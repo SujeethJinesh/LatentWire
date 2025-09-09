@@ -1,0 +1,11 @@
+torch>=2.1
+# Pin transformers to avoid torch>=2.6 restriction for .bin weights on older Pythons
+transformers==4.45.2
+datasets>=2.19.0
+accelerate>=0.30.0
+numpy<2.0
+tqdm
+pytest
+# bitsandbytes is Linux/CUDA specific; safely ignored on macOS
+bitsandbytes>=0.43.0 ; platform_system == "Linux"
+sentence-transformers

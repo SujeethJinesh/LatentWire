@@ -1,0 +1,7 @@
+Loading HotpotQA subset...
+Llama hidden size: 2048, Qwen hidden size: 896
+Epoch 1/1
+  ✅ Saved checkpoint at step 2
+  step 4/4 | loss_llama=12.1060 | loss_qwen=10.9135 | grad_norm=76.13
+  ✅ Saved checkpoint at step 4
+Saved encoder and adapters to ./ckpt_m8_st_smoke
