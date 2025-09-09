@@ -1,0 +1,16 @@
+Loading HotpotQA subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:  25%|██▌       | 1/4 [01:12<03:37, 72.49s/it]Downloading shards:  50%|█████     | 2/4 [02:17<02:16, 68.21s/it]Downloading shards:  75%|███████▌  | 3/4 [03:16<01:03, 63.96s/it]Downloading shards: 100%|██████████| 4/4 [03:29<00:00, 43.79s/it]Downloading shards: 100%|██████████| 4/4 [03:29<00:00, 52.37s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.13s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.22s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:02,  2.27s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.55s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.80s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:  25%|██▌       | 1/4 [00:42<02:07, 42.58s/it]Downloading shards:  50%|█████     | 2/4 [01:21<01:20, 40.37s/it]Downloading shards:  75%|███████▌  | 3/4 [01:58<00:38, 38.86s/it]Downloading shards: 100%|██████████| 4/4 [02:39<00:00, 39.54s/it]Downloading shards: 100%|██████████| 4/4 [02:39<00:00, 39.76s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:03<00:10,  3.65s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:06<00:06,  3.38s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:10<00:03,  3.55s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  4.50s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  4.14s/it]
+Llama hidden size: 4096, Qwen hidden size: 4096
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/1
+  step 10/64 | loss_llama=2.5062 | loss_qwen=2.4419 | grad_norm=6.19 | sec/step~18.69
+  step 20/64 | loss_llama=2.0985 | loss_qwen=1.3994 | grad_norm=1.41 | sec/step~10.00
+  step 30/64 | loss_llama=1.7656 | loss_qwen=1.1075 | grad_norm=1.24 | sec/step~6.94
+  step 40/64 | loss_llama=1.5010 | loss_qwen=1.1041 | grad_norm=1.19 | sec/step~5.99
+  step 50/64 | loss_llama=1.3575 | loss_qwen=0.8167 | grad_norm=0.87 | sec/step~5.55
+  step 60/64 | loss_llama=1.5686 | loss_qwen=1.2651 | grad_norm=0.89 | sec/step~5.42
+  step 64/64 | loss_llama=1.2037 | loss_qwen=0.8713 | grad_norm=0.77 | sec/step~5.41
+Saved encoder, adapters, and state to runs/mps_m8_simple_20250908_235945/ckpt

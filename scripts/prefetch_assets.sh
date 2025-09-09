@@ -5,8 +5,8 @@ set -euo pipefail
 # Example:
 #   bash scripts/prefetch_assets.sh TinyLlama/TinyLlama-1.1B-Chat-v1.0 Qwen/Qwen2-0.5B-Instruct
 
-LLM_A=${1:-"TinyLlama/TinyLlama-1.1B-Chat-v1.0"}
-LLM_B=${2:-"Qwen/Qwen2-0.5B-Instruct"}
+LLM_A=${1:-"meta-llama/Meta-Llama-3.1-8B-Instruct"}
+LLM_B=${2:-"Qwen/Qwen1.5-7B-Chat"}
 
 export HF_HOME="${HF_HOME:-$PWD/.hf_home}"
 export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-$HF_HOME/transformers}"

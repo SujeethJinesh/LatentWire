@@ -1,0 +1,12 @@
+Loading HotpotQA subset...
+Llama hidden size: 2048, Qwen hidden size: 896
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/1
+  step 10/64 | loss_llama=2.1125 | loss_qwen=5.9382 | grad_norm=15.02 | sec/step~2.18
+  step 20/64 | loss_llama=1.7731 | loss_qwen=2.4345 | grad_norm=16.38 | sec/step~1.75
+  step 30/64 | loss_llama=1.5103 | loss_qwen=1.4051 | grad_norm=5.88 | sec/step~1.63
+  step 40/64 | loss_llama=1.3491 | loss_qwen=1.0047 | grad_norm=2.16 | sec/step~1.56
+  step 50/64 | loss_llama=1.6070 | loss_qwen=1.1551 | grad_norm=1.32 | sec/step~1.53
+  step 60/64 | loss_llama=1.6039 | loss_qwen=1.2096 | grad_norm=1.25 | sec/step~1.53
+  step 64/64 | loss_llama=1.6608 | loss_qwen=1.1798 | grad_norm=1.11 | sec/step~1.52
+Saved encoder, adapters, and state to runs/mps_m8_simple_20250908_232547/ckpt

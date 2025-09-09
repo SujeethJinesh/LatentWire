@@ -28,6 +28,22 @@ def generate_latent(wrapper: LMWrapper, prefix_embeds: torch.Tensor, max_new_tok
     out_ids = wrapper.generate_from_prefix(prefix_embeds, max_new_tokens=max_new_tokens, temperature=0.0)
     return [wrapper.tokenizer.decode(ids, skip_special_tokens=True) for ids in out_ids]
 
+def content_only_m_token_chat_prompt(tokenizer, raw_source: str, k: int) -> str:
+    """
+    Take M tokens from the user content (Question+Context+Answer:) ONLY,
+    then wrap with the chat template so the model still sees roles.
+    """
+    # Tokenize content alone and keep first k tokens
+    enc = tokenizer(raw_source, add_special_tokens=True, return_attention_mask=False)
+    ids_k = enc["input_ids"][:k]
+    truncated_content = tokenizer.decode(ids_k, skip_special_tokens=True)
+
+    messages = [
+        {"role": "system", "content": "You are a concise QA assistant. Use the context to answer with a short phrase only."},
+        {"role": "user", "content": truncated_content}
+    ]
+    return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -39,6 +55,10 @@ def main():
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--hotpot_config", type=str, default=None, help="Override HotpotQA config (fullwiki/distractor)")
     ap.add_argument("--out_dir", type=str, default=None, help="Write metrics.json/csv here if set")
+    ap.add_argument("--token_budget_mode", type=str, default="chat_full",
+                choices=["chat_full", "content_only"],
+                help="How to build the M-token baseline: truncate full chat prompt or only the user content.")
+    ap.add_argument("--sequential_eval", action="store_true", help="Load/unload models sequentially to save memory")
     args = ap.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")

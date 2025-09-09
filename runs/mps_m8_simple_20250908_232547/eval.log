@@ -12,21 +12,21 @@ Approx interlingua payload per example: 8192 bytes (dtype float32, shape M=8, d_
 — Baseline: Text prompting
 Llama  EM: 0.000  F1: 0.009  |  NLL/token (gold): 14.314
 Qwen   EM: 0.000   F1: 0.003   |  NLL/token (gold): 11.754
-Wall clock: 141.55s for 200 examples
+Wall clock: 107.33s for 200 examples
 
 — Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 9.601
-Qwen   EM: 0.000   F1: 0.000   |  NLL/token (gold): 10.044
-Wall clock: 17.36s for 200 examples
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 10.121
+Qwen   EM: 0.000   F1: 0.000   |  NLL/token (gold): 9.866
+Wall clock: 14.30s for 200 examples
 
 — Token-budget baseline (same #prefix tokens as latent)
 Llama  EM: 0.000  F1: 0.011
 Qwen   EM: 0.000   F1: 0.005
-Wall clock: 11.36s for 200 examples
+Wall clock: 13.24s for 200 examples
 
 — 2-LLM joint (rescored pick on latent runs)
 Joint  EM: 0.000  F1: 0.000
-Inter-model agreement (normalized): 0.840
+Inter-model agreement (normalized): 0.775
 Oracle upper bound:  EM 0.000  F1 0.000
 
 ==== METRICS_JSON ====
@@ -54,20 +54,20 @@ Oracle upper bound:  EM 0.000  F1 0.000
       "f1": 0.002543738896102188,
       "nll_token": 11.753927846023123
     },
-    "wall_clock_sec": 141.5504801273346
+    "wall_clock_sec": 107.32614803314209
   },
   "latent": {
     "llama": {
       "em": 0.0,
       "f1": 0.0,
-      "nll_token": 9.600510046443837
+      "nll_token": 10.12145115551464
     },
     "qwen": {
       "em": 0.0,
       "f1": 0.0,
-      "nll_token": 10.044482185654875
+      "nll_token": 9.866336449530621
     },
-    "wall_clock_sec": 17.363337993621826
+    "wall_clock_sec": 14.302679061889648
   },
   "token_budget": {
     "llama": {
@@ -78,16 +78,16 @@ Oracle upper bound:  EM 0.000  F1 0.000
       "em": 0.0,
       "f1": 0.004907781076781872
     },
-    "wall_clock_sec": 11.35565710067749
+    "wall_clock_sec": 13.23747205734253
   },
   "joint": {
     "em": 0.0,
     "f1": 0.0,
-    "agreement": 0.84,
+    "agreement": 0.775,
     "oracle": {
       "em": 0.0,
       "f1": 0.0
     }
   }
 }
-Wrote per-example predictions to runs/mps_m8_simple_20250908_230522/predictions.jsonl
+Wrote per-example predictions to runs/mps_m8_simple_20250908_232547/predictions.jsonl

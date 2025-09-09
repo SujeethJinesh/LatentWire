@@ -8,8 +8,8 @@ export OUT="runs/$RUN"; mkdir -p "$OUT"
 # 1) Train (Preset A: safe)
 PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
 python -u latentwire/train.py \
-  --llama_id "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
-  --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
+  --llama_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
+  --qwen_id  "Qwen/Qwen1.5-7B-Chat" \
   --samples  1024 \
   --epochs   1 \
   --batch_size 16 \
@@ -20,15 +20,15 @@ python -u latentwire/train.py \
   --grad_ckpt \
   --fp16_mps \
   --auto_resume \
-  --save_every 200 \
+  --save_every 100 \
   --save_dir "$OUT/ckpt" \
   2>&1 | tee -a "$OUT/train.log"
 
 PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
 python -u latentwire/eval.py \
   --ckpt "$OUT/ckpt" \
-  --samples 200 \
-  --max_new_tokens 24 \
+  --samples 50 \
+  --max_new_tokens 20 \
   --hotpot_config distractor \
   --out_dir "$OUT" \
   2>&1 | tee "$OUT/eval.log"
