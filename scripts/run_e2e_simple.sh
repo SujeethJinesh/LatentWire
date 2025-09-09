@@ -24,6 +24,8 @@ python -u latentwire/train.py \
   --save_dir "$OUT/ckpt" \
   2>&1 | tee -a "$OUT/train.log"
 
+# We need to use sequential_eval + load_4bit to prevent OOMs.
+# Needs at least 82 GB for fp32.
 PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
 python -u latentwire/eval.py \
   --ckpt "$OUT/ckpt" \
@@ -31,6 +33,8 @@ python -u latentwire/eval.py \
   --max_new_tokens 20 \
   --hotpot_config distractor \
   --out_dir "$OUT" \
+  --sequential_eval \
+  --load_4bit \
   2>&1 | tee "$OUT/eval.log"
 
 # Quick extract (what to send to me)
@@ -38,3 +42,19 @@ echo "==== STEP_TIMES ===="
 grep -E "sec/step" "$OUT/train.log" | tail -n 5
 echo "==== EVAL_JSON ===="
 cat "$OUT/metrics.json"
+
+
+## To run eval on my own
+# nohup caffeinate -dims -s bash -c 'PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
+# python -u latentwire/eval.py \
+#   --ckpt "$OUT/ckpt" \
+#   --samples 50 \
+#   --max_new_tokens 20 \
+#   --hotpot_config distractor \
+#   --out_dir "$OUT" \
+#   --sequential_eval \
+#   --load_4bit \
+#   2>&1 | tee "$OUT/eval.log"' &
+
+# # Check progress with
+# tail -f "$OUT/eval.log"

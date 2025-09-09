@@ -1,0 +1,62 @@
+{
+  "samples": 50,
+  "max_new_tokens": 20,
+  "latent_len": 8,
+  "device": "mps",
+  "dtype": "torch.float16",
+  "avg_prompt_tokens": {
+    "llama": 433.8,
+    "qwen": 431.82
+  },
+  "compression": {
+    "llama": 54.225,
+    "qwen": 53.9775
+  },
+  "payload_bytes": 8192,
+  "text": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.11788552027682464,
+      "nll_token": 11.324581342174652
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.01924812030075188,
+      "nll_token": 21.096278264822548
+    },
+    "wall_clock_sec": 3143.836639881134
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll_token": 10.917419981449209
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll_token": 11.26276275969499
+    },
+    "wall_clock_sec": 54.89199185371399
+  },
+  "token_budget": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.017372662425294002
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0
+    },
+    "wall_clock_sec": 11.182677984237671
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.0,
+    "agreement": 0.38,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  }
+}

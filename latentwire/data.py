@@ -170,3 +170,38 @@ def load_hotpot_subset(
         source = f"Question: {q}\nContext: {ctx}\nAnswer:"
         examples.append({"source": source, "answer": ans})
     return examples
+
+# ---- SQuAD loaders (v1 and v2) ----
+
+def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v2: bool = False) -> List[Dict[str, Any]]:
+    name = "squad_v2" if v2 else "squad"
+    ds = load_dataset("rajpurkar/" + name, split=split)
+    rng = random.Random(seed)
+    idxs = list(range(len(ds)))
+    rng.shuffle(idxs)
+    idxs = idxs[:samples]
+    out = []
+    for i in idxs:
+        ex = ds[i]
+        # answers field differs in v1/v2; both provide lists
+        ans_list = ex.get("answers", {}).get("text", []) if "answers" in ex else []
+        answer = ans_list[0] if ans_list else ""
+        source = f"Context: {ex.get('context','')}\nQuestion: {ex.get('question','')}\nAnswer:"
+        out.append({"source": source, "answer": answer})
+    return out
+
+def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
+    """
+    Unified front: dataset ∈ {"hotpot","squad","squad_v2"}
+    kwargs forwarded to the underlying loader (split, samples, seed, config, ...)
+    """
+    ds = dataset.lower()
+    if ds == "hotpot":
+        return load_hotpot_subset(**kwargs)
+    elif ds == "squad":
+        return load_squad_subset(v2=False, **{k:v for k,v in kwargs.items() if k!="config"})
+    elif ds in ("squad_v2", "squad2"):
+        return load_squad_subset(v2=True, **{k:v for k,v in kwargs.items() if k!="config"})
+    else:
+        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2")
+

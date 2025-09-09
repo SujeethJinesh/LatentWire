@@ -161,6 +161,7 @@ We let **both** models generate answers from the same latent prefix and then **s
 
 - **HotpotQA** (`fullwiki` preferred; `distractor` fallback for MPS sanity). We use a **subsample** for feasibility on laptops and larger sets on GPU.
 - Typical subsets: `train: 10k`, `val: 1k`, `test: 1k` (for GPU runs). On MPS, smaller (`train: 256–512`, `val: 200`).
+- We evaluate on HotpotQA (multi‑hop) and SQuAD (single‑hop) to demonstrate generality. SQuAD’s single‑paragraph structure yields clearer systems metrics (prefill time vs M), while HotpotQA stresses multi‑document reasoning.
 
 ### 6.2 Models
 
@@ -207,6 +208,42 @@ We let **both** models generate answers from the same latent prefix and then **s
 - Report **mean ± 95% CI** (bootstrap over examples) for F1.
 - Fix random seeds for splits; keep configs in JSON for reproducibility.
 
+### §6.8 Benchmarks & Collaboration Patterns
+
+#### SQuAD (single‑hop extraction; MLSys‑friendly)
+
+We add SQuAD v1.1/v2 as a clean single‑paragraph QA benchmark. It offers consistent prompt lengths (100–300 tokens), making our prefill vs latent story crisp.
+
+Metrics: EM/F1; Efficiency: prefill wall‑clock, compression, payload bytes.
+
+Expectation: Text F1 ~85–90% (8B/7B); Latent aims ≥75–80% at ≥10× compression (M=8–16).
+
+Why for MLSys: recognizable, stable lengths, easy apples‑to‑apples systems metrics.
+
+#### MS MARCO v2.1 (two‑stage: ranking → answer)
+
+Pipeline: (1) Llama reranks top‑k passages from BM25/ANCE; (2) Qwen extracts/answers. LatentWire replaces long query+context prompts with M‑vector interlingua fed to both models.
+
+Metrics: MRR@10 (ranking), F1 (QA).
+
+Systems win: Heavy prefill avoided in both stages; show ≥10× prompt compression and ≥40% latency reduction at similar quality.
+
+#### MMLU (routing)
+
+Specialize by subject: STEM → Llama; Humanities/SocSci → Qwen. Optionally compute a shared latent from question and let both models propose an answer; pick via joint rescoring.
+
+Metrics: Accuracy per subject; cost per query.
+
+Systems win: Routing reduces cost by avoiding always calling both, while shared latent enables a cheap joint check.
+
+#### TruthfulQA (factuality)
+
+Use cross‑validation: both models decode; we penalize candidates with low mutual likelihood under the other model’s prefix. Evaluate TruthfulQA accuracy gains at similar or less prefill.
+
+Metrics: TruthfulQA accuracy; self‑consistency score.
+
+Systems win: reliability improvements via model diversity with minimal prompt cost (shared latent).
+
 ---
 
 ## 7. Risks & Mitigations (top 10)
@@ -231,6 +268,8 @@ We let **both** models generate answers from the same latent prefix and then **s
    _Mitigate:_ Temperature scaling per model on val split if needed.
 10. **Wrong bottleneck (bandwidth vs compute).**  
     _Mitigate:_ Measure **payload bytes** and **wall‑clock** prefill+decode separately and show where we win.
+11. **dataset loader format discrepancies (e.g., Hotpot dict‑of‑lists vs list‑of‑pairs) yielding empty contexts.**
+    _Mitigate:_: robust indexing code; unit test that Context: length > 0 for sampled examples.
 
 ---
 
@@ -279,6 +318,7 @@ We let **both** models generate answers from the same latent prefix and then **s
 - **Efficiency**: ≥4× prompt compression with non‑worse wall‑clock on prefill; concrete payload savings over a wire.
 - **Synergy**: simple joint rescoring yields measurable gains over either model alone.
 - **Foundation**: A clean, open codebase others can extend (multi‑round comms, asymmetric latents, learned aggregators, LoRA variants).
+- We report wire bytes for text (UTF‑8) vs interlingua (fp32/fp16) and show that a single latent payload can be broadcast to multiple models, unlike text which is retokenized per model.
 
 ---
 

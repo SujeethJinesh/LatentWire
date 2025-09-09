@@ -8,7 +8,7 @@ import torch
 import torch.optim as optim
 
 from latentwire.models import InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
-from latentwire.data import load_hotpot_subset
+from latentwire.data import load_examples
 
 
 def collate_bytes(texts, byte_tok: ByteTokenizer, device: str):
@@ -103,6 +103,8 @@ def main():
     ap.add_argument("--resume_from", type=str, default=None, help="path to a state_step*.pt or last.pt to resume from")
     ap.add_argument("--auto_resume", action="store_true", help="if set, auto-pick the latest checkpoint in save_dir")
     ap.add_argument("--no_load_optimizer", action="store_true", help="if set, do not restore optimizer state")
+    ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot","squad","squad_v2"],
+                help="Which dataset to use")
     args = ap.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
@@ -114,8 +116,13 @@ def main():
         dtype = torch.float32
 
     # Data
-    print("Loading HotpotQA subset...")
-    examples = load_hotpot_subset(split="train", samples=args.samples, seed=0, config=args.hotpot_config)
+    print("Loading dataset subset...")
+    if args.dataset.startswith("squad"):
+        print("Loading SQuAD subset...")
+        examples = load_examples(dataset=args.dataset, split="train", samples=args.samples, seed=0)
+    else:
+        print("Loading HotpotQA subset...")
+        examples = load_examples(dataset="hotpot", split="train", samples=args.samples, seed=0, config=args.hotpot_config)
     texts = [e["source"] for e in examples]
     answers = [e["answer"] for e in examples]
 
