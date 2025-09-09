@@ -4,7 +4,7 @@ import argparse
 
 import torch
 
-from latentwire.models import InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer
+from latentwire.models import InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
 from latentwire.data import load_hotpot_subset
 
 
@@ -32,13 +32,16 @@ def main():
         cfg = json.load(f)
     llama_id = args.llama_id or cfg["llama_id"]
     qwen_id  = args.qwen_id  or cfg["qwen_id"]
+    encoder_type = cfg.get("encoder_type", "byte")
 
     llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
     qwen  = LMWrapper(LMConfig(model_id=qwen_id,  device=device, dtype=dtype, load_4bit=args.load_4bit))
 
-    encoder = InterlinguaEncoder(d_z=cfg["d_z"], latent_len=cfg["latent_len"])
+    if encoder_type == "byte":
+        encoder = InterlinguaEncoder(d_z=cfg["d_z"], latent_len=cfg["latent_len"]).to(device).eval()
+    else:
+        encoder = SimpleEncoder(d_z=cfg["d_z"], latent_len=cfg["latent_len"]).to(device).eval()
     encoder.load_state_dict(torch.load(os.path.join(args.ckpt, "encoder.pt"), map_location="cpu"))
-    encoder.to(device).eval()
 
     adp_llama = Adapter(d_z=cfg["d_z"], d_model=llama.d_model)
     adp_llama.load_state_dict(torch.load(os.path.join(args.ckpt, "adapter_llama.pt"), map_location="cpu"))
@@ -52,10 +55,14 @@ def main():
     texts = [e["source"] for e in examples]
     answers = [e["answer"] for e in examples]
 
-    byte_tok = ByteTokenizer(max_bytes=cfg["byte_max"])
-    z_bytes = collate_bytes(texts, byte_tok, device)
-    with torch.no_grad():
-        z = encoder(z_bytes)
+    if encoder_type == "byte":
+        byte_tok = ByteTokenizer(max_bytes=cfg["byte_max"])
+        z_bytes = collate_bytes(texts, byte_tok, device)
+        with torch.no_grad():
+            z = encoder(z_bytes)
+    else:
+        with torch.no_grad():
+            z = encoder(texts)
         prefix_llama = adp_llama(z)
         prefix_qwen  = adp_qwen(z)
 
@@ -76,4 +83,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

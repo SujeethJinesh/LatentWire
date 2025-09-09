@@ -12,7 +12,7 @@ one from the Llama family and one from the Qwen family—on a small HotpotQA sli
 ## Quickstart
 
 ### 0) Environment
-- Python 3.10+ recommended.
+- Python 3.11 recommended (repo scripts default to 3.11 when available).
 - macOS (Apple Silicon or Intel) or Linux.
 - GPU optional (CUDA recommended for full runs); CPU works for smoke tests.
 
@@ -21,6 +21,13 @@ one from the Llama family and one from the Qwen family—on a small HotpotQA sli
 bash scripts/setup_mac.sh      # on macOS
 # or
 bash scripts/setup_linux.sh    # on Linux
+```
+
+To pre-download models and dataset caches (optional, speeds up first run):
+```bash
+bash scripts/prefetch_assets.sh \
+  TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  Qwen/Qwen2-0.5B-Instruct
 ```
 
 ### 2) Smoke test (fast, CPU-friendly)

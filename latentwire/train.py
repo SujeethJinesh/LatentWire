@@ -1,4 +1,5 @@
 import os
+import time
 import argparse
 
 import torch
@@ -86,10 +87,12 @@ def main():
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
 
     global_step = 0
+    ema_step_time = None
     for epoch in range(args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
         perm = torch.randperm(N)
         for step in range(steps_per_epoch):
+            t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
 
@@ -145,9 +148,11 @@ def main():
                 total_norm = float("nan")
 
             global_step += 1
+            dt = time.time() - t0
+            ema_step_time = dt if ema_step_time is None else (0.9 * ema_step_time + 0.1 * dt)
 
             if (step+1) % 10 == 0 or (step+1) == steps_per_epoch:
-                print(f"  step {step+1}/{steps_per_epoch} | loss_llama={loss_llama.item():.4f} | loss_qwen={loss_qwen.item():.4f} | grad_norm={total_norm:.2f}")
+                print(f"  step {step+1}/{steps_per_epoch} | loss_llama={loss_llama.item():.4f} | loss_qwen={loss_qwen.item():.4f} | grad_norm={total_norm:.2f} | sec/step~{ema_step_time:.2f}")
 
             # Periodic checkpointing
             if args.save_every and (global_step % args.save_every == 0):

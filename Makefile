@@ -14,3 +14,7 @@ train:
 
 eval:
 	bash scripts/run_eval_small.sh
+
+.PHONY: prefetch
+prefetch:
+	bash scripts/prefetch_assets.sh "TinyLlama/TinyLlama-1.1B-Chat-v1.0" "Qwen/Qwen2-0.5B-Instruct"

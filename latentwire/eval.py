@@ -38,6 +38,7 @@ def main():
     ap.add_argument("--max_new_tokens", type=int, default=32)
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--hotpot_config", type=str, default=None, help="Override HotpotQA config (fullwiki/distractor)")
+    ap.add_argument("--out_dir", type=str, default=None, help="Write metrics.json/csv here if set")
     args = ap.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
@@ -208,6 +209,55 @@ def main():
     print(f"Joint  EM: {joint_em:.3f}  F1: {joint_f1:.3f}")
     print(f"Inter-model agreement (normalized): {agreement_rate:.3f}")
     print(f"Oracle upper bound:  EM {oracle_em:.3f}  F1 {oracle_f1:.3f}")
+
+    # Machine-readable summary
+    summary = {
+        "samples": len(prompts),
+        "max_new_tokens": args.max_new_tokens,
+        "latent_len": int(latent_len),
+        "avg_prompt_tokens": {"llama": avg_prompt_tokens_llama, "qwen": avg_prompt_tokens_qwen},
+        "compression": {"llama": avg_prompt_tokens_llama/latent_len, "qwen": avg_prompt_tokens_qwen/latent_len},
+        "payload_bytes": int(bytes_per_latent),
+        "text": {
+            "llama": {"em": llama_text_em, "f1": llama_text_f1, "nll_token": llama_text_nll},
+            "qwen":  {"em": qwen_text_em,  "f1": qwen_text_f1,  "nll_token": qwen_text_nll},
+            "wall_clock_sec": t_text,
+        },
+        "latent": {
+            "llama": {"em": llama_latent_em, "f1": llama_latent_f1, "nll_token": llama_latent_nll},
+            "qwen":  {"em": qwen_latent_em,  "f1": qwen_latent_f1,  "nll_token": qwen_latent_nll},
+            "wall_clock_sec": t_latent,
+        },
+        "token_budget": {
+            "llama": {"em": llama_trunc_em, "f1": llama_trunc_f1},
+            "qwen":  {"em": qwen_trunc_em,  "f1": qwen_trunc_f1},
+            "wall_clock_sec": t_trunc,
+        },
+        "joint": {
+            "em": joint_em, "f1": joint_f1, "agreement": agreement_rate,
+            "oracle": {"em": oracle_em, "f1": oracle_f1},
+        },
+    }
+
+    import json as _json, os as _os
+    print("\n==== METRICS_JSON ====")
+    print(_json.dumps(summary, indent=2))
+    if args.out_dir:
+        _os.makedirs(args.out_dir, exist_ok=True)
+        with open(_os.path.join(args.out_dir, "metrics.json"), "w") as f:
+            _json.dump(summary, f, indent=2)
+        # Simple CSV
+        import csv as _csv
+        with open(_os.path.join(args.out_dir, "metrics.csv"), "w", newline="") as f:
+            w = _csv.writer(f)
+            w.writerow(["group","model","EM","F1","NLL/token","wall_clock_sec","compression","payload_bytes","samples","M"])
+            w.writerow(["text","llama", summary["text"]["llama"]["em"], summary["text"]["llama"]["f1"], summary["text"]["llama"]["nll_token"], summary["text"]["wall_clock_sec"], summary["compression"]["llama"], summary["payload_bytes"], summary["samples"], summary["latent_len"]])
+            w.writerow(["text","qwen",  summary["text"]["qwen"]["em"],  summary["text"]["qwen"]["f1"],  summary["text"]["qwen"]["nll_token"],  summary["text"]["wall_clock_sec"], summary["compression"]["qwen"],  summary["payload_bytes"], summary["samples"], summary["latent_len"]])
+            w.writerow(["latent","llama", summary["latent"]["llama"]["em"], summary["latent"]["llama"]["f1"], summary["latent"]["llama"]["nll_token"], summary["latent"]["wall_clock_sec"], summary["compression"]["llama"], summary["payload_bytes"], summary["samples"], summary["latent_len"]])
+            w.writerow(["latent","qwen",  summary["latent"]["qwen"]["em"],  summary["latent"]["qwen"]["f1"],  summary["latent"]["qwen"]["nll_token"],  summary["latent"]["wall_clock_sec"], summary["compression"]["qwen"],  summary["payload_bytes"], summary["samples"], summary["latent_len"]])
+            w.writerow(["token_budget","llama", summary["token_budget"]["llama"]["em"], summary["token_budget"]["llama"]["f1"], "", summary["token_budget"]["wall_clock_sec"], summary["compression"]["llama"], summary["payload_bytes"], summary["samples"], summary["latent_len"]])
+            w.writerow(["token_budget","qwen",  summary["token_budget"]["qwen"]["em"],  summary["token_budget"]["qwen"]["f1"],  "", summary["token_budget"]["wall_clock_sec"], summary["compression"]["qwen"],  summary["payload_bytes"], summary["samples"], summary["latent_len"]])
+            w.writerow(["joint","both", summary["joint"]["em"], summary["joint"]["f1"], "", "", "", summary["payload_bytes"], summary["samples"], summary["latent_len"]])
 
 
 if __name__ == "__main__":

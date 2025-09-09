@@ -7,12 +7,13 @@
 - Top‑level: `README.md`, `requirements.txt`, `Makefile`, optional `RESEARCH_PROPOSAL.md` (read first).
 
 ## Build, Test, and Development Commands
-- Environment: Python 3.10+.
+- Environment: Python 3.10+ (prefer 3.11; setup scripts auto-detect `python3.11`).
 - Install: `make setup-mac` (macOS) or `make setup-linux` (Linux). Creates `.venv` and installs deps.
 - Smoke test: `make smoke` or `bash scripts/run_smoke_cpu.sh` (validates inputs_embeds → decode path).
 - Train (small demo): `make train` → saves encoder/adapters to `./ckpt`.
 - Evaluate: `make eval` → prints EM/F1, NLL/token, compression, latency, joint‑pick.
 - Direct pytest: `pytest -q`.
+- Prefetch assets (optional): `make prefetch` or `bash scripts/prefetch_assets.sh <llama_id> <qwen_id>`.
 
 ## Coding Style & Naming Conventions
 - Language: Python only. Indentation 4 spaces; max line length ~100.

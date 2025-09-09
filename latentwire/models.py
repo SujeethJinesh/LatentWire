@@ -144,7 +144,7 @@ class LMWrapper(nn.Module):
         self.cfg = cfg
 
         compute_dtype = cfg.dtype
-        load_kwargs = dict(torch_dtype=compute_dtype, device_map="auto")
+        load_kwargs = dict(torch_dtype=compute_dtype)
 
         if cfg.load_4bit:
             try:
@@ -156,6 +156,7 @@ class LMWrapper(nn.Module):
                     bnb_4bit_compute_dtype=compute_dtype,
                 )
                 load_kwargs["quantization_config"] = bnb_config
+                load_kwargs["device_map"] = "auto"
             except Exception as e:
                 print("bitsandbytes not available or failed; falling back to full precision:", e)
 
@@ -174,7 +175,15 @@ class LMWrapper(nn.Module):
                 self.tokenizer.add_special_tokens({"pad_token": "<|pad|>"})
             self.tokenizer.eos_token = self.tokenizer.pad_token
 
+        # For CUDA, allow device_map auto when not MPS. For MPS/CPU, load on host then move.
+        if cfg.device == "cuda" and "device_map" not in load_kwargs:
+            load_kwargs["device_map"] = "auto"
         self.model = AutoModelForCausalLM.from_pretrained(cfg.model_id, trust_remote_code=True, **load_kwargs)
+        if cfg.device in ("mps", "cpu"):
+            try:
+                self.model.to(cfg.device)
+            except Exception:
+                pass
         self.model.eval()
         for p in self.model.parameters():
             p.requires_grad_(False)
@@ -205,7 +214,12 @@ class LMWrapper(nn.Module):
     def forward_with_prefix_loss(self, prefix_embeds: torch.Tensor, target_ids: torch.Tensor) -> torch.Tensor:
         B, M, D = prefix_embeds.shape
         model_device = next(self.model.parameters()).device
-        prefix_embeds = prefix_embeds.to(model_device)
+        # Ensure dtype/device match model embeddings
+        emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
+        if emb_dtype is not None:
+            prefix_embeds = prefix_embeds.to(model_device, dtype=emb_dtype)
+        else:
+            prefix_embeds = prefix_embeds.to(model_device)
         tf_inputs = target_ids[:, :-1]
         tf_embeds = self.input_embed(tf_inputs.to(model_device))
         inputs_embeds = torch.cat([prefix_embeds, tf_embeds], dim=1)
@@ -238,7 +252,11 @@ class LMWrapper(nn.Module):
     @torch.no_grad()
     def generate_from_prefix(self, prefix_embeds: torch.Tensor, max_new_tokens: int = 64, temperature: float = 0.0, top_p: float = 1.0) -> List[List[int]]:
         model_device = next(self.model.parameters()).device
-        prefix_embeds = prefix_embeds.to(model_device)
+        emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
+        if emb_dtype is not None:
+            prefix_embeds = prefix_embeds.to(model_device, dtype=emb_dtype)
+        else:
+            prefix_embeds = prefix_embeds.to(model_device)
         B = prefix_embeds.size(0)
         attn_mask = torch.ones(prefix_embeds.size()[:-1], dtype=torch.long, device=model_device)
         out = self.model(inputs_embeds=prefix_embeds, attention_mask=attn_mask, use_cache=True, return_dict=True)
@@ -285,8 +303,8 @@ class LMWrapper(nn.Module):
             do_sample=(temperature>0),
             temperature=max(1e-5, temperature),
             top_p=top_p,
-            pad_token_id=[pad_id],
-            eos_token_id=[eos_id],
+            pad_token_id=pad_id,
+            eos_token_id=eos_id,
         )
         outs = []
         for i in range(gen.size(0)):
