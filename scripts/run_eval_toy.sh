@@ -6,4 +6,4 @@ python latentwire/eval.py \
   --ckpt ./ckpt_toy \
   --samples 32 \
   --hotpot_config distractor \
-  --max_new_tokens 16
+  --max_new_tokens 24

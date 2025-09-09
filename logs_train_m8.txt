@@ -221,136 +221,119 @@ Epoch 1/1
   step 2100/5000 | loss_llama=0.8899 | loss_qwen=4.4221 | grad_norm=31838.17
   step 2110/5000 | loss_llama=0.4161 | loss_qwen=3.3126 | grad_norm=24.45
   step 2120/5000 | loss_llama=1.4529 | loss_qwen=4.9769 | grad_norm=30.39
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 step 2920/5000 | loss_llama=1.2651 | loss_qwen=5.0991
-  step 2930/5000 | loss_llama=1.2071 | loss_qwen=5.0344
-  step 2940/5000 | loss_llama=1.0524 | loss_qwen=3.7715
-  step 2950/5000 | loss_llama=0.4133 | loss_qwen=3.2545
-  step 2960/5000 | loss_llama=1.2801 | loss_qwen=3.3439
-  step 2970/5000 | loss_llama=0.2459 | loss_qwen=1.9615
-  step 2980/5000 | loss_llama=0.4028 | loss_qwen=1.5472
-  step 2990/5000 | loss_llama=1.1790 | loss_qwen=2.8592
-  step 3000/5000 | loss_llama=0.1781 | loss_qwen=0.8332
-  step 3010/5000 | loss_llama=5.3774 | loss_qwen=4.6669
-  step 3020/5000 | loss_llama=0.2060 | loss_qwen=0.7732
-  step 3030/5000 | loss_llama=0.5797 | loss_qwen=1.2800
-  step 3040/5000 | loss_llama=0.5666 | loss_qwen=1.3423
-  step 3050/5000 | loss_llama=2.4103 | loss_qwen=4.0374
-  step 3060/5000 | loss_llama=0.6888 | loss_qwen=1.7741
-  step 3070/5000 | loss_llama=0.9672 | loss_qwen=1.6622
-  step 3080/5000 | loss_llama=1.0065 | loss_qwen=1.5930
-  step 3090/5000 | loss_llama=0.3935 | loss_qwen=1.2907
-  step 3100/5000 | loss_llama=0.3240 | loss_qwen=0.2314
-  step 3110/5000 | loss_llama=1.7305 | loss_qwen=2.8911
-  step 3120/5000 | loss_llama=0.4140 | loss_qwen=1.0326
-  step 3130/5000 | loss_llama=0.7876 | loss_qwen=0.8899
-  step 3140/5000 | loss_llama=1.1079 | loss_qwen=1.4867
-  step 3150/5000 | loss_llama=0.4534 | loss_qwen=1.3218
-  step 3160/5000 | loss_llama=0.8323 | loss_qwen=0.6111
-  step 3170/5000 | loss_llama=0.2410 | loss_qwen=0.1596
-  step 3180/5000 | loss_llama=1.0976 | loss_qwen=1.5358
-  step 3190/5000 | loss_llama=0.3315 | loss_qwen=0.1359
-  step 3200/5000 | loss_llama=0.8925 | loss_qwen=1.4094
-  step 3210/5000 | loss_llama=0.4954 | loss_qwen=1.1119
-  step 3220/5000 | loss_llama=1.6561 | loss_qwen=2.6017
-  step 3230/5000 | loss_llama=1.0495 | loss_qwen=1.7857
-  step 3240/5000 | loss_llama=0.2034 | loss_qwen=0.2233
-  step 3250/5000 | loss_llama=2.3252 | loss_qwen=3.7829
-  step 3260/5000 | loss_llama=1.1950 | loss_qwen=1.9381
-  step 3270/5000 | loss_llama=0.6431 | loss_qwen=0.9206
-  step 3280/5000 | loss_llama=1.2749 | loss_qwen=2.2761
-  step 3290/5000 | loss_llama=0.4325 | loss_qwen=1.2578
-  step 3300/5000 | loss_llama=0.4625 | loss_qwen=1.3423
-  step 3310/5000 | loss_llama=0.6015 | loss_qwen=1.1150
-  step 3320/5000 | loss_llama=0.2935 | loss_qwen=5.5242
-  step 3330/5000 | loss_llama=1.1768 | loss_qwen=9.3961
-  step 3340/5000 | loss_llama=1.1475 | loss_qwen=8.0263
-  step 3350/5000 | loss_llama=1.1278 | loss_qwen=9.9383
-  step 3360/5000 | loss_llama=0.5141 | loss_qwen=6.9111
-  step 3370/5000 | loss_llama=1.6182 | loss_qwen=7.0765
-  step 3380/5000 | loss_llama=0.4435 | loss_qwen=4.2769
-  step 3390/5000 | loss_llama=0.2049 | loss_qwen=2.4938
-  step 3400/5000 | loss_llama=1.4348 | loss_qwen=3.2904
-  step 3410/5000 | loss_llama=0.4332 | loss_qwen=1.3261
-  step 3420/5000 | loss_llama=0.4512 | loss_qwen=1.4247
-  step 3430/5000 | loss_llama=0.9289 | loss_qwen=1.8204
-  step 3440/5000 | loss_llama=1.8464 | loss_qwen=3.0764
-  step 3450/5000 | loss_llama=1.7244 | loss_qwen=2.3551
-  step 3460/5000 | loss_llama=0.4392 | loss_qwen=6.9336
-  step 3470/5000 | loss_llama=0.9249 | loss_qwen=8.5299
-  step 3480/5000 | loss_llama=2.2050 | loss_qwen=8.6580
-  step 3490/5000 | loss_llama=1.2999 | loss_qwen=7.1777
-  step 3500/5000 | loss_llama=1.2172 | loss_qwen=6.3684
-  step 3510/5000 | loss_llama=0.7519 | loss_qwen=4.6352
-  step 3520/5000 | loss_llama=0.2625 | loss_qwen=2.6876
-  step 3530/5000 | loss_llama=0.2739 | loss_qwen=1.5845
-  step 3540/5000 | loss_llama=1.2677 | loss_qwen=3.4666
-  step 3550/5000 | loss_llama=0.9819 | loss_qwen=6.7670
-  step 3560/5000 | loss_llama=0.6459 | loss_qwen=9.5731
-  step 3570/5000 | loss_llama=1.3037 | loss_qwen=10.5995
-  step 3580/5000 | loss_llama=1.3350 | loss_qwen=9.7586
-  step 3590/5000 | loss_llama=0.7449 | loss_qwen=10.3898
-  step 3600/5000 | loss_llama=8.9804 | loss_qwen=11.6540
-  step 3610/5000 | loss_llama=1.1758 | loss_qwen=10.9393
-  step 3620/5000 | loss_llama=2.4626 | loss_qwen=9.7572
-  step 3630/5000 | loss_llama=0.2454 | loss_qwen=7.5152
-  step 3640/5000 | loss_llama=1.3592 | loss_qwen=7.7616
-  step 3650/5000 | loss_llama=0.8733 | loss_qwen=6.2495
-  step 3660/5000 | loss_llama=0.8155 | loss_qwen=5.2376
-  step 3670/5000 | loss_llama=0.2318 | loss_qwen=4.0793
-  step 3680/5000 | loss_llama=1.5202 | loss_qwen=5.7703
-  step 3690/5000 | loss_llama=1.3613 | loss_qwen=4.7095
-  step 3700/5000 | loss_llama=0.2469 | loss_qwen=2.4004
-  step 3710/5000 | loss_llama=0.5196 | loss_qwen=2.4037
-  step 3720/5000 | loss_llama=0.1847 | loss_qwen=1.5987
-  step 3730/5000 | loss_llama=1.1661 | loss_qwen=2.9346
-  step 3740/5000 | loss_llama=1.0056 | loss_qwen=2.2270
-  step 3750/5000 | loss_llama=0.2219 | loss_qwen=0.8055
-  step 3760/5000 | loss_llama=2.3222 | loss_qwen=3.4626
-  step 3770/5000 | loss_llama=0.6279 | loss_qwen=1.3481
-  step 3780/5000 | loss_llama=1.3538 | loss_qwen=2.3782
-  step 3790/5000 | loss_llama=1.2986 | loss_qwen=2.7833
-  step 3800/5000 | loss_llama=1.1096 | loss_qwen=2.9236
-  step 3810/5000 | loss_llama=0.4219 | loss_qwen=1.0621
-  step 3820/5000 | loss_llama=0.1880 | loss_qwen=0.3517
-  step 3830/5000 | loss_llama=1.1171 | loss_qwen=1.5891
-  step 3840/5000 | loss_llama=0.7132 | loss_qwen=1.3223
-  step 3850/5000 | loss_llama=0.9019 | loss_qwen=1.3409
-  step 3860/5000 | loss_llama=1.5574 | loss_qwen=3.3652
-  step 3870/5000 | loss_llama=1.4462 | loss_qwen=2.8133
-  step 3880/5000 | loss_llama=1.2436 | loss_qwen=2.1404
-  step 3890/5000 | loss_llama=1.6397 | loss_qwen=1.4533
-  step 3900/5000 | loss_llama=0.3690 | loss_qwen=1.4567
-  step 3910/5000 | loss_llama=0.3085 | loss_qwen=0.5156
-  step 3920/5000 | loss_llama=0.9068 | loss_qwen=1.5946
-  step 3930/5000 | loss_llama=0.3785 | loss_qwen=1.4383
-  step 3940/5000 | loss_llama=1.3812 | loss_qwen=2.2780
-  step 3950/5000 | loss_llama=1.3869 | loss_qwen=2.3264
-  step 3960/5000 | loss_llama=0.9654 | loss_qwen=1.7217
-  step 3970/5000 | loss_llama=1.0027 | loss_qwen=1.5865
-  step 3980/5000 | loss_llama=1.1181 | loss_qwen=1.7453
-  step 3990/5000 | loss_llama=3.3705 | loss_qwen=4.2118
-  step 4000/5000 | loss_llama=0.4794 | loss_qwen=0.9844
-  step 4010/5000 | loss_llama=0.9646 | loss_qwen=1.9959
-  step 4020/5000 | loss_llama=0.1821 | loss_qwen=0.2211
-  step 4030/5000 | loss_llama=0.9732 | loss_qwen=1.1435
-  step 4040/5000 | loss_llama=0.4722 | loss_qwen=1.2773
-  step 4050/5000 | loss_llama=1.7407 | loss_qwen=1.9486
-  step 4060/5000 | loss_llama=0.6614 | loss_qwen=0.6168
-  step 4070/5000 | loss_llama=1.6773 | loss_qwen=2.1238
-  step 4080/5000 | loss_llama=1.0982 | loss_qwen=1.3207
-  step 4090/5000 | loss_llama=0.3363 | loss_qwen=0.0974
-  step 4100/5000 | loss_llama=1.7032 | loss_qwen=2.0274
-  step 4110/5000 | loss_llama=1.9598 | loss_qwen=2.7921
-  step 4120/5000 | loss_llama=0.5636 | loss_qwen=0.8026
-  step 4130/5000 | loss_llama=1.1021 | loss_qwen=4.3442
-  step 4140/5000 | loss_llama=0.5795 | loss_qwen=7.5979
-  step 4150/5000 | loss_llama=0.4846 | loss_qwen=9.5650
-  step 4160/5000 | loss_llama=0.4775 | loss_qwen=9.4297
-  step 4170/5000 | loss_llama=0.3520 | loss_qwen=10.3456
-  step 4180/5000 | loss_llama=0.7532 | loss_qwen=10.7458
-  step 4190/5000 | loss_llama=1.1581 | loss_qwen=9.6437
-  step 4200/5000 | loss_llama=0.1905 | loss_qwen=12.1359
-  step 4210/5000 | loss_llama=1.2704 | loss_qwen=12.6313
+  step 2130/5000 | loss_llama=0.6311 | loss_qwen=4.1068 | grad_norm=31552.26
+  step 2140/5000 | loss_llama=0.4914 | loss_qwen=3.7904 | grad_norm=28422.59
+  step 2150/5000 | loss_llama=0.9696 | loss_qwen=4.7386 | grad_norm=33686.04
+  step 2160/5000 | loss_llama=0.4122 | loss_qwen=4.3426 | grad_norm=28.15
+  step 2170/5000 | loss_llama=0.5968 | loss_qwen=4.0201 | grad_norm=44.93
+  step 2180/5000 | loss_llama=0.5378 | loss_qwen=4.9029 | grad_norm=39286.44
+  step 2190/5000 | loss_llama=0.3380 | loss_qwen=5.2078 | grad_norm=47.33
+  step 2200/5000 | loss_llama=1.1732 | loss_qwen=3.7054 | grad_norm=26692.58
+  step 2210/5000 | loss_llama=0.8529 | loss_qwen=5.9504 | grad_norm=45170.12
+  step 2220/5000 | loss_llama=0.6705 | loss_qwen=3.9507 | grad_norm=34.98
+  step 2230/5000 | loss_llama=0.7375 | loss_qwen=6.2255 | grad_norm=77155.02
+  step 2240/5000 | loss_llama=0.7610 | loss_qwen=5.5014 | grad_norm=48.40
+  step 2250/5000 | loss_llama=1.1736 | loss_qwen=5.3789 | grad_norm=32.75
+  ✅ Saved checkpoint at step 2250
+  step 2260/5000 | loss_llama=8.7254 | loss_qwen=9.5558 | grad_norm=18737.34
+  step 2270/5000 | loss_llama=0.7710 | loss_qwen=4.6645 | grad_norm=40.71
+  step 2280/5000 | loss_llama=0.8094 | loss_qwen=5.8352 | grad_norm=61344.72
+  step 2290/5000 | loss_llama=0.8245 | loss_qwen=4.8671 | grad_norm=29.66
+  step 2300/5000 | loss_llama=1.8242 | loss_qwen=5.2552 | grad_norm=30993.81
+  step 2310/5000 | loss_llama=0.9467 | loss_qwen=4.3278 | grad_norm=30.91
+  step 2320/5000 | loss_llama=0.6780 | loss_qwen=4.9247 | grad_norm=38542.93
+  step 2330/5000 | loss_llama=0.4280 | loss_qwen=4.2920 | grad_norm=38446.09
+  step 2340/5000 | loss_llama=0.2619 | loss_qwen=4.6730 | grad_norm=41966.66
+  step 2350/5000 | loss_llama=0.6753 | loss_qwen=4.2189 | grad_norm=41045.54
+  step 2360/5000 | loss_llama=1.4007 | loss_qwen=4.5941 | grad_norm=47795.06
+  step 2370/5000 | loss_llama=1.0064 | loss_qwen=5.8898 | grad_norm=31703.75
+  step 2380/5000 | loss_llama=0.7392 | loss_qwen=4.4377 | grad_norm=50694.39
+  step 2390/5000 | loss_llama=0.8217 | loss_qwen=4.9037 | grad_norm=43.03
+  step 2400/5000 | loss_llama=0.7067 | loss_qwen=5.1374 | grad_norm=41.72
+  step 2410/5000 | loss_llama=0.4103 | loss_qwen=5.3023 | grad_norm=34.24
+  step 2420/5000 | loss_llama=0.7157 | loss_qwen=4.4541 | grad_norm=27.42
+  step 2430/5000 | loss_llama=1.3540 | loss_qwen=4.1847 | grad_norm=23.41
+  step 2440/5000 | loss_llama=1.7687 | loss_qwen=5.3759 | grad_norm=30.54
+  step 2450/5000 | loss_llama=0.9575 | loss_qwen=6.1235 | grad_norm=44417.21
+  step 2460/5000 | loss_llama=1.4802 | loss_qwen=4.4136 | grad_norm=39554.52
+  step 2470/5000 | loss_llama=2.1405 | loss_qwen=4.4182 | grad_norm=26.05
+  step 2480/5000 | loss_llama=1.7176 | loss_qwen=4.5940 | grad_norm=28.54
+  step 2490/5000 | loss_llama=0.4514 | loss_qwen=3.8510 | grad_norm=21.85
+  step 2500/5000 | loss_llama=1.1706 | loss_qwen=4.5072 | grad_norm=35563.88
+  ✅ Saved checkpoint at step 2500
+  step 2510/5000 | loss_llama=1.0234 | loss_qwen=5.0137 | grad_norm=38.09
+  step 2520/5000 | loss_llama=1.5659 | loss_qwen=5.6845 | grad_norm=45653.36
+  step 2530/5000 | loss_llama=0.3475 | loss_qwen=4.5272 | grad_norm=30559.00
+  step 2540/5000 | loss_llama=0.9987 | loss_qwen=5.6493 | grad_norm=40231.70
+  step 2550/5000 | loss_llama=0.4330 | loss_qwen=3.8357 | grad_norm=39.07
+  step 2560/5000 | loss_llama=0.4742 | loss_qwen=4.7241 | grad_norm=34.99
+  step 2570/5000 | loss_llama=1.4230 | loss_qwen=3.7922 | grad_norm=34528.86
+  step 2580/5000 | loss_llama=0.7569 | loss_qwen=4.1798 | grad_norm=27.80
+  step 2590/5000 | loss_llama=1.7321 | loss_qwen=4.5508 | grad_norm=23.46
+  step 2600/5000 | loss_llama=0.9636 | loss_qwen=5.4666 | grad_norm=43206.57
+  step 2610/5000 | loss_llama=0.4030 | loss_qwen=4.0449 | grad_norm=21.86
+  step 2620/5000 | loss_llama=3.7416 | loss_qwen=6.1471 | grad_norm=63353.50
+  step 2630/5000 | loss_llama=0.9803 | loss_qwen=4.5398 | grad_norm=23.56
+  step 2640/5000 | loss_llama=0.2032 | loss_qwen=5.2487 | grad_norm=56704.66
+  step 2650/5000 | loss_llama=2.7540 | loss_qwen=5.0794 | grad_norm=17.35
+  step 2660/5000 | loss_llama=1.0183 | loss_qwen=4.2400 | grad_norm=44082.06
+  step 2670/5000 | loss_llama=1.3393 | loss_qwen=3.9211 | grad_norm=36265.14
+  step 2680/5000 | loss_llama=1.4566 | loss_qwen=4.4584 | grad_norm=31031.39
+  step 2690/5000 | loss_llama=1.4651 | loss_qwen=3.9740 | grad_norm=21.24
+  step 2700/5000 | loss_llama=0.5359 | loss_qwen=4.5426 | grad_norm=57959.07
+  step 2710/5000 | loss_llama=0.9660 | loss_qwen=3.7202 | grad_norm=29176.36
+  step 2720/5000 | loss_llama=1.1148 | loss_qwen=5.2855 | grad_norm=41064.58
+  step 2730/5000 | loss_llama=0.5369 | loss_qwen=4.9465 | grad_norm=39095.16
+  step 2740/5000 | loss_llama=0.9964 | loss_qwen=4.9960 | grad_norm=35745.07
+  step 2750/5000 | loss_llama=0.7729 | loss_qwen=4.5107 | grad_norm=28.06
+  ✅ Saved checkpoint at step 2750
+  step 2760/5000 | loss_llama=1.7761 | loss_qwen=4.9012 | grad_norm=25996.87
+  step 2770/5000 | loss_llama=0.4492 | loss_qwen=4.4277 | grad_norm=36.02
+  step 2780/5000 | loss_llama=1.0386 | loss_qwen=3.7740 | grad_norm=24.16
+  step 2790/5000 | loss_llama=1.0293 | loss_qwen=4.3839 | grad_norm=27052.17
+  step 2800/5000 | loss_llama=1.1462 | loss_qwen=4.5523 | grad_norm=40497.44
+  step 2810/5000 | loss_llama=0.9207 | loss_qwen=4.5301 | grad_norm=28.78
+  step 2820/5000 | loss_llama=0.6447 | loss_qwen=4.0703 | grad_norm=29.30
+  step 2830/5000 | loss_llama=0.5025 | loss_qwen=4.8157 | grad_norm=27258.07
+  step 2840/5000 | loss_llama=1.2570 | loss_qwen=5.2793 | grad_norm=29.07
+  step 2850/5000 | loss_llama=0.9574 | loss_qwen=4.1250 | grad_norm=24.36
+  step 2860/5000 | loss_llama=0.4506 | loss_qwen=5.3249 | grad_norm=43679.99
+  step 2870/5000 | loss_llama=1.2325 | loss_qwen=4.6691 | grad_norm=21906.43
+  step 2880/5000 | loss_llama=0.2317 | loss_qwen=4.9708 | grad_norm=42.83
+  step 2890/5000 | loss_llama=1.0092 | loss_qwen=5.6874 | grad_norm=49579.33
+  step 2900/5000 | loss_llama=0.2038 | loss_qwen=5.2147 | grad_norm=29556.52
+  step 2910/5000 | loss_llama=1.4448 | loss_qwen=4.9504 | grad_norm=32248.48
+  step 2920/5000 | loss_llama=0.8893 | loss_qwen=4.0368 | grad_norm=26.06
+  step 2930/5000 | loss_llama=0.7886 | loss_qwen=5.9046 | grad_norm=40262.56
+  step 2940/5000 | loss_llama=3.2248 | loss_qwen=7.3533 | grad_norm=23.72
+  step 2950/5000 | loss_llama=2.0366 | loss_qwen=4.8782 | grad_norm=48589.77
+  step 2960/5000 | loss_llama=0.4245 | loss_qwen=4.1385 | grad_norm=34469.33
+  step 2970/5000 | loss_llama=0.9392 | loss_qwen=4.9083 | grad_norm=44759.29
+  step 2980/5000 | loss_llama=0.6486 | loss_qwen=5.5835 | grad_norm=46958.63
+  step 2990/5000 | loss_llama=0.6969 | loss_qwen=4.7104 | grad_norm=43456.42
+  step 3000/5000 | loss_llama=0.9268 | loss_qwen=5.1226 | grad_norm=50240.48
+  ✅ Saved checkpoint at step 3000
+  step 3010/5000 | loss_llama=0.8051 | loss_qwen=5.8238 | grad_norm=33.90
+  step 3020/5000 | loss_llama=0.3541 | loss_qwen=4.7846 | grad_norm=44.64
+  step 3030/5000 | loss_llama=9.5869 | loss_qwen=12.3266 | grad_norm=16578.74
+  step 3040/5000 | loss_llama=0.5646 | loss_qwen=6.0594 | grad_norm=40.89
+  step 3050/5000 | loss_llama=1.4311 | loss_qwen=5.2333 | grad_norm=28460.93
+  step 3060/5000 | loss_llama=0.4445 | loss_qwen=5.7256 | grad_norm=37402.29
+  step 3070/5000 | loss_llama=1.8394 | loss_qwen=5.3025 | grad_norm=27.87
+  step 3080/5000 | loss_llama=1.0783 | loss_qwen=4.2043 | grad_norm=60233.66
+  step 3090/5000 | loss_llama=1.0174 | loss_qwen=4.8905 | grad_norm=41468.07
+  step 3100/5000 | loss_llama=0.8461 | loss_qwen=4.6418 | grad_norm=24234.96
+  step 3110/5000 | loss_llama=0.8108 | loss_qwen=5.2954 | grad_norm=41.40
+  step 3120/5000 | loss_llama=2.0752 | loss_qwen=5.8069 | grad_norm=38102.39
+  step 3130/5000 | loss_llama=0.8939 | loss_qwen=4.0666 | grad_norm=20.59
+  step 3140/5000 | loss_llama=1.9357 | loss_qwen=5.0164 | grad_norm=18.31
+  step 3150/5000 | loss_llama=1.8081 | loss_qwen=6.0387 | grad_norm=36855.19
+  step 3160/5000 | loss_llama=1.5344 | loss_qwen=4.9688 | grad_norm=23.35
+  step 3170/5000 | loss_llama=0.5059 | loss_qwen=6.3189 | grad_norm=38.64
+  step 3180/5000 | loss_llama=1.4596 | loss_qwen=5.1334 | grad_norm=29491.50
+/Users/sujeethjinesh/opt/anaconda3/lib/python3.9/multiprocessing/resource_tracker.py:216: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+313
   step 4220/5000 | loss_llama=1.1245 | loss_qwen=12.4434
   step 4230/5000 | loss_llama=1.4182 | loss_qwen=11.8406
   step 4240/5000 | loss_llama=0.7448 | loss_qwen=12.5150

@@ -35,7 +35,7 @@ def main():
     ap.add_argument("--llama_id", type=str, default=None)
     ap.add_argument("--qwen_id", type=str, default=None)
     ap.add_argument("--samples", type=int, default=100)
-    ap.add_argument("--max_new_tokens", type=int, default=32)
+    ap.add_argument("--max_new_tokens", type=int, default=24)
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--hotpot_config", type=str, default=None, help="Override HotpotQA config (fullwiki/distractor)")
     ap.add_argument("--out_dir", type=str, default=None, help="Write metrics.json/csv here if set")
@@ -68,15 +68,31 @@ def main():
     prompts = [e["source"] for e in eval_examples]
     golds   = [e["answer"] for e in eval_examples]
 
-    llama_prompt_tok = llama.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True)
-    qwen_prompt_tok  = qwen.tokenizer(prompts,  return_tensors="pt", padding=True, truncation=True)
+    # Helper: build model-specific chat prompts using each tokenizer's template
+    def build_chat_prompts(tokenizer, sources: List[str]) -> List[str]:
+        prompts_chat = []
+        for s in sources:
+            messages = [
+                {"role": "system", "content": "You are a concise QA assistant. Use the context to answer with a short phrase only."},
+                {"role": "user", "content": s},
+            ]
+            text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            prompts_chat.append(text)
+        return prompts_chat
+
+    llama_chat_prompts = build_chat_prompts(llama.tokenizer, prompts)
+    qwen_chat_prompts  = build_chat_prompts(qwen.tokenizer,  prompts)
+
+    # Measure prompt token counts on the actual chat prompts used for text baselines
+    llama_prompt_tok = llama.tokenizer(llama_chat_prompts, return_tensors="pt", padding=True, truncation=True, add_special_tokens=False)
+    qwen_prompt_tok  = qwen.tokenizer(qwen_chat_prompts,  return_tensors="pt", padding=True, truncation=True, add_special_tokens=False)
     avg_prompt_tokens_llama = float((llama_prompt_tok["input_ids"] != llama.tokenizer.pad_token_id).sum().item()) / len(prompts)
     avg_prompt_tokens_qwen  = float((qwen_prompt_tok["input_ids"]  != qwen.tokenizer.pad_token_id).sum().item())  / len(prompts)
 
     # === Baseline A: Plain text prompting ===
     t0 = time.time()
-    llama_text_preds = generate_text_baseline(llama, prompts, max_new_tokens=args.max_new_tokens)
-    qwen_text_preds  = generate_text_baseline(qwen,  prompts, max_new_tokens=args.max_new_tokens)
+    llama_text_preds = generate_text_baseline(llama, llama_chat_prompts, max_new_tokens=args.max_new_tokens)
+    qwen_text_preds  = generate_text_baseline(qwen,  qwen_chat_prompts,  max_new_tokens=args.max_new_tokens)
     t_text = time.time() - t0
     llama_text_em, llama_text_f1 = batch_metrics(llama_text_preds, golds)
     qwen_text_em,  qwen_text_f1  = batch_metrics(qwen_text_preds, golds)
@@ -104,16 +120,16 @@ def main():
     qwen_latent_em,  qwen_latent_f1  = batch_metrics(qwen_latent_preds, golds)
 
     # === Token-budget baseline (truncate textual prompt to M tokens) ===
-    def truncate_to_k_tokens(tokenizer, texts, k):
-        enc = tokenizer(texts, padding=False, truncation=False, add_special_tokens=True, return_attention_mask=False)
+    def truncate_chat_to_k_tokens(tokenizer, chat_prompts, k):
         outs = []
-        for ids in enc["input_ids"]:
-            ids_k = ids[:k]
+        for cp in chat_prompts:
+            enc = tokenizer(cp, add_special_tokens=False, return_attention_mask=False)
+            ids_k = enc["input_ids"][:k]
             outs.append(tokenizer.decode(ids_k, skip_special_tokens=True))
         return outs
 
-    llama_trunc_prompts = truncate_to_k_tokens(llama.tokenizer, prompts, latent_len)
-    qwen_trunc_prompts  = truncate_to_k_tokens(qwen.tokenizer,  prompts, latent_len)
+    llama_trunc_prompts = truncate_chat_to_k_tokens(llama.tokenizer, llama_chat_prompts, latent_len)
+    qwen_trunc_prompts  = truncate_chat_to_k_tokens(qwen.tokenizer,  qwen_chat_prompts,  latent_len)
 
     t0 = time.time()
     llama_trunc_preds = generate_text_baseline(llama, llama_trunc_prompts, max_new_tokens=args.max_new_tokens)
@@ -128,7 +144,7 @@ def main():
         tot_nll = 0.0
         tot_tok = 0
         for i, a in enumerate(answers):
-            a_ids = tokenizer(a, return_tensors="pt", add_special_tokens=True).input_ids.to(device)
+            a_ids = tokenizer(a, return_tensors="pt", add_special_tokens=True).input_ids.to(device, dtype=torch.long)
             loss = wrapper.forward_with_prefix_loss(prefix[i:i+1], a_ids)
             n_tok = a_ids.size(1) - 1
             tot_nll += float(loss.item()) * n_tok
@@ -139,8 +155,8 @@ def main():
         tot_nll = 0.0
         tot_tok = 0
         for i in range(len(prompts_text)):
-            enc_p = tokenizer(prompts_text[i], return_tensors="pt", add_special_tokens=True).input_ids.to(device)
-            enc_a = tokenizer(answers[i],      return_tensors="pt", add_special_tokens=True).input_ids.to(device)
+            enc_p = tokenizer(prompts_text[i], return_tensors="pt", add_special_tokens=True).input_ids.to(device, dtype=torch.long)
+            enc_a = tokenizer(answers[i],      return_tensors="pt", add_special_tokens=True).input_ids.to(device, dtype=torch.long)
             loss, n_tok = wrapper.loss_with_text_prompt(enc_p, enc_a)
             tot_nll += float(loss.item()) * n_tok
             tot_tok += n_tok
@@ -148,8 +164,9 @@ def main():
 
     llama_latent_nll = avg_nll_latent(llama, prefix_llama, golds, llama.tokenizer)
     qwen_latent_nll  = avg_nll_latent(qwen,  prefix_qwen,  golds, qwen.tokenizer)
-    llama_text_nll   = avg_nll_text(llama, prompts, golds, llama.tokenizer)
-    qwen_text_nll    = avg_nll_text(qwen,  prompts, golds, qwen.tokenizer)
+    # Text NLL measured on chat prompts used for text baseline
+    llama_text_nll   = avg_nll_text(llama, llama_chat_prompts, golds, llama.tokenizer)
+    qwen_text_nll    = avg_nll_text(qwen,  qwen_chat_prompts,  golds, qwen.tokenizer)
 
     # === 2-LLM joint (rescored pick on latent runs)
     joint_preds = []
@@ -158,10 +175,10 @@ def main():
         candA_text = llama_latent_preds[i]
         candB_text = qwen_latent_preds[i]
 
-        A_ids_L = llama.tokenizer(candA_text, return_tensors="pt", add_special_tokens=True).input_ids.to(device)
-        A_ids_Q = qwen.tokenizer(candA_text,  return_tensors="pt", add_special_tokens=True).input_ids.to(device)
-        B_ids_L = llama.tokenizer(candB_text, return_tensors="pt", add_special_tokens=True).input_ids.to(device)
-        B_ids_Q = qwen.tokenizer(candB_text,  return_tensors="pt", add_special_tokens=True).input_ids.to(device)
+        A_ids_L = llama.tokenizer(candA_text, return_tensors="pt", add_special_tokens=True).input_ids.to(device, dtype=torch.long)
+        A_ids_Q = qwen.tokenizer(candA_text,  return_tensors="pt", add_special_tokens=True).input_ids.to(device, dtype=torch.long)
+        B_ids_L = llama.tokenizer(candB_text, return_tensors="pt", add_special_tokens=True).input_ids.to(device, dtype=torch.long)
+        B_ids_Q = qwen.tokenizer(candB_text,  return_tensors="pt", add_special_tokens=True).input_ids.to(device, dtype=torch.long)
 
         scoreA = llama.score_prefix_logprob(prefix_llama[i:i+1], A_ids_L) + qwen.score_prefix_logprob(prefix_qwen[i:i+1], A_ids_Q)
         scoreB = llama.score_prefix_logprob(prefix_llama[i:i+1], B_ids_L) + qwen.score_prefix_logprob(prefix_qwen[i:i+1], B_ids_Q)
@@ -258,6 +275,25 @@ def main():
             w.writerow(["token_budget","llama", summary["token_budget"]["llama"]["em"], summary["token_budget"]["llama"]["f1"], "", summary["token_budget"]["wall_clock_sec"], summary["compression"]["llama"], summary["payload_bytes"], summary["samples"], summary["latent_len"]])
             w.writerow(["token_budget","qwen",  summary["token_budget"]["qwen"]["em"],  summary["token_budget"]["qwen"]["f1"],  "", summary["token_budget"]["wall_clock_sec"], summary["compression"]["qwen"],  summary["payload_bytes"], summary["samples"], summary["latent_len"]])
             w.writerow(["joint","both", summary["joint"]["em"], summary["joint"]["f1"], "", "", "", summary["payload_bytes"], summary["samples"], summary["latent_len"]])
+
+        # Per-example dump for error analysis
+        dump_path = _os.path.join(args.out_dir, "predictions.jsonl")
+        with open(dump_path, "w") as f:
+            for i in range(len(prompts)):
+                rec = {
+                    "prompt_raw": prompts[i],
+                    "prompt_llama_chat": llama_chat_prompts[i],
+                    "prompt_qwen_chat": qwen_chat_prompts[i],
+                    "gold": golds[i],
+                    "text_pred_llama": llama_text_preds[i],
+                    "text_pred_qwen":  qwen_text_preds[i],
+                    "latent_pred_llama": llama_latent_preds[i],
+                    "latent_pred_qwen":  qwen_latent_preds[i],
+                    "trunc_pred_llama": llama_trunc_preds[i],
+                    "trunc_pred_qwen":  qwen_trunc_preds[i],
+                }
+                f.write(_json.dumps(rec) + "\n")
+        print(f"Wrote per-example predictions to {dump_path}")
 
 
 if __name__ == "__main__":

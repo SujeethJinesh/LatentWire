@@ -1,268 +1,514 @@
-Below is a ruthlessly scoped, 8‑week research proposal for an MVP that you can ship. It focuses on one core result: a compact, shared soft‑token interlingua that (i) matches or nearly matches text prompting at 4×+ compression, and (ii) delivers measurable 2‑LLM gains via a simple, deterministic joint‑rescoring combiner. Everything else is optional or a fallback.
+# LatentWire: A Shared Soft‑Token Interlingua for Heterogeneous LLM Cooperation
 
-0. MVP definition (what we will ship)
+**Project type:** Systems + Methods (MLSys)  
+**Target venue:** MLSys / systems-for-ML workshop track (or main)  
+**Project window:** 8 weeks (Week 8 reserved for writing and polish)
 
-Problem: Enable two heterogeneous LLMs (Llama & Qwen) to consume the same compact latent prefix with ≥4× prompt compression versus text, with task quality near text and two‑model gains over either model alone.
+---
 
-MVP success criteria (hard gates):
+## Abstract
 
-G1 (Quality @ Compression): On HotpotQA‑val, Latent F1 ≥ Text F1 − 2.0 pts at ≥4× compression (vs each model’s avg prompt tokens).
+Large Language Models (LLMs) such as Llama and Qwen are trained with different tokenizers and internal representations. Today, if we want two heterogeneous LLMs to “share” context or collaborate, we serialize information as **text**, retokenize it for each model, and pay the full **prefill** (prompt) cost in compute, latency, and bandwidth. This proposal develops **LatentWire**, a compact **interlingua**—a short sequence of continuous vectors ("soft tokens")—that multiple, frozen LLMs can consume directly via `inputs_embeds`. **Unlike existing soft prompt methods (single model) or multi-model systems (text-based), LatentWire is the first to enable different LLM families to communicate via learned continuous embeddings.** The interlingua replaces a long textual prompt with **M vectors of dimension `d_z`** (e.g., `M=8`, `d_z=256`), mapped into each model’s embedding space by tiny **adapters**. We train a small **encoder** (bytes or sentence-embedding based) and the model-specific **adapters** while keeping the LLMs frozen. Training uses a standard next-token loss on gold answers; evaluation compares **text vs latent vs token‑budget** baselines for quality (EM/F1), conditioning (NLL/token), efficiency (compression and latency), and **two‑model synergy** (joint rescoring).
 
-G2 (Synergy): Joint pick (equal‑weight sum of log‑probs with temperature calibration) ≥ +1.5 pts F1 over the better single‑model latent.
+We hypothesize that at moderate compression (≥4×), a shared interlingua matches or closely approaches text prompting while enabling measurable two‑model gains. We outline a minimal but thorough plan: architecture, metrics, ablations, risks (including information bottlenecks and model‑space mismatch), and concrete milestones. The result is an end‑to‑end, reproducible system demonstrating that **heterogeneous LLMs can consume the same compact continuous context** and **work better together** than either alone—all without fine‑tuning the LLMs themselves.
 
-G3 (Conditioning): NLL/token (gold) under latent ≤ 1.05× text.
+---
 
-G4 (Efficiency): Prefill token count reduced ≥4× and wall‑clock (prefill+decode) non‑worse than text baseline on the same hardware.
+## 1. Introduction
 
-Primary deliverables:
+**Problem.** LLMs are excellent reasoners when given a rich prompt, but prompts are long, textual, and **model‑specific** (tokenizer‑dependent). In multi‑model systems—e.g., a code specialist and a math specialist—transferring context between models means **restringifying everything as text** and paying full prompt costs **twice** (retokenize + prefill). This is wasteful, slow, and brittle.
 
-Code (already scaffolded) with train.py, eval.py, infer.py and the interlingua modules.
+**Goal.** Learn a **compact, model‑agnostic interlingua** that both Llama and Qwen can consume **directly**—a small number of **continuous vectors** instead of hundreds of tokens—while preserving downstream task quality and enabling **two‑model cooperation**.
 
-Tables/plots: F1/NLL/token vs M, compression & latency, joint pick vs best single model, token‑budget baseline vs latent.
+**Why now?** Modern toolchains expose `inputs_embeds` for direct prefix seeding, and lightweight adapters make it practical to learn small front‑ends while keeping giant LLMs frozen. The community has shown soft prompt/prefix tuning for single models; we extend the idea to **cross‑model shared prefixes** with **frozen heterogeneous LLMs**.
 
-Paper draft: abstract + intro + methodology + results + systems analysis (week 8).
+**Scope.** We target question answering (HotpotQA) to measure facts + reasoning under strong baselines. We start with **TinyLlama‑1.1B** and **Qwen2‑0.5B** for feasibility on commodity hardware, and our code supports larger variants (e.g., Llama‑3.1‑8B, Qwen2‑7B).
 
-Non‑goals (unless ahead of schedule):
+**Novelty.** While soft prompts have been explored extensively since 2021 for single models, and multi-model ensembles exist, **no prior work demonstrates heterogeneous LLMs consuming the same learned continuous prefix**. This positions LatentWire as the first practical wire protocol for embedding-level LLM communication.
 
-Discrete codebook (VQ) output channel.
+---
 
-Multi‑round message passing.
+## 2. Background (for readers with ML‑101)
 
-Extensive cross‑task generalization.
+> This section anticipates common questions (from undergrads to advisors).
 
-1. Scope, models, and resources
+### 2.1 Tokens, embeddings, and transformer prefill vs decode
 
-Models (default): TinyLlama/TinyLlama-1.1B-Chat-v1.0 and Qwen/Qwen2-0.5B-Instruct (fit on 24–40 GB GPU with batch=1).
-Stretch: Llama‑3.1‑8B‑Instruct + Qwen2‑7B‑Instruct (with --load_4bit).
+- **Tokens** are integer IDs from a tokenizer’s vocabulary. Text → tokens is model‑specific (Llama’s tokenizer ≠ Qwen’s).
+- **Embeddings** are vectors the model looks up for each token (think: numerical meaning).
+- **Prefill** means processing the **prompt** (context) to build the model’s internal state (KV cache). **Decode** is generating new tokens one by one using that state.
+- **Cost:** Prefill cost scales with prompt length. If your prompt is 500 tokens, prefill is expensive. Decode cost is per generated token.
 
-Dataset: HotpotQA (fullwiki or distractor fallback). Use train: 10k, val: 1k, test: 1k (subsampled for speed).
+### 2.2 What is “the M vector”?
 
-Hardware: 1× A100‑40GB (or similar). If only 24GB, keep to 1.1B/0.5B and batch=1.
+We call `M` the **latent length**—the number of **soft tokens** we feed as the prefix interlingua. A normal text prompt might be 300–1000 tokens; we replace it with **M vectors** (e.g., 8, 12, 16). Each vector has dimension `d_z` (e.g., 256). After a tiny linear adapter, those become each model’s prefix embeddings.
 
-Runtime expectations: Training (encoder+adapters) is light parameter‑wise but backprops through LLMs. With small models: 2–5 hrs per sweep (M∈{6,8,12,16}) at batch=1.
+### 2.3 What is backpropagation (“backprop”)?
 
-2. Work breakdown (must‑have vs nice‑to‑have)
+Backprop is the algorithm used to update parameters in neural networks. We compute a **loss** (how wrong the model is), then use the chain rule to compute gradients for each parameter and step them to reduce the loss.
 
-Must‑have (MVP core):
+### 2.4 What does “freezing the weights” mean?
 
-M1. Capacity sweep: M ∈ {6,8,12,16}; pick the smallest M that satisfies G1–G3.
+We **do not** update the LLM’s parameters (billions). We only update our **small encoder** and **adapters** (millions or less). Freezing keeps compute/memory manageable and isolates whether a **universal prefix** can condition heterogeneous LLMs without changing them.
 
-M2. Token‑budget baseline (already added): textual prompt truncated to M tokens.
+### 2.5 What is an adapter? What is LoRA? Why not LoRA now?
 
-M3. Calibration + joint pick: temperature scaling per model on val; equal‑weight sum on test; report F1 gains.
+- An **adapter** is a small module that maps from our latent space (`d_z`) into a specific model’s embedding size (`d_model`). Here it’s a simple LayerNorm + Linear + tanh clip.
+- **LoRA** (Low‑Rank Adapters) inserts trainable low‑rank matrices into the LLM’s attention/MLP layers. It changes the LLM’s behavior. We **do not** use LoRA initially because we want to prove a **frozen‑model interlingua** works; LoRA is a **stability fallback** if frozen acceptance is too brittle.
 
-M4. Diversity/coverage regularizer for cross‑attn queries (lightweight).
+### 2.6 What is “joint rescoring”?
 
-M5. Asymmetric latent (shared + per‑model) if shared‑only misses G1 by >2 pts at M≤16.
+We let **both** models generate answers from the same latent prefix and then **score each candidate under both models**; we pick the answer with the higher **sum of log‑probabilities**. This is a simple way to get **two‑model synergy** without complex message passing.
 
-Should‑have (only if time permits):
+---
 
-S1. Learned aggregator (logistic regression over simple features) vs equal‑weight joint pick.
+## 3. State of the Art (SoTA)
 
-S2. Latency microbench: separate prefill vs decode wall‑clock; approximate FLOPs.
+- **Soft prompts / prefix tuning (Li & Liang, ACL 2021; Lester et al., EMNLP 2021).** Learn continuous task-specific vectors for **single models**. Gist Tokens (Mu et al., 2023) achieve 26x compression but within one model family. These assume fixed tokenizer/model space.
+- **Byte-level models (ByT5, Xue et al. 2022; CANINE, Clark et al. 2022; BLT, Meta 2024).** Process text at byte level to avoid tokenization, but don't enable cross-model communication via continuous embeddings.
+- **Multi-model ensembles (DeePEn, April 2024; Co-LLM, ACL 2024; MoA, June 2024).** Achieve collaboration through probability fusion or text intermediaries. No direct embedding-level communication between heterogeneous models.
+- **Emergent communication (Lazaridou & Baroni 2020; Discrete Messages, Dec 2023).** Theoretical work on agents developing protocols, but not implemented for commercial LLM families.
+- **Prompt compression (AutoCompressors, Chevalier et al. 2023; ICAE, Ge et al. 2024).** Compress within model families, not across heterogeneous architectures.
+- **Cross-model communication (Exchange-of-Thought, Dec 2023; DroidSpeak, Dec 2024).** Use natural language or KV-cache sharing respectively, not learned continuous prefixes.
 
-Nice‑to‑have / fallback:
+**Gap:** There is no simple, end‑to‑end, task‑measurable demonstration that a **single continuous interlingua** can condition **heterogeneous, frozen LLMs** comparably to text while reducing prefill and enabling measurable two‑model gains.
 
-N1. LoRA‑early (rank 4–8, first 2–3 layers Q/V) if inputs remain unstable.
+---
 
-N2. Hybrid front‑end (bytes + tiny subword lexicon) if byte encoder underperforms.
+## 4. Research Gaps We Tackle
 
-3. Week‑by‑week plan (8 weeks; week 8 is paper)
-   Week 1 — Bring‑up, baselines, first sweep (MVP skeleton)
+1. **Tokenizer heterogeneity:** A prompt that works for Llama must be retokenized for Qwen. We bypass text entirely with a **shared continuous prefix**.
+2. **Efficiency:** Long prompts are expensive. A short `M`‑vector interlingua reduces prefill **length** and **payload** (bytes over a wire). **No existing work demonstrates >4x compression while maintaining cross-model compatibility.**
+3. **Synergy:** Show that two models **jointly** outperform either alone under the same prefix.
+4. **Fairness:** Compare against a **token‑budget baseline** (truncate text to `M` tokens) to ensure gains are not just from more budget. **Critical for proving learned compression > naive truncation.**
+5. **Stability with frozen LLMs:** Ensure prefixes are **accepted** by frozen models (statistics, normalization, small adapters).
+6. **Wire protocol innovation:** Unlike all existing work that uses text or probability distributions for inter-model communication, we establish **continuous embeddings as a wire protocol** between different LLM families.
 
-Goals: End‑to‑end runs; text vs latent vs token‑budget for M∈{8,12}.
-Tasks:
+---
 
-✅ Environment pin + HF auth; confirm train.py/eval.py run on small subset (128 samples).
+## 5. Our Contributions (What We Will Do)
 
-✅ Train with M=8,12 on train=5k, evaluate on val=1k.
+### 5.1 System overview
 
-✅ Produce baseline table (Text / Token‑budget / Latent) for EM/F1, NLL/token, compression, latency.
-Acceptance: Latent beats token‑budget at same M by ≥+3 F1 (or clear path identified). If not, raise M and continue.
+**Key innovation:** While prefix tuning exists for single models and byte-level models exist for tokenizer-free processing, **no prior work combines these to enable heterogeneous LLMs to consume the same compressed continuous representation**. This is the first demonstration of Llama and Qwen communicating via learned soft tokens rather than text.
 
-Week 2 — Capacity & stability sweeps (hit G1–G3 at small M if possible)
+```
+              +-------------------+
+   text ----> |   Interlingua     | -- Z ∈ R^{M × d_z} --> [adapters] --> Llama
+ (Q+Context)  |   Encoder         |                              \--> Qwen
+              +-------------------+
+                          ^
+                          |  (two variants)
+                    (1) ByteEncoder + Cross-Attn Pooler
+                    (2) SimpleEncoder (MiniLM) + Learned Queries
+```
 
-Goals: Lock in an M ≤ 16 satisfying G1–G3.
-Tasks:
+- **Interlingua Encoder** (two variants):
+  - **ByteEncoder**: byte embeddings → tiny Transformer → **LatentPooler** (cross‑attention) → `Z` (M×d_z).
+  - **SimpleEncoder**: sentence embedding (MiniLM, frozen) → linear projection + **learned query bank** → `Z`.
+- **Adapters:** `A_L: R^{d_z}→R^{d_L}` and `A_Q: R^{d_z}→R^{d_Q}` (LayerNorm→Linear→tanh) map `Z` into each model’s embedding space.
+- **Frozen LLMs:** Llama and Qwen weights are not updated.
+- **Training loss:** next‑token loss on the gold **answer** with the prefix masked out of labels (teacher‑forcing on the suffix only).
+- **Evaluation:** Text vs Latent vs Token‑budget; NLL/token; compression & latency; joint rescoring; agreement; oracle bound.
 
-Add coverage regularizer to pooler; sweep M=6,8,12,16 on train=10k.
+### 5.2 Notation and training objective
 
-Add input regularization (tanh clipping + mean/var match of prefix vs token embeddings).
+- Let `x = "Question: …\nContext: …\nAnswer:"` and `y = gold answer` (tokenized per model).
+- **Encoder** produces `Z = [z₁,…,z_M] ∈ R^{M×d_z}`.
+- **Adapters** produce `P_L = A_L(Z) ∈ R^{M×d_L}`, `P_Q = A_Q(Z) ∈ R^{M×d_Q}`.
+- For a model `ℓ ∈ {L, Q}` we set `inputs_embeds = [P_ℓ, E_ℓ(y[:-1])]` and labels `[-100,…,-100, y[1:]]`.
+- Loss is standard cross‑entropy over the answer positions. Total loss: `L = 0.5 * (L_Llama + L_Qwen)`.
+- **Why mask the prefix?** We do not want to punish the prefix for not “predicting itself”—it is **context**, not a target.
 
-Re‑run; choose best M.
-Acceptance (Gate G1–G3): If still short, enable Asymmetric latent (shared=4, model‑specific=4) and rerun M=8,12.
+### 5.3 Decoding
 
-Week 3 — Two‑model synergy (G2)
+- We **seed** the model with `P_ℓ` (one forward pass) to build the KV cache (short prefill, length `M`), then generate tokens step‑by‑step as usual.
+- This preserves decode behavior; only prefill length is reduced.
 
-Goals: Show Joint pick ≥ +1.5 F1 over best single‑latent.
-Tasks:
+### 5.4 Two‑model synergy (joint rescoring)
 
-Calibration: temperature scaling per model (on val).
+- Generate one answer from each model under the same latent prefix.
+- **Rescore** both answers under **both** models’ log‑prob and pick the larger sum.
+- This provides a **deterministic, simple** ensemble that often beats either single model, especially when the models disagree.
+
+### 5.5 Why this design should work
+
+- **Soft prompts already work** in single‑model settings: models can be conditioned by continuous prefixes.
+- **Adapters + normalization** make `Z` resemble valid token embeddings statistically, so frozen LLMs accept them.
+- **Encoder capacity (`M × d_z`)** is enough to carry the **gist** needed to answer questions—especially when the question and a small context are summarized by MiniLM (SimpleEncoder) or byte‑Transformer features (ByteEncoder).
+- **Two‑model diversity** improves robustness: reranking across heterogeneous models reduces idiosyncratic errors.
 
-Implement equal‑weight joint pick; report on test.
+### 5.6 What we will test (explicit hypotheses)
 
-If needed, add S1 Learned aggregator (logistic regression features: logP_L, logP_Q, length, repetition score, agreement).
-Acceptance (Gate G2): If synergy < +1.5, enable Asymmetric latent (if not already) and/or increase M one notch (bounded by 16). If still low, consider one‑round message head (optional) only if minimal code change.
+- **H1 (Quality @ Compression):** At `M ≤ 16`, Latent F1 ≥ Text F1 − 2.0 pts with **≥4× compression**.
+- **H2 (Better than token budget):** At the same `M`, Latent F1 > Text‑truncated‑to‑M F1 by ≥ **+3.0** pts.
+- **H3 (Conditioning):** Average NLL/token on gold answers under Latent ≤ **1.05×** Text.
+- **H4 (Synergy):** Joint rescoring ≥ **+1.5** F1 over the better single‑latent model.
+- **H5 (Efficiency):** Prefill time and payload bytes reduced materially (≥4× in tokens; payload measured in bytes).
 
-Week 4 — Efficiency & system results (G4)
+### 5.7 Engineering choices (and alternatives)
 
-Goals: Show compression ≥4× and non‑worse wall‑clock than text.
-Tasks:
+- **Start with SimpleEncoder on Mac (MPS)** for speed, then confirm ByteEncoder on GPU. (Same training loop.)
+- **Frozen LLMs first**, LoRA only if frozen acceptance is unstable.
+- **Equal‑weight joint rescoring** first; learned aggregator (logistic regression) only if needed.
+- **Asymmetric interlingua** (shared + model‑specific sub‑prefixes) is a follow‑up if shared‑only underperforms.
 
-Time prefill (prefix forward) and decode separately (simple timing hooks).
+---
 
-Report compression, payload bytes, prefill tokens, latency.
+## 6. Experimental Design
 
-If wall‑clock worse, profile and reduce ByteEncoder cost (strided attention or conv downsample) without hurting F1.
-Acceptance (Gate G4): Non‑worse wall‑clock at chosen M. If not, accept minor quality drop to meet wall‑clock, but keep G1 within −2.5 pts.
+### 6.1 Dataset & splits
 
-Week 5 — Hardening & minimal ablations
+- **HotpotQA** (`fullwiki` preferred; `distractor` fallback for MPS sanity). We use a **subsample** for feasibility on laptops and larger sets on GPU.
+- Typical subsets: `train: 10k`, `val: 1k`, `test: 1k` (for GPU runs). On MPS, smaller (`train: 256–512`, `val: 200`).
 
-Goals: Produce minimal but convincing ablations for paper.
-Tasks:
+### 6.2 Models
 
-F1 vs M (6,8,12,16) curve (final settings).
+- **TinyLlama/TinyLlama‑1.1B‑Chat‑v1.0** and **Qwen/Qwen2‑0.5B‑Instruct** (baseline feasibility). Larger (8B/7B) with `--load_4bit` later.
 
-Shared vs Asymmetric at fixed total M.
+### 6.3 Metrics (Figures of Merit)
 
-With vs without coverage loss.
+1. **Task quality:** EM/F1 on HotpotQA (standard SQuAD‑style normalization).
+2. **Conditioning quality:** **Average NLL/token** on gold answers under text vs latent (per model).
+3. **Efficiency:**
+   - **Compression ratio**: avg prompt tokens / `M`.
+   - **Payload bytes** for `Z`: `M × d_z × dtype_bytes`.
+   - **Wall‑clock** time for text vs latent (prefill+decode; same hardware).
+4. **Two‑model synergy:**
+   - **Joint pick F1**, **agreement rate**, and **oracle upper bound**.
+5. **Fairness:** **Token‑budget baseline** (text prompt truncated to `M` tokens).
 
-Token‑budget vs Latent at same M.
+### 6.4 Baselines
 
-Save seeds, configs, logs; generate CSVs.
+- **Text baseline** (full prompt).
+- **Token‑budget baseline** at the same `M`.
+- **Single‑model latent** (no joint rescoring).
+- **Oracle** (upper bound if we magically pick the better of Llama/Qwen outputs).
 
-Week 6 — Fallbacks only if needed
+### 6.5 Ablations (minimal but decisive)
 
-Only if gates still unmet:
+- `M ∈ {6, 8, 12, 16}` (pick the smallest satisfying H1–H5).
+- **Encoder type:** SimpleEncoder vs ByteEncoder.
+- **d_z ∈ {128, 256, 384}`** (capacity sensitivity).
+- **Joint rescoring** vs best single latent.
+- (If time) **Asymmetric** latent vs shared‑only.
+- (If needed) **LoRA‑early** (Q/V of first layers) vs frozen.
 
-Enable LoRA‑early (rank=4–8 on first 2–3 layers Q/V).
+### 6.6 Training details (frozen LLMs)
 
-Small LR sweep + alternating schedule (encoder+L, encoder+Q).
+- Batch size 1 (fits everywhere).
+- Optimizer: AdamW (`1e‑4`).
+- Adapters: LayerNorm → Linear → tanh clip (stability).
+- MPS: `--sequential_models` + `--grad_ckpt` + optional `--fp16_mps`.
+- GPU (Linux/CUDA): optional `--load_4bit` for larger models.
 
-Re‑run Week‑2/3 experiments with small LoRA.
+### 6.7 Statistical treatment
 
-Week 7 — Freeze, replicate, and test
+- Report **mean ± 95% CI** (bootstrap over examples) for F1.
+- Fix random seeds for splits; keep configs in JSON for reproducibility.
 
-Goals: Freeze best config; replicate 3 runs for CIs.
-Tasks:
+---
 
-Run 3 seeds; aggregate mean ± 95% CI (bootstrap) for headline metrics.
+## 7. Risks & Mitigations (top 10)
 
-Finalize plots & tables.
+1. **Information bottleneck (too little capacity).**  
+   _Mitigate:_ Increase `M`, use SimpleEncoder (richer global features), and compare to token‑budget baseline. Target `M ≤ 16`.
+2. **Model‑space mismatch (Llama vs Qwen).**  
+   _Mitigate:_ Start with a **shared** latent; if necessary, add **asymmetric** sub‑prefixes `[shared || model‑specific]` under the same total `M`.
+3. **Frozen LLM rejection.**  
+   _Mitigate:_ Adapter normalization + tanh clipping (already in code). LoRA‑early only if absolutely needed.
+4. **Optimization conflicts.**  
+   _Mitigate:_ **Sequential backprop** through each LM (your `--sequential_models`), gradient checkpointing, small LR.
+5. **Byte front‑end inefficiency.**  
+   _Mitigate:_ Use **SimpleEncoder** on Mac for speed; validate ByteEncoder later on GPU.
+6. **Pooling redundancy (queries look at same bytes).**  
+   _Mitigate:_ (Optional) diversity/coverage regularizers; in practice, SimpleEncoder sidesteps this early.
+7. **Same prefix too restrictive.**  
+   _Mitigate:_ Asymmetric variant if shared‑only misses H1 by >2 pts.
+8. **No real synergy.**  
+   _Mitigate:_ Joint rescoring is already implemented; if flat, lightly calibrate (temperature scaling) or learn a tiny logistic combiner.
+9. **Calibration mismatch.**  
+   _Mitigate:_ Temperature scaling per model on val split if needed.
+10. **Wrong bottleneck (bandwidth vs compute).**  
+    _Mitigate:_ Measure **payload bytes** and **wall‑clock** prefill+decode separately and show where we win.
 
-Create a make_figs.py to render plots from CSV.
+---
 
-Week 8 — Paper only
+## 8. Implementation Plan & Timeline (8 weeks)
 
-Goals: Write; no new experiments unless fatal bug.
-Tasks:
+**Week 1–2 (MPS feasibility):**
 
-Results & discussion; systems analysis; limitations; related work.
+- Bring‑up with **SimpleEncoder**; collect **text vs latent vs token‑budget** metrics at `M={8,12}` on small subsets.
+- Verify NLL/token closeness and prefill reduction.
+- Produce **metrics.json / metrics.csv** from `eval.py` (done).
 
-Append reproducibility checklist; release code + configs.
+**Week 3–4 (GPU confirmation):**
 
-4. Concrete task list (ticketized)
+- Repeat at larger scale; optionally switch to **ByteEncoder**.
+- Run `M` sweep; pick smallest `M` meeting H1–H5.
+- Joint rescoring; optional calibration.
 
-T1. Coverage regularizer (R6)
+**Week 5–6 (Ablations & systems):**
 
-Modify LatentPooler to return attention maps and add diversity_loss (weight 0.01).
+- Encoder type ablation; `d_z` sensitivity; token‑budget fairness.
+- Efficiency profiling; payload/latency tables.
 
-Acceptance: +≥0.5 F1 at M=8 vs no regularizer, or same F1 with lower M.
+**Week 7 (Stability/fallbacks only if needed):**
 
-T2. Input regularization (R3)
+- Asymmetric interlingua; LoRA‑early; light aggregator if synergy lagging.
 
-Adapter: LayerNorm → Linear → tanh(x/3)\*3; prefix mean/var match loss (weight 1e‑3).
+**Week 8 (Writing):**
 
-Acceptance: latent NLL/token improves ≥5% where it lagged.
+- Final tables, plots, paper text, reproducibility checklist.
 
-T3. Asymmetric latent (R2/R7)
+---
 
-Produce Z_shared + Z_L + Z_Q under fixed total M.
+## 9. Reproducibility Checklist
 
-Acceptance: +≥1.5 F1 over shared‑only at same M if shared failed G1.
+- Code versioned with `requirements.txt` and model IDs.
+- `eval.py` emits **metrics.json/metrics.csv**.
+- Seeds fixed for splits; configs stored in `config.json`.
+- Training/eval logs include step time (`sec/step`) and final metrics.
+- Minimal scripts to replicate tables.
 
-T4. Calibration + joint pick (R9)
+---
 
-Temperature scaling on val, equal‑weight sum on test.
+## 10. Expected Outcomes & Impact
 
-Optional: logistic aggregator (S1) if equal‑sum < +1.5 F1.
+- **Demonstrate feasibility**: short, continuous prefixes can condition **frozen heterogeneous LLMs** comparably to text on QA.
+- **Efficiency**: ≥4× prompt compression with non‑worse wall‑clock on prefill; concrete payload savings over a wire.
+- **Synergy**: simple joint rescoring yields measurable gains over either model alone.
+- **Foundation**: A clean, open codebase others can extend (multi‑round comms, asymmetric latents, learned aggregators, LoRA variants).
 
-Acceptance: G2 satisfied.
+---
 
-T5. Efficiency hooks (R10)
+## 11. Glossary (for quick reference)
 
-Time prefill vs decode; log prefill tokens & payload bytes.
+- **M vector / latent length (`M`)**: number of soft tokens in the interlingua prefix (e.g., 8, 12).
+- **`d_z`**: latent vector dimension (e.g., 256).
+- **Adapter**: small module mapping from `d_z` to a model’s embedding dimension.
+- **Freeze weights**: do not update the LLM parameters during training.
+- **Backpropagation**: algorithm to compute gradients of the loss w.r.t. parameters.
+- **Prefill vs Decode**: prefill processes the prefix; decode generates tokens.
+- **NLL/token**: negative log‑likelihood per token—lower is better conditioning.
+- **Joint rescoring**: combine both models’ log‑prob scores to pick the better answer.
+- **Token‑budget baseline**: text prompt truncated to `M` tokens (fairness control).
 
-Acceptance: G4 satisfied.
+---
 
-(Fallback) T6. LoRA‑early (R3)
+## 12. Frequently Asked PI Questions (and answers)
 
-Add PEFT LoRA on first 2–3 layers (Q/V).
+**Q1: Why not just fine‑tune the LLM (LoRA) and skip interlingua?**  
+A1: We want to prove **frozen** LLMs can consume a shared compact prefix—showing a practical path for multi‑model systems **without touching vendor models**. LoRA is a fallback for stability, not our story.
 
-Acceptance: meets G1–G3 when others fail.
+**Q2: Isn’t `M × d_z` too small to replace 300–1000 text tokens?**  
+A2: We aren’t reproducing _every_ token—only the **conditioning signal** needed to answer. Empirically, soft prompts carry task information efficiently; we validate via H1–H5 and compare to the **token‑budget** control.
 
-5. Experiment matrix (minimal)
-   Exp ID Purpose Config Report
-   E1 Capacity / choose M M∈{6,8,12,16}; coverage=on; reg=on EM/F1, NLL/token, compression, latency
-   E2 Shared vs Asym M fixed (best); split shared/LLM‑specific EM/F1, NLL/token
-   E3 Synergy Best M; joint pick (equal‑sum) F1 gain vs best single latent
-   E4 Token‑budget fairness Text truncated to M vs Latent EM/F1
-   E5 Efficiency Prefill tokens, payload bytes, wall‑clock Speed & memory narrative
+**Q3: Why should Llama and Qwen agree on the same prefix?**  
+A3: They don’t need to “agree”; each gets its own **adapter** mapping the shared latent into its own embedding space. If still restrictive, we try **asymmetric** latents under the same total budget.
 
-(Only if needed) E6: LoRA‑early vs none at best M.
+**Q4: What if frozen models reject continuous inputs?**  
+A4: Our adapters normalize and clip to match embedding statistics. If instability remains, we use **LoRA‑early** (few low‑rank params in first layers) as a surgical fix.
 
-6. Risks & contingency (aligned to the 10 failure modes)
+**Q5: Isn’t this just ensembling?**  
+A5: Yes—and that’s the point. But unlike typical ensembling, **both models consume the same compact context**, which saves bandwidth/prefill while increasing accuracy through diversity.
 
-If G1 fails at M≤16: switch to Asymmetric; if still fails, raise M to 24 with explicit note that we’re trading some compression for quality.
+**Q6: How do we know we’re not solving the wrong bottleneck?**  
+A6: We measure **payload bytes**, **compression**, and **wall‑clock** separately, and present a clear efficiency narrative alongside quality.
 
-If G2 fails: add calibration (temp scaling) and a learned aggregator; if still low, add one‑round message head (2 vectors) only if trivial to wire.
+---
 
-If NLL/token high or outputs degenerate: ensure input regularization on; then LoRA‑early.
+## 13. What to Run on Your Mac (and What to Send)
 
-If wall‑clock worse: add ByteEncoder stride or smaller d_z; accept −0.5 F1 if needed to win efficiency.
+**Train (MPS, SimpleEncoder, small subset):**
 
-7. Data, logging, and reproducibility
+```bash
+source .venv/bin/activate
+export RUN="mps_m8_simple_$(date +%Y%m%d_%H%M%S)"
+export OUT="runs/$RUN"; mkdir -p "$OUT"
 
-Fix seeds; pin versions in requirements.txt.
+PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
+python latentwire/train.py \
+  --llama_id "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
+  --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
+  --samples  512 \
+  --epochs   1 \
+  --batch_size 1 \
+  --latent_len 8 \
+  --d_z 256 \
+  --encoder_type simple-st \
+  --hotpot_config distractor \
+  --sequential_models \
+  --grad_ckpt \
+  --fp16_mps \
+  --save_every 100 \
+  --save_dir "$OUT/ckpt" \
+  2>&1 | tee "$OUT/train.log"
 
-Standard splits: train=10k, val=1k, test=1k (stratified random).
+tail -f "$OUT/train.log"   # watch loss and sec/step
+```
 
-Save all run configs + metrics to CSV/JSON, plus model ckpts for the tiny modules.
+**Evaluate (writes JSON/CSV):**
 
-Provide scripts/{train,eval}\_runner.sh to replicate all tables.
+```bash
+PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
+python latentwire/eval.py \
+  --ckpt "$OUT/ckpt" \
+  --samples 200 \
+  --max_new_tokens 16 \
+  --hotpot_config distractor \
+  --out_dir "$OUT" \
+  2>&1 | tee "$OUT/eval.log"
 
-8. Paper plan (Week 8)
+# Quick extract
+echo "==== STEP_TIMES ===="
+grep -E "sec/step" "$OUT/train.log" | tail -n 5
+echo "==== EVAL_JSON ===="
+cat "$OUT/metrics.json"
+```
 
-Figures:
+**Send me:** the **metrics.json** plus the last few lines with `sec/step` from the train log.
 
-F1 vs M; NLL/token vs M; latency vs M; shared vs asymmetric; token‑budget vs latent; joint pick gain; compression & payload.
+---
 
-Tables:
+## 14. Quiz (30 questions + answers)
 
-Headline: Text vs Latent at chosen M (per model) + Joint pick; compression; latency.
+**1) What is the “interlingua” in LatentWire?**  
+_A short sequence of continuous vectors (“soft tokens”) produced by a small encoder and consumed by multiple LLMs via `inputs_embeds`._
 
-Ablations: coverage reg on/off; asymmetric on/off.
+**2) What does `M` represent?**  
+_The number of soft tokens in the interlingua prefix (latent length). Lower `M` = higher compression._
 
-Sections ready: Abstract, Intro, Methodology (already drafted); Results; Systems Analysis; Limitations.
+**3) What is `d_z`?**  
+_The dimension of each soft token vector in the interlingua._
 
-9. Day‑to‑day cadence (practical)
+**4) Why do we mask the prefix in the training labels?**  
+_The prefix is context; we don’t want the loss to penalize it for not predicting itself._
 
-Mon/Tue: implement + kick off sweeps overnight.
+**5) What does “freezing the LLM” mean and why do we do it?**  
+_We don’t update LLM weights; we only train the small encoder and adapters. It isolates the interlingua’s effectiveness and reduces compute/memory._
 
-Wed: analyze, decide next M/toggle.
+**6) What is `inputs_embeds`, and why is it central here?**  
+_It lets us feed embeddings directly instead of token IDs, enabling continuous soft‑prefixes._
 
-Thu: run confirmatory evals.
+**7) How does joint rescoring work?**  
+_Let both models generate answers; score each answer under both models’ log‑probs; choose the higher sum._
 
-Fri: write/update a results log and checkpoint figures.
+**8) What is “token‑budget baseline,” and why is it necessary?**  
+_Text prompt truncated to `M` tokens; it ensures fairness—same prefix budget as our latent._
 
-Always keep one best config runnable end‑to‑end.
+**9) What is NLL/token and why do we report it?**  
+_Average negative log‑likelihood per gold token; indicates conditioning quality independent of decoding randomness._
 
-10. Immediate next actions (this week)
+**10) What does `--sequential_models` change?**  
+_Backprop through Llama then Qwen sequentially, reducing peak memory by not holding both graphs simultaneously._
 
-Run Week‑1 plan today: M={8,12} with current code; create baseline table.
+**11) When and why would we enable `--grad_ckpt`?**  
+_To reduce activation memory (at extra compute), helpful on MPS or limited GPUs._
 
-Implement T1 (coverage loss) and T2 (input regularization); re‑run M={6,8,12,16}.
+**12) Why start with SimpleEncoder on Mac and not ByteEncoder?**  
+_Byte sequences are longer and slower to process; SimpleEncoder (MiniLM) gives a fast feasibility signal._
 
-Book a 4–8 hr block on a single GPU nightly for sweeps; keep batch=1; cap max_answer_tokens=32.
+**13) What is the expected compression ratio target and how is it computed?**  
+_≥4×, computed as avg text prompt tokens divided by `M`._
 
-If you want, I can produce small code patches (a few functions) for coverage loss, asymmetric latent, and calibration + joint pick as drop‑ins to your repo so you can start Week‑1/2 immediately.
+**14) How do we compute the interlingua payload bytes?**  
+_`M × d_z × bytes_per_value`, where bytes_per_value depends on dtype (e.g., fp16 ~2 bytes)._
+
+**15) Why do we apply LayerNorm + tanh in the adapters?**  
+_To match expected embedding statistics and clip extremes so frozen LLMs accept the prefix._
+
+**16) What if the latent underperforms the token‑budget baseline?**  
+_Increase `M`, improve the encoder (ByteEncoder on GPU), or use an asymmetric latent (shared + model‑specific) under the same total budget._
+
+**17) Why might two models together outperform either alone under joint rescoring?**  
+_Model diversity: different failure modes; rescoring aggregates evidence and reduces idiosyncratic errors._
+
+**18) What is the difference between prefill and decode cost here?**  
+_Prefill depends on prefix length (`M` vs hundreds of tokens for text); decode cost is the same._
+
+**19) Why is LoRA not used by default?**  
+_It modifies the LLM; we want to demonstrate a **frozen‑model** interlingua first. LoRA is reserved as a stability fallback._
+
+**20) What is the “agreement rate,” and why care?**  
+_Fraction of examples where Llama and Qwen produce the same normalized answer; signals diversity._
+
+**21) What is the “oracle upper bound”?**  
+_Accuracy if we magically always choose the better of the two model outputs; shows headroom for ensembling._
+
+**22) How do we ensure results are not cherry‑picked?**  
+_Fix splits and seeds; write metrics to JSON/CSV; report mean ± CI across test sets._
+
+**23) What might cause “frozen LLM rejection” and how do we detect it?**  
+_Feeding out‑of‑distribution embeddings; symptoms include repetitive outputs and poor NLL/token. Our adapter normalization mitigates this._
+
+**24) What is the rationale for having both SimpleEncoder and ByteEncoder?**  
+_SimpleEncoder accelerates feasibility on laptops; ByteEncoder gives model‑agnostic byte‑level evidence on GPUs._
+
+**25) What is the main risk with very small `M`?**  
+_Information bottleneck: prefix can’t carry enough context; F1 drops or NLL/token rises._
+
+**26) Why compare to text truncated to `M` tokens?**  
+_To ensure we are not just “cheating” by using more prefix budget than a fair text baseline._
+
+**27) How do we compute text vs latent wall‑clock fairly?**  
+_Same hardware, same batch, measure end‑to‑end prefill + decode for the same number of samples._
+
+**28) What does “asymmetric interlingua” mean?**  
+_Split the budget into `[shared || model‑specific]` parts so each model gets a small bespoke slice while sharing most content._
+
+**29) What would justify enabling a learned aggregator over equal‑weight joint rescoring?**  
+_If calibration differs and equal‑weight underperforms; a simple logistic combiner on features (log‑prob, length, repetition) may help._
+
+**30) How do we decide the final `M`?**  
+_Run a sweep; pick the smallest `M` satisfying H1–H5 on the validation set._
+
+**31) Why does “frozen acceptance” matter beyond this project?**  
+_If frozen LLMs accept continuous prefixes, we can ship multi‑model systems without vendor fine‑tunes or heavyweight adapters._
+
+**32) What evidence will convince a skeptical advisor?**  
+_Strong tables: Latent within 2 F1 of Text at ≥4× compression; Latent > Token‑budget; Joint > best single latent; NLL/token close; clear wall‑clock and payload wins; ablations and CIs._
+
+---
+
+## 15. References (informal pointers)
+
+- Soft prompt / prefix tuning; p‑tuning and prompt tuning work (single‑model conditioning).
+- Ensembling / reranking practices in QA and generation.
+- Practical guidance on KV cache, `inputs_embeds`, and gradient checkpointing in HF Transformers.
+
+_We will include formal references in the paper draft._
+
+---
+
+_Prepared for the LatentWire project team. This proposal is intentionally detailed and pedagogical so a motivated ML‑101 reader can follow every design choice and its justification._
+
+## Addendum A: Prompt & Context Realization
+
+### 1. Prompt Realization for Instruct LLMs
+
+We will apply each model’s apply_chat_template to construct prompts for text baselines and text scoring, and optionally to construct the encoder’s source string for latent training. This aligns inputs with the distribution the checkpoints expect.
+
+### 2. Context Construction for HotpotQA
+
+We will include more sentences per context item (k=4) and up to 3 items, with a 2k‑char cap. On GPU we will switch to supporting‑fact extraction.
+
+### 3. Mac Feasibility vs Realistic Benchmarks
+
+On Mac MPS we use TinyLlama‑1.1B and Qwen2‑0.5B to validate mechanics (compression/latency, frozen acceptance). For quality claims we will run Llama‑3.1‑8B + Qwen2‑7B (4‑bit) on GPU.
+
+### 4. Sanity Dataset
+
+If HotpotQA remains too hard for tiny models even after prompt/context changes, we will add SQuAD v1.1 runs to validate Text vs Latent vs Token‑budget behavior, then return to Hotpot on larger models.
+
+### 5. Updated Milestones
+
+Week 1–2: Chat templates + context shaping on Mac; establish non‑zero Text F1; show Latent within ΔF1 vs Text on SQuAD; report prefill speedups.
+
+Week 3–4: GPU runs on Hotpot with 8B/7B models; M sweep (8/12/16); joint rescoring.
+
+Remaining weeks unchanged.
+
+### 6. Reporting
+
+We will add predictions.jsonl dumps for qualitative error analysis, and we will report both: (i) chat‑templated text baselines, and (ii) latent trained with/without templated encoder input.

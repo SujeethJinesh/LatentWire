@@ -1,4 +1,5 @@
-ckpt_*
+*ckpt*
 .venv/*
 .pytest_cache/*
 */__pycache__/*
+.hf_home/*
