@@ -2,15 +2,17 @@
 set -euo pipefail
 
 source .venv/bin/activate
+
+# ========= TRAIN =========
 export RUN="squad_qwen_only_m16_$(date +%Y%m%d_%H%M%S)"
 export OUT="runs/$RUN"; mkdir -p "$OUT"
 
-echo "Starting Qwen-only fast-iterate train (Qwen2-0.5B, M=16, anchor='Answer: ')..."
+echo "Starting Qwen-only train (SQuAD, M=16, anchor='Answer: ')..."
 PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
 python -u latentwire/train.py \
   --dataset squad \
-  --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
   --llama_id "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
+  --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
   --samples  16384 \
   --epochs   5 \
   --batch_size 32 \
@@ -21,32 +23,60 @@ python -u latentwire/train.py \
   --warm_anchor_text "Answer: " \
   --fp16_mps \
   --sequential_models \
-  --lambda_llama 0.0 \
-  --lambda_qwen  1.0 \
-  --acceptance_reg 0.05 \
-  --weight_decay 0.01 \
-  --max_grad_norm 1.0 \
   --auto_resume \
   --save_every 500 \
   --save_dir "$OUT/ckpt" \
   --debug \
   2>&1 | tee -a "$OUT/train.log"
 
-echo "Evaluating on SQuAD (robust decode: min_new_tokens=2, eos_ban_steps=6)..."
+# ========= EVAL =========
+EOUT="$OUT/squad_eval"; mkdir -p "$EOUT"
+
+echo "Evaluating on SQuAD (robust decode: min_new_tokens=3, eos_ban_steps=6; first-token nucleus)..."
 PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
 python -u latentwire/eval.py \
   --ckpt "$OUT/ckpt" \
   --dataset squad \
   --samples 200 \
   --max_new_tokens 8 \
-  --min_new_tokens 2 \
-  --eos_ban_steps 6 \
   --token_budget_mode content_only \
   --token_budget_k 32 \
   --latent_anchor_text "Answer: " \
-  --out_dir "$OUT/squad_eval" \
+  --out_dir "$EOUT" \
   --sequential_eval \
+  --min_new_tokens 3 \
+  --eos_ban_steps 6 \
+  --first_token_top_p 0.9 \
+  --first_token_temperature 0.7 \
+  --prefix_gain 1.0 \
   --debug \
-  2>&1 | tee "$OUT/squad_eval/eval.log"
+  2>&1 | tee "$EOUT/eval.log"
 
-echo "DONE. Results in $OUT"
+# Optional: quick prefix gain sweep (no retrain) to confirm amplitude sensitivity
+for G in 1.25 1.5 2.0; do
+  EOUT_SWEEP="$OUT/squad_eval_gain_${G}"; mkdir -p "$EOUT_SWEEP"
+  echo "Re-evaluating with prefix_gain=${G}..."
+  PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
+  python -u latentwire/eval.py \
+    --ckpt "$OUT/ckpt" \
+    --dataset squad \
+    --samples 200 \
+    --max_new_tokens 8 \
+    --token_budget_mode content_only \
+    --token_budget_k 32 \
+    --latent_anchor_text "Answer: " \
+    --out_dir "$EOUT_SWEEP" \
+    --sequential_eval \
+    --min_new_tokens 3 \
+    --eos_ban_steps 6 \
+    --first_token_top_p 0.9 \
+    --first_token_temperature 0.7 \
+    --prefix_gain $G \
+    --debug \
+    2>&1 | tee "$EOUT_SWEEP/eval.log"
+done
+
+echo "========================================="
+echo "EVAL COMPLETE at $(date)"
+echo "Results in: $OUT"
+echo "========================================="

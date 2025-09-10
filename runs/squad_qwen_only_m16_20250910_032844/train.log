@@ -1,0 +1,48 @@
+Loading dataset subset...
+Llama hidden size: 2048, Qwen hidden size: 896
+⚠️  No valid checkpoint found to resume; starting fresh.
+[diag] Llama input-embed RMS: 0.0149 | Qwen input-embed RMS: 0.0152
+Epoch 1/5
+  step 10/512 | loss=4.3072 | sec/step~2.67
+  step 20/512 | loss=2.7056 | sec/step~2.35
+  step 30/512 | loss=2.7827 | sec/step~2.24
+  step 40/512 | loss=2.3442 | sec/step~2.21
+  step 50/512 | loss=2.0558 | sec/step~2.19
+  step 60/512 | loss=2.1453 | sec/step~2.19
+  step 70/512 | loss=2.1652 | sec/step~2.16
+  step 80/512 | loss=2.1325 | sec/step~2.16
+  step 90/512 | loss=2.1073 | sec/step~2.16
+  step 100/512 | loss=1.9909 | sec/step~2.16
+  [debug:L] a.scale=0.9995 | Z.std=0.9993 Z.mean||=15.9886 | p.std=0.5738 p.mean||=25.9671
+  [debug:Q] a.scale=0.9999 | Z.std=0.9993 Z.mean||=15.9886 | p.std=0.5807 p.mean||=17.3769
+  step 110/512 | loss=1.8253 | sec/step~2.17
+  step 120/512 | loss=1.9011 | sec/step~2.21
+  step 130/512 | loss=1.8490 | sec/step~2.25
+  step 140/512 | loss=1.9352 | sec/step~2.25
+  step 150/512 | loss=2.1515 | sec/step~2.25
+  step 160/512 | loss=1.9349 | sec/step~2.21
+  step 170/512 | loss=2.1800 | sec/step~2.15
+  step 180/512 | loss=1.6733 | sec/step~2.14
+  step 190/512 | loss=1.8969 | sec/step~2.16
+  step 200/512 | loss=1.6333 | sec/step~2.15
+  [debug:L] a.scale=1.0003 | Z.std=0.9994 Z.mean||=15.9903 | p.std=0.5827 p.mean||=26.3679
+  [debug:Q] a.scale=0.9999 | Z.std=0.9994 Z.mean||=15.9903 | p.std=0.5872 p.mean||=17.5718
+  step 210/512 | loss=1.4261 | sec/step~2.14
+  step 220/512 | loss=1.8812 | sec/step~2.13
+  step 230/512 | loss=1.7049 | sec/step~2.12
+  step 240/512 | loss=1.8598 | sec/step~2.13
+  step 250/512 | loss=1.9377 | sec/step~2.12
+  step 260/512 | loss=1.8238 | sec/step~2.12
+  step 270/512 | loss=1.4596 | sec/step~2.13
+  step 280/512 | loss=1.4963 | sec/step~2.13
+  step 290/512 | loss=1.7280 | sec/step~2.13
+  step 300/512 | loss=1.5848 | sec/step~2.14
+  [debug:L] a.scale=1.0011 | Z.std=0.9995 Z.mean||=15.9914 | p.std=0.5916 p.mean||=26.7661
+  [debug:Q] a.scale=1.0000 | Z.std=0.9995 Z.mean||=15.9914 | p.std=0.5914 p.mean||=17.6972
+  step 310/512 | loss=1.5632 | sec/step~2.14
+  step 320/512 | loss=1.4053 | sec/step~2.14
+  step 330/512 | loss=1.6144 | sec/step~2.12
+  step 340/512 | loss=1.7742 | sec/step~2.13
+  step 350/512 | loss=1.4707 | sec/step~2.13
+  step 360/512 | loss=1.5289 | sec/step~2.12
+  step 370/512 | loss=1.8078 | sec/step~2.13

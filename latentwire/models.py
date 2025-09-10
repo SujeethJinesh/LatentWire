@@ -2,7 +2,7 @@
 import math
 import re
 from dataclasses import dataclass
-from typing import Optional, List, Iterable, Tuple
+from typing import Optional, List, Iterable
 
 import torch
 import torch.nn as nn
@@ -23,21 +23,18 @@ def clean_pred(s: str) -> str:
     Normalize short-span generations to a clean answer phrase.
     - Hard-stop at known markers
     - Remove role echoes like 'assistant:' at the front
-    - Keep the first line / clause
-    Robust to empty strings.
+    - Keep the first non-empty line
     """
-    if not s:
+    if s is None:
         return ""
+    s = str(s)
     for ss in STOP_STRINGS:
         idx = s.find(ss)
         if idx >= 0:
             s = s[:idx]
     s = re.sub(r"^\s*(assistant|assistant:|Assistant:)\s*", "", s)
-    # take first non-empty line if present
-    lines = [ln for ln in s.splitlines() if ln.strip() != ""]
-    if not lines:
-        return ""
-    s = lines[0]
+    lines = [ln for ln in s.splitlines() if ln.strip()]
+    s = lines[0] if lines else ""
     s = s.strip(" \t\r\n.:;,'\"-–—")
     return s
 
@@ -130,9 +127,12 @@ class SimpleEncoder(nn.Module):
         except Exception as e:
             raise ImportError("sentence-transformers is required for SimpleEncoder. Install with: pip install sentence-transformers") from e
         self.st = SentenceTransformer(backbone)
-        # Fully freeze ST
-        for p in self.st.parameters():
-            p.requires_grad_(False)
+        # freeze ST
+        try:
+            for p in self.st._first_module().parameters():
+                p.requires_grad_(False)
+        except Exception:
+            pass
         try:
             self.st_dim = self.st.get_sentence_embedding_dimension()
         except Exception:
@@ -142,25 +142,28 @@ class SimpleEncoder(nn.Module):
         self.ln = nn.LayerNorm(d_z)
 
     def forward(self, texts: List[str]) -> torch.Tensor:
+        # ST in no-grad; then clone to make it trainable downstream
         with torch.no_grad():
             emb = self.st.encode(texts, convert_to_tensor=True)
-        emb = emb.detach().clone()             # make it a leaf tensor for autograd downstream
-        z0 = self.proj(emb)                    # [B, d_z]
+        emb = emb.detach().clone()
+        z0 = self.proj(emb)
         B = z0.size(0)
         q = self.queries.unsqueeze(0).expand(B, -1, -1)
-        z = self.ln(q + z0.unsqueeze(1))       # [B, M, d_z]
+        z = self.ln(q + z0.unsqueeze(1))
         return z
 
 
 class Adapter(nn.Module):
-    def __init__(self, d_z: int, d_model: int):
+    def __init__(self, d_z: int, d_model: int, clip_value: float = 3.0):
         super().__init__()
         self.net = nn.Sequential(nn.LayerNorm(d_z), nn.Linear(d_z, d_model))
         self.scale = nn.Parameter(torch.ones(1))
+        self.clip_value = float(clip_value)
     def forward(self, z: torch.Tensor) -> torch.Tensor:
         x = self.net(z) * self.scale
-        # retain mild clip for safety, but less aggressive
-        return torch.tanh(x / 6.0) * 6.0
+        # gentle clip to avoid extreme out-of-distribution values
+        c = self.clip_value
+        return torch.tanh(x / c) * c
 
 
 # ---------------------------
@@ -280,44 +283,11 @@ class LMWrapper(nn.Module):
         return self.input_embed(input_ids)
 
     @torch.no_grad()
-    def get_embedding_mean_norm(self, sample_size: int = 4096) -> float:
-        """Mean L2 norm of token embeddings (used for stat matching)."""
-        W = self.input_embed.weight
-        if W.device.type == "meta":  # safety
-            return 20.0
-        if sample_size and W.size(0) > sample_size:
-            idx = torch.randint(0, W.size(0), (sample_size,), device=W.device)
-            E = W[idx]
-        else:
-            E = W
-        return float(E.norm(dim=-1).mean().item())
-
-    @torch.no_grad()
-    def calibrate_adapter(
-        self,
-        adapter: "Adapter",
-        Z_sample: Optional[torch.Tensor] = None,
-        target_norm: Optional[float] = None,
-        clamp: Tuple[float, float] = (0.1, 10.0),
-    ) -> float:
-        """
-        Scale adapter outputs so that mean ||prefix|| ~= mean ||token embeddings||.
-        Returns the target norm used.
-        """
-        if target_norm is None:
-            target_norm = self.get_embedding_mean_norm()
-        if Z_sample is None:
-            return target_norm
-        dev = next(self.model.parameters()).device
-        with torch.no_grad():
-            P = adapter(Z_sample.to(dev))
-            cur = float(P.norm(dim=-1).mean().item())
-            if cur > 0:
-                factor = target_norm / cur
-                new_scale = adapter.scale.data * factor
-                new_scale.clamp_(clamp[0], clamp[1])
-                adapter.scale.data.copy_(new_scale)
-        return target_norm
+    def input_embedding_rms(self) -> float:
+        w = getattr(self.input_embed, "weight", None)
+        if w is None:
+            return float("nan")
+        return float(torch.sqrt((w.float() ** 2).mean()).item())
 
     # ---- losses / scoring ----
 
@@ -387,17 +357,6 @@ class LMWrapper(nn.Module):
         total_nll = loss * n_tokens
         return -float(total_nll.item())
 
-    # ---- decoding helpers ----
-
-    def _decode_one(self, ids: Iterable[int]) -> str:
-        return self.tokenizer.decode(list(ids), skip_special_tokens=True)
-
-    def decode_then_clean(self, ids: Iterable[int]) -> str:
-        return clean_pred(self._decode_one(ids))
-
-    def decode_batch_then_clean(self, batch_ids: List[List[int]]) -> List[str]:
-        return [self.decode_then_clean(x) for x in batch_ids]
-
     # ---- generation: latent prefix ----
 
     @torch.no_grad()
@@ -408,14 +367,19 @@ class LMWrapper(nn.Module):
         temperature: float = 0.0,
         top_p: float = 1.0,
         anchor_token_text: Optional[str] = None,
-        min_new_tokens: int = 2,
-        eos_ban_steps: int = 4,
+        # new decode controls:
+        min_new_tokens: int = 0,
+        eos_ban_steps: int = 0,
+        first_token_top_p: float = 1.0,
+        first_token_temperature: float = 0.0,
     ) -> List[List[int]]:
         """
         Greedy/sampled generation conditioned on a latent prefix.
-        Optional 'anchor_token_text' is fed as one or more tokens BEFORE decoding,
-        but is not included in the returned token list.
-        Prevent early-EOS by enforcing min_new_tokens and banning EOS for a few steps.
+        - Optional 'anchor_token_text' is fed BEFORE decoding (not returned).
+        - First token can use top-p sampling, then subsequent tokens are greedy
+          unless temperature/top_p are provided (kept for backward compatibility).
+        - You can ban EOS/EOT for the first `eos_ban_steps` steps and force at least
+          `min_new_tokens` tokens before allowing finish.
         """
         model_device = next(self.model.parameters()).device
         emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
@@ -448,23 +412,26 @@ class LMWrapper(nn.Module):
         generated = [[] for _ in range(B)]
         finished = torch.zeros(B, dtype=torch.bool, device=model_device)
 
-        for t in range(max_new_tokens):
+        for step in range(max_new_tokens):
             step_logits = next_token_logits.clone()
-            step_logits[finished] = -1e9
-
-            # ban EOS-like ids for the first few steps
-            if t < max(1, eos_ban_steps):
+            # EOS ban window
+            if step < eos_ban_steps:
                 for sid in stop_ids:
                     step_logits[:, sid] = -1e9
+            # Force generation until min_new_tokens is reached
+            step_finished = finished.clone()
+            if step < max(min_new_tokens, 0):
+                step_finished[:] = False
+            step_logits[step_finished] = -1e9
 
-            if temperature == 0.0:
-                next_tokens = torch.argmax(step_logits, dim=-1)
-            else:
-                probs = torch.softmax(step_logits / max(1e-5, temperature), dim=-1)
-                if top_p < 1.0:
+            # First token sampling option
+            if step == 0 and (first_token_temperature > 0.0 or first_token_top_p < 1.0):
+                t = max(1e-5, first_token_temperature if first_token_temperature > 0.0 else 1.0)
+                probs = torch.softmax(step_logits / t, dim=-1)
+                if first_token_top_p < 1.0:
                     sorted_probs, sorted_idx = torch.sort(probs, descending=True)
                     cum = torch.cumsum(sorted_probs, dim=-1)
-                    mask = cum > top_p
+                    mask = cum > first_token_top_p
                     mask[..., 0] = False
                     sorted_probs[mask] = 0.0
                     sorted_probs = sorted_probs / (sorted_probs.sum(dim=-1, keepdim=True) + 1e-8)
@@ -472,20 +439,32 @@ class LMWrapper(nn.Module):
                     next_tokens = sorted_idx.gather(-1, idx.unsqueeze(-1)).squeeze(-1)
                 else:
                     next_tokens = torch.multinomial(probs, num_samples=1).squeeze(-1)
+            else:
+                # default greedy unless caller sets temperature/top_p
+                if temperature == 0.0 and top_p >= 1.0:
+                    next_tokens = torch.argmax(step_logits, dim=-1)
+                else:
+                    probs = torch.softmax(step_logits / max(1e-5, temperature if temperature > 0 else 1.0), dim=-1)
+                    if top_p < 1.0:
+                        sorted_probs, sorted_idx = torch.sort(probs, descending=True)
+                        cum = torch.cumsum(sorted_probs, dim=-1)
+                        mask = cum > top_p
+                        mask[..., 0] = False
+                        sorted_probs[mask] = 0.0
+                        sorted_probs = sorted_probs / (sorted_probs.sum(dim=-1, keepdim=True) + 1e-8)
+                        idx = torch.multinomial(sorted_probs, num_samples=1).squeeze(-1)
+                        next_tokens = sorted_idx.gather(-1, idx.unsqueeze(-1)).squeeze(-1)
+                    else:
+                        next_tokens = torch.multinomial(probs, num_samples=1).squeeze(-1)
 
             for b in range(B):
                 if finished[b]:
                     continue
                 nid = int(next_tokens[b].item())
-                # allow EOS only after min_new_tokens
-                if (nid in stop_ids) and (len(generated[b]) >= max(0, min_new_tokens)):
+                if (nid in stop_ids) and (step >= max(min_new_tokens, 0)):
                     finished[b] = True
                 else:
-                    if nid not in stop_ids:
-                        generated[b].append(nid)
-                    else:
-                        # if EOS but below min length, skip adding and continue
-                        pass
+                    generated[b].append(nid)
 
             if bool(torch.all(finished).item()):
                 break
@@ -509,9 +488,7 @@ class LMWrapper(nn.Module):
         prompt_texts: List[str],
         max_new_tokens: int = 64,
         temperature: float = 0.0,
-        top_p: float = 1.0,
-        min_new_tokens: int = 0,
-        eos_ban_steps: int = 0,
+        top_p: float = 1.0
     ) -> List[List[int]]:
         enc = self.tokenizer(prompt_texts, return_tensors="pt", padding=True, truncation=False, add_special_tokens=True)
         input_ids = enc["input_ids"].to(next(self.model.parameters()).device)
@@ -528,13 +505,9 @@ class LMWrapper(nn.Module):
         generated = [[] for _ in range(B)]
         finished = torch.zeros(B, dtype=torch.bool, device=input_ids.device)
 
-        for t in range(max_new_tokens):
+        for _ in range(max_new_tokens):
             step_logits = next_token_logits.clone()
             step_logits[finished] = -1e9
-
-            if t < max(0, eos_ban_steps):
-                for sid in stop_ids:
-                    step_logits[:, sid] = -1e9
 
             if temperature == 0.0:
                 next_tokens = torch.argmax(step_logits, dim=-1)
@@ -556,11 +529,10 @@ class LMWrapper(nn.Module):
                 if finished[b]:
                     continue
                 nid = int(next_tokens[b].item())
-                if (nid in stop_ids) and (len(generated[b]) >= max(0, min_new_tokens)):
+                if nid in stop_ids:
                     finished[b] = True
                 else:
-                    if nid not in stop_ids:
-                        generated[b].append(nid)
+                    generated[b].append(nid)
 
             if bool(torch.all(finished).item()):
                 break
