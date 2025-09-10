@@ -46,3 +46,290 @@ Epoch 1/5
   step 350/512 | loss=1.4707 | sec/step~2.13
   step 360/512 | loss=1.5289 | sec/step~2.12
   step 370/512 | loss=1.8078 | sec/step~2.13
+  step 380/512 | loss=1.6915 | sec/step~2.12
+  step 390/512 | loss=1.6362 | sec/step~2.14
+  step 400/512 | loss=1.5783 | sec/step~2.14
+  [debug:L] a.scale=1.0018 | Z.std=0.9996 Z.mean||=15.9930 | p.std=0.6010 p.mean||=27.1894
+  [debug:Q] a.scale=1.0002 | Z.std=0.9996 Z.mean||=15.9930 | p.std=0.5984 p.mean||=17.9077
+  step 410/512 | loss=1.3982 | sec/step~2.17
+  step 420/512 | loss=1.3616 | sec/step~2.17
+  step 430/512 | loss=1.6803 | sec/step~2.18
+  step 440/512 | loss=1.5566 | sec/step~2.18
+  step 450/512 | loss=1.8598 | sec/step~2.18
+  step 460/512 | loss=1.8500 | sec/step~2.18
+  step 470/512 | loss=1.6267 | sec/step~2.18
+  step 480/512 | loss=1.6580 | sec/step~2.17
+  step 490/512 | loss=1.5532 | sec/step~2.17
+  step 500/512 | loss=1.2546 | sec/step~2.17
+  [debug:L] a.scale=1.0025 | Z.std=0.9996 Z.mean||=15.9932 | p.std=0.6061 p.mean||=27.4171
+  [debug:Q] a.scale=1.0002 | Z.std=0.9996 Z.mean||=15.9932 | p.std=0.6015 p.mean||=18.0002
+  ✅ Saved checkpoint at step 500
+  step 510/512 | loss=1.4932 | sec/step~2.17
+  step 512/512 | loss=1.5275 | sec/step~2.17
+  [debug:L] a.scale=1.0026 | Z.std=0.9996 Z.mean||=15.9940 | p.std=0.6087 p.mean||=27.5309
+  [debug:Q] a.scale=1.0002 | Z.std=0.9996 Z.mean||=15.9940 | p.std=0.6034 p.mean||=18.0580
+Epoch 2/5
+  step 10/512 | loss=1.2094 | sec/step~2.18
+  step 20/512 | loss=1.2519 | sec/step~2.18
+  step 30/512 | loss=1.2358 | sec/step~2.18
+  step 40/512 | loss=1.3254 | sec/step~2.18
+  step 50/512 | loss=1.4678 | sec/step~2.18
+  step 60/512 | loss=1.5802 | sec/step~2.17
+  step 70/512 | loss=1.4206 | sec/step~2.17
+  step 80/512 | loss=1.7368 | sec/step~2.17
+  step 90/512 | loss=1.7138 | sec/step~2.17
+  step 100/512 | loss=1.4274 | sec/step~2.18
+  [debug:L] a.scale=1.0031 | Z.std=0.9997 Z.mean||=15.9945 | p.std=0.6135 p.mean||=27.7472
+  [debug:Q] a.scale=1.0002 | Z.std=0.9997 Z.mean||=15.9945 | p.std=0.6108 p.mean||=18.2777
+  step 110/512 | loss=1.8465 | sec/step~2.18
+  step 120/512 | loss=1.3741 | sec/step~2.17
+  step 130/512 | loss=1.1074 | sec/step~2.17
+  step 140/512 | loss=1.8165 | sec/step~2.17
+  step 150/512 | loss=1.4002 | sec/step~2.17
+  step 160/512 | loss=1.6325 | sec/step~2.17
+  step 170/512 | loss=1.2669 | sec/step~2.19
+  step 180/512 | loss=1.5427 | sec/step~2.18
+  step 190/512 | loss=1.6308 | sec/step~2.18
+  step 200/512 | loss=1.5138 | sec/step~2.18
+  [debug:L] a.scale=1.0038 | Z.std=0.9996 Z.mean||=15.9942 | p.std=0.6174 p.mean||=27.9186
+  [debug:Q] a.scale=1.0004 | Z.std=0.9996 Z.mean||=15.9942 | p.std=0.6123 p.mean||=18.3238
+  step 210/512 | loss=1.4623 | sec/step~2.17
+  step 220/512 | loss=1.2289 | sec/step~2.17
+  step 230/512 | loss=1.2331 | sec/step~2.17
+  step 240/512 | loss=1.6409 | sec/step~2.17
+  step 250/512 | loss=1.3707 | sec/step~2.16
+  step 260/512 | loss=1.4556 | sec/step~2.16
+  step 270/512 | loss=1.2362 | sec/step~2.16
+  step 280/512 | loss=1.7754 | sec/step~2.16
+  step 290/512 | loss=1.4942 | sec/step~2.17
+  step 300/512 | loss=1.4478 | sec/step~2.17
+  [debug:L] a.scale=1.0044 | Z.std=0.9997 Z.mean||=15.9952 | p.std=0.6219 p.mean||=28.1209
+  [debug:Q] a.scale=1.0004 | Z.std=0.9997 Z.mean||=15.9952 | p.std=0.6190 p.mean||=18.5206
+  step 310/512 | loss=1.5633 | sec/step~2.17
+  step 320/512 | loss=1.1595 | sec/step~2.18
+  step 330/512 | loss=1.5698 | sec/step~2.16
+  step 340/512 | loss=1.1682 | sec/step~2.15
+  step 350/512 | loss=1.5506 | sec/step~2.16
+  step 360/512 | loss=1.5803 | sec/step~2.17
+  step 370/512 | loss=1.7571 | sec/step~2.18
+  step 380/512 | loss=1.3963 | sec/step~2.18
+  step 390/512 | loss=1.4534 | sec/step~2.17
+  step 400/512 | loss=1.2448 | sec/step~2.16
+  [debug:L] a.scale=1.0049 | Z.std=0.9997 Z.mean||=15.9944 | p.std=0.6244 p.mean||=28.2251
+  [debug:Q] a.scale=1.0006 | Z.std=0.9997 Z.mean||=15.9944 | p.std=0.6211 p.mean||=18.5833
+  step 410/512 | loss=1.3527 | sec/step~2.16
+  step 420/512 | loss=1.7409 | sec/step~2.16
+  step 430/512 | loss=1.3235 | sec/step~2.15
+  step 440/512 | loss=1.6438 | sec/step~2.15
+  step 450/512 | loss=1.4731 | sec/step~2.16
+  step 460/512 | loss=1.5440 | sec/step~2.16
+  step 470/512 | loss=1.2026 | sec/step~2.16
+  step 480/512 | loss=1.6783 | sec/step~2.16
+  ✅ Saved checkpoint at step 1000
+  step 490/512 | loss=1.2678 | sec/step~2.15
+  step 500/512 | loss=1.3848 | sec/step~2.16
+  [debug:L] a.scale=1.0055 | Z.std=0.9996 Z.mean||=15.9942 | p.std=0.6290 p.mean||=28.4303
+  [debug:Q] a.scale=1.0006 | Z.std=0.9996 Z.mean||=15.9942 | p.std=0.6246 p.mean||=18.6913
+  step 510/512 | loss=1.8553 | sec/step~2.15
+  step 512/512 | loss=1.5341 | sec/step~2.15
+  [debug:L] a.scale=1.0055 | Z.std=0.9997 Z.mean||=15.9946 | p.std=0.6302 p.mean||=28.4873
+  [debug:Q] a.scale=1.0006 | Z.std=0.9997 Z.mean||=15.9946 | p.std=0.6265 p.mean||=18.7435
+Epoch 3/5
+  step 10/512 | loss=1.1709 | sec/step~2.15
+  step 20/512 | loss=1.2326 | sec/step~2.16
+  step 30/512 | loss=1.6769 | sec/step~2.16
+  step 40/512 | loss=1.3166 | sec/step~2.16
+  step 50/512 | loss=1.4373 | sec/step~2.16
+  step 60/512 | loss=1.1705 | sec/step~2.16
+  step 70/512 | loss=1.3220 | sec/step~2.16
+  step 80/512 | loss=1.4133 | sec/step~2.16
+  step 90/512 | loss=1.3416 | sec/step~2.16
+  step 100/512 | loss=1.4631 | sec/step~2.16
+  [debug:L] a.scale=1.0059 | Z.std=0.9996 Z.mean||=15.9934 | p.std=0.6317 p.mean||=28.5514
+  [debug:Q] a.scale=1.0006 | Z.std=0.9996 Z.mean||=15.9934 | p.std=0.6290 p.mean||=18.8181
+  step 110/512 | loss=1.3687 | sec/step~2.16
+  step 120/512 | loss=1.5123 | sec/step~2.16
+  step 130/512 | loss=1.6327 | sec/step~2.16
+  step 140/512 | loss=1.2370 | sec/step~2.16
+  step 150/512 | loss=1.6794 | sec/step~2.15
+  step 160/512 | loss=1.4740 | sec/step~2.15
+  step 170/512 | loss=1.0396 | sec/step~2.15
+  step 180/512 | loss=1.4456 | sec/step~2.15
+  step 190/512 | loss=1.4902 | sec/step~2.16
+  step 200/512 | loss=1.2631 | sec/step~2.16
+  [debug:L] a.scale=1.0063 | Z.std=0.9996 Z.mean||=15.9932 | p.std=0.6346 p.mean||=28.6783
+  [debug:Q] a.scale=1.0006 | Z.std=0.9996 Z.mean||=15.9932 | p.std=0.6308 p.mean||=18.8724
+  step 210/512 | loss=1.3643 | sec/step~2.16
+  step 220/512 | loss=0.9771 | sec/step~2.16
+  step 230/512 | loss=1.3025 | sec/step~2.16
+  step 240/512 | loss=1.2385 | sec/step~2.16
+  step 250/512 | loss=1.3203 | sec/step~2.15
+  step 260/512 | loss=1.3960 | sec/step~2.16
+  step 270/512 | loss=1.3259 | sec/step~2.16
+  step 280/512 | loss=1.3008 | sec/step~2.16
+  step 290/512 | loss=1.4861 | sec/step~2.16
+  step 300/512 | loss=1.4182 | sec/step~2.16
+  [debug:L] a.scale=1.0066 | Z.std=0.9996 Z.mean||=15.9929 | p.std=0.6388 p.mean||=28.8642
+  [debug:Q] a.scale=1.0006 | Z.std=0.9996 Z.mean||=15.9929 | p.std=0.6338 p.mean||=18.9612
+  step 310/512 | loss=1.7745 | sec/step~2.15
+  step 320/512 | loss=1.4007 | sec/step~2.16
+  step 330/512 | loss=1.1576 | sec/step~2.15
+  step 340/512 | loss=1.7034 | sec/step~2.15
+  step 350/512 | loss=1.4911 | sec/step~2.16
+  step 360/512 | loss=1.4484 | sec/step~2.15
+  step 370/512 | loss=1.6195 | sec/step~2.16
+  step 380/512 | loss=1.5273 | sec/step~2.15
+  step 390/512 | loss=1.7291 | sec/step~2.15
+  step 400/512 | loss=1.2581 | sec/step~2.15
+  [debug:L] a.scale=1.0071 | Z.std=0.9995 Z.mean||=15.9923 | p.std=0.6410 p.mean||=28.9568
+  [debug:Q] a.scale=1.0006 | Z.std=0.9995 Z.mean||=15.9923 | p.std=0.6373 p.mean||=19.0640
+  step 410/512 | loss=1.3839 | sec/step~2.15
+  step 420/512 | loss=1.6519 | sec/step~2.16
+  step 430/512 | loss=1.3558 | sec/step~2.15
+  step 440/512 | loss=1.2307 | sec/step~2.15
+  step 450/512 | loss=1.3038 | sec/step~2.16
+  step 460/512 | loss=1.1881 | sec/step~2.16
+  step 470/512 | loss=1.4050 | sec/step~2.15
+  ✅ Saved checkpoint at step 1500
+  step 480/512 | loss=1.3244 | sec/step~2.15
+  step 490/512 | loss=1.3363 | sec/step~2.16
+  step 500/512 | loss=1.4474 | sec/step~2.15
+  [debug:L] a.scale=1.0075 | Z.std=0.9995 Z.mean||=15.9919 | p.std=0.6439 p.mean||=29.0841
+  [debug:Q] a.scale=1.0008 | Z.std=0.9995 Z.mean||=15.9919 | p.std=0.6399 p.mean||=19.1385
+  step 510/512 | loss=1.1735 | sec/step~2.15
+  step 512/512 | loss=1.6497 | sec/step~2.15
+  [debug:L] a.scale=1.0075 | Z.std=0.9995 Z.mean||=15.9912 | p.std=0.6437 p.mean||=29.0757
+  [debug:Q] a.scale=1.0008 | Z.std=0.9995 Z.mean||=15.9912 | p.std=0.6408 p.mean||=19.1680
+Epoch 4/5
+  step 10/512 | loss=1.1670 | sec/step~2.16
+  step 20/512 | loss=1.6589 | sec/step~2.15
+  step 30/512 | loss=1.4056 | sec/step~2.15
+  step 40/512 | loss=1.3043 | sec/step~2.15
+  step 50/512 | loss=1.5792 | sec/step~2.15
+  step 60/512 | loss=1.4020 | sec/step~2.16
+  step 70/512 | loss=1.0460 | sec/step~2.15
+  step 80/512 | loss=1.3444 | sec/step~2.15
+  step 90/512 | loss=1.2670 | sec/step~2.16
+  step 100/512 | loss=1.5558 | sec/step~2.15
+  [debug:L] a.scale=1.0077 | Z.std=0.9994 Z.mean||=15.9910 | p.std=0.6469 p.mean||=29.2159
+  [debug:Q] a.scale=1.0011 | Z.std=0.9994 Z.mean||=15.9910 | p.std=0.6439 p.mean||=19.2584
+  step 110/512 | loss=1.6391 | sec/step~2.16
+  step 120/512 | loss=0.9947 | sec/step~2.16
+  step 130/512 | loss=1.2091 | sec/step~2.15
+  step 140/512 | loss=1.6158 | sec/step~2.15
+  step 150/512 | loss=1.3560 | sec/step~2.15
+  step 160/512 | loss=1.1279 | sec/step~2.15
+  step 170/512 | loss=1.3746 | sec/step~2.15
+  step 180/512 | loss=1.4143 | sec/step~2.15
+  step 190/512 | loss=1.2279 | sec/step~2.16
+  step 200/512 | loss=1.0349 | sec/step~2.16
+  [debug:L] a.scale=1.0080 | Z.std=0.9994 Z.mean||=15.9900 | p.std=0.6490 p.mean||=29.3086
+  [debug:Q] a.scale=1.0009 | Z.std=0.9994 Z.mean||=15.9900 | p.std=0.6469 p.mean||=19.3471
+  step 210/512 | loss=1.4355 | sec/step~2.15
+  step 220/512 | loss=1.5222 | sec/step~2.16
+  step 230/512 | loss=1.2213 | sec/step~2.15
+  step 240/512 | loss=1.2118 | sec/step~2.15
+  step 250/512 | loss=1.3211 | sec/step~2.15
+  step 260/512 | loss=1.2257 | sec/step~2.16
+  step 270/512 | loss=1.0524 | sec/step~2.16
+  step 280/512 | loss=1.1685 | sec/step~2.16
+  step 290/512 | loss=1.4016 | sec/step~2.16
+  step 300/512 | loss=1.2473 | sec/step~2.16
+  [debug:L] a.scale=1.0080 | Z.std=0.9992 Z.mean||=15.9875 | p.std=0.6502 p.mean||=29.3529
+  [debug:Q] a.scale=1.0008 | Z.std=0.9992 Z.mean||=15.9875 | p.std=0.6462 p.mean||=19.3241
+  step 310/512 | loss=1.1189 | sec/step~2.16
+  step 320/512 | loss=1.3065 | sec/step~2.16
+  step 330/512 | loss=1.4852 | sec/step~2.16
+  step 340/512 | loss=1.2273 | sec/step~2.16
+  step 350/512 | loss=1.6434 | sec/step~2.15
+  step 360/512 | loss=1.4035 | sec/step~2.15
+  step 370/512 | loss=1.2373 | sec/step~2.16
+  step 380/512 | loss=1.2876 | sec/step~2.16
+  step 390/512 | loss=1.5622 | sec/step~2.15
+  step 400/512 | loss=1.4833 | sec/step~2.15
+  [debug:L] a.scale=1.0083 | Z.std=0.9992 Z.mean||=15.9870 | p.std=0.6543 p.mean||=29.5361
+  [debug:Q] a.scale=1.0007 | Z.std=0.9992 Z.mean||=15.9870 | p.std=0.6498 p.mean||=19.4332
+  step 410/512 | loss=1.1761 | sec/step~2.15
+  step 420/512 | loss=1.2977 | sec/step~2.15
+  step 430/512 | loss=1.0076 | sec/step~2.15
+  step 440/512 | loss=1.1134 | sec/step~2.15
+  step 450/512 | loss=1.6737 | sec/step~2.16
+  step 460/512 | loss=1.4885 | sec/step~2.15
+  ✅ Saved checkpoint at step 2000
+  step 470/512 | loss=0.9560 | sec/step~2.15
+  step 480/512 | loss=1.3759 | sec/step~2.15
+  step 490/512 | loss=1.6477 | sec/step~2.15
+  step 500/512 | loss=1.5507 | sec/step~2.15
+  [debug:L] a.scale=1.0085 | Z.std=0.9992 Z.mean||=15.9869 | p.std=0.6579 p.mean||=29.6969
+  [debug:Q] a.scale=1.0006 | Z.std=0.9992 Z.mean||=15.9869 | p.std=0.6543 p.mean||=19.5634
+  step 510/512 | loss=1.4112 | sec/step~2.15
+  step 512/512 | loss=1.5483 | sec/step~2.15
+  [debug:L] a.scale=1.0086 | Z.std=0.9992 Z.mean||=15.9866 | p.std=0.6576 p.mean||=29.6796
+  [debug:Q] a.scale=1.0007 | Z.std=0.9992 Z.mean||=15.9866 | p.std=0.6541 p.mean||=19.5575
+Epoch 5/5
+  step 10/512 | loss=1.1909 | sec/step~2.15
+  step 20/512 | loss=1.1505 | sec/step~2.15
+  step 30/512 | loss=1.0210 | sec/step~2.16
+  step 40/512 | loss=1.4775 | sec/step~2.15
+  step 50/512 | loss=1.2175 | sec/step~2.15
+  step 60/512 | loss=1.3466 | sec/step~2.16
+  step 70/512 | loss=1.2409 | sec/step~2.16
+  step 80/512 | loss=1.6730 | sec/step~2.15
+  step 90/512 | loss=1.5934 | sec/step~2.15
+  step 100/512 | loss=1.5405 | sec/step~2.14
+  [debug:L] a.scale=1.0085 | Z.std=0.9991 Z.mean||=15.9852 | p.std=0.6585 p.mean||=29.7184
+  [debug:Q] a.scale=1.0008 | Z.std=0.9991 Z.mean||=15.9852 | p.std=0.6550 p.mean||=19.5821
+  step 110/512 | loss=1.3280 | sec/step~2.15
+  step 120/512 | loss=1.2961 | sec/step~2.16
+  step 130/512 | loss=1.2305 | sec/step~2.15
+  step 140/512 | loss=1.3168 | sec/step~2.15
+  step 150/512 | loss=1.7386 | sec/step~2.15
+  step 160/512 | loss=1.1769 | sec/step~2.15
+  step 170/512 | loss=1.4082 | sec/step~2.15
+  step 180/512 | loss=1.1083 | sec/step~2.15
+  step 190/512 | loss=1.1153 | sec/step~2.16
+  step 200/512 | loss=1.3776 | sec/step~2.16
+  [debug:L] a.scale=1.0086 | Z.std=0.9990 Z.mean||=15.9837 | p.std=0.6609 p.mean||=29.8220
+  [debug:Q] a.scale=1.0007 | Z.std=0.9990 Z.mean||=15.9837 | p.std=0.6591 p.mean||=19.7062
+  step 210/512 | loss=1.4571 | sec/step~2.15
+  step 220/512 | loss=1.4641 | sec/step~2.15
+  step 230/512 | loss=1.6172 | sec/step~2.15
+  step 240/512 | loss=1.5069 | sec/step~2.16
+  step 250/512 | loss=1.1972 | sec/step~2.15
+  step 260/512 | loss=1.6479 | sec/step~2.15
+  step 270/512 | loss=1.1716 | sec/step~2.15
+  step 280/512 | loss=1.4535 | sec/step~2.16
+  step 290/512 | loss=1.6680 | sec/step~2.16
+  step 300/512 | loss=1.5426 | sec/step~2.16
+  [debug:L] a.scale=1.0087 | Z.std=0.9989 Z.mean||=15.9816 | p.std=0.6628 p.mean||=29.8984
+  [debug:Q] a.scale=1.0009 | Z.std=0.9989 Z.mean||=15.9816 | p.std=0.6592 p.mean||=19.7069
+  step 310/512 | loss=1.1360 | sec/step~2.15
+  step 320/512 | loss=1.3289 | sec/step~2.15
+  step 330/512 | loss=1.4966 | sec/step~2.16
+  step 340/512 | loss=1.1352 | sec/step~2.15
+  step 350/512 | loss=1.5381 | sec/step~2.15
+  step 360/512 | loss=1.1499 | sec/step~2.15
+  step 370/512 | loss=1.2294 | sec/step~2.15
+  step 380/512 | loss=1.1392 | sec/step~2.15
+  step 390/512 | loss=0.8600 | sec/step~2.16
+  step 400/512 | loss=1.2712 | sec/step~2.15
+  [debug:L] a.scale=1.0089 | Z.std=0.9988 Z.mean||=15.9803 | p.std=0.6659 p.mean||=30.0357
+  [debug:Q] a.scale=1.0008 | Z.std=0.9988 Z.mean||=15.9803 | p.std=0.6622 p.mean||=19.7957
+  step 410/512 | loss=1.6947 | sec/step~2.15
+  step 420/512 | loss=1.1255 | sec/step~2.15
+  step 430/512 | loss=1.1356 | sec/step~2.15
+  step 440/512 | loss=1.2226 | sec/step~2.15
+  step 450/512 | loss=1.2631 | sec/step~2.15
+  ✅ Saved checkpoint at step 2500
+  step 460/512 | loss=1.1574 | sec/step~2.15
+  step 470/512 | loss=1.6613 | sec/step~2.16
+  step 480/512 | loss=1.5604 | sec/step~2.16
+  step 490/512 | loss=1.3496 | sec/step~2.16
+  step 500/512 | loss=1.4642 | sec/step~2.15
+  [debug:L] a.scale=1.0087 | Z.std=0.9987 Z.mean||=15.9788 | p.std=0.6671 p.mean||=30.0838
+  [debug:Q] a.scale=1.0010 | Z.std=0.9987 Z.mean||=15.9788 | p.std=0.6636 p.mean||=19.8341
+  step 510/512 | loss=1.2614 | sec/step~2.15
+  step 512/512 | loss=1.1739 | sec/step~2.15
+  [debug:L] a.scale=1.0087 | Z.std=0.9986 Z.mean||=15.9783 | p.std=0.6680 p.mean||=30.1265
+  [debug:Q] a.scale=1.0010 | Z.std=0.9986 Z.mean||=15.9783 | p.std=0.6637 p.mean||=19.8388
+Saved encoder, adapters, and state to runs/squad_qwen_only_m16_20250910_032844/ckpt

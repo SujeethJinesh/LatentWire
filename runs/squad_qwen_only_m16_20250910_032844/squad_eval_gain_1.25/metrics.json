@@ -1,0 +1,113 @@
+{
+  "samples": 200,
+  "max_new_tokens": 8,
+  "latent_len": 16,
+  "device": "mps",
+  "dtype": "torch.float16",
+  "avg_prompt_tokens": {
+    "llama": 269.205,
+    "qwen": 230.69
+  },
+  "compression": {
+    "llama": 16.8253125,
+    "qwen": 14.418125
+  },
+  "payload_bytes": 16384,
+  "wire": {
+    "text_bytes_onecopy": {
+      "llama_avg": 1070,
+      "qwen_avg": 1106,
+      "max_avg": 1106
+    },
+    "text_bytes_twocopies": {
+      "sum_avg": 2176
+    },
+    "latent_bytes": {
+      "fp32": 16384,
+      "fp16": 8192
+    },
+    "wire_compression": {
+      "vs_onecopy_fp16": 0.135009765625,
+      "vs_onecopy_fp32": 0.0675048828125
+    }
+  },
+  "text": {
+    "wall_clock_sec": 135.0717442035675,
+    "llama": {
+      "em": 0.005,
+      "f1": 0.056785177241059595,
+      "nll_token": 15.681324996504673
+    },
+    "qwen": {
+      "em": 0.23,
+      "f1": 0.39575623885918004,
+      "nll_token": 13.044476828877889
+    }
+  },
+  "latent": {
+    "wall_clock_sec": 63.11927890777588,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.023984801747959646,
+      "nll_token": 7.552110149250474
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll_token": 10.940421521663666
+    }
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.03346892873208663
+    },
+    "wall_clock_sec": 52.45989012718201,
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.051748848373848376
+    }
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.0,
+    "agreement": 0.035,
+    "oracle": {
+      "em": null,
+      "f1": null
+    }
+  },
+  "debug": {
+    "llama": {
+      "adapter_scale": 1.008729100227356,
+      "Z_std": 0.9983295202255249,
+      "Z_mean_norm": 15.973258972167969,
+      "prefix_std": 0.8234203457832336,
+      "prefix_mean_norm": 37.12310791015625,
+      "embed_rms": 0.014909257180988789
+    },
+    "qwen": {
+      "adapter_scale": 1.0009733438491821,
+      "Z_std": 0.9983295202255249,
+      "Z_mean_norm": 15.973258972167969,
+      "prefix_std": 0.8159228563308716,
+      "prefix_mean_norm": 24.38232421875,
+      "embed_rms": 0.015230061486363411
+    },
+    "latent_anchor_text": "Answer: ",
+    "prefix_gain": 1.25,
+    "decode": {
+      "min_new_tokens": 3,
+      "eos_ban_steps": 6,
+      "first_token_top_p": 0.9,
+      "first_token_temperature": 0.7
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.023984801747959646
+  },
+  "dataset": "squad"
+}

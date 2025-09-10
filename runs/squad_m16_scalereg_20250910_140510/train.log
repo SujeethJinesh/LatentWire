@@ -1,0 +1,12 @@
+Loading dataset subset...
+Loading SQuAD subset...
+Llama hidden size: 2048, Qwen hidden size: 896
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/5
+  step 10/512 | loss_L=3.3816 | loss_Q=5.4898 | scale_pen(L)=4.7091e-07 | scale_pen(Q)=3.1258e-07 | grad_norm=126.82 | sec/step~2.66
+  step 20/512 | loss_L=2.7419 | loss_Q=3.2123 | scale_pen(L)=6.5779e-07 | scale_pen(Q)=6.0633e-07 | grad_norm=10.31 | sec/step~2.32
+  step 30/512 | loss_L=2.7086 | loss_Q=2.8428 | scale_pen(L)=8.7070e-07 | scale_pen(Q)=5.6260e-07 | grad_norm=7.08 | sec/step~2.22
+  step 40/512 | loss_L=2.6640 | loss_Q=2.7749 | scale_pen(L)=1.1246e-06 | scale_pen(Q)=4.6171e-07 | grad_norm=4.81 | sec/step~2.17
+  step 50/512 | loss_L=2.1300 | loss_Q=2.1770 | scale_pen(L)=1.2719e-06 | scale_pen(Q)=3.6529e-07 | grad_norm=4.65 | sec/step~2.15
+  step 60/512 | loss_L=2.4284 | loss_Q=2.5500 | scale_pen(L)=1.3682e-06 | scale_pen(Q)=2.8407e-07 | grad_norm=4.40 | sec/step~2.17
+  step 70/512 | loss_L=2.1054 | loss_Q=2.0712 | scale_pen(L)=1.4993e-06 | scale_pen(Q)=3.9633e-07 | grad_norm=3.58 | sec/step~2.17

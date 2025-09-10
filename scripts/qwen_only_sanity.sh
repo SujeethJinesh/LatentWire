@@ -4,30 +4,30 @@ set -euo pipefail
 source .venv/bin/activate
 
 # ========= TRAIN =========
-export RUN="squad_qwen_only_m16_$(date +%Y%m%d_%H%M%S)"
+export RUN="squad_qwen_only_m16_20250910_032844"
 export OUT="runs/$RUN"; mkdir -p "$OUT"
 
-echo "Starting Qwen-only train (SQuAD, M=16, anchor='Answer: ')..."
-PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
-python -u latentwire/train.py \
-  --dataset squad \
-  --llama_id "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
-  --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
-  --samples  16384 \
-  --epochs   5 \
-  --batch_size 32 \
-  --latent_len 16 \
-  --d_z 256 \
-  --encoder_type simple-st \
-  --encoder_use_chat_template \
-  --warm_anchor_text "Answer: " \
-  --fp16_mps \
-  --sequential_models \
-  --auto_resume \
-  --save_every 500 \
-  --save_dir "$OUT/ckpt" \
-  --debug \
-  2>&1 | tee -a "$OUT/train.log"
+# echo "Starting Qwen-only train (SQuAD, M=16, anchor='Answer: ')..."
+# PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
+# python -u latentwire/train.py \
+#   --dataset squad \
+#   --llama_id "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
+#   --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
+#   --samples  16384 \
+#   --epochs   5 \
+#   --batch_size 32 \
+#   --latent_len 16 \
+#   --d_z 256 \
+#   --encoder_type simple-st \
+#   --encoder_use_chat_template \
+#   --warm_anchor_text "Answer: " \
+#   --fp16_mps \
+#   --sequential_models \
+#   --auto_resume \
+#   --save_every 500 \
+#   --save_dir "$OUT/ckpt" \
+#   --debug \
+#   2>&1 | tee -a "$OUT/train.log"
 
 # ========= EVAL =========
 EOUT="$OUT/squad_eval"; mkdir -p "$EOUT"

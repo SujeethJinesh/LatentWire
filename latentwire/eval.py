@@ -99,7 +99,7 @@ def collate_bytes(texts: List[str], byte_tok: ByteTokenizer, device: str):
 
 @torch.no_grad()
 def generate_text_baseline(wrapper: LMWrapper, prompts: List[str], max_new_tokens: int) -> List[str]:
-    out_ids = wrapper.generate_from_text_manual(prompts, max_new_tokens=max_new_tokens, temperature=0.0)
+    out_ids = wrapper.generate_from_text(prompts, max_new_tokens=max_new_tokens, temperature=0.0)
     return wrapper.decode_batch_then_clean(out_ids)
 
 @torch.no_grad()
@@ -114,9 +114,15 @@ def generate_latent(
     first_token_temperature: float,
 ) -> List[str]:
     out_ids = wrapper.generate_from_prefix(
-        prefix_embeds, max_new_tokens=max_new_tokens, temperature=0.0, anchor_token_text=anchor,
-        min_new_tokens=min_new_tokens, eos_ban_steps=eos_ban_steps,
-        first_token_top_p=first_token_top_p, first_token_temperature=first_token_temperature
+        prefix_embeds,
+        max_new_tokens=max_new_tokens,
+        temperature=0.0,
+        top_p=1.0,
+        anchor_token_text=anchor,
+        min_new_tokens=min_new_tokens,
+        eos_ban_steps=eos_ban_steps,
+        first_token_top_p=first_token_top_p,
+        first_token_temperature=first_token_temperature,
     )
     return wrapper.decode_batch_then_clean(out_ids)
 
@@ -371,28 +377,30 @@ def main():
           f"(Qwen): {summary['avg_prompt_tokens'].get('qwen','-'):.1f} | Latent length M: {summary['latent_len']}")
     print(f"Compression ratio (Llama): {summary['compression'].get('llama','-'):.1f}x | "
           f"(Qwen): {summary['compression'].get('qwen','-'):.1f}x")
+    wire_fp16 = summary['wire']['wire_compression'].get('vs_onecopy_fp16', None)
+    wire_fp16_str = f"{wire_fp16:.2f}x" if isinstance(wire_fp16, (int, float)) and wire_fp16 is not None else "n/a"
     print(f"Approx interlingua payload per example: {summary['payload_bytes']} bytes (fp32), "
           f"and {summary['wire']['latent_bytes']['fp16']} bytes (fp16); "
-          f"wire compression vs one-copy text (fp16): {summary['wire']['wire_compression']['vs_onecopy_fp16']:.2f}x")
+          f"wire compression vs one-copy text (fp16): {wire_fp16_str}")
 
     print("\n— Baseline: Text prompting")
-    if summary['text']['llama'] is not None:
+    if summary['text'].get('llama') is not None:
         print(f"Llama  EM: {summary['text']['llama']['em']:.3f}  F1: {summary['text']['llama']['f1']:.3f}  |  NLL/token (gold): {summary['text']['llama']['nll_token']}")
-    if summary['text']['qwen'] is not None:
+    if summary['text'].get('qwen') is not None:
         print(f"Qwen   EM: {summary['text']['qwen']['em']:.3f}   F1: {summary['text']['qwen']['f1']:.3f}   |  NLL/token (gold): {summary['text']['qwen']['nll_token']}")
     print(f"Wall clock: {summary['text']['wall_clock_sec']:.2f}s")
 
     print("\n— Latent prompting (shared interlingua)")
-    if summary['latent']['llama'] is not None:
+    if summary['latent'].get('llama') is not None:
         print(f"Llama  EM: {summary['latent']['llama']['em']:.3f}  F1: {summary['latent']['llama']['f1']:.3f}  |  NLL/token (gold): {summary['latent']['llama']['nll_token']}")
-    if summary['latent']['qwen'] is not None:
+    if summary['latent'].get('qwen') is not None:
         print(f"Qwen   EM: {summary['latent']['qwen']['em']:.3f}   F1: {summary['latent']['qwen']['f1']:.3f}   |  NLL/token (gold): {summary['latent']['qwen']['nll_token']}")
     print(f"Wall clock: {summary['latent']['wall_clock_sec']:.2f}s")
 
     print(f"\n— Token-budget baseline (mode: {summary['token_budget'].get('mode','content_only')})")
-    if summary['token_budget']['llama'] is not None:
+    if summary['token_budget'].get('llama') is not None:
         print(f"Llama  EM: {summary['token_budget']['llama']['em']:.3f}  F1: {summary['token_budget']['llama']['f1']:.3f}")
-    if summary['token_budget']['qwen'] is not None:
+    if summary['token_budget'].get('qwen') is not None:
         print(f"Qwen   EM: {summary['token_budget']['qwen']['em']:.3f}   F1: {summary['token_budget']['qwen']['f1']:.3f}")
     print(f"Wall clock: {summary['token_budget']['wall_clock_sec']:.2f}s")
 
@@ -414,17 +422,17 @@ def main():
             w = _csv.writer(f)
             w.writerow(["group","model","EM","F1","NLL/token","wall_clock_sec","compression","payload_bytes","samples","M","token_budget_mode","token_budget_k","dataset"])
             for mdl in ["llama","qwen"]:
-                if summary["text"][mdl] is not None:
+                if summary["text"].get(mdl) is not None:
                     w.writerow(["text", mdl, summary["text"][mdl]["em"], summary["text"][mdl]["f1"], summary["text"][mdl]["nll_token"],
                                 summary["text"]["wall_clock_sec"], summary["compression"].get(mdl,""), summary["payload_bytes"],
                                 summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
             for mdl in ["llama","qwen"]:
-                if summary["latent"][mdl] is not None:
+                if summary["latent"].get(mdl) is not None:
                     w.writerow(["latent", mdl, summary["latent"][mdl]["em"], summary["latent"][mdl]["f1"], summary["latent"][mdl]["nll_token"],
                                 summary["latent"]["wall_clock_sec"], summary["compression"].get(mdl,""), summary["payload_bytes"],
                                 summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
             for mdl in ["llama","qwen"]:
-                if summary["token_budget"][mdl] is not None:
+                if summary["token_budget"].get(mdl) is not None:
                     w.writerow(["token_budget", mdl, summary["token_budget"][mdl]["em"], summary["token_budget"][mdl]["f1"], "",
                                 summary["token_budget"]["wall_clock_sec"], summary["compression"].get(mdl,""), summary["payload_bytes"],
                                 summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
@@ -746,6 +754,7 @@ def run_sequential_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qw
             qwen_trunc_em, qwen_trunc_f1   = batch_metrics(qwen_trunc_preds, golds)
 
             qwen_text_nll   = avg_nll_text(qwen, qwen_chat, golds, qwen.tokenizer, device)
+            # ---- ONE-LINE FIX: pass 'golds' (answers) here ----
             qwen_latent_nll = avg_nll_latent(qwen, prefix_qwen, golds, qwen.tokenizer, device)
 
             Q = {
