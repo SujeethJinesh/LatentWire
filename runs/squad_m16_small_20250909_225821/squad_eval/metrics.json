@@ -1,0 +1,100 @@
+{
+  "samples": 200,
+  "max_new_tokens": 8,
+  "latent_len": 16,
+  "device": "mps",
+  "dtype": "torch.float16",
+  "avg_prompt_tokens": {
+    "llama": 269.205,
+    "qwen": 230.69
+  },
+  "compression": {
+    "llama": 16.8253125,
+    "qwen": 14.418125
+  },
+  "payload_bytes": 16384,
+  "wire": {
+    "text_bytes_onecopy": {
+      "llama_avg": 1070,
+      "qwen_avg": 1106,
+      "max_avg": 1106
+    },
+    "text_bytes_twocopies": {
+      "sum_avg": 2176
+    },
+    "latent_bytes": {
+      "fp32": 16384,
+      "fp16": 8192
+    }
+  },
+  "text": {
+    "llama": {
+      "em": 0.005,
+      "f1": 0.056785177241059595,
+      "nll_token": 15.681324996504673
+    },
+    "qwen": {
+      "em": 0.23,
+      "f1": 0.39575623885918004,
+      "nll_token": 13.044476828877889
+    },
+    "wall_clock_sec": 136.05494093894958
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll_token": 8.87982312268989
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll_token": 10.28483846042522
+    },
+    "wall_clock_sec": 65.43791604042053
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.03346892873208663
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.051748848373848376
+    },
+    "wall_clock_sec": 53.117454051971436
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.0,
+    "agreement": 0.96,
+    "oracle": {
+      "em": null,
+      "f1": null
+    }
+  },
+  "debug": {
+    "llama": {
+      "adapter_scale": 0.19612836837768555,
+      "Z_std": 1.012070894241333,
+      "Z_mean_norm": 16.193071365356445,
+      "prefix_std": 0.007699538487941027,
+      "prefix_mean_norm": 0.3471503257751465
+    },
+    "qwen": {
+      "adapter_scale": 0.14308753609657288,
+      "Z_std": 1.012070894241333,
+      "Z_mean_norm": 16.193071365356445,
+      "prefix_std": 0.00839131511747837,
+      "prefix_mean_norm": 0.2512787878513336
+    },
+    "latent_anchor_text": "Answer: "
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "dataset": "squad"
+}

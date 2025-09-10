@@ -1,124 +1,0 @@
-Auto-detected device: mps
-Using fp16 precision on MPS for memory efficiency
-
-[Sequential Evaluation Mode - Loading models one at a time]
-
-Evaluating Llama...
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:08,  2.69s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:05<00:05,  2.73s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:08<00:02,  2.71s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  1.88s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  2.18s/it]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-Aggressively cleaning up Llama memory...
-huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
-To disable this warning, you can either:
-	- Avoid using `tokenizers` before the fork if possible
-	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
-Memory after Llama cleanup (first 5 lines):
-Mach Virtual Memory Statistics: (page size of 16384 bytes)
-Pages free:                             3111786.
-Pages active:                            368458.
-Pages inactive:                          356017.
-Pages speculative:                        11506.
-Waiting for memory to settle...
-
-Memory settled. Loading Qwen...
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.26s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.21s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:02,  2.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  2.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  2.12s/it]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-
-Computing joint scores with Qwen...
-Aggressively cleaning up Qwen memory...
-
-Memory settled. Reloading Llama for joint scoring...
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.61s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:07<00:08,  4.22s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:05,  5.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.59s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.84s/it]
-
-==== LatentWire Evaluation ====
-Samples: 50  |  Max new tokens: 20
-Device: mps  |  Dtype: torch.float16
-Avg prompt tokens (Llama): 433.8 | (Qwen): 431.8 | Latent length M: 8
-Compression ratio (Llama): 54.2x | (Qwen): 54.0x
-Approx interlingua payload per example: 8192 bytes (dtype float32, shape M=8, d_z=256)
-
-— Baseline: Text prompting
-Llama  EM: 0.000  F1: 0.118  |  NLL/token (gold): 11.325
-Qwen   EM: 0.000   F1: 0.019   |  NLL/token (gold): 21.096
-Wall clock: 3143.84s for 50 examples
-
-— Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 10.917
-Qwen   EM: 0.000   F1: 0.000   |  NLL/token (gold): 11.263
-Wall clock: 54.89s for 50 examples
-
-— Token-budget baseline (same #prefix tokens as latent)
-Llama  EM: 0.000  F1: 0.017
-Qwen   EM: 0.000   F1: 0.000
-Wall clock: 11.18s for 50 examples
-
-— 2-LLM joint (rescored pick on latent runs)
-Joint  EM: 0.000  F1: 0.000
-Inter-model agreement (normalized): 0.380
-Oracle upper bound:  EM 0.000  F1 0.000
-
-==== METRICS_JSON ====
-{
-  "samples": 50,
-  "max_new_tokens": 20,
-  "latent_len": 8,
-  "device": "mps",
-  "dtype": "torch.float16",
-  "avg_prompt_tokens": {
-    "llama": 433.8,
-    "qwen": 431.82
-  },
-  "compression": {
-    "llama": 54.225,
-    "qwen": 53.9775
-  },
-  "payload_bytes": 8192,
-  "text": {
-    "llama": {
-      "em": 0.0,
-      "f1": 0.11788552027682464,
-      "nll_token": 11.324581342174652
-    },
-    "qwen": {
-      "em": 0.0,
-      "f1": 0.01924812030075188,
-      "nll_token": 21.096278264822548
-    },
-    "wall_clock_sec": 3143.836639881134
-  },
-  "latent": {
-    "llama": {
-      "em": 0.0,
-      "f1": 0.0,
-      "nll_token": 10.917419981449209
-    },
-    "qwen": {
-      "em": 0.0,
-      "f1": 0.0,
-      "nll_token": 11.26276275969499
-    },
-    "wall_clock_sec": 54.89199185371399
-  },
-  "token_budget": {
-    "llama": {
-      "em": 0.0,
-      "f1": 0.017372662425294002
-    },
-    "qwen": {
-      "em": 0.0,
-      "f1": 0.0
-    },
-    "wall_clock_sec": 11.182677984237671
-  },
-  "joint": {
-    "em": 0.0,
-    "f1": 0.0,
-    "agreement": 0.38,
-    "oracle": {
-      "em": 0.0,
-      "f1": 0.0
-    }
-  }
-}
-Wrote per-example predictions to runs/mps_m8_simple_20250908_235945/predictions.jsonl
