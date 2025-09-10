@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PYBIN="$(command -v python3.11 || command -v python3)"
-echo "Using Python interpreter: ${PYBIN}"
-"${PYBIN}" -m venv .venv
+# Load available modules
+module load python3
+module load cudatoolkit/12.5
+
+# Create venv
+python -m venv .venv
 source .venv/bin/activate
 
+# Upgrade pip first
 python -m pip install --upgrade pip wheel
-python -m pip install -r requirements.txt
 
-echo "✅ Linux setup complete. Python: $(python -V). Activate with: source .venv/bin/activate"
+# Install CPU-safe packages on login node
+python -m pip install numpy transformers datasets
+
+echo "✅ Basic setup complete. Now get compute node for GPU packages"

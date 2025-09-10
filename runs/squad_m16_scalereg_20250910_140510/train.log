@@ -10,3 +10,45 @@ Epoch 1/5
   step 50/512 | loss_L=2.1300 | loss_Q=2.1770 | scale_pen(L)=1.2719e-06 | scale_pen(Q)=3.6529e-07 | grad_norm=4.65 | sec/step~2.15
   step 60/512 | loss_L=2.4284 | loss_Q=2.5500 | scale_pen(L)=1.3682e-06 | scale_pen(Q)=2.8407e-07 | grad_norm=4.40 | sec/step~2.17
   step 70/512 | loss_L=2.1054 | loss_Q=2.0712 | scale_pen(L)=1.4993e-06 | scale_pen(Q)=3.9633e-07 | grad_norm=3.58 | sec/step~2.17
+  step 80/512 | loss_L=2.5018 | loss_Q=2.2995 | scale_pen(L)=1.6943e-06 | scale_pen(Q)=5.0870e-07 | grad_norm=3.44 | sec/step~2.16
+  step 90/512 | loss_L=2.3527 | loss_Q=2.1444 | scale_pen(L)=1.8619e-06 | scale_pen(Q)=5.3539e-07 | grad_norm=3.18 | sec/step~2.16
+  step 100/512 | loss_L=1.9497 | loss_Q=1.9378 | scale_pen(L)=1.9137e-06 | scale_pen(Q)=4.9284e-07 | grad_norm=2.84 | sec/step~2.16
+  [debug:L] a.scale=0.9986 | Z.std=0.9993 Z.mean||=15.9890 | p.std=0.5643 p.mean||=25.5358
+  [debug:Q] a.scale=1.0007 | Z.std=0.9993 Z.mean||=15.9890 | p.std=0.5778 p.mean||=17.2912
+  step 110/512 | loss_L=2.4488 | loss_Q=2.2870 | scale_pen(L)=1.8278e-06 | scale_pen(Q)=4.5012e-07 | grad_norm=3.72 | sec/step~2.13
+  step 120/512 | loss_L=1.7241 | loss_Q=1.6731 | scale_pen(L)=1.7228e-06 | scale_pen(Q)=4.2442e-07 | grad_norm=2.35 | sec/step~2.11
+  step 130/512 | loss_L=2.3953 | loss_Q=2.1356 | scale_pen(L)=1.6878e-06 | scale_pen(Q)=3.7999e-07 | grad_norm=2.62 | sec/step~2.13
+  step 140/512 | loss_L=1.7028 | loss_Q=1.5980 | scale_pen(L)=1.4802e-06 | scale_pen(Q)=3.1445e-07 | grad_norm=2.60 | sec/step~2.12
+  step 150/512 | loss_L=2.2892 | loss_Q=2.1805 | scale_pen(L)=1.2380e-06 | scale_pen(Q)=2.2545e-07 | grad_norm=3.43 | sec/step~2.10
+  step 160/512 | loss_L=1.9247 | loss_Q=1.6996 | scale_pen(L)=1.1243e-06 | scale_pen(Q)=1.3718e-07 | grad_norm=2.31 | sec/step~2.11
+  step 170/512 | loss_L=1.7628 | loss_Q=1.6071 | scale_pen(L)=1.0027e-06 | scale_pen(Q)=1.0398e-07 | grad_norm=2.36 | sec/step~2.11
+  step 180/512 | loss_L=2.0584 | loss_Q=2.0725 | scale_pen(L)=9.1336e-07 | scale_pen(Q)=9.5770e-08 | grad_norm=2.83 | sec/step~2.11
+  step 190/512 | loss_L=1.6229 | loss_Q=1.5422 | scale_pen(L)=7.5647e-07 | scale_pen(Q)=9.2334e-08 | grad_norm=2.10 | sec/step~2.12
+  step 200/512 | loss_L=1.6753 | loss_Q=1.5606 | scale_pen(L)=6.5306e-07 | scale_pen(Q)=8.0361e-08 | grad_norm=2.63 | sec/step~2.12
+  [debug:L] a.scale=0.9992 | Z.std=0.9994 Z.mean||=15.9895 | p.std=0.5725 p.mean||=25.9034
+  [debug:Q] a.scale=1.0003 | Z.std=0.9994 Z.mean||=15.9895 | p.std=0.5806 p.mean||=17.3750
+  step 210/512 | loss_L=1.5783 | loss_Q=1.5606 | scale_pen(L)=4.7830e-07 | scale_pen(Q)=4.1554e-08 | grad_norm=1.96 | sec/step~2.12
+  step 220/512 | loss_L=1.7201 | loss_Q=1.6164 | scale_pen(L)=3.7202e-07 | scale_pen(Q)=6.0782e-09 | grad_norm=2.22 | sec/step~2.12
+  step 230/512 | loss_L=1.5963 | loss_Q=1.5602 | scale_pen(L)=3.6098e-07 | scale_pen(Q)=3.5527e-09 | grad_norm=3.13 | sec/step~2.12
+  step 240/512 | loss_L=1.6781 | loss_Q=1.6804 | scale_pen(L)=3.6450e-07 | scale_pen(Q)=3.7549e-08 | grad_norm=2.23 | sec/step~2.11
+  step 250/512 | loss_L=1.6733 | loss_Q=1.7140 | scale_pen(L)=2.6712e-07 | scale_pen(Q)=1.0207e-07 | grad_norm=2.18 | sec/step~2.12
+  step 260/512 | loss_L=1.7648 | loss_Q=1.8597 | scale_pen(L)=2.2977e-07 | scale_pen(Q)=1.8142e-07 | grad_norm=2.33 | sec/step~2.11
+  step 270/512 | loss_L=1.8678 | loss_Q=1.8889 | scale_pen(L)=1.9047e-07 | scale_pen(Q)=2.8223e-07 | grad_norm=2.49 | sec/step~2.10
+  step 280/512 | loss_L=1.6630 | loss_Q=1.5952 | scale_pen(L)=2.0187e-07 | scale_pen(Q)=4.2148e-07 | grad_norm=1.96 | sec/step~2.10
+  step 290/512 | loss_L=1.9295 | loss_Q=1.9117 | scale_pen(L)=1.7778e-07 | scale_pen(Q)=5.3182e-07 | grad_norm=2.63 | sec/step~2.10
+  step 300/512 | loss_L=1.9390 | loss_Q=1.8369 | scale_pen(L)=1.9439e-07 | scale_pen(Q)=6.8346e-07 | grad_norm=2.26 | sec/step~2.10
+  [debug:L] a.scale=0.9996 | Z.std=0.9994 Z.mean||=15.9911 | p.std=0.5797 p.mean||=26.2258
+  [debug:Q] a.scale=0.9992 | Z.std=0.9994 Z.mean||=15.9911 | p.std=0.5867 p.mean||=17.5560
+  step 310/512 | loss_L=1.4728 | loss_Q=1.5241 | scale_pen(L)=1.6495e-07 | scale_pen(Q)=9.1576e-07 | grad_norm=1.76 | sec/step~2.10
+  step 320/512 | loss_L=1.9821 | loss_Q=2.0862 | scale_pen(L)=1.6836e-07 | scale_pen(Q)=1.0491e-06 | grad_norm=2.28 | sec/step~2.11
+  step 330/512 | loss_L=1.8240 | loss_Q=1.7835 | scale_pen(L)=1.7448e-07 | scale_pen(Q)=1.1986e-06 | grad_norm=1.86 | sec/step~2.12
+  step 340/512 | loss_L=1.4559 | loss_Q=1.5178 | scale_pen(L)=1.6836e-07 | scale_pen(Q)=1.3572e-06 | grad_norm=1.78 | sec/step~2.11
+  step 350/512 | loss_L=1.5710 | loss_Q=1.6225 | scale_pen(L)=1.5996e-07 | scale_pen(Q)=1.3795e-06 | grad_norm=2.07 | sec/step~2.12
+  step 360/512 | loss_L=1.4544 | loss_Q=1.4930 | scale_pen(L)=1.5312e-07 | scale_pen(Q)=1.5097e-06 | grad_norm=1.57 | sec/step~2.10
+  step 370/512 | loss_L=1.3996 | loss_Q=1.4365 | scale_pen(L)=1.5205e-07 | scale_pen(Q)=1.6825e-06 | grad_norm=2.00 | sec/step~2.11
+  step 380/512 | loss_L=1.3663 | loss_Q=1.3960 | scale_pen(L)=1.6331e-07 | scale_pen(Q)=1.7206e-06 | grad_norm=1.76 | sec/step~2.10
+  step 390/512 | loss_L=1.6132 | loss_Q=1.6608 | scale_pen(L)=1.9313e-07 | scale_pen(Q)=1.9770e-06 | grad_norm=1.56 | sec/step~2.11
+  step 400/512 | loss_L=1.2660 | loss_Q=1.2519 | scale_pen(L)=2.0456e-07 | scale_pen(Q)=2.1075e-06 | grad_norm=1.38 | sec/step~2.13
+  [debug:L] a.scale=0.9995 | Z.std=0.9995 Z.mean||=15.9918 | p.std=0.5848 p.mean||=26.4565
+  [debug:Q] a.scale=0.9985 | Z.std=0.9995 Z.mean||=15.9918 | p.std=0.5903 p.mean||=17.6617
+  step 410/512 | loss_L=1.2372 | loss_Q=1.2428 | scale_pen(L)=2.0011e-07 | scale_pen(Q)=2.2050e-06 | grad_norm=2.04 | sec/step~2.12
