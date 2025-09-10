@@ -19,7 +19,7 @@ source .venv/bin/activate
 python3 -m pip install --upgrade pip wheel
 
 # Update torch with compatible cuda
-python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu125
+python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # Install packages (pip will skip already installed ones)
 python3 -m pip install -r requirements.txt
