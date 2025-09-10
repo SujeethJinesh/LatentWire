@@ -8,7 +8,7 @@ module load cudatoolkit/12.5
 # Create venv only if it doesn't exist
 if [ ! -d ".venv" ]; then
     echo "Creating virtual environment..."
-    python3 -m venv .venv
+    python -m venv .venv
 else
     echo "Virtual environment already exists, skipping creation"
 fi
@@ -16,16 +16,16 @@ fi
 source .venv/bin/activate
 
 # Upgrade pip first
-python3 -m pip install --upgrade pip wheel
+python -m pip install --upgrade pip wheel
 
 # Update torch with compatible cuda
-python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # Install packages (pip will skip already installed ones)
-python3 -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
-echo "✅ Setup complete. python3: $(python3 --version)"
-echo "📍 Environment: $(which python3)"
+echo "✅ Setup complete. python: $(python --version)"
+echo "📍 Environment: $(which python)"
 
 # Check GPU
 
@@ -40,7 +40,7 @@ echo -e "\n3. Loaded module:"
 module list 2>&1 | grep cuda
 
 echo -e "\n4. PyTorch using:"
-python3 -c "
+python -c "
 import torch
 print(f'CUDA available: {torch.cuda.is_available()}')
 if torch.cuda.is_available():
