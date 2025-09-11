@@ -19,7 +19,7 @@ source .venv/bin/activate
 python -m pip install --upgrade pip wheel
 
 # Update torch with compatible cuda (cu121 is forward-compatible with all newer 12.x drivers)
-python -m pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu124
+python -m pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 
 # Install packages (pip will skip already installed ones)
 python -m pip install -r requirements.txt
