@@ -8,32 +8,32 @@
 #SBATCH --mem=40GB
 #SBATCH --output=code-server-%j.log
 #SBATCH --error=code-server-%j.err
+#SBATCH --signal=B:TERM@30    # Send SIGTERM 30 seconds before time limit
 
-# Load code-server module
-module load code-server/4.93.1
+# Cleanup function
+cleanup() {
+	    echo "Cleaning up code-server files..."
+	        rm -f /users/sujinesh/code-server-${SLURM_JOB_ID}.log
+		    rm -f /users/sujinesh/code-server-${SLURM_JOB_ID}.err
+		        echo "Cleanup complete"
+		}
 
-# Generate a random port to avoid conflicts
-PORT=$(shuf -i 8000-9999 -n 1)
-HOSTNAME=$(hostname)
+		# Trap signals for cleanup
+		trap cleanup EXIT TERM INT
 
-# Print connection instructions
-echo "========================================="
-echo "Code-server started at: $(date)"
-echo "Running on node: $HOSTNAME"
-echo "Port: $PORT"
-echo "Job ID: $SLURM_JOB_ID"
-echo ""
-echo "To connect, run this from your LOCAL machine:"
-echo "ssh -L 8080:$HOSTNAME:$PORT marlowe"
-echo ""
-echo "Then open in your browser:"
-echo "http://localhost:8080"
-echo ""
-echo "To check job status: squeue -j $SLURM_JOB_ID"
-echo "To cancel: scancel $SLURM_JOB_ID"
-echo "========================================="
+		module load code-server/4.93.1
+		PORT=$(shuf -i 8000-9999 -n 1)
+		HOSTNAME=$(hostname)
 
-# Start code-server
-code-server --bind-addr 0.0.0.0:$PORT --auth none
+		echo "========================================="
+		echo "COPY AND RUN THIS ON YOUR LOCAL MACHINE:"
+		echo ""
+		echo "ssh -L $PORT:$HOSTNAME:$PORT marlowe"
+		echo ""
+		echo "THEN OPEN: http://localhost:$PORT"
+		echo "========================================="
 
-# Job will end when code-server stops or time limit is reached
+		# Start code-server
+		code-server --bind-addr 0.0.0.0:$PORT --auth none
+
+		# Cleanup happens automatically when job ends
