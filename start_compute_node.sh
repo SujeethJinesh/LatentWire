@@ -1,4 +1,7 @@
 #!/bin/bash
+# Submit the job and capture the job ID
+JOB_ID=$(sbatch --parsable << 'EOF'
+#!/bin/bash
 #SBATCH --job-name=code-server
 #SBATCH --nodes=1
 #SBATCH --gpus=2
@@ -12,28 +15,54 @@
 
 # Cleanup function
 cleanup() {
-	    echo "Cleaning up code-server files..."
-	        rm -f /users/sujinesh/code-server-${SLURM_JOB_ID}.log
-		    rm -f /users/sujinesh/code-server-${SLURM_JOB_ID}.err
-		        echo "Cleanup complete"
-		}
+    echo "Cleaning up code-server files..."
+    rm -f ${HOME}/code-server-${SLURM_JOB_ID}.log
+    rm -f ${HOME}/code-server-${SLURM_JOB_ID}.err
+    echo "Cleanup complete at $(date)"
+}
 
-		# Trap signals for cleanup
-		trap cleanup EXIT TERM INT
+# Trap signals for cleanup when job ends
+trap cleanup EXIT TERM INT
 
-		module load code-server/4.93.1
-		PORT=$(shuf -i 8000-9999 -n 1)
-		HOSTNAME=$(hostname)
+# Optional: Clean up old logs from previous runs (older than 3 days)
+find ~ -maxdepth 1 -name "code-server-*.log" -mtime +3 -delete 2>/dev/null
+find ~ -maxdepth 1 -name "code-server-*.err" -mtime +3 -delete 2>/dev/null
 
-		echo "========================================="
-		echo "COPY AND RUN THIS ON YOUR LOCAL MACHINE:"
-		echo ""
-		echo "ssh -L $PORT:$HOSTNAME:$PORT marlowe"
-		echo ""
-		echo "THEN OPEN: http://localhost:$PORT"
-		echo "========================================="
+module load code-server/4.93.1
+PORT=$(shuf -i 8000-9999 -n 1)
+HOSTNAME=$(hostname)
 
-		# Start code-server
-		code-server --bind-addr 0.0.0.0:$PORT --auth none
+echo "========================================="
+echo "COPY AND RUN THIS ON YOUR LOCAL MACHINE:"
+echo ""
+echo "ssh -L $PORT:$HOSTNAME:$PORT marlowe"
+echo ""
+echo "THEN OPEN IN YOUR BROWSER:"
+echo ""
+echo "http://localhost:$PORT"
+echo "========================================="
+echo "Job ID: $SLURM_JOB_ID"
+echo "Started at: $(date)"
+echo "Logs will auto-delete when job ends"
+echo "========================================="
 
-		# Cleanup happens automatically when job ends
+# Start code-server
+code-server --bind-addr 0.0.0.0:$PORT --auth none
+
+# Cleanup happens automatically when job ends or is cancelled
+EOF
+)
+
+echo "Job $JOB_ID submitted! Waiting for it to start..."
+sleep 5
+
+# Show the connection instructions from the log
+echo ""
+echo "Connection instructions:"
+echo "------------------------"
+tail -n 20 code-server-${JOB_ID}.log | grep -A 10 "COPY AND RUN"
+
+echo ""
+echo "To see full logs: tail -f code-server-${JOB_ID}.log"
+echo "To stop: scancel $JOB_ID"
+echo "Logs will auto-delete when job ends"
