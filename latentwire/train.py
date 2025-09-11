@@ -11,6 +11,7 @@ import torch.optim as optim
 from latentwire.models import (
     InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
 )
+from latentwire.checkpointing import save_latest_checkpoint
 from latentwire.data import load_examples
 
 
@@ -348,11 +349,6 @@ def main():
 
     # ===== Final save =====
     os.makedirs(args.save_dir, exist_ok=True)
-    torch.save(encoder.state_dict(),    os.path.join(args.save_dir, "encoder.pt"))
-    torch.save(adp_llama.state_dict(),  os.path.join(args.save_dir, "adapter_llama.pt"))
-    torch.save(adp_qwen.state_dict(),   os.path.join(args.save_dir, "adapter_qwen.pt"))
-    save_checkpoint(os.path.join(args.save_dir, "state_final.pt"),
-                    encoder, adp_llama, adp_qwen, optimizer, args.epochs-1, global_step, args)
 
     cfg = {
         "d_z": args.d_z,
@@ -362,9 +358,26 @@ def main():
         "qwen_id": args.qwen_id,
         "encoder_type": args.encoder_type
     }
-    with open(os.path.join(args.save_dir, "config.json"), "w") as f:
-        json.dump(cfg, f, indent=2)
-    print("Saved encoder, adapters, and state to", args.save_dir)
+    artifacts = {
+        "encoder.pt":       encoder.state_dict(),
+        "adapter_llama.pt": adp_llama.state_dict() if 'adp_llama' in locals() and adp_llama is not None else None,
+        "adapter_qwen.pt":  adp_qwen.state_dict()  if 'adp_qwen'  in locals() and adp_qwen  is not None else None,
+        "state.pt":         {
+            "epoch": epoch if 'epoch' in locals() else None,
+            "global_step": global_step if 'global_step' in locals() else None,
+            "optim": optimizer.state_dict(),
+            "sched": scheduler.state_dict(),
+            # Persist adapter scales for debugging:
+            "adapter_scale": {
+                "llama": float(adp_llama.scale.detach().cpu().item()) if 'adp_llama' in locals() and adp_llama is not None else None,
+                "qwen":  float(adp_qwen.scale.detach().cpu().item())  if 'adp_qwen'  in locals() and adp_qwen  is not None else None,
+            },
+        },
+        # Optional: keep config in the ckpt directory. If you already wrote it once at start, you can set this to None.
+        "config.json": cfg,
+    }
+    save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
+    print(f"✅ Saved latest checkpoint to {args.save_dir}")
 
 
 if __name__ == "__main__":
