@@ -409,10 +409,7 @@ class LMWrapper(nn.Module):
         first_token_temperature: float = 0.0,
     ) -> List[List[int]]:
         """
-        Greedy/sampled generation conditioned on a latent prefix.
-        - min_new_tokens: force at least this many tokens before honoring EOS
-        - eos_ban_steps: ban EOS-like ids for these first steps
-        - first_token_*: optional nucleus sampling only for the first generated token
+        Fixed version with debugging
         """
         model_device = next(self.model.parameters()).device
         emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
@@ -420,41 +417,54 @@ class LMWrapper(nn.Module):
             prefix_embeds = prefix_embeds.to(model_device, dtype=emb_dtype)
         else:
             prefix_embeds = prefix_embeds.to(model_device)
+        
         B = prefix_embeds.size(0)
-        attn_mask = torch.ones(prefix_embeds.size()[:-1], dtype=torch.long, device=model_device)
-        out = self.model(inputs_embeds=prefix_embeds, attention_mask=attn_mask, use_cache=True, return_dict=True)
+        
+        # Get anchor tokens
+        anchor_ids = self._encode_anchor_text(anchor_token_text) if anchor_token_text else []
+        
+        # DEBUG: Print what we're using
+        if B == 1 and anchor_token_text:  # Only debug first batch
+            print(f"[DEBUG] Anchor text: '{anchor_token_text}' -> IDs: {anchor_ids}")
+        
+        # Build initial embeddings exactly as in training
+        if anchor_ids:
+            anchor_ids_tensor = torch.tensor(anchor_ids, dtype=torch.long, device=model_device).unsqueeze(0).expand(B, -1)
+            anchor_embeds = self.input_embed(anchor_ids_tensor)
+            inputs_embeds = torch.cat([prefix_embeds, anchor_embeds], dim=1)
+            print(f"[DEBUG] Using anchor, shape: {inputs_embeds.shape}")
+        else:
+            # No anchor - just use prefix alone (training should have handled this)
+            inputs_embeds = prefix_embeds
+            print(f"[DEBUG] No anchor, shape: {inputs_embeds.shape}")
+        
+        # Process prefix+anchor together
+        attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)
+        out = self.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, use_cache=True, return_dict=True)
         past = out.past_key_values
         next_token_logits = out.logits[:, -1, :]
-
+        
+        # DEBUG: Check logits
+        if B == 1:
+            top5 = torch.topk(next_token_logits[0], k=5)
+            top5_tokens = [self.tokenizer.decode([i]) for i in top5.indices.tolist()]
+            print(f"[DEBUG] Top 5 next tokens: {top5_tokens}")
+        
+        # Rest of generation...
         pad_id = self.tokenizer.pad_token_id or 0
         stop_ids = set(self._stop_token_ids)
-
-        # optional warm-start anchor
-        anchor_ids = self._encode_anchor_text(anchor_token_text)
-        if anchor_ids:
-            for tok in anchor_ids:
-                tok_t = torch.full((B,), int(tok), dtype=torch.long, device=model_device)
-                attn_mask_step = torch.ones((B, 1), dtype=torch.long, device=model_device)
-                out = self.model(
-                    input_ids=tok_t.unsqueeze(-1), attention_mask=attn_mask_step,
-                    use_cache=True, past_key_values=past, return_dict=True
-                )
-                past = out.past_key_values
-                next_token_logits = out.logits[:, -1, :]
-
+        
         generated = [[] for _ in range(B)]
         finished = torch.zeros(B, dtype=torch.bool, device=model_device)
-
+        
         for t in range(max_new_tokens):
             step_logits = next_token_logits.clone()
             step_logits[finished] = -1e9
-
-            # ban EOS early if requested
+            
             if t < max(min_new_tokens, eos_ban_steps):
                 for sid in stop_ids:
                     step_logits[:, sid] = -1e9
-
-            # sampling policy
+            
             if t == 0 and (first_token_temperature > 0.0 or first_token_top_p < 1.0):
                 next_tokens = self._sample_top_p(step_logits, top_p=first_token_top_p, temperature=first_token_temperature)
             else:
@@ -462,7 +472,7 @@ class LMWrapper(nn.Module):
                     next_tokens = torch.argmax(step_logits, dim=-1)
                 else:
                     next_tokens = self._sample_top_p(step_logits, top_p=top_p, temperature=temperature)
-
+            
             for b in range(B):
                 if finished[b]:
                     continue
@@ -471,10 +481,10 @@ class LMWrapper(nn.Module):
                     finished[b] = True
                 else:
                     generated[b].append(nid)
-
+            
             if bool(torch.all(finished).item()):
                 break
-
+            
             feed_tokens = next_tokens.clone()
             feed_tokens[finished] = pad_id
             attn_mask_step = torch.ones((B, 1), dtype=torch.long, device=model_device)
@@ -484,6 +494,7 @@ class LMWrapper(nn.Module):
             )
             past = out.past_key_values
             next_token_logits = out.logits[:, -1, :]
+        
         return generated
 
     # ---- generation: text prompt ----

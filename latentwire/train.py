@@ -27,10 +27,6 @@ def collate_bytes(texts, byte_tok: ByteTokenizer, device: str):
 
 
 def find_latest_checkpoint(save_dir: str):
-    """
-    Prefer canonical state.pt. Fall back to legacy 'last.pt' or numerically last 'state_step*.pt'.
-    Returns path string or None.
-    """
     if not os.path.isdir(save_dir):
         return None
     state_path = os.path.join(save_dir, "state.pt")
@@ -52,14 +48,12 @@ def find_latest_checkpoint(save_dir: str):
 
 def load_checkpoint(path, encoder, adp_llama, adp_qwen, optimizer=None, strict=True, device="cpu"):
     state = torch.load(path, map_location="cpu")
-    # Two possible formats: legacy dict with keys or canonical state dicts under a "state" wrapper.
     if "encoder" in state and "adp_llama" in state and "adp_qwen" in state:
         encoder.load_state_dict(state["encoder"], strict=strict)
         adp_llama.load_state_dict(state["adp_llama"], strict=strict)
         adp_qwen.load_state_dict(state["adp_qwen"], strict=strict)
         if optimizer is not None and "optimizer" in state:
             optimizer.load_state_dict(state["optimizer"])
-            # Move optimizer tensors to target device
             for p in optimizer.state.values():
                 for k, v in p.items():
                     if torch.is_tensor(v):
@@ -68,8 +62,6 @@ def load_checkpoint(path, encoder, adp_llama, adp_qwen, optimizer=None, strict=T
         global_step = int(state.get("global_step", 0))
         return epoch, global_step
 
-    # Canonical split-files format (current): load modules separately already saved elsewhere
-    # In this case, 'state.pt' only carries counters/args/rng and possibly optimizer if included by caller.
     epoch = int(state.get("epoch", 0))
     global_step = int(state.get("global_step", 0))
     if optimizer is not None and "optimizer" in state:
@@ -79,6 +71,23 @@ def load_checkpoint(path, encoder, adp_llama, adp_qwen, optimizer=None, strict=T
                 if torch.is_tensor(v):
                     p[k] = v.to(device)
     return epoch, global_step
+
+
+class _RunningMean:
+    def __init__(self):
+        self.n = 0
+        self.sum = 0.0
+    def update(self, value: float):
+        self.n += 1
+        self.sum += float(value)
+    @property
+    def mean(self):
+        return (self.sum / self.n) if self.n > 0 else 0.0
+
+
+def _tensor_rms(x: torch.Tensor) -> float:
+    with torch.no_grad():
+        return float(x.float().pow(2).mean().sqrt().item())
 
 
 def main():
@@ -112,7 +121,7 @@ def main():
     ap.add_argument("--grad_ckpt", action="store_true")
     ap.add_argument("--fp16_mps", action="store_true")
     ap.add_argument("--warm_anchor_text", type=str, default="",
-                    help="Optional anchor tokens fed AFTER latent prefix during training, e.g. 'Answer:'")
+                    help="Optional anchor tokens AFTER latent prefix during training, e.g. 'Answer:'")
     ap.add_argument("--debug", action="store_true")
 
     # Checkpointing
@@ -121,6 +130,9 @@ def main():
     ap.add_argument("--resume_from", type=str, default=None)
     ap.add_argument("--auto_resume", action="store_true")
     ap.add_argument("--no_load_optimizer", action="store_true")
+
+    # Training stats (for eval-time calibration)
+    ap.add_argument("--save_training_stats", action="store_true", help="Record running mean of prefix RMS per model and save to training_stats.json")
 
     args = ap.parse_args()
 
@@ -211,7 +223,6 @@ def main():
     global_step = 0
     os.makedirs(args.save_dir, exist_ok=True)
 
-    # Opportunistically prune any legacy step files before starting (saves disk if a prior run crashed midway).
     try:
         prune_save_dir(args.save_dir)
     except Exception:
@@ -232,6 +243,10 @@ def main():
         else:
             print("⚠️  No valid checkpoint found to resume; starting fresh.")
 
+    # ===== Training stats trackers =====
+    rms_llama = _RunningMean()
+    rms_qwen  = _RunningMean()
+
     # ===== Train =====
     ema_step_time = None
 
@@ -251,7 +266,6 @@ def main():
             optimizer.zero_grad(set_to_none=True)
 
             if args.sequential_models:
-                # Llama pass
                 z = encode_fn(batch_texts)
                 prefix_llama = adp_llama(z)
                 y_llama = llama_ids[idx]
@@ -260,7 +274,6 @@ def main():
                 if torch.isfinite(loss_llama_total):
                     loss_llama_total.backward()
 
-                # Qwen pass
                 z = encode_fn(batch_texts)
                 prefix_qwen = adp_qwen(z)
                 y_qwen = qwen_ids[idx]
@@ -269,26 +282,18 @@ def main():
                 if torch.isfinite(loss_qwen_total):
                     loss_qwen_total.backward()
 
-                if hasattr(torch, "mps") and torch.backends.mps.is_available():
-                    try:
-                        torch.mps.empty_cache()
-                    except Exception:
-                        pass
                 optimizer.step()
                 loss_llama_value = float(loss_llama.item())
                 loss_qwen_value  = float(loss_qwen.item())
             else:
-                # Joint pass
                 z = encode_fn(batch_texts)
                 prefix_llama = adp_llama(z)
                 prefix_qwen  = adp_qwen(z)
-
                 y_llama = llama_ids[idx]; y_qwen = qwen_ids[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_qwen  = qwen.forward_with_prefix_loss(prefix_qwen,  y_qwen,  anchor_token_ids=anchor_qwen_ids)
                 penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
                 loss = 0.5 * (loss_llama + loss_qwen) + args.scale_l2 * penalty
-
                 if not torch.isfinite(loss):
                     print("NaN/Inf loss; skipping step")
                     continue
@@ -296,6 +301,17 @@ def main():
                 optimizer.step()
                 loss_llama_value = float(loss_llama.item())
                 loss_qwen_value  = float(loss_qwen.item())
+
+            # Track training-time prefix RMS (for eval-time calibration)
+            if args.save_training_stats:
+                try:
+                    rms_llama.update(_tensor_rms(prefix_llama))
+                except Exception:
+                    pass
+                try:
+                    rms_qwen.update(_tensor_rms(prefix_qwen))
+                except Exception:
+                    pass
 
             # Grad norm (monitor)
             try:
@@ -310,33 +326,15 @@ def main():
             if (step+1) % 10 == 0 or (step+1) == steps_per_epoch:
                 pen_L = float(scale_penalty(adp_llama).item()) if args.scale_l2 > 0 else 0.0
                 pen_Q = float(scale_penalty(adp_qwen).item())  if args.scale_l2 > 0 else 0.0
-                print(
+                msg = (
                     f"  step {step+1}/{steps_per_epoch} | "
                     f"loss_L={loss_llama_value:.4f} | loss_Q={loss_qwen_value:.4f} | "
                     f"scale_pen(L)={pen_L:.4e} | scale_pen(Q)={pen_Q:.4e} | "
                     f"grad_norm={total_norm:.2f} | sec/step~{ema_step_time:.2f}"
                 )
-
-            if args.debug and ((step + 1) % 100 == 0 or (step + 1) == steps_per_epoch):
-                with torch.no_grad():
-                    try:
-                        z_std = float(z.detach().std().item())
-                        z_mean_norm = float(z.detach().norm(dim=-1).mean().item())
-                        pL = prefix_llama.detach(); pQ = prefix_qwen.detach()
-                        pL_std = float(pL.std().item()); pQ_std = float(pQ.std().item())
-                        pL_mean_norm = float(pL.norm(dim=-1).mean().item()); pQ_mean_norm = float(pQ.norm(dim=-1).mean().item())
-                        print(
-                            f"  [debug:L] a.scale={float(adp_llama.scale.detach().cpu()):.4f} "
-                            f"| Z.std={z_std:.4f} Z.mean||={z_mean_norm:.4f} "
-                            f"| p.std={pL_std:.4f} p.mean||={pL_mean_norm:.4f}"
-                        )
-                        print(
-                            f"  [debug:Q] a.scale={float(adp_qwen.scale.detach().cpu()):.4f} "
-                            f"| Z.std={z_std:.4f} Z.mean||={z_mean_norm:.4f} "
-                            f"| p.std={pQ_std:.4f} p.mean||={pQ_mean_norm:.4f}"
-                        )
-                    except Exception as _e:
-                        print("  [debug] norm check failed:", _e)
+                if args.save_training_stats and (rms_llama.n > 0 or rms_qwen.n > 0):
+                    msg += f" | rms_L~{rms_llama.mean:.4f} rms_Q~{rms_qwen.mean:.4f}"
+                print(msg)
 
             # ---- Periodic checkpointing: write canonical + prune to only latest
             if args.save_every and (global_step % args.save_every == 0):
@@ -404,6 +402,16 @@ def main():
     }
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
+
+    # Save training-time prefix RMS stats (optional)
+    if args.save_training_stats:
+        stats = {
+            "llama": {"rms_mean": rms_llama.mean, "count": rms_llama.n},
+            "qwen":  {"rms_mean": rms_qwen.mean,  "count": rms_qwen.n},
+        }
+        with open(os.path.join(args.save_dir, "training_stats.json"), "w") as f:
+            json.dump(stats, f, indent=2)
+        print(f"📝 Saved training_stats.json: {stats}")
 
 
 if __name__ == "__main__":

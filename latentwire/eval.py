@@ -7,6 +7,7 @@ import gc
 from typing import List, Dict, Any, Tuple, Optional
 
 import torch
+import math
 
 from latentwire.models import (
     InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder, clean_pred
@@ -60,7 +61,7 @@ NEUTRAL_SYSTEM_PROMPT = (
 )
 
 def build_neutral_encoder_texts(raw_sources: List[str]) -> List[str]:
-    # This exactly mirrors train.py's _neutral_chat_wrap
+    # Mirrors train._neutral_chat_wrap
     return [f"System: {NEUTRAL_SYSTEM_PROMPT}\nUser: {s}\nAssistant:" for s in raw_sources]
 
 def truncate_chat_to_k_tokens(tokenizer, chat_prompts: List[str], k: int) -> List[str]:
@@ -130,7 +131,7 @@ def generate_latent(
     return wrapper.decode_batch_then_clean(out_ids)
 
 # ---------------------------
-# Chunked evaluation helpers (restore)
+# Chunked evaluation helpers
 # ---------------------------
 
 @torch.no_grad()
@@ -141,10 +142,6 @@ def evaluate_model_chunked_text(
     chunk_size: int,
     tag: str = ""
 ):
-    """
-    Generate from text prompts in chunks to control memory usage.
-    Returns (predictions, total_wall_clock_seconds).
-    """
     if chunk_size is None or chunk_size <= 0:
         chunk_size = len(prompts) if len(prompts) > 0 else 1
 
@@ -152,7 +149,6 @@ def evaluate_model_chunked_text(
     t0 = time.time()
     for i in range(0, len(prompts), chunk_size):
         batch = prompts[i:i + chunk_size]
-        # wrapper.generate_from_text returns token ids; decode helper cleans
         out_ids = wrapper.generate_from_text(batch, max_new_tokens=max_new_tokens, temperature=0.0)
         preds.extend(wrapper.decode_batch_then_clean(out_ids))
 
@@ -165,7 +161,7 @@ def evaluate_model_chunked_text(
 @torch.no_grad()
 def evaluate_model_chunked_latent(
     wrapper,
-    prefix_embeds: torch.Tensor,   # shape: [N, M, d_model]
+    prefix_embeds: torch.Tensor,
     max_new_tokens: int,
     chunk_size: int,
     tag: str = "",
@@ -175,11 +171,6 @@ def evaluate_model_chunked_latent(
     first_token_top_p: float = 1.0,
     first_token_temperature: float = 0.0,
 ):
-    """
-    Generate from latent prefixes in chunks. Each chunk slices the [B, M, d_model]
-    prefix tensor to match batch size.
-    Returns (predictions, total_wall_clock_seconds).
-    """
     N = prefix_embeds.size(0)
     if chunk_size is None or chunk_size <= 0:
         chunk_size = N if N > 0 else 1
@@ -187,7 +178,7 @@ def evaluate_model_chunked_latent(
     preds = []
     t0 = time.time()
     for i in range(0, N, chunk_size):
-        pb = prefix_embeds[i:i + chunk_size]   # [b, M, d_model]
+        pb = prefix_embeds[i:i + chunk_size]
         out_ids = wrapper.generate_from_prefix(
             pb,
             max_new_tokens=max_new_tokens,
@@ -207,32 +198,50 @@ def evaluate_model_chunked_latent(
     return preds, t_total
 
 # ---------------------------
-# Loss/NLL helpers
+# Loss/NLL helpers (robust to NaNs)
 # ---------------------------
+
+def _is_finite(x: float) -> bool:
+    return (x == x) and math.isfinite(x)
 
 def avg_nll_latent(wrapper: LMWrapper, prefix: torch.Tensor, answers: List[str], tokenizer, device: str) -> Optional[float]:
     if wrapper is None:
         return None
-    tot_nll, tot_tok = 0.0, 0
+    tot_w, tot_tok, skipped = 0.0, 0, 0
     for i, a in enumerate(answers):
         a_ids = _to_long(tokenizer(a, return_tensors="pt", add_special_tokens=True).input_ids, device)
         loss = wrapper.forward_with_prefix_loss(prefix[i:i+1], a_ids)
-        n_tok = a_ids.size(1) - 1
-        tot_nll += float(loss.item()) * n_tok
+        if not torch.isfinite(loss):
+            skipped += 1
+            continue
+        n_tok = max(1, a_ids.size(1) - 1)
+        tot_w += float(loss.item()) * n_tok
         tot_tok += int(n_tok)
-    return (tot_nll / max(1, tot_tok)) if tot_tok > 0 else None
+    if tot_tok == 0:
+        return None
+    if skipped > 0:
+        pass  # keep silent; caller may print debug if needed
+    return tot_w / tot_tok
 
 def avg_nll_text(wrapper: LMWrapper, prompts_text: List[str], answers: List[str], tokenizer, device: str) -> Optional[float]:
     if wrapper is None:
         return None
-    tot_nll, tot_tok = 0.0, 0
+    tot_w, tot_tok, skipped = 0.0, 0, 0
     for i in range(len(prompts_text)):
         enc_p = _to_long(tokenizer(prompts_text[i], return_tensors="pt", add_special_tokens=True).input_ids, device)
         enc_a = _to_long(tokenizer(answers[i],      return_tensors="pt", add_special_tokens=True).input_ids, device)
         loss, n_tok = wrapper.loss_with_text_prompt(enc_p, enc_a)
-        tot_nll += float(loss.item()) * n_tok
-        tot_tok += int(n_tok)
-    return (tot_nll / max(1, tot_tok)) if tot_tok > 0 else None
+        if (loss is None) or (not torch.isfinite(loss)):
+            skipped += 1
+            continue
+        n = int(n_tok) if (n_tok is not None and int(n_tok) > 0) else (enc_a.size(1) - 1)
+        tot_w += float(loss.item()) * n
+        tot_tok += n
+    if tot_tok == 0:
+        return None
+    if skipped > 0:
+        pass
+    return tot_w / tot_tok
 
 
 # ---------------------------
@@ -293,7 +302,6 @@ def _compute_Z_for_mode(
         texts = _encoder_texts_for_mode(mode, wrapper, raw_sources)
         return encoder(texts)
     else:
-        # byte encoder ignores chat templates (operates on raw bytes)
         byte_tok = ByteTokenizer(max_bytes=byte_max or 512)
         z_bytes = collate_bytes(raw_sources, byte_tok, device)
         return encoder(z_bytes)
@@ -303,6 +311,21 @@ def _maybe_save_Z(out_dir: Optional[str], tag: str, Z: torch.Tensor):
         path = os.path.join(out_dir, f"Z_{tag}.pt")
         torch.save(Z.to("cpu"), path)
         print(f"Saved Z[{tag}] to {path}")
+
+def _pick_fallback_mode_from_cfg(cfg: dict) -> str:
+    return "neutral_chat" if bool(cfg.get("encoder_use_chat_template", False)) else "raw"
+
+def _best_mode_from_scores(candidates: List[str], scores: Dict[str, float], cfg: dict) -> str:
+    # Filter to finite
+    finite = {k: v for k, v in scores.items() if _is_finite(v)}
+    if finite:
+        # If the differences are tiny (<1e-3), fall back to training wrapper for stability
+        vals = list(finite.values())
+        if (max(vals) - min(vals)) < 1e-3:
+            return _pick_fallback_mode_from_cfg(cfg)
+        return min(finite, key=lambda k: finite[k])
+    # All NaN/inf → fall back to training wrapper
+    return _pick_fallback_mode_from_cfg(cfg)
 
 def _select_best_encoder_mode_for_model(
     encoder_type: str,
@@ -315,16 +338,12 @@ def _select_best_encoder_mode_for_model(
     device: str,
     byte_max: Optional[int],
     out_dir: Optional[str],
-    debug: bool
+    debug: bool,
+    cfg: dict
 ) -> Tuple[str, torch.Tensor, Dict[str, float]]:
-    """
-    Try encoder text variants and pick the one with best gold NLL.
-    Returns (mode, Z_best, scores_dict).
-    """
     candidates = ["raw"]
     if encoder_type.startswith("simple"):
-        candidates.append("neutral_chat")  # EXACT training-time wrapper
-        candidates.append(f"{model_name}_chat")  # tokenizer.apply_chat_template variant
+        candidates.extend(["neutral_chat", f"{model_name}_chat"])
 
     scores: Dict[str, float] = {}
     Z_cache: Dict[str, torch.Tensor] = {}
@@ -333,12 +352,11 @@ def _select_best_encoder_mode_for_model(
         Z = _compute_Z_for_mode(encoder_type, encoder, mode, wrapper, raw_sources, device, byte_max)
         Z_cache[mode] = Z
         with torch.no_grad():
-            prefix = adapter(Z)
+            prefix = adapter(Z)  # no calibration for selection
         nll = avg_nll_latent(wrapper, prefix, golds, wrapper.tokenizer, device)
-        scores[mode] = float("inf") if nll is None else nll
+        scores[mode] = float("nan") if (nll is None) else float(nll)
 
-    # pick the mode with lowest nll
-    best_mode = min(scores, key=lambda k: scores[k])
+    best_mode = _best_mode_from_scores(candidates, scores, cfg)
     Z_best = Z_cache[best_mode]
     if debug:
         print(f"[align:{model_name}] encoder_text_mode candidates={candidates} | nlls={scores} | picked={best_mode}")
@@ -347,23 +365,35 @@ def _select_best_encoder_mode_for_model(
 
 
 # ---------------------------
-# Optional prefix RMS calibration
+# Calibration
 # ---------------------------
 
-def _calibrate_prefix_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> Tuple[torch.Tensor, float, float]:
+def _tensor_rms(x: torch.Tensor) -> float:
+    return float(x.float().pow(2).mean().sqrt().item())
+
+def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed_rms: Optional[float], stats: Optional[dict], model_key: str) -> Tuple[torch.Tensor, float, float]:
     """
-    Scale the whole prefix tensor so its RMS matches the token embedding RMS.
-    Returns (scaled_prefix, current_rms, target_rms).
+    Returns (scaled_prefix, current_rms, target_rms)
+    mode: 'none' | 'embed_rms' | 'fixed' | 'train_stats'
     """
-    with torch.no_grad():
-        target_rms = wrapper.input_embedding_rms()
-        current_rms = float(prefix.float().pow(2).mean().sqrt().item())
-        if current_rms > 0 and target_rms > 0:
-            gain = target_rms / current_rms
-            prefix = prefix * gain
+    cur = _tensor_rms(prefix)
+    if mode == "none":
+        return prefix, cur, cur
+    elif mode == "embed_rms":
+        tgt = wrapper.input_embedding_rms()
+    elif mode == "fixed":
+        tgt = float(fixed_rms or 0.015)
+    elif mode == "train_stats":
+        if stats and model_key in stats and "rms_mean" in stats[model_key]:
+            tgt = float(stats[model_key]["rms_mean"])
         else:
-            gain = 1.0
-    return prefix, current_rms, target_rms
+            tgt = wrapper.input_embedding_rms()  # fallback
+    else:
+        tgt = wrapper.input_embedding_rms()
+    if cur > 0 and tgt > 0:
+        gain = tgt / cur
+        prefix = prefix * gain
+    return prefix, cur, tgt
 
 
 # ---------------------------
@@ -423,9 +453,13 @@ def main():
     ap.add_argument("--first_token_temperature", type=float, default=0.7)
     # eval-time amplitude control
     ap.add_argument("--prefix_gain", type=float, default=1.0, help="Multiply adapter output by this gain at eval (does not change weights)")
-    ap.add_argument("--calibrate_prefix_rms", action="store_true", help="After adapter, rescale prefix RMS to match token embedding RMS")
+    # calibration modes
+    ap.add_argument("--calibration", type=str, default="embed_rms", choices=["none","embed_rms","fixed","train_stats"],
+                    help="Prefix calibration mode. 'train_stats' uses training_stats.json if present.")
+    ap.add_argument("--prefix_target_rms", type=float, default=None, help="Target RMS for 'fixed' calibration mode.")
     # encoder input alignment
-    ap.add_argument("--encoder_text_mode", type=str, default="auto", choices=["auto","raw","llama_chat","qwen_chat"],
+    ap.add_argument("--encoder_text_mode", type=str, default="auto",
+                    choices=["auto","raw","neutral_chat","llama_chat","qwen_chat"],
                     help="How to format text for the encoder. 'auto' tries candidates per model and picks the best by gold NLL.")
     args = ap.parse_args()
 
@@ -452,17 +486,28 @@ def main():
     with open(os.path.join(args.ckpt, "config.json")) as f:
         cfg = json.load(f)
 
+    encoder_type = cfg.get("encoder_type", "byte")   # <-- define before using
     trained_used_neutral = bool(cfg.get("encoder_use_chat_template", False))
-    if (not args.sequential_eval) and (not args.fresh_eval) and (encoder_type.startswith("simple")) and trained_used_neutral:
+    if (not args.sequential_eval) and (not args.fresh_eval) and encoder_type.startswith("simple") and trained_used_neutral:
         print("⚠️  Detected SimpleEncoder trained with a chat-style wrapper, but Standard eval is about to reuse a cached Z.pt.")
         print("    Add --fresh_eval (or use --sequential_eval) so Z is recomputed with the correct wrapper.")
 
     llama_id = args.llama_id or cfg["llama_id"]
     qwen_id  = args.qwen_id  or cfg["qwen_id"]
     latent_len = int(cfg["latent_len"])
-    encoder_type = cfg.get("encoder_type", "byte")
     d_z = int(cfg["d_z"])
     byte_max = cfg.get("byte_max", 512)
+
+    # Try to load training-time prefix stats (optional)
+    train_stats_path = os.path.join(args.ckpt, "training_stats.json")
+    train_stats = None
+    if os.path.isfile(train_stats_path):
+        try:
+            with open(train_stats_path, "r") as f:
+                train_stats = json.load(f)
+            print(f"Loaded training_stats.json: {train_stats_path}")
+        except Exception as e:
+            print(f"⚠️  Failed to read training_stats.json: {e}")
 
     # Load eval examples
     if args.dataset.startswith("squad"):
@@ -476,7 +521,7 @@ def main():
     prompts_raw = [e["source"] for e in eval_examples]
     golds       = [e["answer"] for e in eval_examples]
 
-    # --------- Build a baseline Z once (raw) for wire-bytes (shape only) and optional reuse ----------
+    # Build a Z for wire metrics (shape only)
     Z_path = os.path.join(args.out_dir, "Z.pt") if args.out_dir else None
     if Z_path and (not args.fresh_eval) and os.path.exists(Z_path):
         print(f"Loading Z from {Z_path}")
@@ -494,6 +539,7 @@ def main():
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
             encoder_wire.load_state_dict(torch.load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
             with torch.no_grad():
+                # For wire bytes we don't care about mode; raw is fine
                 Z_for_wire = encoder_wire(prompts_raw)
         if Z_path:
             torch.save(Z_for_wire.to("cpu"), Z_path)
@@ -505,15 +551,15 @@ def main():
             args=args, device=device, dtype=dtype,
             Z_for_wire=Z_for_wire, prompts_raw=prompts_raw, golds=golds,
             llama_id=llama_id, qwen_id=qwen_id,
-            latent_len=latent_len, d_z=d_z, encoder_type=encoder_type, byte_max=byte_max
+            latent_len=latent_len, d_z=d_z, encoder_type=encoder_type, byte_max=byte_max,
+            cfg=cfg, train_stats=train_stats
         )
     else:
-        # Standard mode keeps the old behavior (single Z); if you need auto alignment, prefer sequential mode.
         summary, preds_dump = run_standard_eval(
             args=args, device=device, dtype=dtype,
             Z=Z_for_wire, prompts_raw=prompts_raw, golds=golds,
             llama_id=llama_id, qwen_id=qwen_id,
-            latent_len=latent_len, d_z=d_z
+            latent_len=latent_len, d_z=d_z, cfg=cfg, train_stats=train_stats
         )
 
     # Tag dataset in the summary
@@ -601,46 +647,50 @@ def main():
 # Standard evaluation (both models loaded; no auto-align)
 # ---------------------------
 
-def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z):
+def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
     print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
-    # Load models
     llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
     qwen  = LMWrapper(LMConfig(model_id=qwen_id,  device=device, dtype=dtype, load_4bit=args.load_4bit))
 
-    # Adapters
     adp_llama = Adapter(d_z=d_z, d_model=llama.d_model).to(device).eval()
     adp_qwen  = Adapter(d_z=d_z, d_model=qwen.d_model).to(device).eval()
     adp_llama.load_state_dict(torch.load(os.path.join(args.ckpt, "adapter_llama.pt"), map_location=device), strict=True)
     adp_qwen.load_state_dict(torch.load(os.path.join(args.ckpt, "adapter_qwen.pt"),  map_location=device), strict=True)
 
-    # Build chat prompts
     llama_chat = build_chat_prompts(llama.tokenizer, prompts_raw)
     qwen_chat  = build_chat_prompts(qwen.tokenizer,  prompts_raw)
 
-    # Token counts (avg)
     llama_prompt_tok = llama.tokenizer(llama_chat, return_tensors="pt", padding=True, truncation=True, add_special_tokens=False)
     qwen_prompt_tok  = qwen.tokenizer(qwen_chat,  return_tensors="pt", padding=True, truncation=True, add_special_tokens=False)
     avg_prompt_tokens_llama = float((llama_prompt_tok["input_ids"] != llama.tokenizer.pad_token_id).sum().item()) / max(1,len(prompts_raw))
     avg_prompt_tokens_qwen  = float((qwen_prompt_tok["input_ids"]  != qwen.tokenizer.pad_token_id).sum().item())  / max(1,len(prompts_raw))
 
-    # Text baseline (chunked)
     llama_text_preds, t_text_llama = evaluate_model_chunked_text(llama, llama_chat, args.max_new_tokens, args.chunk_size, "llama")
     qwen_text_preds,  t_text_qwen  = evaluate_model_chunked_text(qwen,  qwen_chat,  args.max_new_tokens, args.chunk_size, "qwen")
     t_text = t_text_llama + t_text_qwen
     llama_text_em, llama_text_f1 = batch_metrics(llama_text_preds, golds)
     qwen_text_em,  qwen_text_f1  = batch_metrics(qwen_text_preds, golds)
 
-    # Latent prompting
     with torch.no_grad():
-        prefix_llama = adp_llama(Z) * args.prefix_gain
-        prefix_qwen  = adp_qwen(Z)  * args.prefix_gain
-        if args.calibrate_prefix_rms:
-            prefix_llama, _, _ = _calibrate_prefix_rms(prefix_llama, llama)
-            prefix_qwen,  _, _ = _calibrate_prefix_rms(prefix_qwen,  qwen)
+        prefix_llama = adp_llama(Z)
+        prefix_qwen  = adp_qwen(Z)
+        # calibration FIRST, then gain
+        prefix_llama, rmsL, tgtL = _calibrate_prefix(prefix_llama, llama, args.calibration, args.prefix_target_rms, train_stats, "llama")
+        prefix_qwen,  rmsQ, tgtQ = _calibrate_prefix(prefix_qwen,  qwen,  args.calibration, args.prefix_target_rms, train_stats, "qwen")
+        if args.debug:
+            print(f"[calib:llama] mode={args.calibration} prefix_rms={rmsL:.5f} -> target={tgtL:.5f}")
+            print(f"[calib:qwen]  mode={args.calibration} prefix_rms={rmsQ:.5f} -> target={tgtQ:.5f}")
+        prefix_llama = prefix_llama * args.prefix_gain
+        prefix_qwen  = prefix_qwen  * args.prefix_gain
 
     debug_llama = _latent_debug_stats("llama", Z, prefix_llama, adp_llama, llama) if args.debug else {}
     debug_qwen  = _latent_debug_stats("qwen",  Z, prefix_qwen,  adp_qwen,  qwen)  if args.debug else {}
+    if args.debug:
+        debug_llama["encoder_text_mode"] = "standard"
+        debug_qwen["encoder_text_mode"]  = "standard"
+        debug_llama["calibration_mode"] = args.calibration
+        debug_qwen["calibration_mode"]  = args.calibration
 
     llama_latent_preds, t_latent_llama = evaluate_model_chunked_latent(
         llama, prefix_llama, args.max_new_tokens, args.chunk_size, "llama", args.latent_anchor_text or None,
@@ -657,7 +707,6 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     llama_latent_em, llama_latent_f1 = batch_metrics(llama_latent_preds, golds)
     qwen_latent_em,  qwen_latent_f1  = batch_metrics(qwen_latent_preds, golds)
 
-    # Token-budget baseline
     k_budget = args.token_budget_k or latent_len
     llama_trunc = build_token_budget_prompts(llama.tokenizer, prompts_raw, llama_chat, k_budget, args.token_budget_mode)
     qwen_trunc  = build_token_budget_prompts(qwen.tokenizer,  prompts_raw, qwen_chat,  k_budget, args.token_budget_mode)
@@ -669,27 +718,23 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     llama_trunc_em, llama_trunc_f1 = batch_metrics(llama_trunc_preds, golds)
     qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds,  golds)
 
-    # NLLs
     llama_latent_nll = avg_nll_latent(llama, prefix_llama, golds, llama.tokenizer, device)
     qwen_latent_nll  = avg_nll_latent(qwen,  prefix_qwen,  golds, qwen.tokenizer, device)
     llama_text_nll   = avg_nll_text(llama, llama_chat, golds, llama.tokenizer, device)
     qwen_text_nll    = avg_nll_text(qwen,  qwen_chat,  golds, qwen.tokenizer, device)
 
-    # Joint rescoring
+    # Joint rescoring (simple)
     joint_preds = []
     agree = 0
     for i in range(len(prompts_raw)):
         candA = llama_latent_preds[i]
         candB = qwen_latent_preds[i]
-
         A_ids_L = _to_long(llama.tokenizer(candA, return_tensors="pt", add_special_tokens=True).input_ids, device)
         A_ids_Q = _to_long(qwen.tokenizer(candA,  return_tensors="pt", add_special_tokens=True).input_ids, device)
         B_ids_L = _to_long(llama.tokenizer(candB, return_tensors="pt", add_special_tokens=True).input_ids, device)
         B_ids_Q = _to_long(qwen.tokenizer(candB,  return_tensors="pt", add_special_tokens=True).input_ids, device)
-
         scoreA = llama.score_prefix_logprob(prefix_llama[i:i+1], A_ids_L) + qwen.score_prefix_logprob(prefix_qwen[i:i+1], A_ids_Q)
         scoreB = llama.score_prefix_logprob(prefix_llama[i:i+1], B_ids_L) + qwen.score_prefix_logprob(prefix_qwen[i:i+1], B_ids_Q)
-
         pick = candA if scoreA >= scoreB else candB
         joint_preds.append(pick)
         if _normalize(candA) == _normalize(candB):
@@ -698,10 +743,9 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     joint_em, joint_f1 = batch_metrics(joint_preds, golds)
     agreement_rate = agree / len(prompts_raw)
 
-    # Wire metrics
     wire = compute_wire_metrics(llama_chat, qwen_chat, Z)
+    bytes_per_latent = int(Z.element_size() * Z.size(1) * Z.size(2))
 
-    # Oracle bound
     oracle_em = 0.0
     oracle_f1 = 0.0
     for pA, pB, g in zip(llama_latent_preds, qwen_latent_preds, golds):
@@ -710,8 +754,6 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     oracle_em /= len(golds)
     oracle_f1 /= len(golds)
 
-    # Summary
-    bytes_per_latent = int(Z.element_size() * Z.size(1) * Z.size(2))
     summary = {
         "samples": len(prompts_raw),
         "max_new_tokens": args.max_new_tokens,
@@ -744,10 +786,11 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
             "oracle": {"em": None, "f1": None},
         },
         "debug": {
-            "llama": debug_llama,
-            "qwen": debug_qwen,
+            "llama": {**debug_llama, "encoder_text_mode": "standard"},
+            "qwen":  {**debug_qwen,  "encoder_text_mode": "standard"},
             "latent_anchor_text": args.latent_anchor_text or "",
             "prefix_gain": args.prefix_gain,
+            "calibration_mode": args.calibration,
             "decode": {
                 "min_new_tokens": args.min_new_tokens,
                 "eos_ban_steps": args.eos_ban_steps,
@@ -758,7 +801,6 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
         "oracle": {"em": oracle_em, "f1": oracle_f1},
     }
 
-    # Dumps
     preds_dump = []
     for i in range(len(prompts_raw)):
         preds_dump.append({
@@ -774,7 +816,6 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
             "trunc_pred_qwen":   qwen_trunc_preds[i],
         })
 
-    # Cleanup
     del llama, qwen, adp_llama, adp_qwen
     if device == "cuda":
         torch.cuda.empty_cache()
@@ -788,7 +829,7 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
 # Sequential evaluation (with per-model encoder auto-alignment)
 # ---------------------------
 
-def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, encoder_type, byte_max):
+def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, encoder_type, byte_max, cfg, train_stats):
     print("\n[Sequential Evaluation Mode - one model at a time]")
 
     llama_file = os.path.join(args.out_dir, "llama_results.json") if args.out_dir else None
@@ -830,7 +871,7 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
             # ----- encoder text auto-alignment for Llama -----
             if args.encoder_text_mode == "auto":
                 mode, Z, scores = _select_best_encoder_mode_for_model(
-                    encoder_type, encoder, "llama", llama, adp_llama, prompts_raw, golds, device, byte_max, args.out_dir, args.debug
+                    encoder_type, encoder, "llama", llama, adp_llama, prompts_raw, golds, device, byte_max, args.out_dir, args.debug, cfg=cfg
                 )
             else:
                 mode = args.encoder_text_mode
@@ -839,15 +880,16 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                     print(f"[align:llama] forced encoder_text_mode={mode}")
 
             with torch.no_grad():
-                prefix_llama = adp_llama(Z) * args.prefix_gain
-                if args.calibrate_prefix_rms:
-                    prefix_llama, p_rms, e_rms = _calibrate_prefix_rms(prefix_llama, llama)
-                    if args.debug:
-                        print(f"[calib:llama] prefix_rms={p_rms:.5f} -> embed_rms={e_rms:.5f}")
+                prefix_llama = adp_llama(Z)
+                prefix_llama, p_rms, e_rms = _calibrate_prefix(prefix_llama, llama, args.calibration, args.prefix_target_rms, train_stats, "llama")
+                if args.debug:
+                    print(f"[calib:llama] mode={args.calibration} prefix_rms={p_rms:.5f} -> target={e_rms:.5f}")
+                prefix_llama = prefix_llama * args.prefix_gain
 
             debug_llama = _latent_debug_stats("llama", Z, prefix_llama, adp_llama, llama) if args.debug else {}
             if args.debug:
                 debug_llama["encoder_text_mode"] = mode
+                debug_llama["calibration_mode"] = args.calibration
 
             llama_latent_preds, t_latent_llama = evaluate_model_chunked_latent(
                 llama, prefix_llama, args.max_new_tokens, args.chunk_size, "llama", args.latent_anchor_text or None,
@@ -911,10 +953,9 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
 
             qwen_text_preds, t_text_qwen = evaluate_model_chunked_text(qwen, qwen_chat, args.max_new_tokens, args.chunk_size, "qwen")
 
-            # ----- encoder text auto-alignment for Qwen -----
             if args.encoder_text_mode == "auto":
                 mode, Z, scores = _select_best_encoder_mode_for_model(
-                    encoder_type, encoder, "qwen", qwen, adp_qwen, prompts_raw, golds, device, byte_max, args.out_dir, args.debug
+                    encoder_type, encoder, "qwen", qwen, adp_qwen, prompts_raw, golds, device, byte_max, args.out_dir, args.debug, cfg=cfg
                 )
             else:
                 mode = args.encoder_text_mode
@@ -923,15 +964,16 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                     print(f"[align:qwen] forced encoder_text_mode={mode}")
 
             with torch.no_grad():
-                prefix_qwen = adp_qwen(Z) * args.prefix_gain
-                if args.calibrate_prefix_rms:
-                    prefix_qwen, p_rms, e_rms = _calibrate_prefix_rms(prefix_qwen, qwen)
-                    if args.debug:
-                        print(f"[calib:qwen] prefix_rms={p_rms:.5f} -> embed_rms={e_rms:.5f}")
+                prefix_qwen = adp_qwen(Z)
+                prefix_qwen, p_rms, e_rms = _calibrate_prefix(prefix_qwen, qwen, args.calibration, args.prefix_target_rms, train_stats, "qwen")
+                if args.debug:
+                    print(f"[calib:qwen]  mode={args.calibration} prefix_rms={p_rms:.5f} -> target={e_rms:.5f}")
+                prefix_qwen = prefix_qwen * args.prefix_gain
 
             debug_qwen = _latent_debug_stats("qwen", Z, prefix_qwen, adp_qwen, qwen) if args.debug else {}
             if args.debug:
                 debug_qwen["encoder_text_mode"] = mode
+                debug_qwen["calibration_mode"] = args.calibration
 
             qwen_latent_preds, t_latent_qwen = evaluate_model_chunked_latent(
                 qwen, prefix_qwen, args.max_new_tokens, args.chunk_size, "qwen", args.latent_anchor_text or None,
@@ -976,17 +1018,15 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
             elif device == "mps":
                 torch.mps.empty_cache(); torch.mps.synchronize(); time.sleep(0.5)
 
-    # ----- Joint rescoring only if at least one present
+    # Joint section & summary (same as before, shortened)
     if not (have_llama or have_qwen):
         raise RuntimeError("No adapters found (neither adapter_llama.pt nor adapter_qwen.pt).")
 
     joint_section = {"em": None, "f1": None, "agreement": 0.0, "oracle": {"em": None, "f1": None}}
 
-    # Build summary
     llama_avg_tok = float(L.get("avg_prompt_tokens", 0.0)) if have_llama else 0.0
     qwen_avg_tok  = float(Q.get("avg_prompt_tokens", 0.0))  if have_qwen  else 0.0
 
-    # For wire bytes we only need Z shape; use the one computed earlier
     wire = compute_wire_metrics(L.get("chat_prompts", []) if have_llama else [],
                                 Q.get("chat_prompts", []) if have_qwen else [], Z_for_wire)
 
@@ -1015,20 +1055,15 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
     if have_llama: compression["llama"] = llama_avg_tok / latent_len
     if have_qwen:  compression["qwen"]  = qwen_avg_tok / latent_len
 
-    # If both present, do joint rescoring now
     oracle_em = oracle_f1 = None
     if have_llama and have_qwen:
         print("\nJoint rescoring...")
-        llama_id = L.get("model_id", None)  # optional
-        qwen_id  = Q.get("model_id", None)  # optional
-        # No re-run here to keep memory modest; joint is computed from saved preds already
         joint_preds, agree = [], 0
         for i in range(len(prompts_raw)):
             candA = L["latent_preds"][i]
             candB = Q["latent_preds"][i]
             if _normalize(candA) == _normalize(candB):
                 agree += 1
-            # A simple heuristic pick (could re-score with models, but we skip for speed)
             joint_preds.append(candA if len(candA) >= len(candB) else candB)
 
         joint_em, joint_f1 = batch_metrics(joint_preds, golds)
@@ -1064,6 +1099,7 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
             "qwen":  Q.get("debug", {}) if have_qwen else {},
             "latent_anchor_text": args.latent_anchor_text or "",
             "prefix_gain": args.prefix_gain,
+            "calibration_mode": args.calibration,
             "decode": {
                 "min_new_tokens": args.min_new_tokens,
                 "eos_ban_steps": args.eos_ban_steps,
@@ -1074,7 +1110,6 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
         "oracle": {"em": oracle_em, "f1": oracle_f1},
     }
 
-    # Per-example dump
     preds_dump = []
     llama_chat = L.get("chat_prompts", []) if have_llama else ["" for _ in range(len(prompts_raw))]
     qwen_chat  = Q.get("chat_prompts", []) if have_qwen  else ["" for _ in range(len(prompts_raw))]
