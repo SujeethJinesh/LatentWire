@@ -6,35 +6,60 @@
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
 #SBATCH --mem=40GB
-#SBATCH --output=code-server-%j.log
-#SBATCH --error=code-server-%j.err
-#SBATCH --signal=B:TERM@30    # Send SIGTERM 30 seconds before time limit
+#SBATCH --output=/projects/m000066/sujinesh/LatentWire/code-server-%j.log
+#SBATCH --error=/projects/m000066/sujinesh/LatentWire/code-server-%j.err
+#SBATCH --signal=B:TERM@30
 
-# Cleanup function
+# Set working directory
+WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+cd "$WORK_DIR"
+
+# Cleanup function - removes ALL logs and temporary files
 cleanup() {
-    echo "Cleaning up code-server files..."
-    rm -f ${HOME}/code-server-${SLURM_JOB_ID}.log
-    rm -f ${HOME}/code-server-${SLURM_JOB_ID}.err
-    echo "Cleanup complete at $(date)"
+    echo "Starting comprehensive cleanup at $(date)..."
+    
+    # Remove this job's logs
+    rm -f "${WORK_DIR}/code-server-${SLURM_JOB_ID}.log"
+    rm -f "${WORK_DIR}/code-server-${SLURM_JOB_ID}.err"
+    rm -f "${WORK_DIR}/code-server-${SLURM_JOB_ID}-info.txt"
+    
+    # Remove ALL code-server logs in project directory
+    rm -f ${WORK_DIR}/code-server-*.log
+    rm -f ${WORK_DIR}/code-server-*.err
+    rm -f ${WORK_DIR}/code-server-*-info.txt
+    
+    # Clean up temp directories
+    rm -rf /tmp/code-server-${SLURM_JOB_ID}
+    rm -rf /tmp/code-server-ext-${SLURM_JOB_ID}
+    
+    # Clean up any code-server session files
+    rm -rf ~/.local/share/code-server/logs/*
+    rm -rf ~/.cache/code-server/*
+    
+    echo "Cleanup complete - all logs removed at $(date)"
 }
 
 # Trap signals for cleanup
 trap cleanup EXIT TERM INT
 
-# Clean up old logs on start (older than 3 days)
-find ~ -maxdepth 1 -name "code-server-*.log" -mtime +3 -delete 2>/dev/null
-find ~ -maxdepth 1 -name "code-server-*.err" -mtime +3 -delete 2>/dev/null
+# Clean up any old logs at start
+rm -f ${WORK_DIR}/code-server-*.log 2>/dev/null
+rm -f ${WORK_DIR}/code-server-*.err 2>/dev/null
+rm -f ${WORK_DIR}/code-server-*-info.txt 2>/dev/null
 
-# Load the module
+# Load module
 module load code-server/4.93.1
 
-# Generate a random port
+# Generate port and hostname
 PORT=$(shuf -i 8000-9999 -n 1)
 HOSTNAME=$(hostname)
 
-# Print connection instructions with copy-paste ready commands
+# Write connection info to temporary file
+INFO_FILE="${WORK_DIR}/code-server-${SLURM_JOB_ID}-info.txt"
+
+{
 echo "========================================="
-echo "CODE-SERVER SETUP COMPLETE!"
+echo "CODE-SERVER CONNECTION INFO"
 echo "========================================="
 echo ""
 echo "Job ID: $SLURM_JOB_ID"
@@ -42,41 +67,45 @@ echo "Running on: $HOSTNAME"
 echo "Port: $PORT"
 echo "Started at: $(date)"
 echo ""
-echo "STEP 1: Copy and run this EXACT command on your LOCAL machine:"
+echo "STEP 1: Run this on your LOCAL machine:"
 echo ""
 echo "ssh -L $PORT:$HOSTNAME:$PORT marlowe"
 echo ""
-echo "STEP 2: Open your browser and go to:"
+echo "STEP 2: Open browser to:"
 echo ""
 echo "http://localhost:$PORT"
 echo ""
+echo "Working directory: $WORK_DIR"
+echo ""
 echo "========================================="
-echo "To stop code-server, run: scancel $SLURM_JOB_ID"
-echo "To check status, run: squeue -j $SLURM_JOB_ID"
+echo "To stop: scancel $SLURM_JOB_ID"
 echo "========================================="
+} | tee "$INFO_FILE"
 
-# Keep code-server running with auto-restart if it crashes
+# Main loop
 while true; do
     echo "Starting code-server at $(date)..."
     
-    # Start code-server with connection token disabled and no timeout
+    # Start code-server with all data in /tmp
     code-server \
         --bind-addr 0.0.0.0:$PORT \
         --auth none \
         --disable-workspace-trust \
         --disable-telemetry \
         --disable-update-check \
+        --user-data-dir /tmp/code-server-${SLURM_JOB_ID} \
+        --extensions-dir /tmp/code-server-ext-${SLURM_JOB_ID} \
+        "$WORK_DIR" \
         2>&1
     
-    # If code-server exits, wait and restart
     EXIT_CODE=$?
     echo "Code-server exited with code $EXIT_CODE at $(date)"
     
-    # Check if we're close to the time limit (within 5 minutes)
+    # Check time limit
     if [ -n "$SLURM_JOB_END_TIME" ]; then
         TIME_LEFT=$((SLURM_JOB_END_TIME - $(date +%s)))
         if [ $TIME_LEFT -lt 300 ]; then
-            echo "Less than 5 minutes left, exiting gracefully..."
+            echo "Less than 5 minutes left, exiting..."
             break
         fi
     fi
@@ -86,4 +115,4 @@ while true; do
 done
 
 echo "Job ending at $(date)"
-# Cleanup happens automatically when job ends
+# Cleanup will run automatically via trap
