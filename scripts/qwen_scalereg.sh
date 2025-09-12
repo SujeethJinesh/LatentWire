@@ -4,7 +4,8 @@ set -euo pipefail
 # Activate env
 source .venv/bin/activate
 
-export RUN="squad_m16_scalereg_$(date +%Y%m%d_%H%M%S)"
+# export RUN="squad_m16_scalereg_$(date +%Y%m%d_%H%M%S)"
+export RUN="squad_m16_scalereg_20250911_211615"
 export OUT="runs/$RUN"
 mkdir -p "$OUT" "$OUT/squad_eval"
 
@@ -16,7 +17,7 @@ python -u latentwire/train.py \
   --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
   --samples  16384 \
   --epochs   5 \
-  --batch_size 32 \
+  --batch_size 64 \
   --latent_len 16 \
   --d_z 256 \
   --encoder_type simple-st \
@@ -24,9 +25,8 @@ python -u latentwire/train.py \
   --warm_anchor_text "Answer: " \
   --scale_l2 0.10 \
   --fp16_mps \
-  --sequential_models \
   --auto_resume \
-  --save_every 500 \
+  --save_every 512 \
   --save_dir "$OUT/ckpt" \
   --debug 2>&1 | tee -a "$OUT/train.log"
 
@@ -39,8 +39,6 @@ python -u latentwire/eval.py \
   --max_new_tokens 8 \
   --latent_anchor_text "Answer: " \
   --out_dir "$OUT/squad_eval" \
-  --sequential_eval \
-  --device mps \
   --min_new_tokens 2 \
   --eos_ban_steps 6 \
   --first_token_top_p 0.9 \
@@ -60,8 +58,6 @@ for PG in 0.5 1.0 2.0; do
     --max_new_tokens 8 \
     --latent_anchor_text "Answer: " \
     --out_dir "$OUT/squad_eval_pg${PG//./}" \
-    --sequential_eval \
-    --device mps \
     --min_new_tokens 2 \
     --eos_ban_steps 6 \
     --first_token_top_p 0.9 \

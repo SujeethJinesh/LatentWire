@@ -4,6 +4,7 @@ import os
 import json
 import shutil
 import tempfile
+import re
 from typing import Dict, Optional, Tuple, Iterable
 
 try:
@@ -11,25 +12,30 @@ try:
 except Exception:
     torch = None  # eval-time tools can still use the pruner without torch
 
-# Files we consider part of the "latest" canonical set for a run.
+# Canonical set we expect to keep inside a ckpt directory.
+# NOTE: We always provide an explicit keep_only list when saving; this set is used only when keep_only is None.
 CANONICAL_FILES = {
     "encoder.pt",
     "adapter_llama.pt",
     "adapter_qwen.pt",
     "state.pt",
-    "optimizer.pt",
-    "scheduler.pt",
-    "scaler.pt",
+    "optimizer.pt",   # optional; safe to leave here
+    "scheduler.pt",   # optional; safe to leave here
+    "scaler.pt",      # optional; safe to leave here
     "config.json",
 }
 
-# Directories we expect to appear transiently or per-step that should be deleted.
+# Things we consider "step-like" and temporary.
 STEP_DIR_PREFIXES = ("step_", "ckpt_", "epoch_", "iter_", "global_step_")
 TMP_SUFFIXES = (".tmp", ".new", ".partial", ".bak")
+STEP_FILE_PATTERNS = (r".*_step\d+\.pt$", r"state_step\d+\.pt$")
 
 def _is_step_dir(name: str) -> bool:
     name = name.lower()
     return any(name.startswith(p) for p in STEP_DIR_PREFIXES)
+
+def _is_step_file(name: str) -> bool:      # <-- add
+    return any(re.match(p, name) for p in STEP_FILE_PATTERNS)
 
 def _is_tmp_file(name: str) -> bool:
     return any(name.endswith(suf) for suf in TMP_SUFFIXES)
@@ -46,7 +52,6 @@ def _safe_remove(path: str) -> int:
     freed = 0
     try:
         if os.path.isdir(path) and not os.path.islink(path):
-            # Estimate bytes by walking before delete
             for root, _, files in os.walk(path):
                 for f in files:
                     fp = os.path.join(root, f)
@@ -81,23 +86,27 @@ def prune_save_dir(
     keep_set = set(keep_only) if keep_only is not None else set()
     for name in os.listdir(save_dir):
         path = os.path.join(save_dir, name)
+
         # Always remove step-like directories
         if os.path.isdir(path) and _is_step_dir(name):
             freed += _safe_remove(path)
             continue
+
+        # Remove step checkpoint files (e.g., encoder_step1000.pt)
+        if os.path.isfile(path) and _is_step_file(name):
+            freed += _safe_remove(path); continue
 
         # Remove stale temporary files
         if os.path.isfile(path) and (_is_tmp_file(name) or name.endswith(".pt.old")):
             freed += _safe_remove(path)
             continue
 
-        # If keep_only specified, remove any non-kept files
+        # Apply keep-only policy when provided
         if keep_set:
             if name not in keep_set:
                 freed += _safe_remove(path)
         else:
-            # If no keep list, remove anything that's clearly non-canonical
-            # Keep canonical files; remove everything else.
+            # No keep list: remove anything not canonical
             if os.path.isfile(path) and (name not in CANONICAL_FILES):
                 freed += _safe_remove(path)
     return freed
@@ -123,7 +132,6 @@ def _atomic_save_torch(obj, dst_path: str) -> None:
     """Atomic torch.save to dst_path."""
     if torch is None:
         raise RuntimeError("torch is not available but a torch save was requested.")
-    # Save to a temp file in the same dir; then replace atomically
     tmp_fd, tmp_path = tempfile.mkstemp(prefix=os.path.basename(dst_path) + ".", dir=os.path.dirname(dst_path))
     os.close(tmp_fd)
     try:
@@ -149,16 +157,17 @@ def save_latest_checkpoint(
 ) -> Tuple[int, int]:
     """
     Save a set of artifacts to canonical filenames and keep only those files.
-    - artifacts: mapping filename -> object (torch objects for *.pt, dict for *.json). None values are skipped.
-    - pre_prune: delete non-canonical / step_* content before saving (frees space so save can succeed).
-    - post_prune: after saving, ensure only current canonical files remain.
+    - artifacts: mapping filename -> object (torch objects for *.pt, dict/str/bytes for *.json). None values are skipped.
+    - pre_prune: delete non-canonical / step_* content before saving.
+    - post_prune: after saving, enforce keep-only policy (hard guarantee).
     Returns (freed_bytes_pre, freed_bytes_post).
     """
     os.makedirs(save_dir, exist_ok=True)
 
     # Build list of target filenames we intend to keep
     keep_only = [name for name, obj in artifacts.items() if obj is not None]
-    # Always include config.json if it exists already (so we don't delete it if you didn't pass it)
+
+    # Also preserve an existing config.json if you didn't pass it this time
     cfg_path = os.path.join(save_dir, "config.json")
     if "config.json" not in keep_only and os.path.isfile(cfg_path):
         keep_only.append("config.json")
@@ -167,7 +176,7 @@ def save_latest_checkpoint(
     if pre_prune:
         freed_pre = prune_save_dir(save_dir, keep_only=keep_only)
 
-    # Save all artifacts atomically
+    # Save artifacts atomically
     for name, obj in artifacts.items():
         if obj is None:
             continue
@@ -179,17 +188,15 @@ def save_latest_checkpoint(
                 if isinstance(obj, (dict, list)):
                     _atomic_save_json(obj, dst)
                 else:
-                    # accept raw JSON string too
-                    data = obj if isinstance(obj, bytes) else str(obj).encode("utf-8")
+                    data = obj if isinstance(obj, (bytes, bytearray)) else str(obj).encode("utf-8")
                     _atomic_write_bytes(data, dst)
             else:
-                # Fallback: try bytes, then JSON
+                # Fallback: try JSON or raw bytes
                 if isinstance(obj, (dict, list)):
                     _atomic_save_json(obj, dst)
                 elif isinstance(obj, (bytes, bytearray)):
                     _atomic_write_bytes(bytes(obj), dst)
                 else:
-                    # last resort: string-ify
                     _atomic_write_bytes(str(obj).encode("utf-8"), dst)
         except Exception as e:
             if verbose:
@@ -198,7 +205,6 @@ def save_latest_checkpoint(
 
     freed_post = 0
     if post_prune:
-        # After save succeeds, enforce keep-only policy
         freed_post = prune_save_dir(save_dir, keep_only=keep_only)
 
     if verbose:

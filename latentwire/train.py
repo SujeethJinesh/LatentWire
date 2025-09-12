@@ -11,7 +11,7 @@ import torch.optim as optim
 from latentwire.models import (
     InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
 )
-from latentwire.checkpointing import save_latest_checkpoint
+from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir
 from latentwire.data import load_examples
 
 
@@ -27,59 +27,57 @@ def collate_bytes(texts, byte_tok: ByteTokenizer, device: str):
 
 
 def find_latest_checkpoint(save_dir: str):
-    """Return path to the numerically-latest state_step*.pt in save_dir, else None."""
+    """
+    Prefer canonical state.pt. Fall back to legacy 'last.pt' or numerically last 'state_step*.pt'.
+    Returns path string or None.
+    """
     if not os.path.isdir(save_dir):
         return None
-    cand = []
+    state_path = os.path.join(save_dir, "state.pt")
+    if os.path.isfile(state_path):
+        return state_path
+    last_path = os.path.join(save_dir, "last.pt")
+    if os.path.isfile(last_path):
+        return last_path
+    candidates = []
     for fn in os.listdir(save_dir):
         m = re.match(r"state_step(\d+)\.pt$", fn)
         if m:
-            cand.append((int(m.group(1)), os.path.join(save_dir, fn)))
-    if not cand:
-        last_path = os.path.join(save_dir, "last.pt")
-        return last_path if os.path.isfile(last_path) else None
-    cand.sort()
-    return cand[-1][1]
-
-
-def save_checkpoint(path, encoder, adp_llama, adp_qwen, optimizer, epoch, global_step, args):
-    state = {
-        "encoder": encoder.state_dict(),
-        "adp_llama": adp_llama.state_dict(),
-        "adp_qwen": adp_qwen.state_dict(),
-        "optimizer": optimizer.state_dict(),
-        "epoch": epoch,
-        "global_step": global_step,
-        "args": vars(args),
-        "rng": {
-            "torch": torch.get_rng_state(),
-            "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
-        },
-    }
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    torch.save(state, path)
-    # also update pointer
-    last_path = os.path.join(os.path.dirname(path), "last.pt")
-    try:
-        torch.save(state, last_path)
-    except Exception:
-        pass
+            candidates.append((int(m.group(1)), os.path.join(save_dir, fn)))
+    if candidates:
+        candidates.sort()
+        return candidates[-1][1]
+    return None
 
 
 def load_checkpoint(path, encoder, adp_llama, adp_qwen, optimizer=None, strict=True, device="cpu"):
     state = torch.load(path, map_location="cpu")
-    encoder.load_state_dict(state["encoder"], strict=strict)
-    adp_llama.load_state_dict(state["adp_llama"], strict=strict)
-    adp_qwen.load_state_dict(state["adp_qwen"], strict=strict)
+    # Two possible formats: legacy dict with keys or canonical state dicts under a "state" wrapper.
+    if "encoder" in state and "adp_llama" in state and "adp_qwen" in state:
+        encoder.load_state_dict(state["encoder"], strict=strict)
+        adp_llama.load_state_dict(state["adp_llama"], strict=strict)
+        adp_qwen.load_state_dict(state["adp_qwen"], strict=strict)
+        if optimizer is not None and "optimizer" in state:
+            optimizer.load_state_dict(state["optimizer"])
+            # Move optimizer tensors to target device
+            for p in optimizer.state.values():
+                for k, v in p.items():
+                    if torch.is_tensor(v):
+                        p[k] = v.to(device)
+        epoch = int(state.get("epoch", 0))
+        global_step = int(state.get("global_step", 0))
+        return epoch, global_step
+
+    # Canonical split-files format (current): load modules separately already saved elsewhere
+    # In this case, 'state.pt' only carries counters/args/rng and possibly optimizer if included by caller.
+    epoch = int(state.get("epoch", 0))
+    global_step = int(state.get("global_step", 0))
     if optimizer is not None and "optimizer" in state:
         optimizer.load_state_dict(state["optimizer"])
-        # Move optimizer state to correct device
         for p in optimizer.state.values():
             for k, v in p.items():
                 if torch.is_tensor(v):
                     p[k] = v.to(device)
-    epoch = int(state.get("epoch", 0))
-    global_step = int(state.get("global_step", 0))
     return epoch, global_step
 
 
@@ -119,7 +117,7 @@ def main():
 
     # Checkpointing
     ap.add_argument("--save_dir", type=str, default="./ckpt")
-    ap.add_argument("--save_every", type=int, default=0)
+    ap.add_argument("--save_every", type=int, default=0, help="If >0, save the latest checkpoint every N steps and prune old files.")
     ap.add_argument("--resume_from", type=str, default=None)
     ap.add_argument("--auto_resume", action="store_true")
     ap.add_argument("--no_load_optimizer", action="store_true")
@@ -208,9 +206,17 @@ def main():
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
 
-    # ===== Resume =====
+    # ===== Resume (optional) =====
     start_epoch = 0
     global_step = 0
+    os.makedirs(args.save_dir, exist_ok=True)
+
+    # Opportunistically prune any legacy step files before starting (saves disk if a prior run crashed midway).
+    try:
+        prune_save_dir(args.save_dir)
+    except Exception:
+        pass
+
     if args.resume_from or args.auto_resume:
         ckpt_path = args.resume_from or find_latest_checkpoint(args.save_dir)
         if ckpt_path and os.path.isfile(ckpt_path):
@@ -251,9 +257,7 @@ def main():
                 y_llama = llama_ids[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_llama_total = loss_llama + args.scale_l2 * scale_penalty(adp_llama)
-                if not torch.isfinite(loss_llama_total):
-                    print("NaN/Inf loss_llama; skipping step")
-                else:
+                if torch.isfinite(loss_llama_total):
                     loss_llama_total.backward()
 
                 # Qwen pass
@@ -262,9 +266,7 @@ def main():
                 y_qwen = qwen_ids[idx]
                 loss_qwen = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
                 loss_qwen_total = loss_qwen + args.scale_l2 * scale_penalty(adp_qwen)
-                if not torch.isfinite(loss_qwen_total):
-                    print("NaN/Inf loss_qwen; skipping step")
-                else:
+                if torch.isfinite(loss_qwen_total):
                     loss_qwen_total.backward()
 
                 if hasattr(torch, "mps") and torch.backends.mps.is_available():
@@ -276,10 +278,10 @@ def main():
                 loss_llama_value = float(loss_llama.item())
                 loss_qwen_value  = float(loss_qwen.item())
             else:
-                # Joint pass (both losses + both penalties)
-                z = encode_fn(batch_texts)       # [B, M, d_z]
-                prefix_llama = adp_llama(z)      # [B, M, d_model_L]
-                prefix_qwen  = adp_qwen(z)       # [B, M, d_model_Q]
+                # Joint pass
+                z = encode_fn(batch_texts)
+                prefix_llama = adp_llama(z)
+                prefix_qwen  = adp_qwen(z)
 
                 y_llama = llama_ids[idx]; y_qwen = qwen_ids[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
@@ -306,7 +308,6 @@ def main():
             ema_step_time = dt if ema_step_time is None else (0.9 * ema_step_time + 0.1 * dt)
 
             if (step+1) % 10 == 0 or (step+1) == steps_per_epoch:
-                # Report penalty values for transparency in debug mode
                 pen_L = float(scale_penalty(adp_llama).item()) if args.scale_l2 > 0 else 0.0
                 pen_Q = float(scale_penalty(adp_qwen).item())  if args.scale_l2 > 0 else 0.0
                 print(
@@ -337,44 +338,69 @@ def main():
                     except Exception as _e:
                         print("  [debug] norm check failed:", _e)
 
-            # Periodic checkpointing: light and full
+            # ---- Periodic checkpointing: write canonical + prune to only latest
             if args.save_every and (global_step % args.save_every == 0):
                 os.makedirs(args.save_dir, exist_ok=True)
-                torch.save(encoder.state_dict(), os.path.join(args.save_dir, f"encoder_step{global_step}.pt"))
-                torch.save(adp_llama.state_dict(), os.path.join(args.save_dir, f"adapter_llama_step{global_step}.pt"))
-                torch.save(adp_qwen.state_dict(),  os.path.join(args.save_dir, f"adapter_qwen_step{global_step}.pt"))
-                save_checkpoint(os.path.join(args.save_dir, f"state_step{global_step}.pt"),
-                                encoder, adp_llama, adp_qwen, optimizer, epoch, global_step, args)
-                print(f"  ✅ Saved checkpoint at step {global_step}")
+                cfg = {
+                    "d_z": args.d_z,
+                    "latent_len": args.latent_len,
+                    "byte_max": args.max_bytes,
+                    "llama_id": args.llama_id,
+                    "qwen_id": args.qwen_id,
+                    "encoder_type": args.encoder_type,
+                    "encoder_use_chat_template": bool(args.encoder_use_chat_template),
+                    "warm_anchor_text": args.warm_anchor_text,
+                }
+                artifacts = {
+                    "encoder.pt":       encoder.state_dict(),
+                    "adapter_llama.pt": adp_llama.state_dict(),
+                    "adapter_qwen.pt":  adp_qwen.state_dict(),
+                    "state.pt": {
+                        "epoch": epoch,
+                        "global_step": global_step,
+                        "optim": optimizer.state_dict(),
+                        "adapter_scale": {
+                            "llama": float(adp_llama.scale.detach().cpu().item()),
+                            "qwen":  float(adp_qwen.scale.detach().cpu().item()),
+                        },
+                    },
+                    "config.json": cfg,
+                }
+                save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
+                print(f"  ✅ Saved (and pruned to) latest at step {global_step}")
 
-    # ===== Final save =====
+    # ===== Final save (keep-only-latest) =====
     os.makedirs(args.save_dir, exist_ok=True)
-
     cfg = {
         "d_z": args.d_z,
         "latent_len": args.latent_len,
         "byte_max": args.max_bytes,
         "llama_id": args.llama_id,
         "qwen_id": args.qwen_id,
-        "encoder_type": args.encoder_type
+        "encoder_type": args.encoder_type,
+        "encoder_use_chat_template": bool(args.encoder_use_chat_template),
+        "warm_anchor_text": args.warm_anchor_text
+    }
+    state_blob = {
+        "epoch": epoch if 'epoch' in locals() else None,
+        "global_step": global_step if 'global_step' in locals() else None,
+        "args": vars(args),
+        "rng": {
+            "torch": torch.get_rng_state(),
+            "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+        },
+        "optimizer": optimizer.state_dict(),
+        "adapter_scale": {
+            "llama": float(adp_llama.scale.detach().cpu().item()),
+            "qwen":  float(adp_qwen.scale.detach().cpu().item()),
+        },
     }
     artifacts = {
         "encoder.pt":       encoder.state_dict(),
-        "adapter_llama.pt": adp_llama.state_dict() if 'adp_llama' in locals() and adp_llama is not None else None,
-        "adapter_qwen.pt":  adp_qwen.state_dict()  if 'adp_qwen'  in locals() and adp_qwen  is not None else None,
-        "state.pt":         {
-            "epoch": epoch if 'epoch' in locals() else None,
-            "global_step": global_step if 'global_step' in locals() else None,
-            "optim": optimizer.state_dict(),
-            "sched": scheduler.state_dict(),
-            # Persist adapter scales for debugging:
-            "adapter_scale": {
-                "llama": float(adp_llama.scale.detach().cpu().item()) if 'adp_llama' in locals() and adp_llama is not None else None,
-                "qwen":  float(adp_qwen.scale.detach().cpu().item())  if 'adp_qwen'  in locals() and adp_qwen  is not None else None,
-            },
-        },
-        # Optional: keep config in the ckpt directory. If you already wrote it once at start, you can set this to None.
-        "config.json": cfg,
+        "adapter_llama.pt": adp_llama.state_dict(),
+        "adapter_qwen.pt":  adp_qwen.state_dict(),
+        "state.pt":         state_blob,
+        "config.json":      cfg,
     }
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")

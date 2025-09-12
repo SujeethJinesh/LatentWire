@@ -55,6 +55,14 @@ def build_chat_prompts(tokenizer, raw_sources: List[str]) -> List[str]:
         outs.append(text)
     return outs
 
+NEUTRAL_SYSTEM_PROMPT = (
+    "You are a concise QA assistant. Use the context to answer with a short phrase only."
+)
+
+def build_neutral_encoder_texts(raw_sources: List[str]) -> List[str]:
+    # This exactly mirrors train.py's _neutral_chat_wrap
+    return [f"System: {NEUTRAL_SYSTEM_PROMPT}\nUser: {s}\nAssistant:" for s in raw_sources]
+
 def truncate_chat_to_k_tokens(tokenizer, chat_prompts: List[str], k: int) -> List[str]:
     outs = []
     for cp in chat_prompts:
@@ -121,6 +129,82 @@ def generate_latent(
     )
     return wrapper.decode_batch_then_clean(out_ids)
 
+# ---------------------------
+# Chunked evaluation helpers (restore)
+# ---------------------------
+
+@torch.no_grad()
+def evaluate_model_chunked_text(
+    wrapper,
+    prompts: list,
+    max_new_tokens: int,
+    chunk_size: int,
+    tag: str = ""
+):
+    """
+    Generate from text prompts in chunks to control memory usage.
+    Returns (predictions, total_wall_clock_seconds).
+    """
+    if chunk_size is None or chunk_size <= 0:
+        chunk_size = len(prompts) if len(prompts) > 0 else 1
+
+    preds = []
+    t0 = time.time()
+    for i in range(0, len(prompts), chunk_size):
+        batch = prompts[i:i + chunk_size]
+        # wrapper.generate_from_text returns token ids; decode helper cleans
+        out_ids = wrapper.generate_from_text(batch, max_new_tokens=max_new_tokens, temperature=0.0)
+        preds.extend(wrapper.decode_batch_then_clean(out_ids))
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    t_total = time.time() - t0
+    return preds, t_total
+
+
+@torch.no_grad()
+def evaluate_model_chunked_latent(
+    wrapper,
+    prefix_embeds: torch.Tensor,   # shape: [N, M, d_model]
+    max_new_tokens: int,
+    chunk_size: int,
+    tag: str = "",
+    anchor_token_text: str = None,
+    min_new_tokens: int = 0,
+    eos_ban_steps: int = 0,
+    first_token_top_p: float = 1.0,
+    first_token_temperature: float = 0.0,
+):
+    """
+    Generate from latent prefixes in chunks. Each chunk slices the [B, M, d_model]
+    prefix tensor to match batch size.
+    Returns (predictions, total_wall_clock_seconds).
+    """
+    N = prefix_embeds.size(0)
+    if chunk_size is None or chunk_size <= 0:
+        chunk_size = N if N > 0 else 1
+
+    preds = []
+    t0 = time.time()
+    for i in range(0, N, chunk_size):
+        pb = prefix_embeds[i:i + chunk_size]   # [b, M, d_model]
+        out_ids = wrapper.generate_from_prefix(
+            pb,
+            max_new_tokens=max_new_tokens,
+            temperature=0.0,
+            top_p=1.0,
+            anchor_token_text=anchor_token_text,
+            min_new_tokens=min_new_tokens,
+            eos_ban_steps=eos_ban_steps,
+            first_token_top_p=first_token_top_p,
+            first_token_temperature=first_token_temperature,
+        )
+        preds.extend(wrapper.decode_batch_then_clean(out_ids))
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    t_total = time.time() - t0
+    return preds, t_total
 
 # ---------------------------
 # Loss/NLL helpers
@@ -188,6 +272,8 @@ def _latent_debug_stats(name: str, Z: torch.Tensor, prefix: torch.Tensor, adapte
 def _encoder_texts_for_mode(mode: str, wrapper: Optional[LMWrapper], raw_sources: List[str]) -> List[str]:
     if mode == "raw" or wrapper is None:
         return raw_sources
+    elif mode == "neutral_chat":
+        return build_neutral_encoder_texts(raw_sources)
     elif mode in ("llama_chat", "qwen_chat"):
         return build_chat_prompts(wrapper.tokenizer, raw_sources)
     else:
@@ -237,7 +323,8 @@ def _select_best_encoder_mode_for_model(
     """
     candidates = ["raw"]
     if encoder_type.startswith("simple"):
-        candidates.extend([f"{model_name}_chat"])  # e.g., "llama_chat" when scoring for Llama
+        candidates.append("neutral_chat")  # EXACT training-time wrapper
+        candidates.append(f"{model_name}_chat")  # tokenizer.apply_chat_template variant
 
     scores: Dict[str, float] = {}
     Z_cache: Dict[str, torch.Tensor] = {}
@@ -364,6 +451,12 @@ def main():
     # Load run config (from training)
     with open(os.path.join(args.ckpt, "config.json")) as f:
         cfg = json.load(f)
+
+    trained_used_neutral = bool(cfg.get("encoder_use_chat_template", False))
+    if (not args.sequential_eval) and (not args.fresh_eval) and (encoder_type.startswith("simple")) and trained_used_neutral:
+        print("⚠️  Detected SimpleEncoder trained with a chat-style wrapper, but Standard eval is about to reuse a cached Z.pt.")
+        print("    Add --fresh_eval (or use --sequential_eval) so Z is recomputed with the correct wrapper.")
+
     llama_id = args.llama_id or cfg["llama_id"]
     qwen_id  = args.qwen_id  or cfg["qwen_id"]
     latent_len = int(cfg["latent_len"])
@@ -542,6 +635,9 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     with torch.no_grad():
         prefix_llama = adp_llama(Z) * args.prefix_gain
         prefix_qwen  = adp_qwen(Z)  * args.prefix_gain
+        if args.calibrate_prefix_rms:
+            prefix_llama, _, _ = _calibrate_prefix_rms(prefix_llama, llama)
+            prefix_qwen,  _, _ = _calibrate_prefix_rms(prefix_qwen,  qwen)
 
     debug_llama = _latent_debug_stats("llama", Z, prefix_llama, adp_llama, llama) if args.debug else {}
     debug_qwen  = _latent_debug_stats("qwen",  Z, prefix_qwen,  adp_qwen,  qwen)  if args.debug else {}
