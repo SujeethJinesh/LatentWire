@@ -4,6 +4,7 @@ set -euo pipefail
 source .venv/bin/activate
 
 export PYTHONPATH=.
+export TOKENIZERS_PARALLELISM=false  # quieter logs for HF tokenizers
 
 # Set run name and paths
 RUN="8B_runs"
@@ -24,7 +25,10 @@ echo ""
   echo "========================================="
   echo ""
   
-  # Training phase
+  # =========================
+  # PHASE 1: TRAINING
+  # (comment this block to skip)
+  # =========================
   echo "========================================="
   echo "PHASE 1: TRAINING"
   echo "========================================="
@@ -39,11 +43,10 @@ echo ""
     --latent_len 16 --d_z 256 --max_bytes 512 \
     --qwen_id Qwen/Qwen2.5-7B-Instruct \
     --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct \
-    --warm_anchor_text "Answer: " \
+    --anchor_mode chat --prepend_bos \
     --lr 5e-5 \
-    --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 2000 \
-    --save_training_stats --debug 2>&1
-    # --grad_ckpt 
+    --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 1000 \
+    --save_training_stats --debug --grad_ckpt 2>&1
   TRAIN_EXIT_CODE=$?
   
   echo ""
@@ -67,7 +70,8 @@ echo ""
   CUDA_VISIBLE_DEVICES=0,1 \
   python -u latentwire/eval.py \
     --ckpt ${RUN_DIR}/ckpt --dataset squad --samples 200 \
-    --max_new_tokens 12 --latent_anchor_text "Answer: " \
+    --max_new_tokens 12 \
+    --latent_anchor_mode chat --prepend_bos \
     --sequential_eval --fresh_eval \
     --encoder_text_mode auto \
     --calibration embed_rms --prefix_gain 1.0 \
@@ -89,14 +93,12 @@ echo ""
   echo "PIPELINE SUMMARY"
   echo "========================================="
   echo "Run ID: $RUN"
-  echo "Started: $(head -n 20 "$LOG_FILE" | grep "Starting pipeline at" | cut -d' ' -f4-)"
   echo "Completed: $(date)"
   echo ""
   echo "Outputs:"
   echo "  Training checkpoint: ${RUN_DIR}/ckpt/"
   echo "  Training log: ${RUN_DIR}/train.log"
   echo "  Evaluation results: ${RUN_DIR}/eval_squad/"
-  echo "  Evaluation log: ${RUN_DIR}/eval.log"
   echo "  Full pipeline log: $LOG_FILE"
   echo ""
   
@@ -123,14 +125,20 @@ echo ""
     echo "✓ Evaluation metrics saved"
     echo ""
     echo "Key metrics:"
-    python -c "
-import json
-with open('${RUN_DIR}/eval_squad/metrics.json') as f:
-    m = json.load(f)
-    print(f\"  Compression: Llama {m['compression']['llama']:.1f}x, Qwen {m['compression']['qwen']:.1f}x\")
-    print(f\"  Text F1: Llama {m['text']['llama']['f1']:.3f}, Qwen {m['text']['qwen']['f1']:.3f}\")
-    print(f\"  Latent F1: Llama {m['latent']['llama']['f1']:.3f}, Qwen {m['latent']['qwen']['f1']:.3f}\")
-" 2>/dev/null || echo "  (Could not parse metrics)"
+    python - <<'PY'
+import json,sys
+p="runs/8B_runs/eval_squad/metrics.json"
+try:
+    with open(p) as f:
+        m=json.load(f)
+    print(f"  Compression: Llama {m['compression'].get('llama','-'):.1f}x, Qwen {m['compression'].get('qwen','-'):.1f}x")
+    tl = m['text'].get('llama',{}).get('f1',None); tq = m['text'].get('qwen',{}).get('f1',None)
+    ll = m['latent'].get('llama',{}).get('f1',None); lq = m['latent'].get('qwen',{}).get('f1',None)
+    print(f"  Text F1:     Llama {tl:.3f} | Qwen {tq:.3f}")
+    print(f"  Latent F1:   Llama {ll:.3f} | Qwen {lq:.3f}")
+except Exception as e:
+    print("  (Could not parse metrics)", e)
+PY
   else
     echo "✗ Evaluation metrics missing"
   fi

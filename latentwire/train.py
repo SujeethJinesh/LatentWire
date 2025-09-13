@@ -15,6 +15,9 @@ from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir
 from latentwire.data import load_examples
 
 
+# Match eval's neutral prompt (keeps training/eval aligned)
+NEUTRAL_SYSTEM_PROMPT = "You are a concise QA assistant. Use the context to answer with a short phrase only."
+
 def collate_bytes(texts, byte_tok: ByteTokenizer, device: str):
     ids = [byte_tok.encode(t) for t in texts]
     maxT = max([x.size(0) for x in ids]) if ids else 0
@@ -47,7 +50,11 @@ def find_latest_checkpoint(save_dir: str):
 
 
 def load_checkpoint(path, encoder, adp_llama, adp_qwen, optimizer=None, strict=True, device="cpu"):
-    state = torch.load(path, map_location="cpu")
+    # safe load (silence torch.load pickle warning for our state_dicts)
+    try:
+        state = torch.load(path, map_location="cpu", weights_only=False)
+    except TypeError:
+        state = torch.load(path, map_location="cpu")
     if "encoder" in state and "adp_llama" in state and "adp_qwen" in state:
         encoder.load_state_dict(state["encoder"], strict=strict)
         adp_llama.load_state_dict(state["adp_llama"], strict=strict)
@@ -126,8 +133,18 @@ def main():
     ap.add_argument("--sequential_models", action="store_true")
     ap.add_argument("--grad_ckpt", action="store_true")
     ap.add_argument("--fp16_mps", action="store_true")
+
+    # Anchoring & BOS (NEW)
+    ap.add_argument("--anchor_mode", type=str, default="chat", choices=["chat","text","none"],
+                    help="Anchor to prepend after the latent prefix: 'chat' uses assistant header from model's chat template; "
+                         "'text' uses --warm_anchor_text; 'none' = no anchor.")
     ap.add_argument("--warm_anchor_text", type=str, default="",
-                    help="Optional anchor tokens AFTER latent prefix during training, e.g. 'Answer:'")
+                    help="Only used when --anchor_mode=text. Example: 'Answer: '")
+    ap.add_argument("--prepend_bos", dest="prepend_bos", action="store_true",
+                    help="Prepend BOS before prefix+anchor for training (recommended).")
+    ap.add_argument("--no-prepend_bos", dest="prepend_bos", action="store_false")
+    ap.set_defaults(prepend_bos=True)
+
     ap.add_argument("--debug", action="store_true")
 
     # Checkpointing
@@ -171,11 +188,21 @@ def main():
     qwen  = LMWrapper(LMConfig(model_id=args.qwen_id,  device=device, dtype=dtype, load_4bit=args.load_4bit))
     print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
 
-    if args.warm_anchor_text:
-        anchor_llama_ids = llama.tokenizer.encode(args.warm_anchor_text, add_special_tokens=False) if args.warm_anchor_text else []
-        anchor_qwen_ids  = qwen.tokenizer.encode(args.warm_anchor_text,  add_special_tokens=False) if args.warm_anchor_text else []
+    # Determine anchors (NEW)
+    if args.anchor_mode == "chat":
+        llama_anchor_text = llama.assistant_generation_prefix_text(NEUTRAL_SYSTEM_PROMPT)
+        qwen_anchor_text  = qwen.assistant_generation_prefix_text(NEUTRAL_SYSTEM_PROMPT)
+        print(f"[anchor] Using chat-template assistant headers "
+              f"(Llama len={len(llama._encode_anchor_text(llama_anchor_text))}, "
+              f"Qwen len={len(qwen._encode_anchor_text(qwen_anchor_text))})")
+    elif args.anchor_mode == "text":
+        llama_anchor_text = args.warm_anchor_text or ""
+        qwen_anchor_text  = args.warm_anchor_text or ""
+        print(f"[anchor] Using literal text anchor: {repr(args.warm_anchor_text)}")
     else:
-        anchor_llama_ids, anchor_qwen_ids = [], []
+        llama_anchor_text = ""
+        qwen_anchor_text  = ""
+        print("[anchor] No anchor tokens will be used.")
 
     if args.grad_ckpt:
         llama.enable_gradient_checkpointing()
@@ -191,7 +218,7 @@ def main():
     else:
         encoder = SimpleEncoder(d_z=args.d_z, latent_len=args.latent_len).to(device)
         def _neutral_chat_wrap(s: str) -> str:
-            system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
+            system = NEUTRAL_SYSTEM_PROMPT
             return f"System: {system}\nUser: {s}\nAssistant:"
         def encode_fn(batch_texts):
             if args.encoder_use_chat_template:
@@ -278,7 +305,11 @@ def main():
                 prefix_llama_raw = adp_llama(z)
                 prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
                 y_llama = llama_ids[idx]
-                loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
+                loss_llama = llama.forward_with_prefix_loss(
+                    prefix_llama, y_llama,
+                    anchor_token_ids=llama._encode_anchor_text(llama_anchor_text),
+                    prepend_bos=args.prepend_bos,
+                )
                 loss_llama_total = loss_llama + args.scale_l2 * scale_penalty(adp_llama)
                 if torch.isfinite(loss_llama_total):
                     loss_llama_total.backward()
@@ -288,7 +319,11 @@ def main():
                 prefix_qwen_raw = adp_qwen(z)
                 prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
                 y_qwen = qwen_ids[idx]
-                loss_qwen = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
+                loss_qwen = qwen.forward_with_prefix_loss(
+                    prefix_qwen, y_qwen,
+                    anchor_token_ids=qwen._encode_anchor_text(qwen_anchor_text),
+                    prepend_bos=args.prepend_bos,
+                )
                 loss_qwen_total = loss_qwen + args.scale_l2 * scale_penalty(adp_qwen)
                 if torch.isfinite(loss_qwen_total):
                     loss_qwen_total.backward()
@@ -296,7 +331,6 @@ def main():
                 optimizer.step()
                 loss_llama_value = float(loss_llama.item())
                 loss_qwen_value  = float(loss_qwen.item())
-                # Track RMS of the *raw* adapter output only
                 if args.save_training_stats:
                     try: rms_llama.update(_tensor_rms(prefix_llama_raw))
                     except Exception: pass
@@ -307,12 +341,19 @@ def main():
                 z = encode_fn(batch_texts)
                 prefix_llama_raw = adp_llama(z)
                 prefix_qwen_raw  = adp_qwen(z)
-                # Calibrate both before loss
                 prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
                 prefix_qwen  = _calibrate_to_embed_rms(prefix_qwen_raw,  qwen)
                 y_llama = llama_ids[idx]; y_qwen = qwen_ids[idx]
-                loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
-                loss_qwen  = qwen.forward_with_prefix_loss(prefix_qwen,  y_qwen,  anchor_token_ids=anchor_qwen_ids)
+                loss_llama = llama.forward_with_prefix_loss(
+                    prefix_llama, y_llama,
+                    anchor_token_ids=llama._encode_anchor_text(llama_anchor_text),
+                    prepend_bos=args.prepend_bos,
+                )
+                loss_qwen  = qwen.forward_with_prefix_loss(
+                    prefix_qwen,  y_qwen,
+                    anchor_token_ids=qwen._encode_anchor_text(qwen_anchor_text),
+                    prepend_bos=args.prepend_bos,
+                )
                 penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
                 loss = 0.5 * (loss_llama + loss_qwen) + args.scale_l2 * penalty
                 if not torch.isfinite(loss):
@@ -322,7 +363,6 @@ def main():
                 optimizer.step()
                 loss_llama_value = float(loss_llama.item())
                 loss_qwen_value  = float(loss_qwen.item())
-                # Track RMS of the *raw* adapter outputs only
                 if args.save_training_stats:
                     try: rms_llama.update(_tensor_rms(prefix_llama_raw))
                     except Exception: pass
@@ -363,7 +403,9 @@ def main():
                     "qwen_id": args.qwen_id,
                     "encoder_type": args.encoder_type,
                     "encoder_use_chat_template": bool(args.encoder_use_chat_template),
-                    "warm_anchor_text": args.warm_anchor_text,
+                    "anchor_mode": args.anchor_mode,
+                    "warm_anchor_text": llama_anchor_text if args.anchor_mode != "none" else "",
+                    "prepend_bos": bool(args.prepend_bos),
                 }
                 artifacts = {
                     "encoder.pt":       encoder.state_dict(),
@@ -393,7 +435,9 @@ def main():
         "qwen_id": args.qwen_id,
         "encoder_type": args.encoder_type,
         "encoder_use_chat_template": bool(args.encoder_use_chat_template),
-        "warm_anchor_text": args.warm_anchor_text
+        "anchor_mode": args.anchor_mode,
+        "warm_anchor_text": llama_anchor_text if args.anchor_mode != "none" else "",
+        "prepend_bos": bool(args.prepend_bos),
     }
     state_blob = {
         "epoch": epoch if 'epoch' in locals() else None,

@@ -1,0 +1,46 @@
+=========================================
+CODE-SERVER CONNECTION INFO
+=========================================
+
+Job ID: 92006
+Running on: n02
+Port: 8151
+Started at: Sat Sep 13 12:06:13 PM PDT 2025
+
+STEP 1: Run this on your LOCAL machine:
+
+ssh -L 8151:n02:8151 marlowe
+
+STEP 2: Open browser to:
+
+http://localhost:8151
+
+Working directory: /projects/m000066/sujinesh/LatentWire
+
+=========================================
+To stop: scancel 92006
+=========================================
+Starting code-server at Sat Sep 13 12:06:13 PM PDT 2025...
+[2025-09-13T19:06:14.290Z] info  code-server 4.93.1 69df01185ce2f80e99c9e4f8c8de1907cc7a9bc5
+[2025-09-13T19:06:14.292Z] info  Using user-data-dir /tmp/code-server-92006
+[2025-09-13T19:06:14.300Z] warn  Could not create socket at /tmp/code-server-92006/code-server-ipc.sock
+[2025-09-13T19:06:14.304Z] info  Using config file /users/sujinesh/.config/code-server/config.yaml
+[2025-09-13T19:06:14.304Z] info  HTTP server listening on http://0.0.0.0:8151/
+[2025-09-13T19:06:14.304Z] info    - Authentication is disabled
+[2025-09-13T19:06:14.304Z] info    - Not serving HTTPS
+[2025-09-13T19:06:14.304Z] info    - Proxy disabled
+[2025-09-13T19:06:14.304Z] info  Session server listening on /tmp/code-server-92006/code-server-ipc.sock
+[12:07:37] 
+
+
+
+
+[12:07:37] Extension host agent started.
+[12:07:37] Started initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-92006
+[12:07:37] Completed initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-92006
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
+[12:07:38] [171.67.99.202][70c0676c][ManagementConnection] New connection established.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[12:07:39] [171.67.99.202][c18e0ec8][ExtensionHostConnection] New connection established.
+[12:07:40] [171.67.99.202][c18e0ec8][ExtensionHostConnection] <2068978> Launched Extension Host Process.

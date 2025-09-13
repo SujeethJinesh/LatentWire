@@ -160,6 +160,7 @@ class Adapter(nn.Module):
         self.scale = nn.Parameter(torch.ones(1))
     def forward(self, z: torch.Tensor) -> torch.Tensor:
         x = self.net(z) * self.scale
+        # bounded for numerical stability, linear in small range used after calibration
         return torch.tanh(x / 3.0) * 3.0
 
 
@@ -263,6 +264,24 @@ class LMWrapper(nn.Module):
                 ids = ids[0]
             return ids or []
 
+    def assistant_generation_prefix_text(self, system_prompt: str) -> str:
+        """
+        Return the exact assistant-header string that the tokenizer adds when
+        add_generation_prompt=True is used. This is *model-specific* and robust.
+        """
+        try:
+            msgs = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": ""},  # empty user to isolate header
+            ]
+            no_gen = self.tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=False)
+            with_gen = self.tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+            # suffix added by generation prompt = assistant header tokens
+            return with_gen[len(no_gen):]
+        except Exception:
+            # Safe fallback to a generic anchor if template isn’t available
+            return "Answer: "
+
     def enable_gradient_checkpointing(self):
         try:
             if hasattr(self.model, "gradient_checkpointing_enable"):
@@ -297,10 +316,12 @@ class LMWrapper(nn.Module):
         prefix_embeds: torch.Tensor,
         target_ids: torch.Tensor,
         anchor_token_ids: Optional[List[int]] = None,
+        prepend_bos: bool = False,
     ) -> torch.Tensor:
         """
         Teacher-forced CE over the gold answer conditioned on a latent prefix,
-        optionally warm-started by one or more anchor tokens.
+        optionally warm-started by an anchor sequence, with an optional BOS *prepended*
+        (recommended for Instruct models).
         """
         B, M, D = prefix_embeds.shape
         model_device = next(self.model.parameters()).device
@@ -309,6 +330,16 @@ class LMWrapper(nn.Module):
             prefix_embeds = prefix_embeds.to(model_device, dtype=emb_dtype)
         else:
             prefix_embeds = prefix_embeds.to(model_device)
+
+        # Optional BOS
+        if prepend_bos and (getattr(self.tokenizer, "bos_token_id", None) is not None):
+            bos_id = int(self.tokenizer.bos_token_id)
+            bos_ids = torch.full((B, 1), bos_id, dtype=torch.long, device=model_device)
+            bos_embeds = self.input_embed(bos_ids)
+            bos_len = 1
+        else:
+            bos_embeds = None
+            bos_len = 0
 
         # Optional anchor
         A = 0
@@ -324,16 +355,29 @@ class LMWrapper(nn.Module):
         tf_embeds = self.input_embed(tf_inputs)
 
         # Compose
+        parts = []
+        if bos_embeds is not None:
+            parts.append(bos_embeds)
+        parts.extend([prefix_embeds])
         if anchor_embeds is not None:
-            inputs_embeds = torch.cat([prefix_embeds, anchor_embeds, tf_embeds], dim=1)
-        else:
-            inputs_embeds = torch.cat([prefix_embeds, tf_embeds], dim=1)
+            parts.append(anchor_embeds)
+        parts.append(tf_embeds)
+        inputs_embeds = torch.cat(parts, dim=1)
 
-        # Labels (ignore prefix + optional anchor)
+        # Labels (ignore BOS + prefix + optional anchor)
         labels = target_ids[:, 1:].to(model_device)
+        ignore_bos = torch.full((B, bos_len), -100, dtype=torch.long, device=model_device) if bos_len > 0 else None
         ignore_prefix = torch.full((B, M), -100, dtype=torch.long, device=model_device)
         ignore_anchor = torch.full((B, A), -100, dtype=torch.long, device=model_device) if A > 0 else None
-        labels_full = torch.cat([ignore_prefix, ignore_anchor, labels] if A > 0 else [ignore_prefix, labels], dim=1)
+
+        labels_full_parts = []
+        if ignore_bos is not None:
+            labels_full_parts.append(ignore_bos)
+        labels_full_parts.extend([ignore_prefix])
+        if ignore_anchor is not None:
+            labels_full_parts.append(ignore_anchor)
+        labels_full_parts.append(labels)
+        labels_full = torch.cat(labels_full_parts, dim=1)
 
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)
         out = self.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, labels=labels_full)
@@ -352,9 +396,9 @@ class LMWrapper(nn.Module):
         n_tokens = (labels != -100).sum()
         return out.loss, int(n_tokens.item())
 
-    def score_prefix_logprob(self, prefix_embeds: torch.Tensor, target_ids: torch.Tensor, anchor_token_ids: Optional[List[int]] = None) -> float:
-        """Return total log-prob (negative NLL) of target_ids under the latent prefix (with optional anchor)."""
-        loss = self.forward_with_prefix_loss(prefix_embeds, target_ids, anchor_token_ids=anchor_token_ids)
+    def score_prefix_logprob(self, prefix_embeds: torch.Tensor, target_ids: torch.Tensor, anchor_token_ids: Optional[List[int]] = None, prepend_bos: bool = False) -> float:
+        """Return total log-prob (negative NLL) of target_ids under the latent prefix (with optional anchor/BOS)."""
+        loss = self.forward_with_prefix_loss(prefix_embeds, target_ids, anchor_token_ids=anchor_token_ids, prepend_bos=prepend_bos)
         n_tokens = target_ids.size(1) - 1
         total_nll = loss * n_tokens
         return -float(total_nll.item())
@@ -401,11 +445,11 @@ class LMWrapper(nn.Module):
         eos_ban_steps: int = 0,
         first_token_top_p: float = 1.0,
         first_token_temperature: float = 0.0,
-        append_bos_after_prefix: Optional[bool] = None,  # NEW: control BOS insertion
+        prepend_bos_before_all: bool = True,  # NEW default: prepend BOS
     ) -> List[List[int]]:
         """
         Generation from latent prefix with optional anchor text.
-        If append_bos_after_prefix is None (auto), we append BOS *only if* there is no anchor text.
+        BOS is *prepended* by default, then prefix, then anchor.
         """
         model_device = next(self.model.parameters()).device
         emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
@@ -416,24 +460,24 @@ class LMWrapper(nn.Module):
 
         B = prefix_embeds.size(0)
 
+        # Optional BOS
+        parts = []
+        if prepend_bos_before_all and (getattr(self.tokenizer, "bos_token_id", None) is not None):
+            bos = torch.full((B, 1), int(self.tokenizer.bos_token_id), dtype=torch.long, device=model_device)
+            bos_embeds = self.input_embed(bos)
+            parts.append(bos_embeds)
+
+        # Latent prefix
+        parts.append(prefix_embeds)
+
         # Optional anchor tokens
         anchor_ids = self._encode_anchor_text(anchor_token_text) if anchor_token_text else []
         if anchor_ids:
             anchor_ids_tensor = torch.tensor(anchor_ids, dtype=torch.long, device=model_device).unsqueeze(0).expand(B, -1)
             anchor_embeds = self.input_embed(anchor_ids_tensor)
-            inputs_embeds = torch.cat([prefix_embeds, anchor_embeds], dim=1)
-        else:
-            inputs_embeds = prefix_embeds
+            parts.append(anchor_embeds)
 
-        # BOS priming (auto policy: only if no anchor provided)
-        if append_bos_after_prefix is None:
-            append_bos_after_prefix = (len(anchor_ids) == 0)
-        if append_bos_after_prefix:
-            bos_id = getattr(self.tokenizer, "bos_token_id", None)
-            if bos_id is not None:
-                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
-                bos_embeds = self.input_embed(bos)
-                inputs_embeds = torch.cat([inputs_embeds, bos_embeds], dim=1)
+        inputs_embeds = torch.cat(parts, dim=1)
 
         # Initial forward
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)
