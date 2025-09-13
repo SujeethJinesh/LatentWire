@@ -6,10 +6,8 @@ source .venv/bin/activate
 export PYTHONPATH=.
 
 # Set run name and paths
-# RUN="rw_squad_qwen_"
-# RUN_DIR="runs/$RUN"
-RUN="show_that_1B_is_trainable_w_low_nll"
-RUN_DIR="preserved_data/$RUN"
+RUN="8B_runs"
+RUN_DIR="runs/$RUN"
 LOG_FILE="${RUN_DIR}/full_pipeline_$(date +%Y%m%d_%H%M%S).log"
 
 # Create run directory if it doesn't exist
@@ -36,14 +34,16 @@ echo ""
   
   CUDA_VISIBLE_DEVICES=0,1 \
   python -u latentwire/train.py \
-    --dataset squad --samples 87599 --epochs 10 --batch_size 128 \
+    --dataset squad --samples 87599 --epochs 8 --batch_size 128 \
     --encoder_type simple-st --encoder_use_chat_template \
     --latent_len 16 --d_z 256 --max_bytes 512 \
-    --qwen_id Qwen/Qwen2.5-7B-Instruct --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct \
+    --qwen_id Qwen/Qwen2.5-7B-Instruct \
+    --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct \
     --warm_anchor_text "Answer: " \
-    --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 171 \
+    --lr 5e-5 \
+    --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 2000 \
     --save_training_stats --debug 2>&1
-  
+    # --grad_ckpt 
   TRAIN_EXIT_CODE=$?
   
   echo ""
