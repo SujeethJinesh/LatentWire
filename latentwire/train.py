@@ -89,6 +89,12 @@ def _tensor_rms(x: torch.Tensor) -> float:
     with torch.no_grad():
         return float(x.float().pow(2).mean().sqrt().item())
 
+def _calibrate_to_embed_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> torch.Tensor:
+    with torch.no_grad():
+        cur = prefix.float().pow(2).mean().sqrt()
+        tgt = wrapper.input_embedding_rms()
+        gain = float(tgt) / float(cur) if float(cur) > 0 else 1.0
+    return prefix * gain
 
 def main():
     ap = argparse.ArgumentParser()
@@ -267,15 +273,20 @@ def main():
 
             if args.sequential_models:
                 z = encode_fn(batch_texts)
-                prefix_llama = adp_llama(z)
+
+                # ---- Llama path
+                prefix_llama_raw = adp_llama(z)
+                prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
                 y_llama = llama_ids[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_llama_total = loss_llama + args.scale_l2 * scale_penalty(adp_llama)
                 if torch.isfinite(loss_llama_total):
                     loss_llama_total.backward()
 
+                # ---- Qwen path
                 z = encode_fn(batch_texts)
-                prefix_qwen = adp_qwen(z)
+                prefix_qwen_raw = adp_qwen(z)
+                prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
                 y_qwen = qwen_ids[idx]
                 loss_qwen = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
                 loss_qwen_total = loss_qwen + args.scale_l2 * scale_penalty(adp_qwen)
@@ -285,10 +296,20 @@ def main():
                 optimizer.step()
                 loss_llama_value = float(loss_llama.item())
                 loss_qwen_value  = float(loss_qwen.item())
+                # Track RMS of the *raw* adapter output only
+                if args.save_training_stats:
+                    try: rms_llama.update(_tensor_rms(prefix_llama_raw))
+                    except Exception: pass
+                    try: rms_qwen.update(_tensor_rms(prefix_qwen_raw))
+                    except Exception: pass
+
             else:
                 z = encode_fn(batch_texts)
-                prefix_llama = adp_llama(z)
-                prefix_qwen  = adp_qwen(z)
+                prefix_llama_raw = adp_llama(z)
+                prefix_qwen_raw  = adp_qwen(z)
+                # Calibrate both before loss
+                prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
+                prefix_qwen  = _calibrate_to_embed_rms(prefix_qwen_raw,  qwen)
                 y_llama = llama_ids[idx]; y_qwen = qwen_ids[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_qwen  = qwen.forward_with_prefix_loss(prefix_qwen,  y_qwen,  anchor_token_ids=anchor_qwen_ids)
@@ -301,17 +322,12 @@ def main():
                 optimizer.step()
                 loss_llama_value = float(loss_llama.item())
                 loss_qwen_value  = float(loss_qwen.item())
-
-            # Track training-time prefix RMS (for eval-time calibration)
-            if args.save_training_stats:
-                try:
-                    rms_llama.update(_tensor_rms(prefix_llama))
-                except Exception:
-                    pass
-                try:
-                    rms_qwen.update(_tensor_rms(prefix_qwen))
-                except Exception:
-                    pass
+                # Track RMS of the *raw* adapter outputs only
+                if args.save_training_stats:
+                    try: rms_llama.update(_tensor_rms(prefix_llama_raw))
+                    except Exception: pass
+                    try: rms_qwen.update(_tensor_rms(prefix_qwen_raw))
+                    except Exception: pass
 
             # Grad norm (monitor)
             try:
@@ -329,14 +345,14 @@ def main():
                 msg = (
                     f"  step {step+1}/{steps_per_epoch} | "
                     f"loss_L={loss_llama_value:.4f} | loss_Q={loss_qwen_value:.4f} | "
-                    f"scale_pen(L)={pen_L:.4e} | scale_pen(Q)={pen_Q:.4e} | "
+                    f"scale_pen(L)= {pen_L:.4e} | scale_pen(Q)= {pen_Q:.4e} | "
                     f"grad_norm={total_norm:.2f} | sec/step~{ema_step_time:.2f}"
                 )
                 if args.save_training_stats and (rms_llama.n > 0 or rms_qwen.n > 0):
                     msg += f" | rms_L~{rms_llama.mean:.4f} rms_Q~{rms_qwen.mean:.4f}"
                 print(msg)
 
-            # ---- Periodic checkpointing: write canonical + prune to only latest
+            # ---- Periodic checkpoint: save + prune
             if args.save_every and (global_step % args.save_every == 0):
                 os.makedirs(args.save_dir, exist_ok=True)
                 cfg = {
@@ -367,7 +383,7 @@ def main():
                 save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
                 print(f"  ✅ Saved (and pruned to) latest at step {global_step}")
 
-    # ===== Final save (keep-only-latest) =====
+    # ===== Final save =====
     os.makedirs(args.save_dir, exist_ok=True)
     cfg = {
         "d_z": args.d_z,
@@ -403,7 +419,7 @@ def main():
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
 
-    # Save training-time prefix RMS stats (optional)
+    # Save training-time prefix RMS stats (optional, RAW only)
     if args.save_training_stats:
         stats = {
             "llama": {"rms_mean": rms_llama.mean, "count": rms_llama.n},

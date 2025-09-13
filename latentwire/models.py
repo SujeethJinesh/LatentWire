@@ -31,7 +31,6 @@ def clean_pred(s: str) -> str:
         if idx >= 0:
             s = s[:idx]
     s = re.sub(r"^\s*(assistant|assistant:|Assistant:)\s*", "", s)
-    # robust to all-empty strings
     lines = [ln for ln in s.splitlines() if ln.strip()]
     if not lines:
         return ""
@@ -129,7 +128,6 @@ class SimpleEncoder(nn.Module):
             for p in self.st._first_module().parameters():
                 p.requires_grad_((False))
         except Exception:
-            # Fallback: freeze all if _first_module is not exposed
             for p in self.st.parameters():
                 p.requires_grad_(False)
         try:
@@ -141,10 +139,9 @@ class SimpleEncoder(nn.Module):
         self.ln = nn.LayerNorm(d_z)
 
     def forward(self, texts: List[str]) -> torch.Tensor:
-        # deterministic frozen features
         with torch.no_grad():
             emb = self.st.encode(texts, convert_to_tensor=True, show_progress_bar=False, normalize_embeddings=False)
-        emb = emb.detach().clone()  # ensure normal tensor for autograd safety
+        emb = emb.detach().clone()
         z0 = self.proj(emb)         # [B, d_z]
         B = z0.size(0)
         q = self.queries.unsqueeze(0).expand(B, -1, -1)  # [B, M, d_z]
@@ -162,7 +159,6 @@ class Adapter(nn.Module):
         self.scale = nn.Parameter(torch.ones(1))
     def forward(self, z: torch.Tensor) -> torch.Tensor:
         x = self.net(z) * self.scale
-        # mild clipping to keep statistics in a sane band while letting the model breathe
         return torch.tanh(x / 3.0) * 3.0
 
 
@@ -283,9 +279,6 @@ class LMWrapper(nn.Module):
 
     @torch.no_grad()
     def input_embedding_rms(self, sample_rows: int = 65536) -> float:
-        """
-        RMS of the token embedding matrix, used for diagnostics / optional prefix calibration.
-        """
         W = self.input_embed.weight.detach()
         if W.dim() != 2:
             W = W.view(W.size(0), -1)
@@ -358,8 +351,9 @@ class LMWrapper(nn.Module):
         n_tokens = (labels != -100).sum()
         return out.loss, int(n_tokens.item())
 
-    def score_prefix_logprob(self, prefix_embeds: torch.Tensor, target_ids: torch.Tensor) -> float:
-        loss = self.forward_with_prefix_loss(prefix_embeds, target_ids)
+    def score_prefix_logprob(self, prefix_embeds: torch.Tensor, target_ids: torch.Tensor, anchor_token_ids: Optional[List[int]] = None) -> float:
+        """Return total log-prob (negative NLL) of target_ids under the latent prefix (with optional anchor)."""
+        loss = self.forward_with_prefix_loss(prefix_embeds, target_ids, anchor_token_ids=anchor_token_ids)
         n_tokens = target_ids.size(1) - 1
         total_nll = loss * n_tokens
         return -float(total_nll.item())
@@ -386,7 +380,6 @@ class LMWrapper(nn.Module):
         sorted_probs, sorted_idx = torch.sort(probs, dim=-1, descending=True)
         cdf = torch.cumsum(sorted_probs, dim=-1)
         mask = cdf <= top_p
-        # always keep at least one
         mask[..., 0] = True
         masked_probs = sorted_probs * mask
         masked_probs = masked_probs / masked_probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
@@ -409,7 +402,7 @@ class LMWrapper(nn.Module):
         first_token_temperature: float = 0.0,
     ) -> List[List[int]]:
         """
-        Fixed version with debugging
+        Generation from latent prefix with optional anchor text.
         """
         model_device = next(self.model.parameters()).device
         emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
@@ -417,54 +410,47 @@ class LMWrapper(nn.Module):
             prefix_embeds = prefix_embeds.to(model_device, dtype=emb_dtype)
         else:
             prefix_embeds = prefix_embeds.to(model_device)
-        
+
         B = prefix_embeds.size(0)
-        
-        # Get anchor tokens
+
+        # Optional anchor tokens
         anchor_ids = self._encode_anchor_text(anchor_token_text) if anchor_token_text else []
-        
-        # DEBUG: Print what we're using
-        if B == 1 and anchor_token_text:  # Only debug first batch
-            print(f"[DEBUG] Anchor text: '{anchor_token_text}' -> IDs: {anchor_ids}")
-        
-        # Build initial embeddings exactly as in training
         if anchor_ids:
             anchor_ids_tensor = torch.tensor(anchor_ids, dtype=torch.long, device=model_device).unsqueeze(0).expand(B, -1)
             anchor_embeds = self.input_embed(anchor_ids_tensor)
             inputs_embeds = torch.cat([prefix_embeds, anchor_embeds], dim=1)
-            print(f"[DEBUG] Using anchor, shape: {inputs_embeds.shape}")
         else:
-            # No anchor - just use prefix alone (training should have handled this)
             inputs_embeds = prefix_embeds
-            print(f"[DEBUG] No anchor, shape: {inputs_embeds.shape}")
-        
-        # Process prefix+anchor together
+
+        # *** BOS priming to match teacher-forcing context ***
+        bos_id = getattr(self.tokenizer, "bos_token_id", None)
+        if bos_id is not None:
+            bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
+            bos_embeds = self.input_embed(bos)
+            inputs_embeds = torch.cat([inputs_embeds, bos_embeds], dim=1)
+
+        # Initial forward
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)
         out = self.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, use_cache=True, return_dict=True)
         past = out.past_key_values
         next_token_logits = out.logits[:, -1, :]
-        
-        # DEBUG: Check logits
-        if B == 1:
-            top5 = torch.topk(next_token_logits[0], k=5)
-            top5_tokens = [self.tokenizer.decode([i]) for i in top5.indices.tolist()]
-            print(f"[DEBUG] Top 5 next tokens: {top5_tokens}")
-        
-        # Rest of generation...
+
         pad_id = self.tokenizer.pad_token_id or 0
         stop_ids = set(self._stop_token_ids)
-        
+
         generated = [[] for _ in range(B)]
         finished = torch.zeros(B, dtype=torch.bool, device=model_device)
-        
+
         for t in range(max_new_tokens):
             step_logits = next_token_logits.clone()
             step_logits[finished] = -1e9
-            
+
+            # Early EOS ban / min tokens
             if t < max(min_new_tokens, eos_ban_steps):
                 for sid in stop_ids:
                     step_logits[:, sid] = -1e9
-            
+
+            # First-token exploration if requested
             if t == 0 and (first_token_temperature > 0.0 or first_token_top_p < 1.0):
                 next_tokens = self._sample_top_p(step_logits, top_p=first_token_top_p, temperature=first_token_temperature)
             else:
@@ -472,7 +458,7 @@ class LMWrapper(nn.Module):
                     next_tokens = torch.argmax(step_logits, dim=-1)
                 else:
                     next_tokens = self._sample_top_p(step_logits, top_p=top_p, temperature=temperature)
-            
+
             for b in range(B):
                 if finished[b]:
                     continue
@@ -481,10 +467,10 @@ class LMWrapper(nn.Module):
                     finished[b] = True
                 else:
                     generated[b].append(nid)
-            
+
             if bool(torch.all(finished).item()):
                 break
-            
+
             feed_tokens = next_tokens.clone()
             feed_tokens[finished] = pad_id
             attn_mask_step = torch.ones((B, 1), dtype=torch.long, device=model_device)
@@ -494,7 +480,7 @@ class LMWrapper(nn.Module):
             )
             past = out.past_key_values
             next_token_logits = out.logits[:, -1, :]
-        
+
         return generated
 
     # ---- generation: text prompt ----

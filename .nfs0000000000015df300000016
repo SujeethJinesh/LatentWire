@@ -1,0 +1,60 @@
+=========================================
+CODE-SERVER CONNECTION INFO
+=========================================
+
+Job ID: 91830
+Running on: n15
+Port: 8762
+Started at: Fri Sep 12 10:49:38 AM PDT 2025
+
+STEP 1: Run this on your LOCAL machine:
+
+ssh -L 8762:n15:8762 marlowe
+
+STEP 2: Open browser to:
+
+http://localhost:8762
+
+Working directory: /projects/m000066/sujinesh/LatentWire
+
+=========================================
+To stop: scancel 91830
+=========================================
+Starting code-server at Fri Sep 12 10:49:38 AM PDT 2025...
+[2025-09-12T17:49:39.614Z] info  code-server 4.93.1 69df01185ce2f80e99c9e4f8c8de1907cc7a9bc5
+[2025-09-12T17:49:39.619Z] info  Using user-data-dir /tmp/code-server-91830
+[2025-09-12T17:49:39.627Z] warn  Could not create socket at /tmp/code-server-91830/code-server-ipc.sock
+[2025-09-12T17:49:39.634Z] info  Using config file /users/sujinesh/.config/code-server/config.yaml
+[2025-09-12T17:49:39.634Z] info  HTTP server listening on http://0.0.0.0:8762/
+[2025-09-12T17:49:39.634Z] info    - Authentication is disabled
+[2025-09-12T17:49:39.634Z] info    - Not serving HTTPS
+[2025-09-12T17:49:39.634Z] info    - Proxy disabled
+[2025-09-12T17:49:39.634Z] info  Session server listening on /tmp/code-server-91830/code-server-ipc.sock
+[10:59:04] 
+
+
+
+
+[10:59:04] Extension host agent started.
+[10:59:04] Started initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-91830
+[10:59:04] Completed initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-91830
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[10:59:05] [171.67.99.201][942ee093][ManagementConnection] New connection established.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[10:59:06] [171.67.99.201][de50e580][ExtensionHostConnection] New connection established.
+[10:59:07] [171.67.99.201][de50e580][ExtensionHostConnection] <2555282> Launched Extension Host Process.
+[10:59:10] [171.67.99.201][942ee093][ManagementConnection] The client has disconnected gracefully, so the connection will be disposed.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[10:59:14] [171.67.99.201][832a86e0][ManagementConnection] New connection established.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[10:59:15] [171.67.99.201][5a28fccd][ExtensionHostConnection] New connection established.
+[10:59:15] [171.67.99.201][5a28fccd][ExtensionHostConnection] <2555503> Launched Extension Host Process.
+[11:04:14] [171.67.99.201][de50e580][ExtensionHostConnection] <2555282> Extension Host Process exited with code: 0, signal: null.
+[14:50:02] [171.67.99.201][5a28fccd][ExtensionHostConnection] The client has reconnected.
+[14:50:03] [171.67.99.201][832a86e0][ManagementConnection] The client has reconnected.
+[14:53:56] [171.67.99.201][832a86e0][ManagementConnection] The client has disconnected, will wait for reconnection 3h before disposing...
+[17:45:33] [171.67.99.201][832a86e0][ManagementConnection] Another client has connected, will shorten the wait for reconnection 5m before disposing...
+[17:45:33] [171.67.99.200][832a86e0][ManagementConnection] The client has reconnected.
+[17:45:36] [171.67.99.200][5a28fccd][ExtensionHostConnection] The client has reconnected.

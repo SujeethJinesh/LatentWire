@@ -6,8 +6,10 @@ source .venv/bin/activate
 export PYTHONPATH=.
 
 # Set run name and paths
-RUN="rw_squad_qwen_simple_m16_e2_bs32_lr2e-4"
-RUN_DIR="runs/$RUN"
+# RUN="rw_squad_qwen_"
+# RUN_DIR="runs/$RUN"
+RUN="show_that_1B_is_trainable_w_low_nll"
+RUN_DIR="preserved_data/$RUN"
 LOG_FILE="${RUN_DIR}/full_pipeline_$(date +%Y%m%d_%H%M%S).log"
 
 # Create run directory if it doesn't exist
@@ -25,33 +27,33 @@ echo ""
   echo ""
   
   # Training phase
-  echo "========================================="
-  echo "PHASE 1: TRAINING"
-  echo "========================================="
-  echo "Starting training at $(date)"
-  echo "Checkpoint will be saved to: ${RUN_DIR}/ckpt"
-  echo ""
+  # echo "========================================="
+  # echo "PHASE 1: TRAINING"
+  # echo "========================================="
+  # echo "Starting training at $(date)"
+  # echo "Checkpoint will be saved to: ${RUN_DIR}/ckpt"
+  # echo ""
   
-  CUDA_VISIBLE_DEVICES=0,1 \
-  python -u latentwire/train.py \
-    --dataset squad --samples 87599 --epochs 8 --batch_size 256 \
-    --encoder_type simple-st --encoder_use_chat_template \
-    --latent_len 16 --d_z 256 --max_bytes 512 \
-    --qwen_id Qwen/Qwen2-0.5B-Instruct --llama_id TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
-    --warm_anchor_text "Answer: " \
-    --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 171 \
-    --save_training_stats --debug 2>&1
+  # CUDA_VISIBLE_DEVICES=0,1 \
+  # python -u latentwire/train.py \
+  #   --dataset squad --samples 87599 --epochs 8 --batch_size 256 \
+  #   --encoder_type simple-st --encoder_use_chat_template \
+  #   --latent_len 16 --d_z 256 --max_bytes 512 \
+  #   --qwen_id Qwen/Qwen2-0.5B-Instruct --llama_id TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  #   --warm_anchor_text "Answer: " \
+  #   --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 171 \
+  #   --save_training_stats --debug 2>&1
   
-  TRAIN_EXIT_CODE=$?
+  # TRAIN_EXIT_CODE=$?
   
-  echo ""
-  echo "Training completed at $(date) with exit code: $TRAIN_EXIT_CODE"
+  # echo ""
+  # echo "Training completed at $(date) with exit code: $TRAIN_EXIT_CODE"
   
-  if [ $TRAIN_EXIT_CODE -ne 0 ]; then
-    echo "ERROR: Training failed with exit code $TRAIN_EXIT_CODE"
-    echo "Aborting pipeline"
-    exit $TRAIN_EXIT_CODE
-  fi
+  # if [ $TRAIN_EXIT_CODE -ne 0 ]; then
+  #   echo "ERROR: Training failed with exit code $TRAIN_EXIT_CODE"
+  #   echo "Aborting pipeline"
+  #   exit $TRAIN_EXIT_CODE
+  # fi
   
   echo ""
   echo "========================================="
@@ -65,14 +67,14 @@ echo ""
   CUDA_VISIBLE_DEVICES=0,1 \
   python -u latentwire/eval.py \
     --ckpt ${RUN_DIR}/ckpt --dataset squad --samples 200 \
-    --max_new_tokens 8 --latent_anchor_text "Answer: " \
+    --max_new_tokens 12 --latent_anchor_text "Answer: " \
     --sequential_eval --fresh_eval \
     --encoder_text_mode auto \
-    --calibration train_stats --prefix_gain 1.0 \
+    --calibration embed_rms --prefix_gain 1.0 \
     --first_token_top_p 0.9 --first_token_temperature 0.7 \
     --min_new_tokens 2 --eos_ban_steps 6 \
     --out_dir ${RUN_DIR}/eval_squad --debug 2>&1
-  
+
   EVAL_EXIT_CODE=$?
   
   echo ""

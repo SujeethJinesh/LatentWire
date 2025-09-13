@@ -1,0 +1,228 @@
+PHASE 2: EVALUATION
+=========================================
+Starting evaluation at Fri Sep 12 18:25:22 PDT 2025
+Using checkpoint from: preserved_data/show_that_1B_is_trainable_w_low_nll/ckpt
+Results will be saved to: preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Building encoder and computing Z...
+/projects/m000066/sujinesh/LatentWire/latentwire/eval.py:562: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  encoder_wire.load_state_dict(torch.load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+Saved Z to preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad/Z.pt
+
+[Sequential Evaluation Mode - one model at a time]
+/projects/m000066/sujinesh/LatentWire/latentwire/eval.py:874: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  encoder.load_state_dict(torch.load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+
+Evaluating Llama...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+/projects/m000066/sujinesh/LatentWire/latentwire/eval.py:891: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  adp_llama.load_state_dict(torch.load(os.path.join(args.ckpt, "adapter_llama.pt"), map_location=device), strict=True)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+[align:llama] encoder_text_mode candidates=['raw', 'neutral_chat', 'llama_chat'] | nlls={'raw': 7.648946731256884, 'neutral_chat': 7.710875178935916, 'llama_chat': 7.74808314966601} | picked=raw
+Saved Z[llama_raw] to preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad/Z_llama_raw.pt
+[calib:llama] mode=embed_rms prefix_rms=0.65588 -> target=0.01491
+[debug:llama] adapter.scale=1.0018 | Z.std=0.9995 Z.mean||=15.9917 | prefix.std=0.0149 prefix.mean||=0.6727 | embed.RMS=0.0149
+Saved Llama results to preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad/llama_results.json
+
+Evaluating Qwen...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+/projects/m000066/sujinesh/LatentWire/latentwire/eval.py:978: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  adp_qwen.load_state_dict(torch.load(os.path.join(args.ckpt, "adapter_qwen.pt"), map_location=device), strict=True)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+[align:qwen] encoder_text_mode candidates=['raw', 'neutral_chat', 'qwen_chat'] | nlls={'raw': 9.141582128862856, 'neutral_chat': 9.155404976751438, 'qwen_chat': 8.999436044188403} | picked=qwen_chat
+Saved Z[qwen_qwen_chat] to preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad/Z_qwen_qwen_chat.pt
+[calib:qwen]  mode=embed_rms prefix_rms=0.65834 -> target=0.01522
+[debug:qwen] adapter.scale=1.0002 | Z.std=0.9998 Z.mean||=15.9973 | prefix.std=0.0152 prefix.mean||=0.4550 | embed.RMS=0.0152
+Saved Qwen results to preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad/qwen_results.json
+
+Joint rescoring...
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 200  |  Max new tokens: 12
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 269.2 | (Qwen): 230.7 | Latent length M: 16
+Compression ratio (Llama): 16.8x | (Qwen): 14.4x
+Approx interlingua payload per example: 16384 bytes (fp32), and 8192 bytes (fp16); wire compression vs one-copy text (fp16): 0.14x
+
+— Baseline: Text prompting
+Llama  EM: 0.000  F1: 0.131  |  NLL/token (gold): 15.679386170409446
+Qwen   EM: 0.375   F1: 0.598   |  NLL/token (gold): 13.036324268295651
+Wall clock: 9.85s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.001  |  NLL/token (gold): 10.254620859456617
+Qwen   EM: 0.000   F1: 0.001   |  NLL/token (gold): 10.475360118838214
+Wall clock: 9.39s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.000  F1: 0.042
+Qwen   EM: 0.005   F1: 0.041
+Wall clock: 9.25s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint  EM: 0.000  F1: 0.001
+Inter-model agreement (normalized): 0.000
+Oracle upper bound:  EM 0.000  F1 0.002
+
+==== METRICS_JSON ====
+{
+  "samples": 200,
+  "max_new_tokens": 12,
+  "latent_len": 16,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 269.205,
+    "qwen": 230.69
+  },
+  "compression": {
+    "llama": 16.8253125,
+    "qwen": 14.418125
+  },
+  "payload_bytes": 16384,
+  "wire": {
+    "text_bytes_onecopy": {
+      "llama_avg": 1070,
+      "qwen_avg": 1106,
+      "max_avg": 1106
+    },
+    "text_bytes_twocopies": {
+      "sum_avg": 2176
+    },
+    "latent_bytes": {
+      "fp32": 16384,
+      "fp16": 8192
+    },
+    "wire_compression": {
+      "vs_onecopy_fp16": 0.135009765625,
+      "vs_onecopy_fp32": 0.0675048828125
+    }
+  },
+  "text": {
+    "wall_clock_sec": 9.852139949798584,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.13101654220840853,
+      "nll_token": 15.679386170409446
+    },
+    "qwen": {
+      "em": 0.375,
+      "f1": 0.5976191602085568,
+      "nll_token": 13.036324268295651
+    }
+  },
+  "latent": {
+    "wall_clock_sec": 9.387341737747192,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0006666666666666666,
+      "nll_token": 10.254620859456617
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0014285714285714288,
+      "nll_token": 10.475360118838214
+    }
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 16,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0417471874530698
+    },
+    "wall_clock_sec": 9.248571157455444,
+    "qwen": {
+      "em": 0.005,
+      "f1": 0.040937358393240746
+    }
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.0006666666666666666,
+    "agreement": 0.0,
+    "oracle": {
+      "em": null,
+      "f1": null
+    }
+  },
+  "debug": {
+    "llama": {
+      "adapter_scale": 1.001761794090271,
+      "Z_std": 0.9994833469390869,
+      "Z_mean_norm": 15.991716384887695,
+      "prefix_std": 0.014908961020410061,
+      "prefix_mean_norm": 0.6727263331413269,
+      "embed_rms": 0.014909257180988789,
+      "encoder_text_mode": "raw",
+      "calibration_mode": "embed_rms"
+    },
+    "qwen": {
+      "adapter_scale": 1.0001827478408813,
+      "Z_std": 0.9998341202735901,
+      "Z_mean_norm": 15.997328758239746,
+      "prefix_std": 0.015219775028526783,
+      "prefix_mean_norm": 0.4550033509731293,
+      "embed_rms": 0.015231096185743809,
+      "encoder_text_mode": "qwen_chat",
+      "calibration_mode": "embed_rms"
+    },
+    "latent_anchor_text": "Answer: ",
+    "prefix_gain": 1.0,
+    "calibration_mode": "embed_rms",
+    "decode": {
+      "min_new_tokens": 2,
+      "eos_ban_steps": 6,
+      "first_token_top_p": 0.9,
+      "first_token_temperature": 0.7
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0020952380952380958
+  },
+  "dataset": "squad"
+}
+Wrote per-example predictions to preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad/predictions.jsonl
+
+Evaluation completed at Fri Sep 12 18:26:46 PDT 2025 with exit code: 0
+
+=========================================
+PIPELINE SUMMARY
+=========================================
+Run ID: show_that_1B_is_trainable_w_low_nll
+Started: Fri Sep 12 18:25:22 PDT 2025
+Completed: Fri Sep 12 18:26:46 PDT 2025
+
+Outputs:
+  Training checkpoint: preserved_data/show_that_1B_is_trainable_w_low_nll/ckpt/
+  Training log: preserved_data/show_that_1B_is_trainable_w_low_nll/train.log
+  Evaluation results: preserved_data/show_that_1B_is_trainable_w_low_nll/eval_squad/
+  Evaluation log: preserved_data/show_that_1B_is_trainable_w_low_nll/eval.log
+  Full pipeline log: preserved_data/show_that_1B_is_trainable_w_low_nll/full_pipeline_20250912_182522.log
+
+✓ Encoder checkpoint saved
+✓ Llama adapter checkpoint saved
+✓ Qwen adapter checkpoint saved
+✓ Evaluation metrics saved
+
+Key metrics:
+  Compression: Llama 16.8x, Qwen 14.4x
+  Text F1: Llama 0.131, Qwen 0.598
+  Latent F1: Llama 0.001, Qwen 0.001
+
+=========================================
+Pipeline completed at Fri Sep 12 18:26:46 PDT 2025
+=========================================
