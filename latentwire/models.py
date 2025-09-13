@@ -14,6 +14,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 STOP_STRINGS = [
     "<|eot_id|>", "<|im_end|>", "</s>",  # common chat EOS-ish markers
+    "<|system|>", "<|user|>", "<|assistant|>",  # guardrails: if the model starts a chat block, cut it
     "\n\n\n", "\n\nAssistant:", "\nAssistant:"
 ]
 
@@ -400,9 +401,11 @@ class LMWrapper(nn.Module):
         eos_ban_steps: int = 0,
         first_token_top_p: float = 1.0,
         first_token_temperature: float = 0.0,
+        append_bos_after_prefix: Optional[bool] = None,  # NEW: control BOS insertion
     ) -> List[List[int]]:
         """
         Generation from latent prefix with optional anchor text.
+        If append_bos_after_prefix is None (auto), we append BOS *only if* there is no anchor text.
         """
         model_device = next(self.model.parameters()).device
         emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
@@ -422,12 +425,15 @@ class LMWrapper(nn.Module):
         else:
             inputs_embeds = prefix_embeds
 
-        # *** BOS priming to match teacher-forcing context ***
-        bos_id = getattr(self.tokenizer, "bos_token_id", None)
-        if bos_id is not None:
-            bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
-            bos_embeds = self.input_embed(bos)
-            inputs_embeds = torch.cat([inputs_embeds, bos_embeds], dim=1)
+        # BOS priming (auto policy: only if no anchor provided)
+        if append_bos_after_prefix is None:
+            append_bos_after_prefix = (len(anchor_ids) == 0)
+        if append_bos_after_prefix:
+            bos_id = getattr(self.tokenizer, "bos_token_id", None)
+            if bos_id is not None:
+                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
+                bos_embeds = self.input_embed(bos)
+                inputs_embeds = torch.cat([inputs_embeds, bos_embeds], dim=1)
 
         # Initial forward
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)

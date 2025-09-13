@@ -27,33 +27,33 @@ echo ""
   echo ""
   
   # Training phase
-  # echo "========================================="
-  # echo "PHASE 1: TRAINING"
-  # echo "========================================="
-  # echo "Starting training at $(date)"
-  # echo "Checkpoint will be saved to: ${RUN_DIR}/ckpt"
-  # echo ""
+  echo "========================================="
+  echo "PHASE 1: TRAINING"
+  echo "========================================="
+  echo "Starting training at $(date)"
+  echo "Checkpoint will be saved to: ${RUN_DIR}/ckpt"
+  echo ""
   
-  # CUDA_VISIBLE_DEVICES=0,1 \
-  # python -u latentwire/train.py \
-  #   --dataset squad --samples 87599 --epochs 8 --batch_size 256 \
-  #   --encoder_type simple-st --encoder_use_chat_template \
-  #   --latent_len 16 --d_z 256 --max_bytes 512 \
-  #   --qwen_id Qwen/Qwen2-0.5B-Instruct --llama_id TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
-  #   --warm_anchor_text "Answer: " \
-  #   --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 171 \
-  #   --save_training_stats --debug 2>&1
+  CUDA_VISIBLE_DEVICES=0,1 \
+  python -u latentwire/train.py \
+    --dataset squad --samples 87599 --epochs 10 --batch_size 128 \
+    --encoder_type simple-st --encoder_use_chat_template \
+    --latent_len 16 --d_z 256 --max_bytes 512 \
+    --qwen_id Qwen/Qwen2.5-7B-Instruct --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct \
+    --warm_anchor_text "Answer: " \
+    --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 171 \
+    --save_training_stats --debug 2>&1
   
-  # TRAIN_EXIT_CODE=$?
+  TRAIN_EXIT_CODE=$?
   
-  # echo ""
-  # echo "Training completed at $(date) with exit code: $TRAIN_EXIT_CODE"
+  echo ""
+  echo "Training completed at $(date) with exit code: $TRAIN_EXIT_CODE"
   
-  # if [ $TRAIN_EXIT_CODE -ne 0 ]; then
-  #   echo "ERROR: Training failed with exit code $TRAIN_EXIT_CODE"
-  #   echo "Aborting pipeline"
-  #   exit $TRAIN_EXIT_CODE
-  # fi
+  if [ $TRAIN_EXIT_CODE -ne 0 ]; then
+    echo "ERROR: Training failed with exit code $TRAIN_EXIT_CODE"
+    echo "Aborting pipeline"
+    exit $TRAIN_EXIT_CODE
+  fi
   
   echo ""
   echo "========================================="

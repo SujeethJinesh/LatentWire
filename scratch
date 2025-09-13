@@ -1,0 +1,12 @@
+python -u latentwire/eval.py \
+  --ckpt preserved_data/show_that_1B_is_trainable_w_low_nll/ckpt \
+  --dataset squad --samples 200 \
+  --max_new_tokens 12 \
+  --latent_anchor_text "Answer: " \
+  --sequential_eval --fresh_eval \
+  --encoder_text_mode auto \
+  --calibration embed_rms --prefix_gain 1.0 \
+  --append_bos_after_prefix no \
+  --first_token_top_p 0.95 --first_token_temperature 0.8 \
+  --min_new_tokens 2 --eos_ban_steps 2 \
+  --out_dir runs/show_that_1B_is_trainable_w_low_nll/eval_squad --debug
