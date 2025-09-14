@@ -216,25 +216,39 @@ def main():
     # ===== Tokenize answers =====
     llama_tok = llama.tokenizer(
         answers, return_tensors="pt", padding=True, truncation=True,
-        max_length=args.max_answer_tokens, add_special_tokens=False
+        max_length=args.max_answer_tokens, add_special_tokens=True
     )
     llama_ids = llama_tok["input_ids"].to(device)
     llama_attention_mask = llama_tok["attention_mask"].to(device)
     
-    # Create labels, only masking actual padding (where attention_mask is 0)
+    # Create labels - mask padding AND special tokens
     llama_labels = llama_ids.clone()
+    # Mask padding
     llama_labels[llama_attention_mask == 0] = -100
+    # Mask BOS token if present (usually first token)
+    if llama.tokenizer.bos_token_id is not None:
+        llama_labels[llama_ids == llama.tokenizer.bos_token_id] = -100
+    # Mask EOS token if present
+    if llama.tokenizer.eos_token_id is not None:
+        llama_labels[llama_ids == llama.tokenizer.eos_token_id] = -100
 
     qwen_tok = qwen.tokenizer(
         answers, return_tensors="pt", padding=True, truncation=True,
-        max_length=args.max_answer_tokens, add_special_tokens=False
+        max_length=args.max_answer_tokens, add_special_tokens=True
     )
     qwen_ids = qwen_tok["input_ids"].to(device)
     qwen_attention_mask = qwen_tok["attention_mask"].to(device)
     
-    # Create labels, only masking actual padding
+    # Create labels - mask padding AND special tokens
     qwen_labels = qwen_ids.clone()
+    # Mask padding
     qwen_labels[qwen_attention_mask == 0] = -100
+    # Mask BOS token if present
+    if qwen.tokenizer.bos_token_id is not None:
+        qwen_labels[qwen_ids == qwen.tokenizer.bos_token_id] = -100
+    # Mask EOS token if present
+    if qwen.tokenizer.eos_token_id is not None:
+        qwen_labels[qwen_ids == qwen.tokenizer.eos_token_id] = -100
 
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
