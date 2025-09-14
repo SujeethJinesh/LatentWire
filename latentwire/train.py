@@ -214,12 +214,27 @@ def main():
     optimizer = optim.AdamW([p for p in optim_groups if p.requires_grad], lr=args.lr)
 
     # ===== Tokenize answers =====
-    llama_ans = llama.tokenizer(answers, return_tensors="pt", padding=True, truncation=True,
-                                max_length=args.max_answer_tokens, add_special_tokens=True)
-    qwen_ans  = qwen.tokenizer(answers,  return_tensors="pt", padding=True, truncation=True,
-                                max_length=args.max_answer_tokens, add_special_tokens=True)
-    llama_ids = llama_ans["input_ids"].to(device)
-    qwen_ids  = qwen_ans["input_ids"].to(device)
+    llama_tok = llama.tokenizer(
+        answers, return_tensors="pt", padding=True, truncation=True,
+        max_length=args.max_answer_tokens, add_special_tokens=False
+    )
+    llama_ids = llama_tok["input_ids"].to(device)
+    llama_pad = llama.tokenizer.pad_token_id
+    if llama_pad is None:
+        llama_pad = llama.tokenizer.eos_token_id
+    llama_labels = llama_ids.clone()
+    llama_labels[llama_labels == llama_pad] = -100  # ignore padding in loss
+
+    qwen_tok = qwen.tokenizer(
+        answers, return_tensors="pt", padding=True, truncation=True,
+        max_length=args.max_answer_tokens, add_special_tokens=False
+    )
+    qwen_ids = qwen_tok["input_ids"].to(device)
+    qwen_pad = qwen.tokenizer.pad_token_id
+    if qwen_pad is None:
+        qwen_pad = qwen.tokenizer.eos_token_id
+    qwen_labels = qwen_ids.clone()
+    qwen_labels[qwen_labels == qwen_pad] = -100
 
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
@@ -286,7 +301,7 @@ def main():
                 # ---- Llama path
                 prefix_llama_raw = adp_llama(z)
                 prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
-                y_llama = llama_ids[idx]
+                y_llama = llama_labels[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_llama_total = loss_llama + args.scale_l2 * scale_penalty(adp_llama) + args.adapter_rms_l2 * rms_raw_penalty(prefix_llama_raw, llama)
                 if torch.isfinite(loss_llama_total):
@@ -296,7 +311,7 @@ def main():
                 z = encode_fn(batch_texts)
                 prefix_qwen_raw = adp_qwen(z)
                 prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
-                y_qwen = qwen_ids[idx]
+                y_qwen = qwen_labels[idx]
                 loss_qwen = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
                 loss_qwen_total = loss_qwen + args.scale_l2 * scale_penalty(adp_qwen) + args.adapter_rms_l2 * rms_raw_penalty(prefix_qwen_raw, qwen)
                 if torch.isfinite(loss_qwen_total):
@@ -320,7 +335,7 @@ def main():
                 # Calibrate both before loss
                 prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
                 prefix_qwen  = _calibrate_to_embed_rms(prefix_qwen_raw,  qwen)
-                y_llama = llama_ids[idx]; y_qwen = qwen_ids[idx]
+                y_llama = llama_labels[idx]; y_qwen = qwen_labels[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_qwen  = qwen.forward_with_prefix_loss(prefix_qwen,  y_qwen,  anchor_token_ids=anchor_qwen_ids)
                 penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
