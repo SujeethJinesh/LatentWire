@@ -15,6 +15,8 @@ from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
 
+TORCH_FIXED_SEED=42
+
 def find_latest_checkpoint(save_dir: str):
     if not os.path.isdir(save_dir):
         return None
@@ -301,7 +303,7 @@ def main():
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
-        perm = torch.randperm(N)
+        perm = torch.randperm(TORCH_FIXED_SEED)
         for step in range(steps_per_epoch):
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
