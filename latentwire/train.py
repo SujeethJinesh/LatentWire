@@ -411,7 +411,7 @@ def main():
                     "adapter_llama.pt": adp_llama.state_dict(),
                     "adapter_qwen.pt":  adp_qwen.state_dict(),
                     "state.pt": {
-                        "epoch": epoch + 1,
+                        "epoch": epoch,
                         "global_step": global_step,
                         "optim": optimizer.state_dict(),
                         "adapter_scale": {
