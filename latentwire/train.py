@@ -303,7 +303,8 @@ def main():
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
-        perm = torch.randperm(TORCH_FIXED_SEED)
+        torch.manual_seed(TORCH_FIXED_SEED)  # Set the seed
+        perm = torch.randperm(N)              # Generate permutation of size N
         for step in range(steps_per_epoch):
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
