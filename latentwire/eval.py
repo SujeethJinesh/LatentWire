@@ -1,4 +1,11 @@
 # latentwire/eval.py
+# Deterministic, hardened evaluation for LatentWire.
+# - Deterministic by default (fixed RNG seeds)
+# - "Safe" decoding defaults (first-token deterministic, EOS-ban warmup)
+# - Per-model encoder-text auto-alignment (sequential mode) to reduce mis-match
+# - Robust anchor/BOS policy that matches training by default
+# - Clear debug prints and on-disk caches (optional)
+
 import os
 import time
 import json
@@ -24,8 +31,10 @@ from latentwire.common import (
 )
 
 # ---------------------------
-# Utilities
+# Defaults / hardening toggles
 # ---------------------------
+
+EVAL_FIXED_SEED = 12345  # Evaluation should be deterministic across runs
 
 def _safe_load(path: str, map_location=None):
     """torch.load with weights_only=True when available; fall back otherwise."""
@@ -72,13 +81,14 @@ def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed
         prefix = prefix * gain
     return prefix, cur, tgt
 
-
 def compute_wire_metrics(llama_chat_prompts: List[str], qwen_chat_prompts: List[str], Z: torch.Tensor) -> Dict[str, Any]:
     avg_text_bytes_llama = int(sum(len(p.encode("utf-8")) for p in llama_chat_prompts) / max(1, len(llama_chat_prompts))) if llama_chat_prompts else 0
     avg_text_bytes_qwen  = int(sum(len(p.encode("utf-8")) for p in qwen_chat_prompts)  / max(1, len(qwen_chat_prompts))) if qwen_chat_prompts else 0
     bytes_fp32 = int(Z.size(1) * Z.size(2) * 4)
     bytes_fp16 = int(Z.size(1) * Z.size(2) * 2)
     max_onecopy = max(avg_text_bytes_llama, avg_text_bytes_qwen)
+    # Note: "wire_compression" here is the ratio text_bytes / latent_bytes.
+    # Values < 1.0 mean the latent is larger than 1 copy of the text.
     return {
         "text_bytes_onecopy": {"llama_avg": avg_text_bytes_llama, "qwen_avg": avg_text_bytes_qwen, "max_avg": max_onecopy},
         "text_bytes_twocopies": {"sum_avg": avg_text_bytes_llama + avg_text_bytes_qwen},
@@ -136,6 +146,7 @@ def _best_mode_from_scores(candidates: List[str], scores: Dict[str, float], cfg:
     finite = {k: v for k, v in scores.items() if _is_finite(v)}
     if finite:
         vals = list(finite.values())
+        # if basically tied, defer to training-time wrapper choice
         if (max(vals) - min(vals)) < 1e-3:
             return _pick_fallback_mode_from_cfg(cfg)
         return min(finite, key=lambda k: finite[k])
@@ -189,7 +200,7 @@ def _select_best_encoder_mode_for_model(
 
 @torch.no_grad()
 def avg_nll_text(wrapper: LMWrapper, prompts_text: List[str], answers: List[str], tokenizer, device: str) -> Optional[float]:
-    if wrapper is None: 
+    if wrapper is None:
         return None
     tot_w, tot_tok, skipped = 0.0, 0, 0
     for i in range(len(prompts_text)):
@@ -412,29 +423,6 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
         print("\n[DEBUG] First generations (Qwen, latent):")
         for i, pred in enumerate(qwen_latent_preds[:args.debug_print_first]):
             print(f"  {i}: '{pred}'")
-    if args.debug and args.debug_topk > 0:
-        try:
-            topkL = llama.peek_first_step_from_prefix(
-                prefix_llama[:args.debug_topk_examples], anchor_ll or None,
-                append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
-                topk=args.debug_topk)
-            print("\n[DEBUG] First-step top-k (Llama):")
-            for i, rows in enumerate(topkL):
-                pretty = ", ".join([(tok.strip().replace('\n','\\n') or '<NL>') + f":{prob:.3f}" for _, prob, tok in rows])
-                print(f"  ex{i}: {pretty}")
-        except Exception as e:
-            print(f"[DEBUG] Llama top-k failed: {e}")
-        try:
-            topkQ = qwen.peek_first_step_from_prefix(
-                prefix_qwen[:args.debug_topk_examples], anchor_qw or None,
-                append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
-                topk=args.debug_topk)
-            print("\n[DEBUG] First-step top-k (Qwen):")
-            for i, rows in enumerate(topkQ):
-                pretty = ", ".join([(tok.strip().replace('\n','\\n') or '<NL>') + f":{prob:.3f}" for _, prob, tok in rows])
-                print(f"  ex{i}: {pretty}")
-        except Exception as e:
-            print(f"[DEBUG] Qwen top-k failed: {e}")
 
     t_latent = t_latent_llama + t_latent_qwen
 
@@ -450,7 +438,7 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     t_trunc = t_trunc_llama + t_trunc_qwen
 
     llama_trunc_em, llama_trunc_f1 = batch_metrics(llama_trunc_preds, golds)
-    qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds, golds)
+    qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds,  golds)
 
     llama_latent_nll = avg_nll_latent(llama, prefix_llama, golds, llama.tokenizer, device, anchor_token_text=anchor_ll or None)
     qwen_latent_nll  = avg_nll_latent(qwen,  prefix_qwen,  golds, qwen.tokenizer, device, anchor_token_text=anchor_qw or None)
@@ -651,17 +639,6 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                 print("\n[DEBUG] First generations (Llama, latent):")
                 for i, pred in enumerate(llama_latent_preds[:args.debug_print_first]):
                     print(f"  {i}: '{pred}'")
-            if args.debug and args.debug_topk > 0:
-                try:
-                    topkL = llama.peek_first_step_from_prefix(prefix_llama[:args.debug_topk_examples], anchor_ll or None,
-                                                              append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
-                                                              topk=args.debug_topk)
-                    print("\n[DEBUG] First-step top-k (Llama):")
-                    for i, rows in enumerate(topkL):
-                        pretty = ", ".join([(tok.strip().replace('\n','\\n') or '<NL>') + f":{prob:.3f}" for _, prob, tok in rows])
-                        print(f"  ex{i}: {pretty}")
-                except Exception as e:
-                    print(f"[DEBUG] Llama top-k failed: {e}")
 
             k_budget = args.token_budget_k or latent_len
             llama_trunc = build_token_budget_prompts(llama.tokenizer, prompts_raw, llama_chat, k_budget, args.token_budget_mode)
@@ -760,17 +737,6 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                 print("\n[DEBUG] First generations (Qwen, latent):")
                 for i, pred in enumerate(qwen_latent_preds[:args.debug_print_first]):
                     print(f"  {i}: '{pred}'")
-            if args.debug and args.debug_topk > 0:
-                try:
-                    topkQ = qwen.peek_first_step_from_prefix(prefix_qwen[:args.debug_topk_examples], anchor_qw or None,
-                                                             append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
-                                                             topk=args.debug_topk)
-                    print("\n[DEBUG] First-step top-k (Qwen):")
-                    for i, rows in enumerate(topkQ):
-                        pretty = ", ".join([(tok.strip().replace('\n','\\n') or '<NL>') + f":{prob:.3f}" for _, prob, tok in rows])
-                        print(f"  ex{i}: {pretty}")
-                except Exception as e:
-                    print(f"[DEBUG] Qwen top-k failed: {e}")
 
             k_budget = args.token_budget_k or latent_len
             qwen_trunc = build_token_budget_prompts(qwen.tokenizer, prompts_raw, qwen_chat, k_budget, args.token_budget_mode)
@@ -879,8 +845,8 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
 
         joint_preds, agree = [], 0
         for i in range(len(prompts_raw)):
-            candA = L.get("latent_preds", [""]*len(prompts_raw))[i]
-            candB = Q.get("latent_preds", [""]*len(prompts_raw))[i]
+            candA = L["latent_preds"][i]
+            candB = Q["latent_preds"][i]
             if _normalize(candA) == _normalize(candB):
                 agree += 1
             A_ids_L = _to_long(llama.tokenizer(candA, return_tensors="pt", add_special_tokens=True).input_ids, device)
@@ -917,7 +883,7 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
         "latent_len": latent_len,
         "device": device,
         "dtype": str(dtype),
-        "avg_prompt_tokens": {"llama": llama_avg_tok if have_llama else 0.0, "qwen": avg_prompt_tokens_qwen if have_qwen else 0.0},
+        "avg_prompt_tokens": {"llama": llama_avg_tok if have_llama else 0.0, "qwen": qwen_avg_tok if have_qwen else 0.0},
         "compression": compression,
         "payload_bytes": bytes_per_latent,
         "wire": wire,
@@ -988,7 +954,7 @@ def main():
     ap.add_argument("--token_budget_mode", type=str, default="content_only", choices=["chat_full", "content_only"])
     ap.add_argument("--token_budget_k", type=int, default=None)
 
-    # Anchors / BOS controls
+    # Anchors / BOS controls (hardened defaults)
     ap.add_argument("--latent_anchor_mode", type=str, default="auto", choices=["auto","chat","text","none"],
                     help="What to use as latent anchor. 'auto' matches training cfg (warm_anchor_text => text; else chat).")
     ap.add_argument("--latent_anchor_text", type=str, default="Answer: ",
@@ -1005,7 +971,7 @@ def main():
     ap.add_argument("--debug_topk", type=int, default=0)
     ap.add_argument("--debug_topk_examples", type=int, default=2)
 
-    # new decode controls (latent)
+    # new decode controls (latent) - deterministic by default
     ap.add_argument("--min_new_tokens", type=int, default=3)
     ap.add_argument("--eos_ban_steps", type=int, default=6)
     ap.add_argument("--first_token_top_p", type=float, default=1.0)
@@ -1022,10 +988,16 @@ def main():
     ap.add_argument("--encoder_text_mode", type=str, default="auto",
                     choices=["auto","raw","neutral_chat","llama_chat","qwen_chat"])
 
-    # data selection reproducibility
-    ap.add_argument("--data_seed", type=int, default=42)
+    # deterministic eval seed
+    ap.add_argument("--seed", type=int, default=EVAL_FIXED_SEED)
 
     args = ap.parse_args()
+
+    # Deterministic by default
+    seed = int(args.seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
     # Device + dtype
     if args.device:
@@ -1075,10 +1047,10 @@ def main():
 
     # Load eval examples
     if args.dataset.startswith("squad"):
-        eval_examples = load_examples(dataset=args.dataset, split="validation", samples=args.samples, seed=args.data_seed)
+        eval_examples = load_examples(dataset=args.dataset, split="validation", samples=args.samples, seed=42)
         dataset_detail = args.dataset
     else:
-        eval_examples = load_examples(dataset="hotpot", split="validation", samples=args.samples, seed=args.data_seed,
+        eval_examples = load_examples(dataset="hotpot", split="validation", samples=args.samples, seed=42,
                                       config=(args.hotpot_config or "fullwiki"))
         dataset_detail = f"hotpot:{args.hotpot_config or 'fullwiki'}"
 
@@ -1153,7 +1125,7 @@ def main():
     if summary['latent'].get('llama') is not None:
         print(f"Llama  EM: {summary['latent']['llama']['em']:.3f}  F1: {summary['latent']['llama']['f1']:.3f}  |  NLL/token (gold): {summary['latent']['llama']['nll_token']}")
     if summary['latent'].get('qwen') is not None:
-        print(f"Qwen   EM: {summary['latent']['qwen']['em']:.3f}   F1: {summary['latent']['qwen']['f1']:.3f}   |  NLL/token (gold): {summary['latent']['qwen']['nll_token']}")
+        print(f"Qwen   EM: {summary['latent']['qwen']['em']:.3f}   F1: {summary['latent']['qwen']['f1']:.3f}  |  NLL/token (gold): {summary['latent']['qwen']['nll_token']}")
     print(f"Wall clock: {summary['latent']['wall_clock_sec']:.2f}s")
 
     print(f"\n— Token-budget baseline (mode: {summary['token_budget'].get('mode','content_only')})")
@@ -1204,7 +1176,6 @@ def main():
             for rec in preds_dump:
                 f.write(json.dumps(rec) + "\n")
         print(f"Wrote per-example predictions to {dump_path}")
-
 
 if __name__ == "__main__":
     main()

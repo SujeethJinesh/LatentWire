@@ -10,7 +10,7 @@ DO_FINAL_EVAL=1        # full eval after all training
 # Eval knobs
 DATASET="squad"        # "squad", "squad_v2", or "hotpot"
 SAMPLES=200            # full eval sample count
-SMOKE_SAMPLES=200       # per-epoch eval sample count (increased for better signal)
+SMOKE_SAMPLES=200      # per-epoch eval sample count (kept high for stronger signal)
 MAX_NEW_TOKENS=12
 SEQUENTIAL_EVAL=1      # 1 = per-model auto encoder-text alignment
 FRESH_EVAL=1           # 1 = recompute Z for eval outputs
@@ -18,15 +18,15 @@ LOAD_4BIT=0            # for constrained GPUs
 CHUNK_SIZE=8
 TOKEN_BUDGET_MODE="content_only"   # "content_only" or "chat_full"
 TOKEN_BUDGET_K=16
-FIRST_TOKEN_TOP_P=0.95
-FIRST_TOKEN_TEMPERATURE=0.3
+FIRST_TOKEN_TOP_P=1.0              # hardened: deterministic first step
+FIRST_TOKEN_TEMPERATURE=0.0        # hardened: deterministic first step
 
 # Anchor & decode controls
 LATENT_ANCHOR_MODE="text"
-LATENT_ANCHOR_TEXT="Answer: "    # note the trailing space
-APPEND_BOS_AFTER_PREFIX="no"     # no BOS after anchor
+LATENT_ANCHOR_TEXT="Answer: "      # note the trailing space
+APPEND_BOS_AFTER_PREFIX="auto"     # BOS only when no anchor is provided (safer default)
 CALIBRATION="embed_rms"
-PREFIX_GAIN=1.0                  
+PREFIX_GAIN=1.0
 
 # Debug printing (safe to leave on)
 DEBUG=1
@@ -35,20 +35,20 @@ DEBUG_TOPK=10
 DEBUG_TOPK_EXAMPLES=2
 
 # Training knobs
-EPOCHS=16               # Reduced from 8 to avoid overfitting
+EPOCHS=16
 BATCH_SIZE=128
 TRAIN_SAMPLES=87599
-ENCODER_TYPE="simple-st"     
-ENCODER_USE_CHAT_TEMPLATE=1  
+ENCODER_TYPE="simple-st"
+ENCODER_USE_CHAT_TEMPLATE=1
 LATENT_LEN=16
 D_Z=256
 LR=5e-5
 SCALE_L2=0.05
 ADAPTER_RMS_L2=0.0
 MAX_GRAD_NORM=1.0
-WARM_ANCHOR_TEXT="Answer: "  # Matches eval anchor
-SAVE_EVERY=685         # Save after each epoch (87599/128 = ~685 steps/epoch)
-SEQUENTIAL_MODELS=1    
+WARM_ANCHOR_TEXT="Answer: "        # Matches eval anchor
+SAVE_EVERY=0                       # We save once per epoch (copied to epochN)
+SEQUENTIAL_MODELS=1
 
 # Model IDs
 LLAMA_ID="meta-llama/Meta-Llama-3.1-8B-Instruct"
@@ -64,7 +64,7 @@ export PYTHONPATH=.
 export TOKENIZERS_PARALLELISM=false
 
 # Run folder name
-RUN="8B_clean_answer"  # New clean run with proper anchor
+RUN="8B_clean_answer"  # New clean run with proper anchor + hardened eval
 RUN_DIR="runs/${RUN}"
 CKPT_DIR="${RUN_DIR}/ckpt"
 mkdir -p "$RUN_DIR" "$CKPT_DIR"
@@ -126,28 +126,27 @@ run_eval() {
   local out_dir="$2"
   local n_samples="$3"
   local quiet="${4:-0}"
-  
+
   mkdir -p "$out_dir"
-  
+
   EVAL_ARGS=(
     --ckpt "$ckpt_path"
+    --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID"   # be explicit: avoid model id mismatches
     --dataset "$DATASET" --samples "$n_samples"
     --max_new_tokens "$MAX_NEW_TOKENS"
-    --latent_anchor_mode "$LATENT_ANCHOR_MODE" 
+    --latent_anchor_mode "$LATENT_ANCHOR_MODE"
     --latent_anchor_text "$LATENT_ANCHOR_TEXT"
     --append_bos_after_prefix "$APPEND_BOS_AFTER_PREFIX"
     --calibration "$CALIBRATION" --prefix_gain "$PREFIX_GAIN"
     --token_budget_mode "$TOKEN_BUDGET_MODE" --token_budget_k "$TOKEN_BUDGET_K"
-    --first_token_top_p "$FIRST_TOKEN_TOP_P" 
+    --first_token_top_p "$FIRST_TOKEN_TOP_P"
     --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
-    --min_new_tokens 2 --eos_ban_steps 6
+    --min_new_tokens 3 --eos_ban_steps 6          # hardened baseline
     --chunk_size "$CHUNK_SIZE"
     --out_dir "$out_dir"
+    --sequential_eval                              # hardened: always auto-align per model
   )
-  
-  if [[ $SEQUENTIAL_EVAL -eq 1 ]]; then
-    EVAL_ARGS+=(--sequential_eval)
-  fi
+
   if [[ $FRESH_EVAL -eq 1 ]]; then
     EVAL_ARGS+=(--fresh_eval)
   fi
@@ -155,10 +154,10 @@ run_eval() {
     EVAL_ARGS+=(--load_4bit)
   fi
   if [[ $DEBUG -eq 1 ]] && [[ $quiet -eq 0 ]]; then
-    EVAL_ARGS+=(--debug --debug_print_first "$DEBUG_PRINT_FIRST" 
+    EVAL_ARGS+=(--debug --debug_print_first "$DEBUG_PRINT_FIRST"
                 --debug_topk "$DEBUG_TOPK" --debug_topk_examples "$DEBUG_TOPK_EXAMPLES")
   fi
-  
+
   if [[ $quiet -eq 1 ]]; then
     CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" \
     python -u latentwire/eval.py "${EVAL_ARGS[@]}" > /dev/null 2>&1
@@ -173,7 +172,7 @@ run_eval() {
 
 {
   print_header "Starting pipeline at $(date)"
-  
+
   # ======================================================
   # PHASE 1: TRAINING WITH EPOCH EVALUATIONS
   # ======================================================
@@ -182,25 +181,25 @@ run_eval() {
     echo "Training for $EPOCHS epochs with evaluation after each"
     echo "Checkpoint will be saved to: ${CKPT_DIR}"
     echo ""
-    
+
     # Train for one epoch at a time
     for epoch in $(seq 1 $EPOCHS); do
       print_header "EPOCH $epoch/$EPOCHS"
-      
+
       TRAIN_ARGS=(
         --dataset "$DATASET" --samples "$TRAIN_SAMPLES"
         --epochs 1 --batch_size "$BATCH_SIZE"  # Only 1 epoch at a time
         --encoder_type "$ENCODER_TYPE"
         --latent_len "$LATENT_LEN" --d_z "$D_Z"
         --qwen_id "$QWEN_ID" --llama_id "$LLAMA_ID"
-        --lr "$LR" --scale_l2 "$SCALE_L2" 
+        --lr "$LR" --scale_l2 "$SCALE_L2"
         --adapter_rms_l2 "$ADAPTER_RMS_L2"
         --max_grad_norm "$MAX_GRAD_NORM"
-        --save_dir "$CKPT_DIR" 
-        --save_every 0  # Don't save intermediates
+        --save_dir "$CKPT_DIR"
+        --save_every "$SAVE_EVERY"
         --save_training_stats --debug --auto_resume
       )
-      
+
       if [[ "${ENCODER_USE_CHAT_TEMPLATE}" == "1" ]]; then
         TRAIN_ARGS+=(--encoder_use_chat_template)
       fi
@@ -213,26 +212,27 @@ run_eval() {
       if [[ $LOAD_4BIT -eq 1 ]]; then
         TRAIN_ARGS+=(--load_4bit)
       fi
-      
+
       echo "Training epoch $epoch..."
       CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" \
       python -u latentwire/train.py "${TRAIN_ARGS[@]}"
-      
-      # Save checkpoint for this epoch
+
+      # Save checkpoint for this epoch (canonical snapshot)
       epoch_ckpt="${RUN_DIR}/epoch${epoch}"
+      rm -rf "$epoch_ckpt"
       cp -r "$CKPT_DIR" "$epoch_ckpt"
-      
+
       # Evaluate this epoch
       echo ""
       echo "Evaluating epoch $epoch checkpoint..."
       epoch_eval="${RUN_DIR}/eval_epoch${epoch}"
       run_eval "$epoch_ckpt" "$epoch_eval" "$SMOKE_SAMPLES" 0
-      
+
       echo ""
       print_metrics "$epoch_eval"
       echo ""
     done
-    
+
     print_header "TRAINING COMPLETE - EPOCH SUMMARY"
     for epoch in $(seq 1 $EPOCHS); do
       echo "Epoch $epoch results:"
@@ -240,51 +240,50 @@ run_eval() {
       echo ""
     done
   fi
-  
+
   # ======================================================
   # PHASE 2: FINAL FULL EVALUATION
   # ======================================================
   if [[ $DO_FINAL_EVAL -eq 1 ]]; then
     print_header "PHASE 2: FINAL FULL EVALUATION"
-    
-    # Find best epoch based on latent F1
+
+    # Find best epoch based on latent F1 (average of the two models)
     best_epoch=0
     best_f1=0
     for epoch in $(seq 1 $EPOCHS); do
       eval_dir="${RUN_DIR}/eval_epoch${epoch}"
       if [[ -f "${eval_dir}/metrics.json" ]]; then
-        # Extract average latent F1
-        f1=$(python -c "
+        f1=$(python - <<PY 2>/dev/null || echo "0"
 import json
 with open('${eval_dir}/metrics.json') as f:
     m = json.load(f)
-llama_f1 = m.get('latent',{}).get('llama',{}).get('f1',0)
-qwen_f1 = m.get('latent',{}).get('qwen',{}).get('f1',0)
-print((llama_f1 + qwen_f1) / 2)
-" 2>/dev/null || echo "0")
-        
+ll = m.get('latent',{}).get('llama',{}).get('f1',0) or 0
+qw = m.get('latent',{}).get('qwen',{}).get('f1',0) or 0
+print((float(ll) + float(qw)) / 2.0)
+PY
+)
         if (( $(echo "$f1 > $best_f1" | bc -l) )); then
           best_f1=$f1
           best_epoch=$epoch
         fi
       fi
     done
-    
+
     if [[ $best_epoch -gt 0 ]]; then
       echo "Best epoch: $best_epoch (avg latent F1: $best_f1)"
       echo "Running full evaluation on best checkpoint..."
-      
+
       best_ckpt="${RUN_DIR}/epoch${best_epoch}"
       final_eval="${RUN_DIR}/eval_final_best"
       run_eval "$best_ckpt" "$final_eval" "$SAMPLES" 0
-      
+
       echo ""
       print_metrics "$final_eval"
     else
       echo "WARNING: No valid epoch evaluations found"
     fi
   fi
-  
+
   print_header "PIPELINE SUMMARY"
   echo "Run ID: $RUN"
   echo "Completed: $(date)"
@@ -294,11 +293,11 @@ print((llama_f1 + qwen_f1) / 2)
     echo "  Epoch $epoch: ${RUN_DIR}/epoch${epoch}/"
     echo "           Eval: ${RUN_DIR}/eval_epoch${epoch}/"
   done
-  if [[ $DO_FINAL_EVAL -eq 1 ]] && [[ $best_epoch -gt 0 ]]; then
+  if [[ $DO_FINAL_EVAL -eq 1 ]] && [[ ${best_epoch:-0} -gt 0 ]]; then
     echo "  Best checkpoint: ${RUN_DIR}/epoch${best_epoch}/"
     echo "  Final eval: ${RUN_DIR}/eval_final_best/"
   fi
-  
+
 } 2>&1 | tee "$LOG_FILE"
 
 echo ""
