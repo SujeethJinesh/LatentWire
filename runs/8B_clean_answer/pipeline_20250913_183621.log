@@ -1,120 +1,0 @@
-
-=========================================
-Starting pipeline at Sat Sep 13 18:36:21 PDT 2025
-=========================================
-
-
-=========================================
-PHASE 1: TRAINING WITH EPOCH EVALUATIONS
-=========================================
-
-Training for 16 epochs with evaluation after each
-Checkpoint will be saved to: runs/8B_clean_answer/ckpt
-
-
-=========================================
-EPOCH 1/16
-=========================================
-
-Training epoch 1...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3244.48it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.20s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.16s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.05it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2941.31it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.18s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.08it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.06it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.11it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.07it/s]
-Llama hidden size: 4096, Qwen hidden size: 3584
-⚠️  No valid checkpoint found to resume; starting fresh.
-Epoch 1/1
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [0,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [1,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [2,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [3,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [4,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [5,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [6,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [7,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [8,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [9,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [10,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [11,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [12,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [13,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [14,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [15,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [16,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [17,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [18,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [19,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [20,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [21,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [22,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [23,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [24,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [25,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [26,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [27,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [28,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [29,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [30,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [115,0,0], thread: [31,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [32,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [33,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [34,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [35,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [36,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [37,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [38,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [39,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [40,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [41,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [42,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [43,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [44,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [45,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [46,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [47,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [48,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [49,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [50,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [51,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [52,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [53,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [54,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [55,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [56,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [57,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [58,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [59,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [60,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [61,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [62,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-../aten/src/ATen/native/cuda/Indexing.cu:1284: indexSelectLargeIndex: block: [114,0,0], thread: [63,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 474, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 319, in main
-    loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/models.py", line 397, in forward_with_prefix_loss
-    out = self.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, labels=labels_full)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
-    output = module._old_forward(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 1189, in forward
-    outputs = self.model(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 964, in forward
-    cache_position = torch.arange(
-RuntimeError: CUDA error: device-side assert triggered
-CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
-For debugging consider passing CUDA_LAUNCH_BLOCKING=1
-Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
-

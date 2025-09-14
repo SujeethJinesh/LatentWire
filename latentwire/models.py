@@ -529,6 +529,16 @@ class LMWrapper(nn.Module):
 
         pad_id = self.tokenizer.pad_token_id or 0
         stop_ids = set(self._stop_token_ids)
+        
+        # Build extended early stop list for aggressive banning
+        early_stop_ids = set(stop_ids)
+        for tok in ["<|eot_id|>", "<|eom_id|>", "<|endoftext|>", "<|end_of_text|>", "<|im_end|>", "</s>"]:
+            try:
+                tid = self.tokenizer.convert_tokens_to_ids(tok)
+                if isinstance(tid, int) and tid >= 0:
+                    early_stop_ids.add(int(tid))
+            except Exception:
+                pass
 
         generated = [[] for _ in range(B)]
         finished = torch.zeros(B, dtype=torch.bool, device=model_device)
@@ -537,9 +547,9 @@ class LMWrapper(nn.Module):
             step_logits = next_token_logits.clone()
             step_logits[finished] = -1e9
 
-            # Early EOS ban / min tokens
+            # Early EOS ban / min tokens - use extended set
             if t < max(min_new_tokens, eos_ban_steps):
-                for sid in stop_ids:
+                for sid in early_stop_ids:  # Use early_stop_ids instead of stop_ids
                     step_logits[:, sid] = -1e9
 
             # First-token exploration if requested
@@ -555,7 +565,7 @@ class LMWrapper(nn.Module):
                 if finished[b]:
                     continue
                 nid = int(next_tokens[b].item())
-                if (t >= min_new_tokens) and (nid in stop_ids):
+                if (t >= min_new_tokens) and (nid in stop_ids):  # Use regular stop_ids for actual stopping
                     finished[b] = True
                 else:
                     generated[b].append(nid)

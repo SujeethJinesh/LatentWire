@@ -44,3 +44,5 @@ File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
 File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
 [12:07:39] [171.67.99.202][c18e0ec8][ExtensionHostConnection] New connection established.
 [12:07:40] [171.67.99.202][c18e0ec8][ExtensionHostConnection] <2068978> Launched Extension Host Process.
+[18:49:08] [171.67.99.201][c18e0ec8][ExtensionHostConnection] The client has reconnected.
+[18:49:08] [171.67.99.201][70c0676c][ManagementConnection] The client has reconnected.

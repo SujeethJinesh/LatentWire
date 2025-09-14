@@ -411,7 +411,7 @@ def main():
                     "adapter_llama.pt": adp_llama.state_dict(),
                     "adapter_qwen.pt":  adp_qwen.state_dict(),
                     "state.pt": {
-                        "epoch": epoch,
+                        "epoch": epoch + 1,
                         "global_step": global_step,
                         "optim": optimizer.state_dict(),
                         "adapter_scale": {
@@ -437,7 +437,7 @@ def main():
         "warm_anchor_text": args.warm_anchor_text
     }
     state_blob = {
-        "epoch": epoch if 'epoch' in locals() else None,
+        "epoch": epoch + 1 if 'epoch' in locals() else None,
         "global_step": global_step if 'global_step' in locals() else None,
         "args": vars(args),
         "rng": {
