@@ -1,0 +1,10 @@
+{
+  "llama": {
+    "rms_mean": 0.0,
+    "count": 0
+  },
+  "qwen": {
+    "rms_mean": 0.0,
+    "count": 0
+  }
+}

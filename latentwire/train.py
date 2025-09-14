@@ -299,7 +299,7 @@ def main():
 
     params_for_clip = [p for p in optim_groups if p.requires_grad]
 
-    for epoch in range(start_epoch, args.epochs):
+    for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
         perm = torch.randperm(N)
         for step in range(steps_per_epoch):
