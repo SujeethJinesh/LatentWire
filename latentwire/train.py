@@ -219,22 +219,22 @@ def main():
         max_length=args.max_answer_tokens, add_special_tokens=False
     )
     llama_ids = llama_tok["input_ids"].to(device)
-    llama_pad = llama.tokenizer.pad_token_id
-    if llama_pad is None:
-        llama_pad = llama.tokenizer.eos_token_id
+    llama_attention_mask = llama_tok["attention_mask"].to(device)
+    
+    # Create labels, only masking actual padding (where attention_mask is 0)
     llama_labels = llama_ids.clone()
-    llama_labels[llama_labels == llama_pad] = -100  # ignore padding in loss
+    llama_labels[llama_attention_mask == 0] = -100
 
     qwen_tok = qwen.tokenizer(
         answers, return_tensors="pt", padding=True, truncation=True,
         max_length=args.max_answer_tokens, add_special_tokens=False
     )
     qwen_ids = qwen_tok["input_ids"].to(device)
-    qwen_pad = qwen.tokenizer.pad_token_id
-    if qwen_pad is None:
-        qwen_pad = qwen.tokenizer.eos_token_id
+    qwen_attention_mask = qwen_tok["attention_mask"].to(device)
+    
+    # Create labels, only masking actual padding
     qwen_labels = qwen_ids.clone()
-    qwen_labels[qwen_labels == qwen_pad] = -100
+    qwen_labels[qwen_attention_mask == 0] = -100
 
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
