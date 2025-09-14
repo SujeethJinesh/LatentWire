@@ -18,8 +18,8 @@ LOAD_4BIT=0            # for constrained GPUs
 CHUNK_SIZE=8
 TOKEN_BUDGET_MODE="content_only"   # "content_only" or "chat_full"
 TOKEN_BUDGET_K=16
-FIRST_TOKEN_TOP_P=1.0
-FIRST_TOKEN_TEMPERATURE=0.0
+FIRST_TOKEN_TOP_P=0.95
+FIRST_TOKEN_TEMPERATURE=0.3
 
 # Anchor & decode controls
 LATENT_ANCHOR_MODE="text"
