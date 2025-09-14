@@ -315,7 +315,7 @@ def main():
                 # ---- Llama path
                 prefix_llama_raw = adp_llama(z)
                 prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
-                y_llama = llama_labels[idx]
+                y_llama = llama_ids[idx]  # Use original IDs, not labels with -100
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_llama_total = loss_llama + args.scale_l2 * scale_penalty(adp_llama) + args.adapter_rms_l2 * rms_raw_penalty(prefix_llama_raw, llama)
                 if torch.isfinite(loss_llama_total):
@@ -325,7 +325,7 @@ def main():
                 z = encode_fn(batch_texts)
                 prefix_qwen_raw = adp_qwen(z)
                 prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
-                y_qwen = qwen_labels[idx]
+                y_qwen = qwen_ids[idx]  # Use original IDs, not labels with -100
                 loss_qwen = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
                 loss_qwen_total = loss_qwen + args.scale_l2 * scale_penalty(adp_qwen) + args.adapter_rms_l2 * rms_raw_penalty(prefix_qwen_raw, qwen)
                 if torch.isfinite(loss_qwen_total):
@@ -349,7 +349,7 @@ def main():
                 # Calibrate both before loss
                 prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
                 prefix_qwen  = _calibrate_to_embed_rms(prefix_qwen_raw,  qwen)
-                y_llama = llama_labels[idx]; y_qwen = qwen_labels[idx]
+                y_llama = llama_ids[idx]; y_qwen = qwen_ids[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_qwen  = qwen.forward_with_prefix_loss(prefix_qwen,  y_qwen,  anchor_token_ids=anchor_qwen_ids)
                 penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
