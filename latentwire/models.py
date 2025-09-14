@@ -2,11 +2,12 @@
 import math
 import re
 from dataclasses import dataclass
-from typing import Optional, List, Iterable
+from typing import Optional, List, Tuple
 
 import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from latentwire.common import clean_pred
 
 # ---------------------------
 # Small helpers
@@ -127,7 +128,7 @@ class SimpleEncoder(nn.Module):
         self.st = SentenceTransformer(backbone)
         try:
             for p in self.st._first_module().parameters():
-                p.requires_grad_((False))
+                p.requires_grad_(False)
         except Exception:
             for p in self.st.parameters():
                 p.requires_grad_(False)
@@ -160,7 +161,7 @@ class Adapter(nn.Module):
         self.scale = nn.Parameter(torch.ones(1))
     def forward(self, z: torch.Tensor) -> torch.Tensor:
         x = self.net(z) * self.scale
-        # bounded for numerical stability, linear in small range used after calibration
+        # Keep a soft bound to avoid blowing up logits; calibration will adjust RMS
         return torch.tanh(x / 3.0) * 3.0
 
 
@@ -264,24 +265,6 @@ class LMWrapper(nn.Module):
                 ids = ids[0]
             return ids or []
 
-    def assistant_generation_prefix_text(self, system_prompt: str) -> str:
-        """
-        Return the exact assistant-header string that the tokenizer adds when
-        add_generation_prompt=True is used. This is *model-specific* and robust.
-        """
-        try:
-            msgs = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": ""},  # empty user to isolate header
-            ]
-            no_gen = self.tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=False)
-            with_gen = self.tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-            # suffix added by generation prompt = assistant header tokens
-            return with_gen[len(no_gen):]
-        except Exception:
-            # Safe fallback to a generic anchor if template isn’t available
-            return "Answer: "
-
     def enable_gradient_checkpointing(self):
         try:
             if hasattr(self.model, "gradient_checkpointing_enable"):
@@ -309,6 +292,63 @@ class LMWrapper(nn.Module):
             sample = W
         return float(sample.float().pow(2).mean().sqrt().item())
 
+    # ---- decoding helpers (NEW) ----
+
+    @torch.no_grad()
+    def decode_batch_then_clean(self, batches: List[List[int]]) -> List[str]:
+        outs: List[str] = []
+        for ids in batches:
+            if isinstance(ids, torch.Tensor):
+                ids = ids.tolist()
+            txt = self.tokenizer.decode(ids, skip_special_tokens=True)
+            outs.append(clean_pred(txt))  # uses shared cleaner
+        return outs
+
+    @staticmethod
+    def _nucleus_sample(probs: torch.Tensor, top_p: float) -> torch.Tensor:
+        """
+        probs: [B, V], already softmaxed.
+        Returns sampled ids: [B]
+        """
+        if top_p >= 1.0:
+            # Simple categorical
+            dist = torch.distributions.Categorical(probs)
+            return dist.sample()
+        # sort by prob desc
+        sorted_probs, sorted_idx = torch.sort(probs, descending=True, dim=-1)
+        cumsum = torch.cumsum(sorted_probs, dim=-1)
+        # mask out tail beyond top_p; ensure at least one token kept
+        keep = cumsum <= top_p
+        keep[..., 0] = True
+        filtered = sorted_probs * keep
+        # renormalize
+        filtered_sum = filtered.sum(dim=-1, keepdim=True)
+        filtered = torch.where(filtered_sum > 0, filtered / filtered_sum, sorted_probs)
+        dist = torch.distributions.Categorical(filtered)
+        idx_in_sorted = dist.sample()
+        # map back to vocab ids
+        next_ids = sorted_idx.gather(-1, idx_in_sorted.unsqueeze(-1)).squeeze(-1)
+        return next_ids
+
+    @staticmethod
+    def _apply_temperature(logits: torch.Tensor, temperature: float) -> torch.Tensor:
+        if temperature is None or temperature <= 0.0:
+            return logits
+        return logits / max(1e-6, float(temperature))
+
+    @torch.no_grad()
+    def _sample_top_p(self, logits: torch.Tensor, top_p: float = 1.0, temperature: float = 1.0) -> torch.Tensor:
+        """
+        Nucleus sampling helper.
+        logits: [B, V]
+        returns: [B] next token ids
+        """
+        if temperature <= 0.0:
+            return torch.argmax(logits, dim=-1)
+        logits = self._apply_temperature(logits, temperature)
+        probs = torch.softmax(logits, dim=-1)
+        return self._nucleus_sample(probs, top_p=top_p)
+
     # ---- losses / scoring ----
 
     def forward_with_prefix_loss(
@@ -316,12 +356,10 @@ class LMWrapper(nn.Module):
         prefix_embeds: torch.Tensor,
         target_ids: torch.Tensor,
         anchor_token_ids: Optional[List[int]] = None,
-        prepend_bos: bool = False,
     ) -> torch.Tensor:
         """
         Teacher-forced CE over the gold answer conditioned on a latent prefix,
-        optionally warm-started by an anchor sequence, with an optional BOS *prepended*
-        (recommended for Instruct models).
+        optionally warm-started by one or more anchor tokens.
         """
         B, M, D = prefix_embeds.shape
         model_device = next(self.model.parameters()).device
@@ -331,53 +369,29 @@ class LMWrapper(nn.Module):
         else:
             prefix_embeds = prefix_embeds.to(model_device)
 
-        # Optional BOS
-        if prepend_bos and (getattr(self.tokenizer, "bos_token_id", None) is not None):
-            bos_id = int(self.tokenizer.bos_token_id)
-            bos_ids = torch.full((B, 1), bos_id, dtype=torch.long, device=model_device)
-            bos_embeds = self.input_embed(bos_ids)
-            bos_len = 1
-        else:
-            bos_embeds = None
-            bos_len = 0
-
         # Optional anchor
         A = 0
+        anchor_embeds = None
         if anchor_token_ids:
             anchor_ids = torch.tensor(anchor_token_ids, dtype=torch.long, device=model_device).unsqueeze(0).expand(B, -1)
             anchor_embeds = self.input_embed(anchor_ids)
             A = anchor_embeds.size(1)
-        else:
-            anchor_embeds = None
 
         # Teacher-forcing inputs (shift)
         tf_inputs = target_ids[:, :-1].to(model_device)
         tf_embeds = self.input_embed(tf_inputs)
 
         # Compose
-        parts = []
-        if bos_embeds is not None:
-            parts.append(bos_embeds)
-        parts.extend([prefix_embeds])
         if anchor_embeds is not None:
-            parts.append(anchor_embeds)
-        parts.append(tf_embeds)
-        inputs_embeds = torch.cat(parts, dim=1)
+            inputs_embeds = torch.cat([prefix_embeds, anchor_embeds, tf_embeds], dim=1)
+        else:
+            inputs_embeds = torch.cat([prefix_embeds, tf_embeds], dim=1)
 
-        # Labels (ignore BOS + prefix + optional anchor)
+        # Labels (ignore prefix + optional anchor)
         labels = target_ids[:, 1:].to(model_device)
-        ignore_bos = torch.full((B, bos_len), -100, dtype=torch.long, device=model_device) if bos_len > 0 else None
         ignore_prefix = torch.full((B, M), -100, dtype=torch.long, device=model_device)
         ignore_anchor = torch.full((B, A), -100, dtype=torch.long, device=model_device) if A > 0 else None
-
-        labels_full_parts = []
-        if ignore_bos is not None:
-            labels_full_parts.append(ignore_bos)
-        labels_full_parts.extend([ignore_prefix])
-        if ignore_anchor is not None:
-            labels_full_parts.append(ignore_anchor)
-        labels_full_parts.append(labels)
-        labels_full = torch.cat(labels_full_parts, dim=1)
+        labels_full = torch.cat([ignore_prefix, ignore_anchor, labels] if A > 0 else [ignore_prefix, labels], dim=1)
 
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)
         out = self.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, labels=labels_full)
@@ -396,40 +410,68 @@ class LMWrapper(nn.Module):
         n_tokens = (labels != -100).sum()
         return out.loss, int(n_tokens.item())
 
-    def score_prefix_logprob(self, prefix_embeds: torch.Tensor, target_ids: torch.Tensor, anchor_token_ids: Optional[List[int]] = None, prepend_bos: bool = False) -> float:
-        """Return total log-prob (negative NLL) of target_ids under the latent prefix (with optional anchor/BOS)."""
-        loss = self.forward_with_prefix_loss(prefix_embeds, target_ids, anchor_token_ids=anchor_token_ids, prepend_bos=prepend_bos)
+    def score_prefix_logprob(self, prefix_embeds: torch.Tensor, target_ids: torch.Tensor, anchor_token_ids: Optional[List[int]] = None) -> float:
+        """Return total log-prob (negative NLL) of target_ids under the latent prefix (with optional anchor)."""
+        loss = self.forward_with_prefix_loss(prefix_embeds, target_ids, anchor_token_ids=anchor_token_ids)
         n_tokens = target_ids.size(1) - 1
         total_nll = loss * n_tokens
         return -float(total_nll.item())
 
-    # ---- decoding helpers ----
+    # ---- diagnostics: first-step top-k under a latent prefix ----
 
-    def _decode_one(self, ids: Iterable[int]) -> str:
-        return self.tokenizer.decode(list(ids), skip_special_tokens=True)
+    @torch.no_grad()
+    def peek_first_step_from_prefix(
+        self,
+        prefix_embeds: torch.Tensor,
+        anchor_token_text: Optional[str] = None,
+        append_bos_after_prefix: Optional[bool] = None,
+        topk: int = 10
+    ) -> List[List[Tuple[int, float, str]]]:
+        """
+        Inspect the first-step token distribution given a latent prefix and optional anchor.
+        Returns, per example, a list of (token_id, prob, token_string) sorted by prob desc.
+        """
+        model_device = next(self.model.parameters()).device
+        emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
+        if emb_dtype is not None:
+            prefix_embeds = prefix_embeds.to(model_device, dtype=emb_dtype)
+        else:
+            prefix_embeds = prefix_embeds.to(model_device)
 
-    def decode_then_clean(self, ids: Iterable[int]) -> str:
-        return clean_pred(self._decode_one(ids))
+        B = prefix_embeds.size(0)
 
-    def decode_batch_then_clean(self, batch_ids: List[List[int]]) -> List[str]:
-        return [self.decode_then_clean(x) for x in batch_ids]
+        # Anchor (optional)
+        anchor_ids = self._encode_anchor_text(anchor_token_text) if anchor_token_text else []
+        if anchor_ids:
+            anchor_ids_tensor = torch.tensor(anchor_ids, dtype=torch.long, device=model_device).unsqueeze(0).expand(B, -1)
+            anchor_embeds = self.input_embed(anchor_ids_tensor)
+            inputs_embeds = torch.cat([prefix_embeds, anchor_embeds], dim=1)
+        else:
+            inputs_embeds = prefix_embeds
 
-    # ---- nucleus sampling helper ----
-    @staticmethod
-    def _sample_top_p(logits: torch.Tensor, top_p: float, temperature: float) -> torch.Tensor:
-        if temperature <= 0.0:
-            return torch.argmax(logits, dim=-1)
-        probs = torch.softmax(logits / max(1e-5, temperature), dim=-1)
-        if top_p >= 1.0:
-            return torch.multinomial(probs, num_samples=1).squeeze(-1)
-        sorted_probs, sorted_idx = torch.sort(probs, dim=-1, descending=True)
-        cdf = torch.cumsum(sorted_probs, dim=-1)
-        mask = cdf <= top_p
-        mask[..., 0] = True
-        masked_probs = sorted_probs * mask
-        masked_probs = masked_probs / masked_probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
-        sampled_sorted = torch.multinomial(masked_probs, num_samples=1).squeeze(-1)
-        return sorted_idx.gather(-1, sampled_sorted.unsqueeze(-1)).squeeze(-1)
+        # BOS auto-policy: only if no anchor provided
+        if append_bos_after_prefix is None:
+            append_bos_after_prefix = (len(anchor_ids) == 0)
+        if append_bos_after_prefix:
+            bos_id = getattr(self.tokenizer, "bos_token_id", None)
+            if bos_id is not None:
+                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
+                bos_embeds = self.input_embed(bos)
+                inputs_embeds = torch.cat([inputs_embeds, bos_embeds], dim=1)
+
+        attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)
+        out = self.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, use_cache=True, return_dict=True)
+        logits = out.logits[:, -1, :]  # first step
+
+        probs = torch.softmax(logits, dim=-1)
+        topk_probs, topk_ids = torch.topk(probs, k=min(topk, probs.size(-1)), dim=-1)
+        results: List[List[Tuple[int, float, str]]] = []
+        for b in range(B):
+            ids_b = topk_ids[b].tolist()
+            probs_b = topk_probs[b].tolist()
+            toks = [self.tokenizer.decode([tid], skip_special_tokens=False) for tid in ids_b]
+            results.append([(ids_b[i], float(probs_b[i]), toks[i]) for i in range(len(ids_b))])
+        return results
 
     # ---- generation: latent prefix ----
 
@@ -445,11 +487,11 @@ class LMWrapper(nn.Module):
         eos_ban_steps: int = 0,
         first_token_top_p: float = 1.0,
         first_token_temperature: float = 0.0,
-        prepend_bos_before_all: bool = True,  # NEW default: prepend BOS
+        append_bos_after_prefix: Optional[bool] = None,  # None => auto: only if NO anchor
     ) -> List[List[int]]:
         """
         Generation from latent prefix with optional anchor text.
-        BOS is *prepended* by default, then prefix, then anchor.
+        Auto BOS policy: if append_bos_after_prefix is None (auto), we only append BOS when NO anchor is provided.
         """
         model_device = next(self.model.parameters()).device
         emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, 'weight') else None
@@ -460,24 +502,24 @@ class LMWrapper(nn.Module):
 
         B = prefix_embeds.size(0)
 
-        # Optional BOS
-        parts = []
-        if prepend_bos_before_all and (getattr(self.tokenizer, "bos_token_id", None) is not None):
-            bos = torch.full((B, 1), int(self.tokenizer.bos_token_id), dtype=torch.long, device=model_device)
-            bos_embeds = self.input_embed(bos)
-            parts.append(bos_embeds)
-
-        # Latent prefix
-        parts.append(prefix_embeds)
-
         # Optional anchor tokens
         anchor_ids = self._encode_anchor_text(anchor_token_text) if anchor_token_text else []
         if anchor_ids:
             anchor_ids_tensor = torch.tensor(anchor_ids, dtype=torch.long, device=model_device).unsqueeze(0).expand(B, -1)
             anchor_embeds = self.input_embed(anchor_ids_tensor)
-            parts.append(anchor_embeds)
+            inputs_embeds = torch.cat([prefix_embeds, anchor_embeds], dim=1)
+        else:
+            inputs_embeds = prefix_embeds
 
-        inputs_embeds = torch.cat(parts, dim=1)
+        # BOS priming (auto policy: only if no anchor provided)
+        if append_bos_after_prefix is None:
+            append_bos_after_prefix = (len(anchor_ids) == 0)
+        if append_bos_after_prefix:
+            bos_id = getattr(self.tokenizer, "bos_token_id", None)
+            if bos_id is not None:
+                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
+                bos_embeds = self.input_embed(bos)
+                inputs_embeds = torch.cat([inputs_embeds, bos_embeds], dim=1)
 
         # Initial forward
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)

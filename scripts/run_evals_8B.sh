@@ -2,160 +2,99 @@
 set -euo pipefail
 
 source .venv/bin/activate
-
 export PYTHONPATH=.
-export TOKENIZERS_PARALLELISM=false  # quieter logs for HF tokenizers
+export TOKENIZERS_PARALLELISM=false
 
-# Set run name and paths
 RUN="8B_runs"
 RUN_DIR="runs/$RUN"
 LOG_FILE="${RUN_DIR}/full_pipeline_$(date +%Y%m%d_%H%M%S).log"
 
-# Create run directory if it doesn't exist
 mkdir -p "$RUN_DIR"
-
-echo "Starting LatentWire training and evaluation pipeline"
-echo "Run ID: $RUN"
-echo "Output will be saved to: $LOG_FILE"
-echo ""
 
 {
   echo "========================================="
   echo "Starting pipeline at $(date)"
   echo "========================================="
   echo ""
-  
-  # =========================
-  # PHASE 1: TRAINING
-  # (comment this block to skip)
-  # =========================
+
   echo "========================================="
-  echo "PHASE 1: TRAINING"
+  echo "PHASE 1: TRAINING (optional)"
   echo "========================================="
-  echo "Starting training at $(date)"
   echo "Checkpoint will be saved to: ${RUN_DIR}/ckpt"
   echo ""
-  
-  CUDA_VISIBLE_DEVICES=0,1 \
-  python -u latentwire/train.py \
-    --dataset squad --samples 87599 --epochs 8 --batch_size 128 \
-    --encoder_type simple-st --encoder_use_chat_template \
-    --latent_len 16 --d_z 256 --max_bytes 512 \
-    --qwen_id Qwen/Qwen2.5-7B-Instruct \
-    --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct \
-    --anchor_mode chat --prepend_bos \
-    --lr 5e-5 \
-    --scale_l2 0.05 --save_dir ${RUN_DIR}/ckpt --save_every 1000 \
-    --save_training_stats --debug --grad_ckpt 2>&1
-  TRAIN_EXIT_CODE=$?
-  
-  echo ""
-  echo "Training completed at $(date) with exit code: $TRAIN_EXIT_CODE"
-  
-  if [ $TRAIN_EXIT_CODE -ne 0 ]; then
-    echo "ERROR: Training failed with exit code $TRAIN_EXIT_CODE"
-    echo "Aborting pipeline"
-    exit $TRAIN_EXIT_CODE
-  fi
-  
+
+  # Uncomment to retrain with the simple textual anchor
+  # CUDA_VISIBLE_DEVICES=0,1 \
+  # python -u latentwire/train.py \
+  #   --dataset squad --samples 87599 --epochs 12 --batch_size 128 \
+  #   --encoder_type simple-st --encoder_use_chat_template \
+  #   --latent_len 16 --d_z 256 \
+  #   --qwen_id Qwen/Qwen2.5-7B-Instruct \
+  #   --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct \
+  #   --warm_anchor_text "Answer: " \
+  #   --lr 5e-5 --scale_l2 0.05 \
+  #   --adapter_rms_l2 0.0 --max_grad_norm 1.0 \
+  #   --save_dir ${RUN_DIR}/ckpt --save_every 2000 \
+  #   --save_training_stats --debug 2>&1
+
   echo ""
   echo "========================================="
   echo "PHASE 2: EVALUATION"
   echo "========================================="
-  echo "Starting evaluation at $(date)"
   echo "Using checkpoint from: ${RUN_DIR}/ckpt"
-  echo "Results will be saved to: ${RUN_DIR}/eval_squad"
   echo ""
-  
+
+  EV_DIR="${RUN_DIR}/eval_squad_answer_noBOS"
+  mkdir -p "$EV_DIR"
+
   CUDA_VISIBLE_DEVICES=0,1 \
   python -u latentwire/eval.py \
-    --ckpt ${RUN_DIR}/ckpt --dataset squad --samples 200 \
+    --ckpt ${RUN_DIR}/ckpt \
+    --dataset squad --samples 200 \
     --max_new_tokens 12 \
-    --latent_anchor_mode chat --prepend_bos \
-    --sequential_eval --fresh_eval \
+    --latent_anchor_mode text --latent_anchor_text "Answer: " \
+    --append_bos_after_prefix no \
+    --fresh_eval \
     --encoder_text_mode auto \
     --calibration embed_rms --prefix_gain 1.0 \
-    --first_token_top_p 0.9 --first_token_temperature 0.7 \
+    --first_token_top_p 1.0 --first_token_temperature 0.0 \
     --min_new_tokens 2 --eos_ban_steps 6 \
-    --out_dir ${RUN_DIR}/eval_squad --debug 2>&1
+    --out_dir "${EV_DIR}" \
+    --debug --debug_print_first 5 --debug_topk 10 --debug_topk_examples 2 2>&1
 
-  EVAL_EXIT_CODE=$?
-  
-  echo ""
-  echo "Evaluation completed at $(date) with exit code: $EVAL_EXIT_CODE"
-  
-  if [ $EVAL_EXIT_CODE -ne 0 ]; then
-    echo "WARNING: Evaluation failed with exit code $EVAL_EXIT_CODE"
-  fi
-  
   echo ""
   echo "========================================="
   echo "PIPELINE SUMMARY"
   echo "========================================="
   echo "Run ID: $RUN"
   echo "Completed: $(date)"
-  echo ""
   echo "Outputs:"
   echo "  Training checkpoint: ${RUN_DIR}/ckpt/"
-  echo "  Training log: ${RUN_DIR}/train.log"
-  echo "  Evaluation results: ${RUN_DIR}/eval_squad/"
-  echo "  Full pipeline log: $LOG_FILE"
+  echo "  Evaluation results: ${EV_DIR}/"
   echo ""
-  
-  # Check if key output files exist
-  if [ -f "${RUN_DIR}/ckpt/encoder.pt" ]; then
-    echo "✓ Encoder checkpoint saved"
-  else
-    echo "✗ Encoder checkpoint missing"
-  fi
-  
-  if [ -f "${RUN_DIR}/ckpt/adapter_llama.pt" ]; then
-    echo "✓ Llama adapter checkpoint saved"
-  else
-    echo "✗ Llama adapter checkpoint missing"
-  fi
-  
-  if [ -f "${RUN_DIR}/ckpt/adapter_qwen.pt" ]; then
-    echo "✓ Qwen adapter checkpoint saved"
-  else
-    echo "✗ Qwen adapter checkpoint missing"
-  fi
-  
-  if [ -f "${RUN_DIR}/eval_squad/metrics.json" ]; then
-    echo "✓ Evaluation metrics saved"
+
+  if [ -f "${EV_DIR}/metrics.json" ]; then
+    echo "✓ Evaluation metrics saved at: ${EV_DIR}/metrics.json"
     echo ""
     echo "Key metrics:"
     python - <<'PY'
-import json,sys
-p="runs/8B_runs/eval_squad/metrics.json"
-try:
-    with open(p) as f:
-        m=json.load(f)
-    print(f"  Compression: Llama {m['compression'].get('llama','-'):.1f}x, Qwen {m['compression'].get('qwen','-'):.1f}x")
-    tl = m['text'].get('llama',{}).get('f1',None); tq = m['text'].get('qwen',{}).get('f1',None)
-    ll = m['latent'].get('llama',{}).get('f1',None); lq = m['latent'].get('qwen',{}).get('f1',None)
-    print(f"  Text F1:     Llama {tl:.3f} | Qwen {tq:.3f}")
-    print(f"  Latent F1:   Llama {ll:.3f} | Qwen {lq:.3f}")
-except Exception as e:
-    print("  (Could not parse metrics)", e)
+import json, os
+p=os.environ.get("EV_DIR","") or "${EV_DIR}"
+with open(os.path.join(p,"metrics.json")) as f:
+    m=json.load(f)
+def g(d,*ks):
+    for k in ks: d=d.get(k,{})
+    return d
+print(f"  Compression: Llama {m['compression'].get('llama','-'):.1f}x | Qwen {m['compression'].get('qwen','-'):.1f}x")
+print(f"  Text F1:     Llama {g(m,'text','llama').get('f1','-'):.3f} | Qwen {g(m,'text','qwen').get('f1','-'):.3f}")
+print(f"  Latent F1:   Llama {g(m,'latent','llama').get('f1','-'):.3f} | Qwen {g(m,'latent','qwen').get('f1','-'):.3f}")
 PY
   else
     echo "✗ Evaluation metrics missing"
   fi
-  
-  echo ""
-  echo "========================================="
-  echo "Pipeline completed at $(date)"
-  echo "========================================="
-  
 } 2>&1 | tee "$LOG_FILE"
-
-# Also save individual logs for easier access
-grep -E "^\[|step \d+/|epoch \d+/|loss" "$LOG_FILE" > "${RUN_DIR}/train.log" 2>/dev/null || true
-tail -n 500 "$LOG_FILE" | grep -A 1000 "PHASE 2: EVALUATION" > "${RUN_DIR}/eval.log" 2>/dev/null || true
 
 echo ""
 echo "All output has been saved to:"
 echo "  Full log: $LOG_FILE"
-echo "  Training log: ${RUN_DIR}/train.log"
-echo "  Evaluation log: ${RUN_DIR}/eval.log"
+echo "  Evaluation: ${EV_DIR}/metrics.json"
