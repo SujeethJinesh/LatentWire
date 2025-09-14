@@ -12,8 +12,9 @@ try:
 except Exception:
     torch = None  # eval-time tools can still use the pruner without torch
 
+
 # Canonical set we expect to keep inside a ckpt directory.
-# NOTE: We always provide an explicit keep_only list when saving; this set is used only when keep_only is None.
+# NOTE: We also preserve training_stats.json by default (so eval-time calibration stays available).
 CANONICAL_FILES = {
     "encoder.pt",
     "adapter_llama.pt",
@@ -23,6 +24,7 @@ CANONICAL_FILES = {
     "scheduler.pt",   # optional; safe to leave here
     "scaler.pt",      # optional; safe to leave here
     "config.json",
+    "training_stats.json",
 }
 
 # Things we consider "step-like" and temporary.
@@ -30,15 +32,19 @@ STEP_DIR_PREFIXES = ("step_", "ckpt_", "epoch_", "iter_", "global_step_")
 TMP_SUFFIXES = (".tmp", ".new", ".partial", ".bak")
 STEP_FILE_PATTERNS = (r".*_step\d+\.pt$", r"state_step\d+\.pt$")
 
+
 def _is_step_dir(name: str) -> bool:
     name = name.lower()
     return any(name.startswith(p) for p in STEP_DIR_PREFIXES)
 
-def _is_step_file(name: str) -> bool:      # <-- add
+
+def _is_step_file(name: str) -> bool:
     return any(re.match(p, name) for p in STEP_FILE_PATTERNS)
+
 
 def _is_tmp_file(name: str) -> bool:
     return any(name.endswith(suf) for suf in TMP_SUFFIXES)
+
 
 def _human_bytes(n: int) -> str:
     for unit in ["B", "KB", "MB", "GB", "TB"]:
@@ -46,6 +52,7 @@ def _human_bytes(n: int) -> str:
             return f"{n:.1f}{unit}"
         n /= 1024
     return f"{n:.1f}PB"
+
 
 def _safe_remove(path: str) -> int:
     """Remove file or dir; return freed bytes (best effort)."""
@@ -73,6 +80,7 @@ def _safe_remove(path: str) -> int:
         pass
     return freed
 
+
 def prune_save_dir(
     save_dir: str,
     keep_only: Optional[Iterable[str]] = None,
@@ -94,7 +102,8 @@ def prune_save_dir(
 
         # Remove step checkpoint files (e.g., encoder_step1000.pt)
         if os.path.isfile(path) and _is_step_file(name):
-            freed += _safe_remove(path); continue
+            freed += _safe_remove(path)
+            continue
 
         # Remove stale temporary files
         if os.path.isfile(path) and (_is_tmp_file(name) or name.endswith(".pt.old")):
@@ -110,6 +119,7 @@ def prune_save_dir(
             if os.path.isfile(path) and (name not in CANONICAL_FILES):
                 freed += _safe_remove(path)
     return freed
+
 
 def _atomic_write_bytes(data: bytes, dst_path: str) -> None:
     """Write bytes atomically to dst_path via a temp file + os.replace."""
@@ -128,6 +138,7 @@ def _atomic_write_bytes(data: bytes, dst_path: str) -> None:
         except Exception:
             pass
 
+
 def _atomic_save_torch(obj, dst_path: str) -> None:
     """Atomic torch.save to dst_path."""
     if torch is None:
@@ -144,9 +155,11 @@ def _atomic_save_torch(obj, dst_path: str) -> None:
         except Exception:
             pass
 
+
 def _atomic_save_json(obj: dict, dst_path: str) -> None:
     data = json.dumps(obj, indent=2).encode("utf-8")
     _atomic_write_bytes(data, dst_path)
+
 
 def save_latest_checkpoint(
     save_dir: str,
@@ -167,10 +180,15 @@ def save_latest_checkpoint(
     # Build list of target filenames we intend to keep
     keep_only = [name for name, obj in artifacts.items() if obj is not None]
 
-    # Also preserve an existing config.json if you didn't pass it this time
+    # Always preserve config.json if it already exists and caller didn't pass it
     cfg_path = os.path.join(save_dir, "config.json")
     if "config.json" not in keep_only and os.path.isfile(cfg_path):
         keep_only.append("config.json")
+
+    # Always preserve training_stats.json if present
+    stats_path = os.path.join(save_dir, "training_stats.json")
+    if os.path.isfile(stats_path) and "training_stats.json" not in keep_only:
+        keep_only.append("training_stats.json")
 
     freed_pre = 0
     if pre_prune:

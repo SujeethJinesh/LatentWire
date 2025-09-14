@@ -4,6 +4,8 @@ import re
 import time
 import json
 import argparse
+import random
+from typing import Optional, Tuple
 
 import torch
 import torch.optim as optim
@@ -15,17 +17,35 @@ from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
 
-TORCH_FIXED_SEED=42
+DEFAULT_SEED = 42
 
-def find_latest_checkpoint(save_dir: str):
+
+# ---------------------------
+# Checkpoint helpers
+# ---------------------------
+
+def find_latest_checkpoint(save_dir: str) -> Optional[str]:
+    """
+    Return a path to the most recent state file in a directory, preferring:
+    - {save_dir}/state.pt
+    - {save_dir}/last.pt
+    - {save_dir}/state_step*.pt (highest step)
+    If save_dir is a file path, echo it back.
+    """
+    if not save_dir:
+        return None
+    if os.path.isfile(save_dir):
+        return save_dir
     if not os.path.isdir(save_dir):
         return None
-    state_path = os.path.join(save_dir, "state.pt")
-    if os.path.isfile(state_path):
-        return state_path
-    last_path = os.path.join(save_dir, "last.pt")
-    if os.path.isfile(last_path):
-        return last_path
+
+    # Preferred names
+    for name in ["state.pt", "last.pt"]:
+        p = os.path.join(save_dir, name)
+        if os.path.isfile(p):
+            return p
+
+    # Fallback: highest step-like file
     candidates = []
     for fn in os.listdir(save_dir):
         m = re.match(r"state_step(\d+)\.pt$", fn)
@@ -36,56 +56,106 @@ def find_latest_checkpoint(save_dir: str):
         return candidates[-1][1]
     return None
 
+
 def _safe_load(path: str, map_location=None):
     try:
         return torch.load(path, map_location=map_location, weights_only=True)
     except TypeError:
         return torch.load(path, map_location=map_location)
 
-def load_checkpoint(path, encoder, adp_llama, adp_qwen, optimizer=None, strict=True, device="cpu"):
-    state = _safe_load(path, map_location="cpu")
-    if "encoder" in state and "adp_llama" in state and "adp_qwen" in state:
-        encoder.load_state_dict(state["encoder"], strict=strict)
-        adp_llama.load_state_dict(state["adp_llama"], strict=strict)
-        adp_qwen.load_state_dict(state["adp_qwen"], strict=strict)
-        if optimizer is not None and "optimizer" in state:
-            optimizer.load_state_dict(state["optimizer"])
-            for p in optimizer.state.values():
-                for k, v in p.items():
-                    if torch.is_tensor(v):
-                        p[k] = v.to(device)
-        epoch = int(state.get("epoch", 0))
-        global_step = int(state.get("global_step", 0))
-        return epoch, global_step
 
-    epoch = int(state.get("epoch", 0))
-    global_step = int(state.get("global_step", 0))
-    if optimizer is not None and "optimizer" in state:
-        optimizer.load_state_dict(state["optimizer"])
-        for p in optimizer.state.values():
-            for k, v in p.items():
-                if torch.is_tensor(v):
-                    p[k] = v.to(device)
+def _maybe_to_device_optimizer_state(optimizer: optim.Optimizer, device: str):
+    for p in optimizer.state.values():
+        for k, v in p.items():
+            if torch.is_tensor(v):
+                p[k] = v.to(device)
+
+
+def load_checkpoint(
+    path: str,
+    encoder: InterlinguaEncoder,
+    adp_llama: Adapter,
+    adp_qwen: Adapter,
+    optimizer: Optional[optim.Optimizer] = None,
+    strict: bool = True,
+    device: str = "cpu"
+) -> Tuple[int, int]:
+    """
+    Robust loader:
+    - Loads encoder/adapter weights either from state blob (if present) OR from separate files in the same dir.
+    - Restores optimizer (accepts both 'optimizer' and legacy 'optim' keys).
+    - Restores RNG if present.
+    Returns (epoch, global_step).
+    """
+    state = _safe_load(path, map_location="cpu") if path and os.path.isfile(path) else {}
+    ckpt_dir = os.path.dirname(path) if path and os.path.isfile(path) else None
+
+    # 1) Weights from state.pt if present
+    enc_loaded = False
+    if isinstance(state, dict) and all(k in state for k in ["encoder", "adp_llama", "adp_qwen"]):
+        try:
+            encoder.load_state_dict(state["encoder"], strict=strict)
+            adp_llama.load_state_dict(state["adp_llama"], strict=strict)
+            adp_qwen.load_state_dict(state["adp_qwen"], strict=strict)
+            enc_loaded = True
+            print("   -> loaded encoder/adapters FROM state.pt")
+        except Exception as e:
+            print(f"   -> failed to load weights from state.pt ({e}); will try .pt files")
+
+    # 2) Fallback to separate *.pt artifacts in the same directory
+    if not enc_loaded and ckpt_dir:
+        enc_path = os.path.join(ckpt_dir, "encoder.pt")
+        llm_path = os.path.join(ckpt_dir, "adapter_llama.pt")
+        qwn_path = os.path.join(ckpt_dir, "adapter_qwen.pt")
+        if all(os.path.isfile(p) for p in [enc_path, llm_path, qwn_path]):
+            encoder.load_state_dict(_safe_load(enc_path, map_location=device), strict=strict)
+            adp_llama.load_state_dict(_safe_load(llm_path, map_location=device), strict=strict)
+            adp_qwen.load_state_dict(_safe_load(qwn_path, map_location=device), strict=strict)
+            print("   -> loaded encoder/adapters FROM encoder.pt + adapter_{llama,qwen}.pt")
+        else:
+            raise FileNotFoundError(
+                "No weights found to resume: neither state.pt contained weights nor did encoder.pt/adapter_*.pt exist."
+            )
+
+    # 3) Optimizer (both keys accepted)
+    if optimizer is not None and isinstance(state, dict):
+        opt_state = state.get("optimizer", None) or state.get("optim", None)
+        if opt_state is not None:
+            optimizer.load_state_dict(opt_state)
+            _maybe_to_device_optimizer_state(optimizer, device)
+            print("   -> restored optimizer state")
+
+    # 4) RNG (optional)
+    if isinstance(state, dict) and "rng" in state:
+        try:
+            rng = state["rng"]
+            if "torch" in rng and isinstance(rng["torch"], torch.ByteTensor):
+                torch.set_rng_state(rng["torch"])
+            elif "torch" in rng:
+                torch.set_rng_state(torch.tensor(rng["torch"], dtype=torch.uint8))
+            if torch.cuda.is_available() and rng.get("cuda"):
+                torch.cuda.set_rng_state_all(rng["cuda"])
+            print("   -> restored RNG state")
+        except Exception as e:
+            print(f"   -> RNG restore skipped ({e})")
+
+    epoch = int(state.get("epoch", 0)) if isinstance(state, dict) else 0
+    global_step = int(state.get("global_step", 0)) if isinstance(state, dict) else 0
     return epoch, global_step
 
-class _RunningMean:
-    def __init__(self):
-        self.n = 0
-        self.sum = 0.0
-    def update(self, value: float):
-        self.n += 1
-        self.sum += float(value)
-    @property
-    def mean(self):
-        return (self.sum / self.n) if self.n > 0 else 0.0
+
+# ---------------------------
+# Small helpers
+# ---------------------------
 
 def _tensor_rms(x: torch.Tensor) -> float:
     with torch.no_grad():
         return float(x.float().pow(2).mean().sqrt().item())
 
+
 def _tensor_rms_d(x: torch.Tensor) -> torch.Tensor:
-    # differentiable RMS
     return x.pow(2).mean().sqrt()
+
 
 def _calibrate_to_embed_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> torch.Tensor:
     with torch.no_grad():
@@ -94,16 +164,21 @@ def _calibrate_to_embed_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> torch.T
         gain = float(tgt) / float(cur) if float(cur) > 0 else 1.0
     return prefix * gain
 
+
 def main():
     ap = argparse.ArgumentParser()
     # Models & data
     ap.add_argument("--llama_id", type=str, default="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
     ap.add_argument("--qwen_id", type=str, default="Qwen/Qwen2-0.5B-Instruct")
-    ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot","squad","squad_v2"])
+    ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot", "squad", "squad_v2"])
     ap.add_argument("--hotpot_config", type=str, default="fullwiki")
     ap.add_argument("--samples", type=int, default=128)
     ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--batch_size", type=int, default=1)
+
+    # Repro / randomness
+    ap.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Global seed for RNGs & epoch permutations.")
+    ap.add_argument("--data_seed", type=int, default=DEFAULT_SEED, help="Seed for picking dataset subset.")
 
     # Interlingua / encoder
     ap.add_argument("--latent_len", type=int, default=8)
@@ -135,7 +210,7 @@ def main():
     # Checkpointing
     ap.add_argument("--save_dir", type=str, default="./ckpt")
     ap.add_argument("--save_every", type=int, default=0, help="If >0, save the latest checkpoint every N steps and prune old files.")
-    ap.add_argument("--resume_from", type=str, default=None)
+    ap.add_argument("--resume_from", type=str, default=None, help="Path to state.pt OR a directory containing it.")
     ap.add_argument("--auto_resume", action="store_true")
     ap.add_argument("--no_load_optimizer", action="store_true")
 
@@ -153,14 +228,25 @@ def main():
     else:
         dtype = torch.float32
 
+    # ===== Repro: seed everything ONCE =====
+    random.seed(args.seed)
+    try:
+        import numpy as _np
+        _np.random.seed(args.seed)
+    except Exception:
+        pass
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+
     # ===== Data =====
     print("Loading dataset subset...")
     if args.dataset.startswith("squad"):
         print("Loading SQuAD subset...")
-        examples = load_examples(dataset=args.dataset, split="train", samples=args.samples, seed=0)
+        examples = load_examples(dataset=args.dataset, split="train", samples=args.samples, seed=args.data_seed)
     else:
         print("Loading HotpotQA subset...")
-        examples = load_examples(dataset="hotpot", split="train", samples=args.samples, seed=0, config=args.hotpot_config)
+        examples = load_examples(dataset="hotpot", split="train", samples=args.samples, seed=args.data_seed, config=args.hotpot_config)
 
     if len(examples) == 0:
         raise RuntimeError("No training examples loaded.")
@@ -215,42 +301,18 @@ def main():
     optim_groups = list(encoder.parameters()) + list(adp_llama.parameters()) + list(adp_qwen.parameters())
     optimizer = optim.AdamW([p for p in optim_groups if p.requires_grad], lr=args.lr)
 
-    # ===== Tokenize answers =====
+    # ===== Tokenize answers (teacher forcing) =====
     llama_tok = llama.tokenizer(
         answers, return_tensors="pt", padding=True, truncation=True,
         max_length=args.max_answer_tokens, add_special_tokens=True
     )
     llama_ids = llama_tok["input_ids"].to(device)
-    llama_attention_mask = llama_tok["attention_mask"].to(device)
-    
-    # Create labels - mask padding AND special tokens
-    llama_labels = llama_ids.clone()
-    # Mask padding
-    llama_labels[llama_attention_mask == 0] = -100
-    # Mask BOS token if present (usually first token)
-    if llama.tokenizer.bos_token_id is not None:
-        llama_labels[llama_ids == llama.tokenizer.bos_token_id] = -100
-    # Mask EOS token if present
-    if llama.tokenizer.eos_token_id is not None:
-        llama_labels[llama_ids == llama.tokenizer.eos_token_id] = -100
 
     qwen_tok = qwen.tokenizer(
         answers, return_tensors="pt", padding=True, truncation=True,
         max_length=args.max_answer_tokens, add_special_tokens=True
     )
     qwen_ids = qwen_tok["input_ids"].to(device)
-    qwen_attention_mask = qwen_tok["attention_mask"].to(device)
-    
-    # Create labels - mask padding AND special tokens
-    qwen_labels = qwen_ids.clone()
-    # Mask padding
-    qwen_labels[qwen_attention_mask == 0] = -100
-    # Mask BOS token if present
-    if qwen.tokenizer.bos_token_id is not None:
-        qwen_labels[qwen_ids == qwen.tokenizer.bos_token_id] = -100
-    # Mask EOS token if present
-    if qwen.tokenizer.eos_token_id is not None:
-        qwen_labels[qwen_ids == qwen.tokenizer.eos_token_id] = -100
 
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
@@ -260,14 +322,11 @@ def main():
     global_step = 0
     os.makedirs(args.save_dir, exist_ok=True)
 
-    try:
-        prune_save_dir(args.save_dir)
-    except Exception:
-        pass
-
+    # Do NOT prune blindly before resume; only prune during saves.
+    ckpt_path = None
     if args.resume_from or args.auto_resume:
-        ckpt_path = args.resume_from or find_latest_checkpoint(args.save_dir)
-        if ckpt_path and os.path.isfile(ckpt_path):
+        ckpt_path = args.resume_from if args.resume_from else find_latest_checkpoint(args.save_dir)
+        if ckpt_path and (os.path.isfile(ckpt_path) or os.path.isdir(os.path.dirname(ckpt_path))):
             print(f"⏪ Resuming from: {ckpt_path}")
             epoch_loaded, global_loaded = load_checkpoint(
                 ckpt_path, encoder, adp_llama, adp_qwen,
@@ -281,6 +340,17 @@ def main():
             print("⚠️  No valid checkpoint found to resume; starting fresh.")
 
     # ===== Training stats trackers =====
+    class _RunningMean:
+        def __init__(self):
+            self.n = 0
+            self.sum = 0.0
+        def update(self, value: float):
+            self.n += 1
+            self.sum += float(value)
+        @property
+        def mean(self):
+            return (self.sum / self.n) if self.n > 0 else 0.0
+
     rms_llama = _RunningMean()
     rms_qwen  = _RunningMean()
 
@@ -301,10 +371,14 @@ def main():
 
     params_for_clip = [p for p in optim_groups if p.requires_grad]
 
+    # Deterministic but distinct permutation per epoch using a local generator
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
-        torch.manual_seed(TORCH_FIXED_SEED)  # Set the seed
-        perm = torch.randperm(N)              # Generate permutation of size N
+
+        g = torch.Generator(device="cpu")
+        g.manual_seed(int(args.seed) + int(epoch))  # different order per epoch, reproducible across resumes
+        perm = torch.randperm(N, generator=g)
+
         for step in range(steps_per_epoch):
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
@@ -318,7 +392,7 @@ def main():
                 # ---- Llama path
                 prefix_llama_raw = adp_llama(z)
                 prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
-                y_llama = llama_ids[idx]  # Use original IDs, not labels with -100
+                y_llama = llama_ids[idx]
                 loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
                 loss_llama_total = loss_llama + args.scale_l2 * scale_penalty(adp_llama) + args.adapter_rms_l2 * rms_raw_penalty(prefix_llama_raw, llama)
                 if torch.isfinite(loss_llama_total):
@@ -328,7 +402,7 @@ def main():
                 z = encode_fn(batch_texts)
                 prefix_qwen_raw = adp_qwen(z)
                 prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
-                y_qwen = qwen_ids[idx]  # Use original IDs, not labels with -100
+                y_qwen = qwen_ids[idx]
                 loss_qwen = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
                 loss_qwen_total = loss_qwen + args.scale_l2 * scale_penalty(adp_qwen) + args.adapter_rms_l2 * rms_raw_penalty(prefix_qwen_raw, qwen)
                 if torch.isfinite(loss_qwen_total):
@@ -373,7 +447,7 @@ def main():
                     try: rms_qwen.update(_tensor_rms(prefix_qwen_raw))
                     except Exception: pass
 
-            # Grad norm (monitor)
+            # Grad norm (monitor) – encoder only as a proxy
             try:
                 total_norm = float(torch.nn.utils.clip_grad_norm_(encoder.parameters(), max_norm=float("inf")))
             except Exception:
@@ -408,21 +482,33 @@ def main():
                     "encoder_type": args.encoder_type,
                     "encoder_use_chat_template": bool(args.encoder_use_chat_template),
                     "warm_anchor_text": args.warm_anchor_text,
+                    "seed": args.seed,
+                    "data_seed": args.data_seed,
+                }
+                state_blob = {
+                    "epoch": epoch,
+                    "global_step": global_step,
+                    "args": vars(args),
+                    "rng": {
+                        "torch": torch.get_rng_state(),
+                        "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+                    },
+                    "optimizer": optimizer.state_dict(),
+                    "adapter_scale": {
+                        "llama": float(adp_llama.scale.detach().cpu().item()),
+                        "qwen":  float(adp_qwen.scale.detach().cpu().item()),
+                    },
+                    # Pack weights too (belt-and-suspenders)
+                    "encoder": encoder.state_dict(),
+                    "adp_llama": adp_llama.state_dict(),
+                    "adp_qwen": adp_qwen.state_dict(),
                 }
                 artifacts = {
                     "encoder.pt":       encoder.state_dict(),
                     "adapter_llama.pt": adp_llama.state_dict(),
                     "adapter_qwen.pt":  adp_qwen.state_dict(),
-                    "state.pt": {
-                        "epoch": epoch,
-                        "global_step": global_step,
-                        "optim": optimizer.state_dict(),
-                        "adapter_scale": {
-                            "llama": float(adp_llama.scale.detach().cpu().item()),
-                            "qwen":  float(adp_qwen.scale.detach().cpu().item()),
-                        },
-                    },
-                    "config.json": cfg,
+                    "state.pt":         state_blob,
+                    "config.json":      cfg,
                 }
                 save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
                 print(f"  ✅ Saved (and pruned to) latest at step {global_step}")
@@ -437,7 +523,9 @@ def main():
         "qwen_id": args.qwen_id,
         "encoder_type": args.encoder_type,
         "encoder_use_chat_template": bool(args.encoder_use_chat_template),
-        "warm_anchor_text": args.warm_anchor_text
+        "warm_anchor_text": args.warm_anchor_text,
+        "seed": args.seed,
+        "data_seed": args.data_seed,
     }
     state_blob = {
         "epoch": epoch + 1 if 'epoch' in locals() else None,
@@ -452,6 +540,10 @@ def main():
             "llama": float(adp_llama.scale.detach().cpu().item()),
             "qwen":  float(adp_qwen.scale.detach().cpu().item()),
         },
+        # Pack weights as well
+        "encoder": encoder.state_dict(),
+        "adp_llama": adp_llama.state_dict(),
+        "adp_qwen": adp_qwen.state_dict(),
     }
     artifacts = {
         "encoder.pt":       encoder.state_dict(),
@@ -472,6 +564,7 @@ def main():
         with open(os.path.join(args.save_dir, "training_stats.json"), "w") as f:
             json.dump(stats, f, indent=2)
         print(f"📝 Saved training_stats.json: {stats}")
+
 
 if __name__ == "__main__":
     main()

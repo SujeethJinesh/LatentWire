@@ -72,6 +72,7 @@ def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed
         prefix = prefix * gain
     return prefix, cur, tgt
 
+
 def compute_wire_metrics(llama_chat_prompts: List[str], qwen_chat_prompts: List[str], Z: torch.Tensor) -> Dict[str, Any]:
     avg_text_bytes_llama = int(sum(len(p.encode("utf-8")) for p in llama_chat_prompts) / max(1, len(llama_chat_prompts))) if llama_chat_prompts else 0
     avg_text_bytes_qwen  = int(sum(len(p.encode("utf-8")) for p in qwen_chat_prompts)  / max(1, len(qwen_chat_prompts))) if qwen_chat_prompts else 0
@@ -449,7 +450,7 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     t_trunc = t_trunc_llama + t_trunc_qwen
 
     llama_trunc_em, llama_trunc_f1 = batch_metrics(llama_trunc_preds, golds)
-    qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds,  golds)
+    qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds, golds)
 
     llama_latent_nll = avg_nll_latent(llama, prefix_llama, golds, llama.tokenizer, device, anchor_token_text=anchor_ll or None)
     qwen_latent_nll  = avg_nll_latent(qwen,  prefix_qwen,  golds, qwen.tokenizer, device, anchor_token_text=anchor_qw or None)
@@ -878,8 +879,8 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
 
         joint_preds, agree = [], 0
         for i in range(len(prompts_raw)):
-            candA = L["latent_preds"][i]
-            candB = Q["latent_preds"][i]
+            candA = L.get("latent_preds", [""]*len(prompts_raw))[i]
+            candB = Q.get("latent_preds", [""]*len(prompts_raw))[i]
             if _normalize(candA) == _normalize(candB):
                 agree += 1
             A_ids_L = _to_long(llama.tokenizer(candA, return_tensors="pt", add_special_tokens=True).input_ids, device)
@@ -916,7 +917,7 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
         "latent_len": latent_len,
         "device": device,
         "dtype": str(dtype),
-        "avg_prompt_tokens": {"llama": llama_avg_tok if have_llama else 0.0, "qwen": qwen_avg_tok if have_qwen else 0.0},
+        "avg_prompt_tokens": {"llama": llama_avg_tok if have_llama else 0.0, "qwen": avg_prompt_tokens_qwen if have_qwen else 0.0},
         "compression": compression,
         "payload_bytes": bytes_per_latent,
         "wire": wire,
@@ -1021,6 +1022,9 @@ def main():
     ap.add_argument("--encoder_text_mode", type=str, default="auto",
                     choices=["auto","raw","neutral_chat","llama_chat","qwen_chat"])
 
+    # data selection reproducibility
+    ap.add_argument("--data_seed", type=int, default=42)
+
     args = ap.parse_args()
 
     # Device + dtype
@@ -1071,10 +1075,10 @@ def main():
 
     # Load eval examples
     if args.dataset.startswith("squad"):
-        eval_examples = load_examples(dataset=args.dataset, split="validation", samples=args.samples, seed=42)
+        eval_examples = load_examples(dataset=args.dataset, split="validation", samples=args.samples, seed=args.data_seed)
         dataset_detail = args.dataset
     else:
-        eval_examples = load_examples(dataset="hotpot", split="validation", samples=args.samples, seed=42,
+        eval_examples = load_examples(dataset="hotpot", split="validation", samples=args.samples, seed=args.data_seed,
                                       config=(args.hotpot_config or "fullwiki"))
         dataset_detail = f"hotpot:{args.hotpot_config or 'fullwiki'}"
 
@@ -1200,6 +1204,7 @@ def main():
             for rec in preds_dump:
                 f.write(json.dumps(rec) + "\n")
         print(f"Wrote per-example predictions to {dump_path}")
+
 
 if __name__ == "__main__":
     main()
