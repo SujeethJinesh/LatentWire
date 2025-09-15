@@ -6,6 +6,7 @@ import json
 import argparse
 import random
 from typing import Optional, Tuple
+from contextlib import contextmanager
 
 import torch
 import torch.nn as nn
@@ -20,6 +21,18 @@ from latentwire.common import collate_bytes  # deduped
 
 DEFAULT_SEED = 42
 
+
+@contextmanager
+def _temp_padding_side(tokenizer, side: str):
+    old = getattr(tokenizer, "padding_side", "right")
+    try:
+        tokenizer.padding_side = side
+        yield
+    finally:
+        try:
+            tokenizer.padding_side = old
+        except Exception:
+            pass
 
 # ---------------------------
 # Checkpoint helpers
@@ -328,16 +341,18 @@ def main():
     optimizer = optim.AdamW([p for p in optim_groups if p.requires_grad], lr=args.lr)
 
     # ===== Tokenize answers (teacher forcing) =====
-    llama_tok = llama.tokenizer(
-        answers, return_tensors="pt", padding=True, truncation=True,
-        max_length=args.max_answer_tokens, add_special_tokens=True
-    )
+    with _temp_padding_side(llama.tokenizer, "right"):
+        llama_tok = llama.tokenizer(
+            answers, return_tensors="pt", padding=True, truncation=True,
+            max_length=args.max_answer_tokens, add_special_tokens=True
+        )
     llama_ids = llama_tok["input_ids"].to(device)
 
-    qwen_tok = qwen.tokenizer(
-        answers, return_tensors="pt", padding=True, truncation=True,
-        max_length=args.max_answer_tokens, add_special_tokens=True
-    )
+    with _temp_padding_side(qwen.tokenizer, "right"):
+        qwen_tok = qwen.tokenizer(
+            answers, return_tensors="pt", padding=True, truncation=True,
+            max_length=args.max_answer_tokens, add_special_tokens=True
+        )
     qwen_ids = qwen_tok["input_ids"].to(device)
 
     # First gold token ids (skip left PADs and BOS) for the CE on the first step

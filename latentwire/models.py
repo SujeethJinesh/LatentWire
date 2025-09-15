@@ -345,8 +345,8 @@ class LMWrapper(nn.Module):
         Teacher-forced CE over the gold answer conditioned on a latent prefix,
         optionally warm-started by one or more anchor tokens.
 
-        NOTE: This does NOT supervise the first answer token directly; we add a
-        first-token objective in train.py using `first_token_logits_from_prefix`.
+        Now PAD-aware: labels that are PAD/EOS (when PAD==EOS) are ignored,
+        and TF attention masks zero-out padded inputs.
         """
         B, M, D = prefix_embeds.shape
         model_device = next(self.model.parameters()).device
@@ -355,6 +355,9 @@ class LMWrapper(nn.Module):
             prefix_embeds = prefix_embeds.to(model_device, dtype=emb_dtype)
         else:
             prefix_embeds = prefix_embeds.to(model_device)
+
+        pad_id = getattr(self.tokenizer, "pad_token_id", None)
+        eos_id = getattr(self.tokenizer, "eos_token_id", None)
 
         # Optional anchor
         A = 0
@@ -365,34 +368,84 @@ class LMWrapper(nn.Module):
             A = anchor_embeds.size(1)
 
         # Teacher-forcing inputs (shift)
+        #   We still feed TF inputs (may include PADs), but we will (1) mask labels at PADs
+        #   and (2) zero the attention_mask over padded TF positions so they don't serve as context.
         tf_inputs = target_ids[:, :-1].to(model_device)
         tf_embeds = self.input_embed(tf_inputs)
 
-        # Compose
+        # Compose input embeddings
         if anchor_embeds is not None:
             inputs_embeds = torch.cat([prefix_embeds, anchor_embeds, tf_embeds], dim=1)
         else:
             inputs_embeds = torch.cat([prefix_embeds, tf_embeds], dim=1)
 
-        # Labels (ignore prefix + optional anchor)
-        labels = target_ids[:, 1:].to(model_device)
+        # Build labels (shifted by one) and mask PAD/EOS (when PAD==EOS) to -100
+        labels = target_ids[:, 1:].to(model_device).clone()
+        if pad_id is not None:
+            ignore = labels.eq(int(pad_id))
+            # If PAD and EOS are distinct, you may choose to keep EOS as a supervised symbol.
+            # If they are equal (common in chat LMs when pad->eos), EOS gets ignored too.
+            if (eos_id is not None) and (int(eos_id) != int(pad_id)):
+                # Optional: uncomment to also ignore EOS
+                # ignore = ignore | labels.eq(int(eos_id))
+                pass
+            labels = torch.where(ignore, torch.full_like(labels, -100), labels)
+
+        # Prepend ignore masks for prefix/anchor
         ignore_prefix = torch.full((B, M), -100, dtype=torch.long, device=model_device)
         ignore_anchor = torch.full((B, A), -100, dtype=torch.long, device=model_device) if A > 0 else None
         labels_full = torch.cat([ignore_prefix, ignore_anchor, labels] if A > 0 else [ignore_prefix, labels], dim=1)
 
+        # Attention mask: start as ones; zero-out TF padded positions if any
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=model_device)
+        if pad_id is not None:
+            tf_pad = tf_inputs.eq(int(pad_id))
+            if tf_pad.any():
+                # slice covering the TF region inside the composed sequence
+                start = M + (A if A > 0 else 0)
+                stop  = start + tf_inputs.size(1)
+                attn_mask[:, start:stop] = (~tf_pad).long()
+
         out = self.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, labels=labels_full)
         return out.loss
 
+
     def loss_with_text_prompt(self, prompt_ids: torch.Tensor, target_ids: torch.Tensor):
+        """
+        PAD-aware text loss for diagnostics. We ignore PADs in the target labels
+        and zero the attention over padded TF inputs.
+        """
         device = next(self.model.parameters()).device
+        pad_id = getattr(self.tokenizer, "pad_token_id", None)
+        eos_id = getattr(self.tokenizer, "eos_token_id", None)
+
         B = prompt_ids.size(0)
-        tf_inputs = torch.cat([prompt_ids, target_ids[:, :-1]], dim=1)
+        tf_inputs_tail = target_ids[:, :-1]
+        tf_inputs = torch.cat([prompt_ids, tf_inputs_tail], dim=1)
+
+        # Attention mask: ones, but zero-out padded TF positions if any
         attn_mask = torch.ones_like(tf_inputs, dtype=torch.long, device=device)
+        if pad_id is not None:
+            tail_pad = tf_inputs_tail.eq(int(pad_id))
+            if tail_pad.any():
+                S = prompt_ids.size(1)
+                attn_mask[:, S:S + tf_inputs_tail.size(1)] = (~tail_pad).long()
+
+        # Labels: ignore the prompt part entirely; mask PADs in the target part
+        labels_tail = target_ids[:, 1:].clone().to(device)
+        if pad_id is not None:
+            ignore = labels_tail.eq(int(pad_id))
+            if (eos_id is not None) and (int(eos_id) != int(pad_id)):
+                # Optional: also ignore EOS
+                # ignore = ignore | labels_tail.eq(int(eos_id))
+                pass
+            labels_tail = torch.where(ignore, torch.full_like(labels_tail, -100), labels_tail)
+
         labels = torch.cat([
             torch.full((B, prompt_ids.size(1)), -100, dtype=torch.long, device=device),
-            target_ids[:, 1:]
+            labels_tail
         ], dim=1)
+
         out = self.model(input_ids=tf_inputs.to(device), attention_mask=attn_mask, labels=labels)
         n_tokens = (labels != -100).sum()
         return out.loss, int(n_tokens.item())

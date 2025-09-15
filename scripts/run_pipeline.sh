@@ -24,9 +24,9 @@ FIRST_TOKEN_TEMPERATURE=0.0        # hardened: deterministic first step
 # Anchor & decode controls
 LATENT_ANCHOR_MODE="text"
 LATENT_ANCHOR_TEXT="Answer: "      # note the trailing space
-APPEND_BOS_AFTER_PREFIX="yes"      # **important**: align eval first-step with training
+APPEND_BOS_AFTER_PREFIX="no"      # **important**: align eval first-step with training
 CALIBRATION="embed_rms"
-PREFIX_GAIN=1.0
+PREFIX_GAIN=1.15
 
 # Debug printing (safe to leave on)
 DEBUG=1
@@ -48,8 +48,8 @@ SCALE_L2=0.05
 ADAPTER_RMS_L2=0.0
 MAX_GRAD_NORM=1.0
 WARM_ANCHOR_TEXT="Answer: "         # Matches eval anchor
-FIRST_TOKEN_CE=0.5                  # λ_first (first-token CE weight)
-TRAIN_APPEND_BOS="yes"              # BOS after prefix+anchor during first-token CE
+FIRST_TOKEN_CE=1.0                  # λ_first (first-token CE weight)
+TRAIN_APPEND_BOS="no"              # BOS after prefix+anchor during first-token CE
 STEPS_PER_EPOCH=$(( (TRAIN_SAMPLES + BATCH_SIZE - 1) / BATCH_SIZE ))
 SAVE_EVERY=$STEPS_PER_EPOCH         # save only at the end of each epoch (we copy ckpt dir)
 SEQUENTIAL_MODELS=1
