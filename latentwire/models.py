@@ -64,7 +64,7 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:T].unsqueeze(0).to(x.dtype)
 
 class ByteEncoder(nn.Module):
-    def __init__(self, d_z: int = 256, n_layers: int = 2, n_heads: int = 8, ff_mult: int = 4, max_len: int = 1024):
+    def __init__(self, d_z: int = 256, n_layers: int = 2, n_heads: int = 8, ff_mult: int = 4, max_len: int = 2048):
         super().__init__()
         assert d_z % n_heads == 0, "d_z must be divisible by n_heads"
         self.byte_emb = nn.Embedding(256, d_z)

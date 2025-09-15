@@ -35,8 +35,8 @@ DEBUG_TOPK=10
 DEBUG_TOPK_EXAMPLES=2
 
 # Training knobs
-EPOCHS=16
-BATCH_SIZE=128
+EPOCHS=24
+BATCH_SIZE=64
 TRAIN_SAMPLES=87599
 ENCODER_TYPE="byte"                 # stronger, token-level input
 ENCODER_USE_CHAT_TEMPLATE=0         # training wants raw sources
