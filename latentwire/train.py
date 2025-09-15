@@ -8,12 +8,13 @@ import random
 from typing import Optional, Tuple
 
 import torch
+import torch.nn as nn
 import torch.optim as optim
 
 from latentwire.models import (
     InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
 )
-from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir
+from latentwire.checkpointing import save_latest_checkpoint
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
 
@@ -25,13 +26,6 @@ DEFAULT_SEED = 42
 # ---------------------------
 
 def find_latest_checkpoint(save_dir: str) -> Optional[str]:
-    """
-    Return a path to the most recent state file in a directory, preferring:
-    - {save_dir}/state.pt
-    - {save_dir}/last.pt
-    - {save_dir}/state_step*.pt (highest step)
-    If save_dir is a file path, echo it back.
-    """
     if not save_dir:
         return None
     if os.path.isfile(save_dir):
@@ -39,13 +33,11 @@ def find_latest_checkpoint(save_dir: str) -> Optional[str]:
     if not os.path.isdir(save_dir):
         return None
 
-    # Preferred names
     for name in ["state.pt", "last.pt"]:
         p = os.path.join(save_dir, name)
         if os.path.isfile(p):
             return p
 
-    # Fallback: highest step-like file
     candidates = []
     for fn in os.listdir(save_dir):
         m = re.match(r"state_step(\d+)\.pt$", fn)
@@ -80,17 +72,9 @@ def load_checkpoint(
     strict: bool = True,
     device: str = "cpu"
 ) -> Tuple[int, int]:
-    """
-    Robust loader:
-    - Loads encoder/adapter weights either from state blob (if present) OR from separate files in the same dir.
-    - Restores optimizer (accepts both 'optimizer' and legacy 'optim' keys).
-    - Restores RNG if present.
-    Returns (epoch, global_step).
-    """
     state = _safe_load(path, map_location="cpu") if path and os.path.isfile(path) else {}
     ckpt_dir = os.path.dirname(path) if path and os.path.isfile(path) else None
 
-    # 1) Weights from state.pt if present
     enc_loaded = False
     if isinstance(state, dict) and all(k in state for k in ["encoder", "adp_llama", "adp_qwen"]):
         try:
@@ -102,7 +86,6 @@ def load_checkpoint(
         except Exception as e:
             print(f"   -> failed to load weights from state.pt ({e}); will try .pt files")
 
-    # 2) Fallback to separate *.pt artifacts in the same directory
     if not enc_loaded and ckpt_dir:
         enc_path = os.path.join(ckpt_dir, "encoder.pt")
         llm_path = os.path.join(ckpt_dir, "adapter_llama.pt")
@@ -117,7 +100,6 @@ def load_checkpoint(
                 "No weights found to resume: neither state.pt contained weights nor did encoder.pt/adapter_*.pt exist."
             )
 
-    # 3) Optimizer (both keys accepted)
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
         if opt_state is not None:
@@ -125,7 +107,6 @@ def load_checkpoint(
             _maybe_to_device_optimizer_state(optimizer, device)
             print("   -> restored optimizer state")
 
-    # 4) RNG (optional)
     if isinstance(state, dict) and "rng" in state:
         try:
             rng = state["rng"]
@@ -152,10 +133,8 @@ def _tensor_rms(x: torch.Tensor) -> float:
     with torch.no_grad():
         return float(x.float().pow(2).mean().sqrt().item())
 
-
 def _tensor_rms_d(x: torch.Tensor) -> torch.Tensor:
     return x.pow(2).mean().sqrt()
-
 
 def _calibrate_to_embed_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> torch.Tensor:
     with torch.no_grad():
@@ -163,6 +142,19 @@ def _calibrate_to_embed_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> torch.T
         tgt = wrapper.input_embedding_rms()
         gain = float(tgt) / float(cur) if float(cur) > 0 else 1.0
     return prefix * gain
+
+def _first_non_bos(tokenizer, ids: torch.Tensor) -> torch.Tensor:
+    """
+    ids: [B, T] (already padded). Returns first *content* token id per row,
+    skipping BOS if present.
+    """
+    bos = getattr(tokenizer, "bos_token_id", None)
+    if bos is None:
+        return ids[:, 0]
+    # If first token is BOS and there is at least one more token, pick the next
+    first = ids[:, 0]
+    second = ids[:, 1] if ids.size(1) > 1 else ids[:, 0]
+    return torch.where(first.eq(int(bos)), second, first)
 
 
 def main():
@@ -187,6 +179,8 @@ def main():
     ap.add_argument("--encoder_type", type=str, default="byte", choices=["byte", "simple-st"])
     ap.add_argument("--encoder_use_chat_template", action="store_true",
                     help="Wrap encoder input with a neutral chat-style header (SimpleEncoder only).")
+    ap.add_argument("--encoder_backbone", type=str, default=None,
+                    help="Optional SentenceTransformer backbone when --encoder_type=simple-st")
 
     # Training & stability
     ap.add_argument("--max_answer_tokens", type=int, default=32)
@@ -199,12 +193,18 @@ def main():
                     help="If >0, clip grad norm to this value.")
     ap.add_argument("--adapter_freeze_scale", action="store_true",
                     help="If set, fix adapter.scale at 1.0 (no learning).")
+    ap.add_argument("--first_token_ce_weight", type=float, default=0.5,
+                    help="Weight for the first-token CE objective; 0 disables.")
+    ap.add_argument("--train_append_bos_after_prefix", type=str, default="auto",
+                    choices=["auto","yes","no"],
+                    help="Controls BOS appending when computing first-token CE (train).")
+
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--sequential_models", action="store_true")
     ap.add_argument("--grad_ckpt", action="store_true")
     ap.add_argument("--fp16_mps", action="store_true")
     ap.add_argument("--warm_anchor_text", type=str, default="",
-                    help="Optional anchor tokens AFTER latent prefix during training, e.g. 'Answer:'")
+                    help="Optional anchor tokens AFTER latent prefix during training, e.g. 'Answer: '")
     ap.add_argument("--debug", action="store_true")
 
     # Checkpointing
@@ -228,7 +228,7 @@ def main():
     else:
         dtype = torch.float32
 
-    # ===== Repro: seed everything ONCE =====
+    # ===== Repro =====
     random.seed(args.seed)
     try:
         import numpy as _np
@@ -277,7 +277,8 @@ def main():
             z_bytes = collate_bytes(batch_texts, byte_tok, device)
             return encoder(z_bytes)
     else:
-        encoder = SimpleEncoder(d_z=args.d_z, latent_len=args.latent_len).to(device)
+        encoder = SimpleEncoder(d_z=args.d_z, latent_len=args.latent_len,
+                                backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2")).to(device)
         def _neutral_chat_wrap(s: str) -> str:
             system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
             return f"System: {system}\nUser: {s}\nAssistant:"
@@ -314,6 +315,10 @@ def main():
     )
     qwen_ids = qwen_tok["input_ids"].to(device)
 
+    # First gold token ids (skip BOS if present) for the CE on the first step
+    llama_first_ids_all = _first_non_bos(llama.tokenizer, llama_ids)
+    qwen_first_ids_all  = _first_non_bos(qwen.tokenizer,  qwen_ids)
+
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
 
@@ -322,7 +327,6 @@ def main():
     global_step = 0
     os.makedirs(args.save_dir, exist_ok=True)
 
-    # Do NOT prune blindly before resume; only prune during saves.
     ckpt_path = None
     if args.resume_from or args.auto_resume:
         ckpt_path = args.resume_from if args.resume_from else find_latest_checkpoint(args.save_dir)
@@ -354,6 +358,12 @@ def main():
     rms_llama = _RunningMean()
     rms_qwen  = _RunningMean()
 
+    # Helper: map train flag to boolean for BOS policy
+    def _bos_flag_from_str(flag: str, has_anchor: bool) -> Optional[bool]:
+        if flag == "auto":
+            return None  # let wrapper auto-policy decide
+        return (flag == "yes")
+
     # ===== Train =====
     ema_step_time = None
 
@@ -371,12 +381,11 @@ def main():
 
     params_for_clip = [p for p in optim_groups if p.requires_grad]
 
-    # Deterministic but distinct permutation per epoch using a local generator
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
 
         g = torch.Generator(device="cpu")
-        g.manual_seed(int(args.seed) + int(epoch))  # different order per epoch, reproducible across resumes
+        g.manual_seed(int(args.seed) + int(epoch))
         perm = torch.randperm(N, generator=g)
 
         for step in range(steps_per_epoch):
@@ -386,66 +395,69 @@ def main():
 
             optimizer.zero_grad(set_to_none=True)
 
-            if args.sequential_models:
-                z = encode_fn(batch_texts)
+            # Encode sources once when possible
+            z = encode_fn(batch_texts)
 
-                # ---- Llama path
-                prefix_llama_raw = adp_llama(z)
-                prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
-                y_llama = llama_ids[idx]
-                loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
-                loss_llama_total = loss_llama + args.scale_l2 * scale_penalty(adp_llama) + args.adapter_rms_l2 * rms_raw_penalty(prefix_llama_raw, llama)
-                if torch.isfinite(loss_llama_total):
-                    loss_llama_total.backward()
+            # ----- Llama path -----
+            prefix_llama_raw = adp_llama(z)
+            prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
+            y_llama = llama_ids[idx]
+            loss_llama_tf = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
 
-                # ---- Qwen path
-                z = encode_fn(batch_texts)
-                prefix_qwen_raw = adp_qwen(z)
-                prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
-                y_qwen = qwen_ids[idx]
-                loss_qwen = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
-                loss_qwen_total = loss_qwen + args.scale_l2 * scale_penalty(adp_qwen) + args.adapter_rms_l2 * rms_raw_penalty(prefix_qwen_raw, qwen)
-                if torch.isfinite(loss_qwen_total):
-                    loss_qwen_total.backward()
-
-                if args.max_grad_norm and args.max_grad_norm > 0:
-                    torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
-                optimizer.step()
-                loss_llama_value = float(loss_llama.item())
-                loss_qwen_value  = float(loss_qwen.item())
-                if args.save_training_stats:
-                    try: rms_llama.update(_tensor_rms(prefix_llama_raw))
-                    except Exception: pass
-                    try: rms_qwen.update(_tensor_rms(prefix_qwen_raw))
-                    except Exception: pass
-
+            # First-token CE (supervise the very first token)
+            if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
+                logits_first_ll = llama.first_token_logits_from_prefix(
+                    prefix_llama,
+                    anchor_token_text=(args.warm_anchor_text or None),
+                    append_bos_after_prefix=_bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_llama_ids))
+                )
+                y_first_ll = llama_first_ids_all[idx]
+                loss_first_ll = nn.functional.cross_entropy(logits_first_ll.float(), y_first_ll)
             else:
-                z = encode_fn(batch_texts)
-                prefix_llama_raw = adp_llama(z)
-                prefix_qwen_raw  = adp_qwen(z)
-                # Calibrate both before loss
-                prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
-                prefix_qwen  = _calibrate_to_embed_rms(prefix_qwen_raw,  qwen)
-                y_llama = llama_ids[idx]; y_qwen = qwen_ids[idx]
-                loss_llama = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
-                loss_qwen  = qwen.forward_with_prefix_loss(prefix_qwen,  y_qwen,  anchor_token_ids=anchor_qwen_ids)
-                penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
-                rms_pen  = rms_raw_penalty(prefix_llama_raw, llama) + rms_raw_penalty(prefix_qwen_raw, qwen)
-                loss = 0.5 * (loss_llama + loss_qwen) + args.scale_l2 * penalty + args.adapter_rms_l2 * rms_pen
-                if not torch.isfinite(loss):
-                    print("NaN/Inf loss; skipping step")
-                    continue
-                loss.backward()
-                if args.max_grad_norm and args.max_grad_norm > 0:
-                    torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
-                optimizer.step()
-                loss_llama_value = float(loss_llama.item())
-                loss_qwen_value  = float(loss_qwen.item())
-                if args.save_training_stats:
-                    try: rms_llama.update(_tensor_rms(prefix_llama_raw))
-                    except Exception: pass
-                    try: rms_qwen.update(_tensor_rms(prefix_qwen_raw))
-                    except Exception: pass
+                loss_first_ll = torch.zeros((), device=device)
+
+            # ----- Qwen path -----
+            # Reuse z (shared encoder) for efficiency
+            prefix_qwen_raw = adp_qwen(z)
+            prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
+            y_qwen = qwen_ids[idx]
+            loss_qwen_tf = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
+
+            if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
+                logits_first_qw = qwen.first_token_logits_from_prefix(
+                    prefix_qwen,
+                    anchor_token_text=(args.warm_anchor_text or None),
+                    append_bos_after_prefix=_bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_qwen_ids))
+                )
+                y_first_qw = qwen_first_ids_all[idx]
+                loss_first_qw = nn.functional.cross_entropy(logits_first_qw.float(), y_first_qw)
+            else:
+                loss_first_qw = torch.zeros((), device=device)
+
+            # Combine losses
+            penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
+            rms_pen  = rms_raw_penalty(prefix_llama_raw, llama) + rms_raw_penalty(prefix_qwen_raw, qwen)
+
+            loss_ll = loss_llama_tf + args.first_token_ce_weight * loss_first_ll
+            loss_qw = loss_qwen_tf  + args.first_token_ce_weight * loss_first_qw
+            loss = 0.5 * (loss_ll + loss_qw) + args.scale_l2 * penalty + args.adapter_rms_l2 * rms_pen
+
+            if not torch.isfinite(loss):
+                print("NaN/Inf loss; skipping step")
+                continue
+
+            loss.backward()
+            if args.max_grad_norm and args.max_grad_norm > 0:
+                torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
+            optimizer.step()
+
+            loss_llama_value = float(loss_llama_tf.item())
+            loss_qwen_value  = float(loss_qwen_tf.item())
+            if args.save_training_stats:
+                try: rms_llama.update(_tensor_rms(prefix_llama_raw))
+                except Exception: pass
+                try: rms_qwen.update(_tensor_rms(prefix_qwen_raw))
+                except Exception: pass
 
             # Grad norm (monitor) – encoder only as a proxy
             try:
@@ -461,7 +473,7 @@ def main():
                 pen_L = float(scale_penalty(adp_llama).item()) if args.scale_l2 > 0 else 0.0
                 pen_Q = float(scale_penalty(adp_qwen).item())  if args.scale_l2 > 0 else 0.0
                 msg = (
-                    f"  step {step+1}/{steps_per_epoch} | "
+                    f"  step  {step+1}/{steps_per_epoch} | "
                     f"loss_L={loss_llama_value:.4f} | loss_Q={loss_qwen_value:.4f} | "
                     f"scale_pen(L)= {pen_L:.4e} | scale_pen(Q)= {pen_Q:.4e} | "
                     f"grad_norm={total_norm:.2f} | sec/step~{dt:.2f}"
@@ -481,7 +493,10 @@ def main():
                     "qwen_id": args.qwen_id,
                     "encoder_type": args.encoder_type,
                     "encoder_use_chat_template": bool(args.encoder_use_chat_template),
+                    "encoder_backbone": (args.encoder_backbone or ""),
                     "warm_anchor_text": args.warm_anchor_text,
+                    "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
+                    "first_token_ce_weight": args.first_token_ce_weight,
                     "seed": args.seed,
                     "data_seed": args.data_seed,
                 }
@@ -498,7 +513,6 @@ def main():
                         "llama": float(adp_llama.scale.detach().cpu().item()),
                         "qwen":  float(adp_qwen.scale.detach().cpu().item()),
                     },
-                    # Pack weights too (belt-and-suspenders)
                     "encoder": encoder.state_dict(),
                     "adp_llama": adp_llama.state_dict(),
                     "adp_qwen": adp_qwen.state_dict(),
@@ -523,7 +537,10 @@ def main():
         "qwen_id": args.qwen_id,
         "encoder_type": args.encoder_type,
         "encoder_use_chat_template": bool(args.encoder_use_chat_template),
+        "encoder_backbone": (args.encoder_backbone or ""),
         "warm_anchor_text": args.warm_anchor_text,
+        "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
+        "first_token_ce_weight": args.first_token_ce_weight,
         "seed": args.seed,
         "data_seed": args.data_seed,
     }
@@ -540,7 +557,6 @@ def main():
             "llama": float(adp_llama.scale.detach().cpu().item()),
             "qwen":  float(adp_qwen.scale.detach().cpu().item()),
         },
-        # Pack weights as well
         "encoder": encoder.state_dict(),
         "adp_llama": adp_llama.state_dict(),
         "adp_qwen": adp_qwen.state_dict(),
@@ -555,7 +571,6 @@ def main():
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
 
-    # Save training-time prefix RMS stats (optional, RAW only)
     if args.save_training_stats:
         stats = {
             "llama": {"rms_mean": rms_llama.mean, "count": rms_llama.n},

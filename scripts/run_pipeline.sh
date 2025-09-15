@@ -4,7 +4,7 @@ set -euo pipefail
 # ------------- USER TOGGLES (edit these) -----------------
 
 # Phase toggles
-DO_TRAIN=1             # set to 1 when you're ready to retrain
+DO_TRAIN=1             # set to 0 to skip training
 DO_FINAL_EVAL=1        # full eval after all training
 
 # Eval knobs
@@ -12,19 +12,19 @@ DATASET="squad"        # "squad", "squad_v2", or "hotpot"
 SAMPLES=200            # full eval sample count
 SMOKE_SAMPLES=200      # per-epoch eval sample count (kept high for stronger signal)
 MAX_NEW_TOKENS=12
-SEQUENTIAL_EVAL=1      # 1 = per-model auto encoder-text alignment
-FRESH_EVAL=1           # 1 = recompute Z for eval outputs
+SEQUENTIAL_EVAL=1      # per-model auto encoder-text alignment
+FRESH_EVAL=1           # recompute Z for eval outputs
 LOAD_4BIT=0            # for constrained GPUs
 CHUNK_SIZE=8
 TOKEN_BUDGET_MODE="content_only"   # "content_only" or "chat_full"
-TOKEN_BUDGET_K=16
+TOKEN_BUDGET_K=32                  # match LATENT_LEN for a fairer budget
 FIRST_TOKEN_TOP_P=1.0              # hardened: deterministic first step
 FIRST_TOKEN_TEMPERATURE=0.0        # hardened: deterministic first step
 
 # Anchor & decode controls
 LATENT_ANCHOR_MODE="text"
 LATENT_ANCHOR_TEXT="Answer: "      # note the trailing space
-APPEND_BOS_AFTER_PREFIX="auto"     # BOS only when no anchor is provided (safer default)
+APPEND_BOS_AFTER_PREFIX="yes"      # **important**: align eval first-step with training
 CALIBRATION="embed_rms"
 PREFIX_GAIN=1.0
 
@@ -38,16 +38,19 @@ DEBUG_TOPK_EXAMPLES=2
 EPOCHS=16
 BATCH_SIZE=128
 TRAIN_SAMPLES=87599
-ENCODER_TYPE="simple-st"
-ENCODER_USE_CHAT_TEMPLATE=1
-LATENT_LEN=16
+ENCODER_TYPE="byte"                 # stronger, token-level input
+ENCODER_USE_CHAT_TEMPLATE=0         # training wants raw sources
+LATENT_LEN=32
 D_Z=256
+BYTE_MAX=2048                       # byte budget for the encoder
 LR=5e-5
 SCALE_L2=0.05
 ADAPTER_RMS_L2=0.0
 MAX_GRAD_NORM=1.0
-WARM_ANCHOR_TEXT="Answer: "        # Matches eval anchor
-SAVE_EVERY=0                       # We save once per epoch (copied to epochN)
+WARM_ANCHOR_TEXT="Answer: "         # Matches eval anchor
+FIRST_TOKEN_CE=0.5                  # λ_first (first-token CE weight)
+TRAIN_APPEND_BOS="yes"              # BOS after prefix+anchor during first-token CE
+SAVE_EVERY=1                        # We save once per epoch (copied to epochN)
 SEQUENTIAL_MODELS=1
 
 # Model IDs
@@ -64,7 +67,7 @@ export PYTHONPATH=.
 export TOKENIZERS_PARALLELISM=false
 
 # Run folder name
-RUN="8B_clean_answer"  # New clean run with proper anchor + hardened eval
+RUN="8B_clean_answer_ftce"  # new run with first-token CE + BOS alignment
 RUN_DIR="runs/${RUN}"
 CKPT_DIR="${RUN_DIR}/ckpt"
 mkdir -p "$RUN_DIR" "$CKPT_DIR"
@@ -115,6 +118,8 @@ def fmt(x, nd=3):
 
 print(f"  Text F1:     Llama {fmt(get('text','llama','f1'))} | Qwen {fmt(get('text','qwen','f1'))}")
 print(f"  Latent F1:   Llama {fmt(get('latent','llama','f1'))} | Qwen {fmt(get('latent','qwen','f1'))}")
+print(f"  FirstTok@1:  Llama {fmt(get('latent','llama','first_token_top1'))} | Qwen {fmt(get('latent','qwen','first_token_top1'))}")
+print(f"  FirstTok@5:  Llama {fmt(get('latent','llama','first_token_top5'))} | Qwen {fmt(get('latent','qwen','first_token_top5'))}")
 PY
   else
     echo "✗ Metrics missing in ${dir}"
@@ -131,7 +136,7 @@ run_eval() {
 
   EVAL_ARGS=(
     --ckpt "$ckpt_path"
-    --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID"   # be explicit: avoid model id mismatches
+    --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID"
     --dataset "$DATASET" --samples "$n_samples"
     --max_new_tokens "$MAX_NEW_TOKENS"
     --latent_anchor_mode "$LATENT_ANCHOR_MODE"
@@ -141,10 +146,10 @@ run_eval() {
     --token_budget_mode "$TOKEN_BUDGET_MODE" --token_budget_k "$TOKEN_BUDGET_K"
     --first_token_top_p "$FIRST_TOKEN_TOP_P"
     --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
-    --min_new_tokens 3 --eos_ban_steps 6          # hardened baseline
+    --min_new_tokens 3 --eos_ban_steps 6
     --chunk_size "$CHUNK_SIZE"
     --out_dir "$out_dir"
-    --sequential_eval                              # hardened: always auto-align per model
+    --sequential_eval
   )
 
   if [[ $FRESH_EVAL -eq 1 ]]; then
@@ -182,13 +187,12 @@ run_eval() {
     echo "Checkpoint will be saved to: ${CKPT_DIR}"
     echo ""
 
-    # Train for one epoch at a time
     for epoch in $(seq 1 $EPOCHS); do
       print_header "EPOCH $epoch/$EPOCHS"
 
       TRAIN_ARGS=(
         --dataset "$DATASET" --samples "$TRAIN_SAMPLES"
-        --epochs 1 --batch_size "$BATCH_SIZE"  # Only 1 epoch at a time
+        --epochs 1 --batch_size "$BATCH_SIZE"
         --encoder_type "$ENCODER_TYPE"
         --latent_len "$LATENT_LEN" --d_z "$D_Z"
         --qwen_id "$QWEN_ID" --llama_id "$LLAMA_ID"
@@ -198,6 +202,9 @@ run_eval() {
         --save_dir "$CKPT_DIR"
         --save_every "$SAVE_EVERY"
         --save_training_stats --debug --auto_resume
+        --max_bytes "$BYTE_MAX"
+        --first_token_ce_weight "$FIRST_TOKEN_CE"
+        --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
       )
 
       if [[ "${ENCODER_USE_CHAT_TEMPLATE}" == "1" ]]; then

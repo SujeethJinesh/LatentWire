@@ -1,0 +1,12 @@
+{
+  "d_z": 256,
+  "latent_len": 16,
+  "byte_max": 512,
+  "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+  "qwen_id": "Qwen/Qwen2.5-7B-Instruct",
+  "encoder_type": "simple-st",
+  "encoder_use_chat_template": true,
+  "warm_anchor_text": "Answer: ",
+  "seed": 42,
+  "data_seed": 42
+}
