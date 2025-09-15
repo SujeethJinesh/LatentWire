@@ -50,7 +50,7 @@ MAX_GRAD_NORM=1.0
 WARM_ANCHOR_TEXT="Answer: "         # Matches eval anchor
 FIRST_TOKEN_CE=0.5                  # λ_first (first-token CE weight)
 TRAIN_APPEND_BOS="yes"              # BOS after prefix+anchor during first-token CE
-SAVE_EVERY=1                        # We save once per epoch (copied to epochN)
+SAVE_EVERY=1                        # save only at the end of each epoch (we copy ckpt dir)
 SEQUENTIAL_MODELS=1
 
 # Model IDs

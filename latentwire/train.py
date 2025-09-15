@@ -453,6 +453,8 @@ def main():
 
             loss_llama_value = float(loss_llama_tf.item())
             loss_qwen_value  = float(loss_qwen_tf.item())
+            first_ll_value   = float(loss_first_ll.detach().item()) if torch.is_tensor(loss_first_ll) else 0.0
+            first_qw_value   = float(loss_first_qw.detach().item()) if torch.is_tensor(loss_first_qw) else 0.0
             if args.save_training_stats:
                 try: rms_llama.update(_tensor_rms(prefix_llama_raw))
                 except Exception: pass
@@ -475,7 +477,8 @@ def main():
                 msg = (
                     f"  step  {step+1}/{steps_per_epoch} | "
                     f"loss_L={loss_llama_value:.4f} | loss_Q={loss_qwen_value:.4f} | "
-                    f"scale_pen(L)= {pen_L:.4e} | scale_pen(Q)= {pen_Q:.4e} | "
+                    f"firstCE_L={first_ll_value:.4f} | firstCE_Q={first_qw_value:.4f} | "
+                    f"scale_pen(L)={pen_L:.4e} | scale_pen(Q)={pen_Q:.4e} | "
                     f"grad_norm={total_norm:.2f} | sec/step~{dt:.2f}"
                 )
                 if args.save_training_stats and (rms_llama.n > 0 or rms_qwen.n > 0):

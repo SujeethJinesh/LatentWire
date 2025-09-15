@@ -460,7 +460,7 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     t_trunc = t_trunc_llama + t_trunc_qwen
 
     llama_trunc_em, llama_trunc_f1 = batch_metrics(llama_trunc_preds, golds)
-    qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds,  golds)
+    qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds, golds)
 
     llama_latent_nll = avg_nll_latent(llama, prefix_llama, golds, llama.tokenizer, device, anchor_token_text=anchor_ll or None)
     qwen_latent_nll  = avg_nll_latent(qwen,  prefix_qwen,  golds, qwen.tokenizer, device, anchor_token_text=anchor_qw or None)
