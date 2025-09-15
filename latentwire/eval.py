@@ -50,26 +50,35 @@ def _is_finite(x: float) -> bool:
 def _tensor_rms(x: torch.Tensor) -> float:
     return float(x.float().pow(2).mean().sqrt().item())
 
+def _per_example_calibrate(prefix: torch.Tensor, target_rms: float) -> torch.Tensor:
+    """Per-example calibration to a scalar target RMS."""
+    cur = prefix.float().pow(2).mean(dim=[1, 2], keepdim=True).sqrt().clamp_min(1e-8)
+    gain = (prefix.new_tensor(float(target_rms)) / cur).to(prefix.dtype)
+    return prefix * gain
+
 def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed_rms: Optional[float], stats: Optional[dict], model_key: str) -> Tuple[torch.Tensor, float, float]:
-    cur = _tensor_rms(prefix)
+    """Returns (calibrated_prefix, pre_calib_rms_scalar, target_rms_scalar)."""
+    pre_scalar = _tensor_rms(prefix)  # for logging
+    # decide scalar target
     if mode == "none":
-        tgt = cur
+        tgt = pre_scalar
     elif mode == "embed_rms":
         tgt = wrapper.input_embedding_rms()
     elif mode == "fixed":
         tgt = float(fixed_rms or 0.015)
     elif mode == "train_stats":
-        if stats and model_key in stats and "rms_mean" in stats[model_key]:
-            tgt = float(stats[model_key]["rms_mean"])
+        if stats and model_key in stats:
+            # prefer calibrated rms mean if available
+            tgt = float(stats[model_key].get("rms_mean_cal", stats[model_key].get("rms_mean", wrapper.input_embedding_rms())))
         else:
             tgt = wrapper.input_embedding_rms()
     else:
         tgt = wrapper.input_embedding_rms()
 
-    if cur > 0 and tgt > 0:
-        gain = tgt / cur
-        prefix = prefix * gain
-    return prefix, cur, tgt
+    # per-example calibration
+    if mode != "none":
+        prefix = _per_example_calibrate(prefix, tgt)
+    return prefix, pre_scalar, float(tgt)
 
 def compute_wire_metrics(llama_chat_prompts: List[str], qwen_chat_prompts: List[str], Z: torch.Tensor) -> Dict[str, Any]:
     avg_text_bytes_llama = int(sum(len(p.encode("utf-8")) for p in llama_chat_prompts) / max(1, len(llama_chat_prompts))) if llama_chat_prompts else 0
@@ -77,13 +86,20 @@ def compute_wire_metrics(llama_chat_prompts: List[str], qwen_chat_prompts: List[
     bytes_fp32 = int(Z.size(1) * Z.size(2) * 4)
     bytes_fp16 = int(Z.size(1) * Z.size(2) * 2)
     max_onecopy = max(avg_text_bytes_llama, avg_text_bytes_qwen)
+    # Keep backward-compat keys but also expose correct ratios explicitly
     return {
         "text_bytes_onecopy": {"llama_avg": avg_text_bytes_llama, "qwen_avg": avg_text_bytes_qwen, "max_avg": max_onecopy},
         "text_bytes_twocopies": {"sum_avg": avg_text_bytes_llama + avg_text_bytes_qwen},
         "latent_bytes": {"fp32": bytes_fp32, "fp16": bytes_fp16},
-        "wire_compression": {
-            "vs_onecopy_fp16": (float(max_onecopy) / bytes_fp16) if bytes_fp16 > 0 else None,
-            "vs_onecopy_fp32": (float(max_onecopy) / bytes_fp32) if bytes_fp32 > 0 else None,
+        "wire_compression": {  # legacy names (kept for compatibility)
+            "vs_onecopy_fp16": (float(bytes_fp16) / max_onecopy) if max_onecopy > 0 else None,
+            "vs_onecopy_fp32": (float(bytes_fp32) / max_onecopy) if max_onecopy > 0 else None,
+        },
+        "wire_ratio": {         # preferred explicit names
+            "latent_over_onecopy_fp16": (float(bytes_fp16) / max_onecopy) if max_onecopy > 0 else None,
+            "latent_over_onecopy_fp32": (float(bytes_fp32) / max_onecopy) if max_onecopy > 0 else None,
+            "onecopy_over_latent_fp16": (float(max_onecopy) / bytes_fp16) if bytes_fp16 > 0 else None,
+            "onecopy_over_latent_fp32": (float(max_onecopy) / bytes_fp32) if bytes_fp32 > 0 else None,
         }
     }
 
@@ -240,6 +256,34 @@ def avg_nll_latent(
 # First-token accuracy diagnostics
 # ---------------------------
 
+def _first_content_token_ids(tokenizer, golds: List[str], device: str) -> torch.Tensor:
+    """
+    Robustly extract the first *content* token id per example:
+      - ignore left PAD
+      - skip BOS if present at the first non-PAD position
+    """
+    ids = tokenizer(golds, return_tensors="pt", padding=True, truncation=True, add_special_tokens=True).input_ids.to(device)
+    B, T = ids.size()
+    pad = getattr(tokenizer, "pad_token_id", None)
+    bos = getattr(tokenizer, "bos_token_id", None)
+
+    if pad is None:
+        nonpad = torch.ones_like(ids, dtype=torch.bool, device=device)
+    else:
+        nonpad = ids.ne(int(pad))
+
+    # first non-PAD index
+    first_idx = nonpad.float().argmax(dim=1)
+    row = torch.arange(B, device=device)
+    first_tok = ids[row, first_idx]
+
+    if bos is not None:
+        is_bos = first_tok.eq(int(bos))
+        next_idx = torch.clamp(first_idx + 1, max=T - 1)
+        first_tok = torch.where(is_bos, ids[row, next_idx], first_tok)
+
+    return first_tok
+
 @torch.no_grad()
 def first_token_topk_acc(
     wrapper: LMWrapper,
@@ -257,11 +301,8 @@ def first_token_topk_acc(
     logits = wrapper.first_token_logits_from_prefix(
         prefix, anchor_token_text=anchor_token_text, append_bos_after_prefix=append_bos_after_prefix
     )  # [N, V]
-    # Gold first (skip BOS if present)
-    ids = wrapper.tokenizer(golds, return_tensors="pt", padding=True, truncation=True, add_special_tokens=True).input_ids.to(device)
-    bos = getattr(wrapper.tokenizer, "bos_token_id", None)
-    gold_first = ids[:, 0] if bos is None else torch.where(ids[:, 0].eq(int(bos)) & (ids.size(1) > 1), ids[:, 1], ids[:, 0])
 
+    gold_first = _first_content_token_ids(wrapper.tokenizer, golds, device)
     probs = torch.softmax(logits, dim=-1)
     accs = {}
     V = probs.size(-1)
@@ -1141,7 +1182,7 @@ def main():
           f"(Qwen): {summary['compression'].get('qwen','-'):.1f}x")
     print(f"Approx interlingua payload per example: {summary['payload_bytes']} bytes (fp32), "
           f"and {summary['wire']['latent_bytes']['fp16']} bytes (fp16); "
-          f"wire compression vs one-copy text (fp16): {summary['wire']['wire_compression']['vs_onecopy_fp16']:.2f}x")
+          f"latent/text bytes (one-copy, fp16): {summary['wire']['wire_ratio']['latent_over_onecopy_fp16']:.2f}x")
 
     print("\n— Baseline: Text prompting")
     if summary['text'].get('llama') is not None:

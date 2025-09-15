@@ -137,24 +137,49 @@ def _tensor_rms_d(x: torch.Tensor) -> torch.Tensor:
     return x.pow(2).mean().sqrt()
 
 def _calibrate_to_embed_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> torch.Tensor:
-    with torch.no_grad():
-        cur = prefix.float().pow(2).mean().sqrt()
-        tgt = wrapper.input_embedding_rms()
-        gain = float(tgt) / float(cur) if float(cur) > 0 else 1.0
+    """
+    Per-example calibration of the latent prefix to the model's input-embedding RMS.
+    This exactly matches eval-time behavior and avoids batch-level amplitude drift.
+    """
+    # scalar target
+    tgt = prefix.new_tensor(wrapper.input_embedding_rms())
+    # per-example RMS across [M, D]
+    cur = prefix.float().pow(2).mean(dim=[1, 2], keepdim=True).sqrt().clamp_min(1e-8)
+    gain = (tgt / cur).to(prefix.dtype)  # [B,1,1]
     return prefix * gain
 
 def _first_non_bos(tokenizer, ids: torch.Tensor) -> torch.Tensor:
     """
-    ids: [B, T] (already padded). Returns first *content* token id per row,
-    skipping BOS if present.
+    Returns the first *content* token id per row:
+      - skips all left PADs (padding_side='left')
+      - skips BOS if present at the first non-PAD position
+    ids: [B, T]
     """
+    device = ids.device
+    B, T = ids.size()
+    pad = getattr(tokenizer, "pad_token_id", None)
     bos = getattr(tokenizer, "bos_token_id", None)
-    if bos is None:
-        return ids[:, 0]
-    # If first token is BOS and there is at least one more token, pick the next
-    first = ids[:, 0]
-    second = ids[:, 1] if ids.size(1) > 1 else ids[:, 0]
-    return torch.where(first.eq(int(bos)), second, first)
+
+    # mask of non-PAD positions
+    if pad is None:
+        nonpad = torch.ones_like(ids, dtype=torch.bool, device=device)
+    else:
+        nonpad = ids.ne(int(pad))
+
+    # first non-PAD index per row
+    first_idx = nonpad.float().argmax(dim=1)
+
+    # gather that token
+    row = torch.arange(B, device=device)
+    first_tok = ids[row, first_idx]
+
+    # if that token is BOS, move one step to the right (clamped)
+    if bos is not None:
+        is_bos = first_tok.eq(int(bos))
+        next_idx = torch.clamp(first_idx + 1, max=T - 1)
+        first_tok = torch.where(is_bos, ids[row, next_idx], first_tok)
+
+    return first_tok
 
 
 def main():
@@ -315,7 +340,7 @@ def main():
     )
     qwen_ids = qwen_tok["input_ids"].to(device)
 
-    # First gold token ids (skip BOS if present) for the CE on the first step
+    # First gold token ids (skip left PADs and BOS) for the CE on the first step
     llama_first_ids_all = _first_non_bos(llama.tokenizer, llama_ids)
     qwen_first_ids_all  = _first_non_bos(qwen.tokenizer,  qwen_ids)
 
@@ -355,8 +380,13 @@ def main():
         def mean(self):
             return (self.sum / self.n) if self.n > 0 else 0.0
 
-    rms_llama = _RunningMean()
-    rms_qwen  = _RunningMean()
+    rms_llama_raw = _RunningMean()
+    rms_qwen_raw  = _RunningMean()
+    rms_llama_cal = _RunningMean()
+    rms_qwen_cal  = _RunningMean()
+
+    embed_rms_llama = llama.input_embedding_rms()
+    embed_rms_qwen  = qwen.input_embedding_rms()
 
     # Helper: map train flag to boolean for BOS policy
     def _bos_flag_from_str(flag: str, has_anchor: bool) -> Optional[bool]:
@@ -417,7 +447,6 @@ def main():
                 loss_first_ll = torch.zeros((), device=device)
 
             # ----- Qwen path -----
-            # Reuse z (shared encoder) for efficiency
             prefix_qwen_raw = adp_qwen(z)
             prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
             y_qwen = qwen_ids[idx]
@@ -451,14 +480,20 @@ def main():
                 torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
             optimizer.step()
 
-            loss_llama_value = float(loss_llama_tf.item())
-            loss_qwen_value  = float(loss_qwen_tf.item())
-            first_ll_value   = float(loss_first_ll.detach().item()) if torch.is_tensor(loss_first_ll) else 0.0
-            first_qw_value   = float(loss_first_qw.detach().item()) if torch.is_tensor(loss_first_qw) else 0.0
+            # Track RMS (raw + calibrated)
+            llama_rms_raw_val = _tensor_rms(prefix_llama_raw)
+            qwen_rms_raw_val  = _tensor_rms(prefix_qwen_raw)
+            llama_rms_cal_val = _tensor_rms(prefix_llama)
+            qwen_rms_cal_val  = _tensor_rms(prefix_qwen)
+
             if args.save_training_stats:
-                try: rms_llama.update(_tensor_rms(prefix_llama_raw))
+                try: rms_llama_raw.update(llama_rms_raw_val)
                 except Exception: pass
-                try: rms_qwen.update(_tensor_rms(prefix_qwen_raw))
+                try: rms_qwen_raw.update(qwen_rms_raw_val)
+                except Exception: pass
+                try: rms_llama_cal.update(llama_rms_cal_val)
+                except Exception: pass
+                try: rms_qwen_cal.update(qwen_rms_cal_val)
                 except Exception: pass
 
             # Grad norm (monitor) – encoder only as a proxy
@@ -476,13 +511,16 @@ def main():
                 pen_Q = float(scale_penalty(adp_qwen).item())  if args.scale_l2 > 0 else 0.0
                 msg = (
                     f"  step  {step+1}/{steps_per_epoch} | "
-                    f"loss_L={loss_llama_value:.4f} | loss_Q={loss_qwen_value:.4f} | "
-                    f"firstCE_L={first_ll_value:.4f} | firstCE_Q={first_qw_value:.4f} | "
+                    f"loss_L={float(loss_llama_tf.item()):.4f} | loss_Q={float(loss_qwen_tf.item()):.4f} | "
+                    f"firstCE_L={float((loss_first_ll if torch.is_tensor(loss_first_ll) else 0.0)):.4f} | "
+                    f"firstCE_Q={float((loss_first_qw if torch.is_tensor(loss_first_qw) else 0.0)):.4f} | "
                     f"scale_pen(L)={pen_L:.4e} | scale_pen(Q)={pen_Q:.4e} | "
                     f"grad_norm={total_norm:.2f} | sec/step~{dt:.2f}"
                 )
-                if args.save_training_stats and (rms_llama.n > 0 or rms_qwen.n > 0):
-                    msg += f" | rms_L~{rms_llama.mean:.4f} rms_Q~{rms_qwen.mean:.4f}"
+                if args.save_training_stats:
+                    msg += (f" | rms_raw(L)~{rms_llama_raw.mean:.4f} rms_raw(Q)~{rms_qwen_raw.mean:.4f}"
+                            f" | rms_cal(L)~{rms_llama_cal.mean:.4f} rms_cal(Q)~{rms_qwen_cal.mean:.4f}"
+                            f" | embed_rms(L)~{embed_rms_llama:.5f} embed_rms(Q)~{embed_rms_qwen:.5f}")
                 print(msg)
 
             # ---- Periodic checkpoint: save + prune
@@ -576,8 +614,14 @@ def main():
 
     if args.save_training_stats:
         stats = {
-            "llama": {"rms_mean": rms_llama.mean, "count": rms_llama.n},
-            "qwen":  {"rms_mean": rms_qwen.mean,  "count": rms_qwen.n},
+            "llama": {
+                "rms_mean_raw": rms_llama_raw.mean, "rms_mean_cal": rms_llama_cal.mean,
+                "embed_rms": embed_rms_llama, "count": rms_llama_cal.n
+            },
+            "qwen":  {
+                "rms_mean_raw": rms_qwen_raw.mean,  "rms_mean_cal": rms_qwen_cal.mean,
+                "embed_rms": embed_rms_qwen,  "count": rms_qwen_cal.n
+            },
         }
         with open(os.path.join(args.save_dir, "training_stats.json"), "w") as f:
             json.dump(stats, f, indent=2)
