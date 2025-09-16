@@ -79,7 +79,7 @@ def k_token_ce_from_prefix(
 
     for t in range(min(K, A)):
         inputs_embeds = _compose_student_inputs_from_prefix(
-            llm, prefix_embeds, gold_ids, t - 1, anchor_ids, append_bos_after_prefix
+            llm, prefix_embeds, gold_ids, t, anchor_ids, append_bos_after_prefix
         )
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=device)
         out = llm.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, use_cache=False, return_dict=True)
@@ -118,7 +118,7 @@ def kd_first_k_prefix_vs_text(
             T = F.softmax(T_logits / tau, dim=-1)
 
         inputs_embeds = _compose_student_inputs_from_prefix(
-            student_llm, prefix_embeds, gold_ids, t - 1, anchor_ids, append_bos_after_prefix
+            student_llm, prefix_embeds, gold_ids, t, anchor_ids, append_bos_after_prefix
         )
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=device)
         out = student_llm.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, use_cache=False, return_dict=True)

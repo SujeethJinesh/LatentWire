@@ -67,6 +67,36 @@ source .venv/bin/activate
 export PYTHONPATH=.
 export TOKENIZERS_PARALLELISM=false
 
+TRAIN_ARGS_COMMON=(
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES"
+  --epochs 1 --batch_size "$BATCH_SIZE"
+  --encoder_type "$ENCODER_TYPE"
+  --latent_len "$LATENT_LEN" --d_z "$D_Z"
+  --qwen_id "$QWEN_ID" --llama_id "$LLAMA_ID"
+  --lr "$LR" --scale_l2 "$SCALE_L2"
+  --adapter_rms_l2 "$ADAPTER_RMS_L2"
+  --max_grad_norm "$MAX_GRAD_NORM"
+  --max_bytes "$BYTE_MAX"
+  --first_token_ce_weight "$FIRST_TOKEN_CE"
+  --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
+  --K 4 --k_ce_weight 0.5 --kd_first_k_weight 1.0 --kd_tau 1.0
+)
+
+EVAL_ARGS_COMMON=(
+  --dataset "$DATASET" --max_new_tokens "$MAX_NEW_TOKENS"
+  --latent_anchor_mode "$LATENT_ANCHOR_MODE"
+  --latent_anchor_text "$LATENT_ANCHOR_TEXT"
+  --append_bos_after_prefix "$APPEND_BOS_AFTER_PREFIX"
+  --calibration "$CALIBRATION" --prefix_gain "$PREFIX_GAIN"
+  --token_budget_mode "$TOKEN_BUDGET_MODE" --token_budget_k "$TOKEN_BUDGET_K"
+  --first_token_top_p "$FIRST_TOKEN_TOP_P"
+  --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
+  --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16
+  --min_new_tokens 3 --eos_ban_steps 6
+  --chunk_size "$CHUNK_SIZE"
+  --sequential_eval
+)
+
 # Run folder name
 RUN="8B_clean_answer_ftce"  # new run with first-token CE + BOS alignment
 RUN_DIR="runs/${RUN}"
@@ -138,22 +168,9 @@ run_eval() {
   EVAL_ARGS=(
     --ckpt "$ckpt_path"
     --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID"
-    --dataset "$DATASET" --samples "$n_samples"
-    --max_new_tokens "$MAX_NEW_TOKENS"
-    --latent_anchor_mode "$LATENT_ANCHOR_MODE"
-    --latent_anchor_text "$LATENT_ANCHOR_TEXT"
-    --append_bos_after_prefix "$APPEND_BOS_AFTER_PREFIX"
-    --calibration "$CALIBRATION" --prefix_gain "$PREFIX_GAIN"
-    --token_budget_mode "$TOKEN_BUDGET_MODE" --token_budget_k "$TOKEN_BUDGET_K"
-    --first_token_top_p "$FIRST_TOKEN_TOP_P"
-    --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
-    --latent_quant_bits 6
-    --latent_quant_group_size 32
-    --latent_quant_scale_bits 16
-    --min_new_tokens 3 --eos_ban_steps 6
-    --chunk_size "$CHUNK_SIZE"
+    --samples "$n_samples"
     --out_dir "$out_dir"
-    --sequential_eval
+    "${EVAL_ARGS_COMMON[@]}"
   )
 
   if [[ $FRESH_EVAL -eq 1 ]]; then
@@ -195,24 +212,10 @@ run_eval() {
       print_header "EPOCH $epoch/$EPOCHS"
 
       TRAIN_ARGS=(
-        --dataset "$DATASET" --samples "$TRAIN_SAMPLES"
-        --epochs 1 --batch_size "$BATCH_SIZE"
-        --encoder_type "$ENCODER_TYPE"
-        --latent_len "$LATENT_LEN" --d_z "$D_Z"
-        --qwen_id "$QWEN_ID" --llama_id "$LLAMA_ID"
-        --lr "$LR" --scale_l2 "$SCALE_L2"
-        --adapter_rms_l2 "$ADAPTER_RMS_L2"
-        --max_grad_norm "$MAX_GRAD_NORM"
+        "${TRAIN_ARGS_COMMON[@]}"
         --save_dir "$CKPT_DIR"
         --save_every "$SAVE_EVERY"
         --save_training_stats --debug --auto_resume
-        --max_bytes "$BYTE_MAX"
-        --first_token_ce_weight "$FIRST_TOKEN_CE"
-        --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
-        --K 4
-        --k_ce_weight 0.5
-        --kd_first_k_weight 1.0
-        --kd_tau 1.0
       )
 
       if [[ "${ENCODER_USE_CHAT_TEMPLATE}" == "1" ]]; then
