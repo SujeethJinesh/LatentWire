@@ -18,8 +18,8 @@ LOAD_4BIT=0            # for constrained GPUs
 CHUNK_SIZE=8
 TOKEN_BUDGET_MODE="content_only"   # "content_only" or "chat_full"
 TOKEN_BUDGET_K=32                  # match LATENT_LEN for a fairer budget
-FIRST_TOKEN_TOP_P=1.0              # hardened: deterministic first step
-FIRST_TOKEN_TEMPERATURE=0.0        # hardened: deterministic first step
+FIRST_TOKEN_TOP_P=0.95             # eval nudge for first token
+FIRST_TOKEN_TEMPERATURE=0.7        # eval nudge for first token
 
 # Anchor & decode controls
 LATENT_ANCHOR_MODE="text"
@@ -48,7 +48,7 @@ SCALE_L2=0.05
 ADAPTER_RMS_L2=0.0
 MAX_GRAD_NORM=1.0
 WARM_ANCHOR_TEXT="Answer: "         # Matches eval anchor
-FIRST_TOKEN_CE=1.0                  # λ_first (first-token CE weight)
+FIRST_TOKEN_CE=0.0                  # λ_first (first-token CE weight)
 TRAIN_APPEND_BOS="no"              # BOS after prefix+anchor during first-token CE
 STEPS_PER_EPOCH=$(( (TRAIN_SAMPLES + BATCH_SIZE - 1) / BATCH_SIZE ))
 SAVE_EVERY=$STEPS_PER_EPOCH         # save only at the end of each epoch (we copy ckpt dir)
@@ -147,6 +147,9 @@ run_eval() {
     --token_budget_mode "$TOKEN_BUDGET_MODE" --token_budget_k "$TOKEN_BUDGET_K"
     --first_token_top_p "$FIRST_TOKEN_TOP_P"
     --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
+    --latent_quant_bits 6
+    --latent_quant_group_size 32
+    --latent_quant_scale_bits 16
     --min_new_tokens 3 --eos_ban_steps 6
     --chunk_size "$CHUNK_SIZE"
     --out_dir "$out_dir"
@@ -206,6 +209,10 @@ run_eval() {
         --max_bytes "$BYTE_MAX"
         --first_token_ce_weight "$FIRST_TOKEN_CE"
         --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
+        --K 4
+        --k_ce_weight 0.5
+        --kd_first_k_weight 1.0
+        --kd_tau 1.0
       )
 
       if [[ "${ENCODER_USE_CHAT_TEMPLATE}" == "1" ]]; then
