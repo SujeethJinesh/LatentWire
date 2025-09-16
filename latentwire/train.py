@@ -5,7 +5,8 @@ import time
 import json
 import argparse
 import random
-from typing import Optional, Tuple, List
+from dataclasses import dataclass
+from typing import Dict, Optional, Tuple, List, Union
 from contextlib import contextmanager
 
 import torch
@@ -19,6 +20,15 @@ from latentwire.checkpointing import save_latest_checkpoint
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
 from latentwire.losses import k_token_ce_from_prefix, kd_first_k_prefix_vs_text
+from latentwire.prefix_utils import (
+    calibrate_to_embed_rms,
+    bos_policy,
+    first_non_bos,
+    build_scaffold_ids,
+    anchor_token_ids,
+    tensor_rms,
+    tensor_rms_d,
+)
 
 DEFAULT_SEED = 42
 
@@ -143,57 +153,21 @@ def load_checkpoint(
 # Small helpers
 # ---------------------------
 
-def _tensor_rms(x: torch.Tensor) -> float:
-    with torch.no_grad():
-        return float(x.float().pow(2).mean().sqrt().item())
+def _to_float(value: Union[torch.Tensor, float, int]) -> float:
+    if torch.is_tensor(value):
+        return float(value.detach().item())
+    return float(value)
 
-def _tensor_rms_d(x: torch.Tensor) -> torch.Tensor:
-    return x.pow(2).mean().sqrt()
 
-def _calibrate_to_embed_rms(prefix: torch.Tensor, wrapper: LMWrapper) -> torch.Tensor:
-    """
-    Per-example calibration of the latent prefix to the model's input-embedding RMS.
-    This exactly matches eval-time behavior and avoids batch-level amplitude drift.
-    """
-    # scalar target
-    tgt = prefix.new_tensor(wrapper.input_embedding_rms())
-    # per-example RMS across [M, D]
-    cur = prefix.float().pow(2).mean(dim=[1, 2], keepdim=True).sqrt().clamp_min(1e-8)
-    gain = (tgt / cur).to(prefix.dtype)  # [B,1,1]
-    return prefix * gain
-
-def _first_non_bos(tokenizer, ids: torch.Tensor) -> torch.Tensor:
-    """
-    Returns the first *content* token id per row:
-      - skips all left PADs (padding_side='left')
-      - skips BOS if present at the first non-PAD position
-    ids: [B, T]
-    """
-    device = ids.device
-    B, T = ids.size()
-    pad = getattr(tokenizer, "pad_token_id", None)
-    bos = getattr(tokenizer, "bos_token_id", None)
-
-    # mask of non-PAD positions
-    if pad is None:
-        nonpad = torch.ones_like(ids, dtype=torch.bool, device=device)
-    else:
-        nonpad = ids.ne(int(pad))
-
-    # first non-PAD index per row
-    first_idx = nonpad.float().argmax(dim=1)
-
-    # gather that token
-    row = torch.arange(B, device=device)
-    first_tok = ids[row, first_idx]
-
-    # if that token is BOS, move one step to the right (clamped)
-    if bos is not None:
-        is_bos = first_tok.eq(int(bos))
-        next_idx = torch.clamp(first_idx + 1, max=T - 1)
-        first_tok = torch.where(is_bos, ids[row, next_idx], first_tok)
-
-    return first_tok
+@dataclass
+class ModelTrainContext:
+    name: str
+    wrapper: LMWrapper
+    adapter: Adapter
+    token_ids: torch.Tensor
+    first_token_ids: torch.Tensor
+    anchor_ids: List[int]
+    bos_flag: Optional[bool]
 
 
 def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
@@ -336,11 +310,8 @@ def main():
     except Exception as exc:
         print(f"[WARN] A0 sanity check skipped/failed: {exc}")
 
-    if args.warm_anchor_text:
-        anchor_llama_ids = llama.tokenizer.encode(args.warm_anchor_text, add_special_tokens=False) if args.warm_anchor_text else []
-        anchor_qwen_ids  = qwen.tokenizer.encode(args.warm_anchor_text,  add_special_tokens=False) if args.warm_anchor_text else []
-    else:
-        anchor_llama_ids, anchor_qwen_ids = [], []
+    anchor_llama_ids = anchor_token_ids(llama, args.warm_anchor_text)
+    anchor_qwen_ids = anchor_token_ids(qwen, args.warm_anchor_text)
 
     if args.grad_ckpt:
         llama.enable_gradient_checkpointing()
@@ -395,8 +366,8 @@ def main():
     qwen_ids = qwen_tok["input_ids"].to(device)
 
     # First gold token ids (skip left PADs and BOS) for the CE on the first step
-    llama_first_ids_all = _first_non_bos(llama.tokenizer, llama_ids)
-    qwen_first_ids_all  = _first_non_bos(qwen.tokenizer,  qwen_ids)
+    llama_first_ids_all = first_non_bos(llama.tokenizer, llama_ids)
+    qwen_first_ids_all  = first_non_bos(qwen.tokenizer,  qwen_ids)
 
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
@@ -434,19 +405,39 @@ def main():
         def mean(self):
             return (self.sum / self.n) if self.n > 0 else 0.0
 
-    rms_llama_raw = _RunningMean()
-    rms_qwen_raw  = _RunningMean()
-    rms_llama_cal = _RunningMean()
-    rms_qwen_cal  = _RunningMean()
+    stats_trackers = {
+        "llama": {
+            "rms_raw": _RunningMean(),
+            "rms_cal": _RunningMean(),
+            "embed_rms": llama.input_embedding_rms(),
+        },
+        "qwen": {
+            "rms_raw": _RunningMean(),
+            "rms_cal": _RunningMean(),
+            "embed_rms": qwen.input_embedding_rms(),
+        },
+    }
 
-    embed_rms_llama = llama.input_embedding_rms()
-    embed_rms_qwen  = qwen.input_embedding_rms()
-
-    # Helper: map train flag to boolean for BOS policy
-    def _bos_flag_from_str(flag: str, has_anchor: bool) -> Optional[bool]:
-        if flag == "auto":
-            return None  # let wrapper auto-policy decide
-        return (flag == "yes")
+    model_contexts: List[ModelTrainContext] = [
+        ModelTrainContext(
+            name="llama",
+            wrapper=llama,
+            adapter=adp_llama,
+            token_ids=llama_ids,
+            first_token_ids=llama_first_ids_all,
+            anchor_ids=anchor_llama_ids,
+            bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids),
+        ),
+        ModelTrainContext(
+            name="qwen",
+            wrapper=qwen,
+            adapter=adp_qwen,
+            token_ids=qwen_ids,
+            first_token_ids=qwen_first_ids_all,
+            anchor_ids=anchor_qwen_ids,
+            bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids),
+        ),
+    ]
 
     # ===== Train =====
     ema_step_time = None
@@ -460,7 +451,7 @@ def main():
         if args.adapter_rms_l2 <= 0.0:
             return torch.zeros((), device=device)
         tgt = prefix_raw.new_tensor(wrapper.input_embedding_rms())
-        cur = _tensor_rms_d(prefix_raw)
+        cur = tensor_rms_d(prefix_raw)
         return (cur - tgt).pow(2)
 
     params_for_clip = [p for p in optim_groups if p.requires_grad]
@@ -479,128 +470,96 @@ def main():
 
             optimizer.zero_grad(set_to_none=True)
 
-            # Teacher (text) scaffolds for KD (same anchor/prefix as latent)
-            sc_llama = _build_scaffold_ids(llama.tokenizer, batch_texts, args.warm_anchor_text or "", device)
-            sc_qwen  = _build_scaffold_ids(qwen.tokenizer,  batch_texts, args.warm_anchor_text or "", device)
+            scaffolds = {
+                ctx.name: build_scaffold_ids(
+                    ctx.wrapper.tokenizer, batch_texts, args.warm_anchor_text or "", device
+                )
+                for ctx in model_contexts
+            }
 
-            # Encode sources once when possible
             z = encode_fn(batch_texts)
 
-            # ----- Llama path -----
-            prefix_llama_raw = adp_llama(z)
-            prefix_llama = _calibrate_to_embed_rms(prefix_llama_raw, llama)
-            y_llama = llama_ids[idx]
-            loss_llama_tf = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
+            per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
+            total_model_loss = 0.0
+            penalty = torch.zeros((), device=device)
+            rms_pen = torch.zeros((), device=device)
 
-            bos_ll = _bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_llama_ids))
-            # First-token CE (supervise the very first token)
-            if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
-                logits_first_ll = llama.first_token_logits_from_prefix(
-                    prefix_llama,
-                    anchor_token_text=(args.warm_anchor_text or None),
-                    append_bos_after_prefix=bos_ll
+            for ctx in model_contexts:
+                prefix_raw = ctx.adapter(z)
+                prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
+                targets = ctx.token_ids[idx]
+                loss_tf = ctx.wrapper.forward_with_prefix_loss(
+                    prefix, targets, anchor_token_ids=ctx.anchor_ids
                 )
-                y_first_ll = llama_first_ids_all[idx]
-                loss_first_ll = nn.functional.cross_entropy(logits_first_ll.float(), y_first_ll)
-            else:
-                loss_first_ll = torch.zeros((), device=device)
 
-            # ----- Qwen path -----
-            prefix_qwen_raw = adp_qwen(z)
-            prefix_qwen = _calibrate_to_embed_rms(prefix_qwen_raw, qwen)
-            y_qwen = qwen_ids[idx]
-            loss_qwen_tf = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
+                if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
+                    logits_first = ctx.wrapper.first_token_logits_from_prefix(
+                        prefix,
+                        anchor_token_text=(args.warm_anchor_text or None),
+                        append_bos_after_prefix=ctx.bos_flag,
+                    )
+                    first_targets = ctx.first_token_ids[idx]
+                    loss_first = nn.functional.cross_entropy(logits_first.float(), first_targets)
+                else:
+                    loss_first = torch.zeros((), device=device)
 
-            bos_qw = _bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_qwen_ids))
-            if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
-                logits_first_qw = qwen.first_token_logits_from_prefix(
-                    prefix_qwen,
-                    anchor_token_text=(args.warm_anchor_text or None),
-                    append_bos_after_prefix=bos_qw
+                if args.k_ce_weight and args.k_ce_weight > 0.0:
+                    loss_kce = k_token_ce_from_prefix(
+                        ctx.wrapper,
+                        prefix,
+                        targets,
+                        K=args.K,
+                        anchor_ids=ctx.anchor_ids,
+                        append_bos_after_prefix=ctx.bos_flag,
+                    )
+                else:
+                    loss_kce = torch.zeros((), device=device)
+
+                if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
+                    loss_kd = kd_first_k_prefix_vs_text(
+                        ctx.wrapper,
+                        ctx.wrapper,
+                        prefix,
+                        scaffolds[ctx.name],
+                        targets,
+                        K=args.K,
+                        tau=args.kd_tau,
+                        anchor_ids=ctx.anchor_ids,
+                        append_bos_after_prefix=ctx.bos_flag,
+                    )
+                else:
+                    loss_kd = torch.zeros((), device=device)
+
+                model_loss = (
+                    loss_tf
+                    + args.first_token_ce_weight * loss_first
+                    + args.k_ce_weight * loss_kce
+                    + args.kd_first_k_weight * loss_kd
                 )
-                y_first_qw = qwen_first_ids_all[idx]
-                loss_first_qw = nn.functional.cross_entropy(logits_first_qw.float(), y_first_qw)
-            else:
-                loss_first_qw = torch.zeros((), device=device)
+                total_model_loss = total_model_loss + model_loss
 
-            anc_ll_ids = llama._encode_anchor_text(args.warm_anchor_text) if args.warm_anchor_text else []
-            anc_qw_ids = qwen._encode_anchor_text(args.warm_anchor_text) if args.warm_anchor_text else []
+                penalty = penalty + scale_penalty(ctx.adapter)
+                rms_pen = rms_pen + rms_raw_penalty(prefix_raw, ctx.wrapper)
 
-            # A1: K-token auxiliary CE
-            if args.k_ce_weight and args.k_ce_weight > 0.0:
-                loss_kce_ll = k_token_ce_from_prefix(
-                    llama,
-                    prefix_llama,
-                    y_llama,
-                    K=args.K,
-                    anchor_ids=anc_ll_ids,
-                    append_bos_after_prefix=_bos_flag_from_str(
-                        args.train_append_bos_after_prefix, has_anchor=bool(anc_ll_ids)
-                    ),
-                )
-                loss_kce_qw = k_token_ce_from_prefix(
-                    qwen,
-                    prefix_qwen,
-                    y_qwen,
-                    K=args.K,
-                    anchor_ids=anc_qw_ids,
-                    append_bos_after_prefix=_bos_flag_from_str(
-                        args.train_append_bos_after_prefix, has_anchor=bool(anc_qw_ids)
-                    ),
-                )
-            else:
-                loss_kce_ll = torch.zeros((), device=device)
-                loss_kce_qw = torch.zeros((), device=device)
+                rms_raw_val = tensor_rms(prefix_raw)
+                rms_cal_val = tensor_rms(prefix)
+                stats_trackers[ctx.name]["rms_raw"].update(rms_raw_val)
+                stats_trackers[ctx.name]["rms_cal"].update(rms_cal_val)
 
-            # A2: Prefix KD vs text teacher
-            if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
-                loss_kd_ll = kd_first_k_prefix_vs_text(
-                    llama,
-                    llama,
-                    prefix_llama,
-                    sc_llama,
-                    y_llama,
-                    K=args.K,
-                    tau=args.kd_tau,
-                    anchor_ids=anc_ll_ids,
-                    append_bos_after_prefix=_bos_flag_from_str(
-                        args.train_append_bos_after_prefix, has_anchor=bool(anc_ll_ids)
-                    ),
-                )
-                loss_kd_qw = kd_first_k_prefix_vs_text(
-                    qwen,
-                    qwen,
-                    prefix_qwen,
-                    sc_qwen,
-                    y_qwen,
-                    K=args.K,
-                    tau=args.kd_tau,
-                    anchor_ids=anc_qw_ids,
-                    append_bos_after_prefix=_bos_flag_from_str(
-                        args.train_append_bos_after_prefix, has_anchor=bool(anc_qw_ids)
-                    ),
-                )
-            else:
-                loss_kd_ll = torch.zeros((), device=device)
-                loss_kd_qw = torch.zeros((), device=device)
+                per_model_losses[ctx.name] = {
+                    "tf": loss_tf,
+                    "first": loss_first,
+                    "kce": loss_kce,
+                    "kd": loss_kd,
+                    "rms_raw": rms_raw_val,
+                    "rms_cal": rms_cal_val,
+                }
 
-            # Combine losses
-            penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
-            rms_pen  = rms_raw_penalty(prefix_llama_raw, llama) + rms_raw_penalty(prefix_qwen_raw, qwen)
-
-            loss_ll = (
-                loss_llama_tf
-                + args.first_token_ce_weight * loss_first_ll
-                + args.k_ce_weight * loss_kce_ll
-                + args.kd_first_k_weight * loss_kd_ll
+            loss = (
+                total_model_loss / float(len(model_contexts))
+                + args.scale_l2 * penalty
+                + args.adapter_rms_l2 * rms_pen
             )
-            loss_qw = (
-                loss_qwen_tf
-                + args.first_token_ce_weight * loss_first_qw
-                + args.k_ce_weight * loss_kce_qw
-                + args.kd_first_k_weight * loss_kd_qw
-            )
-            loss = 0.5 * (loss_ll + loss_qw) + args.scale_l2 * penalty + args.adapter_rms_l2 * rms_pen
 
             if not torch.isfinite(loss):
                 print("NaN/Inf loss; skipping step")
@@ -610,22 +569,6 @@ def main():
             if args.max_grad_norm and args.max_grad_norm > 0:
                 torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
             optimizer.step()
-
-            # Track RMS (raw + calibrated)
-            llama_rms_raw_val = _tensor_rms(prefix_llama_raw)
-            qwen_rms_raw_val  = _tensor_rms(prefix_qwen_raw)
-            llama_rms_cal_val = _tensor_rms(prefix_llama)
-            qwen_rms_cal_val  = _tensor_rms(prefix_qwen)
-
-            if args.save_training_stats:
-                try: rms_llama_raw.update(llama_rms_raw_val)
-                except Exception: pass
-                try: rms_qwen_raw.update(qwen_rms_raw_val)
-                except Exception: pass
-                try: rms_llama_cal.update(llama_rms_cal_val)
-                except Exception: pass
-                try: rms_qwen_cal.update(qwen_rms_cal_val)
-                except Exception: pass
 
             # Grad norm (monitor) – encoder only as a proxy
             try:
@@ -638,26 +581,33 @@ def main():
             ema_step_time = dt if (locals().get("ema_step_time", None) is None) else (0.9 * locals()["ema_step_time"] + 0.1 * dt)
 
             if (step+1) % 10 == 0 or (step+1) == steps_per_epoch:
-                pen_L = float(scale_penalty(adp_llama).item()) if args.scale_l2 > 0 else 0.0
-                pen_Q = float(scale_penalty(adp_qwen).item())  if args.scale_l2 > 0 else 0.0
-                msg = (
-                    f"  step  {step+1}/{steps_per_epoch} | "
-                    f"loss_L={float(loss_llama_tf.item()):.4f} | loss_Q={float(loss_qwen_tf.item()):.4f} | "
-                    f"firstCE_L={float((loss_first_ll if torch.is_tensor(loss_first_ll) else 0.0)):.4f} | "
-                    f"firstCE_Q={float((loss_first_qw if torch.is_tensor(loss_first_qw) else 0.0)):.4f} | "
-                    f"scale_pen(L)={pen_L:.4e} | scale_pen(Q)={pen_Q:.4e} | "
-                    f"grad_norm={total_norm:.2f} | sec/step~{dt:.2f}"
-                )
-                msg += (
-                    f" | kCE_L={float(loss_kce_ll):.4f} kCE_Q={float(loss_kce_qw):.4f}"
-                    f" | KD_L={float(loss_kd_ll):.4f} KD_Q={float(loss_kd_qw):.4f}"
-                    f" | K={args.K} tau={args.kd_tau:.2f}"
-                )
+                parts = [
+                    f"  step  {step+1}/{steps_per_epoch}",
+                    f"grad_norm={total_norm:.2f}",
+                    f"sec/step~{dt:.2f}",
+                ]
+                for ctx in model_contexts:
+                    metrics = per_model_losses[ctx.name]
+                    parts.append(
+                        f"{ctx.name}: tf={_to_float(metrics['tf']):.4f}"
+                        f" first={_to_float(metrics['first']):.4f}"
+                        f" kCE={_to_float(metrics['kce']):.4f}"
+                        f" KD={_to_float(metrics['kd']):.4f}"
+                    )
+                    if args.scale_l2 > 0.0:
+                        parts.append(f"scale_pen({ctx.name})={scale_penalty(ctx.adapter).item():.4e}")
+                parts.append(f"K={args.K} tau={args.kd_tau:.2f}")
                 if args.save_training_stats:
-                    msg += (f" | rms_raw(L)~{rms_llama_raw.mean:.4f} rms_raw(Q)~{rms_qwen_raw.mean:.4f}"
-                            f" | rms_cal(L)~{rms_llama_cal.mean:.4f} rms_cal(Q)~{rms_qwen_cal.mean:.4f}"
-                            f" | embed_rms(L)~{embed_rms_llama:.5f} embed_rms(Q)~{embed_rms_qwen:.5f}")
-                print(msg)
+                    stats_msgs = []
+                    for ctx in model_contexts:
+                        tracker = stats_trackers[ctx.name]
+                        stats_msgs.append(
+                            f"{ctx.name}: rms_raw~{tracker['rms_raw'].mean:.4f}"
+                            f" rms_cal~{tracker['rms_cal'].mean:.4f}"
+                            f" embed_rms~{tracker['embed_rms']:.5f}"
+                        )
+                    parts.append("stats=[" + "; ".join(stats_msgs) + "]")
+                print(" | ".join(parts))
 
             # ---- Periodic checkpoint: save + prune
             if args.save_every and (global_step % args.save_every == 0):
@@ -758,14 +708,13 @@ def main():
 
     if args.save_training_stats:
         stats = {
-            "llama": {
-                "rms_mean_raw": rms_llama_raw.mean, "rms_mean_cal": rms_llama_cal.mean,
-                "embed_rms": embed_rms_llama, "count": rms_llama_cal.n
-            },
-            "qwen":  {
-                "rms_mean_raw": rms_qwen_raw.mean,  "rms_mean_cal": rms_qwen_cal.mean,
-                "embed_rms": embed_rms_qwen,  "count": rms_qwen_cal.n
-            },
+            name: {
+                "rms_mean_raw": tracker["rms_raw"].mean,
+                "rms_mean_cal": tracker["rms_cal"].mean,
+                "embed_rms": tracker["embed_rms"],
+                "count": tracker["rms_cal"].n,
+            }
+            for name, tracker in stats_trackers.items()
         }
         with open(os.path.join(args.save_dir, "training_stats.json"), "w") as f:
             json.dump(stats, f, indent=2)

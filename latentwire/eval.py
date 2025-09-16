@@ -17,6 +17,7 @@ from latentwire.models import (
 )
 from latentwire.data import load_examples
 from latentwire.metrics import batch_metrics, _normalize, em, f1
+from latentwire.prefix_utils import quantize_dequantize, compute_wire_metrics, tensor_rms
 
 from latentwire.common import (
     clean_pred,
@@ -47,9 +48,6 @@ def _ensure_dir(p: Optional[str]):
 def _is_finite(x: float) -> bool:
     return (x == x) and math.isfinite(x)
 
-def _tensor_rms(x: torch.Tensor) -> float:
-    return float(x.float().pow(2).mean().sqrt().item())
-
 def _per_example_calibrate(prefix: torch.Tensor, target_rms: float) -> torch.Tensor:
     """Per-example calibration to a scalar target RMS."""
     cur = prefix.float().pow(2).mean(dim=[1, 2], keepdim=True).sqrt().clamp_min(1e-8)
@@ -58,7 +56,7 @@ def _per_example_calibrate(prefix: torch.Tensor, target_rms: float) -> torch.Ten
 
 def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed_rms: Optional[float], stats: Optional[dict], model_key: str) -> Tuple[torch.Tensor, float, float]:
     """Returns (calibrated_prefix, pre_calib_rms_scalar, target_rms_scalar)."""
-    pre_scalar = _tensor_rms(prefix)  # for logging
+    pre_scalar = tensor_rms(prefix)  # for logging
     # decide scalar target
     if mode == "none":
         tgt = pre_scalar
@@ -79,103 +77,6 @@ def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed
     if mode != "none":
         prefix = _per_example_calibrate(prefix, tgt)
     return prefix, pre_scalar, float(tgt)
-
-@torch.no_grad()
-def _quantize_dequantize(Z: torch.Tensor, bits: Optional[int], group_size: int = 32) -> torch.Tensor:
-    """Symmetric per-group quantize→dequantize helper for eval-time sweeps."""
-    if bits is None or bits >= 16:
-        return Z
-    if bits not in (8, 6, 4):
-        raise ValueError(f"Unsupported quantization bits: {bits}")
-    qmax = (1 << (bits - 1)) - 1
-    flat = Z.detach().to(torch.float32).contiguous().view(-1)
-    n = flat.numel()
-    if n == 0:
-        return Z
-    gs = max(1, int(group_size))
-    out = flat.clone()
-    for start in range(0, n, gs):
-        end = min(start + gs, n)
-        seg = flat[start:end]
-        amax = seg.abs().max()
-        if float(amax) == 0.0:
-            scale = torch.tensor(1e-8, dtype=seg.dtype, device=seg.device)
-        else:
-            scale = amax / qmax
-        q = torch.clamp(torch.round(seg / scale), min=-qmax, max=qmax)
-        out[start:end] = q * scale
-    return out.view_as(Z).to(Z.dtype)
-
-
-def _latent_bits_count(
-    M: int,
-    d_latent: int,
-    bits_per_param: int,
-    group_size: Optional[int] = None,
-    scale_bits: int = 16,
-) -> int:
-    core = int(M) * int(d_latent) * int(bits_per_param)
-    overhead = 0
-    if group_size and group_size > 0:
-        groups = math.ceil((int(M) * int(d_latent)) / int(group_size))
-        overhead = groups * int(scale_bits)
-    header_bits = 8 * 16  # 16 bytes metadata/header
-    return core + overhead + header_bits
-
-
-def _latent_bytes_dict(M: int, d_latent: int, group_size: int = 32, scale_bits: int = 16) -> Dict[str, int]:
-    return {
-        "fp32": math.ceil(_latent_bits_count(M, d_latent, 32) / 8),
-        "fp16": math.ceil(_latent_bits_count(M, d_latent, 16) / 8),
-        "int8": math.ceil(_latent_bits_count(M, d_latent, 8, group_size, scale_bits) / 8),
-        "int6": math.ceil(_latent_bits_count(M, d_latent, 6, group_size, scale_bits) / 8),
-        "int4": math.ceil(_latent_bits_count(M, d_latent, 4, group_size, scale_bits) / 8),
-    }
-
-
-def compute_wire_metrics(
-    llama_chat_prompts: List[str],
-    qwen_chat_prompts: List[str],
-    Z: torch.Tensor,
-    group_size: int = 32,
-    scale_bits: int = 16,
-    selected_bits: Optional[int] = None,
-) -> Dict[str, Any]:
-    avg_text_bytes_llama = (
-        int(sum(len(p.encode("utf-8")) for p in llama_chat_prompts) / max(1, len(llama_chat_prompts)))
-        if llama_chat_prompts
-        else 0
-    )
-    avg_text_bytes_qwen = (
-        int(sum(len(p.encode("utf-8")) for p in qwen_chat_prompts) / max(1, len(qwen_chat_prompts)))
-        if qwen_chat_prompts
-        else 0
-    )
-    M = int(Z.size(1))
-    d = int(Z.size(2))
-    lat_bytes = _latent_bytes_dict(M, d, group_size=group_size, scale_bits=scale_bits)
-    max_onecopy = max(avg_text_bytes_llama, avg_text_bytes_qwen)
-    sel_key = {16: "fp16", 8: "int8", 6: "int6", 4: "int4"}.get(selected_bits)
-    selected = lat_bytes.get(sel_key) if sel_key else None
-
-    def _safe(x: Optional[int], y: int) -> Optional[float]:
-        return (float(x) / float(y)) if (x and y) else None
-
-    return {
-        "text_bytes_onecopy": {
-            "llama_avg": avg_text_bytes_llama,
-            "qwen_avg": avg_text_bytes_qwen,
-            "max_avg": max_onecopy,
-        },
-        "text_bytes_twocopies": {"sum_avg": avg_text_bytes_llama + avg_text_bytes_qwen},
-        "latent_bytes": lat_bytes,
-        "selected_latent_bytes": selected,
-        "wire_ratio": {
-            "latent_over_onecopy_fp16": _safe(lat_bytes["fp16"], max_onecopy),
-            "latent_over_onecopy_fp32": _safe(lat_bytes["fp32"], max_onecopy),
-            "selected_over_onecopy": _safe(selected, max_onecopy) if selected else None,
-        },
-    }
 
 # ---------------------------
 # Encoder text alignment (auto)
@@ -480,141 +381,234 @@ def evaluate_model_chunked_latent(
 # Standard evaluation
 # ---------------------------
 
+
+def _run_text_path(
+    wrapper: LMWrapper,
+    chat_prompts: List[str],
+    prompts_raw: List[str],
+    golds: List[str],
+    args,
+    name: str,
+):
+    preds, t_text = evaluate_model_chunked_text(wrapper, chat_prompts, args.max_new_tokens, args.chunk_size, name)
+    em_score, f1_score = batch_metrics(preds, golds)
+    nll = avg_nll_text(wrapper, chat_prompts, golds, wrapper.tokenizer, wrapper.model.device)
+    prompt_tok = wrapper.tokenizer(
+        chat_prompts, return_tensors="pt", padding=True, truncation=True, add_special_tokens=False
+    )
+    pad_id = wrapper.tokenizer.pad_token_id
+    avg_prompt_tokens = float((prompt_tok["input_ids"] != pad_id).sum().item()) / max(1, len(prompts_raw))
+    return {
+        "preds": preds,
+        "metrics": {"em": em_score, "f1": f1_score, "nll": nll},
+        "time": t_text,
+        "avg_prompt_tokens": avg_prompt_tokens,
+    }
+
+
+def _run_latent_path(
+    args,
+    name: str,
+    wrapper: LMWrapper,
+    prefix: torch.Tensor,
+    anchor_text: Optional[str],
+    prompts_raw: List[str],
+    chat_prompts: List[str],
+    golds: List[str],
+    latent_len: int,
+):
+    acc = first_token_topk_acc(
+        wrapper,
+        prefix,
+        golds,
+        anchor_text or None,
+        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
+    )
+
+    latent_preds, t_latent = evaluate_model_chunked_latent(
+        wrapper,
+        prefix,
+        args.max_new_tokens,
+        args.chunk_size,
+        name,
+        anchor_token_text=anchor_text or None,
+        min_new_tokens=args.min_new_tokens,
+        eos_ban_steps=args.eos_ban_steps,
+        first_token_top_p=args.first_token_top_p,
+        first_token_temperature=args.first_token_temperature,
+        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
+    )
+
+    if args.debug and args.debug_print_first > 0:
+        print(f"\n[DEBUG] First generations ({name}, latent):")
+        for i, pred in enumerate(latent_preds[:args.debug_print_first]):
+            print(f"  {i}: '{pred}'")
+
+    k_budget = args.token_budget_k or latent_len
+    trunc_prompts = build_token_budget_prompts(
+        wrapper.tokenizer, prompts_raw, chat_prompts, k_budget, args.token_budget_mode
+    )
+    trunc_preds, t_trunc = evaluate_model_chunked_text(
+        wrapper, trunc_prompts, args.max_new_tokens, args.chunk_size, name
+    )
+
+    latent_em, latent_f1 = batch_metrics(latent_preds, golds)
+    trunc_em, trunc_f1 = batch_metrics(trunc_preds, golds)
+
+    latent_nll = avg_nll_latent(wrapper, prefix, golds, wrapper.tokenizer, prefix.device, anchor_text or None)
+
+    return {
+        "latent": {
+            "preds": latent_preds,
+            "metrics": {"em": latent_em, "f1": latent_f1, "nll": latent_nll, **acc},
+            "time": t_latent,
+        },
+        "trunc": {
+            "preds": trunc_preds,
+            "metrics": {"em": trunc_em, "f1": trunc_f1},
+            "time": t_trunc,
+        },
+    }
+
 def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
     print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
     llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
-    qwen  = LMWrapper(LMConfig(model_id=qwen_id,  device=device, dtype=dtype, load_4bit=args.load_4bit))
+    qwen = LMWrapper(LMConfig(model_id=qwen_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
 
-    adp_llama = Adapter(d_z=d_z, d_model=llama.d_model).to(device).eval()
-    adp_qwen  = Adapter(d_z=d_z, d_model=qwen.d_model).to(device).eval()
-    adp_llama.load_state_dict(_safe_load(os.path.join(args.ckpt, "adapter_llama.pt"), map_location=device), strict=True)
-    adp_qwen.load_state_dict(_safe_load(os.path.join(args.ckpt, "adapter_qwen.pt"),  map_location=device), strict=True)
+    adapters = {
+        "llama": Adapter(d_z=d_z, d_model=llama.d_model).to(device).eval(),
+        "qwen": Adapter(d_z=d_z, d_model=qwen.d_model).to(device).eval(),
+    }
+    adapters["llama"].load_state_dict(_safe_load(os.path.join(args.ckpt, "adapter_llama.pt"), map_location=device), strict=True)
+    adapters["qwen"].load_state_dict(_safe_load(os.path.join(args.ckpt, "adapter_qwen.pt"), map_location=device), strict=True)
 
-    llama_chat = build_chat_prompts(llama.tokenizer, prompts_raw)
-    qwen_chat  = build_chat_prompts(qwen.tokenizer,  prompts_raw)
+    wrappers = {"llama": llama, "qwen": qwen}
+    model_contexts = {
+        name: {"wrapper": wrapper, "adapter": adapters[name]}
+        for name, wrapper in wrappers.items()
+    }
 
-    llama_prompt_tok = llama.tokenizer(llama_chat, return_tensors="pt", padding=True, truncation=True, add_special_tokens=False)
-    qwen_prompt_tok  = qwen.tokenizer(qwen_chat,  return_tensors="pt", padding=True, truncation=True, add_special_tokens=False)
-    avg_prompt_tokens_llama = float((llama_prompt_tok["input_ids"] != llama.tokenizer.pad_token_id).sum().item()) / max(1,len(prompts_raw))
-    avg_prompt_tokens_qwen  = float((qwen_prompt_tok["input_ids"]  != qwen.tokenizer.pad_token_id).sum().item())  / max(1,len(prompts_raw))
+    for name, ctx in model_contexts.items():
+        ctx["chat"] = build_chat_prompts(ctx["wrapper"].tokenizer, prompts_raw)
 
-    llama_text_preds, t_text_llama = evaluate_model_chunked_text(llama, llama_chat, args.max_new_tokens, args.chunk_size, "llama")
-    qwen_text_preds,  t_text_qwen  = evaluate_model_chunked_text(qwen,  qwen_chat,  args.max_new_tokens, args.chunk_size, "qwen")
-    t_text = t_text_llama + t_text_qwen
-    llama_text_em, llama_text_f1 = batch_metrics(llama_text_preds, golds)
-    qwen_text_em,  qwen_text_f1  = batch_metrics(qwen_text_preds, golds)
+    text_results = {}
+    text_wall = 0.0
+    for name, ctx in model_contexts.items():
+        res = _run_text_path(ctx["wrapper"], ctx["chat"], prompts_raw, golds, args, name)
+        text_results[name] = res
+        text_wall += res["time"]
 
-    mode_ll, text_ll = infer_anchor_mode_and_text(llama, cfg, args.latent_anchor_mode, args.latent_anchor_text)
-    mode_qw, text_qw = infer_anchor_mode_and_text(qwen,  cfg, args.latent_anchor_mode, args.latent_anchor_text)
-    anchor_ll = make_anchor_text(mode_ll, llama, text_ll)
-    anchor_qw = make_anchor_text(mode_qw, qwen,  text_qw)
+    anchor_info = {}
+    for name, ctx in model_contexts.items():
+        mode, anchor_text_src = infer_anchor_mode_and_text(
+            ctx["wrapper"], cfg, args.latent_anchor_mode, args.latent_anchor_text
+        )
+        anchor = make_anchor_text(mode, ctx["wrapper"], anchor_text_src)
+        anchor_info[name] = {"mode": mode, "text": anchor_text_src, "anchor": anchor}
 
-    Z_q = _quantize_dequantize(
+    Z_q = quantize_dequantize(
         Z,
         getattr(args, "latent_quant_bits", None),
         group_size=getattr(args, "latent_quant_group_size", 32),
     )
+
+    prefix_map = {}
+    debug_map = {"llama": {}, "qwen": {}}
     with torch.no_grad():
-        prefix_llama = adp_llama(Z_q)
-        prefix_qwen  = adp_qwen(Z_q)
-        prefix_llama, rmsL, tgtL = _calibrate_prefix(prefix_llama, llama, args.calibration, args.prefix_target_rms, train_stats, "llama")
-        prefix_qwen,  rmsQ, tgtQ = _calibrate_prefix(prefix_qwen,  qwen,  args.calibration, args.prefix_target_rms, train_stats, "qwen")
-        if args.debug:
-            print(f"[calib:llama] mode={args.calibration} prefix_rms={rmsL:.5f} -> target={tgtL:.5f}")
-            print(f"[calib:qwen]  mode={args.calibration} prefix_rms={rmsQ:.5f} -> target={tgtQ:.5f}")
-        prefix_llama = prefix_llama * args.prefix_gain
-        prefix_qwen  = prefix_qwen  * args.prefix_gain
+        for name, ctx in model_contexts.items():
+            prefix = ctx["adapter"](Z_q)
+            prefix, rms_val, tgt_val = _calibrate_prefix(
+                prefix,
+                ctx["wrapper"],
+                args.calibration,
+                args.prefix_target_rms,
+                train_stats,
+                name,
+            )
+            if args.debug:
+                print(f"[calib:{name}] mode={args.calibration} prefix_rms={rms_val:.5f} -> target={tgt_val:.5f}")
+            prefix = prefix * args.prefix_gain
+            prefix_map[name] = prefix
+            if args.debug:
+                debug = _latent_debug_stats(name, Z_q, prefix, ctx["adapter"], ctx["wrapper"])
+                debug.update({
+                    "encoder_text_mode": "standard",
+                    "calibration_mode": args.calibration,
+                    "append_bos_after_prefix": args.append_bos_after_prefix,
+                    "latent_anchor_mode": anchor_info[name]["mode"],
+                    "latent_anchor_text": anchor_info[name]["anchor"],
+                    "model_id": ctx["wrapper"].cfg.model_id,
+                })
+                debug_map[name] = debug
 
-    debug_llama = _latent_debug_stats("llama", Z_q, prefix_llama, adp_llama, llama) if args.debug else {}
-    debug_qwen  = _latent_debug_stats("qwen",  Z_q, prefix_qwen,  adp_qwen,  qwen)  if args.debug else {}
-    if args.debug:
-        debug_llama.update({"encoder_text_mode": "standard", "calibration_mode": args.calibration,
-                            "append_bos_after_prefix": args.append_bos_after_prefix,
-                            "latent_anchor_mode": mode_ll, "latent_anchor_text": anchor_ll, "model_id": llama.cfg.model_id})
-        debug_qwen.update({"encoder_text_mode": "standard", "calibration_mode": args.calibration,
-                           "append_bos_after_prefix": args.append_bos_after_prefix,
-                           "latent_anchor_mode": mode_qw, "latent_anchor_text": anchor_qw, "model_id": qwen.cfg.model_id})
+    latent_results = {}
+    latent_wall = 0.0
+    trunc_wall = 0.0
+    for name, ctx in model_contexts.items():
+        res = _run_latent_path(
+            args,
+            name,
+            ctx["wrapper"],
+            prefix_map[name],
+            anchor_info[name]["anchor"],
+            prompts_raw,
+            ctx["chat"],
+            golds,
+            latent_len,
+        )
+        latent_results[name] = res
+        latent_wall += res["latent"]["time"]
+        trunc_wall += res["trunc"]["time"]
 
-    # First-token accuracy diagnostics (before free-run)
-    acc_ll = first_token_topk_acc(
-        llama, prefix_llama, golds, anchor_ll or None,
-        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes"))
-    )
-    acc_qw = first_token_topk_acc(
-        qwen,  prefix_qwen,  golds, anchor_qw or None,
-        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes"))
-    )
+    model_outputs = {}
+    for name in model_contexts.keys():
+        model_outputs[name] = {
+            "avg_prompt_tokens": text_results[name]["avg_prompt_tokens"],
+            "text_preds": text_results[name]["preds"],
+            "latent_preds": latent_results[name]["latent"]["preds"],
+            "trunc_preds": latent_results[name]["trunc"]["preds"],
+            "times": {
+                "text": text_results[name]["time"],
+                "latent": latent_results[name]["latent"]["time"],
+                "trunc": latent_results[name]["trunc"]["time"],
+            },
+            "metrics": {
+                "text": text_results[name]["metrics"],
+                "latent": latent_results[name]["latent"]["metrics"],
+                "trunc": latent_results[name]["trunc"]["metrics"],
+            },
+            "chat_prompts": model_contexts[name]["chat"],
+            "debug": debug_map.get(name, {}),
+        }
 
-    llama_latent_preds, t_latent_llama = evaluate_model_chunked_latent(
-        llama, prefix_llama, args.max_new_tokens, args.chunk_size, "llama", anchor_ll or None,
-        min_new_tokens=args.min_new_tokens, eos_ban_steps=args.eos_ban_steps,
-        first_token_top_p=args.first_token_top_p, first_token_temperature=args.first_token_temperature,
-        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes"))
-    )
-    qwen_latent_preds,  t_latent_qwen  = evaluate_model_chunked_latent(
-        qwen,  prefix_qwen,  args.max_new_tokens, args.chunk_size, "qwen",  anchor_qw or None,
-        min_new_tokens=args.min_new_tokens, eos_ban_steps=args.eos_ban_steps,
-        first_token_top_p=args.first_token_top_p, first_token_temperature=args.first_token_temperature,
-        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes"))
-    )
-    if args.debug and args.debug_print_first > 0:
-        print("\n[DEBUG] First generations (Llama, latent):")
-        for i, pred in enumerate(llama_latent_preds[:args.debug_print_first]):
-            print(f"  {i}: '{pred}'")
-        print("\n[DEBUG] First generations (Qwen, latent):")
-        for i, pred in enumerate(qwen_latent_preds[:args.debug_print_first]):
-            print(f"  {i}: '{pred}'")
-
-    t_latent = t_latent_llama + t_latent_qwen
-
-    llama_latent_em, llama_latent_f1 = batch_metrics(llama_latent_preds, golds)
-    qwen_latent_em,  qwen_latent_f1  = batch_metrics(qwen_latent_preds, golds)
-
-    k_budget = args.token_budget_k or latent_len
-    llama_trunc = build_token_budget_prompts(llama.tokenizer, prompts_raw, llama_chat, k_budget, args.token_budget_mode)
-    qwen_trunc  = build_token_budget_prompts(qwen.tokenizer,  prompts_raw, qwen_chat,  k_budget, args.token_budget_mode)
-
-    llama_trunc_preds, t_trunc_llama = evaluate_model_chunked_text(llama, llama_trunc, args.max_new_tokens, args.chunk_size, "llama")
-    qwen_trunc_preds,  t_trunc_qwen  = evaluate_model_chunked_text(qwen,  qwen_trunc,  args.max_new_tokens, args.chunk_size, "qwen")
-    t_trunc = t_trunc_llama + t_trunc_qwen
-
-    llama_trunc_em, llama_trunc_f1 = batch_metrics(llama_trunc_preds, golds)
-    qwen_trunc_em,  qwen_trunc_f1  = batch_metrics(qwen_trunc_preds, golds)
-
-    llama_latent_nll = avg_nll_latent(llama, prefix_llama, golds, llama.tokenizer, device, anchor_token_text=anchor_ll or None)
-    qwen_latent_nll  = avg_nll_latent(qwen,  prefix_qwen,  golds, qwen.tokenizer, device, anchor_token_text=anchor_qw or None)
-    llama_text_nll   = avg_nll_text(llama, llama_chat, golds, llama.tokenizer, device)
-    qwen_text_nll    = avg_nll_text(qwen,  qwen_chat,  golds, qwen.tokenizer, device)
-
-    # Joint rescoring (simple)
     joint_preds = []
     agree = 0
-    anchor_ids_llama = llama._encode_anchor_text(anchor_ll) if anchor_ll else None
-    anchor_ids_qwen  = qwen._encode_anchor_text(anchor_qw)  if anchor_qw else None
+    anchor_ids = {
+        name: model_contexts[name]["wrapper"]._encode_anchor_text(info["anchor"]) if info["anchor"] else None
+        for name, info in anchor_info.items()
+    }
 
-    for i in range(len(prompts_raw)):
-        candA = llama_latent_preds[i]
-        candB = qwen_latent_preds[i]
-        A_ids_L = _to_long(llama.tokenizer(candA, return_tensors="pt", add_special_tokens=True).input_ids, device)
-        A_ids_Q = _to_long(qwen.tokenizer(candA,  return_tensors="pt", add_special_tokens=True).input_ids, device)
-        B_ids_L = _to_long(llama.tokenizer(candB, return_tensors="pt", add_special_tokens=True).input_ids, device)
-        B_ids_Q = _to_long(qwen.tokenizer(candB,  return_tensors="pt", add_special_tokens=True).input_ids, device)
-        scoreA = llama.score_prefix_logprob(prefix_llama[i:i+1], A_ids_L, anchor_token_ids=anchor_ids_llama) + \
-                 qwen.score_prefix_logprob(prefix_qwen[i:i+1],  A_ids_Q, anchor_token_ids=anchor_ids_qwen)
-        scoreB = llama.score_prefix_logprob(prefix_llama[i:i+1], B_ids_L, anchor_token_ids=anchor_ids_llama) + \
-                 qwen.score_prefix_logprob(prefix_qwen[i:i+1],  B_ids_Q, anchor_token_ids=anchor_ids_qwen)
+    for i, (candA, candB) in enumerate(zip(model_outputs["llama"]["latent_preds"], model_outputs["qwen"]["latent_preds"])):
+        prefix_ll = prefix_map["llama"][i:i+1]
+        prefix_qw = prefix_map["qwen"][i:i+1]
+        A_ids_L = _to_long(wrappers["llama"].tokenizer(candA, return_tensors="pt", add_special_tokens=True).input_ids, device)
+        A_ids_Q = _to_long(wrappers["qwen"].tokenizer(candA,  return_tensors="pt", add_special_tokens=True).input_ids, device)
+        B_ids_L = _to_long(wrappers["llama"].tokenizer(candB, return_tensors="pt", add_special_tokens=True).input_ids, device)
+        B_ids_Q = _to_long(wrappers["qwen"].tokenizer(candB,  return_tensors="pt", add_special_tokens=True).input_ids, device)
+        scoreA = wrappers["llama"].score_prefix_logprob(prefix_ll, A_ids_L, anchor_token_ids=anchor_ids["llama"]) +                  wrappers["qwen"].score_prefix_logprob(prefix_qw, A_ids_Q, anchor_token_ids=anchor_ids["qwen"])
+        scoreB = wrappers["llama"].score_prefix_logprob(prefix_ll, B_ids_L, anchor_token_ids=anchor_ids["llama"]) +                  wrappers["qwen"].score_prefix_logprob(prefix_qw, B_ids_Q, anchor_token_ids=anchor_ids["qwen"])
         pick = candA if scoreA >= scoreB else candB
         joint_preds.append(pick)
         if _normalize(candA) == _normalize(candB):
             agree += 1
 
     joint_em, joint_f1 = batch_metrics(joint_preds, golds)
-    agreement_rate = agree / len(prompts_raw)
+    agreement_rate = agree / len(golds)
 
     wire = compute_wire_metrics(
-        llama_chat,
-        qwen_chat,
+        model_outputs["llama"]["chat_prompts"],
+        model_outputs["qwen"]["chat_prompts"],
         Z,
         group_size=getattr(args, "latent_quant_group_size", 32),
         scale_bits=getattr(args, "latent_quant_scale_bits", 16),
@@ -622,12 +616,15 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     )
     bytes_per_latent = int(Z.element_size() * Z.size(1) * Z.size(2))
 
-    # Oracle upper bound
     oracle_em = 0.0
     oracle_f1 = 0.0
-    for pA, pB, g in zip(llama_latent_preds, qwen_latent_preds, golds):
-        oracle_em += max(em(pA, g), em(pB, g))
-        oracle_f1 += max(f1(pA, g), f1(pB, g))
+    for candA, candB, gold in zip(
+        model_outputs["llama"]["latent_preds"],
+        model_outputs["qwen"]["latent_preds"],
+        golds,
+    ):
+        oracle_em += max(em(candA, gold), em(candB, gold))
+        oracle_f1 += max(f1(candA, gold), f1(candB, gold))
     oracle_em /= len(golds)
     oracle_f1 /= len(golds)
 
@@ -637,74 +634,79 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
         "latent_len": latent_len,
         "device": device,
         "dtype": str(dtype),
-        "avg_prompt_tokens": {"llama": avg_prompt_tokens_llama, "qwen": avg_prompt_tokens_qwen},
-        "compression": {"llama": avg_prompt_tokens_llama/latent_len, "qwen": avg_prompt_tokens_qwen/latent_len},
+        "avg_prompt_tokens": {name: text_results[name]["avg_prompt_tokens"] for name in model_contexts},
+        "compression": {name: text_results[name]["avg_prompt_tokens"] / latent_len for name in model_contexts},
         "payload_bytes": bytes_per_latent,
         "wire": wire,
         "text": {
-            "llama": {"em": llama_text_em, "f1": llama_text_f1, "nll_token": llama_text_nll},
-            "qwen":  {"em": qwen_text_em,  "f1": qwen_text_f1,  "nll_token": qwen_text_nll},
-            "wall_clock_sec": t_text,
+            name: {
+                "em": text_results[name]["metrics"]["em"],
+                "f1": text_results[name]["metrics"]["f1"],
+                "nll_token": text_results[name]["metrics"]["nll"],
+            }
+            for name in model_contexts
         },
         "latent": {
-            "llama": {"em": llama_latent_em, "f1": llama_latent_f1, "nll_token": llama_latent_nll, **acc_ll},
-            "qwen":  {"em": qwen_latent_em,  "f1": qwen_latent_f1, "nll_token": qwen_latent_nll, **acc_qw},
-            "wall_clock_sec": t_latent,
+            name: latent_results[name]["latent"]["metrics"]
+            for name in model_contexts
         },
         "token_budget": {
             "mode": args.token_budget_mode,
-            "k": k_budget,
-            "llama": {"em": llama_trunc_em, "f1": llama_trunc_f1},
-            "qwen":  {"em": qwen_trunc_em,  "f1": qwen_trunc_f1},
-            "wall_clock_sec": t_trunc,
+            "k": args.token_budget_k or latent_len,
+            **{name: latent_results[name]["trunc"]["metrics"] for name in model_contexts},
         },
         "joint": {
-            "em": joint_em, "f1": joint_f1, "agreement": agreement_rate,
-            "oracle": {"em": None, "f1": None},
+            "em": joint_em,
+            "f1": joint_f1,
+            "agreement": agreement_rate,
+            "oracle": {"em": oracle_em, "f1": oracle_f1},
         },
-        "debug": {
-            "llama": debug_llama, "qwen": debug_qwen,
-            "latent_anchor_mode": args.latent_anchor_mode,
-            "latent_anchor_text": anchor_ll if anchor_ll else (anchor_qw or ""),
-            "prefix_gain": args.prefix_gain,
-            "calibration_mode": args.calibration,
-            "append_bos_after_prefix": args.append_bos_after_prefix,
-            "decode": {
-                "min_new_tokens": args.min_new_tokens,
-                "eos_ban_steps": args.eos_ban_steps,
-                "first_token_top_p": args.first_token_top_p,
-                "first_token_temperature": args.first_token_temperature
-            }
-        },
+        "debug": {name: model_outputs[name]["debug"] for name in model_contexts},
         "oracle": {"em": oracle_em, "f1": oracle_f1},
+    }
+    summary["text"]["wall_clock_sec"] = text_wall
+    summary.setdefault("latent", {})
+    summary["latent"]["wall_clock_sec"] = latent_wall
+    summary.setdefault("token_budget", {})
+    summary["token_budget"]["wall_clock_sec"] = trunc_wall
+    summary["debug"]["settings"] = {
+        "latent_anchor_mode": args.latent_anchor_mode,
+        "latent_anchor_text": args.latent_anchor_text,
+        "prefix_gain": args.prefix_gain,
+        "calibration_mode": args.calibration,
+        "append_bos_after_prefix": args.append_bos_after_prefix,
+        "decode": {
+            "min_new_tokens": args.min_new_tokens,
+            "eos_ban_steps": args.eos_ban_steps,
+            "first_token_top_p": args.first_token_top_p,
+            "first_token_temperature": args.first_token_temperature,
+        },
     }
 
     preds_dump = []
     for i in range(len(prompts_raw)):
         preds_dump.append({
             "prompt_raw": prompts_raw[i],
-            "prompt_llama_chat": llama_chat[i],
-            "prompt_qwen_chat":  qwen_chat[i],
+            "prompt_llama_chat": model_outputs["llama"]["chat_prompts"][i],
+            "prompt_qwen_chat": model_outputs["qwen"]["chat_prompts"][i],
             "gold": golds[i],
-            "text_pred_llama":   llama_text_preds[i],
-            "text_pred_qwen":    qwen_text_preds[i],
-            "latent_pred_llama": llama_latent_preds[i],
-            "latent_pred_qwen":  qwen_latent_preds[i],
-            "trunc_pred_llama":  llama_trunc_preds[i],
-            "trunc_pred_qwen":   qwen_trunc_preds[i],
+            "text_pred_llama": model_outputs["llama"]["text_preds"][i],
+            "text_pred_qwen": model_outputs["qwen"]["text_preds"][i],
+            "latent_pred_llama": model_outputs["llama"]["latent_preds"][i],
+            "latent_pred_qwen": model_outputs["qwen"]["latent_preds"][i],
+            "trunc_pred_llama": model_outputs["llama"]["trunc_preds"][i],
+            "trunc_pred_qwen": model_outputs["qwen"]["trunc_preds"][i],
         })
 
-    del llama, qwen, adp_llama, adp_qwen
+    del llama, qwen
+    for adapter in adapters.values():
+        del adapter
     if device == "cuda":
         torch.cuda.empty_cache()
     elif device == "mps":
         torch.mps.empty_cache()
 
     return summary, preds_dump
-
-# ---------------------------
-# Sequential evaluation
-# ---------------------------
 
 def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, encoder_type, byte_max, cfg, train_stats):
     print("\n[Sequential Evaluation Mode - one model at a time]")
@@ -761,7 +763,7 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                 if args.debug:
                     print(f"[align:llama] forced encoder_text_mode={mode}")
 
-            Z = _quantize_dequantize(
+            Z = quantize_dequantize(
                 Z,
                 getattr(args, "latent_quant_bits", None),
                 group_size=getattr(args, "latent_quant_group_size", 32),
@@ -870,7 +872,7 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                 if args.debug:
                     print(f"[align:qwen] forced encoder_text_mode={mode}")
 
-            Z = _quantize_dequantize(
+            Z = quantize_dequantize(
                 Z,
                 getattr(args, "latent_quant_bits", None),
                 group_size=getattr(args, "latent_quant_group_size", 32),
