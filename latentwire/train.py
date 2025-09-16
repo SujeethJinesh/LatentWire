@@ -19,7 +19,11 @@ from latentwire.models import (
 from latentwire.checkpointing import save_latest_checkpoint
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
-from latentwire.losses import k_token_ce_from_prefix, kd_first_k_prefix_vs_text
+from latentwire.losses import (
+    k_token_ce_from_prefix,
+    kd_first_k_prefix_vs_text,
+    kd_hidden_states_first_k,
+)
 from latentwire.prefix_utils import (
     calibrate_to_embed_rms,
     bos_policy,
@@ -223,6 +227,10 @@ def main():
 
     # Interlingua / encoder
     ap.add_argument("--latent_len", type=int, default=8)
+    ap.add_argument("--latent_shared_len", type=int, default=None,
+                    help="Optional explicit shared latent length; overrides derived value.")
+    ap.add_argument("--latent_private_len", type=int, default=0,
+                    help="Per-model private latent length (combined with shared length).")
     ap.add_argument("--d_z", type=int, default=256)
     ap.add_argument("--max_bytes", type=int, default=512)
     ap.add_argument("--encoder_type", type=str, default="byte", choices=["byte", "simple-st"])
@@ -247,6 +255,19 @@ def main():
     ap.add_argument("--train_append_bos_after_prefix", type=str, default="auto",
                     choices=["auto","yes","no"],
                     help="Controls BOS appending when computing first-token CE (train).")
+    ap.add_argument("--adapter_hidden_mult", type=int, default=2,
+                    help="Hidden width multiplier for the adapter MLP.")
+    ap.add_argument("--adapter_colorize", action="store_true",
+                    help="If set, add per-dim colorizer to align adapter outputs with LM embeddings.")
+    ap.add_argument("--no_adapter_metadata", action="store_false", dest="adapter_metadata",
+                    help="Disable positional/answer-length metadata injection in the adapter.")
+    ap.set_defaults(adapter_metadata=True)
+    ap.add_argument("--manifold_stat_weight", type=float, default=0.0,
+                    help="Optional weight for μ/σ matching loss (1e-3..5e-3 recommended).")
+    ap.add_argument("--state_kd_weight", type=float, default=0.0,
+                    help="Weight for hidden-state KD on first K steps (0 disables).")
+    ap.add_argument("--state_kd_layers", type=str, default="0,1,2",
+                    help="Comma-separated transformer layer indices for hidden-state KD.")
     # K-token supervision + KD
     ap.add_argument("--K", type=int, default=4, help="Number of early tokens to supervise (A1/A2).")
     ap.add_argument("--adaptive_k_start", type=int, default=None,
@@ -353,6 +374,11 @@ def main():
     qwen  = LMWrapper(LMConfig(model_id=args.qwen_id,  device=device, dtype=dtype, load_4bit=args.load_4bit))
     print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
 
+    embed_stats = {
+        "llama": llama.embedding_stats(),
+        "qwen": qwen.embedding_stats(),
+    }
+
     # === A0 sanity check ===
     try:
         _assert_t0_alignment(llama.tokenizer, args.warm_anchor_text or "Answer: ")
@@ -411,16 +437,28 @@ def main():
         d_z=args.d_z,
         d_model=llama.d_model,
         latent_length=total_latent_len,
-        enable_metadata=True,
-        length_norm=args.max_answer_tokens,
+        enable_metadata=bool(args.adapter_metadata),
+        length_norm=float(args.max_answer_tokens),
+        hidden_mult=args.adapter_hidden_mult,
+        colorize=bool(args.adapter_colorize),
     ).to(device)
     adp_qwen  = Adapter(
         d_z=args.d_z,
         d_model=qwen.d_model,
         latent_length=total_latent_len,
-        enable_metadata=True,
-        length_norm=args.max_answer_tokens,
+        enable_metadata=bool(args.adapter_metadata),
+        length_norm=float(args.max_answer_tokens),
+        hidden_mult=args.adapter_hidden_mult,
+        colorize=bool(args.adapter_colorize),
     ).to(device)
+
+    if args.adapter_colorize:
+        try:
+            adp_llama.install_color_from_wrapper(llama)
+            adp_qwen.install_color_from_wrapper(qwen)
+            print("Initialized adapter colorizers from LM embedding stats.")
+        except Exception as exc:
+            print(f"[WARN] Adapter colorizer initialization skipped: {exc}")
 
     if args.adapter_freeze_scale:
         adp_llama.scale.requires_grad_(False)
@@ -541,6 +579,25 @@ def main():
         cur = tensor_rms_d(prefix_raw)
         return (cur - tgt).pow(2)
 
+    def manifold_stat_loss(prefix: torch.Tensor, model_key: str) -> torch.Tensor:
+        if args.manifold_stat_weight <= 0.0:
+            return torch.zeros((), device=prefix.device)
+        mu, sd = embed_stats[model_key]
+        mu = mu.to(prefix.device, dtype=prefix.dtype)
+        sd = sd.to(prefix.device, dtype=prefix.dtype)
+        cur_mu = prefix.float().mean(dim=[0, 1])
+        cur_sd = prefix.float().std(dim=[0, 1]).clamp_min(1e-6)
+        return (cur_mu - mu).pow(2).mean() + (cur_sd - sd).pow(2).mean()
+
+    def _parse_layers_arg(value: str) -> Tuple[int, ...]:
+        try:
+            items = [int(v) for v in re.split(r"[\s,]+", value.strip()) if v != ""]
+            return tuple(items) if items else (0, 1, 2)
+        except Exception:
+            return (0, 1, 2)
+
+    state_kd_layers = _parse_layers_arg(args.state_kd_layers)
+
     params_for_clip = [p for p in optim_groups if p.requires_grad]
 
     optimizer.zero_grad(set_to_none=True)
@@ -643,11 +700,29 @@ def main():
                 else:
                     loss_kd = torch.zeros((), device=device)
 
+                if args.state_kd_weight and args.state_kd_weight > 0.0:
+                    loss_state = kd_hidden_states_first_k(
+                        ctx.wrapper,
+                        prefix,
+                        scaffolds[ctx.name],
+                        targets,
+                        K=current_K,
+                        layers=state_kd_layers,
+                        append_bos_after_prefix=ctx.bos_flag,
+                        anchor_ids=ctx.anchor_ids,
+                    )
+                else:
+                    loss_state = torch.zeros((), device=device)
+
+                manifold_loss = manifold_stat_loss(prefix, ctx.name)
+
                 model_loss = (
                     loss_tf
                     + args.first_token_ce_weight * loss_first
                     + args.k_ce_weight * loss_kce
                     + args.kd_first_k_weight * loss_kd
+                    + args.state_kd_weight * loss_state
+                    + args.manifold_stat_weight * manifold_loss
                 )
                 total_model_loss = total_model_loss + model_loss
 
@@ -664,6 +739,8 @@ def main():
                     "first": loss_first,
                     "kce": loss_kce,
                     "kd": loss_kd,
+                    "state": loss_state,
+                    "manifold": manifold_loss,
                     "rms_raw": rms_raw_val,
                     "rms_cal": rms_cal_val,
                 }
@@ -709,15 +786,20 @@ def main():
                 ]
                 for ctx in model_contexts:
                     metrics = per_model_losses[ctx.name]
-                    parts.append(
+                    msg_ctx = (
                         f"{ctx.name}: tf={_to_float(metrics['tf']):.4f}"
                         f" first={_to_float(metrics['first']):.4f}"
                         f" kCE={_to_float(metrics['kce']):.4f}"
                         f" KD={_to_float(metrics['kd']):.4f}"
                     )
+                    if args.state_kd_weight > 0.0:
+                        msg_ctx += f" state={_to_float(metrics['state']):.4f}"
+                    if args.manifold_stat_weight > 0.0:
+                        msg_ctx += f" man={_to_float(metrics['manifold']):.4f}"
+                    parts.append(msg_ctx)
                     if args.scale_l2 > 0.0:
                         parts.append(f"scale_pen({ctx.name})={scale_penalty(ctx.adapter).item():.4e}")
-                parts.append(f"K={args.K} tau={args.kd_tau:.2f}")
+                parts.append(f"K={current_K} tau={args.kd_tau:.2f}")
                 if args.save_training_stats:
                     stats_msgs = []
                     for ctx in model_contexts:
@@ -747,6 +829,12 @@ def main():
                     "warm_anchor_text": args.warm_anchor_text,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
                     "first_token_ce_weight": args.first_token_ce_weight,
+                    "adapter_hidden_mult": args.adapter_hidden_mult,
+                    "adapter_colorize": bool(args.adapter_colorize),
+                    "adapter_enable_metadata": bool(args.adapter_metadata),
+                    "manifold_stat_weight": args.manifold_stat_weight,
+                    "state_kd_weight": args.state_kd_weight,
+                    "state_kd_layers": args.state_kd_layers,
                     "K": args.K,
                     "k_ce_weight": args.k_ce_weight,
                     "kd_first_k_weight": args.kd_first_k_weight,
@@ -799,6 +887,12 @@ def main():
         "warm_anchor_text": args.warm_anchor_text,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
         "first_token_ce_weight": args.first_token_ce_weight,
+        "adapter_hidden_mult": args.adapter_hidden_mult,
+        "adapter_colorize": bool(args.adapter_colorize),
+        "adapter_enable_metadata": bool(args.adapter_metadata),
+        "manifold_stat_weight": args.manifold_stat_weight,
+        "state_kd_weight": args.state_kd_weight,
+        "state_kd_layers": args.state_kd_layers,
         "K": args.K,
         "k_ce_weight": args.k_ce_weight,
         "kd_first_k_weight": args.kd_first_k_weight,

@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 
 @torch.no_grad()
@@ -130,4 +130,114 @@ def kd_first_k_prefix_vs_text(
 
     if steps == 0:
         return torch.zeros((), device=device)
+    return total / float(steps)
+
+
+def kd_hidden_states_first_k(
+    wrapper,
+    prefix_embeds: torch.Tensor,
+    text_scaffold_ids: torch.Tensor,
+    gold_ids: torch.Tensor,
+    K: int = 4,
+    layers: Tuple[int, ...] = (0, 1, 2),
+    append_bos_after_prefix: Optional[bool] = None,
+    anchor_ids: Optional[List[int]] = None,
+) -> torch.Tensor:
+    """MSE alignment between teacher (text) and latent prefixes over the first K steps."""
+
+    device = next(wrapper.model.parameters()).device
+    model = wrapper.model
+
+    if append_bos_after_prefix is None:
+        append_bos_after_prefix = not bool(anchor_ids)
+
+    B = prefix_embeds.size(0)
+    pad_id = getattr(wrapper.tokenizer, "pad_token_id", None)
+    total = prefix_embeds.new_zeros(())
+    steps = 0
+    K_eff = max(1, int(K))
+
+    anchor_ids = anchor_ids or []
+    anchor_tensor = None
+    if anchor_ids:
+        anc = torch.tensor(anchor_ids, dtype=torch.long, device=device).unsqueeze(0)
+        anchor_tensor = wrapper.input_embed(anc).expand(B, -1, -1)
+
+    # Pre-compute teacher hidden states up to K tokens
+    max_k = min(K_eff, gold_ids.size(1))
+    teacher_ids = torch.cat([text_scaffold_ids, gold_ids[:, :max_k]], dim=1).to(device)
+    if pad_id is not None:
+        attn_teacher = teacher_ids.ne(int(pad_id)).long()
+        scaffold_mask = text_scaffold_ids.ne(int(pad_id)).long()
+        gold_mask = gold_ids.ne(int(pad_id)).long()
+        answer_lens = gold_mask.sum(dim=1)
+    else:
+        attn_teacher = None
+        scaffold_mask = None
+        answer_lens = torch.full((B,), gold_ids.size(1), dtype=torch.long, device=device)
+
+    with torch.no_grad():
+        teacher_out = model(
+            input_ids=teacher_ids,
+            attention_mask=attn_teacher,
+            output_hidden_states=True,
+            use_cache=False,
+            return_dict=True,
+        )
+    teacher_hs = [t.detach() for t in teacher_out.hidden_states]
+
+    if scaffold_mask is not None:
+        scaffold_lens = scaffold_mask.sum(dim=1)
+    else:
+        scaffold_lens = torch.full((B,), text_scaffold_ids.size(1), dtype=torch.long, device=device)
+
+    emb_dtype = wrapper.input_embed.weight.dtype if hasattr(wrapper.input_embed, "weight") else None
+
+    for k in range(1, K_eff + 1):
+        if k > max_k:
+            break
+
+        valid = answer_lens.ge(k)
+        if not torch.any(valid):
+            continue
+
+        gather_pos = scaffold_lens + (k - 1)
+        gather_pos = gather_pos.clamp(min=0, max=teacher_hs[0].size(1) - 1)
+
+        parts = [prefix_embeds.to(device)]
+        if anchor_tensor is not None:
+            parts.append(anchor_tensor)
+        if append_bos_after_prefix:
+            bos_id = getattr(wrapper.tokenizer, "bos_token_id", None)
+            if bos_id is not None:
+                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=device)
+                parts.append(wrapper.input_embed(bos))
+        if k > 1:
+            parts.append(wrapper.input_embed(gold_ids[:, : k - 1].to(device)))
+
+        stu_inp = torch.cat(parts, dim=1)
+        if emb_dtype is not None:
+            stu_inp = stu_inp.to(device=device, dtype=emb_dtype)
+        else:
+            stu_inp = stu_inp.to(device)
+        s_out = model(
+            inputs_embeds=stu_inp,
+            output_hidden_states=True,
+            use_cache=False,
+            return_dict=True,
+        )
+        student_h = [s_out.hidden_states[layer][:, -1, :] for layer in layers]
+
+        for layer_idx, sh in zip(layers, student_h):
+            layer_h = teacher_hs[layer_idx]
+            layer_pos = gather_pos.view(B, 1, 1).expand(-1, 1, layer_h.size(-1))
+            teacher_vec = torch.gather(layer_h, 1, layer_pos).squeeze(1)
+            diff = (sh - teacher_vec).float()
+            mse = diff.pow(2).mean(dim=-1)
+            if torch.any(valid):
+                total = total + mse[valid].mean()
+        steps += 1
+
+    if steps == 0:
+        return prefix_embeds.new_zeros(())
     return total / float(steps)

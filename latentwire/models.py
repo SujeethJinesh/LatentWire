@@ -206,11 +206,26 @@ class SimpleEncoder(nn.Module):
         z = self.ln(q + z0.unsqueeze(1))
         return z  # [B, M, d_z]
 
+class _EmbedColor(nn.Module):
+    """Per-dimension affine transform that matches target μ/σ statistics."""
+
+    def __init__(self, d_model: int):
+        super().__init__()
+        self.gamma = nn.Parameter(torch.ones(d_model))
+        self.beta = nn.Parameter(torch.zeros(d_model))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        mu = x.mean(dim=-1, keepdim=True)
+        sd = x.std(dim=-1, keepdim=True).clamp_min(1e-6)
+        x = (x - mu) / sd
+        return x * self.gamma + self.beta
+
+
 class Adapter(nn.Module):
     """
     Maps Z (d_z) -> model embedding space (d_model).
-    Optionally injects positional metadata and answer-length hints.
-    Includes a learnable scalar 'scale' that we regularize to ~1.0 in train.py.
+    Uses a small MLP with LayerNorm, optional metadata hints, and an optional
+    "colorizer" that aligns per-dimension statistics with the LM's embedding table.
     """
 
     def __init__(
@@ -220,18 +235,53 @@ class Adapter(nn.Module):
         latent_length: int,
         enable_metadata: bool = False,
         length_norm: float = 32.0,
+        hidden_mult: int = 2,
+        colorize: bool = False,
     ):
         super().__init__()
-        self.net = nn.Sequential(nn.LayerNorm(d_z), nn.Linear(d_z, d_model))
-        self.scale = nn.Parameter(torch.ones(1))
         self.enable_metadata = enable_metadata
         self.length_norm = max(length_norm, 1.0)
+        self.hidden_mult = max(int(hidden_mult), 1)
+
         if self.enable_metadata:
             self.position_emb = nn.Parameter(torch.randn(latent_length, d_z) * 0.02)
             self.length_proj = nn.Sequential(nn.Linear(1, d_z), nn.Tanh())
         else:
             self.register_parameter("position_emb", None)
             self.length_proj = None
+
+        hidden_dim = d_z * self.hidden_mult
+        if self.hidden_mult <= 1:
+            self.net = nn.Sequential(
+                nn.LayerNorm(d_z),
+                nn.Linear(d_z, d_model),
+            )
+        else:
+            self.net = nn.Sequential(
+                nn.LayerNorm(d_z),
+                nn.Linear(d_z, hidden_dim),
+                nn.GELU(),
+                nn.Linear(hidden_dim, d_model),
+            )
+        self.out_norm = nn.LayerNorm(d_model)
+        self.scale = nn.Parameter(torch.ones(1))
+        self.color = _EmbedColor(d_model) if colorize else None
+
+        for module in self.net:
+            if isinstance(module, nn.Linear):
+                nn.init.xavier_uniform_(module.weight)
+                if module.bias is not None:
+                    nn.init.zeros_(module.bias)
+
+    def install_color_from_wrapper(self, wrapper: "LMWrapper") -> None:
+        """Initialize the colorizer parameters from LM embedding statistics."""
+        if self.color is None:
+            return
+        with torch.no_grad():
+            mu, sd = wrapper.embedding_stats()
+            dev = next(self.parameters()).device
+            self.color.beta.data = mu.to(dev)
+            self.color.gamma.data = sd.to(dev).clamp_min(1e-6)
 
     def forward(self, z: torch.Tensor, answer_lengths: Optional[torch.Tensor] = None) -> torch.Tensor:
         if self.enable_metadata and self.position_emb is not None:
@@ -240,9 +290,13 @@ class Adapter(nn.Module):
                 lengths = answer_lengths.float().unsqueeze(-1) / self.length_norm
                 length_emb = self.length_proj(lengths).unsqueeze(1)
                 z = z + length_emb
-        x = self.net(z) * self.scale
-        # Keep a soft bound to avoid blowing up logits; calibration will adjust RMS
-        return torch.tanh(x / 3.0) * 3.0
+
+        x = self.net(z)
+        x = self.out_norm(x)
+        x = x * self.scale
+        if self.color is not None:
+            x = self.color(x)
+        return x
 
 
 # ---------------------------
@@ -371,6 +425,17 @@ class LMWrapper(nn.Module):
         else:
             sample = W
         return float(sample.float().pow(2).mean().sqrt().item())
+
+    @torch.no_grad()
+    def embedding_stats(self, sample_rows: int = 0) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Return per-dimension mean and std of the token embedding matrix."""
+        W = self.input_embed.weight.detach().float()
+        if sample_rows and sample_rows > 0 and W.size(0) > sample_rows:
+            idx = torch.randint(0, W.size(0), (sample_rows,), device=W.device)
+            W = W.index_select(0, idx)
+        mu = W.mean(dim=0).cpu()
+        sd = W.std(dim=0).clamp_min(1e-6).cpu()
+        return mu, sd
 
     # ---- decoding helpers ----
 
