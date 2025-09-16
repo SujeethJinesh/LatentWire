@@ -168,6 +168,7 @@ class ModelTrainContext:
     first_token_ids: torch.Tensor
     anchor_ids: List[int]
     bos_flag: Optional[bool]
+    answer_lengths: torch.Tensor
 
 
 def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
@@ -192,6 +193,15 @@ def _build_scaffold_ids(tokenizer, texts: List[str], anchor_text: str, device: s
     combo = [t + suffix for t in texts]
     enc = tokenizer(combo, return_tensors="pt", padding=True, truncation=False, add_special_tokens=True)
     return enc["input_ids"].to(device)
+
+
+def _answer_lengths(token_ids: torch.Tensor, tokenizer) -> torch.Tensor:
+    pad_id = getattr(tokenizer, "pad_token_id", None)
+    if pad_id is None:
+        lengths = torch.full((token_ids.size(0),), token_ids.size(1), device=token_ids.device)
+    else:
+        lengths = token_ids.ne(int(pad_id)).sum(dim=1)
+    return lengths
 
 
 def main():
@@ -382,8 +392,20 @@ def main():
             return _structure_latents(raw)
 
     # ===== Adapters =====
-    adp_llama = Adapter(d_z=args.d_z, d_model=llama.d_model).to(device)
-    adp_qwen  = Adapter(d_z=args.d_z, d_model=qwen.d_model).to(device)
+    adp_llama = Adapter(
+        d_z=args.d_z,
+        d_model=llama.d_model,
+        latent_length=total_latent_len,
+        enable_metadata=True,
+        length_norm=args.max_answer_tokens,
+    ).to(device)
+    adp_qwen  = Adapter(
+        d_z=args.d_z,
+        d_model=qwen.d_model,
+        latent_length=total_latent_len,
+        enable_metadata=True,
+        length_norm=args.max_answer_tokens,
+    ).to(device)
 
     if args.adapter_freeze_scale:
         adp_llama.scale.requires_grad_(False)
@@ -403,6 +425,7 @@ def main():
             max_length=args.max_answer_tokens, add_special_tokens=True
         )
     llama_ids = llama_tok["input_ids"].to(device)
+    llama_answer_lengths_all = _answer_lengths(llama_ids, llama.tokenizer)
 
     with _temp_padding_side(qwen.tokenizer, "right"):
         qwen_tok = qwen.tokenizer(
@@ -410,6 +433,7 @@ def main():
             max_length=args.max_answer_tokens, add_special_tokens=True
         )
     qwen_ids = qwen_tok["input_ids"].to(device)
+    qwen_answer_lengths_all = _answer_lengths(qwen_ids, qwen.tokenizer)
 
     # First gold token ids (skip left PADs and BOS) for the CE on the first step
     llama_first_ids_all = first_non_bos(llama.tokenizer, llama_ids)
@@ -473,6 +497,7 @@ def main():
             first_token_ids=llama_first_ids_all,
             anchor_ids=anchor_llama_ids,
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids),
+            answer_lengths=llama_answer_lengths_all,
         ),
         ModelTrainContext(
             name="qwen",
@@ -482,6 +507,7 @@ def main():
             first_token_ids=qwen_first_ids_all,
             anchor_ids=anchor_qwen_ids,
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids),
+            answer_lengths=qwen_answer_lengths_all,
         ),
     ]
 
@@ -537,7 +563,8 @@ def main():
             rms_pen = torch.zeros((), device=device)
 
             for ctx in model_contexts:
-                prefix_raw = ctx.adapter(model_latents[ctx.name])
+                answer_lengths = ctx.answer_lengths[idx]
+                prefix_raw = ctx.adapter(model_latents[ctx.name], answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
                 targets = ctx.token_ids[idx]
                 loss_tf = ctx.wrapper.forward_with_prefix_loss(
@@ -672,7 +699,9 @@ def main():
                 os.makedirs(args.save_dir, exist_ok=True)
                 cfg = {
                     "d_z": args.d_z,
-                    "latent_len": args.latent_len,
+                    "latent_len": total_latent_len,
+                    "latent_shared_len": latent_shared_len,
+                    "latent_private_len": latent_private_len,
                     "byte_max": args.max_bytes,
                     "llama_id": args.llama_id,
                     "qwen_id": args.qwen_id,
@@ -686,6 +715,8 @@ def main():
                     "k_ce_weight": args.k_ce_weight,
                     "kd_first_k_weight": args.kd_first_k_weight,
                     "kd_tau": args.kd_tau,
+                    "max_answer_tokens": args.max_answer_tokens,
+                    "grad_accum_steps": grad_accum_steps,
                     "seed": args.seed,
                     "data_seed": args.data_seed,
                 }
@@ -720,7 +751,9 @@ def main():
     os.makedirs(args.save_dir, exist_ok=True)
     cfg = {
         "d_z": args.d_z,
-        "latent_len": args.latent_len,
+        "latent_len": total_latent_len,
+        "latent_shared_len": latent_shared_len,
+        "latent_private_len": latent_private_len,
         "byte_max": args.max_bytes,
         "llama_id": args.llama_id,
         "qwen_id": args.qwen_id,
@@ -734,6 +767,8 @@ def main():
         "k_ce_weight": args.k_ce_weight,
         "kd_first_k_weight": args.kd_first_k_weight,
         "kd_tau": args.kd_tau,
+        "max_answer_tokens": args.max_answer_tokens,
+        "grad_accum_steps": grad_accum_steps,
         "seed": args.seed,
         "data_seed": args.data_seed,
     }

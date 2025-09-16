@@ -209,13 +209,37 @@ class SimpleEncoder(nn.Module):
 class Adapter(nn.Module):
     """
     Maps Z (d_z) -> model embedding space (d_model).
+    Optionally injects positional metadata and answer-length hints.
     Includes a learnable scalar 'scale' that we regularize to ~1.0 in train.py.
     """
-    def __init__(self, d_z: int, d_model: int):
+
+    def __init__(
+        self,
+        d_z: int,
+        d_model: int,
+        latent_length: int,
+        enable_metadata: bool = False,
+        length_norm: float = 32.0,
+    ):
         super().__init__()
         self.net = nn.Sequential(nn.LayerNorm(d_z), nn.Linear(d_z, d_model))
         self.scale = nn.Parameter(torch.ones(1))
-    def forward(self, z: torch.Tensor) -> torch.Tensor:
+        self.enable_metadata = enable_metadata
+        self.length_norm = max(length_norm, 1.0)
+        if self.enable_metadata:
+            self.position_emb = nn.Parameter(torch.randn(latent_length, d_z) * 0.02)
+            self.length_proj = nn.Sequential(nn.Linear(1, d_z), nn.Tanh())
+        else:
+            self.register_parameter("position_emb", None)
+            self.length_proj = None
+
+    def forward(self, z: torch.Tensor, answer_lengths: Optional[torch.Tensor] = None) -> torch.Tensor:
+        if self.enable_metadata and self.position_emb is not None:
+            z = z + self.position_emb.unsqueeze(0).to(z.dtype)
+            if answer_lengths is not None:
+                lengths = answer_lengths.float().unsqueeze(-1) / self.length_norm
+                length_emb = self.length_proj(lengths).unsqueeze(1)
+                z = z + length_emb
         x = self.net(z) * self.scale
         # Keep a soft bound to avoid blowing up logits; calibration will adjust RMS
         return torch.tanh(x / 3.0) * 3.0

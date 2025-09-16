@@ -42,6 +42,8 @@ TRAIN_SAMPLES=87599
 ENCODER_TYPE="byte"                 # stronger, token-level input
 ENCODER_USE_CHAT_TEMPLATE=0         # training wants raw sources
 LATENT_LEN=32
+LATENT_SHARED_LEN=24
+LATENT_PRIVATE_LEN=4
 D_Z=256
 BYTE_MAX=2048                       # byte budget for the encoder
 LR=5e-5
@@ -76,7 +78,7 @@ TRAIN_ARGS_COMMON=(
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES"
   --epochs 1 --batch_size "$BATCH_SIZE"
   --encoder_type "$ENCODER_TYPE"
-  --latent_len "$LATENT_LEN" --d_z "$D_Z"
+  --latent_len "$LATENT_LEN" --latent_shared_len "$LATENT_SHARED_LEN" --latent_private_len "$LATENT_PRIVATE_LEN" --d_z "$D_Z"
   --qwen_id "$QWEN_ID" --llama_id "$LLAMA_ID"
   --lr "$LR" --scale_l2 "$SCALE_L2"
   --adapter_rms_l2 "$ADAPTER_RMS_L2"
@@ -102,6 +104,7 @@ EVAL_ARGS_COMMON=(
   --min_new_tokens 3 --eos_ban_steps 6
   --chunk_size "$CHUNK_SIZE"
   --sequential_eval
+  --latent_len "$LATENT_LEN" --latent_shared_len "$LATENT_SHARED_LEN" --latent_private_len "$LATENT_PRIVATE_LEN"
 )
 
 # Run folder name
