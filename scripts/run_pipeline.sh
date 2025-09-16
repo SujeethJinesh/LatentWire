@@ -98,7 +98,7 @@ EVAL_ARGS_COMMON=(
 )
 
 # Run folder name
-RUN="8B_clean_answer_ftce"  # new run with first-token CE + BOS alignment
+RUN="8B_clean_with_k"  # new run with first-token CE + BOS alignment
 RUN_DIR="runs/${RUN}"
 CKPT_DIR="${RUN_DIR}/ckpt"
 mkdir -p "$RUN_DIR" "$CKPT_DIR"

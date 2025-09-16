@@ -1,0 +1,53 @@
+
+=========================================
+Starting pipeline at Tue Sep 16 12:23:11 PDT 2025
+=========================================
+
+
+=========================================
+PHASE 1: TRAINING WITH EPOCH EVALUATIONS
+=========================================
+
+Training for 24 epochs with evaluation after each
+Checkpoint will be saved to: runs/8B_clean_with_k/ckpt
+
+
+=========================================
+EPOCH 1/24
+=========================================
+
+Training epoch 1...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4818.27it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.13s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.08s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.07it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6111.92it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.04s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.19it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.23it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.20it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.18it/s]
+Llama hidden size: 4096, Qwen hidden size: 3584
+[WARN] t=0 alignment could not be verified: list index out of range
+[WARN] t=0 alignment could not be verified: list index out of range
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/1
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 725, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 519, in main
+    loss_kd = kd_first_k_prefix_vs_text(
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/losses.py", line 117, in kd_first_k_prefix_vs_text
+    T_logits = _teacher_step_logits_text(teacher_llm, scaffold_ids, gold_ids, t)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/losses.py", line 15, in _teacher_step_logits_text
+    out = llm.model(input_ids=ids_t, attention_mask=attn_mask, use_cache=False, return_dict=True)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
+    output = module._old_forward(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 1214, in forward
+    logits = self.lm_head(hidden_states[:, -num_logits_to_keep:, :]).float()
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 16.73 GiB. GPU 1 has a total capacity of 79.19 GiB of which 14.85 GiB is free. Including non-PyTorch memory, this process has 64.33 GiB memory in use. Of the allocated memory 62.44 GiB is allocated by PyTorch, and 1.23 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
