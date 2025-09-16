@@ -2,7 +2,7 @@
 import math
 import re
 from dataclasses import dataclass
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Any, Sequence
 
 import torch
 import torch.nn as nn
@@ -64,7 +64,7 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:T].unsqueeze(0).to(x.dtype)
 
 class ByteEncoder(nn.Module):
-    def __init__(self, d_z: int = 256, n_layers: int = 2, n_heads: int = 8, ff_mult: int = 4, max_len: int = 2048):
+    def __init__(self, d_z: int = 256, n_layers: int = 6, n_heads: int = 8, ff_mult: int = 4, max_len: int = 2048):
         super().__init__()
         assert d_z % n_heads == 0, "d_z must be divisible by n_heads"
         self.byte_emb = nn.Embedding(256, d_z)
@@ -95,23 +95,81 @@ class LatentPooler(nn.Module):
             nn.GELU(),
             nn.Linear(2*d_z, d_z),
         )
+        self.gate = nn.Sequential(
+            nn.LayerNorm(d_z),
+            nn.Linear(d_z, d_z),
+            nn.Sigmoid(),
+        )
     def forward(self, byte_feats: torch.Tensor) -> torch.Tensor:
         B = byte_feats.size(0)
         q = self.latent.unsqueeze(0).expand(B, -1, -1)
         out, _ = self.cross_attn(q, byte_feats, byte_feats, need_weights=False)
         out = out + q
+        gate = self.gate(out)
+        out = out * gate + q * (1 - gate)
         out = out + self.ff(out)
         return out
 
 class InterlinguaEncoder(nn.Module):
-    def __init__(self, d_z: int = 256, n_layers: int = 2, n_heads: int = 8, ff_mult: int = 4, latent_len: int = 8):
+    def __init__(
+        self,
+        d_z: int = 256,
+        n_layers: int = 6,
+        n_heads: int = 8,
+        ff_mult: int = 4,
+        latent_len: int = 8,
+        latent_shared_len: Optional[int] = None,
+        latent_private_len: int = 0,
+        model_keys: Sequence[str] = ("llama", "qwen"),
+    ):
         super().__init__()
+        self.model_keys = list(model_keys)
         self.backbone = ByteEncoder(d_z=d_z, n_layers=n_layers, n_heads=n_heads, ff_mult=ff_mult)
-        self.pooler = LatentPooler(d_z=d_z, latent_len=latent_len, n_heads=n_heads)
-    def forward(self, byte_ids: torch.Tensor) -> torch.Tensor:
+
+        if latent_shared_len is None:
+            if latent_private_len > 0:
+                latent_shared_len = max(latent_len - latent_private_len * len(self.model_keys), 0)
+            else:
+                latent_shared_len = latent_len
+        self.latent_shared_len = int(latent_shared_len)
+        self.latent_private_len = int(latent_private_len)
+        self.total_latent_len = int(self.latent_shared_len + self.latent_private_len * len(self.model_keys))
+
+        if self.latent_shared_len > 0:
+            self.shared_pooler = LatentPooler(d_z=d_z, latent_len=self.latent_shared_len, n_heads=n_heads)
+        else:
+            self.shared_pooler = None
+
+        if self.latent_private_len > 0:
+            self.private_poolers = nn.ModuleDict(
+                {
+                    key: LatentPooler(d_z=d_z, latent_len=self.latent_private_len, n_heads=n_heads)
+                    for key in self.model_keys
+                }
+            )
+        else:
+            self.private_poolers = nn.ModuleDict()
+
+    def forward(self, byte_ids: torch.Tensor, return_components: bool = False) -> torch.Tensor:
         feats = self.backbone(byte_ids)
-        latents = self.pooler(feats)
-        return latents
+
+        if self.latent_shared_len > 0:
+            shared = self.shared_pooler(feats)
+        else:
+            shared = feats.new_zeros(feats.size(0), 0, feats.size(-1))
+
+        private: Dict[str, torch.Tensor] = {}
+        for key in self.model_keys:
+            if self.latent_private_len > 0:
+                private[key] = self.private_poolers[key](feats)
+            else:
+                private[key] = feats.new_zeros(feats.size(0), 0, feats.size(-1))
+
+        if return_components:
+            return {"shared": shared, "private": private}
+
+        parts = [shared] + [private[key] for key in self.model_keys]
+        return torch.cat(parts, dim=1)
 
 class SimpleEncoder(nn.Module):
     """

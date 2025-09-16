@@ -64,6 +64,19 @@ def tensor_rms_d(x: torch.Tensor) -> torch.Tensor:
     return x.pow(2).mean().sqrt()
 
 
+def combine_latents(encoded: Dict[str, torch.Tensor], model_key: str) -> torch.Tensor:
+    shared = encoded.get("shared")
+    private_dict = encoded.get("private", {})
+    parts = []
+    if shared is not None:
+        parts.append(shared)
+    if model_key in private_dict:
+        parts.append(private_dict[model_key])
+    if parts:
+        return torch.cat(parts, dim=1)
+    raise KeyError(f"No latent components found for model key '{model_key}'")
+
+
 @torch.no_grad()
 def quantize_dequantize(Z: torch.Tensor, bits: Optional[int], group_size: int = 32) -> torch.Tensor:
     """Symmetric per-group quantize/dequantize helper used at eval time."""

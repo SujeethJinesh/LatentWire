@@ -8,8 +8,8 @@ This document replaces PLAN_v2 with a detailed roadmap for pushing latent perfor
 
 | Item | Current State (code) | Proposed After State | Cost / Impact | Expected F1 Δ (latent) | Risks & Alignment |
 |------|----------------------|----------------------|----------------|------------------------|-------------------|
-| Deeper Byte Encoder | `latentwire/models.py:66-112` – 2-layer transformer encoder with single cross-attn pooler. | Expand to 6 layers + gated residual, optional CNN front-end for local byte n-grams. | **Training time** ↑ (~1.8× GPU hours), **No extra data**. | +0.02 to +0.03 | Higher latency in smoke tests; still benchmark-agnostic.|
-| Shared + Private Adapters | `latentwire/models.py:132-146` single MLP per LLM with shared scale. | Split latent into shared (M=24) + private (M=8), add residual 2-layer adapters w/ per-token gain. | **Params** ↑ (~5 MB each), negligible runtime. | +0.03 to +0.05 | Slightly more byte-budget bookkeeping but still compressed.|
+| ✅ Deeper Byte Encoder | `latentwire/models.py:66-118` – 6-layer transformer encoder with gated residual pooling. | — | **Training time** ↑ (~1.8× GPU hours), **No extra data**. | +0.02 to +0.03 | Higher latency in smoke tests; still benchmark-agnostic.|
+| ✅ Shared + Private Adapters | `latentwire/models.py:120-178`, `latentwire/train.py:200-380` now concatenate shared + model-specific latents before adapters. | — | **Params** ↑ (~5 MB each), negligible runtime. | +0.03 to +0.05 | Byte accounting tracked via config; remains compressed.|
 | Latent Positional Metadata | None; adapters assume implicit order. | Append learned positional embeddings & answer-length hint vector prior to adapters. | Minimal training cost; no data change. | +0.01 to +0.02 | Must report extra bytes (<16) to remain honest.|
 
 ### Architecture Sketches

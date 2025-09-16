@@ -286,6 +286,16 @@ def main():
         dtype = torch.float32
 
     grad_accum_steps = max(1, int(args.grad_accum_steps))
+    model_keys = ["llama", "qwen"]
+    if args.latent_shared_len is not None:
+        latent_shared_len = int(args.latent_shared_len)
+        latent_private_len = max(0, int(args.latent_private_len))
+        total_latent_len = latent_shared_len + latent_private_len * len(model_keys)
+    else:
+        latent_private_len = max(0, int(args.latent_private_len))
+        total_latent_len = int(args.latent_len)
+        latent_shared_len = max(total_latent_len - latent_private_len * len(model_keys), 0)
+    total_latent_len = max(total_latent_len, 0)
 
     # ===== Repro =====
     random.seed(args.seed)
@@ -333,22 +343,43 @@ def main():
         qwen.enable_gradient_checkpointing()
 
     # ===== Encoder =====
+    def _structure_latents(raw: torch.Tensor) -> Dict[str, torch.Tensor]:
+        shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
+        private = {}
+        start = latent_shared_len
+        for key in model_keys:
+            if latent_private_len > 0:
+                private[key] = raw[:, start:start + latent_private_len]
+            else:
+                private[key] = raw.new_zeros(raw.size(0), 0, raw.size(-1))
+            start += latent_private_len
+        return {"shared": shared, "private": private}
+
     if args.encoder_type == "byte":
-        encoder = InterlinguaEncoder(d_z=args.d_z, latent_len=args.latent_len).to(device)
+        encoder = InterlinguaEncoder(
+            d_z=args.d_z,
+            latent_shared_len=latent_shared_len,
+            latent_private_len=latent_private_len,
+            model_keys=tuple(model_keys),
+        ).to(device)
         byte_tok = ByteTokenizer(max_bytes=args.max_bytes)
+
         def encode_fn(batch_texts):
             z_bytes = collate_bytes(batch_texts, byte_tok, device)
-            return encoder(z_bytes)
+            return encoder(z_bytes, return_components=True)
     else:
-        encoder = SimpleEncoder(d_z=args.d_z, latent_len=args.latent_len,
+        encoder = SimpleEncoder(d_z=args.d_z, latent_len=total_latent_len,
                                 backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2")).to(device)
+
         def _neutral_chat_wrap(s: str) -> str:
             system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
             return f"System: {system}\nUser: {s}\nAssistant:"
+
         def encode_fn(batch_texts):
             if args.encoder_use_chat_template:
                 batch_texts = [_neutral_chat_wrap(t) for t in batch_texts]
-            return encoder(batch_texts)
+            raw = encoder(batch_texts)
+            return _structure_latents(raw)
 
     # ===== Adapters =====
     adp_llama = Adapter(d_z=args.d_z, d_model=llama.d_model).to(device)
@@ -492,7 +523,13 @@ def main():
                 for ctx in model_contexts
             }
 
-            z = encode_fn(batch_texts)
+            encoded_latents = encode_fn(batch_texts)
+            shared_latents = encoded_latents["shared"]
+            private_latents = encoded_latents["private"]
+            model_latents = {
+                name: torch.cat([shared_latents, private_latents[name]], dim=1)
+                for name in model_keys
+            }
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
             total_model_loss = 0.0
@@ -500,7 +537,7 @@ def main():
             rms_pen = torch.zeros((), device=device)
 
             for ctx in model_contexts:
-                prefix_raw = ctx.adapter(z)
+                prefix_raw = ctx.adapter(model_latents[ctx.name])
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
                 targets = ctx.token_ids[idx]
                 loss_tf = ctx.wrapper.forward_with_prefix_loss(

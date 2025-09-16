@@ -470,7 +470,7 @@ def _run_latent_path(
         },
     }
 
-def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
+def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
     print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
     llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
@@ -507,17 +507,19 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
         anchor = make_anchor_text(mode, ctx["wrapper"], anchor_text_src)
         anchor_info[name] = {"mode": mode, "text": anchor_text_src, "anchor": anchor}
 
-    Z_q = quantize_dequantize(
-        Z,
-        getattr(args, "latent_quant_bits", None),
-        group_size=getattr(args, "latent_quant_group_size", 32),
-    )
-
+    combined_latents = {
+        name: combine_latents(encoded_latents, name) for name in model_contexts
+    }
+    quant_bits = getattr(args, "latent_quant_bits", None)
+    quant_group = getattr(args, "latent_quant_group_size", 32)
     prefix_map = {}
     debug_map = {"llama": {}, "qwen": {}}
     with torch.no_grad():
         for name, ctx in model_contexts.items():
-            prefix = ctx["adapter"](Z_q)
+            latents = combined_latents[name]
+            if quant_bits is not None:
+                latents = quantize_dequantize(latents, quant_bits, group_size=quant_group)
+            prefix = ctx["adapter"](latents)
             prefix, rms_val, tgt_val = _calibrate_prefix(
                 prefix,
                 ctx["wrapper"],
@@ -531,7 +533,7 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
             prefix = prefix * args.prefix_gain
             prefix_map[name] = prefix
             if args.debug:
-                debug = _latent_debug_stats(name, Z_q, prefix, ctx["adapter"], ctx["wrapper"])
+                debug = _latent_debug_stats(name, latents, prefix, ctx["adapter"], ctx["wrapper"])
                 debug.update({
                     "encoder_text_mode": "standard",
                     "calibration_mode": args.calibration,
@@ -609,12 +611,13 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     wire = compute_wire_metrics(
         model_outputs["llama"]["chat_prompts"],
         model_outputs["qwen"]["chat_prompts"],
-        Z,
+        combined_latents["llama"],
         group_size=getattr(args, "latent_quant_group_size", 32),
         scale_bits=getattr(args, "latent_quant_scale_bits", 16),
         selected_bits=getattr(args, "latent_quant_bits", None),
     )
-    bytes_per_latent = int(Z.element_size() * Z.size(1) * Z.size(2))
+    llama_latents = combined_latents["llama"]
+    bytes_per_latent = int(llama_latents.element_size() * llama_latents.size(1) * llama_latents.size(2))
 
     oracle_em = 0.0
     oracle_f1 = 0.0
@@ -953,16 +956,17 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
     llama_avg_tok = float(L.get("avg_prompt_tokens", 0.0)) if have_llama else 0.0
     qwen_avg_tok  = float(Q.get("avg_prompt_tokens", 0.0))  if have_qwen  else 0.0
 
+    combined_for_wire = combine_latents(encoded_latents, "llama") if have_llama else None
     wire = compute_wire_metrics(
         L.get("chat_prompts", []) if have_llama else [],
         Q.get("chat_prompts", []) if have_qwen else [],
-        Z_for_wire,
+        combined_for_wire if combined_for_wire is not None else torch.zeros(0, 0, d_z, device=device),
         group_size=getattr(args, "latent_quant_group_size", 32),
         scale_bits=getattr(args, "latent_quant_scale_bits", 16),
         selected_bits=getattr(args, "latent_quant_bits", None),
     )
 
-    bytes_per_latent = int(Z_for_wire.element_size() * Z_for_wire.size(1) * Z_for_wire.size(2))
+    bytes_per_latent = int(combined_for_wire.element_size() * combined_for_wire.size(1) * combined_for_wire.size(2)) if combined_for_wire is not None else 0
     text_block = {"wall_clock_sec": 0.0}
     latent_block = {"wall_clock_sec": 0.0}
     token_budget_block = {"mode": args.token_budget_mode, "k": (args.token_budget_k or latent_len)}
@@ -1211,7 +1215,12 @@ def main():
 
     llama_id = args.llama_id or cfg["llama_id"]
     qwen_id  = args.qwen_id  or cfg["qwen_id"]
-    latent_len = int(cfg["latent_len"])
+    latent_len = int(cfg.get("latent_len", getattr(args, "latent_len", 0) or 0))
+    latent_shared_len = int(cfg.get("latent_shared_len", latent_len))
+    latent_private_len = int(cfg.get("latent_private_len", 0))
+    model_keys = ("llama", "qwen")
+    if latent_private_len > 0 and latent_shared_len + latent_private_len * len(model_keys) != latent_len:
+        latent_len = latent_shared_len + latent_private_len * len(model_keys)
     d_z = int(cfg["d_z"])
     byte_max = cfg.get("byte_max", 512)
 
@@ -1242,30 +1251,45 @@ def main():
     Z_path = os.path.join(args.out_dir, "Z.pt") if args.out_dir else None
     if Z_path and (not args.fresh_eval) and os.path.exists(Z_path):
         print(f"Loading Z from {Z_path}")
-        Z_for_wire = torch.load(Z_path, map_location=device)
+        encoded_latents = torch.load(Z_path, map_location=device)
     else:
         print("Building encoder and computing Z...")
         if encoder_type == "byte":
-            encoder_wire = InterlinguaEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
+            encoder_wire = InterlinguaEncoder(
+                d_z=d_z,
+                latent_shared_len=latent_shared_len,
+                latent_private_len=latent_private_len,
+                model_keys=model_keys,
+            ).to(device).eval()
             encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
             with torch.no_grad():
                 byte_tok = ByteTokenizer(max_bytes=byte_max)
                 z_bytes = collate_bytes(prompts_raw, byte_tok, device)
-                Z_for_wire = encoder_wire(z_bytes)
+                encoded_latents = encoder_wire(z_bytes, return_components=True)
         else:
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
             encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
             with torch.no_grad():
-                Z_for_wire = encoder_wire(prompts_raw)
+                raw = encoder_wire(prompts_raw)
+                shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
+                private = {}
+                start = latent_shared_len
+                for key in model_keys:
+                    if latent_private_len > 0:
+                        private[key] = raw[:, start:start + latent_private_len]
+                    else:
+                        private[key] = raw.new_zeros(raw.size(0), 0, raw.size(-1))
+                    start += latent_private_len
+                encoded_latents = {"shared": shared, "private": private}
         if Z_path:
-            torch.save(Z_for_wire.to("cpu"), Z_path)
+            torch.save({k: v.cpu() if isinstance(v, torch.Tensor) else {kk: vv.cpu() for kk, vv in v.items()} for k, v in encoded_latents.items()}, Z_path)
             print(f"Saved Z to {Z_path}")
 
     # === EVALUATION MODES ===
     if args.sequential_eval:
         summary, preds_dump = run_sequential_eval(
             args=args, device=device, dtype=dtype,
-            Z_for_wire=Z_for_wire, prompts_raw=prompts_raw, golds=golds,
+            encoded_latents=encoded_latents, prompts_raw=prompts_raw, golds=golds,
             llama_id=llama_id, qwen_id=qwen_id,
             latent_len=latent_len, d_z=d_z, encoder_type=encoder_type, byte_max=byte_max,
             cfg=cfg, train_stats=train_stats
@@ -1273,7 +1297,7 @@ def main():
     else:
         summary, preds_dump = run_standard_eval(
             args=args, device=device, dtype=dtype,
-            Z=Z_for_wire, prompts_raw=prompts_raw, golds=golds,
+            encoded_latents=encoded_latents, prompts_raw=prompts_raw, golds=golds,
             llama_id=llama_id, qwen_id=qwen_id,
             latent_len=latent_len, d_z=d_z, cfg=cfg, train_stats=train_stats
         )
