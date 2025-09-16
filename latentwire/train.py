@@ -249,6 +249,16 @@ def main():
                     help="Controls BOS appending when computing first-token CE (train).")
     # K-token supervision + KD
     ap.add_argument("--K", type=int, default=4, help="Number of early tokens to supervise (A1/A2).")
+    ap.add_argument("--adaptive_k_start", type=int, default=None,
+                    help="Optional starting K for curriculum (defaults to --K).")
+    ap.add_argument("--adaptive_k_end", type=int, default=None,
+                    help="Optional final K for curriculum (defaults to --K).")
+    ap.add_argument("--latent_keep_start", type=float, default=1.0,
+                    help="Starting keep probability for latent dropout curriculum (1.0 = keep all).")
+    ap.add_argument("--latent_keep_end", type=float, default=1.0,
+                    help="Final keep probability for latent dropout curriculum.")
+    ap.add_argument("--latent_keep_power", type=float, default=1.0,
+                    help="Exponent controlling schedule shape (1.0 linear, >1 later drop).")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
@@ -296,6 +306,11 @@ def main():
         dtype = torch.float32
 
     grad_accum_steps = max(1, int(args.grad_accum_steps))
+    adaptive_k_start = int(args.adaptive_k_start) if args.adaptive_k_start is not None else args.K
+    adaptive_k_end = int(args.adaptive_k_end) if args.adaptive_k_end is not None else args.K
+    latent_keep_start = float(args.latent_keep_start)
+    latent_keep_end = float(args.latent_keep_end)
+    latent_keep_power = max(1e-6, float(args.latent_keep_power))
     model_keys = ["llama", "qwen"]
     if args.latent_shared_len is not None:
         latent_shared_len = int(args.latent_shared_len)
@@ -530,6 +545,7 @@ def main():
 
     optimizer.zero_grad(set_to_none=True)
 
+    total_batches = steps_per_epoch * args.epochs
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
 
@@ -542,6 +558,17 @@ def main():
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
 
+            global_batch_idx = epoch * steps_per_epoch + step
+            if total_batches > 1:
+                progress = min(max(global_batch_idx / (total_batches - 1), 0.0), 1.0)
+            else:
+                progress = 1.0
+            progress_pow = progress ** latent_keep_power
+            keep_prob = latent_keep_start + (latent_keep_end - latent_keep_start) * progress_pow
+            keep_prob = float(min(max(keep_prob, 0.0), 1.0))
+            current_K = int(round(adaptive_k_start + (adaptive_k_end - adaptive_k_start) * progress_pow))
+            current_K = max(1, min(current_K, args.max_answer_tokens))
+
             scaffolds = {
                 ctx.name: build_scaffold_ids(
                     ctx.wrapper.tokenizer, batch_texts, args.warm_anchor_text or "", device
@@ -552,6 +579,13 @@ def main():
             encoded_latents = encode_fn(batch_texts)
             shared_latents = encoded_latents["shared"]
             private_latents = encoded_latents["private"]
+            if shared_latents.size(1) > 0 and keep_prob < 1.0:
+                mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < keep_prob).float()
+                need_fix = mask.sum(dim=1) == 0
+                if need_fix.any():
+                    mask[need_fix, 0] = 1.0
+                mask = mask.unsqueeze(-1)
+                shared_latents = shared_latents * mask / max(keep_prob, 1e-3)
             model_latents = {
                 name: torch.cat([shared_latents, private_latents[name]], dim=1)
                 for name in model_keys
@@ -587,7 +621,7 @@ def main():
                         ctx.wrapper,
                         prefix,
                         targets,
-                        K=args.K,
+                        K=current_K,
                         anchor_ids=ctx.anchor_ids,
                         append_bos_after_prefix=ctx.bos_flag,
                     )
@@ -601,7 +635,7 @@ def main():
                         prefix,
                         scaffolds[ctx.name],
                         targets,
-                        K=args.K,
+                        K=current_K,
                         tau=args.kd_tau,
                         anchor_ids=ctx.anchor_ids,
                         append_bos_after_prefix=ctx.bos_flag,
@@ -670,6 +704,8 @@ def main():
                     f"  step  {step+1}/{steps_per_epoch}",
                     f"grad_norm={total_norm:.2f}",
                     f"sec/step~{dt:.2f}",
+                    f"keep={keep_prob:.2f}",
+                    f"K={current_K}",
                 ]
                 for ctx in model_contexts:
                     metrics = per_model_losses[ctx.name]

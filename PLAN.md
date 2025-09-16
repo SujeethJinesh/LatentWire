@@ -45,7 +45,7 @@ graph TD
 
 | Item | Current State | Proposed After State | Cost / Impact | Expected F1 Δ | Risks & Alignment |
 |------|---------------|----------------------|----------------|---------------|-------------------|
-| Cold-start schedule | Single stage: CE+KD on full task (`latentwire/train.py:465-615`). | 3-phase curriculum: (1) KD-only @ M=64, (2) KD+CE @ M=48, (3) final @ M=32 with full losses. | **Training time** ↑ (~2.2× total steps). | +0.03 to +0.04 | Requires smooth checkpoint handoff; more bookkeeping.|
+| ✅ Latent dropout + adaptive K | `latentwire/train.py:360-580` now supports keep-probability curriculum and adaptive K schedule (defaults = no change). | Progress-based keep probability + K ramp; optionally emulate larger M early via masking. | **Training time** + logging only; no extra data. | +0.02 to +0.04 | Curriculum stays payload-neutral; shapes constant.|
 | Adaptive K | K=4 hard-coded. | Start K=2, ramp to 6 by stage 3 based on first-token accuracy. | Negligible compute. | +0.01 to +0.02 | Implementation complexity in scheduler; ensures fairness.|
 | Hard-negative KD | KD covers all tokens evenly. | Focus KD on samples with low first-token accuracy & high teacher uncertainty. | Slight logic overhead; same GPU cost. | +0.01 to +0.015 | Needs reliable diagnostics; still benchmark-neutral.|
 
