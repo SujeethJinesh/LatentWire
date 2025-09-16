@@ -204,6 +204,8 @@ def main():
     ap.add_argument("--samples", type=int, default=128)
     ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--batch_size", type=int, default=1)
+    ap.add_argument("--grad_accum_steps", type=int, default=1,
+                    help="Number of micro-batches to accumulate before an optimizer step.")
 
     # Repro / randomness
     ap.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Global seed for RNGs & epoch permutations.")
@@ -265,12 +267,25 @@ def main():
 
     # Device + dtype
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
-    if device == "cuda":
+    env_dtype = os.environ.get("TORCH_DTYPE")
+    if env_dtype:
+        dtype_lookup = {
+            "bf16": torch.bfloat16,
+            "bfloat16": torch.bfloat16,
+            "fp16": torch.float16,
+            "float16": torch.float16,
+            "fp32": torch.float32,
+            "float32": torch.float32,
+        }
+        dtype = dtype_lookup.get(env_dtype.lower(), torch.bfloat16 if device == "cuda" else torch.float32)
+    elif device == "cuda":
         dtype = torch.bfloat16
     elif device == "mps":
         dtype = torch.float16 if args.fp16_mps else torch.float32
     else:
         dtype = torch.float32
+
+    grad_accum_steps = max(1, int(args.grad_accum_steps))
 
     # ===== Repro =====
     random.seed(args.seed)
@@ -456,6 +471,8 @@ def main():
 
     params_for_clip = [p for p in optim_groups if p.requires_grad]
 
+    optimizer.zero_grad(set_to_none=True)
+
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
 
@@ -467,8 +484,6 @@ def main():
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
-
-            optimizer.zero_grad(set_to_none=True)
 
             scaffolds = {
                 ctx.name: build_scaffold_ids(
@@ -565,17 +580,23 @@ def main():
                 print("NaN/Inf loss; skipping step")
                 continue
 
-            loss.backward()
-            if args.max_grad_norm and args.max_grad_norm > 0:
-                torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
-            optimizer.step()
+            loss_backward = loss / float(grad_accum_steps)
+            loss_backward.backward()
 
-            # Grad norm (monitor) – encoder only as a proxy
-            try:
-                total_norm = float(torch.nn.utils.clip_grad_norm_(encoder.parameters(), max_norm=float("inf")))
-            except Exception:
+            should_step = ((step + 1) % grad_accum_steps == 0) or ((step + 1) == steps_per_epoch)
+            if should_step:
+                if args.max_grad_norm and args.max_grad_norm > 0:
+                    total_norm = float(
+                        torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
+                    )
+                else:
+                    total_norm = float("nan")
+                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+            else:
                 total_norm = float("nan")
 
+            # Grad norm (monitor) – encoder only as a proxy
             global_step += 1
             dt = time.time() - t0
             ema_step_time = dt if (locals().get("ema_step_time", None) is None) else (0.9 * locals()["ema_step_time"] + 0.1 * dt)

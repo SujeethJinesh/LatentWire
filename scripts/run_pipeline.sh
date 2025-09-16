@@ -36,7 +36,8 @@ DEBUG_TOPK_EXAMPLES=2
 
 # Training knobs
 EPOCHS=24
-BATCH_SIZE=64
+BATCH_SIZE=2
+GRAD_ACCUM_STEPS=32
 TRAIN_SAMPLES=87599
 ENCODER_TYPE="byte"                 # stronger, token-level input
 ENCODER_USE_CHAT_TEMPLATE=0         # training wants raw sources
@@ -50,8 +51,10 @@ MAX_GRAD_NORM=1.0
 WARM_ANCHOR_TEXT="Answer: "         # Matches eval anchor
 FIRST_TOKEN_CE=0.0                  # λ_first (first-token CE weight)
 TRAIN_APPEND_BOS="no"              # BOS after prefix+anchor during first-token CE
+MAX_ANSWER_TOKENS=24
 STEPS_PER_EPOCH=$(( (TRAIN_SAMPLES + BATCH_SIZE - 1) / BATCH_SIZE ))
-SAVE_EVERY=$STEPS_PER_EPOCH         # save only at the end of each epoch (we copy ckpt dir)
+OPT_STEPS_PER_EPOCH=$(( (STEPS_PER_EPOCH + GRAD_ACCUM_STEPS - 1) / GRAD_ACCUM_STEPS ))
+SAVE_EVERY=$OPT_STEPS_PER_EPOCH     # save after each optimizer epoch equivalent
 SEQUENTIAL_MODELS=1
 
 # Model IDs
@@ -66,6 +69,8 @@ CUDA_VISIBLE_DEVICES="0,1"
 source .venv/bin/activate
 export PYTHONPATH=.
 export TOKENIZERS_PARALLELISM=false
+export TORCH_DTYPE=${TORCH_DTYPE:-bfloat16}
+export PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}
 
 TRAIN_ARGS_COMMON=(
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES"
@@ -77,8 +82,10 @@ TRAIN_ARGS_COMMON=(
   --adapter_rms_l2 "$ADAPTER_RMS_L2"
   --max_grad_norm "$MAX_GRAD_NORM"
   --max_bytes "$BYTE_MAX"
+  --max_answer_tokens "$MAX_ANSWER_TOKENS"
   --first_token_ce_weight "$FIRST_TOKEN_CE"
   --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
+  --grad_accum_steps "$GRAD_ACCUM_STEPS"
   --K 4 --k_ce_weight 0.5 --kd_first_k_weight 1.0 --kd_tau 1.0
 )
 
@@ -217,6 +224,8 @@ run_eval() {
         --save_every "$SAVE_EVERY"
         --save_training_stats --debug --auto_resume
       )
+
+      TRAIN_ARGS+=(--grad_ckpt)
 
       if [[ "${ENCODER_USE_CHAT_TEMPLATE}" == "1" ]]; then
         TRAIN_ARGS+=(--encoder_use_chat_template)
