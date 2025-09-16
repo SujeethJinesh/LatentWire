@@ -38,7 +38,7 @@
     }
   },
   "text": {
-    "wall_clock_sec": 16.257566928863525,
+    "wall_clock_sec": 19.035160303115845,
     "llama": {
       "em": 0.58,
       "f1": 0.7994106570072514,
@@ -51,20 +51,20 @@
     }
   },
   "latent": {
-    "wall_clock_sec": 13.417166233062744,
+    "wall_clock_sec": 16.57156014442444,
     "llama": {
       "em": 0.0,
-      "f1": 0.02050281662781663,
-      "nll_token": 8.168305497591188,
-      "first_token_top1": 0.029999999329447746,
-      "first_token_top5": 0.03999999910593033
+      "f1": 0.02511647562963353,
+      "nll_token": 7.393496977228697,
+      "first_token_top1": 0.02499999850988388,
+      "first_token_top5": 0.0949999988079071
     },
     "qwen": {
       "em": 0.0,
-      "f1": 0.003478535353535353,
-      "nll_token": 7.782977277639682,
+      "f1": 0.008943181818181817,
+      "nll_token": 7.3793133612347654,
       "first_token_top1": 0.05999999865889549,
-      "first_token_top5": 0.125
+      "first_token_top5": 0.14999999105930328
     }
   },
   "token_budget": {
@@ -74,7 +74,7 @@
       "em": 0.005,
       "f1": 0.04086507936507937
     },
-    "wall_clock_sec": 11.505087614059448,
+    "wall_clock_sec": 14.22425627708435,
     "qwen": {
       "em": 0.04,
       "f1": 0.07479711954711955
@@ -82,8 +82,8 @@
   },
   "joint": {
     "em": 0.0,
-    "f1": 0.003478535353535353,
-    "agreement": 0.25,
+    "f1": 0.011900183150183147,
+    "agreement": 0.005,
     "oracle": {
       "em": null,
       "f1": null
@@ -91,38 +91,38 @@
   },
   "debug": {
     "llama": {
-      "adapter_scale": 0.9960306882858276,
-      "Z_std": 0.606008768081665,
-      "Z_mean_norm": 9.693779945373535,
-      "prefix_std": 0.010570434853434563,
-      "prefix_mean_norm": 0.6766930818557739,
+      "adapter_scale": 0.9921572208404541,
+      "Z_std": 0.7367425560951233,
+      "Z_mean_norm": 11.750341415405273,
+      "prefix_std": 0.012158714234828949,
+      "prefix_mean_norm": 0.77773118019104,
       "embed_rms": 0.010569815523922443,
       "encoder_text_mode": "raw",
       "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
+      "append_bos_after_prefix": "no",
       "latent_anchor_mode": "text",
       "latent_anchor_text": "Answer: ",
       "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct"
     },
     "qwen": {
-      "adapter_scale": 0.9989911913871765,
-      "Z_std": 0.606008768081665,
-      "Z_mean_norm": 9.693779945373535,
-      "prefix_std": 0.013638078235089779,
-      "prefix_mean_norm": 0.8165891766548157,
+      "adapter_scale": 0.9983111619949341,
+      "Z_std": 0.7367425560951233,
+      "Z_mean_norm": 11.750341415405273,
+      "prefix_std": 0.01568271592259407,
+      "prefix_mean_norm": 0.9380836486816406,
       "embed_rms": 0.01364860124886036,
       "encoder_text_mode": "raw",
       "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
+      "append_bos_after_prefix": "no",
       "latent_anchor_mode": "text",
       "latent_anchor_text": "Answer: ",
       "model_id": "Qwen/Qwen2.5-7B-Instruct"
     },
     "latent_anchor_mode": "text",
     "latent_anchor_text": "Answer: ",
-    "prefix_gain": 1.0,
+    "prefix_gain": 1.15,
     "calibration_mode": "embed_rms",
-    "append_bos_after_prefix": "yes",
+    "append_bos_after_prefix": "no",
     "decode": {
       "min_new_tokens": 3,
       "eos_ban_steps": 6,
@@ -132,7 +132,7 @@
   },
   "oracle": {
     "em": 0.0,
-    "f1": 0.02050281662781663
+    "f1": 0.02522758674074464
   },
   "dataset": "squad"
 }

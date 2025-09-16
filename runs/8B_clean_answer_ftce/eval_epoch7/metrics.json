@@ -1,0 +1,138 @@
+{
+  "samples": 200,
+  "max_new_tokens": 12,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 245.065,
+    "qwen": 231.69
+  },
+  "compression": {
+    "llama": 7.65828125,
+    "qwen": 7.2403125
+  },
+  "payload_bytes": 32768,
+  "wire": {
+    "text_bytes_onecopy": {
+      "llama_avg": 1259,
+      "qwen_avg": 1107,
+      "max_avg": 1259
+    },
+    "text_bytes_twocopies": {
+      "sum_avg": 2366
+    },
+    "latent_bytes": {
+      "fp32": 32768,
+      "fp16": 16384
+    },
+    "wire_compression": {
+      "vs_onecopy_fp16": 13.013502779984114,
+      "vs_onecopy_fp32": 26.027005559968227
+    },
+    "wire_ratio": {
+      "latent_over_onecopy_fp16": 13.013502779984114,
+      "latent_over_onecopy_fp32": 26.027005559968227,
+      "onecopy_over_latent_fp16": 0.07684326171875,
+      "onecopy_over_latent_fp32": 0.038421630859375
+    }
+  },
+  "text": {
+    "wall_clock_sec": 15.93363094329834,
+    "llama": {
+      "em": 0.58,
+      "f1": 0.7994106570072514,
+      "nll_token": 12.72173482274305
+    },
+    "qwen": {
+      "em": 0.68,
+      "f1": 0.8528460272957177,
+      "nll_token": 25.81069942126198
+    }
+  },
+  "latent": {
+    "wall_clock_sec": 13.405575037002563,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.02706780644760185,
+      "nll_token": 7.044098616727625,
+      "first_token_top1": 0.04999999701976776,
+      "first_token_top5": 0.11499999463558197
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.017747266622266625,
+      "nll_token": 7.126054512287574,
+      "first_token_top1": 0.07000000029802322,
+      "first_token_top5": 0.14999999105930328
+    }
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.005,
+      "f1": 0.04086507936507937
+    },
+    "wall_clock_sec": 11.68359088897705,
+    "qwen": {
+      "em": 0.04,
+      "f1": 0.07479711954711955
+    }
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.017170652876535228,
+    "agreement": 0.0,
+    "oracle": {
+      "em": null,
+      "f1": null
+    }
+  },
+  "debug": {
+    "llama": {
+      "adapter_scale": 0.9962176084518433,
+      "Z_std": 0.6905643939971924,
+      "Z_mean_norm": 10.914313316345215,
+      "prefix_std": 0.012159275822341442,
+      "prefix_mean_norm": 0.7774329781532288,
+      "embed_rms": 0.010569815523922443,
+      "encoder_text_mode": "raw",
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "no",
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    },
+    "qwen": {
+      "adapter_scale": 0.9990101456642151,
+      "Z_std": 0.6905643939971924,
+      "Z_mean_norm": 10.914313316345215,
+      "prefix_std": 0.015685146674513817,
+      "prefix_mean_norm": 0.9368563890457153,
+      "embed_rms": 0.01364860124886036,
+      "encoder_text_mode": "raw",
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "no",
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "model_id": "Qwen/Qwen2.5-7B-Instruct"
+    },
+    "latent_anchor_mode": "text",
+    "latent_anchor_text": "Answer: ",
+    "prefix_gain": 1.15,
+    "calibration_mode": "embed_rms",
+    "append_bos_after_prefix": "no",
+    "decode": {
+      "min_new_tokens": 3,
+      "eos_ban_steps": 6,
+      "first_token_top_p": 1.0,
+      "first_token_temperature": 0.0
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.031198144247057295
+  },
+  "dataset": "squad"
+}

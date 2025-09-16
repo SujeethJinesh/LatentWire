@@ -307,3 +307,60 @@ Track, per epoch (200‑sample smoke eval):
   - Llama latent: F1 0.031, NLL 7.864; Qwen latent: F1 0.009, NLL 7.462
 - Debug snippets show first generations dominated by "the/of/and" patterns in both epochs.
 - **Next action:** Stop after Epoch 3 checkpoint is written, then restart training with the Stage‑B script above (resume from latest ckpt).
+
+### 2025‑09‑15 — Latent prompting stalled at first token; fix plan
+
+#### What went wrong (evidence)
+- **Latent F1/EM remain near zero** across two successive epoch evals on SQuAD (M=32):
+  - *Epoch 1:* Llama EM 0.000 / F1 0.025, Qwen EM 0.000 / F1 0.009
+  - *Epoch 2:* Llama EM 0.000 / F1 0.025, Qwen EM 0.000 / F1 0.013
+- **First‑token accuracy is flat/very low** despite more training:
+  - Llama Top‑1 2.5% → 4.0%, Qwen ~6.0%; Top‑5 stays <16%.
+- **Oracle upper bound is also tiny** (F1 ≈ 0.025–0.028), meaning errors are systematic at the first decode steps, not sampling.
+- **Degenerate first generations at eval** (debug): e.g., "the of …", numeric runs ("1919…")—typical when the model can’t read the latent evidence and falls into function‑word attractors.
+- **Amplitude calibration looks fine** (RMS near targets; adapter.scale ≈ 1.0), so the issue is semantic alignment, not scale.
+
+**Diagnosis:** We are supervising only the `t=0` decision (first‑token CE) and relying on scalar RMS calibration. That does not provide enough signal for steps 0–3 to land on the same distribution the model uses under text prompting. As a result, decoding enters a generic basin and never recovers within a 12‑token budget.
+
+#### Attempted solution (what we will change)
+We are adding early‑step guidance + a slightly more expressive prefix mapping, plus a guardrail check.
+
+1.  **K‑token teacher‑forced CE (K=4) after the "Answer: " anchor**
+    - Supervise the first 4 answer tokens under the latent prefix (teacher forcing).
+    - Keep the existing first‑token CE; fold it into this K‑step average.
+    - Loss weights to start: `λ_first = 1.0`, `λ_kce = 0.5`.
+2.  **Prefix knowledge distillation (KD) for `t=0..K-1` from the text‑prompted teacher**
+    - Run the same LLM with the text prompt and teacher‑force `t=0..K-1` to get teacher logits.
+    - Minimize `KL(teacher || latent‑student)` over those steps.
+    - Loss weight to start: `λ_kd = 0.5` (lower to 0.25 if unstable).
+3.  **Per‑channel affine calibration on the prefix (γ, β)**
+    - After RMS calibration, apply a learnable element‑wise scale and bias on the injected prefix to correct directional mismatch (not just magnitude).
+    - L2‑regularize `(γ−1, β)` with weight ≈ 1e‑4.
+4.  **Upgrade the adapter to a tiny 2‑layer MLP (GELU)**
+    - `Linear(d_z → 4·d_model) → GELU → Linear(4·d_model → d_model)` with WD ≈ 1e‑4.
+    - This gives the encoder a small nonlinearity to map latent space into the LLM’s prefix manifold.
+5.  **Eval‑only nudges (temporary, to reflect progress sooner)**
+    - *First token decode:* `top_p=0.9`, `temperature=0.7` (`t=0` only), then deterministic.
+    - *Prefix gain schedule:* `gain@t0=1.25`, `gain@t1=1.10`, then 1.0.
+    - Reduce `eos_ban_steps` from 6 → 0–1 to avoid forced babbling on short answers.
+    - *(Optional demo‑only)* light stop‑list at `t=0` for `the, of, and, to, in, a, is, was` to remove the most common attractors.
+6.  **Sanity check: anchor/label alignment assertion (both tokenizers)**
+    - Verify the first gold token after `"Answer: "` is the same id used as `y_gold[:,0]` for each model (Llama/Qwen). An off‑by‑one here would exactly produce the observed flat first‑token CE.
+
+#### Why we believe this will work
+- **Multi‑step supervision (K‑token CE)** gives the model a short guided runway so it learns not just which token to start with, but also how to stay on the answer manifold through steps 1–3—precisely where we collapse today.
+- **Prefix KD** forces the latent‑prompted distribution at early steps to match the text‑prompted distribution, directly transferring the text baseline’s behavior (our text F1 is good: Llama ≈ 0.80, Qwen ≈ 0.85).
+- **Per‑channel affine + tiny MLP** add just enough expressiveness to correct directional/shape mismatches that scalar RMS cannot fix; this is a common failure mode behind “function‑word first token” degeneration.
+- **Eval nudges** remove decode‑time headwinds so training gains show up immediately, improving stakeholder confidence while the new losses converge.
+
+#### Expected acceptance signals
+- **FirstTok@1** should move from ~3–6% into the teens (Top‑5 into the 30–40% range).
+- Degenerate "the/of/and" first tokens largely disappear in the debug print.
+- Latent F1/EM increase materially above the token‑budget baseline (currently ~0.04 F1 for Llama), trending toward the text counterpart.
+
+#### Implementation notes (concise)
+- **K-step CE under latent prefix (teacher forcing)**
+  ```python
+  K = 4
+  loss_kce = sum(F.cross_entropy(logits_latent[:, t, :], y_gold[:, t]) for t in range(K)) / K
+  loss = loss_main + λ_first*first_token_ce + λ_kce*loss_kce

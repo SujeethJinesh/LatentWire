@@ -44,3 +44,15 @@ File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
 File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
 [10:45:35] [171.67.99.202][7914b60c][ExtensionHostConnection] New connection established.
 [10:45:37] [171.67.99.202][7914b60c][ExtensionHostConnection] <304767> Launched Extension Host Process.
+[16:35:38] [171.67.99.202][7914b60c][ExtensionHostConnection] The client has reconnected.
+[16:35:38] [171.67.99.202][7a7530b1][ManagementConnection] The client has reconnected.
+[16:53:11] [171.67.99.202][7a7530b1][ManagementConnection] The client has disconnected, will wait for reconnection 3h before disposing...
+[19:52:43] [171.67.99.202][7914b60c][ExtensionHostConnection] <304767> Extension Host Process exited with code: 0, signal: null.
+[19:53:20] [171.67.99.202][7a7530b1][ManagementConnection] The reconnection grace time of 3h has expired, so the connection will be disposed.
+[21:10:34] [171.67.99.201][7a7530b1][ManagementConnection] Unknown reconnection token (seen before).
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[21:10:37] [171.67.99.201][96c460b4][ManagementConnection] New connection established.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[21:10:38] [171.67.99.201][07131042][ExtensionHostConnection] New connection established.
+[21:10:38] [171.67.99.201][07131042][ExtensionHostConnection] <2675641> Launched Extension Host Process.
