@@ -80,27 +80,101 @@ def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed
         prefix = _per_example_calibrate(prefix, tgt)
     return prefix, pre_scalar, float(tgt)
 
-def compute_wire_metrics(llama_chat_prompts: List[str], qwen_chat_prompts: List[str], Z: torch.Tensor) -> Dict[str, Any]:
-    avg_text_bytes_llama = int(sum(len(p.encode("utf-8")) for p in llama_chat_prompts) / max(1, len(llama_chat_prompts))) if llama_chat_prompts else 0
-    avg_text_bytes_qwen  = int(sum(len(p.encode("utf-8")) for p in qwen_chat_prompts)  / max(1, len(qwen_chat_prompts))) if qwen_chat_prompts else 0
-    bytes_fp32 = int(Z.size(1) * Z.size(2) * 4)
-    bytes_fp16 = int(Z.size(1) * Z.size(2) * 2)
-    max_onecopy = max(avg_text_bytes_llama, avg_text_bytes_qwen)
-    # Keep backward-compat keys but also expose correct ratios explicitly
+@torch.no_grad()
+def _quantize_dequantize(Z: torch.Tensor, bits: Optional[int], group_size: int = 32) -> torch.Tensor:
+    """Symmetric per-group quantize→dequantize helper for eval-time sweeps."""
+    if bits is None or bits >= 16:
+        return Z
+    if bits not in (8, 6, 4):
+        raise ValueError(f"Unsupported quantization bits: {bits}")
+    qmax = (1 << (bits - 1)) - 1
+    flat = Z.detach().to(torch.float32).contiguous().view(-1)
+    n = flat.numel()
+    if n == 0:
+        return Z
+    gs = max(1, int(group_size))
+    out = flat.clone()
+    for start in range(0, n, gs):
+        end = min(start + gs, n)
+        seg = flat[start:end]
+        amax = seg.abs().max()
+        if float(amax) == 0.0:
+            scale = torch.tensor(1e-8, dtype=seg.dtype, device=seg.device)
+        else:
+            scale = amax / qmax
+        q = torch.clamp(torch.round(seg / scale), min=-qmax, max=qmax)
+        out[start:end] = q * scale
+    return out.view_as(Z).to(Z.dtype)
+
+
+def _latent_bits_count(
+    M: int,
+    d_latent: int,
+    bits_per_param: int,
+    group_size: Optional[int] = None,
+    scale_bits: int = 16,
+) -> int:
+    core = int(M) * int(d_latent) * int(bits_per_param)
+    overhead = 0
+    if group_size and group_size > 0:
+        groups = math.ceil((int(M) * int(d_latent)) / int(group_size))
+        overhead = groups * int(scale_bits)
+    header_bits = 8 * 16  # 16 bytes metadata/header
+    return core + overhead + header_bits
+
+
+def _latent_bytes_dict(M: int, d_latent: int, group_size: int = 32, scale_bits: int = 16) -> Dict[str, int]:
     return {
-        "text_bytes_onecopy": {"llama_avg": avg_text_bytes_llama, "qwen_avg": avg_text_bytes_qwen, "max_avg": max_onecopy},
-        "text_bytes_twocopies": {"sum_avg": avg_text_bytes_llama + avg_text_bytes_qwen},
-        "latent_bytes": {"fp32": bytes_fp32, "fp16": bytes_fp16},
-        "wire_compression": {  # legacy names (kept for compatibility)
-            "vs_onecopy_fp16": (float(bytes_fp16) / max_onecopy) if max_onecopy > 0 else None,
-            "vs_onecopy_fp32": (float(bytes_fp32) / max_onecopy) if max_onecopy > 0 else None,
+        "fp32": math.ceil(_latent_bits_count(M, d_latent, 32) / 8),
+        "fp16": math.ceil(_latent_bits_count(M, d_latent, 16) / 8),
+        "int8": math.ceil(_latent_bits_count(M, d_latent, 8, group_size, scale_bits) / 8),
+        "int6": math.ceil(_latent_bits_count(M, d_latent, 6, group_size, scale_bits) / 8),
+        "int4": math.ceil(_latent_bits_count(M, d_latent, 4, group_size, scale_bits) / 8),
+    }
+
+
+def compute_wire_metrics(
+    llama_chat_prompts: List[str],
+    qwen_chat_prompts: List[str],
+    Z: torch.Tensor,
+    group_size: int = 32,
+    scale_bits: int = 16,
+    selected_bits: Optional[int] = None,
+) -> Dict[str, Any]:
+    avg_text_bytes_llama = (
+        int(sum(len(p.encode("utf-8")) for p in llama_chat_prompts) / max(1, len(llama_chat_prompts)))
+        if llama_chat_prompts
+        else 0
+    )
+    avg_text_bytes_qwen = (
+        int(sum(len(p.encode("utf-8")) for p in qwen_chat_prompts) / max(1, len(qwen_chat_prompts)))
+        if qwen_chat_prompts
+        else 0
+    )
+    M = int(Z.size(1))
+    d = int(Z.size(2))
+    lat_bytes = _latent_bytes_dict(M, d, group_size=group_size, scale_bits=scale_bits)
+    max_onecopy = max(avg_text_bytes_llama, avg_text_bytes_qwen)
+    sel_key = {16: "fp16", 8: "int8", 6: "int6", 4: "int4"}.get(selected_bits)
+    selected = lat_bytes.get(sel_key) if sel_key else None
+
+    def _safe(x: Optional[int], y: int) -> Optional[float]:
+        return (float(x) / float(y)) if (x and y) else None
+
+    return {
+        "text_bytes_onecopy": {
+            "llama_avg": avg_text_bytes_llama,
+            "qwen_avg": avg_text_bytes_qwen,
+            "max_avg": max_onecopy,
         },
-        "wire_ratio": {         # preferred explicit names
-            "latent_over_onecopy_fp16": (float(bytes_fp16) / max_onecopy) if max_onecopy > 0 else None,
-            "latent_over_onecopy_fp32": (float(bytes_fp32) / max_onecopy) if max_onecopy > 0 else None,
-            "onecopy_over_latent_fp16": (float(max_onecopy) / bytes_fp16) if bytes_fp16 > 0 else None,
-            "onecopy_over_latent_fp32": (float(max_onecopy) / bytes_fp32) if bytes_fp32 > 0 else None,
-        }
+        "text_bytes_twocopies": {"sum_avg": avg_text_bytes_llama + avg_text_bytes_qwen},
+        "latent_bytes": lat_bytes,
+        "selected_latent_bytes": selected,
+        "wire_ratio": {
+            "latent_over_onecopy_fp16": _safe(lat_bytes["fp16"], max_onecopy),
+            "latent_over_onecopy_fp32": _safe(lat_bytes["fp32"], max_onecopy),
+            "selected_over_onecopy": _safe(selected, max_onecopy) if selected else None,
+        },
     }
 
 # ---------------------------
@@ -436,9 +510,14 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     anchor_ll = make_anchor_text(mode_ll, llama, text_ll)
     anchor_qw = make_anchor_text(mode_qw, qwen,  text_qw)
 
+    Z_q = _quantize_dequantize(
+        Z,
+        getattr(args, "latent_quant_bits", None),
+        group_size=getattr(args, "latent_quant_group_size", 32),
+    )
     with torch.no_grad():
-        prefix_llama = adp_llama(Z)
-        prefix_qwen  = adp_qwen(Z)
+        prefix_llama = adp_llama(Z_q)
+        prefix_qwen  = adp_qwen(Z_q)
         prefix_llama, rmsL, tgtL = _calibrate_prefix(prefix_llama, llama, args.calibration, args.prefix_target_rms, train_stats, "llama")
         prefix_qwen,  rmsQ, tgtQ = _calibrate_prefix(prefix_qwen,  qwen,  args.calibration, args.prefix_target_rms, train_stats, "qwen")
         if args.debug:
@@ -447,8 +526,8 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
         prefix_llama = prefix_llama * args.prefix_gain
         prefix_qwen  = prefix_qwen  * args.prefix_gain
 
-    debug_llama = _latent_debug_stats("llama", Z, prefix_llama, adp_llama, llama) if args.debug else {}
-    debug_qwen  = _latent_debug_stats("qwen",  Z, prefix_qwen,  adp_qwen,  qwen)  if args.debug else {}
+    debug_llama = _latent_debug_stats("llama", Z_q, prefix_llama, adp_llama, llama) if args.debug else {}
+    debug_qwen  = _latent_debug_stats("qwen",  Z_q, prefix_qwen,  adp_qwen,  qwen)  if args.debug else {}
     if args.debug:
         debug_llama.update({"encoder_text_mode": "standard", "calibration_mode": args.calibration,
                             "append_bos_after_prefix": args.append_bos_after_prefix,
@@ -533,7 +612,14 @@ def run_standard_eval(args, device, dtype, Z, prompts_raw, golds, llama_id, qwen
     joint_em, joint_f1 = batch_metrics(joint_preds, golds)
     agreement_rate = agree / len(prompts_raw)
 
-    wire = compute_wire_metrics(llama_chat, qwen_chat, Z)
+    wire = compute_wire_metrics(
+        llama_chat,
+        qwen_chat,
+        Z,
+        group_size=getattr(args, "latent_quant_group_size", 32),
+        scale_bits=getattr(args, "latent_quant_scale_bits", 16),
+        selected_bits=getattr(args, "latent_quant_bits", None),
+    )
     bytes_per_latent = int(Z.element_size() * Z.size(1) * Z.size(2))
 
     # Oracle upper bound
@@ -675,6 +761,11 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                 if args.debug:
                     print(f"[align:llama] forced encoder_text_mode={mode}")
 
+            Z = _quantize_dequantize(
+                Z,
+                getattr(args, "latent_quant_bits", None),
+                group_size=getattr(args, "latent_quant_group_size", 32),
+            )
             with torch.no_grad():
                 prefix_llama = adp_llama(Z)
                 prefix_llama, p_rms, e_rms = _calibrate_prefix(prefix_llama, llama, args.calibration, args.prefix_target_rms, train_stats, "llama")
@@ -779,6 +870,11 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
                 if args.debug:
                     print(f"[align:qwen] forced encoder_text_mode={mode}")
 
+            Z = _quantize_dequantize(
+                Z,
+                getattr(args, "latent_quant_bits", None),
+                group_size=getattr(args, "latent_quant_group_size", 32),
+            )
             with torch.no_grad():
                 prefix_qwen = adp_qwen(Z)
                 prefix_qwen, p_rms, e_rms = _calibrate_prefix(prefix_qwen, qwen, args.calibration, args.prefix_target_rms, train_stats, "qwen")
@@ -855,8 +951,14 @@ def run_sequential_eval(args, device, dtype, Z_for_wire, prompts_raw, golds, lla
     llama_avg_tok = float(L.get("avg_prompt_tokens", 0.0)) if have_llama else 0.0
     qwen_avg_tok  = float(Q.get("avg_prompt_tokens", 0.0))  if have_qwen  else 0.0
 
-    wire = compute_wire_metrics(L.get("chat_prompts", []) if have_llama else [],
-                                Q.get("chat_prompts", []) if have_qwen else [], Z_for_wire)
+    wire = compute_wire_metrics(
+        L.get("chat_prompts", []) if have_llama else [],
+        Q.get("chat_prompts", []) if have_qwen else [],
+        Z_for_wire,
+        group_size=getattr(args, "latent_quant_group_size", 32),
+        scale_bits=getattr(args, "latent_quant_scale_bits", 16),
+        selected_bits=getattr(args, "latent_quant_bits", None),
+    )
 
     bytes_per_latent = int(Z_for_wire.element_size() * Z_for_wire.size(1) * Z_for_wire.size(2))
     text_block = {"wall_clock_sec": 0.0}
@@ -1046,6 +1148,13 @@ def main():
     ap.add_argument("--eos_ban_steps", type=int, default=6)
     ap.add_argument("--first_token_top_p", type=float, default=1.0)
     ap.add_argument("--first_token_temperature", type=float, default=0.0)
+    # Optional latent quantization sweeps (applied before adapters)
+    ap.add_argument("--latent_quant_bits", type=int, default=None, choices=[16, 8, 6, 4],
+                    help="If set, quantize→dequantize latent Z to this bitwidth for eval.")
+    ap.add_argument("--latent_quant_group_size", type=int, default=32,
+                    help="Group size for symmetric per-group quantization of Z.")
+    ap.add_argument("--latent_quant_scale_bits", type=int, default=16,
+                    help="Metadata bits allocated for each group's scale during wire accounting.")
 
     # eval-time amplitude control
     ap.add_argument("--prefix_gain", type=float, default=1.0)
@@ -1183,6 +1292,10 @@ def main():
     print(f"Approx interlingua payload per example: {summary['payload_bytes']} bytes (fp32), "
           f"and {summary['wire']['latent_bytes']['fp16']} bytes (fp16); "
           f"latent/text bytes (one-copy, fp16): {summary['wire']['wire_ratio']['latent_over_onecopy_fp16']:.2f}x")
+    if summary['wire'].get('selected_latent_bytes') is not None:
+        print(
+            f"Selected latent bytes ({args.latent_quant_bits}-bit): {summary['wire']['selected_latent_bytes']} bytes"
+        )
 
     print("\n— Baseline: Text prompting")
     if summary['text'].get('llama') is not None:

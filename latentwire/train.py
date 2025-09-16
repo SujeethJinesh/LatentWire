@@ -5,7 +5,7 @@ import time
 import json
 import argparse
 import random
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from contextlib import contextmanager
 
 import torch
@@ -18,6 +18,7 @@ from latentwire.models import (
 from latentwire.checkpointing import save_latest_checkpoint
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
+from latentwire.losses import k_token_ce_from_prefix, kd_first_k_prefix_vs_text
 
 DEFAULT_SEED = 42
 
@@ -195,6 +196,30 @@ def _first_non_bos(tokenizer, ids: torch.Tensor) -> torch.Tensor:
     return first_tok
 
 
+def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
+    """Sanity check ensuring token t=0 matches after the anchor."""
+    try:
+        q = "Q: Capital of France?"
+        c = "C: Paris is the capital of France."
+        g = "Paris"
+        prompt = f"{c}\n\n{q}\n{answer_prefix}"
+        ids_all = tokenizer(prompt + g, add_special_tokens=False).input_ids
+        ids_pref = tokenizer(prompt, add_special_tokens=False).input_ids
+        ids_gold = tokenizer(g, add_special_tokens=False).input_ids
+        assert ids_all[len(ids_pref)] == ids_gold[0], "t=0 alignment failed"
+        print(f"[OK] t=0 alignment for {getattr(tokenizer, 'name_or_path', 'tokenizer')}")
+    except Exception as exc:
+        print(f"[WARN] t=0 alignment could not be verified: {exc}")
+
+
+def _build_scaffold_ids(tokenizer, texts: List[str], anchor_text: str, device: str) -> torch.Tensor:
+    """Construct teacher text scaffolds (prompt + anchor) for KD."""
+    suffix = anchor_text or ""
+    combo = [t + suffix for t in texts]
+    enc = tokenizer(combo, return_tensors="pt", padding=True, truncation=False, add_special_tokens=True)
+    return enc["input_ids"].to(device)
+
+
 def main():
     ap = argparse.ArgumentParser()
     # Models & data
@@ -236,6 +261,13 @@ def main():
     ap.add_argument("--train_append_bos_after_prefix", type=str, default="auto",
                     choices=["auto","yes","no"],
                     help="Controls BOS appending when computing first-token CE (train).")
+    # K-token supervision + KD
+    ap.add_argument("--K", type=int, default=4, help="Number of early tokens to supervise (A1/A2).")
+    ap.add_argument("--k_ce_weight", type=float, default=0.5,
+                    help="Aux weight for K-token CE on first K steps.")
+    ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
+                    help="Weight for prefix KD vs text teacher (first K steps).")
+    ap.add_argument("--kd_tau", type=float, default=1.0, help="Temperature for KD.")
 
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--sequential_models", action="store_true")
@@ -296,6 +328,13 @@ def main():
     llama = LMWrapper(LMConfig(model_id=args.llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
     qwen  = LMWrapper(LMConfig(model_id=args.qwen_id,  device=device, dtype=dtype, load_4bit=args.load_4bit))
     print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
+
+    # === A0 sanity check ===
+    try:
+        _assert_t0_alignment(llama.tokenizer, args.warm_anchor_text or "Answer: ")
+        _assert_t0_alignment(qwen.tokenizer,  args.warm_anchor_text or "Answer: ")
+    except Exception as exc:
+        print(f"[WARN] A0 sanity check skipped/failed: {exc}")
 
     if args.warm_anchor_text:
         anchor_llama_ids = llama.tokenizer.encode(args.warm_anchor_text, add_special_tokens=False) if args.warm_anchor_text else []
@@ -440,6 +479,10 @@ def main():
 
             optimizer.zero_grad(set_to_none=True)
 
+            # Teacher (text) scaffolds for KD (same anchor/prefix as latent)
+            sc_llama = _build_scaffold_ids(llama.tokenizer, batch_texts, args.warm_anchor_text or "", device)
+            sc_qwen  = _build_scaffold_ids(qwen.tokenizer,  batch_texts, args.warm_anchor_text or "", device)
+
             # Encode sources once when possible
             z = encode_fn(batch_texts)
 
@@ -449,12 +492,13 @@ def main():
             y_llama = llama_ids[idx]
             loss_llama_tf = llama.forward_with_prefix_loss(prefix_llama, y_llama, anchor_token_ids=anchor_llama_ids)
 
+            bos_ll = _bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_llama_ids))
             # First-token CE (supervise the very first token)
             if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
                 logits_first_ll = llama.first_token_logits_from_prefix(
                     prefix_llama,
                     anchor_token_text=(args.warm_anchor_text or None),
-                    append_bos_after_prefix=_bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_llama_ids))
+                    append_bos_after_prefix=bos_ll
                 )
                 y_first_ll = llama_first_ids_all[idx]
                 loss_first_ll = nn.functional.cross_entropy(logits_first_ll.float(), y_first_ll)
@@ -467,23 +511,95 @@ def main():
             y_qwen = qwen_ids[idx]
             loss_qwen_tf = qwen.forward_with_prefix_loss(prefix_qwen, y_qwen, anchor_token_ids=anchor_qwen_ids)
 
+            bos_qw = _bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_qwen_ids))
             if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
                 logits_first_qw = qwen.first_token_logits_from_prefix(
                     prefix_qwen,
                     anchor_token_text=(args.warm_anchor_text or None),
-                    append_bos_after_prefix=_bos_flag_from_str(args.train_append_bos_after_prefix, has_anchor=bool(anchor_qwen_ids))
+                    append_bos_after_prefix=bos_qw
                 )
                 y_first_qw = qwen_first_ids_all[idx]
                 loss_first_qw = nn.functional.cross_entropy(logits_first_qw.float(), y_first_qw)
             else:
                 loss_first_qw = torch.zeros((), device=device)
 
+            anc_ll_ids = llama._encode_anchor_text(args.warm_anchor_text) if args.warm_anchor_text else []
+            anc_qw_ids = qwen._encode_anchor_text(args.warm_anchor_text) if args.warm_anchor_text else []
+
+            # A1: K-token auxiliary CE
+            if args.k_ce_weight and args.k_ce_weight > 0.0:
+                loss_kce_ll = k_token_ce_from_prefix(
+                    llama,
+                    prefix_llama,
+                    y_llama,
+                    K=args.K,
+                    anchor_ids=anc_ll_ids,
+                    append_bos_after_prefix=_bos_flag_from_str(
+                        args.train_append_bos_after_prefix, has_anchor=bool(anc_ll_ids)
+                    ),
+                )
+                loss_kce_qw = k_token_ce_from_prefix(
+                    qwen,
+                    prefix_qwen,
+                    y_qwen,
+                    K=args.K,
+                    anchor_ids=anc_qw_ids,
+                    append_bos_after_prefix=_bos_flag_from_str(
+                        args.train_append_bos_after_prefix, has_anchor=bool(anc_qw_ids)
+                    ),
+                )
+            else:
+                loss_kce_ll = torch.zeros((), device=device)
+                loss_kce_qw = torch.zeros((), device=device)
+
+            # A2: Prefix KD vs text teacher
+            if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
+                loss_kd_ll = kd_first_k_prefix_vs_text(
+                    llama,
+                    llama,
+                    prefix_llama,
+                    sc_llama,
+                    y_llama,
+                    K=args.K,
+                    tau=args.kd_tau,
+                    anchor_ids=anc_ll_ids,
+                    append_bos_after_prefix=_bos_flag_from_str(
+                        args.train_append_bos_after_prefix, has_anchor=bool(anc_ll_ids)
+                    ),
+                )
+                loss_kd_qw = kd_first_k_prefix_vs_text(
+                    qwen,
+                    qwen,
+                    prefix_qwen,
+                    sc_qwen,
+                    y_qwen,
+                    K=args.K,
+                    tau=args.kd_tau,
+                    anchor_ids=anc_qw_ids,
+                    append_bos_after_prefix=_bos_flag_from_str(
+                        args.train_append_bos_after_prefix, has_anchor=bool(anc_qw_ids)
+                    ),
+                )
+            else:
+                loss_kd_ll = torch.zeros((), device=device)
+                loss_kd_qw = torch.zeros((), device=device)
+
             # Combine losses
             penalty = scale_penalty(adp_llama) + scale_penalty(adp_qwen)
             rms_pen  = rms_raw_penalty(prefix_llama_raw, llama) + rms_raw_penalty(prefix_qwen_raw, qwen)
 
-            loss_ll = loss_llama_tf + args.first_token_ce_weight * loss_first_ll
-            loss_qw = loss_qwen_tf  + args.first_token_ce_weight * loss_first_qw
+            loss_ll = (
+                loss_llama_tf
+                + args.first_token_ce_weight * loss_first_ll
+                + args.k_ce_weight * loss_kce_ll
+                + args.kd_first_k_weight * loss_kd_ll
+            )
+            loss_qw = (
+                loss_qwen_tf
+                + args.first_token_ce_weight * loss_first_qw
+                + args.k_ce_weight * loss_kce_qw
+                + args.kd_first_k_weight * loss_kd_qw
+            )
             loss = 0.5 * (loss_ll + loss_qw) + args.scale_l2 * penalty + args.adapter_rms_l2 * rms_pen
 
             if not torch.isfinite(loss):
@@ -532,6 +648,11 @@ def main():
                     f"scale_pen(L)={pen_L:.4e} | scale_pen(Q)={pen_Q:.4e} | "
                     f"grad_norm={total_norm:.2f} | sec/step~{dt:.2f}"
                 )
+                msg += (
+                    f" | kCE_L={float(loss_kce_ll):.4f} kCE_Q={float(loss_kce_qw):.4f}"
+                    f" | KD_L={float(loss_kd_ll):.4f} KD_Q={float(loss_kd_qw):.4f}"
+                    f" | K={args.K} tau={args.kd_tau:.2f}"
+                )
                 if args.save_training_stats:
                     msg += (f" | rms_raw(L)~{rms_llama_raw.mean:.4f} rms_raw(Q)~{rms_qwen_raw.mean:.4f}"
                             f" | rms_cal(L)~{rms_llama_cal.mean:.4f} rms_cal(Q)~{rms_qwen_cal.mean:.4f}"
@@ -553,6 +674,10 @@ def main():
                     "warm_anchor_text": args.warm_anchor_text,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
                     "first_token_ce_weight": args.first_token_ce_weight,
+                    "K": args.K,
+                    "k_ce_weight": args.k_ce_weight,
+                    "kd_first_k_weight": args.kd_first_k_weight,
+                    "kd_tau": args.kd_tau,
                     "seed": args.seed,
                     "data_seed": args.data_seed,
                 }
@@ -597,6 +722,10 @@ def main():
         "warm_anchor_text": args.warm_anchor_text,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
         "first_token_ce_weight": args.first_token_ce_weight,
+        "K": args.K,
+        "k_ce_weight": args.k_ce_weight,
+        "kd_first_k_weight": args.kd_first_k_weight,
+        "kd_tau": args.kd_tau,
         "seed": args.seed,
         "data_seed": args.data_seed,
     }
