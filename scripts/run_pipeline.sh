@@ -14,7 +14,7 @@ SMOKE_SAMPLES=200      # per-epoch eval sample count (kept high for stronger sig
 MAX_NEW_TOKENS=12
 SEQUENTIAL_EVAL=1      # per-model auto encoder-text alignment
 FRESH_EVAL=1           # recompute Z for eval outputs
-LOAD_4BIT=0            # for constrained GPUs
+LOAD_4BIT=1            # NF4 quantized inner loop for speed
 CHUNK_SIZE=8
 TOKEN_BUDGET_MODE="content_only"   # "content_only" or "chat_full"
 TOKEN_BUDGET_K=32                  # match LATENT_LEN for a fairer budget
@@ -64,12 +64,12 @@ ADAPTER_HIDDEN_MULT=2
 ADAPTER_COLORIZE=1
 ADAPTER_METADATA=1
 MANIFOLD_STAT_WEIGHT=0.001
-STATE_KD_WEIGHT=0.2
+STATE_KD_WEIGHT=0.0
 STATE_KD_LAYERS="0,1,2"
 K=4
 K_CE_WEIGHT=0.5
 KD_FIRST_K_WEIGHT=1.0
-KD_TAU=1.0
+KD_TAU=1.5
 STEPS_PER_EPOCH=$(( (TRAIN_SAMPLES + BATCH_SIZE - 1) / BATCH_SIZE ))
 OPT_STEPS_PER_EPOCH=$(( (STEPS_PER_EPOCH + GRAD_ACCUM_STEPS - 1) / GRAD_ACCUM_STEPS ))
 SAVE_EVERY=$OPT_STEPS_PER_EPOCH     # save after each optimizer epoch equivalent
@@ -294,6 +294,20 @@ run_eval() {
       echo ""
       print_metrics "$epoch_eval"
       echo ""
+
+      if (( epoch % 4 == 0 )); then
+        echo "Spot-checking (bf16) epoch $epoch checkpoint..."
+        epoch_eval_fp="${RUN_DIR}/eval_epoch${epoch}_fp16"
+        CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" \
+        python -u latentwire/eval.py \
+          --ckpt "$epoch_ckpt" \
+          --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
+          --samples "$SMOKE_SAMPLES" \
+          --out_dir "$epoch_eval_fp" \
+          "${EVAL_ARGS_COMMON[@]}"
+        print_metrics "$epoch_eval_fp"
+        echo ""
+      fi
     done
 
     print_header "TRAINING COMPLETE - EPOCH SUMMARY"
