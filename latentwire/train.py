@@ -12,8 +12,11 @@ from typing import Dict, Optional, Tuple, List, Union
 from contextlib import contextmanager
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
+from latentwire.diagnostics import capture_env_snapshot
+import torch
+from latentwire.diagnostics import capture_env_snapshot.nn as nn
+import torch
+from latentwire.diagnostics import capture_env_snapshot.optim as optim
 
 from latentwire.models import (
     InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
@@ -610,6 +613,11 @@ def main():
     start_epoch = 0
     global_step = 0
     os.makedirs(args.save_dir, exist_ok=True)
+    try:
+        os.makedirs(args.save_dir, exist_ok=True)
+        capture_env_snapshot(args.save_dir, extras={"phase":"train"})
+    except Exception:
+        pass
 
     ckpt_path = None
     if args.resume_from or args.auto_resume:

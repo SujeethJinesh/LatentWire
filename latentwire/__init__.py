@@ -1,1 +1,2 @@
-from .models import *
+# LatentWire package bootstrap
+__all__ = []

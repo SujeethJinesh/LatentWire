@@ -1,4 +1,4 @@
-torch>=2.0.0
+torch>=2.2
 # Pin transformers to avoid torch>=2.6 restriction for .bin weights on older Pythons
 transformers==4.45.2
 datasets>=4.0.0
