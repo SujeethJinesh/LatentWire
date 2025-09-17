@@ -12,11 +12,9 @@ from typing import Dict, Optional, Tuple, List, Union
 from contextlib import contextmanager
 
 import torch
+import torch.nn as nn
+import torch.optim as optim
 from latentwire.diagnostics import capture_env_snapshot
-import torch
-from latentwire.diagnostics import capture_env_snapshot.nn as nn
-import torch
-from latentwire.diagnostics import capture_env_snapshot.optim as optim
 
 from latentwire.models import (
     InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
