@@ -21,6 +21,12 @@ TOKEN_BUDGET_K=32                  # match LATENT_LEN for a fairer budget
 FIRST_TOKEN_TOP_P=1.0              # deterministic first token
 FIRST_TOKEN_TEMPERATURE=0.0        # deterministic first token
 
+DETERMINISTIC_EVAL=${DETERMINISTIC_EVAL:-1}
+if [[ "$DETERMINISTIC_EVAL" -eq 1 ]]; then
+  FIRST_TOKEN_TOP_P=1.0
+  FIRST_TOKEN_TEMPERATURE=0.0
+fi
+
 # Anchor & decode controls
 LATENT_ANCHOR_MODE="text"
 LATENT_ANCHOR_TEXT="Answer: "      # note the trailing space

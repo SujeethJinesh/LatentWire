@@ -198,6 +198,10 @@ class ModelTrainContext:
     answer_lengths: torch.Tensor
 
 
+def _primary_device(wrapper: LMWrapper) -> torch.device:
+    return next(wrapper.model.parameters()).device
+
+
 def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
     """Sanity check ensuring token t=0 matches after the anchor."""
     try:
@@ -512,6 +516,9 @@ def main():
             return _structure_latents(raw)
 
     # ===== Adapters =====
+    llama_device = _primary_device(llama)
+    qwen_device = _primary_device(qwen)
+
     adp_llama = Adapter(
         d_z=args.d_z,
         d_model=llama.d_model,
@@ -520,7 +527,7 @@ def main():
         length_norm=float(args.max_answer_tokens),
         hidden_mult=args.adapter_hidden_mult,
         colorize=bool(args.adapter_colorize),
-    ).to(device)
+    ).to(llama_device)
     adp_qwen  = Adapter(
         d_z=args.d_z,
         d_model=qwen.d_model,
@@ -529,7 +536,7 @@ def main():
         length_norm=float(args.max_answer_tokens),
         hidden_mult=args.adapter_hidden_mult,
         colorize=bool(args.adapter_colorize),
-    ).to(device)
+    ).to(qwen_device)
 
     if args.adapter_colorize:
         try:
@@ -735,13 +742,15 @@ def main():
             }
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
-            total_model_loss = 0.0
+            total_model_loss = torch.zeros((), device=device)
             penalty = torch.zeros((), device=device)
             rms_pen = torch.zeros((), device=device)
 
             for ctx in model_contexts:
-                answer_lengths = ctx.answer_lengths[idx]
-                prefix_raw = ctx.adapter(model_latents[ctx.name], answer_lengths=answer_lengths)
+                target_device = _primary_device(ctx.wrapper)
+                latents_for_adapter = model_latents[ctx.name].to(target_device, non_blocking=True)
+                answer_lengths = ctx.answer_lengths[idx].to(target_device, non_blocking=True)
+                prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
                 targets = ctx.token_ids[idx]
                 loss_tf = ctx.wrapper.forward_with_prefix_loss(
@@ -757,7 +766,7 @@ def main():
                     first_targets = ctx.first_token_ids[idx]
                     loss_first = nn.functional.cross_entropy(logits_first.float(), first_targets)
                 else:
-                    loss_first = torch.zeros((), device=device)
+                    loss_first = torch.zeros((), device=target_device)
 
                 if args.k_ce_weight and args.k_ce_weight > 0.0:
                     loss_kce = k_token_ce_from_prefix(
@@ -769,7 +778,7 @@ def main():
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                 else:
-                    loss_kce = torch.zeros((), device=device)
+                    loss_kce = torch.zeros((), device=target_device)
 
                 if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
                     loss_kd = kd_first_k_prefix_vs_text(
@@ -784,7 +793,7 @@ def main():
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                 else:
-                    loss_kd = torch.zeros((), device=device)
+                    loss_kd = torch.zeros((), device=target_device)
 
                 if args.state_kd_weight and args.state_kd_weight > 0.0:
                     loss_state = kd_hidden_states_first_k(
@@ -798,7 +807,7 @@ def main():
                         anchor_ids=ctx.anchor_ids,
                     )
                 else:
-                    loss_state = torch.zeros((), device=device)
+                    loss_state = torch.zeros((), device=target_device)
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
 
@@ -809,11 +818,11 @@ def main():
                     + args.kd_first_k_weight * loss_kd
                     + args.state_kd_weight * loss_state
                     + args.manifold_stat_weight * manifold_loss
-                )
+                ).to(device)
                 total_model_loss = total_model_loss + model_loss
 
-                penalty = penalty + scale_penalty(ctx.adapter)
-                rms_pen = rms_pen + rms_raw_penalty(prefix_raw, ctx.wrapper)
+                penalty = penalty + scale_penalty(ctx.adapter).to(device)
+                rms_pen = rms_pen + rms_raw_penalty(prefix_raw, ctx.wrapper).to(device)
 
                 rms_raw_val = tensor_rms(prefix_raw)
                 rms_cal_val = tensor_rms(prefix)
