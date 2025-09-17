@@ -568,8 +568,19 @@ def main():
             adp_qwen.scale.fill_(1.0)
 
     # ===== Optimizer =====
-    optim_groups = list(encoder.parameters()) + list(adp_llama.parameters()) + list(adp_qwen.parameters())
-    optimizer = optim.AdamW([p for p in optim_groups if p.requires_grad], lr=args.lr, foreach=False)
+    enc_params = [p for p in encoder.parameters() if p.requires_grad]
+    llama_params = [p for p in adp_llama.parameters() if p.requires_grad]
+    qwen_params = [p for p in adp_qwen.parameters() if p.requires_grad]
+
+    optim_groups = []
+    if enc_params:
+        optim_groups.append({"params": enc_params, "lr": args.lr})
+    if llama_params:
+        optim_groups.append({"params": llama_params, "lr": args.lr})
+    if qwen_params:
+        optim_groups.append({"params": qwen_params, "lr": args.lr})
+
+    optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 
     # ===== Tokenize answers (teacher forcing) =====
     with _temp_padding_side(llama.tokenizer, "right"):
@@ -705,7 +716,7 @@ def main():
 
     state_kd_layers = _parse_layers_arg(args.state_kd_layers)
 
-    params_for_clip = [p for p in optim_groups if p.requires_grad]
+    params_for_clip = enc_params + llama_params + qwen_params
 
     def _grad_norm(params) -> float:
         norms = []
