@@ -7,6 +7,7 @@ import time
 import json
 import argparse
 import gc
+import ast
 from typing import List, Dict, Any, Tuple, Optional
 
 import torch
@@ -36,6 +37,29 @@ from latentwire.common import (
 # ---------------------------
 
 EVAL_FIXED_SEED = 12345  # deterministic eval
+
+
+def _parse_device_map(spec: Optional[str]):
+    if spec is None:
+        return None
+    s = str(spec).strip()
+    if not s:
+        return None
+    if s.lower() == "auto":
+        return "auto"
+    try:
+        parsed = ast.literal_eval(s)
+        if isinstance(parsed, int):
+            return {"": int(parsed)}
+        if isinstance(parsed, str) and parsed.isdigit():
+            return {"": int(parsed)}
+        return parsed
+    except Exception:
+        pass
+    if s.isdigit():
+        return {"": int(s)}
+    return {"": s}
+
 
 def _safe_load(path: str, map_location=None):
     try:
@@ -498,8 +522,13 @@ def _run_latent_path(
 def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
     print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
-    llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
-    qwen = LMWrapper(LMConfig(model_id=qwen_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
+    llama_map = _parse_device_map(args.llama_device_map if args.llama_device_map is not None else cfg.get("llama_device_map"))
+    qwen_map = _parse_device_map(args.qwen_device_map if args.qwen_device_map is not None else cfg.get("qwen_device_map"))
+
+    llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
+                               device_map=llama_map))
+    qwen = LMWrapper(LMConfig(model_id=qwen_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
+                              device_map=qwen_map))
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 
@@ -584,6 +613,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
             latents = combined_latents[name]
             if quant_bits is not None:
                 latents = quantize_dequantize(latents, quant_bits, group_size=quant_group)
+                combined_latents[name] = latents
             prefix = ctx["adapter"](latents, answer_lengths=answer_lengths[name])
             prefix, rms_val, tgt_val = _calibrate_prefix(
                 prefix,
@@ -684,10 +714,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     llama_latents = combined_latents["llama"]
     base_bytes_per_latent = int(llama_latents.element_size() * llama_latents.size(1) * llama_latents.size(2))
     selected_bytes = wire.get("selected_latent_bytes")
-    if selected_bytes is not None:
-        bytes_per_latent = int(selected_bytes)
-    else:
-        bytes_per_latent = base_bytes_per_latent
+    bytes_per_latent = int(selected_bytes) if selected_bytes is not None else base_bytes_per_latent
     wire["base_latent_bytes"] = base_bytes_per_latent
 
     oracle_em = 0.0
@@ -711,6 +738,11 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
         "avg_prompt_tokens": {name: text_results[name]["avg_prompt_tokens"] for name in model_contexts},
         "compression": {name: text_results[name]["avg_prompt_tokens"] / latent_len for name in model_contexts},
         "payload_bytes": bytes_per_latent,
+        "payload_bytes_detail": {
+            "fp32": wire["latent_bytes"]["fp32"],
+            "fp16": wire["latent_bytes"]["fp16"],
+            "selected": selected_bytes,
+        },
         "wire": wire,
         "text": {
             name: {
@@ -792,6 +824,10 @@ def main():
     ap.add_argument("--ckpt", type=str, required=True)
     ap.add_argument("--llama_id", type=str, default=None)
     ap.add_argument("--qwen_id", type=str, default=None)
+    ap.add_argument("--llama_device_map", type=str, default=None,
+                    help="Device map for the Llama wrapper during eval (e.g., 0, 'auto', or JSON dict).")
+    ap.add_argument("--qwen_device_map", type=str, default=None,
+                    help="Device map for the Qwen wrapper during eval (e.g., 1, 'auto', or JSON dict).")
     ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot","squad","squad_v2"])
     ap.add_argument("--samples", type=int, default=100)
     ap.add_argument("--max_new_tokens", type=int, default=6)
@@ -982,12 +1018,13 @@ def main():
           f"(Qwen): {summary['avg_prompt_tokens'].get('qwen','-'):.1f} | Latent length M: {summary['latent_len']}")
     print(f"Compression ratio (Llama): {summary['compression'].get('llama','-'):.1f}x | "
           f"(Qwen): {summary['compression'].get('qwen','-'):.1f}x")
-    selected_bytes = summary['wire'].get('selected_latent_bytes')
+    payload_detail = summary.get('payload_bytes_detail', {})
+    selected_bytes = payload_detail.get('selected')
     base_bytes = summary['wire'].get('base_latent_bytes', summary['payload_bytes'])
     payload_line = (
         f"Approx interlingua payload per example: {summary['payload_bytes']} bytes"
         + (f" ({args.latent_quant_bits}-bit selected)" if selected_bytes is not None else " (fp32)")
-        + f"; fp16 reference: {summary['wire']['latent_bytes']['fp16']} bytes; fp32 reference: {base_bytes} bytes"
+        + f"; fp16 reference: {payload_detail.get('fp16', 'n/a')} bytes; fp32 reference: {payload_detail.get('fp32', base_bytes)} bytes"
     )
     print(payload_line)
     print(f"latent/text bytes (one-copy, fp16): {summary['wire']['wire_ratio']['latent_over_onecopy_fp16']:.2f}x")
