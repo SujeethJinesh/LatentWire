@@ -215,6 +215,11 @@ def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
         ids_pref = tokenizer.encode(prompt, add_special_tokens=False)
         ids_gold = tokenizer.encode(g, add_special_tokens=False)
 
+        if len(ids_all) == len(ids_pref):  # tokenizer swallowed the answer prefix boundary
+            prompt_sp = prompt + " "
+            ids_all = tokenizer.encode(prompt_sp + g, add_special_tokens=False)
+            ids_pref = tokenizer.encode(prompt_sp, add_special_tokens=False)
+
         assert ids_gold, "gold tokenized to empty"
         assert len(ids_all) > len(ids_pref), "concatenation produced no new tokens"
         got = ids_all[len(ids_pref)]
@@ -711,7 +716,7 @@ def main():
             g = grad.detach()
             if not torch.isfinite(g).all():
                 return float("nan")
-            norms.append(g.float().norm(2))
+            norms.append(g.float().norm(2).cpu())
         if not norms:
             return 0.0
         stacked = torch.stack(norms)
