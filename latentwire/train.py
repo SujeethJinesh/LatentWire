@@ -5,6 +5,7 @@ import time
 import json
 import argparse
 import random
+import ast
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, List, Union
 from contextlib import contextmanager
@@ -163,6 +164,28 @@ def _to_float(value: Union[torch.Tensor, float, int]) -> float:
     return float(value)
 
 
+def _parse_device_map(spec: Optional[str]):
+    if spec is None:
+        return None
+    s = str(spec).strip()
+    if not s:
+        return None
+    if s.lower() == "auto":
+        return "auto"
+    try:
+        parsed = ast.literal_eval(s)
+        if isinstance(parsed, int):
+            return {"": int(parsed)}
+        if isinstance(parsed, str) and parsed.isdigit():
+            return {"": int(parsed)}
+        return parsed
+    except Exception:
+        pass
+    if s.isdigit():
+        return {"": int(s)}
+    return {"": s}
+
+
 @dataclass
 class ModelTrainContext:
     name: str
@@ -213,6 +236,11 @@ def main():
     # Models & data
     ap.add_argument("--llama_id", type=str, default="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
     ap.add_argument("--qwen_id", type=str, default="Qwen/Qwen2-0.5B-Instruct")
+    ap.add_argument("--llama_device_map", type=str, default=None,
+                    help="Device map for the Llama wrapper (e.g., 0, 'auto', or JSON dict).
+                    Pins the model to a subset of GPUs when running multi-model training.")
+    ap.add_argument("--qwen_device_map", type=str, default=None,
+                    help="Device map for the Qwen wrapper (e.g., 1, 'auto', or JSON dict).")
     ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot", "squad", "squad_v2"])
     ap.add_argument("--hotpot_config", type=str, default="fullwiki")
     ap.add_argument("--samples", type=int, default=128)
@@ -370,8 +398,23 @@ def main():
     answers = [e["answer"] for e in examples]
 
     # ===== Models =====
-    llama = LMWrapper(LMConfig(model_id=args.llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit))
-    qwen  = LMWrapper(LMConfig(model_id=args.qwen_id,  device=device, dtype=dtype, load_4bit=args.load_4bit))
+    llama_device_map = _parse_device_map(args.llama_device_map)
+    qwen_device_map = _parse_device_map(args.qwen_device_map)
+
+    llama = LMWrapper(LMConfig(
+        model_id=args.llama_id,
+        device=device,
+        dtype=dtype,
+        load_4bit=args.load_4bit,
+        device_map=llama_device_map,
+    ))
+    qwen  = LMWrapper(LMConfig(
+        model_id=args.qwen_id,
+        device=device,
+        dtype=dtype,
+        load_4bit=args.load_4bit,
+        device_map=qwen_device_map,
+    ))
     print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
 
     embed_stats = {
@@ -513,6 +556,13 @@ def main():
             start_epoch = epoch_loaded
             global_step = global_loaded
             print(f"   -> start_epoch={start_epoch}, global_step={global_step}")
+            # Reinstall colorizers in case legacy checkpoints lack buffers
+            if args.adapter_colorize:
+                try:
+                    adp_llama.install_color_from_wrapper(llama)
+                    adp_qwen.install_color_from_wrapper(qwen)
+                except Exception as exc:
+                    print(f"[WARN] Adapter colorizer re-install skipped after resume: {exc}")
         else:
             print("⚠️  No valid checkpoint found to resume; starting fresh.")
 
@@ -832,6 +882,8 @@ def main():
                     "adapter_hidden_mult": args.adapter_hidden_mult,
                     "adapter_colorize": bool(args.adapter_colorize),
                     "adapter_enable_metadata": bool(args.adapter_metadata),
+                    "llama_device_map": args.llama_device_map,
+                    "qwen_device_map": args.qwen_device_map,
                     "manifold_stat_weight": args.manifold_stat_weight,
                     "state_kd_weight": args.state_kd_weight,
                     "state_kd_layers": args.state_kd_layers,
@@ -890,6 +942,8 @@ def main():
         "adapter_hidden_mult": args.adapter_hidden_mult,
         "adapter_colorize": bool(args.adapter_colorize),
         "adapter_enable_metadata": bool(args.adapter_metadata),
+        "llama_device_map": args.llama_device_map,
+        "qwen_device_map": args.qwen_device_map,
         "manifold_stat_weight": args.manifold_stat_weight,
         "state_kd_weight": args.state_kd_weight,
         "state_kd_layers": args.state_kd_layers,

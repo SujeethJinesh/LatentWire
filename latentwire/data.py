@@ -167,7 +167,7 @@ def load_hotpot_subset(
             use_supporting=use_supporting,
             max_chars=max_chars,
         )
-        source = f"Question: {q}\nContext: {ctx}\nAnswer:"
+        source = f"Question: {q}\nContext: {ctx}\nAnswer: "
         examples.append({"source": source, "answer": ans})
     return examples
 
@@ -204,4 +204,3 @@ def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
         return load_squad_subset(v2=True, **{k:v for k,v in kwargs.items() if k!="config"})
     else:
         raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2")
-

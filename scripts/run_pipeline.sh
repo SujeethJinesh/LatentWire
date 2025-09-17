@@ -18,8 +18,8 @@ LOAD_4BIT=0            # for constrained GPUs
 CHUNK_SIZE=8
 TOKEN_BUDGET_MODE="content_only"   # "content_only" or "chat_full"
 TOKEN_BUDGET_K=32                  # match LATENT_LEN for a fairer budget
-FIRST_TOKEN_TOP_P=0.95             # eval nudge for first token
-FIRST_TOKEN_TEMPERATURE=0.7        # eval nudge for first token
+FIRST_TOKEN_TOP_P=1.0              # deterministic first token
+FIRST_TOKEN_TEMPERATURE=0.0        # deterministic first token
 
 # Anchor & decode controls
 LATENT_ANCHOR_MODE="text"
@@ -51,7 +51,7 @@ SCALE_L2=0.05
 ADAPTER_RMS_L2=0.0
 MAX_GRAD_NORM=1.0
 WARM_ANCHOR_TEXT="Answer: "         # Matches eval anchor
-FIRST_TOKEN_CE=0.0                  # λ_first (first-token CE weight)
+FIRST_TOKEN_CE=1.0                  # λ_first (first-token CE weight)
 TRAIN_APPEND_BOS="no"              # BOS after prefix+anchor during first-token CE
 MAX_ANSWER_TOKENS=24
 ADAPTER_HIDDEN_MULT=2
@@ -74,7 +74,9 @@ LLAMA_ID="meta-llama/Meta-Llama-3.1-8B-Instruct"
 QWEN_ID="Qwen/Qwen2.5-7B-Instruct"
 
 # GPU selection
-CUDA_VISIBLE_DEVICES="0,1"
+CUDA_VISIBLE_DEVICES="0,1,2,3"
+LLAMA_DEVICE_MAP="0"
+QWEN_DEVICE_MAP="1"
 
 # ------------- PATHS & RUNTIME -----------------
 
@@ -102,6 +104,7 @@ TRAIN_ARGS_COMMON=(
   --manifold_stat_weight "$MANIFOLD_STAT_WEIGHT"
   --state_kd_weight "$STATE_KD_WEIGHT" --state_kd_layers "$STATE_KD_LAYERS"
   --K "$K" --k_ce_weight "$K_CE_WEIGHT" --kd_first_k_weight "$KD_FIRST_K_WEIGHT" --kd_tau "$KD_TAU"
+  --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
 )
 
 EVAL_ARGS_COMMON=(
@@ -117,7 +120,7 @@ EVAL_ARGS_COMMON=(
   --min_new_tokens 3 --eos_ban_steps 6
   --chunk_size "$CHUNK_SIZE"
   --sequential_eval
-  --latent_len "$LATENT_LEN" --latent_shared_len "$LATENT_SHARED_LEN" --latent_private_len "$LATENT_PRIVATE_LEN"
+  --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
 )
 
 # Run folder name

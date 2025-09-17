@@ -2,7 +2,7 @@
 import math
 import re
 from dataclasses import dataclass
-from typing import Optional, List, Tuple, Dict, Any, Sequence
+from typing import Optional, List, Tuple, Dict, Any, Sequence, Union
 
 import torch
 import torch.nn as nn
@@ -309,6 +309,8 @@ class LMConfig:
     device: str = "cuda"
     dtype: torch.dtype = torch.bfloat16
     load_4bit: bool = False
+    device_map: Optional[Union[str, int, Dict[str, int]]] = None
+    max_memory: Optional[Dict[Union[int, str], Union[int, str]]] = None
 
 class LMWrapper(nn.Module):
     def __init__(self, cfg: LMConfig):
@@ -328,9 +330,14 @@ class LMWrapper(nn.Module):
                     bnb_4bit_compute_dtype=compute_dtype,
                 )
                 load_kwargs["quantization_config"] = bnb_config
-                load_kwargs["device_map"] = "auto"
             except Exception as e:
                 print("bitsandbytes not available or failed; falling back to full precision:", e)
+
+        if cfg.device_map is not None:
+            load_kwargs["device_map"] = cfg.device_map
+
+        if cfg.max_memory is not None:
+            load_kwargs["max_memory"] = cfg.max_memory
 
         self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_id, use_fast=True, trust_remote_code=True)
         try:
