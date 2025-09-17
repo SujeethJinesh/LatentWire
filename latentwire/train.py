@@ -1,5 +1,56 @@
 # latentwire/train.py
 import os
+
+def _align_optimizer_state_to_param_devices(optimizer):
+    """Move optimizer state tensors (e.g., AdamW exp_avg/exp_avg_sq) onto each parameter's device.
+    This is required when params are on heterogeneous CUDA devices (model-parallel) and we resume from a
+    checkpoint saved under a different placement. Safe to call before every optimizer.step()."""
+    try:
+        for param, state in list(optimizer.state.items()):
+            if state is None or not hasattr(param, "device"):
+                continue
+            pdev = param.device
+            if isinstance(state, dict):
+                for k, v in list(state.items()):
+                    # Some entries are scalars or None
+                    try:
+                        import torch
+                        if torch.is_tensor(v) and v.device != pdev:
+                            state[k] = v.to(pdev, non_blocking=True)
+                    except Exception:
+                        pass
+    except Exception:
+        # Best-effort alignment; never crash training because of alignment utility
+        pass
+
+_printed_opt_state_devices = False
+def _debug_print_optimizer_state_devices(optimizer, limit=8):
+    global _printed_opt_state_devices
+    if _printed_opt_state_devices:
+        return
+    try:
+        lines = []
+        cnt = 0
+        for p, st in optimizer.state.items():
+            dev = getattr(p, "device", None)
+            dev = str(dev) if dev is not None else "None"
+            keys = sorted([k for k,v in st.items() if hasattr(__import__("torch"), "is_tensor") and __import__("torch").is_tensor(v)])
+            sd = {}
+            for k in keys:
+                v = st[k]
+                try:
+                    sd[k] = str(v.device)
+                except Exception:
+                    sd[k] = "n/a"
+            lines.append(f"param_dev={dev} state_devs={sd}")
+            cnt += 1
+            if cnt >= limit:
+                break
+        print("[DEBUG] Optimizer state devices (sample):\n  " + "\n  ".join(lines), flush=True)
+    except Exception:
+        pass
+
+
 import re
 import time
 import json
@@ -134,8 +185,9 @@ def load_checkpoint(
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
         if opt_state is not None:
-            optimizer.load_state_dict(opt_state)
-            _maybe_to_device_optimizer_state(optimizer, device)
+            \1
+        _align_optimizer_state_to_param_devices(optimizer)
+_maybe_to_device_optimizer_state(optimizer, device)
             print("   -> restored optimizer state")
 
     if isinstance(state, dict) and "rng" in state:
@@ -749,7 +801,7 @@ def main():
         g.manual_seed(int(args.seed) + int(epoch))
         perm = torch.randperm(N, generator=g)
 
-        for step in range(steps_per_epoch):
+        \1        _debug_print_optimizer_state_devices(optimizer)
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
@@ -911,6 +963,7 @@ def main():
             if should_step:
                 if args.max_grad_norm and args.max_grad_norm > 0:
                     torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
+                _align_optimizer_state_to_param_devices(optimizer)
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
             total_norm = grad_norm_val
