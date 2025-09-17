@@ -591,11 +591,15 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     llama_device = _primary_device(llama)
     qwen_device = _primary_device(qwen)
 
+    per_model_latent_len = int(cfg.get("latent_shared_len", latent_len)) + int(cfg.get("latent_private_len", 0))
+    if per_model_latent_len <= 0:
+        per_model_latent_len = latent_len
+
     adapters = {
         "llama": Adapter(
             d_z=d_z,
             d_model=llama.d_model,
-            latent_length=latent_len,
+            latent_length=per_model_latent_len,
             enable_metadata=adapter_enable_metadata,
             length_norm=max_answer_tokens,
             hidden_mult=adapter_hidden_mult,
@@ -604,7 +608,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
         "qwen": Adapter(
             d_z=d_z,
             d_model=qwen.d_model,
-            latent_length=latent_len,
+            latent_length=per_model_latent_len,
             enable_metadata=adapter_enable_metadata,
             length_norm=max_answer_tokens,
             hidden_mult=adapter_hidden_mult,

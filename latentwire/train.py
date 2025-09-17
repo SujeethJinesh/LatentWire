@@ -519,10 +519,12 @@ def main():
     llama_device = _primary_device(llama)
     qwen_device = _primary_device(qwen)
 
+    per_model_latent_len = latent_shared_len + latent_private_len
+
     adp_llama = Adapter(
         d_z=args.d_z,
         d_model=llama.d_model,
-        latent_length=total_latent_len,
+        latent_length=per_model_latent_len,
         enable_metadata=bool(args.adapter_metadata),
         length_norm=float(args.max_answer_tokens),
         hidden_mult=args.adapter_hidden_mult,
@@ -531,7 +533,7 @@ def main():
     adp_qwen  = Adapter(
         d_z=args.d_z,
         d_model=qwen.d_model,
-        latent_length=total_latent_len,
+        latent_length=per_model_latent_len,
         enable_metadata=bool(args.adapter_metadata),
         length_norm=float(args.max_answer_tokens),
         hidden_mult=args.adapter_hidden_mult,
