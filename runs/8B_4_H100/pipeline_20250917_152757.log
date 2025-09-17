@@ -1,0 +1,23 @@
+
+=========================================
+Starting pipeline at Wed Sep 17 15:27:57 PDT 2025
+=========================================
+
+
+=========================================
+PHASE 1: TRAINING WITH EPOCH EVALUATIONS
+=========================================
+
+Training for 24 epochs with evaluation after each
+Checkpoint will be saved to: runs/8B_4_H100/ckpt
+
+
+=========================================
+EPOCH 1/24
+=========================================
+
+Training epoch 1...
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 188
+    \1
+     ^
+SyntaxError: unexpected character after line continuation character
