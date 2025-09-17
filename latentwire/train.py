@@ -752,9 +752,11 @@ def main():
                 target_device = _primary_device(ctx.wrapper)
                 latents_for_adapter = model_latents[ctx.name].to(target_device, non_blocking=True)
                 answer_lengths = ctx.answer_lengths[idx].to(target_device, non_blocking=True)
+                targets = ctx.token_ids[idx].to(target_device, non_blocking=True)
+                scaffold = scaffolds[ctx.name].to(target_device, non_blocking=True)
+
                 prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
-                targets = ctx.token_ids[idx]
                 loss_tf = ctx.wrapper.forward_with_prefix_loss(
                     prefix, targets, anchor_token_ids=ctx.anchor_ids
                 )
@@ -765,7 +767,7 @@ def main():
                         anchor_token_text=(args.warm_anchor_text or None),
                         append_bos_after_prefix=ctx.bos_flag,
                     )
-                    first_targets = ctx.first_token_ids[idx]
+                    first_targets = ctx.first_token_ids[idx].to(target_device)
                     loss_first = nn.functional.cross_entropy(logits_first.float(), first_targets)
                 else:
                     loss_first = torch.zeros((), device=target_device)
@@ -787,7 +789,7 @@ def main():
                         ctx.wrapper,
                         ctx.wrapper,
                         prefix,
-                        scaffolds[ctx.name],
+                        scaffold,
                         targets,
                         K=current_K,
                         tau=args.kd_tau,
@@ -801,7 +803,7 @@ def main():
                     loss_state = kd_hidden_states_first_k(
                         ctx.wrapper,
                         prefix,
-                        scaffolds[ctx.name],
+                        scaffold,
                         targets,
                         K=current_K,
                         layers=state_kd_layers,
