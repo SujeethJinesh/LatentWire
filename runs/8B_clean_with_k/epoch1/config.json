@@ -1,0 +1,19 @@
+{
+  "d_z": 256,
+  "latent_len": 32,
+  "byte_max": 2048,
+  "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+  "qwen_id": "Qwen/Qwen2.5-7B-Instruct",
+  "encoder_type": "byte",
+  "encoder_use_chat_template": false,
+  "encoder_backbone": "",
+  "warm_anchor_text": "Answer: ",
+  "train_append_bos_after_prefix": "no",
+  "first_token_ce_weight": 0.0,
+  "K": 4,
+  "k_ce_weight": 0.5,
+  "kd_first_k_weight": 1.0,
+  "kd_tau": 1.0,
+  "seed": 42,
+  "data_seed": 42
+}
