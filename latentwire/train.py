@@ -185,9 +185,10 @@ def load_checkpoint(
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
         if opt_state is not None:
-            \1
-        _align_optimizer_state_to_param_devices(optimizer)
-_maybe_to_device_optimizer_state(optimizer, device)
+            optimizer.load_state_dict(opt_state)
+            _align_optimizer_state_to_param_devices(optimizer)
+            _maybe_to_device_optimizer_state(optimizer, device)
+            _debug_print_optimizer_state_devices(optimizer)
             print("   -> restored optimizer state")
 
     if isinstance(state, dict) and "rng" in state:
@@ -801,7 +802,9 @@ def main():
         g.manual_seed(int(args.seed) + int(epoch))
         perm = torch.randperm(N, generator=g)
 
-        \1        _debug_print_optimizer_state_devices(optimizer)
+        _debug_print_optimizer_state_devices(optimizer)
+
+        for step in range(steps_per_epoch):
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
