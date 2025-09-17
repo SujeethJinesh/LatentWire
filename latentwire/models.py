@@ -2,7 +2,7 @@
 import math
 import re
 from dataclasses import dataclass
-from typing import Optional, List, Tuple, Dict, Any, Sequence, Union
+from typing import Optional, List, Tuple, Dict, Any, Sequence, Union, Set
 
 import torch
 import torch.nn as nn
@@ -333,11 +333,18 @@ class LMWrapper(nn.Module):
             except Exception as e:
                 print("bitsandbytes not available or failed; falling back to full precision:", e)
 
-        if cfg.device_map is not None:
-            load_kwargs["device_map"] = cfg.device_map
-
-        if cfg.max_memory is not None:
-            load_kwargs["max_memory"] = cfg.max_memory
+        if cfg.device == "cuda":
+            if cfg.device_map is not None:
+                load_kwargs["device_map"] = cfg.device_map
+            elif "device_map" not in load_kwargs:
+                load_kwargs["device_map"] = "auto"
+            if cfg.max_memory is not None:
+                load_kwargs["max_memory"] = cfg.max_memory
+        else:
+            if cfg.device_map is not None:
+                load_kwargs["device_map"] = cfg.device_map
+            if cfg.max_memory is not None:
+                load_kwargs["max_memory"] = cfg.max_memory
 
         self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_id, use_fast=True, trust_remote_code=True)
         try:
@@ -356,8 +363,6 @@ class LMWrapper(nn.Module):
                 self.tokenizer.add_special_tokens({"pad_token": "<|pad|>"})
             self.tokenizer.eos_token = self.tokenizer.pad_token
 
-        if cfg.device == "cuda" and "device_map" not in load_kwargs:
-            load_kwargs["device_map"] = "auto"
         self.model = AutoModelForCausalLM.from_pretrained(cfg.model_id, trust_remote_code=True, **load_kwargs)
         if cfg.device in ("mps", "cpu"):
             try:
@@ -380,20 +385,21 @@ class LMWrapper(nn.Module):
     # ---- utility ----
 
     def _collect_eos_token_ids(self) -> List[int]:
-        ids = set()
-        try:
-            if self.tokenizer.eos_token_id is not None:
-                ids.add(int(self.tokenizer.eos_token_id))
-        except Exception:
-            pass
-        for tok in ["<|eot_id|>", "<|im_end|>", "</s>"]:
+        ids: Set[int] = set()
+
+        tid = getattr(self.tokenizer, "eos_token_id", None)
+        if isinstance(tid, int) and tid >= 0:
+            ids.add(int(tid))
+
+        for tok in ("<|eot_id|>", "<|im_end|>", "</s>", "<|eom_id|>", "<|endoftext|>"):
             try:
-                tid = self.tokenizer.convert_tokens_to_ids(tok)
-                if isinstance(tid, int) and tid >= 0:
-                    ids.add(int(tid))
+                token_id = self.tokenizer.convert_tokens_to_ids(tok)
             except Exception:
-                pass
-        return list(sorted(ids))
+                continue
+            if isinstance(token_id, int) and token_id >= 0:
+                ids.add(int(token_id))
+
+        return sorted(ids)
 
     def _encode_anchor_text(self, text: Optional[str]) -> List[int]:
         if not text:

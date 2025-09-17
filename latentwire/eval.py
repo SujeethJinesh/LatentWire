@@ -525,10 +525,42 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     llama_map = _parse_device_map(args.llama_device_map if args.llama_device_map is not None else cfg.get("llama_device_map"))
     qwen_map = _parse_device_map(args.qwen_device_map if args.qwen_device_map is not None else cfg.get("qwen_device_map"))
 
+    llama_devices = args.llama_devices if args.llama_devices is not None else cfg.get("llama_devices")
+    qwen_devices = args.qwen_devices if args.qwen_devices is not None else cfg.get("qwen_devices")
+    gpu_mem_budget = args.gpu_mem_gib if args.gpu_mem_gib is not None else cfg.get("gpu_mem_gib", 78.0)
+
+    def _build_max_memory(devices_csv: Optional[str], budget_gib: float):
+        if devices_csv is None or not torch.cuda.is_available():
+            return None
+        devs: List[int] = []
+        for item in str(devices_csv).split(","):
+            token = item.strip()
+            if not token:
+                continue
+            try:
+                dev_id = int(token)
+            except ValueError as exc:
+                raise ValueError(f"Invalid CUDA device id '{token}' in '{devices_csv}'") from exc
+            devs.append(dev_id)
+        if not devs:
+            return None
+        max_mem = {}
+        for idx in range(torch.cuda.device_count()):
+            max_mem[idx] = f"{int(budget_gib)}GiB" if idx in devs else "0GiB"
+        return max_mem
+
+    llama_max_memory = _build_max_memory(llama_devices, gpu_mem_budget)
+    qwen_max_memory = _build_max_memory(qwen_devices, gpu_mem_budget)
+
+    if llama_map is None and llama_max_memory is not None and device == "cuda":
+        llama_map = "auto"
+    if qwen_map is None and qwen_max_memory is not None and device == "cuda":
+        qwen_map = "auto"
+
     llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
-                               device_map=llama_map))
+                               device_map=llama_map, max_memory=llama_max_memory))
     qwen = LMWrapper(LMConfig(model_id=qwen_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
-                              device_map=qwen_map))
+                              device_map=qwen_map, max_memory=qwen_max_memory))
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 
@@ -837,6 +869,12 @@ def main():
     ap.add_argument("--out_dir", type=str, default=None)
     ap.add_argument("--token_budget_mode", type=str, default="content_only", choices=["chat_full", "content_only"])
     ap.add_argument("--token_budget_k", type=int, default=None)
+    ap.add_argument("--llama_devices", type=str, default=None,
+                    help="Comma-separated CUDA device ids reserved for Llama (e.g., '0,1').")
+    ap.add_argument("--qwen_devices", type=str, default=None,
+                    help="Comma-separated CUDA device ids reserved for Qwen (e.g., '2,3').")
+    ap.add_argument("--gpu_mem_gib", type=float, default=78.0,
+                    help="Per-GPU memory budget (GiB) used to constrain auto device maps.")
 
     # Anchors / BOS controls (hardened defaults)
     ap.add_argument("--latent_anchor_mode", type=str, default="auto", choices=["auto","chat","text","none"])

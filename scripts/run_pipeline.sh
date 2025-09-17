@@ -75,8 +75,11 @@ QWEN_ID="Qwen/Qwen2.5-7B-Instruct"
 
 # GPU selection
 CUDA_VISIBLE_DEVICES="0,1,2,3"
-LLAMA_DEVICE_MAP="0"
-QWEN_DEVICE_MAP="1"
+LLAMA_DEVICES="0,1"
+QWEN_DEVICES="2,3"
+GPU_MEM_GIB=78
+LLAMA_DEVICE_MAP="auto"
+QWEN_DEVICE_MAP="auto"
 
 # ------------- PATHS & RUNTIME -----------------
 
@@ -105,6 +108,7 @@ TRAIN_ARGS_COMMON=(
   --state_kd_weight "$STATE_KD_WEIGHT" --state_kd_layers "$STATE_KD_LAYERS"
   --K "$K" --k_ce_weight "$K_CE_WEIGHT" --kd_first_k_weight "$KD_FIRST_K_WEIGHT" --kd_tau "$KD_TAU"
   --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
+  --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB"
 )
 
 EVAL_ARGS_COMMON=(
@@ -121,6 +125,7 @@ EVAL_ARGS_COMMON=(
   --chunk_size "$CHUNK_SIZE"
   --sequential_eval
   --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
+  --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB"
 )
 
 # Run folder name
