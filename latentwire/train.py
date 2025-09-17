@@ -569,7 +569,7 @@ def main():
 
     # ===== Optimizer =====
     optim_groups = list(encoder.parameters()) + list(adp_llama.parameters()) + list(adp_qwen.parameters())
-    optimizer = optim.AdamW([p for p in optim_groups if p.requires_grad], lr=args.lr)
+    optimizer = optim.AdamW([p for p in optim_groups if p.requires_grad], lr=args.lr, foreach=False)
 
     # ===== Tokenize answers (teacher forcing) =====
     with _temp_padding_side(llama.tokenizer, "right"):
