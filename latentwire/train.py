@@ -3,6 +3,7 @@ import os
 import re
 import time
 import json
+import math
 import argparse
 import random
 import ast
@@ -203,19 +204,25 @@ def _primary_device(wrapper: LMWrapper) -> torch.device:
 
 
 def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
-    """Sanity check ensuring token t=0 matches after the anchor."""
+    """Sanity check: the first gold token should appear immediately after the anchor."""
     try:
         q = "Q: Capital of France?"
         c = "C: Paris is the capital of France."
         g = "Paris"
         prompt = f"{c}\n\n{q}\n{answer_prefix}"
-        ids_all = tokenizer(prompt + g, add_special_tokens=False).input_ids
-        ids_pref = tokenizer(prompt, add_special_tokens=False).input_ids
-        ids_gold = tokenizer(g, add_special_tokens=False).input_ids
-        assert ids_all[len(ids_pref)] == ids_gold[0], "t=0 alignment failed"
+
+        ids_all = tokenizer.encode(prompt + g, add_special_tokens=False)
+        ids_pref = tokenizer.encode(prompt, add_special_tokens=False)
+        ids_gold = tokenizer.encode(g, add_special_tokens=False)
+
+        assert ids_gold, "gold tokenized to empty"
+        assert len(ids_all) > len(ids_pref), "concatenation produced no new tokens"
+        got = ids_all[len(ids_pref)]
+        expect = ids_gold[0]
+        assert got == expect, f"t=0 mismatch: got {got}, expected {expect}"
         print(f"[OK] t=0 alignment for {getattr(tokenizer, 'name_or_path', 'tokenizer')}")
     except Exception as exc:
-        print(f"[WARN] t=0 alignment could not be verified: {exc}")
+        print(f"[WARN] t=0 alignment failed: {exc}")
 
 
 def _build_scaffold_ids(tokenizer, texts: List[str], anchor_text: str, device: str) -> torch.Tensor:
@@ -695,6 +702,21 @@ def main():
 
     params_for_clip = [p for p in optim_groups if p.requires_grad]
 
+    def _grad_norm(params) -> float:
+        norms = []
+        for p in params:
+            grad = getattr(p, "grad", None)
+            if grad is None:
+                continue
+            g = grad.detach()
+            if not torch.isfinite(g).all():
+                return float("nan")
+            norms.append(g.float().norm(2))
+        if not norms:
+            return 0.0
+        stacked = torch.stack(norms)
+        return float(torch.norm(stacked, 2).item())
+
     optimizer.zero_grad(set_to_none=True)
 
     total_batches = steps_per_epoch * args.epochs
@@ -857,18 +879,19 @@ def main():
             loss_backward = loss / float(grad_accum_steps)
             loss_backward.backward()
 
+            grad_norm_val = _grad_norm(params_for_clip)
+            if not math.isfinite(grad_norm_val):
+                print("⚠️  Non-finite gradient detected; skipping optimizer step for this batch.")
+                optimizer.zero_grad(set_to_none=True)
+                continue
+
             should_step = ((step + 1) % grad_accum_steps == 0) or ((step + 1) == steps_per_epoch)
             if should_step:
                 if args.max_grad_norm and args.max_grad_norm > 0:
-                    total_norm = float(
-                        torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
-                    )
-                else:
-                    total_norm = float("nan")
+                    torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
-            else:
-                total_norm = float("nan")
+            total_norm = grad_norm_val
 
             # Grad norm (monitor) – encoder only as a proxy
             global_step += 1
