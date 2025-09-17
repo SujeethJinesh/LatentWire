@@ -1,0 +1,60 @@
+
+=========================================
+Starting pipeline at Wed Sep 17 14:33:36 PDT 2025
+=========================================
+
+
+=========================================
+PHASE 1: TRAINING WITH EPOCH EVALUATIONS
+=========================================
+
+Training for 24 epochs with evaluation after each
+Checkpoint will be saved to: runs/8B_4_H100/ckpt
+
+
+=========================================
+EPOCH 1/24
+=========================================
+
+Training epoch 1...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1911.93it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:10<00:30, 10.30s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:19<00:19,  9.64s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:28<00:09,  9.35s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:30<00:00,  6.46s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:30<00:00,  7.63s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1898.95it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:07<00:22,  7.43s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:15<00:15,  7.63s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:22<00:07,  7.30s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:28<00:00,  6.86s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:28<00:00,  7.07s/it]
+Llama hidden size: 4096, Qwen hidden size: 3584
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
+Initialized adapter colorizers from LM embedding stats.
+⏪ Resuming from: runs/8B_4_H100/ckpt/state.pt
+   -> loaded encoder/adapters FROM state.pt
+   -> restored optimizer state
+   -> restored RNG state
+   -> start_epoch=0, global_step=207
+Epoch 1/1
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  10/2190 | grad_norm=25.75 | sec/step~5.93 | keep=1.00 | K=4 | llama: tf=11.6843 first=14.4105 kCE=10.5342 KD=4.2362 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=10.8521 first=13.6593 kCE=12.0862 KD=8.4468 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  20/2190 | grad_norm=45.82 | sec/step~6.88 | keep=1.00 | K=4 | llama: tf=11.2396 first=13.6978 kCE=10.3264 KD=3.6856 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=10.6929 first=13.3392 kCE=11.7820 KD=9.2759 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  30/2190 | grad_norm=69.33 | sec/step~8.04 | keep=1.00 | K=4 | llama: tf=11.8215 first=13.7847 kCE=10.4555 KD=2.9391 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=12.0111 first=12.4856 kCE=11.9349 KD=9.2088 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1102, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 914, in main
+    optimizer.step()
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/optimizer.py", line 484, in wrapper
+    out = func(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/optimizer.py", line 89, in _use_grad
+    ret = func(self, *args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/adamw.py", line 227, in step
+    adamw(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/optimizer.py", line 161, in maybe_fallback
+    return func(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/adamw.py", line 767, in adamw
+    func(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/adamw.py", line 380, in _single_tensor_adamw
+    exp_avg.lerp_(grad, 1 - beta1)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:2!

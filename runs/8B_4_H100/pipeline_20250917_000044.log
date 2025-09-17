@@ -1,70 +1,0 @@
-
-=========================================
-Starting pipeline at Wed Sep 17 00:00:44 PDT 2025
-=========================================
-
-
-=========================================
-PHASE 1: TRAINING WITH EPOCH EVALUATIONS
-=========================================
-
-Training for 24 epochs with evaluation after each
-Checkpoint will be saved to: runs/8B_4_H100/ckpt
-
-
-=========================================
-EPOCH 1/24
-=========================================
-
-Training epoch 1...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2783.68it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.14s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.73s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.47s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.01it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.25s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2676.65it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.02it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.20s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.01s/it]
-Llama hidden size: 4096, Qwen hidden size: 3584
-[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
-[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
-Initialized adapter colorizers from LM embedding stats.
-⚠️  No valid checkpoint found to resume; starting fresh.
-Epoch 1/1
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/2190 | grad_norm=97.68 | sec/step~6.02 | keep=1.00 | K=4 | llama: tf=12.4342 first=17.0873 kCE=10.8769 KD=4.1802 man=0.0002 | scale_pen(llama)=0.0000e+00 | qwen: tf=12.4092 first=16.6392 kCE=12.5799 KD=8.8731 man=0.0003 | scale_pen(qwen)=0.0000e+00 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  20/2190 | grad_norm=195.62 | sec/step~6.94 | keep=1.00 | K=4 | llama: tf=12.2816 first=17.2489 kCE=10.9218 KD=3.7067 man=0.0002 | scale_pen(llama)=0.0000e+00 | qwen: tf=12.2026 first=16.5899 kCE=12.2367 KD=9.6036 man=0.0003 | scale_pen(qwen)=0.0000e+00 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  30/2190 | grad_norm=285.50 | sec/step~8.22 | keep=1.00 | K=4 | llama: tf=12.9064 first=17.7226 kCE=10.8725 KD=2.9826 man=0.0002 | scale_pen(llama)=0.0000e+00 | qwen: tf=13.7360 first=16.0389 kCE=12.5401 KD=9.7645 man=0.0003 | scale_pen(qwen)=0.0000e+00 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  40/2190 | grad_norm=57.07 | sec/step~6.19 | keep=1.00 | K=4 | llama: tf=12.9569 first=17.0448 kCE=10.3075 KD=4.1594 man=0.0001 | scale_pen(llama)=2.7853e-12 | qwen: tf=12.2213 first=15.7451 kCE=12.4256 KD=7.5550 man=0.0003 | scale_pen(qwen)=5.6843e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  50/2190 | grad_norm=128.47 | sec/step~7.17 | keep=1.00 | K=4 | llama: tf=12.1119 first=17.3690 kCE=10.6284 KD=3.6941 man=0.0001 | scale_pen(llama)=2.7853e-12 | qwen: tf=12.5721 first=16.4818 kCE=13.2838 KD=9.1094 man=0.0003 | scale_pen(qwen)=5.6843e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  60/2190 | grad_norm=198.53 | sec/step~7.30 | keep=1.00 | K=4 | llama: tf=12.3071 first=16.5309 kCE=10.5174 KD=3.3499 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=11.7838 first=15.4770 kCE=12.1406 KD=8.2744 man=0.0003 | scale_pen(qwen)=5.6843e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-  ✅ Saved (and pruned to) latest at step 69
-  step  70/2190 | grad_norm=19.42 | sec/step~7.52 | keep=1.00 | K=4 | llama: tf=13.3552 first=16.4943 kCE=10.2629 KD=3.2607 man=0.0002 | scale_pen(llama)=1.2790e-11 | qwen: tf=12.6244 first=16.0046 kCE=13.0606 KD=7.9796 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  80/2190 | grad_norm=50.52 | sec/step~6.64 | keep=1.00 | K=4 | llama: tf=11.9306 first=15.6459 kCE=10.4214 KD=3.9191 man=0.0002 | scale_pen(llama)=1.2790e-11 | qwen: tf=11.9016 first=15.1608 kCE=11.8831 KD=8.6265 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  90/2190 | grad_norm=81.71 | sec/step~6.64 | keep=1.00 | K=4 | llama: tf=11.4780 first=16.4338 kCE=10.2536 KD=4.0189 man=0.0001 | scale_pen(llama)=1.2790e-11 | qwen: tf=11.6923 first=16.5878 kCE=13.2367 KD=8.1573 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  100/2190 | grad_norm=9.58 | sec/step~6.39 | keep=1.00 | K=4 | llama: tf=12.8993 first=16.0452 kCE=10.3901 KD=3.7333 man=0.0002 | scale_pen(llama)=2.2737e-13 | qwen: tf=11.9605 first=15.6714 kCE=12.3772 KD=9.1139 man=0.0003 | scale_pen(qwen)=5.6843e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  110/2190 | grad_norm=31.08 | sec/step~8.09 | keep=1.00 | K=4 | llama: tf=12.5528 first=15.6297 kCE=9.9719 KD=2.8438 man=0.0002 | scale_pen(llama)=2.2737e-13 | qwen: tf=11.6258 first=15.0447 kCE=12.3035 KD=8.2249 man=0.0003 | scale_pen(qwen)=5.6843e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  120/2190 | grad_norm=53.84 | sec/step~6.13 | keep=1.00 | K=4 | llama: tf=11.9140 first=13.9324 kCE=10.4445 KD=3.7242 man=0.0002 | scale_pen(llama)=2.2737e-13 | qwen: tf=11.8407 first=13.5127 kCE=11.8182 KD=9.0284 man=0.0003 | scale_pen(qwen)=5.6843e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  130/2190 | grad_norm=7.70 | sec/step~8.07 | keep=1.00 | K=4 | llama: tf=12.5889 first=15.2367 kCE=10.9489 KD=3.3253 man=0.0002 | scale_pen(llama)=1.3657e-11 | qwen: tf=11.3463 first=14.4939 kCE=12.3127 KD=7.9741 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-  ✅ Saved (and pruned to) latest at step 138
-  step  140/2190 | grad_norm=45.67 | sec/step~7.46 | keep=1.00 | K=4 | llama: tf=12.0058 first=15.5275 kCE=10.9479 KD=3.3882 man=0.0002 | scale_pen(llama)=1.3657e-11 | qwen: tf=11.8858 first=15.1350 kCE=12.4015 KD=8.6500 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  150/2190 | grad_norm=81.31 | sec/step~7.22 | keep=1.00 | K=4 | llama: tf=11.9552 first=14.0027 kCE=10.5741 KD=3.6838 man=0.0002 | scale_pen(llama)=1.3657e-11 | qwen: tf=11.9954 first=12.9576 kCE=13.1646 KD=7.6926 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  160/2190 | grad_norm=119.64 | sec/step~6.68 | keep=1.00 | K=4 | llama: tf=12.3148 first=14.9061 kCE=10.8015 KD=4.2943 man=0.0002 | scale_pen(llama)=4.6043e-12 | qwen: tf=12.0004 first=13.5940 kCE=11.9155 KD=9.7794 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  170/2190 | grad_norm=32.79 | sec/step~6.45 | keep=1.00 | K=4 | llama: tf=12.1536 first=13.3174 kCE=10.6542 KD=3.8768 man=0.0002 | scale_pen(llama)=4.6043e-12 | qwen: tf=10.5765 first=12.2776 kCE=11.0201 KD=8.6369 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  180/2190 | grad_norm=64.90 | sec/step~6.54 | keep=1.00 | K=4 | llama: tf=12.4763 first=16.1494 kCE=10.1775 KD=4.1811 man=0.0002 | scale_pen(llama)=4.6043e-12 | qwen: tf=12.6846 first=16.2778 kCE=13.7237 KD=8.9649 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  190/2190 | grad_norm=96.50 | sec/step~6.24 | keep=1.00 | K=4 | llama: tf=11.8044 first=15.6844 kCE=9.4960 KD=4.1153 man=0.0001 | scale_pen(llama)=4.6043e-12 | qwen: tf=11.8306 first=15.1648 kCE=14.0041 KD=7.7256 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  200/2190 | grad_norm=24.56 | sec/step~6.68 | keep=1.00 | K=4 | llama: tf=11.6688 first=14.2750 kCE=10.6054 KD=3.7114 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=10.5790 first=13.4002 kCE=11.1454 KD=8.7374 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-  ✅ Saved (and pruned to) latest at step 207
-  step  210/2190 | grad_norm=53.78 | sec/step~8.48 | keep=1.00 | K=4 | llama: tf=11.5387 first=13.2261 kCE=10.3642 KD=3.3791 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=10.6489 first=12.0505 kCE=11.1579 KD=8.7820 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  220/2190 | grad_norm=76.95 | sec/step~9.04 | keep=1.00 | K=4 | llama: tf=11.8006 first=13.3423 kCE=10.5443 KD=2.6060 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=10.3553 first=12.6395 kCE=11.8430 KD=8.5255 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-  step  230/2190 | grad_norm=14.32 | sec/step~6.66 | keep=1.00 | K=4 | llama: tf=12.0681 first=13.8784 kCE=10.2232 KD=4.2689 man=0.0002 | scale_pen(llama)=1.4101e-11 | qwen: tf=12.2998 first=13.3351 kCE=11.9697 KD=9.1193 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
