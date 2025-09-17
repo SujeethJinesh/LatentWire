@@ -17,10 +17,15 @@ import torch.optim as optim
 from latentwire.diagnostics import capture_env_snapshot
 
 from latentwire.models import (
-    InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder
+    InterlinguaEncoder,
+    Adapter,
+    LMWrapper,
+    LMConfig,
+    ByteTokenizer,
+    SimpleEncoder,
+)
 from latentwire.dataloader_patch import patch_dataloader_defaults
 from latentwire.anchor_utils import apply_anchor_normalization
-)
 from latentwire.checkpointing import save_latest_checkpoint
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
