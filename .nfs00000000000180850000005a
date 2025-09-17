@@ -44,3 +44,11 @@ File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
 [14:31:16] [171.67.99.200][857e3f16][ManagementConnection] New connection established.
 [14:31:17] [171.67.99.200][e2aec5d0][ExtensionHostConnection] New connection established.
 [14:31:19] [171.67.99.200][e2aec5d0][ExtensionHostConnection] <1857207> Launched Extension Host Process.
+[14:42:18] [171.67.99.200][857e3f16][ManagementConnection] The client has disconnected gracefully, so the connection will be disposed.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[14:42:21] [171.67.99.200][4aecb13a][ManagementConnection] New connection established.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[14:42:22] [171.67.99.200][20887431][ExtensionHostConnection] New connection established.
+[14:42:22] [171.67.99.200][20887431][ExtensionHostConnection] <1875868> Launched Extension Host Process.
+[14:47:23] [171.67.99.200][e2aec5d0][ExtensionHostConnection] <1857207> Extension Host Process exited with code: 0, signal: null.
