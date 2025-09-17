@@ -54,6 +54,16 @@ WARM_ANCHOR_TEXT="Answer: "         # Matches eval anchor
 FIRST_TOKEN_CE=0.0                  # λ_first (first-token CE weight)
 TRAIN_APPEND_BOS="no"              # BOS after prefix+anchor during first-token CE
 MAX_ANSWER_TOKENS=24
+ADAPTER_HIDDEN_MULT=2
+ADAPTER_COLORIZE=1
+ADAPTER_METADATA=1
+MANIFOLD_STAT_WEIGHT=0.001
+STATE_KD_WEIGHT=0.2
+STATE_KD_LAYERS="0,1,2"
+K=4
+K_CE_WEIGHT=0.5
+KD_FIRST_K_WEIGHT=1.0
+KD_TAU=1.0
 STEPS_PER_EPOCH=$(( (TRAIN_SAMPLES + BATCH_SIZE - 1) / BATCH_SIZE ))
 OPT_STEPS_PER_EPOCH=$(( (STEPS_PER_EPOCH + GRAD_ACCUM_STEPS - 1) / GRAD_ACCUM_STEPS ))
 SAVE_EVERY=$OPT_STEPS_PER_EPOCH     # save after each optimizer epoch equivalent
@@ -88,7 +98,10 @@ TRAIN_ARGS_COMMON=(
   --first_token_ce_weight "$FIRST_TOKEN_CE"
   --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
   --grad_accum_steps "$GRAD_ACCUM_STEPS"
-  --K 4 --k_ce_weight 0.5 --kd_first_k_weight 1.0 --kd_tau 1.0
+  --adapter_hidden_mult "$ADAPTER_HIDDEN_MULT"
+  --manifold_stat_weight "$MANIFOLD_STAT_WEIGHT"
+  --state_kd_weight "$STATE_KD_WEIGHT" --state_kd_layers "$STATE_KD_LAYERS"
+  --K "$K" --k_ce_weight "$K_CE_WEIGHT" --kd_first_k_weight "$KD_FIRST_K_WEIGHT" --kd_tau "$KD_TAU"
 )
 
 EVAL_ARGS_COMMON=(
@@ -241,6 +254,12 @@ run_eval() {
       fi
       if [[ $LOAD_4BIT -eq 1 ]]; then
         TRAIN_ARGS+=(--load_4bit)
+      fi
+      if [[ "$ADAPTER_COLORIZE" == "1" ]]; then
+        TRAIN_ARGS+=(--adapter_colorize)
+      fi
+      if [[ "$ADAPTER_METADATA" == "0" ]]; then
+        TRAIN_ARGS+=(--no_adapter_metadata)
       fi
 
       echo "Training epoch $epoch..."

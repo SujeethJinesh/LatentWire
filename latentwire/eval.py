@@ -503,26 +503,47 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 
+    adapter_hidden_mult = int(cfg.get("adapter_hidden_mult", 1))
+    adapter_colorize = bool(cfg.get("adapter_colorize", False))
+    adapter_enable_metadata = cfg.get("adapter_enable_metadata", True)
+    adapter_enable_metadata = bool(adapter_enable_metadata)
+
     adapters = {
         "llama": Adapter(
             d_z=d_z,
             d_model=llama.d_model,
             latent_length=latent_len,
-            enable_metadata=True,
+            enable_metadata=adapter_enable_metadata,
             length_norm=max_answer_tokens,
+            hidden_mult=adapter_hidden_mult,
+            colorize=adapter_colorize,
         ).to(device).eval(),
         "qwen": Adapter(
             d_z=d_z,
             d_model=qwen.d_model,
             latent_length=latent_len,
-            enable_metadata=True,
+            enable_metadata=adapter_enable_metadata,
             length_norm=max_answer_tokens,
+            hidden_mult=adapter_hidden_mult,
+            colorize=adapter_colorize,
         ).to(device).eval(),
     }
-    adapters["llama"].load_state_dict(_safe_load(os.path.join(args.ckpt, "adapter_llama.pt"), map_location=device), strict=True)
-    adapters["qwen"].load_state_dict(_safe_load(os.path.join(args.ckpt, "adapter_qwen.pt"), map_location=device), strict=True)
 
     wrappers = {"llama": llama, "qwen": qwen}
+
+    for name in ("llama", "qwen"):
+        path = os.path.join(args.ckpt, f"adapter_{name}.pt")
+        state = _safe_load(path, map_location=device)
+        try:
+            adapters[name].load_state_dict(state, strict=True)
+        except Exception as exc:
+            print(f"⚠️  Adapter({name}) strict load failed; retrying with strict=False ({exc})")
+            adapters[name].load_state_dict(state, strict=False)
+        if adapter_colorize and hasattr(adapters[name], "install_color_from_wrapper"):
+            try:
+                adapters[name].install_color_from_wrapper(wrappers[name])
+            except Exception:
+                pass
     model_contexts = {
         name: {"wrapper": wrapper, "adapter": adapters[name]}
         for name, wrapper in wrappers.items()
@@ -661,7 +682,13 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
         selected_bits=getattr(args, "latent_quant_bits", None),
     )
     llama_latents = combined_latents["llama"]
-    bytes_per_latent = int(llama_latents.element_size() * llama_latents.size(1) * llama_latents.size(2))
+    base_bytes_per_latent = int(llama_latents.element_size() * llama_latents.size(1) * llama_latents.size(2))
+    selected_bytes = wire.get("selected_latent_bytes")
+    if selected_bytes is not None:
+        bytes_per_latent = int(selected_bytes)
+    else:
+        bytes_per_latent = base_bytes_per_latent
+    wire["base_latent_bytes"] = base_bytes_per_latent
 
     oracle_em = 0.0
     oracle_f1 = 0.0
@@ -955,13 +982,15 @@ def main():
           f"(Qwen): {summary['avg_prompt_tokens'].get('qwen','-'):.1f} | Latent length M: {summary['latent_len']}")
     print(f"Compression ratio (Llama): {summary['compression'].get('llama','-'):.1f}x | "
           f"(Qwen): {summary['compression'].get('qwen','-'):.1f}x")
-    print(f"Approx interlingua payload per example: {summary['payload_bytes']} bytes (fp32), "
-          f"and {summary['wire']['latent_bytes']['fp16']} bytes (fp16); "
-          f"latent/text bytes (one-copy, fp16): {summary['wire']['wire_ratio']['latent_over_onecopy_fp16']:.2f}x")
-    if summary['wire'].get('selected_latent_bytes') is not None:
-        print(
-            f"Selected latent bytes ({args.latent_quant_bits}-bit): {summary['wire']['selected_latent_bytes']} bytes"
-        )
+    selected_bytes = summary['wire'].get('selected_latent_bytes')
+    base_bytes = summary['wire'].get('base_latent_bytes', summary['payload_bytes'])
+    payload_line = (
+        f"Approx interlingua payload per example: {summary['payload_bytes']} bytes"
+        + (f" ({args.latent_quant_bits}-bit selected)" if selected_bytes is not None else " (fp32)")
+        + f"; fp16 reference: {summary['wire']['latent_bytes']['fp16']} bytes; fp32 reference: {base_bytes} bytes"
+    )
+    print(payload_line)
+    print(f"latent/text bytes (one-copy, fp16): {summary['wire']['wire_ratio']['latent_over_onecopy_fp16']:.2f}x")
 
     print("\n— Baseline: Text prompting")
     if summary['text'].get('llama') is not None:
