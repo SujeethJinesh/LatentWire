@@ -1,2 +1,1 @@
-# LatentWire package bootstrap
-__all__ = []
+# LatentWire package

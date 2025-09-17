@@ -1,7 +1,6 @@
 # latentwire/metrics.py
 # Basic SQuAD-style EM/F1 utilities with light normalization.
-import re
-import string
+import re, string
 from typing import List, Tuple
 
 _ARTICLES = {"a","an","the"}
@@ -11,11 +10,8 @@ def _normalize(s: str) -> str:
     if s is None:
         return ""
     s = s.strip().lower()
-    # Remove punctuation
     s = s.translate(_PUNC_TABLE)
-    # Collapse whitespace
     s = re.sub(r"\s+", " ", s).strip()
-    # Drop articles as standalone tokens
     toks = [t for t in s.split() if t not in _ARTICLES]
     return " ".join(toks)
 

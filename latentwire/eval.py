@@ -11,7 +11,6 @@ import ast
 from typing import List, Dict, Any, Tuple, Optional
 
 import torch
-from latentwire.diagnostics import capture_env_snapshot
 import math
 
 from latentwire.models import (
@@ -946,11 +945,6 @@ def main():
     ap.add_argument("--seed", type=int, default=EVAL_FIXED_SEED)
 
     args = ap.parse_args()
-    try:
-        os.makedirs(args.out_dir, exist_ok=True)
-        capture_env_snapshot(args.out_dir, extras={"phase":"eval"})
-    except Exception:
-        pass
 
     # Deterministic by default
     seed = int(args.seed)
