@@ -198,6 +198,10 @@ class ModelTrainContext:
     answer_lengths: torch.Tensor
 
 
+def _primary_device(wrapper: LMWrapper) -> torch.device:
+    return next(wrapper.model.parameters()).device
+
+
 def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
     """Sanity check ensuring token t=0 matches after the anchor."""
     try:
@@ -237,8 +241,8 @@ def main():
     ap.add_argument("--llama_id", type=str, default="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
     ap.add_argument("--qwen_id", type=str, default="Qwen/Qwen2-0.5B-Instruct")
     ap.add_argument("--llama_device_map", type=str, default=None,
-                    help="Device map for the Llama wrapper (e.g., 0, 'auto', or JSON dict).
-                    Pins the model to a subset of GPUs when running multi-model training.")
+                    help=("Device map for the Llama wrapper (e.g., 0, 'auto', or JSON dict). "
+                          "Pins the model to a subset of GPUs when running multi-model training."))
     ap.add_argument("--qwen_device_map", type=str, default=None,
                     help="Device map for the Qwen wrapper (e.g., 1, 'auto', or JSON dict).")
     ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot", "squad", "squad_v2"])
@@ -316,6 +320,12 @@ def main():
 
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--sequential_models", action="store_true")
+    ap.add_argument("--llama_devices", type=str, default=None,
+                    help="Comma-separated CUDA device ids reserved for Llama (e.g., '0,1').")
+    ap.add_argument("--qwen_devices", type=str, default=None,
+                    help="Comma-separated CUDA device ids reserved for Qwen (e.g., '2,3').")
+    ap.add_argument("--gpu_mem_gib", type=float, default=78.0,
+                    help="Per-GPU memory budget (GiB) when constraining auto device maps.")
     ap.add_argument("--grad_ckpt", action="store_true")
     ap.add_argument("--fp16_mps", action="store_true")
     ap.add_argument("--warm_anchor_text", type=str, default="",
@@ -398,8 +408,36 @@ def main():
     answers = [e["answer"] for e in examples]
 
     # ===== Models =====
+    def _build_max_memory(devices_csv: Optional[str], budget_gib: float):
+        if devices_csv is None or not torch.cuda.is_available():
+            return None
+        devs: List[int] = []
+        for item in devices_csv.split(","):
+            name = item.strip()
+            if not name:
+                continue
+            try:
+                dev_id = int(name)
+            except ValueError as exc:
+                raise ValueError(f"Invalid CUDA device id '{name}' in '{devices_csv}'") from exc
+            devs.append(dev_id)
+        if not devs:
+            return None
+        max_mem = {}
+        for idx in range(torch.cuda.device_count()):
+            max_mem[idx] = f"{int(budget_gib)}GiB" if idx in devs else "0GiB"
+        return max_mem
+
     llama_device_map = _parse_device_map(args.llama_device_map)
     qwen_device_map = _parse_device_map(args.qwen_device_map)
+
+    llama_max_memory = _build_max_memory(args.llama_devices, args.gpu_mem_gib)
+    qwen_max_memory = _build_max_memory(args.qwen_devices, args.gpu_mem_gib)
+
+    if llama_device_map is None and llama_max_memory is not None and device == "cuda":
+        llama_device_map = "auto"
+    if qwen_device_map is None and qwen_max_memory is not None and device == "cuda":
+        qwen_device_map = "auto"
 
     llama = LMWrapper(LMConfig(
         model_id=args.llama_id,
@@ -407,6 +445,7 @@ def main():
         dtype=dtype,
         load_4bit=args.load_4bit,
         device_map=llama_device_map,
+        max_memory=llama_max_memory,
     ))
     qwen  = LMWrapper(LMConfig(
         model_id=args.qwen_id,
@@ -414,6 +453,7 @@ def main():
         dtype=dtype,
         load_4bit=args.load_4bit,
         device_map=qwen_device_map,
+        max_memory=qwen_max_memory,
     ))
     print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
 
@@ -476,6 +516,9 @@ def main():
             return _structure_latents(raw)
 
     # ===== Adapters =====
+    llama_device = _primary_device(llama)
+    qwen_device = _primary_device(qwen)
+
     adp_llama = Adapter(
         d_z=args.d_z,
         d_model=llama.d_model,
@@ -484,7 +527,7 @@ def main():
         length_norm=float(args.max_answer_tokens),
         hidden_mult=args.adapter_hidden_mult,
         colorize=bool(args.adapter_colorize),
-    ).to(device)
+    ).to(llama_device)
     adp_qwen  = Adapter(
         d_z=args.d_z,
         d_model=qwen.d_model,
@@ -493,7 +536,7 @@ def main():
         length_norm=float(args.max_answer_tokens),
         hidden_mult=args.adapter_hidden_mult,
         colorize=bool(args.adapter_colorize),
-    ).to(device)
+    ).to(qwen_device)
 
     if args.adapter_colorize:
         try:
@@ -699,13 +742,15 @@ def main():
             }
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
-            total_model_loss = 0.0
+            total_model_loss = torch.zeros((), device=device)
             penalty = torch.zeros((), device=device)
             rms_pen = torch.zeros((), device=device)
 
             for ctx in model_contexts:
-                answer_lengths = ctx.answer_lengths[idx]
-                prefix_raw = ctx.adapter(model_latents[ctx.name], answer_lengths=answer_lengths)
+                target_device = _primary_device(ctx.wrapper)
+                latents_for_adapter = model_latents[ctx.name].to(target_device, non_blocking=True)
+                answer_lengths = ctx.answer_lengths[idx].to(target_device, non_blocking=True)
+                prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
                 targets = ctx.token_ids[idx]
                 loss_tf = ctx.wrapper.forward_with_prefix_loss(
@@ -721,7 +766,7 @@ def main():
                     first_targets = ctx.first_token_ids[idx]
                     loss_first = nn.functional.cross_entropy(logits_first.float(), first_targets)
                 else:
-                    loss_first = torch.zeros((), device=device)
+                    loss_first = torch.zeros((), device=target_device)
 
                 if args.k_ce_weight and args.k_ce_weight > 0.0:
                     loss_kce = k_token_ce_from_prefix(
@@ -733,7 +778,7 @@ def main():
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                 else:
-                    loss_kce = torch.zeros((), device=device)
+                    loss_kce = torch.zeros((), device=target_device)
 
                 if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
                     loss_kd = kd_first_k_prefix_vs_text(
@@ -748,7 +793,7 @@ def main():
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                 else:
-                    loss_kd = torch.zeros((), device=device)
+                    loss_kd = torch.zeros((), device=target_device)
 
                 if args.state_kd_weight and args.state_kd_weight > 0.0:
                     loss_state = kd_hidden_states_first_k(
@@ -762,7 +807,7 @@ def main():
                         anchor_ids=ctx.anchor_ids,
                     )
                 else:
-                    loss_state = torch.zeros((), device=device)
+                    loss_state = torch.zeros((), device=target_device)
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
 
@@ -773,11 +818,11 @@ def main():
                     + args.kd_first_k_weight * loss_kd
                     + args.state_kd_weight * loss_state
                     + args.manifold_stat_weight * manifold_loss
-                )
+                ).to(device)
                 total_model_loss = total_model_loss + model_loss
 
-                penalty = penalty + scale_penalty(ctx.adapter)
-                rms_pen = rms_pen + rms_raw_penalty(prefix_raw, ctx.wrapper)
+                penalty = penalty + scale_penalty(ctx.adapter).to(device)
+                rms_pen = rms_pen + rms_raw_penalty(prefix_raw, ctx.wrapper).to(device)
 
                 rms_raw_val = tensor_rms(prefix_raw)
                 rms_cal_val = tensor_rms(prefix)
@@ -884,6 +929,9 @@ def main():
                     "adapter_enable_metadata": bool(args.adapter_metadata),
                     "llama_device_map": args.llama_device_map,
                     "qwen_device_map": args.qwen_device_map,
+                    "llama_devices": args.llama_devices,
+                    "qwen_devices": args.qwen_devices,
+                    "gpu_mem_gib": args.gpu_mem_gib,
                     "manifold_stat_weight": args.manifold_stat_weight,
                     "state_kd_weight": args.state_kd_weight,
                     "state_kd_layers": args.state_kd_layers,
@@ -944,6 +992,9 @@ def main():
         "adapter_enable_metadata": bool(args.adapter_metadata),
         "llama_device_map": args.llama_device_map,
         "qwen_device_map": args.qwen_device_map,
+        "llama_devices": args.llama_devices,
+        "qwen_devices": args.qwen_devices,
+        "gpu_mem_gib": args.gpu_mem_gib,
         "manifold_stat_weight": args.manifold_stat_weight,
         "state_kd_weight": args.state_kd_weight,
         "state_kd_layers": args.state_kd_layers,

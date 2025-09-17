@@ -61,6 +61,27 @@ def _parse_device_map(spec: Optional[str]):
     return {"": s}
 
 
+def _parse_device_csv(spec: Optional[str]) -> Optional[List[int]]:
+    if spec is None:
+        return None
+    s = str(spec).strip()
+    if not s or s.lower() == "auto":
+        return None
+    out: List[int] = []
+    for chunk in s.split(","):
+        token = chunk.strip()
+        if not token:
+            continue
+        if not token.isdigit():
+            return None
+        out.append(int(token))
+    return out or None
+
+
+def _primary_device(wrapper: LMWrapper) -> torch.device:
+    return next(wrapper.model.parameters()).device
+
+
 def _safe_load(path: str, map_location=None):
     try:
         return torch.load(path, map_location=map_location, weights_only=True)  # PyTorch >= 2.4
@@ -522,13 +543,43 @@ def _run_latent_path(
 def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
     print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
-    llama_map = _parse_device_map(args.llama_device_map if args.llama_device_map is not None else cfg.get("llama_device_map"))
-    qwen_map = _parse_device_map(args.qwen_device_map if args.qwen_device_map is not None else cfg.get("qwen_device_map"))
+    llama_map_spec = args.llama_device_map if args.llama_device_map is not None else cfg.get("llama_device_map")
+    qwen_map_spec = args.qwen_device_map if args.qwen_device_map is not None else cfg.get("qwen_device_map")
+    llama_devices_spec = args.llama_devices if args.llama_devices is not None else cfg.get("llama_devices")
+    qwen_devices_spec = args.qwen_devices if args.qwen_devices is not None else cfg.get("qwen_devices")
+    gpu_mem_budget = args.gpu_mem_gib if args.gpu_mem_gib is not None else cfg.get("gpu_mem_gib", 78.0)
+
+    llama_device_ids = _parse_device_csv(llama_devices_spec)
+    if llama_device_ids is None:
+        llama_device_ids = _parse_device_csv(llama_map_spec)
+    qwen_device_ids = _parse_device_csv(qwen_devices_spec)
+    if qwen_device_ids is None:
+        qwen_device_ids = _parse_device_csv(qwen_map_spec)
+
+    def _build_max_memory(devices: Optional[List[int]], budget_gib: float):
+        if not devices or not torch.cuda.is_available():
+            return None
+        budget = f"{int(budget_gib)}GiB"
+        table: Dict[int, str] = {}
+        for idx in range(torch.cuda.device_count()):
+            table[idx] = budget if idx in devices else "0GiB"
+        return table
+
+    llama_max_memory = _build_max_memory(llama_device_ids, gpu_mem_budget)
+    qwen_max_memory = _build_max_memory(qwen_device_ids, gpu_mem_budget)
+
+    llama_map = _parse_device_map(llama_map_spec)
+    qwen_map = _parse_device_map(qwen_map_spec)
+
+    if llama_map is None and llama_max_memory is not None and device == "cuda":
+        llama_map = "auto"
+    if qwen_map is None and qwen_max_memory is not None and device == "cuda":
+        qwen_map = "auto"
 
     llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
-                               device_map=llama_map))
+                               device_map=llama_map, max_memory=llama_max_memory))
     qwen = LMWrapper(LMConfig(model_id=qwen_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
-                              device_map=qwen_map))
+                              device_map=qwen_map, max_memory=qwen_max_memory))
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 
@@ -536,6 +587,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     adapter_colorize = bool(cfg.get("adapter_colorize", False))
     adapter_enable_metadata = cfg.get("adapter_enable_metadata", True)
     adapter_enable_metadata = bool(adapter_enable_metadata)
+
+    llama_device = _primary_device(llama)
+    qwen_device = _primary_device(qwen)
 
     adapters = {
         "llama": Adapter(
@@ -546,7 +600,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
             length_norm=max_answer_tokens,
             hidden_mult=adapter_hidden_mult,
             colorize=adapter_colorize,
-        ).to(device).eval(),
+        ).to(llama_device).eval(),
         "qwen": Adapter(
             d_z=d_z,
             d_model=qwen.d_model,
@@ -555,7 +609,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
             length_norm=max_answer_tokens,
             hidden_mult=adapter_hidden_mult,
             colorize=adapter_colorize,
-        ).to(device).eval(),
+        ).to(qwen_device).eval(),
     }
 
     wrappers = {"llama": llama, "qwen": qwen}
@@ -581,10 +635,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     for name, ctx in model_contexts.items():
         ctx["chat"] = build_chat_prompts(ctx["wrapper"].tokenizer, prompts_raw)
 
-    answer_lengths = {
-        name: _answer_lengths_eval(ctx["wrapper"], golds, max_answer_tokens, device)
-        for name, ctx in model_contexts.items()
-    }
+    answer_lengths = {}
+    for name, ctx in model_contexts.items():
+        target_device = _primary_device(ctx["wrapper"])
+        answer_lengths[name] = _answer_lengths_eval(ctx["wrapper"], golds, max_answer_tokens, target_device)
 
     text_results = {}
     text_wall = 0.0
@@ -614,7 +668,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
             if quant_bits is not None:
                 latents = quantize_dequantize(latents, quant_bits, group_size=quant_group)
                 combined_latents[name] = latents
-            prefix = ctx["adapter"](latents, answer_lengths=answer_lengths[name])
+            target_device = _primary_device(ctx["wrapper"])
+            latents_for_adapter = latents.to(target_device, non_blocking=True)
+            lengths_for_adapter = answer_lengths[name].to(target_device, non_blocking=True)
+            prefix = ctx["adapter"](latents_for_adapter, answer_lengths=lengths_for_adapter)
             prefix, rms_val, tgt_val = _calibrate_prefix(
                 prefix,
                 ctx["wrapper"],
@@ -837,6 +894,10 @@ def main():
     ap.add_argument("--out_dir", type=str, default=None)
     ap.add_argument("--token_budget_mode", type=str, default="content_only", choices=["chat_full", "content_only"])
     ap.add_argument("--token_budget_k", type=int, default=None)
+    ap.add_argument("--llama_devices", type=str, default=None, help=argparse.SUPPRESS)
+    ap.add_argument("--qwen_devices", type=str, default=None, help=argparse.SUPPRESS)
+    ap.add_argument("--gpu_mem_gib", type=float, default=78.0,
+                    help="Per-GPU memory budget (GiB) used to constrain auto device maps.")
 
     # Anchors / BOS controls (hardened defaults)
     ap.add_argument("--latent_anchor_mode", type=str, default="auto", choices=["auto","chat","text","none"])
