@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from latentwire.diagnostics import capture_env_snapshot
+from latentwire.diagnostics import debug_optimizer_state_devices
 from latentwire.dataloader_patch import patch_dataloader_defaults
 from latentwire.anchor_utils import apply_anchor_normalization
 
@@ -112,6 +113,28 @@ def _maybe_to_device_optimizer_state(optimizer: optim.Optimizer, device: str):
         for k, v in p.items():
             if torch.is_tensor(v):
                 p[k] = v.to(device)
+
+
+def _debug_print_optimizer_state_devices(optimizer: optim.Optimizer, limit: int = 8) -> None:
+    if getattr(_debug_print_optimizer_state_devices, "_printed", False):
+        return
+    try:
+        lines = []
+        for idx, (param, state) in enumerate(optimizer.state.items()):
+            param_dev = str(getattr(param, "device", "None"))
+            state_devs = {}
+            if isinstance(state, dict):
+                for key, value in state.items():
+                    if torch.is_tensor(value):
+                        state_devs[key] = str(value.device)
+            lines.append(f"param_dev={param_dev} state_devs={state_devs}")
+            if idx + 1 >= limit:
+                break
+        if lines:
+            print("[DEBUG] Optimizer state devices:\n  " + "\n  ".join(lines), flush=True)
+    except Exception:
+        pass
+    _debug_print_optimizer_state_devices._printed = True
 
 
 def load_checkpoint(
