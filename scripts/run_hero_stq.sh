@@ -27,13 +27,13 @@ PREFIX_GAIN=1.15
 
 # Training emphasis on early steps
 EPOCHS=12
-BATCH_SIZE=2
+BATCH_SIZE=36
 GRAD_ACCUM_STEPS=32
 TRAIN_SAMPLES=40000           # faster epochs than full 87k, still enough variety
 
 # Encoder: STQueryEncoder (MiniLM) preserves positional structure via token features
 ENCODER_TYPE="stq"
-HF_ENCODER_ID="microsoft/MiniLM-L6-v2"
+HF_ENCODER_ID="sentence-transformers/all-MiniLM-L6-v2"
 MAX_ENC_TOKENS=1024
 
 LATENT_LEN=32                 # 4× compression target

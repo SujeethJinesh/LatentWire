@@ -183,7 +183,7 @@ class STQueryEncoder(nn.Module):
     Preserves positional structure by attending over token-level features.
     Returns [B, M, d_z].
     """
-    def __init__(self, d_z: int = 256, latent_len: int = 32, hf_encoder_id: str = "microsoft/MiniLM-L6-v2",
+    def __init__(self, d_z: int = 256, latent_len: int = 32, hf_encoder_id: str = "sentence-transformers/all-MiniLM-L6-v2",
                  max_tokens: int = 1024, n_heads: int = 8):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(hf_encoder_id, use_fast=True)

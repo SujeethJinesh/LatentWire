@@ -910,7 +910,7 @@ def main():
 
     ap.add_argument("--sequential_eval", action="store_true")
     ap.add_argument("--chunk_size", type=int, default=8)
-    ap.add_argument("--hf_encoder_id", type=str, default="microsoft/MiniLM-L6-v2")
+    ap.add_argument("--hf_encoder_id", type=str, default="sentence-transformers/all-MiniLM-L6-v2")
     ap.add_argument("--max_enc_tokens", type=int, default=1024)
     ap.add_argument("--fresh_eval", action="store_true")
 
@@ -1040,7 +1040,7 @@ def main():
                 encoded_latents = encoder_wire(z_bytes, return_components=True)
         elif encoder_type == "stq":
             encoder_wire = STQueryEncoder(d_z=d_z, latent_len=latent_len,
-                                         hf_encoder_id=(args.hf_encoder_id or cfg.get('hf_encoder_id','microsoft/MiniLM-L6-v2')),
+                                         hf_encoder_id=(args.hf_encoder_id or cfg.get('hf_encoder_id','sentence-transformers/all-MiniLM-L6-v2')),
                                          max_tokens=(args.max_enc_tokens or cfg.get('max_enc_tokens',1024))).to(device).eval()
         else:
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()

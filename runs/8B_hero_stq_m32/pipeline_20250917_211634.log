@@ -1,0 +1,97 @@
+
+=========================================
+Starting pipeline at Wed Sep 17 21:16:34 PDT 2025
+=========================================
+
+
+=========================================
+TRAIN + PER-EPOCH EVAL
+=========================================
+
+
+=========================================
+EPOCH 1/12
+=========================================
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3236.97it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.43s/it]
+Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.23s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.23s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.13it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.03s/it]
+
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3044.87it/s]sentence-transformers/all-MiniLM-L6-v2
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.12it/s]
+Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.06it/s]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.03it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.01s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.01it/s]
+Llama hidden size: 4096, Qwen hidden size: 3584
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/utils/_http.py", line 409, in hf_raise_for_status
+    response.raise_for_status()
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/requests/models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://huggingface.co/microsoft/MiniLM-L6-v2/resolve/main/tokenizer_config.json
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py", line 403, in cached_file
+    resolved_file = hf_hub_download(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1010, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1117, in _hf_hub_download_to_cache_dir
+    _raise_on_head_call_error(head_call_error, force_download, local_files_only)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lsentence-transformers/all-MiniLM-L6-v2ages/huggingface_hub/file_download.py", line 1658, in _raise_on_head_call_error
+    raise head_call_error
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1546, in _get_metadata_or_catch_error
+    metadata = get_hf_file_metadata(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1463, in get_hf_file_metadata
+    r = _request_wrapper(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 286, in _request_wrapper
+    response = _request_wrapper(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 310, in _request_wrapper
+    hf_raise_for_status(response)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/huggingface_hub/utils/_http.py", line 459, in hf_raise_for_status
+    raise _format(RepositoryNotFoundError, message, response) from e
+huggingface_hub.errors.RepositoryNotFoundError: 404 Client Error. (Request ID: Root=1-68cb87b4-13c4f16638f403d03dbc4527;737129b6-b497-4633-9cdd-d7be5b2eed7b)
+
+Repository Not Found for url: https://huggingface.co/microsoft/MiniLM-L6-v2/resolve/main/tokenizer_config.json.
+Please make sure you specified the correct `repo_id` and `repo_type`.
+If you are trying to access a private or gated repo, make sure you are authenticated. For more details, see https://huggingface.co/docs/huggingface_hub/authentication
+sentence-transformers/all-MiniLM-L6-v2
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1160, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 548, in main
+    encoder = STQueryEncoder(
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/models.py", line 189, in __init__
+    self.tokenizer = AutoTokenizer.from_pretrained(hf_encoder_id, use_fast=True)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/auto/tokenization_auto.py", line 844, in from_pretrained
+    tokenizer_config = get_tokenizer_config(pretrained_model_name_or_path, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/auto/tokenization_auto.py", line 676, in get_tokenizer_config
+    resolved_config_file = cached_file(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py", line 426, in cached_file
+    raise EnvironmentError(
+OSError: microsoft/MiniLM-L6-v2 is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'
+If this is a private repository, make sure to pass a token having permission to this repo either by logging in with `huggingface-cli login` or by passing `token=<your_token>`

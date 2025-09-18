@@ -305,7 +305,7 @@ def main():
                     help="Wrap encoder input with a neutral chat-style header (SimpleEncoder only).")
     ap.add_argument("--encoder_backbone", type=str, default=None,
                     help="Optional SentenceTransformer backbone when --encoder_type=simple-st")
-    ap.add_argument("--hf_encoder_id", type=str, default="microsoft/MiniLM-L6-v2",
+    ap.add_argument("--hf_encoder_id", type=str, default="sentence-transformers/all-MiniLM-L6-v2",
                     help="HF encoder id for --encoder_type=stq (frozen).")
     ap.add_argument("--max_enc_tokens", type=int, default=1024,
                     help="Max source tokens for the HF encoder when --encoder_type=stq.")
@@ -548,7 +548,7 @@ def main():
         encoder = STQueryEncoder(
             d_z=args.d_z,
             latent_len=total_latent_len,
-            hf_encoder_id=(args.hf_encoder_id or "microsoft/MiniLM-L6-v2"),
+            hf_encoder_id=(args.hf_encoder_id or "sentence-transformers/all-MiniLM-L6-v2"),
             max_tokens=args.max_enc_tokens,
         ).to(device)
 
