@@ -627,7 +627,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     wrappers = {"llama": llama, "qwen": qwen}
 
     for name in ("llama", "qwen"):
-        path = os.path.join(args.ckpt, f"adapter_{name}.pt")
+        path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
         state = _safe_load(path, map_location=device)
         try:
             adapters[name].load_state_dict(state, strict=True)
@@ -1048,7 +1048,7 @@ def main():
                 latent_private_len=latent_private_len,
                 model_keys=model_keys,
             ).to(device).eval()
-            encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+            encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
                 byte_tok = ByteTokenizer(max_bytes=byte_max)
                 z_bytes = collate_bytes(prompts_raw, byte_tok, device)
@@ -1057,7 +1057,7 @@ def main():
             encoder_wire = STQueryEncoder(d_z=d_z, latent_len=latent_len,
                                          hf_encoder_id=(args.hf_encoder_id or cfg.get('hf_encoder_id','sentence-transformers/all-MiniLM-L6-v2')),
                                          max_tokens=(args.max_enc_tokens or cfg.get('max_enc_tokens',1024))).to(device).eval()
-            encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+            encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
                 raw = encoder_wire(prompts_raw)
                 shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
@@ -1072,7 +1072,7 @@ def main():
                 encoded_latents = {"shared": shared, "private": private}
         else:
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
-            encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+            encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
                 raw = encoder_wire(prompts_raw)
                 shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
