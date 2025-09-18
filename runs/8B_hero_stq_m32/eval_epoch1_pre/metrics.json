@@ -1,0 +1,121 @@
+{
+  "samples": 400,
+  "max_new_tokens": 16,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 245.3875,
+    "qwen": 231.6975
+  },
+  "compression": {
+    "llama": 7.668359375,
+    "qwen": 7.240546875
+  },
+  "payload_bytes": 5840,
+  "payload_bytes_detail": {
+    "fp32": 28688,
+    "fp16": 14352,
+    "selected": 5840
+  },
+  "wire": {
+    "text_bytes_onecopy": {
+      "llama_avg": 1254,
+      "qwen_avg": 1102,
+      "max_avg": 1254
+    },
+    "text_bytes_twocopies": {
+      "sum_avg": 2356
+    },
+    "latent_bytes": {
+      "fp32": 28688,
+      "fp16": 14352,
+      "int8": 7632,
+      "int6": 5840,
+      "int4": 4048
+    },
+    "selected_latent_bytes": 5840,
+    "wire_ratio": {
+      "latent_over_onecopy_fp16": 11.444976076555024,
+      "latent_over_onecopy_fp32": 22.87719298245614,
+      "selected_over_onecopy": 4.657097288676236
+    },
+    "base_latent_bytes": 28672
+  },
+  "text": {
+    "llama": {
+      "em": 0.5625,
+      "f1": 0.7909989729439809,
+      "nll_token": 12.45985620746975
+    },
+    "qwen": {
+      "em": 0.625,
+      "f1": 0.8187413621093965,
+      "nll_token": 24.665170413293474
+    },
+    "wall_clock_sec": 61.10987210273743
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0029393196672608435,
+      "nll": 9.952085258508617,
+      "first_token_top1": 0.044999998062849045,
+      "first_token_top5": 0.05999999865889549,
+      "nll_token": 9.952085258508617
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.014466966212322251,
+      "nll": 9.68157445447839,
+      "first_token_top1": 0.04749999940395355,
+      "first_token_top5": 0.13249999284744263,
+      "nll_token": 9.68157445447839
+    },
+    "wall_clock_sec": 71.40234375
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.005,
+      "f1": 0.03870520428256327
+    },
+    "qwen": {
+      "em": 0.0375,
+      "f1": 0.09191796602090718
+    },
+    "wall_clock_sec": 50.964311838150024
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.011370382971002166,
+    "agreement": 0.0,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.016012055110352325
+    }
+  },
+  "debug": {
+    "llama": {},
+    "qwen": {},
+    "settings": {
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.15,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "no",
+      "decode": {
+        "min_new_tokens": 3,
+        "eos_ban_steps": 6,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.016012055110352325
+  },
+  "dataset": "squad"
+}

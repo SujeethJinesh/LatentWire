@@ -30,3 +30,17 @@ Starting code-server at Thu Sep 18 09:54:19 AM PDT 2025...
 [2025-09-18T16:54:20.570Z] info    - Not serving HTTPS
 [2025-09-18T16:54:20.570Z] info    - Proxy disabled
 [2025-09-18T16:54:20.570Z] info  Session server listening on /tmp/code-server-93138/code-server-ipc.sock
+[11:03:39] 
+
+
+
+
+[11:03:39] Extension host agent started.
+[11:03:39] Started initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-93138
+[11:03:39] Completed initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-93138
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[11:03:40] [171.67.99.202][12090fb9][ManagementConnection] New connection established.
+[11:03:41] [171.67.99.202][f54c566f][ExtensionHostConnection] New connection established.
+[11:03:44] [171.67.99.202][f54c566f][ExtensionHostConnection] <465543> Launched Extension Host Process.

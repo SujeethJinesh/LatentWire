@@ -1,0 +1,55 @@
+
+=========================================
+Starting pipeline at Thu Sep 18 11:02:26 PDT 2025
+=========================================
+
+
+=========================================
+TRAIN + PER-EPOCH EVAL
+=========================================
+
+
+=========================================
+EPOCH 1/12
+=========================================
+
+Running pre-train eval on existing checkpoint...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Loaded training_stats.json: runs/8B_hero_stq_m32/ckpt/training_stats.json
+Building encoder and computing Z...
+Saved Z to runs/8B_hero_stq_m32/eval_epoch1_pre/Z.pt
+
+[Standard Evaluation Mode - both models loaded]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3655.17it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.63s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.43s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.16s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.31s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3800.91it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.30s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.19s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.10s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.14s/it]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 400  |  Max new tokens: 16
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 245.4 | (Qwen): 231.7 | Latent length M: 32
+Compression ratio (Llama): 7.7x | (Qwen): 7.2x
+Approx interlingua payload per example: 5840 bytes (6-bit selected); fp16 reference: 14352 bytes; fp32 reference: 28688 bytes
+latent/text bytes (one-copy, fp16): 11.44x
+
+— Baseline: Text prompting
+Llama  EM: 0.562  F1: 0.791  |  NLL/token (gold): 12.45985620746975
+Qwen   EM: 0.625   F1: 0.819   |  NLL/token (gold): 24.665170413293474
+Wall clock: 66.04s
+
+— Latent prompting (shared interlingua)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1204, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1145, in main
+    print(f"Llama  EM: {summary['latent']['llama']['em']:.3f}  F1: {summary['latent']['llama']['f1']:.3f}  |  NLL/token (gold): {summary['latent']['llama']['nll_token']}")
+KeyError: 'nll_token'
