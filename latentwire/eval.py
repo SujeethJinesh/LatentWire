@@ -984,7 +984,14 @@ def main():
     _ensure_dir(args.out_dir)
 
     # Load run config (from training)
-    with open(os.path.join(args.ckpt, "config.json")) as f:
+    # Resolve checkpoint directory if a file path (e.g., state.pt) was provided
+    ckpt_path = args.ckpt
+    if os.path.isfile(ckpt_path):
+        ckpt_dir = os.path.dirname(ckpt_path)
+    else:
+        ckpt_dir = ckpt_path
+
+    with open(os.path.join(ckpt_dir, "config.json")) as f:
         cfg = json.load(f)
 
     encoder_type = cfg.get("encoder_type", "byte")
@@ -1005,7 +1012,7 @@ def main():
     byte_max = cfg.get("byte_max", 512)
 
     # Try to load training-time prefix stats (optional)
-    train_stats_path = os.path.join(args.ckpt, "training_stats.json")
+    train_stats_path = os.path.join(ckpt_dir, "training_stats.json")
     train_stats = None
     if os.path.isfile(train_stats_path):
         try:
