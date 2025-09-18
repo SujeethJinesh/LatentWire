@@ -1,0 +1,25 @@
+
+=========================================
+Starting pipeline at Thu Sep 18 10:03:52 PDT 2025
+=========================================
+
+
+=========================================
+TRAIN + PER-EPOCH EVAL
+=========================================
+
+
+=========================================
+EPOCH 1/12
+=========================================
+
+Running pre-train eval on existing checkpoint...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1194, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 987, in main
+    with open(os.path.join(args.ckpt, "config.json")) as f:
+NotADirectoryError: [Errno 20] Not a directory: 'runs/8B_hero_stq_m32/ckpt/state.pt/config.json'

@@ -1,0 +1,32 @@
+=========================================
+CODE-SERVER CONNECTION INFO
+=========================================
+
+Job ID: 93138
+Running on: n10
+Port: 9318
+Started at: Thu Sep 18 09:54:19 AM PDT 2025
+
+STEP 1: Run this on your LOCAL machine:
+
+ssh -L 9318:n10:9318 marlowe
+
+STEP 2: Open browser to:
+
+http://localhost:9318
+
+Working directory: /projects/m000066/sujinesh/LatentWire
+
+=========================================
+To stop: scancel 93138
+=========================================
+Starting code-server at Thu Sep 18 09:54:19 AM PDT 2025...
+[2025-09-18T16:54:20.555Z] info  code-server 4.93.1 69df01185ce2f80e99c9e4f8c8de1907cc7a9bc5
+[2025-09-18T16:54:20.557Z] info  Using user-data-dir /tmp/code-server-93138
+[2025-09-18T16:54:20.566Z] warn  Could not create socket at /tmp/code-server-93138/code-server-ipc.sock
+[2025-09-18T16:54:20.570Z] info  Using config file /users/sujinesh/.config/code-server/config.yaml
+[2025-09-18T16:54:20.570Z] info  HTTP server listening on http://0.0.0.0:9318/
+[2025-09-18T16:54:20.570Z] info    - Authentication is disabled
+[2025-09-18T16:54:20.570Z] info    - Not serving HTTPS
+[2025-09-18T16:54:20.570Z] info    - Proxy disabled
+[2025-09-18T16:54:20.570Z] info  Session server listening on /tmp/code-server-93138/code-server-ipc.sock
