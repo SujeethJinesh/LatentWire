@@ -27,7 +27,7 @@ PREFIX_GAIN=1.15
 
 # Training emphasis on early steps
 EPOCHS=12
-BATCH_SIZE=36
+BATCH_SIZE=24
 GRAD_ACCUM_STEPS=32
 TRAIN_SAMPLES=40000           # faster epochs than full 87k, still enough variety
 
