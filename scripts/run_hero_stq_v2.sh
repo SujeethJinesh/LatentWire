@@ -113,7 +113,7 @@ EVAL_ARGS_COMMON=(
   --first_token_top_p "$FIRST_TOKEN_TOP_P" --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16
   --min_new_tokens 3 --eos_ban_steps 6 --chunk_size "$CHUNK_SIZE"
-  --sequential_eval 1     # **explicit** value (parser-friendly)
+  --sequential_eval
   --hf_encoder_id "$HF_ENCODER_ID" --max_enc_tokens "$MAX_ENC_TOKENS"
   --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
   --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB"

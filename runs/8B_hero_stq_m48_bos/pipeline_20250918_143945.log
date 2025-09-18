@@ -1,0 +1,22 @@
+
+=========================================
+Starting pipeline at Thu Sep 18 14:39:45 PDT 2025
+=========================================
+
+
+=========================================
+TRAIN + PER-EPOCH EVAL
+=========================================
+
+
+=========================================
+EPOCH 1/12
+=========================================
+
+Running pre-train eval on existing checkpoint...
+Evaluating: runs/8B_hero_stq_m48_bos/ckpt/state.pt -> runs/8B_hero_stq_m48_bos/eval_epoch1_pre (bf16=1)
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Loaded training_stats.json: runs/8B_hero_stq_m48_bos/ckpt/training_stats.json
+Building encoder and computing Z...
