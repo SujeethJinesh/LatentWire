@@ -1,4 +1,51 @@
 # LatentWire: A Shared Soft‑Token Interlingua for Heterogeneous LLM Cooperation
+---
+## Update (2025-09-18): Token‑level encoder + learned query pooling (STQueryEncoder)
+
+### Why this change? (one paragraph, plain-English)
+Our earlier **SimpleEncoder** collapsed the whole source text into a single sentence embedding before “spreading” it across the M latent slots. That’s fast but loses **positional structure** from the source. The new **STQueryEncoder** preserves order by first computing **token‑level features** with a small, **frozen** HF encoder (default: `microsoft/MiniLM‑L6‑v2`) and then using **learned queries** to **cross‑attend** over those tokens to build the `M×d_z` latent. Inside Llama/Qwen, **RoPE** continues to assign positions to the latent prefix, so the LLMs still see an ordered prefix of length `M`.
+
+### What the pipeline looks like now
+```mermaid
+flowchart LR
+    A[Text: Question + Context] --> B[STQueryEncoder\n(HF token encoder, frozen)]
+    B --> C[Cross‑Attention Pooler\nLearned queries + slot sinusoid]
+    C -->|Z \in R^{M×d_z}| D1[Adapter_L\nLayerNorm→Linear→tanh]
+    C -->|Z \in R^{M×d_z}| D2[Adapter_Q\nLayerNorm→Linear→tanh]
+    D1 --> E1[Llama (frozen)\ninputs_embeds: [P_L, E_L(answer[:-1])]]
+    D2 --> E2[Qwen (frozen)\ninputs_embeds: [P_Q, E_Q(answer[:-1])]]
+    E1 --> F1[Answer 1]
+    E2 --> F2[Answer 2]
+    F1 --> G[Joint rescoring\nsum logp under both models]
+    F2 --> G
+    G --> H[Final answer]
+```
+
+**Yes—we are still:** `text → encoder (Z) → model‑specific adapter → LLM`. We’ve **replaced the encoder** with one that keeps token‑level structure and added small systems fixes (anchor normalization, dataloader speedups, optimizer‑state device alignment).
+
+### Why this should outperform the previous encoder at the same M (4× compression target)
+1. **Token‑level evidence is preserved**: learned queries attend over **all tokens** (not a single pooled vector), so `Z` retains fine‑grained cues for extraction.  
+2. **Better early‑token acceptance**: slot sinusoid + LayerNorm/tanh adapters keep statistics close to real token embeddings; plus stronger first‑token loss (`λ_first`) aligns the first decode step.  
+3. **Frozen, off‑the‑shelf backbone**: MiniLM‑L6 is tiny, fast, and general—no task‑specific tuning required.  
+4. **Interlingua story intact**: LLMs remain **frozen**; only the small encoder/adapters learn—so we can honestly claim a shared wire, not per‑model fine‑tuning.
+
+### Controlled experiment we will run (baked into `run_hero_stq.sh`)
+- **Models:** Llama‑3.1‑8B‑Instruct, Qwen‑2.5‑7B‑Instruct (NF4 for memory).  
+- **Encoder:** `encoder_type=stq`, MiniLM‑L6‑v2 (frozen), `max_enc_tokens=1024`.  
+- **Latent budget:** `M=32` (`≈4×` compression on SQuAD prompts), `d_z=256`, split `shared=24`, `private=4`.  
+- **Training:** 12 epochs, `B=2`, `grad_accum=32`, `λ_first=3.0`, `K=8`, `τ=1.25`.  
+- **Eval each epoch:** Text vs Latent vs Token‑budget‑32; EM/F1, NLL/token, FirstTok@k, wall‑clock.
+
+### Minimal math (unchanged objective)
+- `Z = Attn(Q=learned_queries, K=Proj(HF_tokens), V=Proj(HF_tokens))`  
+- `P_ℓ = A_ℓ(Z)`, `inputs_embeds = [P_ℓ, E_ℓ(y[:-1])]`, labels `[mask… , y[1:]]`  
+- Loss: `L = 0.5·(CE_L + CE_Q)` with auxiliary first‑token / first‑K terms.
+
+### Ablations (guardrails)
+- `M ∈ {24, 32, 48}`, `d_z ∈ {192, 256, 320}`; compare **Latent vs Token‑budget** at same `M`.  
+- Encoder swap: `stq` vs `simple-st` to quantify the positional benefit.
+
+---
 
 **Project type:** Systems + Methods (MLSys)  
 **Target venue:** MLSys / systems-for-ML workshop track (or main)  
