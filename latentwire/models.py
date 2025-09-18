@@ -171,6 +171,89 @@ class InterlinguaEncoder(nn.Module):
         parts = [shared] + [private[key] for key in self.model_keys]
         return torch.cat(parts, dim=1)
 
+
+
+# ===========================
+# STQueryEncoder: Off-the-shelf token encoder + learned query pooler
+# ===========================
+from transformers import AutoTokenizer, AutoModel
+
+class STQueryEncoder(nn.Module):
+    """Frozen HF encoder (e.g., MiniLM) -> learned queries with cross-attention pooling.
+    Preserves positional structure by attending over token-level features.
+    Returns [B, M, d_z].
+    """
+    def __init__(self, d_z: int = 256, latent_len: int = 32, hf_encoder_id: str = "microsoft/MiniLM-L6-v2",
+                 max_tokens: int = 1024, n_heads: int = 8):
+        super().__init__()
+        self.tokenizer = AutoTokenizer.from_pretrained(hf_encoder_id, use_fast=True)
+        self.enc = AutoModel.from_pretrained(hf_encoder_id)
+        for p in self.enc.parameters():
+            p.requires_grad_(False)
+        self.enc.eval()
+
+        self.max_tokens = int(max_tokens)
+        self.hf_dim = int(self.enc.config.hidden_size)
+
+        # Project encoder features to d_z for attention K/V; queries live in d_z
+        self.to_k = nn.Linear(self.hf_dim, d_z)
+        self.to_v = nn.Linear(self.hf_dim, d_z)
+
+        # Learned queries + fixed sinusoidal slot codes (helps under RoPE on consumers)
+        self.latent_len = int(latent_len)
+        self.queries = nn.Parameter(torch.randn(self.latent_len, d_z) / math.sqrt(d_z))
+
+        # Fixed sinusoidal per-slot code
+        slot_pe = torch.zeros(self.latent_len, d_z)
+        position = torch.arange(0, self.latent_len, dtype=torch.float32).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_z, 2, dtype=torch.float32) * (-math.log(10000.0) / d_z))
+        slot_pe[:, 0::2] = torch.sin(position * div_term)
+        slot_pe[:, 1::2] = torch.cos(position * div_term)
+        self.register_buffer("slot_pe", slot_pe, persistent=False)
+
+        self.attn = nn.MultiheadAttention(embed_dim=d_z, num_heads=n_heads, batch_first=True)
+        self.ff = nn.Sequential(
+            nn.LayerNorm(d_z),
+            nn.Linear(d_z, 4*d_z),
+            nn.GELU(),
+            nn.Linear(4*d_z, d_z),
+        )
+        self.out_ln = nn.LayerNorm(d_z)
+
+    @torch.no_grad()
+    def _encode_tokens(self, texts: List[str], device: torch.device):
+        toks = self.tokenizer(
+            texts, padding=True, truncation=True, max_length=self.max_tokens, return_tensors="pt"
+        )
+        toks = {k: v.to(device) for k, v in toks.items()}
+        out = self.enc(**toks, output_hidden_states=False, return_dict=True).last_hidden_state  # [B,T,H]
+        attn_mask = toks["attention_mask"].bool()  # [B,T]
+        return out, attn_mask
+
+    def forward(self, texts: List[str]) -> torch.Tensor:
+        # We allow the module to be placed on a device; tokenization stays CPU, model goes to device
+        device = next(self.parameters()).device
+        with torch.no_grad():
+            feats, amask = self._encode_tokens(texts, device)  # [B,T,H], [B,T]
+        B, T, H = feats.shape
+
+        # Project to d_z
+        K = self.to_k(feats)  # [B,T,d_z]
+        V = self.to_v(feats)  # [B,T,d_z]
+
+        # Prepare queries with slot codes
+        q = (self.queries + self.slot_pe).unsqueeze(0).expand(B, -1, -1)  # [B,M,d_z]
+
+        # key_padding_mask expects True at positions that should be ignored
+        key_padding_mask = ~amask  # [B,T], True = ignore
+
+        # Cross-attention: Q (B,M,d) attends to K/V (B,T,d)
+        out, _ = self.attn(q, K, V, key_padding_mask=key_padding_mask, need_weights=False)
+        out = out + q
+        out = out + self.ff(out)
+        out = self.out_ln(out)
+        return out  # [B,M,d_z]
+
 class SimpleEncoder(nn.Module):
     """
     Frozen SentenceTransformer -> linear projection -> learned queries.

@@ -15,18 +15,31 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from latentwire.diagnostics import capture_env_snapshot
-
-from latentwire.models import (
-    InterlinguaEncoder,
-    Adapter,
-    LMWrapper,
-    LMConfig,
-    ByteTokenizer,
-    SimpleEncoder,
-)
 from latentwire.dataloader_patch import patch_dataloader_defaults
 from latentwire.anchor_utils import apply_anchor_normalization
+
+from latentwire.models import (
+    InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder, STQueryEncoder
+)
 from latentwire.checkpointing import save_latest_checkpoint
+
+def _align_optimizer_state_to_param_devices(optimizer):
+    """Ensure optimizer state tensors live on the same device as their params (multi-GPU safety)."""
+    try:
+        for param, st in optimizer.state.items():
+            if not isinstance(st, dict):
+                continue
+            pdev = getattr(param, "device", None)
+            if pdev is None:
+                continue
+            for k, v in list(st.items()):
+                try:
+                    if torch.is_tensor(v) and v.device != pdev:
+                        st[k] = v.to(pdev, non_blocking=True)
+                except Exception:
+                    pass
+    except Exception:
+        pass
 from latentwire.data import load_examples
 from latentwire.common import collate_bytes  # deduped
 from latentwire.losses import (
@@ -141,8 +154,9 @@ def load_checkpoint(
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
         if opt_state is not None:
-            optimizer.load_state_dict(opt_state)
-            _maybe_to_device_optimizer_state(optimizer, device)
+            \1
+        _align_optimizer_state_to_param_devices(optimizer)
+_maybe_to_device_optimizer_state(optimizer, device)
             print("   -> restored optimizer state")
 
     if isinstance(state, dict) and "rng" in state:
@@ -285,11 +299,15 @@ def main():
                     help="Per-model private latent length (combined with shared length).")
     ap.add_argument("--d_z", type=int, default=256)
     ap.add_argument("--max_bytes", type=int, default=512)
-    ap.add_argument("--encoder_type", type=str, default="byte", choices=["byte", "simple-st"])
+    ap.add_argument("--encoder_type", type=str, default="byte", choices=["byte", "simple-st", "stq"])
     ap.add_argument("--encoder_use_chat_template", action="store_true",
                     help="Wrap encoder input with a neutral chat-style header (SimpleEncoder only).")
     ap.add_argument("--encoder_backbone", type=str, default=None,
                     help="Optional SentenceTransformer backbone when --encoder_type=simple-st")
+    ap.add_argument("--hf_encoder_id", type=str, default="microsoft/MiniLM-L6-v2",
+                    help="HF encoder id for --encoder_type=stq (frozen).")
+    ap.add_argument("--max_enc_tokens", type=int, default=1024,
+                    help="Max source tokens for the HF encoder when --encoder_type=stq.")
 
     # Training & stability
     ap.add_argument("--max_answer_tokens", type=int, default=32)
@@ -363,7 +381,7 @@ def main():
     ap.add_argument("--save_training_stats", action="store_true", help="Record running mean of prefix RMS per model and save to training_stats.json")
 
     args = ap.parse_args()
-    # LatentWire patches
+    # global runtime patches
     patch_dataloader_defaults()
     apply_anchor_normalization(args)
 
@@ -524,7 +542,34 @@ def main():
         def encode_fn(batch_texts):
             z_bytes = collate_bytes(batch_texts, byte_tok, device)
             return encoder(z_bytes, return_components=True)
-    else:
+    elif args.encoder_type == "stq":
+    encoder = STQueryEncoder(d_z=args.d_z, latent_len=total_latent_len,
+                             hf_encoder_id=(args.hf_encoder_id or "microsoft/MiniLM-L6-v2"),
+                             max_tokens=args.max_enc_tokens).to(device)
+
+    def _neutral_chat_wrap(s: str) -> str:
+        system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
+        return f"System: {system}\nUser: {s}\nAssistant:"
+
+    def encode_fn(batch_texts):
+        texts = batch_texts
+        if args.encoder_use_chat_template:
+            texts = [_neutral_chat_wrap(t) for t in texts]
+        raw = encoder(texts)
+        return _structure_latents(raw)
+else:
+    encoder = SimpleEncoder(d_z=args.d_z, latent_len=total_latent_len,
+                            backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2")).to(device)
+
+    def _neutral_chat_wrap(s: str) -> str:
+        system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
+        return f"System: {system}\nUser: {s}\nAssistant:"
+
+    def encode_fn(batch_texts):
+        if args.encoder_use_chat_template:
+            batch_texts = [_neutral_chat_wrap(t) for t in batch_texts]
+        raw = encoder(batch_texts)
+        return _structure_latents(raw)
         encoder = SimpleEncoder(d_z=args.d_z, latent_len=total_latent_len,
                                 backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2")).to(device)
 
@@ -921,6 +966,7 @@ def main():
             if should_step:
                 if args.max_grad_norm and args.max_grad_norm > 0:
                     torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
+                _align_optimizer_state_to_param_devices(optimizer)
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
             total_norm = grad_norm_val
@@ -979,6 +1025,8 @@ def main():
                     "qwen_id": args.qwen_id,
                     "encoder_type": args.encoder_type,
                     "encoder_use_chat_template": bool(args.encoder_use_chat_template),
+        "hf_encoder_id": (args.hf_encoder_id if hasattr(args, "hf_encoder_id") else ""),
+        "max_enc_tokens": (args.max_enc_tokens if hasattr(args, "max_enc_tokens") else 1024),
                     "encoder_backbone": (args.encoder_backbone or ""),
                     "warm_anchor_text": args.warm_anchor_text,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
@@ -1042,6 +1090,8 @@ def main():
         "qwen_id": args.qwen_id,
         "encoder_type": args.encoder_type,
         "encoder_use_chat_template": bool(args.encoder_use_chat_template),
+        "hf_encoder_id": (args.hf_encoder_id if hasattr(args, "hf_encoder_id") else ""),
+        "max_enc_tokens": (args.max_enc_tokens if hasattr(args, "max_enc_tokens") else 1024),
         "encoder_backbone": (args.encoder_backbone or ""),
         "warm_anchor_text": args.warm_anchor_text,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,

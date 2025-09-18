@@ -1,12 +1,8 @@
 # latentwire/dataloader_patch.py
 import os
-from typing import Optional
 import torch.utils.data
 
-def patch_dataloader_defaults(num_workers: Optional[int]=None, prefetch_factor: Optional[int]=None, pin_memory: Optional[bool]=None):
-    """Monkey-patch torch.utils.data.DataLoader to set better defaults for GPU training.
-    Safe no-op on CPU-only and has no effect if kwargs already provided.
-    """
+def patch_dataloader_defaults(num_workers=None, prefetch_factor=None, pin_memory=None):
     try:
         _Orig = torch.utils.data.DataLoader
     except Exception:
@@ -14,7 +10,6 @@ def patch_dataloader_defaults(num_workers: Optional[int]=None, prefetch_factor: 
 
     if num_workers is None:
         try:
-            # Heuristic: 4 * #GPUs, capped by CPU cores
             ngpu = len(os.environ.get("CUDA_VISIBLE_DEVICES","").split(",")) if os.environ.get("CUDA_VISIBLE_DEVICES") else 1
             cpu = os.cpu_count() or 8
             num_workers = min(cpu, max(4, 4*ngpu))
@@ -27,13 +22,12 @@ def patch_dataloader_defaults(num_workers: Optional[int]=None, prefetch_factor: 
     if pin_memory is None:
         pin_memory = True
 
-    class _PatchedDataLoader(_Orig):
+    class _Patched(_Orig):
         def __init__(self, *args, **kwargs):
             kwargs.setdefault("pin_memory", pin_memory)
             kwargs.setdefault("num_workers", num_workers)
-            # prefetch_factor only valid when num_workers > 0
             if kwargs.get("num_workers", 0) > 0:
                 kwargs.setdefault("prefetch_factor", prefetch_factor)
             super().__init__(*args, **kwargs)
 
-    torch.utils.data.DataLoader = _PatchedDataLoader
+    torch.utils.data.DataLoader = _Patched

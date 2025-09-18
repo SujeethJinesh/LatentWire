@@ -14,15 +14,8 @@ import torch
 import math
 
 from latentwire.models import (
-    InterlinguaEncoder,
-    Adapter,
-    LMWrapper,
-    LMConfig,
-    ByteTokenizer,
-    SimpleEncoder,
+    InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder, STQueryEncoder
 )
-from latentwire.dataloader_patch import patch_dataloader_defaults
-from latentwire.anchor_utils import apply_anchor_normalization
 from latentwire.data import load_examples
 from latentwire.metrics import batch_metrics, _normalize, em, f1
 from latentwire.prefix_utils import (
@@ -917,6 +910,8 @@ def main():
 
     ap.add_argument("--sequential_eval", action="store_true")
     ap.add_argument("--chunk_size", type=int, default=8)
+    ap.add_argument("--hf_encoder_id", type=str, default="microsoft/MiniLM-L6-v2")
+    ap.add_argument("--max_enc_tokens", type=int, default=1024)
     ap.add_argument("--fresh_eval", action="store_true")
 
     ap.add_argument("--debug", action="store_true")
@@ -1043,6 +1038,10 @@ def main():
                 byte_tok = ByteTokenizer(max_bytes=byte_max)
                 z_bytes = collate_bytes(prompts_raw, byte_tok, device)
                 encoded_latents = encoder_wire(z_bytes, return_components=True)
+        elif encoder_type == "stq":
+            encoder_wire = STQueryEncoder(d_z=d_z, latent_len=latent_len,
+                                         hf_encoder_id=(args.hf_encoder_id or cfg.get('hf_encoder_id','microsoft/MiniLM-L6-v2')),
+                                         max_tokens=(args.max_enc_tokens or cfg.get('max_enc_tokens',1024))).to(device).eval()
         else:
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
             encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
