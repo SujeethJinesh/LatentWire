@@ -1,26 +1,16 @@
-# latentwire/anchor_utils.py
-import re
+import torch
+from .common import LOG
 
-def _norm_space(s: str) -> str:
-    s = (s or "").replace("\t"," ").replace("\r"," ").replace("\n"," ")
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
-
-def normalize_anchor_text(s: str) -> str:
-    s = _norm_space(s)
-    if not s:
-        return s
-    if not s.endswith(" "):
-        s = s + " "
-    return s
-
-def apply_anchor_normalization(args):
-    if hasattr(args, "warm_anchor_text") and args.warm_anchor_text:
-        args.warm_anchor_text = normalize_anchor_text(args.warm_anchor_text)
-    if hasattr(args, "latent_anchor_text") and args.latent_anchor_text:
-        args.latent_anchor_text = normalize_anchor_text(args.latent_anchor_text)
-    # Disable BOS when anchor text present
-    if (getattr(args, "warm_anchor_text", "") or getattr(args, "latent_anchor_text", "")) and hasattr(args, "append_bos_after_prefix"):
-        if str(getattr(args, "append_bos_after_prefix")).lower() != "no":
-            setattr(args, "append_bos_after_prefix", "no")
-    return args
+def apply_anchor_and_bos(prefix_embeds: torch.Tensor, anchor_embeds: torch.Tensor, append_bos_after_prefix: str = "no"):
+    """
+    Concatenate [prefix, anchor] and control whether a BOS is appended by the caller.
+    prefix_embeds: [M, d_model]
+    anchor_embeds: [A, d_model]
+    """
+    if prefix_embeds.dim() == 2:
+        prefix_embeds = prefix_embeds.unsqueeze(0)
+    if anchor_embeds.dim() == 2:
+        anchor_embeds = anchor_embeds.unsqueeze(0)
+    out = torch.cat([prefix_embeds, anchor_embeds], dim=1)
+    LOG.debug(f"[anchor] prefix+anchor -> {tuple(out.shape)}")
+    return out

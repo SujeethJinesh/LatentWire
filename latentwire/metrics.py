@@ -1,50 +1,35 @@
-# latentwire/metrics.py
-# Basic SQuAD-style EM/F1 utilities with light normalization.
-import re, string
-from typing import List, Tuple
+import os, json, re, string
+from typing import List, Dict, Tuple
 
-_ARTICLES = {"a","an","the"}
-_PUNC_TABLE = str.maketrans("", "", string.punctuation)
+def _normalize_answer(s: str) -> str:
+    def remove_articles(text): return re.sub(r"\b(a|an|the)\b", " ", text)
+    def white_space_fix(text): return " ".join(text.split())
+    def remove_punc(text): return "".join(ch for ch in text if ch not in set(string.punctuation))
+    def lower(text): return text.lower()
+    return white_space_fix(remove_articles(remove_punc(lower(s))))
 
-def _normalize(s: str) -> str:
-    if s is None:
-        return ""
-    s = s.strip().lower()
-    s = s.translate(_PUNC_TABLE)
-    s = re.sub(r"\s+", " ", s).strip()
-    toks = [t for t in s.split() if t not in _ARTICLES]
-    return " ".join(toks)
+def _f1_score(pred: str, truth: str) -> float:
+    pred_tokens = _normalize_answer(pred).split()
+    truth_tokens = _normalize_answer(truth).split()
+    common = set(pred_tokens) & set(truth_tokens)
+    if len(pred_tokens) == 0 or len(truth_tokens) == 0: return float(pred_tokens == truth_tokens)
+    if not common: return 0.0
+    prec = len(common) / len(pred_tokens)
+    rec = len(common) / len(truth_tokens)
+    return 2 * prec * rec / (prec + rec + 1e-8)
 
-def em(pred: str, gold: str) -> float:
-    return 1.0 if _normalize(pred) == _normalize(gold) else 0.0
+def _em(pred: str, truth: str) -> float:
+    return float(_normalize_answer(pred) == _normalize_answer(truth))
 
-def f1(pred: str, gold: str) -> float:
-    p = _normalize(pred).split()
-    g = _normalize(gold).split()
-    if not p and not g:
-        return 1.0
-    if not p or not g:
-        return 0.0
-    p_counts = {}
-    for t in p:
-        p_counts[t] = p_counts.get(t, 0) + 1
-    overlap = 0
-    for t in g:
-        if p_counts.get(t, 0) > 0:
-            overlap += 1
-            p_counts[t] -= 1
-    if overlap == 0:
-        return 0.0
-    prec = overlap / max(1, len(p))
-    rec  = overlap / max(1, len(g))
-    return 2 * prec * rec / (prec + rec) if (prec + rec) > 0 else 0.0
-
-def batch_metrics(preds: List[str], golds: List[str]) -> Tuple[float, float]:
-    assert len(preds) == len(golds)
-    em_sum = 0.0
-    f1_sum = 0.0
+def squad_em_f1(preds: List[str], truths: List[List[str]]) -> Tuple[float, float]:
+    em = 0.0; f1 = 0.0
     n = len(preds)
-    for p, g in zip(preds, golds):
-        em_sum += em(p, g)
-        f1_sum += f1(p, g)
-    return em_sum / n if n else 0.0, f1_sum / n if n else 0.0
+    for p, ts in zip(preds, truths):
+        em += max(_em(p, t) for t in ts)
+        f1 += max(_f1_score(p, t) for t in ts)
+    return em / max(n,1), f1 / max(n,1)
+
+def dump_metrics(path: str, metrics: Dict):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(metrics, f, indent=2)
