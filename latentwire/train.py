@@ -154,9 +154,10 @@ def load_checkpoint(
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
         if opt_state is not None:
-            \1
-        _align_optimizer_state_to_param_devices(optimizer)
-_maybe_to_device_optimizer_state(optimizer, device)
+            optimizer.load_state_dict(opt_state)
+            _align_optimizer_state_to_param_devices(optimizer)
+            _maybe_to_device_optimizer_state(optimizer, device)
+            _debug_print_optimizer_state_devices(optimizer)
             print("   -> restored optimizer state")
 
     if isinstance(state, dict) and "rng" in state:
@@ -542,45 +543,42 @@ def main():
         def encode_fn(batch_texts):
             z_bytes = collate_bytes(batch_texts, byte_tok, device)
             return encoder(z_bytes, return_components=True)
+
     elif args.encoder_type == "stq":
-    encoder = STQueryEncoder(d_z=args.d_z, latent_len=total_latent_len,
-                             hf_encoder_id=(args.hf_encoder_id or "microsoft/MiniLM-L6-v2"),
-                             max_tokens=args.max_enc_tokens).to(device)
-
-    def _neutral_chat_wrap(s: str) -> str:
-        system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
-        return f"System: {system}\nUser: {s}\nAssistant:"
-
-    def encode_fn(batch_texts):
-        texts = batch_texts
-        if args.encoder_use_chat_template:
-            texts = [_neutral_chat_wrap(t) for t in texts]
-        raw = encoder(texts)
-        return _structure_latents(raw)
-else:
-    encoder = SimpleEncoder(d_z=args.d_z, latent_len=total_latent_len,
-                            backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2")).to(device)
-
-    def _neutral_chat_wrap(s: str) -> str:
-        system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
-        return f"System: {system}\nUser: {s}\nAssistant:"
-
-    def encode_fn(batch_texts):
-        if args.encoder_use_chat_template:
-            batch_texts = [_neutral_chat_wrap(t) for t in batch_texts]
-        raw = encoder(batch_texts)
-        return _structure_latents(raw)
-        encoder = SimpleEncoder(d_z=args.d_z, latent_len=total_latent_len,
-                                backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2")).to(device)
+        encoder = STQueryEncoder(
+            d_z=args.d_z,
+            latent_len=total_latent_len,
+            hf_encoder_id=(args.hf_encoder_id or "microsoft/MiniLM-L6-v2"),
+            max_tokens=args.max_enc_tokens,
+        ).to(device)
 
         def _neutral_chat_wrap(s: str) -> str:
             system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
             return f"System: {system}\nUser: {s}\nAssistant:"
 
         def encode_fn(batch_texts):
+            texts = batch_texts
             if args.encoder_use_chat_template:
-                batch_texts = [_neutral_chat_wrap(t) for t in batch_texts]
-            raw = encoder(batch_texts)
+                texts = [_neutral_chat_wrap(t) for t in texts]
+            raw = encoder(texts)
+            return _structure_latents(raw)
+
+    else:
+        encoder = SimpleEncoder(
+            d_z=args.d_z,
+            latent_len=total_latent_len,
+            backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2"),
+        ).to(device)
+
+        def _neutral_chat_wrap(s: str) -> str:
+            system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
+            return f"System: {system}\nUser: {s}\nAssistant:"
+
+        def encode_fn(batch_texts):
+            texts = batch_texts
+            if args.encoder_use_chat_template:
+                texts = [_neutral_chat_wrap(t) for t in texts]
+            raw = encoder(texts)
             return _structure_latents(raw)
 
     # ===== Adapters =====
