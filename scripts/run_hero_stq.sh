@@ -141,6 +141,13 @@ run_eval() {
       if [[ -n "${WARM_ANCHOR_TEXT}" ]]; then TRAIN_ARGS+=(--warm_anchor_text "$WARM_ANCHOR_TEXT"); fi
       if [[ $LOAD_4BIT -eq 1 ]]; then TRAIN_ARGS+=(--load_4bit); fi
       if [[ "$ADAPTER_COLORIZE" == "1" ]]; then TRAIN_ARGS+=(--adapter_colorize); fi
+
+      # If we're resuming from an existing checkpoint, perform an eval before training resumes
+      if [[ -f "${CKPT_DIR}/state.pt" || -f "${CKPT_DIR}/encoder.pt" ]]; then
+        echo "Running pre-train eval on existing checkpoint..."
+        run_eval "$CKPT_DIR" "${RUN_DIR}/eval_epoch${epoch}_pre" "$SMOKE_SAMPLES"
+      fi
+
       CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py "${TRAIN_ARGS[@]}"
       epoch_ckpt="${RUN_DIR}/epoch${epoch}"; rm -rf "$epoch_ckpt"; cp -r "$CKPT_DIR" "$epoch_ckpt"
       run_eval "$epoch_ckpt" "${RUN_DIR}/eval_epoch${epoch}" "$SMOKE_SAMPLES"
