@@ -1,0 +1,19 @@
+
+=========================================
+Starting pipeline at Wed Sep 17 16:57:28 PDT 2025
+=========================================
+
+
+=========================================
+TRAIN + PER-EPOCH EVAL
+=========================================
+
+
+=========================================
+EPOCH 1/20
+=========================================
+
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 21
+    from latentwire.dataloader_patch import patch_dataloader_defaults
+    ^
+SyntaxError: invalid syntax

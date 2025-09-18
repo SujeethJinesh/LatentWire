@@ -34,7 +34,7 @@ PREFIX_GAIN=1.15
 
 # Training knobs (stronger first steps & KD)
 EPOCHS=12
-BATCH_SIZE=40
+BATCH_SIZE=28
 GRAD_ACCUM_STEPS=32
 TRAIN_SAMPLES=87599
 ENCODER_TYPE="byte"           # keep byte for generality; switch to 'simple-st' if GPU-limited

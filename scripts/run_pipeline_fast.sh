@@ -30,7 +30,7 @@ PREFIX_GAIN=1.15
 
 # Training knobs focused on acceptance
 EPOCHS=20
-BATCH_SIZE=2
+BATCH_SIZE=28
 GRAD_ACCUM_STEPS=32
 TRAIN_SAMPLES=20000              # ↓ from 87599 -> faster epochs
 ENCODER_TYPE="byte"
