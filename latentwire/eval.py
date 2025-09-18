@@ -821,7 +821,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
             for name in model_contexts
         },
         "latent": {
-            name: latent_results[name]["latent"]["metrics"]
+            name: {
+                **latent_results[name]["latent"]["metrics"],
+                "nll_token": latent_results[name]["latent"]["metrics"].get("nll"),
+            }
             for name in model_contexts
         },
         "token_budget": {
