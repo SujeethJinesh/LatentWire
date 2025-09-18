@@ -15,7 +15,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from latentwire.diagnostics import capture_env_snapshot
-from latentwire.diagnostics import debug_optimizer_state_devices
 from latentwire.dataloader_patch import patch_dataloader_defaults
 from latentwire.anchor_utils import apply_anchor_normalization
 
