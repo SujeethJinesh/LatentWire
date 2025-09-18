@@ -1050,6 +1050,19 @@ def main():
             encoder_wire = STQueryEncoder(d_z=d_z, latent_len=latent_len,
                                          hf_encoder_id=(args.hf_encoder_id or cfg.get('hf_encoder_id','sentence-transformers/all-MiniLM-L6-v2')),
                                          max_tokens=(args.max_enc_tokens or cfg.get('max_enc_tokens',1024))).to(device).eval()
+            encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+            with torch.no_grad():
+                raw = encoder_wire(prompts_raw)
+                shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
+                private = {}
+                start = latent_shared_len
+                for key in model_keys:
+                    if latent_private_len > 0:
+                        private[key] = raw[:, start:start + latent_private_len]
+                    else:
+                        private[key] = raw.new_zeros(raw.size(0), 0, raw.size(-1))
+                    start += latent_private_len
+                encoded_latents = {"shared": shared, "private": private}
         else:
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
             encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
