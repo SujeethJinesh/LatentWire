@@ -4,8 +4,6 @@ import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
 
-from .common import LOG
-
 class STQueryEncoder(nn.Module):
     """
     Sentence-Transformer based encoder (MiniLM backbone) with learned cross-attention
