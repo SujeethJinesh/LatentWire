@@ -1,0 +1,21 @@
+
+=========================================
+Starting pipeline at Thu Sep 18 16:39:45 PDT 2025
+=========================================
+
+
+=========================================
+TRAIN + PER-EPOCH EVAL
+=========================================
+
+
+=========================================
+EPOCH 1/12
+=========================================
+
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 17, in <module>
+    from latentwire.diagnostics import capture_env_snapshot
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/diagnostics.py", line 4, in <module>
+    from .common import rms, save_json, LOG
+ImportError: cannot import name 'rms' from 'latentwire.common' (/projects/m000066/sujinesh/LatentWire/latentwire/common.py)
