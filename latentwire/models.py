@@ -222,9 +222,12 @@ class STQueryEncoder(nn.Module):
 
     @torch.no_grad()
     def _encode_tokens(self, texts: List[str], device: torch.device):
-        toks = self.tokenizer(
-            texts, padding=True, truncation=True, max_length=self.max_tokens, return_tensors="pt"
-        )
+        toks = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
+        # Clip sequences longer than max_tokens
+        if "input_ids" in toks and toks["input_ids"].size(-1) > self.max_tokens:
+            toks["input_ids"] = toks["input_ids"][..., : self.max_tokens]
+        if "attention_mask" in toks and toks["attention_mask"].size(-1) > self.max_tokens:
+            toks["attention_mask"] = toks["attention_mask"][..., : self.max_tokens]
         toks = {k: v.to(device) for k, v in toks.items()}
         out = self.enc(**toks, output_hidden_states=False, return_dict=True).last_hidden_state  # [B,T,H]
         attn_mask = toks["attention_mask"].bool()  # [B,T]
