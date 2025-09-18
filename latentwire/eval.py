@@ -551,6 +551,9 @@ def _run_latent_path(
 def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
     print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
+    ckpt_path = args.ckpt
+    ckpt_dir = os.path.dirname(ckpt_path) if os.path.isfile(ckpt_path) else ckpt_path
+
     llama_map_spec = args.llama_device_map if args.llama_device_map is not None else cfg.get("llama_device_map")
     qwen_map_spec = args.qwen_device_map if args.qwen_device_map is not None else cfg.get("qwen_device_map")
     llama_devices_spec = args.llama_devices if args.llama_devices is not None else cfg.get("llama_devices")
