@@ -14,8 +14,15 @@ import torch
 import math
 
 from latentwire.models import (
-    InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder, STQueryEncoder
+    InterlinguaEncoder,
+    Adapter,
+    LMWrapper,
+    LMConfig,
+    ByteTokenizer,
+    SimpleEncoder,
+    STQueryEncoder,
 )
+from latentwire.dataloader_patch import patch_dataloader_defaults
 from latentwire.data import load_examples
 from latentwire.metrics import batch_metrics, _normalize, em, f1
 from latentwire.prefix_utils import (
