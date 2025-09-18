@@ -121,10 +121,23 @@ LOG_FILE="${RUN_DIR}/pipeline_${ts}.log"
 
 print_header() { echo ""; echo "========================================="; echo "$1"; echo "========================================="; echo ""; }
 
+resolve_ckpt_for_eval() {
+  local path="$1"
+  if [[ -f "${path}/state.pt" ]]; then
+    echo "${path}/state.pt"
+  elif [[ -f "${path}/encoder.pt" ]]; then
+    echo "$path"
+  else
+    echo "$path"
+  fi
+}
+
 run_eval() {
   local ckpt_path="$1"; local out_dir="$2"; local n_samples="$3"
   mkdir -p "$out_dir"
-  EVAL_ARGS=( --ckpt "$ckpt_path" --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" --samples "$n_samples" --out_dir "$out_dir" "${EVAL_ARGS_COMMON[@]}" )
+  local resolved
+  resolved=$(resolve_ckpt_for_eval "$ckpt_path")
+  EVAL_ARGS=( --ckpt "$resolved" --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" --samples "$n_samples" --out_dir "$out_dir" "${EVAL_ARGS_COMMON[@]}" )
   if [[ $FRESH_EVAL -eq 1 ]]; then EVAL_ARGS+=(--fresh_eval); fi
   if [[ $LOAD_4BIT -eq 1 ]]; then EVAL_ARGS+=(--load_4bit); fi
   CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py "${EVAL_ARGS[@]}"
