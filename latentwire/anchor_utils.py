@@ -3,6 +3,12 @@ import logging
 
 LOG = logging.getLogger("latentwire.anchor_utils")
 
+
+def apply_anchor_normalization(args):
+    """Placeholder for backwards compatibility."""
+    return None
+
+
 def apply_anchor_and_bos(prefix_embeds: torch.Tensor, anchor_embeds: torch.Tensor, append_bos_after_prefix: str = "no"):
     """
     Concatenate [prefix, anchor] and control whether a BOS is appended by the caller.
