@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Dict, Iterable, List, Optional, Sequence, Union
 
 import torch
 
@@ -56,7 +56,7 @@ def calibrate_to_embed_rms(
     return prefix * scale
 
 
-def bos_policy(mode: str, anchor_ids: Optional[Sequence[int] | torch.Tensor]) -> Optional[bool]:
+def bos_policy(mode: str, anchor_ids: Optional[Union[Sequence[int], torch.Tensor]]) -> Optional[bool]:
     """Determine whether to append BOS after the latent prefix."""
     mode = (mode or "auto").lower()
     has_anchor = anchor_ids is not None and len(anchor_ids) > 0
@@ -97,7 +97,7 @@ def build_scaffold_ids(
     tokenizer,
     texts: Sequence[str],
     anchor_text: str,
-    device: torch.device | str,
+    device: Union[torch.device, str],
 ) -> torch.Tensor:
     """Tokenize teacher prompts for KD (prompt + anchor)."""
     if anchor_text and not anchor_text.endswith(" "):
@@ -217,4 +217,3 @@ def build_anchor_prefix_text(anchor_text: str = "Answer: ", append_bos_after_pre
         LOG.warning("Anchor text should have trailing space; appending one.")
         anchor_text = anchor_text + " "
     return {"anchor_text": anchor_text, "append_bos_after_prefix": append_bos_after_prefix}
-

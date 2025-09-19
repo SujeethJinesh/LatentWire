@@ -629,7 +629,7 @@ class LMWrapper(nn.Module):
         prefix_embeds: torch.Tensor,
         prev_token_ids: Optional[torch.Tensor],
         *,
-        anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
+        anchor_ids: Optional[Union[Sequence[int], torch.Tensor]] = None,
         append_bos_after_prefix: Optional[bool] = None,
     ) -> torch.Tensor:
         """Compose latent prefix + optional anchor/BOS + previous token ids into embeddings."""
