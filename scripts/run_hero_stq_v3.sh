@@ -60,7 +60,17 @@ LR=3e-4
 WARMUP=100
 GRAD_ACC=1
 GRAD_CLIP=1.0
-WEIGHT_DECAY=0.01
+
+# Additional adapter / encoder knobs
+D_Z=${D_Z:-256}
+MAX_BYTES=${MAX_BYTES:-512}
+MAX_ENC_TOKENS=${MAX_ENC_TOKENS:-1024}
+MAX_ANSWER_TOKENS=${MAX_ANSWER_TOKENS:-32}
+ADAPTER_HIDDEN_MULT=${ADAPTER_HIDDEN_MULT:-2}
+SCALE_L2=${SCALE_L2:-0.05}
+MANIFOLD_STAT_WEIGHT=${MANIFOLD_STAT_WEIGHT:-0.0}
+LOAD_4BIT=${LOAD_4BIT:-0}
+ADAPTER_COLORIZE=${ADAPTER_COLORIZE:-0}
 
 # Devices
 DEV="cuda"
@@ -73,6 +83,8 @@ SEQ_EVAL=1
 FRESH_EVAL=1
 
 RUN_DIR="${OUT_ROOT}"
+CKPT_DIR="${RUN_DIR}/ckpt"
+mkdir -p "$RUN_DIR" "$CKPT_DIR"
 LOG_FILE="${OUT_ROOT}/pipeline_$(date +%Y%m%d_%H%M%S).log"
 
 # --------------- Helpers ---------------
@@ -80,43 +92,49 @@ print_header () { echo -e "\\n=========================================\\n$1\\n=
 
 run_train () {
   print_header "TRAINING (${EPOCHS} epochs, ${SAMPLES} samples, latent M=${LATENT_LEN})"
-  python -u -m latentwire.train \
-    --dataset "$DATASET" \
-    --samples "$SAMPLES" \
-    --epochs "$EPOCHS" \
-    --batch_size "$BATCH" \
-    --max_new_tokens "$MAX_NEW" \
-    --device "$DEV" \
-    --seed "$SEED" \
-    --out_dir "$RUN_DIR" \
-    --llama_id "$LLAMA_ID" \
-    --qwen_id "$QWEN_ID" \
-    --encoder_type "$ENCODER_TYPE" \
-    --encoder_backbone "$ENC_BACKBONE" \
-    $( [[ "$ENC_USE_CHAT" -eq 1 ]] && echo --encoder_use_chat_template ) \
-    --latent_len "$LATENT_LEN" \
-    --max_bytes "$MAX_BYTES" \
-    --train_append_bos_after_prefix "$APPEND_BOS" \
-    --warm_anchor_text "$ANCHOR_TEXT" \
-    --first_token_ce_weight "$FIRST_W" \
-    --k_token_ce_weight "$KCE_W" \
-    --kd_first_k_weight "$KD_W" \
-    --first_k "$K_TOKENS" \
-    --kd_temperature "$TEMP" \
-    --lr "$LR" \
-    --weight_decay "$WEIGHT_DECAY" \
-    --warmup_steps "$WARMUP" \
-    --grad_accum "$GRAD_ACC" \
-    --grad_clip_norm "$GRAD_CLIP" \
-    $( [[ "$AMP_BF16" -eq 1 ]] && echo --amp_bf16 ) \
-    $( [[ "$GRAD_CKPT" -eq 1 ]] && echo --grad_ckpt )
+  ARGS=(
+    --dataset "$DATASET"
+    --samples "$SAMPLES"
+    --epochs "$EPOCHS"
+    --batch_size "$BATCH"
+    --grad_accum_steps "$GRAD_ACC"
+    --seed "$SEED"
+    --data_seed "$SEED"
+    --llama_id "$LLAMA_ID"
+    --qwen_id "$QWEN_ID"
+    --encoder_type "$ENCODER_TYPE"
+    --hf_encoder_id "$ENC_BACKBONE"
+    --max_enc_tokens "$MAX_ENC_TOKENS"
+    --latent_len "$LATENT_LEN"
+    --d_z "$D_Z"
+    --max_bytes "$MAX_BYTES"
+    --max_answer_tokens "$MAX_ANSWER_TOKENS"
+    --lr "$LR"
+    --scale_l2 "$SCALE_L2"
+    --manifold_stat_weight "$MANIFOLD_STAT_WEIGHT"
+    --first_token_ce_weight "$FIRST_W"
+    --k_ce_weight "$KCE_W"
+    --K "$K_TOKENS"
+    --kd_first_k_weight "$KD_W"
+    --kd_tau "$TEMP"
+    --train_append_bos_after_prefix "$APPEND_BOS"
+    --warm_anchor_text "$ANCHOR_TEXT"
+    --max_grad_norm "$GRAD_CLIP"
+    --adapter_hidden_mult "$ADAPTER_HIDDEN_MULT"
+    --save_dir "$CKPT_DIR"
+    --save_training_stats
+  )
+  [[ "$ENC_USE_CHAT" -eq 1 ]] && ARGS+=(--encoder_use_chat_template)
+  [[ "$ADAPTER_COLORIZE" -eq 1 ]] && ARGS+=(--adapter_colorize)
+  [[ "$LOAD_4BIT" -eq 1 ]] && ARGS+=(--load_4bit)
+  [[ "$GRAD_CKPT" -eq 1 ]] && ARGS+=(--grad_ckpt)
+  python -u -m latentwire.train "${ARGS[@]}"
 }
 
 run_eval () {
   CKPT_DIR="$1"
   OUT_EVAL="$2"
   N="$3"
-  BF16="$4"
   print_header "EVAL (N=$N) @ $CKPT_DIR -> $OUT_EVAL"
   mkdir -p "$OUT_EVAL"
   python -u -m latentwire.eval \
@@ -125,17 +143,15 @@ run_eval () {
     --dataset "$DATASET" \
     --samples "$N" \
     --max_new_tokens "$MAX_NEW" \
-    --device "$DEV" \
     --seed "$SEED" \
-    --latent_len "$LATENT_LEN" \
-    --append_bos_after_prefix "$APPEND_BOS" \
     --latent_anchor_mode "$ANCHOR_MODE" \
     --latent_anchor_text "$ANCHOR_TEXT" \
+    --append_bos_after_prefix "$APPEND_BOS" \
     --calibration "$CALIB" \
     --prefix_gain "$PREF_GAIN" \
-    --sequential_eval "$SEQ_EVAL" \
-    --fresh_eval "$FRESH_EVAL" \
-    $( [[ "$BF16" -eq 1 ]] && echo --force_bf16 )
+    $( [[ "$SEQ_EVAL" -eq 1 ]] && echo --sequential_eval ) \
+    $( [[ "$FRESH_EVAL" -eq 1 ]] && echo --fresh_eval ) \
+    $( [[ "$LOAD_4BIT" -eq 1 ]] && echo --load_4bit )
 }
 
 print_metrics () {
@@ -204,13 +220,13 @@ PY
   print_header "Starting pipeline at $(date)"
   run_train
   # quick smoke eval on the last checkpoint
-  LAST="${RUN_DIR}/epoch${EPOCHS}"
-  run_eval "$LAST" "${RUN_DIR}/eval_smoke_bf16" 200 1
+  LAST="$CKPT_DIR"
+  run_eval "$LAST" "${RUN_DIR}/eval_smoke_bf16" 200
   print_metrics "${RUN_DIR}/eval_smoke_bf16"
   print_top_predictions "${RUN_DIR}/eval_smoke_bf16" 5
 
   # optional full eval on small set
-  run_eval "$LAST" "${RUN_DIR}/eval_small" $SAMPLES 1
+  run_eval "$LAST" "${RUN_DIR}/eval_small" $SAMPLES
   print_metrics "${RUN_DIR}/eval_small"
   print_top_predictions "${RUN_DIR}/eval_small" 5
 
