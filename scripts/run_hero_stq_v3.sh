@@ -36,7 +36,7 @@ ENC_USE_CHAT=1                            # neutral chat wrapper for encoder inp
 # Budget: keep short so we can iterate quickly
 SAMPLES=${SAMPLES:-1600}
 EPOCHS=${EPOCHS:-3}
-BATCH=${BATCH:-16}
+BATCH=${BATCH:-8}
 LATENT_LEN=${LATENT_LEN:-48}             # ensures >=4x compression on SQuAD prompts
 MAX_NEW=16
 
