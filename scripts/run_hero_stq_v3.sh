@@ -182,6 +182,38 @@ PY
   fi
 }
 
+print_top_predictions() {
+  local dir="$1"; local limit="${2:-5}"
+  local preds="${dir}/predictions.jsonl"
+  if [[ ! -f "$preds" ]]; then
+    echo "✗ predictions.jsonl missing in ${dir}"
+    return
+  fi
+  echo "Top ${limit} latent predictions from ${preds}"
+  PRED_DIR="$dir" LIMIT="$limit" python - <<'PY'
+import json, os
+
+path = os.path.join(os.environ["PRED_DIR"], "predictions.jsonl")
+limit = int(os.environ.get("LIMIT", "5"))
+
+rows = []
+with open(path, "r", encoding="utf-8") as f:
+    for idx, line in enumerate(f):
+        if idx >= limit:
+            break
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+
+for i, row in enumerate(rows, 1):
+    llama = row.get("latent_pred_llama") or row.get("text_pred_llama")
+    qwen = row.get("latent_pred_qwen") or row.get("text_pred_qwen")
+    gold = row.get("gold")
+    print(f"  {i}. Llama: {llama!s} | Qwen: {qwen!s} | Gold: {gold!s}")
+PY
+}
+
 run_eval() {
   local ckpt_path="$1"; local out_dir="$2"; local n_samples="$3"
   mkdir -p "$out_dir"
@@ -215,12 +247,14 @@ run_eval() {
       epoch_ckpt="${RUN_DIR}/epoch${epoch}"; rm -rf "$epoch_ckpt"; cp -r "$CKPT_DIR" "$epoch_ckpt"
       run_eval "$epoch_ckpt" "${RUN_DIR}/eval_epoch${epoch}" "$SMOKE_SAMPLES"
       print_metrics "${RUN_DIR}/eval_epoch${epoch}"
+      print_top_predictions "${RUN_DIR}/eval_epoch${epoch}" 5
     done
   fi
   if [[ $DO_FINAL_EVAL -eq 1 ]]; then
     print_header "FINAL FULL EVAL ON LAST CKPT"
     run_eval "${RUN_DIR}/epoch${EPOCHS}" "${RUN_DIR}/eval_final" "$SAMPLES"
     print_metrics "${RUN_DIR}/eval_final"
+    print_top_predictions "${RUN_DIR}/eval_final" 5
   fi
 } 2>&1 | tee "$LOG_FILE"
 
