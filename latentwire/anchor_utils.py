@@ -4,34 +4,8 @@ import logging
 LOG = logging.getLogger("latentwire.anchor_utils")
 
 
-def _normalize_anchor_text(text: str) -> str:
-    if not text:
-        return text
-    normalized = text.rstrip()
-    if not normalized.endswith(" "):
-        normalized = normalized + " "
-    return normalized
-
-
 def apply_anchor_normalization(args):
-    """Normalize anchor text inputs and enforce BOS policy consistency."""
-    if args is None:
-        return None
-
-    if hasattr(args, "warm_anchor_text") and isinstance(args.warm_anchor_text, str):
-        args.warm_anchor_text = _normalize_anchor_text(args.warm_anchor_text)
-
-    if hasattr(args, "latent_anchor_text") and isinstance(args.latent_anchor_text, str):
-        args.latent_anchor_text = _normalize_anchor_text(args.latent_anchor_text)
-
-    has_anchor = bool(getattr(args, "warm_anchor_text", "").strip()) or bool(getattr(args, "latent_anchor_text", "").strip())
-
-    if has_anchor:
-        if hasattr(args, "append_bos_after_prefix"):
-            setattr(args, "append_bos_after_prefix", "no")
-        if hasattr(args, "train_append_bos_after_prefix"):
-            setattr(args, "train_append_bos_after_prefix", "no")
-
+    """Placeholder for backwards compatibility."""
     return None
 
 

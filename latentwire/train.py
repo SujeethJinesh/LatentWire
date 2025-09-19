@@ -177,7 +177,8 @@ def load_checkpoint(
         opt_state = state.get("optimizer", None) or state.get("optim", None)
         if opt_state is not None:
             optimizer.load_state_dict(opt_state)
-            # Keep state tensors on the same device as their parameters.
+            # Important: keep optimizer state tensors on the same device as *their* params.
+            # Do NOT mass-move to a single device, because adapters live on different GPUs.
             _align_optimizer_state_to_param_devices(optimizer)
             _debug_print_optimizer_state_devices(optimizer)
             print("   -> restored optimizer state")
