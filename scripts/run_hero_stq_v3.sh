@@ -165,6 +165,37 @@ PY
   fi
 }
 
+print_top_predictions () {
+  local DIR="$1"; local LIMIT="${2:-5}"; local FILE="$DIR/predictions.jsonl"
+  if [[ ! -f "$FILE" ]]; then
+    echo "✗ predictions.jsonl missing in $DIR"
+    return
+  fi
+  echo "Top ${LIMIT} latent predictions from $FILE"
+  PRED_PATH="$FILE" LIMIT="$LIMIT" python - <<'PY'
+import json, os
+
+path = os.environ["PRED_PATH"]
+limit = int(os.environ.get("LIMIT", "5"))
+
+with open(path, "r", encoding="utf-8") as f:
+    rows = []
+    for idx, line in enumerate(f):
+        if idx >= limit:
+            break
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+
+for i, row in enumerate(rows, 1):
+    llama = row.get("latent_pred_llama") or row.get("text_pred_llama")
+    qwen = row.get("latent_pred_qwen") or row.get("text_pred_qwen")
+    gold = row.get("gold")
+    print(f"  {i}. Llama: {llama!s} | Qwen: {qwen!s} | Gold: {gold!s}")
+PY
+}
+
 # --------------- Pipeline ---------------
 {
   print_header "Starting pipeline at $(date)"
@@ -173,10 +204,12 @@ PY
   LAST="${RUN_DIR}/epoch${EPOCHS}"
   run_eval "$LAST" "${RUN_DIR}/eval_smoke_bf16" 200 1
   print_metrics "${RUN_DIR}/eval_smoke_bf16"
+  print_top_predictions "${RUN_DIR}/eval_smoke_bf16" 5
 
   # optional full eval on small set
   run_eval "$LAST" "${RUN_DIR}/eval_small" $SAMPLES 1
   print_metrics "${RUN_DIR}/eval_small"
+  print_top_predictions "${RUN_DIR}/eval_small" 5
 
 } 2>&1 | tee "$LOG_FILE"
 
