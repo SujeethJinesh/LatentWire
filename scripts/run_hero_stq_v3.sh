@@ -38,9 +38,9 @@ PREFIX_GAIN=1.15                   # mild gain to match RMS
 
 # --- Training schedule ---
 EPOCHS=12
-BATCH_SIZE=18
+BATCH_SIZE=16
 GRAD_ACCUM_STEPS=32
-TRAIN_SAMPLES=5000                # shorter epochs for faster iterate & evaluate
+TRAIN_SAMPLES=320                # shorter epochs for faster iterate & evaluate
 
 # --- Encoder (STQueryEncoder using MiniLM) ---
 ENCODER_TYPE="stq"

@@ -1,0 +1,23 @@
+
+=========================================
+Starting pipeline at Thu Sep 18 16:53:10 PDT 2025
+=========================================
+
+
+=========================================
+TRAIN + PER-EPOCH EVAL
+=========================================
+
+
+=========================================
+EPOCH 1/12
+=========================================
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 21, in <module>
+    from latentwire.models import (
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/models.py", line 7, in <module>
+    from .common import LOG
+ImportError: cannot import name 'LOG' from 'latentwire.common' (/projects/m000066/sujinesh/LatentWire/latentwire/common.py)
