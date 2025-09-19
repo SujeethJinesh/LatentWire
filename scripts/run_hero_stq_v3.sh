@@ -1,261 +1,184 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ============================================================
-# LatentWire Hero Run (v3)
-#  - STQueryEncoder (MiniLM) + cross-model adapters
-#  - 4× compression target (M=32)
-#  - ≥ 0.8× Text-F1 quality goal on SQuAD
-#  - 4× H100s (2 for Llama, 2 for Qwen) with 4-bit loading
-# ============================================================
+# Hero run v3 (Attempt A+B+C, compact verification)
+# - Fixes t=0 alignment by using chat anchor (no "Answer: " text anchor)
+# - Uses chat templates for encoder text (neutral chat) to match LLM distribution
+# - Stronger first-token CE and short-horizon K-token CE
+# - No eval-time quantization of Z (remove confounders); bf16 spot-check
+# - Small sample & few epochs to finish in ~2 hours on 4x H100 (adjust if needed)
+# - Saves full metrics JSON and prints compact summary
 
-# --- Phase toggles ---
-DO_TRAIN=1
-DO_FINAL_EVAL=1
+THIS_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$THIS_DIR"
 
-# --- Dataset / eval ---
+export PYTHONUNBUFFERED=1
+export TOKENIZERS_PARALLELISM=false
+
+# --------------- Config ---------------
+RUN_NAME="hero_v3_ABCs"
+OUT_ROOT="runs/${RUN_NAME}"
+mkdir -p "$OUT_ROOT"
+
+# Data & model choices
 DATASET="squad"
-SAMPLES=1000              # full eval size
-SMOKE_SAMPLES=200         # per-epoch eval size (fast but informative)
-MAX_NEW_TOKENS=16
-SEQUENTIAL_EVAL=1         # per-model encoder-text alignment pass
-FRESH_EVAL=1              # recompute Z for every eval
-LOAD_4BIT=1
-CHUNK_SIZE=8
-TOKEN_BUDGET_MODE="content_only"
-TOKEN_BUDGET_K=32
-
-# Deterministic first token during eval (stable first-token metrics)
-FIRST_TOKEN_TOP_P=1.0
-FIRST_TOKEN_TEMPERATURE=0.0
-
-# --- Anchor & calibration ---
-LATENT_ANCHOR_MODE="text"
-LATENT_ANCHOR_TEXT="Answer: "      # trailing space intentional
-APPEND_BOS_AFTER_PREFIX="no"
-CALIBRATION="embed_rms"            # use embedding RMS for scale matching
-PREFIX_GAIN=1.15                   # mild gain to match RMS
-
-# --- Training schedule ---
-EPOCHS=12
-BATCH_SIZE=16
-GRAD_ACCUM_STEPS=32
-TRAIN_SAMPLES=1600                # shorter epochs for faster iterate & evaluate
-
-# --- Encoder (STQueryEncoder using MiniLM) ---
-ENCODER_TYPE="stq"
-HF_ENCODER_ID="sentence-transformers/all-MiniLM-L6-v2"
-MAX_ENC_TOKENS=1024
-
-# --- Latent / adapter hyperparams ---
-LATENT_LEN=32                      # 4× compression target
-LATENT_SHARED_LEN=24
-LATENT_PRIVATE_LEN=4
-D_Z=256
-BYTE_MAX=2048                      # retained for config parity
-LR=3e-5
-SCALE_L2=0.05
-ADAPTER_RMS_L2=0.0
-MAX_GRAD_NORM=1.0
-WARM_ANCHOR_TEXT="Answer: "        # same anchor during warmup
-FIRST_TOKEN_CE=3.0                 # stronger first-token CE
-TRAIN_APPEND_BOS="no"
-MAX_ANSWER_TOKENS=24
-ADAPTER_HIDDEN_MULT=2
-ADAPTER_COLORIZE=1
-ADAPTER_METADATA=1
-MANIFOLD_STAT_WEIGHT=0.001
-STATE_KD_WEIGHT=0.0
-STATE_KD_LAYERS="0,1,2"
-K=8
-K_CE_WEIGHT=1.2
-KD_FIRST_K_WEIGHT=1.5
-KD_TAU=1.25
-
-# --- Model IDs ---
-LLAMA_ID="meta-llama/Meta-Llama-3.1-8B-Instruct"
+LLAMA_ID="meta-llama/Llama-3.1-8B-Instruct"
 QWEN_ID="Qwen/Qwen2.5-7B-Instruct"
 
-# --- Devices (4× H100) ---
-CUDA_VISIBLE_DEVICES="0,1,2,3"
-LLAMA_DEVICES="0,1"
-QWEN_DEVICES="2,3"
-GPU_MEM_GIB=78
-LLAMA_DEVICE_MAP="auto"
-QWEN_DEVICE_MAP="auto"
+# Encoder (Attempt A: STQuery; Attempt B: byte fallback off; Attempt C: early-K losses already in code)
+ENCODER_TYPE="simple-stq"                # you're using MiniLM
+ENC_BACKBONE="sentence-transformers/all-MiniLM-L6-v2"
+ENC_USE_CHAT=1                            # neutral chat wrapper for encoder inputs
 
-# --- Environment ---
-source .venv/bin/activate
-export PYTHONPATH=.
-export TOKENIZERS_PARALLELISM=false
-export TORCH_DTYPE=${TORCH_DTYPE:-bfloat16}
-# Prevent OOM fragmentation on large models
-export PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}
+# Budget: keep short so we can iterate quickly
+SAMPLES=${SAMPLES:-1600}
+EPOCHS=${EPOCHS:-3}
+BATCH=${BATCH:-16}
+LATENT_LEN=${LATENT_LEN:-48}             # ensures >=4x compression on SQuAD prompts
+MAX_NEW=16
 
-# ------------------------------------------------------------
-# Shared args
-# ------------------------------------------------------------
-TRAIN_ARGS_COMMON=(
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES"
-  --epochs 1 --batch_size "$BATCH_SIZE"
-  --encoder_type "$ENCODER_TYPE"
-  --hf_encoder_id "$HF_ENCODER_ID" --max_enc_tokens "$MAX_ENC_TOKENS"
-  --latent_len "$LATENT_LEN" --latent_shared_len "$LATENT_SHARED_LEN" --latent_private_len "$LATENT_PRIVATE_LEN" --d_z "$D_Z"
-  --qwen_id "$QWEN_ID" --llama_id "$LLAMA_ID"
-  --lr "$LR" --scale_l2 "$SCALE_L2" --adapter_rms_l2 "$ADAPTER_RMS_L2" --max_grad_norm "$MAX_GRAD_NORM"
-  --max_bytes "$BYTE_MAX" --max_answer_tokens "$MAX_ANSWER_TOKENS"
-  --first_token_ce_weight "$FIRST_TOKEN_CE"
-  --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
-  --grad_accum_steps "$GRAD_ACCUM_STEPS"
-  --adapter_hidden_mult "$ADAPTER_HIDDEN_MULT"
-  --manifold_stat_weight "$MANIFOLD_STAT_WEIGHT"
-  --state_kd_weight "$STATE_KD_WEIGHT" --state_kd_layers "$STATE_KD_LAYERS"
-  --K "$K" --k_ce_weight "$K_CE_WEIGHT" --kd_first_k_weight "$KD_FIRST_K_WEIGHT" --kd_tau "$KD_TAU"
-  --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
-  --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB"
-)
+# Train/Eval deterministic knobs
+SEED=123
+APPEND_BOS="auto"                         # let code pick BOS usage per model
+ANCHOR_MODE="auto"                        # CRITICAL: uses chat assistant header, not "Answer: "
+ANCHOR_TEXT=""                            # force empty text-anchor
+CALIB="embed_rms"
+PREF_GAIN=1.0
 
-EVAL_ARGS_COMMON=(
-  --dataset "$DATASET" --max_new_tokens "$MAX_NEW_TOKENS"
-  --latent_anchor_mode "$LATENT_ANCHOR_MODE" --latent_anchor_text "$LATENT_ANCHOR_TEXT"
-  --append_bos_after_prefix "$APPEND_BOS_AFTER_PREFIX"
-  --calibration "$CALIBRATION" --prefix_gain "$PREFIX_GAIN"
-  --token_budget_mode "$TOKEN_BUDGET_MODE" --token_budget_k "$TOKEN_BUDGET_K"
-  --first_token_top_p "$FIRST_TOKEN_TOP_P" --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
-  --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16
-  --min_new_tokens 3 --eos_ban_steps 6 --chunk_size "$CHUNK_SIZE"
-  --sequential_eval
-  --hf_encoder_id "$HF_ENCODER_ID" --max_enc_tokens "$MAX_ENC_TOKENS"
-  --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
-  --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB"
-)
+# Loss weights (conservative but stronger than v2)
+FIRST_W=6.0                               # first-token CE
+KCE_W=0.3                                 # K-token CE on first ~K tokens
+KD_W=0.2                                  # KD between latent and text scaffolds
+K_TOKENS=8
+TEMP=1.25                                  # for KD
 
-RUN="8B_hero_stq_m32_v3"
-RUN_DIR="runs/${RUN}"
-CKPT_DIR="${RUN_DIR}/ckpt"
-mkdir -p "$RUN_DIR" "$CKPT_DIR"
+# Other training
+LR=3e-4
+WARMUP=100
+GRAD_ACC=1
+GRAD_CLIP=1.0
+WEIGHT_DECAY=0.01
 
-ts="$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="${RUN_DIR}/pipeline_${ts}.log"
+# Devices
+DEV="cuda"
+MAX_BYTES=512
+AMP_BF16=1
+GRAD_CKPT=0
 
-print_header() { echo ""; echo "========================================="; echo "$1"; echo "========================================="; echo ""; }
+# Optional: sequential eval for stability across big models
+SEQ_EVAL=1
+FRESH_EVAL=1
 
-resolve_ckpt_for_eval() {
-  local path="$1"
-  if [[ -f "${path}/state.pt" ]]; then
-    echo "${path}/state.pt"
-  elif [[ -f "${path}/encoder.pt" ]]; then
-    echo "$path"
-  else
-    echo "$path"
-  fi
+RUN_DIR="${OUT_ROOT}"
+LOG_FILE="${OUT_ROOT}/pipeline_$(date +%Y%m%d_%H%M%S).log"
+
+# --------------- Helpers ---------------
+print_header () { echo -e "\\n=========================================\\n$1\\n=========================================\\n"; }
+
+run_train () {
+  print_header "TRAINING (${EPOCHS} epochs, ${SAMPLES} samples, latent M=${LATENT_LEN})"
+  python -u -m latentwire.train \
+    --dataset "$DATASET" \
+    --samples "$SAMPLES" \
+    --epochs "$EPOCHS" \
+    --batch_size "$BATCH" \
+    --max_new_tokens "$MAX_NEW" \
+    --device "$DEV" \
+    --seed "$SEED" \
+    --out_dir "$RUN_DIR" \
+    --llama_id "$LLAMA_ID" \
+    --qwen_id "$QWEN_ID" \
+    --encoder_type "$ENCODER_TYPE" \
+    --encoder_backbone "$ENC_BACKBONE" \
+    $( [[ "$ENC_USE_CHAT" -eq 1 ]] && echo --encoder_use_chat_template ) \
+    --latent_len "$LATENT_LEN" \
+    --max_bytes "$MAX_BYTES" \
+    --train_append_bos_after_prefix "$APPEND_BOS" \
+    --warm_anchor_text "$ANCHOR_TEXT" \
+    --first_token_ce_weight "$FIRST_W" \
+    --k_token_ce_weight "$KCE_W" \
+    --kd_first_k_weight "$KD_W" \
+    --first_k "$K_TOKENS" \
+    --kd_temperature "$TEMP" \
+    --lr "$LR" \
+    --weight_decay "$WEIGHT_DECAY" \
+    --warmup_steps "$WARMUP" \
+    --grad_accum "$GRAD_ACC" \
+    --grad_clip_norm "$GRAD_CLIP" \
+    $( [[ "$AMP_BF16" -eq 1 ]] && echo --amp_bf16 ) \
+    $( [[ "$GRAD_CKPT" -eq 1 ]] && echo --grad_ckpt )
 }
 
-print_metrics() {
-  local dir="$1"
-  if [[ -f "${dir}/metrics.json" ]]; then
-    echo "✓ Metrics from: ${dir}/metrics.json"
-    EV_DIR="${dir}" python - <<'PY'
-import os, json, sys
-p = os.environ.get("EV_DIR")
-with open(os.path.join(p,"metrics.json")) as f:
+run_eval () {
+  CKPT_DIR="$1"
+  OUT_EVAL="$2"
+  N="$3"
+  BF16="$4"
+  print_header "EVAL (N=$N) @ $CKPT_DIR -> $OUT_EVAL"
+  mkdir -p "$OUT_EVAL"
+  python -u -m latentwire.eval \
+    --ckpt "$CKPT_DIR" \
+    --out_dir "$OUT_EVAL" \
+    --dataset "$DATASET" \
+    --samples "$N" \
+    --max_new_tokens "$MAX_NEW" \
+    --device "$DEV" \
+    --seed "$SEED" \
+    --latent_len "$LATENT_LEN" \
+    --append_bos_after_prefix "$APPEND_BOS" \
+    --latent_anchor_mode "$ANCHOR_MODE" \
+    --latent_anchor_text "$ANCHOR_TEXT" \
+    --calibration "$CALIB" \
+    --prefix_gain "$PREF_GAIN" \
+    --sequential_eval "$SEQ_EVAL" \
+    --fresh_eval "$FRESH_EVAL" \
+    $( [[ "$BF16" -eq 1 ]] && echo --force_bf16 )
+}
+
+print_metrics () {
+  DIR="$1"
+  echo ""
+  echo "==== METRICS SNAPSHOT ($DIR) ===="
+  if [[ -f "$DIR/metrics.json" ]]; then
+    python - <<'PY'
+import json,sys,os,math
+with open(os.path.join(sys.argv[1], "metrics.json")) as f:
     m=json.load(f)
-
-def g(*ks, d=None, default=None):
-    cur=d or m
+def g(*ks, default=None):
+    cur=m
     for k in ks:
-        if cur is None: return default
-        cur = cur.get(k)
+        if cur is None: break
+        cur=cur.get(k) if isinstance(cur, dict) else None
     return cur if cur is not None else default
-
-def fmt(x, nd=3):
-    try: return f"{float(x):.{nd}f}"
+def fmt(x):
+    try: return f"{float(x):.3f}"
     except: return "-"
-
-print(f"  Text F1:     Llama {fmt(g('text','llama','f1'))} | Qwen {fmt(g('text','qwen','f1'))}")
-print(f"  Latent F1:   Llama {fmt(g('latent','llama','f1'))} | Qwen {fmt(g('latent','qwen','f1'))}")
-print(f"  FirstTok@1:  Llama {fmt(g('latent','llama','first_token_top1'))} | Qwen {fmt(g('latent','qwen','first_token_top1'))}")
-print(f"  Compression: Llama×{fmt(g('compression','llama'))} | Qwen×{fmt(g('compression','qwen'))}")
+print(f"  Text  F1: Llama {fmt(g('text','llama','f1'))} | Qwen {fmt(g('text','qwen','f1'))}")
+print(f"  Latent F1: Llama {fmt(g('latent','llama','f1'))} | Qwen {fmt(g('latent','qwen','f1'))}")
+print(f"  FirstTok@1: Llama {fmt(g('latent','llama','first_token_top1'))} | Qwen {fmt(g('latent','qwen','first_token_top1'))}")
+print(f"  FirstTok@5: Llama {fmt(g('latent','llama','first_token_top5'))} | Qwen {fmt(g('latent','qwen','first_token_top5'))}")
+print(f"  NLL/token:  Llama {fmt(g('latent','llama','nll_token'))} | Qwen {fmt(g('latent','qwen','nll_token'))}")
+print(f"  Compression: Llama {fmt(g('compression','llama'))}× | Qwen {fmt(g('compression','qwen'))}×")
 PY
   else
-    echo "✗ Metrics missing in ${dir}"
+    echo "✗ metrics.json missing in $DIR"
   fi
 }
 
-print_top_predictions() {
-  local dir="$1"; local limit="${2:-5}"
-  local preds="${dir}/predictions.jsonl"
-  if [[ ! -f "$preds" ]]; then
-    echo "✗ predictions.jsonl missing in ${dir}"
-    return
-  fi
-  echo "Top ${limit} latent predictions from ${preds}"
-  PRED_DIR="$dir" LIMIT="$limit" python - <<'PY'
-import json, os
-
-path = os.path.join(os.environ["PRED_DIR"], "predictions.jsonl")
-limit = int(os.environ.get("LIMIT", "5"))
-
-rows = []
-with open(path, "r", encoding="utf-8") as f:
-    for idx, line in enumerate(f):
-        if idx >= limit:
-            break
-        try:
-            rows.append(json.loads(line))
-        except json.JSONDecodeError:
-            continue
-
-for i, row in enumerate(rows, 1):
-    llama = row.get("latent_pred_llama") or row.get("text_pred_llama")
-    qwen = row.get("latent_pred_qwen") or row.get("text_pred_qwen")
-    gold = row.get("gold")
-    print(f"  {i}. Llama: {llama!s} | Qwen: {qwen!s} | Gold: {gold!s}")
-PY
-}
-
-run_eval() {
-  local ckpt_path="$1"; local out_dir="$2"; local n_samples="$3"
-  mkdir -p "$out_dir"
-  local resolved
-  resolved=$(resolve_ckpt_for_eval "$ckpt_path")
-  EVAL_ARGS=( --ckpt "$resolved" --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" --samples "$n_samples" --out_dir "$out_dir" "${EVAL_ARGS_COMMON[@]}" )
-  if [[ $FRESH_EVAL -eq 1 ]]; then EVAL_ARGS+=(--fresh_eval); fi
-  if [[ $LOAD_4BIT -eq 1 ]]; then EVAL_ARGS+=(--load_4bit); fi
-  CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py "${EVAL_ARGS[@]}"
-}
-
+# --------------- Pipeline ---------------
 {
   print_header "Starting pipeline at $(date)"
-  if [[ $DO_TRAIN -eq 1 ]]; then
-    print_header "TRAIN + PER-EPOCH EVAL"
-    for epoch in $(seq 1 $EPOCHS); do
-      print_header "EPOCH $epoch/$EPOCHS"
-      TRAIN_ARGS=( "${TRAIN_ARGS_COMMON[@]}" --save_dir "$CKPT_DIR" --save_every 1000000 --save_training_stats --debug --auto_resume )
-      TRAIN_ARGS+=(--grad_ckpt)
-      if [[ -n "${WARM_ANCHOR_TEXT}" ]]; then TRAIN_ARGS+=(--warm_anchor_text "$WARM_ANCHOR_TEXT"); fi
-      if [[ $LOAD_4BIT -eq 1 ]]; then TRAIN_ARGS+=(--load_4bit); fi
-      if [[ "$ADAPTER_COLORIZE" == "1" ]]; then TRAIN_ARGS+=(--adapter_colorize); fi
+  run_train
+  # quick smoke eval on the last checkpoint
+  LAST="${RUN_DIR}/epoch${EPOCHS}"
+  run_eval "$LAST" "${RUN_DIR}/eval_smoke_bf16" 200 1
+  print_metrics "${RUN_DIR}/eval_smoke_bf16"
 
-      # Pre-train eval if resuming
-      if [[ -f "${CKPT_DIR}/state.pt" || -f "${CKPT_DIR}/encoder.pt" ]]; then
-        echo "Running pre-train eval on existing checkpoint..."
-        run_eval "$CKPT_DIR" "${RUN_DIR}/eval_epoch${epoch}_pre" "$SMOKE_SAMPLES"
-      fi
+  # optional full eval on small set
+  run_eval "$LAST" "${RUN_DIR}/eval_small" $SAMPLES 1
+  print_metrics "${RUN_DIR}/eval_small"
 
-      CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py "${TRAIN_ARGS[@]}"
-      epoch_ckpt="${RUN_DIR}/epoch${epoch}"; rm -rf "$epoch_ckpt"; cp -r "$CKPT_DIR" "$epoch_ckpt"
-      run_eval "$epoch_ckpt" "${RUN_DIR}/eval_epoch${epoch}" "$SMOKE_SAMPLES"
-      print_metrics "${RUN_DIR}/eval_epoch${epoch}"
-      print_top_predictions "${RUN_DIR}/eval_epoch${epoch}" 5
-    done
-  fi
-  if [[ $DO_FINAL_EVAL -eq 1 ]]; then
-    print_header "FINAL FULL EVAL ON LAST CKPT"
-    run_eval "${RUN_DIR}/epoch${EPOCHS}" "${RUN_DIR}/eval_final" "$SAMPLES"
-    print_metrics "${RUN_DIR}/eval_final"
-    print_top_predictions "${RUN_DIR}/eval_final" 5
-  fi
 } 2>&1 | tee "$LOG_FILE"
 
-echo ""; echo "All output saved to: $LOG_FILE"
+echo ""
+echo "All output saved to: $LOG_FILE"
