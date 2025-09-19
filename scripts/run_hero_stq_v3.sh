@@ -9,11 +9,14 @@ set -euo pipefail
 # - Small sample & few epochs to finish in ~2 hours on 4x H100 (adjust if needed)
 # - Saves full metrics JSON and prints compact summary
 
-THIS_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-cd "$THIS_DIR"
+# Resolve repository root (script lives in scripts/)
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+cd "$REPO_ROOT"
 
 export PYTHONUNBUFFERED=1
 export TOKENIZERS_PARALLELISM=false
+export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
 
 # --------------- Config ---------------
 RUN_NAME="hero_v3_ABCs"
