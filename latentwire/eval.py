@@ -850,6 +850,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     summary["latent"]["wall_clock_sec"] = latent_wall
     summary.setdefault("token_budget", {})
     summary["token_budget"]["wall_clock_sec"] = trunc_wall
+    try:
+        summary.setdefault("wire", {}).setdefault("wire_ratio", {}).update(wire.get("wire_ratio", {}))
+    except Exception:
+        pass
     summary["debug"]["settings"] = {
         "latent_anchor_mode": args.latent_anchor_mode,
         "latent_anchor_text": args.latent_anchor_text,
