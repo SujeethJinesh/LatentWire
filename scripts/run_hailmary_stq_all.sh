@@ -28,11 +28,14 @@ FIRST_TOKEN_TOP_P=1.0
 FIRST_TOKEN_TEMPERATURE=0.0
 
 # ---- Anchor & calibration (important for frozen acceptance) ----
-LATENT_ANCHOR_MODE="text"
-LATENT_ANCHOR_TEXT="Answer: "        # NOTE: trailing space
-APPEND_BOS_AFTER_PREFIX="no"         # must match training for first-token CE
+# Use chat-aware anchoring (per-model assistant header) + explicit BOS after prefix
+LATENT_ANCHOR_MODE="auto"
+LATENT_ANCHOR_TEXT=""
+APPEND_BOS_AFTER_PREFIX="yes"
 CALIBRATION="embed_rms"
 PREFIX_GAIN=1.15
+SEQ_EVAL=1
+FRESH_EVAL=1
 
 # ---- Training core knobs (A+B+C ON) ----
 # Encoder: STQueryEncoder (MiniLM)
@@ -41,9 +44,9 @@ HF_ENCODER_ID="sentence-transformers/all-MiniLM-L6-v2"
 MAX_ENC_TOKENS=1024
 
 # Latent shape (asymmetric within a fixed budget)
-LATENT_LEN=32                   # 4×+ compression target (avg ~ 240–260 text tokens)
-LATENT_SHARED_LEN=24
-LATENT_PRIVATE_LEN=4            # per model; code splits remaining
+LATENT_LEN=48                   # 4×+ compression target (avg ~ 240–260 text tokens)
+LATENT_SHARED_LEN=36
+LATENT_PRIVATE_LEN=6            # per model; code splits remaining
 
 # Capacity & stability
 D_Z=256
@@ -56,9 +59,9 @@ ADAPTER_COLORIZE=1
 ADAPTER_METADATA=1
 
 # First-token cross-entropy (stabilizes BOS acceptance)
-WARM_ANCHOR_TEXT="Answer: "
+WARM_ANCHOR_TEXT=""
 FIRST_TOKEN_CE=3.0
-TRAIN_APPEND_BOS="no"           # keep BOS alignment with eval
+TRAIN_APPEND_BOS="yes"          # keep BOS alignment with eval
 
 # Regularizers & KD (B & C)
 MANIFOLD_STAT_WEIGHT=0.001
@@ -68,6 +71,11 @@ K=8                              # top‑K teacher guidance steps
 K_CE_WEIGHT=1.2
 KD_FIRST_K_WEIGHT=1.5
 KD_TAU=1.25
+ADAPTIVE_K_START=${ADAPTIVE_K_START:-4}
+ADAPTIVE_K_END=${ADAPTIVE_K_END:-8}
+LATENT_KEEP_START=${LATENT_KEEP_START:-1.0}
+LATENT_KEEP_END=${LATENT_KEEP_END:-0.85}
+LATENT_KEEP_POWER=${LATENT_KEEP_POWER:-2.0}
 
 # Hardware & quant
 LOAD_4BIT=1                     # NF4 quantized inner loop for base LLMs
@@ -145,11 +153,14 @@ TRAIN_ARGS_COMMON=(
   --max_bytes 2048 --max_answer_tokens 24
   --first_token_ce_weight "$FIRST_TOKEN_CE"
   --train_append_bos_after_prefix "$TRAIN_APPEND_BOS"
+  --encoder_use_chat_template
   --grad_accum_steps "$GRAD_ACCUM_STEPS"
   --adapter_hidden_mult "$ADAPTER_HIDDEN_MULT"
   --manifold_stat_weight "$MANIFOLD_STAT_WEIGHT"
   --state_kd_weight "$STATE_KD_WEIGHT" --state_kd_layers "$STATE_KD_LAYERS"
   --K "$K" --k_ce_weight "$K_CE_WEIGHT" --kd_first_k_weight "$KD_FIRST_K_WEIGHT" --kd_tau "$KD_TAU"
+  --adaptive_k_start "$ADAPTIVE_K_START" --adaptive_k_end "$ADAPTIVE_K_END"
+  --latent_keep_start "$LATENT_KEEP_START" --latent_keep_end "$LATENT_KEEP_END" --latent_keep_power "$LATENT_KEEP_POWER"
   --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
   --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB"
 )
@@ -161,9 +172,9 @@ EVAL_ARGS_COMMON=(
   --calibration "$CALIBRATION" --prefix_gain "$PREFIX_GAIN"
   --token_budget_mode "$TOKEN_BUDGET_MODE" --token_budget_k "$TOKEN_BUDGET_K"
   --first_token_top_p "$FIRST_TOKEN_TOP_P" --first_token_temperature "$FIRST_TOKEN_TEMPERATURE"
-  --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16
+  # Disable eval-time Z quantization until acceptance improves
+  # --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16
   --min_new_tokens 3 --eos_ban_steps 6 --chunk_size "$CHUNK_SIZE"
-  --sequential_eval
   --hf_encoder_id "$HF_ENCODER_ID" --max_enc_tokens "$MAX_ENC_TOKENS"
   --llama_device_map "$LLAMA_DEVICE_MAP" --qwen_device_map "$QWEN_DEVICE_MAP"
   --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB"
@@ -173,9 +184,14 @@ run_eval() {
   local ckpt_path="$1"; local out_dir="$2"; local n_samples="$3"
   mkdir -p "$out_dir"
   local resolved; resolved=$(resolve_ckpt_for_eval "$ckpt_path")
-  local args=( --ckpt "$resolved" --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" --samples "$n_samples" --out_dir "$out_dir" "${EVAL_ARGS_COMMON[@]}" )
+  local args=( --ckpt "$resolved" --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
+               --samples "$n_samples" --out_dir "$out_dir" "${EVAL_ARGS_COMMON[@]}" )
+  [[ ${SEQ_EVAL:-0} -eq 1 ]] && args+=(--sequential_eval)
+  [[ ${FRESH_EVAL:-0} -eq 1 ]] && args+=(--fresh_eval)
   [[ $LOAD_4BIT -eq 1 ]] && args+=(--load_4bit)
-  CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py "${args[@]}"
+  set -x
+  CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u -m latentwire.eval "${args[@]}"
+  set +x
 }
 
 print_metrics() {
