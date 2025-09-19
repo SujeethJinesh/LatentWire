@@ -202,6 +202,39 @@ PY
   fi
 }
 
+print_top_predictions() {
+  local dir="$1"
+  local limit="${2:-5}"
+  local preds="${dir}/predictions.jsonl"
+  if [[ ! -f "$preds" ]]; then
+    echo "✗ No predictions.jsonl in ${dir}"
+    return
+  fi
+  echo "Top ${limit} latent predictions from $preds"
+  PRED_PATH="$preds" LIMIT="$limit" python - <<'PY'
+import json, os
+
+path = os.environ["PRED_PATH"]
+limit = int(os.environ.get("LIMIT", "5"))
+
+rows = []
+with open(path, "r", encoding="utf-8") as f:
+    for idx, line in enumerate(f):
+        if idx >= limit:
+            break
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+
+for i, row in enumerate(rows, 1):
+    llama = row.get("latent_pred_llama") or row.get("text_pred_llama")
+    qwen = row.get("latent_pred_qwen") or row.get("text_pred_qwen")
+    gold = row.get("gold")
+    print(f"  {i}. Llama: {llama!s} | Qwen: {qwen!s} | Gold: {gold!s}")
+PY
+}
+
 # ---- Pipeline ----
 {
   print_header "Starting pipeline at $(date)"
@@ -230,6 +263,7 @@ PY
       epoch_ckpt="${RUN_DIR}/epoch${epoch}"; rm -rf "$epoch_ckpt"; cp -r "$CKPT_DIR" "$epoch_ckpt"
       run_eval "$epoch_ckpt" "${RUN_DIR}/eval_epoch${epoch}" "$SMOKE_SAMPLES"
       print_metrics "${RUN_DIR}/eval_epoch${epoch}"
+      print_top_predictions "${RUN_DIR}/eval_epoch${epoch}" 5
     done
   fi
 
@@ -257,6 +291,7 @@ PY
       final_eval="${RUN_DIR}/eval_final_best"
       run_eval "$best_ckpt" "$final_eval" "$SAMPLES"
       print_metrics "$final_eval"
+      print_top_predictions "$final_eval" 5
     else
       echo "WARNING: No epoch metrics found; skipping final full eval."
     fi
