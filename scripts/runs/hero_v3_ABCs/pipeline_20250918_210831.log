@@ -1,0 +1,11 @@
+
+=========================================
+Starting pipeline at Thu Sep 18 21:08:31 PDT 2025
+=========================================
+
+
+=========================================
+TRAINING (3 epochs, 1600 samples, latent M=48)
+=========================================
+
+/projects/m000066/sujinesh/LatentWire/.venv/bin/python: Error while finding module specification for 'latentwire.train' (ModuleNotFoundError: No module named 'latentwire')

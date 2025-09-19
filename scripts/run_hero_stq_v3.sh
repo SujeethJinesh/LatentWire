@@ -20,7 +20,7 @@ export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
 
 # --------------- Config ---------------
 RUN_NAME="hero_v3_ABCs"
-OUT_ROOT="runs/${RUN_NAME}"
+OUT_ROOT="../runs/${RUN_NAME}"
 mkdir -p "$OUT_ROOT"
 
 # Data & model choices
