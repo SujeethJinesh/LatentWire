@@ -16,7 +16,7 @@ DO_FINAL_EVAL=1
 # --- Dataset / eval ---
 DATASET="squad"
 SAMPLES=1000              # full eval size
-SMOKE_SAMPLES=400         # per-epoch eval size (fast but informative)
+SMOKE_SAMPLES=200         # per-epoch eval size (fast but informative)
 MAX_NEW_TOKENS=16
 SEQUENTIAL_EVAL=1         # per-model encoder-text alignment pass
 FRESH_EVAL=1              # recompute Z for every eval

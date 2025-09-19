@@ -17,3 +17,28 @@ EPOCH 1/12
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2751.27it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.11s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.64s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.35s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3119.02it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.58s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.30s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.25s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.28s/it]
+Llama hidden size: 4096, Qwen hidden size: 3584
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
+Initialized adapter colorizers from LM embedding stats.
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/1
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  10/20 | grad_norm=81.06 | sec/step~7.38 | keep=1.00 | K=8 | llama: tf=11.6665 first=15.8225 kCE=8.0219 KD=3.3185 man=0.0001 | scale_pen(llama)=0.0000e+00 | qwen: tf=10.1819 first=15.5649 kCE=10.6596 KD=4.5930 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0136 rms_cal~0.0136 embed_rms~0.01364]
+  step  20/20 | grad_norm=160.14 | sec/step~7.05 | keep=1.00 | K=8 | llama: tf=11.8314 first=18.4592 kCE=8.1195 KD=3.5259 man=0.0001 | scale_pen(llama)=6.9633e-13 | qwen: tf=11.7684 first=17.8850 kCE=11.3879 KD=5.0995 man=0.0002 | scale_pen(qwen)=5.6843e-14 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0136 rms_cal~0.0136 embed_rms~0.01364]
+[checkpoint] Freed 1.9KB before save.
+[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/8B_hero_stq_m32_v3/ckpt
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.010565286409109831, 'rms_mean_cal': 0.010571250505745412, 'embed_rms': 0.01057521253824234, 'count': 20}, 'qwen': {'rms_mean_raw': 0.013646732922643423, 'rms_mean_cal': 0.013638359308242799, 'embed_rms': 0.013643525540828705, 'count': 20}}
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 28, in <module>
+    from latentwire.metrics import batch_metrics, _normalize, em, f1
+ImportError: cannot import name 'batch_metrics' from 'latentwire.metrics' (/projects/m000066/sujinesh/LatentWire/latentwire/metrics.py)

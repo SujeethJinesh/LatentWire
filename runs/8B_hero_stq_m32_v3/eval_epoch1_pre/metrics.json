@@ -1,0 +1,121 @@
+{
+  "samples": 200,
+  "max_new_tokens": 16,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 245.065,
+    "qwen": 231.69
+  },
+  "compression": {
+    "llama": 7.65828125,
+    "qwen": 7.2403125
+  },
+  "payload_bytes": 1164800,
+  "payload_bytes_detail": {
+    "fp32": 5734400,
+    "fp16": 2867200,
+    "selected": 1164800
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 251564,
+      "qwen": 221164
+    },
+    "prompt_count": 200,
+    "latent_shape": [
+      200,
+      28,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 5734400,
+      "fp16": 2867200,
+      "quantized": 1075200,
+      "quantized_with_scales": 1164800
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_bits": 6,
+    "selected_latent_bytes": 1164800,
+    "base_latent_bytes": 28672,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.615,
+      "f1": 0.8094276466075133,
+      "nll_token": 12.403911339973977
+    },
+    "qwen": {
+      "em": 0.68,
+      "f1": 0.8516192862752388,
+      "nll_token": 24.624676366308734
+    },
+    "wall_clock_sec": 29.99095582962036
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.000999999991,
+      "nll": 12.4314515390634,
+      "first_token_top1": 0.004999999888241291,
+      "first_token_top5": 0.004999999888241291,
+      "nll_token": 12.4314515390634
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.014851133517620805,
+      "nll": 11.25658493973906,
+      "first_token_top1": 0.04999999701976776,
+      "first_token_top5": 0.10499999672174454,
+      "nll_token": 11.25658493973906
+    },
+    "wall_clock_sec": 36.449477195739746
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.005,
+      "f1": 0.04021474843730812
+    },
+    "qwen": {
+      "em": 0.04,
+      "f1": 0.08823398758088613
+    },
+    "wall_clock_sec": 28.501718997955322
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.000999999991,
+    "agreement": 0.0,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0158511335086208
+    }
+  },
+  "debug": {
+    "llama": {},
+    "qwen": {},
+    "settings": {
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.15,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "no",
+      "decode": {
+        "min_new_tokens": 3,
+        "eos_ban_steps": 6,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0158511335086208
+  },
+  "dataset": "squad"
+}
