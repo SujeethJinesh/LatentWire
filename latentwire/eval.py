@@ -1138,7 +1138,12 @@ def main():
         + f"; fp16 reference: {payload_detail.get('fp16', 'n/a')} bytes; fp32 reference: {payload_detail.get('fp32', base_bytes)} bytes"
     )
     print(payload_line)
-    print(f"latent/text bytes (one-copy, fp16): {summary['wire']['wire_ratio']['latent_over_onecopy_fp16']:.2f}x")
+    wire_ratio = summary.get('wire', {}).get('wire_ratio', {}) if isinstance(summary.get('wire'), dict) else {}
+    ratio_val = wire_ratio.get('latent_over_onecopy_fp16') if isinstance(wire_ratio, dict) else None
+    if ratio_val is not None:
+        print(f"latent/text bytes (one-copy, fp16): {float(ratio_val):.2f}x")
+    else:
+        print("latent/text bytes (one-copy, fp16): n/a")
 
     print("\n— Baseline: Text prompting")
     if summary['text'].get('llama') is not None:
