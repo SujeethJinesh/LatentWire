@@ -29,7 +29,7 @@ LLAMA_ID="meta-llama/Llama-3.1-8B-Instruct"
 QWEN_ID="Qwen/Qwen2.5-7B-Instruct"
 
 # Encoder (Attempt A: STQuery; Attempt B: byte fallback off; Attempt C: early-K losses already in code)
-ENCODER_TYPE="simple-stq"                # you're using MiniLM
+ENCODER_TYPE="stq"                        # STQuery encoder backed by MiniLM
 ENC_BACKBONE="sentence-transformers/all-MiniLM-L6-v2"
 ENC_USE_CHAT=1                            # neutral chat wrapper for encoder inputs
 
