@@ -1012,3 +1012,4 @@ Initialized adapter colorizers from LM embedding stats.
    -> start_epoch=6, global_step=360
 Epoch 7/1
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
