@@ -6,7 +6,7 @@ from typing import Optional, List, Tuple, Dict, Any, Sequence, Union, Set
 
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from latentwire.common import clean_pred  # global cleaner used across the project
 
 # ---------------------------
