@@ -78,7 +78,7 @@ LATENT_KEEP_END=${LATENT_KEEP_END:-0.85}
 LATENT_KEEP_POWER=${LATENT_KEEP_POWER:-2.0}
 
 # Hardware & quant
-LOAD_4BIT=1                     # NF4 quantized inner loop for base LLMs
+LOAD_4BIT=${LOAD_4BIT:-0}       # disable by default to remove NF4 confounders
 SEQUENTIAL_MODELS=1             # sequential backprop to avoid param/state on different devices
 GRAD_CKPT=1
 

@@ -970,22 +970,30 @@ class STQueryEncoder(nn.Module):
         else:
             self.register_buffer("slot_pe", torch.zeros(self.latent_len, self.hidden), persistent=False)
 
-    @torch.no_grad()
     def _encode_tokens(self, texts: List[str], device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
         toks = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
         if "input_ids" in toks and toks["input_ids"].size(-1) > self.max_tokens:
-            toks["input_ids"] = toks["input_ids"][..., : self.max_tokens]
+            toks["input_ids"] = toks["input_ids"][:, : self.max_tokens]
         if "attention_mask" in toks and toks["attention_mask"].size(-1) > self.max_tokens:
-            toks["attention_mask"] = toks["attention_mask"][..., : self.max_tokens]
+            toks["attention_mask"] = toks["attention_mask"][:, : self.max_tokens]
         toks = {k: v.to(device) for k, v in toks.items()}
-        out = self.encoder(**toks, output_hidden_states=False, return_dict=True).last_hidden_state
-        attn_mask = toks["attention_mask"].bool()
-        return out, attn_mask
+        with torch.no_grad():
+            encoder_out = self.encoder(
+                input_ids=toks.get("input_ids"),
+                attention_mask=toks.get("attention_mask"),
+                output_hidden_states=False,
+                return_dict=True,
+            )
+        hidden = encoder_out.last_hidden_state  # [B, T, hidden]
+        if "attention_mask" in toks:
+            attn_mask = toks["attention_mask"].bool()
+        else:
+            attn_mask = torch.ones(hidden.size()[:2], dtype=torch.bool, device=device)
+        return hidden, attn_mask
 
     def forward(self, texts: List[str]) -> torch.Tensor:
         device = next(self.parameters()).device
-        with torch.no_grad():
-            feats, amask = self._encode_tokens(texts, device)
+        feats, amask = self._encode_tokens(texts, device)
         B, T, H = feats.shape
         q = self.q_proj(self.query + self.slot_pe.to(device)).unsqueeze(0).expand(B, -1, -1)
         k = self.k_proj(feats)

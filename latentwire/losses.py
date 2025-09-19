@@ -38,7 +38,7 @@ def k_token_ce_from_prefix(
     append_bos_after_prefix: Optional[bool] = None,
 ) -> torch.Tensor:
     """Cross-entropy over the first `K` decoding steps under latent-prefix conditioning."""
-    device = prefix_embeds.device
+    device = next(llm.model.parameters()).device
     total = torch.zeros((), device=device)
     steps = 0
 
@@ -76,7 +76,7 @@ def kd_first_k_prefix_vs_text(
     append_bos_after_prefix: Optional[bool] = None,
 ) -> torch.Tensor:
     """KL(student‖teacher) over first `K` steps, teacher conditioned on text prompts."""
-    device = prefix_embeds.device
+    device = next(student_llm.model.parameters()).device
     total = torch.zeros((), device=device)
     steps = 0
 
