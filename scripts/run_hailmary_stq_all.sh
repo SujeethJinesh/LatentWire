@@ -19,7 +19,7 @@ DATASET="squad"
 SAMPLES=1000             # full eval sample count
 SMOKE_SAMPLES=400        # per-epoch eval sample count (keep high enough to see signal)
 MAX_NEW_TOKENS=16
-CHUNK_SIZE=8             # eval decode batching
+CHUNK_SIZE=64             # eval decode batching
 TOKEN_BUDGET_MODE="content_only"
 TOKEN_BUDGET_K=32
 
@@ -102,7 +102,7 @@ if [[ "$PRESET" == "HERO" ]]; then
   TRAIN_SAMPLES=40000           # ~half SQuAD train; faster epochs than 87k
 elif [[ "$PRESET" == "FAST_2H" ]]; then
   EPOCHS=14
-  BATCH_SIZE=24
+  BATCH_SIZE=20
   GRAD_ACCUM_STEPS=32
   TRAIN_SAMPLES=7000            # quick verification; ~2–4 epochs in ~2h on 4×H100
   SAMPLES=400                   # full eval budget smaller in fast mode
@@ -112,7 +112,7 @@ else
 fi
 
 # ---- Paths ----
-RUN="8B_hailmary_allknobs_corrected_${PRESET,,}"
+RUN="8B_hailmary_allknobs_hero_${PRESET,,}"
 RUN_DIR="runs/${RUN}"
 CKPT_DIR="${RUN_DIR}/ckpt"
 mkdir -p "$RUN_DIR" "$CKPT_DIR"
