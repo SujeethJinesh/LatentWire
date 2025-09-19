@@ -624,6 +624,51 @@ class LMWrapper(nn.Module):
 
     # ---- diagnostics: first-step distribution ----
 
+    def _compose_inputs_from_prefix(
+        self,
+        prefix_embeds: torch.Tensor,
+        prev_token_ids: Optional[torch.Tensor],
+        *,
+        anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
+        append_bos_after_prefix: Optional[bool] = None,
+    ) -> torch.Tensor:
+        """Compose latent prefix + optional anchor/BOS + previous token ids into embeddings."""
+        model_device = next(self.model.parameters()).device
+        emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, "weight") else None
+        if emb_dtype is not None:
+            prefix = prefix_embeds.to(model_device, dtype=emb_dtype)
+        else:
+            prefix = prefix_embeds.to(model_device)
+
+        parts = [prefix]
+        B = prefix.size(0)
+
+        anchor_tensor: Optional[torch.Tensor] = None
+        if anchor_ids is not None:
+            if isinstance(anchor_ids, torch.Tensor):
+                anchor_tensor = anchor_ids.to(model_device, dtype=torch.long)
+            else:
+                ids_list = list(anchor_ids)
+                if ids_list:
+                    anchor_tensor = torch.tensor(ids_list, dtype=torch.long, device=model_device)
+        if anchor_tensor is not None and anchor_tensor.numel() > 0:
+            anchor_tensor = anchor_tensor.view(1, -1).expand(B, -1)
+            parts.append(self.input_embed(anchor_tensor))
+
+        if append_bos_after_prefix is None:
+            append_bos_after_prefix = not (anchor_tensor is not None and anchor_tensor.numel() > 0)
+        if append_bos_after_prefix:
+            bos_id = getattr(self.tokenizer, "bos_token_id", None)
+            if bos_id is not None:
+                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
+                parts.append(self.input_embed(bos))
+
+        if prev_token_ids is not None and prev_token_ids.numel() > 0:
+            prev = prev_token_ids.to(model_device)
+            parts.append(self.input_embed(prev))
+
+        return torch.cat(parts, dim=1)
+
     def first_token_logits_from_prefix(
         self,
         prefix_embeds: torch.Tensor,
