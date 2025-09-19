@@ -285,23 +285,32 @@ PY
 
   if [[ $DO_FINAL_EVAL -eq 1 ]]; then
     print_header "FINAL FULL EVAL (best epoch by avg latent F1)"
-    # pick best epoch
-    best_epoch=0; best_f1=0
-    for epoch in $(seq 1 $EPOCHS); do
-      eval_dir="${RUN_DIR}/eval_epoch${epoch}"
-      if [[ -f "${eval_dir}/metrics.json" ]]; then
-        f1=$(python - <<PY 2>/dev/null || echo "0"
-import json
-m=json.load(open('${eval_dir}/metrics.json'))
-ll=float(m.get('latent',{}).get('llama',{}).get('f1',0) or 0)
-qw=float(m.get('latent',{}).get('qwen',{}).get('f1',0) or 0)
-print((ll+qw)/2.0)
+    best_info=$(RUN_DIR="$RUN_DIR" EPOCHS="$EPOCHS" python - <<'PY'
+import os, json
+run_dir = os.environ["RUN_DIR"]
+epochs = int(os.environ["EPOCHS"])
+best_epoch = 0
+best = 0.0
+for epoch in range(1, epochs + 1):
+    path = os.path.join(run_dir, f"eval_epoch{epoch}", "metrics.json")
+    try:
+        with open(path) as f:
+            m = json.load(f)
+    except Exception:
+        continue
+    ll = float(m.get("latent", {}).get("llama", {}).get("f1", 0) or 0)
+    qw = float(m.get("latent", {}).get("qwen", {}).get("f1", 0) or 0)
+    cur = (ll + qw) / 2.0
+    if cur > best:
+        best = cur
+        best_epoch = epoch
+print(best_epoch)
+print(best)
 PY
 )
-        if (( $(echo "$f1 > $best_f1" | bc -l) )); then best_f1=$f1; best_epoch=$epoch; fi
-      fi
-    done
-    if [[ $best_epoch -gt 0 ]]; then
+    best_epoch=$(echo "$best_info" | sed -n '1p')
+    best_f1=$(echo "$best_info" | sed -n '2p')
+    if [[ ${best_epoch:-0} -gt 0 ]]; then
       echo "Best epoch: $best_epoch (avg latent F1: $best_f1)"
       best_ckpt="${RUN_DIR}/epoch${best_epoch}"
       final_eval="${RUN_DIR}/eval_final_best"
