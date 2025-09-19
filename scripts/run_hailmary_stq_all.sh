@@ -89,12 +89,12 @@ QWEN_DEVICE_MAP="auto"
 # ---- Presets ----
 if [[ "$PRESET" == "HERO" ]]; then
   EPOCHS=12
-  BATCH_SIZE=24
+  BATCH_SIZE=8
   GRAD_ACCUM_STEPS=32
   TRAIN_SAMPLES=40000           # ~half SQuAD train; faster epochs than 87k
 elif [[ "$PRESET" == "FAST_2H" ]]; then
   EPOCHS=4
-  BATCH_SIZE=16
+  BATCH_SIZE=8
   GRAD_ACCUM_STEPS=32
   TRAIN_SAMPLES=6400            # quick verification; ~2–4 epochs in ~2h on 4×H100
   SAMPLES=400                   # full eval budget smaller in fast mode
@@ -105,7 +105,7 @@ fi
 
 # ---- Paths ----
 RUN="8B_hailmary_allknobs_${PRESET,,}"
-RUN_DIR="runs/${RUN}"
+RUN_DIR="../runs/${RUN}"
 CKPT_DIR="${RUN_DIR}/ckpt"
 mkdir -p "$RUN_DIR" "$CKPT_DIR"
 
