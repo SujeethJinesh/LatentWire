@@ -430,3 +430,585 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
 We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
 We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 200  |  Max new tokens: 16
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 245.1 | (Qwen): 231.7 | Latent length M: 32
+Compression ratio (Llama): 7.7x | (Qwen): 7.2x
+Approx interlingua payload per example: 1164800 bytes (6-bit selected); fp16 reference: 2867200 bytes; fp32 reference: 5734400 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.615  F1: 0.809  |  NLL/token (gold): 12.403911339973977
+Qwen   EM: 0.680   F1: 0.852   |  NLL/token (gold): 24.624676366308734
+Wall clock: 34.04s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.009  |  NLL/token (gold): 11.693009008355693
+       First-token acc: top1=0.005  top5=0.005
+Qwen   EM: 0.000   F1: 0.019  |  NLL/token (gold): 10.5923120358949
+       First-token acc: top1=0.050  top5=0.090
+Wall clock: 40.30s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.005  F1: 0.040
+Qwen   EM: 0.040   F1: 0.088
+Wall clock: 28.59s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint  EM: 0.000  F1: 0.018
+Inter-model agreement (normalized): 0.000
+Oracle upper bound:  EM 0.000  F1 0.022
+
+==== METRICS_JSON ====
+{
+  "samples": 200,
+  "max_new_tokens": 16,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 245.065,
+    "qwen": 231.69
+  },
+  "compression": {
+    "llama": 7.65828125,
+    "qwen": 7.2403125
+  },
+  "payload_bytes": 1164800,
+  "payload_bytes_detail": {
+    "fp32": 5734400,
+    "fp16": 2867200,
+    "selected": 1164800
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 251564,
+      "qwen": 221164
+    },
+    "prompt_count": 200,
+    "latent_shape": [
+      200,
+      28,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 5734400,
+      "fp16": 2867200,
+      "quantized": 1075200,
+      "quantized_with_scales": 1164800
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_bits": 6,
+    "selected_latent_bytes": 1164800,
+    "base_latent_bytes": 28672,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.615,
+      "f1": 0.8094276466075133,
+      "nll_token": 12.403911339973977
+    },
+    "qwen": {
+      "em": 0.68,
+      "f1": 0.8516192862752388,
+      "nll_token": 24.624676366308734
+    },
+    "wall_clock_sec": 34.041300535202026
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.009110813740079979,
+      "nll": 11.693009008355693,
+      "first_token_top1": 0.004999999888241291,
+      "first_token_top5": 0.004999999888241291,
+      "nll_token": 11.693009008355693
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.018505271955832337,
+      "nll": 10.5923120358949,
+      "first_token_top1": 0.04999999701976776,
+      "first_token_top5": 0.08999999612569809,
+      "nll_token": 10.5923120358949
+    },
+    "wall_clock_sec": 40.29586982727051
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.005,
+      "f1": 0.04021474843730812
+    },
+    "qwen": {
+      "em": 0.04,
+      "f1": 0.08823398758088613
+    },
+    "wall_clock_sec": 28.591562509536743
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.017667350133497232,
+    "agreement": 0.0,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.02153398335186472
+    }
+  },
+  "debug": {
+    "llama": {},
+    "qwen": {},
+    "settings": {
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.15,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "no",
+      "decode": {
+        "min_new_tokens": 3,
+        "eos_ban_steps": 6,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.02153398335186472
+  },
+  "dataset": "squad"
+}
+Wrote per-example predictions to runs/8B_hero_stq_m32_v3/eval_epoch2_pre/predictions.jsonl
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3041.55it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.61s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.04s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:01,  1.92s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.41s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.66s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3067.69it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.71s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.38s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.47s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.23s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+Llama hidden size: 4096, Qwen hidden size: 3584
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
+Initialized adapter colorizers from LM embedding stats.
+⏪ Resuming from: runs/8B_hero_stq_m32_v3/ckpt/state.pt
+   -> loaded encoder/adapters FROM state.pt
+[DEBUG] Optimizer state devices:
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+   -> restored optimizer state
+   -> restored RNG state
+   -> start_epoch=5, global_step=260
+Epoch 6/1
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  10/100 | grad_norm=63.69 | sec/step~6.51 | keep=1.00 | K=8 | llama: tf=10.9140 first=12.7207 kCE=5.6340 KD=3.8183 man=0.0001 | scale_pen(llama)=4.6043e-12 | qwen: tf=9.1193 first=9.4801 kCE=8.6643 KD=4.2637 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  20/100 | grad_norm=114.81 | sec/step~6.68 | keep=1.00 | K=8 | llama: tf=11.1712 first=11.9601 kCE=5.8089 KD=3.7519 man=0.0001 | scale_pen(llama)=4.6043e-12 | qwen: tf=8.1673 first=9.4870 kCE=9.8965 KD=4.0256 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  30/100 | grad_norm=172.28 | sec/step~7.66 | keep=1.00 | K=8 | llama: tf=11.5441 first=12.7609 kCE=6.1614 KD=3.8213 man=0.0001 | scale_pen(llama)=4.6043e-12 | qwen: tf=10.6690 first=11.5345 kCE=9.6238 KD=4.7245 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  40/100 | grad_norm=46.92 | sec/step~6.51 | keep=1.00 | K=8 | llama: tf=11.6177 first=12.9193 kCE=6.0531 KD=3.6270 man=0.0001 | scale_pen(llama)=1.4211e-14 | qwen: tf=10.9364 first=12.6769 kCE=10.2717 KD=4.3597 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  50/100 | grad_norm=98.95 | sec/step~7.09 | keep=1.00 | K=8 | llama: tf=11.2847 first=13.4219 kCE=5.4890 KD=3.2706 man=0.0001 | scale_pen(llama)=1.4211e-14 | qwen: tf=11.5389 first=12.6096 kCE=10.9503 KD=4.4204 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  60/100 | grad_norm=153.53 | sec/step~7.06 | keep=1.00 | K=8 | llama: tf=12.0760 first=13.4707 kCE=5.9894 KD=4.1211 man=0.0001 | scale_pen(llama)=1.4211e-14 | qwen: tf=10.3822 first=12.8151 kCE=11.1672 KD=4.4992 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  70/100 | grad_norm=40.75 | sec/step~6.07 | keep=1.00 | K=8 | llama: tf=10.7719 first=13.5216 kCE=6.2997 KD=3.9086 man=0.0001 | scale_pen(llama)=2.0464e-12 | qwen: tf=9.4770 first=14.0192 kCE=9.8900 KD=4.7332 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  80/100 | grad_norm=109.42 | sec/step~6.75 | keep=1.00 | K=8 | llama: tf=12.4975 first=13.0889 kCE=5.5896 KD=3.3483 man=0.0001 | scale_pen(llama)=2.0464e-12 | qwen: tf=11.5147 first=12.2234 kCE=9.5503 KD=4.2258 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  90/100 | grad_norm=183.43 | sec/step~6.84 | keep=1.00 | K=8 | llama: tf=12.0049 first=14.3980 kCE=6.0444 KD=4.1993 man=0.0001 | scale_pen(llama)=2.0464e-12 | qwen: tf=11.6459 first=14.9447 kCE=11.2538 KD=4.4200 man=0.0002 | scale_pen(qwen)=0.0000e+00 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+  step  100/100 | grad_norm=24.38 | sec/step~6.53 | keep=1.00 | K=8 | llama: tf=12.3947 first=13.0294 kCE=5.9793 KD=3.8781 man=0.0001 | scale_pen(llama)=1.1951e-11 | qwen: tf=10.9140 first=13.0658 kCE=10.3679 KD=4.8227 man=0.0002 | scale_pen(qwen)=3.5527e-15 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01057; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
+[checkpoint] Freed 1.9KB before save.
+[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json, training_stats.json
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/8B_hero_stq_m32_v3/ckpt
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.010556663125753403, 'rms_mean_cal': 0.010571341868489981, 'embed_rms': 0.010573241859674454, 'count': 100}, 'qwen': {'rms_mean_raw': 0.013664216184988618, 'rms_mean_cal': 0.013640329232439399, 'embed_rms': 0.013646915555000305, 'count': 100}}
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Loaded training_stats.json: runs/8B_hero_stq_m32_v3/epoch2/training_stats.json
+Building encoder and computing Z...
+Saved Z to runs/8B_hero_stq_m32_v3/eval_epoch2/Z.pt
+
+[Standard Evaluation Mode - both models loaded]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2888.64it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.69s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.59s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.81s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.26s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.42s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3154.80it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.34s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.46s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 200  |  Max new tokens: 16
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 245.1 | (Qwen): 231.7 | Latent length M: 32
+Compression ratio (Llama): 7.7x | (Qwen): 7.2x
+Approx interlingua payload per example: 1164800 bytes (6-bit selected); fp16 reference: 2867200 bytes; fp32 reference: 5734400 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.615  F1: 0.809  |  NLL/token (gold): 12.403911339973977
+Qwen   EM: 0.680   F1: 0.852   |  NLL/token (gold): 24.624676366308734
+Wall clock: 33.32s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.004  |  NLL/token (gold): 11.42535460562933
+       First-token acc: top1=0.005  top5=0.005
+Qwen   EM: 0.000   F1: 0.018  |  NLL/token (gold): 10.422491482010594
+       First-token acc: top1=0.050  top5=0.070
+Wall clock: 39.87s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.005  F1: 0.040
+Qwen   EM: 0.040   F1: 0.088
+Wall clock: 28.56s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint  EM: 0.000  F1: 0.013
+Inter-model agreement (normalized): 0.000
+Oracle upper bound:  EM 0.000  F1 0.020
+
+==== METRICS_JSON ====
+{
+  "samples": 200,
+  "max_new_tokens": 16,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 245.065,
+    "qwen": 231.69
+  },
+  "compression": {
+    "llama": 7.65828125,
+    "qwen": 7.2403125
+  },
+  "payload_bytes": 1164800,
+  "payload_bytes_detail": {
+    "fp32": 5734400,
+    "fp16": 2867200,
+    "selected": 1164800
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 251564,
+      "qwen": 221164
+    },
+    "prompt_count": 200,
+    "latent_shape": [
+      200,
+      28,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 5734400,
+      "fp16": 2867200,
+      "quantized": 1075200,
+      "quantized_with_scales": 1164800
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_bits": 6,
+    "selected_latent_bytes": 1164800,
+    "base_latent_bytes": 28672,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.615,
+      "f1": 0.8094276466075133,
+      "nll_token": 12.403911339973977
+    },
+    "qwen": {
+      "em": 0.68,
+      "f1": 0.8516192862752388,
+      "nll_token": 24.624676366308734
+    },
+    "wall_clock_sec": 33.31723642349243
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.004437691284205056,
+      "nll": 11.42535460562933,
+      "first_token_top1": 0.004999999888241291,
+      "first_token_top5": 0.004999999888241291,
+      "nll_token": 11.42535460562933
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.017582643166260535,
+      "nll": 10.422491482010594,
+      "first_token_top1": 0.04999999701976776,
+      "first_token_top5": 0.07000000029802322,
+      "nll_token": 10.422491482010594
+    },
+    "wall_clock_sec": 39.86600065231323
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.005,
+      "f1": 0.04021474843730812
+    },
+    "qwen": {
+      "em": 0.04,
+      "f1": 0.08823398758088613
+    },
+    "wall_clock_sec": 28.562387943267822
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.01267959319115324,
+    "agreement": 0.0,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.019970069968132192
+    }
+  },
+  "debug": {
+    "llama": {},
+    "qwen": {},
+    "settings": {
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.15,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "no",
+      "decode": {
+        "min_new_tokens": 3,
+        "eos_ban_steps": 6,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.019970069968132192
+  },
+  "dataset": "squad"
+}
+Wrote per-example predictions to runs/8B_hero_stq_m32_v3/eval_epoch2/predictions.jsonl
+✓ Metrics from: runs/8B_hero_stq_m32_v3/eval_epoch2/metrics.json
+  Text F1:     Llama 0.809 | Qwen 0.852
+  Latent F1:   Llama 0.004 | Qwen 0.018
+  FirstTok@1:  Llama 0.005 | Qwen 0.050
+  Compression: Llama×7.658 | Qwen×7.240
+
+=========================================
+EPOCH 3/12
+=========================================
+
+Running pre-train eval on existing checkpoint...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Loaded training_stats.json: runs/8B_hero_stq_m32_v3/ckpt/training_stats.json
+Building encoder and computing Z...
+Saved Z to runs/8B_hero_stq_m32_v3/eval_epoch3_pre/Z.pt
+
+[Standard Evaluation Mode - both models loaded]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2294.48it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.72s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.55s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.85s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.27s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.44s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3357.46it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.67s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.45s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.47s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 200  |  Max new tokens: 16
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 245.1 | (Qwen): 231.7 | Latent length M: 32
+Compression ratio (Llama): 7.7x | (Qwen): 7.2x
+Approx interlingua payload per example: 1164800 bytes (6-bit selected); fp16 reference: 2867200 bytes; fp32 reference: 5734400 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.615  F1: 0.809  |  NLL/token (gold): 12.403911339973977
+Qwen   EM: 0.680   F1: 0.852   |  NLL/token (gold): 24.624676366308734
+Wall clock: 33.45s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.004  |  NLL/token (gold): 11.42535460562933
+       First-token acc: top1=0.005  top5=0.005
+Qwen   EM: 0.000   F1: 0.018  |  NLL/token (gold): 10.422491482010594
+       First-token acc: top1=0.050  top5=0.070
+Wall clock: 40.16s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.005  F1: 0.040
+Qwen   EM: 0.040   F1: 0.088
+Wall clock: 29.60s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint  EM: 0.000  F1: 0.013
+Inter-model agreement (normalized): 0.000
+Oracle upper bound:  EM 0.000  F1 0.020
+
+==== METRICS_JSON ====
+{
+  "samples": 200,
+  "max_new_tokens": 16,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 245.065,
+    "qwen": 231.69
+  },
+  "compression": {
+    "llama": 7.65828125,
+    "qwen": 7.2403125
+  },
+  "payload_bytes": 1164800,
+  "payload_bytes_detail": {
+    "fp32": 5734400,
+    "fp16": 2867200,
+    "selected": 1164800
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 251564,
+      "qwen": 221164
+    },
+    "prompt_count": 200,
+    "latent_shape": [
+      200,
+      28,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 5734400,
+      "fp16": 2867200,
+      "quantized": 1075200,
+      "quantized_with_scales": 1164800
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_bits": 6,
+    "selected_latent_bytes": 1164800,
+    "base_latent_bytes": 28672,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.615,
+      "f1": 0.8094276466075133,
+      "nll_token": 12.403911339973977
+    },
+    "qwen": {
+      "em": 0.68,
+      "f1": 0.8516192862752388,
+      "nll_token": 24.624676366308734
+    },
+    "wall_clock_sec": 33.45382905006409
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.004437691284205056,
+      "nll": 11.42535460562933,
+      "first_token_top1": 0.004999999888241291,
+      "first_token_top5": 0.004999999888241291,
+      "nll_token": 11.42535460562933
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.017582643166260535,
+      "nll": 10.422491482010594,
+      "first_token_top1": 0.04999999701976776,
+      "first_token_top5": 0.07000000029802322,
+      "nll_token": 10.422491482010594
+    },
+    "wall_clock_sec": 40.16087007522583
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.005,
+      "f1": 0.04021474843730812
+    },
+    "qwen": {
+      "em": 0.04,
+      "f1": 0.08823398758088613
+    },
+    "wall_clock_sec": 29.59978723526001
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.01267959319115324,
+    "agreement": 0.0,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.019970069968132192
+    }
+  },
+  "debug": {
+    "llama": {},
+    "qwen": {},
+    "settings": {
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.15,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "no",
+      "decode": {
+        "min_new_tokens": 3,
+        "eos_ban_steps": 6,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.019970069968132192
+  },
+  "dataset": "squad"
+}
+Wrote per-example predictions to runs/8B_hero_stq_m32_v3/eval_epoch3_pre/predictions.jsonl
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3149.47it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.38s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.68s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.77s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.21s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.45s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2792.94it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.46s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.39s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.32s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.28s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.31s/it]
+Llama hidden size: 4096, Qwen hidden size: 3584
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
+Initialized adapter colorizers from LM embedding stats.
+⏪ Resuming from: runs/8B_hero_stq_m32_v3/ckpt/state.pt
+   -> loaded encoder/adapters FROM state.pt
+[DEBUG] Optimizer state devices:
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+   -> restored optimizer state
+   -> restored RNG state
+   -> start_epoch=6, global_step=360
+Epoch 7/1
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
