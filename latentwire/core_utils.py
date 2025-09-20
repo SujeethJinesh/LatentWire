@@ -552,30 +552,24 @@ def build_chat_for_qa(
     messages: List[Dict[str, str]] = []
     if system:
         messages.append({"role": "system", "content": system})
-    messages.append(  # instruction-tuned friendly framing
-        {
-            "role": "user",
-            "content": (
-                "Use the context to answer the question.\n\n"
-                f"Context:\n{context}\n\nQuestion: {question}\nAnswer in one short span."
-            ),
-        }
+    messages.append({
+        "role": "user",
+        "content": (
+            "Use the context to answer the question.\n\n"
+            f"Context:\n{context}\n\nQuestion: {question}\nAnswer in one short span."
+        ),
+    })
+
+    model_inputs = tokenizer.apply_chat_template(
+        messages,
+        add_generation_prompt=add_generation_prompt,
+        return_tensors=return_tensors,
     )
-    kwargs = dict(add_generation_prompt=add_generation_prompt, return_tensors=return_tensors)
-    try:
-        kwargs["continue_final_message"] = True
-    except Exception:
-        pass
-    model_inputs = tokenizer.apply_chat_template(messages, **kwargs)
-    prompt_text = None
-    try:
-        prompt_text = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            **{k: v for k, v in kwargs.items() if k != "return_tensors"},
-        )
-    except Exception:
-        pass
+    prompt_text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=add_generation_prompt,
+    )
     return model_inputs, prompt_text
 
 
@@ -664,16 +658,14 @@ def apply_lora(
 
 
 def maybe_merge_lora(model):
+    """Merge LoRA adapters into base weights if present; otherwise return as-is."""
     try:
         from peft import PeftModel
-
-        if isinstance(model, PeftModel) and getattr(model, "peft_config", None):
-            adapter_types = {cfg.peft_type for cfg in model.peft_config.values()}
-            if adapter_types == {"LORA"} or "LORA" in adapter_types:
-                model = model.merge_and_unload()
-        return model
     except Exception:
         return model
+    if isinstance(model, PeftModel):
+        model = model.merge_and_unload(safe_merge=True)
+    return model
 
 
 def apply_prefix_tuning(

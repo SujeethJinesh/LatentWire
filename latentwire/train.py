@@ -29,7 +29,15 @@ from latentwire.core_utils import (
 )
 
 from latentwire.models import (
-    InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder, STQueryEncoder
+    InterlinguaEncoder,
+    Adapter,
+    LMWrapper,
+    LMConfig,
+    ByteTokenizer,
+    SimpleEncoder,
+    STQueryEncoder,
+    apply_lora_if_requested,
+    apply_prefix_if_requested,
 )
 from latentwire.checkpointing import save_latest_checkpoint
 
@@ -362,6 +370,18 @@ def main():
                     help="Weight for hidden-state KD on first K steps (0 disables).")
     ap.add_argument("--state_kd_layers", type=str, default="0,1,2",
                     help="Comma-separated transformer layer indices for hidden-state KD.")
+    # PEFT toggles
+    ap.add_argument("--use_lora", action="store_true")
+    ap.add_argument("--lora_r", type=int, default=8)
+    ap.add_argument("--lora_alpha", type=int, default=16)
+    ap.add_argument("--lora_dropout", type=float, default=0.05)
+    ap.add_argument("--lora_target_modules", type=str, default="auto",
+                    help="Comma-separated module list or presets (auto, attn_mlp_firstN:12, ...).")
+    ap.add_argument("--use_prefix", action="store_true")
+    ap.add_argument("--prefix_tokens", type=int, default=16)
+    ap.add_argument("--prefix_projection", action="store_true")
+    ap.add_argument("--peft_prefix_all_layers", type=str, default="yes",
+                    help="yes/no toggle to apply prefix adapters across every transformer layer.")
     # K-token supervision + KD
     ap.add_argument("--K", type=int, default=4, help="Number of early tokens to supervise (A1/A2).")
     ap.add_argument("--adaptive_k_start", type=int, default=None,
@@ -520,6 +540,47 @@ def main():
         device_map=qwen_device_map,
         max_memory=qwen_max_memory,
     ))
+
+    def _collect_trainable(module: nn.Module) -> List[nn.Parameter]:
+        return [p for p in module.parameters() if p.requires_grad]
+
+    extra_llama_params: List[nn.Parameter] = []
+    extra_qwen_params: List[nn.Parameter] = []
+
+    if args.use_lora:
+        lora_cfg = {
+            "r": args.lora_r,
+            "alpha": args.lora_alpha,
+            "dropout": args.lora_dropout,
+            "target_modules": args.lora_target_modules,
+        }
+        llama.model = apply_lora_if_requested(llama.model, lora_cfg, args.llama_id)
+        qwen.model = apply_lora_if_requested(qwen.model, lora_cfg, args.qwen_id)
+        extra_llama_params.extend(_collect_trainable(llama.model))
+        extra_qwen_params.extend(_collect_trainable(qwen.model))
+        llama.model.train()
+        qwen.model.train()
+        llama.input_embed = llama.model.get_input_embeddings()
+        qwen.input_embed = qwen.model.get_input_embeddings()
+
+    if args.use_prefix:
+        prefix_cfg = {
+            "tokens": args.prefix_tokens,
+            "projection": args.prefix_projection,
+            "all_layers": str(args.peft_prefix_all_layers).lower() != "no",
+        }
+        llama.model = apply_prefix_if_requested(llama.model, prefix_cfg, llama.tokenizer)
+        qwen.model = apply_prefix_if_requested(qwen.model, prefix_cfg, qwen.tokenizer)
+        extra_llama_params = _collect_trainable(llama.model)
+        extra_qwen_params = _collect_trainable(qwen.model)
+        llama.model.train()
+        qwen.model.train()
+        llama.input_embed = llama.model.get_input_embeddings()
+        qwen.input_embed = qwen.model.get_input_embeddings()
+
+    if (args.use_lora or args.use_prefix) and not (extra_llama_params or extra_qwen_params):
+        raise RuntimeError("No trainable PEFT parameters detected – check LoRA/Prefix flags")
+
     print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
 
     embed_stats = {
@@ -656,6 +717,10 @@ def main():
         optim_groups.append({"params": llama_params, "lr": args.lr})
     if qwen_params:
         optim_groups.append({"params": qwen_params, "lr": args.lr})
+    if extra_llama_params:
+        optim_groups.append({"params": extra_llama_params, "lr": args.lr})
+    if extra_qwen_params:
+        optim_groups.append({"params": extra_qwen_params, "lr": args.lr})
 
     optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 

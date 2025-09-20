@@ -14,6 +14,109 @@ from latentwire.core_utils import (
     maybe_merge_lora,
 )
 
+
+def default_lora_targets_for(model_name_or_path: str) -> List[str]:
+    """Return canonical attention + MLP module names for Llama/Qwen stacks."""
+    return [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ]
+
+
+def resolve_lora_targets(arg: str, model_name_or_path: str) -> Tuple[List[str], Optional[int]]:
+    """Parse '--lora_target_modules' style specifiers into module names and optional layer limits."""
+    spec = (arg or "auto").strip()
+    if spec == "auto":
+        return default_lora_targets_for(model_name_or_path), None
+    if spec.startswith("attn_mlp_firstN:"):
+        try:
+            first_n = int(spec.split(":", 1)[1])
+        except ValueError:
+            first_n = None
+        return default_lora_targets_for(model_name_or_path), first_n
+    modules = [tok.strip() for tok in spec.split(",") if tok.strip()]
+    return modules or default_lora_targets_for(model_name_or_path), None
+
+
+def apply_lora_if_requested(model, lora_args: Dict[str, Any], model_name_or_path: str):
+    """Attach LoRA adapters to *model* using the supplied hyper-parameters."""
+    target_modules, first_n = resolve_lora_targets(lora_args.get("target_modules", "auto"), model_name_or_path)
+    try:
+        from peft import (
+            LoraConfig,
+            TaskType,
+            get_peft_model,
+            prepare_model_for_kbit_training,
+        )
+    except Exception as exc:  # pragma: no cover - optional dependency
+        raise RuntimeError("peft is required for --use_lora runs") from exc
+
+    if getattr(model, "is_loaded_in_4bit", False) or getattr(model, "is_loaded_in_8bit", False):
+        try:
+            model = prepare_model_for_kbit_training(model)
+        except Exception:
+            pass
+
+    cfg = LoraConfig(
+        r=int(lora_args.get("r", 8)),
+        lora_alpha=int(lora_args.get("alpha", 16)),
+        lora_dropout=float(lora_args.get("dropout", 0.05)),
+        target_modules=target_modules,
+        bias="none",
+        task_type=TaskType.CAUSAL_LM,
+    )
+    lora_model = get_peft_model(model, cfg)
+
+    if first_n is not None:
+        try:
+            base_layers = getattr(lora_model.base_model, "model", None)
+            base_layers = getattr(base_layers, "layers", None)
+            if base_layers is not None:
+                for idx, layer in enumerate(base_layers):
+                    allow = idx < first_n
+                    for name, module in layer.named_modules():
+                        if any(tok in name for tok in target_modules):
+                            for param in module.parameters():
+                                param.requires_grad = allow
+        except Exception:
+            pass
+
+    try:
+        lora_model.print_trainable_parameters()
+    except Exception:
+        pass
+    return lora_model
+
+
+def apply_prefix_if_requested(model, prefix_args: Dict[str, Any], tokenizer=None):
+    """Attach Prefix-Tuning adapters across transformer layers when requested."""
+    try:
+        from peft import PrefixTuningConfig, TaskType, get_peft_model
+    except Exception as exc:  # pragma: no cover - optional dependency
+        raise RuntimeError("peft is required for --use_prefix runs") from exc
+
+    hidden = getattr(model.config, "hidden_size", getattr(model.config, "n_embd", None))
+    num_layers = getattr(model.config, "num_hidden_layers", None)
+    cfg = PrefixTuningConfig(
+        task_type=TaskType.CAUSAL_LM,
+        num_virtual_tokens=int(prefix_args.get("tokens", 16)),
+        prefix_projection=bool(prefix_args.get("projection", True)),
+        encoder_hidden_size=hidden,
+        token_dim=hidden,
+        num_layers=(num_layers if prefix_args.get("all_layers", True) else None),
+    )
+    prefix_model = get_peft_model(model, cfg)
+    try:
+        prefix_model.print_trainable_parameters()
+    except Exception:
+        pass
+    return prefix_model
+
 # ---------------------------
 # Small helpers
 # ---------------------------
@@ -158,9 +261,16 @@ class ByteEncoder(nn.Module):
     def forward(self, byte_ids: torch.Tensor, attn_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         if byte_ids.numel() == 0:
             return torch.zeros((0, 0, self.ln.normalized_shape[0]), device=byte_ids.device, dtype=torch.float32)
-        x = self.byte_emb(byte_ids)
+
+        ids = byte_ids.clamp_min(0).clamp_max(255).long()
+        x = self.byte_emb(ids)
         x = self.pos(x)
-        x = self.encoder(x, src_key_padding_mask=None)
+
+        key_padding = None
+        if attn_mask is not None:
+            key_padding = attn_mask.eq(0)
+
+        x = self.encoder(x, src_key_padding_mask=key_padding)
         x = self.ln(x)
         return x
 

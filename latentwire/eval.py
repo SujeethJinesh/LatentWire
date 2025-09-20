@@ -200,6 +200,21 @@ def _maybe_save_Z(out_dir: Optional[str], tag: str, Z: torch.Tensor):
 def _pick_fallback_mode_from_cfg(cfg: dict) -> str:
     return "neutral_chat" if bool(cfg.get("encoder_use_chat_template", False)) else "raw"
 
+
+def format_with_chat_template(tokenizer, user_text: str, system_text: Optional[str], assistant_prefill: Optional[str]) -> str:
+    """Apply chat template with optional assistant prefill handled correctly for chat LLMs."""
+    messages: List[Dict[str, str]] = []
+    if system_text:
+        messages.append({"role": "system", "content": system_text})
+    messages.append({"role": "user", "content": user_text})
+    kwargs: Dict[str, Any] = {"tokenize": False}
+    if assistant_prefill:
+        messages.append({"role": "assistant", "content": assistant_prefill})
+        kwargs.update(add_generation_prompt=False, continue_final_message=True)
+    else:
+        kwargs.update(add_generation_prompt=True)
+    return tokenizer.apply_chat_template(messages, **kwargs)
+
 def _best_mode_from_scores(candidates: List[str], scores: Dict[str, float], cfg: dict) -> str:
     finite = {k: v for k, v in scores.items() if _is_finite(v)}
     if finite:
@@ -650,20 +665,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
         for name, wrapper in wrappers.items()
     }
 
-    for name, ctx in model_contexts.items():
-        ctx["chat"] = build_chat_prompts(ctx["wrapper"].tokenizer, prompts_raw)
-
     answer_lengths = {}
     for name, ctx in model_contexts.items():
         target_device = _primary_device(ctx["wrapper"])
         answer_lengths[name] = _answer_lengths_eval(ctx["wrapper"], golds, max_answer_tokens, target_device)
-
-    text_results = {}
-    text_wall = 0.0
-    for name, ctx in model_contexts.items():
-        res = _run_text_path(ctx["wrapper"], ctx["chat"], prompts_raw, golds, args, name)
-        text_results[name] = res
-        text_wall += res["time"]
 
     anchor_info = {}
     for name, ctx in model_contexts.items():
@@ -672,6 +677,33 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
         )
         anchor = make_anchor_text(mode, ctx["wrapper"], anchor_text_src)
         anchor_info[name] = {"mode": mode, "text": anchor_text_src, "anchor": anchor}
+
+    use_chat_template_flag = str(getattr(args, "use_chat_template", "yes")).lower()
+    apply_chat_template = use_chat_template_flag != "no"
+    for name, ctx in model_contexts.items():
+        if apply_chat_template:
+            assistant_prefill = None
+            info = anchor_info.get(name, {})
+            if info.get("mode") == "text" and info.get("anchor"):
+                assistant_prefill = info["anchor"]
+            ctx["chat"] = [
+                format_with_chat_template(
+                    ctx["wrapper"].tokenizer,
+                    user_text=raw,
+                    system_text=SYSTEM_PROMPT,
+                    assistant_prefill=assistant_prefill,
+                )
+                for raw in prompts_raw
+            ]
+        else:
+            ctx["chat"] = build_chat_prompts(ctx["wrapper"].tokenizer, prompts_raw)
+
+    text_results = {}
+    text_wall = 0.0
+    for name, ctx in model_contexts.items():
+        res = _run_text_path(ctx["wrapper"], ctx["chat"], prompts_raw, golds, args, name)
+        text_results[name] = res
+        text_wall += res["time"]
 
     combined_latents = {
         name: combine_latents(encoded_latents, name) for name in model_contexts
@@ -928,6 +960,8 @@ def main():
     ap.add_argument("--latent_anchor_mode", type=str, default="auto", choices=["auto","chat","text","none"])
     ap.add_argument("--latent_anchor_text", type=str, default="Answer: ")
     ap.add_argument("--append_bos_after_prefix", type=str, default="auto", choices=["auto","yes","no"])
+    ap.add_argument("--use_chat_template", type=str, default="yes", choices=["yes","no"],
+                    help="Toggle chat template application when constructing text prompts.")
 
     ap.add_argument("--sequential_eval", action="store_true")
     ap.add_argument("--chunk_size", type=int, default=8)
