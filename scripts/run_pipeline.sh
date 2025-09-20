@@ -145,8 +145,8 @@ ts="$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="${RUN_DIR}/pipeline_${ts}.log"
 
 # Ensure helper is present
-if [[ ! -f "latentwire/common.py" ]]; then
-  echo "FATAL: missing latentwire/common.py" >&2
+if [[ ! -f "latentwire/core_utils.py" ]]; then
+  echo "FATAL: missing latentwire/core_utils.py" >&2
   exit 1
 fi
 

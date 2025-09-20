@@ -22,23 +22,26 @@ from latentwire.models import (
     SimpleEncoder,
     STQueryEncoder,
 )
-from latentwire.dataloader_patch import patch_dataloader_defaults
-from latentwire.anchor_utils import apply_anchor_normalization
-from latentwire.data import load_examples
-from latentwire.metrics import batch_metrics, _normalize, em, f1
-from latentwire.prefix_utils import (
+from latentwire.core_utils import (
+    patch_dataloader_defaults,
+    apply_anchor_normalization,
     quantize_dequantize,
     compute_wire_metrics,
     tensor_rms,
     combine_latents,
-)
-
-from latentwire.common import (
     clean_pred,
-    build_chat_prompts, build_neutral_encoder_texts,
-    truncate_chat_to_k_tokens, content_only_m_token_chat_prompt, build_token_budget_prompts,
-    collate_bytes, make_anchor_text, infer_anchor_mode_and_text, SYSTEM_PROMPT
+    build_chat_prompts,
+    build_neutral_encoder_texts,
+    truncate_chat_to_k_tokens,
+    content_only_m_token_chat_prompt,
+    build_token_budget_prompts,
+    collate_bytes,
+    make_anchor_text,
+    infer_anchor_mode_and_text,
+    SYSTEM_PROMPT,
 )
+from latentwire.data import load_examples
+from latentwire.diagnostics import batch_metrics, _normalize, em, f1
 
 # ---------------------------
 # Defaults / hardening toggles

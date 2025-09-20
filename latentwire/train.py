@@ -15,8 +15,18 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from latentwire.diagnostics import capture_env_snapshot
-from latentwire.dataloader_patch import patch_dataloader_defaults
-from latentwire.anchor_utils import apply_anchor_normalization
+from latentwire.core_utils import (
+    patch_dataloader_defaults,
+    apply_anchor_normalization,
+    collate_bytes,
+    calibrate_to_embed_rms,
+    bos_policy,
+    first_non_bos,
+    build_scaffold_ids,
+    anchor_token_ids,
+    tensor_rms,
+    tensor_rms_d,
+)
 
 from latentwire.models import (
     InterlinguaEncoder, Adapter, LMWrapper, LMConfig, ByteTokenizer, SimpleEncoder, STQueryEncoder
@@ -41,20 +51,10 @@ def _align_optimizer_state_to_param_devices(optimizer):
     except Exception:
         pass
 from latentwire.data import load_examples
-from latentwire.common import collate_bytes  # deduped
 from latentwire.losses import (
     k_token_ce_from_prefix,
     kd_first_k_prefix_vs_text,
     kd_hidden_states_first_k,
-)
-from latentwire.prefix_utils import (
-    calibrate_to_embed_rms,
-    bos_policy,
-    first_non_bos,
-    build_scaffold_ids,
-    anchor_token_ids,
-    tensor_rms,
-    tensor_rms_d,
 )
 
 DEFAULT_SEED = 42

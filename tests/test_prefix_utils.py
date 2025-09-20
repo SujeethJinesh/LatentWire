@@ -5,7 +5,7 @@ try:
 except OSError as err:
     pytest.skip(f"Skipping Torch-dependent tests due to import error: {err}", allow_module_level=True)
 
-from latentwire.prefix_utils import combine_latents
+from latentwire.core_utils import combine_latents
 
 
 def test_combine_latents_shared_and_private():
@@ -26,4 +26,3 @@ def test_combine_latents_raises_for_missing_model():
     private = {}
     with pytest.raises(KeyError):
         combine_latents({"shared": shared, "private": private}, "llama")
-
