@@ -7,6 +7,7 @@ import math
 import argparse
 import random
 import ast
+import subprocess
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, List, Union
 from contextlib import contextmanager
@@ -311,6 +312,8 @@ def main():
                           "Pins the model to a subset of GPUs when running multi-model training."))
     ap.add_argument("--qwen_device_map", type=str, default=None,
                     help="Device map for the Qwen wrapper (e.g., 1, 'auto', or JSON dict).")
+    ap.add_argument("--require_cuda", type=str, default="yes", choices=["yes", "no"],
+                    help="Abort immediately if CUDA is not available (default: yes).")
     ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot", "squad", "squad_v2"])
     ap.add_argument("--hotpot_config", type=str, default="fullwiki")
     ap.add_argument("--samples", type=int, default=128)
@@ -431,6 +434,16 @@ def main():
 
     # Device + dtype
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+    if args.require_cuda.lower() != "no":
+        if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
+            print("[FATAL] CUDA unavailable. torch.cuda.is_available()=", torch.cuda.is_available(),
+                  "count=", torch.cuda.device_count())
+            print("  CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
+            try:
+                subprocess.run(["nvidia-smi"], check=False)
+            except Exception as exc:
+                print("  nvidia-smi not runnable:", exc)
+            raise SystemExit(2)
     env_dtype = os.environ.get("TORCH_DTYPE")
     if env_dtype:
         dtype_lookup = {
@@ -582,6 +595,11 @@ def main():
         raise RuntimeError("No trainable PEFT parameters detected – check LoRA/Prefix flags")
 
     print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
+    try:
+        print("[DeviceMap] Llama:", getattr(llama.model, "hf_device_map", None))
+        print("[DeviceMap] Qwen :", getattr(qwen.model, "hf_device_map", None))
+    except Exception:
+        pass
 
     embed_stats = {
         "llama": llama.embedding_stats(),

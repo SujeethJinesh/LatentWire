@@ -572,6 +572,12 @@ class LMWrapper(nn.Module):
 
         self.input_embed = self.model.get_input_embeddings()
 
+        try:
+            dmap = getattr(self.model, "hf_device_map", None)
+            print(f"[{cfg.model_id}] hf_device_map: {dmap}")
+        except Exception:
+            pass
+
         d_model = getattr(self.model.config, "hidden_size", None)
         if d_model is None:
             d_model = getattr(self.model.config, "n_embd", None)

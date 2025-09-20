@@ -42,7 +42,13 @@ QWEN_DEVICES="${QWEN_DEVICES:-2,3}"
 GPU_MEM_GIB="${GPU_MEM_GIB:-78}"
 
 # Common flags
-COMMON_DEVMAP=( --llama_device_map auto --qwen_device_map auto --llama_devices "$LLAMA_DEVICES" --qwen_devices "$QWEN_DEVICES" --gpu_mem_gib "$GPU_MEM_GIB" )
+COMMON_DEVMAP=(
+  --llama_device_map auto
+  --qwen_device_map auto
+  --llama_devices "$LLAMA_DEVICES"
+  --qwen_devices "$QWEN_DEVICES"
+  --gpu_mem_gib "$GPU_MEM_GIB"
+)
 
 # Install peft if missing (allows Slurm nodes without preinstall)
 python - <<'PY'
@@ -53,6 +59,26 @@ except Exception:
     import sys, subprocess
     subprocess.check_call([sys.executable,"-m","pip","install","-q","peft>=0.12.0","accelerate>=0.33.0"])
 print("✓ Environment ready")
+PY
+
+# Hardened CUDA preflight
+echo -e "\n=== Preflight: CUDA / SLURM / bitsandbytes ===\n" | tee -a "$LOG"
+python - <<'PY' 2>&1 | tee -a "$LOG"
+import os, torch, subprocess, sys
+print("torch:", torch.__version__, "cuda:", torch.version.cuda, "is_available:", torch.cuda.is_available(), "count:", torch.cuda.device_count())
+print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
+try:
+    subprocess.run(["nvidia-smi"], check=False)
+except Exception as exc:
+    print("nvidia-smi not runnable:", exc)
+try:
+    import bitsandbytes as bnb
+    print("bitsandbytes:", getattr(bnb, "__version__", "?"))
+except Exception as exc:
+    print("bitsandbytes import failed:", exc)
+if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
+    print("FATAL: No CUDA devices visible. Aborting before training.")
+    sys.exit(2)
 PY
 
 # Stage A: tiny LoRA (first ~12 layers, attn+mlp)
@@ -109,10 +135,10 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "${CKPT_DIR}/merged_llama" \
   --qwen_id "${CKPT_DIR}/merged_qwen" \
-  --use_prefix --prefix_tokens 16 --prefix_projection --peft_prefix_all_layers yes \
+  --use_prefix --prefix_tokens 32 --prefix_projection --peft_prefix_all_layers yes \
   --save_dir "$CKPT_DIR" --auto_resume --save_training_stats \
   --train_append_bos_after_prefix yes \
-  --first_token_ce_weight 4.0 \
+  --first_token_ce_weight 2.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.001 \
   --max_answer_tokens 24 \
