@@ -1,0 +1,47 @@
+=========================================
+CODE-SERVER CONNECTION INFO
+=========================================
+
+Job ID: 93735
+Running on: n31
+Port: 8131
+Started at: Sat Sep 20 03:41:56 PM PDT 2025
+
+STEP 1: Run this on your LOCAL machine:
+
+ssh -L 8131:n31:8131 marlowe
+
+STEP 2: Open browser to:
+
+http://localhost:8131
+
+Working directory: /projects/m000066/sujinesh/LatentWire
+
+=========================================
+To stop: scancel 93735
+=========================================
+Starting code-server at Sat Sep 20 03:41:56 PM PDT 2025...
+[2025-09-20T22:41:57.198Z] info  code-server 4.93.1 69df01185ce2f80e99c9e4f8c8de1907cc7a9bc5
+[2025-09-20T22:41:57.200Z] info  Using user-data-dir /tmp/code-server-93735
+[2025-09-20T22:41:57.208Z] warn  Could not create socket at /tmp/code-server-93735/code-server-ipc.sock
+[2025-09-20T22:41:57.212Z] info  Using config file /users/sujinesh/.config/code-server/config.yaml
+[2025-09-20T22:41:57.212Z] info  HTTP server listening on http://0.0.0.0:8131/
+[2025-09-20T22:41:57.212Z] info    - Authentication is disabled
+[2025-09-20T22:41:57.212Z] info    - Not serving HTTPS
+[2025-09-20T22:41:57.212Z] info    - Proxy disabled
+[2025-09-20T22:41:57.212Z] info  Session server listening on /tmp/code-server-93735/code-server-ipc.sock
+[15:45:30] 
+
+
+
+
+[15:45:30] Extension host agent started.
+[15:45:30] Started initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-93735
+[15:45:30] Completed initializing default profile extensions in extensions installation folder. file:///tmp/code-server-ext-93735
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda_bg.wasm
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
+[15:45:32] [171.67.99.202][f56a6ba5][ManagementConnection] New connection established.
+[15:45:33] [171.67.99.202][d7684a3a][ExtensionHostConnection] New connection established.
+[15:45:35] [171.67.99.202][d7684a3a][ExtensionHostConnection] <1677765> Launched Extension Host Process.
+File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/node_modules/vscode-regexp-languagedetection/dist/index.js
