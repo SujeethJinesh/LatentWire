@@ -276,7 +276,7 @@ def avg_nll_text(wrapper: LMWrapper, prompts_text: List[str], answers: List[str]
         return None
     tot_w, tot_tok, skipped = 0.0, 0, 0
     for i in range(len(prompts_text)):
-        enc_p = _to_long(tokenizer(prompts_text[i], return_tensors="pt", add_special_tokens=True).input_ids, device)
+        enc_p = _to_long(tokenizer(prompts_text[i], return_tensors="pt", add_special_tokens=False).input_ids, device)
         enc_a = _to_long(tokenizer(answers[i], return_tensors="pt", add_special_tokens=True).input_ids, device)
         loss, n_tok = wrapper.loss_with_text_prompt(enc_p, enc_a)
         if (loss is None) or (not torch.isfinite(loss)):
