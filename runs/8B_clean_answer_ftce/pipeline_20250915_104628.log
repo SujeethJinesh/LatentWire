@@ -1,1236 +1,0 @@
-
-=========================================
-Starting pipeline at Mon Sep 15 10:46:28 PDT 2025
-=========================================
-
-
-=========================================
-PHASE 1: TRAINING WITH EPOCH EVALUATIONS
-=========================================
-
-Training for 24 epochs with evaluation after each
-Checkpoint will be saved to: runs/8B_clean_answer_ftce/ckpt
-
-
-=========================================
-EPOCH 1/24
-=========================================
-
-Training epoch 1...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1914.55it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:07<00:22,  7.65s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:14<00:14,  7.43s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:22<00:07,  7.30s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:23<00:00,  5.03s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:23<00:00,  5.90s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1899.38it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:06<00:18,  6.01s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:12<00:12,  6.30s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:18<00:06,  6.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:24<00:00,  5.94s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:24<00:00,  6.04s/it]
-Llama hidden size: 4096, Qwen hidden size: 3584
-⚠️  No valid checkpoint found to resume; starting fresh.
-Epoch 1/1
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/1369 | loss_L=10.2874 | loss_Q=10.2435 | firstCE_L=9.5701 | firstCE_Q=15.3246 | scale_pen(L)=1.2451e-09 | scale_pen(Q)=2.2921e-10 | grad_norm=0.87 | sec/step~1.04 | rms_raw(L)~0.5585 rms_raw(Q)~0.5655 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  20/1369 | loss_L=9.9671 | loss_Q=9.7994 | firstCE_L=8.8757 | firstCE_Q=13.9388 | scale_pen(L)=1.0716e-07 | scale_pen(Q)=1.4126e-08 | grad_norm=0.87 | sec/step~1.09 | rms_raw(L)~0.5602 rms_raw(Q)~0.5657 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  30/1369 | loss_L=10.0999 | loss_Q=9.4460 | firstCE_L=9.2554 | firstCE_Q=9.5750 | scale_pen(L)=1.5692e-07 | scale_pen(Q)=1.2283e-09 | grad_norm=0.83 | sec/step~1.07 | rms_raw(L)~0.5612 rms_raw(Q)~0.5675 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  40/1369 | loss_L=9.7212 | loss_Q=9.2985 | firstCE_L=8.5303 | firstCE_Q=7.3663 | scale_pen(L)=2.3263e-07 | scale_pen(Q)=7.5730e-09 | grad_norm=0.82 | sec/step~1.06 | rms_raw(L)~0.5627 rms_raw(Q)~0.5692 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  50/1369 | loss_L=9.3358 | loss_Q=9.3333 | firstCE_L=8.9031 | firstCE_Q=8.3007 | scale_pen(L)=2.2658e-07 | scale_pen(Q)=6.3839e-08 | grad_norm=0.83 | sec/step~1.02 | rms_raw(L)~0.5643 rms_raw(Q)~0.5706 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  60/1369 | loss_L=9.8564 | loss_Q=9.5882 | firstCE_L=8.8432 | firstCE_Q=7.9718 | scale_pen(L)=1.9973e-07 | scale_pen(Q)=4.1797e-08 | grad_norm=0.79 | sec/step~1.07 | rms_raw(L)~0.5659 rms_raw(Q)~0.5719 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  70/1369 | loss_L=9.8208 | loss_Q=8.9197 | firstCE_L=8.8631 | firstCE_Q=7.7363 | scale_pen(L)=1.5532e-07 | scale_pen(Q)=3.9254e-08 | grad_norm=0.77 | sec/step~1.13 | rms_raw(L)~0.5674 rms_raw(Q)~0.5730 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  80/1369 | loss_L=9.7142 | loss_Q=9.0839 | firstCE_L=9.4773 | firstCE_Q=8.6149 | scale_pen(L)=1.9287e-07 | scale_pen(Q)=3.2574e-08 | grad_norm=0.75 | sec/step~1.08 | rms_raw(L)~0.5690 rms_raw(Q)~0.5741 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  90/1369 | loss_L=9.6295 | loss_Q=9.9871 | firstCE_L=8.6256 | firstCE_Q=8.1706 | scale_pen(L)=2.2139e-07 | scale_pen(Q)=1.3858e-08 | grad_norm=0.74 | sec/step~1.02 | rms_raw(L)~0.5704 rms_raw(Q)~0.5751 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  100/1369 | loss_L=9.3181 | loss_Q=9.0179 | firstCE_L=8.5788 | firstCE_Q=7.5318 | scale_pen(L)=2.3668e-07 | scale_pen(Q)=6.2670e-12 | grad_norm=0.76 | sec/step~1.03 | rms_raw(L)~0.5718 rms_raw(Q)~0.5760 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  110/1369 | loss_L=9.0494 | loss_Q=9.5969 | firstCE_L=8.9126 | firstCE_Q=7.9349 | scale_pen(L)=2.2977e-07 | scale_pen(Q)=2.8777e-11 | grad_norm=0.73 | sec/step~1.09 | rms_raw(L)~0.5730 rms_raw(Q)~0.5767 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  120/1369 | loss_L=9.3943 | loss_Q=8.9772 | firstCE_L=9.2220 | firstCE_Q=8.1663 | scale_pen(L)=2.8573e-07 | scale_pen(Q)=1.3657e-11 | grad_norm=0.70 | sec/step~1.10 | rms_raw(L)~0.5741 rms_raw(Q)~0.5774 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  130/1369 | loss_L=9.1027 | loss_Q=8.4898 | firstCE_L=8.7255 | firstCE_Q=8.0168 | scale_pen(L)=2.9927e-07 | scale_pen(Q)=6.0226e-09 | grad_norm=0.71 | sec/step~1.06 | rms_raw(L)~0.5753 rms_raw(Q)~0.5779 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  140/1369 | loss_L=8.9579 | loss_Q=8.9392 | firstCE_L=9.0469 | firstCE_Q=8.5723 | scale_pen(L)=4.1993e-07 | scale_pen(Q)=4.9800e-08 | grad_norm=0.74 | sec/step~1.02 | rms_raw(L)~0.5763 rms_raw(Q)~0.5785 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  150/1369 | loss_L=9.1156 | loss_Q=9.1579 | firstCE_L=8.9115 | firstCE_Q=8.2428 | scale_pen(L)=5.4204e-07 | scale_pen(Q)=1.1494e-07 | grad_norm=0.77 | sec/step~1.07 | rms_raw(L)~0.5773 rms_raw(Q)~0.5790 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  160/1369 | loss_L=8.8322 | loss_Q=8.6241 | firstCE_L=9.0224 | firstCE_Q=8.2848 | scale_pen(L)=7.1516e-07 | scale_pen(Q)=2.3633e-07 | grad_norm=0.75 | sec/step~1.03 | rms_raw(L)~0.5782 rms_raw(Q)~0.5795 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  170/1369 | loss_L=8.5815 | loss_Q=8.1018 | firstCE_L=8.8554 | firstCE_Q=7.8735 | scale_pen(L)=8.7259e-07 | scale_pen(Q)=3.0833e-07 | grad_norm=0.71 | sec/step~1.06 | rms_raw(L)~0.5790 rms_raw(Q)~0.5799 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  180/1369 | loss_L=9.1016 | loss_Q=8.8956 | firstCE_L=9.2336 | firstCE_Q=8.3303 | scale_pen(L)=1.1135e-06 | scale_pen(Q)=5.0734e-07 | grad_norm=0.78 | sec/step~1.13 | rms_raw(L)~0.5799 rms_raw(Q)~0.5804 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  190/1369 | loss_L=8.9626 | loss_Q=8.5958 | firstCE_L=8.8274 | firstCE_Q=8.3253 | scale_pen(L)=1.4425e-06 | scale_pen(Q)=5.8171e-07 | grad_norm=0.71 | sec/step~1.02 | rms_raw(L)~0.5807 rms_raw(Q)~0.5808 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  200/1369 | loss_L=8.7737 | loss_Q=8.2281 | firstCE_L=8.3810 | firstCE_Q=7.1044 | scale_pen(L)=1.7201e-06 | scale_pen(Q)=8.7147e-07 | grad_norm=0.73 | sec/step~1.07 | rms_raw(L)~0.5815 rms_raw(Q)~0.5812 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  210/1369 | loss_L=8.5891 | loss_Q=8.2526 | firstCE_L=8.4038 | firstCE_Q=7.1739 | scale_pen(L)=1.9162e-06 | scale_pen(Q)=8.6614e-07 | grad_norm=0.75 | sec/step~1.07 | rms_raw(L)~0.5823 rms_raw(Q)~0.5817 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  220/1369 | loss_L=9.0361 | loss_Q=8.4493 | firstCE_L=8.7604 | firstCE_Q=8.0211 | scale_pen(L)=2.1773e-06 | scale_pen(Q)=8.9297e-07 | grad_norm=0.76 | sec/step~1.06 | rms_raw(L)~0.5830 rms_raw(Q)~0.5821 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  230/1369 | loss_L=8.7775 | loss_Q=8.3559 | firstCE_L=8.6266 | firstCE_Q=7.4437 | scale_pen(L)=2.4016e-06 | scale_pen(Q)=8.5420e-07 | grad_norm=0.76 | sec/step~1.02 | rms_raw(L)~0.5838 rms_raw(Q)~0.5825 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  240/1369 | loss_L=8.7063 | loss_Q=8.7664 | firstCE_L=8.6150 | firstCE_Q=7.7145 | scale_pen(L)=2.7153e-06 | scale_pen(Q)=8.0363e-07 | grad_norm=0.73 | sec/step~1.17 | rms_raw(L)~0.5846 rms_raw(Q)~0.5829 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  250/1369 | loss_L=9.0039 | loss_Q=8.9998 | firstCE_L=8.7969 | firstCE_Q=8.1719 | scale_pen(L)=3.1342e-06 | scale_pen(Q)=8.8960e-07 | grad_norm=0.75 | sec/step~1.06 | rms_raw(L)~0.5854 rms_raw(Q)~0.5833 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  260/1369 | loss_L=8.7177 | loss_Q=8.4262 | firstCE_L=8.5252 | firstCE_Q=7.7151 | scale_pen(L)=3.3405e-06 | scale_pen(Q)=1.0015e-06 | grad_norm=0.74 | sec/step~1.00 | rms_raw(L)~0.5861 rms_raw(Q)~0.5837 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  270/1369 | loss_L=8.3197 | loss_Q=7.9858 | firstCE_L=8.7640 | firstCE_Q=7.5215 | scale_pen(L)=3.4970e-06 | scale_pen(Q)=1.0505e-06 | grad_norm=0.71 | sec/step~1.12 | rms_raw(L)~0.5869 rms_raw(Q)~0.5840 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  280/1369 | loss_L=8.6110 | loss_Q=8.4090 | firstCE_L=8.5403 | firstCE_Q=7.5179 | scale_pen(L)=3.6941e-06 | scale_pen(Q)=1.1404e-06 | grad_norm=0.73 | sec/step~1.02 | rms_raw(L)~0.5876 rms_raw(Q)~0.5844 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  290/1369 | loss_L=8.6996 | loss_Q=8.1058 | firstCE_L=8.6409 | firstCE_Q=7.5965 | scale_pen(L)=3.7419e-06 | scale_pen(Q)=1.0796e-06 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.5883 rms_raw(Q)~0.5848 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  300/1369 | loss_L=8.2995 | loss_Q=7.9006 | firstCE_L=8.4950 | firstCE_Q=7.3543 | scale_pen(L)=3.7507e-06 | scale_pen(Q)=1.2315e-06 | grad_norm=0.75 | sec/step~1.17 | rms_raw(L)~0.5889 rms_raw(Q)~0.5852 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  310/1369 | loss_L=8.6971 | loss_Q=8.1268 | firstCE_L=8.4136 | firstCE_Q=7.5165 | scale_pen(L)=3.7771e-06 | scale_pen(Q)=1.1719e-06 | grad_norm=0.77 | sec/step~1.03 | rms_raw(L)~0.5896 rms_raw(Q)~0.5855 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  320/1369 | loss_L=8.7136 | loss_Q=8.0193 | firstCE_L=8.5092 | firstCE_Q=7.3736 | scale_pen(L)=3.7961e-06 | scale_pen(Q)=1.3264e-06 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.5903 rms_raw(Q)~0.5859 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  330/1369 | loss_L=8.7671 | loss_Q=8.0485 | firstCE_L=8.5554 | firstCE_Q=7.1661 | scale_pen(L)=3.7673e-06 | scale_pen(Q)=1.3900e-06 | grad_norm=0.77 | sec/step~1.07 | rms_raw(L)~0.5909 rms_raw(Q)~0.5863 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  340/1369 | loss_L=8.4255 | loss_Q=7.9519 | firstCE_L=8.6414 | firstCE_Q=7.3635 | scale_pen(L)=3.9628e-06 | scale_pen(Q)=1.5790e-06 | grad_norm=0.70 | sec/step~1.02 | rms_raw(L)~0.5915 rms_raw(Q)~0.5867 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  350/1369 | loss_L=8.6746 | loss_Q=8.3034 | firstCE_L=8.6040 | firstCE_Q=7.6064 | scale_pen(L)=4.1539e-06 | scale_pen(Q)=1.4534e-06 | grad_norm=0.73 | sec/step~1.04 | rms_raw(L)~0.5921 rms_raw(Q)~0.5871 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  360/1369 | loss_L=8.6166 | loss_Q=8.2476 | firstCE_L=8.2003 | firstCE_Q=7.1038 | scale_pen(L)=4.1520e-06 | scale_pen(Q)=1.2637e-06 | grad_norm=0.68 | sec/step~1.12 | rms_raw(L)~0.5927 rms_raw(Q)~0.5875 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  370/1369 | loss_L=8.5488 | loss_Q=8.7794 | firstCE_L=8.3707 | firstCE_Q=7.6316 | scale_pen(L)=4.1676e-06 | scale_pen(Q)=1.1691e-06 | grad_norm=0.74 | sec/step~1.00 | rms_raw(L)~0.5933 rms_raw(Q)~0.5879 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  380/1369 | loss_L=8.2006 | loss_Q=7.6620 | firstCE_L=8.4345 | firstCE_Q=7.6100 | scale_pen(L)=4.0544e-06 | scale_pen(Q)=1.1455e-06 | grad_norm=0.67 | sec/step~1.06 | rms_raw(L)~0.5939 rms_raw(Q)~0.5883 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  390/1369 | loss_L=8.5413 | loss_Q=8.3096 | firstCE_L=8.5005 | firstCE_Q=7.5398 | scale_pen(L)=3.8666e-06 | scale_pen(Q)=1.0574e-06 | grad_norm=0.68 | sec/step~1.08 | rms_raw(L)~0.5944 rms_raw(Q)~0.5886 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  400/1369 | loss_L=8.3434 | loss_Q=7.6369 | firstCE_L=9.0528 | firstCE_Q=7.5935 | scale_pen(L)=3.7489e-06 | scale_pen(Q)=1.0764e-06 | grad_norm=0.73 | sec/step~1.12 | rms_raw(L)~0.5950 rms_raw(Q)~0.5890 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  410/1369 | loss_L=8.0773 | loss_Q=7.7107 | firstCE_L=8.1919 | firstCE_Q=7.0817 | scale_pen(L)=3.6960e-06 | scale_pen(Q)=1.0178e-06 | grad_norm=0.73 | sec/step~1.05 | rms_raw(L)~0.5955 rms_raw(Q)~0.5894 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  420/1369 | loss_L=8.5411 | loss_Q=7.9699 | firstCE_L=8.0423 | firstCE_Q=7.0729 | scale_pen(L)=3.5288e-06 | scale_pen(Q)=9.3491e-07 | grad_norm=0.71 | sec/step~1.05 | rms_raw(L)~0.5960 rms_raw(Q)~0.5898 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  430/1369 | loss_L=8.6872 | loss_Q=8.7062 | firstCE_L=8.3768 | firstCE_Q=7.4888 | scale_pen(L)=3.6708e-06 | scale_pen(Q)=9.1884e-07 | grad_norm=0.70 | sec/step~1.04 | rms_raw(L)~0.5966 rms_raw(Q)~0.5902 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  440/1369 | loss_L=8.4701 | loss_Q=8.0408 | firstCE_L=8.1352 | firstCE_Q=7.1858 | scale_pen(L)=3.3497e-06 | scale_pen(Q)=8.0427e-07 | grad_norm=0.66 | sec/step~1.11 | rms_raw(L)~0.5971 rms_raw(Q)~0.5905 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  450/1369 | loss_L=8.4033 | loss_Q=8.1987 | firstCE_L=8.5793 | firstCE_Q=7.7397 | scale_pen(L)=3.0922e-06 | scale_pen(Q)=7.3812e-07 | grad_norm=0.73 | sec/step~1.00 | rms_raw(L)~0.5976 rms_raw(Q)~0.5909 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  460/1369 | loss_L=8.4541 | loss_Q=8.1094 | firstCE_L=8.6186 | firstCE_Q=7.8678 | scale_pen(L)=2.9977e-06 | scale_pen(Q)=7.3220e-07 | grad_norm=0.73 | sec/step~1.04 | rms_raw(L)~0.5981 rms_raw(Q)~0.5912 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  470/1369 | loss_L=8.3855 | loss_Q=8.4251 | firstCE_L=8.1709 | firstCE_Q=7.1637 | scale_pen(L)=3.0060e-06 | scale_pen(Q)=6.7992e-07 | grad_norm=0.74 | sec/step~1.02 | rms_raw(L)~0.5986 rms_raw(Q)~0.5915 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  480/1369 | loss_L=8.5395 | loss_Q=7.4950 | firstCE_L=8.0796 | firstCE_Q=7.2285 | scale_pen(L)=2.9825e-06 | scale_pen(Q)=7.0912e-07 | grad_norm=0.64 | sec/step~1.01 | rms_raw(L)~0.5991 rms_raw(Q)~0.5919 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  490/1369 | loss_L=8.2796 | loss_Q=7.9996 | firstCE_L=8.4246 | firstCE_Q=7.4299 | scale_pen(L)=2.8910e-06 | scale_pen(Q)=7.1294e-07 | grad_norm=0.72 | sec/step~1.03 | rms_raw(L)~0.5996 rms_raw(Q)~0.5922 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  500/1369 | loss_L=8.2278 | loss_Q=7.8657 | firstCE_L=8.1397 | firstCE_Q=7.6460 | scale_pen(L)=2.9015e-06 | scale_pen(Q)=5.9084e-07 | grad_norm=0.72 | sec/step~1.05 | rms_raw(L)~0.6001 rms_raw(Q)~0.5925 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  510/1369 | loss_L=8.3895 | loss_Q=7.7770 | firstCE_L=8.5467 | firstCE_Q=7.2608 | scale_pen(L)=2.8413e-06 | scale_pen(Q)=5.0836e-07 | grad_norm=0.69 | sec/step~1.06 | rms_raw(L)~0.6006 rms_raw(Q)~0.5929 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  520/1369 | loss_L=8.1587 | loss_Q=7.0759 | firstCE_L=8.3279 | firstCE_Q=7.1160 | scale_pen(L)=2.8285e-06 | scale_pen(Q)=4.7987e-07 | grad_norm=0.71 | sec/step~1.03 | rms_raw(L)~0.6011 rms_raw(Q)~0.5932 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  530/1369 | loss_L=8.2181 | loss_Q=7.8378 | firstCE_L=8.1187 | firstCE_Q=7.1300 | scale_pen(L)=2.6474e-06 | scale_pen(Q)=4.5961e-07 | grad_norm=0.66 | sec/step~1.04 | rms_raw(L)~0.6016 rms_raw(Q)~0.5935 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  540/1369 | loss_L=8.5061 | loss_Q=7.9954 | firstCE_L=8.1010 | firstCE_Q=7.5777 | scale_pen(L)=2.4645e-06 | scale_pen(Q)=3.2334e-07 | grad_norm=0.75 | sec/step~1.03 | rms_raw(L)~0.6021 rms_raw(Q)~0.5938 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  550/1369 | loss_L=8.2728 | loss_Q=7.8366 | firstCE_L=8.3720 | firstCE_Q=7.1363 | scale_pen(L)=2.3458e-06 | scale_pen(Q)=3.0913e-07 | grad_norm=0.69 | sec/step~1.01 | rms_raw(L)~0.6026 rms_raw(Q)~0.5941 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  560/1369 | loss_L=8.1388 | loss_Q=7.5520 | firstCE_L=8.2319 | firstCE_Q=6.9272 | scale_pen(L)=2.0837e-06 | scale_pen(Q)=2.7500e-07 | grad_norm=0.72 | sec/step~1.16 | rms_raw(L)~0.6031 rms_raw(Q)~0.5944 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  570/1369 | loss_L=8.1817 | loss_Q=7.5774 | firstCE_L=8.4289 | firstCE_Q=7.3442 | scale_pen(L)=1.9982e-06 | scale_pen(Q)=2.6056e-07 | grad_norm=0.65 | sec/step~1.00 | rms_raw(L)~0.6036 rms_raw(Q)~0.5947 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  580/1369 | loss_L=7.8904 | loss_Q=6.6692 | firstCE_L=7.7203 | firstCE_Q=6.5939 | scale_pen(L)=1.7117e-06 | scale_pen(Q)=2.0510e-07 | grad_norm=0.65 | sec/step~1.03 | rms_raw(L)~0.6040 rms_raw(Q)~0.5950 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  590/1369 | loss_L=8.6083 | loss_Q=7.9242 | firstCE_L=8.6265 | firstCE_Q=7.6028 | scale_pen(L)=1.4765e-06 | scale_pen(Q)=2.5886e-07 | grad_norm=0.74 | sec/step~1.11 | rms_raw(L)~0.6045 rms_raw(Q)~0.5954 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  600/1369 | loss_L=8.4790 | loss_Q=8.1194 | firstCE_L=8.5133 | firstCE_Q=7.4473 | scale_pen(L)=1.5158e-06 | scale_pen(Q)=1.6168e-07 | grad_norm=0.70 | sec/step~0.99 | rms_raw(L)~0.6050 rms_raw(Q)~0.5957 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  610/1369 | loss_L=8.5040 | loss_Q=7.9868 | firstCE_L=8.0841 | firstCE_Q=7.0191 | scale_pen(L)=1.4525e-06 | scale_pen(Q)=1.6651e-07 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.6054 rms_raw(Q)~0.5960 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  620/1369 | loss_L=8.3689 | loss_Q=7.5506 | firstCE_L=7.9745 | firstCE_Q=6.9763 | scale_pen(L)=1.2953e-06 | scale_pen(Q)=1.0444e-07 | grad_norm=0.74 | sec/step~1.02 | rms_raw(L)~0.6059 rms_raw(Q)~0.5962 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  630/1369 | loss_L=8.5039 | loss_Q=8.0465 | firstCE_L=8.8394 | firstCE_Q=7.6416 | scale_pen(L)=1.2015e-06 | scale_pen(Q)=1.2158e-07 | grad_norm=0.72 | sec/step~1.06 | rms_raw(L)~0.6064 rms_raw(Q)~0.5965 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  640/1369 | loss_L=8.1544 | loss_Q=7.7944 | firstCE_L=8.3390 | firstCE_Q=7.1766 | scale_pen(L)=1.2236e-06 | scale_pen(Q)=1.0967e-07 | grad_norm=0.67 | sec/step~1.06 | rms_raw(L)~0.6068 rms_raw(Q)~0.5968 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  650/1369 | loss_L=8.1331 | loss_Q=7.7777 | firstCE_L=8.5888 | firstCE_Q=7.4144 | scale_pen(L)=1.1376e-06 | scale_pen(Q)=9.0819e-08 | grad_norm=0.74 | sec/step~1.15 | rms_raw(L)~0.6073 rms_raw(Q)~0.5971 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  660/1369 | loss_L=8.4995 | loss_Q=7.7900 | firstCE_L=8.2616 | firstCE_Q=7.3616 | scale_pen(L)=1.1606e-06 | scale_pen(Q)=8.7685e-08 | grad_norm=0.75 | sec/step~1.04 | rms_raw(L)~0.6077 rms_raw(Q)~0.5974 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  670/1369 | loss_L=7.9448 | loss_Q=7.4278 | firstCE_L=8.1589 | firstCE_Q=7.0949 | scale_pen(L)=1.1330e-06 | scale_pen(Q)=7.1559e-08 | grad_norm=0.72 | sec/step~1.06 | rms_raw(L)~0.6082 rms_raw(Q)~0.5977 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  680/1369 | loss_L=8.5359 | loss_Q=7.8795 | firstCE_L=7.9185 | firstCE_Q=7.1302 | scale_pen(L)=9.6816e-07 | scale_pen(Q)=6.3749e-08 | grad_norm=0.74 | sec/step~1.04 | rms_raw(L)~0.6086 rms_raw(Q)~0.5980 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  690/1369 | loss_L=8.2934 | loss_Q=7.6690 | firstCE_L=8.1734 | firstCE_Q=7.1840 | scale_pen(L)=7.4655e-07 | scale_pen(Q)=7.1687e-08 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.6090 rms_raw(Q)~0.5983 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  700/1369 | loss_L=8.6694 | loss_Q=8.3312 | firstCE_L=8.5073 | firstCE_Q=7.3654 | scale_pen(L)=7.0772e-07 | scale_pen(Q)=1.8663e-08 | grad_norm=0.67 | sec/step~1.02 | rms_raw(L)~0.6094 rms_raw(Q)~0.5986 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  710/1369 | loss_L=8.1651 | loss_Q=8.0861 | firstCE_L=7.9624 | firstCE_Q=7.2399 | scale_pen(L)=4.4422e-07 | scale_pen(Q)=4.9636e-09 | grad_norm=0.69 | sec/step~1.01 | rms_raw(L)~0.6099 rms_raw(Q)~0.5989 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  720/1369 | loss_L=8.4662 | loss_Q=7.5099 | firstCE_L=8.7887 | firstCE_Q=7.4584 | scale_pen(L)=3.4274e-07 | scale_pen(Q)=3.2063e-09 | grad_norm=0.70 | sec/step~1.08 | rms_raw(L)~0.6103 rms_raw(Q)~0.5992 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  730/1369 | loss_L=8.3378 | loss_Q=7.7790 | firstCE_L=8.6012 | firstCE_Q=7.7392 | scale_pen(L)=2.9731e-07 | scale_pen(Q)=2.2867e-08 | grad_norm=0.71 | sec/step~1.00 | rms_raw(L)~0.6107 rms_raw(Q)~0.5995 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  740/1369 | loss_L=8.3077 | loss_Q=7.9453 | firstCE_L=8.1047 | firstCE_Q=7.3051 | scale_pen(L)=2.2499e-07 | scale_pen(Q)=2.5422e-08 | grad_norm=0.76 | sec/step~0.99 | rms_raw(L)~0.6111 rms_raw(Q)~0.5998 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  750/1369 | loss_L=8.3117 | loss_Q=7.8103 | firstCE_L=8.2374 | firstCE_Q=6.6151 | scale_pen(L)=1.9518e-07 | scale_pen(Q)=7.8413e-08 | grad_norm=0.75 | sec/step~1.10 | rms_raw(L)~0.6115 rms_raw(Q)~0.6001 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  760/1369 | loss_L=8.2279 | loss_Q=7.6796 | firstCE_L=8.4806 | firstCE_Q=7.4455 | scale_pen(L)=1.6437e-07 | scale_pen(Q)=4.9987e-08 | grad_norm=0.70 | sec/step~1.03 | rms_raw(L)~0.6119 rms_raw(Q)~0.6004 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  770/1369 | loss_L=7.5631 | loss_Q=6.6546 | firstCE_L=8.8045 | firstCE_Q=7.4739 | scale_pen(L)=2.1449e-07 | scale_pen(Q)=3.8971e-08 | grad_norm=0.74 | sec/step~1.01 | rms_raw(L)~0.6123 rms_raw(Q)~0.6007 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  780/1369 | loss_L=7.7830 | loss_Q=7.2417 | firstCE_L=8.0366 | firstCE_Q=7.3950 | scale_pen(L)=1.8870e-07 | scale_pen(Q)=7.7614e-08 | grad_norm=0.70 | sec/step~1.06 | rms_raw(L)~0.6127 rms_raw(Q)~0.6011 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  790/1369 | loss_L=8.0781 | loss_Q=7.3525 | firstCE_L=8.7532 | firstCE_Q=7.5525 | scale_pen(L)=1.1261e-07 | scale_pen(Q)=8.9923e-08 | grad_norm=0.66 | sec/step~1.21 | rms_raw(L)~0.6131 rms_raw(Q)~0.6014 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  800/1369 | loss_L=8.3521 | loss_Q=7.7848 | firstCE_L=8.3186 | firstCE_Q=7.0954 | scale_pen(L)=1.0116e-07 | scale_pen(Q)=7.2937e-08 | grad_norm=0.65 | sec/step~0.98 | rms_raw(L)~0.6135 rms_raw(Q)~0.6017 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  810/1369 | loss_L=8.4856 | loss_Q=8.1517 | firstCE_L=8.7251 | firstCE_Q=7.8864 | scale_pen(L)=8.5579e-08 | scale_pen(Q)=7.1623e-08 | grad_norm=0.71 | sec/step~1.06 | rms_raw(L)~0.6139 rms_raw(Q)~0.6020 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  820/1369 | loss_L=8.1791 | loss_Q=8.0169 | firstCE_L=8.1570 | firstCE_Q=7.3637 | scale_pen(L)=3.0750e-08 | scale_pen(Q)=9.4263e-08 | grad_norm=0.73 | sec/step~1.12 | rms_raw(L)~0.6143 rms_raw(Q)~0.6023 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  830/1369 | loss_L=8.2110 | loss_Q=7.7430 | firstCE_L=8.3641 | firstCE_Q=7.4448 | scale_pen(L)=5.1301e-12 | scale_pen(Q)=7.6357e-08 | grad_norm=0.70 | sec/step~1.03 | rms_raw(L)~0.6147 rms_raw(Q)~0.6025 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  840/1369 | loss_L=8.1394 | loss_Q=7.4618 | firstCE_L=8.7704 | firstCE_Q=7.3339 | scale_pen(L)=1.8622e-09 | scale_pen(Q)=1.0112e-07 | grad_norm=0.72 | sec/step~1.06 | rms_raw(L)~0.6151 rms_raw(Q)~0.6028 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  850/1369 | loss_L=7.9130 | loss_Q=7.9798 | firstCE_L=8.0657 | firstCE_Q=7.2841 | scale_pen(L)=4.8217e-08 | scale_pen(Q)=9.8108e-08 | grad_norm=0.71 | sec/step~1.03 | rms_raw(L)~0.6154 rms_raw(Q)~0.6031 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  860/1369 | loss_L=8.1999 | loss_Q=7.6536 | firstCE_L=8.1398 | firstCE_Q=7.4229 | scale_pen(L)=8.5894e-08 | scale_pen(Q)=1.0770e-07 | grad_norm=0.73 | sec/step~1.02 | rms_raw(L)~0.6158 rms_raw(Q)~0.6035 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  870/1369 | loss_L=8.4511 | loss_Q=8.1427 | firstCE_L=9.2047 | firstCE_Q=8.1452 | scale_pen(L)=1.1632e-07 | scale_pen(Q)=1.3333e-07 | grad_norm=0.73 | sec/step~1.06 | rms_raw(L)~0.6162 rms_raw(Q)~0.6038 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  880/1369 | loss_L=8.2701 | loss_Q=7.8006 | firstCE_L=8.3148 | firstCE_Q=7.3549 | scale_pen(L)=2.2607e-07 | scale_pen(Q)=1.6597e-07 | grad_norm=0.69 | sec/step~1.04 | rms_raw(L)~0.6165 rms_raw(Q)~0.6041 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  890/1369 | loss_L=7.8139 | loss_Q=7.1179 | firstCE_L=8.0147 | firstCE_Q=6.8432 | scale_pen(L)=2.4286e-07 | scale_pen(Q)=2.1228e-07 | grad_norm=0.63 | sec/step~1.06 | rms_raw(L)~0.6169 rms_raw(Q)~0.6044 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  900/1369 | loss_L=7.9693 | loss_Q=7.9135 | firstCE_L=8.4943 | firstCE_Q=7.8338 | scale_pen(L)=2.5886e-07 | scale_pen(Q)=1.8279e-07 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.6173 rms_raw(Q)~0.6047 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  910/1369 | loss_L=7.9665 | loss_Q=7.5407 | firstCE_L=8.4105 | firstCE_Q=7.1639 | scale_pen(L)=3.4072e-07 | scale_pen(Q)=1.9920e-07 | grad_norm=0.66 | sec/step~1.08 | rms_raw(L)~0.6176 rms_raw(Q)~0.6050 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  920/1369 | loss_L=8.1076 | loss_Q=7.4906 | firstCE_L=7.8979 | firstCE_Q=6.9674 | scale_pen(L)=5.1116e-07 | scale_pen(Q)=1.2905e-07 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.6180 rms_raw(Q)~0.6053 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  930/1369 | loss_L=8.2111 | loss_Q=8.0835 | firstCE_L=8.5692 | firstCE_Q=7.4263 | scale_pen(L)=5.7518e-07 | scale_pen(Q)=1.6288e-07 | grad_norm=0.72 | sec/step~1.00 | rms_raw(L)~0.6183 rms_raw(Q)~0.6056 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  940/1369 | loss_L=8.1454 | loss_Q=8.0027 | firstCE_L=7.6467 | firstCE_Q=6.6845 | scale_pen(L)=7.4881e-07 | scale_pen(Q)=1.9936e-07 | grad_norm=0.60 | sec/step~1.12 | rms_raw(L)~0.6187 rms_raw(Q)~0.6059 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  950/1369 | loss_L=8.3263 | loss_Q=7.8785 | firstCE_L=7.5664 | firstCE_Q=7.0408 | scale_pen(L)=8.8163e-07 | scale_pen(Q)=1.7588e-07 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.6190 rms_raw(Q)~0.6062 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  960/1369 | loss_L=8.3025 | loss_Q=8.1658 | firstCE_L=8.2953 | firstCE_Q=7.0595 | scale_pen(L)=1.1045e-06 | scale_pen(Q)=2.6718e-07 | grad_norm=0.74 | sec/step~1.15 | rms_raw(L)~0.6194 rms_raw(Q)~0.6065 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  970/1369 | loss_L=8.3783 | loss_Q=7.6818 | firstCE_L=8.6288 | firstCE_Q=7.4575 | scale_pen(L)=1.1363e-06 | scale_pen(Q)=2.6282e-07 | grad_norm=0.66 | sec/step~1.07 | rms_raw(L)~0.6197 rms_raw(Q)~0.6068 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  980/1369 | loss_L=8.5745 | loss_Q=8.3883 | firstCE_L=8.2692 | firstCE_Q=7.1140 | scale_pen(L)=1.3619e-06 | scale_pen(Q)=2.3563e-07 | grad_norm=0.67 | sec/step~1.06 | rms_raw(L)~0.6201 rms_raw(Q)~0.6071 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  990/1369 | loss_L=8.5875 | loss_Q=8.3907 | firstCE_L=8.9671 | firstCE_Q=7.5612 | scale_pen(L)=1.5449e-06 | scale_pen(Q)=2.7070e-07 | grad_norm=0.68 | sec/step~1.05 | rms_raw(L)~0.6204 rms_raw(Q)~0.6074 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1000/1369 | loss_L=7.8780 | loss_Q=7.2815 | firstCE_L=8.3779 | firstCE_Q=7.2028 | scale_pen(L)=1.6864e-06 | scale_pen(Q)=2.6816e-07 | grad_norm=0.69 | sec/step~1.09 | rms_raw(L)~0.6208 rms_raw(Q)~0.6077 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1010/1369 | loss_L=8.1991 | loss_Q=7.8643 | firstCE_L=8.2481 | firstCE_Q=6.9919 | scale_pen(L)=1.9834e-06 | scale_pen(Q)=2.8046e-07 | grad_norm=0.65 | sec/step~1.06 | rms_raw(L)~0.6211 rms_raw(Q)~0.6080 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1020/1369 | loss_L=7.9225 | loss_Q=7.2256 | firstCE_L=8.1242 | firstCE_Q=7.0373 | scale_pen(L)=2.2798e-06 | scale_pen(Q)=2.3743e-07 | grad_norm=0.71 | sec/step~1.04 | rms_raw(L)~0.6214 rms_raw(Q)~0.6083 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1030/1369 | loss_L=8.2978 | loss_Q=7.5020 | firstCE_L=8.6443 | firstCE_Q=7.0939 | scale_pen(L)=2.7146e-06 | scale_pen(Q)=3.1059e-07 | grad_norm=0.70 | sec/step~1.01 | rms_raw(L)~0.6218 rms_raw(Q)~0.6086 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1040/1369 | loss_L=7.9013 | loss_Q=7.5549 | firstCE_L=7.9877 | firstCE_Q=6.9717 | scale_pen(L)=2.9839e-06 | scale_pen(Q)=2.9072e-07 | grad_norm=0.67 | sec/step~1.02 | rms_raw(L)~0.6221 rms_raw(Q)~0.6088 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1050/1369 | loss_L=8.0384 | loss_Q=8.0330 | firstCE_L=7.8526 | firstCE_Q=6.5611 | scale_pen(L)=3.3147e-06 | scale_pen(Q)=3.1012e-07 | grad_norm=0.73 | sec/step~1.05 | rms_raw(L)~0.6224 rms_raw(Q)~0.6091 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1060/1369 | loss_L=8.3658 | loss_Q=8.0157 | firstCE_L=8.4818 | firstCE_Q=7.7321 | scale_pen(L)=3.6062e-06 | scale_pen(Q)=3.9843e-07 | grad_norm=0.77 | sec/step~1.02 | rms_raw(L)~0.6228 rms_raw(Q)~0.6094 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1070/1369 | loss_L=8.4865 | loss_Q=8.1591 | firstCE_L=8.2151 | firstCE_Q=7.3297 | scale_pen(L)=3.7093e-06 | scale_pen(Q)=3.1854e-07 | grad_norm=0.67 | sec/step~1.13 | rms_raw(L)~0.6231 rms_raw(Q)~0.6097 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1080/1369 | loss_L=8.2379 | loss_Q=7.4886 | firstCE_L=8.6356 | firstCE_Q=7.0932 | scale_pen(L)=3.9904e-06 | scale_pen(Q)=3.0760e-07 | grad_norm=0.60 | sec/step~1.03 | rms_raw(L)~0.6234 rms_raw(Q)~0.6100 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1090/1369 | loss_L=7.8679 | loss_Q=7.5804 | firstCE_L=8.3901 | firstCE_Q=7.4248 | scale_pen(L)=4.1880e-06 | scale_pen(Q)=3.1145e-07 | grad_norm=0.64 | sec/step~1.05 | rms_raw(L)~0.6237 rms_raw(Q)~0.6103 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1100/1369 | loss_L=7.9847 | loss_Q=8.1257 | firstCE_L=8.0541 | firstCE_Q=7.1985 | scale_pen(L)=4.0343e-06 | scale_pen(Q)=3.5137e-07 | grad_norm=0.70 | sec/step~1.03 | rms_raw(L)~0.6241 rms_raw(Q)~0.6106 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1110/1369 | loss_L=8.4757 | loss_Q=8.5141 | firstCE_L=8.6002 | firstCE_Q=7.5412 | scale_pen(L)=4.6064e-06 | scale_pen(Q)=4.2894e-07 | grad_norm=0.64 | sec/step~1.01 | rms_raw(L)~0.6244 rms_raw(Q)~0.6109 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1120/1369 | loss_L=7.6481 | loss_Q=6.9661 | firstCE_L=7.9113 | firstCE_Q=7.1358 | scale_pen(L)=5.1938e-06 | scale_pen(Q)=6.6798e-07 | grad_norm=0.64 | sec/step~1.00 | rms_raw(L)~0.6247 rms_raw(Q)~0.6112 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1130/1369 | loss_L=8.2027 | loss_Q=8.4994 | firstCE_L=8.0540 | firstCE_Q=7.4085 | scale_pen(L)=5.5285e-06 | scale_pen(Q)=6.6176e-07 | grad_norm=0.69 | sec/step~1.16 | rms_raw(L)~0.6250 rms_raw(Q)~0.6115 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1140/1369 | loss_L=8.0596 | loss_Q=7.9277 | firstCE_L=8.7185 | firstCE_Q=7.7977 | scale_pen(L)=5.6079e-06 | scale_pen(Q)=7.3240e-07 | grad_norm=0.72 | sec/step~1.06 | rms_raw(L)~0.6253 rms_raw(Q)~0.6118 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1150/1369 | loss_L=8.0882 | loss_Q=7.7946 | firstCE_L=7.8327 | firstCE_Q=6.5398 | scale_pen(L)=5.9654e-06 | scale_pen(Q)=8.1801e-07 | grad_norm=0.70 | sec/step~1.02 | rms_raw(L)~0.6257 rms_raw(Q)~0.6121 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1160/1369 | loss_L=7.8212 | loss_Q=7.1758 | firstCE_L=7.9612 | firstCE_Q=7.0191 | scale_pen(L)=6.7409e-06 | scale_pen(Q)=7.8493e-07 | grad_norm=0.66 | sec/step~1.04 | rms_raw(L)~0.6260 rms_raw(Q)~0.6124 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1170/1369 | loss_L=7.9406 | loss_Q=7.8713 | firstCE_L=8.2235 | firstCE_Q=7.6331 | scale_pen(L)=7.4338e-06 | scale_pen(Q)=8.5674e-07 | grad_norm=0.65 | sec/step~1.01 | rms_raw(L)~0.6263 rms_raw(Q)~0.6127 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1180/1369 | loss_L=7.5997 | loss_Q=7.2507 | firstCE_L=7.7838 | firstCE_Q=6.9425 | scale_pen(L)=7.5676e-06 | scale_pen(Q)=7.8314e-07 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.6266 rms_raw(Q)~0.6130 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1190/1369 | loss_L=7.9391 | loss_Q=8.1949 | firstCE_L=7.8164 | firstCE_Q=7.2369 | scale_pen(L)=8.0608e-06 | scale_pen(Q)=8.1758e-07 | grad_norm=0.63 | sec/step~1.11 | rms_raw(L)~0.6269 rms_raw(Q)~0.6133 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1200/1369 | loss_L=7.8157 | loss_Q=7.4375 | firstCE_L=8.1229 | firstCE_Q=7.1663 | scale_pen(L)=8.2039e-06 | scale_pen(Q)=9.3525e-07 | grad_norm=0.64 | sec/step~1.01 | rms_raw(L)~0.6272 rms_raw(Q)~0.6136 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1210/1369 | loss_L=8.2901 | loss_Q=7.5351 | firstCE_L=8.2979 | firstCE_Q=6.9567 | scale_pen(L)=9.2910e-06 | scale_pen(Q)=8.9061e-07 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.6275 rms_raw(Q)~0.6139 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1220/1369 | loss_L=8.1689 | loss_Q=7.9720 | firstCE_L=8.5750 | firstCE_Q=7.5912 | scale_pen(L)=9.6680e-06 | scale_pen(Q)=8.5552e-07 | grad_norm=0.69 | sec/step~1.16 | rms_raw(L)~0.6278 rms_raw(Q)~0.6141 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1230/1369 | loss_L=7.9042 | loss_Q=7.0534 | firstCE_L=8.5173 | firstCE_Q=7.4624 | scale_pen(L)=9.2504e-06 | scale_pen(Q)=6.4825e-07 | grad_norm=0.70 | sec/step~1.01 | rms_raw(L)~0.6282 rms_raw(Q)~0.6144 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1240/1369 | loss_L=7.7626 | loss_Q=7.7506 | firstCE_L=8.5739 | firstCE_Q=7.6466 | scale_pen(L)=8.7529e-06 | scale_pen(Q)=7.6938e-07 | grad_norm=0.65 | sec/step~1.04 | rms_raw(L)~0.6285 rms_raw(Q)~0.6147 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1250/1369 | loss_L=8.0629 | loss_Q=7.9504 | firstCE_L=8.1851 | firstCE_Q=6.9974 | scale_pen(L)=9.6669e-06 | scale_pen(Q)=6.4873e-07 | grad_norm=0.62 | sec/step~1.17 | rms_raw(L)~0.6288 rms_raw(Q)~0.6150 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1260/1369 | loss_L=8.2426 | loss_Q=8.1351 | firstCE_L=7.9811 | firstCE_Q=7.2603 | scale_pen(L)=1.0746e-05 | scale_pen(Q)=7.0672e-07 | grad_norm=0.69 | sec/step~1.02 | rms_raw(L)~0.6291 rms_raw(Q)~0.6153 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1270/1369 | loss_L=7.7237 | loss_Q=7.1164 | firstCE_L=8.2325 | firstCE_Q=7.3895 | scale_pen(L)=1.1527e-05 | scale_pen(Q)=7.5958e-07 | grad_norm=0.65 | sec/step~0.99 | rms_raw(L)~0.6294 rms_raw(Q)~0.6156 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1280/1369 | loss_L=7.8490 | loss_Q=7.3256 | firstCE_L=8.4257 | firstCE_Q=7.3842 | scale_pen(L)=1.1964e-05 | scale_pen(Q)=6.1912e-07 | grad_norm=0.65 | sec/step~1.10 | rms_raw(L)~0.6297 rms_raw(Q)~0.6159 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1290/1369 | loss_L=8.3898 | loss_Q=8.2383 | firstCE_L=8.4829 | firstCE_Q=7.6974 | scale_pen(L)=1.2005e-05 | scale_pen(Q)=7.7987e-07 | grad_norm=0.67 | sec/step~1.04 | rms_raw(L)~0.6300 rms_raw(Q)~0.6162 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1300/1369 | loss_L=8.1923 | loss_Q=7.6656 | firstCE_L=8.3222 | firstCE_Q=7.1407 | scale_pen(L)=1.3176e-05 | scale_pen(Q)=1.0058e-06 | grad_norm=0.70 | sec/step~1.06 | rms_raw(L)~0.6303 rms_raw(Q)~0.6165 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1310/1369 | loss_L=7.9128 | loss_Q=7.1207 | firstCE_L=8.7568 | firstCE_Q=7.4757 | scale_pen(L)=1.2722e-05 | scale_pen(Q)=1.0970e-06 | grad_norm=0.60 | sec/step~1.14 | rms_raw(L)~0.6306 rms_raw(Q)~0.6168 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1320/1369 | loss_L=8.1756 | loss_Q=7.6301 | firstCE_L=8.2073 | firstCE_Q=7.9376 | scale_pen(L)=1.3606e-05 | scale_pen(Q)=1.0432e-06 | grad_norm=0.70 | sec/step~1.03 | rms_raw(L)~0.6308 rms_raw(Q)~0.6170 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1330/1369 | loss_L=8.0193 | loss_Q=7.9195 | firstCE_L=8.0860 | firstCE_Q=7.1781 | scale_pen(L)=1.4197e-05 | scale_pen(Q)=1.0112e-06 | grad_norm=0.69 | sec/step~1.05 | rms_raw(L)~0.6311 rms_raw(Q)~0.6173 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1340/1369 | loss_L=7.6191 | loss_Q=7.3757 | firstCE_L=7.7052 | firstCE_Q=6.5195 | scale_pen(L)=1.4305e-05 | scale_pen(Q)=1.1340e-06 | grad_norm=0.68 | sec/step~1.12 | rms_raw(L)~0.6314 rms_raw(Q)~0.6176 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1350/1369 | loss_L=8.0930 | loss_Q=7.5214 | firstCE_L=8.5039 | firstCE_Q=7.4534 | scale_pen(L)=1.4942e-05 | scale_pen(Q)=1.0042e-06 | grad_norm=0.68 | sec/step~1.06 | rms_raw(L)~0.6317 rms_raw(Q)~0.6179 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1360/1369 | loss_L=7.7912 | loss_Q=7.4182 | firstCE_L=8.5328 | firstCE_Q=7.5981 | scale_pen(L)=1.5817e-05 | scale_pen(Q)=1.1793e-06 | grad_norm=0.69 | sec/step~1.07 | rms_raw(L)~0.6320 rms_raw(Q)~0.6182 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-  step  1369/1369 | loss_L=8.4579 | loss_Q=8.6925 | firstCE_L=8.5072 | firstCE_Q=7.7056 | scale_pen(L)=1.5755e-05 | scale_pen(Q)=1.0177e-06 | grad_norm=0.75 | sec/step~0.80 | rms_raw(L)~0.6323 rms_raw(Q)~0.6185 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01363
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-  ✅ Saved (and pruned to) latest at step 1369
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-✅ Saved latest checkpoint to runs/8B_clean_answer_ftce/ckpt
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.6322672562149861, 'rms_mean_cal': 0.010571094556358542, 'embed_rms': 0.01057521253824234, 'count': 1369}, 'qwen': {'rms_mean_raw': 0.6184672953614011, 'rms_mean_cal': 0.013640873189240019, 'embed_rms': 0.013628026470541954, 'count': 1369}}
-
-Evaluating epoch 1 checkpoint...
-Evaluating: runs/8B_clean_answer_ftce/epoch1 -> runs/8B_clean_answer_ftce/eval_epoch1
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Auto-detected device: cuda
-Loaded training_stats.json: runs/8B_clean_answer_ftce/epoch1/training_stats.json
-Building encoder and computing Z...
-Saved Z to runs/8B_clean_answer_ftce/eval_epoch1/Z.pt
-
-[Sequential Evaluation Mode - one model at a time]
-
-Evaluating Llama...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3080.65it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.35s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.45s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.33s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.07it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.10s/it]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-[align:llama] encoder_text_mode candidates=['raw'] | nlls={'raw': 8.16628575919707} | picked=raw
-Saved Z[llama_raw] to runs/8B_clean_answer_ftce/eval_epoch1/Z_llama_raw.pt
-[calib:llama] mode=embed_rms prefix_rms=0.67143 -> target=0.01057
-[debug:llama] adapter.scale=0.9960 | Z.std=0.6060 Z.mean||=9.6938 | prefix.std=0.0106 prefix.mean||=0.6767 | embed.RMS=0.0106
-
-[DEBUG] First generations (Llama, latent):
-  0: 'the of the of the of the of the of the of'
-  1: 'the of the of the of the of the of the of'
-  2: 'the of the of the of the of the of the of'
-  3: 'the of the of the of the of the of the of'
-  4: 'the of the of the of the of the of the of'
-Saved Llama results to runs/8B_clean_answer_ftce/eval_epoch1/llama_results.json
-
-Evaluating Qwen...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3320.25it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.01it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.05s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.02it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.03s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.02s/it]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-[align:qwen] encoder_text_mode candidates=['raw'] | nlls={'raw': 7.774132496307766} | picked=raw
-Saved Z[qwen_raw] to runs/8B_clean_answer_ftce/eval_epoch1/Z_qwen_raw.pt
-[calib:qwen]  mode=embed_rms prefix_rms=0.65671 -> target=0.01364
-[debug:qwen] adapter.scale=0.9990 | Z.std=0.6060 Z.mean||=9.6938 | prefix.std=0.0136 prefix.mean||=0.8166 | embed.RMS=0.0136
-
-[DEBUG] First generations (Qwen, latent):
-  0: 'the of the of the of the of the of the of'
-  1: '1919 1919 19'
-  2: '1919 1919 19'
-  3: '1919 1919 19'
-  4: '100000000000'
-Saved Qwen results to runs/8B_clean_answer_ftce/eval_epoch1/qwen_results.json
-
-Joint rescoring...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3014.77it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.10it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.09s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.11it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3124.83it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.29it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.16it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.19it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.33it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]
-
-==== LatentWire Evaluation ====
-Dataset: squad
-Samples: 200  |  Max new tokens: 12
-Device: cuda  |  Dtype: bfloat16
-Avg prompt tokens (Llama): 245.1 | (Qwen): 231.7 | Latent length M: 32
-Compression ratio (Llama): 7.7x | (Qwen): 7.2x
-Approx interlingua payload per example: 32768 bytes (fp32), and 16384 bytes (fp16); latent/text bytes (one-copy, fp16): 13.01x
-
-— Baseline: Text prompting
-Llama  EM: 0.580  F1: 0.799  |  NLL/token (gold): 12.72173482274305
-Qwen   EM: 0.680   F1: 0.853   |  NLL/token (gold): 25.81069942126198
-Wall clock: 16.26s
-
-— Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.021  |  NLL/token (gold): 8.168305497591188
-       First-token acc: top1=0.030  top5=0.040
-Qwen   EM: 0.000   F1: 0.003  |  NLL/token (gold): 7.782977277639682
-       First-token acc: top1=0.060  top5=0.125
-Wall clock: 13.42s
-
-— Token-budget baseline (mode: content_only)
-Llama  EM: 0.005  F1: 0.041
-Qwen   EM: 0.040   F1: 0.075
-Wall clock: 11.51s
-
-— 2-LLM joint (rescored pick on latent runs)
-Joint  EM: 0.000  F1: 0.003
-Inter-model agreement (normalized): 0.250
-Oracle upper bound:  EM 0.000  F1 0.021
-
-==== METRICS_JSON ====
-{
-  "samples": 200,
-  "max_new_tokens": 12,
-  "latent_len": 32,
-  "device": "cuda",
-  "dtype": "torch.bfloat16",
-  "avg_prompt_tokens": {
-    "llama": 245.065,
-    "qwen": 231.69
-  },
-  "compression": {
-    "llama": 7.65828125,
-    "qwen": 7.2403125
-  },
-  "payload_bytes": 32768,
-  "wire": {
-    "text_bytes_onecopy": {
-      "llama_avg": 1259,
-      "qwen_avg": 1107,
-      "max_avg": 1259
-    },
-    "text_bytes_twocopies": {
-      "sum_avg": 2366
-    },
-    "latent_bytes": {
-      "fp32": 32768,
-      "fp16": 16384
-    },
-    "wire_compression": {
-      "vs_onecopy_fp16": 13.013502779984114,
-      "vs_onecopy_fp32": 26.027005559968227
-    },
-    "wire_ratio": {
-      "latent_over_onecopy_fp16": 13.013502779984114,
-      "latent_over_onecopy_fp32": 26.027005559968227,
-      "onecopy_over_latent_fp16": 0.07684326171875,
-      "onecopy_over_latent_fp32": 0.038421630859375
-    }
-  },
-  "text": {
-    "wall_clock_sec": 16.257566928863525,
-    "llama": {
-      "em": 0.58,
-      "f1": 0.7994106570072514,
-      "nll_token": 12.72173482274305
-    },
-    "qwen": {
-      "em": 0.68,
-      "f1": 0.8528460272957177,
-      "nll_token": 25.81069942126198
-    }
-  },
-  "latent": {
-    "wall_clock_sec": 13.417166233062744,
-    "llama": {
-      "em": 0.0,
-      "f1": 0.02050281662781663,
-      "nll_token": 8.168305497591188,
-      "first_token_top1": 0.029999999329447746,
-      "first_token_top5": 0.03999999910593033
-    },
-    "qwen": {
-      "em": 0.0,
-      "f1": 0.003478535353535353,
-      "nll_token": 7.782977277639682,
-      "first_token_top1": 0.05999999865889549,
-      "first_token_top5": 0.125
-    }
-  },
-  "token_budget": {
-    "mode": "content_only",
-    "k": 32,
-    "llama": {
-      "em": 0.005,
-      "f1": 0.04086507936507937
-    },
-    "wall_clock_sec": 11.505087614059448,
-    "qwen": {
-      "em": 0.04,
-      "f1": 0.07479711954711955
-    }
-  },
-  "joint": {
-    "em": 0.0,
-    "f1": 0.003478535353535353,
-    "agreement": 0.25,
-    "oracle": {
-      "em": null,
-      "f1": null
-    }
-  },
-  "debug": {
-    "llama": {
-      "adapter_scale": 0.9960306882858276,
-      "Z_std": 0.606008768081665,
-      "Z_mean_norm": 9.693779945373535,
-      "prefix_std": 0.010570434853434563,
-      "prefix_mean_norm": 0.6766930818557739,
-      "embed_rms": 0.010569815523922443,
-      "encoder_text_mode": "raw",
-      "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
-      "latent_anchor_mode": "text",
-      "latent_anchor_text": "Answer: ",
-      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    },
-    "qwen": {
-      "adapter_scale": 0.9989911913871765,
-      "Z_std": 0.606008768081665,
-      "Z_mean_norm": 9.693779945373535,
-      "prefix_std": 0.013638078235089779,
-      "prefix_mean_norm": 0.8165891766548157,
-      "embed_rms": 0.01364860124886036,
-      "encoder_text_mode": "raw",
-      "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
-      "latent_anchor_mode": "text",
-      "latent_anchor_text": "Answer: ",
-      "model_id": "Qwen/Qwen2.5-7B-Instruct"
-    },
-    "latent_anchor_mode": "text",
-    "latent_anchor_text": "Answer: ",
-    "prefix_gain": 1.0,
-    "calibration_mode": "embed_rms",
-    "append_bos_after_prefix": "yes",
-    "decode": {
-      "min_new_tokens": 3,
-      "eos_ban_steps": 6,
-      "first_token_top_p": 1.0,
-      "first_token_temperature": 0.0
-    }
-  },
-  "oracle": {
-    "em": 0.0,
-    "f1": 0.02050281662781663
-  },
-  "dataset": "squad"
-}
-Wrote per-example predictions to runs/8B_clean_answer_ftce/eval_epoch1/predictions.jsonl
-
-✓ Metrics from: runs/8B_clean_answer_ftce/eval_epoch1/metrics.json
-  Text F1:     Llama 0.799 | Qwen 0.853
-  Latent F1:   Llama 0.021 | Qwen 0.003
-  FirstTok@1:  Llama 0.030 | Qwen 0.060
-  FirstTok@5:  Llama 0.040 | Qwen 0.125
-
-
-=========================================
-EPOCH 2/24
-=========================================
-
-Training epoch 2...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3228.25it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.12s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:01,  1.01it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.29it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.13it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3153.02it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.05it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.24it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.33it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.26it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.25it/s]
-Llama hidden size: 4096, Qwen hidden size: 3584
-⏪ Resuming from: runs/8B_clean_answer_ftce/ckpt/state.pt
-   -> loaded encoder/adapters FROM state.pt
-   -> restored optimizer state
-   -> restored RNG state
-   -> start_epoch=1, global_step=1369
-Epoch 2/1
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/1369 | loss_L=7.7430 | loss_Q=7.1318 | firstCE_L=9.0046 | firstCE_Q=8.0161 | scale_pen(L)=1.6169e-05 | scale_pen(Q)=9.8205e-07 | grad_norm=0.68 | sec/step~1.07 | rms_raw(L)~0.6720 rms_raw(Q)~0.6576 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  20/1369 | loss_L=8.2273 | loss_Q=8.2600 | firstCE_L=8.0987 | firstCE_Q=7.1562 | scale_pen(L)=1.6606e-05 | scale_pen(Q)=8.7136e-07 | grad_norm=0.68 | sec/step~1.04 | rms_raw(L)~0.6724 rms_raw(Q)~0.6580 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  30/1369 | loss_L=8.1565 | loss_Q=7.9690 | firstCE_L=7.9725 | firstCE_Q=6.8509 | scale_pen(L)=1.7413e-05 | scale_pen(Q)=8.7236e-07 | grad_norm=0.69 | sec/step~1.06 | rms_raw(L)~0.6725 rms_raw(Q)~0.6585 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  40/1369 | loss_L=8.1535 | loss_Q=7.9149 | firstCE_L=7.8112 | firstCE_Q=6.7822 | scale_pen(L)=1.8298e-05 | scale_pen(Q)=1.0627e-06 | grad_norm=0.68 | sec/step~1.03 | rms_raw(L)~0.6727 rms_raw(Q)~0.6587 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  50/1369 | loss_L=7.7226 | loss_Q=6.7849 | firstCE_L=8.0588 | firstCE_Q=6.9448 | scale_pen(L)=1.8011e-05 | scale_pen(Q)=1.0961e-06 | grad_norm=0.68 | sec/step~1.08 | rms_raw(L)~0.6729 rms_raw(Q)~0.6590 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  60/1369 | loss_L=7.9335 | loss_Q=7.7115 | firstCE_L=7.7909 | firstCE_Q=6.8531 | scale_pen(L)=1.8666e-05 | scale_pen(Q)=9.8371e-07 | grad_norm=0.62 | sec/step~1.05 | rms_raw(L)~0.6731 rms_raw(Q)~0.6592 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  70/1369 | loss_L=8.0148 | loss_Q=7.7256 | firstCE_L=8.2274 | firstCE_Q=6.9608 | scale_pen(L)=1.9338e-05 | scale_pen(Q)=1.1220e-06 | grad_norm=0.63 | sec/step~1.02 | rms_raw(L)~0.6734 rms_raw(Q)~0.6595 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  80/1369 | loss_L=8.1817 | loss_Q=7.7632 | firstCE_L=8.4673 | firstCE_Q=7.2975 | scale_pen(L)=1.9811e-05 | scale_pen(Q)=1.0055e-06 | grad_norm=0.67 | sec/step~1.06 | rms_raw(L)~0.6736 rms_raw(Q)~0.6597 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  90/1369 | loss_L=8.4266 | loss_Q=8.3362 | firstCE_L=8.5113 | firstCE_Q=7.3198 | scale_pen(L)=2.0052e-05 | scale_pen(Q)=1.1134e-06 | grad_norm=0.68 | sec/step~1.10 | rms_raw(L)~0.6739 rms_raw(Q)~0.6599 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  100/1369 | loss_L=7.7793 | loss_Q=7.3762 | firstCE_L=8.5244 | firstCE_Q=7.2176 | scale_pen(L)=2.0567e-05 | scale_pen(Q)=1.2995e-06 | grad_norm=0.65 | sec/step~1.05 | rms_raw(L)~0.6741 rms_raw(Q)~0.6601 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  110/1369 | loss_L=7.8223 | loss_Q=7.4901 | firstCE_L=7.9311 | firstCE_Q=6.9394 | scale_pen(L)=2.0657e-05 | scale_pen(Q)=1.4849e-06 | grad_norm=0.59 | sec/step~1.09 | rms_raw(L)~0.6743 rms_raw(Q)~0.6604 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  120/1369 | loss_L=7.8525 | loss_Q=7.5955 | firstCE_L=8.0964 | firstCE_Q=7.1026 | scale_pen(L)=2.1335e-05 | scale_pen(Q)=1.4485e-06 | grad_norm=0.62 | sec/step~1.08 | rms_raw(L)~0.6745 rms_raw(Q)~0.6606 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  130/1369 | loss_L=7.7857 | loss_Q=7.5173 | firstCE_L=8.0013 | firstCE_Q=7.2248 | scale_pen(L)=2.2577e-05 | scale_pen(Q)=1.3749e-06 | grad_norm=0.64 | sec/step~1.06 | rms_raw(L)~0.6748 rms_raw(Q)~0.6609 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  140/1369 | loss_L=7.5741 | loss_Q=7.4772 | firstCE_L=7.6248 | firstCE_Q=6.6755 | scale_pen(L)=2.3544e-05 | scale_pen(Q)=1.5513e-06 | grad_norm=0.54 | sec/step~1.06 | rms_raw(L)~0.6750 rms_raw(Q)~0.6611 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  150/1369 | loss_L=8.1913 | loss_Q=8.2913 | firstCE_L=7.9879 | firstCE_Q=6.9395 | scale_pen(L)=2.3912e-05 | scale_pen(Q)=1.5394e-06 | grad_norm=0.66 | sec/step~1.07 | rms_raw(L)~0.6752 rms_raw(Q)~0.6614 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  160/1369 | loss_L=7.8461 | loss_Q=7.4446 | firstCE_L=8.4587 | firstCE_Q=7.8424 | scale_pen(L)=2.3654e-05 | scale_pen(Q)=1.4239e-06 | grad_norm=0.66 | sec/step~1.05 | rms_raw(L)~0.6755 rms_raw(Q)~0.6616 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  170/1369 | loss_L=7.7509 | loss_Q=7.0658 | firstCE_L=8.2299 | firstCE_Q=6.9189 | scale_pen(L)=2.5550e-05 | scale_pen(Q)=1.6944e-06 | grad_norm=0.67 | sec/step~1.03 | rms_raw(L)~0.6757 rms_raw(Q)~0.6619 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  180/1369 | loss_L=7.7580 | loss_Q=7.6482 | firstCE_L=8.1767 | firstCE_Q=7.5320 | scale_pen(L)=2.6603e-05 | scale_pen(Q)=1.7111e-06 | grad_norm=0.64 | sec/step~0.99 | rms_raw(L)~0.6760 rms_raw(Q)~0.6621 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  190/1369 | loss_L=7.7810 | loss_Q=7.5719 | firstCE_L=8.4119 | firstCE_Q=7.4157 | scale_pen(L)=2.6453e-05 | scale_pen(Q)=1.9332e-06 | grad_norm=0.67 | sec/step~1.06 | rms_raw(L)~0.6762 rms_raw(Q)~0.6624 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  200/1369 | loss_L=7.9149 | loss_Q=7.7964 | firstCE_L=8.6038 | firstCE_Q=7.1815 | scale_pen(L)=2.7567e-05 | scale_pen(Q)=2.0498e-06 | grad_norm=0.63 | sec/step~1.01 | rms_raw(L)~0.6765 rms_raw(Q)~0.6626 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  210/1369 | loss_L=8.0008 | loss_Q=7.4668 | firstCE_L=7.7987 | firstCE_Q=6.6932 | scale_pen(L)=2.8230e-05 | scale_pen(Q)=1.9727e-06 | grad_norm=0.62 | sec/step~1.05 | rms_raw(L)~0.6767 rms_raw(Q)~0.6629 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  220/1369 | loss_L=8.0199 | loss_Q=7.3664 | firstCE_L=8.3918 | firstCE_Q=7.2250 | scale_pen(L)=2.9708e-05 | scale_pen(Q)=2.0822e-06 | grad_norm=0.58 | sec/step~1.07 | rms_raw(L)~0.6769 rms_raw(Q)~0.6632 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  230/1369 | loss_L=8.0031 | loss_Q=7.9326 | firstCE_L=7.8855 | firstCE_Q=7.5390 | scale_pen(L)=2.9631e-05 | scale_pen(Q)=2.0647e-06 | grad_norm=0.70 | sec/step~1.06 | rms_raw(L)~0.6772 rms_raw(Q)~0.6634 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  240/1369 | loss_L=7.4105 | loss_Q=7.3278 | firstCE_L=7.6313 | firstCE_Q=6.8482 | scale_pen(L)=2.8409e-05 | scale_pen(Q)=1.7320e-06 | grad_norm=0.65 | sec/step~1.04 | rms_raw(L)~0.6774 rms_raw(Q)~0.6637 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  250/1369 | loss_L=7.8778 | loss_Q=7.5127 | firstCE_L=8.4273 | firstCE_Q=7.7521 | scale_pen(L)=2.9004e-05 | scale_pen(Q)=1.6904e-06 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.6777 rms_raw(Q)~0.6639 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  260/1369 | loss_L=7.9677 | loss_Q=7.7443 | firstCE_L=7.4996 | firstCE_Q=6.5023 | scale_pen(L)=2.8408e-05 | scale_pen(Q)=1.5912e-06 | grad_norm=0.64 | sec/step~1.01 | rms_raw(L)~0.6780 rms_raw(Q)~0.6642 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  270/1369 | loss_L=7.8844 | loss_Q=7.5404 | firstCE_L=7.8966 | firstCE_Q=7.0472 | scale_pen(L)=2.7808e-05 | scale_pen(Q)=1.3803e-06 | grad_norm=0.66 | sec/step~1.08 | rms_raw(L)~0.6782 rms_raw(Q)~0.6645 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  280/1369 | loss_L=7.9296 | loss_Q=7.3590 | firstCE_L=8.1624 | firstCE_Q=6.7450 | scale_pen(L)=2.8625e-05 | scale_pen(Q)=1.4900e-06 | grad_norm=0.63 | sec/step~1.06 | rms_raw(L)~0.6784 rms_raw(Q)~0.6647 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  290/1369 | loss_L=7.9051 | loss_Q=7.8175 | firstCE_L=8.3186 | firstCE_Q=7.4740 | scale_pen(L)=2.9077e-05 | scale_pen(Q)=1.3309e-06 | grad_norm=0.60 | sec/step~1.06 | rms_raw(L)~0.6786 rms_raw(Q)~0.6650 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  300/1369 | loss_L=8.1476 | loss_Q=7.2503 | firstCE_L=8.3188 | firstCE_Q=7.2889 | scale_pen(L)=2.9523e-05 | scale_pen(Q)=1.2593e-06 | grad_norm=0.65 | sec/step~1.05 | rms_raw(L)~0.6788 rms_raw(Q)~0.6653 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  310/1369 | loss_L=8.0385 | loss_Q=7.3914 | firstCE_L=8.7243 | firstCE_Q=7.7442 | scale_pen(L)=2.8947e-05 | scale_pen(Q)=1.2598e-06 | grad_norm=0.69 | sec/step~1.11 | rms_raw(L)~0.6790 rms_raw(Q)~0.6655 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  320/1369 | loss_L=8.1342 | loss_Q=8.3560 | firstCE_L=7.8146 | firstCE_Q=6.8035 | scale_pen(L)=2.9809e-05 | scale_pen(Q)=1.3180e-06 | grad_norm=0.62 | sec/step~1.02 | rms_raw(L)~0.6792 rms_raw(Q)~0.6658 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  330/1369 | loss_L=8.1746 | loss_Q=8.1820 | firstCE_L=8.0310 | firstCE_Q=7.1389 | scale_pen(L)=3.0331e-05 | scale_pen(Q)=1.3251e-06 | grad_norm=0.62 | sec/step~1.02 | rms_raw(L)~0.6794 rms_raw(Q)~0.6661 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  340/1369 | loss_L=8.1737 | loss_Q=7.7846 | firstCE_L=7.9754 | firstCE_Q=7.1832 | scale_pen(L)=3.0326e-05 | scale_pen(Q)=1.1981e-06 | grad_norm=0.70 | sec/step~1.08 | rms_raw(L)~0.6795 rms_raw(Q)~0.6663 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  350/1369 | loss_L=7.9911 | loss_Q=7.2737 | firstCE_L=8.5435 | firstCE_Q=7.4070 | scale_pen(L)=3.0946e-05 | scale_pen(Q)=1.1981e-06 | grad_norm=0.69 | sec/step~1.06 | rms_raw(L)~0.6797 rms_raw(Q)~0.6665 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  360/1369 | loss_L=7.6189 | loss_Q=6.8497 | firstCE_L=7.5574 | firstCE_Q=6.2599 | scale_pen(L)=3.0296e-05 | scale_pen(Q)=1.2133e-06 | grad_norm=0.58 | sec/step~1.08 | rms_raw(L)~0.6799 rms_raw(Q)~0.6668 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  370/1369 | loss_L=7.6677 | loss_Q=7.5080 | firstCE_L=8.5570 | firstCE_Q=7.5775 | scale_pen(L)=3.0966e-05 | scale_pen(Q)=1.0867e-06 | grad_norm=0.61 | sec/step~1.14 | rms_raw(L)~0.6801 rms_raw(Q)~0.6670 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  380/1369 | loss_L=7.5574 | loss_Q=7.2258 | firstCE_L=7.5927 | firstCE_Q=6.8285 | scale_pen(L)=3.2090e-05 | scale_pen(Q)=1.0021e-06 | grad_norm=0.62 | sec/step~1.01 | rms_raw(L)~0.6803 rms_raw(Q)~0.6673 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  390/1369 | loss_L=8.1733 | loss_Q=7.7178 | firstCE_L=8.0187 | firstCE_Q=6.5347 | scale_pen(L)=3.3256e-05 | scale_pen(Q)=9.2204e-07 | grad_norm=0.62 | sec/step~1.08 | rms_raw(L)~0.6804 rms_raw(Q)~0.6675 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  400/1369 | loss_L=7.8967 | loss_Q=7.5560 | firstCE_L=8.3121 | firstCE_Q=7.2252 | scale_pen(L)=3.3391e-05 | scale_pen(Q)=1.0154e-06 | grad_norm=0.66 | sec/step~1.02 | rms_raw(L)~0.6806 rms_raw(Q)~0.6678 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  410/1369 | loss_L=7.9596 | loss_Q=7.6800 | firstCE_L=8.2162 | firstCE_Q=7.1100 | scale_pen(L)=3.4786e-05 | scale_pen(Q)=8.8780e-07 | grad_norm=0.66 | sec/step~1.06 | rms_raw(L)~0.6808 rms_raw(Q)~0.6680 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  420/1369 | loss_L=7.4334 | loss_Q=7.3457 | firstCE_L=7.6349 | firstCE_Q=6.7145 | scale_pen(L)=3.2878e-05 | scale_pen(Q)=8.4837e-07 | grad_norm=0.70 | sec/step~1.07 | rms_raw(L)~0.6810 rms_raw(Q)~0.6683 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  430/1369 | loss_L=8.1050 | loss_Q=8.0846 | firstCE_L=7.8009 | firstCE_Q=7.0126 | scale_pen(L)=3.3874e-05 | scale_pen(Q)=1.0999e-06 | grad_norm=0.67 | sec/step~1.14 | rms_raw(L)~0.6812 rms_raw(Q)~0.6685 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  440/1369 | loss_L=8.1006 | loss_Q=8.0536 | firstCE_L=8.1831 | firstCE_Q=7.0923 | scale_pen(L)=3.4506e-05 | scale_pen(Q)=9.6594e-07 | grad_norm=0.64 | sec/step~1.01 | rms_raw(L)~0.6814 rms_raw(Q)~0.6688 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  450/1369 | loss_L=8.0077 | loss_Q=7.6714 | firstCE_L=8.4676 | firstCE_Q=7.6717 | scale_pen(L)=3.4895e-05 | scale_pen(Q)=9.8797e-07 | grad_norm=0.65 | sec/step~0.98 | rms_raw(L)~0.6816 rms_raw(Q)~0.6690 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  460/1369 | loss_L=8.0825 | loss_Q=7.6792 | firstCE_L=8.2404 | firstCE_Q=7.1566 | scale_pen(L)=3.6471e-05 | scale_pen(Q)=1.1530e-06 | grad_norm=0.64 | sec/step~1.12 | rms_raw(L)~0.6817 rms_raw(Q)~0.6693 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  470/1369 | loss_L=7.6164 | loss_Q=7.0216 | firstCE_L=8.1417 | firstCE_Q=6.6856 | scale_pen(L)=3.6169e-05 | scale_pen(Q)=1.1416e-06 | grad_norm=0.69 | sec/step~0.98 | rms_raw(L)~0.6819 rms_raw(Q)~0.6695 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  480/1369 | loss_L=7.9106 | loss_Q=7.9022 | firstCE_L=7.6751 | firstCE_Q=7.0697 | scale_pen(L)=3.5758e-05 | scale_pen(Q)=1.1054e-06 | grad_norm=0.60 | sec/step~1.03 | rms_raw(L)~0.6821 rms_raw(Q)~0.6698 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  490/1369 | loss_L=7.9209 | loss_Q=7.3741 | firstCE_L=8.5014 | firstCE_Q=7.2851 | scale_pen(L)=3.5651e-05 | scale_pen(Q)=1.0481e-06 | grad_norm=0.67 | sec/step~1.04 | rms_raw(L)~0.6823 rms_raw(Q)~0.6700 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  500/1369 | loss_L=7.7268 | loss_Q=7.1926 | firstCE_L=8.0615 | firstCE_Q=7.2062 | scale_pen(L)=3.5933e-05 | scale_pen(Q)=1.1866e-06 | grad_norm=0.72 | sec/step~1.13 | rms_raw(L)~0.6824 rms_raw(Q)~0.6703 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  510/1369 | loss_L=8.0322 | loss_Q=8.1845 | firstCE_L=8.2764 | firstCE_Q=7.2751 | scale_pen(L)=3.5345e-05 | scale_pen(Q)=1.3190e-06 | grad_norm=0.64 | sec/step~1.06 | rms_raw(L)~0.6826 rms_raw(Q)~0.6705 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  520/1369 | loss_L=7.8645 | loss_Q=7.2374 | firstCE_L=8.1701 | firstCE_Q=6.9236 | scale_pen(L)=3.6046e-05 | scale_pen(Q)=1.0937e-06 | grad_norm=0.57 | sec/step~1.10 | rms_raw(L)~0.6828 rms_raw(Q)~0.6708 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  530/1369 | loss_L=7.6333 | loss_Q=7.4838 | firstCE_L=8.4201 | firstCE_Q=7.1232 | scale_pen(L)=3.7431e-05 | scale_pen(Q)=1.1302e-06 | grad_norm=0.63 | sec/step~1.14 | rms_raw(L)~0.6830 rms_raw(Q)~0.6710 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  540/1369 | loss_L=7.6355 | loss_Q=7.2100 | firstCE_L=7.9192 | firstCE_Q=6.7088 | scale_pen(L)=3.8689e-05 | scale_pen(Q)=1.1283e-06 | grad_norm=0.65 | sec/step~1.00 | rms_raw(L)~0.6831 rms_raw(Q)~0.6713 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  550/1369 | loss_L=7.8554 | loss_Q=7.7674 | firstCE_L=7.7316 | firstCE_Q=6.7777 | scale_pen(L)=3.9726e-05 | scale_pen(Q)=1.2473e-06 | grad_norm=0.58 | sec/step~1.06 | rms_raw(L)~0.6833 rms_raw(Q)~0.6716 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  560/1369 | loss_L=8.0842 | loss_Q=7.5831 | firstCE_L=8.4145 | firstCE_Q=7.1136 | scale_pen(L)=3.8279e-05 | scale_pen(Q)=1.3123e-06 | grad_norm=0.63 | sec/step~1.04 | rms_raw(L)~0.6835 rms_raw(Q)~0.6718 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  570/1369 | loss_L=7.9109 | loss_Q=8.0014 | firstCE_L=7.4239 | firstCE_Q=6.8771 | scale_pen(L)=3.8740e-05 | scale_pen(Q)=1.1709e-06 | grad_norm=0.66 | sec/step~1.18 | rms_raw(L)~0.6837 rms_raw(Q)~0.6720 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  580/1369 | loss_L=8.3003 | loss_Q=8.1468 | firstCE_L=8.6457 | firstCE_Q=7.4324 | scale_pen(L)=3.6767e-05 | scale_pen(Q)=1.1095e-06 | grad_norm=0.67 | sec/step~0.98 | rms_raw(L)~0.6839 rms_raw(Q)~0.6723 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  590/1369 | loss_L=7.6865 | loss_Q=7.6660 | firstCE_L=7.9030 | firstCE_Q=7.0258 | scale_pen(L)=3.6737e-05 | scale_pen(Q)=9.9379e-07 | grad_norm=0.68 | sec/step~1.00 | rms_raw(L)~0.6841 rms_raw(Q)~0.6726 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  600/1369 | loss_L=7.8799 | loss_Q=7.7388 | firstCE_L=8.0564 | firstCE_Q=6.9516 | scale_pen(L)=3.5893e-05 | scale_pen(Q)=1.1950e-06 | grad_norm=0.65 | sec/step~1.08 | rms_raw(L)~0.6842 rms_raw(Q)~0.6728 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  610/1369 | loss_L=8.4301 | loss_Q=8.0780 | firstCE_L=8.3336 | firstCE_Q=7.8834 | scale_pen(L)=3.5431e-05 | scale_pen(Q)=1.3511e-06 | grad_norm=0.61 | sec/step~1.01 | rms_raw(L)~0.6844 rms_raw(Q)~0.6730 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  620/1369 | loss_L=7.9796 | loss_Q=7.8660 | firstCE_L=8.2063 | firstCE_Q=7.2283 | scale_pen(L)=3.5551e-05 | scale_pen(Q)=1.3175e-06 | grad_norm=0.62 | sec/step~1.00 | rms_raw(L)~0.6846 rms_raw(Q)~0.6733 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  630/1369 | loss_L=7.6154 | loss_Q=8.0176 | firstCE_L=7.7470 | firstCE_Q=6.7713 | scale_pen(L)=3.5940e-05 | scale_pen(Q)=1.3461e-06 | grad_norm=0.65 | sec/step~1.03 | rms_raw(L)~0.6848 rms_raw(Q)~0.6735 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  640/1369 | loss_L=7.9954 | loss_Q=7.6865 | firstCE_L=8.5741 | firstCE_Q=7.1942 | scale_pen(L)=3.6828e-05 | scale_pen(Q)=1.3719e-06 | grad_norm=0.54 | sec/step~1.13 | rms_raw(L)~0.6849 rms_raw(Q)~0.6738 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  650/1369 | loss_L=7.5034 | loss_Q=7.3697 | firstCE_L=7.4222 | firstCE_Q=6.4715 | scale_pen(L)=3.8544e-05 | scale_pen(Q)=1.3370e-06 | grad_norm=0.66 | sec/step~1.03 | rms_raw(L)~0.6851 rms_raw(Q)~0.6741 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  660/1369 | loss_L=8.0845 | loss_Q=7.8643 | firstCE_L=7.9622 | firstCE_Q=6.9245 | scale_pen(L)=3.9240e-05 | scale_pen(Q)=1.2481e-06 | grad_norm=0.69 | sec/step~1.08 | rms_raw(L)~0.6853 rms_raw(Q)~0.6743 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  670/1369 | loss_L=8.0885 | loss_Q=8.0352 | firstCE_L=8.5525 | firstCE_Q=7.5785 | scale_pen(L)=3.8708e-05 | scale_pen(Q)=1.2027e-06 | grad_norm=0.66 | sec/step~0.99 | rms_raw(L)~0.6855 rms_raw(Q)~0.6745 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  680/1369 | loss_L=7.6212 | loss_Q=7.8164 | firstCE_L=8.0550 | firstCE_Q=6.9043 | scale_pen(L)=3.8973e-05 | scale_pen(Q)=1.0293e-06 | grad_norm=0.61 | sec/step~1.04 | rms_raw(L)~0.6856 rms_raw(Q)~0.6748 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  690/1369 | loss_L=7.7901 | loss_Q=7.3308 | firstCE_L=7.8724 | firstCE_Q=6.7004 | scale_pen(L)=3.8564e-05 | scale_pen(Q)=1.1306e-06 | grad_norm=0.69 | sec/step~1.00 | rms_raw(L)~0.6858 rms_raw(Q)~0.6751 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  700/1369 | loss_L=8.0536 | loss_Q=8.0522 | firstCE_L=8.2277 | firstCE_Q=6.9429 | scale_pen(L)=3.7827e-05 | scale_pen(Q)=1.0485e-06 | grad_norm=0.64 | sec/step~1.03 | rms_raw(L)~0.6860 rms_raw(Q)~0.6753 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  710/1369 | loss_L=7.8014 | loss_Q=7.4508 | firstCE_L=7.7641 | firstCE_Q=6.9623 | scale_pen(L)=3.6512e-05 | scale_pen(Q)=1.1570e-06 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.6862 rms_raw(Q)~0.6756 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  720/1369 | loss_L=7.8202 | loss_Q=7.7255 | firstCE_L=8.2305 | firstCE_Q=7.3603 | scale_pen(L)=3.7352e-05 | scale_pen(Q)=1.1346e-06 | grad_norm=0.66 | sec/step~1.07 | rms_raw(L)~0.6863 rms_raw(Q)~0.6758 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  730/1369 | loss_L=8.0363 | loss_Q=7.7746 | firstCE_L=8.6397 | firstCE_Q=7.2277 | scale_pen(L)=3.7631e-05 | scale_pen(Q)=1.2400e-06 | grad_norm=0.64 | sec/step~1.11 | rms_raw(L)~0.6865 rms_raw(Q)~0.6761 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  740/1369 | loss_L=7.9761 | loss_Q=8.2421 | firstCE_L=8.3356 | firstCE_Q=7.2975 | scale_pen(L)=3.9017e-05 | scale_pen(Q)=1.3690e-06 | grad_norm=0.67 | sec/step~1.02 | rms_raw(L)~0.6867 rms_raw(Q)~0.6764 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  750/1369 | loss_L=7.4359 | loss_Q=6.5427 | firstCE_L=7.3265 | firstCE_Q=6.0039 | scale_pen(L)=3.8116e-05 | scale_pen(Q)=1.2362e-06 | grad_norm=0.63 | sec/step~1.03 | rms_raw(L)~0.6869 rms_raw(Q)~0.6766 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  760/1369 | loss_L=8.1020 | loss_Q=7.4835 | firstCE_L=8.2586 | firstCE_Q=7.5029 | scale_pen(L)=3.8673e-05 | scale_pen(Q)=1.2921e-06 | grad_norm=0.59 | sec/step~1.14 | rms_raw(L)~0.6870 rms_raw(Q)~0.6769 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  770/1369 | loss_L=8.0221 | loss_Q=8.0358 | firstCE_L=8.4737 | firstCE_Q=7.9350 | scale_pen(L)=3.9290e-05 | scale_pen(Q)=1.2146e-06 | grad_norm=0.66 | sec/step~1.01 | rms_raw(L)~0.6872 rms_raw(Q)~0.6771 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  780/1369 | loss_L=7.6550 | loss_Q=7.5406 | firstCE_L=7.5339 | firstCE_Q=6.3412 | scale_pen(L)=3.8653e-05 | scale_pen(Q)=1.3732e-06 | grad_norm=0.67 | sec/step~1.05 | rms_raw(L)~0.6874 rms_raw(Q)~0.6774 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  790/1369 | loss_L=7.5968 | loss_Q=7.4961 | firstCE_L=8.2222 | firstCE_Q=7.4574 | scale_pen(L)=3.8500e-05 | scale_pen(Q)=1.4365e-06 | grad_norm=0.60 | sec/step~1.07 | rms_raw(L)~0.6875 rms_raw(Q)~0.6776 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  800/1369 | loss_L=7.9374 | loss_Q=7.9026 | firstCE_L=8.0014 | firstCE_Q=7.0796 | scale_pen(L)=3.8299e-05 | scale_pen(Q)=1.3093e-06 | grad_norm=0.65 | sec/step~1.03 | rms_raw(L)~0.6877 rms_raw(Q)~0.6779 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  810/1369 | loss_L=7.3936 | loss_Q=6.9526 | firstCE_L=8.2736 | firstCE_Q=6.9766 | scale_pen(L)=3.8539e-05 | scale_pen(Q)=1.1645e-06 | grad_norm=0.70 | sec/step~1.08 | rms_raw(L)~0.6879 rms_raw(Q)~0.6781 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  820/1369 | loss_L=7.8521 | loss_Q=7.1954 | firstCE_L=8.1252 | firstCE_Q=7.0882 | scale_pen(L)=3.7642e-05 | scale_pen(Q)=1.3177e-06 | grad_norm=0.59 | sec/step~1.09 | rms_raw(L)~0.6881 rms_raw(Q)~0.6784 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  830/1369 | loss_L=7.4816 | loss_Q=7.0867 | firstCE_L=8.0594 | firstCE_Q=6.8821 | scale_pen(L)=3.7092e-05 | scale_pen(Q)=1.2711e-06 | grad_norm=0.61 | sec/step~1.01 | rms_raw(L)~0.6882 rms_raw(Q)~0.6786 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  840/1369 | loss_L=7.8159 | loss_Q=7.3348 | firstCE_L=8.3397 | firstCE_Q=7.5669 | scale_pen(L)=3.7763e-05 | scale_pen(Q)=1.3847e-06 | grad_norm=0.56 | sec/step~1.09 | rms_raw(L)~0.6884 rms_raw(Q)~0.6789 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  850/1369 | loss_L=7.8427 | loss_Q=8.0843 | firstCE_L=8.1360 | firstCE_Q=7.4822 | scale_pen(L)=3.7520e-05 | scale_pen(Q)=1.3612e-06 | grad_norm=0.63 | sec/step~1.10 | rms_raw(L)~0.6886 rms_raw(Q)~0.6791 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  860/1369 | loss_L=7.7397 | loss_Q=7.1833 | firstCE_L=8.2303 | firstCE_Q=7.1417 | scale_pen(L)=3.7550e-05 | scale_pen(Q)=1.1975e-06 | grad_norm=0.61 | sec/step~1.05 | rms_raw(L)~0.6887 rms_raw(Q)~0.6794 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  870/1369 | loss_L=7.3200 | loss_Q=7.0478 | firstCE_L=7.6491 | firstCE_Q=6.6270 | scale_pen(L)=3.7921e-05 | scale_pen(Q)=1.1273e-06 | grad_norm=0.65 | sec/step~0.98 | rms_raw(L)~0.6889 rms_raw(Q)~0.6797 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  880/1369 | loss_L=7.9069 | loss_Q=7.8485 | firstCE_L=8.3106 | firstCE_Q=7.4104 | scale_pen(L)=3.8216e-05 | scale_pen(Q)=1.0710e-06 | grad_norm=0.69 | sec/step~1.08 | rms_raw(L)~0.6891 rms_raw(Q)~0.6799 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  890/1369 | loss_L=7.5442 | loss_Q=6.9166 | firstCE_L=7.5999 | firstCE_Q=6.7249 | scale_pen(L)=3.9703e-05 | scale_pen(Q)=1.1388e-06 | grad_norm=0.69 | sec/step~1.06 | rms_raw(L)~0.6892 rms_raw(Q)~0.6802 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  900/1369 | loss_L=8.3663 | loss_Q=8.2498 | firstCE_L=8.1712 | firstCE_Q=7.5494 | scale_pen(L)=4.0527e-05 | scale_pen(Q)=1.0012e-06 | grad_norm=0.64 | sec/step~1.04 | rms_raw(L)~0.6894 rms_raw(Q)~0.6804 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  910/1369 | loss_L=7.7282 | loss_Q=7.1458 | firstCE_L=8.3640 | firstCE_Q=7.1451 | scale_pen(L)=3.8455e-05 | scale_pen(Q)=1.0464e-06 | grad_norm=0.62 | sec/step~1.07 | rms_raw(L)~0.6895 rms_raw(Q)~0.6807 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  920/1369 | loss_L=7.4272 | loss_Q=7.2752 | firstCE_L=8.4395 | firstCE_Q=7.3696 | scale_pen(L)=3.7931e-05 | scale_pen(Q)=1.0148e-06 | grad_norm=0.63 | sec/step~1.06 | rms_raw(L)~0.6897 rms_raw(Q)~0.6809 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  930/1369 | loss_L=7.2645 | loss_Q=7.2343 | firstCE_L=7.7658 | firstCE_Q=6.8995 | scale_pen(L)=3.8221e-05 | scale_pen(Q)=1.0027e-06 | grad_norm=0.61 | sec/step~1.13 | rms_raw(L)~0.6898 rms_raw(Q)~0.6812 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  940/1369 | loss_L=7.6782 | loss_Q=7.7228 | firstCE_L=7.6056 | firstCE_Q=7.0784 | scale_pen(L)=3.7345e-05 | scale_pen(Q)=8.0363e-07 | grad_norm=0.60 | sec/step~1.09 | rms_raw(L)~0.6900 rms_raw(Q)~0.6814 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  950/1369 | loss_L=7.5996 | loss_Q=7.2757 | firstCE_L=8.7137 | firstCE_Q=7.1994 | scale_pen(L)=3.8240e-05 | scale_pen(Q)=8.1360e-07 | grad_norm=0.52 | sec/step~1.06 | rms_raw(L)~0.6902 rms_raw(Q)~0.6817 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  960/1369 | loss_L=7.6369 | loss_Q=7.4880 | firstCE_L=8.2683 | firstCE_Q=6.9291 | scale_pen(L)=3.9128e-05 | scale_pen(Q)=9.1279e-07 | grad_norm=0.69 | sec/step~1.02 | rms_raw(L)~0.6903 rms_raw(Q)~0.6819 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  970/1369 | loss_L=7.5260 | loss_Q=7.4555 | firstCE_L=7.9353 | firstCE_Q=6.8930 | scale_pen(L)=3.9143e-05 | scale_pen(Q)=9.4740e-07 | grad_norm=0.61 | sec/step~1.13 | rms_raw(L)~0.6905 rms_raw(Q)~0.6822 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  980/1369 | loss_L=7.8275 | loss_Q=6.9224 | firstCE_L=8.5093 | firstCE_Q=6.5392 | scale_pen(L)=3.9380e-05 | scale_pen(Q)=9.7816e-07 | grad_norm=0.62 | sec/step~1.02 | rms_raw(L)~0.6906 rms_raw(Q)~0.6825 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  990/1369 | loss_L=7.2072 | loss_Q=7.0662 | firstCE_L=7.9547 | firstCE_Q=6.9881 | scale_pen(L)=3.8461e-05 | scale_pen(Q)=9.9616e-07 | grad_norm=0.69 | sec/step~0.98 | rms_raw(L)~0.6908 rms_raw(Q)~0.6827 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1000/1369 | loss_L=7.7819 | loss_Q=7.9769 | firstCE_L=7.5638 | firstCE_Q=7.2318 | scale_pen(L)=3.9067e-05 | scale_pen(Q)=1.0889e-06 | grad_norm=0.62 | sec/step~1.04 | rms_raw(L)~0.6909 rms_raw(Q)~0.6830 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1010/1369 | loss_L=7.7262 | loss_Q=7.0978 | firstCE_L=8.4715 | firstCE_Q=6.8203 | scale_pen(L)=3.9315e-05 | scale_pen(Q)=9.9950e-07 | grad_norm=0.61 | sec/step~1.08 | rms_raw(L)~0.6911 rms_raw(Q)~0.6832 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1020/1369 | loss_L=7.7298 | loss_Q=7.4740 | firstCE_L=8.5306 | firstCE_Q=8.6732 | scale_pen(L)=3.9043e-05 | scale_pen(Q)=9.2056e-07 | grad_norm=0.63 | sec/step~1.03 | rms_raw(L)~0.6912 rms_raw(Q)~0.6835 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1030/1369 | loss_L=7.9206 | loss_Q=8.0148 | firstCE_L=7.9507 | firstCE_Q=6.7481 | scale_pen(L)=3.9008e-05 | scale_pen(Q)=1.0104e-06 | grad_norm=0.64 | sec/step~0.99 | rms_raw(L)~0.6914 rms_raw(Q)~0.6837 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1040/1369 | loss_L=7.6144 | loss_Q=7.5521 | firstCE_L=8.5156 | firstCE_Q=7.7000 | scale_pen(L)=3.9702e-05 | scale_pen(Q)=9.4740e-07 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.6915 rms_raw(Q)~0.6840 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1050/1369 | loss_L=7.4287 | loss_Q=6.9732 | firstCE_L=8.4442 | firstCE_Q=7.4154 | scale_pen(L)=3.9575e-05 | scale_pen(Q)=9.2835e-07 | grad_norm=0.62 | sec/step~1.16 | rms_raw(L)~0.6917 rms_raw(Q)~0.6842 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1060/1369 | loss_L=7.7065 | loss_Q=7.2794 | firstCE_L=8.2793 | firstCE_Q=7.1414 | scale_pen(L)=3.9309e-05 | scale_pen(Q)=8.5894e-07 | grad_norm=0.61 | sec/step~0.99 | rms_raw(L)~0.6918 rms_raw(Q)~0.6845 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1070/1369 | loss_L=7.8375 | loss_Q=7.6717 | firstCE_L=9.0887 | firstCE_Q=7.4213 | scale_pen(L)=3.8904e-05 | scale_pen(Q)=9.6946e-07 | grad_norm=0.60 | sec/step~1.05 | rms_raw(L)~0.6920 rms_raw(Q)~0.6847 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1080/1369 | loss_L=7.8294 | loss_Q=7.3283 | firstCE_L=8.2779 | firstCE_Q=7.5247 | scale_pen(L)=3.9178e-05 | scale_pen(Q)=9.7086e-07 | grad_norm=0.67 | sec/step~1.13 | rms_raw(L)~0.6921 rms_raw(Q)~0.6850 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1090/1369 | loss_L=7.6259 | loss_Q=7.4818 | firstCE_L=7.5460 | firstCE_Q=6.6975 | scale_pen(L)=3.9252e-05 | scale_pen(Q)=1.0462e-06 | grad_norm=0.61 | sec/step~1.05 | rms_raw(L)~0.6923 rms_raw(Q)~0.6852 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1100/1369 | loss_L=7.3624 | loss_Q=6.7566 | firstCE_L=8.2565 | firstCE_Q=7.0403 | scale_pen(L)=3.9757e-05 | scale_pen(Q)=9.6032e-07 | grad_norm=0.58 | sec/step~1.08 | rms_raw(L)~0.6924 rms_raw(Q)~0.6855 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1110/1369 | loss_L=7.8045 | loss_Q=7.6373 | firstCE_L=7.6625 | firstCE_Q=7.0266 | scale_pen(L)=3.9526e-05 | scale_pen(Q)=9.2479e-07 | grad_norm=0.63 | sec/step~1.06 | rms_raw(L)~0.6926 rms_raw(Q)~0.6857 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1120/1369 | loss_L=7.4251 | loss_Q=7.0128 | firstCE_L=8.3412 | firstCE_Q=7.0000 | scale_pen(L)=3.9181e-05 | scale_pen(Q)=8.7526e-07 | grad_norm=0.59 | sec/step~1.04 | rms_raw(L)~0.6927 rms_raw(Q)~0.6859 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1130/1369 | loss_L=7.6991 | loss_Q=7.7124 | firstCE_L=8.0243 | firstCE_Q=6.8169 | scale_pen(L)=3.7828e-05 | scale_pen(Q)=8.6005e-07 | grad_norm=0.66 | sec/step~1.08 | rms_raw(L)~0.6928 rms_raw(Q)~0.6862 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1140/1369 | loss_L=7.6537 | loss_Q=7.1759 | firstCE_L=8.3140 | firstCE_Q=7.4725 | scale_pen(L)=3.7912e-05 | scale_pen(Q)=8.2569e-07 | grad_norm=0.68 | sec/step~1.09 | rms_raw(L)~0.6930 rms_raw(Q)~0.6864 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1150/1369 | loss_L=7.9582 | loss_Q=8.3286 | firstCE_L=8.1197 | firstCE_Q=6.9743 | scale_pen(L)=3.7136e-05 | scale_pen(Q)=8.3361e-07 | grad_norm=0.63 | sec/step~1.13 | rms_raw(L)~0.6931 rms_raw(Q)~0.6867 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1160/1369 | loss_L=7.3643 | loss_Q=6.9521 | firstCE_L=7.6478 | firstCE_Q=6.7018 | scale_pen(L)=3.6556e-05 | scale_pen(Q)=8.9230e-07 | grad_norm=0.67 | sec/step~1.08 | rms_raw(L)~0.6933 rms_raw(Q)~0.6869 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1170/1369 | loss_L=7.3990 | loss_Q=7.0722 | firstCE_L=7.9459 | firstCE_Q=6.8829 | scale_pen(L)=3.7477e-05 | scale_pen(Q)=9.0870e-07 | grad_norm=0.69 | sec/step~1.05 | rms_raw(L)~0.6934 rms_raw(Q)~0.6872 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1180/1369 | loss_L=8.0949 | loss_Q=7.8947 | firstCE_L=8.1764 | firstCE_Q=7.1327 | scale_pen(L)=3.6584e-05 | scale_pen(Q)=9.5764e-07 | grad_norm=0.64 | sec/step~1.03 | rms_raw(L)~0.6936 rms_raw(Q)~0.6874 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1190/1369 | loss_L=7.2554 | loss_Q=7.0266 | firstCE_L=7.8272 | firstCE_Q=6.9094 | scale_pen(L)=3.7265e-05 | scale_pen(Q)=7.7745e-07 | grad_norm=0.62 | sec/step~1.01 | rms_raw(L)~0.6937 rms_raw(Q)~0.6876 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1200/1369 | loss_L=7.3768 | loss_Q=6.9668 | firstCE_L=8.2691 | firstCE_Q=7.1280 | scale_pen(L)=3.7773e-05 | scale_pen(Q)=7.8641e-07 | grad_norm=0.55 | sec/step~1.06 | rms_raw(L)~0.6939 rms_raw(Q)~0.6879 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1210/1369 | loss_L=7.8308 | loss_Q=7.3385 | firstCE_L=8.2971 | firstCE_Q=7.2776 | scale_pen(L)=3.8778e-05 | scale_pen(Q)=6.9693e-07 | grad_norm=0.60 | sec/step~1.17 | rms_raw(L)~0.6940 rms_raw(Q)~0.6881 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1220/1369 | loss_L=7.9428 | loss_Q=7.5475 | firstCE_L=8.0793 | firstCE_Q=6.7918 | scale_pen(L)=3.8594e-05 | scale_pen(Q)=7.4758e-07 | grad_norm=0.67 | sec/step~1.06 | rms_raw(L)~0.6942 rms_raw(Q)~0.6884 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1230/1369 | loss_L=7.5410 | loss_Q=7.2550 | firstCE_L=8.2909 | firstCE_Q=7.3752 | scale_pen(L)=3.8473e-05 | scale_pen(Q)=6.4461e-07 | grad_norm=0.65 | sec/step~1.07 | rms_raw(L)~0.6943 rms_raw(Q)~0.6886 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1240/1369 | loss_L=7.6114 | loss_Q=7.7387 | firstCE_L=7.9620 | firstCE_Q=7.1650 | scale_pen(L)=3.9070e-05 | scale_pen(Q)=5.4829e-07 | grad_norm=0.65 | sec/step~0.99 | rms_raw(L)~0.6945 rms_raw(Q)~0.6889 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1250/1369 | loss_L=8.0216 | loss_Q=7.5450 | firstCE_L=8.3021 | firstCE_Q=7.4281 | scale_pen(L)=3.9470e-05 | scale_pen(Q)=5.2119e-07 | grad_norm=0.57 | sec/step~0.99 | rms_raw(L)~0.6946 rms_raw(Q)~0.6891 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1260/1369 | loss_L=7.5560 | loss_Q=7.6304 | firstCE_L=8.2589 | firstCE_Q=7.3482 | scale_pen(L)=3.9246e-05 | scale_pen(Q)=5.3156e-07 | grad_norm=0.61 | sec/step~1.04 | rms_raw(L)~0.6948 rms_raw(Q)~0.6894 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1270/1369 | loss_L=7.5373 | loss_Q=7.0470 | firstCE_L=8.0450 | firstCE_Q=7.0552 | scale_pen(L)=3.9533e-05 | scale_pen(Q)=4.7567e-07 | grad_norm=0.61 | sec/step~1.08 | rms_raw(L)~0.6949 rms_raw(Q)~0.6896 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1280/1369 | loss_L=7.2747 | loss_Q=6.9453 | firstCE_L=7.7664 | firstCE_Q=6.8708 | scale_pen(L)=3.9528e-05 | scale_pen(Q)=5.4055e-07 | grad_norm=0.65 | sec/step~1.02 | rms_raw(L)~0.6950 rms_raw(Q)~0.6898 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1290/1369 | loss_L=7.5808 | loss_Q=7.4758 | firstCE_L=7.8574 | firstCE_Q=6.8827 | scale_pen(L)=3.9959e-05 | scale_pen(Q)=4.9981e-07 | grad_norm=0.70 | sec/step~1.04 | rms_raw(L)~0.6952 rms_raw(Q)~0.6901 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1300/1369 | loss_L=7.7653 | loss_Q=7.5789 | firstCE_L=8.1520 | firstCE_Q=6.9192 | scale_pen(L)=4.1464e-05 | scale_pen(Q)=6.1846e-07 | grad_norm=0.61 | sec/step~1.14 | rms_raw(L)~0.6953 rms_raw(Q)~0.6903 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1310/1369 | loss_L=7.5910 | loss_Q=7.2627 | firstCE_L=7.6188 | firstCE_Q=6.7620 | scale_pen(L)=4.0438e-05 | scale_pen(Q)=5.8126e-07 | grad_norm=0.54 | sec/step~1.06 | rms_raw(L)~0.6955 rms_raw(Q)~0.6906 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1320/1369 | loss_L=7.5288 | loss_Q=7.4428 | firstCE_L=7.7386 | firstCE_Q=7.1814 | scale_pen(L)=3.9249e-05 | scale_pen(Q)=6.3840e-07 | grad_norm=0.61 | sec/step~1.05 | rms_raw(L)~0.6956 rms_raw(Q)~0.6908 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1330/1369 | loss_L=7.6173 | loss_Q=7.5935 | firstCE_L=8.1894 | firstCE_Q=7.3242 | scale_pen(L)=3.8904e-05 | scale_pen(Q)=5.7302e-07 | grad_norm=0.59 | sec/step~1.13 | rms_raw(L)~0.6958 rms_raw(Q)~0.6910 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1340/1369 | loss_L=7.5191 | loss_Q=7.1006 | firstCE_L=8.1434 | firstCE_Q=7.1189 | scale_pen(L)=3.8556e-05 | scale_pen(Q)=5.8199e-07 | grad_norm=0.67 | sec/step~1.06 | rms_raw(L)~0.6959 rms_raw(Q)~0.6913 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1350/1369 | loss_L=8.1820 | loss_Q=7.7423 | firstCE_L=8.0845 | firstCE_Q=6.8737 | scale_pen(L)=3.6946e-05 | scale_pen(Q)=3.9475e-07 | grad_norm=0.64 | sec/step~1.00 | rms_raw(L)~0.6961 rms_raw(Q)~0.6915 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1360/1369 | loss_L=7.6417 | loss_Q=7.4328 | firstCE_L=8.0687 | firstCE_Q=7.5006 | scale_pen(L)=3.6326e-05 | scale_pen(Q)=4.5501e-07 | grad_norm=0.63 | sec/step~1.10 | rms_raw(L)~0.6962 rms_raw(Q)~0.6917 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  1369/1369 | loss_L=8.0641 | loss_Q=8.4941 | firstCE_L=8.4719 | firstCE_Q=7.7357 | scale_pen(L)=3.7488e-05 | scale_pen(Q)=5.0242e-07 | grad_norm=0.57 | sec/step~0.86 | rms_raw(L)~0.6964 rms_raw(Q)~0.6920 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json, training_stats.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-  ✅ Saved (and pruned to) latest at step 2738
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json, training_stats.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-✅ Saved latest checkpoint to runs/8B_clean_answer_ftce/ckpt
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.696364540048896, 'rms_mean_cal': 0.010571359936352016, 'embed_rms': 0.0105800935998559, 'count': 1369}, 'qwen': {'rms_mean_raw': 0.6919575832550154, 'rms_mean_cal': 0.013640723401412553, 'embed_rms': 0.013648351654410362, 'count': 1369}}
-
-Evaluating epoch 2 checkpoint...
-Evaluating: runs/8B_clean_answer_ftce/epoch2 -> runs/8B_clean_answer_ftce/eval_epoch2
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Auto-detected device: cuda
-Loaded training_stats.json: runs/8B_clean_answer_ftce/epoch2/training_stats.json
-Building encoder and computing Z...
-Saved Z to runs/8B_clean_answer_ftce/eval_epoch2/Z.pt
-
-[Sequential Evaluation Mode - one model at a time]
-
-Evaluating Llama...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2598.70it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.16s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.04s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.11it/s]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-[align:llama] encoder_text_mode candidates=['raw'] | nlls={'raw': 7.866149151676637} | picked=raw
-Saved Z[llama_raw] to runs/8B_clean_answer_ftce/eval_epoch2/Z_llama_raw.pt
-[calib:llama] mode=embed_rms prefix_rms=0.71644 -> target=0.01057
-[debug:llama] adapter.scale=0.9939 | Z.std=0.6617 Z.mean||=10.5673 | prefix.std=0.0106 prefix.mean||=0.6767 | embed.RMS=0.0106
-
-[DEBUG] First generations (Llama, latent):
-  0: 'the of the and the of the are in the of the'
-  1: 'the of the and the of the are to the of the'
-  2: 'the of the and the of the and the of the and'
-  3: 'the of the and the of the and the of the and'
-  4: 'the of the and the of the and the of the and'
-Saved Llama results to runs/8B_clean_answer_ftce/eval_epoch2/llama_results.json
-
-Evaluating Qwen...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2603.94it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.27it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.35it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.14it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.30it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.27it/s]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-[align:qwen] encoder_text_mode candidates=['raw'] | nlls={'raw': 7.457290293836089} | picked=raw
-Saved Z[qwen_raw] to runs/8B_clean_answer_ftce/eval_epoch2/Z_qwen_raw.pt
-[calib:qwen]  mode=embed_rms prefix_rms=0.72400 -> target=0.01364
-[debug:qwen] adapter.scale=0.9993 | Z.std=0.6617 Z.mean||=10.5673 | prefix.std=0.0136 prefix.mean||=0.8165 | embed.RMS=0.0136
-
-[DEBUG] First generations (Qwen, latent):
-  0: 'the of the of the of the of the of the of'
-  1: 'the of the of the of the of the of the of'
-  2: '1919 1919 19'
-  3: 'the 1911 of the 111'
-  4: 'the of the of the of the of the of the of'
-Saved Qwen results to runs/8B_clean_answer_ftce/eval_epoch2/qwen_results.json
-
-Joint rescoring...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3025.10it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.10it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.13s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.36it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.18it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 5949.37it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.29it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.19it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.16it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.31it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.27it/s]
-
-==== LatentWire Evaluation ====
-Dataset: squad
-Samples: 200  |  Max new tokens: 12
-Device: cuda  |  Dtype: bfloat16
-Avg prompt tokens (Llama): 245.1 | (Qwen): 231.7 | Latent length M: 32
-Compression ratio (Llama): 7.7x | (Qwen): 7.2x
-Approx interlingua payload per example: 32768 bytes (fp32), and 16384 bytes (fp16); latent/text bytes (one-copy, fp16): 13.01x
-
-— Baseline: Text prompting
-Llama  EM: 0.580  F1: 0.799  |  NLL/token (gold): 12.72173482274305
-Qwen   EM: 0.680   F1: 0.853   |  NLL/token (gold): 25.81069942126198
-Wall clock: 16.56s
-
-— Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.031  |  NLL/token (gold): 7.863609602121539
-       First-token acc: top1=0.025  top5=0.075
-Qwen   EM: 0.000   F1: 0.009  |  NLL/token (gold): 7.462445713540234
-       First-token acc: top1=0.055  top5=0.140
-Wall clock: 13.93s
-
-— Token-budget baseline (mode: content_only)
-Llama  EM: 0.005  F1: 0.041
-Qwen   EM: 0.040   F1: 0.075
-Wall clock: 11.98s
-
-— 2-LLM joint (rescored pick on latent runs)
-Joint  EM: 0.000  F1: 0.014
-Inter-model agreement (normalized): 0.000
-Oracle upper bound:  EM 0.000  F1 0.032
-
-==== METRICS_JSON ====
-{
-  "samples": 200,
-  "max_new_tokens": 12,
-  "latent_len": 32,
-  "device": "cuda",
-  "dtype": "torch.bfloat16",
-  "avg_prompt_tokens": {
-    "llama": 245.065,
-    "qwen": 231.69
-  },
-  "compression": {
-    "llama": 7.65828125,
-    "qwen": 7.2403125
-  },
-  "payload_bytes": 32768,
-  "wire": {
-    "text_bytes_onecopy": {
-      "llama_avg": 1259,
-      "qwen_avg": 1107,
-      "max_avg": 1259
-    },
-    "text_bytes_twocopies": {
-      "sum_avg": 2366
-    },
-    "latent_bytes": {
-      "fp32": 32768,
-      "fp16": 16384
-    },
-    "wire_compression": {
-      "vs_onecopy_fp16": 13.013502779984114,
-      "vs_onecopy_fp32": 26.027005559968227
-    },
-    "wire_ratio": {
-      "latent_over_onecopy_fp16": 13.013502779984114,
-      "latent_over_onecopy_fp32": 26.027005559968227,
-      "onecopy_over_latent_fp16": 0.07684326171875,
-      "onecopy_over_latent_fp32": 0.038421630859375
-    }
-  },
-  "text": {
-    "wall_clock_sec": 16.559028148651123,
-    "llama": {
-      "em": 0.58,
-      "f1": 0.7994106570072514,
-      "nll_token": 12.72173482274305
-    },
-    "qwen": {
-      "em": 0.68,
-      "f1": 0.8528460272957177,
-      "nll_token": 25.81069942126198
-    }
-  },
-  "latent": {
-    "wall_clock_sec": 13.931443691253662,
-    "llama": {
-      "em": 0.0,
-      "f1": 0.031218947718947718,
-      "nll_token": 7.863609602121539,
-      "first_token_top1": 0.02499999850988388,
-      "first_token_top5": 0.07499999552965164
-    },
-    "qwen": {
-      "em": 0.0,
-      "f1": 0.009462662337662337,
-      "nll_token": 7.462445713540234,
-      "first_token_top1": 0.054999999701976776,
-      "first_token_top5": 0.14000000059604645
-    }
-  },
-  "token_budget": {
-    "mode": "content_only",
-    "k": 32,
-    "llama": {
-      "em": 0.005,
-      "f1": 0.04086507936507937
-    },
-    "wall_clock_sec": 11.981855154037476,
-    "qwen": {
-      "em": 0.04,
-      "f1": 0.07479711954711955
-    }
-  },
-  "joint": {
-    "em": 0.0,
-    "f1": 0.0144739565989566,
-    "agreement": 0.0,
-    "oracle": {
-      "em": null,
-      "f1": null
-    }
-  },
-  "debug": {
-    "llama": {
-      "adapter_scale": 0.9938772916793823,
-      "Z_std": 0.6617497801780701,
-      "Z_mean_norm": 10.567349433898926,
-      "prefix_std": 0.010571831837296486,
-      "prefix_mean_norm": 0.6766675710678101,
-      "embed_rms": 0.010569815523922443,
-      "encoder_text_mode": "raw",
-      "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
-      "latent_anchor_mode": "text",
-      "latent_anchor_text": "Answer: ",
-      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    },
-    "qwen": {
-      "adapter_scale": 0.999291181564331,
-      "Z_std": 0.6617497801780701,
-      "Z_mean_norm": 10.567349433898926,
-      "prefix_std": 0.013636586256325245,
-      "prefix_mean_norm": 0.8164951205253601,
-      "embed_rms": 0.01364860124886036,
-      "encoder_text_mode": "raw",
-      "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
-      "latent_anchor_mode": "text",
-      "latent_anchor_text": "Answer: ",
-      "model_id": "Qwen/Qwen2.5-7B-Instruct"
-    },
-    "latent_anchor_mode": "text",
-    "latent_anchor_text": "Answer: ",
-    "prefix_gain": 1.0,
-    "calibration_mode": "embed_rms",
-    "append_bos_after_prefix": "yes",
-    "decode": {
-      "min_new_tokens": 3,
-      "eos_ban_steps": 6,
-      "first_token_top_p": 1.0,
-      "first_token_temperature": 0.0
-    }
-  },
-  "oracle": {
-    "em": 0.0,
-    "f1": 0.03164751914751915
-  },
-  "dataset": "squad"
-}
-Wrote per-example predictions to runs/8B_clean_answer_ftce/eval_epoch2/predictions.jsonl
-
-✓ Metrics from: runs/8B_clean_answer_ftce/eval_epoch2/metrics.json
-  Text F1:     Llama 0.799 | Qwen 0.853
-  Latent F1:   Llama 0.031 | Qwen 0.009
-  FirstTok@1:  Llama 0.025 | Qwen 0.055
-  FirstTok@5:  Llama 0.075 | Qwen 0.140
-
-
-=========================================
-EPOCH 3/24
-=========================================
-
-Training epoch 3...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7763.64it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.12s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.00s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.10s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.29it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.13it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4273.36it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.28it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.02it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.13it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.19it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.16it/s]
-Llama hidden size: 4096, Qwen hidden size: 3584
-⏪ Resuming from: runs/8B_clean_answer_ftce/ckpt/state.pt
-   -> loaded encoder/adapters FROM state.pt
-   -> restored optimizer state
-   -> restored RNG state
-   -> start_epoch=2, global_step=2738
-Epoch 3/1
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/1369 | loss_L=7.9606 | loss_Q=7.3015 | firstCE_L=8.0833 | firstCE_Q=6.8817 | scale_pen(L)=3.8666e-05 | scale_pen(Q)=4.6341e-07 | grad_norm=0.59 | sec/step~1.08 | rms_raw(L)~0.7171 rms_raw(Q)~0.7245 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  20/1369 | loss_L=7.2444 | loss_Q=6.6048 | firstCE_L=7.9579 | firstCE_Q=7.0597 | scale_pen(L)=3.9046e-05 | scale_pen(Q)=4.4327e-07 | grad_norm=0.64 | sec/step~1.06 | rms_raw(L)~0.7169 rms_raw(Q)~0.7247 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  30/1369 | loss_L=7.9508 | loss_Q=7.7728 | firstCE_L=7.7219 | firstCE_Q=6.7889 | scale_pen(L)=3.9211e-05 | scale_pen(Q)=4.3521e-07 | grad_norm=0.58 | sec/step~1.05 | rms_raw(L)~0.7171 rms_raw(Q)~0.7251 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  40/1369 | loss_L=7.5851 | loss_Q=7.4301 | firstCE_L=7.3881 | firstCE_Q=6.6065 | scale_pen(L)=3.9310e-05 | scale_pen(Q)=5.4715e-07 | grad_norm=0.62 | sec/step~1.08 | rms_raw(L)~0.7171 rms_raw(Q)~0.7253 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  50/1369 | loss_L=7.7258 | loss_Q=7.3900 | firstCE_L=7.7892 | firstCE_Q=6.6680 | scale_pen(L)=3.8527e-05 | scale_pen(Q)=6.2071e-07 | grad_norm=0.55 | sec/step~1.16 | rms_raw(L)~0.7171 rms_raw(Q)~0.7256 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  60/1369 | loss_L=7.8649 | loss_Q=7.3424 | firstCE_L=7.9366 | firstCE_Q=7.2688 | scale_pen(L)=3.8252e-05 | scale_pen(Q)=6.3005e-07 | grad_norm=0.62 | sec/step~0.99 | rms_raw(L)~0.7172 rms_raw(Q)~0.7258 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  70/1369 | loss_L=8.0074 | loss_Q=7.7856 | firstCE_L=8.8386 | firstCE_Q=7.6543 | scale_pen(L)=3.9080e-05 | scale_pen(Q)=5.9654e-07 | grad_norm=0.60 | sec/step~0.97 | rms_raw(L)~0.7173 rms_raw(Q)~0.7260 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  80/1369 | loss_L=7.6309 | loss_Q=7.7239 | firstCE_L=8.5677 | firstCE_Q=7.8646 | scale_pen(L)=3.7526e-05 | scale_pen(Q)=5.3889e-07 | grad_norm=0.62 | sec/step~1.01 | rms_raw(L)~0.7173 rms_raw(Q)~0.7260 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  90/1369 | loss_L=7.7464 | loss_Q=7.2193 | firstCE_L=8.3112 | firstCE_Q=7.1046 | scale_pen(L)=3.7154e-05 | scale_pen(Q)=4.4303e-07 | grad_norm=0.60 | sec/step~1.08 | rms_raw(L)~0.7174 rms_raw(Q)~0.7262 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  100/1369 | loss_L=7.5992 | loss_Q=7.3673 | firstCE_L=7.7049 | firstCE_Q=7.1827 | scale_pen(L)=3.7126e-05 | scale_pen(Q)=4.4010e-07 | grad_norm=0.58 | sec/step~1.01 | rms_raw(L)~0.7175 rms_raw(Q)~0.7263 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  110/1369 | loss_L=7.8426 | loss_Q=7.8429 | firstCE_L=8.0526 | firstCE_Q=7.7046 | scale_pen(L)=3.8040e-05 | scale_pen(Q)=3.9348e-07 | grad_norm=0.63 | sec/step~1.03 | rms_raw(L)~0.7177 rms_raw(Q)~0.7265 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  120/1369 | loss_L=7.2851 | loss_Q=6.6854 | firstCE_L=8.4769 | firstCE_Q=6.9318 | scale_pen(L)=3.8387e-05 | scale_pen(Q)=3.6962e-07 | grad_norm=0.65 | sec/step~1.12 | rms_raw(L)~0.7177 rms_raw(Q)~0.7266 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  130/1369 | loss_L=7.6373 | loss_Q=7.3231 | firstCE_L=8.2494 | firstCE_Q=6.8178 | scale_pen(L)=3.8909e-05 | scale_pen(Q)=3.7057e-07 | grad_norm=0.62 | sec/step~1.06 | rms_raw(L)~0.7178 rms_raw(Q)~0.7267 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  140/1369 | loss_L=7.9979 | loss_Q=7.7756 | firstCE_L=7.8374 | firstCE_Q=7.3095 | scale_pen(L)=3.8959e-05 | scale_pen(Q)=4.0077e-07 | grad_norm=0.64 | sec/step~1.06 | rms_raw(L)~0.7178 rms_raw(Q)~0.7268 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  150/1369 | loss_L=8.1655 | loss_Q=8.3384 | firstCE_L=8.6494 | firstCE_Q=7.7105 | scale_pen(L)=3.8511e-05 | scale_pen(Q)=3.8006e-07 | grad_norm=0.66 | sec/step~1.12 | rms_raw(L)~0.7179 rms_raw(Q)~0.7269 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  160/1369 | loss_L=8.1396 | loss_Q=7.8605 | firstCE_L=7.9274 | firstCE_Q=7.0481 | scale_pen(L)=3.8740e-05 | scale_pen(Q)=4.3191e-07 | grad_norm=0.51 | sec/step~1.04 | rms_raw(L)~0.7180 rms_raw(Q)~0.7270 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  170/1369 | loss_L=7.8654 | loss_Q=7.8108 | firstCE_L=7.5964 | firstCE_Q=6.7153 | scale_pen(L)=3.8919e-05 | scale_pen(Q)=4.9880e-07 | grad_norm=0.51 | sec/step~1.01 | rms_raw(L)~0.7182 rms_raw(Q)~0.7272 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  180/1369 | loss_L=7.4577 | loss_Q=7.1006 | firstCE_L=8.0308 | firstCE_Q=7.1568 | scale_pen(L)=3.9871e-05 | scale_pen(Q)=3.9535e-07 | grad_norm=0.63 | sec/step~1.09 | rms_raw(L)~0.7183 rms_raw(Q)~0.7273 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  190/1369 | loss_L=7.7169 | loss_Q=7.3213 | firstCE_L=8.5853 | firstCE_Q=7.3622 | scale_pen(L)=3.9657e-05 | scale_pen(Q)=2.8116e-07 | grad_norm=0.60 | sec/step~1.10 | rms_raw(L)~0.7184 rms_raw(Q)~0.7275 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  200/1369 | loss_L=7.7710 | loss_Q=7.3076 | firstCE_L=7.9629 | firstCE_Q=7.3222 | scale_pen(L)=3.8434e-05 | scale_pen(Q)=2.5729e-07 | grad_norm=0.57 | sec/step~0.99 | rms_raw(L)~0.7185 rms_raw(Q)~0.7277 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  210/1369 | loss_L=7.6802 | loss_Q=7.7274 | firstCE_L=7.6598 | firstCE_Q=6.9120 | scale_pen(L)=3.7842e-05 | scale_pen(Q)=3.6084e-07 | grad_norm=0.66 | sec/step~1.04 | rms_raw(L)~0.7186 rms_raw(Q)~0.7278 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  220/1369 | loss_L=7.9087 | loss_Q=7.6696 | firstCE_L=8.5732 | firstCE_Q=7.1753 | scale_pen(L)=3.7789e-05 | scale_pen(Q)=4.3978e-07 | grad_norm=0.62 | sec/step~1.14 | rms_raw(L)~0.7187 rms_raw(Q)~0.7280 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  230/1369 | loss_L=7.4546 | loss_Q=7.4234 | firstCE_L=8.1972 | firstCE_Q=7.5535 | scale_pen(L)=3.6536e-05 | scale_pen(Q)=4.9075e-07 | grad_norm=0.63 | sec/step~1.02 | rms_raw(L)~0.7187 rms_raw(Q)~0.7281 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  240/1369 | loss_L=7.4085 | loss_Q=7.1904 | firstCE_L=7.7019 | firstCE_Q=6.7219 | scale_pen(L)=3.6787e-05 | scale_pen(Q)=4.2032e-07 | grad_norm=0.66 | sec/step~1.03 | rms_raw(L)~0.7188 rms_raw(Q)~0.7283 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  250/1369 | loss_L=7.9166 | loss_Q=7.8082 | firstCE_L=7.1671 | firstCE_Q=6.6136 | scale_pen(L)=3.6732e-05 | scale_pen(Q)=5.1818e-07 | grad_norm=0.63 | sec/step~1.11 | rms_raw(L)~0.7189 rms_raw(Q)~0.7284 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  260/1369 | loss_L=7.5171 | loss_Q=7.3803 | firstCE_L=8.1180 | firstCE_Q=7.1849 | scale_pen(L)=3.6679e-05 | scale_pen(Q)=5.3924e-07 | grad_norm=0.63 | sec/step~1.03 | rms_raw(L)~0.7190 rms_raw(Q)~0.7286 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  270/1369 | loss_L=8.0548 | loss_Q=7.7090 | firstCE_L=8.0471 | firstCE_Q=7.3268 | scale_pen(L)=3.7399e-05 | scale_pen(Q)=5.3261e-07 | grad_norm=0.60 | sec/step~1.01 | rms_raw(L)~0.7191 rms_raw(Q)~0.7288 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  280/1369 | loss_L=7.7425 | loss_Q=7.4233 | firstCE_L=8.3547 | firstCE_Q=6.9960 | scale_pen(L)=3.6356e-05 | scale_pen(Q)=5.7166e-07 | grad_norm=0.52 | sec/step~1.06 | rms_raw(L)~0.7191 rms_raw(Q)~0.7289 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  290/1369 | loss_L=7.6023 | loss_Q=7.6089 | firstCE_L=7.7608 | firstCE_Q=6.9603 | scale_pen(L)=3.6774e-05 | scale_pen(Q)=6.5605e-07 | grad_norm=0.63 | sec/step~1.14 | rms_raw(L)~0.7192 rms_raw(Q)~0.7291 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  300/1369 | loss_L=7.7373 | loss_Q=7.5822 | firstCE_L=8.1254 | firstCE_Q=7.4012 | scale_pen(L)=3.7163e-05 | scale_pen(Q)=5.1629e-07 | grad_norm=0.62 | sec/step~1.01 | rms_raw(L)~0.7193 rms_raw(Q)~0.7292 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  310/1369 | loss_L=7.7914 | loss_Q=7.4864 | firstCE_L=8.3458 | firstCE_Q=7.3652 | scale_pen(L)=3.7342e-05 | scale_pen(Q)=5.1578e-07 | grad_norm=0.57 | sec/step~1.05 | rms_raw(L)~0.7194 rms_raw(Q)~0.7294 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  320/1369 | loss_L=7.4068 | loss_Q=7.0764 | firstCE_L=7.9899 | firstCE_Q=7.3509 | scale_pen(L)=3.7171e-05 | scale_pen(Q)=5.2757e-07 | grad_norm=0.57 | sec/step~1.07 | rms_raw(L)~0.7195 rms_raw(Q)~0.7295 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  330/1369 | loss_L=7.7168 | loss_Q=7.2469 | firstCE_L=8.5270 | firstCE_Q=7.4254 | scale_pen(L)=3.7596e-05 | scale_pen(Q)=6.0606e-07 | grad_norm=0.59 | sec/step~1.05 | rms_raw(L)~0.7196 rms_raw(Q)~0.7297 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  340/1369 | loss_L=7.6973 | loss_Q=7.6922 | firstCE_L=8.0379 | firstCE_Q=6.6720 | scale_pen(L)=3.8542e-05 | scale_pen(Q)=4.9267e-07 | grad_norm=0.54 | sec/step~1.03 | rms_raw(L)~0.7197 rms_raw(Q)~0.7299 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  350/1369 | loss_L=7.6875 | loss_Q=7.4068 | firstCE_L=8.0404 | firstCE_Q=7.0343 | scale_pen(L)=3.8088e-05 | scale_pen(Q)=5.1134e-07 | grad_norm=0.58 | sec/step~1.06 | rms_raw(L)~0.7198 rms_raw(Q)~0.7301 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  360/1369 | loss_L=7.2830 | loss_Q=6.8187 | firstCE_L=7.9738 | firstCE_Q=7.1120 | scale_pen(L)=3.7749e-05 | scale_pen(Q)=5.3906e-07 | grad_norm=0.59 | sec/step~1.08 | rms_raw(L)~0.7199 rms_raw(Q)~0.7303 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  370/1369 | loss_L=7.9922 | loss_Q=7.9807 | firstCE_L=8.0822 | firstCE_Q=7.3430 | scale_pen(L)=3.7295e-05 | scale_pen(Q)=3.8559e-07 | grad_norm=0.62 | sec/step~1.14 | rms_raw(L)~0.7200 rms_raw(Q)~0.7304 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  380/1369 | loss_L=7.1233 | loss_Q=6.6392 | firstCE_L=7.3449 | firstCE_Q=6.3715 | scale_pen(L)=3.6887e-05 | scale_pen(Q)=3.9057e-07 | grad_norm=0.63 | sec/step~1.10 | rms_raw(L)~0.7201 rms_raw(Q)~0.7306 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  390/1369 | loss_L=7.9223 | loss_Q=7.7754 | firstCE_L=8.3091 | firstCE_Q=6.8416 | scale_pen(L)=3.7557e-05 | scale_pen(Q)=3.2940e-07 | grad_norm=0.61 | sec/step~1.02 | rms_raw(L)~0.7202 rms_raw(Q)~0.7307 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  400/1369 | loss_L=7.4205 | loss_Q=7.2246 | firstCE_L=8.1764 | firstCE_Q=7.2202 | scale_pen(L)=3.7082e-05 | scale_pen(Q)=3.2837e-07 | grad_norm=0.65 | sec/step~1.05 | rms_raw(L)~0.7203 rms_raw(Q)~0.7309 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  410/1369 | loss_L=7.7018 | loss_Q=7.5590 | firstCE_L=7.4548 | firstCE_Q=6.6784 | scale_pen(L)=3.6656e-05 | scale_pen(Q)=2.8490e-07 | grad_norm=0.61 | sec/step~1.15 | rms_raw(L)~0.7204 rms_raw(Q)~0.7310 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  420/1369 | loss_L=7.7218 | loss_Q=7.5328 | firstCE_L=7.9389 | firstCE_Q=7.3370 | scale_pen(L)=3.8584e-05 | scale_pen(Q)=2.6786e-07 | grad_norm=0.55 | sec/step~1.06 | rms_raw(L)~0.7204 rms_raw(Q)~0.7312 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  430/1369 | loss_L=8.2356 | loss_Q=7.9161 | firstCE_L=7.8510 | firstCE_Q=7.3166 | scale_pen(L)=3.8420e-05 | scale_pen(Q)=3.2144e-07 | grad_norm=0.67 | sec/step~1.07 | rms_raw(L)~0.7205 rms_raw(Q)~0.7314 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  440/1369 | loss_L=7.4556 | loss_Q=7.2131 | firstCE_L=7.8098 | firstCE_Q=6.7103 | scale_pen(L)=3.9187e-05 | scale_pen(Q)=3.5869e-07 | grad_norm=0.65 | sec/step~1.17 | rms_raw(L)~0.7206 rms_raw(Q)~0.7315 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  450/1369 | loss_L=7.3934 | loss_Q=6.9998 | firstCE_L=7.3951 | firstCE_Q=6.4626 | scale_pen(L)=3.9553e-05 | scale_pen(Q)=3.4799e-07 | grad_norm=0.61 | sec/step~1.05 | rms_raw(L)~0.7207 rms_raw(Q)~0.7317 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  460/1369 | loss_L=7.2634 | loss_Q=7.0524 | firstCE_L=7.7995 | firstCE_Q=6.9429 | scale_pen(L)=3.9399e-05 | scale_pen(Q)=2.9517e-07 | grad_norm=0.66 | sec/step~1.05 | rms_raw(L)~0.7208 rms_raw(Q)~0.7319 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  470/1369 | loss_L=7.6958 | loss_Q=7.1175 | firstCE_L=8.4998 | firstCE_Q=7.1694 | scale_pen(L)=3.9445e-05 | scale_pen(Q)=3.0767e-07 | grad_norm=0.65 | sec/step~1.01 | rms_raw(L)~0.7209 rms_raw(Q)~0.7321 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  480/1369 | loss_L=7.4832 | loss_Q=7.1776 | firstCE_L=8.0770 | firstCE_Q=7.0247 | scale_pen(L)=3.9426e-05 | scale_pen(Q)=3.3324e-07 | grad_norm=0.65 | sec/step~1.06 | rms_raw(L)~0.7210 rms_raw(Q)~0.7322 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  490/1369 | loss_L=7.2405 | loss_Q=6.8292 | firstCE_L=8.1645 | firstCE_Q=6.9937 | scale_pen(L)=4.0882e-05 | scale_pen(Q)=2.6392e-07 | grad_norm=0.66 | sec/step~1.14 | rms_raw(L)~0.7211 rms_raw(Q)~0.7324 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  500/1369 | loss_L=7.7823 | loss_Q=7.4083 | firstCE_L=7.9285 | firstCE_Q=6.8730 | scale_pen(L)=4.1072e-05 | scale_pen(Q)=2.3183e-07 | grad_norm=0.62 | sec/step~1.01 | rms_raw(L)~0.7212 rms_raw(Q)~0.7326 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  510/1369 | loss_L=7.4492 | loss_Q=7.2340 | firstCE_L=8.1823 | firstCE_Q=7.0612 | scale_pen(L)=4.0680e-05 | scale_pen(Q)=2.6835e-07 | grad_norm=0.62 | sec/step~1.05 | rms_raw(L)~0.7213 rms_raw(Q)~0.7328 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  520/1369 | loss_L=7.6500 | loss_Q=7.0729 | firstCE_L=7.9953 | firstCE_Q=6.3741 | scale_pen(L)=4.0581e-05 | scale_pen(Q)=3.3974e-07 | grad_norm=0.57 | sec/step~1.09 | rms_raw(L)~0.7214 rms_raw(Q)~0.7329 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  530/1369 | loss_L=7.4062 | loss_Q=6.9927 | firstCE_L=8.2696 | firstCE_Q=7.2105 | scale_pen(L)=4.0649e-05 | scale_pen(Q)=3.4623e-07 | grad_norm=0.57 | sec/step~1.04 | rms_raw(L)~0.7215 rms_raw(Q)~0.7331 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  540/1369 | loss_L=7.5760 | loss_Q=7.5172 | firstCE_L=8.0741 | firstCE_Q=6.8015 | scale_pen(L)=3.9583e-05 | scale_pen(Q)=3.0253e-07 | grad_norm=0.60 | sec/step~1.07 | rms_raw(L)~0.7216 rms_raw(Q)~0.7332 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  550/1369 | loss_L=7.4436 | loss_Q=7.2775 | firstCE_L=8.0375 | firstCE_Q=7.3159 | scale_pen(L)=4.0178e-05 | scale_pen(Q)=3.6623e-07 | grad_norm=0.61 | sec/step~1.03 | rms_raw(L)~0.7217 rms_raw(Q)~0.7334 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  560/1369 | loss_L=7.4181 | loss_Q=6.9764 | firstCE_L=8.1463 | firstCE_Q=7.0141 | scale_pen(L)=4.0214e-05 | scale_pen(Q)=3.6421e-07 | grad_norm=0.66 | sec/step~1.13 | rms_raw(L)~0.7217 rms_raw(Q)~0.7336 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  570/1369 | loss_L=7.6384 | loss_Q=7.1246 | firstCE_L=8.0372 | firstCE_Q=7.0894 | scale_pen(L)=3.9939e-05 | scale_pen(Q)=4.2109e-07 | grad_norm=0.58 | sec/step~1.05 | rms_raw(L)~0.7218 rms_raw(Q)~0.7337 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  580/1369 | loss_L=7.4660 | loss_Q=6.9734 | firstCE_L=7.7058 | firstCE_Q=7.0588 | scale_pen(L)=3.9830e-05 | scale_pen(Q)=3.3960e-07 | grad_norm=0.62 | sec/step~1.04 | rms_raw(L)~0.7219 rms_raw(Q)~0.7339 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  590/1369 | loss_L=7.6652 | loss_Q=7.2216 | firstCE_L=7.8608 | firstCE_Q=7.0007 | scale_pen(L)=4.0370e-05 | scale_pen(Q)=3.1092e-07 | grad_norm=0.64 | sec/step~1.07 | rms_raw(L)~0.7220 rms_raw(Q)~0.7340 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  600/1369 | loss_L=7.1982 | loss_Q=7.1032 | firstCE_L=7.9268 | firstCE_Q=6.6928 | scale_pen(L)=4.0902e-05 | scale_pen(Q)=3.2347e-07 | grad_norm=0.61 | sec/step~1.12 | rms_raw(L)~0.7221 rms_raw(Q)~0.7342 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  610/1369 | loss_L=7.9189 | loss_Q=8.0186 | firstCE_L=7.5149 | firstCE_Q=6.5774 | scale_pen(L)=4.0787e-05 | scale_pen(Q)=3.1881e-07 | grad_norm=0.56 | sec/step~1.00 | rms_raw(L)~0.7222 rms_raw(Q)~0.7344 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  620/1369 | loss_L=6.8041 | loss_Q=6.6426 | firstCE_L=7.9744 | firstCE_Q=6.9236 | scale_pen(L)=3.9896e-05 | scale_pen(Q)=2.6767e-07 | grad_norm=0.64 | sec/step~1.06 | rms_raw(L)~0.7223 rms_raw(Q)~0.7345 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  630/1369 | loss_L=7.5361 | loss_Q=7.2043 | firstCE_L=8.3431 | firstCE_Q=7.2111 | scale_pen(L)=4.0060e-05 | scale_pen(Q)=2.1971e-07 | grad_norm=0.66 | sec/step~1.10 | rms_raw(L)~0.7224 rms_raw(Q)~0.7347 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  640/1369 | loss_L=7.4215 | loss_Q=6.9648 | firstCE_L=7.8911 | firstCE_Q=6.9323 | scale_pen(L)=4.1014e-05 | scale_pen(Q)=2.8344e-07 | grad_norm=0.61 | sec/step~1.02 | rms_raw(L)~0.7225 rms_raw(Q)~0.7348 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  650/1369 | loss_L=7.2734 | loss_Q=6.8497 | firstCE_L=7.2789 | firstCE_Q=6.2553 | scale_pen(L)=4.2463e-05 | scale_pen(Q)=2.9634e-07 | grad_norm=0.63 | sec/step~1.00 | rms_raw(L)~0.7225 rms_raw(Q)~0.7350 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  660/1369 | loss_L=7.5201 | loss_Q=7.6041 | firstCE_L=7.8124 | firstCE_Q=6.9451 | scale_pen(L)=4.1460e-05 | scale_pen(Q)=2.9621e-07 | grad_norm=0.61 | sec/step~1.04 | rms_raw(L)~0.7226 rms_raw(Q)~0.7351 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  670/1369 | loss_L=7.6734 | loss_Q=7.3292 | firstCE_L=7.9946 | firstCE_Q=6.8101 | scale_pen(L)=4.2534e-05 | scale_pen(Q)=2.6044e-07 | grad_norm=0.61 | sec/step~1.10 | rms_raw(L)~0.7227 rms_raw(Q)~0.7353 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  680/1369 | loss_L=7.6572 | loss_Q=7.7457 | firstCE_L=7.1840 | firstCE_Q=6.7647 | scale_pen(L)=4.2571e-05 | scale_pen(Q)=3.1922e-07 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.7228 rms_raw(Q)~0.7354 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  690/1369 | loss_L=7.4762 | loss_Q=7.3865 | firstCE_L=7.9132 | firstCE_Q=7.2108 | scale_pen(L)=4.1377e-05 | scale_pen(Q)=2.8103e-07 | grad_norm=0.54 | sec/step~1.06 | rms_raw(L)~0.7229 rms_raw(Q)~0.7356 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  700/1369 | loss_L=7.2690 | loss_Q=7.0548 | firstCE_L=8.1408 | firstCE_Q=7.5670 | scale_pen(L)=4.1147e-05 | scale_pen(Q)=2.6681e-07 | grad_norm=0.60 | sec/step~1.06 | rms_raw(L)~0.7230 rms_raw(Q)~0.7357 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  710/1369 | loss_L=7.3209 | loss_Q=7.0605 | firstCE_L=8.1287 | firstCE_Q=7.0794 | scale_pen(L)=4.1277e-05 | scale_pen(Q)=3.2463e-07 | grad_norm=0.52 | sec/step~1.15 | rms_raw(L)~0.7231 rms_raw(Q)~0.7359 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  720/1369 | loss_L=7.3496 | loss_Q=7.1489 | firstCE_L=7.3091 | firstCE_Q=6.6339 | scale_pen(L)=4.1060e-05 | scale_pen(Q)=4.9897e-07 | grad_norm=0.55 | sec/step~1.06 | rms_raw(L)~0.7232 rms_raw(Q)~0.7360 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  730/1369 | loss_L=7.9212 | loss_Q=7.6211 | firstCE_L=7.8452 | firstCE_Q=6.7632 | scale_pen(L)=4.2030e-05 | scale_pen(Q)=5.7618e-07 | grad_norm=0.60 | sec/step~1.00 | rms_raw(L)~0.7233 rms_raw(Q)~0.7362 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  740/1369 | loss_L=7.8297 | loss_Q=7.6963 | firstCE_L=7.5786 | firstCE_Q=6.6579 | scale_pen(L)=4.2617e-05 | scale_pen(Q)=4.4319e-07 | grad_norm=0.55 | sec/step~1.04 | rms_raw(L)~0.7234 rms_raw(Q)~0.7363 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  750/1369 | loss_L=7.7768 | loss_Q=7.5651 | firstCE_L=7.8762 | firstCE_Q=7.2356 | scale_pen(L)=4.3329e-05 | scale_pen(Q)=3.8871e-07 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.7235 rms_raw(Q)~0.7365 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  760/1369 | loss_L=7.3822 | loss_Q=7.0133 | firstCE_L=8.0297 | firstCE_Q=7.2900 | scale_pen(L)=4.2852e-05 | scale_pen(Q)=3.3552e-07 | grad_norm=0.57 | sec/step~1.00 | rms_raw(L)~0.7236 rms_raw(Q)~0.7366 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  770/1369 | loss_L=7.7285 | loss_Q=7.7059 | firstCE_L=8.7494 | firstCE_Q=7.8553 | scale_pen(L)=4.2918e-05 | scale_pen(Q)=2.6087e-07 | grad_norm=0.61 | sec/step~1.07 | rms_raw(L)~0.7237 rms_raw(Q)~0.7368 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  780/1369 | loss_L=7.6134 | loss_Q=7.8817 | firstCE_L=7.1985 | firstCE_Q=6.8435 | scale_pen(L)=4.1932e-05 | scale_pen(Q)=3.4609e-07 | grad_norm=0.59 | sec/step~1.00 | rms_raw(L)~0.7238 rms_raw(Q)~0.7369 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  790/1369 | loss_L=7.1021 | loss_Q=6.5781 | firstCE_L=8.2576 | firstCE_Q=6.8114 | scale_pen(L)=4.2158e-05 | scale_pen(Q)=2.7331e-07 | grad_norm=0.62 | sec/step~1.12 | rms_raw(L)~0.7239 rms_raw(Q)~0.7371 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  800/1369 | loss_L=7.9313 | loss_Q=7.7711 | firstCE_L=7.9252 | firstCE_Q=6.9109 | scale_pen(L)=4.2540e-05 | scale_pen(Q)=2.9647e-07 | grad_norm=0.59 | sec/step~1.00 | rms_raw(L)~0.7240 rms_raw(Q)~0.7372 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  810/1369 | loss_L=7.4154 | loss_Q=7.4220 | firstCE_L=7.6462 | firstCE_Q=7.1295 | scale_pen(L)=4.2196e-05 | scale_pen(Q)=3.4645e-07 | grad_norm=0.58 | sec/step~0.99 | rms_raw(L)~0.7241 rms_raw(Q)~0.7374 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  820/1369 | loss_L=7.6305 | loss_Q=7.3578 | firstCE_L=7.3748 | firstCE_Q=6.8316 | scale_pen(L)=4.1691e-05 | scale_pen(Q)=3.7166e-07 | grad_norm=0.62 | sec/step~1.07 | rms_raw(L)~0.7242 rms_raw(Q)~0.7375 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  830/1369 | loss_L=7.5825 | loss_Q=7.0868 | firstCE_L=8.0749 | firstCE_Q=7.0449 | scale_pen(L)=4.1158e-05 | scale_pen(Q)=3.4385e-07 | grad_norm=0.65 | sec/step~1.06 | rms_raw(L)~0.7243 rms_raw(Q)~0.7377 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  840/1369 | loss_L=7.0385 | loss_Q=6.7533 | firstCE_L=8.1838 | firstCE_Q=7.3123 | scale_pen(L)=4.1323e-05 | scale_pen(Q)=3.3884e-07 | grad_norm=0.61 | sec/step~1.07 | rms_raw(L)~0.7244 rms_raw(Q)~0.7378 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  850/1369 | loss_L=7.8448 | loss_Q=7.8953 | firstCE_L=8.3902 | firstCE_Q=7.5064 | scale_pen(L)=4.1246e-05 | scale_pen(Q)=2.5469e-07 | grad_norm=0.65 | sec/step~1.08 | rms_raw(L)~0.7245 rms_raw(Q)~0.7380 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  860/1369 | loss_L=7.3817 | loss_Q=7.3368 | firstCE_L=7.4263 | firstCE_Q=6.3397 | scale_pen(L)=4.1096e-05 | scale_pen(Q)=2.5747e-07 | grad_norm=0.61 | sec/step~1.01 | rms_raw(L)~0.7246 rms_raw(Q)~0.7381 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  870/1369 | loss_L=6.8762 | loss_Q=6.6276 | firstCE_L=7.9062 | firstCE_Q=6.9751 | scale_pen(L)=4.1814e-05 | scale_pen(Q)=2.7562e-07 | grad_norm=0.65 | sec/step~1.05 | rms_raw(L)~0.7247 rms_raw(Q)~0.7382 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  880/1369 | loss_L=7.5324 | loss_Q=7.6187 | firstCE_L=7.8638 | firstCE_Q=7.0697 | scale_pen(L)=4.2387e-05 | scale_pen(Q)=2.5349e-07 | grad_norm=0.55 | sec/step~1.02 | rms_raw(L)~0.7248 rms_raw(Q)~0.7384 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  890/1369 | loss_L=7.6954 | loss_Q=7.6910 | firstCE_L=7.6371 | firstCE_Q=6.9156 | scale_pen(L)=4.3424e-05 | scale_pen(Q)=2.3327e-07 | grad_norm=0.58 | sec/step~1.14 | rms_raw(L)~0.7249 rms_raw(Q)~0.7385 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  900/1369 | loss_L=7.1324 | loss_Q=7.0007 | firstCE_L=8.6540 | firstCE_Q=7.6556 | scale_pen(L)=4.4316e-05 | scale_pen(Q)=2.4069e-07 | grad_norm=0.56 | sec/step~1.06 | rms_raw(L)~0.7250 rms_raw(Q)~0.7387 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  910/1369 | loss_L=7.4505 | loss_Q=7.1626 | firstCE_L=8.0644 | firstCE_Q=6.9117 | scale_pen(L)=4.4612e-05 | scale_pen(Q)=2.3108e-07 | grad_norm=0.60 | sec/step~1.04 | rms_raw(L)~0.7250 rms_raw(Q)~0.7388 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  920/1369 | loss_L=7.3649 | loss_Q=6.7154 | firstCE_L=7.9904 | firstCE_Q=6.9662 | scale_pen(L)=4.4544e-05 | scale_pen(Q)=1.9835e-07 | grad_norm=0.54 | sec/step~1.14 | rms_raw(L)~0.7251 rms_raw(Q)~0.7389 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  930/1369 | loss_L=7.5430 | loss_Q=7.1714 | firstCE_L=7.6166 | firstCE_Q=6.5262 | scale_pen(L)=4.4832e-05 | scale_pen(Q)=1.7518e-07 | grad_norm=0.64 | sec/step~1.06 | rms_raw(L)~0.7252 rms_raw(Q)~0.7391 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  940/1369 | loss_L=7.2948 | loss_Q=7.1110 | firstCE_L=7.5554 | firstCE_Q=6.7555 | scale_pen(L)=4.5317e-05 | scale_pen(Q)=1.4909e-07 | grad_norm=0.60 | sec/step~1.01 | rms_raw(L)~0.7253 rms_raw(Q)~0.7392 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  950/1369 | loss_L=7.6841 | loss_Q=7.4961 | firstCE_L=7.9223 | firstCE_Q=6.7063 | scale_pen(L)=4.5509e-05 | scale_pen(Q)=1.6249e-07 | grad_norm=0.53 | sec/step~1.07 | rms_raw(L)~0.7254 rms_raw(Q)~0.7394 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  960/1369 | loss_L=7.0193 | loss_Q=6.7968 | firstCE_L=7.6262 | firstCE_Q=6.5340 | scale_pen(L)=4.5349e-05 | scale_pen(Q)=1.2828e-07 | grad_norm=0.59 | sec/step~1.02 | rms_raw(L)~0.7255 rms_raw(Q)~0.7395 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  970/1369 | loss_L=7.5555 | loss_Q=7.4075 | firstCE_L=7.9020 | firstCE_Q=6.8198 | scale_pen(L)=4.3955e-05 | scale_pen(Q)=1.5527e-07 | grad_norm=0.61 | sec/step~1.01 | rms_raw(L)~0.7256 rms_raw(Q)~0.7397 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  980/1369 | loss_L=7.7404 | loss_Q=7.5870 | firstCE_L=8.0031 | firstCE_Q=6.7467 | scale_pen(L)=4.2921e-05 | scale_pen(Q)=1.1758e-07 | grad_norm=0.62 | sec/step~1.01 | rms_raw(L)~0.7257 rms_raw(Q)~0.7398 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  990/1369 | loss_L=8.1357 | loss_Q=7.8883 | firstCE_L=8.4328 | firstCE_Q=7.6396 | scale_pen(L)=4.3408e-05 | scale_pen(Q)=2.0187e-07 | grad_norm=0.53 | sec/step~1.06 | rms_raw(L)~0.7257 rms_raw(Q)~0.7400 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1000/1369 | loss_L=7.8270 | loss_Q=7.4991 | firstCE_L=7.6041 | firstCE_Q=6.6995 | scale_pen(L)=4.3387e-05 | scale_pen(Q)=2.8681e-07 | grad_norm=0.59 | sec/step~1.10 | rms_raw(L)~0.7258 rms_raw(Q)~0.7401 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1010/1369 | loss_L=7.9172 | loss_Q=7.8684 | firstCE_L=7.9127 | firstCE_Q=7.2865 | scale_pen(L)=4.3451e-05 | scale_pen(Q)=2.5560e-07 | grad_norm=0.60 | sec/step~1.02 | rms_raw(L)~0.7259 rms_raw(Q)~0.7402 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1020/1369 | loss_L=7.9770 | loss_Q=7.5315 | firstCE_L=8.3192 | firstCE_Q=7.7530 | scale_pen(L)=4.2981e-05 | scale_pen(Q)=2.7801e-07 | grad_norm=0.53 | sec/step~1.11 | rms_raw(L)~0.7260 rms_raw(Q)~0.7404 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1030/1369 | loss_L=7.4222 | loss_Q=7.5313 | firstCE_L=8.1929 | firstCE_Q=7.5107 | scale_pen(L)=4.2913e-05 | scale_pen(Q)=3.0913e-07 | grad_norm=0.61 | sec/step~1.10 | rms_raw(L)~0.7261 rms_raw(Q)~0.7405 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1040/1369 | loss_L=7.1920 | loss_Q=7.0356 | firstCE_L=7.4204 | firstCE_Q=6.4809 | scale_pen(L)=4.3380e-05 | scale_pen(Q)=2.9647e-07 | grad_norm=0.57 | sec/step~0.99 | rms_raw(L)~0.7262 rms_raw(Q)~0.7407 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1050/1369 | loss_L=7.7167 | loss_Q=7.8872 | firstCE_L=8.1577 | firstCE_Q=7.0039 | scale_pen(L)=4.2903e-05 | scale_pen(Q)=3.1673e-07 | grad_norm=0.54 | sec/step~0.98 | rms_raw(L)~0.7263 rms_raw(Q)~0.7408 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1060/1369 | loss_L=7.0207 | loss_Q=6.5234 | firstCE_L=7.9417 | firstCE_Q=6.9553 | scale_pen(L)=4.3466e-05 | scale_pen(Q)=3.6601e-07 | grad_norm=0.66 | sec/step~1.16 | rms_raw(L)~0.7264 rms_raw(Q)~0.7409 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1070/1369 | loss_L=7.3742 | loss_Q=7.0979 | firstCE_L=8.3593 | firstCE_Q=7.2180 | scale_pen(L)=4.3627e-05 | scale_pen(Q)=3.2701e-07 | grad_norm=0.59 | sec/step~1.14 | rms_raw(L)~0.7265 rms_raw(Q)~0.7411 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1080/1369 | loss_L=7.7510 | loss_Q=7.5240 | firstCE_L=7.8204 | firstCE_Q=6.6078 | scale_pen(L)=4.3726e-05 | scale_pen(Q)=3.3690e-07 | grad_norm=0.52 | sec/step~1.00 | rms_raw(L)~0.7265 rms_raw(Q)~0.7412 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1090/1369 | loss_L=7.5608 | loss_Q=7.5928 | firstCE_L=7.9207 | firstCE_Q=7.1882 | scale_pen(L)=4.3981e-05 | scale_pen(Q)=2.3563e-07 | grad_norm=0.63 | sec/step~1.09 | rms_raw(L)~0.7266 rms_raw(Q)~0.7414 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1100/1369 | loss_L=7.3292 | loss_Q=6.9813 | firstCE_L=8.2324 | firstCE_Q=7.3935 | scale_pen(L)=4.5483e-05 | scale_pen(Q)=1.7047e-07 | grad_norm=0.52 | sec/step~1.07 | rms_raw(L)~0.7267 rms_raw(Q)~0.7415 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1110/1369 | loss_L=7.5152 | loss_Q=7.0664 | firstCE_L=8.2066 | firstCE_Q=6.6173 | scale_pen(L)=4.5498e-05 | scale_pen(Q)=2.2352e-07 | grad_norm=0.62 | sec/step~1.09 | rms_raw(L)~0.7268 rms_raw(Q)~0.7416 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1120/1369 | loss_L=7.5660 | loss_Q=7.1236 | firstCE_L=8.3007 | firstCE_Q=7.0180 | scale_pen(L)=4.5783e-05 | scale_pen(Q)=2.4105e-07 | grad_norm=0.52 | sec/step~1.04 | rms_raw(L)~0.7269 rms_raw(Q)~0.7418 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1130/1369 | loss_L=7.4633 | loss_Q=7.2854 | firstCE_L=8.1916 | firstCE_Q=7.4861 | scale_pen(L)=4.5620e-05 | scale_pen(Q)=2.4871e-07 | grad_norm=0.58 | sec/step~1.15 | rms_raw(L)~0.7270 rms_raw(Q)~0.7419 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1140/1369 | loss_L=7.8572 | loss_Q=7.1679 | firstCE_L=8.3880 | firstCE_Q=7.0176 | scale_pen(L)=4.5085e-05 | scale_pen(Q)=2.8522e-07 | grad_norm=0.59 | sec/step~1.06 | rms_raw(L)~0.7270 rms_raw(Q)~0.7420 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1150/1369 | loss_L=7.2209 | loss_Q=7.1951 | firstCE_L=7.8865 | firstCE_Q=7.1416 | scale_pen(L)=4.5115e-05 | scale_pen(Q)=3.1740e-07 | grad_norm=0.61 | sec/step~1.06 | rms_raw(L)~0.7271 rms_raw(Q)~0.7421 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1160/1369 | loss_L=7.4581 | loss_Q=7.4906 | firstCE_L=7.9651 | firstCE_Q=6.6718 | scale_pen(L)=4.5052e-05 | scale_pen(Q)=2.2828e-07 | grad_norm=0.61 | sec/step~1.11 | rms_raw(L)~0.7272 rms_raw(Q)~0.7423 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1170/1369 | loss_L=7.1981 | loss_Q=6.7365 | firstCE_L=7.9843 | firstCE_Q=6.9393 | scale_pen(L)=4.4731e-05 | scale_pen(Q)=2.3575e-07 | grad_norm=0.65 | sec/step~1.02 | rms_raw(L)~0.7273 rms_raw(Q)~0.7424 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1180/1369 | loss_L=7.1320 | loss_Q=6.7158 | firstCE_L=7.6062 | firstCE_Q=6.4224 | scale_pen(L)=4.5176e-05 | scale_pen(Q)=2.9459e-07 | grad_norm=0.60 | sec/step~1.06 | rms_raw(L)~0.7274 rms_raw(Q)~0.7425 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1190/1369 | loss_L=7.6375 | loss_Q=7.3029 | firstCE_L=7.8724 | firstCE_Q=6.3864 | scale_pen(L)=4.5090e-05 | scale_pen(Q)=2.6423e-07 | grad_norm=0.62 | sec/step~1.20 | rms_raw(L)~0.7275 rms_raw(Q)~0.7426 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1200/1369 | loss_L=8.0131 | loss_Q=7.9898 | firstCE_L=7.8827 | firstCE_Q=7.1503 | scale_pen(L)=4.5479e-05 | scale_pen(Q)=2.4263e-07 | grad_norm=0.57 | sec/step~1.06 | rms_raw(L)~0.7275 rms_raw(Q)~0.7428 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1210/1369 | loss_L=7.9096 | loss_Q=7.9962 | firstCE_L=8.1393 | firstCE_Q=7.3696 | scale_pen(L)=4.5582e-05 | scale_pen(Q)=2.2840e-07 | grad_norm=0.62 | sec/step~1.06 | rms_raw(L)~0.7276 rms_raw(Q)~0.7429 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1220/1369 | loss_L=7.1998 | loss_Q=6.8565 | firstCE_L=8.0064 | firstCE_Q=7.1561 | scale_pen(L)=4.5868e-05 | scale_pen(Q)=2.3755e-07 | grad_norm=0.61 | sec/step~1.08 | rms_raw(L)~0.7277 rms_raw(Q)~0.7430 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1230/1369 | loss_L=7.3520 | loss_Q=7.4722 | firstCE_L=7.7055 | firstCE_Q=6.9940 | scale_pen(L)=4.7327e-05 | scale_pen(Q)=2.3824e-07 | grad_norm=0.59 | sec/step~1.04 | rms_raw(L)~0.7278 rms_raw(Q)~0.7432 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1240/1369 | loss_L=7.1754 | loss_Q=6.8794 | firstCE_L=7.8645 | firstCE_Q=7.0810 | scale_pen(L)=4.7445e-05 | scale_pen(Q)=2.1064e-07 | grad_norm=0.62 | sec/step~1.08 | rms_raw(L)~0.7279 rms_raw(Q)~0.7433 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1250/1369 | loss_L=7.5005 | loss_Q=7.1972 | firstCE_L=8.3234 | firstCE_Q=7.2248 | scale_pen(L)=4.5485e-05 | scale_pen(Q)=2.4134e-07 | grad_norm=0.57 | sec/step~1.04 | rms_raw(L)~0.7279 rms_raw(Q)~0.7434 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1260/1369 | loss_L=7.3284 | loss_Q=7.1689 | firstCE_L=7.3908 | firstCE_Q=6.3570 | scale_pen(L)=4.5660e-05 | scale_pen(Q)=2.7637e-07 | grad_norm=0.58 | sec/step~1.15 | rms_raw(L)~0.7280 rms_raw(Q)~0.7435 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1270/1369 | loss_L=7.8114 | loss_Q=7.6987 | firstCE_L=8.4416 | firstCE_Q=7.5777 | scale_pen(L)=4.3970e-05 | scale_pen(Q)=2.5596e-07 | grad_norm=0.59 | sec/step~1.06 | rms_raw(L)~0.7281 rms_raw(Q)~0.7437 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1280/1369 | loss_L=7.2766 | loss_Q=7.2022 | firstCE_L=7.9098 | firstCE_Q=6.5417 | scale_pen(L)=4.4501e-05 | scale_pen(Q)=2.7443e-07 | grad_norm=0.63 | sec/step~1.00 | rms_raw(L)~0.7282 rms_raw(Q)~0.7438 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1290/1369 | loss_L=7.4523 | loss_Q=7.4024 | firstCE_L=7.5728 | firstCE_Q=6.7174 | scale_pen(L)=4.4259e-05 | scale_pen(Q)=2.3085e-07 | grad_norm=0.65 | sec/step~1.03 | rms_raw(L)~0.7283 rms_raw(Q)~0.7439 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1300/1369 | loss_L=7.4253 | loss_Q=7.2262 | firstCE_L=7.8408 | firstCE_Q=6.8506 | scale_pen(L)=4.4939e-05 | scale_pen(Q)=2.8605e-07 | grad_norm=0.59 | sec/step~1.06 | rms_raw(L)~0.7283 rms_raw(Q)~0.7440 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1310/1369 | loss_L=7.6098 | loss_Q=7.4786 | firstCE_L=8.1345 | firstCE_Q=7.5291 | scale_pen(L)=4.6247e-05 | scale_pen(Q)=3.1660e-07 | grad_norm=0.60 | sec/step~1.06 | rms_raw(L)~0.7284 rms_raw(Q)~0.7442 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1320/1369 | loss_L=7.4545 | loss_Q=6.9890 | firstCE_L=8.0838 | firstCE_Q=7.0851 | scale_pen(L)=4.6135e-05 | scale_pen(Q)=2.7020e-07 | grad_norm=0.59 | sec/step~1.11 | rms_raw(L)~0.7285 rms_raw(Q)~0.7443 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1330/1369 | loss_L=7.4245 | loss_Q=6.9264 | firstCE_L=8.0035 | firstCE_Q=7.1613 | scale_pen(L)=4.5817e-05 | scale_pen(Q)=2.8579e-07 | grad_norm=0.54 | sec/step~1.12 | rms_raw(L)~0.7286 rms_raw(Q)~0.7444 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1340/1369 | loss_L=7.7117 | loss_Q=7.7292 | firstCE_L=8.2613 | firstCE_Q=7.2943 | scale_pen(L)=4.5562e-05 | scale_pen(Q)=3.0214e-07 | grad_norm=0.50 | sec/step~1.07 | rms_raw(L)~0.7287 rms_raw(Q)~0.7446 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1350/1369 | loss_L=7.7142 | loss_Q=7.5519 | firstCE_L=7.7556 | firstCE_Q=6.7062 | scale_pen(L)=4.5830e-05 | scale_pen(Q)=3.0044e-07 | grad_norm=0.60 | sec/step~1.06 | rms_raw(L)~0.7287 rms_raw(Q)~0.7447 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1360/1369 | loss_L=8.3164 | loss_Q=7.8399 | firstCE_L=8.0774 | firstCE_Q=7.2285 | scale_pen(L)=4.6132e-05 | scale_pen(Q)=3.1372e-07 | grad_norm=0.62 | sec/step~1.11 | rms_raw(L)~0.7288 rms_raw(Q)~0.7448 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-  step  1369/1369 | loss_L=7.2686 | loss_Q=7.4474 | firstCE_L=7.9890 | firstCE_Q=7.3792 | scale_pen(L)=4.6903e-05 | scale_pen(Q)=3.5976e-07 | grad_norm=0.62 | sec/step~0.80 | rms_raw(L)~0.7289 rms_raw(Q)~0.7449 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01057 embed_rms(Q)~0.01365
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json, training_stats.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-  ✅ Saved (and pruned to) latest at step 4107
-[checkpoint] Freed 0.0B before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json, training_stats.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-✅ Saved latest checkpoint to runs/8B_clean_answer_ftce/ckpt
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.7288807713698087, 'rms_mean_cal': 0.01057129652410136, 'embed_rms': 0.010566863231360912, 'count': 1369}, 'qwen': {'rms_mean_raw': 0.7449258858483582, 'rms_mean_cal': 0.01364122135898029, 'embed_rms': 0.013653487898409367, 'count': 1369}}
-
-Evaluating epoch 3 checkpoint...
-Evaluating: runs/8B_clean_answer_ftce/epoch3 -> runs/8B_clean_answer_ftce/eval_epoch3
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Auto-detected device: cuda
-Loaded training_stats.json: runs/8B_clean_answer_ftce/epoch3/training_stats.json
-Building encoder and computing Z...
-Saved Z to runs/8B_clean_answer_ftce/eval_epoch3/Z.pt
-
-[Sequential Evaluation Mode - one model at a time]
-
-Evaluating Llama...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3278.08it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.09s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.03it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.31it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.16it/s]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-[align:llama] encoder_text_mode candidates=['raw'] | nlls={'raw': 7.621999673832571} | picked=raw
-Saved Z[llama_raw] to runs/8B_clean_answer_ftce/eval_epoch3/Z_llama_raw.pt
-[calib:llama] mode=embed_rms prefix_rms=0.73888 -> target=0.01057
-[debug:llama] adapter.scale=0.9932 | Z.std=0.7253 Z.mean||=11.5683 | prefix.std=0.0106 prefix.mean||=0.6766 | embed.RMS=0.0106
-
-[DEBUG] First generations (Llama, latent):
-  0: 'the of the, the, the, the, the'
-  1: 'the of the, the of the, the of the'
-  2: 'the of the of the, the of the, the of'
-  3: 'the of the of the of the of the of the of'
-  4: 'the of the, the, the, the, the'
-Saved Llama results to runs/8B_clean_answer_ftce/eval_epoch3/llama_results.json
-
-Evaluating Qwen...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3246.37it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.05s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.15it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.28it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.39it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.29it/s]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-[align:qwen] encoder_text_mode candidates=['raw'] | nlls={'raw': 7.296490445496544} | picked=raw
-Saved Z[qwen_raw] to runs/8B_clean_answer_ftce/eval_epoch3/Z_qwen_raw.pt
-[calib:qwen]  mode=embed_rms prefix_rms=0.76177 -> target=0.01364
-[debug:qwen] adapter.scale=0.9994 | Z.std=0.7253 Z.mean||=11.5683 | prefix.std=0.0136 prefix.mean||=0.8161 | embed.RMS=0.0136
-
-[DEBUG] First generations (Qwen, latent):
-  0: 'the of and to in as for is and to or as'
-  1: 'the of and to in as for is a to and for'
-  2: '1990s 1990s'
-  3: '1972 1972 19'
-  4: 'the of and to in a language. is a of the'
-Saved Qwen results to runs/8B_clean_answer_ftce/eval_epoch3/qwen_results.json
-
-Joint rescoring...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2979.44it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.09it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.03s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.04s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.25it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.14it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6111.92it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.17it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.13it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.25it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.29it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.25it/s]
-
-==== LatentWire Evaluation ====
-Dataset: squad
-Samples: 200  |  Max new tokens: 12
-Device: cuda  |  Dtype: bfloat16
-Avg prompt tokens (Llama): 245.1 | (Qwen): 231.7 | Latent length M: 32
-Compression ratio (Llama): 7.7x | (Qwen): 7.2x
-Approx interlingua payload per example: 32768 bytes (fp32), and 16384 bytes (fp16); latent/text bytes (one-copy, fp16): 13.01x
-
-— Baseline: Text prompting
-Llama  EM: 0.580  F1: 0.799  |  NLL/token (gold): 12.72173482274305
-Qwen   EM: 0.680   F1: 0.853   |  NLL/token (gold): 25.81069942126198
-Wall clock: 16.48s
-
-— Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.027  |  NLL/token (gold): 7.621333787230407
-       First-token acc: top1=0.025  top5=0.075
-Qwen   EM: 0.000   F1: 0.013  |  NLL/token (gold): 7.299324211147097
-       First-token acc: top1=0.060  top5=0.125
-Wall clock: 13.33s
-
-— Token-budget baseline (mode: content_only)
-Llama  EM: 0.005  F1: 0.041
-Qwen   EM: 0.040   F1: 0.075
-Wall clock: 11.50s
-
-— 2-LLM joint (rescored pick on latent runs)
-Joint  EM: 0.000  F1: 0.011
-Inter-model agreement (normalized): 0.000
-Oracle upper bound:  EM 0.000  F1 0.031
-
-==== METRICS_JSON ====
-{
-  "samples": 200,
-  "max_new_tokens": 12,
-  "latent_len": 32,
-  "device": "cuda",
-  "dtype": "torch.bfloat16",
-  "avg_prompt_tokens": {
-    "llama": 245.065,
-    "qwen": 231.69
-  },
-  "compression": {
-    "llama": 7.65828125,
-    "qwen": 7.2403125
-  },
-  "payload_bytes": 32768,
-  "wire": {
-    "text_bytes_onecopy": {
-      "llama_avg": 1259,
-      "qwen_avg": 1107,
-      "max_avg": 1259
-    },
-    "text_bytes_twocopies": {
-      "sum_avg": 2366
-    },
-    "latent_bytes": {
-      "fp32": 32768,
-      "fp16": 16384
-    },
-    "wire_compression": {
-      "vs_onecopy_fp16": 13.013502779984114,
-      "vs_onecopy_fp32": 26.027005559968227
-    },
-    "wire_ratio": {
-      "latent_over_onecopy_fp16": 13.013502779984114,
-      "latent_over_onecopy_fp32": 26.027005559968227,
-      "onecopy_over_latent_fp16": 0.07684326171875,
-      "onecopy_over_latent_fp32": 0.038421630859375
-    }
-  },
-  "text": {
-    "wall_clock_sec": 16.47888159751892,
-    "llama": {
-      "em": 0.58,
-      "f1": 0.7994106570072514,
-      "nll_token": 12.72173482274305
-    },
-    "qwen": {
-      "em": 0.68,
-      "f1": 0.8528460272957177,
-      "nll_token": 25.81069942126198
-    }
-  },
-  "latent": {
-    "wall_clock_sec": 13.32939076423645,
-    "llama": {
-      "em": 0.0,
-      "f1": 0.027049825174825175,
-      "nll_token": 7.621333787230407,
-      "first_token_top1": 0.02499999850988388,
-      "first_token_top5": 0.07499999552965164
-    },
-    "qwen": {
-      "em": 0.0,
-      "f1": 0.012774891774891774,
-      "nll_token": 7.299324211147097,
-      "first_token_top1": 0.05999999865889549,
-      "first_token_top5": 0.125
-    }
-  },
-  "token_budget": {
-    "mode": "content_only",
-    "k": 32,
-    "llama": {
-      "em": 0.005,
-      "f1": 0.04086507936507937
-    },
-    "wall_clock_sec": 11.502137184143066,
-    "qwen": {
-      "em": 0.04,
-      "f1": 0.07479711954711955
-    }
-  },
-  "joint": {
-    "em": 0.0,
-    "f1": 0.010799714174714174,
-    "agreement": 0.0,
-    "oracle": {
-      "em": null,
-      "f1": null
-    }
-  },
-  "debug": {
-    "llama": {
-      "adapter_scale": 0.9931514263153076,
-      "Z_std": 0.7253382205963135,
-      "Z_mean_norm": 11.568334579467773,
-      "prefix_std": 0.010572593659162521,
-      "prefix_mean_norm": 0.6765959858894348,
-      "embed_rms": 0.010569815523922443,
-      "encoder_text_mode": "raw",
-      "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
-      "latent_anchor_mode": "text",
-      "latent_anchor_text": "Answer: ",
-      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    },
-    "qwen": {
-      "adapter_scale": 0.9994001984596252,
-      "Z_std": 0.7253382205963135,
-      "Z_mean_norm": 11.568334579467773,
-      "prefix_std": 0.013636560179293156,
-      "prefix_mean_norm": 0.8161417841911316,
-      "embed_rms": 0.01364860124886036,
-      "encoder_text_mode": "raw",
-      "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
-      "latent_anchor_mode": "text",
-      "latent_anchor_text": "Answer: ",
-      "model_id": "Qwen/Qwen2.5-7B-Instruct"
-    },
-    "latent_anchor_mode": "text",
-    "latent_anchor_text": "Answer: ",
-    "prefix_gain": 1.0,
-    "calibration_mode": "embed_rms",
-    "append_bos_after_prefix": "yes",
-    "decode": {
-      "min_new_tokens": 3,
-      "eos_ban_steps": 6,
-      "first_token_top_p": 1.0,
-      "first_token_temperature": 0.0
-    }
-  },
-  "oracle": {
-    "em": 0.0,
-    "f1": 0.030848415473415478
-  },
-  "dataset": "squad"
-}
-Wrote per-example predictions to runs/8B_clean_answer_ftce/eval_epoch3/predictions.jsonl
-
-✓ Metrics from: runs/8B_clean_answer_ftce/eval_epoch3/metrics.json
-  Text F1:     Llama 0.799 | Qwen 0.853
-  Latent F1:   Llama 0.027 | Qwen 0.013
-  FirstTok@1:  Llama 0.025 | Qwen 0.060
-  FirstTok@5:  Llama 0.075 | Qwen 0.125
-
-
-=========================================
-EPOCH 4/24
-=========================================
-
-Training epoch 4...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7130.14it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.03s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.17s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.34it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.15it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3616.56it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.30it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.36it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.17it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.30it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]
-Llama hidden size: 4096, Qwen hidden size: 3584
-⏪ Resuming from: runs/8B_clean_answer_ftce/ckpt/state.pt
-   -> loaded encoder/adapters FROM state.pt
-   -> restored optimizer state
-   -> restored RNG state
-   -> start_epoch=3, global_step=4107
-Epoch 4/1
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/1369 | loss_L=7.3672 | loss_Q=7.3227 | firstCE_L=7.7609 | firstCE_Q=6.8148 | scale_pen(L)=4.7593e-05 | scale_pen(Q)=3.6868e-07 | grad_norm=0.59 | sec/step~1.04 | rms_raw(L)~0.7390 rms_raw(Q)~0.7623 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  20/1369 | loss_L=7.2879 | loss_Q=6.8215 | firstCE_L=8.1682 | firstCE_Q=6.7758 | scale_pen(L)=4.6818e-05 | scale_pen(Q)=3.6579e-07 | grad_norm=0.64 | sec/step~1.15 | rms_raw(L)~0.7396 rms_raw(Q)~0.7627 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  30/1369 | loss_L=7.5444 | loss_Q=7.1291 | firstCE_L=8.3806 | firstCE_Q=7.6351 | scale_pen(L)=4.6371e-05 | scale_pen(Q)=2.4705e-07 | grad_norm=0.62 | sec/step~1.00 | rms_raw(L)~0.7401 rms_raw(Q)~0.7630 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365
-  step  40/1369 | loss_L=7.3525 | loss_Q=7.2874 | firstCE_L=7.5123 | firstCE_Q=6.9257 | scale_pen(L)=4.6367e-05 | scale_pen(Q)=2.3633e-07 | grad_norm=0.60 | sec/step~1.03 | rms_raw(L)~0.7403 rms_raw(Q)~0.7632 | rms_cal(L)~0.0106 rms_cal(Q)~0.0136 | embed_rms(L)~0.01058 embed_rms(Q)~0.01365

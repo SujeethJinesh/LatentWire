@@ -1,72 +1,0 @@
-
-=========================================
-Starting pipeline at Wed Sep 17 15:30:55 PDT 2025
-=========================================
-
-
-=========================================
-PHASE 1: TRAINING WITH EPOCH EVALUATIONS
-=========================================
-
-Training for 24 epochs with evaluation after each
-Checkpoint will be saved to: runs/8B_4_H100/ckpt
-
-
-=========================================
-EPOCH 1/24
-=========================================
-
-Training epoch 1...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3166.71it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.44s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.39s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.23it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.01it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2886.15it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.12s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.14s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.21s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.15s/it]
-Llama hidden size: 4096, Qwen hidden size: 3584
-[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
-[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
-Initialized adapter colorizers from LM embedding stats.
-⏪ Resuming from: runs/8B_4_H100/ckpt/state.pt
-   -> loaded encoder/adapters FROM state.pt
-[DEBUG] Optimizer state devices (sample):
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-   -> restored optimizer state
-   -> restored RNG state
-   -> start_epoch=0, global_step=207
-Epoch 1/1
-[DEBUG] Optimizer state devices (sample):
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-  param_dev=cuda:0 state_devs={'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0', 'step': 'cuda:0'}
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/2190 | grad_norm=25.75 | sec/step~6.24 | keep=1.00 | K=4 | llama: tf=11.6843 first=14.4105 kCE=10.5342 KD=4.2362 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=10.8521 first=13.6593 kCE=12.0862 KD=8.4468 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  20/2190 | grad_norm=45.82 | sec/step~7.37 | keep=1.00 | K=4 | llama: tf=11.2396 first=13.6978 kCE=10.3264 KD=3.6856 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=10.6929 first=13.3392 kCE=11.7820 KD=9.2759 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  30/2190 | grad_norm=69.33 | sec/step~8.19 | keep=1.00 | K=4 | llama: tf=11.8215 first=13.7847 kCE=10.4555 KD=2.9391 man=0.0002 | scale_pen(llama)=2.7853e-12 | qwen: tf=12.0111 first=12.4856 kCE=11.9349 KD=9.2088 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  40/2190 | grad_norm=18.25 | sec/step~6.13 | keep=1.00 | K=4 | llama: tf=11.8871 first=13.8697 kCE=10.1882 KD=4.2801 man=0.0002 | scale_pen(llama)=9.6065e-12 | qwen: tf=11.3165 first=12.7893 kCE=11.9862 KD=7.8707 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  50/2190 | grad_norm=34.91 | sec/step~7.61 | keep=1.00 | K=4 | llama: tf=11.2058 first=14.2124 kCE=10.4329 KD=3.7744 man=0.0002 | scale_pen(llama)=9.6065e-12 | qwen: tf=11.8413 first=13.7653 kCE=12.8226 KD=9.3637 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  60/2190 | grad_norm=60.01 | sec/step~7.34 | keep=1.00 | K=4 | llama: tf=11.3321 first=13.5962 kCE=10.3948 KD=3.3328 man=0.0002 | scale_pen(llama)=9.6065e-12 | qwen: tf=10.9807 first=12.8149 kCE=11.7348 KD=8.3653 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-[checkpoint] Freed 1.8KB before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-  ✅ Saved (and pruned to) latest at step 276
-  step  70/2190 | grad_norm=11.86 | sec/step~7.50 | keep=1.00 | K=4 | llama: tf=12.3210 first=13.5646 kCE=10.1844 KD=3.1686 man=0.0002 | scale_pen(llama)=7.9936e-13 | qwen: tf=11.3648 first=13.2111 kCE=12.5134 KD=8.0871 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  80/2190 | grad_norm=30.14 | sec/step~6.48 | keep=1.00 | K=4 | llama: tf=11.3636 first=13.2584 kCE=10.1207 KD=3.8807 man=0.0002 | scale_pen(llama)=7.9936e-13 | qwen: tf=11.1832 first=12.6819 kCE=11.5667 KD=8.5994 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  90/2190 | grad_norm=47.95 | sec/step~5.97 | keep=1.00 | K=4 | llama: tf=10.9375 first=13.9561 kCE=10.0632 KD=3.9493 man=0.0001 | scale_pen(llama)=7.9936e-13 | qwen: tf=10.8964 first=13.8739 kCE=12.8542 KD=8.2863 man=0.0003 | scale_pen(qwen)=3.5527e-15 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  100/2190 | grad_norm=9.77 | sec/step~6.41 | keep=1.00 | K=4 | llama: tf=12.0555 first=13.1133 kCE=10.4150 KD=3.6038 man=0.0002 | scale_pen(llama)=7.5175e-12 | qwen: tf=10.9701 first=12.9525 kCE=11.9144 KD=9.0936 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]
-  step  110/2190 | grad_norm=33.54 | sec/step~8.27 | keep=1.00 | K=4 | llama: tf=11.7364 first=12.9985 kCE=10.0103 KD=2.7550 man=0.0002 | scale_pen(llama)=7.5175e-12 | qwen: tf=10.5938 first=12.5473 kCE=11.9594 KD=8.2376 man=0.0003 | scale_pen(qwen)=1.4211e-14 | K=4 tau=1.50 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01365]

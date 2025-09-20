@@ -1,280 +1,0 @@
-
-=========================================
-Starting pipeline at Fri Sep 19 00:37:03 PDT 2025
-=========================================
-
-Preset: FAST_2H  |  GPUs: 0,1,2,3  |  Llama devices: 0,1  |  Qwen devices: 2,3
-Run dir: runs/8B_hailmary_allknobs_corrected_fast_2h
-
-
-=========================================
-TRAIN + PER-EPOCH EVAL (All knobs enabled)
-=========================================
-
-
-=========================================
-EPOCH 1/1
-=========================================
-
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2848.42it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.35s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:03,  1.52s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.25s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.13it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3220.81it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.15it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.16it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.11it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.09it/s]
-Llama hidden size: 4096, Qwen hidden size: 3584
-[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
-[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
-Initialized adapter colorizers from LM embedding stats.
-⚠️  No valid checkpoint found to resume; starting fresh.
-Epoch 1/1
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/10 | grad_norm=165.20 | sec/step~11.86 | keep=0.85 | K=8 | llama: tf=10.8441 first=11.4224 kCE=6.5438 KD=4.3773 state=3.9408 man=0.0001 | scale_pen(llama)=3.5527e-15 | qwen: tf=10.0898 first=15.7248 kCE=10.8903 KD=5.6553 state=0.1736 man=0.0002 | scale_pen(qwen)=2.5668e-11 | K=8 tau=1.25 | stats=[llama: rms_raw~0.0106 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.0137 rms_cal~0.0136 embed_rms~0.01364]
-[checkpoint] Freed 2.1KB before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-✅ Saved latest checkpoint to runs/8B_hailmary_allknobs_corrected_fast_2h/ckpt
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.010567932575941085, 'rms_mean_cal': 0.010571101680397987, 'embed_rms': 0.01057521253824234, 'count': 10}, 'qwen': {'rms_mean_raw': 0.013658932317048312, 'rms_mean_cal': 0.01363970898091793, 'embed_rms': 0.013643525540828705, 'count': 10}}
-+ CUDA_VISIBLE_DEVICES=0,1,2,3
-+ python -u -m latentwire.eval --ckpt runs/8B_hailmary_allknobs_corrected_fast_2h/epoch1/state.pt --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --qwen_id Qwen/Qwen2.5-7B-Instruct --samples 200 --out_dir runs/8B_hailmary_allknobs_corrected_fast_2h/eval_epoch1 --dataset squad --max_new_tokens 16 --latent_anchor_mode auto --latent_anchor_text '' --append_bos_after_prefix yes --calibration embed_rms --prefix_gain 1.15 --token_budget_mode content_only --token_budget_k 32 --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 3 --eos_ban_steps 6 --chunk_size 96 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto --qwen_device_map auto --llama_devices 0,1 --qwen_devices 2,3 --gpu_mem_gib 78 --sequential_eval --fresh_eval
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Auto-detected device: cuda
-Loaded training_stats.json: runs/8B_hailmary_allknobs_corrected_fast_2h/epoch1/training_stats.json
-Building encoder and computing Z...
-Saved Z to runs/8B_hailmary_allknobs_corrected_fast_2h/eval_epoch1/Z.pt
-
-[Standard Evaluation Mode - both models loaded]
-(Use --sequential_eval to enable per-model encoder text auto-alignment.)
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3161.93it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.41s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.27s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.35s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.09s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3243.23it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.39s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:01,  1.01it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.08s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.14s/it]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-
-==== LatentWire Evaluation ====
-Dataset: squad
-Samples: 200  |  Max new tokens: 16
-Device: cuda  |  Dtype: bfloat16
-Avg prompt tokens (Llama): 245.1 | (Qwen): 231.7 | Latent length M: 48
-Compression ratio (Llama): 5.1x | (Qwen): 4.8x
-Approx interlingua payload per example: 43008 bytes (fp32); fp16 reference: 4300800 bytes; fp32 reference: 8601600 bytes
-latent/text bytes (one-copy, fp16): n/a
-
-— Baseline: Text prompting
-Llama  EM: 0.585  F1: 0.799  |  NLL/token (gold): 12.72173482274305
-Qwen   EM: 0.655   F1: 0.831   |  NLL/token (gold): 25.81069942126198
-Wall clock: 19.81s
-
-— Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.015  |  NLL/token (gold): 11.141284474980534
-       First-token acc: top1=0.000  top5=0.000
-Qwen   EM: 0.000   F1: 0.008  |  NLL/token (gold): 16.85340898755997
-       First-token acc: top1=0.000  top5=0.000
-Wall clock: 3.34s
-
-— Token-budget baseline (mode: content_only)
-Llama  EM: 0.005  F1: 0.041
-Qwen   EM: 0.040   F1: 0.075
-Wall clock: 3.11s
-
-— 2-LLM joint (rescored pick on latent runs)
-Joint  EM: 0.000  F1: 0.004
-Inter-model agreement (normalized): 0.000
-Oracle upper bound:  EM 0.000  F1 0.019
-
-==== METRICS_JSON ====
-{
-  "samples": 200,
-  "max_new_tokens": 16,
-  "latent_len": 48,
-  "device": "cuda",
-  "dtype": "torch.bfloat16",
-  "avg_prompt_tokens": {
-    "llama": 245.065,
-    "qwen": 231.69
-  },
-  "compression": {
-    "llama": 5.105520833333333,
-    "qwen": 4.826875
-  },
-  "payload_bytes": 43008,
-  "payload_bytes_detail": {
-    "fp32": 8601600,
-    "fp16": 4300800,
-    "selected": null
-  },
-  "wire": {
-    "prompt_chars": {
-      "llama": 251564,
-      "qwen": 221164
-    },
-    "prompt_count": 200,
-    "latent_shape": [
-      200,
-      42,
-      256
-    ],
-    "latent_bytes": {
-      "fp32": 8601600,
-      "fp16": 4300800
-    },
-    "group_size": 32,
-    "scale_bits": 16,
-    "selected_latent_bytes": null,
-    "base_latent_bytes": 43008,
-    "wire_ratio": {}
-  },
-  "text": {
-    "llama": {
-      "em": 0.585,
-      "f1": 0.7986400586346852,
-      "nll_token": 12.72173482274305
-    },
-    "qwen": {
-      "em": 0.655,
-      "f1": 0.8313113259894596,
-      "nll_token": 25.81069942126198
-    },
-    "wall_clock_sec": 19.81077527999878
-  },
-  "latent": {
-    "llama": {
-      "em": 0.0,
-      "f1": 0.014748057555626606,
-      "nll": 11.141284474980534,
-      "first_token_top1": 0.0,
-      "first_token_top5": 0.0,
-      "nll_token": 11.141284474980534
-    },
-    "qwen": {
-      "em": 0.0,
-      "f1": 0.00756798226141794,
-      "nll": 16.85340898755997,
-      "first_token_top1": 0.0,
-      "first_token_top5": 0.0,
-      "nll_token": 16.85340898755997
-    },
-    "wall_clock_sec": 3.34321665763855
-  },
-  "token_budget": {
-    "mode": "content_only",
-    "k": 32,
-    "llama": {
-      "em": 0.005,
-      "f1": 0.04095895236860437
-    },
-    "qwen": {
-      "em": 0.04,
-      "f1": 0.07479711898018827
-    },
-    "wall_clock_sec": 3.105943441390991
-  },
-  "joint": {
-    "em": 0.0,
-    "f1": 0.003888471074923906,
-    "agreement": 0.0,
-    "oracle": {
-      "em": 0.0,
-      "f1": 0.019047666779556698
-    }
-  },
-  "debug": {
-    "llama": {},
-    "qwen": {},
-    "settings": {
-      "latent_anchor_mode": "auto",
-      "latent_anchor_text": "",
-      "prefix_gain": 1.15,
-      "calibration_mode": "embed_rms",
-      "append_bos_after_prefix": "yes",
-      "decode": {
-        "min_new_tokens": 3,
-        "eos_ban_steps": 6,
-        "first_token_top_p": 1.0,
-        "first_token_temperature": 0.0
-      }
-    }
-  },
-  "oracle": {
-    "em": 0.0,
-    "f1": 0.019047666779556698
-  },
-  "dataset": "squad"
-}
-Wrote per-example predictions to runs/8B_hailmary_allknobs_corrected_fast_2h/eval_epoch1/predictions.jsonl
-+ set +x
-✓ Metrics from: runs/8B_hailmary_allknobs_corrected_fast_2h/eval_epoch1/metrics.json
-  Text F1:    Llama 0.799 | Qwen 0.831
-  Latent F1:  Llama 0.015 | Qwen 0.008
-  FirstTok@1: Llama - | Qwen -
-  NLL/token:  Llama 11.141 | Qwen 16.853
-Top 5 latent predictions from runs/8B_hailmary_allknobs_corrected_fast_2h/eval_epoch1/predictions.jsonl
-  1. Llama: NNTP is a protocol used for sending and receiving news articles over the Internet | Qwen: It seems like you've entered a series of "K" and | Gold: linear
-  2. Llama: NNTP is a protocol used for sending and receiving news articles over the Internet | Qwen: Lampea | Gold: Lampea
-  3. Llama: NNTP is a protocol used for sending and receiving news articles and other types of | Qwen: It seems like you've entered a series of "k" and | Gold: residents willing to pay higher market rate for housing
-  4. Llama: NNTPD (Network News Transfer Protocol) is a protocol used for transferring news | Qwen: It seems like you've entered a string of "k" and | Gold: San Jose
-  5. Llama: NNTP is a protocol used for sending and receiving news articles over the Internet | Qwen: różne pytanie? Czy możesz pom | Gold: oxides
-
-=========================================
-FINAL FULL EVAL (best epoch by avg latent F1)
-=========================================
-
-Best epoch: 1 (avg latent F1: 0.011158019908522273)
-+ CUDA_VISIBLE_DEVICES=0,1,2,3
-+ python -u -m latentwire.eval --ckpt runs/8B_hailmary_allknobs_corrected_fast_2h/epoch1/state.pt --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --qwen_id Qwen/Qwen2.5-7B-Instruct --samples 400 --out_dir runs/8B_hailmary_allknobs_corrected_fast_2h/eval_final_best --dataset squad --max_new_tokens 16 --latent_anchor_mode auto --latent_anchor_text '' --append_bos_after_prefix yes --calibration embed_rms --prefix_gain 1.15 --token_budget_mode content_only --token_budget_k 32 --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 3 --eos_ban_steps 6 --chunk_size 96 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto --qwen_device_map auto --llama_devices 0,1 --qwen_devices 2,3 --gpu_mem_gib 78 --sequential_eval --fresh_eval
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Auto-detected device: cuda
-Loaded training_stats.json: runs/8B_hailmary_allknobs_corrected_fast_2h/epoch1/training_stats.json
-Building encoder and computing Z...
-Saved Z to runs/8B_hailmary_allknobs_corrected_fast_2h/eval_final_best/Z.pt
-
-[Standard Evaluation Mode - both models loaded]
-(Use --sequential_eval to enable per-model encoder text auto-alignment.)
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 344.06it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.32s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.22s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.25s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.17it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.00it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2524.41it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.46s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.02s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.04s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.03s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06s/it]
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-Traceback (most recent call last):
-  File "/cm/local/apps/python3/lib/python3.9/runpy.py", line 197, in _run_module_as_main
-    return _run_code(code, main_globals, None,
-  File "/cm/local/apps/python3/lib/python3.9/runpy.py", line 87, in _run_code
-    exec(code, run_globals)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1216, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1104, in main
-    summary, preds_dump = run_sequential_eval(
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 898, in run_sequential_eval
-    return run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 661, in run_standard_eval
-    res = _run_text_path(ctx["wrapper"], ctx["chat"], prompts_raw, golds, args, name)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 471, in _run_text_path
-    preds, t_text = evaluate_model_chunked_text(wrapper, chat_prompts, args.max_new_tokens, args.chunk_size, name)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
-    return func(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 411, in evaluate_model_chunked_text
-    out_ids = wrapper.generate_from_text(batch, max_new_tokens=max_new_tokens, temperature=0.0)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
-    return func(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/models.py", line 887, in generate_from_text
-    out = self.model(input_ids=input_ids, attention_mask=attn_mask, use_cache=True, return_dict=True)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
-    output = module._old_forward(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 1187, in forward
-    logits = self.lm_head(hidden_states[:, -num_logits_to_keep:, :]).float()
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 46.82 GiB. GPU 3 has a total capacity of 79.19 GiB of which 45.70 GiB is free. Including non-PyTorch memory, this process has 33.48 GiB memory in use. Of the allocated memory 32.70 GiB is allocated by PyTorch, and 114.51 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
