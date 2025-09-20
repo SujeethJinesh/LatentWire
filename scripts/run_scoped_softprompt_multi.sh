@@ -32,6 +32,9 @@ D_Z="${D_Z:-256}"
 # Chat templating (non‑negotiable)
 export LW_APPLY_CHAT_TEMPLATE=1
 
+# Ensure the latentwire package is discoverable when running via python -m / latentwire/*.py
+export PYTHONPATH="${PYTHONPATH:-.}"
+
 # GPU maps
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1}"
