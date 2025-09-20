@@ -87,7 +87,7 @@ def merge_adapter(base_id: str, adapter_dir: str, out_dir: str) -> None:
         raise FileNotFoundError(f"Missing adapter directory: {adapter_dir}")
     base = AutoModelForCausalLM.from_pretrained(base_id, device_map="auto", torch_dtype="auto")
     peft = PeftModel.from_pretrained(base, adapter_dir)
-    peft.merge_and_unload()
+    peft.merge_and_unload(safe_merge=True)
     peft.save_pretrained(out_dir)
     tokenizer = AutoTokenizer.from_pretrained(base_id, use_fast=True)
     tokenizer.save_pretrained(out_dir)
