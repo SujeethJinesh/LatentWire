@@ -1,63 +1,32 @@
+"""Auxiliary loss utilities shared by training and evaluation."""
+
+from __future__ import annotations
+
+from typing import Optional, Sequence, Tuple
+
 import torch
 import torch.nn.functional as F
-from typing import Optional, List, Tuple
+
+__all__ = [
+    "k_token_ce_from_prefix",
+    "kd_first_k_prefix_vs_text",
+    "kd_hidden_states_first_k",
+]
 
 
-@torch.no_grad()
-def _teacher_step_logits_text(llm, scaffold_ids: torch.Tensor, gold_ids: torch.Tensor, t: int) -> torch.Tensor:
-    """
-    Teacher (text-prompted) logits at step t (predict token t of the answer),
-    conditioned on [scaffold_ids, gold_ids[:t]] as input, predicting gold_ids[t].
-    """
-    device = next(llm.model.parameters()).device
-    ids_t = torch.cat([scaffold_ids, gold_ids[:, :t+1]], dim=1).to(device)
-    attn_mask = torch.ones_like(ids_t, dtype=torch.long, device=device)
-    out = llm.model(input_ids=ids_t, attention_mask=attn_mask, use_cache=False, return_dict=True)
-    return out.logits[:, -1, :]  # [B, V]
-
-
-def _compose_student_inputs_from_prefix(
-    llm,
-    prefix_embeds: torch.Tensor,
-    gold_ids: torch.Tensor,
-    t: int,
-    anchor_ids: Optional[List[int]],
-    append_bos_after_prefix: Optional[bool],
-) -> torch.Tensor:
-    """
-    Compose student inputs: [prefix] + optional [anchor] + optional [BOS] + teacher-forced gold[:t]
-    Returns inputs_embeds for the LLM.
-    """
-    device = next(llm.model.parameters()).device
-    emb_dtype = llm.input_embed.weight.dtype if hasattr(llm.input_embed, "weight") else None
-    if emb_dtype is not None:
-        prefix_embeds = prefix_embeds.to(device, dtype=emb_dtype)
-    else:
-        prefix_embeds = prefix_embeds.to(device)
-
-    B = prefix_embeds.size(0)
-    parts = [prefix_embeds]
-
-    # optional anchor
-    if anchor_ids and len(anchor_ids) > 0:
-        anc = torch.tensor(anchor_ids, dtype=torch.long, device=device).unsqueeze(0).expand(B, -1)
-        parts.append(llm.input_embed(anc))
-
-    # BOS policy: None => auto (only if NO anchor)
-    if append_bos_after_prefix is None:
-        append_bos_after_prefix = not (anchor_ids and len(anchor_ids) > 0)
-    if append_bos_after_prefix:
-        bos_id = getattr(llm.tokenizer, "bos_token_id", None)
-        if bos_id is not None:
-            bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=device)
-            parts.append(llm.input_embed(bos))
-
-    # teacher-forced gold prefix up to t (exclusive of the to-be-predicted token)
-    if t >= 0:
-        tf = gold_ids[:, :t+1].to(device)
-        parts.append(llm.input_embed(tf))
-
-    return torch.cat(parts, dim=1)
+def _maybe_to_anchor_tensor(
+    anchor_ids: Optional[Sequence[int] | torch.Tensor],
+    device: torch.device,
+) -> Optional[torch.Tensor]:
+    if anchor_ids is None:
+        return None
+    if isinstance(anchor_ids, torch.Tensor):
+        return anchor_ids.to(device=device, dtype=torch.long)
+    if isinstance(anchor_ids, (list, tuple)):
+        if len(anchor_ids) == 0:
+            return None
+        return torch.tensor(anchor_ids, dtype=torch.long, device=device)
+    raise TypeError(f"Unsupported anchor_ids type: {type(anchor_ids)!r}")
 
 
 def k_token_ce_from_prefix(
@@ -65,31 +34,34 @@ def k_token_ce_from_prefix(
     prefix_embeds: torch.Tensor,
     gold_ids: torch.Tensor,
     K: int = 4,
-    anchor_ids: Optional[List[int]] = None,
+    anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
     append_bos_after_prefix: Optional[bool] = None,
 ) -> torch.Tensor:
-    """
-    Auxiliary CE over the first K steps (teacher-forced).
-    Average CE across t=0..K-1 (skip if sequence shorter).
-    """
+    """Cross-entropy over the first `K` decoding steps under latent-prefix conditioning."""
     device = next(llm.model.parameters()).device
-    A = gold_ids.size(1)
-    total = 0.0
+    total = torch.zeros((), device=device)
     steps = 0
 
-    for t in range(min(K, A)):
-        inputs_embeds = _compose_student_inputs_from_prefix(
-            llm, prefix_embeds, gold_ids, t, anchor_ids, append_bos_after_prefix
+    anchor_tensor = _maybe_to_anchor_tensor(anchor_ids, device)
+
+    for t in range(min(K, gold_ids.size(1))):
+        inputs_embeds = llm._compose_inputs_from_prefix(
+            prefix_embeds,
+            gold_ids[:, :t],
+            anchor_ids=anchor_tensor,
+            append_bos_after_prefix=append_bos_after_prefix,
         )
         attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=device)
-        out = llm.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, use_cache=False, return_dict=True)
-        logits = out.logits[:, -1, :]  # predict gold_ids[:, t]
-        total = total + F.cross_entropy(logits.float(), gold_ids[:, t].to(device))
+        logits = llm.model(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attn_mask,
+            use_cache=False,
+            return_dict=True,
+        ).logits[:, -1, :]
+        total = total + F.cross_entropy(logits, gold_ids[:, t], reduction="mean")
         steps += 1
 
-    if steps == 0:
-        return torch.zeros((), device=device)
-    return total / float(steps)
+    return total / max(steps, 1)
 
 
 def kd_first_k_prefix_vs_text(
@@ -100,37 +72,47 @@ def kd_first_k_prefix_vs_text(
     gold_ids: torch.Tensor,
     K: int = 4,
     tau: float = 1.0,
-    anchor_ids: Optional[List[int]] = None,
+    anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
     append_bos_after_prefix: Optional[bool] = None,
 ) -> torch.Tensor:
-    """
-    KL(student||teacher) over first K steps.
-    Teacher: text prompt (scaffold_ids).
-    Student: latent prefix (+ optional anchor/BOS) with teacher-forced gold[:t].
-    """
+    """KL(student‖teacher) over first `K` steps, teacher conditioned on text prompts."""
     device = next(student_llm.model.parameters()).device
-    total = 0.0
+    total = torch.zeros((), device=device)
     steps = 0
+
+    anchor_tensor = _maybe_to_anchor_tensor(anchor_ids, device)
 
     for t in range(min(K, gold_ids.size(1))):
         with torch.no_grad():
-            T_logits = _teacher_step_logits_text(teacher_llm, scaffold_ids, gold_ids, t)
-            T = F.softmax(T_logits / tau, dim=-1)
+            teacher_inputs = torch.cat([scaffold_ids, gold_ids[:, :t]], dim=1)
+            teacher_mask = torch.ones_like(teacher_inputs, dtype=torch.long, device=device)
+            teacher_logits = teacher_llm.model(
+                input_ids=teacher_inputs,
+                attention_mask=teacher_mask,
+                use_cache=False,
+                return_dict=True,
+            ).logits[:, -1, :]
+            teacher_probs = F.softmax(teacher_logits / tau, dim=-1)
 
-        inputs_embeds = _compose_student_inputs_from_prefix(
-            student_llm, prefix_embeds, gold_ids, t, anchor_ids, append_bos_after_prefix
+        student_inputs = student_llm._compose_inputs_from_prefix(
+            prefix_embeds,
+            gold_ids[:, :t],
+            anchor_ids=anchor_tensor,
+            append_bos_after_prefix=append_bos_after_prefix,
         )
-        attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=device)
-        out = student_llm.model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, use_cache=False, return_dict=True)
-        S_logits = out.logits[:, -1, :]
-        S_log = F.log_softmax(S_logits / tau, dim=-1)
+        student_mask = torch.ones(student_inputs.size()[:-1], dtype=torch.long, device=device)
+        student_logits = student_llm.model(
+            inputs_embeds=student_inputs,
+            attention_mask=student_mask,
+            use_cache=False,
+            return_dict=True,
+        ).logits[:, -1, :]
+        student_log_probs = F.log_softmax(student_logits / tau, dim=-1)
 
-        total = total + F.kl_div(S_log, T, reduction="batchmean") * (tau * tau)
+        total = total + F.kl_div(student_log_probs, teacher_probs, reduction="batchmean") * (tau * tau)
         steps += 1
 
-    if steps == 0:
-        return torch.zeros((), device=device)
-    return total / float(steps)
+    return total / max(steps, 1)
 
 
 def kd_hidden_states_first_k(
@@ -141,103 +123,50 @@ def kd_hidden_states_first_k(
     K: int = 4,
     layers: Tuple[int, ...] = (0, 1, 2),
     append_bos_after_prefix: Optional[bool] = None,
-    anchor_ids: Optional[List[int]] = None,
+    anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
 ) -> torch.Tensor:
-    """MSE alignment between teacher (text) and latent prefixes over the first K steps."""
-
-    device = next(wrapper.model.parameters()).device
+    """Match hidden states between latent and text runs for the first `K` decoding steps."""
+    device = prefix_embeds.device
     model = wrapper.model
-
-    if append_bos_after_prefix is None:
-        append_bos_after_prefix = not bool(anchor_ids)
-
-    B = prefix_embeds.size(0)
-    pad_id = getattr(wrapper.tokenizer, "pad_token_id", None)
-    total = prefix_embeds.new_zeros(())
+    total = torch.zeros((), device=device)
     steps = 0
-    K_eff = max(1, int(K))
 
-    anchor_ids = anchor_ids or []
-    anchor_tensor = None
-    if anchor_ids:
-        anc = torch.tensor(anchor_ids, dtype=torch.long, device=device).unsqueeze(0)
-        anchor_tensor = wrapper.input_embed(anc).expand(B, -1, -1)
-
-    # Pre-compute teacher hidden states up to K tokens
-    max_k = min(K_eff, gold_ids.size(1))
-    teacher_ids = torch.cat([text_scaffold_ids, gold_ids[:, :max_k]], dim=1).to(device)
-    if pad_id is not None:
-        attn_teacher = teacher_ids.ne(int(pad_id)).long()
-        scaffold_mask = text_scaffold_ids.ne(int(pad_id)).long()
-        gold_mask = gold_ids.ne(int(pad_id)).long()
-        answer_lens = gold_mask.sum(dim=1)
-    else:
-        attn_teacher = None
-        scaffold_mask = None
-        answer_lens = torch.full((B,), gold_ids.size(1), dtype=torch.long, device=device)
+    anchor_tensor = _maybe_to_anchor_tensor(anchor_ids, device)
 
     with torch.no_grad():
+        teacher_inputs = torch.cat([text_scaffold_ids, gold_ids[:, :K]], dim=1)
+        teacher_mask = torch.ones_like(teacher_inputs, dtype=torch.long, device=device)
         teacher_out = model(
-            input_ids=teacher_ids,
-            attention_mask=attn_teacher,
+            input_ids=teacher_inputs,
+            attention_mask=teacher_mask,
             output_hidden_states=True,
             use_cache=False,
             return_dict=True,
         )
-    teacher_hs = [t.detach() for t in teacher_out.hidden_states]
+        teacher_states = teacher_out.hidden_states
 
-    if scaffold_mask is not None:
-        scaffold_lens = scaffold_mask.sum(dim=1)
-    else:
-        scaffold_lens = torch.full((B,), text_scaffold_ids.size(1), dtype=torch.long, device=device)
-
-    emb_dtype = wrapper.input_embed.weight.dtype if hasattr(wrapper.input_embed, "weight") else None
-
-    for k in range(1, K_eff + 1):
-        if k > max_k:
-            break
-
-        valid = answer_lens.ge(k)
-        if not torch.any(valid):
-            continue
-
-        gather_pos = scaffold_lens + (k - 1)
-        gather_pos = gather_pos.clamp(min=0, max=teacher_hs[0].size(1) - 1)
-
-        parts = [prefix_embeds.to(device)]
-        if anchor_tensor is not None:
-            parts.append(anchor_tensor)
-        if append_bos_after_prefix:
-            bos_id = getattr(wrapper.tokenizer, "bos_token_id", None)
-            if bos_id is not None:
-                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=device)
-                parts.append(wrapper.input_embed(bos))
-        if k > 1:
-            parts.append(wrapper.input_embed(gold_ids[:, : k - 1].to(device)))
-
-        stu_inp = torch.cat(parts, dim=1)
-        if emb_dtype is not None:
-            stu_inp = stu_inp.to(device=device, dtype=emb_dtype)
-        else:
-            stu_inp = stu_inp.to(device)
-        s_out = model(
-            inputs_embeds=stu_inp,
+    for t in range(min(K, gold_ids.size(1))):
+        student_inputs = wrapper._compose_inputs_from_prefix(
+            prefix_embeds,
+            gold_ids[:, :t],
+            anchor_ids=anchor_tensor,
+            append_bos_after_prefix=append_bos_after_prefix,
+        )
+        student_mask = torch.ones(student_inputs.size()[:-1], dtype=torch.long, device=device)
+        student_out = model(
+            inputs_embeds=student_inputs,
+            attention_mask=student_mask,
             output_hidden_states=True,
             use_cache=False,
             return_dict=True,
         )
-        student_h = [s_out.hidden_states[layer][:, -1, :] for layer in layers]
+        student_states = student_out.hidden_states
 
-        for layer_idx, sh in zip(layers, student_h):
-            layer_h = teacher_hs[layer_idx]
-            layer_pos = gather_pos.view(B, 1, 1).expand(-1, 1, layer_h.size(-1))
-            teacher_vec = torch.gather(layer_h, 1, layer_pos).squeeze(1)
-            diff = (sh - teacher_vec).float()
-            mse = diff.pow(2).mean(dim=-1)
-            if torch.any(valid):
-                total = total + mse[valid].mean()
+        gather_index = text_scaffold_ids.size(1) + t
+        for layer in layers:
+            teacher_state = teacher_states[layer][:, gather_index, :]
+            student_state = student_states[layer][:, -1, :]
+            total = total + (student_state - teacher_state).pow(2).mean()
         steps += 1
 
-    if steps == 0:
-        return prefix_embeds.new_zeros(())
-    return total / float(steps)
+    return total / max(steps, 1)

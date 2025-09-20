@@ -6,8 +6,8 @@ from typing import Optional, List, Tuple, Dict, Any, Sequence, Union, Set
 
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from latentwire.common import clean_pred  # global cleaner used across the project
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
+from latentwire.core_utils import clean_pred  # global cleaner used across the project
 
 # ---------------------------
 # Small helpers
@@ -22,7 +22,7 @@ STOP_STRINGS = [
 def _local_clean_pred(s: str) -> str:
     """
     Defensive cleaner for short generations; uses STOP_STRINGS as hard stops and
-    trims role echoes. We still rely on latentwire.common.clean_pred in eval.py,
+    trims role echoes. We still rely on latentwire.core_utils.clean_pred in eval.py,
     but keep a local version for LMWrapper utilities.
     """
     if not s:
@@ -37,6 +37,88 @@ def _local_clean_pred(s: str) -> str:
         return ""
     s = lines[0].strip(" \t\r\n.:;,'\"-–—")
     return s
+
+
+# ---------------------------
+# Model loading helpers (PEFT-aware)
+# ---------------------------
+
+def load_llm_pair(
+    llama_id: str,
+    qwen_id: str,
+    load_4bit: bool = False,
+    device_map: Union[str, Dict[str, Union[str, int]]] = "auto",
+    **kw,
+):
+    """Load a Llama/Qwen pair along with their tokenizers.
+
+    The helper supports optional PEFT hooks (LoRA / Prefix tuning) when
+    latentwire.plugins module is available and the caller sets the
+    "use_lora" / "use_prefix" flags on an argparse-style namespace passed via
+    ``args`` or ``cfg`` in ``kw``.
+    """
+
+    dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+    model_kwargs: Dict[str, Any] = dict(device_map=device_map)
+
+    if load_4bit:
+        try:
+            from transformers import BitsAndBytesConfig  # type: ignore
+        except Exception as exc:  # pragma: no cover - optional dependency
+            raise RuntimeError("bitsandbytes is required for 4-bit loading") from exc
+        quant_cfg = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=dtype,
+            bnb_4bit_quant_type="nf4",
+        )
+        model_kwargs["quantization_config"] = quant_cfg
+    else:
+        model_kwargs["torch_dtype"] = dtype
+
+    # Allow callers to thread additional kwargs (e.g., max_memory)
+    extra_model_kw = kw.pop("model_kwargs", {})
+    if extra_model_kw:
+        model_kwargs.update(extra_model_kw)
+
+    llama = AutoModelForCausalLM.from_pretrained(llama_id, **model_kwargs)
+    qwen = AutoModelForCausalLM.from_pretrained(qwen_id, **model_kwargs)
+
+    tok_llama = AutoTokenizer.from_pretrained(llama_id, use_fast=True)
+    tok_qwen = AutoTokenizer.from_pretrained(qwen_id, use_fast=True)
+
+    for tok in (tok_llama, tok_qwen):
+        if tok.pad_token is None:
+            if tok.eos_token is not None:
+                tok.pad_token = tok.eos_token
+            else:
+                tok.add_special_tokens({"pad_token": "<|pad|>"})
+
+    try:
+        from latentwire import plugins as _peft  # type: ignore
+    except Exception:  # pragma: no cover - optional hook
+        _peft = None
+
+    args = kw.get("args") or kw.get("cfg") or None
+
+    def maybe(name: str, default=None):
+        return getattr(args, name, default) if args is not None else default
+
+    if _peft is not None:
+        if maybe("use_lora", False):
+            target = maybe("lora_target_modules", "attn_mlp_firstN:12")
+            r = maybe("lora_r", 8)
+            alpha = maybe("lora_alpha", 16)
+            dropout = maybe("lora_dropout", 0.05)
+            llama = _peft.apply_lora(llama, r=r, alpha=alpha, dropout=dropout, target_modules=target)
+            qwen = _peft.apply_lora(qwen, r=r, alpha=alpha, dropout=dropout, target_modules=target)
+        if maybe("use_prefix", False):
+            tokens = maybe("prefix_tokens", 16)
+            projection = maybe("prefix_projection", True)
+            llama = _peft.apply_prefix_tuning(llama, num_virtual_tokens=tokens, projection=projection)
+            qwen = _peft.apply_prefix_tuning(qwen, num_virtual_tokens=tokens, projection=projection)
+
+    return llama, tok_llama, qwen, tok_qwen
 
 
 # ---------------------------
@@ -624,6 +706,51 @@ class LMWrapper(nn.Module):
 
     # ---- diagnostics: first-step distribution ----
 
+    def _compose_inputs_from_prefix(
+        self,
+        prefix_embeds: torch.Tensor,
+        prev_token_ids: Optional[torch.Tensor],
+        *,
+        anchor_ids: Optional[Union[Sequence[int], torch.Tensor]] = None,
+        append_bos_after_prefix: Optional[bool] = None,
+    ) -> torch.Tensor:
+        """Compose latent prefix + optional anchor/BOS + previous token ids into embeddings."""
+        model_device = next(self.model.parameters()).device
+        emb_dtype = self.input_embed.weight.dtype if hasattr(self.input_embed, "weight") else None
+        if emb_dtype is not None:
+            prefix = prefix_embeds.to(model_device, dtype=emb_dtype)
+        else:
+            prefix = prefix_embeds.to(model_device)
+
+        parts = [prefix]
+        B = prefix.size(0)
+
+        anchor_tensor: Optional[torch.Tensor] = None
+        if anchor_ids is not None:
+            if isinstance(anchor_ids, torch.Tensor):
+                anchor_tensor = anchor_ids.to(model_device, dtype=torch.long)
+            else:
+                ids_list = list(anchor_ids)
+                if ids_list:
+                    anchor_tensor = torch.tensor(ids_list, dtype=torch.long, device=model_device)
+        if anchor_tensor is not None and anchor_tensor.numel() > 0:
+            anchor_tensor = anchor_tensor.view(1, -1).expand(B, -1)
+            parts.append(self.input_embed(anchor_tensor))
+
+        if append_bos_after_prefix is None:
+            append_bos_after_prefix = not (anchor_tensor is not None and anchor_tensor.numel() > 0)
+        if append_bos_after_prefix:
+            bos_id = getattr(self.tokenizer, "bos_token_id", None)
+            if bos_id is not None:
+                bos = torch.full((B, 1), int(bos_id), dtype=torch.long, device=model_device)
+                parts.append(self.input_embed(bos))
+
+        if prev_token_ids is not None and prev_token_ids.numel() > 0:
+            prev = prev_token_ids.to(model_device)
+            parts.append(self.input_embed(prev))
+
+        return torch.cat(parts, dim=1)
+
     def first_token_logits_from_prefix(
         self,
         prefix_embeds: torch.Tensor,
@@ -879,3 +1006,83 @@ class LMWrapper(nn.Module):
             next_token_logits = out.logits[:, -1, :]
             past = out.past_key_values
         return generated
+
+
+class STQueryEncoder(nn.Module):
+    """Sentence-Transformer encoder with learned query pooling to produce latent slots."""
+    def __init__(self,
+                 d_z: int = 256,
+                 latent_len: int = 32,
+                 hf_encoder_id: str = "sentence-transformers/all-MiniLM-L6-v2",
+                 max_tokens: int = 1024,
+                 freeze_backbone: bool = True,
+                 slot_sinusoid: bool = True,
+                 attn_heads: int = 8):
+        super().__init__()
+        self.tokenizer = AutoTokenizer.from_pretrained(hf_encoder_id, use_fast=True)
+        self.encoder = AutoModel.from_pretrained(hf_encoder_id)
+        self.hidden = int(self.encoder.config.hidden_size)
+        self.latent_len = int(latent_len)
+        self.d_z = int(d_z)
+        self.max_tokens = int(max_tokens)
+
+        if freeze_backbone:
+            for p in self.encoder.parameters():
+                p.requires_grad_(False)
+
+        self.query = nn.Parameter(torch.randn(self.latent_len, self.hidden) * 0.02)
+        self.q_proj = nn.Linear(self.hidden, self.hidden, bias=False)
+        self.k_proj = nn.Linear(self.hidden, self.hidden, bias=False)
+        self.v_proj = nn.Linear(self.hidden, self.hidden, bias=False)
+        self.attn = nn.MultiheadAttention(embed_dim=self.hidden, num_heads=attn_heads, batch_first=True)
+        self.o_proj = nn.Linear(self.hidden, self.hidden, bias=False)
+        self.to_latent = nn.Sequential(
+            nn.LayerNorm(self.hidden),
+            nn.Linear(self.hidden, self.d_z),
+        )
+
+        self.slot_sinusoid = bool(slot_sinusoid)
+        if self.slot_sinusoid:
+            slot_pe = torch.zeros(self.latent_len, self.hidden)
+            position = torch.arange(0, self.latent_len, dtype=torch.float32).unsqueeze(1)
+            div_term = torch.exp(torch.arange(0, self.hidden, 2, dtype=torch.float32) * (-math.log(10000.0) / self.hidden))
+            slot_pe[:, 0::2] = torch.sin(position * div_term)
+            slot_pe[:, 1::2] = torch.cos(position * div_term)
+            self.register_buffer("slot_pe", slot_pe, persistent=False)
+        else:
+            self.register_buffer("slot_pe", torch.zeros(self.latent_len, self.hidden), persistent=False)
+
+    def _encode_tokens(self, texts: List[str], device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
+        toks = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
+        if "input_ids" in toks and toks["input_ids"].size(-1) > self.max_tokens:
+            toks["input_ids"] = toks["input_ids"][:, : self.max_tokens]
+        if "attention_mask" in toks and toks["attention_mask"].size(-1) > self.max_tokens:
+            toks["attention_mask"] = toks["attention_mask"][:, : self.max_tokens]
+        toks = {k: v.to(device) for k, v in toks.items()}
+        with torch.no_grad():
+            encoder_out = self.encoder(
+                input_ids=toks.get("input_ids"),
+                attention_mask=toks.get("attention_mask"),
+                output_hidden_states=False,
+                return_dict=True,
+            )
+        hidden = encoder_out.last_hidden_state  # [B, T, hidden]
+        if "attention_mask" in toks:
+            attn_mask = toks["attention_mask"].bool()
+        else:
+            attn_mask = torch.ones(hidden.size()[:2], dtype=torch.bool, device=device)
+        return hidden, attn_mask
+
+    def forward(self, texts: List[str]) -> torch.Tensor:
+        device = next(self.parameters()).device
+        feats, amask = self._encode_tokens(texts, device)
+        B, T, H = feats.shape
+        q = self.q_proj(self.query + self.slot_pe.to(device)).unsqueeze(0).expand(B, -1, -1)
+        k = self.k_proj(feats)
+        v = self.v_proj(feats)
+        key_padding_mask = ~amask
+        pooled, _ = self.attn(q, k, v, key_padding_mask=key_padding_mask, need_weights=False)
+        pooled = pooled + q
+        pooled = self.o_proj(pooled)
+        z = self.to_latent(pooled)
+        return z

@@ -20,24 +20,28 @@ from latentwire.models import (
     LMConfig,
     ByteTokenizer,
     SimpleEncoder,
+    STQueryEncoder,
 )
-from latentwire.dataloader_patch import patch_dataloader_defaults
-from latentwire.anchor_utils import apply_anchor_normalization
-from latentwire.data import load_examples
-from latentwire.metrics import batch_metrics, _normalize, em, f1
-from latentwire.prefix_utils import (
+from latentwire.core_utils import (
+    patch_dataloader_defaults,
+    apply_anchor_normalization,
     quantize_dequantize,
     compute_wire_metrics,
     tensor_rms,
     combine_latents,
-)
-
-from latentwire.common import (
     clean_pred,
-    build_chat_prompts, build_neutral_encoder_texts,
-    truncate_chat_to_k_tokens, content_only_m_token_chat_prompt, build_token_budget_prompts,
-    collate_bytes, make_anchor_text, infer_anchor_mode_and_text, SYSTEM_PROMPT
+    build_chat_prompts,
+    build_neutral_encoder_texts,
+    truncate_chat_to_k_tokens,
+    content_only_m_token_chat_prompt,
+    build_token_budget_prompts,
+    collate_bytes,
+    make_anchor_text,
+    infer_anchor_mode_and_text,
+    SYSTEM_PROMPT,
 )
+from latentwire.data import load_examples
+from latentwire.diagnostics import batch_metrics, _normalize, em, f1
 
 # ---------------------------
 # Defaults / hardening toggles
@@ -550,6 +554,9 @@ def _run_latent_path(
 def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
     print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
+    ckpt_path = args.ckpt
+    ckpt_dir = os.path.dirname(ckpt_path) if os.path.isfile(ckpt_path) else ckpt_path
+
     llama_map_spec = args.llama_device_map if args.llama_device_map is not None else cfg.get("llama_device_map")
     qwen_map_spec = args.qwen_device_map if args.qwen_device_map is not None else cfg.get("qwen_device_map")
     llama_devices_spec = args.llama_devices if args.llama_devices is not None else cfg.get("llama_devices")
@@ -626,7 +633,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     wrappers = {"llama": llama, "qwen": qwen}
 
     for name in ("llama", "qwen"):
-        path = os.path.join(args.ckpt, f"adapter_{name}.pt")
+        path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
         state = _safe_load(path, map_location=device)
         try:
             adapters[name].load_state_dict(state, strict=True)
@@ -846,6 +853,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     summary["latent"]["wall_clock_sec"] = latent_wall
     summary.setdefault("token_budget", {})
     summary["token_budget"]["wall_clock_sec"] = trunc_wall
+    try:
+        summary.setdefault("wire", {}).setdefault("wire_ratio", {}).update(wire.get("wire_ratio", {}))
+    except Exception:
+        pass
     summary["debug"]["settings"] = {
         "latent_anchor_mode": args.latent_anchor_mode,
         "latent_anchor_text": args.latent_anchor_text,
@@ -920,6 +931,8 @@ def main():
 
     ap.add_argument("--sequential_eval", action="store_true")
     ap.add_argument("--chunk_size", type=int, default=8)
+    ap.add_argument("--hf_encoder_id", type=str, default="sentence-transformers/all-MiniLM-L6-v2")
+    ap.add_argument("--max_enc_tokens", type=int, default=1024)
     ap.add_argument("--fresh_eval", action="store_true")
 
     ap.add_argument("--debug", action="store_true")
@@ -984,7 +997,14 @@ def main():
     _ensure_dir(args.out_dir)
 
     # Load run config (from training)
-    with open(os.path.join(args.ckpt, "config.json")) as f:
+    # Resolve checkpoint directory if a file path (e.g., state.pt) was provided
+    ckpt_path = args.ckpt
+    if os.path.isfile(ckpt_path):
+        ckpt_dir = os.path.dirname(ckpt_path)
+    else:
+        ckpt_dir = ckpt_path
+
+    with open(os.path.join(ckpt_dir, "config.json")) as f:
         cfg = json.load(f)
 
     encoder_type = cfg.get("encoder_type", "byte")
@@ -1005,7 +1025,7 @@ def main():
     byte_max = cfg.get("byte_max", 512)
 
     # Try to load training-time prefix stats (optional)
-    train_stats_path = os.path.join(args.ckpt, "training_stats.json")
+    train_stats_path = os.path.join(ckpt_dir, "training_stats.json")
     train_stats = None
     if os.path.isfile(train_stats_path):
         try:
@@ -1041,14 +1061,31 @@ def main():
                 latent_private_len=latent_private_len,
                 model_keys=model_keys,
             ).to(device).eval()
-            encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+            encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
                 byte_tok = ByteTokenizer(max_bytes=byte_max)
                 z_bytes = collate_bytes(prompts_raw, byte_tok, device)
                 encoded_latents = encoder_wire(z_bytes, return_components=True)
+        elif encoder_type == "stq":
+            encoder_wire = STQueryEncoder(d_z=d_z, latent_len=latent_len,
+                                         hf_encoder_id=(args.hf_encoder_id or cfg.get('hf_encoder_id','sentence-transformers/all-MiniLM-L6-v2')),
+                                         max_tokens=(args.max_enc_tokens or cfg.get('max_enc_tokens',1024))).to(device).eval()
+            encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
+            with torch.no_grad():
+                raw = encoder_wire(prompts_raw)
+                shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
+                private = {}
+                start = latent_shared_len
+                for key in model_keys:
+                    if latent_private_len > 0:
+                        private[key] = raw[:, start:start + latent_private_len]
+                    else:
+                        private[key] = raw.new_zeros(raw.size(0), 0, raw.size(-1))
+                    start += latent_private_len
+                encoded_latents = {"shared": shared, "private": private}
         else:
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
-            encoder_wire.load_state_dict(_safe_load(os.path.join(args.ckpt, "encoder.pt"), map_location=device))
+            encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
                 raw = encoder_wire(prompts_raw)
                 shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
@@ -1104,7 +1141,12 @@ def main():
         + f"; fp16 reference: {payload_detail.get('fp16', 'n/a')} bytes; fp32 reference: {payload_detail.get('fp32', base_bytes)} bytes"
     )
     print(payload_line)
-    print(f"latent/text bytes (one-copy, fp16): {summary['wire']['wire_ratio']['latent_over_onecopy_fp16']:.2f}x")
+    wire_ratio = summary.get('wire', {}).get('wire_ratio', {}) if isinstance(summary.get('wire'), dict) else {}
+    ratio_val = wire_ratio.get('latent_over_onecopy_fp16') if isinstance(wire_ratio, dict) else None
+    if ratio_val is not None:
+        print(f"latent/text bytes (one-copy, fp16): {float(ratio_val):.2f}x")
+    else:
+        print("latent/text bytes (one-copy, fp16): n/a")
 
     print("\n— Baseline: Text prompting")
     if summary['text'].get('llama') is not None:
