@@ -1111,8 +1111,8 @@ def main():
                     "qwen_id": args.qwen_id,
                     "encoder_type": args.encoder_type,
                     "encoder_use_chat_template": bool(args.encoder_use_chat_template),
-        "hf_encoder_id": (args.hf_encoder_id if hasattr(args, "hf_encoder_id") else ""),
-        "max_enc_tokens": (args.max_enc_tokens if hasattr(args, "max_enc_tokens") else 1024),
+                    "hf_encoder_id": (args.hf_encoder_id if hasattr(args, "hf_encoder_id") else ""),
+                    "max_enc_tokens": (args.max_enc_tokens if hasattr(args, "max_enc_tokens") else 1024),
                     "encoder_backbone": (args.encoder_backbone or ""),
                     "warm_anchor_text": args.warm_anchor_text,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
@@ -1125,6 +1125,15 @@ def main():
                     "llama_devices": args.llama_devices,
                     "qwen_devices": args.qwen_devices,
                     "gpu_mem_gib": args.gpu_mem_gib,
+                    "use_lora": bool(args.use_lora),
+                    "lora_r": args.lora_r,
+                    "lora_alpha": args.lora_alpha,
+                    "lora_dropout": args.lora_dropout,
+                    "lora_target_modules": args.lora_target_modules,
+                    "use_prefix": bool(args.use_prefix),
+                    "prefix_tokens": args.prefix_tokens,
+                    "prefix_projection": bool(args.prefix_projection),
+                    "peft_prefix_all_layers": str(getattr(args, "peft_prefix_all_layers", "yes")),
                     "manifold_stat_weight": args.manifold_stat_weight,
                     "state_kd_weight": args.state_kd_weight,
                     "state_kd_layers": args.state_kd_layers,
@@ -1190,6 +1199,15 @@ def main():
         "llama_devices": args.llama_devices,
         "qwen_devices": args.qwen_devices,
         "gpu_mem_gib": args.gpu_mem_gib,
+        "use_lora": bool(args.use_lora),
+        "lora_r": args.lora_r,
+        "lora_alpha": args.lora_alpha,
+        "lora_dropout": args.lora_dropout,
+        "lora_target_modules": args.lora_target_modules,
+        "use_prefix": bool(args.use_prefix),
+        "prefix_tokens": args.prefix_tokens,
+        "prefix_projection": bool(args.prefix_projection),
+        "peft_prefix_all_layers": str(getattr(args, "peft_prefix_all_layers", "yes")),
         "manifold_stat_weight": args.manifold_stat_weight,
         "state_kd_weight": args.state_kd_weight,
         "state_kd_layers": args.state_kd_layers,
@@ -1228,6 +1246,31 @@ def main():
     }
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
+
+    # Persist PEFT adapters (LoRA / Prefix) if present
+    try:
+        from peft import PeftModel  # type: ignore
+
+        def _save_peft(model: nn.Module, path: str) -> None:
+            os.makedirs(path, exist_ok=True)
+            model.save_pretrained(path)
+
+        if isinstance(getattr(llama, "model", None), PeftModel):
+            if args.use_lora:
+                _save_peft(llama.model, os.path.join(args.save_dir, "lora_llama"))
+                print("📝 Saved LoRA adapters for Llama")
+            if args.use_prefix:
+                _save_peft(llama.model, os.path.join(args.save_dir, "prefix_llama"))
+                print("📝 Saved Prefix-Tuning adapters for Llama")
+        if isinstance(getattr(qwen, "model", None), PeftModel):
+            if args.use_lora:
+                _save_peft(qwen.model, os.path.join(args.save_dir, "lora_qwen"))
+                print("📝 Saved LoRA adapters for Qwen")
+            if args.use_prefix:
+                _save_peft(qwen.model, os.path.join(args.save_dir, "prefix_qwen"))
+                print("📝 Saved Prefix-Tuning adapters for Qwen")
+    except Exception as exc:
+        print(f"[WARN] Skipped PEFT adapter save: {exc}")
 
     if args.save_training_stats:
         stats = {

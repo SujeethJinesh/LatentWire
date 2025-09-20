@@ -72,18 +72,27 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
 
 # Merge LoRA into base weights for stability of Stage B (Prefix)
 echo -e "\n=== Stage A -> merge LoRA ===\n" | tee -a "$LOG"
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" RUN_MERGE_DIR="$CKPT_DIR" python - <<'PY'
-import torch, os, json
+RUN_TAG="$RUN_TAG" LLAMA_ID="$LLAMA_ID" QWEN_ID="$QWEN_ID" CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
+import os
 from transformers import AutoModelForCausalLM
-from latentwire.models import load_llm_pair  # expected in your codebase
-from latentwire.core_utils import maybe_merge_lora
-llama_id=os.environ.get("LLAMA_ID"); qwen_id=os.environ.get("QWEN_ID")
-mL, tokL, mQ, tokQ = load_llm_pair(llama_id, qwen_id, load_4bit=False, device_map="auto")
-mL = maybe_merge_lora(mL); mQ = maybe_merge_lora(mQ)
-save_dir = os.environ["RUN_MERGE_DIR"]
-mL.save_pretrained(os.path.join(save_dir, "merged_llama"))
-mQ.save_pretrained(os.path.join(save_dir, "merged_qwen"))
-print(f"✓ Merged and saved to {save_dir}")
+from peft import PeftModel
+
+run_tag = os.environ["RUN_TAG"]
+ckpt = os.path.join("runs", run_tag, "ckpt")
+llama_id = os.environ.get("LLAMA_ID")
+qwen_id = os.environ.get("QWEN_ID")
+
+def merge_adapter(base_id: str, adapter_dir: str, out_dir: str) -> None:
+    if not os.path.isdir(adapter_dir):
+        raise FileNotFoundError(f"Missing adapter directory: {adapter_dir}")
+    base = AutoModelForCausalLM.from_pretrained(base_id, device_map="auto", torch_dtype="auto")
+    peft = PeftModel.from_pretrained(base, adapter_dir)
+    peft.merge_and_unload()
+    peft.save_pretrained(out_dir)
+
+merge_adapter(llama_id, os.path.join(ckpt, "lora_llama"), os.path.join(ckpt, "merged_llama"))
+merge_adapter(qwen_id, os.path.join(ckpt, "lora_qwen"), os.path.join(ckpt, "merged_qwen"))
+print(f"✓ Merged LoRA adapters into {ckpt}/merged_*")
 PY
 
 # Stage B: Deep Prefix (Prefix‑Tuning) with merged bases

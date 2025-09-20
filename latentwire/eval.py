@@ -647,6 +647,21 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
 
     wrappers = {"llama": llama, "qwen": qwen}
 
+    # Reattach Prefix-Tuning adapters if available
+    try:
+        from peft import PeftModel  # type: ignore
+
+        prefix_paths = {
+            "llama": os.path.join(ckpt_dir, "prefix_llama"),
+            "qwen": os.path.join(ckpt_dir, "prefix_qwen"),
+        }
+        for name, path in prefix_paths.items():
+            if os.path.isdir(path):
+                wrappers[name].model = PeftModel.from_pretrained(wrappers[name].model, path).eval()
+                print(f"✓ Loaded Prefix-Tuning adapters for {name}")
+    except Exception as exc:
+        print(f"[WARN] Prefix-Tuning reload skipped: {exc}")
+
     for name in ("llama", "qwen"):
         path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
         state = _safe_load(path, map_location=device)

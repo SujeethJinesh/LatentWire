@@ -1073,7 +1073,13 @@ class LMWrapper(nn.Module):
         temperature: float = 0.0,
         top_p: float = 1.0
     ) -> List[List[int]]:
-        enc = self.tokenizer(prompt_texts, return_tensors="pt", padding=True, truncation=False, add_special_tokens=True)
+        enc = self.tokenizer(
+            prompt_texts,
+            return_tensors="pt",
+            padding=True,
+            truncation=False,
+            add_special_tokens=False,
+        )
         input_ids = enc["input_ids"].to(next(self.model.parameters()).device)
         attn_mask = enc["attention_mask"].to(input_ids.device)
 
