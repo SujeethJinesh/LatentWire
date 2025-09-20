@@ -74,7 +74,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
 echo -e "\n=== Stage A -> merge LoRA ===\n" | tee -a "$LOG"
 RUN_TAG="$RUN_TAG" LLAMA_ID="$LLAMA_ID" QWEN_ID="$QWEN_ID" CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
 import os
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
 run_tag = os.environ["RUN_TAG"]
@@ -89,6 +89,8 @@ def merge_adapter(base_id: str, adapter_dir: str, out_dir: str) -> None:
     peft = PeftModel.from_pretrained(base, adapter_dir)
     peft.merge_and_unload()
     peft.save_pretrained(out_dir)
+    tokenizer = AutoTokenizer.from_pretrained(base_id, use_fast=True)
+    tokenizer.save_pretrained(out_dir)
 
 merge_adapter(llama_id, os.path.join(ckpt, "lora_llama"), os.path.join(ckpt, "merged_llama"))
 merge_adapter(qwen_id, os.path.join(ckpt, "lora_qwen"), os.path.join(ckpt, "merged_qwen"))
