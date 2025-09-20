@@ -748,7 +748,10 @@ class LMWrapper(nn.Module):
             prev = prev_token_ids.to(model_device)
             parts.append(self.input_embed(prev))
 
-        return torch.cat(parts, dim=1)
+        full = torch.cat(parts, dim=1)
+        if hasattr(self.input_embed, "weight"):
+            full = full.to(dtype=self.input_embed.weight.dtype)
+        return full
 
     def first_token_logits_from_prefix(
         self,
