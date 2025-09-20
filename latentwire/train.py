@@ -14,8 +14,8 @@ from contextlib import contextmanager
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from latentwire.diagnostics import capture_env_snapshot
 from latentwire.core_utils import (
+    capture_env_snapshot,
     patch_dataloader_defaults,
     apply_anchor_normalization,
     collate_bytes,

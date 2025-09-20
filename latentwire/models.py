@@ -7,7 +7,12 @@ from typing import Optional, List, Tuple, Dict, Any, Sequence, Union, Set
 import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
-from latentwire.core_utils import clean_pred  # global cleaner used across the project
+from latentwire.core_utils import (
+    clean_pred,
+    apply_lora,
+    apply_prefix_tuning,
+    maybe_merge_lora,
+)
 
 # ---------------------------
 # Small helpers
@@ -53,7 +58,7 @@ def load_llm_pair(
     """Load a Llama/Qwen pair along with their tokenizers.
 
     The helper supports optional PEFT hooks (LoRA / Prefix tuning) when
-    latentwire.plugins module is available and the caller sets the
+    latentwire.core_utils module is available and the caller sets the
     "use_lora" / "use_prefix" flags on an argparse-style namespace passed via
     ``args`` or ``cfg`` in ``kw``.
     """
@@ -94,29 +99,23 @@ def load_llm_pair(
             else:
                 tok.add_special_tokens({"pad_token": "<|pad|>"})
 
-    try:
-        from latentwire import plugins as _peft  # type: ignore
-    except Exception:  # pragma: no cover - optional hook
-        _peft = None
-
     args = kw.get("args") or kw.get("cfg") or None
 
     def maybe(name: str, default=None):
         return getattr(args, name, default) if args is not None else default
 
-    if _peft is not None:
-        if maybe("use_lora", False):
-            target = maybe("lora_target_modules", "attn_mlp_firstN:12")
-            r = maybe("lora_r", 8)
-            alpha = maybe("lora_alpha", 16)
-            dropout = maybe("lora_dropout", 0.05)
-            llama = _peft.apply_lora(llama, r=r, alpha=alpha, dropout=dropout, target_modules=target)
-            qwen = _peft.apply_lora(qwen, r=r, alpha=alpha, dropout=dropout, target_modules=target)
-        if maybe("use_prefix", False):
-            tokens = maybe("prefix_tokens", 16)
-            projection = maybe("prefix_projection", True)
-            llama = _peft.apply_prefix_tuning(llama, num_virtual_tokens=tokens, projection=projection)
-            qwen = _peft.apply_prefix_tuning(qwen, num_virtual_tokens=tokens, projection=projection)
+    if maybe("use_lora", False):
+        target = maybe("lora_target_modules", "attn_mlp_firstN:12")
+        r = maybe("lora_r", 8)
+        alpha = maybe("lora_alpha", 16)
+        dropout = maybe("lora_dropout", 0.05)
+        llama = apply_lora(llama, r=r, alpha=alpha, dropout=dropout, target_modules=target)
+        qwen = apply_lora(qwen, r=r, alpha=alpha, dropout=dropout, target_modules=target)
+    if maybe("use_prefix", False):
+        tokens = maybe("prefix_tokens", 16)
+        projection = maybe("prefix_projection", True)
+        llama = apply_prefix_tuning(llama, num_virtual_tokens=tokens, projection=projection)
+        qwen = apply_prefix_tuning(qwen, num_virtual_tokens=tokens, projection=projection)
 
     return llama, tok_llama, qwen, tok_qwen
 

@@ -41,7 +41,7 @@ from latentwire.core_utils import (
     SYSTEM_PROMPT,
 )
 from latentwire.data import load_examples
-from latentwire.diagnostics import batch_metrics, _normalize, em, f1
+from latentwire.core_utils import batch_metrics, _normalize, em, f1
 
 # ---------------------------
 # Defaults / hardening toggles

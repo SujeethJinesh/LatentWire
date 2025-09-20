@@ -74,7 +74,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
 import torch, os, json
 from transformers import AutoModelForCausalLM
 from latentwire.models import load_llm_pair  # expected in your codebase
-from latentwire.plugins import maybe_merge_lora
+from latentwire.core_utils import maybe_merge_lora
 llama_id=os.environ.get("LLAMA_ID"); qwen_id=os.environ.get("QWEN_ID")
 mL, tokL, mQ, tokQ = load_llm_pair(llama_id, qwen_id, load_4bit=False, device_map="auto")
 mL = maybe_merge_lora(mL); mQ = maybe_merge_lora(mQ)

@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import datetime
+import json
 import logging
 import math
+import os
+import platform
 import re
-from typing import Dict, Iterable, List, Optional, Sequence, Union
+import string
+import sys
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
 from datasets import load_dataset
@@ -42,6 +48,19 @@ __all__ = [
     "build_anchor_prefix_text",
     "patch_dataloader_defaults",
     "load_squad_split",
+    "capture_env_snapshot",
+    "capture_stats",
+    "batch_metrics",
+    "_normalize",
+    "em",
+    "f1",
+    "squad_em_f1",
+    "dump_metrics",
+    "build_chat_for_qa",
+    "apply_lora",
+    "maybe_merge_lora",
+    "apply_prefix_tuning",
+    "apply_prompt_tuning",
 ]
 
 # ---------------------------------------------------------------------------
@@ -365,3 +384,339 @@ def load_squad_split(split: str = "train", samples: Optional[int] = None):
     if samples is not None:
         ds = ds.select(range(min(len(ds), samples)))
     return ds
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics (env snapshot + prefix stats)
+# ---------------------------------------------------------------------------
+
+
+def _tensor_rms(t: torch.Tensor) -> float:
+    return float(t.float().pow(2).mean().sqrt().item())
+
+
+def _save_json(path: str, payload: dict) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(payload, f, indent=2)
+
+
+def _safe_import_version(modname: str) -> str:
+    try:
+        mod = __import__(modname)
+        return getattr(mod, "__version__", "unknown")
+    except Exception:
+        return "not-installed"
+
+
+def capture_env_snapshot(out_dir: str, extras=None) -> str:
+    os.makedirs(out_dir, exist_ok=True)
+    snap = {
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        "python": sys.version.replace("\n", " "),
+        "platform": {
+            "system": platform.system(),
+            "release": platform.release(),
+            "machine": platform.machine(),
+        },
+        "versions": {
+            "torch": _safe_import_version("torch"),
+            "transformers": _safe_import_version("transformers"),
+            "datasets": _safe_import_version("datasets"),
+            "sentence_transformers": _safe_import_version("sentence_transformers"),
+            "bitsandbytes": _safe_import_version("bitsandbytes"),
+        },
+        "argv": sys.argv,
+    }
+    if extras:
+        snap.update(extras)
+    dst = os.path.join(out_dir, "env_snapshot.json")
+    _save_json(dst, snap)
+    LOG.info("[core_utils] wrote %s", dst)
+    return dst
+
+
+@torch.no_grad()
+def capture_stats(
+    run_dir: str,
+    model_name: str,
+    lm_embed_weight: torch.Tensor,
+    adapter_out: torch.Tensor,
+    z: torch.Tensor,
+    extra: Dict | None = None,
+):
+    stats = {
+        "model": model_name,
+        "embed_weight_rms": _tensor_rms(lm_embed_weight),
+        "adapter_out_rms": _tensor_rms(adapter_out),
+        "z_rms": _tensor_rms(z),
+        "adapter_out_mean": float(adapter_out.float().mean()),
+        "adapter_out_std": float(adapter_out.float().std()),
+        "z_mean": float(z.float().mean()),
+        "z_std": float(z.float().std()),
+    }
+    if extra:
+        stats.update(extra)
+    out_dir = os.path.join(run_dir, "diagnostics")
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, f"{model_name}_stats.json")
+    _save_json(path, stats)
+    LOG.info("[core_utils] wrote %s", path)
+    return stats
+
+
+# ---------------------------------------------------------------------------
+# Metrics (EM / F1)
+# ---------------------------------------------------------------------------
+
+
+def _normalize_answer(s: str) -> str:
+    def remove_articles(text):
+        return re.sub(r"\b(a|an|the)\b", " ", text)
+
+    def white_space_fix(text):
+        return " ".join(text.split())
+
+    def remove_punc(text):
+        return "".join(ch for ch in text if ch not in set(string.punctuation))
+
+    def lower(text):
+        return text.lower()
+
+    return white_space_fix(remove_articles(remove_punc(lower(s))))
+
+
+def _normalize(text: str) -> str:
+    return _normalize_answer(text)
+
+
+def em(pred: str, truth: str) -> float:
+    return float(_normalize(pred) == _normalize(truth))
+
+
+def f1(pred: str, truth: str) -> float:
+    pred_tokens = _normalize(pred).split()
+    truth_tokens = _normalize(truth).split()
+    if not pred_tokens or not truth_tokens:
+        return float(pred_tokens == truth_tokens)
+    common = set(pred_tokens) & set(truth_tokens)
+    if not common:
+        return 0.0
+    precision = len(common) / len(pred_tokens)
+    recall = len(common) / len(truth_tokens)
+    return 2 * precision * recall / (precision + recall + 1e-8)
+
+
+def squad_em_f1(preds: List[str], truths: List[List[str]]) -> Tuple[float, float]:
+    total_em = 0.0
+    total_f1 = 0.0
+    n = len(preds)
+    for p, ts in zip(preds, truths):
+        total_em += max(em(p, t) for t in ts)
+        total_f1 += max(f1(p, t) for t in ts)
+    denom = max(n, 1)
+    return total_em / denom, total_f1 / denom
+
+
+def batch_metrics(preds: Sequence[str], golds: Sequence[Union[Sequence[str], str]]) -> Tuple[float, float]:
+    total_em = 0.0
+    total_f1 = 0.0
+    count = 0
+    for pred, gold in zip(preds, golds):
+        refs: List[str] = [gold] if isinstance(gold, str) else list(gold)
+        total_em += max(em(pred, ref) for ref in refs)
+        total_f1 += max(f1(pred, ref) for ref in refs)
+        count += 1
+    if count == 0:
+        return 0.0, 0.0
+    return total_em / count, total_f1 / count
+
+
+def dump_metrics(path: str, metrics: Dict) -> None:
+    _save_json(path, metrics)
+
+
+# ---------------------------------------------------------------------------
+# Chat templating helper (exported for runners if needed)
+# ---------------------------------------------------------------------------
+
+
+def build_chat_for_qa(
+    tokenizer,
+    question: str,
+    context: str,
+    system: Optional[str] = None,
+    add_generation_prompt: bool = True,
+    return_tensors: str = "pt",
+) -> Tuple[Dict[str, str], Optional[str]]:
+    messages: List[Dict[str, str]] = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append(  # instruction-tuned friendly framing
+        {
+            "role": "user",
+            "content": (
+                "Use the context to answer the question.\n\n"
+                f"Context:\n{context}\n\nQuestion: {question}\nAnswer in one short span."
+            ),
+        }
+    )
+    kwargs = dict(add_generation_prompt=add_generation_prompt, return_tensors=return_tensors)
+    try:
+        kwargs["continue_final_message"] = True
+    except Exception:
+        pass
+    model_inputs = tokenizer.apply_chat_template(messages, **kwargs)
+    prompt_text = None
+    try:
+        prompt_text = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            **{k: v for k, v in kwargs.items() if k != "return_tensors"},
+        )
+    except Exception:
+        pass
+    return model_inputs, prompt_text
+
+
+# ---------------------------------------------------------------------------
+# PEFT integration helpers (LoRA / Prefix / Prompt tuning)
+# ---------------------------------------------------------------------------
+
+
+def _ensure_peft():
+    try:
+        import peft  # noqa
+    except Exception:
+        import subprocess
+
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--quiet", "peft>=0.12.0", "accelerate>=0.33.0"]
+        )
+    import peft  # noqa
+    return peft
+
+
+def _infer_default_targets(model):
+    names = set()
+    for n, _ in model.named_modules():
+        if any(s in n for s in ("q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj", "gate_proj")):
+            names.add(n.split(".")[-1])
+    if not names:
+        names = {"q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj", "gate_proj"}
+    return sorted(list(names))
+
+
+def _parse_target_modules(arg: Union[str, Iterable[str]], model):
+    if isinstance(arg, (list, tuple, set)):
+        return list(arg), None
+    s = str(arg).strip()
+    firstN = None
+    if "firstN:" in s:
+        s, n = s.split("firstN:", 1)
+        try:
+            firstN = int(n)
+        except Exception:
+            firstN = None
+    if s == "attn":
+        mods = ["q_proj", "k_proj", "v_proj", "o_proj"]
+    elif s == "attn_mlp":
+        mods = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj", "gate_proj"]
+    elif s == "auto":
+        mods = _infer_default_targets(model)
+    else:
+        mods = [m.strip() for m in s.split(",") if m.strip()]
+    return mods, firstN
+
+
+def apply_lora(
+    model,
+    r: int = 8,
+    alpha: int = 16,
+    dropout: float = 0.05,
+    target_modules: Union[str, Iterable[str]] = "attn_mlp_firstN:16",
+    bias: str = "none",
+    task_type: str = "CAUSAL_LM",
+):
+    peft = _ensure_peft()
+    from peft import LoraConfig, get_peft_model, TaskType
+
+    tm, firstN = _parse_target_modules(target_modules, model)
+    kwargs = dict(
+        r=r,
+        lora_alpha=alpha,
+        lora_dropout=dropout,
+        target_modules=tm,
+        bias=bias,
+        task_type=getattr(TaskType, task_type),
+    )
+    try:
+        kwargs["layers_to_transform"] = list(range(firstN)) if firstN else None
+    except Exception:
+        pass
+    cfg = LoraConfig(**{k: v for k, v in kwargs.items() if v is not None})
+    lora_model = get_peft_model(model, cfg)
+    try:
+        lora_model.print_trainable_parameters()
+    except Exception:
+        pass
+    return lora_model
+
+
+def maybe_merge_lora(model):
+    try:
+        from peft import PeftModel
+
+        if isinstance(model, PeftModel) and getattr(model, "peft_config", None):
+            adapter_types = {cfg.peft_type for cfg in model.peft_config.values()}
+            if adapter_types == {"LORA"} or "LORA" in adapter_types:
+                model = model.merge_and_unload()
+        return model
+    except Exception:
+        return model
+
+
+def apply_prefix_tuning(
+    model,
+    num_virtual_tokens: int = 16,
+    projection: bool = True,
+    encoder_hidden_size: Optional[int] = None,
+    task_type: str = "CAUSAL_LM",
+):
+    peft = _ensure_peft()
+    from peft import PrefixTuningConfig, get_peft_model, TaskType
+
+    cfg = PrefixTuningConfig(
+        task_type=getattr(TaskType, task_type),
+        num_virtual_tokens=int(num_virtual_tokens),
+        prefix_projection=bool(projection),
+        encoder_hidden_size=encoder_hidden_size,
+    )
+    pt_model = get_peft_model(model, cfg)
+    try:
+        pt_model.print_trainable_parameters()
+    except Exception:
+        pass
+    return pt_model
+
+
+def apply_prompt_tuning(
+    model,
+    num_virtual_tokens: int = 16,
+    tokenizer=None,
+    task_type: str = "CAUSAL_LM",
+):
+    peft = _ensure_peft()
+    from peft import PromptTuningConfig, get_peft_model, TaskType
+
+    cfg = PromptTuningConfig(
+        task_type=getattr(TaskType, task_type),
+        num_virtual_tokens=int(num_virtual_tokens),
+        tokenizer_name_or_path=getattr(tokenizer, "name_or_path", None),
+    )
+    pm = get_peft_model(model, cfg)
+    try:
+        pm.print_trainable_parameters()
+    except Exception:
+        pass
+    return pm
