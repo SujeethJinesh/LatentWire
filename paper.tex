@@ -839,38 +839,3 @@ Model Scale & GPU Memory & Training Time & Cost \\
 Despite higher training costs, 7B+ models are necessary for viable deployment. The 1B experiments, while computationally cheap, produce unusable outputs even after all fixes are applied.
 
 \end{document}
-
-% ===================== Updated Architecture (STQueryEncoder) =====================
-\section{Update: Token-level encoder with learned query pooling (STQueryEncoder)}
-\label{sec:stq-update}
-
-\paragraph{Motivation.}
-Our initial \emph{SimpleEncoder} pooled the source into a single sentence vector and spread it across $M$ latent slots.
-This is fast but discards token-level positional cues that are often needed for extractive QA.
-We swap in a tiny, \emph{frozen} HF encoder (default: MiniLM-L6-v2) to compute token-level features and then apply a bank of
-learned queries with cross-attention to construct $Z \in \mathbb{R}^{M \times d_z}$.
-Inside Llama/Qwen, RoPE assigns positions to the latent prefix as usual, so the LLMs still see an ordered prefix of length $M$.
-
-\paragraph{Definition.}
-Let $H \in \mathbb{R}^{T \times h}$ be the hidden states from the frozen token encoder (MiniLM). We learn queries
-$Q \in \mathbb{R}^{M \times d_z}$ and linear projections $K = H W_K$, $V = H W_V$ with $W_K, W_V \in \mathbb{R}^{h \times d_z}$.
-We compute
-\begin{equation}
-Z = \mathrm{MHA}(Q, K, V) + \mathrm{FFN}(\cdot) \quad \in \mathbb{R}^{M \times d_z},
-\end{equation}
-optionally adding fixed sinusoidal codes per slot.
-Adapters map each $z_i$ to model-specific embedding spaces: $P_\ell = A_\ell(Z)$, $\ell \in \{\text{Llama}, \text{Qwen}\}$.
-
-\paragraph{Training objective.}
-Given gold answer tokens $y$, we feed $[\;P_\ell\;;\;E_\ell(y_{<t})\;]$ as \texttt{inputs\_embeds} and optimize the cross-entropy over answer positions
-(masking out the prefix), with auxiliary first-token and first-$K$ terms to stabilize early decoding. LLM weights remain frozen.
-
-\paragraph{Why this helps.}
-Token-level cross-attention pooling (cf.\ Set Transformer / Perceiver-style querying) preserves local order and salient spans,
-so the compressed $Z$ carries extraction cues that a single sentence vector cannot.
-Adapters (LayerNorm + MLP + $\tanh$) align $Z$ statistics to the target embedding distributions, improving frozen acceptance.
-
-\paragraph{Experiment (hero run).}
-We target $M{=}32$ ($\approx 4\times$ compression on SQuAD prompts) with $d_z{=}256$, MiniLM-L6-v2 encoder (frozen),
-and Llama-3.1-8B / Qwen2.5-7B (frozen, 4-bit NF4 for memory). We report Text vs Latent vs Token-budget ($K{=}32$) EM/F1,
-NLL/token, and wall-clock prefill. Joint rescoring uses the sum of log-probs across the two models.
