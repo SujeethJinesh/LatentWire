@@ -191,6 +191,28 @@ merge_adapter(qwen_base,  os.path.join(backup, "qwen"),  os.path.join(ckpt, "mer
 print(f"✓ Refreshed merged weights in {ckpt}/merged_*")
 PY
 
+# Restore LoRA adapter directories for Stage C (PEFT expects lora_* paths)
+echo -e "\n=== Stage B -> restore LoRA adapters ===\n" | tee -a "$LOG"
+RUN_TAG="$RUN_TAG" CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
+import os
+import shutil
+
+run_tag = os.environ["RUN_TAG"]
+ckpt = os.path.join("runs", run_tag, "ckpt")
+backup = os.path.join("runs", run_tag, "stageA_lora")
+
+for name in ("llama", "qwen"):
+    src = os.path.join(backup, name)
+    dst = os.path.join(ckpt, f"lora_{name}")
+    if os.path.isdir(src):
+        if os.path.isdir(dst):
+            shutil.rmtree(dst)
+        shutil.copytree(src, dst)
+        print(f"Restored {dst}")
+    else:
+        print(f"[WARN] Missing stageA backup {src}; adapter restore skipped")
+PY
+
 # Stage C: Eval (text vs latent, sequential_eval, proper chat templates)
 echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
