@@ -31,7 +31,7 @@ D_Z="${D_Z:-256}"
 
 # Tuning Params
 BATCH_SIZE_A="${BATCH_SIZE_A:-8}"
-BATCH_SIZE_B="${BATCH_SIZE_B:-4}"
+BATCH_SIZE_B="${BATCH_SIZE_B:-2}"
 
 # Chat templating (non‑negotiable)
 export LW_APPLY_CHAT_TEMPLATE=1
@@ -148,7 +148,7 @@ PY
 echo -e "\n=== Stage B: Deep Prefix ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
-  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
+  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 --grad_ckpt \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "${CKPT_DIR}/merged_llama" \
