@@ -264,8 +264,6 @@ class ModelTrainContext:
     bos_flag: Optional[bool]
     answer_lengths: torch.Tensor
     anchor_text: str
-    scaffold_texts: List[str]
-    append_anchor_to_scaffold: bool
 
 
 def _primary_device(wrapper: LMWrapper) -> torch.device:
@@ -886,17 +884,6 @@ def main():
         },
     }
 
-    if args.use_chat_template:
-        llama_scaffold_texts = [_render_chat_prompt(llama.tokenizer, text, SYSTEM_PROMPT) for text in texts]
-        qwen_scaffold_texts = [_render_chat_prompt(qwen.tokenizer, text, SYSTEM_PROMPT) for text in texts]
-        append_anchor_llama = False
-        append_anchor_qwen = False
-    else:
-        llama_scaffold_texts = list(texts)
-        qwen_scaffold_texts = list(texts)
-        append_anchor_llama = bool(anchor_text_llama)
-        append_anchor_qwen = bool(anchor_text_qwen)
-
     model_contexts: List[ModelTrainContext] = [
         ModelTrainContext(
             name="llama",
@@ -908,8 +895,6 @@ def main():
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids),
             answer_lengths=llama_answer_lengths_all,
             anchor_text=anchor_text_llama,
-            scaffold_texts=llama_scaffold_texts,
-            append_anchor_to_scaffold=append_anchor_llama,
         ),
         ModelTrainContext(
             name="qwen",
@@ -921,8 +906,6 @@ def main():
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids),
             answer_lengths=qwen_answer_lengths_all,
             anchor_text=anchor_text_qwen,
-            scaffold_texts=qwen_scaffold_texts,
-            append_anchor_to_scaffold=append_anchor_qwen,
         ),
     ]
 
@@ -1027,17 +1010,42 @@ def main():
             current_first_weight = _first_token_weight_for_step(global_step)
             enable_first_token_loss = current_first_weight > 0.0
 
-            idx_list = idx.tolist()
             scaffolds = {}
             for ctx in model_contexts:
-                base_texts = [ctx.scaffold_texts[i] for i in idx_list]
-                anchor_suffix = ctx.anchor_text if ctx.append_anchor_to_scaffold else ""
-                scaffolds[ctx.name] = _build_scaffold_ids(
-                    ctx.wrapper.tokenizer,
-                    base_texts,
-                    anchor_suffix,
-                    device,
-                )
+                if args.use_chat_template:
+                    pad_token = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
+                    if pad_token is None:
+                        pad_token = int(getattr(ctx.wrapper.tokenizer, "eos_token_id", 0))
+                    ids_list = []
+                    for text in batch_texts:
+                        messages = [
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": text},
+                        ]
+                        chat_ids = ctx.wrapper.tokenizer.apply_chat_template(
+                            messages,
+                            tokenize=True,
+                            add_generation_prompt=True,
+                        )
+                        if isinstance(chat_ids, dict):
+                            chat_ids = chat_ids.get("input_ids", [])
+                            if isinstance(chat_ids, list) and chat_ids and isinstance(chat_ids[0], list):
+                                chat_ids = chat_ids[0]
+                        ids_list.append(torch.tensor(chat_ids, dtype=torch.long, device=device))
+                    scaffolds[ctx.name] = torch.nn.utils.rnn.pad_sequence(
+                        ids_list, batch_first=True, padding_value=int(pad_token)
+                    )
+                else:
+                    anchor_suffix = ctx.anchor_text or ""
+                    texts_with_anchor = [f"{text}{anchor_suffix}" for text in batch_texts]
+                    tok = ctx.wrapper.tokenizer(
+                        texts_with_anchor,
+                        return_tensors="pt",
+                        padding=True,
+                        truncation=False,
+                        add_special_tokens=False,
+                    )
+                    scaffolds[ctx.name] = tok["input_ids"].to(device)
 
             encoded_latents = encode_fn(batch_texts)
             shared_latents = encoded_latents["shared"]

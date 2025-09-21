@@ -238,8 +238,7 @@ def calibrate_to_embed_rms(prefix: torch.Tensor, wrapper, mode: str = "embed_rms
         return prefix
     current = prefix.float().pow(2).mean(dim=[1, 2], keepdim=True).sqrt().clamp_min(1e-6)
     scale = prefix.new_tensor(target_rms).view(1, 1, 1) / current
-    scaled = prefix * scale
-    return torch.tanh(scaled)
+    return prefix * scale
 
 
 def bos_policy(mode: str, anchor_ids: Optional[Union[Sequence[int], torch.Tensor]]) -> Optional[bool]:
@@ -274,7 +273,7 @@ def first_non_bos(tokenizer, token_ids: torch.Tensor) -> torch.Tensor:
 def build_scaffold_ids(tokenizer, texts: Sequence[str], anchor_text: str, device: Union[torch.device, str]) -> torch.Tensor:
     anchor = anchor_text + " " if anchor_text and not anchor_text.endswith(" ") else anchor_text
     payloads = [f"{text}{anchor}" for text in texts]
-    enc = tokenizer(payloads, return_tensors="pt", padding=True, truncation=False, add_special_tokens=True)
+    enc = tokenizer(payloads, return_tensors="pt", padding=True, truncation=False, add_special_tokens=False)
     return enc["input_ids"].to(device)
 
 
