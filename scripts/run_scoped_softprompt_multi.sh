@@ -11,8 +11,8 @@ set -euo pipefail
 : "${RUN_TAG:=scoped_softprompt_$(date +%Y%m%d_%H%M%S)}"
 RUN_DIR="runs/${RUN_TAG}"
 CKPT_DIR="${RUN_DIR}/ckpt"
-CKPT_DIR_STAGEB="${RUN_DIR}/ckpt_stageB"
-mkdir -p "$RUN_DIR" "$CKPT_DIR"
+: "${CKPT_DIR_STAGEB:=${CKPT_DIR}/stageB}"
+mkdir -p "$RUN_DIR" "$CKPT_DIR" "$CKPT_DIR_STAGEB"
 LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
 
 # Models
@@ -33,6 +33,7 @@ D_Z="${D_Z:-256}"
 # Tuning Params
 BATCH_SIZE_A="${BATCH_SIZE_A:-8}"
 BATCH_SIZE_B="${BATCH_SIZE_B:-2}"
+EPOCHS_B="${EPOCHS_B:-1}"
 
 # Chat templating (non‑negotiable)
 export LW_APPLY_CHAT_TEMPLATE=1
@@ -147,19 +148,17 @@ PY
 
 # Stage B: Deep Prefix (Prefix‑Tuning) with merged bases
 echo -e "\n=== Stage B: Deep Prefix ===\n" | tee -a "$LOG"
-mkdir -p "$CKPT_DIR_STAGEB"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
-  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
+  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 --grad_ckpt \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
-  --llama_id "${CKPT_DIR}/merged_llama" \
-  --qwen_id "${CKPT_DIR}/merged_qwen" \
+  --llama_id "${RUN_DIR}/ckpt/merged_llama" \
+  --qwen_id "${RUN_DIR}/ckpt/merged_qwen" \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
   --save_dir "$CKPT_DIR_STAGEB" --resume_from "$CKPT_DIR_STAGEB" --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
-  --first_token_ce_weight 3.0 \
-  --first_token_ce_schedule cosine --first_token_ce_peak 8.0 --first_token_ce_warmup_frac 0.4 \
+  --first_token_ce_weight 4.0 \
   --k_ce_weight 0.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.001 \
