@@ -87,6 +87,7 @@ def clean_pred(s: str) -> str:
     if not lines:
         return ""
     s = lines[0]
+    s = re.sub(r"^(<\|assistant\|>|</s>|<\|im_start\|>assistant|Assistant:)+\s*", "", s, flags=re.IGNORECASE)
     return s.strip(" \t\r\n.:;,'\"-–—")
 
 # ---------------------------------------------------------------------------

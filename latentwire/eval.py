@@ -455,7 +455,14 @@ def _latent_debug_stats(name: str, Z: torch.Tensor, prefix: torch.Tensor, adapte
 # ---------------------------
 
 @torch.no_grad()
-def evaluate_model_chunked_text(wrapper: LMWrapper, prompts: list, max_new_tokens: int, chunk_size: int, tag: str = ""):
+def evaluate_model_chunked_text(
+    wrapper: LMWrapper,
+    prompts: list,
+    max_new_tokens: int,
+    chunk_size: int,
+    tag: str = "",
+    lengths: Optional[torch.Tensor] = None,
+):
     if chunk_size is None or chunk_size <= 0:
         chunk_size = len(prompts) if len(prompts) > 0 else 1
 
@@ -463,7 +470,12 @@ def evaluate_model_chunked_text(wrapper: LMWrapper, prompts: list, max_new_token
     t0 = time.time()
     for i in range(0, len(prompts), chunk_size):
         batch = prompts[i:i + chunk_size]
-        out_ids = wrapper.generate_from_text(batch, max_new_tokens=max_new_tokens, temperature=0.0)
+        cap = max_new_tokens
+        if lengths is not None and lengths.numel() > 0:
+            chunk_len = lengths[i:i + chunk_size]
+            if chunk_len.numel() > 0:
+                cap = max(1, min(max_new_tokens, int(chunk_len.max().item())))
+        out_ids = wrapper.generate_from_text(batch, max_new_tokens=cap, temperature=0.0)
         preds.extend(wrapper.decode_batch_then_clean(out_ids))
     if torch.cuda.is_available():
         torch.cuda.synchronize()
@@ -483,6 +495,7 @@ def evaluate_model_chunked_latent(
     first_token_top_p: float = 1.0,
     first_token_temperature: float = 0.0,
     append_bos_after_prefix: Optional[bool] = None,
+    lengths: Optional[torch.Tensor] = None,
 ):
     N = prefix_embeds.size(0)
     if chunk_size is None or chunk_size <= 0:
@@ -492,9 +505,14 @@ def evaluate_model_chunked_latent(
     t0 = time.time()
     for i in range(0, N, chunk_size):
         pb = prefix_embeds[i:i + chunk_size]
+        cap = max_new_tokens
+        if lengths is not None and lengths.numel() > 0:
+            chunk_len = lengths[i:i + chunk_size]
+            if chunk_len.numel() > 0:
+                cap = max(1, min(max_new_tokens, int(chunk_len.max().item())))
         out_ids = wrapper.generate_from_prefix(
             pb,
-            max_new_tokens=max_new_tokens,
+            max_new_tokens=cap,
             temperature=0.0,
             top_p=1.0,
             anchor_token_text=anchor_token_text,
@@ -522,8 +540,16 @@ def _run_text_path(
     golds: List[str],
     args,
     name: str,
+    answer_lengths: Optional[torch.Tensor],
 ):
-    preds, t_text = evaluate_model_chunked_text(wrapper, chat_prompts, args.max_new_tokens, args.chunk_size, name)
+    preds, t_text = evaluate_model_chunked_text(
+        wrapper,
+        chat_prompts,
+        args.max_new_tokens,
+        args.chunk_size,
+        name,
+        lengths=answer_lengths,
+    )
     em_score, f1_score = batch_metrics(preds, golds)
     nll = avg_nll_text(wrapper, chat_prompts, golds, wrapper.tokenizer, wrapper.model.device)
     prompt_tok = wrapper.tokenizer(
@@ -549,6 +575,7 @@ def _run_latent_path(
     chat_prompts: List[str],
     golds: List[str],
     latent_len: int,
+    answer_lengths: Optional[torch.Tensor],
 ):
     acc = first_token_topk_acc(
         wrapper,
@@ -572,6 +599,7 @@ def _run_latent_path(
         first_token_top_p=args.first_token_top_p,
         first_token_temperature=args.first_token_temperature,
         append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
+        lengths=answer_lengths,
     )
 
     if args.debug and args.debug_print_first > 0:
@@ -584,7 +612,12 @@ def _run_latent_path(
         wrapper.tokenizer, prompts_raw, chat_prompts, k_budget, args.token_budget_mode
     )
     trunc_preds, t_trunc = evaluate_model_chunked_text(
-        wrapper, trunc_prompts, args.max_new_tokens, args.chunk_size, name
+        wrapper,
+        trunc_prompts,
+        args.max_new_tokens,
+        args.chunk_size,
+        name,
+        lengths=answer_lengths,
     )
 
     latent_em, latent_f1 = batch_metrics(latent_preds, golds)
@@ -755,7 +788,15 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     text_results = {}
     text_wall = 0.0
     for name, ctx in model_contexts.items():
-        res = _run_text_path(ctx["wrapper"], ctx["chat"], prompts_raw, golds, args, name)
+        res = _run_text_path(
+            ctx["wrapper"],
+            ctx["chat"],
+            prompts_raw,
+            golds,
+            args,
+            name,
+            answer_lengths[name],
+        )
         text_results[name] = res
         text_wall += res["time"]
 
@@ -814,6 +855,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
             ctx["chat"],
             golds,
             latent_len,
+            answer_lengths[name],
         )
         latent_results[name] = res
         latent_wall += res["latent"]["time"]
