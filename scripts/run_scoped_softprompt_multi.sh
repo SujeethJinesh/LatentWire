@@ -142,6 +142,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --save_dir "$CKPT_DIR" --resume_from "$CKPT_DIR" --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
   --first_token_ce_weight 2.0 \
+  --k_ce_weight 0.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.001 \
   --max_answer_tokens 24 \
