@@ -617,6 +617,17 @@ class LMWrapper(nn.Module):
 
     def enable_gradient_checkpointing(self):
         try:
+            try:
+                # Flash/SDPA kernels are incompatible with non-reentrant checkpointing; disable globally.
+                import torch.backends.cuda
+                if hasattr(torch.backends.cuda, "enable_flash_sdp"):
+                    torch.backends.cuda.enable_flash_sdp(False)
+                if hasattr(torch.backends.cuda, "enable_math_sdp"):
+                    torch.backends.cuda.enable_math_sdp(True)
+                if hasattr(torch.backends.cuda, "enable_mem_efficient_sdp"):
+                    torch.backends.cuda.enable_mem_efficient_sdp(False)
+            except Exception:
+                pass
             if hasattr(self.model, "gradient_checkpointing_enable"):
                 if hasattr(self.model.config, "use_cache"):
                     self.model.config.use_cache = False
