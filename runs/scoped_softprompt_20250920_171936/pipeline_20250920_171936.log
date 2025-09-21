@@ -1,7 +1,7 @@
 
 === Preflight: CUDA / SLURM / bitsandbytes ===
 
-Sat Sep 20 16:59:41 2025       
+Sat Sep 20 17:19:43 2025       
 +-----------------------------------------------------------------------------------------+
 | NVIDIA-SMI 570.133.20             Driver Version: 570.133.20     CUDA Version: 12.8     |
 |-----------------------------------------+------------------------+----------------------+
@@ -10,19 +10,19 @@ Sat Sep 20 16:59:41 2025
 |                                         |                        |               MIG M. |
 |=========================================+========================+======================|
 |   0  NVIDIA H100 80GB HBM3          Off |   00000000:52:00.0 Off |                    0 |
-| N/A   49C    P0             70W /  700W |       4MiB /  81559MiB |      0%      Default |
+| N/A   47C    P0             69W /  700W |       4MiB /  81559MiB |      0%      Default |
 |                                         |                        |             Disabled |
 +-----------------------------------------+------------------------+----------------------+
 |   1  NVIDIA H100 80GB HBM3          Off |   00000000:61:00.0 Off |                    0 |
-| N/A   47C    P0             72W /  700W |       4MiB /  81559MiB |      0%      Default |
+| N/A   45C    P0             71W /  700W |       4MiB /  81559MiB |      0%      Default |
 |                                         |                        |             Disabled |
 +-----------------------------------------+------------------------+----------------------+
 |   2  NVIDIA H100 80GB HBM3          Off |   00000000:D1:00.0 Off |                    0 |
-| N/A   48C    P0             71W /  700W |       4MiB /  81559MiB |      0%      Default |
+| N/A   46C    P0             70W /  700W |       4MiB /  81559MiB |      0%      Default |
 |                                         |                        |             Disabled |
 +-----------------------------------------+------------------------+----------------------+
 |   3  NVIDIA H100 80GB HBM3          Off |   00000000:DF:00.0 Off |                    0 |
-| N/A   49C    P0             81W /  700W |       4MiB /  81559MiB |      0%      Default |
+| N/A   47C    P0             81W /  700W |       4MiB /  81559MiB |      0%      Default |
 |                                         |                        |             Disabled |
 +-----------------------------------------+------------------------+----------------------+
                                                                                          
@@ -43,11 +43,11 @@ bitsandbytes: 0.47.0
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2660.94it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.93s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.80s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.52s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.04s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.28s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3042.66it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.05s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.96s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.60s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.34s/it]
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 547.15it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.02it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.05it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.23s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.00s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.03s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3404.47it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.13s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.10s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.21s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.02s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.07s/it]
 [Qwen/Qwen2.5-7B-Instruct] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
 trainable params: 20,971,520 || all params: 8,051,232,768 || trainable%: 0.2605
 trainable params: 20,185,088 || all params: 7,635,801,600 || trainable%: 0.2643
@@ -64,14 +64,14 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py:295: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
   with torch.enable_grad(), device_autocast_ctx, torch.cpu.amp.autocast(**ctx.cpu_autocast_kwargs):  # type: ignore[attr-defined]
-  step  10/10 | grad_norm=416.63 | sec/step~11.93 | keep=1.00 | K=4 | llama: tf=9.8159 first=10.0505 kCE=10.7296 KD=6.6945 man=0.0001 | scale_pen(llama)=8.7794e-09 | qwen: tf=11.2731 first=15.5825 kCE=9.9996 KD=6.5523 man=0.0002 | scale_pen(qwen)=9.6957e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.9999 rms_cal~0.0136 embed_rms~0.01364]
+  step  10/10 | grad_norm=746.88 | sec/step~11.97 | keep=1.00 | K=4 | llama: tf=9.8198 first=10.0441 kCE=10.7320 KD=6.6917 man=0.0001 | scale_pen(llama)=8.4694e-09 | qwen: tf=11.3235 first=15.5663 kCE=9.9647 KD=6.5157 man=0.0002 | scale_pen(qwen)=1.0123e-08 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.9999 rms_cal~0.0136 embed_rms~0.01364]
 [checkpoint] Freed 1.5KB before save.
 [checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
 [checkpoint] Freed 0.0B after save (non-canonical).
-✅ Saved latest checkpoint to runs/scoped_softprompt_20250920_165934/ckpt
+✅ Saved latest checkpoint to runs/scoped_softprompt_20250920_171936/ckpt
 📝 Saved LoRA adapters for Llama
 📝 Saved LoRA adapters for Qwen
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.9999256014823914, 'rms_mean_cal': 0.01057245982810855, 'embed_rms': 0.01057521253824234, 'count': 10}, 'qwen': {'rms_mean_raw': 0.9999231278896332, 'rms_mean_cal': 0.013638490345329046, 'embed_rms': 0.013643525540828705, 'count': 10}}
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.9999256014823914, 'rms_mean_cal': 0.010570767614990473, 'embed_rms': 0.01057521253824234, 'count': 10}, 'qwen': {'rms_mean_raw': 0.9999231278896332, 'rms_mean_cal': 0.01364148510619998, 'embed_rms': 0.013643525540828705, 'count': 10}}
 
 === Stage A -> merge LoRA ===
 
@@ -82,12 +82,12 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6842.26it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.44s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.58s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.30s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.12it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.09s/it]
-[runs/scoped_softprompt_20250920_165934/ckpt/merged_llama] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 5637.51it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.51s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.29s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.33s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.20s/it]
-[runs/scoped_softprompt_20250920_165934/ckpt/merged_qwen] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6250.83it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.91s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:02,  1.48s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.55s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.25s/it]
+[runs/scoped_softprompt_20250920_171936/ckpt/merged_llama] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7197.43it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.22s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.22s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.20s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.17s/it]
+[runs/scoped_softprompt_20250920_171936/ckpt/merged_qwen] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/peft/mapping_func.py:73: UserWarning: You are trying to modify a model with PEFT for a second time. If you want to reload the model with a different config, make sure to call `.unload()` before.
   warnings.warn(
 trainable params: 272,732,160 || all params: 8,323,964,928 || trainable%: 3.2765
@@ -97,19 +97,46 @@ Llama hidden size: 4096, Qwen hidden size: 3584
 [DeviceMap] Qwen : {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
 [WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
 [WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
-⏪ Resuming from: runs/scoped_softprompt_20250920_165934/ckpt/state.pt
+⏪ Resuming from: runs/scoped_softprompt_20250920_171936/ckpt/state.pt
    -> loaded encoder/adapters FROM state.pt
+   -> restored RNG state
+   -> start_epoch=1, global_step=10
+Epoch 2/1
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py:92: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py:295: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with torch.enable_grad(), device_autocast_ctx, torch.cpu.amp.autocast(**ctx.cpu_autocast_kwargs):  # type: ignore[attr-defined]
 Traceback (most recent call last):
   File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1309, in <module>
     main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 784, in main
-    epoch_loaded, global_loaded = load_checkpoint(
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 188, in load_checkpoint
-    optimizer.load_state_dict(opt_state)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/_compile.py", line 31, in inner
-    return disable_fn(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/_dynamo/eval_frame.py", line 600, in _fn
-    return fn(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/optimizer.py", line 854, in load_state_dict
-    raise ValueError(
-ValueError: loaded state dict contains a parameter group that doesn't match the size of optimizer's group
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1061, in main
+    loss_backward.backward()
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/_tensor.py", line 521, in backward
+    torch.autograd.backward(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/__init__.py", line 289, in backward
+    _engine_run_backward(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/graph.py", line 768, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/function.py", line 306, in apply
+    return user_fn(self, *args)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py", line 296, in backward
+    outputs = ctx.run_function(*detached_inputs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
+    output = module._old_forward(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 729, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
+    output = module._old_forward(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 655, in forward
+    attn_output = torch.nn.functional.scaled_dot_product_attention(
+RuntimeError: The expanded size of the tensor (168) must match the existing size (100) at non-singleton dimension 3.  Target sizes: [32, 32, 68, 168].  Tensor sizes: [32, 1, 68, 100]
