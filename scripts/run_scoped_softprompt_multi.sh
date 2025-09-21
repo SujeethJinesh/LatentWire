@@ -133,12 +133,12 @@ PY
 echo -e "\n=== Stage B: Deep Prefix ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
-  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
+  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 --grad_ckpt \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "${CKPT_DIR}/merged_llama" \
   --qwen_id "${CKPT_DIR}/merged_qwen" \
-  --use_prefix --prefix_tokens 32 --prefix_projection --peft_prefix_all_layers yes \
+  --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
   --save_dir "$CKPT_DIR" --resume_from "$CKPT_DIR" --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
   --first_token_ce_weight 2.0 \
