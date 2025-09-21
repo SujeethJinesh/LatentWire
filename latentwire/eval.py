@@ -213,7 +213,14 @@ def format_with_chat_template(tokenizer, user_text: str, system_text: Optional[s
         kwargs.update(add_generation_prompt=False, continue_final_message=True)
     else:
         kwargs.update(add_generation_prompt=True)
-    return tokenizer.apply_chat_template(messages, **kwargs)
+    try:
+        return tokenizer.apply_chat_template(messages, **kwargs)
+    except ValueError:
+        # Some templates (e.g., recent Qwen) require the final assistant message to be present.
+        # Fall back to inserting an empty assistant turn and continuing that message.
+        messages.append({"role": "assistant", "content": assistant_prefill or ""})
+        safe_kwargs = {"tokenize": False, "add_generation_prompt": False, "continue_final_message": True}
+        return tokenizer.apply_chat_template(messages, **safe_kwargs)
 
 def _best_mode_from_scores(candidates: List[str], scores: Dict[str, float], cfg: dict) -> str:
     finite = {k: v for k, v in scores.items() if _is_finite(v)}
