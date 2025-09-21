@@ -620,7 +620,10 @@ class LMWrapper(nn.Module):
             if hasattr(self.model, "gradient_checkpointing_enable"):
                 if hasattr(self.model.config, "use_cache"):
                     self.model.config.use_cache = False
-                self.model.gradient_checkpointing_enable()
+                try:
+                    self.model.gradient_checkpointing_enable(use_reentrant=False)
+                except TypeError:
+                    self.model.gradient_checkpointing_enable()
                 return True
         except Exception:
             pass
