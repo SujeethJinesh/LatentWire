@@ -193,7 +193,10 @@ def load_checkpoint(
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
         if opt_state is not None:
-            optimizer.load_state_dict(opt_state)
+            try:
+                optimizer.load_state_dict(opt_state)
+            except ValueError as exc:
+                print(f"[WARN] Optimizer state incompatible; continuing with fresh optimizer ({exc})")
             # Important: keep optimizer state tensors on the same device as *their* params.
             # Do NOT mass-move to a single device, because adapters live on different GPUs.
             _align_optimizer_state_to_param_devices(optimizer)

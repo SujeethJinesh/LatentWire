@@ -93,6 +93,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
   --batch_size "$BATCH_SIZE_A" --grad_accum_steps 16 --grad_ckpt \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
+  --encoder_use_chat_template \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
   --use_lora --lora_r 8 --lora_alpha 16 --lora_dropout 0.05 \
@@ -152,6 +153,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
   --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
+  --encoder_use_chat_template \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "${RUN_DIR}/ckpt/merged_llama" \
   --qwen_id "${RUN_DIR}/ckpt/merged_qwen" \
@@ -222,7 +224,7 @@ echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --ckpt "$CKPT_DIR_STAGEB" --samples "$SAMPLES" --dataset "$DATASET" \
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
-  --sequential_eval --max_new_tokens "$MAX_NEW_TOKENS" \
+  --sequential_eval --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
   --latent_anchor_mode chat --append_bos_after_prefix yes \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
