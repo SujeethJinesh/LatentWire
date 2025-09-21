@@ -112,6 +112,7 @@ from peft import PeftModel
 
 run_tag = os.environ["RUN_TAG"]
 ckpt = os.path.join("runs", run_tag, "ckpt")
+backup = os.path.join("runs", run_tag, "stageA_lora")
 llama_id = os.environ.get("LLAMA_ID")
 qwen_id = os.environ.get("QWEN_ID")
 
@@ -127,6 +128,19 @@ def merge_adapter(base_id: str, adapter_dir: str, out_dir: str) -> None:
 
 merge_adapter(llama_id, os.path.join(ckpt, "lora_llama"), os.path.join(ckpt, "merged_llama"))
 merge_adapter(qwen_id, os.path.join(ckpt, "lora_qwen"), os.path.join(ckpt, "merged_qwen"))
+# Stage A LoRA backups (survive Stage B pruning)
+import shutil
+os.makedirs(backup, exist_ok=True)
+for name in ("llama", "qwen"):
+    src = os.path.join(ckpt, f"lora_{name}")
+    if os.path.isdir(src):
+        dst = os.path.join(backup, name)
+        if os.path.isdir(dst):
+            shutil.rmtree(dst)
+        shutil.copytree(src, dst)
+        print(f"Backed up {src} -> {dst}")
+    else:
+        print(f"[WARN] Missing {src}; backup skipped")
 print(f"✓ Merged LoRA adapters into {ckpt}/merged_*")
 PY
 
@@ -158,6 +172,7 @@ from peft import PeftModel
 
 run_tag = os.environ["RUN_TAG"]
 ckpt = os.path.join("runs", run_tag, "ckpt")
+backup = os.path.join("runs", run_tag, "stageA_lora")
 llama_base = os.environ.get("LLAMA_ID")
 qwen_base  = os.environ.get("QWEN_ID")
 
@@ -171,8 +186,8 @@ def merge_adapter(base_id: str, adapter_dir: str, out_dir: str):
     tok = AutoTokenizer.from_pretrained(base_id, use_fast=True)
     tok.save_pretrained(out_dir)
 
-merge_adapter(llama_base, os.path.join(ckpt, "lora_llama"), os.path.join(ckpt, "merged_llama"))
-merge_adapter(qwen_base,  os.path.join(ckpt, "lora_qwen"),  os.path.join(ckpt, "merged_qwen"))
+merge_adapter(llama_base, os.path.join(backup, "llama"), os.path.join(ckpt, "merged_llama"))
+merge_adapter(qwen_base,  os.path.join(backup, "qwen"),  os.path.join(ckpt, "merged_qwen"))
 print(f"✓ Refreshed merged weights in {ckpt}/merged_*")
 PY
 
