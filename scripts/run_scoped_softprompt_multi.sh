@@ -11,6 +11,7 @@ set -euo pipefail
 : "${RUN_TAG:=scoped_softprompt_$(date +%Y%m%d_%H%M%S)}"
 RUN_DIR="runs/${RUN_TAG}"
 CKPT_DIR="${RUN_DIR}/ckpt"
+CKPT_DIR_STAGEB="${RUN_DIR}/ckpt_stageB"
 mkdir -p "$RUN_DIR" "$CKPT_DIR"
 LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
 
@@ -146,6 +147,7 @@ PY
 
 # Stage B: Deep Prefix (Prefix‑Tuning) with merged bases
 echo -e "\n=== Stage B: Deep Prefix ===\n" | tee -a "$LOG"
+mkdir -p "$CKPT_DIR_STAGEB"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
   --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
@@ -154,7 +156,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --llama_id "${CKPT_DIR}/merged_llama" \
   --qwen_id "${CKPT_DIR}/merged_qwen" \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
-  --save_dir "$CKPT_DIR" --resume_from "$CKPT_DIR" --no_load_optimizer --save_training_stats \
+  --save_dir "$CKPT_DIR_STAGEB" --resume_from "$CKPT_DIR_STAGEB" --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
   --first_token_ce_weight 3.0 \
   --first_token_ce_schedule cosine --first_token_ce_peak 8.0 --first_token_ce_warmup_frac 0.4 \
@@ -217,7 +219,7 @@ PY
 # Stage C: Eval (text vs latent, sequential_eval, proper chat templates)
 echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
-  --ckpt "$CKPT_DIR" --samples "$SAMPLES" --dataset "$DATASET" \
+  --ckpt "$CKPT_DIR_STAGEB" --samples "$SAMPLES" --dataset "$DATASET" \
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
   --sequential_eval --max_new_tokens "$MAX_NEW_TOKENS" \
   --latent_anchor_mode chat --append_bos_after_prefix yes \
