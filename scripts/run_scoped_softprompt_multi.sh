@@ -26,6 +26,7 @@ TRAIN_SAMPLES="${TRAIN_SAMPLES:-320}"
 SMOKE_SAMPLES="${SMOKE_SAMPLES:-200}"
 SAMPLES="${SAMPLES:-1000}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
+CHUNK_SIZE="${CHUNK_SIZE:-64}"
 
 # Latent
 LATENT_LEN="${LATENT_LEN:-64}"           # Relax compression for acceptance
@@ -227,6 +228,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --ckpt "$CKPT_DIR_STAGEB" --samples "$SAMPLES" --dataset "$DATASET" \
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
   --sequential_eval --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
+  --chunk_size "$CHUNK_SIZE" \
   --latent_anchor_mode chat --append_bos_after_prefix yes \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
