@@ -1,0 +1,43 @@
+
+=== Preflight: CUDA / SLURM / bitsandbytes ===
+
+Sun Sep 21 14:14:24 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.133.20             Driver Version: 570.133.20     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H100 80GB HBM3          Off |   00000000:1B:00.0 Off |                    0 |
+| N/A   37C    P0             66W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA H100 80GB HBM3          Off |   00000000:43:00.0 Off |                    0 |
+| N/A   39C    P0             69W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA H100 80GB HBM3          Off |   00000000:52:00.0 Off |                    0 |
+| N/A   47C    P0             70W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   3  NVIDIA H100 80GB HBM3          Off |   00000000:61:00.0 Off |                    0 |
+| N/A   43C    P0             68W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+torch: 2.4.0+cu121 cuda: 12.1 is_available: True count: 4
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+bitsandbytes: 0.47.0
+
+=== Stage A: LoRA (tiny) ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
