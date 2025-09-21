@@ -88,7 +88,7 @@ PY
 echo -e "\n=== Stage A: LoRA (tiny) ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
-  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 --grad_ckpt \
+  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
