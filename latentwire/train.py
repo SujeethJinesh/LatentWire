@@ -23,10 +23,11 @@ from latentwire.core_utils import (
     calibrate_to_embed_rms,
     bos_policy,
     first_non_bos,
-    build_scaffold_ids,
     anchor_token_ids,
     tensor_rms,
     tensor_rms_d,
+    assistant_header_anchor,
+    SYSTEM_PROMPT,
 )
 
 from latentwire.models import (
@@ -259,6 +260,9 @@ class ModelTrainContext:
     anchor_ids: List[int]
     bos_flag: Optional[bool]
     answer_lengths: torch.Tensor
+    anchor_text: str
+    scaffold_texts: List[str]
+    append_anchor_to_scaffold: bool
 
 
 def _primary_device(wrapper: LMWrapper) -> torch.device:
@@ -298,6 +302,21 @@ def _build_scaffold_ids(tokenizer, texts: List[str], anchor_text: str, device: s
     combo = [t + suffix for t in texts]
     enc = tokenizer(combo, return_tensors="pt", padding=True, truncation=False, add_special_tokens=True)
     return enc["input_ids"].to(device)
+
+
+def _render_chat_prompt(tokenizer, user_text: str, system_prompt: Optional[str]) -> str:
+    messages: List[Dict[str, str]] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": user_text})
+    try:
+        rendered = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        if rendered:
+            return rendered
+    except Exception:
+        pass
+    system_block = f"System: {system_prompt}\n" if system_prompt else ""
+    return f"{system_block}User: {user_text}\nAssistant:"
 
 
 def _answer_lengths(token_ids: torch.Tensor, tokenizer) -> torch.Tensor:
@@ -350,6 +369,10 @@ def main():
                     help="HF encoder id for --encoder_type=stq (frozen).")
     ap.add_argument("--max_enc_tokens", type=int, default=1024,
                     help="Max source tokens for the HF encoder when --encoder_type=stq.")
+    ap.add_argument("--freeze_encoder", action="store_true",
+                    help="Freeze encoder parameters (e.g., during Stage B prefix-tuning).")
+    ap.add_argument("--use_chat_template", action="store_true",
+                    help="Apply tokenizer.apply_chat_template when constructing teacher scaffolds and anchors.")
 
     # Training & stability
     ap.add_argument("--max_answer_tokens", type=int, default=32)
@@ -370,7 +393,7 @@ def main():
                     help="Peak first-token CE weight during warmup when using a schedule.")
     ap.add_argument("--first_token_ce_warmup_frac", type=float, default=0.4,
                     help="Fraction of total steps to hold the peak first-token CE weight before cosine decay.")
-    ap.add_argument("--train_append_bos_after_prefix", type=str, default="auto",
+    ap.add_argument("--train_append_bos_after_prefix", type=str, default="no",
                     choices=["auto","yes","no"],
                     help="Controls BOS appending when computing first-token CE (train).")
     ap.add_argument("--adapter_hidden_mult", type=int, default=2,
@@ -619,15 +642,27 @@ def main():
         "qwen": qwen.embedding_stats(),
     }
 
+    def _anchor_text_for(wrapper, fallback: str) -> str:
+        if args.use_chat_template:
+            txt = assistant_header_anchor(wrapper.tokenizer) or ""
+        else:
+            txt = fallback or ""
+            if txt and not txt.endswith(" "):
+                txt = txt + " "
+        return txt
+
+    anchor_text_llama = _anchor_text_for(llama, args.warm_anchor_text)
+    anchor_text_qwen = _anchor_text_for(qwen, args.warm_anchor_text)
+
     # === A0 sanity check ===
     try:
-        _assert_t0_alignment(llama.tokenizer, args.warm_anchor_text or "Answer: ")
-        _assert_t0_alignment(qwen.tokenizer,  args.warm_anchor_text or "Answer: ")
+        _assert_t0_alignment(llama.tokenizer, anchor_text_llama or "Answer: ")
+        _assert_t0_alignment(qwen.tokenizer,  anchor_text_qwen or "Answer: ")
     except Exception as exc:
         print(f"[WARN] A0 sanity check skipped/failed: {exc}")
 
-    anchor_llama_ids = anchor_token_ids(llama, args.warm_anchor_text)
-    anchor_qwen_ids = anchor_token_ids(qwen, args.warm_anchor_text)
+    anchor_llama_ids = anchor_token_ids(llama, anchor_text_llama)
+    anchor_qwen_ids = anchor_token_ids(qwen, anchor_text_qwen)
 
     if args.grad_ckpt:
         llama.enable_gradient_checkpointing()
@@ -674,6 +709,11 @@ def main():
             hf_encoder_id=(args.hf_encoder_id or "sentence-transformers/all-MiniLM-L6-v2"),
             max_tokens=args.max_enc_tokens,
         ).to(device)
+
+    if args.freeze_encoder:
+        for param in encoder.parameters():
+            param.requires_grad_(False)
+        print("[INFO] Encoder frozen (--freeze_encoder)")
 
         def _neutral_chat_wrap(s: str) -> str:
             system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
@@ -845,6 +885,17 @@ def main():
         },
     }
 
+    if args.use_chat_template:
+        llama_scaffold_texts = [_render_chat_prompt(llama.tokenizer, text, SYSTEM_PROMPT) for text in texts]
+        qwen_scaffold_texts = [_render_chat_prompt(qwen.tokenizer, text, SYSTEM_PROMPT) for text in texts]
+        append_anchor_llama = False
+        append_anchor_qwen = False
+    else:
+        llama_scaffold_texts = list(texts)
+        qwen_scaffold_texts = list(texts)
+        append_anchor_llama = bool(anchor_text_llama)
+        append_anchor_qwen = bool(anchor_text_qwen)
+
     model_contexts: List[ModelTrainContext] = [
         ModelTrainContext(
             name="llama",
@@ -855,6 +906,9 @@ def main():
             anchor_ids=anchor_llama_ids,
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids),
             answer_lengths=llama_answer_lengths_all,
+            anchor_text=anchor_text_llama,
+            scaffold_texts=llama_scaffold_texts,
+            append_anchor_to_scaffold=append_anchor_llama,
         ),
         ModelTrainContext(
             name="qwen",
@@ -865,6 +919,9 @@ def main():
             anchor_ids=anchor_qwen_ids,
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids),
             answer_lengths=qwen_answer_lengths_all,
+            anchor_text=anchor_text_qwen,
+            scaffold_texts=qwen_scaffold_texts,
+            append_anchor_to_scaffold=append_anchor_qwen,
         ),
     ]
 
@@ -969,12 +1026,17 @@ def main():
             current_first_weight = _first_token_weight_for_step(global_step)
             enable_first_token_loss = current_first_weight > 0.0
 
-            scaffolds = {
-                ctx.name: build_scaffold_ids(
-                    ctx.wrapper.tokenizer, batch_texts, args.warm_anchor_text or "", device
+            idx_list = idx.tolist()
+            scaffolds = {}
+            for ctx in model_contexts:
+                base_texts = [ctx.scaffold_texts[i] for i in idx_list]
+                anchor_suffix = ctx.anchor_text if ctx.append_anchor_to_scaffold else ""
+                scaffolds[ctx.name] = _build_scaffold_ids(
+                    ctx.wrapper.tokenizer,
+                    base_texts,
+                    anchor_suffix,
+                    device,
                 )
-                for ctx in model_contexts
-            }
 
             encoded_latents = encode_fn(batch_texts)
             shared_latents = encoded_latents["shared"]
@@ -1012,7 +1074,7 @@ def main():
                 if enable_first_token_loss:
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
-                        anchor_token_text=(args.warm_anchor_text or None),
+                        anchor_token_text=(ctx.anchor_text or None),
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                     first_targets = ctx.first_token_ids[idx].to(target_device)
@@ -1180,6 +1242,8 @@ def main():
                     "hf_encoder_id": (args.hf_encoder_id if hasattr(args, "hf_encoder_id") else ""),
                     "max_enc_tokens": (args.max_enc_tokens if hasattr(args, "max_enc_tokens") else 1024),
                     "encoder_backbone": (args.encoder_backbone or ""),
+                    "freeze_encoder": bool(args.freeze_encoder),
+                    "use_chat_template": bool(args.use_chat_template),
                     "warm_anchor_text": args.warm_anchor_text,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
                     "first_token_ce_weight": args.first_token_ce_weight,
@@ -1257,6 +1321,8 @@ def main():
         "hf_encoder_id": (args.hf_encoder_id if hasattr(args, "hf_encoder_id") else ""),
         "max_enc_tokens": (args.max_enc_tokens if hasattr(args, "max_enc_tokens") else 1024),
         "encoder_backbone": (args.encoder_backbone or ""),
+        "freeze_encoder": bool(args.freeze_encoder),
+        "use_chat_template": bool(args.use_chat_template),
         "warm_anchor_text": args.warm_anchor_text,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
         "first_token_ce_weight": args.first_token_ce_weight,
