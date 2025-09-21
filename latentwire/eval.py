@@ -223,9 +223,12 @@ def format_with_chat_template(tokenizer, user_text: str, system_text: Optional[s
         fallback_msgs = list(messages)
         fallback_msgs.append({"role": "assistant", "content": assistant_prefill or ""})
         fallback_kwargs = {"tokenize": False, "add_generation_prompt": False, "continue_final_message": True}
-        rendered = tokenizer.apply_chat_template(fallback_msgs, **fallback_kwargs)
-        if rendered:
-            return rendered
+        try:
+            rendered = tokenizer.apply_chat_template(fallback_msgs, **fallback_kwargs)
+            if rendered:
+                return rendered
+        except ValueError:
+            pass
         # Final fallback: synthesize a minimal chat prompt ourselves (system/user + assistant header)
         system_block = f"System: {system_text}\n" if system_text else ""
         assistant_hdr = "Assistant:" if assistant_prefill is None else "Assistant: " + assistant_prefill
