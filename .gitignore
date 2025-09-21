@@ -7,3 +7,4 @@
 .ns*
 code-server-*
 *.pt*
+*adapter_model.safetensors
