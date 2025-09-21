@@ -156,7 +156,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --llama_id "${RUN_DIR}/ckpt/merged_llama" \
   --qwen_id "${RUN_DIR}/ckpt/merged_qwen" \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
-  --save_dir "$CKPT_DIR_STAGEB" --resume_from "$CKPT_DIR_STAGEB" --no_load_optimizer --save_training_stats \
+  --save_dir "$CKPT_DIR_STAGEB" --auto_resume --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
   --first_token_ce_weight 4.0 \
   --k_ce_weight 0.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
