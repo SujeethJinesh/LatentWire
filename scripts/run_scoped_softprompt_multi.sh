@@ -149,6 +149,33 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --max_answer_tokens 24 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
+# Re-create merged directories for evaluation (checkpoint pruner removes them)
+echo -e "\n=== Stage B -> refresh merged weights ===\n" | tee -a "$LOG"
+RUN_TAG="$RUN_TAG" LLAMA_ID="$LLAMA_ID" QWEN_ID="$QWEN_ID" CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
+import os
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
+
+run_tag = os.environ["RUN_TAG"]
+ckpt = os.path.join("runs", run_tag, "ckpt")
+llama_base = os.environ.get("LLAMA_ID")
+qwen_base  = os.environ.get("QWEN_ID")
+
+def merge_adapter(base_id: str, adapter_dir: str, out_dir: str):
+    if not os.path.isdir(adapter_dir):
+        raise FileNotFoundError(f"Missing adapter directory: {adapter_dir}")
+    base = AutoModelForCausalLM.from_pretrained(base_id, device_map="cpu", torch_dtype="auto")
+    peft = PeftModel.from_pretrained(base, adapter_dir)
+    peft.merge_and_unload(safe_merge=True)
+    peft.save_pretrained(out_dir)
+    tok = AutoTokenizer.from_pretrained(base_id, use_fast=True)
+    tok.save_pretrained(out_dir)
+
+merge_adapter(llama_base, os.path.join(ckpt, "lora_llama"), os.path.join(ckpt, "merged_llama"))
+merge_adapter(qwen_base,  os.path.join(ckpt, "lora_qwen"),  os.path.join(ckpt, "merged_qwen"))
+print(f"✓ Refreshed merged weights in {ckpt}/merged_*")
+PY
+
 # Stage C: Eval (text vs latent, sequential_eval, proper chat templates)
 echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
