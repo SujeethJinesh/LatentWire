@@ -383,6 +383,7 @@ def first_token_topk_acc(
     append_bos_after_prefix: Optional[bool],
     k_values=(1, 5),
     skip: bool = False,
+    chunk_size: int = 16,
 ) -> Dict[str, float]:
     """
     Compute top-k accuracy for the very first answer token predicted from
@@ -392,19 +393,32 @@ def first_token_topk_acc(
         return {f"first_token_top{k}": float("nan") for k in k_values}
 
     device = next(wrapper.model.parameters()).device
-    logits = wrapper.first_token_logits_from_prefix(
-        prefix, anchor_token_text=anchor_token_text, append_bos_after_prefix=append_bos_after_prefix
-    )  # [N, V]
-
     gold_first = _first_content_token_ids(wrapper.tokenizer, golds, device)
-    probs = torch.softmax(logits, dim=-1)
-    accs = {}
-    V = probs.size(-1)
-    for k in k_values:
-        k = min(k, V)
-        topk_probs, topk_ids = torch.topk(probs, k=k, dim=-1)
-        match = (topk_ids == gold_first.unsqueeze(-1)).any(dim=-1).float()
-        accs[f"first_token_top{k}"] = float(match.mean().item())
+
+    total = prefix.size(0)
+    chunk = max(int(chunk_size or 1), 1)
+    correct = {int(k): 0.0 for k in k_values}
+    counts = 0
+
+    for start in range(0, total, chunk):
+        end = min(total, start + chunk)
+        prefix_chunk = prefix[start:end]
+        logits = wrapper.first_token_logits_from_prefix(
+            prefix_chunk,
+            anchor_token_text=anchor_token_text,
+            append_bos_after_prefix=append_bos_after_prefix,
+        )
+        probs = torch.softmax(logits, dim=-1)
+        V = probs.size(-1)
+        gold_chunk = gold_first[start:end]
+        for k in k_values:
+            kk = max(1, min(int(k), V))
+            topk_ids = probs.topk(k=kk, dim=-1).indices
+            match = (topk_ids == gold_chunk.unsqueeze(-1)).any(dim=-1).float()
+            correct[int(k)] += float(match.sum().item())
+        counts += end - start
+
+    accs = {f"first_token_top{int(k)}": (correct[int(k)] / max(counts, 1)) for k in k_values}
     return accs
 
 # ---------------------------
@@ -543,6 +557,7 @@ def _run_latent_path(
         anchor_text or None,
         append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
         skip=bool(getattr(args, "skip_prefix_acc", False)),
+        chunk_size=max(1, getattr(args, "chunk_size", 8)),
     )
 
     latent_preds, t_latent = evaluate_model_chunked_latent(
