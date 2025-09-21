@@ -632,6 +632,14 @@ def main():
     if args.grad_ckpt:
         llama.enable_gradient_checkpointing()
         qwen.enable_gradient_checkpointing()
+        try:
+            llama.model.config.use_cache = False
+        except Exception:
+            pass
+        try:
+            qwen.model.config.use_cache = False
+        except Exception:
+            pass
 
     # ===== Encoder =====
     def _structure_latents(raw: torch.Tensor) -> Dict[str, torch.Tensor]:
