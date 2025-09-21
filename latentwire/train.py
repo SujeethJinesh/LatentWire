@@ -689,6 +689,15 @@ def main():
             start += latent_private_len
         return {"shared": shared, "private": private}
 
+    def _neutral_chat_wrap(s: str) -> str:
+        system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
+        return f"System: {system}\nUser: {s}\nAssistant:"
+
+    def _maybe_chat_texts(batch_texts: List[str]) -> List[str]:
+        if not args.encoder_use_chat_template:
+            return batch_texts
+        return [_neutral_chat_wrap(t) for t in batch_texts]
+
     if args.encoder_type == "byte":
         encoder = InterlinguaEncoder(
             d_z=args.d_z,
@@ -699,7 +708,8 @@ def main():
         byte_tok = ByteTokenizer(max_bytes=args.max_bytes)
 
         def encode_fn(batch_texts):
-            z_bytes = collate_bytes(batch_texts, byte_tok, device)
+            texts = _maybe_chat_texts(batch_texts)
+            z_bytes = collate_bytes(texts, byte_tok, device)
             return encoder(z_bytes, return_components=True)
 
     elif args.encoder_type == "stq":
@@ -710,19 +720,8 @@ def main():
             max_tokens=args.max_enc_tokens,
         ).to(device)
 
-    if args.freeze_encoder:
-        for param in encoder.parameters():
-            param.requires_grad_(False)
-        print("[INFO] Encoder frozen (--freeze_encoder)")
-
-        def _neutral_chat_wrap(s: str) -> str:
-            system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
-            return f"System: {system}\nUser: {s}\nAssistant:"
-
         def encode_fn(batch_texts):
-            texts = batch_texts
-            if args.encoder_use_chat_template:
-                texts = [_neutral_chat_wrap(t) for t in texts]
+            texts = _maybe_chat_texts(batch_texts)
             raw = encoder(texts)
             return _structure_latents(raw)
 
@@ -733,16 +732,15 @@ def main():
             backbone=(args.encoder_backbone or "sentence-transformers/all-MiniLM-L6-v2"),
         ).to(device)
 
-        def _neutral_chat_wrap(s: str) -> str:
-            system = "You are a concise QA assistant. Use the context to answer with a short phrase only."
-            return f"System: {system}\nUser: {s}\nAssistant:"
-
         def encode_fn(batch_texts):
-            texts = batch_texts
-            if args.encoder_use_chat_template:
-                texts = [_neutral_chat_wrap(t) for t in texts]
+            texts = _maybe_chat_texts(batch_texts)
             raw = encoder(texts)
             return _structure_latents(raw)
+
+    if args.freeze_encoder:
+        for param in encoder.parameters():
+            param.requires_grad_(False)
+        print("[INFO] Encoder frozen (--freeze_encoder)")
 
     # ===== Adapters =====
     llama_device = _primary_device(llama)
