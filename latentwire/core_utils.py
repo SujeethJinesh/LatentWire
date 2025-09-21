@@ -238,7 +238,8 @@ def calibrate_to_embed_rms(prefix: torch.Tensor, wrapper, mode: str = "embed_rms
         return prefix
     current = prefix.float().pow(2).mean(dim=[1, 2], keepdim=True).sqrt().clamp_min(1e-6)
     scale = prefix.new_tensor(target_rms).view(1, 1, 1) / current
-    return prefix * scale
+    scaled = prefix * scale
+    return torch.tanh(scaled)
 
 
 def bos_policy(mode: str, anchor_ids: Optional[Union[Sequence[int], torch.Tensor]]) -> Optional[bool]:

@@ -156,7 +156,8 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
   --save_dir "$CKPT_DIR" --resume_from "$CKPT_DIR" --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
-  --first_token_ce_weight 1.0 \
+  --first_token_ce_weight 3.0 \
+  --first_token_ce_schedule cosine --first_token_ce_peak 8.0 --first_token_ce_warmup_frac 0.4 \
   --k_ce_weight 0.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.001 \
@@ -219,11 +220,10 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --ckpt "$CKPT_DIR" --samples "$SAMPLES" --dataset "$DATASET" \
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
   --sequential_eval --max_new_tokens "$MAX_NEW_TOKENS" \
-  --latent_anchor_mode text --latent_anchor_text "Answer: " --append_bos_after_prefix yes \
+  --latent_anchor_mode chat --append_bos_after_prefix yes \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
-  --skip_prefix_acc \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
 echo -e "\n✓ Completed. Logs at $LOG\n"

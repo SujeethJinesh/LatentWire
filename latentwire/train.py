@@ -364,6 +364,12 @@ def main():
                     help="If set, fix adapter.scale at 1.0 (no learning).")
     ap.add_argument("--first_token_ce_weight", type=float, default=0.5,
                     help="Weight for the first-token CE objective; 0 disables.")
+    ap.add_argument("--first_token_ce_schedule", type=str, default="none", choices=["none", "cosine"],
+                    help="Optional schedule for first-token CE weights (default: none).")
+    ap.add_argument("--first_token_ce_peak", type=float, default=None,
+                    help="Peak first-token CE weight during warmup when using a schedule.")
+    ap.add_argument("--first_token_ce_warmup_frac", type=float, default=0.4,
+                    help="Fraction of total steps to hold the peak first-token CE weight before cosine decay.")
     ap.add_argument("--train_append_bos_after_prefix", type=str, default="auto",
                     choices=["auto","yes","no"],
                     help="Controls BOS appending when computing first-token CE (train).")
@@ -908,6 +914,27 @@ def main():
     optimizer.zero_grad(set_to_none=True)
 
     total_batches = steps_per_epoch * args.epochs
+
+    first_ce_schedule = str(getattr(args, "first_token_ce_schedule", "none")).lower()
+    peak_override = args.first_token_ce_peak
+
+    def _first_token_weight_for_step(step_idx: int) -> float:
+        base = max(float(args.first_token_ce_weight), 0.0)
+        if first_ce_schedule == "none" or total_batches <= 0:
+            return base
+        total = max(int(total_batches), 1)
+        peak = peak_override if (peak_override is not None and peak_override > 0.0) else max(8.0, 2.0 * max(base, 1e-6))
+        warm_frac = min(max(float(args.first_token_ce_warmup_frac), 0.0), 1.0)
+        warm_steps = int(round(total * warm_frac))
+        warm_steps = min(warm_steps, total)
+        if step_idx < warm_steps:
+            return peak
+        if step_idx >= total or total == warm_steps:
+            return base
+        t = (step_idx - warm_steps) / max(1, total - warm_steps)
+        t = min(max(t, 0.0), 1.0)
+        cosine = 0.5 * (1.0 + math.cos(math.pi * t))
+        return base + (peak - base) * cosine
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
 
@@ -930,6 +957,9 @@ def main():
             keep_prob = float(min(max(keep_prob, 0.0), 1.0))
             current_K = int(round(adaptive_k_start + (adaptive_k_end - adaptive_k_start) * progress_pow))
             current_K = max(1, min(current_K, args.max_answer_tokens))
+
+            current_first_weight = _first_token_weight_for_step(global_step)
+            enable_first_token_loss = current_first_weight > 0.0
 
             scaffolds = {
                 ctx.name: build_scaffold_ids(
@@ -971,7 +1001,7 @@ def main():
                     prefix, targets, anchor_token_ids=ctx.anchor_ids
                 )
 
-                if args.first_token_ce_weight and args.first_token_ce_weight > 0.0:
+                if enable_first_token_loss:
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
                         anchor_token_text=(args.warm_anchor_text or None),
@@ -1027,7 +1057,7 @@ def main():
 
                 model_loss = (
                     loss_tf
-                    + args.first_token_ce_weight * loss_first
+                    + current_first_weight * loss_first
                     + args.k_ce_weight * loss_kce
                     + args.kd_first_k_weight * loss_kd
                     + args.state_kd_weight * loss_state
@@ -1046,6 +1076,7 @@ def main():
                 per_model_losses[ctx.name] = {
                     "tf": loss_tf,
                     "first": loss_first,
+                    "first_weight": current_first_weight,
                     "kce": loss_kce,
                     "kd": loss_kd,
                     "state": loss_state,
@@ -1095,6 +1126,8 @@ def main():
                     f"keep={keep_prob:.2f}",
                     f"K={current_K}",
                 ]
+                if first_ce_schedule != "none":
+                    parts.append(f"first_w={current_first_weight:.2f}")
                 for ctx in model_contexts:
                     metrics = per_model_losses[ctx.name]
                     msg_ctx = (
@@ -1142,6 +1175,9 @@ def main():
                     "warm_anchor_text": args.warm_anchor_text,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
                     "first_token_ce_weight": args.first_token_ce_weight,
+                    "first_token_ce_schedule": args.first_token_ce_schedule,
+                    "first_token_ce_peak": args.first_token_ce_peak,
+                    "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
                     "adapter_hidden_mult": args.adapter_hidden_mult,
                     "adapter_colorize": bool(args.adapter_colorize),
                     "adapter_enable_metadata": bool(args.adapter_metadata),
@@ -1216,6 +1252,9 @@ def main():
         "warm_anchor_text": args.warm_anchor_text,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
         "first_token_ce_weight": args.first_token_ce_weight,
+        "first_token_ce_schedule": args.first_token_ce_schedule,
+        "first_token_ce_peak": args.first_token_ce_peak,
+        "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
         "adapter_hidden_mult": args.adapter_hidden_mult,
         "adapter_colorize": bool(args.adapter_colorize),
         "adapter_enable_metadata": bool(args.adapter_metadata),
