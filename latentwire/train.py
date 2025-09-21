@@ -154,8 +154,15 @@ def load_checkpoint(
     strict: bool = True,
     device: str = "cpu"
 ) -> Tuple[int, int]:
-    state = _safe_load(path, map_location="cpu") if path and os.path.isfile(path) else {}
-    ckpt_dir = os.path.dirname(path) if path and os.path.isfile(path) else None
+    if path and os.path.isfile(path):
+        state = _safe_load(path, map_location="cpu")
+        ckpt_dir = os.path.dirname(path)
+    elif path and os.path.isdir(path):
+        state = {}
+        ckpt_dir = path
+    else:
+        state = {}
+        ckpt_dir = None
 
     enc_loaded = False
     if isinstance(state, dict) and all(k in state for k in ["encoder", "adp_llama", "adp_qwen"]):
