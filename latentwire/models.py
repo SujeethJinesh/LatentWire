@@ -102,13 +102,18 @@ def apply_prefix_if_requested(model, prefix_args: Dict[str, Any], tokenizer=None
 
     hidden = getattr(model.config, "hidden_size", getattr(model.config, "n_embd", None))
     num_layers = getattr(model.config, "num_hidden_layers", None)
+    num_heads = getattr(model.config, "num_attention_heads", getattr(model.config, "n_head", None))
+    if hidden is None or num_layers is None or num_heads is None:
+        raise ValueError("Cannot infer model dimensions for Prefix-Tuning; please provide a compatible model config.")
     cfg = PrefixTuningConfig(
         task_type=TaskType.CAUSAL_LM,
         num_virtual_tokens=int(prefix_args.get("tokens", 16)),
         prefix_projection=bool(prefix_args.get("projection", True)),
         encoder_hidden_size=hidden,
         token_dim=hidden,
-        num_layers=(num_layers if prefix_args.get("all_layers", True) else None),
+        num_layers=(num_layers if prefix_args.get("all_layers", True) else 1),
+        num_attention_heads=num_heads,
+        num_transformer_submodules=1,
     )
     prefix_model = get_peft_model(model, cfg)
     try:

@@ -161,7 +161,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --llama_id "${RUN_DIR}/ckpt/merged_llama" \
   --qwen_id "${RUN_DIR}/ckpt/merged_qwen" \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
-  --save_dir "$CKPT_DIR_STAGEB" --auto_resume --no_load_optimizer --save_training_stats \
+  --save_dir "$CKPT_DIR_STAGEB" --no_load_optimizer --no_load_lr_scheduler --save_training_stats \
   --train_append_bos_after_prefix yes \
   --freeze_encoder \
   --use_chat_template \
@@ -229,7 +229,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
   --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
   --chunk_size "$CHUNK_SIZE" \
-  --latent_anchor_mode chat --append_bos_after_prefix yes \
+  --latent_anchor_mode chat --append_bos_after_prefix no \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \

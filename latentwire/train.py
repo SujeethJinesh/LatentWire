@@ -457,9 +457,10 @@ def main():
     # Checkpointing
     ap.add_argument("--save_dir", type=str, default="./ckpt")
     ap.add_argument("--save_every", type=int, default=0, help="If >0, save the latest checkpoint every N steps and prune old files.")
-    ap.add_argument("--resume_from", type=str, default=None, help="Path to state.pt OR a directory containing it.")
+    ap.add_argument("--resume_from", type=str, default="", help="Path to state.pt or directory containing checkpoints. Empty string disables resume.")
     ap.add_argument("--auto_resume", action="store_true")
     ap.add_argument("--no_load_optimizer", action="store_true")
+    ap.add_argument("--no_load_lr_scheduler", action="store_true")
 
     # Training stats (for eval-time calibration)
     ap.add_argument("--save_training_stats", action="store_true", help="Record running mean of prefix RMS per model and save to training_stats.json")
@@ -837,27 +838,36 @@ def main():
         pass
 
     ckpt_path = None
-    if args.resume_from or args.auto_resume:
-        ckpt_path = args.resume_from if args.resume_from else find_latest_checkpoint(args.save_dir)
-        if ckpt_path and (os.path.isfile(ckpt_path) or os.path.isdir(os.path.dirname(ckpt_path))):
-            print(f"⏪ Resuming from: {ckpt_path}")
-            epoch_loaded, global_loaded = load_checkpoint(
-                ckpt_path, encoder, adp_llama, adp_qwen,
-                optimizer=None if args.no_load_optimizer else optimizer,
-                strict=True, device=device
-            )
-            start_epoch = epoch_loaded
-            global_step = global_loaded
-            print(f"   -> start_epoch={start_epoch}, global_step={global_step}")
-            # Reinstall colorizers in case legacy checkpoints lack buffers
-            if args.adapter_colorize:
-                try:
-                    adp_llama.install_color_from_wrapper(llama)
-                    adp_qwen.install_color_from_wrapper(qwen)
-                except Exception as exc:
-                    print(f"[WARN] Adapter colorizer re-install skipped after resume: {exc}")
+    if args.resume_from:
+        if os.path.isdir(args.resume_from):
+            ckpt_path = find_latest_checkpoint(args.resume_from)
         else:
-            print("⚠️  No valid checkpoint found to resume; starting fresh.")
+            ckpt_path = args.resume_from
+    elif args.auto_resume:
+        ckpt_path = find_latest_checkpoint(args.save_dir)
+
+    if ckpt_path:
+        print(f"⏪ Resuming from: {ckpt_path}")
+        epoch_loaded, global_loaded = load_checkpoint(
+            ckpt_path,
+            encoder,
+            adp_llama,
+            adp_qwen,
+            optimizer=None if args.no_load_optimizer else optimizer,
+            strict=True,
+            device=device,
+        )
+        start_epoch = epoch_loaded
+        global_step = global_loaded
+        print(f"   -> start_epoch={start_epoch}, global_step={global_step}")
+        if args.adapter_colorize:
+            try:
+                adp_llama.install_color_from_wrapper(llama)
+                adp_qwen.install_color_from_wrapper(qwen)
+            except Exception as exc:
+                print(f"[WARN] Adapter colorizer re-install skipped after resume: {exc}")
+    else:
+        print("⚠️  No valid checkpoint found to resume; starting fresh.")
 
     # ===== Training stats trackers =====
     class _RunningMean:
