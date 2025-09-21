@@ -20,7 +20,7 @@ QWEN_ID="${QWEN_ID:-Qwen/Qwen2.5-7B-Instruct}"
 
 # Data/Eval
 DATASET="${DATASET:-squad}"
-TRAIN_SAMPLES="${TRAIN_SAMPLES:-20000}"
+TRAIN_SAMPLES="${TRAIN_SAMPLES:-320}"
 SMOKE_SAMPLES="${SMOKE_SAMPLES:-200}"
 SAMPLES="${SAMPLES:-1000}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
@@ -28,6 +28,9 @@ MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
 # Latent
 LATENT_LEN="${LATENT_LEN:-64}"           # Relax compression for acceptance
 D_Z="${D_Z:-256}"
+
+# Tuning Params
+BATCH_SIZE="${BATCH_SIZE:-32}"
 
 # Chat templating (non‑negotiable)
 export LW_APPLY_CHAT_TEMPLATE=1
@@ -85,7 +88,7 @@ PY
 echo -e "\n=== Stage A: LoRA (tiny) ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
-  --batch_size 8 --grad_accum_steps 16 --grad_ckpt \
+  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 --grad_ckpt \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
@@ -130,7 +133,7 @@ PY
 echo -e "\n=== Stage B: Deep Prefix ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
-  --batch_size 8 --grad_accum_steps 16 --grad_ckpt \
+  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 --grad_ckpt \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "${CKPT_DIR}/merged_llama" \

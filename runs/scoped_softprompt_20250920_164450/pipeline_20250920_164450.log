@@ -1,9 +1,0 @@
-
-=== Preflight: CUDA / SLURM / bitsandbytes ===
-
-The 8-bit optimizer is not available on your device, only available on CUDA for now.
-torch: 2.4.0+cu121 cuda: 12.1 is_available: False count: 0
-CUDA_VISIBLE_DEVICES: 0,1,2,3
-nvidia-smi not runnable: [Errno 2] No such file or directory: 'nvidia-smi'
-bitsandbytes: 0.47.0
-FATAL: No CUDA devices visible. Aborting before training.
