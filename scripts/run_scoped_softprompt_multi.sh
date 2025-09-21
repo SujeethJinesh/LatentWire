@@ -31,7 +31,7 @@ LATENT_LEN="${LATENT_LEN:-64}"           # Relax compression for acceptance
 D_Z="${D_Z:-256}"
 
 # Tuning Params
-BATCH_SIZE_A="${BATCH_SIZE_A:-8}"
+BATCH_SIZE_A="${BATCH_SIZE_A:-32}"
 BATCH_SIZE_B="${BATCH_SIZE_B:-2}"
 EPOCHS_B="${EPOCHS_B:-1}"
 
