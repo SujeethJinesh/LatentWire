@@ -214,13 +214,22 @@ def format_with_chat_template(tokenizer, user_text: str, system_text: Optional[s
     else:
         kwargs.update(add_generation_prompt=True)
     try:
-        return tokenizer.apply_chat_template(messages, **kwargs)
+        rendered = tokenizer.apply_chat_template(messages, **kwargs)
+        if not rendered:
+            raise ValueError("empty rendering")
+        return rendered
     except ValueError:
-        # Some templates (e.g., recent Qwen) require the final assistant message to be present.
-        # Fall back to inserting an empty assistant turn and continuing that message.
-        messages.append({"role": "assistant", "content": assistant_prefill or ""})
-        safe_kwargs = {"tokenize": False, "add_generation_prompt": False, "continue_final_message": True}
-        return tokenizer.apply_chat_template(messages, **safe_kwargs)
+        # Retry by explicitly continuing an assistant turn (covers Qwen-style "default" templates).
+        fallback_msgs = list(messages)
+        fallback_msgs.append({"role": "assistant", "content": assistant_prefill or ""})
+        fallback_kwargs = {"tokenize": False, "add_generation_prompt": False, "continue_final_message": True}
+        rendered = tokenizer.apply_chat_template(fallback_msgs, **fallback_kwargs)
+        if rendered:
+            return rendered
+        # Final fallback: synthesize a minimal chat prompt ourselves (system/user + assistant header)
+        system_block = f"System: {system_text}\n" if system_text else ""
+        assistant_hdr = "Assistant:" if assistant_prefill is None else "Assistant: " + assistant_prefill
+        return f"{system_block}User: {user_text}\n\n{assistant_hdr}"
 
 def _best_mode_from_scores(candidates: List[str], scores: Dict[str, float], cfg: dict) -> str:
     finite = {k: v for k, v in scores.items() if _is_finite(v)}
