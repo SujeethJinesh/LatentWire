@@ -227,7 +227,7 @@ echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --ckpt "$CKPT_DIR_STAGEB" --samples "$SAMPLES" --dataset "$DATASET" \
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
-  --sequential_eval --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
+  --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
   --chunk_size "$CHUNK_SIZE" \
   --latent_anchor_mode chat --append_bos_after_prefix yes \
   --use_chat_template yes \
