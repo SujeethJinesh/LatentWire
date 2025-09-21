@@ -382,11 +382,15 @@ def first_token_topk_acc(
     anchor_token_text: Optional[str],
     append_bos_after_prefix: Optional[bool],
     k_values=(1, 5),
+    skip: bool = False,
 ) -> Dict[str, float]:
     """
     Compute top-k accuracy for the very first answer token predicted from
     (prefix + optional anchor + optional BOS).
     """
+    if skip:
+        return {f"first_token_top{k}": float("nan") for k in k_values}
+
     device = next(wrapper.model.parameters()).device
     logits = wrapper.first_token_logits_from_prefix(
         prefix, anchor_token_text=anchor_token_text, append_bos_after_prefix=append_bos_after_prefix
@@ -538,6 +542,7 @@ def _run_latent_path(
         golds,
         anchor_text or None,
         append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
+        skip=bool(getattr(args, "skip_prefix_acc", False)),
     )
 
     latent_preds, t_latent = evaluate_model_chunked_latent(
@@ -994,6 +999,7 @@ def main():
     ap.add_argument("--latent_anchor_mode", type=str, default="auto", choices=["auto","chat","text","none"])
     ap.add_argument("--latent_anchor_text", type=str, default="Answer: ")
     ap.add_argument("--append_bos_after_prefix", type=str, default="auto", choices=["auto","yes","no"])
+    ap.add_argument("--skip_prefix_acc", action="store_true", help="Skip first-token accuracy evaluation (saves memory)")
     ap.add_argument("--use_chat_template", type=str, default="yes", choices=["yes","no"],
                     help="Toggle chat template application when constructing text prompts.")
 

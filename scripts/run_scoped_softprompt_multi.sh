@@ -223,6 +223,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
+  --skip_prefix_acc \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
 echo -e "\n✓ Completed. Logs at $LOG\n"
