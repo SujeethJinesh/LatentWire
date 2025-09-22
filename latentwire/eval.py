@@ -89,6 +89,18 @@ def _parse_device_csv(spec: Optional[str]) -> Optional[List[int]]:
     return out or None
 
 
+def _parse_models_arg(spec: Optional[str]) -> List[str]:
+    valid = ["llama", "qwen"]
+    if not spec:
+        return valid
+    models = []
+    for chunk in spec.split(','):
+        name = chunk.strip().lower()
+        if name in valid and name not in models:
+            models.append(name)
+    return models or valid
+
+
 def _primary_device(wrapper: LMWrapper) -> torch.device:
     return next(wrapper.model.parameters()).device
 
@@ -638,8 +650,8 @@ def _run_latent_path(
         },
     }
 
-def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats):
-    print("\n[Standard Evaluation Mode - both models loaded]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
+def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats, models):
+    print("\n[Standard Evaluation Mode]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
     ckpt_path = args.ckpt
     ckpt_dir = os.path.dirname(ckpt_path) if os.path.isfile(ckpt_path) else ckpt_path
@@ -1024,9 +1036,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
 
     return summary, preds_dump
 
-def run_sequential_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, encoder_type, byte_max, cfg, train_stats):
+def run_sequential_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, encoder_type, byte_max, cfg, train_stats, models):
     """Fallback to standard evaluation logic; kept for API compatibility."""
-    return run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats)
+    return run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats, models)
 
 
 def main():
@@ -1061,6 +1073,8 @@ def main():
                     help="Toggle chat template application when constructing text prompts.")
 
     ap.add_argument("--sequential_eval", action="store_true")
+    ap.add_argument("--models", type=str, default="llama,qwen",
+                    help="Comma-separated list of models to evaluate (subset of llama,qwen)")
     ap.add_argument("--chunk_size", type=int, default=8)
     ap.add_argument("--hf_encoder_id", type=str, default="sentence-transformers/all-MiniLM-L6-v2")
     ap.add_argument("--max_enc_tokens", type=int, default=1024)
@@ -1072,8 +1086,8 @@ def main():
     ap.add_argument("--debug_topk_examples", type=int, default=2)
 
     # new decode controls (latent) - deterministic by default
-    ap.add_argument("--min_new_tokens", type=int, default=3)
-    ap.add_argument("--eos_ban_steps", type=int, default=6)
+    ap.add_argument("--min_new_tokens", type=int, default=1)
+    ap.add_argument("--eos_ban_steps", type=int, default=0)
     ap.add_argument("--first_token_top_p", type=float, default=1.0)
     ap.add_argument("--first_token_temperature", type=float, default=0.0)
     # Optional latent quantization sweeps (applied before adapters)
@@ -1101,6 +1115,8 @@ def main():
     args = ap.parse_args()
     patch_dataloader_defaults()
     apply_anchor_normalization(args)
+
+    selected_models = _parse_models_arg(getattr(args, "models", ""))
 
     # Deterministic by default
     seed = int(args.seed)

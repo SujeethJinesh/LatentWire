@@ -1,11 +1,15 @@
 # LatentWire: A Shared Soft‑Token Interlingua for Heterogeneous LLM Cooperation
+
 ---
+
 ## Update (2025-09-18): Token‑level encoder + learned query pooling (STQueryEncoder)
 
 ### Why this change? (one paragraph, plain-English)
+
 Our earlier **SimpleEncoder** collapsed the whole source text into a single sentence embedding before “spreading” it across the M latent slots. That’s fast but loses **positional structure** from the source. The new **STQueryEncoder** preserves order by first computing **token‑level features** with a small, **frozen** HF encoder (default: `microsoft/MiniLM‑L6‑v2`) and then using **learned queries** to **cross‑attend** over those tokens to build the `M×d_z` latent. Inside Llama/Qwen, **RoPE** continues to assign positions to the latent prefix, so the LLMs still see an ordered prefix of length `M`.
 
 ### What the pipeline looks like now
+
 ```mermaid
 flowchart LR
     A[Text: Question + Context] --> B[STQueryEncoder\n(HF token encoder, frozen)]
@@ -24,25 +28,29 @@ flowchart LR
 **Yes—we are still:** `text → encoder (Z) → model‑specific adapter → LLM`. We’ve **replaced the encoder** with one that keeps token‑level structure and added small systems fixes (anchor normalization, dataloader speedups, optimizer‑state device alignment).
 
 ### Why this should outperform the previous encoder at the same M (4× compression target)
-1. **Token‑level evidence is preserved**: learned queries attend over **all tokens** (not a single pooled vector), so `Z` retains fine‑grained cues for extraction.  
-2. **Better early‑token acceptance**: slot sinusoid + LayerNorm/tanh adapters keep statistics close to real token embeddings; plus stronger first‑token loss (`λ_first`) aligns the first decode step.  
-3. **Frozen, off‑the‑shelf backbone**: MiniLM‑L6 is tiny, fast, and general—no task‑specific tuning required.  
+
+1. **Token‑level evidence is preserved**: learned queries attend over **all tokens** (not a single pooled vector), so `Z` retains fine‑grained cues for extraction.
+2. **Better early‑token acceptance**: slot sinusoid + LayerNorm/tanh adapters keep statistics close to real token embeddings; plus stronger first‑token loss (`λ_first`) aligns the first decode step.
+3. **Frozen, off‑the‑shelf backbone**: MiniLM‑L6 is tiny, fast, and general—no task‑specific tuning required.
 4. **Interlingua story intact**: LLMs remain **frozen**; only the small encoder/adapters learn—so we can honestly claim a shared wire, not per‑model fine‑tuning.
 
 ### Controlled experiment we will run (baked into `run_hero_stq.sh`)
-- **Models:** Llama‑3.1‑8B‑Instruct, Qwen‑2.5‑7B‑Instruct (NF4 for memory).  
-- **Encoder:** `encoder_type=stq`, MiniLM‑L6‑v2 (frozen), `max_enc_tokens=1024`.  
-- **Latent budget:** `M=32` (`≈4×` compression on SQuAD prompts), `d_z=256`, split `shared=24`, `private=4`.  
-- **Training:** 12 epochs, `B=2`, `grad_accum=32`, `λ_first=3.0`, `K=8`, `τ=1.25`.  
+
+- **Models:** Llama‑3.1‑8B‑Instruct, Qwen‑2.5‑7B‑Instruct (NF4 for memory).
+- **Encoder:** `encoder_type=stq`, MiniLM‑L6‑v2 (frozen), `max_enc_tokens=1024`.
+- **Latent budget:** `M=32` (`≈4×` compression on SQuAD prompts), `d_z=256`, split `shared=24`, `private=4`.
+- **Training:** 12 epochs, `B=2`, `grad_accum=32`, `λ_first=3.0`, `K=8`, `τ=1.25`.
 - **Eval each epoch:** Text vs Latent vs Token‑budget‑32; EM/F1, NLL/token, FirstTok@k, wall‑clock.
 
 ### Minimal math (unchanged objective)
-- `Z = Attn(Q=learned_queries, K=Proj(HF_tokens), V=Proj(HF_tokens))`  
-- `P_ℓ = A_ℓ(Z)`, `inputs_embeds = [P_ℓ, E_ℓ(y[:-1])]`, labels `[mask… , y[1:]]`  
+
+- `Z = Attn(Q=learned_queries, K=Proj(HF_tokens), V=Proj(HF_tokens))`
+- `P_ℓ = A_ℓ(Z)`, `inputs_embeds = [P_ℓ, E_ℓ(y[:-1])]`, labels `[mask… , y[1:]]`
 - Loss: `L = 0.5·(CE_L + CE_Q)` with auxiliary first‑token / first‑K terms.
 
 ### Ablations (guardrails)
-- `M ∈ {24, 32, 48}`, `d_z ∈ {192, 256, 320}`; compare **Latent vs Token‑budget** at same `M`.  
+
+- `M ∈ {24, 32, 48}`, `d_z ∈ {192, 256, 320}`; compare **Latent vs Token‑budget** at same `M`.
 - Encoder swap: `stq` vs `simple-st` to quantify the positional benefit.
 
 ---
@@ -599,3 +607,117 @@ Remaining weeks unchanged.
 ### 6. Reporting
 
 We will add predictions.jsonl dumps for qualitative error analysis, and we will report both: (i) chat‑templated text baselines, and (ii) latent trained with/without templated encoder input.
+
+# Addendum (Sept 2025): Scoped Interlingua via Tiny LoRA + Deep Prefix Injection with Strict Chat-Template Compliance
+
+## What changed and why
+
+Our hero runs showed that a purely frozen two-model interlingua (shared soft tokens + minimal linear adapters) did not reliably "take" as a prefix authority inside different LLM families. We observed (a) near-zero first-token acceptance in latent mode, (b) large gaps to the text baseline, and (c) sensitivity to BOS/anchor handling. The takeaway is consistent with the literature: parameter-efficient adaptation that touches early attention pathways (keys/queries/values) or injects prefixes across layers is often necessary for stable conditioning while keeping models mostly frozen. We therefore adopt a scoped plan that maintains the spirit of a shared latent "wire" but adds just enough per-model trainable capacity to make the signal usable:
+
+- **Tiny per-model LoRA** (rank 8–16) on early attention blocks to improve acceptance of soft-prompted context without editing knowledge broadly. LoRA is a low-rank, parameter-efficient method that empirically matches or exceeds full fine-tuning with orders-of-magnitude fewer trained parameters.
+
+- **Deep prefix injection** (a.k.a. prefix/"deep prompt" tuning) that inserts learned key/value "virtual tokens" in every layer—a proven approach to steer frozen decoders and close the gap to full fine-tuning at scale.
+
+- **Prompt/soft-prompt compatibility at scale** (P-Tuning / P-Tuning v2): with the right optimization, deep prompts can be universally competitive with fine-tuning, especially as models grow. This supports our design to favor prefixes + small per-model adapters over heavier tuning.
+
+- **Strict chat-template compliance** for Llama/Qwen via `tokenizer.apply_chat_template(...)` so our prefixes sit in the expected conversation scaffolding (system/instructions/assistant turns). This removes formatting drift as a confounder.
+
+## Revised objective
+
+Maintain a shared latent interlingua (the M-vector soft prompt we encode from the task input) while equipping each model with just-enough trainable structure (tiny LoRA + deep prefix) to interpret the wire. We target:
+
+- **Compression**: ≥ 4× prompt reduction (e.g., average 240–260 text tokens → M ≈ 48 soft tokens).
+- **Quality**: ≥ 80% of each model's text baseline F1/EM on QA-style evaluation (and ROUGE on summarization).
+- **Cross-model portability**: one latent wire consumed by both Llama and Qwen with per-model PEFT heads.
+
+## Architecture (concise)
+
+```mermaid
+flowchart LR
+  A[Task input (QA/sum)] -->|encode| E[Latent Encoder (frozen or lightly tuned)]
+  E -->|M x d_z| Z[(Shared latent "wire")]
+
+  subgraph Llama branch
+    Z --> P1[Deep Prefix (per-layer KV, learnable)]
+    P1 --> L1[LoRA r=8-16 on early attn (per-model)]
+    L1 -->|inputs_embeds + chat template| LLM1[Llama (frozen base)]
+  end
+
+  subgraph Qwen branch
+    Z --> P2[Deep Prefix (per-layer KV, learnable)]
+    P2 --> L2[LoRA r=8-16 on early attn (per-model)]
+    L2 -->|inputs_embeds + chat template| LLM2[Qwen (frozen base)]
+  end
+
+  LLM1 --> O1[Answer/summary]
+  LLM2 --> O2[Answer/summary]
+```
+
+**Key differences vs. the original**: We still learn a shared latent Z, but we augment the per-model front-end with (1) deep prefixes and (2) small LoRA deltas on the first N attention blocks to ensure the frozen decoders can read Z. Prefix-to-chat alignment is enforced by building the prompt strictly via each model's chat template.
+
+## Training recipe (high level)
+
+- **Backbone**: two frozen instruct LLMs (e.g., Llama-3.1-8B-Instruct, Qwen-2.5-7B/8B-Instruct).
+
+- **Per-model PEFT head**:
+
+  - LoRA on attention projections (q_proj, k_proj, v_proj, o_proj) in early K layers (e.g., first 8–12) with ranks r ∈ {8, 16}, α ≈ 16–32, small dropout.
+  - Prefix tuning (deep) with prefix length p ∈ {8–16} per layer (KV prompts).
+
+- **Latent encoder**: sentence-embedding or byte encoder producing M×d_z soft tokens (M≈48, d_z≈256).
+
+- **Losses**:
+
+  - Teacher-forced NLL on gold,
+  - First-token CE (stabilize BOS acceptance),
+  - Short-horizon K-token CE,
+  - (Optional) KD from text-prompted runs for early tokens.
+
+- **Prompt construction**: Always use `tokenizer.apply_chat_template([...], add_generation_prompt=True)` for both Llama and Qwen; the latent prefix and anchor (e.g., Assistant:) are inserted at the assistant preamble location defined by each tokenizer's template.
+
+## Why this should work (evidence & intuition)
+
+- **LoRA** provides a small, targeted path to adapt early attention so the model can interpret non-textual prefixes without touching its knowledge broadly—shown to match or beat full fine-tuning with 10³–10⁴× fewer trained params.
+
+- **Deep prefix tuning** inserts virtual tokens in every layer, giving the model layer-wise hooks to propagate the latent signal—an effect known to achieve near-fine-tuning performance with frozen weights when scaled properly (P-Tuning v2).
+
+- **Prompt/soft-prompt scaling**: As models get larger, prompt/soft-prompt methods close the gap to full fine-tuning, which aligns with our 7B–8B regime.
+
+- **Template correctness** removes a frequent source of failure: inconsistent BOS/assistant headers and spacing differences across Llama/Qwen. HF's chat templates are the canonical way to serialize conversational inputs.
+
+## Evaluation plan
+
+We will report, per model and jointly:
+
+- Text baseline (chat-templated) vs Latent+Prefix vs Latent+Prefix+LoRA (our main),
+- Compression (text tokens vs M), latency (prefill time), acceptance (first-token top-k acc),
+- Quality: EM/F1 for QA, ROUGE-1/2/L for summarization,
+- Ablations: (a) LoRA off, (b) shallow vs deep prefix, (c) M sensitivity, (d) with/without KD.
+
+## Risks & mitigations
+
+- **Over-fitting to one model**: Keep the latent shared, but constrain per-model PEFT heads to be tiny (LoRA r≤16, short prefixes) and regularize with early-token KD.
+
+- **Template drift**: Treat chat template as non-negotiable; add CI checks that refuse to run if a template isn't applied.
+
+- **Under-capacity at 4× compression**: If acceptance remains low, we will (1) increase M to 64 temporarily, (2) raise prefix length modestly, or (3) expand LoRA to +4 layers—while tracking parameter budget.
+
+## Implementation notes (PEFT & Transformers)
+
+- Use PEFT for both LoRA and Prefix-Tuning; keep the base model in 4-bit/bfloat16 as appropriate, with gradient checkpointing to fit 4×H100.
+
+- Always wrap inputs with `apply_chat_template(...)` for both models; ensure `add_generation_prompt=True` so the assistant turn header is in place when our latent/prefix is injected.
+
+## References
+
+1. **LoRA** (Hu et al., 2021) — low-rank adapters for efficient fine-tuning. [arXiv](https://arxiv.org/abs/2106.09685)
+
+2. **Prefix-Tuning** (Li & Liang, 2021) — continuous prefixes for frozen LMs. [arXiv](https://arxiv.org/abs/2101.00190)
+
+3. **Prompt Tuning** (Lester et al., 2021) — soft prompts scale well with model size. [arXiv](https://arxiv.org/abs/2104.08691)
+
+4. **P-Tuning v2** (Liu et al., 2021/2022) — deep prompt tuning competitive with fine-tuning. [arXiv](https://arxiv.org/abs/2110.07602)
+
+5. **PEFT docs** — LoRA & Prefix-Tuning implementations. [Hugging Face](https://huggingface.co/docs/peft)
+
+6. **Transformers docs** — chat templates & correct serialization. [Hugging Face](https://huggingface.co/docs/transformers)
