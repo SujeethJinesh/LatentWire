@@ -469,7 +469,15 @@ def main():
     ap.add_argument("--grad_ckpt", action="store_true")
     ap.add_argument("--fp16_mps", action="store_true")
     ap.add_argument("--warm_anchor_text", type=str, default="",
-                    help="Optional anchor tokens AFTER latent prefix during training, e.g. 'Answer: '")
+                    help="Optional anchor tokens AFTER latent prefix during training (text mode).")
+    ap.add_argument(
+        "--warm_anchor_mode",
+        type=str,
+        default="auto",
+        choices=["auto", "text", "chat", "none"],
+        help="How to choose the training anchor: 'text' uses --warm_anchor_text, 'chat' injects the"
+             " tokenizer's assistant header, 'none' disables anchors, 'auto' matches legacy behaviour.",
+    )
     ap.add_argument("--debug", action="store_true")
 
     # Checkpointing
@@ -663,12 +671,32 @@ def main():
     }
 
     def _anchor_text_for(wrapper, fallback: str) -> str:
-        txt = fallback or ""
+        mode = (getattr(args, "warm_anchor_mode", "auto") or "auto").lower()
+
+        def _ensure_trailing_space(txt: str) -> str:
+            if txt and not txt.endswith(" "):
+                return txt + " "
+            return txt
+
+        if mode == "none":
+            return ""
+        if mode == "chat":
+            anchor = assistant_header_anchor(wrapper.tokenizer) or ""
+            return anchor
+        if mode == "text":
+            base = fallback or ""
+            if not base and args.use_chat_template:
+                base = "Answer: "
+            return _ensure_trailing_space(base)
+
+        # auto (legacy behaviour): prefer explicit text, otherwise chat header when templates are used
+        base = fallback or ""
+        if base:
+            return _ensure_trailing_space(base)
         if args.use_chat_template:
-            txt = txt or "Answer: "
-        if txt and not txt.endswith(" "):
-            txt = txt + " "
-        return txt
+            anchor = assistant_header_anchor(wrapper.tokenizer) or "Answer: "
+            return anchor
+        return ""
 
     anchor_text_llama = _anchor_text_for(llama, args.warm_anchor_text)
     anchor_text_qwen = _anchor_text_for(qwen, args.warm_anchor_text)
@@ -1299,6 +1327,7 @@ def main():
                     "freeze_encoder": bool(args.freeze_encoder),
                     "use_chat_template": bool(args.use_chat_template),
                     "warm_anchor_text": args.warm_anchor_text,
+                    "warm_anchor_mode": args.warm_anchor_mode,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
                     "first_token_ce_weight": args.first_token_ce_weight,
                     "first_token_ce_schedule": args.first_token_ce_schedule,
@@ -1378,6 +1407,7 @@ def main():
         "freeze_encoder": bool(args.freeze_encoder),
         "use_chat_template": bool(args.use_chat_template),
         "warm_anchor_text": args.warm_anchor_text,
+        "warm_anchor_mode": args.warm_anchor_mode,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
         "first_token_ce_weight": args.first_token_ce_weight,
         "first_token_ce_schedule": args.first_token_ce_schedule,

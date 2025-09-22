@@ -2,23 +2,23 @@
 set -euo pipefail
 
 # run_scoped_softprompt_multi.sh
-# One‑button runner to stage (A) tiny LoRA, merge; (B) deep Prefix‑Tuning;
-# (C) evaluate latent soft‑prompt + text baselines with proper chat templates.
-#
-# Assumes your package entry points still live at latentwire/train.py and latentwire/eval.py.
-# This script *adds no new Python entry point*; it only toggles features via flags/env.
+# Streamlined pipeline: (A) train shared latent encoder + prefix adapters on clean
+# hub checkpoints; (B) evaluate latent vs text baselines with deterministic chat
+# templates. LoRA bring-up is intentionally omitted – focus is on latent-wire
+# acceptance only.
 
 : "${RUN_TAG:=scoped_softprompt_$(date +%Y%m%d_%H%M%S)}"
 RUN_DIR="runs/${RUN_TAG}"
 CKPT_DIR="${RUN_DIR}/ckpt"
-: "${CKPT_DIR_STAGEB:=${CKPT_DIR}/stageB}"
-mkdir -p "$RUN_DIR" "$CKPT_DIR" "$CKPT_DIR_STAGEB"
+CKPT_DIR_STAGEB="${CKPT_DIR}/stageB"
+mkdir -p "$RUN_DIR" "$CKPT_DIR_STAGEB"
 LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
 
-# Models
+# Base hub models
 LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 QWEN_ID="${QWEN_ID:-Qwen/Qwen2.5-7B-Instruct}"
 
+# Optional hero flag for extended runs
 hero=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -36,7 +36,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Data/Eval
+# Data / eval
 DATASET="${DATASET:-squad}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
 CHUNK_SIZE="${CHUNK_SIZE:-32}"
@@ -46,32 +46,26 @@ if [[ $hero -eq 1 ]]; then
   EPOCHS_B=8
   SAMPLES="${SAMPLES:-1000}"
 else
-  TRAIN_SAMPLES=320
-  EPOCHS_B=1
+  TRAIN_SAMPLES=640
+  EPOCHS_B=4
   SAMPLES="${SAMPLES:-200}"
 fi
 
-# Latent
-LATENT_LEN="${LATENT_LEN:-64}"           # Relax compression for acceptance
+# Latent budget and optimiser defaults
+LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
+BATCH_SIZE_B="${BATCH_SIZE_B:-16}"
 
-# Tuning Params
-BATCH_SIZE_A="${BATCH_SIZE_A:-32}"
-BATCH_SIZE_B="${BATCH_SIZE_B:-24}"
-
-# Chat templating (non‑negotiable)
+# Mandatory chat templating across the stack
 export LW_APPLY_CHAT_TEMPLATE=1
-
-# Ensure the latentwire package is discoverable when running via python -m / latentwire/*.py
 export PYTHONPATH="${PYTHONPATH:-.}"
 
-# GPU maps
+# GPU placement
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1}"
 QWEN_DEVICES="${QWEN_DEVICES:-2,3}"
 GPU_MEM_GIB="${GPU_MEM_GIB:-78}"
 
-# Common flags
 COMMON_DEVMAP=(
   --llama_device_map auto
   --qwen_device_map auto
@@ -80,18 +74,19 @@ COMMON_DEVMAP=(
   --gpu_mem_gib "$GPU_MEM_GIB"
 )
 
-# Install peft if missing (allows Slurm nodes without preinstall)
+# Ensure PEFT is available
 python - <<'PY'
 try:
     import peft, accelerate  # noqa
     print("✓ PEFT present")
 except Exception:
     import sys, subprocess
-    subprocess.check_call([sys.executable,"-m","pip","install","-q","peft>=0.12.0","accelerate>=0.33.0"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "peft>=0.12.0", "accelerate>=0.33.0"])
+    print("✓ Installed PEFT + Accelerate")
 print("✓ Environment ready")
 PY
 
-# Hardened CUDA preflight
+# CUDA preflight summary
 echo -e "\n=== Preflight: CUDA / SLURM / bitsandbytes ===\n" | tee -a "$LOG"
 python - <<'PY' 2>&1 | tee -a "$LOG"
 import os, torch, subprocess, sys
@@ -111,149 +106,37 @@ if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
     sys.exit(2)
 PY
 
-# Stage A: tiny LoRA (first ~12 layers, attn+mlp)
-echo -e "\n=== Stage A: LoRA (tiny) ===\n" | tee -a "$LOG"
+# --- Stage B: Prefix-training only ---
+echo -e "\n=== Stage B: Prefix Training ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs 1 \
-  --batch_size "$BATCH_SIZE_A" --grad_accum_steps 16 --grad_ckpt \
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
+  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 --grad_ckpt \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --encoder_use_chat_template \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
-  --use_lora --lora_r 8 --lora_alpha 16 --lora_dropout 0.05 \
-  --lora_target_modules attn_mlp_firstN:12 \
-  --save_dir "$CKPT_DIR" --auto_resume --save_training_stats \
-  --train_append_bos_after_prefix yes \
-  --warm_anchor_text "Answer: " \
-  --first_token_ce_weight 3.0 \
-  --K 0 \
-  --adapter_hidden_mult 2 \
-  --manifold_stat_weight 0.0 \
-  --max_answer_tokens 24 \
-  "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
-
-# Merge LoRA into base weights for stability of Stage B (Prefix)
-echo -e "\n=== Stage A -> merge LoRA ===\n" | tee -a "$LOG"
-RUN_TAG="$RUN_TAG" LLAMA_ID="$LLAMA_ID" QWEN_ID="$QWEN_ID" CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
-import os
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
-
-run_tag = os.environ["RUN_TAG"]
-ckpt = os.path.join("runs", run_tag, "ckpt")
-backup = os.path.join("runs", run_tag, "stageA_lora")
-llama_id = os.environ.get("LLAMA_ID")
-qwen_id = os.environ.get("QWEN_ID")
-
-def merge_adapter(base_id: str, adapter_dir: str, out_dir: str) -> None:
-    if not os.path.isdir(adapter_dir):
-        raise FileNotFoundError(f"Missing adapter directory: {adapter_dir}")
-    base = AutoModelForCausalLM.from_pretrained(base_id, device_map="auto", torch_dtype="auto")
-    peft = PeftModel.from_pretrained(base, adapter_dir)
-    peft.merge_and_unload(safe_merge=True)
-    peft.save_pretrained(out_dir)
-    tokenizer = AutoTokenizer.from_pretrained(base_id, use_fast=True)
-    tokenizer.save_pretrained(out_dir)
-
-merge_adapter(llama_id, os.path.join(ckpt, "lora_llama"), os.path.join(ckpt, "merged_llama"))
-merge_adapter(qwen_id, os.path.join(ckpt, "lora_qwen"), os.path.join(ckpt, "merged_qwen"))
-# Stage A LoRA backups (survive Stage B pruning)
-import shutil
-os.makedirs(backup, exist_ok=True)
-for name in ("llama", "qwen"):
-    src = os.path.join(ckpt, f"lora_{name}")
-    if os.path.isdir(src):
-        dst = os.path.join(backup, name)
-        if os.path.isdir(dst):
-            shutil.rmtree(dst)
-        shutil.copytree(src, dst)
-        print(f"Backed up {src} -> {dst}")
-    else:
-        print(f"[WARN] Missing {src}; backup skipped")
-print(f"✓ Merged LoRA adapters into {ckpt}/merged_*")
-PY
-
-# Stage B: Deep Prefix (Prefix‑Tuning) with merged bases
-echo -e "\n=== Stage B: Deep Prefix ===\n" | tee -a "$LOG"
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
-  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
-  --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
-  --encoder_use_chat_template \
-  --latent_len "$LATENT_LEN" --d_z "$D_Z" \
-  --llama_id "${RUN_DIR}/ckpt/merged_llama" \
-  --qwen_id "${RUN_DIR}/ckpt/merged_qwen" \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
-  --save_dir "$CKPT_DIR_STAGEB" --no_load_optimizer --no_load_lr_scheduler --save_training_stats \
+  --save_dir "$CKPT_DIR_STAGEB" --auto_resume --save_training_stats \
   --train_append_bos_after_prefix yes \
   --freeze_encoder \
   --use_chat_template \
-  --warm_anchor_text "Answer: " \
-  --first_token_ce_weight 3.0 \
-  --K 0 \
-  --k_ce_weight 0.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
+  --warm_anchor_mode chat \
+  --first_token_ce_weight 8.0 \
+  --K 4 \
+  --k_ce_weight 1.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.0 \
   --max_answer_tokens 24 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
-# Re-create merged directories for evaluation (checkpoint pruner removes them)
-echo -e "\n=== Stage B -> refresh merged weights ===\n" | tee -a "$LOG"
-RUN_TAG="$RUN_TAG" LLAMA_ID="$LLAMA_ID" QWEN_ID="$QWEN_ID" CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
-import os
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
-
-run_tag = os.environ["RUN_TAG"]
-ckpt = os.path.join("runs", run_tag, "ckpt")
-backup = os.path.join("runs", run_tag, "stageA_lora")
-llama_base = os.environ.get("LLAMA_ID")
-qwen_base  = os.environ.get("QWEN_ID")
-
-def merge_adapter(base_id: str, adapter_dir: str, out_dir: str):
-    if not os.path.isdir(adapter_dir):
-        raise FileNotFoundError(f"Missing adapter directory: {adapter_dir}")
-    base = AutoModelForCausalLM.from_pretrained(base_id, device_map="cpu", torch_dtype="auto")
-    peft = PeftModel.from_pretrained(base, adapter_dir)
-    peft.merge_and_unload(safe_merge=True)
-    peft.save_pretrained(out_dir)
-    tok = AutoTokenizer.from_pretrained(base_id, use_fast=True)
-    tok.save_pretrained(out_dir)
-
-merge_adapter(llama_base, os.path.join(backup, "llama"), os.path.join(ckpt, "merged_llama"))
-merge_adapter(qwen_base,  os.path.join(backup, "qwen"),  os.path.join(ckpt, "merged_qwen"))
-print(f"✓ Refreshed merged weights in {ckpt}/merged_*")
-PY
-
-# Restore LoRA adapter directories for Stage C (PEFT expects lora_* paths)
-echo -e "\n=== Stage B -> restore LoRA adapters ===\n" | tee -a "$LOG"
-RUN_TAG="$RUN_TAG" CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python - <<'PY'
-import os
-import shutil
-
-run_tag = os.environ["RUN_TAG"]
-ckpt = os.path.join("runs", run_tag, "ckpt")
-backup = os.path.join("runs", run_tag, "stageA_lora")
-
-for name in ("llama", "qwen"):
-    src = os.path.join(backup, name)
-    dst = os.path.join(ckpt, f"lora_{name}")
-    if os.path.isdir(src):
-        if os.path.isdir(dst):
-            shutil.rmtree(dst)
-        shutil.copytree(src, dst)
-        print(f"Restored {dst}")
-    else:
-        print(f"[WARN] Missing stageA backup {src}; adapter restore skipped")
-PY
-
-# Stage C: Eval (text vs latent, sequential_eval, proper chat templates)
+# --- Stage C: Evaluation on clean hubs + learned prefixes ---
 echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
-  --ckpt "$CKPT_DIR_STAGEB" --samples "$SAMPLES" --dataset "$DATASET" \
+  --ckpt "$CKPT_DIR_STAGEB" --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
+  --samples "$SAMPLES" --dataset "$DATASET" \
   --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
   --chunk_size "$CHUNK_SIZE" \
-  --latent_anchor_mode text --latent_anchor_text "Answer: " --append_bos_after_prefix yes \
+  --latent_anchor_mode chat --append_bos_after_prefix yes \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
