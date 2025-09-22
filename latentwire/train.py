@@ -1054,13 +1054,12 @@ def main():
                             {"role": "user", "content": user_text},
                         ]
                         if ctx.anchor_text:
-                            messages.append({"role": "assistant", "content": ctx.anchor_text})
                             rendered = ctx.wrapper.tokenizer.apply_chat_template(
                                 messages,
                                 tokenize=False,
-                                add_generation_prompt=False,
-                                continue_final_message=True,
+                                add_generation_prompt=True,
                             )
+                            rendered = rendered + ctx.anchor_text
                         else:
                             rendered = ctx.wrapper.tokenizer.apply_chat_template(
                                 messages,
