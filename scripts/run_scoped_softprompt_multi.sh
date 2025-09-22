@@ -19,14 +19,33 @@ LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
 LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 QWEN_ID="${QWEN_ID:-Qwen/Qwen2.5-7B-Instruct}"
 
+hero=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --hero)
+      hero=1
+      shift
+      ;;
+    --)
+      shift
+      break
+    *)
+      break
+  esac
+done
+
 # Data/Eval
 DATASET="${DATASET:-squad}"
-TRAIN_SAMPLES="${TRAIN_SAMPLES:-8000}"
-# TRAIN_SAMPLES="${TRAIN_SAMPLES:-320}"
-SMOKE_SAMPLES="${SMOKE_SAMPLES:-200}"
-SAMPLES="${SAMPLES:-1000}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
 CHUNK_SIZE="${CHUNK_SIZE:-32}"
+
+if [[ $hero -eq 1 ]]; then
+  TRAIN_SAMPLES=8000
+  EPOCHS_B=8
+else
+  TRAIN_SAMPLES=320
+  EPOCHS_B=1
+fi
 
 # Latent
 LATENT_LEN="${LATENT_LEN:-64}"           # Relax compression for acceptance
@@ -35,8 +54,6 @@ D_Z="${D_Z:-256}"
 # Tuning Params
 BATCH_SIZE_A="${BATCH_SIZE_A:-32}"
 BATCH_SIZE_B="${BATCH_SIZE_B:-24}"
-EPOCHS_B="${EPOCHS_B:-8}"
-# EPOCHS_B="${EPOCHS_B:-1}"
 
 # Chat templating (non‑negotiable)
 export LW_APPLY_CHAT_TEMPLATE=1
