@@ -478,6 +478,13 @@ def main():
         help="How to choose the training anchor: 'text' uses --warm_anchor_text, 'chat' injects the"
              " tokenizer's assistant header, 'none' disables anchors, 'auto' matches legacy behaviour.",
     )
+    ap.add_argument(
+        "--max_anchor_tokens",
+        type=int,
+        default=32,
+        help="Upper bound on the number of discrete anchor tokens to inject (prevents chat headers"
+             " from ballooning the prefix). Set <=0 to disable truncation.",
+    )
     ap.add_argument("--debug", action="store_true")
 
     # Checkpointing
@@ -698,8 +705,27 @@ def main():
             return anchor
         return ""
 
-    anchor_text_llama = _anchor_text_for(llama, args.warm_anchor_text)
-    anchor_text_qwen = _anchor_text_for(qwen, args.warm_anchor_text)
+    def _truncate_anchor(wrapper, text: str) -> str:
+        max_tok = int(getattr(args, "max_anchor_tokens", 0) or 0)
+        if max_tok <= 0 or not text:
+            return text
+        try:
+            ids = wrapper._encode_anchor_text(text)
+        except Exception:
+            return text
+        if len(ids) <= max_tok:
+            return text
+        kept = ids[:max_tok]
+        truncated = wrapper.tokenizer.decode(kept, skip_special_tokens=False)
+        if text.endswith(" ") and not truncated.endswith(" "):
+            truncated += " "
+        print(f"[WARN] Anchor trimmed from {len(ids)} to {len(kept)} tokens for {wrapper.cfg.model_id}")
+        return truncated
+
+    anchor_text_llama = _truncate_anchor(llama, _anchor_text_for(llama, args.warm_anchor_text))
+    anchor_text_qwen = _truncate_anchor(qwen, _anchor_text_for(qwen, args.warm_anchor_text))
+    if anchor_text_qwen != anchor_text_llama:
+        print("[WARN] Anchor strings differ between models; using Llama variant for shared config.")
 
     # === A0 sanity check ===
     try:
@@ -1326,8 +1352,9 @@ def main():
                     "encoder_backbone": (args.encoder_backbone or ""),
                     "freeze_encoder": bool(args.freeze_encoder),
                     "use_chat_template": bool(args.use_chat_template),
-                    "warm_anchor_text": args.warm_anchor_text,
+                    "warm_anchor_text": anchor_text_llama,
                     "warm_anchor_mode": args.warm_anchor_mode,
+                    "max_anchor_tokens": args.max_anchor_tokens,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
                     "first_token_ce_weight": args.first_token_ce_weight,
                     "first_token_ce_schedule": args.first_token_ce_schedule,
@@ -1406,8 +1433,9 @@ def main():
         "encoder_backbone": (args.encoder_backbone or ""),
         "freeze_encoder": bool(args.freeze_encoder),
         "use_chat_template": bool(args.use_chat_template),
-        "warm_anchor_text": args.warm_anchor_text,
+        "warm_anchor_text": anchor_text_llama,
         "warm_anchor_mode": args.warm_anchor_mode,
+        "max_anchor_tokens": args.max_anchor_tokens,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
         "first_token_ce_weight": args.first_token_ce_weight,
         "first_token_ce_schedule": args.first_token_ce_schedule,

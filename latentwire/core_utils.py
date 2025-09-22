@@ -203,6 +203,8 @@ def infer_anchor_mode_and_text(wrapper, cfg: dict, cli_mode: str, cli_text: str)
     if mode == "text":
         return "text", train_anchor
     if mode == "chat":
+        if train_anchor:
+            return "text", train_anchor
         return "chat", ""
 
     # auto/legacy fallback: prefer explicit text, otherwise chat header
