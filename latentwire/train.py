@@ -723,6 +723,13 @@ def main():
     if anchor_qwen_ids:
         print(f"[INFO] Qwen anchor tokens: {len(anchor_qwen_ids)}")
 
+    bos_flag_llama = bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids)
+    bos_flag_qwen = bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids)
+    if anchor_mode_llama == "chat":
+        bos_flag_llama = False
+    if anchor_mode_qwen == "chat":
+        bos_flag_qwen = False
+
     if args.grad_ckpt:
         llama.enable_gradient_checkpointing()
         qwen.enable_gradient_checkpointing()
@@ -959,7 +966,7 @@ def main():
             token_ids=llama_ids,
             first_token_ids=llama_first_ids_all,
             anchor_ids=anchor_llama_ids,
-            bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids),
+            bos_flag=bos_flag_llama,
             answer_lengths=llama_answer_lengths_all,
             anchor_text=anchor_text_llama,
             anchor_mode=anchor_mode_llama,
@@ -971,7 +978,7 @@ def main():
             token_ids=qwen_ids,
             first_token_ids=qwen_first_ids_all,
             anchor_ids=anchor_qwen_ids,
-            bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids),
+            bos_flag=bos_flag_qwen,
             answer_lengths=qwen_answer_lengths_all,
             anchor_text=anchor_text_qwen,
             anchor_mode=anchor_mode_qwen,
@@ -1163,7 +1170,7 @@ def main():
 
                 prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
-                if epoch == start_epoch and step == 0:
+                if args.debug and epoch == start_epoch and step == 0:
                     print(
                         f"[DEBUG:{ctx.name}] prefix_len={prefix.shape[1]} anchor_ids={len(ctx.anchor_ids)} tf_len={targets.size(1)}",
                         flush=True,

@@ -39,6 +39,7 @@ from latentwire.core_utils import (
     make_anchor_text,
     infer_anchor_mode_and_text,
     SYSTEM_PROMPT,
+    bos_policy,
     split_user_and_anchor,
 )
 from latentwire.data import load_examples
@@ -585,6 +586,7 @@ def _run_latent_path(
     wrapper: LMWrapper,
     prefix: torch.Tensor,
     anchor_text: Optional[str],
+    append_bos: Optional[bool],
     prompts_raw: List[str],
     chat_prompts: List[str],
     golds: List[str],
@@ -596,7 +598,7 @@ def _run_latent_path(
         prefix,
         golds,
         anchor_text or None,
-        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
+        append_bos_after_prefix=append_bos,
         skip=bool(getattr(args, "skip_prefix_acc", False)),
         chunk_size=max(1, getattr(args, "chunk_size", 8)),
     )
@@ -612,7 +614,7 @@ def _run_latent_path(
         eos_ban_steps=args.eos_ban_steps,
         first_token_top_p=args.first_token_top_p,
         first_token_temperature=args.first_token_temperature,
-        append_bos_after_prefix=(None if args.append_bos_after_prefix == "auto" else (args.append_bos_after_prefix == "yes")),
+        append_bos_after_prefix=append_bos,
         lengths=answer_lengths,
     )
 
@@ -777,7 +779,16 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
             ctx["wrapper"], cfg, args.latent_anchor_mode, args.latent_anchor_text
         )
         anchor = make_anchor_text(mode, ctx["wrapper"], anchor_text_src)
-        anchor_info[name] = {"mode": mode, "text": anchor_text_src, "anchor": anchor}
+        has_anchor = bool(anchor) if mode == "text" else False
+        bos_flag = bos_policy(args.append_bos_after_prefix, [0] if has_anchor else [])
+        if mode == "chat":
+            bos_flag = False
+        anchor_info[name] = {
+            "mode": mode,
+            "text": anchor_text_src,
+            "anchor": anchor,
+            "bos": bos_flag,
+        }
 
     use_chat_template_flag = str(getattr(args, "use_chat_template", "yes")).lower()
     apply_chat_template = use_chat_template_flag != "no"
@@ -862,12 +873,14 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     trunc_wall = 0.0
     for name, ctx in model_contexts.items():
         anchor_payload = anchor_info[name]["anchor"] if anchor_info[name]["mode"] == "text" else None
+        append_bos = anchor_info[name]["bos"]
         res = _run_latent_path(
             args,
             name,
             ctx["wrapper"],
             prefix_map[name],
             anchor_payload,
+            append_bos,
             prompts_raw,
             ctx["chat"],
             golds,
