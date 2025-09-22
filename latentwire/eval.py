@@ -654,7 +654,9 @@ def _run_latent_path(
         },
     }
 
-def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats, models):
+def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
+                      llama_id, qwen_id, latent_len, d_z, cfg, train_stats,
+                      models: Optional[List[str]] = None):
     print("\n[Standard Evaluation Mode]\n(Use --sequential_eval to enable per-model encoder text auto-alignment.)")
 
     ckpt_path = args.ckpt
@@ -735,6 +737,12 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
 
     wrappers = {"llama": llama, "qwen": qwen}
 
+    if models:
+        keep = {m for m in models}
+        wrappers = {k: v for k, v in wrappers.items() if k in keep}
+        if not wrappers:
+            raise ValueError(f"No valid models selected from {models}; choose any subset of ['llama','qwen']")
+
     # Reattach Prefix-Tuning adapters if available
     try:
         from peft import PeftModel  # type: ignore
@@ -750,7 +758,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     except Exception as exc:
         print(f"[WARN] Prefix-Tuning reload skipped: {exc}")
 
-    for name in ("llama", "qwen"):
+    for name in list(wrappers.keys()):
         path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
         state = _safe_load(path, map_location=device)
         try:
@@ -763,10 +771,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
                 adapters[name].install_color_from_wrapper(wrappers[name])
             except Exception:
                 pass
-    model_contexts = {
-        name: {"wrapper": wrapper, "adapter": adapters[name]}
-        for name, wrapper in wrappers.items()
-    }
+    model_contexts = {name: {"wrapper": wrapper, "adapter": adapters[name]} for name, wrapper in wrappers.items()}
 
     answer_lengths = {}
     for name, ctx in model_contexts.items():
@@ -1054,7 +1059,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
 
     return summary, preds_dump
 
-def run_sequential_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, encoder_type, byte_max, cfg, train_stats, models):
+def run_sequential_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
+                        llama_id, qwen_id, latent_len, d_z, encoder_type,
+                        byte_max, cfg, train_stats, models: Optional[List[str]] = None):
     """Fallback to standard evaluation logic; kept for API compatibility."""
     return run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, llama_id, qwen_id, latent_len, d_z, cfg, train_stats, models)
 
@@ -1274,14 +1281,15 @@ def main():
             encoded_latents=encoded_latents, prompts_raw=prompts_raw, golds=golds,
             llama_id=llama_id, qwen_id=qwen_id,
             latent_len=latent_len, d_z=d_z, encoder_type=encoder_type, byte_max=byte_max,
-            cfg=cfg, train_stats=train_stats
+            cfg=cfg, train_stats=train_stats, models=selected_models
         )
     else:
         summary, preds_dump = run_standard_eval(
             args=args, device=device, dtype=dtype,
             encoded_latents=encoded_latents, prompts_raw=prompts_raw, golds=golds,
             llama_id=llama_id, qwen_id=qwen_id,
-            latent_len=latent_len, d_z=d_z, cfg=cfg, train_stats=train_stats
+            latent_len=latent_len, d_z=d_z, cfg=cfg, train_stats=train_stats,
+            models=selected_models
         )
 
     # Tag dataset in the summary
