@@ -61,6 +61,7 @@ __all__ = [
     "maybe_merge_lora",
     "apply_prefix_tuning",
     "apply_prompt_tuning",
+    "split_user_and_anchor",
 ]
 
 # ---------------------------------------------------------------------------
@@ -211,6 +212,24 @@ def infer_anchor_mode_and_text(wrapper, cfg: dict, cli_mode: str, cli_text: str)
     if train_anchor:
         return "text", train_anchor
     return "chat", ""
+
+
+def split_user_and_anchor(text: str, anchor_literal: str):
+    """Split raw prompt into user text and trailing anchor literal (if present)."""
+    if not anchor_literal:
+        return text, ""
+    marker = anchor_literal.strip()
+    raw = text.rstrip()
+    if marker and raw.endswith(marker):
+        idx = raw.rfind(marker)
+        user = raw[:idx].rstrip()
+        return user, anchor_literal
+    newline_marker = f"\n{marker}"
+    if marker and newline_marker in text:
+        parts = text.split(newline_marker)
+        user = newline_marker.join(parts[:-1]).rstrip()
+        return user, anchor_literal
+    return text, anchor_literal
 
 
 def apply_anchor_normalization(args):  # pragma: no cover - compatibility shim

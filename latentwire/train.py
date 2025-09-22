@@ -28,6 +28,7 @@ from latentwire.core_utils import (
     tensor_rms_d,
     assistant_header_anchor,
     SYSTEM_PROMPT,
+    split_user_and_anchor,
 )
 
 from latentwire.models import (
@@ -68,6 +69,7 @@ from latentwire.losses import (
 )
 
 DEFAULT_SEED = 42
+DEFAULT_ANSWER_PREFIX = "Answer: "
 
 
 @contextmanager
@@ -296,32 +298,6 @@ def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
         print(f"[OK] t=0 alignment for {getattr(tokenizer, 'name_or_path', 'tokenizer')}")
     except Exception as exc:
         print(f"[WARN] t=0 alignment failed: {exc}")
-
-
-def _build_scaffold_ids(tokenizer, texts: List[str], anchor_text: str, device: str) -> torch.Tensor:
-    """Construct teacher text scaffolds (prompt + anchor) for KD."""
-    suffix = anchor_text or ""
-    combo = [t + suffix for t in texts]
-    enc = tokenizer(combo, return_tensors="pt", padding=True, truncation=False, add_special_tokens=True)
-    return enc["input_ids"].to(device)
-
-
-def _split_user_and_anchor(text: str, anchor_literal: str) -> Tuple[str, str]:
-    if not anchor_literal:
-        return text, ""
-    marker = anchor_literal.strip()
-    raw = text.rstrip()
-    if marker and raw.endswith(marker):
-        idx = raw.rfind(marker)
-        user = raw[:idx].rstrip()
-        return user, anchor_literal
-    # try newline-separated
-    newline_marker = f"\n{marker}"
-    if marker and newline_marker in text:
-        parts = text.split(newline_marker)
-        user = newline_marker.join(parts[:-1]).rstrip()
-        return user, anchor_literal
-    return text, anchor_literal
 
 
 def _render_chat_prompt(tokenizer, user_text: str, system_prompt: Optional[str]) -> str:
@@ -672,6 +648,8 @@ def main():
         print("[DeviceMap] Qwen :", getattr(qwen.model, "hf_device_map", None))
     except Exception:
         pass
+
+    strip_anchor_literal = args.warm_anchor_text if args.warm_anchor_text else DEFAULT_ANSWER_PREFIX
 
     embed_stats = {
         "llama": llama.embedding_stats(),
@@ -1087,8 +1065,7 @@ def main():
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
             if args.use_chat_template:
-                anchor_literal = anchor_text_llama if anchor_mode_llama == "text" else ""
-                batch_user_texts = [_split_user_and_anchor(raw, anchor_literal)[0] for raw in batch_texts]
+                batch_user_texts = [split_user_and_anchor(raw, strip_anchor_literal)[0] for raw in batch_texts]
             else:
                 batch_user_texts = batch_texts
 
@@ -1366,6 +1343,7 @@ def main():
                     "use_chat_template": bool(args.use_chat_template),
                     "warm_anchor_text": anchor_text_llama,
                     "warm_anchor_mode": args.warm_anchor_mode,
+                    "strip_anchor_text": strip_anchor_literal,
                     "max_anchor_tokens": args.max_anchor_tokens,
                     "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
                     "first_token_ce_weight": args.first_token_ce_weight,
@@ -1447,6 +1425,7 @@ def main():
         "use_chat_template": bool(args.use_chat_template),
         "warm_anchor_text": anchor_text_llama,
         "warm_anchor_mode": args.warm_anchor_mode,
+        "strip_anchor_text": strip_anchor_literal,
         "max_anchor_tokens": args.max_anchor_tokens,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
         "first_token_ce_weight": args.first_token_ce_weight,

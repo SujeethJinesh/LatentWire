@@ -39,6 +39,7 @@ from latentwire.core_utils import (
     make_anchor_text,
     infer_anchor_mode_and_text,
     SYSTEM_PROMPT,
+    split_user_and_anchor,
 )
 from latentwire.data import load_examples
 from latentwire.core_utils import batch_metrics, _normalize, em, f1
@@ -48,6 +49,7 @@ from latentwire.core_utils import batch_metrics, _normalize, em, f1
 # ---------------------------
 
 EVAL_FIXED_SEED = 12345  # deterministic eval
+DEFAULT_ANSWER_PREFIX = "Answer: "
 
 
 def _parse_device_map(spec: Optional[str]):
@@ -779,20 +781,22 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
 
     use_chat_template_flag = str(getattr(args, "use_chat_template", "yes")).lower()
     apply_chat_template = use_chat_template_flag != "no"
+    strip_literal = cfg.get("strip_anchor_text") or DEFAULT_ANSWER_PREFIX
     for name, ctx in model_contexts.items():
         if apply_chat_template:
             assistant_prefill = None
             info = anchor_info.get(name, {})
             if info.get("mode") == "text" and info.get("anchor"):
                 assistant_prefill = info["anchor"]
+            chat_user = [split_user_and_anchor(raw, strip_literal)[0] for raw in prompts_raw]
             ctx["chat"] = [
                 format_with_chat_template(
                     ctx["wrapper"].tokenizer,
-                    user_text=raw,
+                    user_text=user_text,
                     system_text=SYSTEM_PROMPT,
                     assistant_prefill=assistant_prefill,
                 )
-                for raw in prompts_raw
+                for user_text in chat_user
             ]
         else:
             ctx["chat"] = build_chat_prompts(ctx["wrapper"].tokenizer, prompts_raw)
