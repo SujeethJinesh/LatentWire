@@ -31,6 +31,7 @@ while [[ $# -gt 0 ]]; do
       break
     *)
       break
+      ;;
   esac
 done
 
