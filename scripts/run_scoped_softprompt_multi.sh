@@ -44,9 +44,11 @@ CHUNK_SIZE="${CHUNK_SIZE:-32}"
 if [[ $hero -eq 1 ]]; then
   TRAIN_SAMPLES=8000
   EPOCHS_B=8
+  SAMPLES="${SAMPLES:-1000}"
 else
   TRAIN_SAMPLES=320
   EPOCHS_B=1
+  SAMPLES="${SAMPLES:-200}"
 fi
 
 # Latent
