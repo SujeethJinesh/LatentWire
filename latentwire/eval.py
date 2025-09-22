@@ -857,12 +857,13 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     latent_wall = 0.0
     trunc_wall = 0.0
     for name, ctx in model_contexts.items():
+        anchor_payload = anchor_info[name]["anchor"] if anchor_info[name]["mode"] == "text" else None
         res = _run_latent_path(
             args,
             name,
             ctx["wrapper"],
             prefix_map[name],
-            anchor_info[name]["anchor"],
+            anchor_payload,
             prompts_raw,
             ctx["chat"],
             golds,
@@ -897,7 +898,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds, 
     joint_preds = []
     agree = 0
     anchor_ids = {
-        name: model_contexts[name]["wrapper"]._encode_anchor_text(info["anchor"]) if info["anchor"] else None
+        name: (model_contexts[name]["wrapper"]._encode_anchor_text(info["anchor"]) if info.get("mode") == "text" and info.get("anchor") else None)
         for name, info in anchor_info.items()
     }
 

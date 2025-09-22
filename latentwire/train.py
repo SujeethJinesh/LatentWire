@@ -738,8 +738,8 @@ def main():
     except Exception as exc:
         print(f"[WARN] A0 sanity check skipped/failed: {exc}")
 
-    anchor_llama_ids = anchor_token_ids(llama, anchor_text_llama)
-    anchor_qwen_ids = anchor_token_ids(qwen, anchor_text_qwen)
+    anchor_llama_ids = anchor_token_ids(llama, anchor_text_llama) if anchor_mode_llama == "text" else []
+    anchor_qwen_ids = anchor_token_ids(qwen, anchor_text_qwen) if anchor_mode_qwen == "text" else []
     if anchor_llama_ids:
         print(f"[INFO] Llama anchor tokens: {len(anchor_llama_ids)}")
     if anchor_qwen_ids:
@@ -1087,7 +1087,8 @@ def main():
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
             if args.use_chat_template:
-                batch_user_texts = [_split_user_and_anchor(raw, anchor_text_llama)[0] for raw in batch_texts]
+                anchor_literal = anchor_text_llama if anchor_mode_llama == "text" else ""
+                batch_user_texts = [_split_user_and_anchor(raw, anchor_literal)[0] for raw in batch_texts]
             else:
                 batch_user_texts = batch_texts
 
@@ -1190,9 +1191,10 @@ def main():
                 )
 
                 if enable_first_token_loss:
+                    first_anchor_text = ctx.anchor_text if (ctx.anchor_mode == "text" and ctx.anchor_text) else None
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
-                        anchor_token_text=(ctx.anchor_text or None),
+                        anchor_token_text=first_anchor_text,
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                     first_targets = ctx.first_token_ids[idx].to(target_device)
