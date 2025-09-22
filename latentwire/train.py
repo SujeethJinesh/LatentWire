@@ -1080,6 +1080,7 @@ def main():
                     scaffolds[ctx.name] = tok["input_ids"].to(device)
 
             effective_texts = batch_user_texts if args.use_chat_template else batch_texts
+            effective_texts = batch_user_texts if args.use_chat_template else batch_texts
             encoded_latents = encode_fn(effective_texts)
             shared_latents = encoded_latents["shared"]
             private_latents = encoded_latents["private"]

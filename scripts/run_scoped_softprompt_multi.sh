@@ -123,9 +123,10 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --save_dir "$CKPT_DIR" --auto_resume --save_training_stats \
   --train_append_bos_after_prefix yes \
   --warm_anchor_text "Answer: " \
-  --first_token_ce_weight 4.0 \
+  --first_token_ce_weight 3.0 \
+  --K 0 \
   --adapter_hidden_mult 2 \
-  --manifold_stat_weight 0.001 \
+  --manifold_stat_weight 0.0 \
   --max_answer_tokens 24 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
@@ -186,10 +187,11 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --freeze_encoder \
   --use_chat_template \
   --warm_anchor_text "Answer: " \
-  --first_token_ce_weight 4.0 \
+  --first_token_ce_weight 3.0 \
+  --K 0 \
   --k_ce_weight 0.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
   --adapter_hidden_mult 2 \
-  --manifold_stat_weight 0.001 \
+  --manifold_stat_weight 0.0 \
   --max_answer_tokens 24 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
@@ -247,7 +249,6 @@ PY
 echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --ckpt "$CKPT_DIR_STAGEB" --samples "$SAMPLES" --dataset "$DATASET" \
-  --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
   --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
   --chunk_size "$CHUNK_SIZE" \
   --latent_anchor_mode text --latent_anchor_text "Answer: " --append_bos_after_prefix yes \
