@@ -305,6 +305,24 @@ def _build_scaffold_ids(tokenizer, texts: List[str], anchor_text: str, device: s
     return enc["input_ids"].to(device)
 
 
+def _split_user_and_anchor(text: str, anchor_literal: str) -> Tuple[str, str]:
+    if not anchor_literal:
+        return text, ""
+    marker = anchor_literal.strip()
+    raw = text.rstrip()
+    if marker and raw.endswith(marker):
+        idx = raw.rfind(marker)
+        user = raw[:idx].rstrip()
+        return user, anchor_literal
+    # try newline-separated
+    newline_marker = f"\n{marker}"
+    if marker and newline_marker in text:
+        parts = text.split(newline_marker)
+        user = newline_marker.join(parts[:-1]).rstrip()
+        return user, anchor_literal
+    return text, anchor_literal
+
+
 def _render_chat_prompt(tokenizer, user_text: str, system_prompt: Optional[str]) -> str:
     messages: List[Dict[str, str]] = []
     if system_prompt:
@@ -645,12 +663,11 @@ def main():
     }
 
     def _anchor_text_for(wrapper, fallback: str) -> str:
+        txt = fallback or ""
         if args.use_chat_template:
-            txt = assistant_header_anchor(wrapper.tokenizer) or ""
-        else:
-            txt = fallback or ""
-            if txt and not txt.endswith(" "):
-                txt = txt + " "
+            txt = txt or "Answer: "
+        if txt and not txt.endswith(" "):
+            txt = txt + " "
         return txt
 
     anchor_text_llama = _anchor_text_for(llama, args.warm_anchor_text)
@@ -1005,6 +1022,10 @@ def main():
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
+            if args.use_chat_template:
+                batch_user_texts = [_split_user_and_anchor(raw, anchor_text_llama)[0] for raw in batch_texts]
+            else:
+                batch_user_texts = batch_texts
 
             global_batch_idx = epoch * steps_per_epoch + step
             if total_batches > 1:
@@ -1027,21 +1048,22 @@ def main():
                     if pad_token is None:
                         pad_token = int(getattr(ctx.wrapper.tokenizer, "eos_token_id", 0))
                     ids_list = []
-                    for text in batch_texts:
+                    for user_text in batch_user_texts:
                         messages = [
                             {"role": "system", "content": SYSTEM_PROMPT},
-                            {"role": "user", "content": text},
+                            {"role": "user", "content": user_text},
                         ]
-                        chat_ids = ctx.wrapper.tokenizer.apply_chat_template(
+                        if ctx.anchor_text:
+                            messages.append({"role": "assistant", "content": ctx.anchor_text})
+                        chat_tokens = ctx.wrapper.tokenizer.apply_chat_template(
                             messages,
                             tokenize=True,
-                            add_generation_prompt=True,
+                            return_tensors="pt",
+                            add_generation_prompt=False,
+                            continue_final_message=bool(ctx.anchor_text),
                         )
-                        if isinstance(chat_ids, dict):
-                            chat_ids = chat_ids.get("input_ids", [])
-                            if isinstance(chat_ids, list) and chat_ids and isinstance(chat_ids[0], list):
-                                chat_ids = chat_ids[0]
-                        ids_list.append(torch.tensor(chat_ids, dtype=torch.long, device=device))
+                        ids = chat_tokens["input_ids"][0]
+                        ids_list.append(ids.to(device))
                     scaffolds[ctx.name] = torch.nn.utils.rnn.pad_sequence(
                         ids_list, batch_first=True, padding_value=int(pad_token)
                     )
@@ -1057,7 +1079,8 @@ def main():
                     )
                     scaffolds[ctx.name] = tok["input_ids"].to(device)
 
-            encoded_latents = encode_fn(batch_texts)
+            effective_texts = batch_user_texts if args.use_chat_template else batch_texts
+            encoded_latents = encode_fn(effective_texts)
             shared_latents = encoded_latents["shared"]
             private_latents = encoded_latents["private"]
             if shared_latents.size(1) > 0 and keep_prob < 1.0:

@@ -103,6 +103,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --lora_target_modules attn_mlp_firstN:12 \
   --save_dir "$CKPT_DIR" --auto_resume --save_training_stats \
   --train_append_bos_after_prefix yes \
+  --warm_anchor_text "Answer: " \
   --first_token_ce_weight 4.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.001 \
@@ -165,6 +166,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --freeze_encoder \
   --use_chat_template \
+  --warm_anchor_text "Answer: " \
   --first_token_ce_weight 4.0 \
   --k_ce_weight 0.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
   --adapter_hidden_mult 2 \
@@ -229,7 +231,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --latent_quant_bits 6 --latent_quant_group_size 32 --latent_quant_scale_bits 16 \
   --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
   --chunk_size "$CHUNK_SIZE" \
-  --latent_anchor_mode chat --append_bos_after_prefix no \
+  --latent_anchor_mode text --latent_anchor_text "Answer: " --append_bos_after_prefix yes \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
