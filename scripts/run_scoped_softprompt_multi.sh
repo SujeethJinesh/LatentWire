@@ -110,7 +110,7 @@ PY
 echo -e "\n=== Stage B: Prefix Training ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
-  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 --grad_ckpt \
+  --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --encoder_use_chat_template \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
