@@ -1163,6 +1163,15 @@ def main():
 
                 prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
+                if epoch == start_epoch and step == 0:
+                    print(
+                        f"[DEBUG:{ctx.name}] prefix_len={prefix.shape[1]} anchor_ids={len(ctx.anchor_ids)} tf_len={targets.size(1)}",
+                        flush=True,
+                    )
+                    print(
+                        f"[DEBUG:{ctx.name}] scaffold_len={scaffold.size(1)} anchor_mode={ctx.anchor_mode}",
+                        flush=True,
+                    )
                 loss_tf = ctx.wrapper.forward_with_prefix_loss(
                     prefix, targets, anchor_token_ids=ctx.anchor_ids
                 )
