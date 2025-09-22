@@ -1055,15 +1055,27 @@ def main():
                         ]
                         if ctx.anchor_text:
                             messages.append({"role": "assistant", "content": ctx.anchor_text})
-                        chat_tokens = ctx.wrapper.tokenizer.apply_chat_template(
-                            messages,
-                            tokenize=True,
+                            rendered = ctx.wrapper.tokenizer.apply_chat_template(
+                                messages,
+                                tokenize=False,
+                                add_generation_prompt=False,
+                                continue_final_message=True,
+                            )
+                        else:
+                            rendered = ctx.wrapper.tokenizer.apply_chat_template(
+                                messages,
+                                tokenize=False,
+                                add_generation_prompt=True,
+                            )
+                        toks = ctx.wrapper.tokenizer(
+                            rendered,
                             return_tensors="pt",
-                            add_generation_prompt=False,
-                            continue_final_message=bool(ctx.anchor_text),
+                            padding=False,
+                            truncation=False,
+                            add_special_tokens=False,
                         )
-                        ids = chat_tokens["input_ids"][0]
-                        ids_list.append(ids.to(device))
+                        ids = toks["input_ids"][0].to(device)
+                        ids_list.append(ids)
                     scaffolds[ctx.name] = torch.nn.utils.rnn.pad_sequence(
                         ids_list, batch_first=True, padding_value=int(pad_token)
                     )
