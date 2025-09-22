@@ -264,6 +264,7 @@ class ModelTrainContext:
     bos_flag: Optional[bool]
     answer_lengths: torch.Tensor
     anchor_text: str
+    anchor_mode: str
 
 
 def _primary_device(wrapper: LMWrapper) -> torch.device:
@@ -677,8 +678,9 @@ def main():
         "qwen": qwen.embedding_stats(),
     }
 
-    def _anchor_text_for(wrapper, fallback: str) -> str:
-        mode = (getattr(args, "warm_anchor_mode", "auto") or "auto").lower()
+    def _anchor_text_for(wrapper, fallback: str) -> Tuple[str, str]:
+        requested = (getattr(args, "warm_anchor_mode", "auto") or "auto").lower()
+        mode = requested
 
         def _ensure_trailing_space(txt: str) -> str:
             if txt and not txt.endswith(" "):
@@ -686,24 +688,24 @@ def main():
             return txt
 
         if mode == "none":
-            return ""
+            return "", "none"
         if mode == "chat":
             anchor = assistant_header_anchor(wrapper.tokenizer) or ""
-            return anchor
+            return anchor, "chat"
         if mode == "text":
             base = fallback or ""
             if not base and args.use_chat_template:
                 base = "Answer: "
-            return _ensure_trailing_space(base)
+            return _ensure_trailing_space(base), "text"
 
         # auto (legacy behaviour): prefer explicit text, otherwise chat header when templates are used
         base = fallback or ""
         if base:
-            return _ensure_trailing_space(base)
+            return _ensure_trailing_space(base), "text"
         if args.use_chat_template:
             anchor = assistant_header_anchor(wrapper.tokenizer) or "Answer: "
-            return anchor
-        return ""
+            return anchor, "chat"
+        return "", "none"
 
     def _truncate_anchor(wrapper, text: str) -> str:
         max_tok = int(getattr(args, "max_anchor_tokens", 0) or 0)
@@ -722,8 +724,10 @@ def main():
         print(f"[WARN] Anchor trimmed from {len(ids)} to {len(kept)} tokens for {wrapper.cfg.model_id}")
         return truncated
 
-    anchor_text_llama = _truncate_anchor(llama, _anchor_text_for(llama, args.warm_anchor_text))
-    anchor_text_qwen = _truncate_anchor(qwen, _anchor_text_for(qwen, args.warm_anchor_text))
+    anchor_text_llama, anchor_mode_llama = _anchor_text_for(llama, args.warm_anchor_text)
+    anchor_text_qwen, anchor_mode_qwen = _anchor_text_for(qwen, args.warm_anchor_text)
+    anchor_text_llama = _truncate_anchor(llama, anchor_text_llama)
+    anchor_text_qwen = _truncate_anchor(qwen, anchor_text_qwen)
     if anchor_text_qwen != anchor_text_llama:
         print("[WARN] Anchor strings differ between models; using Llama variant for shared config.")
 
@@ -736,6 +740,10 @@ def main():
 
     anchor_llama_ids = anchor_token_ids(llama, anchor_text_llama)
     anchor_qwen_ids = anchor_token_ids(qwen, anchor_text_qwen)
+    if anchor_llama_ids:
+        print(f"[INFO] Llama anchor tokens: {len(anchor_llama_ids)}")
+    if anchor_qwen_ids:
+        print(f"[INFO] Qwen anchor tokens: {len(anchor_qwen_ids)}")
 
     if args.grad_ckpt:
         llama.enable_gradient_checkpointing()
@@ -976,6 +984,7 @@ def main():
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids),
             answer_lengths=llama_answer_lengths_all,
             anchor_text=anchor_text_llama,
+            anchor_mode=anchor_mode_llama,
         ),
         ModelTrainContext(
             name="qwen",
@@ -987,6 +996,7 @@ def main():
             bos_flag=bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids),
             answer_lengths=qwen_answer_lengths_all,
             anchor_text=anchor_text_qwen,
+            anchor_mode=anchor_mode_qwen,
         ),
     ]
 
@@ -1107,7 +1117,7 @@ def main():
                             {"role": "system", "content": SYSTEM_PROMPT},
                             {"role": "user", "content": user_text},
                         ]
-                        if ctx.anchor_text:
+                        if ctx.anchor_mode == "text" and ctx.anchor_text:
                             rendered = ctx.wrapper.tokenizer.apply_chat_template(
                                 messages,
                                 tokenize=False,
@@ -1133,7 +1143,7 @@ def main():
                         ids_list, batch_first=True, padding_value=int(pad_token)
                     )
                 else:
-                    anchor_suffix = ctx.anchor_text or ""
+                    anchor_suffix = ctx.anchor_text if ctx.anchor_mode == "text" else ""
                     texts_with_anchor = [f"{text}{anchor_suffix}" for text in batch_texts]
                     tok = ctx.wrapper.tokenizer(
                         texts_with_anchor,
