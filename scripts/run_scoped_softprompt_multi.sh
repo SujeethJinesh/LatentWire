@@ -40,7 +40,7 @@ done
 # Data / eval
 DATASET="${DATASET:-squad}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
-CHUNK_SIZE="${CHUNK_SIZE:-64}"
+CHUNK_SIZE="${CHUNK_SIZE:-96}"
 
 if [[ $hero -eq 1 ]]; then
   TRAIN_SAMPLES=8000
@@ -55,8 +55,8 @@ fi
 # Latent budget and optimiser defaults
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
-BATCH_SIZE_B="${BATCH_SIZE_B:-32}"
-BATCH_SIZE_A="${BATCH_SIZE_A:-32}"
+BATCH_SIZE_B="${BATCH_SIZE_B:-48}"
+BATCH_SIZE_A="${BATCH_SIZE_A:-48}"
 
 # Mandatory chat templating across the stack
 export LW_APPLY_CHAT_TEMPLATE=1
@@ -121,9 +121,9 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --use_chat_template \
   --warm_anchor_mode chat \
-  --first_token_ce_weight 1.0 \
+  --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 2.5 --first_token_ce_warmup_frac 0.3 \
   --K 4 \
-  --k_ce_weight 0.5 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
+  --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.0 \
   --max_grad_norm 1.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.0 \
@@ -144,9 +144,9 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --use_chat_template \
   --warm_anchor_mode chat \
-  --first_token_ce_weight 2.0 \
+  --first_token_ce_weight 1.5 --first_token_ce_schedule cosine --first_token_ce_peak 3.0 --first_token_ce_warmup_frac 0.3 \
   --K 4 \
-  --k_ce_weight 0.5 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
+  --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.0 \
   --max_grad_norm 1.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.0 \
