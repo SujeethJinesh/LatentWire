@@ -273,8 +273,10 @@ def _primary_device(wrapper: LMWrapper) -> torch.device:
     return next(wrapper.model.parameters()).device
 
 
-def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: "):
+def _assert_t0_alignment(tokenizer, answer_prefix: str = "Answer: ", skip_if_chat: bool = False):
     """Sanity check: the first gold token should appear immediately after the anchor."""
+    if skip_if_chat:
+        return
     try:
         q = "Q: Capital of France?"
         c = "C: Paris is the capital of France."
@@ -650,6 +652,8 @@ def main():
         pass
 
     strip_anchor_literal = args.warm_anchor_text if args.warm_anchor_text else DEFAULT_ANSWER_PREFIX
+    if strip_anchor_literal and not strip_anchor_literal.endswith(" "):
+        strip_anchor_literal = strip_anchor_literal + " "
 
     embed_stats = {
         "llama": llama.embedding_stats(),
@@ -711,13 +715,18 @@ def main():
         anchor_text_llama = _truncate_anchor(llama, anchor_text_llama)
     if anchor_mode_qwen == "text":
         anchor_text_qwen = _truncate_anchor(qwen, anchor_text_qwen)
+    if anchor_mode_llama == "chat":
+        anchor_text_llama = strip_anchor_literal
+    if anchor_mode_qwen == "chat":
+        anchor_text_qwen = strip_anchor_literal
     if anchor_text_qwen != anchor_text_llama:
         print("[WARN] Anchor strings differ between models; using Llama variant for shared config.")
 
     # === A0 sanity check ===
     try:
-        _assert_t0_alignment(llama.tokenizer, anchor_text_llama or "Answer: ")
-        _assert_t0_alignment(qwen.tokenizer,  anchor_text_qwen or "Answer: ")
+        skip_chat = bool(args.use_chat_template)
+        _assert_t0_alignment(llama.tokenizer, anchor_text_llama or "Answer: ", skip_if_chat=skip_chat)
+        _assert_t0_alignment(qwen.tokenizer,  anchor_text_qwen or "Answer: ", skip_if_chat=skip_chat)
     except Exception as exc:
         print(f"[WARN] A0 sanity check skipped/failed: {exc}")
 
@@ -1107,19 +1116,14 @@ def main():
                             {"role": "system", "content": SYSTEM_PROMPT},
                             {"role": "user", "content": user_text},
                         ]
-                        if ctx.anchor_mode == "text" and ctx.anchor_text:
-                            rendered = ctx.wrapper.tokenizer.apply_chat_template(
-                                messages,
-                                tokenize=False,
-                                add_generation_prompt=True,
-                            )
-                            rendered = rendered + ctx.anchor_text
-                        else:
-                            rendered = ctx.wrapper.tokenizer.apply_chat_template(
-                                messages,
-                                tokenize=False,
-                                add_generation_prompt=True,
-                            )
+                        rendered = ctx.wrapper.tokenizer.apply_chat_template(
+                            messages,
+                            tokenize=False,
+                            add_generation_prompt=True,
+                        )
+                        assistant_prefill = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
+                        if assistant_prefill:
+                            rendered = rendered + assistant_prefill
                         toks = ctx.wrapper.tokenizer(
                             rendered,
                             return_tensors="pt",
@@ -1133,7 +1137,7 @@ def main():
                         ids_list, batch_first=True, padding_value=int(pad_token)
                     )
                 else:
-                    anchor_suffix = ctx.anchor_text if ctx.anchor_mode == "text" else ""
+                    anchor_suffix = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
                     texts_with_anchor = [f"{text}{anchor_suffix}" for text in batch_texts]
                     tok = ctx.wrapper.tokenizer(
                         texts_with_anchor,
@@ -1189,7 +1193,7 @@ def main():
                 )
 
                 if enable_first_token_loss:
-                    first_anchor_text = ctx.anchor_text if (ctx.anchor_mode == "text" and ctx.anchor_text) else None
+                    first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
                         anchor_token_text=first_anchor_text,

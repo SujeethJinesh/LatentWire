@@ -222,31 +222,34 @@ def format_with_chat_template(tokenizer, user_text: str, system_text: Optional[s
     if system_text:
         messages.append({"role": "system", "content": system_text})
     messages.append({"role": "user", "content": user_text})
-    kwargs: Dict[str, Any] = {"tokenize": False}
-    if assistant_prefill:
-        messages.append({"role": "assistant", "content": assistant_prefill})
-        kwargs.update(add_generation_prompt=False, continue_final_message=True)
-    else:
-        kwargs.update(add_generation_prompt=True)
+    base_prefill = assistant_prefill or ""
+    if base_prefill and not base_prefill.endswith(" "):
+        base_prefill = base_prefill + " "
     try:
-        rendered = tokenizer.apply_chat_template(messages, **kwargs)
+        rendered = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
         if not rendered:
             raise ValueError("empty rendering")
+        if base_prefill:
+            rendered = rendered + base_prefill
         return rendered
-    except ValueError:
-        # Retry by explicitly continuing an assistant turn (covers Qwen-style "default" templates).
+    except Exception:
+        # Retry by explicitly continuing an assistant turn (covers tokenizers that require an explicit assistant message).
         fallback_msgs = list(messages)
-        fallback_msgs.append({"role": "assistant", "content": assistant_prefill or ""})
+        fallback_msgs.append({"role": "assistant", "content": base_prefill})
         fallback_kwargs = {"tokenize": False, "add_generation_prompt": False, "continue_final_message": True}
         try:
             rendered = tokenizer.apply_chat_template(fallback_msgs, **fallback_kwargs)
             if rendered:
                 return rendered
-        except ValueError:
+        except Exception:
             pass
         # Final fallback: synthesize a minimal chat prompt ourselves (system/user + assistant header)
         system_block = f"System: {system_text}\n" if system_text else ""
-        assistant_hdr = "Assistant:" if assistant_prefill is None else "Assistant: " + assistant_prefill
+        assistant_hdr = "Assistant:" if not base_prefill else "Assistant: " + base_prefill
         return f"{system_block}User: {user_text}\n\n{assistant_hdr}"
 
 def _best_mode_from_scores(candidates: List[str], scores: Dict[str, float], cfg: dict) -> str:

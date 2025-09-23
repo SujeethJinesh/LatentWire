@@ -10,8 +10,9 @@ set -euo pipefail
 : "${RUN_TAG:=scoped_softprompt_$(date +%Y%m%d_%H%M%S)}"
 RUN_DIR="runs/${RUN_TAG}"
 CKPT_DIR="${RUN_DIR}/ckpt"
+CKPT_DIR_STAGEA="${CKPT_DIR}/stageA"
 CKPT_DIR_STAGEB="${CKPT_DIR}/stageB"
-mkdir -p "$RUN_DIR" "$CKPT_DIR_STAGEB"
+mkdir -p "$RUN_DIR" "$CKPT_DIR_STAGEA" "$CKPT_DIR_STAGEB"
 LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
 
 # Base hub models
@@ -55,6 +56,7 @@ fi
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
 BATCH_SIZE_B="${BATCH_SIZE_B:-16}"
+BATCH_SIZE_A="${BATCH_SIZE_A:-$BATCH_SIZE_B}"
 
 # Mandatory chat templating across the stack
 export LW_APPLY_CHAT_TEMPLATE=1
@@ -106,6 +108,27 @@ if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
     sys.exit(2)
 PY
 
+# --- Stage A: Latent encoder bring-up ---
+echo -e "\n=== Stage A: Latent Fit ===\n" | tee -a "$LOG"
+CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
+  --batch_size "$BATCH_SIZE_A" --grad_accum_steps 16 \
+  --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
+  --encoder_use_chat_template \
+  --latent_len "$LATENT_LEN" --d_z "$D_Z" \
+  --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
+  --save_dir "$CKPT_DIR_STAGEA" --auto_resume --save_training_stats \
+  --train_append_bos_after_prefix yes \
+  --use_chat_template \
+  --warm_anchor_mode chat \
+  --first_token_ce_weight 4.0 \
+  --K 4 \
+  --k_ce_weight 1.0 --kd_first_k_weight 0.0 --state_kd_weight 0.0 \
+  --adapter_hidden_mult 2 \
+  --manifold_stat_weight 0.0 \
+  --max_answer_tokens 24 \
+  "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
+
 # --- Stage B: Prefix-training only ---
 echo -e "\n=== Stage B: Prefix Training ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
@@ -116,7 +139,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
-  --save_dir "$CKPT_DIR_STAGEB" --auto_resume --save_training_stats \
+  --save_dir "$CKPT_DIR_STAGEB" --auto_resume --resume_from "$CKPT_DIR_STAGEA" --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
   --freeze_encoder \
   --use_chat_template \

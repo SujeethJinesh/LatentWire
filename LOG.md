@@ -370,3 +370,10 @@ We are adding early‑step guidance + a slightly more expressive prefix mapping,
 - **Error:** `UnboundLocalError: local variable 'strip_literal' referenced before assignment` during Stage C evaluation.
 - **Cause:** The chat-mode prompt path stripped the `Answer: ` literal and attempted to reattach it before the literal was initialised in the anchor loop.
 - **Fix:** Initialise the literal once (from `config.json` or the default) before building `anchor_info`, then reuse it when constructing prompts and anchors. Evaluation now completes and text baselines recover.
+
+### 2025-09-22 — Stage A warm-up & chat-template baseline repair
+
+- **Pipeline update:** `run_scoped_softprompt_multi.sh` now performs a Stage A latent fit (encoder + adapters unfrozen) before the scoped Stage B prefix training, saving the first pass to `ckpt/stageA` and resuming from it with the encoder frozen. This prevents Stage B from starting with random latents.
+- **Training sanity:** `_assert_t0_alignment` skips its check when chat templates are active, eliminating false warnings about first-token mismatches under templated prompts.
+- **Evaluation fix:** `format_with_chat_template` always routes through the tokenizer’s own chat template and appends `"Answer: "` afterward, so text baselines retain model-specific headers instead of falling back to plain “Assistant:” scaffolds.
+- **Next steps:** Re-run Stage A→Stage B→Stage C to confirm text EM/F1 recover, then inspect latent metrics with the warmed-up wire.
