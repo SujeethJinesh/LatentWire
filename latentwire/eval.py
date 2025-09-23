@@ -917,43 +917,70 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "debug": debug_map.get(name, {}),
         }
 
+    joint_em = joint_f1 = agreement_rate = float("nan")
     joint_preds = []
-    agree = 0
-    anchor_ids = {
-        name: (model_contexts[name]["wrapper"]._encode_anchor_text(info["anchor"]) if info.get("mode") == "text" and info.get("anchor") else None)
-        for name, info in anchor_info.items()
-    }
+    if all(name in model_outputs for name in ("llama", "qwen")):
+        agree = 0
+        anchor_ids = {
+            name: (wrappers[name]._encode_anchor_text(anchor_info[name]["anchor"]) if anchor_info[name]["mode"] == "text" and anchor_info[name]["anchor"] else None)
+            for name in ("llama", "qwen")
+        }
 
-    for i, (candA, candB) in enumerate(zip(model_outputs["llama"]["latent_preds"], model_outputs["qwen"]["latent_preds"])):
-        prefix_ll = prefix_map["llama"][i:i+1]
-        prefix_qw = prefix_map["qwen"][i:i+1]
-        A_ids_L = _to_long(wrappers["llama"].tokenizer(candA, return_tensors="pt", add_special_tokens=True).input_ids, device)
-        A_ids_Q = _to_long(wrappers["qwen"].tokenizer(candA,  return_tensors="pt", add_special_tokens=True).input_ids, device)
-        B_ids_L = _to_long(wrappers["llama"].tokenizer(candB, return_tensors="pt", add_special_tokens=True).input_ids, device)
-        B_ids_Q = _to_long(wrappers["qwen"].tokenizer(candB,  return_tensors="pt", add_special_tokens=True).input_ids, device)
-        scoreA = wrappers["llama"].score_prefix_logprob(prefix_ll, A_ids_L, anchor_token_ids=anchor_ids["llama"]) +                  wrappers["qwen"].score_prefix_logprob(prefix_qw, A_ids_Q, anchor_token_ids=anchor_ids["qwen"])
-        scoreB = wrappers["llama"].score_prefix_logprob(prefix_ll, B_ids_L, anchor_token_ids=anchor_ids["llama"]) +                  wrappers["qwen"].score_prefix_logprob(prefix_qw, B_ids_Q, anchor_token_ids=anchor_ids["qwen"])
-        pick = candA if scoreA >= scoreB else candB
-        joint_preds.append(pick)
-        if _normalize(candA) == _normalize(candB):
-            agree += 1
+        for i, (candA, candB) in enumerate(zip(model_outputs["llama"]["latent_preds"], model_outputs["qwen"]["latent_preds"])):
+            prefix_ll = prefix_map["llama"][i:i+1]
+            prefix_qw = prefix_map["qwen"][i:i+1]
+            A_ids_L = _to_long(wrappers["llama"].tokenizer(candA, return_tensors="pt", add_special_tokens=True).input_ids, device)
+            A_ids_Q = _to_long(wrappers["qwen"].tokenizer(candA,  return_tensors="pt", add_special_tokens=True).input_ids, device)
+            B_ids_L = _to_long(wrappers["llama"].tokenizer(candB, return_tensors="pt", add_special_tokens=True).input_ids, device)
+            B_ids_Q = _to_long(wrappers["qwen"].tokenizer(candB,  return_tensors="pt", add_special_tokens=True).input_ids, device)
+            scoreA = wrappers["llama"].score_prefix_logprob(prefix_ll, A_ids_L, anchor_token_ids=anchor_ids["llama"]) + \
+                     wrappers["qwen"].score_prefix_logprob(prefix_qw, A_ids_Q, anchor_token_ids=anchor_ids["qwen"])
+            scoreB = wrappers["llama"].score_prefix_logprob(prefix_ll, B_ids_L, anchor_token_ids=anchor_ids["llama"]) + \
+                     wrappers["qwen"].score_prefix_logprob(prefix_qw, B_ids_Q, anchor_token_ids=anchor_ids["qwen"])
+            pick = candA if scoreA >= scoreB else candB
+            joint_preds.append(pick)
+            if _normalize(candA) == _normalize(candB):
+                agree += 1
 
-    joint_em, joint_f1 = batch_metrics(joint_preds, golds)
-    agreement_rate = agree / len(golds)
+        joint_em, joint_f1 = batch_metrics(joint_preds, golds)
+        agreement_rate = agree / len(golds)
 
-    wire = compute_wire_metrics(
-        model_outputs["llama"]["chat_prompts"],
-        model_outputs["qwen"]["chat_prompts"],
-        combined_latents["llama"],
-        group_size=getattr(args, "latent_quant_group_size", 32),
-        scale_bits=getattr(args, "latent_quant_scale_bits", 16),
-        selected_bits=getattr(args, "latent_quant_bits", None),
-    )
-    llama_latents = combined_latents["llama"]
-    base_bytes_per_latent = int(llama_latents.element_size() * llama_latents.size(1) * llama_latents.size(2))
-    selected_bytes = wire.get("selected_latent_bytes")
-    bytes_per_latent = int(selected_bytes) if selected_bytes is not None else base_bytes_per_latent
-    wire["base_latent_bytes"] = base_bytes_per_latent
+    wire = {}
+    bytes_per_latent = 0
+    group_size = getattr(args, "latent_quant_group_size", 32)
+    scale_bits = getattr(args, "latent_quant_scale_bits", 16)
+    if all(name in model_outputs for name in ("llama", "qwen")):
+        wire = compute_wire_metrics(
+            model_outputs["llama"]["chat_prompts"],
+            model_outputs["qwen"]["chat_prompts"],
+            combined_latents["llama"],
+            group_size=group_size,
+            scale_bits=scale_bits,
+            selected_bits=getattr(args, "latent_quant_bits", None),
+        )
+        llama_latents = combined_latents["llama"]
+        base_bytes_per_latent = int(llama_latents.element_size() * llama_latents.size(1) * llama_latents.size(2))
+        selected_bytes = wire.get("selected_latent_bytes")
+        bytes_per_latent = int(selected_bytes) if selected_bytes is not None else base_bytes_per_latent
+        wire["base_latent_bytes"] = base_bytes_per_latent
+    else:
+        name, latent_tensor = next(iter(combined_latents.items()))
+        prompts = model_outputs[name]["chat_prompts"]
+        num_latent = latent_tensor.numel()
+        base_bytes_per_latent = int(num_latent * 4)
+        bytes_per_latent = base_bytes_per_latent
+        wire = {
+            "prompt_chars": {name: sum(len(p) for p in prompts)},
+            "prompt_count": len(prompts),
+            "latent_shape": list(latent_tensor.shape),
+            "latent_bytes": {
+                "fp32": base_bytes_per_latent,
+                "fp16": int(num_latent * 2),
+            },
+            "group_size": int(group_size),
+            "scale_bits": int(scale_bits),
+            "selected_latent_bytes": None,
+        }
 
     oracle_em = 0.0
     oracle_f1 = 0.0
@@ -974,7 +1001,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         "device": device,
         "dtype": str(dtype),
         "avg_prompt_tokens": {name: text_results[name]["avg_prompt_tokens"] for name in model_contexts},
-        "compression": {name: text_results[name]["avg_prompt_tokens"] / latent_len for name in model_contexts},
+        "compression": {name: text_results[name]["avg_prompt_tokens"] / max(latent_len, 1) for name in model_contexts},
         "payload_bytes": bytes_per_latent,
         "payload_bytes_detail": {
             "fp32": wire["latent_bytes"]["fp32"],
@@ -1020,6 +1047,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         summary.setdefault("wire", {}).setdefault("wire_ratio", {}).update(wire.get("wire_ratio", {}))
     except Exception:
         pass
+    summary.setdefault("debug", {})
     summary["debug"]["settings"] = {
         "latent_anchor_mode": args.latent_anchor_mode,
         "latent_anchor_text": args.latent_anchor_text,
@@ -1036,18 +1064,16 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
 
     preds_dump = []
     for i in range(len(prompts_raw)):
-        preds_dump.append({
+        entry = {
             "prompt_raw": prompts_raw[i],
-            "prompt_llama_chat": model_outputs["llama"]["chat_prompts"][i],
-            "prompt_qwen_chat": model_outputs["qwen"]["chat_prompts"][i],
             "gold": golds[i],
-            "text_pred_llama": model_outputs["llama"]["text_preds"][i],
-            "text_pred_qwen": model_outputs["qwen"]["text_preds"][i],
-            "latent_pred_llama": model_outputs["llama"]["latent_preds"][i],
-            "latent_pred_qwen": model_outputs["qwen"]["latent_preds"][i],
-            "trunc_pred_llama": model_outputs["llama"]["trunc_preds"][i],
-            "trunc_pred_qwen": model_outputs["qwen"]["trunc_preds"][i],
-        })
+        }
+        for name, outputs in model_outputs.items():
+            entry.setdefault("chat_prompts", {})[name] = outputs["chat_prompts"][i]
+            entry[f"text_pred_{name}"] = outputs["text_preds"][i]
+            entry[f"latent_pred_{name}"] = outputs["latent_preds"][i]
+            entry[f"trunc_pred_{name}"] = outputs["trunc_preds"][i]
+        preds_dump.append(entry)
 
     del llama, qwen
     for adapter in adapters.values():
