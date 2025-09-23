@@ -707,8 +707,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
 
     adapter_hidden_mult = int(cfg.get("adapter_hidden_mult", 1))
     adapter_colorize = bool(cfg.get("adapter_colorize", False))
-    adapter_enable_metadata = cfg.get("adapter_enable_metadata", True)
-    adapter_enable_metadata = bool(adapter_enable_metadata)
+    adapter_enable_metadata = bool(cfg.get("adapter_enable_metadata", True))
 
     llama_device = _primary_device(llama)
     qwen_device = _primary_device(qwen)
@@ -716,27 +715,6 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     per_model_latent_len = int(cfg.get("latent_shared_len", latent_len)) + int(cfg.get("latent_private_len", 0))
     if per_model_latent_len <= 0:
         per_model_latent_len = latent_len
-
-    adapters = {
-        "llama": Adapter(
-            d_z=d_z,
-            d_model=llama.d_model,
-            latent_length=per_model_latent_len,
-            enable_metadata=adapter_enable_metadata,
-            length_norm=max_answer_tokens,
-            hidden_mult=adapter_hidden_mult,
-            colorize=adapter_colorize,
-        ).to(llama_device).eval(),
-        "qwen": Adapter(
-            d_z=d_z,
-            d_model=qwen.d_model,
-            latent_length=per_model_latent_len,
-            enable_metadata=adapter_enable_metadata,
-            length_norm=max_answer_tokens,
-            hidden_mult=adapter_hidden_mult,
-            colorize=adapter_colorize,
-        ).to(qwen_device).eval(),
-    }
 
     wrappers = {"llama": llama, "qwen": qwen}
 
@@ -746,35 +724,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         if not wrappers:
             raise ValueError(f"No valid models selected from {models}; choose any subset of ['llama','qwen']")
 
-    # Reattach Prefix-Tuning adapters if available
-    try:
-        from peft import PeftModel  # type: ignore
-
-        prefix_paths = {
-            "llama": os.path.join(ckpt_dir, "prefix_llama"),
-            "qwen": os.path.join(ckpt_dir, "prefix_qwen"),
-        }
-        for name, path in prefix_paths.items():
-            if os.path.isdir(path):
-                wrappers[name].model = PeftModel.from_pretrained(wrappers[name].model, path).eval()
-                print(f"✓ Loaded Prefix-Tuning adapters for {name}")
-    except Exception as exc:
-        print(f"[WARN] Prefix-Tuning reload skipped: {exc}")
-
-    for name in list(wrappers.keys()):
-        path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
-        state = _safe_load(path, map_location=device)
-        try:
-            adapters[name].load_state_dict(state, strict=True)
-        except Exception as exc:
-            print(f"⚠️  Adapter({name}) strict load failed; retrying with strict=False ({exc})")
-            adapters[name].load_state_dict(state, strict=False)
-        if adapter_colorize and hasattr(adapters[name], "install_color_from_wrapper"):
-            try:
-                adapters[name].install_color_from_wrapper(wrappers[name])
-            except Exception:
-                pass
-    model_contexts = {name: {"wrapper": wrapper, "adapter": adapters[name]} for name, wrapper in wrappers.items()}
+    model_contexts = {name: {"wrapper": wrapper} for name, wrapper in wrappers.items()}
 
     answer_lengths = {}
     for name, ctx in model_contexts.items():
@@ -837,6 +787,47 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         )
         text_results[name] = res
         text_wall += res["time"]
+
+    # Reattach Prefix-Tuning adapters if available (for latent runs)
+    try:
+        from peft import PeftModel  # type: ignore
+
+        prefix_paths = {
+            "llama": os.path.join(ckpt_dir, "prefix_llama"),
+            "qwen": os.path.join(ckpt_dir, "prefix_qwen"),
+        }
+        for name, path in prefix_paths.items():
+            if os.path.isdir(path):
+                wrappers[name].model = PeftModel.from_pretrained(wrappers[name].model, path).eval()
+                print(f"✓ Loaded Prefix-Tuning adapters for {name}")
+    except Exception as exc:
+        print(f"[WARN] Prefix-Tuning reload skipped: {exc}")
+
+    adapters = {}
+    for name in list(wrappers.keys()):
+        adapter = Adapter(
+            d_z=d_z,
+            d_model=wrappers[name].d_model,
+            latent_length=per_model_latent_len,
+            enable_metadata=adapter_enable_metadata,
+            length_norm=max_answer_tokens,
+            hidden_mult=adapter_hidden_mult,
+            colorize=adapter_colorize,
+        ).to(_primary_device(wrappers[name])).eval()
+        path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
+        state = _safe_load(path, map_location=device)
+        try:
+            adapter.load_state_dict(state, strict=True)
+        except Exception as exc:
+            print(f"⚠️  Adapter({name}) strict load failed; retrying with strict=False ({exc})")
+            adapter.load_state_dict(state, strict=False)
+        if adapter_colorize and hasattr(adapter, "install_color_from_wrapper"):
+            try:
+                adapter.install_color_from_wrapper(wrappers[name])
+            except Exception:
+                pass
+        adapters[name] = adapter
+        model_contexts[name]["adapter"] = adapter
 
     combined_latents = {
         name: combine_latents(encoded_latents, name) for name in model_contexts
