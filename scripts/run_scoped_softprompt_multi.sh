@@ -143,16 +143,16 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --resume_from "$CKPT_DIR_STAGEA" \
   --save_dir "$CKPT_DIR_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
   --train_append_bos_after_prefix yes \
-  --freeze_encoder \
   --use_chat_template \
   --warm_anchor_mode chat \
-  --first_token_ce_weight 1.5 --first_token_ce_schedule cosine --first_token_ce_peak 3.0 --first_token_ce_warmup_frac 0.3 \
+  --first_token_ce_weight 1.2 --first_token_ce_schedule cosine --first_token_ce_peak 2.2 --first_token_ce_warmup_frac 0.3 \
   --K 4 \
   --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.0 \
   --max_grad_norm 1.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.0 \
   --max_answer_tokens 24 \
+  --lr 5e-5 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage C: Evaluation on clean hubs + learned prefixes ---

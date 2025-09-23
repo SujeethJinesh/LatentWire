@@ -384,4 +384,5 @@ We are adding early‑step guidance + a slightly more expressive prefix mapping,
 - Stage B now keeps the encoder trainable while prefix-tuning so the warmed-up latent model can continue improving instead of freezing at a random initialisation.
 - Enabled a gentle cosine schedule for the first-token CE (peaks capped at 2.5/3.0) and turned on KD for the first K steps in both Stage A and Stage B. This keeps gradients in check while distilling the text baseline into the latent path during smoke runs, giving the latent wire a fighting chance before the hero sweep.
 - Stage B now resumes from Stage A weights with `--reset_epoch`, so we reuse the learned latent encoder without inheriting Stage A's epoch counter; each stage now cleanly runs its own four epochs.
+- Stage B no longer freezes the encoder; instead we resume from Stage A, reset the epoch counter, drop the first-token peak slightly (2.2), and lower the LR (5e-5) so the encoder and prefix continue to improve together without blowing up gradients.
 - **Next steps:** Re-run Stage A→Stage B→Stage C to confirm text EM/F1 recover, then inspect latent metrics with the warmed-up wire.
