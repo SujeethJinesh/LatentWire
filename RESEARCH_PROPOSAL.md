@@ -606,7 +606,12 @@ Remaining weeks unchanged.
 
 ### 6. Reporting
 
-We will add predictions.jsonl dumps for qualitative error analysis, and we will report both: (i) chat‑templated text baselines, and (ii) latent trained with/without templated encoder input.
+We will add predictions.jsonl dumps for qualitative error analysis, and we will report both: (i) chat-templated text baselines, and (ii) latent trained with/without templated encoder input.
+
+### 7. Recent Implementation Note (2025-09-22)
+
+- Stage-C evaluation crashed because the chat-template path stripped the `Answer:` literal but did not restore it before constructing the assistant turn. This left both text and latent baselines with empty prefills and produced near-zero EM/F1.
+- **Fix:** Always reattach the answer literal for chat-mode anchors (without adding extra BOS tokens) so training and evaluation share the same prompt prefill. The latent prefix remains unchanged, and evaluation now completes with non-zero text baselines.
 
 # Addendum (Sept 2025): Scoped Interlingua via Tiny LoRA + Deep Prefix Injection with Strict Chat-Template Compliance
 

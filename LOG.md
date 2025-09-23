@@ -363,4 +363,10 @@ We are adding early‑step guidance + a slightly more expressive prefix mapping,
   ```python
   K = 4
   loss_kce = sum(F.cross_entropy(logits_latent[:, t, :], y_gold[:, t]) for t in range(K)) / K
-  loss = loss_main + λ_first*first_token_ce + λ_kce*loss_kce
+  loss = loss_main + λ_first*first_token_ce + λ_kce*loss_kce    ```
+
+### 2025-09-22 — Stage C eval crash (chat literal)
+
+- **Error:** `UnboundLocalError: local variable 'strip_literal' referenced before assignment` during Stage C evaluation.
+- **Cause:** The chat-mode prompt path stripped the `Answer: ` literal and attempted to reattach it before the literal was initialised in the anchor loop.
+- **Fix:** Initialise the literal once (from `config.json` or the default) before building `anchor_info`, then reuse it when constructing prompts and anchors. Evaluation now completes and text baselines recover.
