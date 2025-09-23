@@ -779,6 +779,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         answer_lengths[name] = _answer_lengths_eval(ctx["wrapper"], golds, max_answer_tokens, target_device)
 
     anchor_info = {}
+    strip_literal = cfg.get("strip_anchor_text") or DEFAULT_ANSWER_PREFIX
     for name, ctx in model_contexts.items():
         mode, anchor_text_src = infer_anchor_mode_and_text(
             ctx["wrapper"], cfg, args.latent_anchor_mode, args.latent_anchor_text
@@ -803,7 +804,6 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
 
     use_chat_template_flag = str(getattr(args, "use_chat_template", "yes")).lower()
     apply_chat_template = use_chat_template_flag != "no"
-    strip_literal = cfg.get("strip_anchor_text") or DEFAULT_ANSWER_PREFIX
     for name, ctx in model_contexts.items():
         if apply_chat_template:
             assistant_prefill = None
