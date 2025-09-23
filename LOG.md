@@ -381,4 +381,5 @@ We are adding early‑step guidance + a slightly more expressive prefix mapping,
 ### 2025-09-22 — Stage A instability (fix)
 
 - Stage A gradients were spiking into the 500–800 range, starving the latent encoder of real progress. We made clipping the default (`--max_grad_norm=1.0`) in `latentwire/train.py` and reduced the Stage A/Stage B first-token + K-token weights in `scripts/run_scoped_softprompt_multi.sh` to stabilise optimisation. These knobs apply automatically for future runs; setting `--max_grad_norm <= 0` still disables clipping for experiments.
+- Stage B now keeps the encoder trainable while prefix-tuning so the warmed-up latent model can continue improving instead of freezing at a random initialisation.
 - **Next steps:** Re-run Stage A→Stage B→Stage C to confirm text EM/F1 recover, then inspect latent metrics with the warmed-up wire.

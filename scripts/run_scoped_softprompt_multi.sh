@@ -142,7 +142,6 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
   --save_dir "$CKPT_DIR_STAGEB" --auto_resume --resume_from "$CKPT_DIR_STAGEA" --no_load_optimizer --save_training_stats \
   --train_append_bos_after_prefix yes \
-  --freeze_encoder \
   --use_chat_template \
   --warm_anchor_mode chat \
   --first_token_ce_weight 2.0 \
