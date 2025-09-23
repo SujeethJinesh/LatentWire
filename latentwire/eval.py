@@ -785,6 +785,12 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         )
         anchor = make_anchor_text(mode, ctx["wrapper"], anchor_text_src)
         has_anchor = bool(anchor) if mode == "text" else False
+        if mode == "chat":
+            literal = strip_literal or DEFAULT_ANSWER_PREFIX
+            if literal and not literal.endswith(" "):
+                literal = literal + " "
+            anchor = (anchor or "") + literal
+            has_anchor = bool(literal)
         bos_flag = bos_policy(args.append_bos_after_prefix, [0] if has_anchor else [])
         if mode == "chat":
             bos_flag = False

@@ -668,8 +668,11 @@ def main():
         if mode == "none":
             return "", "none"
         if mode == "chat":
-            anchor = assistant_header_anchor(wrapper.tokenizer) or ""
-            return anchor, "chat"
+            header = assistant_header_anchor(wrapper.tokenizer) or ""
+            literal = DEFAULT_ANSWER_PREFIX if DEFAULT_ANSWER_PREFIX else ""
+            if literal and not literal.endswith(" "):
+                literal = literal + " "
+            return header + literal, "chat"
         if mode == "text":
             base = fallback or ""
             if not base and args.use_chat_template:
@@ -704,8 +707,10 @@ def main():
 
     anchor_text_llama, anchor_mode_llama = _anchor_text_for(llama, args.warm_anchor_text)
     anchor_text_qwen, anchor_mode_qwen = _anchor_text_for(qwen, args.warm_anchor_text)
-    anchor_text_llama = _truncate_anchor(llama, anchor_text_llama)
-    anchor_text_qwen = _truncate_anchor(qwen, anchor_text_qwen)
+    if anchor_mode_llama == "text":
+        anchor_text_llama = _truncate_anchor(llama, anchor_text_llama)
+    if anchor_mode_qwen == "text":
+        anchor_text_qwen = _truncate_anchor(qwen, anchor_text_qwen)
     if anchor_text_qwen != anchor_text_llama:
         print("[WARN] Anchor strings differ between models; using Llama variant for shared config.")
 
