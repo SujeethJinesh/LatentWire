@@ -55,8 +55,8 @@ fi
 # Latent budget and optimiser defaults
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
-BATCH_SIZE_B="${BATCH_SIZE_B:-32}"
-BATCH_SIZE_A="${BATCH_SIZE_A:-32}"
+BATCH_SIZE_B="${BATCH_SIZE_B:-30}"
+BATCH_SIZE_A="${BATCH_SIZE_A:-30}"
 
 # Mandatory chat templating across the stack
 export LW_APPLY_CHAT_TEMPLATE=1
