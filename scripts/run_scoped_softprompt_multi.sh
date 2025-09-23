@@ -140,8 +140,10 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --latent_len "$LATENT_LEN" --d_z "$D_Z" \
   --llama_id "$LLAMA_ID" --qwen_id "$QWEN_ID" \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
-  --save_dir "$CKPT_DIR_STAGEB" --auto_resume --resume_from "$CKPT_DIR_STAGEA" --no_load_optimizer --save_training_stats \
+  --resume_from "$CKPT_DIR_STAGEA" \
+  --save_dir "$CKPT_DIR_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
   --train_append_bos_after_prefix yes \
+  --freeze_encoder \
   --use_chat_template \
   --warm_anchor_mode chat \
   --first_token_ce_weight 1.5 --first_token_ce_schedule cosine --first_token_ce_peak 3.0 --first_token_ce_warmup_frac 0.3 \

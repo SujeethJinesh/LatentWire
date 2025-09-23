@@ -473,6 +473,7 @@ def main():
     ap.add_argument("--auto_resume", action="store_true")
     ap.add_argument("--no_load_optimizer", action="store_true")
     ap.add_argument("--no_load_lr_scheduler", action="store_true")
+    ap.add_argument("--reset_epoch", action="store_true", help="When resuming, ignore stored epoch/step counters and restart from zero.")
 
     # Training stats (for eval-time calibration)
     ap.add_argument("--save_training_stats", action="store_true", help="Record running mean of prefix RMS per model and save to training_stats.json")
@@ -937,6 +938,10 @@ def main():
         )
         start_epoch = epoch_loaded
         global_step = global_loaded
+        if args.reset_epoch:
+            start_epoch = 0
+            global_step = 0
+            print("   -> reset epoch/global_step to zero as requested")
         print(f"   -> start_epoch={start_epoch}, global_step={global_step}")
         if args.adapter_colorize:
             try:

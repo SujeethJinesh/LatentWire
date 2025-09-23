@@ -787,6 +787,11 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         )
         text_results[name] = res
         text_wall += res["time"]
+    # Capture text baseline summary for logging
+    print("\n— Text baseline summary:")
+    for name, ctx in model_contexts.items():
+        metrics = text_results[name]["metrics"]
+        print(f"{name}: EM={metrics['em']:.3f} F1={metrics['f1']:.3f}")
 
     # Reattach Prefix-Tuning adapters if available (for latent runs)
     try:
@@ -907,9 +912,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             },
             "metrics": {
                 "text": text_results[name]["metrics"],
-                "latent": latent_results[name]["latent"]["metrics"],
-                "trunc": latent_results[name]["trunc"]["metrics"],
-            },
+            "latent": latent_results[name]["latent"]["metrics"],
+            "trunc": latent_results[name]["trunc"]["metrics"],
+        },
             "chat_prompts": model_contexts[name]["chat"],
             "debug": debug_map.get(name, {}),
         }
