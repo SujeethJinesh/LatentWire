@@ -44,3 +44,9 @@ File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
 File not found: /marlowe/apps/code-server/4.93.1/lib/vscode/out/vsda.js
 [13:07:24] [171.67.99.200][7b135a2b][ExtensionHostConnection] New connection established.
 [13:07:25] [171.67.99.200][7b135a2b][ExtensionHostConnection] <3202381> Launched Extension Host Process.
+[18:10:08] [171.67.99.200][7b135a2b][ExtensionHostConnection] The client has reconnected.
+[18:10:08] [171.67.99.200][68d6db24][ManagementConnection] The client has reconnected.
+[18:27:12] [171.67.99.200][68d6db24][ManagementConnection] The client has disconnected, will wait for reconnection 3h before disposing...
+[20:00:46] [171.67.99.200][68d6db24][ManagementConnection] Another client has connected, will shorten the wait for reconnection 5m before disposing...
+[20:00:46] [171.67.99.202][68d6db24][ManagementConnection] The client has reconnected.
+[20:00:46] [171.67.99.202][7b135a2b][ExtensionHostConnection] The client has reconnected.
