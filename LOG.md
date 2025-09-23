@@ -377,4 +377,8 @@ We are adding early‑step guidance + a slightly more expressive prefix mapping,
 - **Training sanity:** `_assert_t0_alignment` skips its check when chat templates are active, eliminating false warnings about first-token mismatches under templated prompts.
 - **Evaluation fix:** `format_with_chat_template` always routes through the tokenizer’s own chat template and appends `"Answer: "` afterward, so text baselines retain model-specific headers instead of falling back to plain “Assistant:” scaffolds.
 - **Post-mortem:** The initial Stage C rerun still showed zero text EM/F1 because we reloaded prefix-tuning adapters *before* computing text baselines. Evaluation now measures text prompts using the raw base checkpoints and only attaches prefix adapters afterwards for latent runs.
+
+### 2025-09-22 — Stage A instability (fix)
+
+- Stage A gradients were spiking into the 500–800 range, starving the latent encoder of real progress. We made clipping the default (`--max_grad_norm=1.0`) in `latentwire/train.py` and reduced the Stage A/Stage B first-token + K-token weights in `scripts/run_scoped_softprompt_multi.sh` to stabilise optimisation. These knobs apply automatically for future runs; setting `--max_grad_norm <= 0` still disables clipping for experiments.
 - **Next steps:** Re-run Stage A→Stage B→Stage C to confirm text EM/F1 recover, then inspect latent metrics with the warmed-up wire.

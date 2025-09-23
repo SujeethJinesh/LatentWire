@@ -379,8 +379,8 @@ def main():
                     help="L2 penalty weight to keep adapter.scale near 1.0; set 0 to disable.")
     ap.add_argument("--adapter_rms_l2", type=float, default=0.0,
                     help="Optional penalty to pull RAW adapter RMS toward input embedding RMS.")
-    ap.add_argument("--max_grad_norm", type=float, default=0.0,
-                    help="If >0, clip grad norm to this value.")
+    ap.add_argument("--max_grad_norm", type=float, default=1.0,
+                    help="Clip grad norm to this value (set <=0 to disable).")
     ap.add_argument("--adapter_freeze_scale", action="store_true",
                     help="If set, fix adapter.scale at 1.0 (no learning).")
     ap.add_argument("--first_token_ce_weight", type=float, default=0.5,
