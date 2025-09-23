@@ -1,0 +1,324 @@
+
+=== Preflight: CUDA / SLURM / bitsandbytes ===
+
+Mon Sep 22 21:39:56 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.133.20             Driver Version: 570.133.20     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H100 80GB HBM3          Off |   00000000:1B:00.0 Off |                    0 |
+| N/A   28C    P0             65W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA H100 80GB HBM3          Off |   00000000:43:00.0 Off |                    0 |
+| N/A   29C    P0             66W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA H100 80GB HBM3          Off |   00000000:52:00.0 Off |                    0 |
+| N/A   31C    P0             67W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   3  NVIDIA H100 80GB HBM3          Off |   00000000:61:00.0 Off |                    0 |
+| N/A   31C    P0             67W /  700W |       4MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+torch: 2.4.0+cu121 cuda: 12.1 is_available: True count: 4
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+bitsandbytes: 0.47.0
+
+=== Stage A: Latent Fit ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3068.82it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.61s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.74s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3306.51it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.11s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.20s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.15s/it]
+[Qwen/Qwen2.5-7B-Instruct] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Llama hidden size: 4096, Qwen hidden size: 3584
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
+[DeviceMap] Qwen : {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/4
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  10/40 | grad_norm=563.03 | sec/step~0.89 | keep=1.00 | K=4 | llama: tf=11.0989 first=17.8629 kCE=11.5008 KD=0.0000 | scale_pen(llama)=0.0000e+00 | qwen: tf=14.5178 first=19.2327 kCE=13.0855 KD=0.0000 | scale_pen(qwen)=0.0000e+00 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.9999 rms_cal~0.0136 embed_rms~0.01364]
+  step  20/40 | grad_norm=78.03 | sec/step~1.05 | keep=1.00 | K=4 | llama: tf=11.7945 first=11.8935 kCE=12.7180 KD=0.0000 | scale_pen(llama)=5.7573e-09 | qwen: tf=13.2076 first=17.3381 kCE=11.9838 KD=0.0000 | scale_pen(qwen)=9.6488e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.9999 rms_cal~0.0136 embed_rms~0.01364]
+  step  30/40 | grad_norm=224.62 | sec/step~0.89 | keep=1.00 | K=4 | llama: tf=11.9635 first=11.7363 kCE=11.4305 KD=0.0000 | scale_pen(llama)=5.7573e-09 | qwen: tf=11.9402 first=19.3159 kCE=9.1787 KD=0.0000 | scale_pen(qwen)=9.6488e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  40/40 | grad_norm=107.27 | sec/step~1.02 | keep=1.00 | K=4 | llama: tf=13.0360 first=11.2041 kCE=10.0964 KD=0.0000 | scale_pen(llama)=3.0332e-09 | qwen: tf=9.7428 first=14.6537 kCE=10.2139 KD=0.0000 | scale_pen(qwen)=7.7149e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+Epoch 2/4
+  step  10/40 | grad_norm=358.18 | sec/step~0.93 | keep=1.00 | K=4 | llama: tf=12.0501 first=11.4969 kCE=9.8926 KD=0.0000 | scale_pen(llama)=3.0332e-09 | qwen: tf=11.7535 first=12.8974 kCE=10.6276 KD=0.0000 | scale_pen(qwen)=7.7149e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  20/40 | grad_norm=203.07 | sec/step~0.88 | keep=1.00 | K=4 | llama: tf=11.7203 first=11.4417 kCE=10.8625 KD=0.0000 | scale_pen(llama)=3.1660e-09 | qwen: tf=9.8174 first=17.0686 kCE=8.9386 KD=0.0000 | scale_pen(qwen)=3.2198e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  30/40 | grad_norm=794.89 | sec/step~1.26 | keep=1.00 | K=4 | llama: tf=11.7393 first=10.9801 kCE=11.0179 KD=0.0000 | scale_pen(llama)=3.1660e-09 | qwen: tf=10.0203 first=15.9017 kCE=9.1734 KD=0.0000 | scale_pen(qwen)=3.2198e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  40/40 | grad_norm=155.36 | sec/step~1.15 | keep=1.00 | K=4 | llama: tf=11.6307 first=11.6053 kCE=10.6661 KD=0.0000 | scale_pen(llama)=1.1511e-12 | qwen: tf=9.1873 first=10.9754 kCE=10.0505 KD=0.0000 | scale_pen(qwen)=9.6806e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+Epoch 3/4
+  step  10/40 | grad_norm=92.31 | sec/step~0.88 | keep=1.00 | K=4 | llama: tf=11.5129 first=11.3344 kCE=11.3171 KD=0.0000 | scale_pen(llama)=1.1511e-12 | qwen: tf=10.8273 first=11.3419 kCE=10.7433 KD=0.0000 | scale_pen(qwen)=9.6806e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  20/40 | grad_norm=25.32 | sec/step~1.02 | keep=1.00 | K=4 | llama: tf=11.6772 first=10.7702 kCE=10.8388 KD=0.0000 | scale_pen(llama)=6.3869e-10 | qwen: tf=11.7190 first=10.0076 kCE=10.8641 KD=0.0000 | scale_pen(qwen)=8.5301e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  30/40 | grad_norm=68.10 | sec/step~1.05 | keep=1.00 | K=4 | llama: tf=12.4526 first=11.0686 kCE=10.3422 KD=0.0000 | scale_pen(llama)=6.3869e-10 | qwen: tf=11.2971 first=10.9912 kCE=11.0040 KD=0.0000 | scale_pen(qwen)=8.5301e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  40/40 | grad_norm=81.98 | sec/step~0.89 | keep=1.00 | K=4 | llama: tf=11.4253 first=11.4758 kCE=9.9816 KD=0.0000 | scale_pen(llama)=1.5853e-09 | qwen: tf=11.1251 first=12.6032 kCE=11.3225 KD=0.0000 | scale_pen(qwen)=1.7013e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+Epoch 4/4
+  step  10/40 | grad_norm=230.20 | sec/step~1.05 | keep=1.00 | K=4 | llama: tf=11.5299 first=10.3116 kCE=10.2413 KD=0.0000 | scale_pen(llama)=1.5853e-09 | qwen: tf=10.0875 first=9.5295 kCE=10.5688 KD=0.0000 | scale_pen(qwen)=1.7013e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  20/40 | grad_norm=21.54 | sec/step~1.10 | keep=1.00 | K=4 | llama: tf=12.0983 first=9.9944 kCE=10.3860 KD=0.0000 | scale_pen(llama)=7.1942e-10 | qwen: tf=10.8362 first=9.1982 kCE=10.4566 KD=0.0000 | scale_pen(qwen)=1.6139e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  30/40 | grad_norm=69.64 | sec/step~0.89 | keep=1.00 | K=4 | llama: tf=12.5398 first=11.1608 kCE=10.9443 KD=0.0000 | scale_pen(llama)=7.1942e-10 | qwen: tf=12.2679 first=10.9430 kCE=11.4846 KD=0.0000 | scale_pen(qwen)=1.6139e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
+  step  40/40 | grad_norm=47.07 | sec/step~1.08 | keep=1.00 | K=4 | llama: tf=13.0305 first=10.7282 kCE=10.1686 KD=0.0000 | scale_pen(llama)=2.4761e-10 | qwen: tf=10.6817 first=9.1674 kCE=10.4943 KD=0.0000 | scale_pen(qwen)=2.5068e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0001 rms_cal~0.0136 embed_rms~0.01364]
+[checkpoint] Freed 1.6KB before save.
+[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/scoped_softprompt_20250922_213950/ckpt/stageA
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 1.0000032640993595, 'rms_mean_cal': 0.010570699768140911, 'embed_rms': 0.01057521253824234, 'count': 160}, 'qwen': {'rms_mean_raw': 1.0000547513365745, 'rms_mean_cal': 0.013640904717613011, 'embed_rms': 0.013643525540828705, 'count': 160}}
+
+=== Stage B: Prefix Training ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2921.84it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.02s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.72s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.66s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.36s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3675.18it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.12s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.29s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.16s/it]
+[Qwen/Qwen2.5-7B-Instruct] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+trainable params: 272,723,968 || all params: 8,302,985,216 || trainable%: 3.2846
+trainable params: 104,640,000 || all params: 7,720,256,512 || trainable%: 1.3554
+Llama hidden size: 4096, Qwen hidden size: 3584
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
+[DeviceMap] Qwen : {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+[INFO] Encoder frozen (--freeze_encoder)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+⏪ Resuming from: runs/scoped_softprompt_20250922_213950/ckpt/stageA/state.pt
+   -> loaded encoder/adapters FROM state.pt
+   -> restored RNG state
+   -> start_epoch=4, global_step=160
+Epoch 5/4
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  10/40 | grad_norm=577.90 | sec/step~1.03 | keep=1.00 | K=4 | llama: tf=10.9550 first=18.0612 kCE=9.6470 KD=0.0000 | scale_pen(llama)=2.4761e-10 | qwen: tf=10.5930 first=15.9527 kCE=10.8693 KD=0.0000 | scale_pen(qwen)=2.5068e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0002 rms_cal~0.0136 embed_rms~0.01365]
+  step  20/40 | grad_norm=20.39 | sec/step~1.17 | keep=1.00 | K=4 | llama: tf=10.5346 first=12.5745 kCE=9.9720 KD=0.0000 | scale_pen(llama)=7.1738e-09 | qwen: tf=10.6141 first=11.8558 kCE=10.8555 KD=0.0000 | scale_pen(qwen)=8.7571e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0002 rms_cal~0.0136 embed_rms~0.01365]
+  step  30/40 | grad_norm=47.88 | sec/step~1.02 | keep=1.00 | K=4 | llama: tf=10.7204 first=10.8814 kCE=9.5508 KD=0.0000 | scale_pen(llama)=7.1738e-09 | qwen: tf=10.9110 first=10.4252 kCE=11.2599 KD=0.0000 | scale_pen(qwen)=8.7571e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0002 rms_cal~0.0136 embed_rms~0.01365]
+  step  40/40 | grad_norm=46.59 | sec/step~1.22 | keep=1.00 | K=4 | llama: tf=11.3571 first=10.5232 kCE=11.6362 KD=0.0000 | scale_pen(llama)=9.4593e-10 | qwen: tf=11.1199 first=12.6579 kCE=11.5842 KD=0.0000 | scale_pen(qwen)=1.4826e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0002 rms_cal~0.0136 embed_rms~0.01365]
+Epoch 6/4
+  step  10/40 | grad_norm=80.92 | sec/step~1.17 | keep=1.00 | K=4 | llama: tf=10.6002 first=8.7522 kCE=10.7638 KD=0.0000 | scale_pen(llama)=9.4593e-10 | qwen: tf=10.2000 first=11.3505 kCE=10.2807 KD=0.0000 | scale_pen(qwen)=1.4826e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0002 rms_cal~0.0136 embed_rms~0.01365]
+  step  20/40 | grad_norm=34.94 | sec/step~1.10 | keep=1.00 | K=4 | llama: tf=10.3149 first=8.3982 kCE=11.3341 KD=0.0000 | scale_pen(llama)=2.8522e-09 | qwen: tf=9.5432 first=10.0473 kCE=10.0659 KD=0.0000 | scale_pen(qwen)=3.8722e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0002 rms_cal~0.0136 embed_rms~0.01365]
+  step  30/40 | grad_norm=98.14 | sec/step~1.28 | keep=1.00 | K=4 | llama: tf=9.9925 first=9.4401 kCE=11.6092 KD=0.0000 | scale_pen(llama)=2.8522e-09 | qwen: tf=9.1633 first=12.0543 kCE=10.1954 KD=0.0000 | scale_pen(qwen)=3.8722e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+  step  40/40 | grad_norm=55.94 | sec/step~1.16 | keep=1.00 | K=4 | llama: tf=9.6467 first=8.0945 kCE=11.5140 KD=0.0000 | scale_pen(llama)=5.1301e-10 | qwen: tf=10.7152 first=11.3149 kCE=10.5284 KD=0.0000 | scale_pen(qwen)=8.8818e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+Epoch 7/4
+  step  10/40 | grad_norm=20.04 | sec/step~1.03 | keep=1.00 | K=4 | llama: tf=9.1422 first=7.8244 kCE=10.9811 KD=0.0000 | scale_pen(llama)=5.1301e-10 | qwen: tf=9.2932 first=9.4290 kCE=10.1832 KD=0.0000 | scale_pen(qwen)=8.8818e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+  step  20/40 | grad_norm=43.82 | sec/step~1.22 | keep=1.00 | K=4 | llama: tf=10.3259 first=8.3577 kCE=10.6829 KD=0.0000 | scale_pen(llama)=2.2172e-11 | qwen: tf=11.4553 first=9.9205 kCE=11.0441 KD=0.0000 | scale_pen(qwen)=0.0000e+00 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+  step  30/40 | grad_norm=106.17 | sec/step~1.02 | keep=1.00 | K=4 | llama: tf=9.8200 first=6.9660 kCE=10.5169 KD=0.0000 | scale_pen(llama)=2.2172e-11 | qwen: tf=10.9723 first=8.2225 kCE=10.4937 KD=0.0000 | scale_pen(qwen)=0.0000e+00 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+  step  40/40 | grad_norm=26.01 | sec/step~1.10 | keep=1.00 | K=4 | llama: tf=9.4656 first=7.8755 kCE=10.0576 KD=0.0000 | scale_pen(llama)=1.6379e-09 | qwen: tf=9.6478 first=7.8677 kCE=9.7440 KD=0.0000 | scale_pen(qwen)=1.9771e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+Epoch 8/4
+  step  10/40 | grad_norm=12.09 | sec/step~1.37 | keep=1.00 | K=4 | llama: tf=9.1376 first=7.5799 kCE=9.2702 KD=0.0000 | scale_pen(llama)=1.6379e-09 | qwen: tf=9.9233 first=6.7245 kCE=9.8075 KD=0.0000 | scale_pen(qwen)=1.9771e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+  step  20/40 | grad_norm=2.92 | sec/step~1.21 | keep=1.00 | K=4 | llama: tf=8.5816 first=7.2612 kCE=8.7347 KD=0.0000 | scale_pen(llama)=1.2662e-09 | qwen: tf=9.5739 first=7.3285 kCE=9.5097 KD=0.0000 | scale_pen(qwen)=1.9297e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+  step  30/40 | grad_norm=19.85 | sec/step~1.31 | keep=1.00 | K=4 | llama: tf=9.6065 first=6.6461 kCE=9.1232 KD=0.0000 | scale_pen(llama)=1.2662e-09 | qwen: tf=10.6115 first=7.1859 kCE=11.1194 KD=0.0000 | scale_pen(qwen)=1.9297e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+  step  40/40 | grad_norm=9.41 | sec/step~1.37 | keep=1.00 | K=4 | llama: tf=8.8843 first=7.2934 kCE=9.0805 KD=0.0000 | scale_pen(llama)=2.7853e-12 | qwen: tf=11.4349 first=7.3233 kCE=10.8242 KD=0.0000 | scale_pen(qwen)=1.0147e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0003 rms_cal~0.0136 embed_rms~0.01365]
+[checkpoint] Freed 1.8KB before save.
+[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/scoped_softprompt_20250922_213950/ckpt/stageB
+📝 Saved Prefix-Tuning adapters for Llama
+📝 Saved Prefix-Tuning adapters for Qwen
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 1.000224370509386, 'rms_mean_cal': 0.010571185487788171, 'embed_rms': 0.010575870051980019, 'count': 160}, 'qwen': {'rms_mean_raw': 1.0003082565963268, 'rms_mean_cal': 0.013640572846634313, 'embed_rms': 0.013645347207784653, 'count': 160}}
+
+=== Stage C: Eval ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Loaded training_stats.json: runs/scoped_softprompt_20250922_213950/ckpt/stageB/training_stats.json
+Building encoder and computing Z...
+
+[Standard Evaluation Mode]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3205.43it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.68s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.58s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.55s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.24s/it]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3348.75it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.41s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.08s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.11s/it]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+[Qwen/Qwen2.5-7B-Instruct] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+✓ Loaded Prefix-Tuning adapters for llama
+✓ Loaded Prefix-Tuning adapters for qwen
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 200  |  Max new tokens: 16
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 246.0 | (Qwen): 231.7 | Latent length M: 64
+Compression ratio (Llama): 3.8x | (Qwen): 3.6x
+Approx interlingua payload per example: 65536 bytes (fp32); fp16 reference: 6553600 bytes; fp32 reference: 13107200 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.585  F1: 0.795  |  NLL/token (gold): 13.675748455854526
+Qwen   EM: 0.570   F1: 0.776   |  NLL/token (gold): 23.41644366140719
+Wall clock: 13.42s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 9.182386887046485
+       First-token acc: top1=0.025  top5=0.075
+Qwen   EM: 0.000   F1: 0.000  |  NLL/token (gold): 10.369700900461307
+       First-token acc: top1=0.000  top5=0.000
+Wall clock: 5.75s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.000  F1: 0.000
+Qwen   EM: 0.000   F1: 0.000
+Wall clock: 6.53s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint  EM: 0.000  F1: 0.000
+Inter-model agreement (normalized): 0.000
+Oracle upper bound:  EM 0.000  F1 0.000
+
+==== METRICS_JSON ====
+{
+  "samples": 200,
+  "max_new_tokens": 16,
+  "latent_len": 64,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 246.03,
+    "qwen": 231.655
+  },
+  "compression": {
+    "llama": 3.84421875,
+    "qwen": 3.619609375
+  },
+  "payload_bytes": 65536,
+  "payload_bytes_detail": {
+    "fp32": 13107200,
+    "fp16": 6553600,
+    "selected": null
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 251558,
+      "qwen": 220958
+    },
+    "prompt_count": 200,
+    "latent_shape": [
+      200,
+      64,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 13107200,
+      "fp16": 6553600
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_latent_bytes": null,
+    "base_latent_bytes": 65536,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.585,
+      "f1": 0.7953247124936754,
+      "nll_token": 13.675748455854526
+    },
+    "qwen": {
+      "em": 0.57,
+      "f1": 0.7762135982464771,
+      "nll_token": 23.41644366140719
+    },
+    "wall_clock_sec": 13.424113750457764
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll": 9.182386887046485,
+      "first_token_top1": 0.025,
+      "first_token_top5": 0.075,
+      "nll_token": 9.182386887046485
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll": 10.369700900461307,
+      "first_token_top1": 0.0,
+      "first_token_top5": 0.0,
+      "nll_token": 10.369700900461307
+    },
+    "wall_clock_sec": 5.75227952003479
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 64,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0
+    },
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0
+    },
+    "wall_clock_sec": 6.529881715774536
+  },
+  "joint": {
+    "em": 0.0,
+    "f1": 0.0,
+    "agreement": 0.0,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  },
+  "debug": {
+    "llama": {},
+    "qwen": {},
+    "settings": {
+      "latent_anchor_mode": "chat",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.0,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "yes",
+      "decode": {
+        "min_new_tokens": 1,
+        "eos_ban_steps": 0,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "dataset": "squad"
+}
