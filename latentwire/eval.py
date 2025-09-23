@@ -778,20 +778,19 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         target_device = _primary_device(ctx["wrapper"])
         answer_lengths[name] = _answer_lengths_eval(ctx["wrapper"], golds, max_answer_tokens, target_device)
 
-    anchor_info = {}
     strip_literal = cfg.get("strip_anchor_text") or DEFAULT_ANSWER_PREFIX
+    if strip_literal and not strip_literal.endswith(" "):
+        strip_literal = strip_literal + " "
+
+    anchor_info = {}
     for name, ctx in model_contexts.items():
         mode, anchor_text_src = infer_anchor_mode_and_text(
             ctx["wrapper"], cfg, args.latent_anchor_mode, args.latent_anchor_text
         )
         anchor = make_anchor_text(mode, ctx["wrapper"], anchor_text_src)
-        has_anchor = bool(anchor) if mode == "text" else False
-        if mode == "chat":
-            literal = strip_literal or DEFAULT_ANSWER_PREFIX
-            if literal and not literal.endswith(" "):
-                literal = literal + " "
-            anchor = (anchor or "") + literal
-            has_anchor = bool(literal)
+        if mode != "text":
+            anchor = None
+        has_anchor = bool(anchor)
         bos_flag = bos_policy(args.append_bos_after_prefix, [0] if has_anchor else [])
         if mode == "chat":
             bos_flag = False
@@ -806,11 +805,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     apply_chat_template = use_chat_template_flag != "no"
     for name, ctx in model_contexts.items():
         if apply_chat_template:
-            assistant_prefill = None
             info = anchor_info.get(name, {})
-            if info.get("mode") == "text" and info.get("anchor"):
-                assistant_prefill = info["anchor"]
-            chat_user = [split_user_and_anchor(raw, strip_literal)[0] for raw in prompts_raw]
+            assistant_prefill = strip_literal or None
+            chat_user = [split_user_and_anchor(raw, strip_literal or "")[0] for raw in prompts_raw]
             ctx["chat"] = [
                 format_with_chat_template(
                     ctx["wrapper"].tokenizer,
