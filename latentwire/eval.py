@@ -1356,10 +1356,20 @@ def main():
     print(f"Dataset: {dataset_detail}")
     print(f"Samples: {summary['samples']}  |  Max new tokens: {summary['max_new_tokens']}")
     print(f"Device: {summary['device']}  |  Dtype: {summary['dtype'].split('.')[-1] if isinstance(summary['dtype'], str) else 'unknown'}")
-    print(f"Avg prompt tokens (Llama): {summary['avg_prompt_tokens'].get('llama','-'):.1f} | "
-          f"(Qwen): {summary['avg_prompt_tokens'].get('qwen','-'):.1f} | Latent length M: {summary['latent_len']}")
-    print(f"Compression ratio (Llama): {summary['compression'].get('llama','-'):.1f}x | "
-          f"(Qwen): {summary['compression'].get('qwen','-'):.1f}x")
+    def _fmt_float(value, default="-"):
+        try:
+            return f"{float(value):.1f}"
+        except (TypeError, ValueError):
+            return default
+
+    llama_tokens = _fmt_float(summary['avg_prompt_tokens'].get('llama')) if isinstance(summary.get('avg_prompt_tokens'), dict) else "-"
+    qwen_tokens = _fmt_float(summary['avg_prompt_tokens'].get('qwen')) if isinstance(summary.get('avg_prompt_tokens'), dict) else "-"
+    llama_comp = summary.get('compression', {})
+    llama_comp_val = _fmt_float(llama_comp.get('llama')) if isinstance(llama_comp, dict) else "-"
+    qwen_comp_val = _fmt_float(llama_comp.get('qwen')) if isinstance(llama_comp, dict) else "-"
+
+    print(f"Avg prompt tokens (Llama): {llama_tokens} | (Qwen): {qwen_tokens} | Latent length M: {summary['latent_len']}")
+    print(f"Compression ratio (Llama): {llama_comp_val}x | (Qwen): {qwen_comp_val}x")
     payload_detail = summary.get('payload_bytes_detail', {})
     selected_bytes = payload_detail.get('selected')
     base_bytes = summary['wire'].get('base_latent_bytes', summary['payload_bytes'])
