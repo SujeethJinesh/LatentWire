@@ -1,106 +1,0 @@
-
-=== Preflight: CUDA / SLURM / bitsandbytes ===
-
-Mon Sep 22 16:14:01 2025       
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 570.133.20             Driver Version: 570.133.20     CUDA Version: 12.8     |
-|-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA H100 80GB HBM3          Off |   00000000:1B:00.0 Off |                    0 |
-| N/A   32C    P0             66W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-|   1  NVIDIA H100 80GB HBM3          Off |   00000000:43:00.0 Off |                    0 |
-| N/A   34C    P0             67W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-|   2  NVIDIA H100 80GB HBM3          Off |   00000000:52:00.0 Off |                    0 |
-| N/A   35C    P0             68W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-|   3  NVIDIA H100 80GB HBM3          Off |   00000000:61:00.0 Off |                    0 |
-| N/A   35C    P0             68W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-                                                                                         
-+-----------------------------------------------------------------------------------------+
-| Processes:                                                                              |
-|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-|        ID   ID                                                               Usage      |
-|=========================================================================================|
-|  No running processes found                                                             |
-+-----------------------------------------------------------------------------------------+
-torch: 2.4.0+cu121 cuda: 12.1 is_available: True count: 4
-CUDA_VISIBLE_DEVICES: 0,1,2,3
-bitsandbytes: 0.47.0
-
-=== Stage B: Prefix Training ===
-
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3067.13it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.46s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.09s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.66s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.45s/it]
-[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3296.11it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.04s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.13s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.00s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.05s/it]
-[Qwen/Qwen2.5-7B-Instruct] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-trainable params: 272,723,968 || all params: 8,302,985,216 || trainable%: 3.2846
-trainable params: 104,640,000 || all params: 7,720,256,512 || trainable%: 1.3554
-Llama hidden size: 4096, Qwen hidden size: 3584
-[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
-[DeviceMap] Qwen : {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-[WARN] Anchor strings differ between models; using Llama variant for shared config.
-[OK] t=0 alignment for meta-llama/Meta-Llama-3.1-8B-Instruct
-[OK] t=0 alignment for Qwen/Qwen2.5-7B-Instruct
-[INFO] Encoder frozen (--freeze_encoder)
-huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
-To disable this warning, you can either:
-	- Avoid using `tokenizers` before the fork if possible
-	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
-⚠️  No valid checkpoint found to resume; starting fresh.
-Epoch 1/4
-[DEBUG:llama] prefix_len=64 anchor_ids=0 tf_len=24
-[DEBUG:llama] scaffold_len=407 anchor_mode=chat
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-[DEBUG:qwen] prefix_len=64 anchor_ids=0 tf_len=24
-[DEBUG:qwen] scaffold_len=391 anchor_mode=chat
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py:295: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
-  with torch.enable_grad(), device_autocast_ctx, torch.cpu.amp.autocast(**ctx.cpu_autocast_kwargs):  # type: ignore[attr-defined]
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1541, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1275, in main
-    loss_backward.backward()
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/_tensor.py", line 521, in backward
-    torch.autograd.backward(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/__init__.py", line 289, in backward
-    _engine_run_backward(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/graph.py", line 768, in _engine_run_backward
-    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/function.py", line 306, in apply
-    return user_fn(self, *args)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py", line 296, in backward
-    outputs = ctx.run_function(*detached_inputs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
-    output = module._old_forward(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 702, in forward
-    hidden_states, self_attn_weights, present_key_value = self.self_attn(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
-    output = module._old_forward(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 623, in forward
-    attn_output = torch.nn.functional.scaled_dot_product_attention(
-RuntimeError: The size of tensor a (158) must match the size of tensor b (91) at non-singleton dimension 3

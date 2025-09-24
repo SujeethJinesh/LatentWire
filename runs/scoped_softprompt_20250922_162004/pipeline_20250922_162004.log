@@ -1,112 +1,0 @@
-
-=== Preflight: CUDA / SLURM / bitsandbytes ===
-
-Mon Sep 22 16:20:11 2025       
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 570.133.20             Driver Version: 570.133.20     CUDA Version: 12.8     |
-|-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA H100 80GB HBM3          Off |   00000000:1B:00.0 Off |                    0 |
-| N/A   32C    P0             66W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-|   1  NVIDIA H100 80GB HBM3          Off |   00000000:43:00.0 Off |                    0 |
-| N/A   34C    P0             67W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-|   2  NVIDIA H100 80GB HBM3          Off |   00000000:52:00.0 Off |                    0 |
-| N/A   35C    P0             67W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-|   3  NVIDIA H100 80GB HBM3          Off |   00000000:61:00.0 Off |                    0 |
-| N/A   35C    P0             69W /  700W |       4MiB /  81559MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-                                                                                         
-+-----------------------------------------------------------------------------------------+
-| Processes:                                                                              |
-|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-|        ID   ID                                                               Usage      |
-|=========================================================================================|
-|  No running processes found                                                             |
-+-----------------------------------------------------------------------------------------+
-torch: 2.4.0+cu121 cuda: 12.1 is_available: True count: 4
-CUDA_VISIBLE_DEVICES: 0,1,2,3
-bitsandbytes: 0.47.0
-
-=== Stage B: Prefix Training ===
-
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2725.79it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.13s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.73s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.73s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.40s/it]
-[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3590.25it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.26s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.40s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.27s/it]
-[Qwen/Qwen2.5-7B-Instruct] hf_device_map: {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-trainable params: 272,723,968 || all params: 8,302,985,216 || trainable%: 3.2846
-trainable params: 104,640,000 || all params: 7,720,256,512 || trainable%: 1.3554
-Llama hidden size: 4096, Qwen hidden size: 3584
-[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 0, 'model.layers.9': 0, 'model.layers.10': 0, 'model.layers.11': 0, 'model.layers.12': 0, 'model.layers.13': 0, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 1, 'model.layers.17': 1, 'model.layers.18': 1, 'model.layers.19': 1, 'model.layers.20': 1, 'model.layers.21': 1, 'model.layers.22': 1, 'model.layers.23': 1, 'model.layers.24': 1, 'model.layers.25': 1, 'model.layers.26': 1, 'model.layers.27': 1, 'model.layers.28': 1, 'model.layers.29': 1, 'model.layers.30': 1, 'model.layers.31': 1, 'model.norm': 1, 'model.rotary_emb': 1, 'lm_head': 1}
-[DeviceMap] Qwen : {'model.embed_tokens': 2, 'model.layers.0': 2, 'model.layers.1': 2, 'model.layers.2': 2, 'model.layers.3': 2, 'model.layers.4': 2, 'model.layers.5': 2, 'model.layers.6': 2, 'model.layers.7': 2, 'model.layers.8': 2, 'model.layers.9': 2, 'model.layers.10': 2, 'model.layers.11': 2, 'model.layers.12': 2, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 3, 'model.layers.16': 3, 'model.layers.17': 3, 'model.layers.18': 3, 'model.layers.19': 3, 'model.layers.20': 3, 'model.layers.21': 3, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-[WARN] Anchor strings differ between models; using Llama variant for shared config.
-[OK] t=0 alignment for meta-llama/Meta-Llama-3.1-8B-Instruct
-[OK] t=0 alignment for Qwen/Qwen2.5-7B-Instruct
-[INFO] Encoder frozen (--freeze_encoder)
-huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
-To disable this warning, you can either:
-	- Avoid using `tokenizers` before the fork if possible
-	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
-⚠️  No valid checkpoint found to resume; starting fresh.
-Epoch 1/4
-[DEBUG:llama] prefix_len=64 anchor_ids=0 tf_len=24
-[DEBUG:llama] scaffold_len=407 anchor_mode=chat
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-[DEBUG:qwen] prefix_len=64 anchor_ids=0 tf_len=24
-[DEBUG:qwen] scaffold_len=391 anchor_mode=chat
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  10/40 | grad_norm=617.08 | sec/step~1.12 | keep=1.00 | K=4 | llama: tf=11.1616 first=10.7240 kCE=10.2852 KD=0.0000 | scale_pen(llama)=0.0000e+00 | qwen: tf=11.6050 first=10.8520 kCE=9.6121 KD=0.0000 | scale_pen(qwen)=0.0000e+00 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.9999 rms_cal~0.0136 embed_rms~0.01364]
-  step  20/40 | grad_norm=114.98 | sec/step~1.26 | keep=1.00 | K=4 | llama: tf=11.5010 first=9.7067 kCE=11.2991 KD=0.0000 | scale_pen(llama)=4.9133e-09 | qwen: tf=12.1179 first=10.0061 kCE=10.1357 KD=0.0000 | scale_pen(qwen)=9.5088e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~0.9999 rms_cal~0.0136 embed_rms~0.01364]
-  step  30/40 | grad_norm=257.98 | sec/step~1.39 | keep=1.00 | K=4 | llama: tf=10.9650 first=9.9289 kCE=10.3332 KD=0.0000 | scale_pen(llama)=4.9133e-09 | qwen: tf=10.1577 first=11.9804 kCE=10.4190 KD=0.0000 | scale_pen(qwen)=9.5088e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  40/40 | grad_norm=212.47 | sec/step~1.14 | keep=1.00 | K=4 | llama: tf=9.9793 first=10.1595 kCE=10.0387 KD=0.0000 | scale_pen(llama)=3.3290e-09 | qwen: tf=8.1185 first=10.9572 kCE=9.0510 KD=0.0000 | scale_pen(qwen)=1.3004e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-Epoch 2/4
-  step  10/40 | grad_norm=46.97 | sec/step~1.33 | keep=1.00 | K=4 | llama: tf=9.9482 first=10.4067 kCE=10.6690 KD=0.0000 | scale_pen(llama)=3.3290e-09 | qwen: tf=9.8103 first=10.3422 kCE=9.2933 KD=0.0000 | scale_pen(qwen)=1.3004e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  20/40 | grad_norm=14.71 | sec/step~1.15 | keep=1.00 | K=4 | llama: tf=10.3023 first=9.7725 kCE=10.7954 KD=0.0000 | scale_pen(llama)=3.0332e-09 | qwen: tf=9.9072 first=10.5472 kCE=9.1751 KD=0.0000 | scale_pen(qwen)=4.1669e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~0.9999 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  30/40 | grad_norm=46.76 | sec/step~1.24 | keep=1.00 | K=4 | llama: tf=10.1206 first=8.8606 kCE=10.9023 KD=0.0000 | scale_pen(llama)=3.0332e-09 | qwen: tf=10.9597 first=10.0374 kCE=9.9076 KD=0.0000 | scale_pen(qwen)=4.1669e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  40/40 | grad_norm=46.15 | sec/step~1.15 | keep=1.00 | K=4 | llama: tf=9.9808 first=9.8790 kCE=9.7573 KD=0.0000 | scale_pen(llama)=5.7302e-11 | qwen: tf=9.6739 first=10.1079 kCE=8.5014 KD=0.0000 | scale_pen(qwen)=1.5196e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-Epoch 3/4
-  step  10/40 | grad_norm=37.36 | sec/step~1.12 | keep=1.00 | K=4 | llama: tf=9.7312 first=8.9822 kCE=9.8208 KD=0.0000 | scale_pen(llama)=5.7302e-11 | qwen: tf=10.0474 first=8.6230 kCE=9.2681 KD=0.0000 | scale_pen(qwen)=1.5196e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  20/40 | grad_norm=11.55 | sec/step~1.04 | keep=1.00 | K=4 | llama: tf=10.2009 first=8.0029 kCE=9.2744 KD=0.0000 | scale_pen(llama)=1.0398e-09 | qwen: tf=11.4446 first=7.8454 kCE=8.6088 KD=0.0000 | scale_pen(qwen)=8.6459e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  30/40 | grad_norm=24.71 | sec/step~1.07 | keep=1.00 | K=4 | llama: tf=10.2531 first=8.4956 kCE=9.2917 KD=0.0000 | scale_pen(llama)=1.0398e-09 | qwen: tf=10.6798 first=8.1800 kCE=8.7874 KD=0.0000 | scale_pen(qwen)=8.6459e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  40/40 | grad_norm=16.37 | sec/step~1.18 | keep=1.00 | K=4 | llama: tf=9.6367 first=8.4603 kCE=8.3916 KD=0.0000 | scale_pen(llama)=1.3306e-09 | qwen: tf=10.2174 first=8.8128 kCE=8.0905 KD=0.0000 | scale_pen(qwen)=1.7808e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-Epoch 4/4
-  step  10/40 | grad_norm=47.33 | sec/step~1.14 | keep=1.00 | K=4 | llama: tf=8.6877 first=8.2213 kCE=8.2199 KD=0.0000 | scale_pen(llama)=1.3306e-09 | qwen: tf=7.4960 first=7.0476 kCE=6.3353 KD=0.0000 | scale_pen(qwen)=1.7808e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  20/40 | grad_norm=11.01 | sec/step~1.07 | keep=1.00 | K=4 | llama: tf=9.4437 first=7.4689 kCE=8.2946 KD=0.0000 | scale_pen(llama)=3.8924e-10 | qwen: tf=8.9256 first=7.0954 kCE=6.7997 KD=0.0000 | scale_pen(qwen)=2.1174e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  30/40 | grad_norm=34.72 | sec/step~1.10 | keep=1.00 | K=4 | llama: tf=10.3518 first=7.9166 kCE=8.4915 KD=0.0000 | scale_pen(llama)=3.8924e-10 | qwen: tf=10.5268 first=8.0467 kCE=7.0098 KD=0.0000 | scale_pen(qwen)=2.1174e-09 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-  step  40/40 | grad_norm=14.57 | sec/step~1.04 | keep=1.00 | K=4 | llama: tf=9.9264 first=8.2385 kCE=7.8366 KD=0.0000 | scale_pen(llama)=5.0227e-10 | qwen: tf=9.5708 first=7.0556 kCE=6.7791 KD=0.0000 | scale_pen(qwen)=3.0708e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058; qwen: rms_raw~1.0000 rms_cal~0.0136 embed_rms~0.01364]
-[checkpoint] Freed 1.7KB before save.
-[checkpoint] Saved latest: encoder.pt, adapter_llama.pt, adapter_qwen.pt, state.pt, config.json
-[checkpoint] Freed 0.0B after save (non-canonical).
-✅ Saved latest checkpoint to runs/scoped_softprompt_20250922_162004/ckpt/stageB
-📝 Saved Prefix-Tuning adapters for Llama
-📝 Saved Prefix-Tuning adapters for Qwen
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 1.0000182837247849, 'rms_mean_cal': 0.010570699750678614, 'embed_rms': 0.01057521253824234, 'count': 160}, 'qwen': {'rms_mean_raw': 1.000027147680521, 'rms_mean_cal': 0.013640904781641438, 'embed_rms': 0.013643525540828705, 'count': 160}}
-
-=== Stage C: Eval ===
-
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Auto-detected device: cuda
-Loaded training_stats.json: runs/scoped_softprompt_20250922_162004/ckpt/stageB/training_stats.json
-Building encoder and computing Z...
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1371, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1267, in main
-    summary, preds_dump = run_standard_eval(
-TypeError: run_standard_eval() missing 1 required positional argument: 'models'
