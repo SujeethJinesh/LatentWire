@@ -69,6 +69,7 @@ export TOKENIZERS_PARALLELISM="false"
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
+LLAMA_DEVICE_MAP="${LLAMA_DEVICE_MAP:-balanced}"
 GPU_MEM_GIB="${GPU_MEM_GIB:-78}"
 
 COMMON_ARGS=(
@@ -81,7 +82,7 @@ COMMON_ARGS=(
   --encoder_type stq
   --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2
   --encoder_use_chat_template
-  --llama_device_map auto
+  --llama_device_map "$LLAMA_DEVICE_MAP"
   --llama_devices "$LLAMA_DEVICES"
   --gpu_mem_gib "$GPU_MEM_GIB"
 )

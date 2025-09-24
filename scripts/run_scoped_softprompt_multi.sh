@@ -72,10 +72,12 @@ export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1}"
 QWEN_DEVICES="${QWEN_DEVICES:-2,3}"
 GPU_MEM_GIB="${GPU_MEM_GIB:-78}"
+LLAMA_DEVICE_MAP="${LLAMA_DEVICE_MAP:-balanced}"
+QWEN_DEVICE_MAP="${QWEN_DEVICE_MAP:-balanced}"
 
 COMMON_DEVMAP=(
-  --llama_device_map auto
-  --qwen_device_map auto
+  --llama_device_map "$LLAMA_DEVICE_MAP"
+  --qwen_device_map "$QWEN_DEVICE_MAP"
   --llama_devices "$LLAMA_DEVICES"
   --qwen_devices "$QWEN_DEVICES"
   --gpu_mem_gib "$GPU_MEM_GIB"
