@@ -43,12 +43,14 @@ MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
 CHUNK_SIZE="${CHUNK_SIZE:-96}"
 
 if [[ $hero -eq 1 ]]; then
-  TRAIN_SAMPLES=8000
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-8000}
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-6}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-10}
   SAMPLES="${SAMPLES:-1000}"
 else
-  TRAIN_SAMPLES=640
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-640}
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-1280}
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-6}
   SAMPLES="${SAMPLES:-200}"
@@ -114,7 +116,7 @@ PY
 # --- Stage A: Latent encoder bring-up ---
 echo -e "\n=== Stage A: Latent Fit ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_STAGEA" \
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
   --batch_size "$BATCH_SIZE_A" --grad_accum_steps 16 \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --encoder_use_chat_template \
@@ -137,7 +139,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
 # --- Stage B: Prefix-training only ---
 echo -e "\n=== Stage B: Prefix Training ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_STAGEB" \
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
   --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --encoder_use_chat_template \
