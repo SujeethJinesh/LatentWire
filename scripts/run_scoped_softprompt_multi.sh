@@ -162,6 +162,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --lr 5e-5 \
   --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
   --warmup_text_latent_epochs 1.0 \
+  --warmup_align_tokens 4 --warmup_align_weight 0.5 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage C: Evaluation on clean hubs + learned prefixes ---

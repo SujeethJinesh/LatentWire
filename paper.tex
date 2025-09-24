@@ -244,6 +244,14 @@ The final loss becomes:
 
 where $\lambda_{\text{first}} = 0.5$ in our experiments. This single addition improved generation F1 from 0.03 to 0.4+ within two epochs.
 
+\subsubsection{Mixed Warm-up Alignment}
+
+Even with the first-token loss, the adapters initially received extremely noisy gradients—Stage~B smoke runs showed first-token cross-entropy around 7--9 and top-1 accuracy near zero. To stabilise early training we now alternate the first epoch between latent steps and ``text'' alignment steps. On the latter, we still run the encoder/adapters but additionally match the first few gold answer embeddings (four tokens by default) via an $\ell_2$ alignment loss:
+\begin{align}
+\mathcal{L}_{\text{align}} = \frac{1}{K d} \sum_{k=1}^{K} \lVert P_i^{(k)} - \text{Embed}_i(y_k) \rVert^2
+\end{align}
+The alignment loss is weighted (0.5 in smoke runs) and only active during the warm-up window; dropout over the shared latent slots is disabled on these steps. This procedure injects clean supervision exactly where the encoder/adapters are weakest—lifting first-token acceptance into the teens before we resume standard latent-only updates.
+
 \subsubsection{Data Loading and Checkpoint Resume}
 
 We discovered critical bugs in our training pipeline that caused complete retraining from scratch at each epoch:

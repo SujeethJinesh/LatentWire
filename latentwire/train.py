@@ -470,6 +470,10 @@ def main():
                     help="Number of initial optimizer steps to alternate text vs latent teacher forcing (0 disables).")
     ap.add_argument("--warmup_text_latent_epochs", type=float, default=0.0,
                     help="Alternative way to specify warm-up length via epochs (e.g., 1.0 for first epoch).")
+    ap.add_argument("--warmup_align_tokens", type=int, default=1,
+                    help="During warm-up text steps, align this many leading answer tokens (0 disables alignment).")
+    ap.add_argument("--warmup_align_weight", type=float, default=1.0,
+                    help="Weight for the warm-up embedding alignment loss (text-mode steps only).")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
@@ -1124,6 +1128,18 @@ def main():
         cur_sd = prefix.float().std(dim=[0, 1]).clamp_min(1e-6)
         return (cur_mu - mu).pow(2).mean() + (cur_sd - sd).pow(2).mean()
 
+    def alignment_mse(pred: torch.Tensor, target: torch.Tensor, mask: Optional[torch.Tensor]) -> torch.Tensor:
+        if pred.numel() == 0:
+            return torch.zeros((), device=pred.device, dtype=pred.dtype)
+        diff = (pred - target).pow(2)
+        if mask is not None:
+            mask_base = mask.to(pred.device, dtype=pred.dtype)
+            diff = diff * mask_base.unsqueeze(-1)
+            denom = (mask_base.sum().clamp_min(1.0)) * pred.size(-1)
+        else:
+            denom = torch.tensor(float(diff.numel()), device=pred.device, dtype=pred.dtype)
+        return diff.sum() / denom
+
     def _parse_layers_arg(value: str) -> Tuple[int, ...]:
         try:
             items = [int(v) for v in re.split(r"[\s,]+", value.strip()) if v != ""]
@@ -1262,25 +1278,21 @@ def main():
             penalty = torch.zeros((), device=device)
             rms_pen = torch.zeros((), device=device)
 
-            model_latents: Dict[str, torch.Tensor] = {}
-            shared_latents = None
-            private_latents = None
-
-            if training_mode == "latent":
-                encoded_latents = encode_fn(effective_texts)
-                shared_latents = encoded_latents["shared"]
-                private_latents = encoded_latents["private"]
-                if shared_latents.size(1) > 0 and keep_prob < 1.0:
-                    mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < keep_prob).float()
-                    need_fix = mask.sum(dim=1) == 0
-                    if need_fix.any():
-                        mask[need_fix, 0] = 1.0
-                    mask = mask.unsqueeze(-1)
-                    shared_latents = shared_latents * mask / max(keep_prob, 1e-3)
-                model_latents = {
-                    name: torch.cat([shared_latents, private_latents[name]], dim=1)
-                    for name in model_keys
-                }
+            encoded_latents = encode_fn(effective_texts)
+            shared_latents = encoded_latents["shared"]
+            private_latents = encoded_latents["private"]
+            dropout_keep = keep_prob if training_mode == "latent" else 1.0
+            if shared_latents.size(1) > 0 and dropout_keep < 1.0:
+                mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < dropout_keep).float()
+                need_fix = mask.sum(dim=1) == 0
+                if need_fix.any():
+                    mask[need_fix, 0] = 1.0
+                mask = mask.unsqueeze(-1)
+                shared_latents = shared_latents * mask / max(dropout_keep, 1e-3)
+            model_latents = {
+                name: torch.cat([shared_latents, private_latents[name]], dim=1)
+                for name in model_keys
+            }
 
             for ctx in model_contexts:
                 target_device = _primary_device(ctx.wrapper)
@@ -1288,27 +1300,6 @@ def main():
                 scaffold = scaffolds[ctx.name].to(target_device, non_blocking=True)
 
                 losses_record: Dict[str, torch.Tensor] = {}
-
-                if training_mode == "text":
-                    loss_text, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
-                    model_loss = loss_text.to(device)
-                    total_model_loss = total_model_loss + model_loss
-                    penalty = penalty + scale_penalty(ctx.adapter).to(device)
-                    losses_record.update({
-                        "tf": loss_text,
-                        "first": torch.zeros((), device=target_device),
-                        "first_weight": torch.tensor(0.0, device=target_device),
-                        "kce": torch.zeros((), device=target_device),
-                        "kd": torch.zeros((), device=target_device),
-                        "state": torch.zeros((), device=target_device),
-                        "manifold": torch.zeros((), device=target_device),
-                        "rms_raw": torch.zeros((), device=target_device),
-                        "rms_cal": torch.zeros((), device=target_device),
-                    })
-                    per_model_losses[ctx.name] = losses_record
-                    per_model_losses[ctx.name]["mode"] = "text"
-                    continue
-
                 latents_for_adapter = model_latents[ctx.name].to(target_device, non_blocking=True)
                 answer_lengths = ctx.answer_lengths[idx].to(target_device, non_blocking=True)
 
@@ -1382,6 +1373,27 @@ def main():
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
 
+                align_loss = torch.zeros((), device=target_device)
+                if training_mode == "text" and args.warmup_align_tokens > 0 and args.warmup_align_weight > 0.0:
+                    max_align = min(int(args.warmup_align_tokens), prefix.shape[1])
+                    pad_id = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
+                    if max_align > 0 and prefix.shape[1] > 0:
+                        teacher_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
+                        # Drop potential BOS token by shifting by one position
+                        start = 1
+                        stop = 1 + max_align
+                        if stop > teacher_ids.size(1):
+                            stop = teacher_ids.size(1)
+                        token_slice = teacher_ids[:, start:stop]
+                        if token_slice.numel() > 0:
+                            mask = None
+                            if pad_id is not None:
+                                mask = token_slice.ne(int(pad_id))
+                            teacher_embeds = ctx.wrapper.input_embed(token_slice)
+                            prefix_slice = prefix[:, : token_slice.size(1), :]
+                            align_loss = alignment_mse(prefix_slice, teacher_embeds, mask)
+                            align_loss = align_loss * float(max(args.warmup_align_weight, 0.0))
+
                 model_loss = (
                     loss_tf
                     + current_first_weight * loss_first
@@ -1389,6 +1401,7 @@ def main():
                     + args.kd_first_k_weight * loss_kd
                     + args.state_kd_weight * loss_state
                     + args.manifold_stat_weight * manifold_loss
+                    + align_loss
                 ).to(device)
                 total_model_loss = total_model_loss + model_loss
 
@@ -1410,9 +1423,12 @@ def main():
                     "manifold": manifold_loss,
                     "rms_raw": rms_raw_val,
                     "rms_cal": rms_cal_val,
+                    "align": align_loss,
                 })
                 per_model_losses[ctx.name] = losses_record
                 per_model_losses[ctx.name]["mode"] = "latent"
+                if training_mode == "text":
+                    per_model_losses[ctx.name]["mode"] = "text"
 
             loss = (
                 total_model_loss / float(len(model_contexts))
@@ -1471,6 +1487,8 @@ def main():
                         msg_ctx += f" state={_to_float(metrics['state']):.4f}"
                     if args.manifold_stat_weight > 0.0:
                         msg_ctx += f" man={_to_float(metrics['manifold']):.4f}"
+                    if args.warmup_align_weight > 0.0:
+                        msg_ctx += f" align={_to_float(metrics['align']):.4f}"
                     parts.append(msg_ctx)
                     if args.scale_l2 > 0.0:
                         parts.append(f"scale_pen({ctx.name})={scale_penalty(ctx.adapter).item():.4e}")
@@ -1543,11 +1561,13 @@ def main():
                     "data_seed": args.data_seed,
                     "models": model_keys,
                     "warmup_text_latent_steps": warmup_total_steps,
+                    "warmup_align_tokens": args.warmup_align_tokens,
+                    "warmup_align_weight": args.warmup_align_weight,
                 }
                 cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
-    cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
-    cfg["warm_anchor_texts"] = anchor_texts
-    cfg["warm_anchor_modes"] = anchor_modes
+                cfg["warm_anchor_texts"] = anchor_texts
+                cfg["warm_anchor_modes"] = anchor_modes
+
                 state_blob = {
                     "epoch": epoch,
                     "global_step": global_step,
@@ -1593,6 +1613,7 @@ def main():
         "encoder_backbone": (args.encoder_backbone or ""),
         "freeze_encoder": bool(args.freeze_encoder),
         "use_chat_template": bool(args.use_chat_template),
+        "warm_anchor_text": anchor_texts.get("llama", ""),
         "warm_anchor_texts": anchor_texts,
         "warm_anchor_modes": anchor_modes,
         "strip_anchor_text": strip_anchor_literal,
@@ -1632,6 +1653,8 @@ def main():
         "data_seed": args.data_seed,
         "models": model_keys,
         "warmup_text_latent_steps": warmup_total_steps,
+        "warmup_align_tokens": args.warmup_align_tokens,
+        "warmup_align_weight": args.warmup_align_weight,
     }
     state_blob = {
         "epoch": epoch + 1 if 'epoch' in locals() else None,
