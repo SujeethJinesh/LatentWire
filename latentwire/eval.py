@@ -1011,15 +1011,16 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
 
     oracle_em = 0.0
     oracle_f1 = 0.0
-    for candA, candB, gold in zip(
-        model_outputs["llama"]["latent_preds"],
-        model_outputs["qwen"]["latent_preds"],
-        golds,
-    ):
-        oracle_em += max(em(candA, gold), em(candB, gold))
-        oracle_f1 += max(f1(candA, gold), f1(candB, gold))
-    oracle_em /= len(golds)
-    oracle_f1 /= len(golds)
+    if all(name in model_outputs for name in ("llama", "qwen")):
+        for candA, candB, gold in zip(
+            model_outputs["llama"]["latent_preds"],
+            model_outputs["qwen"]["latent_preds"],
+            golds,
+        ):
+            oracle_em += max(em(candA, gold), em(candB, gold))
+            oracle_f1 += max(f1(candA, gold), f1(candB, gold))
+        oracle_em /= len(golds)
+        oracle_f1 /= len(golds)
 
     summary = {
         "samples": len(prompts_raw),
