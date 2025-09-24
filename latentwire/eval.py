@@ -698,16 +698,43 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     if qwen_map is None and qwen_max_memory is not None and device == "cuda":
         qwen_map = "auto"
 
-    llama = LMWrapper(LMConfig(model_id=llama_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
-                               device_map=llama_map, max_memory=llama_max_memory))
-    qwen = LMWrapper(LMConfig(model_id=qwen_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
-                              device_map=qwen_map, max_memory=qwen_max_memory))
-    for wrapper in (llama, qwen):
+    requested = models or ["llama", "qwen"]
+    wrappers: Dict[str, LMWrapper] = {}
+
+    if "llama" in requested:
+        llama = LMWrapper(LMConfig(
+            model_id=llama_id,
+            device=device,
+            dtype=dtype,
+            load_4bit=args.load_4bit,
+            device_map=llama_map,
+            max_memory=llama_max_memory,
+        ))
         try:
-            if hasattr(wrapper.model.config, "use_cache"):
-                wrapper.model.config.use_cache = False
+            if hasattr(llama.model.config, "use_cache"):
+                llama.model.config.use_cache = False
         except Exception:
             pass
+        wrappers["llama"] = llama
+
+    if "qwen" in requested:
+        qwen = LMWrapper(LMConfig(
+            model_id=qwen_id,
+            device=device,
+            dtype=dtype,
+            load_4bit=args.load_4bit,
+            device_map=qwen_map,
+            max_memory=qwen_max_memory,
+        ))
+        try:
+            if hasattr(qwen.model.config, "use_cache"):
+                qwen.model.config.use_cache = False
+        except Exception:
+            pass
+        wrappers["qwen"] = qwen
+
+    if not wrappers:
+        raise ValueError("No models selected for evaluation.")
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 
@@ -715,20 +742,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     adapter_colorize = bool(cfg.get("adapter_colorize", False))
     adapter_enable_metadata = bool(cfg.get("adapter_enable_metadata", True))
 
-    llama_device = _primary_device(llama)
-    qwen_device = _primary_device(qwen)
-
     per_model_latent_len = int(cfg.get("latent_shared_len", latent_len)) + int(cfg.get("latent_private_len", 0))
     if per_model_latent_len <= 0:
         per_model_latent_len = latent_len
-
-    wrappers = {"llama": llama, "qwen": qwen}
-
-    if models:
-        keep = {m for m in models}
-        wrappers = {k: v for k, v in wrappers.items() if k in keep}
-        if not wrappers:
-            raise ValueError(f"No valid models selected from {models}; choose any subset of ['llama','qwen']")
 
     model_contexts = {name: {"wrapper": wrapper} for name, wrapper in wrappers.items()}
 
@@ -808,6 +824,8 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "qwen": os.path.join(ckpt_dir, "prefix_qwen"),
         }
         for name, path in prefix_paths.items():
+            if name not in wrappers:
+                continue
             if os.path.isdir(path):
                 wrappers[name].model = PeftModel.from_pretrained(wrappers[name].model, path).eval()
                 print(f"✓ Loaded Prefix-Tuning adapters for {name}")
@@ -846,7 +864,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     quant_bits = getattr(args, "latent_quant_bits", None)
     quant_group = getattr(args, "latent_quant_group_size", 32)
     prefix_map = {}
-    debug_map = {"llama": {}, "qwen": {}}
+    debug_map = {name: {} for name in model_contexts}
     with torch.no_grad():
         for name, ctx in model_contexts.items():
             latents = combined_latents[name]
@@ -957,6 +975,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     bytes_per_latent = 0
     group_size = getattr(args, "latent_quant_group_size", 32)
     scale_bits = getattr(args, "latent_quant_scale_bits", 16)
+    selected_bytes: Optional[int] = None
     if all(name in model_outputs for name in ("llama", "qwen")):
         wire = compute_wire_metrics(
             model_outputs["llama"]["chat_prompts"],
