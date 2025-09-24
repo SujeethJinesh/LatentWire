@@ -1103,7 +1103,8 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             entry[f"trunc_pred_{name}"] = outputs["trunc_preds"][i]
         preds_dump.append(entry)
 
-    del llama, qwen
+    for wrapper in wrappers.values():
+        del wrapper
     for adapter in adapters.values():
         del adapter
     if device == "cuda":
