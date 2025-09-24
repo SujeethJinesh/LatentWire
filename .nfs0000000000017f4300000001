@@ -1,0 +1,32 @@
+=========================================
+CODE-SERVER CONNECTION INFO
+=========================================
+
+Job ID: 94467
+Running on: n05
+Port: 8071
+Started at: Tue Sep 23 10:56:08 AM PDT 2025
+
+STEP 1: Run this on your LOCAL machine:
+
+ssh -L 8071:n05:8071 marlowe
+
+STEP 2: Open browser to:
+
+http://localhost:8071
+
+Working directory: /projects/m000066/sujinesh/LatentWire
+
+=========================================
+To stop: scancel 94467
+=========================================
+Starting code-server at Tue Sep 23 10:56:08 AM PDT 2025...
+[2025-09-23T17:56:10.003Z] info  code-server 4.93.1 69df01185ce2f80e99c9e4f8c8de1907cc7a9bc5
+[2025-09-23T17:56:10.011Z] info  Using user-data-dir /tmp/code-server-94467
+[2025-09-23T17:56:10.019Z] warn  Could not create socket at /tmp/code-server-94467/code-server-ipc.sock
+[2025-09-23T17:56:10.027Z] info  Using config file /users/sujinesh/.config/code-server/config.yaml
+[2025-09-23T17:56:10.027Z] info  HTTP server listening on http://0.0.0.0:8071/
+[2025-09-23T17:56:10.027Z] info    - Authentication is disabled
+[2025-09-23T17:56:10.027Z] info    - Not serving HTTPS
+[2025-09-23T17:56:10.027Z] info    - Proxy disabled
+[2025-09-23T17:56:10.027Z] info  Session server listening on /tmp/code-server-94467/code-server-ipc.sock
