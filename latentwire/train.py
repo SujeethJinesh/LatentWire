@@ -1174,6 +1174,8 @@ def main():
     warmup_steps_from_epochs = int(round(max(float(args.warmup_text_latent_epochs), 0.0) * steps_per_epoch))
     warmup_total_steps = max(int(args.warmup_text_latent_steps), warmup_steps_from_epochs)
     warmup_total_steps = max(0, min(warmup_total_steps, total_batches))
+    if warmup_total_steps > 0:
+        print(f"[warmup] alternating text/latent for first {warmup_total_steps} steps")
 
     first_ce_schedule = str(getattr(args, "first_token_ce_schedule", "none")).lower()
     peak_override = args.first_token_ce_peak
@@ -1274,6 +1276,8 @@ def main():
             training_mode = "latent"
             if warmup_active and (global_step % 2 == 0):
                 training_mode = "text"
+            if warmup_active and global_step < 10:
+                print(f"[warmup] step={global_step} mode={training_mode}")
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
             total_model_loss = torch.zeros((), device=device)
