@@ -702,6 +702,12 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                                device_map=llama_map, max_memory=llama_max_memory))
     qwen = LMWrapper(LMConfig(model_id=qwen_id, device=device, dtype=dtype, load_4bit=args.load_4bit,
                               device_map=qwen_map, max_memory=qwen_max_memory))
+    for wrapper in (llama, qwen):
+        try:
+            if hasattr(wrapper.model.config, "use_cache"):
+                wrapper.model.config.use_cache = False
+        except Exception:
+            pass
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 

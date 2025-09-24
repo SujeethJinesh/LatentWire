@@ -44,11 +44,13 @@ CHUNK_SIZE="${CHUNK_SIZE:-96}"
 
 if [[ $hero -eq 1 ]]; then
   TRAIN_SAMPLES=8000
-  EPOCHS_B=8
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-6}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-10}
   SAMPLES="${SAMPLES:-1000}"
 else
   TRAIN_SAMPLES=640
-  EPOCHS_B=4
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-6}
   SAMPLES="${SAMPLES:-200}"
 fi
 
@@ -61,6 +63,7 @@ BATCH_SIZE_A="${BATCH_SIZE_A:-16}"
 # Mandatory chat templating across the stack
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
+export TOKENIZERS_PARALLELISM="false"
 
 # GPU placement
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
@@ -111,7 +114,7 @@ PY
 # --- Stage A: Latent encoder bring-up ---
 echo -e "\n=== Stage A: Latent Fit ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_STAGEA" \
   --batch_size "$BATCH_SIZE_A" --grad_accum_steps 16 \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --encoder_use_chat_template \
@@ -134,7 +137,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
 # --- Stage B: Prefix-training only ---
 echo -e "\n=== Stage B: Prefix Training ===\n" | tee -a "$LOG"
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_B" \
+  --dataset "$DATASET" --samples "$TRAIN_SAMPLES" --epochs "$EPOCHS_STAGEB" \
   --batch_size "$BATCH_SIZE_B" --grad_accum_steps 16 \
   --encoder_type stq --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 \
   --encoder_use_chat_template \
