@@ -474,6 +474,8 @@ def main():
                     help="During warm-up text steps, align this many leading answer tokens (0 disables alignment).")
     ap.add_argument("--warmup_align_weight", type=float, default=1.0,
                     help="Weight for the warm-up embedding alignment loss (text-mode steps only).")
+    ap.add_argument("--warmup_text_teacher_weight", type=float, default=1.0,
+                    help="Weight for the teacher-forced text loss during warm-up text steps.")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
@@ -1314,11 +1316,14 @@ def main():
                         f"[DEBUG:{ctx.name}] scaffold_len={scaffold.size(1)} anchor_mode={ctx.anchor_mode}",
                         flush=True,
                     )
-                loss_tf = ctx.wrapper.forward_with_prefix_loss(
-                    prefix, targets, anchor_token_ids=ctx.anchor_ids
-                )
+                if training_mode == "latent":
+                    loss_tf = ctx.wrapper.forward_with_prefix_loss(
+                        prefix, targets, anchor_token_ids=ctx.anchor_ids
+                    )
+                else:
+                    loss_tf = torch.zeros((), device=target_device)
 
-                if enable_first_token_loss:
+                if enable_first_token_loss and training_mode == "latent":
                     first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
@@ -1330,7 +1335,7 @@ def main():
                 else:
                     loss_first = torch.zeros((), device=target_device)
 
-                if args.k_ce_weight and args.k_ce_weight > 0.0:
+                if args.k_ce_weight and args.k_ce_weight > 0.0 and training_mode == "latent":
                     loss_kce = k_token_ce_from_prefix(
                         ctx.wrapper,
                         prefix,
@@ -1373,6 +1378,7 @@ def main():
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
 
+                text_teacher_loss = torch.zeros((), device=target_device)
                 align_loss = torch.zeros((), device=target_device)
                 if training_mode == "text" and args.warmup_align_tokens > 0 and args.warmup_align_weight > 0.0:
                     max_align = min(int(args.warmup_align_tokens), prefix.shape[1])
@@ -1393,6 +1399,11 @@ def main():
                             prefix_slice = prefix[:, : token_slice.size(1), :]
                             align_loss = alignment_mse(prefix_slice, teacher_embeds, mask)
                             align_loss = align_loss * float(max(args.warmup_align_weight, 0.0))
+                if training_mode == "text":
+                    try:
+                        text_teacher_loss, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
+                    except Exception:
+                        text_teacher_loss = torch.zeros((), device=target_device)
 
                 model_loss = (
                     loss_tf
@@ -1402,6 +1413,7 @@ def main():
                     + args.state_kd_weight * loss_state
                     + args.manifold_stat_weight * manifold_loss
                     + align_loss
+                    + float(max(args.warmup_text_teacher_weight, 0.0)) * text_teacher_loss
                 ).to(device)
                 total_model_loss = total_model_loss + model_loss
 
@@ -1424,11 +1436,21 @@ def main():
                     "rms_raw": rms_raw_val,
                     "rms_cal": rms_cal_val,
                     "align": align_loss,
+                    "text_tf": text_teacher_loss,
                 })
                 per_model_losses[ctx.name] = losses_record
                 per_model_losses[ctx.name]["mode"] = "latent"
                 if training_mode == "text":
                     per_model_losses[ctx.name]["mode"] = "text"
+
+            if training_mode == "text" and ((step + 1) % 10 == 0 or (step + 1) == steps_per_epoch):
+                parts_text = [
+                    f"  step  {step+1}/{steps_per_epoch}",
+                    "(warm-up text)",
+                    f"align={_to_float(align_loss):.4f}",
+                    f"text_tf={_to_float(text_teacher_loss):.4f}",
+                ]
+                print(" | ".join(parts_text))
 
             loss = (
                 total_model_loss / float(len(model_contexts))

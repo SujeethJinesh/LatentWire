@@ -1422,10 +1422,14 @@ def main():
     print(f"Wall clock: {summary['token_budget']['wall_clock_sec']:.2f}s")
 
     print("\n— 2-LLM joint (rescored pick on latent runs)")
-    if summary['joint']['em'] is not None:
-        print(f"Joint  EM: {summary['joint']['em']:.3f}  F1: {summary['joint']['f1']:.3f}")
-        print(f"Inter-model agreement (normalized): {summary['joint']['agreement']:.3f}")
+    joint_block = summary.get('joint', {})
+    if joint_block.get('em') is not None:
+        print(f"Joint  EM: {joint_block['em']:.3f}  F1: {joint_block['f1']:.3f}")
+        if joint_block.get('agreement') is not None:
+            print(f"Inter-model agreement (normalized): {joint_block['agreement']:.3f}")
         print(f"Oracle upper bound:  EM {summary['oracle']['em']:.3f}  F1 {summary['oracle']['f1']:.3f}")
+    else:
+        print("Joint metrics unavailable (single-model evaluation).")
 
     print("\n==== METRICS_JSON ====")
     print(json.dumps(summary, indent=2))
@@ -1453,7 +1457,7 @@ def main():
                     w.writerow(["token_budget", mdl, summary["token_budget"][mdl]["em"], summary["token_budget"][mdl]["f1"], "",
                                 summary["token_budget"]["wall_clock_sec"], summary["compression"].get(mdl,""), summary["payload_bytes"],
                                 summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
-            if summary["joint"]["em"] is not None:
+            if summary.get("joint", {}).get("em") is not None:
                 w.writerow(["joint","both", summary["joint"]["em"], summary["joint"]["f1"], "", "", "", summary["payload_bytes"],
                             summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
 
