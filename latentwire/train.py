@@ -9,7 +9,7 @@ import random
 import ast
 import subprocess
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple, List, Union
+from typing import Dict, Optional, Tuple, List, Union, Any
 from contextlib import contextmanager
 
 import torch
@@ -151,11 +151,10 @@ def _debug_print_optimizer_state_devices(optimizer: optim.Optimizer, limit: int 
 def load_checkpoint(
     path: str,
     encoder: InterlinguaEncoder,
-    adp_llama: Adapter,
-    adp_qwen: Adapter,
+    adapters: Dict[str, Adapter],
     optimizer: Optional[optim.Optimizer] = None,
     strict: bool = True,
-    device: str = "cpu"
+    device: str = "cpu",
 ) -> Tuple[int, int]:
     if path and os.path.isfile(path):
         state = _safe_load(path, map_location="cpu")
@@ -168,29 +167,63 @@ def load_checkpoint(
         ckpt_dir = None
 
     enc_loaded = False
-    if isinstance(state, dict) and all(k in state for k in ["encoder", "adp_llama", "adp_qwen"]):
+    adapters_loaded: Dict[str, bool] = {name: False for name in adapters.keys()}
+    if isinstance(state, dict) and "encoder" in state:
         try:
             encoder.load_state_dict(state["encoder"], strict=strict)
-            adp_llama.load_state_dict(state["adp_llama"], strict=strict)
-            adp_qwen.load_state_dict(state["adp_qwen"], strict=strict)
             enc_loaded = True
-            print("   -> loaded encoder/adapters FROM state.pt")
-        except Exception as e:
-            print(f"   -> failed to load weights from state.pt ({e}); will try .pt files")
+        except Exception as exc:
+            print(f"   -> failed to load encoder weights from state.pt ({exc}); will try .pt files")
+            enc_loaded = False
 
-    if not enc_loaded and ckpt_dir:
+        if enc_loaded:
+            for name, adapter in adapters.items():
+                key = f"adp_{name}"
+                alt_key = {
+                    "llama": "adp_llama",
+                    "qwen": "adp_qwen",
+                }.get(name, key)
+                state_key = key if key in state else alt_key
+                if state_key in state:
+                    try:
+                        adapter.load_state_dict(state[state_key], strict=strict)
+                        adapters_loaded[name] = True
+                    except Exception as exc:
+                        print(f"   -> adapter '{name}' from state.pt failed ({exc}); will retry from disk")
+                        adapters_loaded[name] = False
+                else:
+                    print(f"   -> adapter '{name}' missing in state.pt; will retry from disk")
+    if enc_loaded and all(adapters_loaded.values()):
+        print("   -> loaded encoder/adapters FROM state.pt")
+
+    if (not enc_loaded or not all(adapters_loaded.values())) and ckpt_dir:
         enc_path = os.path.join(ckpt_dir, "encoder.pt")
-        llm_path = os.path.join(ckpt_dir, "adapter_llama.pt")
-        qwn_path = os.path.join(ckpt_dir, "adapter_qwen.pt")
-        if all(os.path.isfile(p) for p in [enc_path, llm_path, qwn_path]):
-            encoder.load_state_dict(_safe_load(enc_path, map_location=device), strict=strict)
-            adp_llama.load_state_dict(_safe_load(llm_path, map_location=device), strict=strict)
-            adp_qwen.load_state_dict(_safe_load(qwn_path, map_location=device), strict=strict)
-            print("   -> loaded encoder/adapters FROM encoder.pt + adapter_{llama,qwen}.pt")
-        else:
+        missing: List[str] = []
+        if not enc_loaded:
+            if os.path.isfile(enc_path):
+                encoder.load_state_dict(_safe_load(enc_path, map_location=device), strict=strict)
+                enc_loaded = True
+            else:
+                missing.append(enc_path)
+
+        for name, adapter in adapters.items():
+            if adapters_loaded.get(name):
+                continue
+            adapter_path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
+            legacy_path = os.path.join(ckpt_dir, f"adapter_{name if name in ('llama','qwen') else name}.pt")
+            path_to_use = adapter_path if os.path.isfile(adapter_path) else legacy_path
+            if os.path.isfile(path_to_use):
+                adapter.load_state_dict(_safe_load(path_to_use, map_location=device), strict=strict)
+                adapters_loaded[name] = True
+            else:
+                missing.append(adapter_path)
+
+        if missing:
             raise FileNotFoundError(
-                "No weights found to resume: neither state.pt contained weights nor did encoder.pt/adapter_*.pt exist."
+                "Missing checkpoint artifacts: " + ", ".join(missing)
             )
+        else:
+            print("   -> loaded encoder/adapters FROM encoder.pt + adapter_*.pt")
 
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
@@ -339,6 +372,8 @@ def main():
     ap.add_argument("--require_cuda", type=str, default="yes", choices=["yes", "no"],
                     help="Abort immediately if CUDA is not available (default: yes).")
     ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot", "squad", "squad_v2"])
+    ap.add_argument("--models", type=str, default="llama,qwen",
+                    help="Comma-separated subset of models to train (subset of llama,qwen).")
     ap.add_argument("--hotpot_config", type=str, default="fullwiki")
     ap.add_argument("--samples", type=int, default=128)
     ap.add_argument("--epochs", type=int, default=1)
@@ -431,6 +466,10 @@ def main():
                     help="Final keep probability for latent dropout curriculum.")
     ap.add_argument("--latent_keep_power", type=float, default=1.0,
                     help="Exponent controlling schedule shape (1.0 linear, >1 later drop).")
+    ap.add_argument("--warmup_text_latent_steps", type=int, default=0,
+                    help="Number of initial optimizer steps to alternate text vs latent teacher forcing (0 disables).")
+    ap.add_argument("--warmup_text_latent_epochs", type=float, default=0.0,
+                    help="Alternative way to specify warm-up length via epochs (e.g., 1.0 for first epoch).")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
@@ -513,13 +552,21 @@ def main():
     else:
         dtype = torch.float32
 
+    supported_models = ["llama", "qwen"]
+    requested_models = [m.strip() for m in (args.models or "").split(",") if m.strip()]
+    if not requested_models:
+        requested_models = supported_models
+    for name in requested_models:
+        if name not in supported_models:
+            raise ValueError(f"Unknown model '{name}'. Choose from {supported_models}.")
+    model_keys = requested_models
+
     grad_accum_steps = max(1, int(args.grad_accum_steps))
     adaptive_k_start = int(args.adaptive_k_start) if args.adaptive_k_start is not None else args.K
     adaptive_k_end = int(args.adaptive_k_end) if args.adaptive_k_end is not None else args.K
     latent_keep_start = float(args.latent_keep_start)
     latent_keep_end = float(args.latent_keep_end)
     latent_keep_power = max(1e-6, float(args.latent_keep_power))
-    model_keys = ["llama", "qwen"]
     if args.latent_shared_len is not None:
         latent_shared_len = int(args.latent_shared_len)
         latent_private_len = max(0, int(args.latent_private_len))
@@ -588,23 +635,29 @@ def main():
     if qwen_device_map is None and qwen_max_memory is not None and device == "cuda":
         qwen_device_map = "auto"
 
-    llama = LMWrapper(LMConfig(
-        model_id=args.llama_id,
-        device=device,
-        dtype=dtype,
-        load_4bit=args.load_4bit,
-        device_map=llama_device_map,
-        max_memory=llama_max_memory,
-    ))
-    qwen  = LMWrapper(LMConfig(
-        model_id=args.qwen_id,
-        device=device,
-        dtype=dtype,
-        load_4bit=args.load_4bit,
-        device_map=qwen_device_map,
-        max_memory=qwen_max_memory,
-    ))
-    for wrapper in (llama, qwen):
+    llama = None
+    if "llama" in model_keys:
+        llama = LMWrapper(LMConfig(
+            model_id=args.llama_id,
+            device=device,
+            dtype=dtype,
+            load_4bit=args.load_4bit,
+            device_map=llama_device_map,
+            max_memory=llama_max_memory,
+        ))
+    qwen = None
+    if "qwen" in model_keys:
+        qwen = LMWrapper(LMConfig(
+            model_id=args.qwen_id,
+            device=device,
+            dtype=dtype,
+            load_4bit=args.load_4bit,
+            device_map=qwen_device_map,
+            max_memory=qwen_max_memory,
+        ))
+
+    wrappers_in_use: List[LMWrapper] = [w for w in (llama, qwen) if w is not None]
+    for wrapper in wrappers_in_use:
         try:
             if hasattr(wrapper.model.config, "use_cache"):
                 wrapper.model.config.use_cache = False
@@ -624,14 +677,16 @@ def main():
             "dropout": args.lora_dropout,
             "target_modules": args.lora_target_modules,
         }
-        llama.model = apply_lora_if_requested(llama.model, lora_cfg, args.llama_id)
-        qwen.model = apply_lora_if_requested(qwen.model, lora_cfg, args.qwen_id)
-        extra_llama_params.extend(_collect_trainable(llama.model))
-        extra_qwen_params.extend(_collect_trainable(qwen.model))
-        llama.model.train()
-        qwen.model.train()
-        llama.input_embed = llama.model.get_input_embeddings()
-        qwen.input_embed = qwen.model.get_input_embeddings()
+        if llama is not None:
+            llama.model = apply_lora_if_requested(llama.model, lora_cfg, args.llama_id)
+            extra_llama_params.extend(_collect_trainable(llama.model))
+            llama.model.train()
+            llama.input_embed = llama.model.get_input_embeddings()
+        if qwen is not None:
+            qwen.model = apply_lora_if_requested(qwen.model, lora_cfg, args.qwen_id)
+            extra_qwen_params.extend(_collect_trainable(qwen.model))
+            qwen.model.train()
+            qwen.input_embed = qwen.model.get_input_embeddings()
 
     if args.use_prefix:
         prefix_cfg = {
@@ -639,22 +694,31 @@ def main():
             "projection": args.prefix_projection,
             "all_layers": str(args.peft_prefix_all_layers).lower() != "no",
         }
-        llama.model = apply_prefix_if_requested(llama.model, prefix_cfg, llama.tokenizer)
-        qwen.model = apply_prefix_if_requested(qwen.model, prefix_cfg, qwen.tokenizer)
-        extra_llama_params = _collect_trainable(llama.model)
-        extra_qwen_params = _collect_trainable(qwen.model)
-        llama.model.train()
-        qwen.model.train()
-        llama.input_embed = llama.model.get_input_embeddings()
-        qwen.input_embed = qwen.model.get_input_embeddings()
+        if llama is not None:
+            llama.model = apply_prefix_if_requested(llama.model, prefix_cfg, llama.tokenizer)
+            extra_llama_params = _collect_trainable(llama.model)
+            llama.model.train()
+            llama.input_embed = llama.model.get_input_embeddings()
+        if qwen is not None:
+            qwen.model = apply_prefix_if_requested(qwen.model, prefix_cfg, qwen.tokenizer)
+            extra_qwen_params = _collect_trainable(qwen.model)
+            qwen.model.train()
+            qwen.input_embed = qwen.model.get_input_embeddings()
 
     if (args.use_lora or args.use_prefix) and not (extra_llama_params or extra_qwen_params):
         raise RuntimeError("No trainable PEFT parameters detected – check LoRA/Prefix flags")
 
-    print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
+    if llama is not None and qwen is not None:
+        print(f"Llama hidden size: {llama.d_model}, Qwen hidden size: {qwen.d_model}")
+    elif llama is not None:
+        print(f"Llama hidden size: {llama.d_model}")
+    elif qwen is not None:
+        print(f"Qwen hidden size: {qwen.d_model}")
     try:
-        print("[DeviceMap] Llama:", getattr(llama.model, "hf_device_map", None))
-        print("[DeviceMap] Qwen :", getattr(qwen.model, "hf_device_map", None))
+        if llama is not None:
+            print("[DeviceMap] Llama:", getattr(llama.model, "hf_device_map", None))
+        if qwen is not None:
+            print("[DeviceMap] Qwen :", getattr(qwen.model, "hf_device_map", None))
     except Exception:
         pass
 
@@ -662,10 +726,11 @@ def main():
     if strip_anchor_literal and not strip_anchor_literal.endswith(" "):
         strip_anchor_literal = strip_anchor_literal + " "
 
-    embed_stats = {
-        "llama": llama.embedding_stats(),
-        "qwen": qwen.embedding_stats(),
-    }
+    embed_stats: Dict[str, Tuple[torch.Tensor, torch.Tensor]] = {}
+    if llama is not None:
+        embed_stats["llama"] = llama.embedding_stats()
+    if qwen is not None:
+        embed_stats["qwen"] = qwen.embedding_stats()
 
     def _anchor_text_for(wrapper, fallback: str) -> Tuple[str, str]:
         requested = (getattr(args, "warm_anchor_mode", "auto") or "auto").lower()
@@ -716,52 +781,54 @@ def main():
         print(f"[WARN] Anchor trimmed from {len(ids)} to {len(kept)} tokens for {wrapper.cfg.model_id}")
         return truncated
 
-    anchor_text_llama, anchor_mode_llama = _anchor_text_for(llama, args.warm_anchor_text)
-    anchor_text_qwen, anchor_mode_qwen = _anchor_text_for(qwen, args.warm_anchor_text)
-    if anchor_mode_llama == "text":
-        anchor_text_llama = _truncate_anchor(llama, anchor_text_llama)
-    if anchor_mode_qwen == "text":
-        anchor_text_qwen = _truncate_anchor(qwen, anchor_text_qwen)
-    if anchor_mode_llama == "chat":
-        anchor_text_llama = strip_anchor_literal
-    if anchor_mode_qwen == "chat":
-        anchor_text_qwen = strip_anchor_literal
-    if anchor_text_qwen != anchor_text_llama:
-        print("[WARN] Anchor strings differ between models; using Llama variant for shared config.")
+    anchor_texts: Dict[str, str] = {}
+    anchor_modes: Dict[str, str] = {}
+    anchor_token_lists: Dict[str, List[int]] = {}
+    bos_flags: Dict[str, Optional[bool]] = {}
 
-    # === A0 sanity check ===
-    try:
-        skip_chat = bool(args.use_chat_template)
-        _assert_t0_alignment(llama.tokenizer, anchor_text_llama or "Answer: ", skip_if_chat=skip_chat)
-        _assert_t0_alignment(qwen.tokenizer,  anchor_text_qwen or "Answer: ", skip_if_chat=skip_chat)
-    except Exception as exc:
-        print(f"[WARN] A0 sanity check skipped/failed: {exc}")
+    for name, wrapper in (('llama', llama), ('qwen', qwen)):
+        if wrapper is None:
+            continue
+        text, mode = _anchor_text_for(wrapper, args.warm_anchor_text)
+        if mode == "text":
+            text = _truncate_anchor(wrapper, text)
+        elif mode == "chat":
+            text = strip_anchor_literal
+        anchor_texts[name] = text
+        anchor_modes[name] = mode
 
-    anchor_llama_ids = anchor_token_ids(llama, anchor_text_llama) if anchor_mode_llama == "text" else []
-    anchor_qwen_ids = anchor_token_ids(qwen, anchor_text_qwen) if anchor_mode_qwen == "text" else []
-    if anchor_llama_ids:
-        print(f"[INFO] Llama anchor tokens: {len(anchor_llama_ids)}")
-    if anchor_qwen_ids:
-        print(f"[INFO] Qwen anchor tokens: {len(anchor_qwen_ids)}")
+        try:
+            skip_chat = bool(args.use_chat_template)
+            _assert_t0_alignment(wrapper.tokenizer, text or "Answer: ", skip_if_chat=skip_chat)
+        except Exception as exc:
+            print(f"[WARN] A0 sanity check skipped/failed for {name}: {exc}")
 
-    bos_flag_llama = bos_policy(args.train_append_bos_after_prefix, anchor_llama_ids)
-    bos_flag_qwen = bos_policy(args.train_append_bos_after_prefix, anchor_qwen_ids)
-    if anchor_mode_llama == "chat":
-        bos_flag_llama = False
-    if anchor_mode_qwen == "chat":
-        bos_flag_qwen = False
+        anchor_ids = anchor_token_ids(wrapper, text) if mode == "text" else []
+        anchor_token_lists[name] = anchor_ids
+        if anchor_ids:
+            print(f"[INFO] {name} anchor tokens: {len(anchor_ids)}")
+        flag = bos_policy(args.train_append_bos_after_prefix, anchor_ids)
+        if mode == "chat":
+            flag = False
+        bos_flags[name] = flag
+
+    if 'llama' in anchor_texts and 'qwen' in anchor_texts:
+        if anchor_texts['llama'] != anchor_texts['qwen']:
+            print("[WARN] Anchor strings differ between models; using Llama variant for shared config.")
 
     if args.grad_ckpt:
-        llama.enable_gradient_checkpointing()
-        qwen.enable_gradient_checkpointing()
-        try:
-            llama.model.config.use_cache = False
-        except Exception:
-            pass
-        try:
-            qwen.model.config.use_cache = False
-        except Exception:
-            pass
+        if llama is not None:
+            llama.enable_gradient_checkpointing()
+            try:
+                llama.model.config.use_cache = False
+            except Exception:
+                pass
+        if qwen is not None:
+            qwen.enable_gradient_checkpointing()
+            try:
+                qwen.model.config.use_cache = False
+            except Exception:
+                pass
 
     # ===== Encoder =====
     def _structure_latents(raw: torch.Tensor) -> Dict[str, torch.Tensor]:
@@ -830,49 +897,57 @@ def main():
         print("[INFO] Encoder frozen (--freeze_encoder)")
 
     # ===== Adapters =====
-    llama_device = _primary_device(llama)
-    qwen_device = _primary_device(qwen)
+    adapters: Dict[str, Adapter] = {}
+    adp_llama: Optional[Adapter] = None
+    adp_qwen: Optional[Adapter] = None
 
-    per_model_latent_len = latent_shared_len + latent_private_len
+    if llama is not None:
+        adp_llama = Adapter(
+            d_z=args.d_z,
+            d_model=llama.d_model,
+            latent_length=latent_shared_len + latent_private_len,
+            enable_metadata=bool(args.adapter_metadata),
+            length_norm=float(args.max_answer_tokens),
+            hidden_mult=args.adapter_hidden_mult,
+            colorize=bool(args.adapter_colorize),
+        ).to(_primary_device(llama))
+        adapters["llama"] = adp_llama
 
-    adp_llama = Adapter(
-        d_z=args.d_z,
-        d_model=llama.d_model,
-        latent_length=per_model_latent_len,
-        enable_metadata=bool(args.adapter_metadata),
-        length_norm=float(args.max_answer_tokens),
-        hidden_mult=args.adapter_hidden_mult,
-        colorize=bool(args.adapter_colorize),
-    ).to(llama_device)
-    adp_qwen  = Adapter(
-        d_z=args.d_z,
-        d_model=qwen.d_model,
-        latent_length=per_model_latent_len,
-        enable_metadata=bool(args.adapter_metadata),
-        length_norm=float(args.max_answer_tokens),
-        hidden_mult=args.adapter_hidden_mult,
-        colorize=bool(args.adapter_colorize),
-    ).to(qwen_device)
+    if qwen is not None:
+        adp_qwen = Adapter(
+            d_z=args.d_z,
+            d_model=qwen.d_model,
+            latent_length=latent_shared_len + latent_private_len,
+            enable_metadata=bool(args.adapter_metadata),
+            length_norm=float(args.max_answer_tokens),
+            hidden_mult=args.adapter_hidden_mult,
+            colorize=bool(args.adapter_colorize),
+        ).to(_primary_device(qwen))
+        adapters["qwen"] = adp_qwen
 
     if args.adapter_colorize:
-        try:
-            adp_llama.install_color_from_wrapper(llama)
-            adp_qwen.install_color_from_wrapper(qwen)
-            print("Initialized adapter colorizers from LM embedding stats.")
-        except Exception as exc:
-            print(f"[WARN] Adapter colorizer initialization skipped: {exc}")
+        for name, adapter in adapters.items():
+            wrapper = llama if name == "llama" else qwen
+            if wrapper is None:
+                continue
+            try:
+                adapter.install_color_from_wrapper(wrapper)
+                print(f"Initialized adapter colorizer for {name} from LM embedding stats.")
+            except Exception as exc:
+                print(f"[WARN] Adapter colorizer initialization skipped for {name}: {exc}")
 
     if args.adapter_freeze_scale:
-        adp_llama.scale.requires_grad_(False)
-        adp_qwen.scale.requires_grad_(False)
-        with torch.no_grad():
-            adp_llama.scale.fill_(1.0)
-            adp_qwen.scale.fill_(1.0)
+        for adapter in adapters.values():
+            if adapter.scale is None:
+                continue
+            adapter.scale.requires_grad_(False)
+            with torch.no_grad():
+                adapter.scale.fill_(1.0)
 
     # ===== Optimizer =====
     enc_params = [p for p in encoder.parameters() if p.requires_grad]
-    llama_params = [p for p in adp_llama.parameters() if p.requires_grad]
-    qwen_params = [p for p in adp_qwen.parameters() if p.requires_grad]
+    llama_params = [p for p in adp_llama.parameters() if p.requires_grad] if adp_llama is not None else []
+    qwen_params = [p for p in adp_qwen.parameters() if p.requires_grad] if adp_qwen is not None else []
 
     optim_groups = []
     if enc_params:
@@ -889,25 +964,26 @@ def main():
     optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 
     # ===== Tokenize answers (teacher forcing) =====
-    with _temp_padding_side(llama.tokenizer, "right"):
-        llama_tok = llama.tokenizer(
-            answers, return_tensors="pt", padding=True, truncation=True,
-            max_length=args.max_answer_tokens, add_special_tokens=True
-        )
-    llama_ids = llama_tok["input_ids"].to(device)
-    llama_answer_lengths_all = _answer_lengths(llama_ids, llama.tokenizer)
+    token_ids_map: Dict[str, torch.Tensor] = {}
+    answer_lengths_map: Dict[str, torch.Tensor] = {}
+    first_token_ids_map: Dict[str, torch.Tensor] = {}
 
-    with _temp_padding_side(qwen.tokenizer, "right"):
-        qwen_tok = qwen.tokenizer(
-            answers, return_tensors="pt", padding=True, truncation=True,
-            max_length=args.max_answer_tokens, add_special_tokens=True
-        )
-    qwen_ids = qwen_tok["input_ids"].to(device)
-    qwen_answer_lengths_all = _answer_lengths(qwen_ids, qwen.tokenizer)
-
-    # First gold token ids (skip left PADs and BOS) for the CE on the first step
-    llama_first_ids_all = first_non_bos(llama.tokenizer, llama_ids)
-    qwen_first_ids_all  = first_non_bos(qwen.tokenizer,  qwen_ids)
+    for name, wrapper in (('llama', llama), ('qwen', qwen)):
+        if wrapper is None:
+            continue
+        with _temp_padding_side(wrapper.tokenizer, "right"):
+            tok = wrapper.tokenizer(
+                answers,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=args.max_answer_tokens,
+                add_special_tokens=True,
+            )
+        ids = tok["input_ids"].to(device)
+        token_ids_map[name] = ids
+        answer_lengths_map[name] = _answer_lengths(ids, wrapper.tokenizer)
+        first_token_ids_map[name] = first_non_bos(wrapper.tokenizer, ids)
 
     N = len(texts)
     steps_per_epoch = (N + args.batch_size - 1) // args.batch_size
@@ -936,8 +1012,7 @@ def main():
         epoch_loaded, global_loaded = load_checkpoint(
             ckpt_path,
             encoder,
-            adp_llama,
-            adp_qwen,
+            adapters,
             optimizer=None if args.no_load_optimizer else optimizer,
             strict=True,
             device=device,
@@ -951,8 +1026,11 @@ def main():
         print(f"   -> start_epoch={start_epoch}, global_step={global_step}")
         if args.adapter_colorize:
             try:
-                adp_llama.install_color_from_wrapper(llama)
-                adp_qwen.install_color_from_wrapper(qwen)
+                for name, adapter in adapters.items():
+                    wrapper = llama if name == "llama" else qwen
+                    if wrapper is None:
+                        continue
+                    adapter.install_color_from_wrapper(wrapper)
             except Exception as exc:
                 print(f"[WARN] Adapter colorizer re-install skipped after resume: {exc}")
     else:
@@ -970,45 +1048,56 @@ def main():
         def mean(self):
             return (self.sum / self.n) if self.n > 0 else 0.0
 
-    stats_trackers = {
-        "llama": {
+    stats_trackers: Dict[str, Dict[str, Any]] = {}
+    if llama is not None:
+        stats_trackers["llama"] = {
             "rms_raw": _RunningMean(),
             "rms_cal": _RunningMean(),
             "embed_rms": llama.input_embedding_rms(),
-        },
-        "qwen": {
+        }
+    if qwen is not None:
+        stats_trackers["qwen"] = {
             "rms_raw": _RunningMean(),
             "rms_cal": _RunningMean(),
             "embed_rms": qwen.input_embedding_rms(),
-        },
-    }
+        }
 
-    model_contexts: List[ModelTrainContext] = [
-        ModelTrainContext(
-            name="llama",
-            wrapper=llama,
-            adapter=adp_llama,
-            token_ids=llama_ids,
-            first_token_ids=llama_first_ids_all,
-            anchor_ids=anchor_llama_ids,
-            bos_flag=bos_flag_llama,
-            answer_lengths=llama_answer_lengths_all,
-            anchor_text=anchor_text_llama,
-            anchor_mode=anchor_mode_llama,
-        ),
-        ModelTrainContext(
-            name="qwen",
-            wrapper=qwen,
-            adapter=adp_qwen,
-            token_ids=qwen_ids,
-            first_token_ids=qwen_first_ids_all,
-            anchor_ids=anchor_qwen_ids,
-            bos_flag=bos_flag_qwen,
-            answer_lengths=qwen_answer_lengths_all,
-            anchor_text=anchor_text_qwen,
-            anchor_mode=anchor_mode_qwen,
-        ),
-    ]
+    model_contexts: List[ModelTrainContext] = []
+
+    if llama is not None:
+        model_contexts.append(
+            ModelTrainContext(
+                name="llama",
+                wrapper=llama,
+                adapter=adp_llama,
+                token_ids=token_ids_map["llama"],
+                first_token_ids=first_token_ids_map["llama"],
+                anchor_ids=anchor_token_lists["llama"],
+                bos_flag=bos_flags.get("llama"),
+                answer_lengths=answer_lengths_map["llama"],
+                anchor_text=anchor_texts.get("llama", ""),
+                anchor_mode=anchor_modes.get("llama", "none"),
+            )
+        )
+
+    if qwen is not None:
+        model_contexts.append(
+            ModelTrainContext(
+                name="qwen",
+                wrapper=qwen,
+                adapter=adp_qwen,
+                token_ids=token_ids_map["qwen"],
+                first_token_ids=first_token_ids_map["qwen"],
+                anchor_ids=anchor_token_lists["qwen"],
+                bos_flag=bos_flags.get("qwen"),
+                answer_lengths=answer_lengths_map["qwen"],
+                anchor_text=anchor_texts.get("qwen", ""),
+                anchor_mode=anchor_modes.get("qwen", "none"),
+            )
+        )
+
+    if not model_contexts:
+        raise RuntimeError("No models selected for training. Use --models to include at least one backend.")
 
     # ===== Train =====
     ema_step_time = None
@@ -1064,6 +1153,9 @@ def main():
     optimizer.zero_grad(set_to_none=True)
 
     total_batches = steps_per_epoch * args.epochs
+    warmup_steps_from_epochs = int(round(max(float(args.warmup_text_latent_epochs), 0.0) * steps_per_epoch))
+    warmup_total_steps = max(int(args.warmup_text_latent_steps), warmup_steps_from_epochs)
+    warmup_total_steps = max(0, min(warmup_total_steps, total_batches))
 
     first_ce_schedule = str(getattr(args, "first_token_ce_schedule", "none")).lower()
     peak_override = args.first_token_ce_peak
@@ -1160,33 +1252,65 @@ def main():
                     scaffolds[ctx.name] = tok["input_ids"].to(device)
 
             effective_texts = batch_user_texts if args.use_chat_template else batch_texts
-            effective_texts = batch_user_texts if args.use_chat_template else batch_texts
-            encoded_latents = encode_fn(effective_texts)
-            shared_latents = encoded_latents["shared"]
-            private_latents = encoded_latents["private"]
-            if shared_latents.size(1) > 0 and keep_prob < 1.0:
-                mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < keep_prob).float()
-                need_fix = mask.sum(dim=1) == 0
-                if need_fix.any():
-                    mask[need_fix, 0] = 1.0
-                mask = mask.unsqueeze(-1)
-                shared_latents = shared_latents * mask / max(keep_prob, 1e-3)
-            model_latents = {
-                name: torch.cat([shared_latents, private_latents[name]], dim=1)
-                for name in model_keys
-            }
+            warmup_active = warmup_total_steps > 0 and global_step < warmup_total_steps
+            training_mode = "latent"
+            if warmup_active and (global_step % 2 == 0):
+                training_mode = "text"
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
             total_model_loss = torch.zeros((), device=device)
             penalty = torch.zeros((), device=device)
             rms_pen = torch.zeros((), device=device)
 
+            model_latents: Dict[str, torch.Tensor] = {}
+            shared_latents = None
+            private_latents = None
+
+            if training_mode == "latent":
+                encoded_latents = encode_fn(effective_texts)
+                shared_latents = encoded_latents["shared"]
+                private_latents = encoded_latents["private"]
+                if shared_latents.size(1) > 0 and keep_prob < 1.0:
+                    mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < keep_prob).float()
+                    need_fix = mask.sum(dim=1) == 0
+                    if need_fix.any():
+                        mask[need_fix, 0] = 1.0
+                    mask = mask.unsqueeze(-1)
+                    shared_latents = shared_latents * mask / max(keep_prob, 1e-3)
+                model_latents = {
+                    name: torch.cat([shared_latents, private_latents[name]], dim=1)
+                    for name in model_keys
+                }
+
             for ctx in model_contexts:
                 target_device = _primary_device(ctx.wrapper)
-                latents_for_adapter = model_latents[ctx.name].to(target_device, non_blocking=True)
-                answer_lengths = ctx.answer_lengths[idx].to(target_device, non_blocking=True)
                 targets = ctx.token_ids[idx].to(target_device, non_blocking=True)
                 scaffold = scaffolds[ctx.name].to(target_device, non_blocking=True)
+
+                losses_record: Dict[str, torch.Tensor] = {}
+
+                if training_mode == "text":
+                    loss_text, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
+                    model_loss = loss_text.to(device)
+                    total_model_loss = total_model_loss + model_loss
+                    penalty = penalty + scale_penalty(ctx.adapter).to(device)
+                    losses_record.update({
+                        "tf": loss_text,
+                        "first": torch.zeros((), device=target_device),
+                        "first_weight": torch.tensor(0.0, device=target_device),
+                        "kce": torch.zeros((), device=target_device),
+                        "kd": torch.zeros((), device=target_device),
+                        "state": torch.zeros((), device=target_device),
+                        "manifold": torch.zeros((), device=target_device),
+                        "rms_raw": torch.zeros((), device=target_device),
+                        "rms_cal": torch.zeros((), device=target_device),
+                    })
+                    per_model_losses[ctx.name] = losses_record
+                    per_model_losses[ctx.name]["mode"] = "text"
+                    continue
+
+                latents_for_adapter = model_latents[ctx.name].to(target_device, non_blocking=True)
+                answer_lengths = ctx.answer_lengths[idx].to(target_device, non_blocking=True)
 
                 prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
@@ -1276,17 +1400,19 @@ def main():
                 stats_trackers[ctx.name]["rms_raw"].update(rms_raw_val)
                 stats_trackers[ctx.name]["rms_cal"].update(rms_cal_val)
 
-                per_model_losses[ctx.name] = {
+                losses_record.update({
                     "tf": loss_tf,
                     "first": loss_first,
-                    "first_weight": current_first_weight,
+                    "first_weight": torch.tensor(float(current_first_weight), device=target_device),
                     "kce": loss_kce,
                     "kd": loss_kd,
                     "state": loss_state,
                     "manifold": manifold_loss,
                     "rms_raw": rms_raw_val,
                     "rms_cal": rms_cal_val,
-                }
+                })
+                per_model_losses[ctx.name] = losses_record
+                per_model_losses[ctx.name]["mode"] = "latent"
 
             loss = (
                 total_model_loss / float(len(model_contexts))
@@ -1333,8 +1459,10 @@ def main():
                     parts.append(f"first_w={current_first_weight:.2f}")
                 for ctx in model_contexts:
                     metrics = per_model_losses[ctx.name]
+                    mode_tag = metrics.get("mode", "latent")
+                    mode_label = "T" if mode_tag == "text" else "L"
                     msg_ctx = (
-                        f"{ctx.name}: tf={_to_float(metrics['tf']):.4f}"
+                        f"{ctx.name}({mode_label}): tf={_to_float(metrics['tf']):.4f}"
                         f" first={_to_float(metrics['first']):.4f}"
                         f" kCE={_to_float(metrics['kce']):.4f}"
                         f" KD={_to_float(metrics['kd']):.4f}"
@@ -1377,7 +1505,6 @@ def main():
                     "encoder_backbone": (args.encoder_backbone or ""),
                     "freeze_encoder": bool(args.freeze_encoder),
                     "use_chat_template": bool(args.use_chat_template),
-                    "warm_anchor_text": anchor_text_llama,
                     "warm_anchor_mode": args.warm_anchor_mode,
                     "strip_anchor_text": strip_anchor_literal,
                     "max_anchor_tokens": args.max_anchor_tokens,
@@ -1414,7 +1541,13 @@ def main():
                     "grad_accum_steps": grad_accum_steps,
                     "seed": args.seed,
                     "data_seed": args.data_seed,
+                    "models": model_keys,
+                    "warmup_text_latent_steps": warmup_total_steps,
                 }
+                cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
+    cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
+    cfg["warm_anchor_texts"] = anchor_texts
+    cfg["warm_anchor_modes"] = anchor_modes
                 state_blob = {
                     "epoch": epoch,
                     "global_step": global_step,
@@ -1425,20 +1558,21 @@ def main():
                     },
                     "optimizer": optimizer.state_dict(),
                     "adapter_scale": {
-                        "llama": float(adp_llama.scale.detach().cpu().item()),
-                        "qwen":  float(adp_qwen.scale.detach().cpu().item()),
+                        name: float(adapter.scale.detach().cpu().item())
+                        for name, adapter in adapters.items()
+                        if getattr(adapter, "scale", None) is not None
                     },
                     "encoder": encoder.state_dict(),
-                    "adp_llama": adp_llama.state_dict(),
-                    "adp_qwen": adp_qwen.state_dict(),
                 }
+                for name, adapter in adapters.items():
+                    state_blob[f"adp_{name}"] = adapter.state_dict()
                 artifacts = {
-                    "encoder.pt":       encoder.state_dict(),
-                    "adapter_llama.pt": adp_llama.state_dict(),
-                    "adapter_qwen.pt":  adp_qwen.state_dict(),
-                    "state.pt":         state_blob,
-                    "config.json":      cfg,
+                    "encoder.pt": encoder.state_dict(),
+                    "state.pt": state_blob,
+                    "config.json": cfg,
                 }
+                for name, adapter in adapters.items():
+                    artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
                 save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
                 print(f"  ✅ Saved (and pruned to) latest at step {global_step}")
 
@@ -1459,8 +1593,8 @@ def main():
         "encoder_backbone": (args.encoder_backbone or ""),
         "freeze_encoder": bool(args.freeze_encoder),
         "use_chat_template": bool(args.use_chat_template),
-        "warm_anchor_text": anchor_text_llama,
-        "warm_anchor_mode": args.warm_anchor_mode,
+        "warm_anchor_texts": anchor_texts,
+        "warm_anchor_modes": anchor_modes,
         "strip_anchor_text": strip_anchor_literal,
         "max_anchor_tokens": args.max_anchor_tokens,
         "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
@@ -1496,6 +1630,8 @@ def main():
         "grad_accum_steps": grad_accum_steps,
         "seed": args.seed,
         "data_seed": args.data_seed,
+        "models": model_keys,
+        "warmup_text_latent_steps": warmup_total_steps,
     }
     state_blob = {
         "epoch": epoch + 1 if 'epoch' in locals() else None,
@@ -1507,20 +1643,22 @@ def main():
         },
         "optimizer": optimizer.state_dict(),
         "adapter_scale": {
-            "llama": float(adp_llama.scale.detach().cpu().item()),
-            "qwen":  float(adp_qwen.scale.detach().cpu().item()),
+            name: float(adapter.scale.detach().cpu().item())
+            for name, adapter in adapters.items()
+            if getattr(adapter, "scale", None) is not None
         },
         "encoder": encoder.state_dict(),
-        "adp_llama": adp_llama.state_dict(),
-        "adp_qwen": adp_qwen.state_dict(),
     }
+    for name, adapter in adapters.items():
+        state_blob[f"adp_{name}"] = adapter.state_dict()
+
     artifacts = {
-        "encoder.pt":       encoder.state_dict(),
-        "adapter_llama.pt": adp_llama.state_dict(),
-        "adapter_qwen.pt":  adp_qwen.state_dict(),
-        "state.pt":         state_blob,
-        "config.json":      cfg,
+        "encoder.pt": encoder.state_dict(),
+        "state.pt": state_blob,
+        "config.json": cfg,
     }
+    for name, adapter in adapters.items():
+        artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
 

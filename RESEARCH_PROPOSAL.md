@@ -32,7 +32,11 @@ flowchart LR
 1. **Token‑level evidence is preserved**: learned queries attend over **all tokens** (not a single pooled vector), so `Z` retains fine‑grained cues for extraction.
 2. **Better early‑token acceptance**: slot sinusoid + LayerNorm/tanh adapters keep statistics close to real token embeddings; plus stronger first‑token loss (`λ_first`) aligns the first decode step.
 3. **Frozen, off‑the‑shelf backbone**: MiniLM‑L6 is tiny, fast, and general—no task‑specific tuning required.
-4. **Interlingua story intact**: LLMs remain **frozen**; only the small encoder/adapters learn—so we can honestly claim a shared wire, not per‑model fine‑tuning.
+4. **Interlingua story intact**: LLMs remain **frozen**; only the small encoder/adapters learn—so we can honestly claim a shared wire, not per-model fine-tuning.
+
+## Update (2025-09-25): Single-model warm-up scaffolding
+
+We now have a focused path for iterating on Llama in isolation. The trainer respects `--models` so we can skip Qwen entirely (smaller footprint, faster spin-up), Stage B supports a mixed text↔latent warm-up for the first epoch, and `scripts/run_llama_single.sh` wires those pieces together into a reproducible Stage A→B→C loop. Once Llama latent F1 tracks the text baseline we can reintroduce Qwen using the same warm-up hooks.
 
 ### Controlled experiment we will run (baked into `run_hero_stq.sh`)
 

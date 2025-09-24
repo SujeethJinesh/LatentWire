@@ -390,4 +390,16 @@ We are adding early‑step guidance + a slightly more expressive prefix mapping,
 - Stage B now trains on a larger sampled subset (default 1.3k vs 640) while Stage A keeps the smaller 640 batch; the extra data plus longer epoch budget should help the prefix/encoder continue to improve during smoke runs before we scale to hero configurations.
 - Stage C now evaluates with a mild prefix gain (`1.1`) to counteract under‑scaling during decode; this will be our default until the latent first-token accuracy stabilises.
 - Stage A starts with latent dropout (`keep_start=0.7`) and Stage B starts even lower (`0.5`), annealing to 1.0; combined with state KD it mixes teacher tokens into the latent path early on so first-token learning no longer stalls.
+- **Next intervention plan (latent acceptance):**
+  1. **Mixed text/latent warm-up.** For the first Stage B epoch alternate batches between text teacher forcing and latent-prefix teacher forcing. This injects clean gold scaffolds at the moment the encoder/adapters are most fragile, which should push first-token top‑1 into double digits and kick latent F1 off the floor.
+  2. **Shared + per-model latent slices w/ deeper adapters.** Split `latent_len` into `[shared || llama_private || qwen_private]` (e.g., 32→20/6/6) and upgrade adapters to 2-layer MLPs with residual. This gives each model enough dedicated bandwidth to interpret the shared wire without fighting the other, particularly important because Qwen’s first-token acceptance remains 0%.
+  3. **Tiny LoRA fallback.** If the above still leaves latent F1 >10 points behind text, attach r=4 LoRA to the first 4 attention blocks on each LLM. This keeps the story scoped while letting the models learn how to read the latent prefix instead of being purely frozen.
+  4. **Parallel Llama/Qwen passes.** Once latent learning is healthy, run both LLM updates concurrently (Accelerate or manual threading) so all four GPUs are busy; that roughly halves turn-around time for smoke sweeps and hero runs.
 - **Next steps:** Re-run Stage A→Stage B→Stage C to confirm text EM/F1 recover, then inspect latent metrics with the warmed-up wire.
+
+### 2025-09-25 — Single-model warm-up + runner (today)
+
+- Added optional model selection to `latentwire/train.py` (`--models` now honours `llama`/`qwen` subsets) so we can train a single backend without loading the other 7B checkpoint. Checkpoint loading/saving now adapts to whichever adapters are present.
+- Implemented the Stage B text↔latent warm-up (controlled via `--warmup_text_latent_steps` / `--warmup_text_latent_epochs`). When enabled we alternate full-text and latent teacher forcing for the initial steps; logging now tags each batch `L` (latent) or `T` (text) so we can verify the schedule.
+- Updated `scripts/run_scoped_softprompt_multi.sh` to enable a one-epoch warm-up during Stage B, and added `scripts/run_llama_single.sh` for the Llama-only pipeline (Stage A/B/C). The new runner defaults to smoke-sized budgets and accepts `--hero` for longer sweeps.
+- Known issue: `pytest -q` currently fails on this workstation because Torch cannot locate `libtorch_cpu.dylib` in the host Anaconda env; rerun inside the project venv/conda env before publishing results.
