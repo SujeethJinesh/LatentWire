@@ -1,0 +1,10 @@
+
+=== CUDA preflight ===
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1
+
+=== Stage A: Llama latent fit ===
+
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1551
+    state_blob = {
+IndentationError: unexpected indent
