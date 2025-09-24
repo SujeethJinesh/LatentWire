@@ -5,6 +5,7 @@
 */__pycache__/*
 .hf_home/*
 .ns*
+.nfs*
 code-server-*
 *.pt*
 *adapter_model.safetensors
