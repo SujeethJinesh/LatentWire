@@ -1022,6 +1022,21 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         oracle_em /= len(golds)
         oracle_f1 /= len(golds)
 
+    if not all(name in model_outputs for name in ("llama", "qwen")):
+        joint_summary = {
+            "em": None,
+            "f1": None,
+            "agreement": None,
+            "oracle": {"em": oracle_em, "f1": oracle_f1},
+        }
+    else:
+        joint_summary = {
+            "em": joint_em,
+            "f1": joint_f1,
+            "agreement": agreement_rate,
+            "oracle": {"em": oracle_em, "f1": oracle_f1},
+        }
+
     summary = {
         "samples": len(prompts_raw),
         "max_new_tokens": args.max_new_tokens,
@@ -1057,12 +1072,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "k": args.token_budget_k or latent_len,
             **{name: latent_results[name]["trunc"]["metrics"] for name in model_contexts},
         },
-        "joint": {
-            "em": joint_em,
-            "f1": joint_f1,
-            "agreement": agreement_rate,
-            "oracle": {"em": oracle_em, "f1": oracle_f1},
-        },
+        "joint": joint_summary,
         "debug": {name: model_outputs[name]["debug"] for name in model_contexts},
         "oracle": {"em": oracle_em, "f1": oracle_f1},
     }

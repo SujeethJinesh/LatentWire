@@ -1377,13 +1377,13 @@ def main():
                 if training_mode == "text" and args.warmup_align_tokens > 0 and args.warmup_align_weight > 0.0:
                     max_align = min(int(args.warmup_align_tokens), prefix.shape[1])
                     pad_id = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
+                    bos_id = getattr(ctx.wrapper.tokenizer, "bos_token_id", None)
                     if max_align > 0 and prefix.shape[1] > 0:
                         teacher_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
-                        # Drop potential BOS token by shifting by one position
-                        start = 1
-                        stop = 1 + max_align
-                        if stop > teacher_ids.size(1):
-                            stop = teacher_ids.size(1)
+                        start = 0
+                        if bos_id is not None and teacher_ids.size(1) > 0 and (teacher_ids[:, 0] == int(bos_id)).all():
+                            start = 1
+                        stop = min(start + max_align, teacher_ids.size(1))
                         token_slice = teacher_ids[:, start:stop]
                         if token_slice.numel() > 0:
                             mask = None
