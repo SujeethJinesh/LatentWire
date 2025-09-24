@@ -1443,7 +1443,7 @@ def main():
                 if training_mode == "text":
                     per_model_losses[ctx.name]["mode"] = "text"
 
-            if training_mode == "text" and ((step + 1) % 10 == 0 or (step + 1) == steps_per_epoch):
+            if training_mode == "text":
                 parts_text = [
                     f"  step  {step+1}/{steps_per_epoch}",
                     "(warm-up text)",
