@@ -604,6 +604,12 @@ def main():
         device_map=qwen_device_map,
         max_memory=qwen_max_memory,
     ))
+    for wrapper in (llama, qwen):
+        try:
+            if hasattr(wrapper.model.config, "use_cache"):
+                wrapper.model.config.use_cache = False
+        except Exception:
+            pass
 
     def _collect_trainable(module: nn.Module) -> List[nn.Parameter]:
         return [p for p in module.parameters() if p.requires_grad]

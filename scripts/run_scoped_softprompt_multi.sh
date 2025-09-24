@@ -134,6 +134,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --manifold_stat_weight 0.0 \
   --max_answer_tokens 24 \
   --lr 5e-5 \
+  --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage B: Prefix-training only ---
@@ -159,6 +160,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --manifold_stat_weight 0.0 \
   --max_answer_tokens 24 \
   --lr 5e-5 \
+  --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage C: Evaluation on clean hubs + learned prefixes ---
@@ -171,6 +173,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --latent_anchor_mode chat --append_bos_after_prefix yes \
   --use_chat_template yes \
   --first_token_top_p 1.0 --first_token_temperature 0.0 \
+  --prefix_gain 1.1 \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
   "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
 
