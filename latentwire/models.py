@@ -106,26 +106,13 @@ def apply_prefix_if_requested(model, prefix_args: Dict[str, Any], tokenizer=None
     num_heads = getattr(model.config, "num_attention_heads", getattr(model.config, "n_head", None))
     if hidden is None or num_layers is None or num_heads is None:
         raise ValueError("Cannot infer model dimensions for Prefix-Tuning; please provide a compatible model config.")
-    depth = prefix_args.get("depth", None)
-    depth_int = num_layers
-    if depth is not None:
-        try:
-            depth_int = max(1, min(int(depth), num_layers))
-        except Exception:
-            depth_int = num_layers
-    all_layers_flag = bool(prefix_args.get("all_layers", True))
-    if all_layers_flag:
-        target_layers = num_layers
-    else:
-        target_layers = depth_int
-
     cfg = PrefixTuningConfig(
         task_type=TaskType.CAUSAL_LM,
         num_virtual_tokens=int(prefix_args.get("tokens", 16)),
         prefix_projection=bool(prefix_args.get("projection", True)),
         encoder_hidden_size=hidden,
         token_dim=hidden,
-        num_layers=target_layers,
+        num_layers=(num_layers if prefix_args.get("all_layers", True) else 1),
         num_attention_heads=num_heads,
         num_transformer_submodules=1,
     )

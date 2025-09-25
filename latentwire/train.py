@@ -455,8 +455,6 @@ def main():
                     help="Comma-separated module list or presets (auto, attn_mlp_firstN:12, ...).")
     ap.add_argument("--use_prefix", action="store_true")
     ap.add_argument("--prefix_tokens", type=int, default=16)
-    ap.add_argument("--prefix_depth", type=int, default=None,
-                    help="Number of transformer layers to receive prefix adapters (defaults to all layers).")
     ap.add_argument("--prefix_projection", action="store_true")
     ap.add_argument("--peft_prefix_all_layers", type=str, default="yes",
                     help="yes/no toggle to apply prefix adapters across every transformer layer.")
@@ -711,7 +709,6 @@ def main():
             "tokens": args.prefix_tokens,
             "projection": args.prefix_projection,
             "all_layers": str(args.peft_prefix_all_layers).lower() != "no",
-            "depth": args.prefix_depth,
         }
         if llama is not None:
             llama.model = apply_prefix_if_requested(llama.model, prefix_cfg, llama.tokenizer)
@@ -1624,8 +1621,7 @@ def main():
                     "lora_dropout": args.lora_dropout,
                     "lora_target_modules": args.lora_target_modules,
                     "use_prefix": bool(args.use_prefix),
-                    "prefix_tokens": args.prefix_tokens,
-                    "prefix_depth": args.prefix_depth,
+        "prefix_tokens": args.prefix_tokens,
                     "prefix_projection": bool(args.prefix_projection),
                     "peft_prefix_all_layers": str(getattr(args, "peft_prefix_all_layers", "yes")),
                     "manifold_stat_weight": args.manifold_stat_weight,
@@ -1723,7 +1719,6 @@ def main():
         "lora_target_modules": args.lora_target_modules,
         "use_prefix": bool(args.use_prefix),
         "prefix_tokens": args.prefix_tokens,
-        "prefix_depth": args.prefix_depth,
         "prefix_projection": bool(args.prefix_projection),
         "peft_prefix_all_layers": str(getattr(args, "peft_prefix_all_layers", "yes")),
         "manifold_stat_weight": args.manifold_stat_weight,

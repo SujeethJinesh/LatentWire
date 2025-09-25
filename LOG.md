@@ -9,7 +9,7 @@
 - Strengthened STQueryEncoder with per-slot gating (Ln→Linear→Sigmoid) so the learned queries can modulate the attended summary before projection; mirroring the ByteEncoder pooler gate stabilizes slot specialization when we compress long contexts to 64 vectors.
 - Shortened Stage‑B text warm-up (`--warmup_text_latent_epochs 1.0`) and reduced tail probability to 5% so latent batches dominate sooner; this should surface the autoscaled first-token gradients earlier in training.
 - Added FiLM modulation inside the adapters (scale/shift per slot conditioned on the latent) to give the interlingua an extra degree of freedom when matching LM embedding statistics.
-- Prefix-tuning now accepts an explicit depth. Stage B runs use `--peft_prefix_all_layers no --prefix_depth 16`, limiting adapters to the lower half of Llama while avoiding PEFT cache/device mismatches.
+- NOTE: the depth flag is temporarily disabled because PEFT currently requires prefix caches for every layer; Stage B reverts to `--peft_prefix_all_layers yes` until we downstream patch the cache mapper.
 - PyTorch import issue on this workstation (`libtorch_cpu.dylib` missing) prevented running `pytest -q`; no code changes depend on test results, but rerun once the local Torch install is fixed.
 - Next smoke: rerun `bash scripts/run_llama_single.sh` to confirm latent F1 and first-token metrics lift from zero. If improvements hold, proceed to tuned Stage‑B tweaks (prefix gain sweep, first-token CE).
 
