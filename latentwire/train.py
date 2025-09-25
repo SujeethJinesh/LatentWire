@@ -1457,8 +1457,9 @@ def main():
                             align_loss = alignment_mse(prefix_slice, teacher_embeds, mask)
                             align_loss = align_loss * float(max(args.warmup_align_weight, 0.0))
                 if training_mode == "latent" and args.latent_align_weight > 0.0 and prefix.shape[1] > 0:
-                    teacher_first = ctx.first_token_ids[idx].to(target_device, non_blocking=True)
-                    teacher_emb = ctx.wrapper.input_embed(teacher_first[:, :1]).squeeze(1)
+                    teacher_first_ids = ctx.first_token_ids[idx].to(target_device, non_blocking=True)
+                    teacher_first_ids = teacher_first_ids.view(-1, 1)
+                    teacher_emb = ctx.wrapper.input_embed(teacher_first_ids).squeeze(1)
                     latent_embed = prefix[:, 0, :]
                     latent_align_loss = nn.functional.mse_loss(latent_embed, teacher_emb)
                     latent_align_loss = latent_align_loss * float(max(args.latent_align_weight, 0.0))
