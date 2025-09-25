@@ -478,6 +478,10 @@ def main():
                     help="Weight for the warm-up embedding alignment loss (text-mode steps only).")
     ap.add_argument("--warmup_text_teacher_weight", type=float, default=1.0,
                     help="Weight for the teacher-forced text loss during warm-up text steps.")
+    ap.add_argument("--warmup_text_latent_weight", type=float, default=0.2,
+                    help="Multiplier applied to latent losses on warm-up text batches (0 disables latent CE on those steps).")
+    ap.add_argument("--warmup_tail_prob", type=float, default=0.0,
+                    help="After the warm-up window, continue sampling text batches with this probability (0 disables).")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
@@ -1280,8 +1284,14 @@ def main():
             training_mode = "latent"
             if warmup_active and (global_step % 2 == 0):
                 training_mode = "text"
-            if warmup_active and global_step < 10:
-                print(f"[warmup] step={global_step} mode={training_mode}")
+            elif (not warmup_active) and args.warmup_tail_prob > 0.0 and random.random() < float(args.warmup_tail_prob):
+                training_mode = "text"
+
+            if training_mode == "text":
+                if warmup_active and global_step < 10:
+                    print(f"[warmup] step={global_step} mode=text (warm-up)")
+                elif not warmup_active and global_step < warmup_total_steps + 50:
+                    print(f"[warmup] step={global_step} mode=text (tail)")
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
             total_model_loss = torch.zeros((), device=device)
@@ -1324,27 +1334,24 @@ def main():
                         f"[DEBUG:{ctx.name}] scaffold_len={scaffold.size(1)} anchor_mode={ctx.anchor_mode}",
                         flush=True,
                     )
-                if training_mode == "latent":
-                    loss_tf = ctx.wrapper.forward_with_prefix_loss(
-                        prefix, targets, anchor_token_ids=ctx.anchor_ids
-                    )
-                else:
-                    loss_tf = torch.zeros((), device=target_device)
+                loss_tf_latent = ctx.wrapper.forward_with_prefix_loss(
+                    prefix, targets, anchor_token_ids=ctx.anchor_ids
+                )
 
-                if enable_first_token_loss and training_mode == "latent":
-                    first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
+                first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
+                if enable_first_token_loss:
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
                         anchor_token_text=first_anchor_text,
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                     first_targets = ctx.first_token_ids[idx].to(target_device)
-                    loss_first = nn.functional.cross_entropy(logits_first.float(), first_targets)
+                    loss_first_raw = nn.functional.cross_entropy(logits_first.float(), first_targets)
                 else:
-                    loss_first = torch.zeros((), device=target_device)
+                    loss_first_raw = torch.zeros((), device=target_device)
 
-                if args.k_ce_weight and args.k_ce_weight > 0.0 and training_mode == "latent":
-                    loss_kce = k_token_ce_from_prefix(
+                if args.k_ce_weight and args.k_ce_weight > 0.0:
+                    loss_kce_raw = k_token_ce_from_prefix(
                         ctx.wrapper,
                         prefix,
                         targets,
@@ -1353,10 +1360,10 @@ def main():
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                 else:
-                    loss_kce = torch.zeros((), device=target_device)
+                    loss_kce_raw = torch.zeros((), device=target_device)
 
                 if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
-                    loss_kd = kd_first_k_prefix_vs_text(
+                    loss_kd_raw = kd_first_k_prefix_vs_text(
                         ctx.wrapper,
                         ctx.wrapper,
                         prefix,
@@ -1368,10 +1375,10 @@ def main():
                         append_bos_after_prefix=ctx.bos_flag,
                     )
                 else:
-                    loss_kd = torch.zeros((), device=target_device)
+                    loss_kd_raw = torch.zeros((), device=target_device)
 
                 if args.state_kd_weight and args.state_kd_weight > 0.0:
-                    loss_state = kd_hidden_states_first_k(
+                    loss_state_raw = kd_hidden_states_first_k(
                         ctx.wrapper,
                         prefix,
                         scaffold,
@@ -1382,7 +1389,17 @@ def main():
                         anchor_ids=ctx.anchor_ids,
                     )
                 else:
-                    loss_state = torch.zeros((), device=target_device)
+                    loss_state_raw = torch.zeros((), device=target_device)
+
+                latent_scale = 1.0
+                if training_mode == "text":
+                    latent_scale = float(max(args.warmup_text_latent_weight, 0.0))
+
+                loss_tf = latent_scale * loss_tf_latent
+                loss_first = latent_scale * loss_first_raw
+                loss_kce = latent_scale * loss_kce_raw
+                loss_kd = latent_scale * loss_kd_raw
+                loss_state = latent_scale * loss_state_raw
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
 
@@ -1445,6 +1462,7 @@ def main():
                     "rms_cal": rms_cal_val,
                     "align": align_loss,
                     "text_tf": text_teacher_loss,
+                    "latent_scale": torch.tensor(float(latent_scale), device=target_device),
                 })
                 per_model_losses[ctx.name] = losses_record
                 per_model_losses[ctx.name]["mode"] = "latent"
@@ -1454,9 +1472,10 @@ def main():
             if training_mode == "text":
                 parts_text = [
                     f"  step  {step+1}/{steps_per_epoch}",
-                    "(warm-up text)",
+                    "(warm-up text)" if warmup_active else "(tail text)",
                     f"align={_to_float(align_loss):.4f}",
                     f"text_tf={_to_float(text_teacher_loss):.4f}",
+                    f"latent_scale={latent_scale:.2f}",
                 ]
                 print(" | ".join(parts_text))
 
@@ -1592,6 +1611,9 @@ def main():
                     "data_seed": args.data_seed,
                     "models": model_keys,
                     "warmup_text_latent_steps": warmup_total_steps,
+                    "warmup_text_latent_weight": args.warmup_text_latent_weight,
+                    "warmup_text_teacher_weight": args.warmup_text_teacher_weight,
+                    "warmup_tail_prob": args.warmup_tail_prob,
                     "warmup_align_tokens": args.warmup_align_tokens,
                     "warmup_align_weight": args.warmup_align_weight,
                 }
@@ -1685,6 +1707,9 @@ def main():
         "data_seed": args.data_seed,
         "models": model_keys,
         "warmup_text_latent_steps": warmup_total_steps,
+        "warmup_text_latent_weight": args.warmup_text_latent_weight,
+        "warmup_text_teacher_weight": args.warmup_text_teacher_weight,
+        "warmup_tail_prob": args.warmup_tail_prob,
         "warmup_align_tokens": args.warmup_align_tokens,
         "warmup_align_weight": args.warmup_align_weight,
     }
