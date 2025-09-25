@@ -817,7 +817,8 @@ def main():
         except Exception as exc:
             print(f"[WARN] A0 sanity check skipped/failed for {name}: {exc}")
 
-        anchor_ids = anchor_token_ids(wrapper, text) if mode == "text" else []
+        anchor_tokens_source = text if mode == "text" else strip_anchor_literal
+        anchor_ids = anchor_token_ids(wrapper, anchor_tokens_source) if anchor_tokens_source else []
         anchor_token_lists[name] = anchor_ids
         if anchor_ids:
             print(f"[INFO] {name} anchor tokens: {len(anchor_ids)}")
