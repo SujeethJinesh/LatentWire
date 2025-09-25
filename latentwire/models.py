@@ -114,7 +114,10 @@ def apply_prefix_if_requested(model, prefix_args: Dict[str, Any], tokenizer=None
         except Exception:
             depth_int = num_layers
     all_layers_flag = bool(prefix_args.get("all_layers", True))
-    target_layers = depth_int if all_layers_flag else min(depth_int, 1)
+    if all_layers_flag:
+        target_layers = num_layers
+    else:
+        target_layers = depth_int
 
     cfg = PrefixTuningConfig(
         task_type=TaskType.CAUSAL_LM,
