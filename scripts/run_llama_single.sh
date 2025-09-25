@@ -129,7 +129,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --warmup_text_latent_epochs 3.0 \
   --warmup_align_tokens 8 --warmup_align_weight 1.5 \
   --warmup_text_teacher_weight 2.5 \
-  --warmup_text_latent_weight 0.0 \
+  --warmup_text_latent_weight 0.0 --warmup_text_latent_weight_end 1.0 \
   --warmup_tail_prob 0.5 \
   --adapter_hidden_mult 4 --adapter_dropout 0.1 \
   --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \

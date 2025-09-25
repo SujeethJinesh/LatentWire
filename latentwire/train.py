@@ -480,6 +480,8 @@ def main():
                     help="Weight for the teacher-forced text loss during warm-up text steps.")
     ap.add_argument("--warmup_text_latent_weight", type=float, default=0.2,
                     help="Multiplier applied to latent losses on warm-up text batches (0 disables latent CE on those steps).")
+    ap.add_argument("--warmup_text_latent_weight_end", type=float, default=1.0,
+                    help="Target latent-loss multiplier once warm-up completes (tail text batches use this value).")
     ap.add_argument("--warmup_tail_prob", type=float, default=0.0,
                     help="After the warm-up window, continue sampling text batches with this probability (0 disables).")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
@@ -1393,7 +1395,13 @@ def main():
 
                 latent_scale = 1.0
                 if training_mode == "text":
-                    latent_scale = float(max(args.warmup_text_latent_weight, 0.0))
+                    start_scale = float(max(args.warmup_text_latent_weight, 0.0))
+                    end_scale = float(max(args.warmup_text_latent_weight_end, 0.0))
+                    if warmup_active and warmup_total_steps > 0:
+                        frac = min(1.0, max(0.0, global_step / float(max(1, warmup_total_steps))))
+                        latent_scale = start_scale + (end_scale - start_scale) * frac
+                    else:
+                        latent_scale = end_scale
 
                 loss_tf = latent_scale * loss_tf_latent
                 loss_first = latent_scale * loss_first_raw
@@ -1612,6 +1620,7 @@ def main():
                     "models": model_keys,
                     "warmup_text_latent_steps": warmup_total_steps,
                     "warmup_text_latent_weight": args.warmup_text_latent_weight,
+                    "warmup_text_latent_weight_end": args.warmup_text_latent_weight_end,
                     "warmup_text_teacher_weight": args.warmup_text_teacher_weight,
                     "warmup_tail_prob": args.warmup_tail_prob,
                     "warmup_align_tokens": args.warmup_align_tokens,
@@ -1708,6 +1717,7 @@ def main():
         "models": model_keys,
         "warmup_text_latent_steps": warmup_total_steps,
         "warmup_text_latent_weight": args.warmup_text_latent_weight,
+        "warmup_text_latent_weight_end": args.warmup_text_latent_weight_end,
         "warmup_text_teacher_weight": args.warmup_text_teacher_weight,
         "warmup_tail_prob": args.warmup_tail_prob,
         "warmup_align_tokens": args.warmup_align_tokens,
