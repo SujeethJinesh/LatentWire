@@ -6,6 +6,7 @@ from typing import Optional, List, Tuple, Dict, Any, Sequence, Union, Set
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from latentwire.core_utils import (
     clean_pred,
@@ -448,26 +449,31 @@ class Adapter(nn.Module):
 
         hidden_dim = d_z * self.hidden_mult
         if self.hidden_mult <= 1:
-            self.net = nn.Sequential(
-                nn.LayerNorm(d_z),
-                nn.Linear(d_z, d_model),
-            )
+            self.input_norm = nn.LayerNorm(d_z)
+            self.proj_out = nn.Linear(d_z, d_model)
+            self.skip = None
+            self.mid = None
         else:
-            self.net = nn.Sequential(
-                nn.LayerNorm(d_z),
-                nn.Linear(d_z, hidden_dim),
-                nn.GELU(),
-                nn.Linear(hidden_dim, d_model),
-            )
+            self.input_norm = nn.LayerNorm(d_z)
+            self.proj_in = nn.Linear(d_z, hidden_dim)
+            self.mid = nn.Linear(hidden_dim, hidden_dim)
+            self.proj_out = nn.Linear(hidden_dim, d_model)
+            self.skip = nn.Linear(d_z, d_model)
         self.out_norm = nn.LayerNorm(d_model)
         self.scale = nn.Parameter(torch.ones(1))
         self.color = _EmbedColor(d_model) if colorize else None
 
-        for module in self.net:
-            if isinstance(module, nn.Linear):
-                nn.init.xavier_uniform_(module.weight)
-                if module.bias is not None:
-                    nn.init.zeros_(module.bias)
+        def _init_linear(module: Optional[nn.Linear]) -> None:
+            if module is None:
+                return
+            nn.init.xavier_uniform_(module.weight)
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+
+        _init_linear(getattr(self, "proj_in", None))
+        _init_linear(getattr(self, "mid", None))
+        _init_linear(self.proj_out)
+        _init_linear(getattr(self, "skip", None))
 
     def install_color_from_wrapper(self, wrapper: "LMWrapper") -> None:
         """Initialize the colorizer parameters from LM embedding statistics."""
@@ -487,7 +493,18 @@ class Adapter(nn.Module):
                 length_emb = self.length_proj(lengths).unsqueeze(1)
                 z = z + length_emb
 
-        x = self.net(z)
+        if self.hidden_mult <= 1:
+            x_norm = self.input_norm(z)
+            x = self.proj_out(x_norm)
+        else:
+            x_norm = self.input_norm(z)
+            hidden = self.proj_in(x_norm)
+            hidden = F.gelu(hidden)
+            hidden = self.mid(hidden)
+            hidden = F.gelu(hidden)
+            out_main = self.proj_out(hidden)
+            skip = self.skip(x_norm)
+            x = out_main + skip
         x = self.out_norm(x)
         x = x * self.scale
         if self.color is not None:
