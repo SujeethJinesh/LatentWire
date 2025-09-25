@@ -222,7 +222,7 @@ The total loss combines both models with adapter regularization:
 \mathcal{L} = \frac{1}{2}(\mathcal{L}_{\text{Llama}} + \mathcal{L}_{\text{Qwen}}) + \lambda \sum_i (s_i - 1)^2
 \end{align}
 
-The regularization term $\lambda(s_i - 1)^2$ prevents adapters from suppressing the signal (our experiments use $\lambda=0.05$). In the latest smoke runs we replace each adapter with a residual two-layer MLP—LayerNorm $\rightarrow$ Linear $\rightarrow$ GELU $\rightarrow$ Dropout $\rightarrow$ Linear plus a skip path—so the mapping from the shared latent to model-specific embeddings has enough capacity to absorb the mixed text/latent warm-up. We also reserve a small private latent slice per model (12 vectors in the single-Llama configuration) and extend the warm-up window (two epochs, higher alignment/teacher weights) so the encoder can first imitate the teacher distribution before we reintroduce Qwen.
+The regularization term $\lambda(s_i - 1)^2$ prevents adapters from suppressing the signal (our experiments use $\lambda=0.05$). In the latest smoke runs we replace each adapter with a residual two-layer MLP—LayerNorm $\rightarrow$ Linear $\rightarrow$ GELU $\rightarrow$ Dropout $\rightarrow$ Linear plus a skip path—so the mapping from the shared latent to model-specific embeddings has enough capacity to absorb the mixed text/latent warm-up. We also reserve a private latent slice per model (16 vectors in the single-Llama configuration) and run a long teacher phase (three epochs of text/latent alternation followed by 50% tail text batches) so the encoder can first imitate the teacher distribution before we reintroduce Qwen.
 
 \subsection{Training Challenges and Solutions}
 
