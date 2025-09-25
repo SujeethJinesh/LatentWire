@@ -1425,7 +1425,7 @@ def main():
                     if denom_val > 0.0:
                         ratio = numer_val / denom_val
                         if ratio > 1.0:
-                            effective_first_weight *= max(min(ratio, 4.0), 1.0)
+                            effective_first_weight *= max(min(ratio, 8.0), 1.0)
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
 
