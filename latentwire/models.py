@@ -106,13 +106,23 @@ def apply_prefix_if_requested(model, prefix_args: Dict[str, Any], tokenizer=None
     num_heads = getattr(model.config, "num_attention_heads", getattr(model.config, "n_head", None))
     if hidden is None or num_layers is None or num_heads is None:
         raise ValueError("Cannot infer model dimensions for Prefix-Tuning; please provide a compatible model config.")
+    depth = prefix_args.get("depth", None)
+    depth_int = num_layers
+    if depth is not None:
+        try:
+            depth_int = max(1, min(int(depth), num_layers))
+        except Exception:
+            depth_int = num_layers
+    all_layers_flag = bool(prefix_args.get("all_layers", True))
+    target_layers = depth_int if all_layers_flag else min(depth_int, 1)
+
     cfg = PrefixTuningConfig(
         task_type=TaskType.CAUSAL_LM,
         num_virtual_tokens=int(prefix_args.get("tokens", 16)),
         prefix_projection=bool(prefix_args.get("projection", True)),
         encoder_hidden_size=hidden,
         token_dim=hidden,
-        num_layers=(num_layers if prefix_args.get("all_layers", True) else 1),
+        num_layers=target_layers,
         num_attention_heads=num_heads,
         num_transformer_submodules=1,
     )
@@ -455,6 +465,7 @@ class Adapter(nn.Module):
             self.proj_out = nn.Linear(d_z, d_model)
             self.skip = None
             self.mid = None
+            self.dropout_layer = None
         else:
             self.input_norm = nn.LayerNorm(d_z)
             self.proj_in = nn.Linear(d_z, hidden_dim)
@@ -465,6 +476,10 @@ class Adapter(nn.Module):
         self.out_norm = nn.LayerNorm(d_model)
         self.scale = nn.Parameter(torch.ones(1))
         self.color = _EmbedColor(d_model) if colorize else None
+
+        # FiLM modulation heads: per-slot scale/shift conditioned on latent features.
+        self.film_scale = nn.Linear(d_z, d_model)
+        self.film_shift = nn.Linear(d_z, d_model)
 
         def _init_linear(module: Optional[nn.Linear]) -> None:
             if module is None:
@@ -477,6 +492,8 @@ class Adapter(nn.Module):
         _init_linear(getattr(self, "mid", None))
         _init_linear(self.proj_out)
         _init_linear(getattr(self, "skip", None))
+        _init_linear(self.film_scale)
+        _init_linear(self.film_shift)
 
     def install_color_from_wrapper(self, wrapper: "LMWrapper") -> None:
         """Initialize the colorizer parameters from LM embedding statistics."""
@@ -510,6 +527,10 @@ class Adapter(nn.Module):
             out_main = self.proj_out(hidden)
             skip = self.skip(x_norm)
             x = out_main + skip
+        # FiLM modulation: scale and shift each slot using the original latent features.
+        film_scale = torch.sigmoid(self.film_scale(z))
+        film_shift = self.film_shift(z)
+        x = x * film_scale + film_shift
         x = self.out_norm(x)
         x = x * self.scale
         if self.color is not None:

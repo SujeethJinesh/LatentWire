@@ -8,6 +8,8 @@
 - Added first-token auto-scaling during latent steps: when the latent first-token loss stays higher than the teacher-forced loss, we now up-weight the auxiliary CE term (capped ×4). This should push the encoder+adapter to close the gap faster instead of plateauing at ~0% first-token accuracy.
 - Strengthened STQueryEncoder with per-slot gating (Ln→Linear→Sigmoid) so the learned queries can modulate the attended summary before projection; mirroring the ByteEncoder pooler gate stabilizes slot specialization when we compress long contexts to 64 vectors.
 - Shortened Stage‑B text warm-up (`--warmup_text_latent_epochs 1.0`) and reduced tail probability to 5% so latent batches dominate sooner; this should surface the autoscaled first-token gradients earlier in training.
+- Added FiLM modulation inside the adapters (scale/shift per slot conditioned on the latent) to give the interlingua an extra degree of freedom when matching LM embedding statistics.
+- Prefix-tuning now accepts an explicit depth; Stage B defaults to 16 layers so we inject prefixes across the lower half of Llama rather than all 32 layers, mirroring P-Tuning v2’s multi-layer strategy.
 - PyTorch import issue on this workstation (`libtorch_cpu.dylib` missing) prevented running `pytest -q`; no code changes depend on test results, but rerun once the local Torch install is fixed.
 - Next smoke: rerun `bash scripts/run_llama_single.sh` to confirm latent F1 and first-token metrics lift from zero. If improvements hold, proceed to tuned Stage‑B tweaks (prefix gain sweep, first-token CE).
 

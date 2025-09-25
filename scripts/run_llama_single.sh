@@ -120,6 +120,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --resume_from "$CKPT_STAGEA" \
   --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
+  --prefix_depth 16 \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
   --latent_private_len 16 \
