@@ -36,7 +36,7 @@ flowchart LR
 
 ## Update (2025-09-25): Single-model warm-up scaffolding
 
-We now have a focused path for iterating on Llama in isolation. The trainer respects `--models` so we can skip Qwen entirely (smaller footprint, faster spin-up), Stage B supports a mixed text↔latent warm-up for the first epoch, and `scripts/run_llama_single.sh` wires those pieces together into a reproducible Stage A→B→C loop. During warm-up, we alternate latent steps with text-alignment steps that directly match the first few gold answer embeddings (default 4 tokens) against the adapter output; this provides the “clean gradient signal” we were missing when first-token acceptance was stuck near 0 %. The adapters have been upgraded to residual two-layer MLPs, and the single-model runner reserves a small private latent block (8 vectors) so we can start testing the shared vs. private split before folding Qwen back in.
+We now have a focused path for iterating on Llama in isolation. The trainer respects `--models` so we can skip Qwen entirely (smaller footprint, faster spin-up), Stage B supports a mixed text↔latent warm-up for the first epochs, and `scripts/run_llama_single.sh` wires those pieces together into a reproducible Stage A→B→C loop. During warm-up, we alternate latent steps with text-alignment steps that directly match the first few gold answer embeddings (default 4 tokens) against the adapter output and include a teacher-forced CE term. The adapters are residual two-layer MLPs with dropout, and the single-model runner now reserves a 12-vector private latent block plus stronger warm-up weights so the encoder/adapter stack can actually absorb the teacher signal before we fold Qwen back in.
 
 ### Controlled experiment we will run (baked into `run_hero_stq.sh`)
 

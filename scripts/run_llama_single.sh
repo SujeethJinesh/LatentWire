@@ -103,11 +103,11 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --save_dir "$CKPT_STAGEA" --auto_resume --save_training_stats \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
-  --latent_private_len 8 \
-  --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 2.5 --first_token_ce_warmup_frac 0.3 \
+  --latent_private_len 12 \
+  --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 2.0 --first_token_ce_warmup_frac 0.3 \
   --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
   --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
-  --adapter_hidden_mult 4 \
+  --adapter_hidden_mult 4 --adapter_dropout 0.1 \
   --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
   2>&1 | tee -a "$LOG"
 
@@ -122,13 +122,14 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
-  --latent_private_len 8 \
-  --first_token_ce_weight 1.2 --first_token_ce_schedule cosine --first_token_ce_peak 2.2 --first_token_ce_warmup_frac 0.3 \
+  --latent_private_len 12 \
+  --first_token_ce_weight 1.2 --first_token_ce_schedule cosine --first_token_ce_peak 1.8 --first_token_ce_warmup_frac 0.3 \
   --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
   --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
-  --warmup_text_latent_epochs 1.0 \
-  --warmup_align_tokens 4 --warmup_align_weight 0.5 \
-  --adapter_hidden_mult 4 \
+  --warmup_text_latent_epochs 2.0 \
+  --warmup_align_tokens 6 --warmup_align_weight 1.0 \
+  --warmup_text_teacher_weight 1.5 \
+  --adapter_hidden_mult 4 --adapter_dropout 0.1 \
   --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
   2>&1 | tee -a "$LOG"
 

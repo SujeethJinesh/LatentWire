@@ -431,6 +431,8 @@ def main():
                     help="Controls BOS appending when computing first-token CE (train).")
     ap.add_argument("--adapter_hidden_mult", type=int, default=2,
                     help="Hidden width multiplier for the adapter MLP.")
+    ap.add_argument("--adapter_dropout", type=float, default=0.0,
+                    help="Dropout probability for adapter MLP hidden states (0 disables).")
     ap.add_argument("--adapter_colorize", action="store_true",
                     help="If set, add per-dim colorizer to align adapter outputs with LM embeddings.")
     ap.add_argument("--no_adapter_metadata", action="store_false", dest="adapter_metadata",
@@ -916,6 +918,7 @@ def main():
             length_norm=float(args.max_answer_tokens),
             hidden_mult=args.adapter_hidden_mult,
             colorize=bool(args.adapter_colorize),
+            dropout=float(args.adapter_dropout),
         ).to(_primary_device(llama))
         adapters["llama"] = adp_llama
 
@@ -928,6 +931,7 @@ def main():
             length_norm=float(args.max_answer_tokens),
             hidden_mult=args.adapter_hidden_mult,
             colorize=bool(args.adapter_colorize),
+            dropout=float(args.adapter_dropout),
         ).to(_primary_device(qwen))
         adapters["qwen"] = adp_qwen
 
@@ -1558,6 +1562,7 @@ def main():
                     "first_token_ce_peak": args.first_token_ce_peak,
                     "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
                     "adapter_hidden_mult": args.adapter_hidden_mult,
+                    "adapter_dropout": args.adapter_dropout,
                     "adapter_colorize": bool(args.adapter_colorize),
                     "adapter_enable_metadata": bool(args.adapter_metadata),
                     "llama_device_map": args.llama_device_map,
@@ -1650,6 +1655,7 @@ def main():
         "first_token_ce_peak": args.first_token_ce_peak,
         "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
         "adapter_hidden_mult": args.adapter_hidden_mult,
+        "adapter_dropout": args.adapter_dropout,
         "adapter_colorize": bool(args.adapter_colorize),
         "adapter_enable_metadata": bool(args.adapter_metadata),
         "llama_device_map": args.llama_device_map,

@@ -740,6 +740,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
 
     adapter_hidden_mult = int(cfg.get("adapter_hidden_mult", 1))
     adapter_colorize = bool(cfg.get("adapter_colorize", False))
+    adapter_dropout = float(args.adapter_dropout) if args.adapter_dropout is not None else float(cfg.get("adapter_dropout", 0.0))
     adapter_enable_metadata = bool(cfg.get("adapter_enable_metadata", True))
 
     per_model_latent_len = int(cfg.get("latent_shared_len", latent_len)) + int(cfg.get("latent_private_len", 0))
@@ -842,6 +843,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             length_norm=max_answer_tokens,
             hidden_mult=adapter_hidden_mult,
             colorize=adapter_colorize,
+            dropout=adapter_dropout,
         ).to(_primary_device(wrappers[name])).eval()
         path = os.path.join(ckpt_dir, f"adapter_{name}.pt")
         state = _safe_load(path, map_location=device)
@@ -1194,6 +1196,9 @@ def main():
     # calibration modes
     ap.add_argument("--calibration", type=str, default="embed_rms", choices=["none","embed_rms","fixed","train_stats"])
     ap.add_argument("--prefix_target_rms", type=float, default=None)
+
+    ap.add_argument("--adapter_dropout", type=float, default=None,
+                    help="Override adapter dropout probability when loading adapters (defaults to training config).")
 
     # encoder input alignment
     ap.add_argument("--encoder_text_mode", type=str, default="auto",

@@ -434,11 +434,13 @@ class Adapter(nn.Module):
         length_norm: float = 32.0,
         hidden_mult: int = 2,
         colorize: bool = False,
+        dropout: float = 0.0,
     ):
         super().__init__()
         self.enable_metadata = enable_metadata
         self.length_norm = max(length_norm, 1.0)
         self.hidden_mult = max(int(hidden_mult), 1)
+        self.dropout = float(max(dropout, 0.0))
 
         if self.enable_metadata:
             self.position_emb = nn.Parameter(torch.randn(latent_length, d_z) * 0.02)
@@ -459,6 +461,7 @@ class Adapter(nn.Module):
             self.mid = nn.Linear(hidden_dim, hidden_dim)
             self.proj_out = nn.Linear(hidden_dim, d_model)
             self.skip = nn.Linear(d_z, d_model)
+            self.dropout_layer = nn.Dropout(self.dropout) if self.dropout > 0.0 else None
         self.out_norm = nn.LayerNorm(d_model)
         self.scale = nn.Parameter(torch.ones(1))
         self.color = _EmbedColor(d_model) if colorize else None
@@ -502,6 +505,8 @@ class Adapter(nn.Module):
             hidden = F.gelu(hidden)
             hidden = self.mid(hidden)
             hidden = F.gelu(hidden)
+            if self.dropout_layer is not None:
+                hidden = self.dropout_layer(hidden)
             out_main = self.proj_out(hidden)
             skip = self.skip(x_norm)
             x = out_main + skip
