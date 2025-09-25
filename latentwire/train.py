@@ -488,6 +488,8 @@ def main():
                     help="After the warm-up window, continue sampling text batches with this probability (0 disables).")
     ap.add_argument("--latent_align_weight", type=float, default=0.0,
                     help="Weight for matching latent prefix embeddings to the teacher's first token embedding during latent batches.")
+    ap.add_argument("--latent_prefix_align_weight", type=float, default=0.0,
+                    help="Weight for aligning the entire latent prefix to the teacher's token embeddings (first slots).")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
@@ -1434,6 +1436,7 @@ def main():
                 text_teacher_loss = torch.zeros((), device=target_device)
                 align_loss = torch.zeros((), device=target_device)
                 latent_align_loss = torch.zeros((), device=target_device)
+                latent_prefix_align_loss = torch.zeros((), device=target_device)
                 if training_mode == "text" and args.warmup_align_tokens > 0 and args.warmup_align_weight > 0.0:
                     max_align = min(int(args.warmup_align_tokens), prefix.shape[1])
                     pad_id = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
@@ -1459,6 +1462,13 @@ def main():
                     latent_embed = prefix[:, 0, :]
                     latent_align_loss = nn.functional.mse_loss(latent_embed, teacher_emb)
                     latent_align_loss = latent_align_loss * float(max(args.latent_align_weight, 0.0))
+                if training_mode == "latent" and args.latent_prefix_align_weight > 0.0 and prefix.shape[1] > 0:
+                    prefix_len = prefix.shape[1]
+                    teacher_prefix_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
+                    teacher_prefix_ids = teacher_prefix_ids[:, :prefix_len]
+                    teacher_prefix_emb = ctx.wrapper.input_embed(teacher_prefix_ids)
+                    latent_prefix_align_loss = nn.functional.mse_loss(prefix, teacher_prefix_emb)
+                    latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
                 if training_mode == "text":
                     try:
                         text_teacher_loss, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
@@ -1474,6 +1484,7 @@ def main():
                     + args.manifold_stat_weight * manifold_loss
                     + align_loss
                     + latent_align_loss
+                    + latent_prefix_align_loss
                     + float(max(args.warmup_text_teacher_weight, 0.0)) * text_teacher_loss
                 ).to(device)
                 total_model_loss = total_model_loss + model_loss
@@ -1498,6 +1509,7 @@ def main():
                     "rms_cal": rms_cal_val,
                     "align": align_loss,
                     "latent_align": latent_align_loss,
+                    "latent_prefix_align": latent_prefix_align_loss,
                     "text_tf": text_teacher_loss,
                     "latent_scale": torch.tensor(float(latent_scale), device=target_device),
                 })
