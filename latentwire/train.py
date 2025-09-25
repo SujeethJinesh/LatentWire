@@ -426,6 +426,8 @@ def main():
                     help="Peak first-token CE weight during warmup when using a schedule.")
     ap.add_argument("--first_token_ce_warmup_frac", type=float, default=0.4,
                     help="Fraction of total steps to hold the peak first-token CE weight before cosine decay.")
+    ap.add_argument("--first_token_autoscale", type=str, default="yes", choices=["yes", "no"],
+                    help="If 'yes', dynamically boost first-token CE weight when latent first-token loss stays larger than the teacher-forced loss.")
     ap.add_argument("--train_append_bos_after_prefix", type=str, default="no",
                     choices=["auto","yes","no"],
                     help="Controls BOS appending when computing first-token CE (train).")
@@ -1190,6 +1192,7 @@ def main():
 
     first_ce_schedule = str(getattr(args, "first_token_ce_schedule", "none")).lower()
     peak_override = args.first_token_ce_peak
+    autoscale_first = str(getattr(args, "first_token_autoscale", "yes")).lower() != "no"
 
     def _first_token_weight_for_step(step_idx: int) -> float:
         base = max(float(args.first_token_ce_weight), 0.0)
@@ -1404,11 +1407,25 @@ def main():
                     else:
                         latent_scale = end_scale
 
+                effective_first_weight = float(current_first_weight)
                 loss_tf = latent_scale * loss_tf_latent
                 loss_first = latent_scale * loss_first_raw
                 loss_kce = latent_scale * loss_kce_raw
                 loss_kd = latent_scale * loss_kd_raw
                 loss_state = latent_scale * loss_state_raw
+
+                if (
+                    enable_first_token_loss
+                    and autoscale_first
+                    and training_mode == "latent"
+                    and latent_scale > 0.0
+                ):
+                    denom_val = float(loss_tf_latent.detach().abs().clamp_min(1e-4).item())
+                    numer_val = float(loss_first_raw.detach().abs().item())
+                    if denom_val > 0.0:
+                        ratio = numer_val / denom_val
+                        if ratio > 1.0:
+                            effective_first_weight *= max(min(ratio, 4.0), 1.0)
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
 
@@ -1441,7 +1458,7 @@ def main():
 
                 model_loss = (
                     loss_tf
-                    + current_first_weight * loss_first
+                    + effective_first_weight * loss_first
                     + args.k_ce_weight * loss_kce
                     + args.kd_first_k_weight * loss_kd
                     + args.state_kd_weight * loss_state
@@ -1462,7 +1479,7 @@ def main():
                 losses_record.update({
                     "tf": loss_tf,
                     "first": loss_first,
-                    "first_weight": torch.tensor(float(current_first_weight), device=target_device),
+                    "first_weight": torch.tensor(float(effective_first_weight), device=target_device),
                     "kce": loss_kce,
                     "kd": loss_kd,
                     "state": loss_state,
