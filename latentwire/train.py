@@ -1282,9 +1282,9 @@ def main():
             effective_texts = batch_user_texts if args.use_chat_template else batch_texts
             warmup_active = warmup_total_steps > 0 and global_step < warmup_total_steps
             training_mode = "latent"
-            if warmup_active and (global_step % 2 == 0):
+            if warmup_active:
                 training_mode = "text"
-            elif (not warmup_active) and args.warmup_tail_prob > 0.0 and random.random() < float(args.warmup_tail_prob):
+            elif args.warmup_tail_prob > 0.0 and random.random() < float(args.warmup_tail_prob):
                 training_mode = "text"
 
             if training_mode == "text":
