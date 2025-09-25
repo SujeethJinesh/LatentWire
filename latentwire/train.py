@@ -1459,14 +1459,14 @@ def main():
                 if training_mode == "latent" and args.latent_align_weight > 0.0 and prefix.shape[1] > 0:
                     teacher_first_ids = ctx.first_token_ids[idx].to(target_device, non_blocking=True)
                     teacher_first_ids = teacher_first_ids.view(-1, 1)
-                    teacher_emb = ctx.wrapper.input_embed(teacher_first_ids).squeeze(1)
+                    teacher_emb = ctx.wrapper.input_embed(teacher_first_ids).squeeze(1).to(prefix.dtype)
                     latent_embed = prefix[:, 0, :]
                     latent_align_loss = nn.functional.mse_loss(latent_embed, teacher_emb)
                     latent_align_loss = latent_align_loss * float(max(args.latent_align_weight, 0.0))
                 if training_mode == "latent" and args.latent_prefix_align_weight > 0.0 and prefix.shape[1] > 0:
                     prefix_len = prefix.shape[1]
                     teacher_prefix_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
-                    teacher_prefix_emb = ctx.wrapper.input_embed(teacher_prefix_ids)
+                    teacher_prefix_emb = ctx.wrapper.input_embed(teacher_prefix_ids).to(prefix.dtype)
                     teacher_prefix_emb = teacher_prefix_emb[:, :prefix_len]
                     overlap = min(prefix_len, teacher_prefix_emb.size(1))
                     if overlap > 0:
