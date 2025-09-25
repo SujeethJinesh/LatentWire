@@ -901,11 +901,22 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                 })
                 debug_map[name] = debug
 
+    # Align latent-anchor usage with training: chat-mode runs still expect the raw
+    # literal (e.g., "Answer: ") even though we render the assistant header via the
+    # chat template. Reuse the strip_literal computed above so the first decoded
+    # token sees the same conditioning as training.
+    latent_anchor_texts: Dict[str, Optional[str]] = {}
+    for name, info in anchor_info.items():
+        if info["mode"] == "text":
+            latent_anchor_texts[name] = info["anchor"] or None
+        else:
+            latent_anchor_texts[name] = strip_literal or None
+
     latent_results = {}
     latent_wall = 0.0
     trunc_wall = 0.0
     for name, ctx in model_contexts.items():
-        anchor_payload = anchor_info[name]["anchor"] if anchor_info[name]["mode"] == "text" else None
+        anchor_payload = latent_anchor_texts[name]
         append_bos = anchor_info[name]["bos"]
         res = _run_latent_path(
             args,
@@ -942,7 +953,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "trunc": latent_results[name]["trunc"]["metrics"],
         },
             "chat_prompts": model_contexts[name]["chat"],
-            "debug": debug_map.get(name, {}),
+            "debug": {
+                **debug_map.get(name, {}),
+                "latent_anchor_text": anchor_payload,
+            },
         }
 
     joint_em = joint_f1 = agreement_rate = float("nan")
@@ -950,7 +964,11 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     if all(name in model_outputs for name in ("llama", "qwen")):
         agree = 0
         anchor_ids = {
-            name: (wrappers[name]._encode_anchor_text(anchor_info[name]["anchor"]) if anchor_info[name]["mode"] == "text" and anchor_info[name]["anchor"] else None)
+            name: (
+                wrappers[name]._encode_anchor_text(latent_anchor_texts[name])
+                if latent_anchor_texts[name]
+                else None
+            )
             for name in ("llama", "qwen")
         }
 
