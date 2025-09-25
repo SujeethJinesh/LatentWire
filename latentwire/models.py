@@ -1182,7 +1182,8 @@ class STQueryEncoder(nn.Module):
                  max_tokens: int = 1024,
                  freeze_backbone: bool = True,
                  slot_sinusoid: bool = True,
-                 attn_heads: int = 8):
+                 attn_heads: int = 8,
+                 gate: bool = True):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(hf_encoder_id, use_fast=True)
         self.encoder = AutoModel.from_pretrained(hf_encoder_id)
@@ -1190,6 +1191,7 @@ class STQueryEncoder(nn.Module):
         self.latent_len = int(latent_len)
         self.d_z = int(d_z)
         self.max_tokens = int(max_tokens)
+        self.use_gate = bool(gate)
 
         if freeze_backbone:
             for p in self.encoder.parameters():
@@ -1205,6 +1207,15 @@ class STQueryEncoder(nn.Module):
             nn.LayerNorm(self.hidden),
             nn.Linear(self.hidden, self.d_z),
         )
+
+        if self.use_gate:
+            self.slot_gate = nn.Sequential(
+                nn.LayerNorm(self.hidden),
+                nn.Linear(self.hidden, self.hidden),
+                nn.Sigmoid(),
+            )
+        else:
+            self.slot_gate = None
 
         self.slot_sinusoid = bool(slot_sinusoid)
         if self.slot_sinusoid:
@@ -1248,6 +1259,9 @@ class STQueryEncoder(nn.Module):
         key_padding_mask = ~amask
         pooled, _ = self.attn(q, k, v, key_padding_mask=key_padding_mask, need_weights=False)
         pooled = pooled + q
+        if self.slot_gate is not None:
+            gate = self.slot_gate(pooled)
+            pooled = pooled * gate + q * (1.0 - gate)
         pooled = self.o_proj(pooled)
         z = self.to_latent(pooled)
         return z
