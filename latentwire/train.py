@@ -1466,10 +1466,14 @@ def main():
                 if training_mode == "latent" and args.latent_prefix_align_weight > 0.0 and prefix.shape[1] > 0:
                     prefix_len = prefix.shape[1]
                     teacher_prefix_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
-                    teacher_prefix_ids = teacher_prefix_ids[:, :prefix_len]
                     teacher_prefix_emb = ctx.wrapper.input_embed(teacher_prefix_ids)
-                    latent_prefix_align_loss = nn.functional.mse_loss(prefix, teacher_prefix_emb)
-                    latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
+                    teacher_prefix_emb = teacher_prefix_emb[:, :prefix_len]
+                    overlap = min(prefix_len, teacher_prefix_emb.size(1))
+                    if overlap > 0:
+                        latent_prefix_align_loss = nn.functional.mse_loss(
+                            prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :]
+                        )
+                        latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
                 if training_mode == "text":
                     try:
                         text_teacher_loss, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
