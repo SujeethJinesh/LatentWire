@@ -1294,6 +1294,29 @@ def main():
     prompts_raw = [e["source"] for e in eval_examples]
     golds       = [e["answer"] for e in eval_examples]
 
+    # Determine encoder inputs (match training preprocessing)
+    strip_literal = cfg.get("strip_anchor_text") or DEFAULT_ANSWER_PREFIX
+    if strip_literal and not strip_literal.endswith(" "):
+        strip_literal = strip_literal + " "
+    # Remove the anchor literal the encoder never saw during training
+    encoder_sources = [
+        split_user_and_anchor(src, strip_literal or "")[0] for src in prompts_raw
+    ]
+
+    encoder_text_mode = (args.encoder_text_mode or "auto").lower()
+    trained_neutral_chat = bool(cfg.get("encoder_use_chat_template", False))
+    if encoder_text_mode == "auto":
+        encoder_text_mode = "neutral_chat" if trained_neutral_chat else "raw"
+
+    if encoder_text_mode == "neutral_chat":
+        encoder_inputs = build_neutral_encoder_texts(encoder_sources)
+    else:
+        # Fall back to raw inputs (already anchor-stripped). Additional modes (llama/qwen chat)
+        # are handled elsewhere when sequential alignment is requested.
+        encoder_inputs = encoder_sources
+
+    print(f"Encoder input alignment: mode={encoder_text_mode} | strip_anchor={'yes' if strip_literal else 'no'} | samples={len(encoder_inputs)}")
+
     # Build a Z for wire metrics
     Z_path = os.path.join(args.out_dir, "Z.pt") if args.out_dir else None
     if Z_path and (not args.fresh_eval) and os.path.exists(Z_path):
@@ -1311,7 +1334,7 @@ def main():
             encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
                 byte_tok = ByteTokenizer(max_bytes=byte_max)
-                z_bytes = collate_bytes(prompts_raw, byte_tok, device)
+                z_bytes = collate_bytes(encoder_inputs, byte_tok, device)
                 encoded_latents = encoder_wire(z_bytes, return_components=True)
         elif encoder_type == "stq":
             encoder_wire = STQueryEncoder(d_z=d_z, latent_len=latent_len,
@@ -1319,7 +1342,7 @@ def main():
                                          max_tokens=(args.max_enc_tokens or cfg.get('max_enc_tokens',1024))).to(device).eval()
             encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
-                raw = encoder_wire(prompts_raw)
+                raw = encoder_wire(encoder_inputs)
                 shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
                 private = {}
                 start = latent_shared_len
@@ -1334,7 +1357,7 @@ def main():
             encoder_wire = SimpleEncoder(d_z=d_z, latent_len=latent_len).to(device).eval()
             encoder_wire.load_state_dict(_safe_load(os.path.join(ckpt_dir, "encoder.pt"), map_location=device))
             with torch.no_grad():
-                raw = encoder_wire(prompts_raw)
+                raw = encoder_wire(encoder_inputs)
                 shared = raw[:, :latent_shared_len] if latent_shared_len > 0 else raw.new_zeros(raw.size(0), 0, raw.size(-1))
                 private = {}
                 start = latent_shared_len

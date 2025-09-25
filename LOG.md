@@ -1,5 +1,11 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-09-25 — Eval latent alignment fix (Codex)
+- Identified that Stage C evaluation recomputed latent Z from the **raw prompt** (`Question…\nAnswer:`), while training encoded the **anchor-stripped user text** (optionally wrapped in a neutral chat template). This mismatch left the latent encoder seeing an extra "Answer:" literal at eval time, producing unusable soft tokens and first-token accuracy ≈0.
+- Patched `latentwire/eval.py` so standard evaluation now mirrors the training preprocessing: strip the configured anchor literal before encoding and, when the run used `--encoder_use_chat_template`, wrap the user text with the neutral chat scaffold prior to computing Z. Logged the chosen mode for transparency.
+- PyTorch import issue on this workstation (`libtorch_cpu.dylib` missing) prevented running `pytest -q`; no code changes depend on test results, but rerun once the local Torch install is fixed.
+- Next smoke: rerun `bash scripts/run_llama_single.sh` to confirm latent F1 and first-token metrics lift from zero. If improvements hold, proceed to tuned Stage‑B tweaks (prefix gain sweep, first-token CE).
+
 **Run ID:** `8B_clean_answer_ftce`  
 **Start:** Sun Sep 14 23:54:43 PDT 2025  
 **Backbones:** - Llama: `meta-llama/Meta-Llama-3.1-8B-Instruct`  
