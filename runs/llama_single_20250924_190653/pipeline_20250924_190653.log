@@ -1,0 +1,316 @@
+
+=== CUDA preflight ===
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+
+=== Stage A: Llama latent fit ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2978.91it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.51s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.46s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.29s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.14it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/4
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  10/40 | grad_norm=493.11 | sec/step~1.87 | keep=0.70 | K=4 | first_w=2.50 | llama(L): tf=11.7474 first=19.1619 kCE=9.4908 KD=6.5835 state=26.1982 align=0.0000 | scale_pen(llama)=0.0000e+00 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/40 | grad_norm=110.87 | sec/step~2.10 | keep=0.70 | K=4 | first_w=2.50 | llama(L): tf=10.7655 first=15.4559 kCE=8.7607 KD=9.0126 state=26.7605 align=0.0000 | scale_pen(llama)=2.4016e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/40 | grad_norm=406.60 | sec/step~2.16 | keep=0.71 | K=4 | first_w=2.50 | llama(L): tf=10.4703 first=15.4077 kCE=8.0187 KD=8.0554 state=26.6356 align=0.0000 | scale_pen(llama)=2.4016e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/40 | grad_norm=184.24 | sec/step~2.12 | keep=0.72 | K=4 | first_w=2.50 | llama(L): tf=10.4937 first=11.9803 kCE=8.5281 KD=9.2823 state=25.5769 align=0.0000 | scale_pen(llama)=3.8689e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 2/4
+  step  10/40 | grad_norm=65.29 | sec/step~2.10 | keep=0.73 | K=4 | first_w=2.50 | llama(L): tf=9.8571 first=10.3424 kCE=8.7097 KD=9.3562 state=25.3869 align=0.0000 | scale_pen(llama)=3.8689e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/40 | grad_norm=18.48 | sec/step~2.80 | keep=0.74 | K=4 | first_w=2.46 | llama(L): tf=9.9124 first=9.7869 kCE=9.5311 KD=8.7030 state=26.7608 align=0.0000 | scale_pen(llama)=6.9633e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/40 | grad_norm=61.52 | sec/step~2.26 | keep=0.76 | K=4 | first_w=2.37 | llama(L): tf=10.1696 first=9.4432 kCE=9.4132 KD=9.4502 state=25.8235 align=0.0000 | scale_pen(llama)=6.9633e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/40 | grad_norm=26.36 | sec/step~1.83 | keep=0.77 | K=4 | first_w=2.23 | llama(L): tf=9.9380 first=9.4426 kCE=9.5644 KD=9.6694 state=23.1994 align=0.0000 | scale_pen(llama)=6.9633e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 3/4
+  step  10/40 | grad_norm=28.70 | sec/step~2.11 | keep=0.79 | K=4 | first_w=2.06 | llama(L): tf=9.8275 first=8.8361 kCE=9.0065 KD=9.5323 state=24.3222 align=0.0000 | scale_pen(llama)=6.9633e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/40 | grad_norm=10.17 | sec/step~2.14 | keep=0.82 | K=4 | first_w=1.85 | llama(L): tf=9.6954 first=8.3115 kCE=8.9797 KD=9.7719 state=23.6344 align=0.0000 | scale_pen(llama)=6.2670e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/40 | grad_norm=23.85 | sec/step~2.05 | keep=0.84 | K=4 | first_w=1.65 | llama(L): tf=10.1545 first=8.5070 kCE=8.8736 KD=9.1980 state=23.4474 align=0.0000 | scale_pen(llama)=6.2670e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/40 | grad_norm=11.98 | sec/step~2.71 | keep=0.87 | K=4 | first_w=1.44 | llama(L): tf=9.4202 first=9.0304 kCE=8.2604 KD=7.8961 state=24.5081 align=0.0000 | scale_pen(llama)=2.0464e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 4/4
+  step  10/40 | grad_norm=12.18 | sec/step~1.92 | keep=0.90 | K=4 | first_w=1.27 | llama(L): tf=9.4407 first=8.0870 kCE=8.4480 KD=8.8746 state=21.5094 align=0.0000 | scale_pen(llama)=2.0464e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/40 | grad_norm=6.61 | sec/step~2.09 | keep=0.93 | K=4 | first_w=1.13 | llama(L): tf=9.6030 first=7.9304 kCE=8.7198 KD=9.3932 state=20.2595 align=0.0000 | scale_pen(llama)=5.4037e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/40 | grad_norm=18.97 | sec/step~1.88 | keep=0.96 | K=4 | first_w=1.04 | llama(L): tf=9.6424 first=8.2669 kCE=9.1747 KD=9.5363 state=20.3217 align=0.0000 | scale_pen(llama)=5.4037e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/40 | grad_norm=9.10 | sec/step~2.03 | keep=1.00 | K=4 | first_w=1.00 | llama(L): tf=10.0313 first=7.9989 kCE=8.3821 KD=8.6333 state=20.7581 align=0.0000 | scale_pen(llama)=3.1974e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 1.8KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/llama_single_20250924_190653/ckpt/stageA
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 1.0000037495046854, 'rms_mean_cal': 0.010571266751503572, 'embed_rms': 0.01057521253824234, 'count': 160}}
+
+=== Stage B: Llama prefix training + warm-up ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3051.51it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.30s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.22s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.18it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.01it/s]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+trainable params: 272,723,968 || all params: 8,302,985,216 || trainable%: 3.2846
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+⏪ Resuming from: runs/llama_single_20250924_190653/ckpt/stageA/state.pt
+   -> loaded encoder/adapters FROM state.pt
+   -> restored RNG state
+   -> reset epoch/global_step to zero as requested
+   -> start_epoch=0, global_step=0
+[warmup] alternating text/latent for first 80 steps
+Epoch 1/6
+[warmup] step=0 mode=text
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  1/80 | (warm-up text) | align=0.0001 | text_tf=9.3322
+[warmup] step=1 mode=latent
+[warmup] step=2 mode=text
+  step  3/80 | (warm-up text) | align=0.0001 | text_tf=9.6052
+[warmup] step=3 mode=latent
+[warmup] step=4 mode=text
+  step  5/80 | (warm-up text) | align=0.0001 | text_tf=11.1511
+[warmup] step=5 mode=latent
+[warmup] step=6 mode=text
+  step  7/80 | (warm-up text) | align=0.0001 | text_tf=10.7789
+[warmup] step=7 mode=latent
+[warmup] step=8 mode=text
+  step  9/80 | (warm-up text) | align=0.0001 | text_tf=11.1129
+[warmup] step=9 mode=latent
+  step  10/80 | grad_norm=92.78 | sec/step~2.69 | keep=0.50 | K=4 | first_w=2.20 | llama(L): tf=11.0401 first=14.8949 kCE=10.0157 KD=2.9594 state=26.3209 align=0.0000 | scale_pen(llama)=3.1974e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  11/80 | (warm-up text) | align=0.0001 | text_tf=9.9096
+  step  13/80 | (warm-up text) | align=0.0001 | text_tf=8.9452
+  step  15/80 | (warm-up text) | align=0.0001 | text_tf=10.3443
+  step  17/80 | (warm-up text) | align=0.0001 | text_tf=7.6166
+  step  19/80 | (warm-up text) | align=0.0001 | text_tf=7.5222
+  step  20/80 | grad_norm=5.16 | sec/step~2.30 | keep=0.50 | K=4 | first_w=2.20 | llama(L): tf=10.0774 first=10.6378 kCE=9.7666 KD=1.9083 state=23.5712 align=0.0000 | scale_pen(llama)=1.1951e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  21/80 | (warm-up text) | align=0.0001 | text_tf=8.3796
+  step  23/80 | (warm-up text) | align=0.0001 | text_tf=9.3945
+  step  25/80 | (warm-up text) | align=0.0001 | text_tf=9.9567
+  step  27/80 | (warm-up text) | align=0.0001 | text_tf=9.4462
+  step  29/80 | (warm-up text) | align=0.0001 | text_tf=8.9688
+  step  30/80 | grad_norm=17.39 | sec/step~2.63 | keep=0.50 | K=4 | first_w=2.20 | llama(L): tf=10.6303 first=10.1486 kCE=9.7626 KD=1.7050 state=24.1334 align=0.0000 | scale_pen(llama)=1.1951e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  31/80 | (warm-up text) | align=0.0001 | text_tf=8.9959
+  step  33/80 | (warm-up text) | align=0.0001 | text_tf=8.5150
+  step  35/80 | (warm-up text) | align=0.0001 | text_tf=7.9944
+  step  37/80 | (warm-up text) | align=0.0001 | text_tf=8.6059
+  step  39/80 | (warm-up text) | align=0.0001 | text_tf=8.7130
+  step  40/80 | grad_norm=6.31 | sec/step~2.19 | keep=0.50 | K=4 | first_w=2.20 | llama(L): tf=10.3922 first=8.9221 kCE=9.4176 KD=1.0640 state=18.3523 align=0.0000 | scale_pen(llama)=2.2921e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  41/80 | (warm-up text) | align=0.0001 | text_tf=8.1202
+  step  43/80 | (warm-up text) | align=0.0001 | text_tf=8.4166
+  step  45/80 | (warm-up text) | align=0.0001 | text_tf=7.4680
+  step  47/80 | (warm-up text) | align=0.0001 | text_tf=8.2581
+  step  49/80 | (warm-up text) | align=0.0001 | text_tf=8.6055
+  step  50/80 | grad_norm=1.41 | sec/step~2.34 | keep=0.51 | K=4 | first_w=2.20 | llama(L): tf=9.4076 first=7.7427 kCE=9.2499 KD=0.8674 state=13.2815 align=0.0000 | scale_pen(llama)=8.6459e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  51/80 | (warm-up text) | align=0.0001 | text_tf=8.1130
+  step  53/80 | (warm-up text) | align=0.0001 | text_tf=8.0837
+  step  55/80 | (warm-up text) | align=0.0001 | text_tf=9.6458
+  step  57/80 | (warm-up text) | align=0.0001 | text_tf=8.2468
+  step  59/80 | (warm-up text) | align=0.0001 | text_tf=9.1186
+  step  60/80 | grad_norm=7.35 | sec/step~2.30 | keep=0.51 | K=4 | first_w=2.20 | llama(L): tf=10.3061 first=8.5160 kCE=9.7703 KD=1.0949 state=12.7896 align=0.0000 | scale_pen(llama)=8.6459e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  61/80 | (warm-up text) | align=0.0001 | text_tf=8.9621
+  step  63/80 | (warm-up text) | align=0.0001 | text_tf=8.4417
+  step  65/80 | (warm-up text) | align=0.0001 | text_tf=7.7994
+  step  67/80 | (warm-up text) | align=0.0001 | text_tf=7.5151
+  step  69/80 | (warm-up text) | align=0.0001 | text_tf=9.0655
+  step  70/80 | grad_norm=6.97 | sec/step~2.54 | keep=0.51 | K=4 | first_w=2.20 | llama(L): tf=9.3606 first=8.0235 kCE=8.8121 KD=1.0582 state=12.5756 align=0.0000 | scale_pen(llama)=1.0388e-10 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  71/80 | (warm-up text) | align=0.0001 | text_tf=9.0245
+  step  73/80 | (warm-up text) | align=0.0001 | text_tf=8.5022
+  step  75/80 | (warm-up text) | align=0.0001 | text_tf=7.6671
+  step  77/80 | (warm-up text) | align=0.0001 | text_tf=7.8494
+  step  79/80 | (warm-up text) | align=0.0001 | text_tf=8.1273
+  step  80/80 | grad_norm=17.37 | sec/step~2.51 | keep=0.51 | K=4 | first_w=2.20 | llama(L): tf=9.5637 first=7.8902 kCE=8.9246 KD=1.1370 state=12.5210 align=0.0000 | scale_pen(llama)=4.1069e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 2/6
+  step  10/80 | grad_norm=18.26 | sec/step~2.54 | keep=0.52 | K=4 | first_w=2.20 | llama(L): tf=8.7463 first=7.8532 kCE=8.1242 KD=0.8497 state=13.4130 align=0.0000 | scale_pen(llama)=4.1069e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/80 | grad_norm=3.23 | sec/step~2.92 | keep=0.52 | K=4 | first_w=2.20 | llama(L): tf=8.8516 first=6.7985 kCE=7.9440 KD=1.0226 state=12.9682 align=0.0000 | scale_pen(llama)=3.5527e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/80 | grad_norm=5.69 | sec/step~2.48 | keep=0.53 | K=4 | first_w=2.20 | llama(L): tf=9.5324 first=8.4513 kCE=8.1258 KD=1.1839 state=11.7707 align=0.0000 | scale_pen(llama)=3.5527e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/80 | grad_norm=5.51 | sec/step~2.36 | keep=0.53 | K=4 | first_w=2.20 | llama(L): tf=9.5194 first=8.4001 kCE=7.4670 KD=1.3228 state=11.6954 align=0.0000 | scale_pen(llama)=1.4211e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/80 | grad_norm=0.96 | sec/step~2.67 | keep=0.54 | K=4 | first_w=2.20 | llama(L): tf=9.2990 first=8.4348 kCE=6.3408 KD=1.1551 state=12.5906 align=0.0000 | scale_pen(llama)=4.2210e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/80 | grad_norm=3.41 | sec/step~2.24 | keep=0.54 | K=4 | first_w=2.20 | llama(L): tf=8.9029 first=7.2645 kCE=6.8109 KD=1.6056 state=10.0423 align=0.0000 | scale_pen(llama)=4.2210e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/80 | grad_norm=2.81 | sec/step~2.28 | keep=0.55 | K=4 | first_w=2.20 | llama(L): tf=9.1299 first=6.4100 kCE=5.9856 KD=1.4263 state=10.9815 align=0.0000 | scale_pen(llama)=5.1159e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  80/80 | grad_norm=5.81 | sec/step~2.54 | keep=0.56 | K=4 | first_w=2.20 | llama(L): tf=8.7338 first=8.0191 kCE=5.8204 KD=1.1733 state=12.1577 align=0.0000 | scale_pen(llama)=3.5527e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 3/6
+  step  10/80 | grad_norm=5.99 | sec/step~2.22 | keep=0.56 | K=4 | first_w=2.19 | llama(L): tf=8.8889 first=8.4034 kCE=5.9136 KD=1.2647 state=10.3281 align=0.0000 | scale_pen(llama)=3.5527e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/80 | grad_norm=2.59 | sec/step~2.14 | keep=0.57 | K=4 | first_w=2.17 | llama(L): tf=8.6670 first=7.5600 kCE=5.7036 KD=1.4093 state=9.7877 align=0.0000 | scale_pen(llama)=3.2742e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/80 | grad_norm=16.86 | sec/step~2.58 | keep=0.58 | K=4 | first_w=2.16 | llama(L): tf=8.4737 first=7.2694 kCE=5.3148 KD=1.0484 state=12.1585 align=0.0000 | scale_pen(llama)=3.2742e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/80 | grad_norm=4.89 | sec/step~2.73 | keep=0.59 | K=4 | first_w=2.14 | llama(L): tf=8.6342 first=7.7757 kCE=5.4974 KD=1.2470 state=12.0257 align=0.0000 | scale_pen(llama)=6.8781e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/80 | grad_norm=0.33 | sec/step~2.66 | keep=0.60 | K=4 | first_w=2.11 | llama(L): tf=9.2144 first=7.7795 kCE=5.2101 KD=1.0869 state=12.3937 align=0.0000 | scale_pen(llama)=5.6843e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/80 | grad_norm=2.31 | sec/step~2.46 | keep=0.60 | K=4 | first_w=2.08 | llama(L): tf=8.7581 first=7.7800 kCE=5.1433 KD=1.0711 state=11.7661 align=0.0000 | scale_pen(llama)=5.6843e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/80 | grad_norm=1.73 | sec/step~2.34 | keep=0.61 | K=4 | first_w=2.05 | llama(L): tf=8.4723 first=7.2476 kCE=5.7509 KD=1.0832 state=10.0932 align=0.0000 | scale_pen(llama)=1.4211e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  80/80 | grad_norm=5.59 | sec/step~2.67 | keep=0.62 | K=4 | first_w=2.02 | llama(L): tf=8.5215 first=7.1778 kCE=5.6573 KD=1.0192 state=11.7172 align=0.0000 | scale_pen(llama)=6.8781e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 4/6
+  step  10/80 | grad_norm=4.78 | sec/step~2.45 | keep=0.64 | K=4 | first_w=1.98 | llama(L): tf=8.5035 first=7.0804 kCE=5.6455 KD=1.0020 state=11.7608 align=0.0000 | scale_pen(llama)=6.8781e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/80 | grad_norm=1.37 | sec/step~2.96 | keep=0.65 | K=4 | first_w=1.94 | llama(L): tf=8.0514 first=7.0306 kCE=5.0366 KD=1.0510 state=12.4410 align=0.0000 | scale_pen(llama)=1.7195e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/80 | grad_norm=4.78 | sec/step~2.52 | keep=0.66 | K=4 | first_w=1.90 | llama(L): tf=8.7375 first=6.9898 kCE=5.5409 KD=1.1111 state=11.3954 align=0.0000 | scale_pen(llama)=1.7195e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/80 | grad_norm=2.11 | sec/step~2.60 | keep=0.67 | K=4 | first_w=1.85 | llama(L): tf=8.5771 first=7.8510 kCE=5.0461 KD=1.1990 state=11.7741 align=0.0000 | scale_pen(llama)=2.7853e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/80 | grad_norm=1.14 | sec/step~2.52 | keep=0.68 | K=4 | first_w=1.81 | llama(L): tf=8.5015 first=7.5600 kCE=5.6874 KD=1.2117 state=11.1476 align=0.0000 | scale_pen(llama)=0.0000e+00 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/80 | grad_norm=2.54 | sec/step~2.45 | keep=0.69 | K=4 | first_w=1.76 | llama(L): tf=8.3274 first=7.2937 kCE=5.8243 KD=1.1592 state=10.7111 align=0.0000 | scale_pen(llama)=0.0000e+00 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/80 | grad_norm=2.37 | sec/step~2.62 | keep=0.71 | K=4 | first_w=1.71 | llama(L): tf=8.6570 first=6.7277 kCE=5.3104 KD=1.1239 state=11.5294 align=0.0000 | scale_pen(llama)=2.0464e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  80/80 | grad_norm=7.18 | sec/step~2.47 | keep=0.72 | K=4 | first_w=1.67 | llama(L): tf=8.2969 first=7.0713 kCE=5.6911 KD=1.2131 state=11.0371 align=0.0000 | scale_pen(llama)=1.4211e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 5/6
+  step  10/80 | grad_norm=12.90 | sec/step~2.41 | keep=0.74 | K=4 | first_w=1.62 | llama(L): tf=8.2802 first=7.6760 kCE=5.1546 KD=1.1487 state=10.5340 align=0.0000 | scale_pen(llama)=1.4211e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/80 | grad_norm=2.81 | sec/step~2.79 | keep=0.75 | K=4 | first_w=1.58 | llama(L): tf=8.1849 first=6.8643 kCE=5.1463 KD=1.0298 state=12.2756 align=0.0000 | scale_pen(llama)=1.2790e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/80 | grad_norm=8.69 | sec/step~3.24 | keep=0.77 | K=4 | first_w=1.53 | llama(L): tf=8.1247 first=7.3659 kCE=4.9387 KD=1.0958 state=12.6424 align=0.0000 | scale_pen(llama)=1.2790e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/80 | grad_norm=5.84 | sec/step~2.63 | keep=0.78 | K=4 | first_w=1.49 | llama(L): tf=8.3768 first=7.0561 kCE=4.7048 KD=1.2558 state=11.0257 align=0.0000 | scale_pen(llama)=5.1159e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/80 | grad_norm=1.07 | sec/step~2.39 | keep=0.80 | K=4 | first_w=1.45 | llama(L): tf=8.5701 first=6.9495 kCE=5.1425 KD=1.2746 state=9.9083 align=0.0000 | scale_pen(llama)=1.7195e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/80 | grad_norm=8.61 | sec/step~2.53 | keep=0.81 | K=4 | first_w=1.41 | llama(L): tf=8.1524 first=7.5707 kCE=4.2433 KD=1.2581 state=11.0321 align=0.0000 | scale_pen(llama)=1.7195e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/80 | grad_norm=4.45 | sec/step~2.62 | keep=0.83 | K=4 | first_w=1.37 | llama(L): tf=8.4077 first=7.4085 kCE=4.6391 KD=0.9357 state=11.8472 align=0.0000 | scale_pen(llama)=9.0949e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  80/80 | grad_norm=13.11 | sec/step~2.39 | keep=0.85 | K=4 | first_w=1.34 | llama(L): tf=8.0654 first=7.1169 kCE=5.0016 KD=1.0351 state=10.5433 align=0.0000 | scale_pen(llama)=3.5527e-15 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 6/6
+  step  10/80 | grad_norm=8.03 | sec/step~2.51 | keep=0.86 | K=4 | first_w=1.31 | llama(L): tf=8.5527 first=7.4490 kCE=5.1233 KD=0.9634 state=10.9182 align=0.0000 | scale_pen(llama)=3.5527e-15 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/80 | grad_norm=0.36 | sec/step~2.15 | keep=0.88 | K=4 | first_w=1.28 | llama(L): tf=8.2986 first=7.5395 kCE=5.1979 KD=0.9902 state=9.9901 align=0.0000 | scale_pen(llama)=5.1159e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/80 | grad_norm=1.06 | sec/step~2.76 | keep=0.90 | K=4 | first_w=1.26 | llama(L): tf=7.8999 first=6.7708 kCE=5.0583 KD=0.9365 state=11.8638 align=0.0000 | scale_pen(llama)=5.1159e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/80 | grad_norm=4.40 | sec/step~2.58 | keep=0.92 | K=4 | first_w=1.24 | llama(L): tf=8.2627 first=7.4305 kCE=4.6960 KD=1.0903 state=10.8972 align=0.0000 | scale_pen(llama)=9.9796e-12 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/80 | grad_norm=1.19 | sec/step~2.47 | keep=0.94 | K=4 | first_w=1.22 | llama(L): tf=7.9289 first=7.2103 kCE=4.9442 KD=1.0643 state=10.8961 align=0.0000 | scale_pen(llama)=1.1951e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/80 | grad_norm=8.21 | sec/step~2.30 | keep=0.96 | K=4 | first_w=1.21 | llama(L): tf=8.0655 first=6.5381 kCE=5.0446 KD=1.1726 state=9.4604 align=0.0000 | scale_pen(llama)=1.1951e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/80 | grad_norm=1.87 | sec/step~2.14 | keep=0.98 | K=4 | first_w=1.20 | llama(L): tf=8.4862 first=7.3881 kCE=4.4654 KD=1.1869 state=9.3528 align=0.0000 | scale_pen(llama)=6.9633e-13 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  80/80 | grad_norm=2.10 | sec/step~2.27 | keep=1.00 | K=4 | first_w=1.20 | llama(L): tf=8.3734 first=7.0053 kCE=5.0099 KD=1.1317 state=9.7929 align=0.0000 | scale_pen(llama)=2.6276e-11 | K=4 tau=1.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 2.2KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/llama_single_20250924_190653/ckpt/stageB
+📝 Saved Prefix-Tuning adapters for Llama
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 1.0001848839223384, 'rms_mean_cal': 0.010571490158326924, 'embed_rms': 0.010575395077466965, 'count': 480}}
+
+=== Stage C: Evaluation (Llama only) ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Loaded training_stats.json: runs/llama_single_20250924_190653/ckpt/stageB/training_stats.json
+Building encoder and computing Z...
+
+[Standard Evaluation Mode]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2986.33it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.17s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.11s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.20s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.06it/s]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+
+— Text baseline summary:
+llama: EM=0.590 F1=0.796
+✓ Loaded Prefix-Tuning adapters for llama
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 200  |  Max new tokens: 16
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 246.0 | (Qwen): - | Latent length M: 64
+Compression ratio (Llama): 3.8x | (Qwen): -x
+Approx interlingua payload per example: 13107200 bytes (fp32); fp16 reference: 6553600 bytes; fp32 reference: 13107200 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.590  F1: 0.796  |  NLL/token (gold): 13.675748455854526
+Wall clock: 7.01s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 8.483442048096602
+       First-token acc: top1=0.000  top5=0.025
+Wall clock: 1.49s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.000  F1: 0.000
+Wall clock: 1.93s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint metrics unavailable (single-model evaluation).
+
+==== METRICS_JSON ====
+{
+  "samples": 200,
+  "max_new_tokens": 16,
+  "latent_len": 64,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 246.03
+  },
+  "compression": {
+    "llama": 3.84421875
+  },
+  "payload_bytes": 13107200,
+  "payload_bytes_detail": {
+    "fp32": 13107200,
+    "fp16": 6553600,
+    "selected": null
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 251558
+    },
+    "prompt_count": 200,
+    "latent_shape": [
+      200,
+      64,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 13107200,
+      "fp16": 6553600
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_latent_bytes": null,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.59,
+      "f1": 0.7961021295152534,
+      "nll_token": 13.675748455854526
+    },
+    "wall_clock_sec": 7.008646249771118
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll": 8.483442048096602,
+      "first_token_top1": 0.0,
+      "first_token_top5": 0.025,
+      "nll_token": 8.483442048096602
+    },
+    "wall_clock_sec": 1.4906485080718994
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 64,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0
+    },
+    "wall_clock_sec": 1.9309513568878174
+  },
+  "joint": {
+    "em": null,
+    "f1": null,
+    "agreement": null,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  },
+  "debug": {
+    "llama": {},
+    "settings": {
+      "latent_anchor_mode": "chat",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.1,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "yes",
+      "decode": {
+        "min_new_tokens": 1,
+        "eos_ban_steps": 0,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "dataset": "squad"
+}
