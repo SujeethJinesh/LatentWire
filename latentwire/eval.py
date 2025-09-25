@@ -1255,7 +1255,12 @@ def main():
     latent_len = int(cfg.get("latent_len", getattr(args, "latent_len", 0) or 0))
     latent_shared_len = int(cfg.get("latent_shared_len", latent_len))
     latent_private_len = int(cfg.get("latent_private_len", 0))
-    model_keys = ("llama", "qwen")
+    if selected_models:
+        model_keys = tuple(selected_models)
+    else:
+        model_keys = tuple(cfg.get("models", ["llama", "qwen"]))
+        if not model_keys:
+            model_keys = ("llama", "qwen")
     if latent_private_len > 0 and latent_shared_len + latent_private_len * len(model_keys) != latent_len:
         latent_len = latent_shared_len + latent_private_len * len(model_keys)
     d_z = int(cfg["d_z"])
