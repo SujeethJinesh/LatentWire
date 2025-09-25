@@ -104,7 +104,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
   --latent_private_len 16 \
-  --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 2.0 --first_token_ce_warmup_frac 0.3 \
+  --first_token_ce_weight 2.0 --first_token_ce_schedule cosine --first_token_ce_peak 6.0 --first_token_ce_warmup_frac 0.3 \
   --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
   --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
   --adapter_hidden_mult 4 --adapter_dropout 0.1 \
@@ -123,7 +123,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
   --latent_private_len 16 \
-  --first_token_ce_weight 1.1 --first_token_ce_schedule cosine --first_token_ce_peak 1.2 --first_token_ce_warmup_frac 0.4 \
+  --first_token_ce_weight 5.0 --first_token_ce_schedule cosine --first_token_ce_peak 10.0 --first_token_ce_warmup_frac 0.25 \
   --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
   --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
   --warmup_text_latent_epochs 1.0 \

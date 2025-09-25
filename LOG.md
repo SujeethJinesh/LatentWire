@@ -10,6 +10,7 @@
 - Shortened Stage‑B text warm-up (`--warmup_text_latent_epochs 1.0`) and reduced tail probability to 5% so latent batches dominate sooner; this should surface the autoscaled first-token gradients earlier in training.
 - Added FiLM modulation inside the adapters (scale/shift per slot conditioned on the latent) to give the interlingua an extra degree of freedom when matching LM embedding statistics.
 - NOTE: the depth flag is temporarily disabled because PEFT currently requires prefix caches for every layer; Stage B reverts to `--peft_prefix_all_layers yes` until we downstream patch the cache mapper.
+- Cranked up first-token supervision: Stage A now runs with `first_token_ce_weight=2.0` (peak 6.0) and Stage B with `first_token_ce_weight=5.0` (peak 10.0, faster decay). This should drop the stubborn `first≈7` loss and push latent top-1 above chance in the next smoke.
 - PyTorch import issue on this workstation (`libtorch_cpu.dylib` missing) prevented running `pytest -q`; no code changes depend on test results, but rerun once the local Torch install is fixed.
 - Next smoke: rerun `bash scripts/run_llama_single.sh` to confirm latent F1 and first-token metrics lift from zero. If improvements hold, proceed to tuned Stage‑B tweaks (prefix gain sweep, first-token CE).
 
