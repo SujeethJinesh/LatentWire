@@ -510,6 +510,9 @@ def main():
                     help="Weight for matching latent prefix embeddings to the teacher's first token embedding during latent batches.")
     ap.add_argument("--latent_prefix_align_weight", type=float, default=0.0,
                     help="Weight for aligning the entire latent prefix to the teacher's token embeddings (first slots).")
+    ap.add_argument("--latent_align_metric", type=str, default="cosine",
+                    choices=["mse", "cosine", "both"],
+                    help="Distance metric for latent alignment losses (default cosine).")
     ap.add_argument("--k_ce_weight", type=float, default=0.5,
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
@@ -1500,7 +1503,11 @@ def main():
                     teacher_first_ids = teacher_first_ids.view(-1, 1)
                     teacher_emb = ctx.wrapper.input_embed(teacher_first_ids).squeeze(1).to(prefix.dtype)
                     latent_embed = prefix[:, 0, :]
-                    latent_align_loss = nn.functional.mse_loss(latent_embed, teacher_emb)
+                    if args.latent_align_metric in ("cosine", "both"):
+                        cos = 1.0 - nn.functional.cosine_similarity(latent_embed, teacher_emb, dim=-1)
+                        latent_align_loss = latent_align_loss + cos.mean()
+                    if args.latent_align_metric in ("mse", "both"):
+                        latent_align_loss = latent_align_loss + nn.functional.mse_loss(latent_embed, teacher_emb)
                     latent_align_loss = latent_align_loss * float(max(args.latent_align_weight, 0.0))
                 if training_mode == "latent" and args.latent_prefix_align_weight > 0.0 and prefix.shape[1] > 0:
                     prefix_len = prefix.shape[1]
@@ -1509,9 +1516,16 @@ def main():
                     teacher_prefix_emb = teacher_prefix_emb[:, :prefix_len]
                     overlap = min(prefix_len, teacher_prefix_emb.size(1))
                     if overlap > 0:
-                        latent_prefix_align_loss = nn.functional.mse_loss(
-                            prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :]
-                        )
+                        latent_prefix_align_loss = torch.zeros((), device=target_device)
+                        if args.latent_align_metric in ("cosine", "both"):
+                            cos = 1.0 - nn.functional.cosine_similarity(
+                                prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :], dim=-1
+                            )
+                            latent_prefix_align_loss = latent_prefix_align_loss + cos.mean()
+                        if args.latent_align_metric in ("mse", "both"):
+                            latent_prefix_align_loss = latent_prefix_align_loss + nn.functional.mse_loss(
+                                prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :]
+                            )
                         latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
                 if training_mode == "text":
                     try:
