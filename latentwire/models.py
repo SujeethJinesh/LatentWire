@@ -876,19 +876,35 @@ class LMWrapper(nn.Module):
         if attn_dtype is None and hasattr(self.input_embed, "weight"):
             attn_dtype = self.input_embed.weight.dtype
 
+        device_map = getattr(self.model, "hf_device_map", None)
+        if device_map is None and hasattr(self.model, "base_model"):
+            device_map = getattr(getattr(self.model, "base_model"), "hf_device_map", None)
+
         layer_list = None
-        try:
-            layer_list = getattr(self.model, "model", None)
-            layer_list = getattr(layer_list, "layers", None)
-        except Exception:
-            layer_list = None
+        candidates = [self.model]
+        if hasattr(self.model, "base_model"):
+            candidates.append(self.model.base_model)
+        for cand in candidates:
+            try:
+                layers = getattr(cand, "model", None)
+                layers = getattr(layers, "layers", None)
+                if layers is not None:
+                    layer_list = layers
+                    break
+            except Exception:
+                continue
 
         prepared: List[Tuple[torch.Tensor, torch.Tensor]] = []
         past_len = 0
         for key, value in deep_prefix:
+            layer_idx = len(prepared)
             target_device = None
-            if layer_list is not None and len(layer_list) > len(prepared):
-                layer_mod = layer_list[len(prepared)]
+            if device_map is not None:
+                dev_entry = device_map.get(f"model.layers.{layer_idx}")
+                if dev_entry is not None:
+                    target_device = torch.device(dev_entry)
+            if target_device is None and layer_list is not None and layer_idx < len(layer_list):
+                layer_mod = layer_list[layer_idx]
                 try:
                     target_device = next(layer_mod.parameters()).device
                 except StopIteration:
