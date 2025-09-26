@@ -167,7 +167,7 @@ def load_hotpot_subset(
             use_supporting=use_supporting,
             max_chars=max_chars,
         )
-        source = f"Question: {q}\nContext: {ctx}\nAnswer: "
+        source = f"Question: {q}\nContext: {ctx}\n"
         examples.append({"source": source, "answer": ans})
     return examples
 
@@ -186,7 +186,7 @@ def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v
         # answers field differs in v1/v2; both provide lists
         ans_list = ex.get("answers", {}).get("text", []) if "answers" in ex else []
         answer = ans_list[0] if ans_list else ""
-        source = f"Context: {ex.get('context','')}\nQuestion: {ex.get('question','')}\nAnswer: "
+        source = f"Context: {ex.get('context','')}\nQuestion: {ex.get('question','')}\n"
         out.append({"source": source, "answer": answer})
     return out
 

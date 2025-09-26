@@ -22,6 +22,7 @@ from latentwire.models import (
     SimpleEncoder,
     STQueryEncoder,
     DeepPrefixGenerator,
+    apply_lora_if_requested,
 )
 from latentwire.core_utils import (
     patch_dataloader_defaults,
@@ -803,6 +804,31 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                 print(f"[WARN] deep_prefix_{name}.pt missing; continuing without deep prefixes for {name}")
                 continue
             deep_prefix_generators[name] = generator
+
+    if cfg.get("use_lora"):
+        lora_cfg = {
+            "r": cfg.get("lora_r", 0),
+            "alpha": cfg.get("lora_alpha", 16),
+            "dropout": cfg.get("lora_dropout", 0.05),
+            "target_modules": cfg.get("lora_target_modules", "auto"),
+        }
+        for name, wrapper in wrappers.items():
+            try:
+                wrapper.model = apply_lora_if_requested(wrapper.model, lora_cfg, wrapper.cfg.model_id)
+            except Exception as exc:
+                print(f"[WARN] LoRA attach failed for {name}: {exc}")
+                continue
+            lora_path = os.path.join(ckpt_dir, f"lora_{name}")
+            if os.path.isdir(lora_path):
+                try:
+                    from peft import PeftModel
+
+                    wrapper.model = PeftModel.from_pretrained(wrapper.model, lora_path).eval()
+                    print(f"✓ Loaded LoRA adapters for {name}")
+                except Exception as exc:
+                    print(f"[WARN] Failed to load LoRA adapters for {name}: {exc}")
+            else:
+                print(f"[WARN] LoRA path missing for {name}: {lora_path}")
 
     adapter_hidden_mult = int(cfg.get("adapter_hidden_mult", 1))
     adapter_colorize = bool(cfg.get("adapter_colorize", False))

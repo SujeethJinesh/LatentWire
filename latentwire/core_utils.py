@@ -84,6 +84,7 @@ def clean_pred(s: str) -> str:
         if idx >= 0:
             s = s[:idx]
     s = re.sub(r"^\s*(assistant|assistant:|Assistant:)\s*", "", s)
+    s = re.sub(r"^\s*(answer\s*:)", "", s, flags=re.IGNORECASE)
     lines = [ln for ln in s.splitlines() if ln.strip()]
     if not lines:
         return ""

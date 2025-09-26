@@ -73,6 +73,10 @@ GIST_LAYERS="${GIST_LAYERS:-2}"
 GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
 GIST_WEIGHT="${GIST_WEIGHT:-0.02}"
 GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
+LORA_R="${LORA_R:-8}"
+LORA_ALPHA="${LORA_ALPHA:-16}"
+LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
+LORA_FIRSTN="${LORA_FIRSTN:-8}"
 
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -166,6 +170,13 @@ PY
           GIST_ARGS=()
           GRAD_COMPONENTS_LATENT="tf,first,kce,kd,align,latent_align,latent_prefix_align"
         fi
+        LORA_ARGS=(
+          --use_lora
+          --lora_r "$LORA_R"
+          --lora_alpha "$LORA_ALPHA"
+          --lora_dropout "$LORA_DROPOUT"
+          --lora_firstN "$LORA_FIRSTN"
+        )
 
         # --- Stage A ---
         echo -e "\n=== Stage A: Llama latent fit ===\n" | tee -a "$LOG"
@@ -192,6 +203,7 @@ PY
           --grad_diag_interval 100 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
           --diagnostic_log "$DIAGNOSTIC_LOG" \
           "${GIST_ARGS[@]}" \
+          "${LORA_ARGS[@]}" \
           2>&1 | tee -a "$LOG"
 
         # --- Stage B ---
@@ -221,6 +233,7 @@ PY
           --grad_diag_interval 50 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
           --diagnostic_log "$DIAGNOSTIC_LOG" \
           "${GIST_ARGS[@]}" \
+          "${LORA_ARGS[@]}" \
           2>&1 | tee -a "$LOG"
 
         # --- Stage C ---

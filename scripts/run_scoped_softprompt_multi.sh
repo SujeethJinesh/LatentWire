@@ -70,6 +70,10 @@ GIST_LAYERS="${GIST_LAYERS:-2}"
 GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
 GIST_WEIGHT="${GIST_WEIGHT:-0.02}"
 GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
+LORA_R="${LORA_R:-8}"
+LORA_ALPHA="${LORA_ALPHA:-16}"
+LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
+LORA_FIRSTN="${LORA_FIRSTN:-8}"
 
 # Mandatory chat templating across the stack
 export LW_APPLY_CHAT_TEMPLATE=1
@@ -110,6 +114,13 @@ else
   GIST_ARGS=()
   GRAD_COMPONENTS="tf,first,kce,kd,align,latent_align,latent_prefix_align"
 fi
+LORA_ARGS=(
+  --use_lora
+  --lora_r "$LORA_R"
+  --lora_alpha "$LORA_ALPHA"
+  --lora_dropout "$LORA_DROPOUT"
+  --lora_firstN "$LORA_FIRSTN"
+)
 
 # Ensure PEFT is available
 python - <<'PY'
@@ -173,7 +184,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --warmup_tail_prob 0.1 \
   --grad_diag_interval 100 --grad_diag_components "$GRAD_COMPONENTS" \
   --diagnostic_log "$DIAGNOSTIC_LOG" \
-  "${COMMON_DEVMAP[@]}" "${GIST_ARGS[@]}" 2>&1 | tee -a "$LOG"
+  "${COMMON_DEVMAP[@]}" "${GIST_ARGS[@]}" "${LORA_ARGS[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage B: Prefix-training only ---
 echo -e "\n=== Stage B: Prefix Training ===\n" | tee -a "$LOG"
@@ -207,7 +218,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --warmup_tail_prob 0.0 \
   --grad_diag_interval 50 --grad_diag_components "$GRAD_COMPONENTS" \
   --diagnostic_log "$DIAGNOSTIC_LOG" \
-  "${COMMON_DEVMAP[@]}" "${GIST_ARGS[@]}" 2>&1 | tee -a "$LOG"
+  "${COMMON_DEVMAP[@]}" "${GIST_ARGS[@]}" "${LORA_ARGS[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage C: Evaluation on clean hubs + learned prefixes ---
 echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
