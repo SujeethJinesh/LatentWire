@@ -78,6 +78,8 @@ COMMON_ARGS=(
   --dataset "$DATASET"
   --latent_len "$LATENT_LEN"
   --d_z "$D_Z"
+  --latent_refiner_layers 2
+  --latent_refiner_heads 4
   --use_chat_template
   --encoder_type stq
   --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2

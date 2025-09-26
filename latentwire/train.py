@@ -34,6 +34,7 @@ from latentwire.core_utils import (
 from latentwire.models import (
     InterlinguaEncoder,
     Adapter,
+    LatentRefiner,
     LMWrapper,
     LMConfig,
     ByteTokenizer,
@@ -152,6 +153,7 @@ def load_checkpoint(
     path: str,
     encoder: InterlinguaEncoder,
     adapters: Dict[str, Adapter],
+    refiner: Optional[LatentRefiner] = None,
     optimizer: Optional[optim.Optimizer] = None,
     strict: bool = True,
     device: str = "cpu",
@@ -167,6 +169,7 @@ def load_checkpoint(
         ckpt_dir = None
 
     enc_loaded = False
+    refiner_loaded = refiner is None
     adapters_loaded: Dict[str, bool] = {name: False for name in adapters.keys()}
     if isinstance(state, dict) and "encoder" in state:
         try:
@@ -193,10 +196,19 @@ def load_checkpoint(
                         adapters_loaded[name] = False
                 else:
                     print(f"   -> adapter '{name}' missing in state.pt; will retry from disk")
-    if enc_loaded and all(adapters_loaded.values()):
-        print("   -> loaded encoder/adapters FROM state.pt")
+        if refiner is not None and "refiner" in state:
+            try:
+                refiner.load_state_dict(state["refiner"], strict=strict)
+                refiner_loaded = True
+            except Exception as exc:
+                print(f"   -> refiner from state.pt failed ({exc}); will retry from disk")
+                refiner_loaded = False
+        else:
+            refiner_loaded = refiner is None
+    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded:
+        print("   -> loaded encoder/adapters/refiner FROM state.pt")
 
-    if (not enc_loaded or not all(adapters_loaded.values())) and ckpt_dir:
+    if (not enc_loaded or not all(adapters_loaded.values()) or not refiner_loaded) and ckpt_dir:
         enc_path = os.path.join(ckpt_dir, "encoder.pt")
         missing: List[str] = []
         if not enc_loaded:
@@ -218,12 +230,20 @@ def load_checkpoint(
             else:
                 missing.append(adapter_path)
 
+        if refiner is not None and not refiner_loaded:
+            refiner_path = os.path.join(ckpt_dir, "refiner.pt")
+            if os.path.isfile(refiner_path):
+                refiner.load_state_dict(_safe_load(refiner_path, map_location=device), strict=strict)
+                refiner_loaded = True
+            else:
+                missing.append(refiner_path)
+
         if missing:
             raise FileNotFoundError(
                 "Missing checkpoint artifacts: " + ", ".join(missing)
             )
         else:
-            print("   -> loaded encoder/adapters FROM encoder.pt + adapter_*.pt")
+            print("   -> loaded encoder/adapters/refiner FROM encoder.pt + adapter_*.pt")
 
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
@@ -495,6 +515,10 @@ def main():
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
                     help="Weight for prefix KD vs text teacher (first K steps).")
     ap.add_argument("--kd_tau", type=float, default=1.0, help="Temperature for KD.")
+    ap.add_argument("--latent_refiner_layers", type=int, default=0,
+                    help="If >0, use a Transformer refiner with this many layers on latent slots before adapters.")
+    ap.add_argument("--latent_refiner_heads", type=int, default=4,
+                    help="Number of attention heads for the latent refiner (when enabled).")
 
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--sequential_models", action="store_true")
@@ -912,6 +936,14 @@ def main():
             raw = encoder(texts)
             return _structure_latents(raw)
 
+    latent_refiner = None
+    if int(args.latent_refiner_layers) > 0:
+        latent_refiner = LatentRefiner(
+            d_z=args.d_z,
+            num_layers=int(args.latent_refiner_layers),
+            num_heads=int(max(args.latent_refiner_heads, 1)),
+        ).to(device)
+
     if args.freeze_encoder:
         for param in encoder.parameters():
             param.requires_grad_(False)
@@ -971,6 +1003,7 @@ def main():
     enc_params = [p for p in encoder.parameters() if p.requires_grad]
     llama_params = [p for p in adp_llama.parameters() if p.requires_grad] if adp_llama is not None else []
     qwen_params = [p for p in adp_qwen.parameters() if p.requires_grad] if adp_qwen is not None else []
+    refiner_params = [p for p in latent_refiner.parameters() if p.requires_grad] if latent_refiner is not None else []
 
     optim_groups = []
     if enc_params:
@@ -983,6 +1016,8 @@ def main():
         optim_groups.append({"params": extra_llama_params, "lr": args.lr})
     if extra_qwen_params:
         optim_groups.append({"params": extra_qwen_params, "lr": args.lr})
+    if refiner_params:
+        optim_groups.append({"params": refiner_params, "lr": args.lr})
 
     optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 
@@ -1036,6 +1071,7 @@ def main():
             ckpt_path,
             encoder,
             adapters,
+            refiner=latent_refiner,
             optimizer=None if args.no_load_optimizer else optimizer,
             strict=True,
             device=device,
@@ -1323,6 +1359,9 @@ def main():
                 name: torch.cat([shared_latents, private_latents[name]], dim=1)
                 for name in model_keys
             }
+            if latent_refiner is not None:
+                for name in model_keys:
+                    model_latents[name] = latent_refiner(model_latents[name])
 
             for ctx in model_contexts:
                 target_device = _primary_device(ctx.wrapper)
@@ -1787,6 +1826,8 @@ def main():
     }
     for name, adapter in adapters.items():
         state_blob[f"adp_{name}"] = adapter.state_dict()
+    if latent_refiner is not None:
+        state_blob["refiner"] = latent_refiner.state_dict()
 
     artifacts = {
         "encoder.pt": encoder.state_dict(),
@@ -1795,6 +1836,8 @@ def main():
     }
     for name, adapter in adapters.items():
         artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
+    if latent_refiner is not None:
+        artifacts["refiner.pt"] = latent_refiner.state_dict()
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
 

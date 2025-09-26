@@ -528,6 +528,27 @@ class Adapter(nn.Module):
         return x
 
 
+class LatentRefiner(nn.Module):
+    """Lightweight Transformer encoder that smooths latent slots before adapters."""
+
+    def __init__(self, d_z: int, num_layers: int = 2, num_heads: int = 4, ff_mult: int = 4):
+        super().__init__()
+        assert num_layers > 0, "LatentRefiner requires at least one layer"
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_z,
+            nhead=num_heads,
+            dim_feedforward=d_z * ff_mult,
+            batch_first=True,
+            activation="gelu",
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.norm = nn.LayerNorm(d_z)
+
+    def forward(self, latents: torch.Tensor) -> torch.Tensor:
+        refined = self.encoder(latents)
+        return self.norm(refined)
+
+
 # ---------------------------
 # LM Wrapper
 # ---------------------------
