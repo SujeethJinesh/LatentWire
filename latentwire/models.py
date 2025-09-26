@@ -867,16 +867,31 @@ class LMWrapper(nn.Module):
         if not deep_prefix:
             return None, 0
 
-        model_device = next(self.model.parameters()).device
         attn_dtype = dtype
         if attn_dtype is None and hasattr(self.input_embed, "weight"):
             attn_dtype = self.input_embed.weight.dtype
 
+        layer_list = None
+        try:
+            layer_list = getattr(self.model, "model", None)
+            layer_list = getattr(layer_list, "layers", None)
+        except Exception:
+            layer_list = None
+
         prepared: List[Tuple[torch.Tensor, torch.Tensor]] = []
         past_len = 0
         for key, value in deep_prefix:
-            key_t = key.to(model_device)
-            value_t = value.to(model_device)
+            target_device = None
+            if layer_list is not None and len(layer_list) > len(prepared):
+                layer_mod = layer_list[len(prepared)]
+                try:
+                    target_device = next(layer_mod.parameters()).device
+                except StopIteration:
+                    target_device = None
+            if target_device is None:
+                target_device = next(self.model.parameters()).device
+            key_t = key.to(target_device)
+            value_t = value.to(target_device)
             if attn_dtype is not None:
                 key_t = key_t.to(attn_dtype)
                 value_t = value_t.to(attn_dtype)
