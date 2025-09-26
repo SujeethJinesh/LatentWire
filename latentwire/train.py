@@ -514,6 +514,8 @@ def main():
     ap.add_argument("--grad_diag_components", type=str,
                     default="tf,first,kce,kd,align,latent_align,latent_prefix_align",
                     help="Comma-separated loss names to include in gradient diagnostics (e.g., 'tf,first,kd').")
+    ap.add_argument("--diagnostic_log", type=str, default="",
+                    help="Optional JSONL path to append diagnostic summaries each log interval.")
     ap.add_argument("--adapter_freeze_scale", action="store_true",
                     help="If set, fix adapter.scale at 1.0 (no learning).")
     ap.add_argument("--first_token_ce_weight", type=float, default=0.5,
@@ -675,6 +677,19 @@ def main():
     ]
     grad_diag_components = list(dict.fromkeys(grad_diag_components))  # preserve order, dedupe
     grad_diag_component_set = set(grad_diag_components)
+    diagnostic_log_path = (getattr(args, "diagnostic_log", "") or "").strip()
+    if diagnostic_log_path:
+        diag_dir = os.path.dirname(diagnostic_log_path)
+        if diag_dir:
+            os.makedirs(diag_dir, exist_ok=True)
+        else:
+            os.makedirs(".", exist_ok=True)
+        try:
+            with open(diagnostic_log_path, "a") as _f:
+                pass
+        except Exception as exc:
+            print(f"[WARN] Unable to open diagnostic log '{diagnostic_log_path}': {exc}")
+            diagnostic_log_path = ""
 
     # Device + dtype
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
@@ -1566,8 +1581,12 @@ def main():
                     )
                     first_targets = ctx.first_token_ids[idx].to(target_device)
                     loss_first_raw = nn.functional.cross_entropy(logits_first.float(), first_targets)
+                    with torch.no_grad():
+                        first_pred = logits_first.argmax(dim=-1)
+                        first_acc_raw = (first_pred == first_targets).float().mean()
                 else:
                     loss_first_raw = torch.zeros((), device=target_device)
+                    first_acc_raw = torch.zeros((), device=target_device)
 
                 if args.k_ce_weight and args.k_ce_weight > 0.0:
                     loss_kce_raw = k_token_ce_from_prefix(
@@ -1792,6 +1811,7 @@ def main():
                     "tf": loss_tf,
                     "first": loss_first,
                     "first_weight": torch.tensor(float(effective_first_weight), device=target_device),
+                    "first_acc": first_acc_raw,
                     "kce": loss_kce,
                     "kd": loss_kd,
                     "state": loss_state,
@@ -1875,6 +1895,7 @@ def main():
                         f" kCE={_to_float(metrics['kce']):.4f}"
                         f" KD={_to_float(metrics['kd']):.4f}"
                     )
+                    msg_ctx += f" acc={_to_float(metrics.get('first_acc', 0.0)):.3f}"
                     if args.state_kd_weight > 0.0:
                         msg_ctx += f" state={_to_float(metrics['state']):.4f}"
                     if args.manifold_stat_weight > 0.0:
@@ -1907,6 +1928,47 @@ def main():
                         )
                     parts.append("stats=[" + "; ".join(stats_msgs) + "]")
                 print(" | ".join(parts))
+
+                if diagnostic_log_path and ((step + 1) % 10 == 0 or (step + 1) == steps_per_epoch):
+                    diag_entry: Dict[str, Any] = {
+                        "epoch": epoch,
+                        "global_step": global_step,
+                        "epoch_step": step + 1,
+                        "mode": training_mode,
+                        "keep_prob": keep_prob,
+                        "K": current_K,
+                        "first_weight": float(current_first_weight),
+                        "grad_norm": float(total_norm),
+                        "sec_per_step": float(dt),
+                        "latent_scale": float(latent_scale),
+                        "models": {},
+                    }
+                    for ctx in model_contexts:
+                        metrics = per_model_losses[ctx.name]
+                        diag_entry["models"][ctx.name] = {
+                            "mode": metrics.get("mode", "latent"),
+                            "tf": _to_float(metrics.get("tf", 0.0)),
+                            "first": _to_float(metrics.get("first", 0.0)),
+                            "first_acc": _to_float(metrics.get("first_acc", 0.0)),
+                            "kce": _to_float(metrics.get("kce", 0.0)),
+                            "kd": _to_float(metrics.get("kd", 0.0)),
+                            "state": _to_float(metrics.get("state", 0.0)),
+                            "align": _to_float(metrics.get("align", 0.0)),
+                            "latent_align": _to_float(metrics.get("latent_align", 0.0)),
+                            "latent_prefix_align": _to_float(metrics.get("latent_prefix_align", 0.0)),
+                            "gist": _to_float(metrics.get("gist", 0.0)),
+                        }
+                        for diag_name in grad_diag_components:
+                            key = f"grad_{diag_name}"
+                            if key in metrics:
+                                diag_entry["models"][ctx.name][key] = _to_float(metrics[key])
+                    try:
+                        with open(diagnostic_log_path, "a") as diag_f:
+                            json.dump(diag_entry, diag_f)
+                            diag_f.write("\n")
+                    except Exception as exc:
+                        if args.debug:
+                            print(f"[WARN] Failed to append diagnostic log: {exc}")
 
             # ---- Periodic checkpoint: save + prune
             if args.save_every and (global_step % args.save_every == 0):

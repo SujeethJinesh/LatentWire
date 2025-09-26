@@ -130,6 +130,8 @@ for LATENT_LEN_CURRENT in "${LATENT_LEN_GRID[@]}"; do
         else
           LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
         fi
+        DIAGNOSTIC_LOG="${RUN_DIR}/diagnostics.jsonl"
+        : > "$DIAGNOSTIC_LOG"
 
         COMMON_ARGS=(
           "${COMMON_ARGS_BASE[@]}"
@@ -183,6 +185,7 @@ PY
           --adapter_hidden_mult 4 --adapter_dropout 0.1 \
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
           --grad_diag_interval 100 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
+          --diagnostic_log "$DIAGNOSTIC_LOG" \
           "${GIST_ARGS[@]}" \
           2>&1 | tee -a "$LOG"
 
@@ -211,6 +214,7 @@ PY
           --adapter_hidden_mult 4 --adapter_dropout 0.1 \
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
           --grad_diag_interval 50 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
+          --diagnostic_log "$DIAGNOSTIC_LOG" \
           "${GIST_ARGS[@]}" \
           2>&1 | tee -a "$LOG"
 
