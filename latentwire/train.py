@@ -840,36 +840,6 @@ def main():
         except Exception:
             pass
 
-    teacher_models: Dict[str, LMWrapper] = {}
-    if args.kd_first_k_weight > 0.0:
-        if llama is not None:
-            teacher_cfg = LMConfig(
-                model_id=args.teacher_llama_id or args.llama_id,
-                device=device,
-                dtype=dtype,
-                load_4bit=args.load_4bit,
-                device_map=llama_device_map,
-                max_memory=llama_max_memory,
-            )
-            teacher_models["llama"] = LMWrapper(teacher_cfg)
-        if qwen is not None:
-            teacher_cfg = LMConfig(
-                model_id=args.teacher_qwen_id or args.qwen_id,
-                device=device,
-                dtype=dtype,
-                load_4bit=args.load_4bit,
-                device_map=qwen_device_map,
-                max_memory=qwen_max_memory,
-            )
-            teacher_models["qwen"] = LMWrapper(teacher_cfg)
-
-    for teacher in teacher_models.values():
-        try:
-            if hasattr(teacher.model.config, "use_cache"):
-                teacher.model.config.use_cache = False
-        except Exception:
-            pass
-
     def _collect_trainable(module: nn.Module) -> List[nn.Parameter]:
         return [p for p in module.parameters() if p.requires_grad]
 
@@ -1645,21 +1615,35 @@ def main():
                     loss_kce_raw = torch.zeros((), device=target_device)
 
                 if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
-                    teacher_wrapper = teacher_models.get(ctx.name)
-                    if teacher_wrapper is None:
-                        teacher_wrapper = ctx.wrapper
-                    loss_kd_raw = kd_first_k_prefix_vs_text(
-                        ctx.wrapper,
-                        teacher_wrapper,
-                        prefix,
-                        scaffold,
-                        targets,
-                        K=current_K,
-                        tau=args.kd_tau,
-                        anchor_ids=ctx.anchor_ids,
-                        append_bos_after_prefix=ctx.bos_flag,
-                        deep_prefix_past=deep_prefix_cache,
-                    )
+                    teacher_model = ctx.wrapper.model
+                    disable_fn = getattr(teacher_model, "disable_adapter", None)
+                    if disable_fn is not None:
+                        with teacher_model.disable_adapter():
+                            loss_kd_raw = kd_first_k_prefix_vs_text(
+                                ctx.wrapper,
+                                ctx.wrapper,
+                                prefix,
+                                scaffold,
+                                targets,
+                                K=current_K,
+                                tau=args.kd_tau,
+                                anchor_ids=ctx.anchor_ids,
+                                append_bos_after_prefix=ctx.bos_flag,
+                                deep_prefix_past=deep_prefix_cache,
+                            )
+                    else:
+                        loss_kd_raw = kd_first_k_prefix_vs_text(
+                            ctx.wrapper,
+                            ctx.wrapper,
+                            prefix,
+                            scaffold,
+                            targets,
+                            K=current_K,
+                            tau=args.kd_tau,
+                            anchor_ids=ctx.anchor_ids,
+                            append_bos_after_prefix=ctx.bos_flag,
+                            deep_prefix_past=deep_prefix_cache,
+                        )
                 else:
                     loss_kd_raw = torch.zeros((), device=target_device)
 
