@@ -1282,6 +1282,7 @@ class LMWrapper(nn.Module):
         )
 
         B = inputs_embeds.size(0)
+        model_device = next(self.model.parameters()).device
 
         out = self.model(
             inputs_embeds=inputs_embeds,
