@@ -476,6 +476,11 @@ def main():
                     help="Optional penalty to pull RAW adapter RMS toward input embedding RMS.")
     ap.add_argument("--max_grad_norm", type=float, default=1.0,
                     help="Clip grad norm to this value (set <=0 to disable).")
+    ap.add_argument("--grad_diag_interval", type=int, default=0,
+                    help="If >0, compute gradient-norm diagnostics every N global steps (0 disables).")
+    ap.add_argument("--grad_diag_components", type=str,
+                    default="tf,first,kce,kd,align,latent_align,latent_prefix_align",
+                    help="Comma-separated loss names to include in gradient diagnostics (e.g., 'tf,first,kd').")
     ap.add_argument("--adapter_freeze_scale", action="store_true",
                     help="If set, fix adapter.scale at 1.0 (no learning).")
     ap.add_argument("--first_token_ce_weight", type=float, default=0.5,
@@ -614,6 +619,15 @@ def main():
     # global runtime patches
     patch_dataloader_defaults()
     apply_anchor_normalization(args)
+
+    grad_diag_interval = max(0, int(getattr(args, "grad_diag_interval", 0)))
+    grad_diag_components = [
+        token.strip().lower()
+        for token in (getattr(args, "grad_diag_components", "") or "").split(",")
+        if token.strip()
+    ]
+    grad_diag_components = list(dict.fromkeys(grad_diag_components))  # preserve order, dedupe
+    grad_diag_component_set = set(grad_diag_components)
 
     # Device + dtype
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
@@ -1530,6 +1544,45 @@ def main():
                 else:
                     loss_state_raw = torch.zeros((), device=target_device)
 
+                grad_diag_values: Dict[str, torch.Tensor] = {}
+                if (
+                    grad_diag_interval > 0
+                    and grad_diag_component_set
+                    and prefix_raw.requires_grad
+                    and (global_step % grad_diag_interval == 0)
+                ):
+                    diag_sources: Dict[str, torch.Tensor] = {
+                        "tf": loss_tf_latent,
+                        "first": loss_first_raw,
+                        "kce": loss_kce_raw,
+                        "kd": loss_kd_raw,
+                        "state": loss_state_raw,
+                        "align": align_loss,
+                        "latent_align": latent_align_loss,
+                        "latent_prefix_align": latent_prefix_align_loss,
+                    }
+                    for name in grad_diag_components:
+                        term = diag_sources.get(name)
+                        if term is None:
+                            continue
+                        try:
+                            grads = torch.autograd.grad(
+                                term,
+                                prefix_raw,
+                                retain_graph=True,
+                                allow_unused=True,
+                            )
+                        except RuntimeError as exc:
+                            if args.debug:
+                                print(f"[WARN] grad_diag({ctx.name}:{name}) failed: {exc}")
+                            continue
+                        grad_tensor = grads[0] if grads else None
+                        if grad_tensor is None:
+                            value = torch.zeros((), device=target_device)
+                        else:
+                            value = grad_tensor.float().pow(2).sum().sqrt()
+                        grad_diag_values[f"grad_{name}"] = value.detach()
+
                 latent_scale = 1.0
                 if training_mode == "text":
                     start_scale = float(max(args.warmup_text_latent_weight, 0.0))
@@ -1658,6 +1711,8 @@ def main():
                     "text_tf": text_teacher_loss,
                     "latent_scale": torch.tensor(float(latent_scale), device=target_device),
                 })
+                for key, value in grad_diag_values.items():
+                    losses_record[key] = value
                 per_model_losses[ctx.name] = losses_record
                 per_model_losses[ctx.name]["mode"] = "latent"
                 if training_mode == "text":
@@ -1736,6 +1791,11 @@ def main():
                         msg_ctx += f" latA={_to_float(metrics['latent_align']):.4f}"
                     if args.latent_prefix_align_weight > 0.0:
                         msg_ctx += f" latP={_to_float(metrics['latent_prefix_align']):.4f}"
+                    if grad_diag_components:
+                        for diag_name in grad_diag_components:
+                            key = f"grad_{diag_name}"
+                            if key in metrics:
+                                msg_ctx += f" {key}={_to_float(metrics[key]):.3e}"
                     parts.append(msg_ctx)
                     if args.scale_l2 > 0.0:
                         parts.append(f"scale_pen({ctx.name})={scale_penalty(ctx.adapter).item():.4e}")
@@ -1793,7 +1853,7 @@ def main():
                     "lora_dropout": args.lora_dropout,
                     "lora_target_modules": args.lora_target_modules,
                     "use_prefix": bool(args.use_prefix),
-        "prefix_tokens": args.prefix_tokens,
+                    "prefix_tokens": args.prefix_tokens,
                     "prefix_projection": bool(args.prefix_projection),
                     "peft_prefix_all_layers": str(getattr(args, "peft_prefix_all_layers", "yes")),
                     "manifold_stat_weight": args.manifold_stat_weight,
@@ -1815,6 +1875,8 @@ def main():
                     "warmup_tail_prob": args.warmup_tail_prob,
                     "warmup_align_tokens": args.warmup_align_tokens,
                     "warmup_align_weight": args.warmup_align_weight,
+                    "grad_diag_interval": grad_diag_interval,
+                    "grad_diag_components": args.grad_diag_components,
                 }
                 dp_len_cfg = int(
                     args.deep_prefix_len
@@ -1930,6 +1992,8 @@ def main():
         "warmup_tail_prob": args.warmup_tail_prob,
         "warmup_align_tokens": args.warmup_align_tokens,
         "warmup_align_weight": args.warmup_align_weight,
+        "grad_diag_interval": grad_diag_interval,
+        "grad_diag_components": args.grad_diag_components,
     }
     dp_len_cfg = int(
         args.deep_prefix_len

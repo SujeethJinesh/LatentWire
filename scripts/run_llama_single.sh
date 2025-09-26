@@ -16,12 +16,7 @@ set -euo pipefail
 # Results land in runs/${RUN_TAG}/ with checkpoints under runs/${RUN_TAG}/ckpt/.
 
 : "${RUN_TAG:=llama_single_$(date +%Y%m%d_%H%M%S)}"
-RUN_DIR="runs/${RUN_TAG}"
-CKPT_DIR="${RUN_DIR}/ckpt"
-CKPT_STAGEA="${CKPT_DIR}/stageA"
-CKPT_STAGEB="${CKPT_DIR}/stageB"
-mkdir -p "$CKPT_STAGEA" "$CKPT_STAGEB"
-LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
+BASE_RUN_TAG="$RUN_TAG"
 
 LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 DATASET="${DATASET:-squad}"
@@ -64,6 +59,13 @@ D_Z="${D_Z:-256}"
 BATCH_SIZE="${BATCH_SIZE:-16}"
 DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-24}"
 DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.1}"
+REFINER_LAYERS="${REFINER_LAYERS:-2}"
+REFINER_HEADS="${REFINER_HEADS:-4}"
+
+LATENT_LEN_LIST="${LATENT_LEN_LIST:-$LATENT_LEN}"
+D_Z_LIST="${D_Z_LIST:-$D_Z}"
+REFINER_LAYERS_LIST="${REFINER_LAYERS_LIST:-$REFINER_LAYERS}"
+REFINER_HEADS_LIST="${REFINER_HEADS_LIST:-$REFINER_HEADS}"
 
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -74,14 +76,10 @@ LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
 LLAMA_DEVICE_MAP="${LLAMA_DEVICE_MAP:-auto}"
 GPU_MEM_GIB="${GPU_MEM_GIB:-78}"
 
-COMMON_ARGS=(
+COMMON_ARGS_BASE=(
   --models llama
   --llama_id "$LLAMA_ID"
   --dataset "$DATASET"
-  --latent_len "$LATENT_LEN"
-  --d_z "$D_Z"
-  --latent_refiner_layers 2
-  --latent_refiner_heads 4
   --use_chat_template
   --encoder_type stq
   --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2
@@ -91,72 +89,124 @@ COMMON_ARGS=(
   --gpu_mem_gib "$GPU_MEM_GIB"
 )
 
-echo -e "\n=== CUDA preflight ===" | tee -a "$LOG"
-python - <<'PY' 2>&1 | tee -a "$LOG"
+IFS_SAVE="$IFS"
+IFS=',' read -r -a LATENT_LEN_GRID <<< "$LATENT_LEN_LIST"
+IFS=',' read -r -a D_Z_GRID <<< "$D_Z_LIST"
+IFS=',' read -r -a REFINER_LAYERS_GRID <<< "$REFINER_LAYERS_LIST"
+IFS=',' read -r -a REFINER_HEADS_GRID <<< "$REFINER_HEADS_LIST"
+IFS="$IFS_SAVE"
+
+multi_combo=0
+if [[ ${#LATENT_LEN_GRID[@]} -gt 1 || ${#D_Z_GRID[@]} -gt 1 || ${#REFINER_LAYERS_GRID[@]} -gt 1 || ${#REFINER_HEADS_GRID[@]} -gt 1 ]]; then
+  multi_combo=1
+fi
+
+combo_index=0
+for LATENT_LEN_CURRENT in "${LATENT_LEN_GRID[@]}"; do
+  for D_Z_CURRENT in "${D_Z_GRID[@]}"; do
+    for REFINER_LAYERS_CURRENT in "${REFINER_LAYERS_GRID[@]}"; do
+      for REFINER_HEADS_CURRENT in "${REFINER_HEADS_GRID[@]}"; do
+        combo_index=$((combo_index + 1))
+        combo_suffix="m${LATENT_LEN_CURRENT}_dz${D_Z_CURRENT}_rl${REFINER_LAYERS_CURRENT}_rh${REFINER_HEADS_CURRENT}"
+        if [[ $multi_combo -eq 1 ]]; then
+          RUN_TAG="${BASE_RUN_TAG}_${combo_suffix}"
+        else
+          RUN_TAG="$BASE_RUN_TAG"
+        fi
+        RUN_DIR="runs/${RUN_TAG}"
+        CKPT_DIR="${RUN_DIR}/ckpt"
+        CKPT_STAGEA="${CKPT_DIR}/stageA"
+        CKPT_STAGEB="${CKPT_DIR}/stageB"
+        mkdir -p "$CKPT_STAGEA" "$CKPT_STAGEB"
+        if [[ $multi_combo -eq 1 ]]; then
+          LOG="${RUN_DIR}/pipeline_${combo_suffix}_$(date +%Y%m%d_%H%M%S).log"
+        else
+          LOG="${RUN_DIR}/pipeline_$(date +%Y%m%d_%H%M%S).log"
+        fi
+
+        COMMON_ARGS=(
+          "${COMMON_ARGS_BASE[@]}"
+          --latent_len "$LATENT_LEN_CURRENT"
+          --d_z "$D_Z_CURRENT"
+          --latent_refiner_layers "$REFINER_LAYERS_CURRENT"
+          --latent_refiner_heads "$REFINER_HEADS_CURRENT"
+        )
+
+        echo -e "\n>>> Combination $combo_index: $combo_suffix" | tee -a "$LOG"
+        echo -e "    RUN_TAG=$RUN_TAG" | tee -a "$LOG"
+
+        echo -e "\n=== CUDA preflight ===" | tee -a "$LOG"
+        python - <<'PY' 2>&1 | tee -a "$LOG"
 import os, torch
 print("torch:", torch.__version__, "cuda:", torch.version.cuda, "available:", torch.cuda.is_available())
 print("CUDA_VISIBLE_DEVICES:", os.getenv("CUDA_VISIBLE_DEVICES"))
 PY
 
-# --- Stage A ---
-echo -e "\n=== Stage A: Llama latent fit ===\n" | tee -a "$LOG"
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  "${COMMON_ARGS[@]}" \
-  --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
-  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
-  --save_dir "$CKPT_STAGEA" --auto_resume --save_training_stats \
-  --train_append_bos_after_prefix yes \
-  --warm_anchor_mode chat \
-  --latent_private_len 16 \
-  --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-  --first_token_ce_weight 2.0 --first_token_ce_schedule cosine --first_token_ce_peak 6.0 --first_token_ce_warmup_frac 0.3 \
-  --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
-  --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
-  --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
-  --adapter_hidden_mult 4 --adapter_dropout 0.1 \
-  --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
-  2>&1 | tee -a "$LOG"
+        # --- Stage A ---
+        echo -e "\n=== Stage A: Llama latent fit ===\n" | tee -a "$LOG"
+        CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
+          "${COMMON_ARGS[@]}" \
+          --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
+          --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
+          --save_dir "$CKPT_STAGEA" --auto_resume --save_training_stats \
+          --train_append_bos_after_prefix yes \
+          --warm_anchor_mode chat \
+          --latent_private_len 16 \
+          --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
+          --first_token_ce_weight 2.0 --first_token_ce_schedule cosine --first_token_ce_peak 6.0 --first_token_ce_warmup_frac 0.3 \
+          --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
+          --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
+          --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
+          --adapter_hidden_mult 4 --adapter_dropout 0.1 \
+          --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
+          --grad_diag_interval 100 --grad_diag_components tf,first,kce,kd,align,latent_align,latent_prefix_align \
+          2>&1 | tee -a "$LOG"
 
-# --- Stage B ---
-echo -e "\n=== Stage B: Llama prefix training + warm-up ===\n" | tee -a "$LOG"
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
-  "${COMMON_ARGS[@]}" \
-  --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
-  --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
-  --resume_from "$CKPT_STAGEA" \
-  --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
-  --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
-  --train_append_bos_after_prefix yes \
-  --warm_anchor_mode chat \
-  --latent_private_len 16 \
-  --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-  --first_token_ce_weight 5.0 --first_token_ce_schedule cosine --first_token_ce_peak 10.0 --first_token_ce_warmup_frac 0.25 \
-  --K 4 --k_ce_weight 0.5 --kd_first_k_weight 1.5 --kd_tau 0.7 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
-  --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
-  --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
-  --warmup_text_latent_epochs 1.0 \
-  --warmup_align_tokens 8 --warmup_align_weight 1.5 \
-  --warmup_text_teacher_weight 2.0 \
-  --warmup_text_latent_weight 0.0 --warmup_text_latent_weight_end 1.0 \
-  --warmup_tail_prob 0.0 \
-  --adapter_hidden_mult 4 --adapter_dropout 0.1 \
-  --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
-  2>&1 | tee -a "$LOG"
+        # --- Stage B ---
+        echo -e "\n=== Stage B: Llama prefix training + warm-up ===\n" | tee -a "$LOG"
+        CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
+          "${COMMON_ARGS[@]}" \
+          --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
+          --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
+          --resume_from "$CKPT_STAGEA" \
+          --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
+          --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
+          --train_append_bos_after_prefix yes \
+          --warm_anchor_mode chat \
+          --latent_private_len 16 \
+          --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
+          --first_token_ce_weight 5.0 --first_token_ce_schedule cosine --first_token_ce_peak 10.0 --first_token_ce_warmup_frac 0.25 \
+          --K 4 --k_ce_weight 0.5 --kd_first_k_weight 1.5 --kd_tau 0.7 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
+          --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
+          --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
+          --warmup_text_latent_epochs 1.0 \
+          --warmup_align_tokens 8 --warmup_align_weight 1.5 \
+          --warmup_text_teacher_weight 2.0 \
+          --warmup_text_latent_weight 0.0 --warmup_text_latent_weight_end 1.0 \
+          --warmup_tail_prob 0.0 \
+          --adapter_hidden_mult 4 --adapter_dropout 0.1 \
+          --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
+          --grad_diag_interval 50 --grad_diag_components tf,first,kce,kd,align,latent_align,latent_prefix_align \
+          2>&1 | tee -a "$LOG"
 
-# --- Stage C ---
-echo -e "\n=== Stage C: Evaluation (Llama only) ===\n" | tee -a "$LOG"
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
-  --models llama \
-  --ckpt "$CKPT_STAGEB" \
-  --llama_id "$LLAMA_ID" \
-  --samples "$SAMPLES" --dataset "$DATASET" \
-  --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
-  --chunk_size "$CHUNK_SIZE" \
-  --latent_anchor_mode chat --append_bos_after_prefix yes \
-  --use_chat_template yes \
-  --first_token_top_p 1.0 --first_token_temperature 0.0 \
-  --prefix_gain 1.1 \
-  --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
-  2>&1 | tee -a "$LOG"
+        # --- Stage C ---
+        echo -e "\n=== Stage C: Evaluation (Llama only) ===\n" | tee -a "$LOG"
+        CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
+          --models llama \
+          --ckpt "$CKPT_STAGEB" \
+          --llama_id "$LLAMA_ID" \
+          --samples "$SAMPLES" --dataset "$DATASET" \
+          --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
+          --chunk_size "$CHUNK_SIZE" \
+          --latent_anchor_mode chat --append_bos_after_prefix yes \
+          --use_chat_template yes \
+          --first_token_top_p 1.0 --first_token_temperature 0.0 \
+          --prefix_gain 1.1 \
+          --token_budget_mode content_only --token_budget_k "$LATENT_LEN_CURRENT" \
+          2>&1 | tee -a "$LOG"
 
-echo -e "\n✓ Llama-only pipeline complete. Logs: $LOG\n"
+        echo -e "\n✓ Llama-only pipeline complete for $RUN_TAG. Logs: $LOG\n"
+      done
+    done
+  done
+done

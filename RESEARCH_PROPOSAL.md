@@ -57,6 +57,11 @@ We now have a focused path for iterating on Llama in isolation. The trainer resp
 - `M ∈ {24, 32, 48}`, `d_z ∈ {192, 256, 320}`; compare **Latent vs Token-budget** at same `M`.
 - Encoder swap: `stq` vs `simple-st` to quantify the positional benefit.
 
+## Update (2025-09-25): Latent adaptation diagnostics
+
+- Introduced per-loss gradient diagnostics in `latentwire/train.py` (`--grad_diag_interval`, `--grad_diag_components`). Every N steps we now log gradient norms for teacher-forced CE, first-token CE, k-step KD, hidden-state KD, and alignment terms, so stalled objectives are obvious without digging through tensorboard dumps.
+- `scripts/run_llama_single.sh` understands sweep lists (`LATENT_LEN_LIST`, `D_Z_LIST`, `REFINER_LAYERS_LIST`, `REFINER_HEADS_LIST`) and enables the diagnostics by default (Stage A every 100 steps, Stage B every 50). This gives us a one-command latent/refiner grid on the 4×H100 node with gradient health indicators baked into the logs.
+
 ## Update (2025-09-25): Deep prefix injection is live
 
 - Added `DeepPrefixGenerator` modules per backend. Each maps the calibrated latent prefix into layer-wise key/value caches (prompt dropout → LayerNorm → residual MLP → per-layer projections). The feature is gated by `--use_deep_prefix`, with `--deep_prefix_len` / `--deep_prefix_dropout` to sweep capacity.
