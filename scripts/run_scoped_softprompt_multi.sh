@@ -168,9 +168,9 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --use_chat_template \
   --warm_anchor_mode chat \
   --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-  --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 3.5 --first_token_ce_warmup_frac 0.3 \
-  --K 4 \
-  --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
+  --first_token_ce_weight 1.5 --first_token_ce_schedule cosine --first_token_ce_peak 4.0 --first_token_ce_warmup_frac 0.3 \
+  --K 8 \
+  --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
   --max_grad_norm 1.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.0 \
@@ -202,9 +202,9 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --use_chat_template \
   --warm_anchor_mode chat \
   --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-  --first_token_ce_weight 1.2 --first_token_ce_schedule cosine --first_token_ce_peak 2.2 --first_token_ce_warmup_frac 0.3 \
-  --K 4 \
-  --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
+  --first_token_ce_weight 6.0 --first_token_ce_schedule cosine --first_token_ce_peak 8.0 --first_token_ce_warmup_frac 0.4 \
+  --K 8 \
+  --k_ce_weight 0.5 --kd_first_k_weight 1.0 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
   --max_grad_norm 1.0 \
   --adapter_hidden_mult 2 \
   --manifold_stat_weight 0.0 \

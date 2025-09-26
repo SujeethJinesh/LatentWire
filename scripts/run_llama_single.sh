@@ -190,7 +190,7 @@ LORA_ARGS=(
           --latent_private_len 16 \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight 1.5 --first_token_ce_schedule cosine --first_token_ce_peak 4.0 --first_token_ce_warmup_frac 0.3 \
-          --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
+          --K 8 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
           --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
           --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
           --warmup_text_latent_epochs 0.5 \
@@ -219,8 +219,8 @@ LORA_ARGS=(
           --warm_anchor_mode chat \
           --latent_private_len 16 \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-          --first_token_ce_weight 3.5 --first_token_ce_schedule cosine --first_token_ce_peak 7.0 --first_token_ce_warmup_frac 0.25 \
-          --K 4 --k_ce_weight 0.5 --kd_first_k_weight 1.5 --kd_tau 0.7 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
+          --first_token_ce_weight 6.0 --first_token_ce_schedule cosine --first_token_ce_peak 8.0 --first_token_ce_warmup_frac 0.4 \
+          --K 8 --k_ce_weight 0.5 --kd_first_k_weight 1.0 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
           --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
           --warmup_text_latent_epochs 1.0 \

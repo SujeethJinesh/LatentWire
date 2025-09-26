@@ -619,7 +619,12 @@ def main():
                     help="Aux weight for K-token CE on first K steps.")
     ap.add_argument("--kd_first_k_weight", type=float, default=1.0,
                     help="Weight for prefix KD vs text teacher (first K steps).")
-    ap.add_argument("--kd_tau", type=float, default=1.0, help="Temperature for KD.")
+    ap.add_argument("--kd_tau", type=float, default=2.0,
+                    help="Temperature for KD (recommend 1.5–2.0).")
+    ap.add_argument("--teacher_llama_id", type=str, default=None,
+                    help="Optional hub ID for Llama KD teacher (defaults to --llama_id).")
+    ap.add_argument("--teacher_qwen_id", type=str, default=None,
+                    help="Optional hub ID for Qwen KD teacher (defaults to --qwen_id).")
     ap.add_argument("--latent_refiner_layers", type=int, default=0,
                     help="If >0, use a Transformer refiner with this many layers on latent slots before adapters.")
     ap.add_argument("--latent_refiner_heads", type=int, default=4,
@@ -834,6 +839,36 @@ def main():
                 wrapper.model.config.use_cache = False
         except Exception:
             pass
+
+    for teacher in teacher_models.values():
+        try:
+            if hasattr(teacher.model.config, "use_cache"):
+                teacher.model.config.use_cache = False
+        except Exception:
+            pass
+
+    teacher_models: Dict[str, LMWrapper] = {}
+    if args.kd_first_k_weight > 0.0:
+        if llama is not None:
+            teacher_cfg = LMConfig(
+                model_id=args.teacher_llama_id or args.llama_id,
+                device=device,
+                dtype=dtype,
+                load_4bit=args.load_4bit,
+                device_map=llama_device_map,
+                max_memory=llama_max_memory,
+            )
+            teacher_models["llama"] = LMWrapper(teacher_cfg)
+        if qwen is not None:
+            teacher_cfg = LMConfig(
+                model_id=args.teacher_qwen_id or args.qwen_id,
+                device=device,
+                dtype=dtype,
+                load_4bit=args.load_4bit,
+                device_map=qwen_device_map,
+                max_memory=qwen_max_memory,
+            )
+            teacher_models["qwen"] = LMWrapper(teacher_cfg)
 
     def _collect_trainable(module: nn.Module) -> List[nn.Parameter]:
         return [p for p in module.parameters() if p.requires_grad]
@@ -1610,9 +1645,12 @@ def main():
                     loss_kce_raw = torch.zeros((), device=target_device)
 
                 if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
+                    teacher_wrapper = teacher_models.get(ctx.name)
+                    if teacher_wrapper is None:
+                        teacher_wrapper = ctx.wrapper
                     loss_kd_raw = kd_first_k_prefix_vs_text(
                         ctx.wrapper,
-                        ctx.wrapper,
+                        teacher_wrapper,
                         prefix,
                         scaffold,
                         targets,
