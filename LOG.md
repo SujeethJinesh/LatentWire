@@ -17,6 +17,11 @@
 - Added a two-layer latent refiner Transformer (configurable via `--latent_refiner_layers`) that smooths the shared+private slots before adapter projection.
 - Deeper KD: Stage A now matches teacher hidden states on the first four layers, Stage B on the first five, giving latent prefixes a stronger target.
 - Training logs now emit `latA/latP` diagnostics each 10 steps so we can track latent alignment magnitudes directly.
+- **Milestone 1 — Deep Prefix Injection (P‑Tuning inspired).** Implement per-layer prompt generators that map the shared latent into key/value prefixes for every transformer block. Include prompt dropout, LayerNorm, and residual connections to stabilize training. Guard the feature behind a CLI flag so we can A/B against the current single-layer adapter.
+- **Milestone 2 — Enhanced Latent Adaptation.** After Milestone 1, sweep latent hyperparameters (`M`, `d_z`) and refiner depth/heads. Add gradient-norm diagnostics for each loss component (first-token CE, KD, align) to confirm they contribute meaningful signal. Expose these metrics in the log.
+- **Milestone 3 — Gist Reconstruction Head.** Add a small decoder that reconstructs the teacher prompt from the latent prefix. Optionally apply gist-style attention masking so the model must route information through the latent. Evaluate reconstruction quality to ensure the latent retains enough task information.
+- **Milestone 4 — Diagnostics & Controlled Experiments.** Run targeted experiments on small SQuAD subsets to verify first-token acceptance improves before scaling. Track acceptance, alignment, and latent-loss trends as go/no-go metrics ahead of hero runs.
+- **Milestone 5 — Scaling & Hero Preparation.** Once Milestones 1–4 show consistent gains, extend Stage B duration, run larger sample sweeps, and prepare the pipeline (including documentation updates in `paper.tex` / `RESEARCH_PROPOSAL.md`) for hero experiments.
 - PyTorch import issue on this workstation (`libtorch_cpu.dylib` missing) prevented running `pytest -q`; no code changes depend on test results, but rerun once the local Torch install is fixed.
 - Next smoke: rerun `bash scripts/run_llama_single.sh` to confirm latent F1 and first-token metrics lift from zero. If improvements hold, proceed to tuned Stage‑B tweaks (prefix gain sweep, first-token CE).
 
