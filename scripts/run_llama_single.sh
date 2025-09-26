@@ -178,6 +178,12 @@ LORA_ARGS=(
   --lora_firstN "$LORA_FIRSTN"
 )
 
+        if [[ $USE_GIST_HEAD -eq 1 ]]; then
+          WARMUP_FLAG=(--kd_skip_text)
+        else
+          WARMUP_FLAG=(--kd_skip_text)
+        fi
+
         # --- Stage A ---
         echo -e "\n=== Stage A: Llama latent fit ===\n" | tee -a "$LOG"
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
@@ -204,6 +210,7 @@ LORA_ARGS=(
           --diagnostic_log "$DIAGNOSTIC_LOG" \
           "${GIST_ARGS[@]}" \
           "${LORA_ARGS[@]}" \
+          "${WARMUP_FLAG[@]}" \
           2>&1 | tee -a "$LOG"
 
         # --- Stage B ---
@@ -234,6 +241,7 @@ LORA_ARGS=(
           --diagnostic_log "$DIAGNOSTIC_LOG" \
           "${GIST_ARGS[@]}" \
           "${LORA_ARGS[@]}" \
+          "${WARMUP_FLAG[@]}" \
           2>&1 | tee -a "$LOG"
 
         # --- Stage C ---
