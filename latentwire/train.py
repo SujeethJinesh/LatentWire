@@ -625,6 +625,8 @@ def main():
                     help="Optional hub ID for Llama KD teacher (defaults to --llama_id).")
     ap.add_argument("--teacher_qwen_id", type=str, default=None,
                     help="Optional hub ID for Qwen KD teacher (defaults to --qwen_id).")
+    ap.add_argument("--kd_skip_text", action="store_true",
+                    help="Skip KD loss entirely whenever training operates in text mode (warm-up/tail batches).")
     ap.add_argument("--latent_refiner_layers", type=int, default=0,
                     help="If >0, use a Transformer refiner with this many layers on latent slots before adapters.")
     ap.add_argument("--latent_refiner_heads", type=int, default=4,
