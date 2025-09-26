@@ -47,6 +47,11 @@ def resolve_lora_targets(arg: str, model_name_or_path: str) -> Tuple[List[str], 
 def apply_lora_if_requested(model, lora_args: Dict[str, Any], model_name_or_path: str):
     """Attach LoRA adapters to *model* using the supplied hyper-parameters."""
     target_modules, first_n = resolve_lora_targets(lora_args.get("target_modules", "auto"), model_name_or_path)
+    if lora_args.get("first_n") is not None:
+        try:
+            first_n = int(lora_args["first_n"])
+        except Exception:
+            pass
     try:
         from peft import (
             LoraConfig,

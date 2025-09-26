@@ -565,6 +565,8 @@ def main():
     ap.add_argument("--lora_r", type=int, default=8)
     ap.add_argument("--lora_alpha", type=int, default=16)
     ap.add_argument("--lora_dropout", type=float, default=0.05)
+    ap.add_argument("--lora_firstN", type=int, default=None,
+                    help="If set, only the first N transformer layers keep LoRA weights trainable.")
     ap.add_argument("--lora_target_modules", type=str, default="auto",
                     help="Comma-separated module list or presets (auto, attn_mlp_firstN:12, ...).")
     ap.add_argument("--use_prefix", action="store_true")
@@ -845,6 +847,7 @@ def main():
             "alpha": args.lora_alpha,
             "dropout": args.lora_dropout,
             "target_modules": args.lora_target_modules,
+            "first_n": args.lora_firstN,
         }
         if llama is not None:
             llama.model = apply_lora_if_requested(llama.model, lora_cfg, args.llama_id)
@@ -2068,6 +2071,7 @@ def main():
                     "lora_alpha": args.lora_alpha,
                     "lora_dropout": args.lora_dropout,
                     "lora_target_modules": args.lora_target_modules,
+                    "lora_firstN": args.lora_firstN,
                     "use_prefix": bool(args.use_prefix),
                     "prefix_tokens": args.prefix_tokens,
                     "prefix_projection": bool(args.prefix_projection),
@@ -2194,6 +2198,7 @@ def main():
         "lora_alpha": args.lora_alpha,
         "lora_dropout": args.lora_dropout,
         "lora_target_modules": args.lora_target_modules,
+        "lora_firstN": args.lora_firstN,
         "use_prefix": bool(args.use_prefix),
         "prefix_tokens": args.prefix_tokens,
         "prefix_projection": bool(args.prefix_projection),

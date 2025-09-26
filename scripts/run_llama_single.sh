@@ -170,13 +170,13 @@ PY
           GIST_ARGS=()
           GRAD_COMPONENTS_LATENT="tf,first,kce,kd,align,latent_align,latent_prefix_align"
         fi
-        LORA_ARGS=(
-          --use_lora
-          --lora_r "$LORA_R"
-          --lora_alpha "$LORA_ALPHA"
-          --lora_dropout "$LORA_DROPOUT"
-          --lora_firstN "$LORA_FIRSTN"
-        )
+LORA_ARGS=(
+  --use_lora
+  --lora_r "$LORA_R"
+  --lora_alpha "$LORA_ALPHA"
+  --lora_dropout "$LORA_DROPOUT"
+  --lora_firstN "$LORA_FIRSTN"
+)
 
         # --- Stage A ---
         echo -e "\n=== Stage A: Llama latent fit ===\n" | tee -a "$LOG"
