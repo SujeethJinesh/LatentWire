@@ -1009,8 +1009,10 @@ class LMWrapper(nn.Module):
             labels = torch.where(ignore, torch.full_like(labels, -100), labels)
 
         # Prepend ignore masks for prefix/anchor (account for deep prefix past)
-        ignore_prefix = torch.full((B, past_len + prefix_in_inputs), -100, dtype=torch.long, device=model_device)
-        label_parts = [ignore_prefix]
+        label_parts = []
+        if prefix_in_inputs > 0:
+            ignore_prefix = torch.full((B, prefix_in_inputs), -100, dtype=torch.long, device=model_device)
+            label_parts.append(ignore_prefix)
         if A > 0:
             ignore_anchor = torch.full((B, A), -100, dtype=torch.long, device=model_device)
             label_parts.append(ignore_anchor)
