@@ -1136,9 +1136,9 @@ def main():
             if wrapper is None:
                 continue
             num_layers = getattr(wrapper.model.config, "num_hidden_layers", None)
-            num_heads = getattr(wrapper.model.config, "num_key_value_heads", None)
-            if num_heads is None:
-                num_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
+            num_attention_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
+            num_kv_heads = getattr(wrapper.model.config, "num_key_value_heads", None)
+            num_heads = int(num_attention_heads) if num_attention_heads is not None else None
             if num_layers is None or num_heads is None:
                 print(f"[WARN] Skipping deep prefix for {name}: model config missing layer/head counts")
                 continue
