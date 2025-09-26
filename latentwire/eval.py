@@ -541,11 +541,12 @@ def evaluate_model_chunked_latent(
 
     preds = []
     t0 = time.time()
-    for i in range(0, N, chunk_size):
-        pb = prefix_embeds[i:i + chunk_size]
+    for start_idx in range(0, N, chunk_size):
+        end_idx = min(N, start_idx + chunk_size)
+        pb = prefix_embeds[start_idx:end_idx]
         cap = max_new_tokens
         if lengths is not None and lengths.numel() > 0:
-            chunk_len = lengths[i:i + chunk_size]
+            chunk_len = lengths[start_idx:end_idx]
             if chunk_len.numel() > 0:
                 cap = max(1, min(max_new_tokens, int(chunk_len.max().item())))
         out_ids = wrapper.generate_from_prefix(
@@ -559,7 +560,7 @@ def evaluate_model_chunked_latent(
             first_token_top_p=first_token_top_p,
             first_token_temperature=first_token_temperature,
             append_bos_after_prefix=append_bos_after_prefix,
-            deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, start, end),
+            deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, start_idx, end_idx),
         )
         preds.extend(wrapper.decode_batch_then_clean(out_ids))
     if torch.cuda.is_available():
