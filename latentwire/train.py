@@ -35,6 +35,7 @@ from latentwire.models import (
     InterlinguaEncoder,
     Adapter,
     LatentRefiner,
+    GistReconstructionHead,
     LMWrapper,
     LMConfig,
     ByteTokenizer,
@@ -156,6 +157,7 @@ def load_checkpoint(
     adapters: Dict[str, Adapter],
     refiner: Optional[LatentRefiner] = None,
     deep_prefix_generators: Optional[Dict[str, DeepPrefixGenerator]] = None,
+    gist_heads: Optional[Dict[str, GistReconstructionHead]] = None,
     optimizer: Optional[optim.Optimizer] = None,
     strict: bool = True,
     device: str = "cpu",
@@ -176,6 +178,10 @@ def load_checkpoint(
     deep_prefix_loaded: Dict[str, bool] = (
         {name: False for name in (deep_prefix_generators or {}).keys()}
         if deep_prefix_generators else {}
+    )
+    gist_loaded: Dict[str, bool] = (
+        {name: False for name in (gist_heads or {}).keys()}
+        if gist_heads else {}
     )
     if isinstance(state, dict) and "encoder" in state:
         try:
@@ -214,6 +220,18 @@ def load_checkpoint(
                             deep_prefix_loaded[name] = False
                     else:
                         print(f"   -> deep prefix '{name}' missing in state.pt; will retry from disk")
+            if gist_heads:
+                for name, head in gist_heads.items():
+                    key = f"gist_{name}"
+                    if key in state:
+                        try:
+                            head.load_state_dict(state[key], strict=strict)
+                            gist_loaded[name] = True
+                        except Exception as exc:
+                            print(f"   -> gist head '{name}' from state.pt failed ({exc}); will retry from disk")
+                            gist_loaded[name] = False
+                    else:
+                        print(f"   -> gist head '{name}' missing in state.pt; will retry from disk")
         if refiner is not None and "refiner" in state:
             try:
                 refiner.load_state_dict(state["refiner"], strict=strict)
@@ -224,12 +242,15 @@ def load_checkpoint(
         else:
             refiner_loaded = refiner is None
     deep_prefix_ok = True if not deep_prefix_generators else all(deep_prefix_loaded.values())
-    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded and deep_prefix_ok:
+    gist_ok = True if not gist_heads else all(gist_loaded.values())
+    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded and deep_prefix_ok and gist_ok:
         suffix = "encoder/adapters"
         if deep_prefix_generators:
             suffix += "/deep_prefix"
         if refiner is not None:
             suffix += "/refiner"
+        if gist_heads:
+            suffix += "/gist"
         print(f"   -> loaded {suffix} FROM state.pt")
 
     if (not enc_loaded or not all(adapters_loaded.values()) or not refiner_loaded) and ckpt_dir:
@@ -272,6 +293,16 @@ def load_checkpoint(
                 refiner_loaded = True
             else:
                 missing.append(refiner_path)
+        if gist_heads:
+            for name, head in gist_heads.items():
+                if gist_loaded.get(name):
+                    continue
+                gist_path = os.path.join(ckpt_dir, f"gist_{name}.pt")
+                if os.path.isfile(gist_path):
+                    head.load_state_dict(_safe_load(gist_path, map_location=device), strict=strict)
+                    gist_loaded[name] = True
+                else:
+                    missing.append(gist_path)
 
         if missing:
             raise FileNotFoundError(
@@ -283,6 +314,8 @@ def load_checkpoint(
                 suffix += "/deep_prefix"
             if refiner is not None:
                 suffix += "/refiner"
+            if gist_heads:
+                suffix += "/gist"
             print(f"   -> loaded {suffix} FROM encoder.pt + adapter_*.pt")
 
     if optimizer is not None and isinstance(state, dict):
@@ -511,6 +544,20 @@ def main():
                     help="Weight for hidden-state KD on first K steps (0 disables).")
     ap.add_argument("--state_kd_layers", type=str, default="0,1,2",
                     help="Comma-separated transformer layer indices for hidden-state KD.")
+    ap.add_argument("--use_gist_head", action="store_true",
+                    help="Enable gist reconstruction head that rebuilds teacher prompts from the latent wire.")
+    ap.add_argument("--gist_target_len", type=int, default=48,
+                    help="Number of tokens to reconstruct with the gist head.")
+    ap.add_argument("--gist_hidden", type=int, default=512,
+                    help="Hidden dimension inside the gist head MLP.")
+    ap.add_argument("--gist_layers", type=int, default=2,
+                    help="Number of residual MLP blocks in the gist head.")
+    ap.add_argument("--gist_dropout", type=float, default=0.1,
+                    help="Dropout applied inside the gist head.")
+    ap.add_argument("--gist_weight", type=float, default=0.0,
+                    help="Weight for the gist reconstruction loss (0 disables).")
+    ap.add_argument("--gist_mask_prob", type=float, default=0.15,
+                    help="Probability of masking each gist target token when computing the loss (simulates gist masking).")
     # PEFT toggles
     ap.add_argument("--use_lora", action="store_true")
     ap.add_argument("--lora_r", type=int, default=8)
@@ -1015,6 +1062,7 @@ def main():
     # ===== Adapters =====
     adapters: Dict[str, Adapter] = {}
     deep_prefix_generators: Dict[str, DeepPrefixGenerator] = {}
+    gist_heads: Dict[str, GistReconstructionHead] = {}
     adp_llama: Optional[Adapter] = None
     adp_qwen: Optional[Adapter] = None
 
@@ -1087,6 +1135,21 @@ def main():
             generator.train()
             deep_prefix_generators[name] = generator
 
+    if args.use_gist_head and args.gist_weight > 0.0:
+        gist_len = max(1, int(args.gist_target_len))
+        for name, wrapper in (('llama', llama), ('qwen', qwen)):
+            if wrapper is None:
+                continue
+            head = GistReconstructionHead(
+                d_latent=args.d_z,
+                d_model=wrapper.d_model,
+                target_len=gist_len,
+                hidden=int(max(args.gist_hidden, args.d_z)),
+                num_layers=int(max(args.gist_layers, 0)),
+                dropout=float(max(args.gist_dropout, 0.0)),
+            ).to(_primary_device(wrapper))
+            gist_heads[name] = head
+
     # ===== Optimizer =====
     enc_params = [p for p in encoder.parameters() if p.requires_grad]
     llama_params = [p for p in adp_llama.parameters() if p.requires_grad] if adp_llama is not None else []
@@ -1095,6 +1158,9 @@ def main():
     deep_prefix_params: List[torch.nn.Parameter] = []
     for generator in deep_prefix_generators.values():
         deep_prefix_params.extend([p for p in generator.parameters() if p.requires_grad])
+    gist_params: List[torch.nn.Parameter] = []
+    for head in gist_heads.values():
+        gist_params.extend([p for p in head.parameters() if p.requires_grad])
 
     optim_groups = []
     if enc_params:
@@ -1111,6 +1177,8 @@ def main():
         optim_groups.append({"params": refiner_params, "lr": args.lr})
     if deep_prefix_params:
         optim_groups.append({"params": deep_prefix_params, "lr": args.lr})
+    if gist_params:
+        optim_groups.append({"params": gist_params, "lr": args.lr})
 
     optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 
@@ -1166,6 +1234,7 @@ def main():
             adapters,
             refiner=latent_refiner,
             deep_prefix_generators=deep_prefix_generators,
+            gist_heads=gist_heads,
             optimizer=None if args.no_load_optimizer else optimizer,
             strict=True,
             device=device,
@@ -1544,6 +1613,26 @@ def main():
                 else:
                     loss_state_raw = torch.zeros((), device=target_device)
 
+                gist_loss_raw = torch.zeros((), device=target_device)
+                if args.use_gist_head and args.gist_weight > 0.0:
+                    head = gist_heads.get(ctx.name)
+                    if head is not None:
+                        gist_len = head.target_len
+                        scaffold_slice = scaffold[:, :gist_len]
+                        gist_pred = head(latents_for_adapter)
+                        pad_id = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
+                        valid = torch.ones_like(scaffold_slice, dtype=torch.bool, device=target_device)
+                        if pad_id is not None:
+                            valid = valid & scaffold_slice.ne(int(pad_id))
+                        if args.gist_mask_prob > 0.0:
+                            mask_rand = torch.rand_like(scaffold_slice.float(), device=target_device)
+                            valid = valid & (mask_rand >= float(args.gist_mask_prob))
+                        gist_targets = ctx.wrapper.input_embed(scaffold_slice)
+                        mask = valid.unsqueeze(-1).float()
+                        denom = mask.sum().clamp_min(1.0)
+                        diff = (gist_pred - gist_targets) * mask
+                        gist_loss_raw = diff.pow(2).sum() / denom
+
                 grad_diag_values: Dict[str, torch.Tensor] = {}
                 if (
                     grad_diag_interval > 0
@@ -1560,6 +1649,7 @@ def main():
                         "align": align_loss,
                         "latent_align": latent_align_loss,
                         "latent_prefix_align": latent_prefix_align_loss,
+                        "gist": gist_loss_raw,
                     }
                     for name in grad_diag_components:
                         term = diag_sources.get(name)
@@ -1599,6 +1689,8 @@ def main():
                 loss_kce = latent_scale * loss_kce_raw
                 loss_kd = latent_scale * loss_kd_raw
                 loss_state = latent_scale * loss_state_raw
+                gist_weight = float(max(args.gist_weight, 0.0)) if args.use_gist_head else 0.0
+                gist_loss = gist_weight * gist_loss_raw
 
                 if (
                     enable_first_token_loss
@@ -1684,6 +1776,7 @@ def main():
                     + latent_align_loss
                     + latent_prefix_align_loss
                     + float(max(args.warmup_text_teacher_weight, 0.0)) * text_teacher_loss
+                    + gist_loss
                 ).to(device)
                 total_model_loss = total_model_loss + model_loss
 
@@ -1710,6 +1803,7 @@ def main():
                     "latent_prefix_align": latent_prefix_align_loss,
                     "text_tf": text_teacher_loss,
                     "latent_scale": torch.tensor(float(latent_scale), device=target_device),
+                    "gist": gist_loss_raw,
                 })
                 for key, value in grad_diag_values.items():
                     losses_record[key] = value
@@ -1791,6 +1885,8 @@ def main():
                         msg_ctx += f" latA={_to_float(metrics['latent_align']):.4f}"
                     if args.latent_prefix_align_weight > 0.0:
                         msg_ctx += f" latP={_to_float(metrics['latent_prefix_align']):.4f}"
+                    if args.use_gist_head and args.gist_weight > 0.0:
+                        msg_ctx += f" gist={_to_float(metrics['gist']):.4f}"
                     if grad_diag_components:
                         for diag_name in grad_diag_components:
                             key = f"grad_{diag_name}"
@@ -1877,6 +1973,15 @@ def main():
                     "warmup_align_weight": args.warmup_align_weight,
                     "grad_diag_interval": grad_diag_interval,
                     "grad_diag_components": args.grad_diag_components,
+                    "gist_head": {
+                        "enabled": bool(args.use_gist_head),
+                        "target_len": int(args.gist_target_len),
+                        "hidden": int(args.gist_hidden),
+                        "layers": int(args.gist_layers),
+                        "dropout": float(args.gist_dropout),
+                        "weight": float(args.gist_weight),
+                        "mask_prob": float(args.gist_mask_prob),
+                    },
                 }
                 dp_len_cfg = int(
                     args.deep_prefix_len
@@ -1994,6 +2099,15 @@ def main():
         "warmup_align_weight": args.warmup_align_weight,
         "grad_diag_interval": grad_diag_interval,
         "grad_diag_components": args.grad_diag_components,
+        "gist_head": {
+            "enabled": bool(args.use_gist_head),
+            "target_len": int(args.gist_target_len),
+            "hidden": int(args.gist_hidden),
+            "layers": int(args.gist_layers),
+            "dropout": float(args.gist_dropout),
+            "weight": float(args.gist_weight),
+            "mask_prob": float(args.gist_mask_prob),
+        },
     }
     dp_len_cfg = int(
         args.deep_prefix_len
@@ -2027,6 +2141,8 @@ def main():
         state_blob[f"deep_prefix_{name}"] = gen.state_dict()
     if latent_refiner is not None:
         state_blob["refiner"] = latent_refiner.state_dict()
+    for name, head in gist_heads.items():
+        state_blob[f"gist_{name}"] = head.state_dict()
 
     artifacts = {
         "encoder.pt": encoder.state_dict(),
@@ -2039,6 +2155,8 @@ def main():
         artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
     if latent_refiner is not None:
         artifacts["refiner.pt"] = latent_refiner.state_dict()
+    for name, head in gist_heads.items():
+        artifacts[f"gist_{name}.pt"] = head.state_dict()
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
 

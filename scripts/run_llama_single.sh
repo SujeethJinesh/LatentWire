@@ -66,6 +66,13 @@ LATENT_LEN_LIST="${LATENT_LEN_LIST:-$LATENT_LEN}"
 D_Z_LIST="${D_Z_LIST:-$D_Z}"
 REFINER_LAYERS_LIST="${REFINER_LAYERS_LIST:-$REFINER_LAYERS}"
 REFINER_HEADS_LIST="${REFINER_HEADS_LIST:-$REFINER_HEADS}"
+USE_GIST_HEAD="${USE_GIST_HEAD:-1}"
+GIST_TARGET_LEN="${GIST_TARGET_LEN:-48}"
+GIST_HIDDEN="${GIST_HIDDEN:-512}"
+GIST_LAYERS="${GIST_LAYERS:-2}"
+GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
+GIST_WEIGHT="${GIST_WEIGHT:-0.1}"
+GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
 
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -142,6 +149,22 @@ print("torch:", torch.__version__, "cuda:", torch.version.cuda, "available:", to
 print("CUDA_VISIBLE_DEVICES:", os.getenv("CUDA_VISIBLE_DEVICES"))
 PY
 
+        if [[ $USE_GIST_HEAD -eq 1 ]]; then
+          GIST_ARGS=(
+            --use_gist_head
+            --gist_target_len "$GIST_TARGET_LEN"
+            --gist_hidden "$GIST_HIDDEN"
+            --gist_layers "$GIST_LAYERS"
+            --gist_dropout "$GIST_DROPOUT"
+            --gist_weight "$GIST_WEIGHT"
+            --gist_mask_prob "$GIST_MASK_PROB"
+          )
+          GRAD_COMPONENTS_LATENT="tf,first,kce,kd,align,latent_align,latent_prefix_align,gist"
+        else
+          GIST_ARGS=()
+          GRAD_COMPONENTS_LATENT="tf,first,kce,kd,align,latent_align,latent_prefix_align"
+        fi
+
         # --- Stage A ---
         echo -e "\n=== Stage A: Llama latent fit ===\n" | tee -a "$LOG"
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
@@ -159,7 +182,8 @@ PY
           --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
           --adapter_hidden_mult 4 --adapter_dropout 0.1 \
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
-          --grad_diag_interval 100 --grad_diag_components tf,first,kce,kd,align,latent_align,latent_prefix_align \
+          --grad_diag_interval 100 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
+          "${GIST_ARGS[@]}" \
           2>&1 | tee -a "$LOG"
 
         # --- Stage B ---
@@ -186,7 +210,8 @@ PY
           --warmup_tail_prob 0.0 \
           --adapter_hidden_mult 4 --adapter_dropout 0.1 \
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
-          --grad_diag_interval 50 --grad_diag_components tf,first,kce,kd,align,latent_align,latent_prefix_align \
+          --grad_diag_interval 50 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
+          "${GIST_ARGS[@]}" \
           2>&1 | tee -a "$LOG"
 
         # --- Stage C ---

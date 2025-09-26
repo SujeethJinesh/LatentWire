@@ -61,6 +61,7 @@ We now have a focused path for iterating on Llama in isolation. The trainer resp
 
 - Introduced per-loss gradient diagnostics in `latentwire/train.py` (`--grad_diag_interval`, `--grad_diag_components`). Every N steps we now log gradient norms for teacher-forced CE, first-token CE, k-step KD, hidden-state KD, and alignment terms, so stalled objectives are obvious without digging through tensorboard dumps.
 - `scripts/run_llama_single.sh` understands sweep lists (`LATENT_LEN_LIST`, `D_Z_LIST`, `REFINER_LAYERS_LIST`, `REFINER_HEADS_LIST`) and enables the diagnostics by default (Stage A every 100 steps, Stage B every 50). This gives us a one-command latent/refiner grid on the 4×H100 node with gradient health indicators baked into the logs.
+- Added a gist reconstruction head (`--use_gist_head`) that projects the latent wire back into prompt embeddings via learned queries. We mask targets with `--gist_mask_prob` to simulate gist attention and score an embedding MSE (`--gist_weight`). The additional loss should ensure the latent preserves enough prompt information for downstream adapters.
 
 ## Update (2025-09-25): Deep prefix injection is live
 

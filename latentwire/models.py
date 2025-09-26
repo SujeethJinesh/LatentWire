@@ -588,6 +588,76 @@ class DeepPrefixGenerator(nn.Module):
         return past
 
 
+class GistReconstructionHead(nn.Module):
+    """Reconstructs teacher prompt embeddings from latent slots via cross-attention."""
+
+    def __init__(
+        self,
+        d_latent: int,
+        d_model: int,
+        target_len: int,
+        hidden: int = 512,
+        num_layers: int = 2,
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        assert target_len > 0, "gist target len must be positive"
+        self.target_len = int(target_len)
+        self.d_latent = int(d_latent)
+        self.d_model = int(d_model)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0.0 else None
+
+        self.query = nn.Parameter(torch.randn(self.target_len, d_latent) * 0.01)
+        self.q_proj = nn.Linear(d_latent, d_latent, bias=False)
+        self.k_proj = nn.Linear(d_latent, d_latent, bias=False)
+        self.v_proj = nn.Linear(d_latent, d_latent, bias=False)
+        self.out_proj = nn.Linear(d_latent, d_model)
+        self.out_norm = nn.LayerNorm(d_model)
+
+        blocks: List[nn.Module] = []
+        for _ in range(max(int(num_layers), 0)):
+            blocks.append(nn.Sequential(
+                nn.LayerNorm(d_latent),
+                nn.Linear(d_latent, hidden),
+                nn.GELU(),
+                nn.Dropout(dropout) if dropout and dropout > 0.0 else nn.Identity(),
+                nn.Linear(hidden, d_latent),
+            ))
+        self.blocks = nn.ModuleList(blocks)
+        for linear in (self.q_proj, self.k_proj, self.v_proj, self.out_proj):
+            nn.init.xavier_uniform_(linear.weight)
+        for block in self.blocks:
+            nn.init.xavier_uniform_(block[1].weight)
+            nn.init.zeros_(block[1].bias)
+            nn.init.xavier_uniform_(block[4].weight)
+            nn.init.zeros_(block[4].bias)
+
+    def forward(self, latents: torch.Tensor) -> torch.Tensor:
+        if latents.dim() != 3:
+            raise ValueError("latents must be [batch, latent_len, d_latent]")
+        batch, _, d_latent = latents.shape
+        if d_latent != self.d_latent:
+            raise ValueError(f"Expected latent dim {self.d_latent}, got {d_latent}")
+
+        query = self.query.unsqueeze(0).expand(batch, -1, -1)
+        q = self.q_proj(query)
+        k = self.k_proj(latents)
+        v = self.v_proj(latents)
+        attn_logits = torch.matmul(q, k.transpose(-1, -2)) / math.sqrt(self.d_latent)
+        attn = torch.softmax(attn_logits, dim=-1)
+        if self.dropout is not None and self.training:
+            attn = self.dropout(attn)
+        gist_latent = torch.matmul(attn, v)
+
+        for block in self.blocks:
+            residual = gist_latent
+            gist_latent = residual + block(gist_latent)
+
+        output = self.out_proj(gist_latent)
+        output = self.out_norm(output)
+        return output
+
+
 class LatentRefiner(nn.Module):
     """Lightweight Transformer encoder that smooths latent slots before adapters."""
 
