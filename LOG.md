@@ -15,6 +15,8 @@
 - Added an optional latent alignment loss (`--latent_align_weight`) that pulls the first latent slot toward the teacher's first token embedding during latent batches, helping the autoscaled CE focus on the correct target.
 - Enabled the latent alignment loss in both Stage A (`0.5`) and Stage B (`1.0`) so every latent batch explicitly matches the teacher’s first-token embedding before decoding.
 - Added a two-layer latent refiner Transformer (configurable via `--latent_refiner_layers`) that smooths the shared+private slots before adapter projection.
+- Deeper KD: Stage A now matches teacher hidden states on the first four layers, Stage B on the first five, giving latent prefixes a stronger target.
+- Training logs now emit `latA/latP` diagnostics each 10 steps so we can track latent alignment magnitudes directly.
 - PyTorch import issue on this workstation (`libtorch_cpu.dylib` missing) prevented running `pytest -q`; no code changes depend on test results, but rerun once the local Torch install is fixed.
 - Next smoke: rerun `bash scripts/run_llama_single.sh` to confirm latent F1 and first-token metrics lift from zero. If improvements hold, proceed to tuned Stage‑B tweaks (prefix gain sweep, first-token CE).
 

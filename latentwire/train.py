@@ -1631,6 +1631,10 @@ def main():
                         msg_ctx += f" man={_to_float(metrics['manifold']):.4f}"
                     if args.warmup_align_weight > 0.0:
                         msg_ctx += f" align={_to_float(metrics['align']):.4f}"
+                    if args.latent_align_weight > 0.0:
+                        msg_ctx += f" latA={_to_float(metrics['latent_align']):.4f}"
+                    if args.latent_prefix_align_weight > 0.0:
+                        msg_ctx += f" latP={_to_float(metrics['latent_prefix_align']):.4f}"
                     parts.append(msg_ctx)
                     if args.scale_l2 > 0.0:
                         parts.append(f"scale_pen({ctx.name})={scale_penalty(ctx.adapter).item():.4e}")
