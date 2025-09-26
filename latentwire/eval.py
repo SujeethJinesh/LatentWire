@@ -777,15 +777,20 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         dropout = float(deep_prefix_cfg.get("dropout", 0.0))
         for name, wrapper in wrappers.items():
             num_layers = getattr(wrapper.model.config, "num_hidden_layers", None)
-            num_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
-            if num_layers is None or num_heads is None:
+            num_attention_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
+            num_kv_heads = getattr(wrapper.model.config, "num_key_value_heads", None)
+            if num_layers is None or num_attention_heads is None:
                 print(f"[WARN] Skipping deep prefix generator load for {name}: missing layer/head config")
                 continue
+            if num_kv_heads is None:
+                num_kv_heads = num_attention_heads
+            head_dim = wrapper.d_model // int(num_attention_heads)
             generator = DeepPrefixGenerator(
                 d_z=wrapper.d_model,
                 prefix_len=prefix_len,
                 num_layers=int(num_layers),
-                num_heads=int(num_heads),
+                num_kv_heads=int(num_kv_heads),
+                head_dim=int(head_dim),
                 dropout=dropout,
             ).to(_primary_device(wrapper)).eval()
             path = os.path.join(ckpt_dir, f"deep_prefix_{name}.pt")
