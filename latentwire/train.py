@@ -1657,6 +1657,58 @@ def main():
                         diff = (gist_pred - gist_targets) * mask
                         gist_loss_raw = diff.pow(2).sum() / denom
 
+                align_loss = torch.zeros((), device=target_device)
+                latent_align_loss = torch.zeros((), device=target_device)
+                latent_prefix_align_loss = torch.zeros((), device=target_device)
+                if training_mode == "text" and args.warmup_align_tokens > 0 and args.warmup_align_weight > 0.0:
+                    max_align = min(int(args.warmup_align_tokens), prefix.shape[1])
+                    pad_id = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
+                    bos_id = getattr(ctx.wrapper.tokenizer, "bos_token_id", None)
+                    if max_align > 0 and prefix.shape[1] > 0:
+                        teacher_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
+                        start = 0
+                        if bos_id is not None and teacher_ids.size(1) > 0 and (teacher_ids[:, 0] == int(bos_id)).all():
+                            start = 1
+                        stop = min(start + max_align, teacher_ids.size(1))
+                        token_slice = teacher_ids[:, start:stop]
+                        if token_slice.numel() > 0:
+                            mask = None
+                            if pad_id is not None:
+                                mask = token_slice.ne(int(pad_id))
+                            teacher_embeds = ctx.wrapper.input_embed(token_slice)
+                            prefix_slice = prefix[:, : token_slice.size(1), :]
+                            align_loss = alignment_mse(prefix_slice, teacher_embeds, mask)
+                            align_loss = align_loss * float(max(args.warmup_align_weight, 0.0))
+                if training_mode == "latent" and args.latent_align_weight > 0.0 and prefix.shape[1] > 0:
+                    teacher_first_ids = ctx.first_token_ids[idx].to(target_device, non_blocking=True)
+                    teacher_first_ids = teacher_first_ids.view(-1, 1)
+                    teacher_emb = ctx.wrapper.input_embed(teacher_first_ids).squeeze(1).to(prefix.dtype)
+                    latent_embed = prefix[:, 0, :]
+                    if args.latent_align_metric in ("cosine", "both"):
+                        cos = 1.0 - nn.functional.cosine_similarity(latent_embed, teacher_emb, dim=-1)
+                        latent_align_loss = latent_align_loss + cos.mean()
+                    if args.latent_align_metric in ("mse", "both"):
+                        latent_align_loss = latent_align_loss + nn.functional.mse_loss(latent_embed, teacher_emb)
+                    latent_align_loss = latent_align_loss * float(max(args.latent_align_weight, 0.0))
+                if training_mode == "latent" and args.latent_prefix_align_weight > 0.0 and prefix.shape[1] > 0:
+                    prefix_len = prefix.shape[1]
+                    teacher_prefix_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
+                    teacher_prefix_emb = ctx.wrapper.input_embed(teacher_prefix_ids).to(prefix.dtype)
+                    teacher_prefix_emb = teacher_prefix_emb[:, :prefix_len]
+                    overlap = min(prefix_len, teacher_prefix_emb.size(1))
+                    if overlap > 0:
+                        latent_prefix_align_loss = torch.zeros((), device=target_device)
+                        if args.latent_align_metric in ("cosine", "both"):
+                            cos = 1.0 - nn.functional.cosine_similarity(
+                                prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :], dim=-1
+                            )
+                            latent_prefix_align_loss = latent_prefix_align_loss + cos.mean()
+                        if args.latent_align_metric in ("mse", "both"):
+                            latent_prefix_align_loss = latent_prefix_align_loss + nn.functional.mse_loss(
+                                prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :]
+                            )
+                        latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
+
                 grad_diag_values: Dict[str, torch.Tensor] = {}
                 if (
                     grad_diag_interval > 0
