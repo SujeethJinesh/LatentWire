@@ -1619,13 +1619,14 @@ def main():
                 if training_mode == "latent" and args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
                     teacher_model = ctx.wrapper.model
                     disable_fn = getattr(teacher_model, "disable_adapter", None)
+                    teacher_device = next(teacher_model.parameters()).device
                     if disable_fn is not None:
                         with teacher_model.disable_adapter():
                             loss_kd_raw = kd_first_k_prefix_vs_text(
                                 ctx.wrapper,
                                 ctx.wrapper,
                                 prefix,
-                                scaffold,
+                                scaffold.to(teacher_device, non_blocking=True),
                                 targets,
                                 K=current_K,
                                 tau=args.kd_tau,
@@ -1638,7 +1639,7 @@ def main():
                             ctx.wrapper,
                             ctx.wrapper,
                             prefix,
-                            scaffold,
+                            scaffold.to(teacher_device, non_blocking=True),
                             targets,
                             K=current_K,
                             tau=args.kd_tau,
