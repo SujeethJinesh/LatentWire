@@ -62,6 +62,8 @@ fi
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
 BATCH_SIZE="${BATCH_SIZE:-16}"
+DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-24}"
+DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.1}"
 
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -106,6 +108,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
   --latent_private_len 16 \
+  --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
   --first_token_ce_weight 2.0 --first_token_ce_schedule cosine --first_token_ce_peak 6.0 --first_token_ce_warmup_frac 0.3 \
   --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
   --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
@@ -126,6 +129,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
   --latent_private_len 16 \
+  --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
   --first_token_ce_weight 5.0 --first_token_ce_schedule cosine --first_token_ce_peak 10.0 --first_token_ce_warmup_frac 0.25 \
   --K 4 --k_ce_weight 0.5 --kd_first_k_weight 1.5 --kd_tau 0.7 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
   --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
