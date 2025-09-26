@@ -840,13 +840,6 @@ def main():
         except Exception:
             pass
 
-    for teacher in teacher_models.values():
-        try:
-            if hasattr(teacher.model.config, "use_cache"):
-                teacher.model.config.use_cache = False
-        except Exception:
-            pass
-
     teacher_models: Dict[str, LMWrapper] = {}
     if args.kd_first_k_weight > 0.0:
         if llama is not None:
@@ -869,6 +862,13 @@ def main():
                 max_memory=qwen_max_memory,
             )
             teacher_models["qwen"] = LMWrapper(teacher_cfg)
+
+    for teacher in teacher_models.values():
+        try:
+            if hasattr(teacher.model.config, "use_cache"):
+                teacher.model.config.use_cache = False
+        except Exception:
+            pass
 
     def _collect_trainable(module: nn.Module) -> List[nn.Parameter]:
         return [p for p in module.parameters() if p.requires_grad]
