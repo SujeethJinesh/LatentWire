@@ -536,7 +536,8 @@ class DeepPrefixGenerator(nn.Module):
         d_z: int,
         prefix_len: int,
         num_layers: int,
-        num_heads: int,
+        num_kv_heads: int,
+        head_dim: int,
         dropout: float = 0.1,
     ):
         super().__init__()
@@ -544,16 +545,17 @@ class DeepPrefixGenerator(nn.Module):
             raise ValueError("deep_prefix_len must be positive")
         if num_layers <= 0:
             raise ValueError("deep prefix requires at least one transformer layer")
-        if d_z % num_heads != 0:
-            raise ValueError("d_z must be divisible by num_heads for deep prefix")
         self.prefix_len = int(prefix_len)
         self.num_layers = int(num_layers)
-        self.num_heads = int(num_heads)
-        self.head_dim = d_z // num_heads
+        self.num_kv_heads = int(num_kv_heads)
+        self.head_dim = int(head_dim)
+        if self.num_kv_heads <= 0 or self.head_dim <= 0:
+            raise ValueError("deep prefix requires positive kv head count and head dim")
+        out_dim = self.num_kv_heads * self.head_dim
         self.dropout = nn.Dropout(dropout) if dropout and dropout > 0.0 else None
 
-        self.key_layers = nn.ModuleList([nn.Linear(d_z, d_z, bias=False) for _ in range(self.num_layers)])
-        self.value_layers = nn.ModuleList([nn.Linear(d_z, d_z, bias=False) for _ in range(self.num_layers)])
+        self.key_layers = nn.ModuleList([nn.Linear(d_z, out_dim, bias=False) for _ in range(self.num_layers)])
+        self.value_layers = nn.ModuleList([nn.Linear(d_z, out_dim, bias=False) for _ in range(self.num_layers)])
         for linear in list(self.key_layers) + list(self.value_layers):
             nn.init.xavier_uniform_(linear.weight)
 
@@ -582,8 +584,8 @@ class DeepPrefixGenerator(nn.Module):
         for key_proj, value_proj in zip(self.key_layers, self.value_layers):
             key = key_proj(core)
             value = value_proj(core)
-            key = key.view(batch, self.prefix_len, self.num_heads, self.head_dim).permute(0, 2, 1, 3).contiguous()
-            value = value.view(batch, self.prefix_len, self.num_heads, self.head_dim).permute(0, 2, 1, 3).contiguous()
+            key = key.view(batch, self.prefix_len, self.num_kv_heads, self.head_dim).permute(0, 2, 1, 3).contiguous()
+            value = value.view(batch, self.prefix_len, self.num_kv_heads, self.head_dim).permute(0, 2, 1, 3).contiguous()
             past.append((key, value))
         return past
 

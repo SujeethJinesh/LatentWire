@@ -1138,15 +1138,18 @@ def main():
             num_layers = getattr(wrapper.model.config, "num_hidden_layers", None)
             num_attention_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
             num_kv_heads = getattr(wrapper.model.config, "num_key_value_heads", None)
-            num_heads = int(num_attention_heads) if num_attention_heads is not None else None
-            if num_layers is None or num_heads is None:
+            if num_layers is None or num_attention_heads is None:
                 print(f"[WARN] Skipping deep prefix for {name}: model config missing layer/head counts")
                 continue
+            if num_kv_heads is None:
+                num_kv_heads = num_attention_heads
+            head_dim = wrapper.d_model // int(num_attention_heads)
             generator = DeepPrefixGenerator(
                 d_z=wrapper.d_model,
                 prefix_len=prefix_len,
                 num_layers=int(num_layers),
-                num_heads=int(num_heads),
+                num_kv_heads=int(num_kv_heads),
+                head_dim=int(head_dim),
                 dropout=dropout,
             ).to(_primary_device(wrapper))
             generator.train()
