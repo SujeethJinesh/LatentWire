@@ -718,6 +718,16 @@ We will report, per model and jointly:
 - Quality: EM/F1 for QA, ROUGE-1/2/L for summarization,
 - Ablations: (a) LoRA off, (b) shallow vs deep prefix, (c) M sensitivity, (d) with/without KD.
 
+## Addendum (2025-09-25): Debugging deep prefix rollout
+
+- **What we tried.** We enabled deep prefix generation for both Llama and Qwen with grouped KV caches, combined with the gist reconstruction head and the new gradient diagnostics (Milestones 1–4). Initial smoke runs on the 4×H100 cluster exposed cache shape mismatches (32 attention heads vs 8 KV heads) and cross-device `torch.cat` failures when Accelerate sharded layers across GPUs.
+
+- **What broke.** Prefix projections that assumed `d_z` divisible by the full attention head count produced tensors that could not concatenate with Hugging Face’s grouped KV cache (`transformers` ≥ 4.46) [7]. Even after fixing the head count, the KV tensors remained on GPU0 while later decoder blocks lived on GPU1–3, causing multi-device runtime errors during Stage A.
+
+- **What we changed.** `DeepPrefixGenerator` now projects to `num_kv_heads × head_dim` and `_prepare_deep_prefix` moves each layer’s cache to the layer’s actual device before dispatch. Loss assembly skips the latent-prefix segment when the cache is used, so logits/labels align. Both single- and multi-model runners stream the resulting metrics to `diagnostics.jsonl` for post-mortem analysis.
+
+- **What’s next / expected.** With the head/device alignment fixes, we expect Stage A smoke runs to stably report positive first-token accuracy and decreasing gist loss within the first epoch. Hero runs (`run_scoped_softprompt_multi.sh --hero`) should extend those gains to the full Llama+Qwen setting, providing the acceptance metrics we outlined in Milestone 5 (EM/F1, latency, compression) while keeping the structured diagnostics for regression tracking. We will validate against SQuAD (smoke) and HotpotQA (hero) in line with prior work on cross-model latent prompting [1,2,4].
+
 ## Risks & mitigations
 
 - **Over-fitting to one model**: Keep the latent shared, but constrain per-model PEFT heads to be tiny (LoRA r≤16, short prefixes) and regularize with early-token KD.
@@ -745,3 +755,5 @@ We will report, per model and jointly:
 5. **PEFT docs** — LoRA & Prefix-Tuning implementations. [Hugging Face](https://huggingface.co/docs/peft)
 
 6. **Transformers docs** — chat templates & correct serialization. [Hugging Face](https://huggingface.co/docs/transformers)
+
+7. **Transformers KV cache guide** — grouped-key/value cache API and device placement notes. [Hugging Face](https://huggingface.co/docs/transformers/kv_cache)
