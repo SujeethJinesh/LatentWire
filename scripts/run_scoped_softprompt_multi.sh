@@ -43,11 +43,11 @@ MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
 CHUNK_SIZE="${CHUNK_SIZE:-96}"
 
 if [[ $hero -eq 1 ]]; then
-  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-8000}
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
-  EPOCHS_STAGEA=${EPOCHS_STAGEA:-6}
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-10}
-  SAMPLES="${SAMPLES:-1000}"
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-12000}
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-24000}
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-8}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-14}
+  SAMPLES="${SAMPLES:-1500}"
 else
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-640}
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-1280}
@@ -59,8 +59,17 @@ fi
 # Latent budget and optimiser defaults
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
-BATCH_SIZE_B="${BATCH_SIZE_B:-16}"
+BATCH_SIZE_B="${BATCH_SIZE_B:-24}"
 BATCH_SIZE_A="${BATCH_SIZE_A:-16}"
+DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-32}"
+DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.1}"
+USE_GIST_HEAD="${USE_GIST_HEAD:-1}"
+GIST_TARGET_LEN="${GIST_TARGET_LEN:-64}"
+GIST_HIDDEN="${GIST_HIDDEN:-512}"
+GIST_LAYERS="${GIST_LAYERS:-2}"
+GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
+GIST_WEIGHT="${GIST_WEIGHT:-0.1}"
+GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
 
 # Mandatory chat templating across the stack
 export LW_APPLY_CHAT_TEMPLATE=1
@@ -82,6 +91,25 @@ COMMON_DEVMAP=(
   --qwen_devices "$QWEN_DEVICES"
   --gpu_mem_gib "$GPU_MEM_GIB"
 )
+
+DIAGNOSTIC_LOG="${RUN_DIR}/diagnostics.jsonl"
+: > "$DIAGNOSTIC_LOG"
+
+if [[ $USE_GIST_HEAD -eq 1 ]]; then
+  GIST_ARGS=(
+    --use_gist_head
+    --gist_target_len "$GIST_TARGET_LEN"
+    --gist_hidden "$GIST_HIDDEN"
+    --gist_layers "$GIST_LAYERS"
+    --gist_dropout "$GIST_DROPOUT"
+    --gist_weight "$GIST_WEIGHT"
+    --gist_mask_prob "$GIST_MASK_PROB"
+  )
+  GRAD_COMPONENTS="tf,first,kce,kd,align,latent_align,latent_prefix_align,gist"
+else
+  GIST_ARGS=()
+  GRAD_COMPONENTS="tf,first,kce,kd,align,latent_align,latent_prefix_align"
+fi
 
 # Ensure PEFT is available
 python - <<'PY'
@@ -128,6 +156,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --use_chat_template \
   --warm_anchor_mode chat \
+  --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
   --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 2.5 --first_token_ce_warmup_frac 0.3 \
   --K 4 \
   --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
@@ -137,7 +166,9 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --max_answer_tokens 24 \
   --lr 5e-5 \
   --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
-  "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
+  --grad_diag_interval 100 --grad_diag_components "$GRAD_COMPONENTS" \
+  --diagnostic_log "$DIAGNOSTIC_LOG" \
+  "${COMMON_DEVMAP[@]}" "${GIST_ARGS[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage B: Prefix-training only ---
 echo -e "\n=== Stage B: Prefix Training ===\n" | tee -a "$LOG"
@@ -154,6 +185,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --train_append_bos_after_prefix yes \
   --use_chat_template \
   --warm_anchor_mode chat \
+  --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
   --first_token_ce_weight 1.2 --first_token_ce_schedule cosine --first_token_ce_peak 2.2 --first_token_ce_warmup_frac 0.3 \
   --K 4 \
   --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
@@ -164,8 +196,13 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --lr 5e-5 \
   --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
   --warmup_text_latent_epochs 1.0 \
-  --warmup_align_tokens 4 --warmup_align_weight 0.5 \
-  "${COMMON_DEVMAP[@]}" 2>&1 | tee -a "$LOG"
+  --warmup_align_tokens 8 --warmup_align_weight 1.0 \
+  --warmup_text_teacher_weight 1.5 \
+  --warmup_text_latent_weight 0.0 --warmup_text_latent_weight_end 1.0 \
+  --warmup_tail_prob 0.0 \
+  --grad_diag_interval 50 --grad_diag_components "$GRAD_COMPONENTS" \
+  --diagnostic_log "$DIAGNOSTIC_LOG" \
+  "${COMMON_DEVMAP[@]}" "${GIST_ARGS[@]}" 2>&1 | tee -a "$LOG"
 
 # --- Stage C: Evaluation on clean hubs + learned prefixes ---
 echo -e "\n=== Stage C: Eval ===\n" | tee -a "$LOG"
