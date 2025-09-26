@@ -68,7 +68,7 @@ GIST_TARGET_LEN="${GIST_TARGET_LEN:-64}"
 GIST_HIDDEN="${GIST_HIDDEN:-512}"
 GIST_LAYERS="${GIST_LAYERS:-2}"
 GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
-GIST_WEIGHT="${GIST_WEIGHT:-0.1}"
+GIST_WEIGHT="${GIST_WEIGHT:-0.02}"
 GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
 
 # Mandatory chat templating across the stack
@@ -157,7 +157,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --use_chat_template \
   --warm_anchor_mode chat \
   --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-  --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 2.5 --first_token_ce_warmup_frac 0.3 \
+  --first_token_ce_weight 1.0 --first_token_ce_schedule cosine --first_token_ce_peak 3.5 --first_token_ce_warmup_frac 0.3 \
   --K 4 \
   --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 1.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2 \
   --max_grad_norm 1.0 \
@@ -166,6 +166,11 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --max_answer_tokens 24 \
   --lr 5e-5 \
   --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
+  --warmup_text_latent_epochs 0.5 \
+  --warmup_align_tokens 8 --warmup_align_weight 1.0 \
+  --warmup_text_teacher_weight 1.5 \
+  --warmup_text_latent_weight 0.0 --warmup_text_latent_weight_end 0.5 \
+  --warmup_tail_prob 0.1 \
   --grad_diag_interval 100 --grad_diag_components "$GRAD_COMPONENTS" \
   --diagnostic_log "$DIAGNOSTIC_LOG" \
   "${COMMON_DEVMAP[@]}" "${GIST_ARGS[@]}" 2>&1 | tee -a "$LOG"

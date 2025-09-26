@@ -1655,7 +1655,8 @@ def main():
                         mask = valid.unsqueeze(-1).float()
                         denom = mask.sum().clamp_min(1.0)
                         diff = (gist_pred - gist_targets) * mask
-                        gist_loss_raw = diff.pow(2).sum() / denom
+                        diff_sq = diff.pow(2).sum(dim=-1)
+                        gist_loss_raw = diff_sq.sum() / (denom * gist_targets.size(-1))
 
                 align_loss = torch.zeros((), device=target_device)
                 latent_align_loss = torch.zeros((), device=target_device)
