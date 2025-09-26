@@ -1614,7 +1614,7 @@ def main():
                 else:
                     loss_kce_raw = torch.zeros((), device=target_device)
 
-                if args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
+                if training_mode == "latent" and args.kd_first_k_weight and args.kd_first_k_weight > 0.0:
                     teacher_model = ctx.wrapper.model
                     disable_fn = getattr(teacher_model, "disable_adapter", None)
                     if disable_fn is not None:
