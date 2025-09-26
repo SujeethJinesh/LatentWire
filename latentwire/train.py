@@ -9,7 +9,7 @@ import random
 import ast
 import subprocess
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple, List, Union, Any
+from typing import Dict, Optional, Tuple, List, Union, Any, Sequence
 from contextlib import contextmanager
 
 import torch
@@ -40,6 +40,7 @@ from latentwire.models import (
     ByteTokenizer,
     SimpleEncoder,
     STQueryEncoder,
+    DeepPrefixGenerator,
     apply_lora_if_requested,
     apply_prefix_if_requested,
 )
@@ -154,6 +155,7 @@ def load_checkpoint(
     encoder: InterlinguaEncoder,
     adapters: Dict[str, Adapter],
     refiner: Optional[LatentRefiner] = None,
+    deep_prefix_generators: Optional[Dict[str, DeepPrefixGenerator]] = None,
     optimizer: Optional[optim.Optimizer] = None,
     strict: bool = True,
     device: str = "cpu",
@@ -171,6 +173,10 @@ def load_checkpoint(
     enc_loaded = False
     refiner_loaded = refiner is None
     adapters_loaded: Dict[str, bool] = {name: False for name in adapters.keys()}
+    deep_prefix_loaded: Dict[str, bool] = (
+        {name: False for name in (deep_prefix_generators or {}).keys()}
+        if deep_prefix_generators else {}
+    )
     if isinstance(state, dict) and "encoder" in state:
         try:
             encoder.load_state_dict(state["encoder"], strict=strict)
@@ -196,6 +202,18 @@ def load_checkpoint(
                         adapters_loaded[name] = False
                 else:
                     print(f"   -> adapter '{name}' missing in state.pt; will retry from disk")
+            if deep_prefix_generators:
+                for name, generator in deep_prefix_generators.items():
+                    key = f"deep_prefix_{name}"
+                    if key in state:
+                        try:
+                            generator.load_state_dict(state[key], strict=strict)
+                            deep_prefix_loaded[name] = True
+                        except Exception as exc:
+                            print(f"   -> deep prefix '{name}' from state.pt failed ({exc}); will retry from disk")
+                            deep_prefix_loaded[name] = False
+                    else:
+                        print(f"   -> deep prefix '{name}' missing in state.pt; will retry from disk")
         if refiner is not None and "refiner" in state:
             try:
                 refiner.load_state_dict(state["refiner"], strict=strict)
@@ -205,8 +223,14 @@ def load_checkpoint(
                 refiner_loaded = False
         else:
             refiner_loaded = refiner is None
-    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded:
-        print("   -> loaded encoder/adapters/refiner FROM state.pt")
+    deep_prefix_ok = True if not deep_prefix_generators else all(deep_prefix_loaded.values())
+    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded and deep_prefix_ok:
+        suffix = "encoder/adapters"
+        if deep_prefix_generators:
+            suffix += "/deep_prefix"
+        if refiner is not None:
+            suffix += "/refiner"
+        print(f"   -> loaded {suffix} FROM state.pt")
 
     if (not enc_loaded or not all(adapters_loaded.values()) or not refiner_loaded) and ckpt_dir:
         enc_path = os.path.join(ckpt_dir, "encoder.pt")
@@ -230,6 +254,17 @@ def load_checkpoint(
             else:
                 missing.append(adapter_path)
 
+        if deep_prefix_generators:
+            for name, generator in deep_prefix_generators.items():
+                if deep_prefix_loaded.get(name):
+                    continue
+                prefix_path = os.path.join(ckpt_dir, f"deep_prefix_{name}.pt")
+                if os.path.isfile(prefix_path):
+                    generator.load_state_dict(_safe_load(prefix_path, map_location=device), strict=strict)
+                    deep_prefix_loaded[name] = True
+                else:
+                    missing.append(prefix_path)
+
         if refiner is not None and not refiner_loaded:
             refiner_path = os.path.join(ckpt_dir, "refiner.pt")
             if os.path.isfile(refiner_path):
@@ -243,7 +278,12 @@ def load_checkpoint(
                 "Missing checkpoint artifacts: " + ", ".join(missing)
             )
         else:
-            print("   -> loaded encoder/adapters/refiner FROM encoder.pt + adapter_*.pt")
+            suffix = "encoder/adapters"
+            if deep_prefix_generators:
+                suffix += "/deep_prefix"
+            if refiner is not None:
+                suffix += "/refiner"
+            print(f"   -> loaded {suffix} FROM encoder.pt + adapter_*.pt")
 
     if optimizer is not None and isinstance(state, dict):
         opt_state = state.get("optimizer", None) or state.get("optim", None)
@@ -478,6 +518,12 @@ def main():
     ap.add_argument("--prefix_projection", action="store_true")
     ap.add_argument("--peft_prefix_all_layers", type=str, default="yes",
                     help="yes/no toggle to apply prefix adapters across every transformer layer.")
+    ap.add_argument("--use_deep_prefix", action="store_true",
+                    help="Enable learned per-layer prefixes derived from the latent interlingua.")
+    ap.add_argument("--deep_prefix_len", type=int, default=None,
+                    help="Number of latent slots used to seed the deep prefixes (defaults to shared latent length).")
+    ap.add_argument("--deep_prefix_dropout", type=float, default=0.1,
+                    help="Dropout probability applied inside the deep prefix generator.")
     # K-token supervision + KD
     ap.add_argument("--K", type=int, default=4, help="Number of early tokens to supervise (A1/A2).")
     ap.add_argument("--adaptive_k_start", type=int, default=None,
@@ -954,6 +1000,7 @@ def main():
 
     # ===== Adapters =====
     adapters: Dict[str, Adapter] = {}
+    deep_prefix_generators: Dict[str, DeepPrefixGenerator] = {}
     adp_llama: Optional[Adapter] = None
     adp_qwen: Optional[Adapter] = None
 
@@ -1002,11 +1049,38 @@ def main():
             with torch.no_grad():
                 adapter.scale.fill_(1.0)
 
+    if args.use_deep_prefix:
+        cfg_prefix_len = args.deep_prefix_len if args.deep_prefix_len is not None else (latent_shared_len + latent_private_len)
+        if cfg_prefix_len <= 0:
+            raise ValueError("--use_deep_prefix requires deep_prefix_len > 0 or non-zero latent length")
+        prefix_len = int(cfg_prefix_len)
+        dropout = float(max(args.deep_prefix_dropout, 0.0))
+        for name, wrapper in (('llama', llama), ('qwen', qwen)):
+            if wrapper is None:
+                continue
+            num_layers = getattr(wrapper.model.config, "num_hidden_layers", None)
+            num_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
+            if num_layers is None or num_heads is None:
+                print(f"[WARN] Skipping deep prefix for {name}: model config missing layer/head counts")
+                continue
+            generator = DeepPrefixGenerator(
+                d_z=wrapper.d_model,
+                prefix_len=prefix_len,
+                num_layers=int(num_layers),
+                num_heads=int(num_heads),
+                dropout=dropout,
+            ).to(_primary_device(wrapper))
+            generator.train()
+            deep_prefix_generators[name] = generator
+
     # ===== Optimizer =====
     enc_params = [p for p in encoder.parameters() if p.requires_grad]
     llama_params = [p for p in adp_llama.parameters() if p.requires_grad] if adp_llama is not None else []
     qwen_params = [p for p in adp_qwen.parameters() if p.requires_grad] if adp_qwen is not None else []
     refiner_params = [p for p in latent_refiner.parameters() if p.requires_grad] if latent_refiner is not None else []
+    deep_prefix_params: List[torch.nn.Parameter] = []
+    for generator in deep_prefix_generators.values():
+        deep_prefix_params.extend([p for p in generator.parameters() if p.requires_grad])
 
     optim_groups = []
     if enc_params:
@@ -1021,6 +1095,8 @@ def main():
         optim_groups.append({"params": extra_qwen_params, "lr": args.lr})
     if refiner_params:
         optim_groups.append({"params": refiner_params, "lr": args.lr})
+    if deep_prefix_params:
+        optim_groups.append({"params": deep_prefix_params, "lr": args.lr})
 
     optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 
@@ -1075,6 +1151,7 @@ def main():
             encoder,
             adapters,
             refiner=latent_refiner,
+            deep_prefix_generators=deep_prefix_generators,
             optimizer=None if args.no_load_optimizer else optimizer,
             strict=True,
             device=device,
@@ -1377,6 +1454,9 @@ def main():
 
                 prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
+                deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None
+                if ctx.name in deep_prefix_generators:
+                    deep_prefix_cache = deep_prefix_generators[ctx.name](prefix)
                 if args.debug and epoch == start_epoch and step == 0:
                     print(
                         f"[DEBUG:{ctx.name}] prefix_len={prefix.shape[1]} anchor_ids={len(ctx.anchor_ids)} tf_len={targets.size(1)}",
@@ -1387,7 +1467,10 @@ def main():
                         flush=True,
                     )
                 loss_tf_latent = ctx.wrapper.forward_with_prefix_loss(
-                    prefix, targets, anchor_token_ids=ctx.anchor_ids
+                    prefix,
+                    targets,
+                    anchor_token_ids=ctx.anchor_ids,
+                    deep_prefix_past=deep_prefix_cache,
                 )
 
                 first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
@@ -1396,6 +1479,7 @@ def main():
                         prefix,
                         anchor_token_text=first_anchor_text,
                         append_bos_after_prefix=ctx.bos_flag,
+                        deep_prefix_past=deep_prefix_cache,
                     )
                     first_targets = ctx.first_token_ids[idx].to(target_device)
                     loss_first_raw = nn.functional.cross_entropy(logits_first.float(), first_targets)
@@ -1410,6 +1494,7 @@ def main():
                         K=current_K,
                         anchor_ids=ctx.anchor_ids,
                         append_bos_after_prefix=ctx.bos_flag,
+                        deep_prefix_past=deep_prefix_cache,
                     )
                 else:
                     loss_kce_raw = torch.zeros((), device=target_device)
@@ -1425,6 +1510,7 @@ def main():
                         tau=args.kd_tau,
                         anchor_ids=ctx.anchor_ids,
                         append_bos_after_prefix=ctx.bos_flag,
+                        deep_prefix_past=deep_prefix_cache,
                     )
                 else:
                     loss_kd_raw = torch.zeros((), device=target_device)
@@ -1439,6 +1525,7 @@ def main():
                         layers=state_kd_layers,
                         append_bos_after_prefix=ctx.bos_flag,
                         anchor_ids=ctx.anchor_ids,
+                        deep_prefix_past=deep_prefix_cache,
                     )
                 else:
                     loss_state_raw = torch.zeros((), device=target_device)
@@ -1729,6 +1816,16 @@ def main():
                     "warmup_align_tokens": args.warmup_align_tokens,
                     "warmup_align_weight": args.warmup_align_weight,
                 }
+                dp_len_cfg = int(
+                    args.deep_prefix_len
+                    if (args.use_deep_prefix and args.deep_prefix_len is not None)
+                    else (latent_shared_len + latent_private_len)
+                ) if args.use_deep_prefix else 0
+                cfg["deep_prefix"] = {
+                    "enabled": bool(args.use_deep_prefix),
+                    "len": dp_len_cfg,
+                    "dropout": float(args.deep_prefix_dropout),
+                }
                 cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
                 cfg["warm_anchor_texts"] = anchor_texts
                 cfg["warm_anchor_modes"] = anchor_modes
@@ -1751,6 +1848,10 @@ def main():
                 }
                 for name, adapter in adapters.items():
                     state_blob[f"adp_{name}"] = adapter.state_dict()
+                for name, gen in deep_prefix_generators.items():
+                    state_blob[f"deep_prefix_{name}"] = gen.state_dict()
+                if latent_refiner is not None:
+                    state_blob["refiner"] = latent_refiner.state_dict()
                 artifacts = {
                     "encoder.pt": encoder.state_dict(),
                     "state.pt": state_blob,
@@ -1758,6 +1859,10 @@ def main():
                 }
                 for name, adapter in adapters.items():
                     artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
+                for name, gen in deep_prefix_generators.items():
+                    artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
+                if latent_refiner is not None:
+                    artifacts["refiner.pt"] = latent_refiner.state_dict()
                 save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
                 print(f"  ✅ Saved (and pruned to) latest at step {global_step}")
 
@@ -1826,6 +1931,16 @@ def main():
         "warmup_align_tokens": args.warmup_align_tokens,
         "warmup_align_weight": args.warmup_align_weight,
     }
+    dp_len_cfg = int(
+        args.deep_prefix_len
+        if (args.use_deep_prefix and args.deep_prefix_len is not None)
+        else (latent_shared_len + latent_private_len)
+    ) if args.use_deep_prefix else 0
+    cfg["deep_prefix"] = {
+        "enabled": bool(args.use_deep_prefix),
+        "len": dp_len_cfg,
+        "dropout": float(args.deep_prefix_dropout),
+    }
     state_blob = {
         "epoch": epoch + 1 if 'epoch' in locals() else None,
         "global_step": global_step if 'global_step' in locals() else None,
@@ -1844,6 +1959,8 @@ def main():
     }
     for name, adapter in adapters.items():
         state_blob[f"adp_{name}"] = adapter.state_dict()
+    for name, gen in deep_prefix_generators.items():
+        state_blob[f"deep_prefix_{name}"] = gen.state_dict()
     if latent_refiner is not None:
         state_blob["refiner"] = latent_refiner.state_dict()
 
@@ -1854,6 +1971,8 @@ def main():
     }
     for name, adapter in adapters.items():
         artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
+    for name, gen in deep_prefix_generators.items():
+        artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
     if latent_refiner is not None:
         artifacts["refiner.pt"] = latent_refiner.state_dict()
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)

@@ -8,7 +8,7 @@ import json
 import argparse
 import gc
 import ast
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple, Optional, Sequence
 
 import torch
 import math
@@ -21,6 +21,7 @@ from latentwire.models import (
     ByteTokenizer,
     SimpleEncoder,
     STQueryEncoder,
+    DeepPrefixGenerator,
 )
 from latentwire.core_utils import (
     patch_dataloader_defaults,
@@ -153,6 +154,16 @@ def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed
     if mode != "none":
         prefix = _per_example_calibrate(prefix, tgt)
     return prefix, pre_scalar, float(tgt)
+
+
+def _slice_deep_prefix(
+    cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
+    start: int,
+    end: int,
+) -> Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]]:
+    if cache is None:
+        return None
+    return tuple((k[start:end], v[start:end]) for (k, v) in cache)
 
 
 def _answer_lengths_eval(wrapper: LMWrapper, answers: List[str], max_answer_tokens: int, device: str) -> torch.Tensor:
@@ -334,6 +345,7 @@ def avg_nll_latent(
     tokenizer,
     device: str,
     anchor_token_text: Optional[str] = None,
+    deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
 ) -> Optional[float]:
     if wrapper is None:
         return None
@@ -351,7 +363,12 @@ def avg_nll_latent(
     tot_w, tot_tok, skipped = 0.0, 0, 0
     for i, a in enumerate(answers):
         a_ids = _to_long(tokenizer(a, return_tensors="pt", add_special_tokens=True).input_ids, device)
-        loss = wrapper.forward_with_prefix_loss(prefix[i:i+1], a_ids, anchor_token_ids=anchor_ids)
+        loss = wrapper.forward_with_prefix_loss(
+            prefix[i:i+1],
+            a_ids,
+            anchor_token_ids=anchor_ids,
+            deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, i, i + 1),
+        )
         if not torch.isfinite(loss):
             skipped += 1
             continue
@@ -402,6 +419,7 @@ def first_token_topk_acc(
     k_values=(1, 5),
     skip: bool = False,
     chunk_size: int = 16,
+    deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
 ) -> Dict[str, float]:
     """
     Compute top-k accuracy for the very first answer token predicted from
@@ -425,6 +443,7 @@ def first_token_topk_acc(
             prefix_chunk,
             anchor_token_text=anchor_token_text,
             append_bos_after_prefix=append_bos_after_prefix,
+            deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, start, end),
         )
         probs = torch.softmax(logits, dim=-1)
         V = probs.size(-1)
@@ -514,6 +533,7 @@ def evaluate_model_chunked_latent(
     first_token_temperature: float = 0.0,
     append_bos_after_prefix: Optional[bool] = None,
     lengths: Optional[torch.Tensor] = None,
+    deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
 ):
     N = prefix_embeds.size(0)
     if chunk_size is None or chunk_size <= 0:
@@ -539,6 +559,7 @@ def evaluate_model_chunked_latent(
             first_token_top_p=first_token_top_p,
             first_token_temperature=first_token_temperature,
             append_bos_after_prefix=append_bos_after_prefix,
+            deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, start, end),
         )
         preds.extend(wrapper.decode_batch_then_clean(out_ids))
     if torch.cuda.is_available():
@@ -595,6 +616,7 @@ def _run_latent_path(
     golds: List[str],
     latent_len: int,
     answer_lengths: Optional[torch.Tensor],
+    deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
 ):
     acc = first_token_topk_acc(
         wrapper,
@@ -604,6 +626,7 @@ def _run_latent_path(
         append_bos_after_prefix=append_bos,
         skip=bool(getattr(args, "skip_prefix_acc", False)),
         chunk_size=max(1, getattr(args, "chunk_size", 8)),
+        deep_prefix_cache=deep_prefix_cache,
     )
 
     latent_preds, t_latent = evaluate_model_chunked_latent(
@@ -619,6 +642,7 @@ def _run_latent_path(
         first_token_temperature=args.first_token_temperature,
         append_bos_after_prefix=append_bos,
         lengths=answer_lengths,
+        deep_prefix_cache=deep_prefix_cache,
     )
 
     if args.debug and args.debug_print_first > 0:
@@ -642,7 +666,15 @@ def _run_latent_path(
     latent_em, latent_f1 = batch_metrics(latent_preds, golds)
     trunc_em, trunc_f1 = batch_metrics(trunc_preds, golds)
 
-    latent_nll = avg_nll_latent(wrapper, prefix, golds, wrapper.tokenizer, prefix.device, anchor_text or None)
+    latent_nll = avg_nll_latent(
+        wrapper,
+        prefix,
+        golds,
+        wrapper.tokenizer,
+        prefix.device,
+        anchor_text or None,
+        deep_prefix_cache=deep_prefix_cache,
+    )
 
     return {
         "latent": {
@@ -737,6 +769,34 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         raise ValueError("No models selected for evaluation.")
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
+
+    deep_prefix_cfg = cfg.get("deep_prefix", {}) or {}
+    deep_prefix_generators: Dict[str, DeepPrefixGenerator] = {}
+    if deep_prefix_cfg.get("enabled"):
+        prefix_len = int(deep_prefix_cfg.get("len", latent_len))
+        dropout = float(deep_prefix_cfg.get("dropout", 0.0))
+        for name, wrapper in wrappers.items():
+            num_layers = getattr(wrapper.model.config, "num_hidden_layers", None)
+            num_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
+            if num_layers is None or num_heads is None:
+                print(f"[WARN] Skipping deep prefix generator load for {name}: missing layer/head config")
+                continue
+            generator = DeepPrefixGenerator(
+                d_z=wrapper.d_model,
+                prefix_len=prefix_len,
+                num_layers=int(num_layers),
+                num_heads=int(num_heads),
+                dropout=dropout,
+            ).to(_primary_device(wrapper)).eval()
+            path = os.path.join(ckpt_dir, f"deep_prefix_{name}.pt")
+            if os.path.isfile(path):
+                generator.load_state_dict(_safe_load(path, map_location="cpu"), strict=True)
+                generator.to(_primary_device(wrapper)).eval()
+                print(f"✓ Loaded deep prefix generator for {name}")
+            else:
+                print(f"[WARN] deep_prefix_{name}.pt missing; continuing without deep prefixes for {name}")
+                continue
+            deep_prefix_generators[name] = generator
 
     adapter_hidden_mult = int(cfg.get("adapter_hidden_mult", 1))
     adapter_colorize = bool(cfg.get("adapter_colorize", False))
@@ -866,6 +926,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     quant_bits = getattr(args, "latent_quant_bits", None)
     quant_group = getattr(args, "latent_quant_group_size", 32)
     prefix_map = {}
+    deep_prefix_cache_map: Dict[str, Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]]] = {}
     debug_map = {name: {} for name in model_contexts}
     with torch.no_grad():
         for name, ctx in model_contexts.items():
@@ -900,6 +961,14 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                     "model_id": ctx["wrapper"].cfg.model_id,
                 })
                 debug_map[name] = debug
+            generator = deep_prefix_generators.get(name)
+            if generator is not None:
+                generator = generator.to(target_device).eval()
+                with torch.no_grad():
+                    cache = generator(prefix)
+                deep_prefix_cache_map[name] = cache
+            else:
+                deep_prefix_cache_map[name] = None
 
     # Align latent-anchor usage with training: chat-mode runs still expect the raw
     # literal (e.g., "Answer: ") even though we render the assistant header via the
@@ -930,6 +999,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             golds,
             latent_len,
             answer_lengths[name],
+            deep_prefix_cache_map[name],
         )
         latent_results[name] = res
         latent_wall += res["latent"]["time"]
@@ -979,10 +1049,32 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             A_ids_Q = _to_long(wrappers["qwen"].tokenizer(candA,  return_tensors="pt", add_special_tokens=True).input_ids, device)
             B_ids_L = _to_long(wrappers["llama"].tokenizer(candB, return_tensors="pt", add_special_tokens=True).input_ids, device)
             B_ids_Q = _to_long(wrappers["qwen"].tokenizer(candB,  return_tensors="pt", add_special_tokens=True).input_ids, device)
-            scoreA = wrappers["llama"].score_prefix_logprob(prefix_ll, A_ids_L, anchor_token_ids=anchor_ids["llama"]) + \
-                     wrappers["qwen"].score_prefix_logprob(prefix_qw, A_ids_Q, anchor_token_ids=anchor_ids["qwen"])
-            scoreB = wrappers["llama"].score_prefix_logprob(prefix_ll, B_ids_L, anchor_token_ids=anchor_ids["llama"]) + \
-                     wrappers["qwen"].score_prefix_logprob(prefix_qw, B_ids_Q, anchor_token_ids=anchor_ids["qwen"])
+            deep_ll = _slice_deep_prefix(deep_prefix_cache_map.get("llama"), i, i + 1)
+            deep_qw = _slice_deep_prefix(deep_prefix_cache_map.get("qwen"), i, i + 1)
+            scoreA = wrappers["llama"].score_prefix_logprob(
+                prefix_ll,
+                A_ids_L,
+                anchor_token_ids=anchor_ids["llama"],
+                deep_prefix_past=deep_ll,
+            )
+            scoreA += wrappers["qwen"].score_prefix_logprob(
+                prefix_qw,
+                A_ids_Q,
+                anchor_token_ids=anchor_ids["qwen"],
+                deep_prefix_past=deep_qw,
+            )
+            scoreB = wrappers["llama"].score_prefix_logprob(
+                prefix_ll,
+                B_ids_L,
+                anchor_token_ids=anchor_ids["llama"],
+                deep_prefix_past=deep_ll,
+            )
+            scoreB += wrappers["qwen"].score_prefix_logprob(
+                prefix_qw,
+                B_ids_Q,
+                anchor_token_ids=anchor_ids["qwen"],
+                deep_prefix_past=deep_qw,
+            )
             pick = candA if scoreA >= scoreB else candB
             joint_preds.append(pick)
             if _normalize(candA) == _normalize(candB):

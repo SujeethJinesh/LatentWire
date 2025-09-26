@@ -50,12 +50,19 @@ We now have a focused path for iterating on Llama in isolation. The trainer resp
 
 - `Z = Attn(Q=learned_queries, K=Proj(HF_tokens), V=Proj(HF_tokens))`
 - `P_ℓ = A_ℓ(Z)`, `inputs_embeds = [P_ℓ, E_ℓ(y[:-1])]`, labels `[mask… , y[1:]]`
-- Loss: `L = 0.5·(CE_L + CE_Q)` with auxiliary first‑token / first‑K terms.
+- Loss: `L = 0.5·(CE_L + CE_Q)` with auxiliary first-token / first-K terms.
 
 ### Ablations (guardrails)
 
-- `M ∈ {24, 32, 48}`, `d_z ∈ {192, 256, 320}`; compare **Latent vs Token‑budget** at same `M`.
+- `M ∈ {24, 32, 48}`, `d_z ∈ {192, 256, 320}`; compare **Latent vs Token-budget** at same `M`.
 - Encoder swap: `stq` vs `simple-st` to quantify the positional benefit.
+
+## Update (2025-09-25): Deep prefix injection is live
+
+- Added `DeepPrefixGenerator` modules per backend. Each maps the calibrated latent prefix into layer-wise key/value caches (prompt dropout → LayerNorm → residual MLP → per-layer projections). The feature is gated by `--use_deep_prefix`, with `--deep_prefix_len` / `--deep_prefix_dropout` to sweep capacity.
+- Training links the deep prefix through every prefix-aware path: teacher-forced loss, first-token CE, KD (logits + hidden states), and chunked latent generation now accept an optional `deep_prefix_past`. Gradients flow into the generator, so we can co-train shallow embeddings and deep prompts.
+- Checkpoints persist `deep_prefix_{llama,qwen}.pt` alongside adapters; `config.json.deep_prefix = {enabled,len,dropout}` keeps eval in sync, and resume restores generator weights automatically.
+- Evaluation reconstructs the same deep prefix caches before scoring. Latent NLL, first-token accuracy, joint rescoring, and decode chunks slice/cache the per-layer K/V tensors so A/B against the legacy shallow-only path is faithful.
 
 ---
 

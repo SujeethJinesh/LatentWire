@@ -36,6 +36,8 @@ def k_token_ce_from_prefix(
     K: int = 4,
     anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
     append_bos_after_prefix: Optional[bool] = None,
+    *,
+    deep_prefix_past: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
 ) -> torch.Tensor:
     """Cross-entropy over the first `K` decoding steps under latent-prefix conditioning."""
     device = next(llm.model.parameters()).device
@@ -45,17 +47,18 @@ def k_token_ce_from_prefix(
     anchor_tensor = _maybe_to_anchor_tensor(anchor_ids, device)
 
     for t in range(min(K, gold_ids.size(1))):
-        inputs_embeds = llm._compose_inputs_from_prefix(
+        inputs_embeds, attn_mask, prepared_past = llm._compose_inputs_from_prefix(
             prefix_embeds,
             gold_ids[:, :t],
             anchor_ids=anchor_tensor,
             append_bos_after_prefix=append_bos_after_prefix,
+            deep_prefix=deep_prefix_past,
         )
-        attn_mask = torch.ones(inputs_embeds.size()[:-1], dtype=torch.long, device=device)
         logits = llm.model(
             inputs_embeds=inputs_embeds,
             attention_mask=attn_mask,
-            use_cache=False,
+            past_key_values=prepared_past,
+            use_cache=bool(prepared_past),
             return_dict=True,
         ).logits[:, -1, :]
         total = total + F.cross_entropy(logits, gold_ids[:, t], reduction="mean")
@@ -74,6 +77,8 @@ def kd_first_k_prefix_vs_text(
     tau: float = 1.0,
     anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
     append_bos_after_prefix: Optional[bool] = None,
+    *,
+    deep_prefix_past: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
 ) -> torch.Tensor:
     """KL(student‖teacher) over first `K` steps, teacher conditioned on text prompts."""
     device = next(student_llm.model.parameters()).device
@@ -94,17 +99,18 @@ def kd_first_k_prefix_vs_text(
             ).logits[:, -1, :]
             teacher_probs = F.softmax(teacher_logits / tau, dim=-1)
 
-        student_inputs = student_llm._compose_inputs_from_prefix(
+        student_inputs, student_mask, prepared_past = student_llm._compose_inputs_from_prefix(
             prefix_embeds,
             gold_ids[:, :t],
             anchor_ids=anchor_tensor,
             append_bos_after_prefix=append_bos_after_prefix,
+            deep_prefix=deep_prefix_past,
         )
-        student_mask = torch.ones(student_inputs.size()[:-1], dtype=torch.long, device=device)
         student_logits = student_llm.model(
             inputs_embeds=student_inputs,
             attention_mask=student_mask,
-            use_cache=False,
+            past_key_values=prepared_past,
+            use_cache=bool(prepared_past),
             return_dict=True,
         ).logits[:, -1, :]
         student_log_probs = F.log_softmax(student_logits / tau, dim=-1)
@@ -124,6 +130,8 @@ def kd_hidden_states_first_k(
     layers: Tuple[int, ...] = (0, 1, 2),
     append_bos_after_prefix: Optional[bool] = None,
     anchor_ids: Optional[Sequence[int] | torch.Tensor] = None,
+    *,
+    deep_prefix_past: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
 ) -> torch.Tensor:
     """Match hidden states between latent and text runs for the first `K` decoding steps."""
     device = prefix_embeds.device
@@ -146,18 +154,19 @@ def kd_hidden_states_first_k(
         teacher_states = teacher_out.hidden_states
 
     for t in range(min(K, gold_ids.size(1))):
-        student_inputs = wrapper._compose_inputs_from_prefix(
+        student_inputs, student_mask, prepared_past = wrapper._compose_inputs_from_prefix(
             prefix_embeds,
             gold_ids[:, :t],
             anchor_ids=anchor_tensor,
             append_bos_after_prefix=append_bos_after_prefix,
+            deep_prefix=deep_prefix_past,
         )
-        student_mask = torch.ones(student_inputs.size()[:-1], dtype=torch.long, device=device)
         student_out = model(
             inputs_embeds=student_inputs,
             attention_mask=student_mask,
             output_hidden_states=True,
-            use_cache=False,
+            past_key_values=prepared_past,
+            use_cache=bool(prepared_past),
             return_dict=True,
         )
         student_states = student_out.hidden_states
