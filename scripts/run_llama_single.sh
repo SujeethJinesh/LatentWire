@@ -56,7 +56,8 @@ fi
 
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
-BATCH_SIZE="${BATCH_SIZE:-20}"
+BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-20}"
+BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-32}"
 DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-24}"
 DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.1}"
 REFINER_LAYERS="${REFINER_LAYERS:-2}"
@@ -189,7 +190,7 @@ LORA_ARGS=(
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
-          --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
+          --batch_size "$BATCH_SIZE_STAGEA" --grad_accum_steps 16 \
           --save_dir "$CKPT_STAGEA" --auto_resume --save_training_stats \
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
@@ -218,7 +219,7 @@ LORA_ARGS=(
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
-          --batch_size "$BATCH_SIZE" --grad_accum_steps 16 \
+          --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps 16 \
           --resume_from "$CKPT_STAGEA" \
           --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
           --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \

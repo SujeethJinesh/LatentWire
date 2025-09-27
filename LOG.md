@@ -3,6 +3,7 @@
 ### 2025-09-26 — Stage A KD stabilization (Codex)
 - Collapsed `kd_first_k_prefix_vs_text` into a single teacher forward pass over the chat-templated text, reusing those logits for the first-K KD steps. This removes the repeated PEFT dispatch that was hitting `CUDA error: unspecified launch failure` on the multi-GPU Llama stage-A run (`scripts/run_llama_single.sh`), and now masks padded answers, tracks per-example prompt lengths, and only disables LoRA during the teacher pass.
 - Extended `LMWrapper.loss_with_text_prompt(... return_logits=True)` so the KD path can share the same PAD-aware scaffold/attention logic. Training and eval call-sites now unpack the optional logits while keeping text warm-up behaviour unchanged.
+- `scripts/run_llama_single.sh` now exposes independent batch sizes for Stage A and Stage B (`BATCH_SIZE_STAGEA`, `BATCH_SIZE_STAGEB`), defaulting to 20 and 32 respectively so we can warm up with smaller latent batches and immediately scale Stage B without editing the script.
 
 ### 2025-09-25 — Eval latent alignment fix (Codex)
 - Identified that Stage C evaluation recomputed latent Z from the **raw prompt** (`Question…\nAnswer:`), while training encoded the **anchor-stripped user text** (optionally wrapped in a neutral chat template). This mismatch left the latent encoder seeing an extra "Answer:" literal at eval time, producing unusable soft tokens and first-token accuracy ≈0.
