@@ -1866,7 +1866,7 @@ def main():
                         latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
                 if training_mode == "text":
                     try:
-                        text_teacher_loss, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
+                        text_teacher_loss, _, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
                     except Exception:
                         text_teacher_loss = torch.zeros((), device=target_device)
 

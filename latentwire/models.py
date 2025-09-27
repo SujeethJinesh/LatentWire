@@ -1061,10 +1061,17 @@ class LMWrapper(nn.Module):
         return out.loss
 
 
-    def loss_with_text_prompt(self, prompt_ids: torch.Tensor, target_ids: torch.Tensor):
+    def loss_with_text_prompt(
+        self,
+        prompt_ids: torch.Tensor,
+        target_ids: torch.Tensor,
+        *,
+        return_logits: bool = False,
+    ):
         """
-        PAD-aware text loss for diagnostics. We ignore PADs in the target labels
-        and zero the attention over padded TF inputs.
+        PAD-aware text loss for diagnostics. We ignore PADs in the target labels,
+        zero the attention over padded TF inputs, and optionally return logits
+        for downstream analyses (e.g., KD teacher targets).
         """
         device = next(self.model.parameters()).device
         pad_id = getattr(self.tokenizer, "pad_token_id", None)
@@ -1099,7 +1106,8 @@ class LMWrapper(nn.Module):
 
         out = self.model(input_ids=tf_inputs.to(device), attention_mask=attn_mask, labels=labels)
         n_tokens = (labels != -100).sum()
-        return out.loss, int(n_tokens.item())
+        logits = out.logits if return_logits else None
+        return out.loss, int(n_tokens.item()), logits
 
     def score_prefix_logprob(
         self,
