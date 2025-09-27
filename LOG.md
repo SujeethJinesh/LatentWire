@@ -12,6 +12,7 @@
 - KD teacher inference now chunks the batch (`KD_TEACHER_CHUNK`, default 4) to avoid the GPU kernel fault we saw on full Stage B batches; if a chunk still fails we fall back per-example and finally on CPU. Script defaults to `KD_WEIGHT_STAGEA=0.5`, so hero runs keep KD active by default while remaining configurable via env vars.
 - `run_llama_single.sh` now defaults `LLAMA_DEVICE_MAP` to `balanced_low_0`, raises Stage A/B micro-batches to 28/36 with `grad_accum=12`, and tightens the GPU memory budget (70 GiB) so auto-mapping distributes layers more evenly while keeping total batch size similar.
 - `_parse_device_map` returns string specs (e.g., `balanced_low_0`) directly, and `LMWrapper` skips `max_memory` whenever the map is a string so evaluation/training both load cleanly under the new default.
+- State-KD now mirrors the logits KD fallback: it chunk-loads the teacher (`KD_STATE_CHUNK`, default 4), retries per-example, and finally moves to CPU if needed, eliminating Stage A crashes from teacher hidden-state inference.
 
 ### 2025-09-25 — Eval latent alignment fix (Codex)
 - Identified that Stage C evaluation recomputed latent Z from the **raw prompt** (`Question…\nAnswer:`), while training encoded the **anchor-stripped user text** (optionally wrapped in a neutral chat template). This mismatch left the latent encoder seeing an extra "Answer:" literal at eval time, producing unusable soft tokens and first-token accuracy ≈0.

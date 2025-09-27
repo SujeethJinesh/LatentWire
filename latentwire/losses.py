@@ -273,14 +273,86 @@ def kd_hidden_states_first_k(
     with torch.no_grad():
         teacher_inputs = torch.cat([text_scaffold_ids, gold_ids[:, :K]], dim=1)
         teacher_mask = torch.ones_like(teacher_inputs, dtype=torch.long, device=device)
-        teacher_out = model(
-            input_ids=teacher_inputs,
-            attention_mask=teacher_mask,
-            output_hidden_states=True,
-            use_cache=False,
-            return_dict=True,
-        )
-        teacher_states = teacher_out.hidden_states
+
+        chunk = max(1, int(os.getenv("KD_STATE_CHUNK", "4")))
+        teacher_states = None
+        try:
+            hidden_chunks = None
+            for start in range(0, teacher_inputs.size(0), chunk):
+                end = min(teacher_inputs.size(0), start + chunk)
+                inputs_chunk = teacher_inputs[start:end]
+                mask_chunk = teacher_mask[start:end]
+                out_chunk = model(
+                    input_ids=inputs_chunk,
+                    attention_mask=mask_chunk,
+                    output_hidden_states=True,
+                    use_cache=False,
+                    return_dict=True,
+                )
+                if hidden_chunks is None:
+                    hidden_chunks = [[] for _ in out_chunk.hidden_states]
+                for idx_layer, tensor_layer in enumerate(out_chunk.hidden_states):
+                    hidden_chunks[idx_layer].append(tensor_layer)
+            if hidden_chunks is not None:
+                teacher_states = tuple(torch.cat(chunks, dim=0) for chunks in hidden_chunks)
+        except RuntimeError as exc:
+            print("[WARN] KD state teacher chunked forward failed; retrying per-example:", exc)
+            teacher_states = None
+
+        if teacher_states is None:
+            fallback_failed = False
+            hidden_chunks = None
+            for row in range(teacher_inputs.size(0)):
+                try:
+                    out_row = model(
+                        input_ids=teacher_inputs[row : row + 1],
+                        attention_mask=teacher_mask[row : row + 1],
+                        output_hidden_states=True,
+                        use_cache=False,
+                        return_dict=True,
+                    )
+                    if hidden_chunks is None:
+                        hidden_chunks = [[] for _ in out_row.hidden_states]
+                    for idx_layer, tensor_layer in enumerate(out_row.hidden_states):
+                        hidden_chunks[idx_layer].append(tensor_layer)
+                except RuntimeError as inner_exc:
+                    print("[WARN] KD state teacher per-example fallback failed; attempting CPU run:", inner_exc)
+                    fallback_failed = True
+                    break
+            if not fallback_failed and hidden_chunks is not None:
+                teacher_states = tuple(torch.cat(chunks, dim=0) for chunks in hidden_chunks)
+
+        if teacher_states is None:
+            try:
+                original_device = next(model.parameters()).device
+            except StopIteration:
+                original_device = device
+            try:
+                model.to("cpu")
+                teacher_inputs_cpu = teacher_inputs.to("cpu")
+                teacher_mask_cpu = teacher_mask.to("cpu")
+                out_cpu = model(
+                    input_ids=teacher_inputs_cpu,
+                    attention_mask=teacher_mask_cpu,
+                    output_hidden_states=True,
+                    use_cache=False,
+                    return_dict=True,
+                )
+                teacher_states = tuple(t.to(device) for t in out_cpu.hidden_states)
+                print("[WARN] KD state CPU fallback succeeded")
+            except RuntimeError as cpu_exc:
+                print("[WARN] KD state CPU fallback failed; skipping state KD for batch:", cpu_exc)
+                teacher_states = None
+            finally:
+                try:
+                    model.to(original_device)
+                except Exception:
+                    pass
+
+        if teacher_states is None:
+            return torch.zeros((), device=device)
+
+        teacher_states = tuple(t.to(device) for t in teacher_states)
 
     for t in range(min(K, gold_ids.size(1))):
         student_inputs, student_mask, prepared_past = wrapper._compose_inputs_from_prefix(
