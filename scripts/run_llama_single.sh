@@ -48,9 +48,9 @@ if [[ $hero -eq 1 ]]; then
   SAMPLES="${SAMPLES:-1000}"
 else
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-640}
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-1280}
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-2560}
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-6}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-8}
   SAMPLES="${SAMPLES:-200}"
 fi
 
@@ -227,18 +227,18 @@ LORA_ARGS=(
           --warm_anchor_mode chat \
           --latent_private_len 16 \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-          --first_token_ce_weight 6.0 --first_token_ce_schedule cosine --first_token_ce_peak 8.0 --first_token_ce_warmup_frac 0.4 \
-          --K 8 --k_ce_weight 0.5 --kd_first_k_weight 1.0 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
+          --first_token_ce_weight 6.0 --first_token_ce_schedule cosine --first_token_ce_peak 10.0 --first_token_ce_warmup_frac 0.4 \
+          --K 8 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
           --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
-          --warmup_text_latent_epochs 1.0 \
+          --warmup_text_latent_epochs 1.5 \
           --warmup_align_tokens 8 --warmup_align_weight 1.5 \
           --warmup_text_teacher_weight 2.0 \
-          --warmup_text_latent_weight 0.0 --warmup_text_latent_weight_end 1.0 \
-          --warmup_tail_prob 0.0 \
+          --warmup_text_latent_weight 0.2 --warmup_text_latent_weight_end 1.0 \
+          --warmup_tail_prob 0.1 \
           --adapter_hidden_mult 4 --adapter_dropout 0.1 \
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
-          --grad_diag_interval 50 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
+          --grad_diag_interval 25 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
           --diagnostic_log "$DIAGNOSTIC_LOG" \
           "${GIST_ARGS[@]}" \
           "${LORA_ARGS[@]}" \
