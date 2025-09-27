@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Optional, Sequence, Tuple
 
 from contextlib import nullcontext
@@ -114,16 +115,26 @@ def kd_first_k_prefix_vs_text(
         except Exception:
             disable_adapter_ctx = nullcontext()
 
+    max_batch_chunk = int(os.getenv("KD_TEACHER_CHUNK", "4"))
+    max_batch_chunk = max(1, max_batch_chunk)
+
     teacher_logits_full = None
     with disable_adapter_ctx:
         with torch.no_grad():
             try:
-                _loss, _n_tok, teacher_logits_full = teacher_llm.loss_with_text_prompt(
-                    scaffold_ids_teacher,
-                    gold_ids_teacher_trim,
-                    return_logits=True,
-                    compute_loss=False,
-                )
+                logits_chunks = []
+                for start in range(0, scaffold_ids_teacher.size(0), max_batch_chunk):
+                    end = min(scaffold_ids_teacher.size(0), start + max_batch_chunk)
+                    ids_chunk = scaffold_ids_teacher[start:end]
+                    gold_chunk = gold_ids_teacher_trim[start:end]
+                    _, _, logits_chunk = teacher_llm.loss_with_text_prompt(
+                        ids_chunk,
+                        gold_chunk,
+                        return_logits=True,
+                        compute_loss=False,
+                    )
+                    logits_chunks.append(logits_chunk)
+                teacher_logits_full = torch.cat(logits_chunks, dim=0)
             except RuntimeError as exc:
                 print("[WARN] KD teacher forward failed; retrying per-example:", exc)
                 teacher_logits_full = None
