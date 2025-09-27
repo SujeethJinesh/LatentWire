@@ -122,8 +122,27 @@ def kd_first_k_prefix_vs_text(
                     compute_loss=False,
                 )
             except RuntimeError as exc:
-                print("[WARN] KD teacher forward failed; skipping KD for this batch:", exc)
+                print("[WARN] KD teacher forward failed; retrying per-example:", exc)
                 teacher_logits_full = None
+                logits_chunks = []
+                fallback_failed = False
+                for row in range(scaffold_ids_teacher.size(0)):
+                    ids_row = scaffold_ids_teacher[row : row + 1]
+                    gold_row = gold_ids_teacher[row : row + 1]
+                    try:
+                        _, _, logits_row = teacher_llm.loss_with_text_prompt(
+                            ids_row,
+                            gold_row,
+                            return_logits=True,
+                            compute_loss=False,
+                        )
+                        logits_chunks.append(logits_row)
+                    except RuntimeError as inner_exc:
+                        print("[WARN] KD teacher per-example fallback failed; skipping batch:", inner_exc)
+                        fallback_failed = True
+                        break
+                if not fallback_failed and logits_chunks:
+                    teacher_logits_full = torch.cat(logits_chunks, dim=0)
 
     if teacher_logits_full is None:
         return torch.zeros((), device=student_device)
