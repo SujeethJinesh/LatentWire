@@ -1067,11 +1067,16 @@ class LMWrapper(nn.Module):
         target_ids: torch.Tensor,
         *,
         return_logits: bool = False,
+        compute_loss: bool = True,
     ):
         """
         PAD-aware text loss for diagnostics. We ignore PADs in the target labels,
         zero the attention over padded TF inputs, and optionally return logits
         for downstream analyses (e.g., KD teacher targets).
+
+        When `compute_loss=False`, the model forward is run without labels to avoid
+        Hugging Face's internal shift/CE kernels (useful for KD teachers). In that
+        case the returned loss is `None`.
         """
         device = next(self.model.parameters()).device
         pad_id = getattr(self.tokenizer, "pad_token_id", None)
@@ -1104,10 +1109,19 @@ class LMWrapper(nn.Module):
             labels_tail
         ], dim=1)
 
-        out = self.model(input_ids=tf_inputs.to(device), attention_mask=attn_mask, labels=labels)
+        model_kwargs = {
+            "input_ids": tf_inputs.to(device),
+            "attention_mask": attn_mask,
+            "use_cache": False,
+        }
+        if compute_loss:
+            model_kwargs["labels"] = labels
+
+        out = self.model(**model_kwargs)
         n_tokens = (labels != -100).sum()
         logits = out.logits if return_logits else None
-        return out.loss, int(n_tokens.item()), logits
+        loss = out.loss if compute_loss else None
+        return loss, int(n_tokens.item()), logits
 
     def score_prefix_logprob(
         self,

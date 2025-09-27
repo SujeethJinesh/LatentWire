@@ -114,6 +114,7 @@ def kd_first_k_prefix_vs_text(
                 scaffold_ids_teacher,
                 gold_ids_teacher,
                 return_logits=True,
+                compute_loss=False,
             )
 
     if teacher_logits_full is None:
