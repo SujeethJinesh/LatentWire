@@ -108,14 +108,20 @@ def kd_first_k_prefix_vs_text(
         except Exception:
             disable_adapter_ctx = nullcontext()
 
+    teacher_logits_full = None
     with disable_adapter_ctx:
         with torch.no_grad():
-            _loss, _n_tok, teacher_logits_full = teacher_llm.loss_with_text_prompt(
-                scaffold_ids_teacher,
-                gold_ids_teacher,
-                return_logits=True,
-                compute_loss=False,
-            )
+            try:
+                _loss, _n_tok, teacher_logits_full = teacher_llm.loss_with_text_prompt(
+                    scaffold_ids_teacher,
+                    gold_ids_teacher,
+                    return_logits=True,
+                    compute_loss=False,
+                )
+            except RuntimeError as exc:
+                print("[WARN] KD teacher forward failed; skipping KD for this batch:", exc)
+                torch.cuda.synchronize()
+                teacher_logits_full = None
 
     if teacher_logits_full is None:
         return torch.zeros((), device=student_device)
