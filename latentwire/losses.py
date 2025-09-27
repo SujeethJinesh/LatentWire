@@ -99,6 +99,9 @@ def kd_first_k_prefix_vs_text(
 
     pad_id = getattr(teacher_llm.tokenizer, "pad_token_id", None)
 
+    if scaffold_ids_teacher.size(1) <= 1 or gold_ids_teacher.size(1) <= 1:
+        return torch.zeros((), device=student_device)
+
     teacher_model = teacher_llm.model
     disable_adapter_ctx = nullcontext()
     disable_adapter = getattr(teacher_model, "disable_adapter", None)
