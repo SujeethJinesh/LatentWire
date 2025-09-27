@@ -97,6 +97,9 @@ def kd_first_k_prefix_vs_text(
     scaffold_ids_teacher = scaffold_ids.to(teacher_device, non_blocking=True)
     gold_ids_teacher = gold_ids.to(teacher_device, non_blocking=True)
 
+    max_teacher_steps = max(1, min(int(K), gold_ids_teacher.size(1)))
+    gold_ids_teacher_trim = gold_ids_teacher[:, :max_teacher_steps]
+
     pad_id = getattr(teacher_llm.tokenizer, "pad_token_id", None)
 
     if scaffold_ids_teacher.size(1) <= 1 or gold_ids_teacher.size(1) <= 1:
@@ -117,7 +120,7 @@ def kd_first_k_prefix_vs_text(
             try:
                 _loss, _n_tok, teacher_logits_full = teacher_llm.loss_with_text_prompt(
                     scaffold_ids_teacher,
-                    gold_ids_teacher,
+                    gold_ids_teacher_trim,
                     return_logits=True,
                     compute_loss=False,
                 )
@@ -128,7 +131,7 @@ def kd_first_k_prefix_vs_text(
                 fallback_failed = False
                 for row in range(scaffold_ids_teacher.size(0)):
                     ids_row = scaffold_ids_teacher[row : row + 1]
-                    gold_row = gold_ids_teacher[row : row + 1]
+                    gold_row = gold_ids_teacher_trim[row : row + 1]
                     try:
                         _, _, logits_row = teacher_llm.loss_with_text_prompt(
                             ids_row,
@@ -138,11 +141,29 @@ def kd_first_k_prefix_vs_text(
                         )
                         logits_chunks.append(logits_row)
                     except RuntimeError as inner_exc:
-                        print("[WARN] KD teacher per-example fallback failed; skipping batch:", inner_exc)
+                        print("[WARN] KD teacher per-example fallback failed on row; attempting CPU fallback:", inner_exc)
                         fallback_failed = True
                         break
                 if not fallback_failed and logits_chunks:
                     teacher_logits_full = torch.cat(logits_chunks, dim=0)
+                if teacher_logits_full is None:
+                    try:
+                        teacher_llm.model.to("cpu")
+                        ids_cpu = scaffold_ids_teacher.to("cpu")
+                        gold_cpu = gold_ids_teacher_trim.to("cpu")
+                        _, _, logits_cpu = teacher_llm.loss_with_text_prompt(
+                            ids_cpu,
+                            gold_cpu,
+                            return_logits=True,
+                            compute_loss=False,
+                        )
+                        teacher_logits_full = logits_cpu.to(student_device)
+                        print("[WARN] KD teacher CPU fallback succeeded")
+                    except RuntimeError as cpu_exc:
+                        print("[WARN] KD teacher CPU fallback failed; skipping KD for batch:", cpu_exc)
+                        teacher_logits_full = None
+                    finally:
+                        teacher_llm.model.to(teacher_device)
 
     if teacher_logits_full is None:
         return torch.zeros((), device=student_device)
