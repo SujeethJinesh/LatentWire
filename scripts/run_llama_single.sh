@@ -102,7 +102,13 @@ export TOKENIZERS_PARALLELISM="false"
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
-LLAMA_DEVICE_MAP="${LLAMA_DEVICE_MAP:-auto}"
+if [[ -z "${LLAMA_DEVICE_MAP:-}" ]]; then
+  if [[ "$hero" -eq 1 ]]; then
+    LLAMA_DEVICE_MAP="balanced_low_0"
+  else
+    LLAMA_DEVICE_MAP="balanced_low_0"
+  fi
+fi
 GPU_MEM_GIB="${GPU_MEM_GIB:-78}"
 
 COMMON_ARGS_BASE=(
