@@ -656,14 +656,26 @@ def _run_latent_path(
     trunc_prompts = build_token_budget_prompts(
         wrapper.tokenizer, prompts_raw, chat_prompts, k_budget, args.token_budget_mode
     )
-    trunc_preds, t_trunc = evaluate_model_chunked_text(
-        wrapper,
-        trunc_prompts,
-        args.max_new_tokens,
-        args.chunk_size,
-        name,
-        lengths=answer_lengths,
-    )
+    disable_adapter = getattr(wrapper.model, "disable_adapter", None)
+    if callable(disable_adapter):
+        with wrapper.model.disable_adapter():
+            trunc_preds, t_trunc = evaluate_model_chunked_text(
+                wrapper,
+                trunc_prompts,
+                args.max_new_tokens,
+                args.chunk_size,
+                name,
+                lengths=answer_lengths,
+            )
+    else:
+        trunc_preds, t_trunc = evaluate_model_chunked_text(
+            wrapper,
+            trunc_prompts,
+            args.max_new_tokens,
+            args.chunk_size,
+            name,
+            lengths=answer_lengths,
+        )
 
     latent_em, latent_f1 = batch_metrics(latent_preds, golds)
     trunc_em, trunc_f1 = batch_metrics(trunc_preds, golds)
@@ -805,31 +817,6 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                 continue
             deep_prefix_generators[name] = generator
 
-    if cfg.get("use_lora"):
-        lora_cfg = {
-            "r": cfg.get("lora_r", 0),
-            "alpha": cfg.get("lora_alpha", 16),
-            "dropout": cfg.get("lora_dropout", 0.05),
-            "target_modules": cfg.get("lora_target_modules", "auto"),
-        }
-        for name, wrapper in wrappers.items():
-            try:
-                wrapper.model = apply_lora_if_requested(wrapper.model, lora_cfg, wrapper.cfg.model_id)
-            except Exception as exc:
-                print(f"[WARN] LoRA attach failed for {name}: {exc}")
-                continue
-            lora_path = os.path.join(ckpt_dir, f"lora_{name}")
-            if os.path.isdir(lora_path):
-                try:
-                    from peft import PeftModel
-
-                    wrapper.model = PeftModel.from_pretrained(wrapper.model, lora_path).eval()
-                    print(f"✓ Loaded LoRA adapters for {name}")
-                except Exception as exc:
-                    print(f"[WARN] Failed to load LoRA adapters for {name}: {exc}")
-            else:
-                print(f"[WARN] LoRA path missing for {name}: {lora_path}")
-
     adapter_hidden_mult = int(cfg.get("adapter_hidden_mult", 1))
     adapter_colorize = bool(cfg.get("adapter_colorize", False))
     adapter_dropout = float(args.adapter_dropout) if args.adapter_dropout is not None else float(cfg.get("adapter_dropout", 0.0))
@@ -907,6 +894,31 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     for name, ctx in model_contexts.items():
         metrics = text_results[name]["metrics"]
         print(f"{name}: EM={metrics['em']:.3f} F1={metrics['f1']:.3f}")
+
+    if cfg.get("use_lora"):
+        lora_cfg = {
+            "r": cfg.get("lora_r", 0),
+            "alpha": cfg.get("lora_alpha", 16),
+            "dropout": cfg.get("lora_dropout", 0.05),
+            "target_modules": cfg.get("lora_target_modules", "auto"),
+        }
+        for name, wrapper in wrappers.items():
+            try:
+                wrapper.model = apply_lora_if_requested(wrapper.model, lora_cfg, wrapper.cfg.model_id)
+            except Exception as exc:
+                print(f"[WARN] LoRA attach failed for {name}: {exc}")
+                continue
+            lora_path = os.path.join(ckpt_dir, f"lora_{name}")
+            if os.path.isdir(lora_path):
+                try:
+                    from peft import PeftModel
+
+                    wrapper.model = PeftModel.from_pretrained(wrapper.model, lora_path).eval()
+                    print(f"✓ Loaded LoRA adapters for {name}")
+                except Exception as exc:
+                    print(f"[WARN] Failed to load LoRA adapters for {name}: {exc}")
+            else:
+                print(f"[WARN] LoRA path missing for {name}: {lora_path}")
 
     # Reattach Prefix-Tuning adapters if available (for latent runs)
     try:
