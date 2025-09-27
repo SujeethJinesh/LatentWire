@@ -46,10 +46,8 @@ done
 if [[ $hero -eq 1 ]]; then
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-8000}
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
-#   EPOCHS_STAGEA=${EPOCHS_STAGEA:-6}
-#   EPOCHS_STAGEB=${EPOCHS_STAGEB:-10}
-  EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-2}
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-6}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-10}
   SAMPLES="${SAMPLES:-1000}"
   if [[ "$RUN_TAG" == llama_single_* ]]; then
     RUN_TAG="hero"
@@ -62,6 +60,17 @@ else
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-8}
   SAMPLES="${SAMPLES:-200}"
 fi
+
+if [[ $hero -eq 1 ]]; then
+  KD_WEIGHT_STAGEA_DEFAULT="0.0"
+  KD_WEIGHT_STAGEB_DEFAULT="0.5"
+else
+  KD_WEIGHT_STAGEA_DEFAULT="0.5"
+  KD_WEIGHT_STAGEB_DEFAULT="0.5"
+fi
+
+KD_WEIGHT_STAGEA="${KD_WEIGHT_STAGEA:-$KD_WEIGHT_STAGEA_DEFAULT}"
+KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-$KD_WEIGHT_STAGEB_DEFAULT}"
 
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
@@ -211,7 +220,7 @@ LORA_ARGS=(
           --latent_private_len 16 \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight 1.5 --first_token_ce_schedule cosine --first_token_ce_peak 4.0 --first_token_ce_warmup_frac 0.3 \
-          --K 8 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
+          --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEA" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
           --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
           --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
           --warmup_text_latent_epochs 0.5 \
@@ -248,7 +257,7 @@ LORA_ARGS=(
           --latent_private_len 16 \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight 6.0 --first_token_ce_schedule cosine --first_token_ce_peak 10.0 --first_token_ce_warmup_frac 0.4 \
-          --K 8 --k_ce_weight 0.5 --kd_first_k_weight 0.5 --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
+          --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
           --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
           --warmup_text_latent_epochs 1.5 \

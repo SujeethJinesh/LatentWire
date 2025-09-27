@@ -9,6 +9,7 @@
 - Hero workflow wiring: `run_llama_single.sh --hero` now defaults to `runs/hero` and automatically computes per-epoch `--save_every` so checkpoints are written (and pruned) each epoch. Added `scripts/run_llama_hero_smoke.sh` to smoke-test the resume logic with tiny sample counts before kicking off the full hero run.
 - Stabilised KD teacher forward: `loss_with_text_prompt(... compute_loss=False)` skips Hugging Face's internal CE shift when we only need logits, eliminating the sporadic CUDA launch failure seen mid-Stage A. KD now calls the lighter path, while text baselines still compute the loss as before.
 - KD now guards against rare teacher-forward CUDA faults; if the logits call still fails even after the lighter path, we log a warning, skip KD for that batch, and let training continue instead of crashing the run.
+- `run_llama_single.sh --hero` now defaults Stage A KD weight to `0.0` (overridable via `KD_WEIGHT_STAGEA`) so the flaky teacher path is disabled during hero warm-up; Stage B keeps KD at 0.5. This gives us a clean end-to-end hero run while we continue debugging KD stability.
 
 ### 2025-09-25 — Eval latent alignment fix (Codex)
 - Identified that Stage C evaluation recomputed latent Z from the **raw prompt** (`Question…\nAnswer:`), while training encoded the **anchor-stripped user text** (optionally wrapped in a neutral chat template). This mismatch left the latent encoder seeing an extra "Answer:" literal at eval time, producing unusable soft tokens and first-token accuracy ≈0.
