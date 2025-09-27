@@ -123,7 +123,6 @@ def kd_first_k_prefix_vs_text(
                 )
             except RuntimeError as exc:
                 print("[WARN] KD teacher forward failed; skipping KD for this batch:", exc)
-                torch.cuda.synchronize()
                 teacher_logits_full = None
 
     if teacher_logits_full is None:
