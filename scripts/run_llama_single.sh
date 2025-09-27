@@ -18,6 +18,9 @@ set -euo pipefail
 : "${RUN_TAG:=llama_single_$(date +%Y%m%d_%H%M%S)}"
 BASE_RUN_TAG="$RUN_TAG"
 
+SAVE_EVERY_STAGEA="${SAVE_EVERY_STAGEA:-0}"
+SAVE_EVERY_STAGEB="${SAVE_EVERY_STAGEB:-0}"
+
 LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 DATASET="${DATASET:-squad}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
@@ -46,6 +49,10 @@ if [[ $hero -eq 1 ]]; then
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-6}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-10}
   SAMPLES="${SAMPLES:-1000}"
+  if [[ "$RUN_TAG" == llama_single_* ]]; then
+    RUN_TAG="hero"
+  fi
+  BASE_RUN_TAG="$RUN_TAG"
 else
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-640}
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-2560}
@@ -56,7 +63,7 @@ fi
 
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
-BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-20}"
+BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-24}"
 BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-32}"
 DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-24}"
 DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.1}"
@@ -187,6 +194,11 @@ LORA_ARGS=(
 
         # --- Stage A ---
         echo -e "\n=== Stage A: Llama latent fit ===\n" | tee -a "$LOG"
+        steps_per_epoch_stagea=$(( (TRAIN_SAMPLES_STAGEA + BATCH_SIZE_STAGEA - 1) / BATCH_SIZE_STAGEA ))
+        save_every_stagea=$SAVE_EVERY_STAGEA
+        if [[ $hero -eq 1 && $save_every_stagea -le 0 ]]; then
+          save_every_stagea=$steps_per_epoch_stagea
+        fi
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
@@ -209,6 +221,7 @@ LORA_ARGS=(
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
           --grad_diag_interval 100 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
           --diagnostic_log "$DIAGNOSTIC_LOG" \
+          --save_every "$save_every_stagea" \
           "${GIST_ARGS[@]}" \
           "${LORA_ARGS[@]}" \
           "${WARMUP_FLAG[@]}" \
@@ -216,6 +229,11 @@ LORA_ARGS=(
 
         # --- Stage B ---
         echo -e "\n=== Stage B: Llama prefix training + warm-up ===\n" | tee -a "$LOG"
+        steps_per_epoch_stageb=$(( (TRAIN_SAMPLES_STAGEB + BATCH_SIZE_STAGEB - 1) / BATCH_SIZE_STAGEB ))
+        save_every_stageb=$SAVE_EVERY_STAGEB
+        if [[ $hero -eq 1 && $save_every_stageb -le 0 ]]; then
+          save_every_stageb=$steps_per_epoch_stageb
+        fi
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
@@ -240,6 +258,7 @@ LORA_ARGS=(
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
           --grad_diag_interval 25 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
           --diagnostic_log "$DIAGNOSTIC_LOG" \
+          --save_every "$save_every_stageb" \
           "${GIST_ARGS[@]}" \
           "${LORA_ARGS[@]}" \
           "${WARMUP_FLAG[@]}" \
