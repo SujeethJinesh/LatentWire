@@ -24,7 +24,7 @@ SAVE_EVERY_STAGEB="${SAVE_EVERY_STAGEB:-0}"
 LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 DATASET="${DATASET:-squad}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
-CHUNK_SIZE="${CHUNK_SIZE:-88}"
+CHUNK_SIZE="${CHUNK_SIZE:-96}"
 
 hero=0
 while [[ $# -gt 0 ]]; do
