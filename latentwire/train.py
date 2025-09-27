@@ -378,7 +378,7 @@ def _parse_device_map(spec: Optional[str]):
         pass
     if s.isdigit():
         return {"": int(s)}
-    return {"": s}
+    return s
 
 
 @dataclass

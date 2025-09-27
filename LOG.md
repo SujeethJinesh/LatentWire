@@ -11,6 +11,7 @@
 - KD now guards against rare teacher-forward CUDA faults; if the logits call still fails even after the lighter path, we log a warning, skip KD for that batch, and let training continue instead of crashing the run.
 - KD teacher inference now chunks the batch (`KD_TEACHER_CHUNK`, default 4) to avoid the GPU kernel fault we saw on full Stage B batches; if a chunk still fails we fall back per-example and finally on CPU. Script defaults to `KD_WEIGHT_STAGEA=0.5`, so hero runs keep KD active by default while remaining configurable via env vars.
 - `run_llama_single.sh` now defaults `LLAMA_DEVICE_MAP` to `balanced_low_0` when unset so smoke/hero runs spread layers across all four GPUs without manual overrides; still overridable via environment variable.
+- `_parse_device_map` now returns string specs like `balanced_low_0` or `cuda:1` directly instead of wrapping them in dicts, so Hugging Face/Accelerate accept the new default device-map string.
 
 ### 2025-09-25 — Eval latent alignment fix (Codex)
 - Identified that Stage C evaluation recomputed latent Z from the **raw prompt** (`Question…\nAnswer:`), while training encoded the **anchor-stripped user text** (optionally wrapped in a neutral chat template). This mismatch left the latent encoder seeing an extra "Answer:" literal at eval time, producing unusable soft tokens and first-token accuracy ≈0.
