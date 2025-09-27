@@ -721,7 +721,7 @@ class LMWrapper(nn.Module):
                     load_kwargs["device_map"] = cfg.device_map
                 elif cfg.device == "cuda":
                     load_kwargs.setdefault("device_map", "auto")
-                if cfg.max_memory is not None:
+                if cfg.max_memory is not None and isinstance(cfg.device_map, (dict, type(None))):
                     load_kwargs["max_memory"] = cfg.max_memory
             except Exception as e:
                 print("bitsandbytes not available or failed; falling back to full precision:", e)
@@ -731,12 +731,12 @@ class LMWrapper(nn.Module):
                 load_kwargs["device_map"] = cfg.device_map
             else:
                 load_kwargs.setdefault("device_map", "auto")
-            if cfg.max_memory is not None and "max_memory" not in load_kwargs:
+            if cfg.max_memory is not None and "max_memory" not in load_kwargs and isinstance(cfg.device_map, (dict, type(None))):
                 load_kwargs["max_memory"] = cfg.max_memory
         else:
             if cfg.device_map is not None:
                 load_kwargs["device_map"] = cfg.device_map
-            if cfg.max_memory is not None and "max_memory" not in load_kwargs:
+            if cfg.max_memory is not None and "max_memory" not in load_kwargs and isinstance(cfg.device_map, (dict, type(None))):
                 load_kwargs["max_memory"] = cfg.max_memory
 
         self.tokenizer = AutoTokenizer.from_pretrained(cfg.model_id, use_fast=True, trust_remote_code=True)

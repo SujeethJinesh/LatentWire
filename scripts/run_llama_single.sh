@@ -73,8 +73,10 @@ KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-$KD_WEIGHT_STAGEB_DEFAULT}"
 
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
-BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-24}"
-BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-32}"
+BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-28}"
+BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-36}"
+GRAD_ACCUM_STAGEA="${GRAD_ACCUM_STAGEA:-12}"
+GRAD_ACCUM_STAGEB="${GRAD_ACCUM_STAGEB:-12}"
 DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-24}"
 DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.1}"
 REFINER_LAYERS="${REFINER_LAYERS:-2}"
@@ -109,7 +111,7 @@ if [[ -z "${LLAMA_DEVICE_MAP:-}" ]]; then
     LLAMA_DEVICE_MAP="balanced_low_0"
   fi
 fi
-GPU_MEM_GIB="${GPU_MEM_GIB:-78}"
+GPU_MEM_GIB="${GPU_MEM_GIB:-70}"
 
 COMMON_ARGS_BASE=(
   --models llama
@@ -218,7 +220,7 @@ LORA_ARGS=(
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
-          --batch_size "$BATCH_SIZE_STAGEA" --grad_accum_steps 16 \
+          --batch_size "$BATCH_SIZE_STAGEA" --grad_accum_steps "$GRAD_ACCUM_STAGEA" \
           --save_dir "$CKPT_STAGEA" --auto_resume --save_training_stats \
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
@@ -253,7 +255,7 @@ LORA_ARGS=(
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
-          --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps 16 \
+          --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps "$GRAD_ACCUM_STAGEB" \
           --resume_from "$CKPT_STAGEA" \
           --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
           --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
