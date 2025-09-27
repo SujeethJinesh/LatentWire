@@ -1,81 +1,0 @@
-
->>> Combination 1: m64_dz256_rl2_rh4
-    RUN_TAG=llama_single_20250926_164610
-
-=== CUDA preflight ===
-torch: 2.4.0+cu121 cuda: 12.1 available: True
-CUDA_VISIBLE_DEVICES: 0,1,2,3
-
-=== Stage A: Llama latent fit ===
-
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3049.85it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:02,  1.46s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.40s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.05it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.15s/it]
-[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-trainable params: 20,971,520 || all params: 8,051,232,768 || trainable%: 0.2605
-Llama hidden size: 4096
-[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-[INFO] llama anchor tokens: 3
-⚠️  No valid checkpoint found to resume; starting fresh.
-[warmup] alternating text/latent for first 16 steps
-Epoch 1/4
-[warmup] step=0 mode=text (warm-up)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  1/32 | (warm-up text) | align=0.0002 | text_tf=13.4584 | latent_scale=0.00
-[warmup] step=1 mode=text (warm-up)
-  step  2/32 | (warm-up text) | align=0.0002 | text_tf=13.6803 | latent_scale=0.03
-[warmup] step=2 mode=text (warm-up)
-  step  3/32 | (warm-up text) | align=0.0002 | text_tf=13.4812 | latent_scale=0.06
-[warmup] step=3 mode=text (warm-up)
-  step  4/32 | (warm-up text) | align=0.0002 | text_tf=13.5367 | latent_scale=0.09
-[warmup] step=4 mode=text (warm-up)
-  step  5/32 | (warm-up text) | align=0.0002 | text_tf=14.5049 | latent_scale=0.12
-[warmup] step=5 mode=text (warm-up)
-  step  6/32 | (warm-up text) | align=0.0002 | text_tf=13.5405 | latent_scale=0.16
-[warmup] step=6 mode=text (warm-up)
-  step  7/32 | (warm-up text) | align=0.0002 | text_tf=14.9243 | latent_scale=0.19
-[warmup] step=7 mode=text (warm-up)
-  step  8/32 | (warm-up text) | align=0.0002 | text_tf=13.7110 | latent_scale=0.22
-[warmup] step=8 mode=text (warm-up)
-  step  9/32 | (warm-up text) | align=0.0002 | text_tf=12.3362 | latent_scale=0.25
-[warmup] step=9 mode=text (warm-up)
-  step  10/32 | (warm-up text) | align=0.0002 | text_tf=14.6672 | latent_scale=0.28
-  step  10/32 | grad_norm=32.42 | sec/step~3.48 | keep=0.70 | K=8 | first_w=4.00 | llama(T): tf=3.8909 first=3.8410 kCE=3.7223 KD=0.0000 acc=0.000 state=4.0125 align=0.0002 latA=0.0000 latP=0.0000 gist=1.0001 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
-  step  11/32 | (warm-up text) | align=0.0002 | text_tf=13.0599 | latent_scale=0.31
-  step  12/32 | (warm-up text) | align=0.0002 | text_tf=13.5308 | latent_scale=0.34
-  step  13/32 | (warm-up text) | align=0.0002 | text_tf=13.7707 | latent_scale=0.38
-  step  14/32 | (warm-up text) | align=0.0002 | text_tf=15.2113 | latent_scale=0.41
-  step  15/32 | (warm-up text) | align=0.0002 | text_tf=14.3971 | latent_scale=0.44
-  step  16/32 | (warm-up text) | align=0.0002 | text_tf=15.7620 | latent_scale=0.47
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 2354, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1625, in main
-    loss_kd_raw = kd_first_k_prefix_vs_text(
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/losses.py", line 94, in kd_first_k_prefix_vs_text
-    teacher_logits = teacher_llm.model(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/peft/peft_model.py", line 1850, in forward
-    return self.base_model(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/peft/tuners/tuners_utils.py", line 222, in forward
-    return self.model.forward(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
-    output = module._old_forward(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 1214, in forward
-    logits = self.lm_head(hidden_states[:, -num_logits_to_keep:, :]).float()
-RuntimeError: CUDA error: unspecified launch failure
-CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
-For debugging consider passing CUDA_LAUNCH_BLOCKING=1
-Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
-
