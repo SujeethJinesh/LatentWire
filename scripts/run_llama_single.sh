@@ -65,6 +65,8 @@ else
   SAMPLES="${SAMPLES:-200}"
 fi
 
+DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
+
 KD_WEIGHT_STAGEA_DEFAULT="0.5"
 KD_WEIGHT_STAGEB_DEFAULT="0.5"
 
@@ -104,13 +106,7 @@ export TOKENIZERS_PARALLELISM="false"
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
-if [[ -z "${LLAMA_DEVICE_MAP:-}" ]]; then
-  if [[ "$hero" -eq 1 ]]; then
-    LLAMA_DEVICE_MAP="balanced_low_0"
-  else
-    LLAMA_DEVICE_MAP="balanced_low_0"
-  fi
-fi
+LLAMA_DEVICE_MAP="${LLAMA_DEVICE_MAP:-$DEFAULT_LLAMA_DEVICE_MAP}"
 GPU_MEM_GIB="${GPU_MEM_GIB:-70}"
 
 COMMON_ARGS_BASE=(
