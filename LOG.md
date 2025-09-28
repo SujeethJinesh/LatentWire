@@ -1,8 +1,8 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
 ### 2025-09-27 — Stage B acceptance tuning (Codex)
-- Updated `scripts/run_llama_single.sh` so Stage B keeps a constant first-token CE weight (`12.0`, schedule `none`), doubles KD strength (default `KD_WEIGHT_STAGEB=2.0`, `τ=2.0`, `K=8`), and shortens the warm-up schedule (`warmup_text_latent_epochs=0.75`, `warmup_tail_prob=0.05`).
-- Default hero runs now skip LoRA and prefix projection for Stage B (`USE_LORA=0`, no `--prefix_projection`) and disable the gist head unless explicitly re-enabled, keeping the adapter stack lightweight and focused on acceptance.
+- Updated `scripts/run_llama_single.sh` so Stage B keeps a constant first-token CE weight (`12.0`, schedule `none` in hero mode), doubles KD strength (default `KD_WEIGHT_STAGEB=2.0`, `τ=2.0`, `K=8`), and shortens the warm-up schedule (`warmup_text_latent_epochs=0.75`, `warmup_tail_prob=0.05`).
+- Default hero runs now skip LoRA and prefix projection for Stage B (`USE_LORA=0`, no `--prefix_projection`) and disable the gist head unless explicitly re-enabled, keeping the adapter stack lightweight and focused on acceptance. Non-hero smoke runs use a scaled-down dataset (Stage A≈1.2k / Stage B≈3.6k samples), milder CE/KD defaults (`first_token_ce_weight=8`, `KD_WEIGHT_STAGEB=1.5`), and still exercise the same telemetry so we can debug acceptance before launching a hero run.
 
 ### 2025-09-26 — Stage A KD stabilization (Codex)
 - Collapsed `kd_first_k_prefix_vs_text` into a single teacher forward pass over the chat-templated text, reusing those logits for the first-K KD steps. This removes the repeated PEFT dispatch that was hitting `CUDA error: unspecified launch failure` on the multi-GPU Llama stage-A run (`scripts/run_llama_single.sh`), and now masks padded answers, tracks per-example prompt lengths, and only disables LoRA during the teacher pass.
