@@ -1895,8 +1895,10 @@ def main():
                                 prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :]
                             )
                         latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
-                if training_mode == "text":
+                if training_mode == "text" and float(max(args.warmup_text_teacher_weight, 0.0)) > 0.0:
                     text_teacher_loss, _, _ = _loss_with_text_prompt_chunked(ctx.wrapper, scaffold, targets)
+                else:
+                    text_teacher_loss = torch.zeros((), device=target_device)
 
                 model_loss = (
                     loss_tf

@@ -4,7 +4,7 @@
 - Updated `scripts/run_llama_single.sh` so Stage B keeps a constant first-token CE weight (`12.0`, schedule `none` in hero mode), doubles KD strength (default `KD_WEIGHT_STAGEB=2.0`, `τ=2.0`, `K=8`), and shortens the warm-up schedule (`warmup_text_latent_epochs=0.75`, `warmup_tail_prob=0.05`).
 - Default hero runs now skip LoRA and prefix projection for Stage B (`USE_LORA=0`, no `--prefix_projection`) and disable the gist head unless explicitly re-enabled, keeping the adapter stack lightweight and focused on acceptance.
 - Non-hero smoke runs now use a scaled-down dataset (Stage A≈1.2 k / Stage B≈3.6 k samples), milder acceptance defaults (`first_token_ce_weight≈6`, `KD_WEIGHT_STAGEB≈1`), and skip the text warm-up (latent batches start immediately) so we can capture acceptance telemetry without triggering teacher CE failures while still mimicking the hero configuration.
-- Stage A now runs with a smaller micro-batch (`BATCH_SIZE_STAGEA=24`, `GRAD_ACCUM_STAGEA=14`) and the text warm-up is disabled by default (hero + smoke), so latent batches start immediately without stressing the teacher CE path.
+- Stage A now runs with a smaller micro-batch (`BATCH_SIZE_STAGEA=24`, `GRAD_ACCUM_STAGEA=14`) and retains a short text warm-up (`warmup_text_latent_epochs=0.25`) while skipping the teacher CE call whenever its weight is zero, so we still get the intended alternating curriculum without tripping CUDA launch failures.
 - Text warm-up now uses a chunked `loss_with_text_prompt` helper (`TEXT_TEACHER_CHUNK` env, default 4) so Stage A/B teacher passes no longer trigger CUDA launch failures when gradients spike; if the full batch succeeds we still use the fast path.
 
 ### 2025-09-26 — Stage A KD stabilization (Codex)
