@@ -75,6 +75,37 @@ DEFAULT_SEED = 42
 DEFAULT_ANSWER_PREFIX = "Answer: "
 
 
+def _loss_with_text_prompt_chunked(wrapper, scaffold_ids, target_ids):
+    chunk_env = os.getenv("TEXT_TEACHER_CHUNK", "4")
+    try:
+        chunk_size = max(1, int(chunk_env))
+    except ValueError:
+        chunk_size = 4
+
+    try:
+        return wrapper.loss_with_text_prompt(scaffold_ids, target_ids)
+    except RuntimeError as exc:
+        last_exc = exc
+        batch_size = scaffold_ids.size(0)
+        for size in (chunk_size, 1):
+            try:
+                total_loss = torch.zeros((), device=scaffold_ids.device)
+                count = 0
+                for start in range(0, batch_size, size):
+                    end = min(batch_size, start + size)
+                    loss, _, _ = wrapper.loss_with_text_prompt(
+                        scaffold_ids[start:end], target_ids[start:end]
+                    )
+                    total_loss = total_loss + loss * (end - start)
+                    count += end - start
+                avg_loss = total_loss / max(count, 1)
+                return avg_loss, None, None
+            except RuntimeError as inner_exc:
+                last_exc = inner_exc
+                continue
+        raise last_exc
+
+
 @contextmanager
 def _temp_padding_side(tokenizer, side: str):
     old = getattr(tokenizer, "padding_side", "right")
@@ -1865,10 +1896,7 @@ def main():
                             )
                         latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
                 if training_mode == "text":
-                    try:
-                        text_teacher_loss, _, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
-                    except Exception:
-                        text_teacher_loss = torch.zeros((), device=target_device)
+                    text_teacher_loss, _, _ = _loss_with_text_prompt_chunked(ctx.wrapper, scaffold, targets)
 
                 model_loss = (
                     loss_tf
