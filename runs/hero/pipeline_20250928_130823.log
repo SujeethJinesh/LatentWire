@@ -12,8 +12,8 @@ CUDA_VISIBLE_DEVICES: 0,1,2,3
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2005.64it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.70s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.51s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.58s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.25s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2904.14it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.94s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.75s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.54s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.09s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.31s/it]
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
 Llama hidden size: 4096
 [DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
@@ -43,7 +43,7 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   step  9/334 | (warm-up text) | align=0.0002 | text_tf=13.3924 | latent_scale=0.05
 [warmup] step=9 mode=text (warm-up)
   step  10/334 | (warm-up text) | align=0.0002 | text_tf=14.1952 | latent_scale=0.05
-  step  10/334 | grad_norm=4.87 | sec/step~1.93 | keep=0.70 | K=8 | first_w=4.00 | llama(T): tf=0.7135 first=0.7359 kCE=0.7572 KD=0.0000 acc=0.000 state=0.7776 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  10/334 | grad_norm=4.87 | sec/step~1.90 | keep=0.70 | K=8 | first_w=4.00 | llama(T): tf=0.7135 first=0.7359 kCE=0.7572 KD=0.0000 acc=0.000 state=0.7776 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
   step  11/334 | (warm-up text) | align=0.0002 | text_tf=14.9200 | latent_scale=0.06
   step  12/334 | (warm-up text) | align=0.0002 | text_tf=13.7612 | latent_scale=0.07
   step  13/334 | (warm-up text) | align=0.0002 | text_tf=16.6193 | latent_scale=0.07
@@ -51,8 +51,8 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   step  15/334 | (warm-up text) | align=0.0002 | text_tf=13.7806 | latent_scale=0.08
   step  16/334 | (warm-up text) | align=0.0002 | text_tf=12.6895 | latent_scale=0.09
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1869, in main
-    text_teacher_loss, _, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 86, in _loss_with_text_prompt_chunked
+    return wrapper.loss_with_text_prompt(scaffold_ids, target_ids)
   File "/projects/m000066/sujinesh/LatentWire/latentwire/models.py", line 1120, in loss_with_text_prompt
     out = self.model(**model_kwargs)
   File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
@@ -80,10 +80,14 @@ Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 2354, in <module>
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 2382, in <module>
     main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1871, in main
-    text_teacher_loss = torch.zeros((), device=target_device)
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1899, in main
+    text_teacher_loss, _, _ = _loss_with_text_prompt_chunked(ctx.wrapper, scaffold, targets)
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 106, in _loss_with_text_prompt_chunked
+    raise last_exc
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 92, in _loss_with_text_prompt_chunked
+    total_loss = torch.zeros((), device=scaffold_ids.device)
 RuntimeError: CUDA error: unspecified launch failure
 CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
 For debugging consider passing CUDA_LAUNCH_BLOCKING=1
