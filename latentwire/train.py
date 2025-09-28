@@ -82,28 +82,18 @@ def _loss_with_text_prompt_chunked(wrapper, scaffold_ids, target_ids):
     except ValueError:
         chunk_size = 4
 
-    try:
-        return wrapper.loss_with_text_prompt(scaffold_ids, target_ids)
-    except RuntimeError as exc:
-        last_exc = exc
-        batch_size = scaffold_ids.size(0)
-        for size in (chunk_size, 1):
-            try:
-                total_loss = torch.zeros((), device=scaffold_ids.device)
-                count = 0
-                for start in range(0, batch_size, size):
-                    end = min(batch_size, start + size)
-                    loss, _, _ = wrapper.loss_with_text_prompt(
-                        scaffold_ids[start:end], target_ids[start:end]
-                    )
-                    total_loss = total_loss + loss * (end - start)
-                    count += end - start
-                avg_loss = total_loss / max(count, 1)
-                return avg_loss, None, None
-            except RuntimeError as inner_exc:
-                last_exc = inner_exc
-                continue
-        raise last_exc
+    batch_size = scaffold_ids.size(0)
+    total_loss = torch.zeros((), device=scaffold_ids.device)
+    count = 0
+    for start in range(0, batch_size, chunk_size):
+        end = min(batch_size, start + chunk_size)
+        loss, _, _ = wrapper.loss_with_text_prompt(
+            scaffold_ids[start:end], target_ids[start:end]
+        )
+        total_loss = total_loss + loss * (end - start)
+        count += end - start
+    avg_loss = total_loss / max(count, 1)
+    return avg_loss, None, None
 
 
 @contextmanager
