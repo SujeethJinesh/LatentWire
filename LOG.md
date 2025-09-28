@@ -5,7 +5,7 @@
 - Default hero runs now skip LoRA and prefix projection for Stage B (`USE_LORA=0`, no `--prefix_projection`) and disable the gist head unless explicitly re-enabled, keeping the adapter stack lightweight and focused on acceptance.
 - Non-hero smoke runs now use a scaled-down dataset (Stage A≈1.2 k / Stage B≈3.6 k samples) with milder acceptance defaults (`first_token_ce_weight≈6`, `KD_WEIGHT_STAGEB≈1`) so we can capture acceptance telemetry quickly without hammering the GPUs.
 - Stage A runs with a smaller micro-batch (`BATCH_SIZE_STAGEA=24`, `GRAD_ACCUM_STAGEA=14`) and keeps a short text warm-up (`warmup_text_latent_epochs=0.25`), but we only compute the teacher CE when its weight is non-zero.
-- Text warm-up now uses an always-chunked `loss_with_text_prompt` helper (`TEXT_TEACHER_CHUNK`, default 4) to avoid launching oversized kernels; Stage A/B teacher passes stay on GPU but are processed in controllable slices.
+- Text warm-up now uses an always-chunked `loss_with_text_prompt` helper (`TEXT_TEACHER_CHUNK`, default 1) so Stage A/B teacher passes never launch oversized kernels; you can raise the chunk size after acceptance stabilises.
 
 ### 2025-09-26 — Stage A KD stabilization (Codex)
 - Collapsed `kd_first_k_prefix_vs_text` into a single teacher forward pass over the chat-templated text, reusing those logits for the first-K KD steps. This removes the repeated PEFT dispatch that was hitting `CUDA error: unspecified launch failure` on the multi-GPU Llama stage-A run (`scripts/run_llama_single.sh`), and now masks padded answers, tracks per-example prompt lengths, and only disables LoRA during the teacher pass.

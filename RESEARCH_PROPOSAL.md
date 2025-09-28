@@ -34,6 +34,13 @@ flowchart LR
 3. **Frozen, off‑the‑shelf backbone**: MiniLM‑L6 is tiny, fast, and general—no task‑specific tuning required.
 4. **Interlingua story intact**: LLMs remain **frozen**; only the small encoder/adapters learn—so we can honestly claim a shared wire, not per-model fine-tuning.
 
+## Update (2025-09-27): Acceptance stability (Stage A/B)
+
+- **Stage A text warm-up**: keep a short text-only ramp (`warmup_text_latent_epochs=0.25`) but compute the teacher CE in small GPU chunks (`TEXT_TEACHER_CHUNK=1` by default). This prevents the launch failures we saw in earlier heroes while retaining the curriculum that pairs latent and text prefixes.
+- **Stage B acceptance pressure**: fix the first-token CE at a high constant weight (`12.0`) and strengthen KD (`τ=2.0`, `K=8`, weight `2.0`). This stops first-token accuracy from collapsing late in the run.
+- **Lean adapters**: LoRA, prefix projection MLPs, and gist heads remain disabled for the Llama-only run so the acceptance objectives dominate. Adapters are still residual two-layer MLPs with private latent slices.
+- **Smokes mirror the hero**: the smoke configuration now uses realistic sample counts (Stage A≈1.2 k / Stage B≈3.6 k) and the same telemetry, just with milder CE/KD weights, so failures surface quickly before overnight jobs.
+
 ## Update (2025-09-25): Single-model warm-up scaffolding
 
 We now have a focused path for iterating on Llama in isolation. The trainer respects `--models` so we can skip Qwen entirely (smaller footprint, faster spin-up), Stage B keeps the first warm-up epochs purely in text teacher-forcing mode, and `scripts/run_llama_single.sh` wires those pieces together into a reproducible Stage A→B→C loop. During warm-up we match the first few gold answer embeddings (default 4 tokens) against the adapter output and include a teacher-forced CE term. The adapters are residual two-layer MLPs with dropout, we reserve a 16-vector private latent block, and we keep tail text batches (50% probability) after the three-epoch warm-up so the encoder/adapter stack continues to absorb the teacher signal before we fold Qwen back in.
