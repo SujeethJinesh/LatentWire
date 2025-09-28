@@ -12,42 +12,44 @@ CUDA_VISIBLE_DEVICES: 0,1,2,3
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8608.11it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.56s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.59s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.50s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.28s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2005.64it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.70s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.51s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.58s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.25s/it]
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
 Llama hidden size: 4096
 [DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
 [INFO] llama anchor tokens: 3
 ⚠️  No valid checkpoint found to resume; starting fresh.
-[warmup] alternating text/latent for first 143 steps
+[warmup] alternating text/latent for first 84 steps
 Epoch 1/6
 [warmup] step=0 mode=text (warm-up)
 We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  step  1/286 | (warm-up text) | align=0.0002 | text_tf=15.9322 | latent_scale=0.00
+  step  1/334 | (warm-up text) | align=0.0002 | text_tf=14.1409 | latent_scale=0.00
 [warmup] step=1 mode=text (warm-up)
-  step  2/286 | (warm-up text) | align=0.0002 | text_tf=14.2217 | latent_scale=0.00
+  step  2/334 | (warm-up text) | align=0.0002 | text_tf=14.4763 | latent_scale=0.01
 [warmup] step=2 mode=text (warm-up)
-  step  3/286 | (warm-up text) | align=0.0002 | text_tf=15.2922 | latent_scale=0.01
+  step  3/334 | (warm-up text) | align=0.0002 | text_tf=15.6948 | latent_scale=0.01
 [warmup] step=3 mode=text (warm-up)
-  step  4/286 | (warm-up text) | align=0.0002 | text_tf=13.7204 | latent_scale=0.01
+  step  4/334 | (warm-up text) | align=0.0002 | text_tf=12.3696 | latent_scale=0.02
 [warmup] step=4 mode=text (warm-up)
-  step  5/286 | (warm-up text) | align=0.0002 | text_tf=14.2244 | latent_scale=0.01
+  step  5/334 | (warm-up text) | align=0.0002 | text_tf=14.9147 | latent_scale=0.02
 [warmup] step=5 mode=text (warm-up)
-  step  6/286 | (warm-up text) | align=0.0002 | text_tf=12.6222 | latent_scale=0.02
+  step  6/334 | (warm-up text) | align=0.0002 | text_tf=12.8197 | latent_scale=0.03
 [warmup] step=6 mode=text (warm-up)
-  step  7/286 | (warm-up text) | align=0.0002 | text_tf=13.3581 | latent_scale=0.02
+  step  7/334 | (warm-up text) | align=0.0002 | text_tf=12.6957 | latent_scale=0.04
 [warmup] step=7 mode=text (warm-up)
-  step  8/286 | (warm-up text) | align=0.0002 | text_tf=13.4206 | latent_scale=0.02
+  step  8/334 | (warm-up text) | align=0.0002 | text_tf=13.7441 | latent_scale=0.04
 [warmup] step=8 mode=text (warm-up)
-  step  9/286 | (warm-up text) | align=0.0002 | text_tf=14.4065 | latent_scale=0.03
+  step  9/334 | (warm-up text) | align=0.0002 | text_tf=13.3924 | latent_scale=0.05
 [warmup] step=9 mode=text (warm-up)
-  step  10/286 | (warm-up text) | align=0.0002 | text_tf=14.0242 | latent_scale=0.03
-  step  10/286 | grad_norm=3.24 | sec/step~1.83 | keep=0.70 | K=8 | first_w=4.00 | llama(T): tf=0.4190 first=0.4221 kCE=0.4460 KD=0.0000 acc=0.000 state=0.4307 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
-  step  11/286 | (warm-up text) | align=0.0002 | text_tf=15.8585 | latent_scale=0.03
-  step  12/286 | (warm-up text) | align=0.0002 | text_tf=14.5108 | latent_scale=0.04
-  step  13/286 | (warm-up text) | align=0.0002 | text_tf=13.5412 | latent_scale=0.04
-  step  14/286 | (warm-up text) | align=0.0002 | text_tf=13.1676 | latent_scale=0.05
+  step  10/334 | (warm-up text) | align=0.0002 | text_tf=14.1952 | latent_scale=0.05
+  step  10/334 | grad_norm=4.87 | sec/step~1.93 | keep=0.70 | K=8 | first_w=4.00 | llama(T): tf=0.7135 first=0.7359 kCE=0.7572 KD=0.0000 acc=0.000 state=0.7776 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  11/334 | (warm-up text) | align=0.0002 | text_tf=14.9200 | latent_scale=0.06
+  step  12/334 | (warm-up text) | align=0.0002 | text_tf=13.7612 | latent_scale=0.07
+  step  13/334 | (warm-up text) | align=0.0002 | text_tf=16.6193 | latent_scale=0.07
+  step  14/334 | (warm-up text) | align=0.0002 | text_tf=14.2048 | latent_scale=0.08
+  step  15/334 | (warm-up text) | align=0.0002 | text_tf=13.7806 | latent_scale=0.08
+  step  16/334 | (warm-up text) | align=0.0002 | text_tf=12.6895 | latent_scale=0.09
 Traceback (most recent call last):
   File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1869, in main
     text_teacher_loss, _, _ = ctx.wrapper.loss_with_text_prompt(scaffold, targets)
