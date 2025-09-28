@@ -51,6 +51,11 @@ if [[ $hero -eq 1 ]]; then
   SAMPLES="${SAMPLES:-1000}"
   FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-12.0}"
   KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-2.0}"
+  WARMUP_TEXT_LATENT_EPOCHS_STAGEB="${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:-0.75}"
+  WARMUP_TAIL_PROB_STAGEB="${WARMUP_TAIL_PROB_STAGEB:-0.05}"
+  WARMUP_TEXT_TEACHER_WEIGHT_STAGEB="${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:-2.0}"
+  WARMUP_TEXT_LATENT_WEIGHT_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:-0.2}"
+  WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:-1.0}"
   if [[ "$RUN_TAG" == llama_single_* ]]; then
     RUN_TAG="hero"
   fi
@@ -61,8 +66,13 @@ else
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-3}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}
   SAMPLES="${SAMPLES:-300}"
-  FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-8.0}"
-  KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-1.5}"
+  FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-6.0}"
+  KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-1.0}"
+  WARMUP_TEXT_LATENT_EPOCHS_STAGEB="${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:-0.0}"
+  WARMUP_TAIL_PROB_STAGEB="${WARMUP_TAIL_PROB_STAGEB:-0.0}"
+  WARMUP_TEXT_TEACHER_WEIGHT_STAGEB="${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:-0.0}"
+  WARMUP_TEXT_LATENT_WEIGHT_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:-0.0}"
+  WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:-0.0}"
 fi
 
 DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
@@ -269,11 +279,11 @@ PY
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
           --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
-          --warmup_text_latent_epochs 0.75 \
+          --warmup_text_latent_epochs "$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" \
           --warmup_align_tokens 8 --warmup_align_weight 1.5 \
-          --warmup_text_teacher_weight 2.0 \
-          --warmup_text_latent_weight 0.2 --warmup_text_latent_weight_end 1.0 \
-          --warmup_tail_prob 0.05 \
+          --warmup_text_teacher_weight "$WARMUP_TEXT_TEACHER_WEIGHT_STAGEB" \
+          --warmup_text_latent_weight "$WARMUP_TEXT_LATENT_WEIGHT_STAGEB" --warmup_text_latent_weight_end "$WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB" \
+          --warmup_tail_prob "$WARMUP_TAIL_PROB_STAGEB" \
           --adapter_hidden_mult 4 --adapter_dropout 0.1 \
           --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
           --grad_diag_interval 25 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
