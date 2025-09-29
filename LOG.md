@@ -1,8 +1,10 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
 ### 2025-09-28 — Smoke run defaults (Codex)
-- Updated `scripts/run_llama_single.sh` smoke configuration defaults so Stage A and Stage B each train on 640 examples (2 epochs) and Stage B warm-up trims to `0.25` with `warmup_tail_prob=0.02`, keeping the smoke run quick while ensuring latent batches get meaningful coverage before evaluation.
-- Hero defaults remain unchanged (`8k/16k` samples, warm-up `0.75`), but the script now chooses warm-up/tail defaults per mode (smoke vs hero) so we can flip between tiny validation sweeps and the full hero run without manual edits.
+- Updated `scripts/run_llama_single.sh` smoke configuration defaults so Stage A trains on 960 examples and Stage B on 1,280 (still 2 epochs apiece) while Stage B warm-up trims to `0.25` with `warmup_tail_prob=0.02`, keeping the smoke run quick but giving latent batches more coverage before evaluation.
+- Hero defaults remain at `8k/16k` samples with a trimmed warm-up (`0.5`, tail prob `0.02`), and the script now chooses warm-up/tail defaults per mode so we can flip between tiny validation sweeps and the full hero run without manual edits.
+- LoRA and deep prefix remain enabled for both stages; the latest smoke run reports 20.97 M trainable params during Stage A and 272.72 M when LoRA+prefix stack attach in Stage B, yet latent acceptance is still flat—so we raised Stage A first-token supervision (weight 3.0 → peak 8.0) and increased Stage A KD weight to 1.0, while giving smoke Stage A/B a bit more data (960/1,280 samples) without touching hero settings.
+- Boosted the adapter stack capacity across both modes (`lora_r=16`, `lora_firstn=16`, `deep_prefix_len=32`, lower dropout 0.05, and Stage B prefix tokens tied to the deep prefix length) to give the latent wire more room to match the teacher before we attempt a hero run. Hero defaults now also lean harder on acceptance (`first_token_ce_weight_stageb=16`, warm-up 0.5 epochs with tail prob 0.02, `latent_private_len=24`).
 
 ### 2025-09-27 — Stage B acceptance tuning (Codex)
 - Updated `scripts/run_llama_single.sh` so Stage B keeps a constant first-token CE weight (`12.0`, schedule `none` in hero mode), doubles KD strength (default `KD_WEIGHT_STAGEB=2.0`, `τ=2.0`, `K=8`), and shortens the warm-up schedule (`warmup_text_latent_epochs=0.75`, `warmup_tail_prob=0.05`).

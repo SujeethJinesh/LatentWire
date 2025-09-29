@@ -54,8 +54,8 @@ if [[ $hero -eq 1 ]]; then
   fi
   BASE_RUN_TAG="$RUN_TAG"
 else
-  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-640}
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-640}
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-960}
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-1280}
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-2}
   SAMPLES="${SAMPLES:-400}"
@@ -65,14 +65,20 @@ else
 fi
 
 if [[ $hero -eq 1 ]]; then
-  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=0.75}"
-  : "${WARMUP_TAIL_PROB_STAGEB:=0.05}"
+  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=0.5}"
+  : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
+  : "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=16.0}"
+  : "${LATENT_PRIVATE_LEN:=24}"
 else
   : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=0.25}"
   : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
+  : "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=12.0}"
+  : "${LATENT_PRIVATE_LEN:=16}"
 fi
 
-: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=12.0}"
+: "${FIRST_TOKEN_CE_WEIGHT_STAGEA:=3.0}"
+: "${FIRST_TOKEN_CE_PEAK_STAGEA:=8.0}"
+: "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEA:=0.3}"
 : "${KD_WEIGHT_STAGEB:=2.0}"
 : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:=0.25}"
 : "${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:=2.0}"
@@ -82,7 +88,7 @@ BASE_RUN_TAG="$RUN_TAG"
 
 DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
 
-KD_WEIGHT_STAGEA_DEFAULT="0.5"
+KD_WEIGHT_STAGEA_DEFAULT="1.0"
 KD_WEIGHT_STAGEB_DEFAULT="2.0"
 
 KD_WEIGHT_STAGEA="${KD_WEIGHT_STAGEA:-$KD_WEIGHT_STAGEA_DEFAULT}"
@@ -94,8 +100,8 @@ BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-32}"
 BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-36}"
 GRAD_ACCUM_STAGEA="${GRAD_ACCUM_STAGEA:-14}"
 GRAD_ACCUM_STAGEB="${GRAD_ACCUM_STAGEB:-12}"
-DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-24}"
-DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.1}"
+DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-32}"
+DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.05}"
 REFINER_LAYERS="${REFINER_LAYERS:-2}"
 REFINER_HEADS="${REFINER_HEADS:-4}"
 
@@ -111,10 +117,10 @@ GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
 GIST_WEIGHT="${GIST_WEIGHT:-0.02}"
 GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
 USE_LORA="${USE_LORA:-1}"
-LORA_R="${LORA_R:-8}"
+LORA_R="${LORA_R:-16}"
 LORA_ALPHA="${LORA_ALPHA:-16}"
 LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
-LORA_FIRSTN="${LORA_FIRSTN:-8}"
+LORA_FIRSTN="${LORA_FIRSTN:-16}"
 
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -242,9 +248,9 @@ PY
           --save_dir "$CKPT_STAGEA" --auto_resume --save_training_stats \
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
-          --latent_private_len 16 \
+          --latent_private_len "$LATENT_PRIVATE_LEN" \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-          --first_token_ce_weight 1.5 --first_token_ce_schedule cosine --first_token_ce_peak 4.0 --first_token_ce_warmup_frac 0.3 \
+          --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEA" --first_token_ce_schedule cosine --first_token_ce_peak "$FIRST_TOKEN_CE_PEAK_STAGEA" --first_token_ce_warmup_frac "$FIRST_TOKEN_CE_WARMUP_FRAC_STAGEA" \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEA" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
           --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
           --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
@@ -276,10 +282,10 @@ PY
           --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps "$GRAD_ACCUM_STAGEB" \
           --resume_from "$CKPT_STAGEA" \
           --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
-          --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
+          --use_prefix --prefix_tokens "$DEEP_PREFIX_LEN" --prefix_projection --peft_prefix_all_layers yes \
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
-          --latent_private_len 16 \
+          --latent_private_len "$LATENT_PRIVATE_LEN" \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule none \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
