@@ -2,8 +2,8 @@
 
 ### 2025-09-27 — Stage B acceptance tuning (Codex)
 - Updated `scripts/run_llama_single.sh` so Stage B keeps a constant first-token CE weight (`12.0`, schedule `none` in hero mode), doubles KD strength (default `KD_WEIGHT_STAGEB=2.0`, `τ=2.0`, `K=8`), and shortens the warm-up schedule (`warmup_text_latent_epochs=0.75`, `warmup_tail_prob=0.05`).
-- Default hero runs now skip LoRA and prefix projection for Stage B (`USE_LORA=0`, no `--prefix_projection`) and disable the gist head unless explicitly re-enabled, keeping the adapter stack lightweight and focused on acceptance.
-- Non-hero smoke runs now use a scaled-down dataset (Stage A≈1.2 k / Stage B≈3.6 k samples) with milder acceptance defaults (`first_token_ce_weight≈6`, `KD_WEIGHT_STAGEB≈1`) so we can capture acceptance telemetry quickly without hammering the GPUs.
+- Default hero (and smoke) runs now enable LoRA by default (`USE_LORA=1`, `r=8`, `first_n=8`) and include prefix projection for the deep prompt, so both acceptance and representational capacity match the configuration we landed on before the regression.
+- Added a `--smoke` flag to `run_llama_single.sh`; it mirrors the hero hyper-parameters (LoRA on, first-token CE 12, KD weight 2, warm-up schedules) but cuts the dataset to Stage A≈2 k / Stage B≈6 k samples and runs only 2 epochs per stage so we can validate acceptance quickly before an overnight hero job.
 - Stage A runs with a smaller micro-batch (`BATCH_SIZE_STAGEA=24`, `GRAD_ACCUM_STAGEA=14`) and keeps a short text warm-up (`warmup_text_latent_epochs=0.25`), but we only compute the teacher CE when its weight is non-zero.
 - Text warm-up now uses an always-chunked `loss_with_text_prompt` helper (`TEXT_TEACHER_CHUNK`, default 1) so Stage A/B teacher passes never launch oversized kernels; you can raise the chunk size after acceptance stabilises.
 

@@ -5,7 +5,7 @@ set -euo pipefail
 # End-to-end pipeline for the single-model (Llama-only) LatentWire workflow.
 #
 # Usage examples:
-#   bash scripts/run_llama_single.sh            # quick smoke run (default)
+#   bash scripts/run_llama_single.sh --smoke    # quick smoke aligned with hero settings
 #   bash scripts/run_llama_single.sh --hero     # longer "hero" configuration
 #
 # The pipeline performs:
@@ -27,10 +27,15 @@ MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
 CHUNK_SIZE="${CHUNK_SIZE:-88}"
 
 hero=0
+smoke=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --hero)
       hero=1
+      shift
+      ;;
+    --smoke)
+      smoke=1
       shift
       ;;
     --)
@@ -61,9 +66,27 @@ if [[ $hero -eq 1 ]]; then
     RUN_TAG="hero"
   fi
   BASE_RUN_TAG="$RUN_TAG"
+elif [[ $smoke -eq 1 ]]; then
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-2000}
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-6000}
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-2}
+  SAMPLES="${SAMPLES:-400}"
+  FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-12.0}"
+  KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-2.0}"
+  WARMUP_TEXT_LATENT_EPOCHS_STAGEA="${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:-0.25}"
+  WARMUP_TEXT_LATENT_EPOCHS_STAGEB="${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:-0.75}"
+  WARMUP_TAIL_PROB_STAGEB="${WARMUP_TAIL_PROB_STAGEB:-0.05}"
+  WARMUP_TEXT_TEACHER_WEIGHT_STAGEB="${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:-2.0}"
+  WARMUP_TEXT_LATENT_WEIGHT_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:-0.2}"
+  WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:-1.0}"
+  if [[ "$RUN_TAG" == llama_single_* ]]; then
+    RUN_TAG="smoke"
+  fi
+  BASE_RUN_TAG="$RUN_TAG"
 else
-  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-1200}
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-3600}
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-240}
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-320}
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-3}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}
   SAMPLES="${SAMPLES:-300}"
@@ -107,7 +130,7 @@ GIST_LAYERS="${GIST_LAYERS:-2}"
 GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
 GIST_WEIGHT="${GIST_WEIGHT:-0.02}"
 GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
-USE_LORA="${USE_LORA:-0}"
+USE_LORA="${USE_LORA:-1}"
 LORA_R="${LORA_R:-8}"
 LORA_ALPHA="${LORA_ALPHA:-16}"
 LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
@@ -273,7 +296,7 @@ PY
           --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps "$GRAD_ACCUM_STAGEB" \
           --resume_from "$CKPT_STAGEA" \
           --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
-          --use_prefix --prefix_tokens 24 --peft_prefix_all_layers yes \
+          --use_prefix --prefix_tokens 24 --prefix_projection --peft_prefix_all_layers yes \
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
           --latent_private_len 16 \

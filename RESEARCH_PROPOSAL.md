@@ -37,9 +37,9 @@ flowchart LR
 ## Update (2025-09-27): Acceptance stability (Stage A/B)
 
 - **Stage A text warm-up**: keep a short text-only ramp (`warmup_text_latent_epochs=0.25`) but compute the teacher CE in small GPU chunks (`TEXT_TEACHER_CHUNK=1` by default). This prevents the launch failures we saw in earlier heroes while retaining the curriculum that pairs latent and text prefixes.
-- **Stage B acceptance pressure**: fix the first-token CE at a high constant weight (`12.0`) and strengthen KD (`τ=2.0`, `K=8`, weight `2.0`). This stops first-token accuracy from collapsing late in the run.
+- **Stage B acceptance pressure**: fix the first-token CE at a high constant weight (`12.0`) and strengthen KD (`τ=2.0`, `K=8`, weight `2.0`). LoRA (r=8, firstN=8) and deep prefix projection are both active in the Llama-only setup so the latent adapters have enough capacity to interpret the shared wire without modifying the frozen backbone directly.
 - **Lean adapters**: LoRA, prefix projection MLPs, and gist heads remain disabled for the Llama-only run so the acceptance objectives dominate. Adapters are still residual two-layer MLPs with private latent slices.
-- **Smokes mirror the hero**: the smoke configuration now uses realistic sample counts (Stage A≈1.2 k / Stage B≈3.6 k) and the same telemetry, just with milder CE/KD weights, so failures surface quickly before overnight jobs.
+- **Smokes mirror the hero**: the `--smoke` flag runs Stage A≈2 k / Stage B≈6 k samples for 2 epochs apiece while keeping the same LoRA+prefix stack and acceptance weights as the hero, giving us a faithful but shorter regression run before overnight jobs.
 
 ## Update (2025-09-25): Single-model warm-up scaffolding
 
