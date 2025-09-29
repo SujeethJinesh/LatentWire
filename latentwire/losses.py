@@ -158,6 +158,7 @@ def kd_first_k_prefix_vs_text(
                 if not fallback_failed and logits_chunks:
                     teacher_logits_full = torch.cat(logits_chunks, dim=0)
                 if teacher_logits_full is None:
+                    cpu_success = False
                     try:
                         teacher_llm.model.to("cpu")
                         ids_cpu = scaffold_ids_teacher.to("cpu")
@@ -169,12 +170,18 @@ def kd_first_k_prefix_vs_text(
                             compute_loss=False,
                         )
                         teacher_logits_full = logits_cpu.to(student_device)
+                        cpu_success = True
                         print("[WARN] KD teacher CPU fallback succeeded")
                     except RuntimeError as cpu_exc:
                         print("[WARN] KD teacher CPU fallback failed; skipping KD for batch:", cpu_exc)
                         teacher_logits_full = None
                     finally:
-                        teacher_llm.model.to(teacher_device)
+                        try:
+                            teacher_llm.model.to(teacher_device)
+                        except RuntimeError as restore_exc:
+                            print("[WARN] KD teacher restore failed; leaving on current device:", restore_exc)
+                    if not cpu_success:
+                        return torch.zeros((), device=student_device)
 
     if teacher_logits_full is None:
         return torch.zeros((), device=student_device)
