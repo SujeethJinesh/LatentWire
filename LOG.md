@@ -1,5 +1,9 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-09-28 — Smoke run defaults (Codex)
+- Updated `scripts/run_llama_single.sh` smoke configuration defaults so Stage A and Stage B each train on 640 examples (2 epochs) and Stage B warm-up trims to `0.25` with `warmup_tail_prob=0.02`, keeping the smoke run quick while ensuring latent batches get meaningful coverage before evaluation.
+- Hero defaults remain unchanged (`8k/16k` samples, warm-up `0.75`), but the script now chooses warm-up/tail defaults per mode (smoke vs hero) so we can flip between tiny validation sweeps and the full hero run without manual edits.
+
 ### 2025-09-27 — Stage B acceptance tuning (Codex)
 - Updated `scripts/run_llama_single.sh` so Stage B keeps a constant first-token CE weight (`12.0`, schedule `none` in hero mode), doubles KD strength (default `KD_WEIGHT_STAGEB=2.0`, `τ=2.0`, `K=8`), and shortens the warm-up schedule (`warmup_text_latent_epochs=0.75`, `warmup_tail_prob=0.05`).
 - Default hero (and smoke) runs now enable LoRA by default (`USE_LORA=1`, `r=8`, `first_n=8`) and include prefix projection for the deep prompt, so both acceptance and representational capacity match the configuration we landed on before the regression.
