@@ -5,8 +5,8 @@ set -euo pipefail
 # End-to-end pipeline for the single-model (Llama-only) LatentWire workflow.
 #
 # Usage examples:
-#   bash scripts/run_llama_single.sh --smoke    # quick smoke aligned with hero settings
-#   bash scripts/run_llama_single.sh --hero     # longer "hero" configuration
+#   bash scripts/run_llama_single.sh            # smoke run aligned with hero settings
+#   bash scripts/run_llama_single.sh --hero     # full "hero" configuration
 #
 # The pipeline performs:
 #   Stage A – latent encoder warm-up on Llama.
@@ -27,15 +27,10 @@ MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
 CHUNK_SIZE="${CHUNK_SIZE:-88}"
 
 hero=0
-smoke=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --hero)
       hero=1
-      shift
-      ;;
-    --smoke)
-      smoke=1
       shift
       ;;
     --)
@@ -66,7 +61,7 @@ if [[ $hero -eq 1 ]]; then
     RUN_TAG="hero"
   fi
   BASE_RUN_TAG="$RUN_TAG"
-elif [[ $smoke -eq 1 ]]; then
+else
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-2000}
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-6000}
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
@@ -84,20 +79,6 @@ elif [[ $smoke -eq 1 ]]; then
     RUN_TAG="smoke"
   fi
   BASE_RUN_TAG="$RUN_TAG"
-else
-  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-240}
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-320}
-  EPOCHS_STAGEA=${EPOCHS_STAGEA:-3}
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}
-  SAMPLES="${SAMPLES:-300}"
-  FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-6.0}"
-  KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-1.0}"
-  WARMUP_TEXT_LATENT_EPOCHS_STAGEA="${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:-0.0}"
-  WARMUP_TEXT_LATENT_EPOCHS_STAGEB="${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:-0.0}"
-  WARMUP_TAIL_PROB_STAGEB="${WARMUP_TAIL_PROB_STAGEB:-0.0}"
-  WARMUP_TEXT_TEACHER_WEIGHT_STAGEB="${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:-0.0}"
-  WARMUP_TEXT_LATENT_WEIGHT_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:-0.0}"
-  WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:-0.0}"
 fi
 
 DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
