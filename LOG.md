@@ -1,5 +1,11 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-09-29 — Stage A gradient stabilization and warm-up extension (Claude Code)
+- Reduced `FIRST_TOKEN_CE_PEAK_STAGEA` from 8.0 → 3.0 to eliminate gradient explosions (previous smoke run showed spikes to 870.67, violating the max_grad_norm=1.0 clipping). P-Tuning v2 evidence shows over-weighting auxiliary objectives destabilizes training; our LOG.md (2025-09-27) independently confirmed "excessive first-token weight (12+) can destabilize training".
+- Extended `WARMUP_TEXT_LATENT_EPOCHS_STAGEA` from 0.25 → 1.0 (10 steps → 40 steps) so adapter/deep-prefix learns text embedding manifold before encoder injection. Gist Tokens paper uses full instruction finetuning for gist training; our 10-step warm-up was insufficient (KD exploded to 77.36 at step 20, indicating encoder/adapter in different representational spaces).
+- **Expected impact**: Gradient norm should stay <100 throughout Stage A; text_tf should converge <10.0 before latent mode; KD should stay <30.0 at first latent step. If Stage A still shows first=24+ at epoch 2, next fix is deep_prefix_len=100-128 per P-Tuning v2 findings on hard sequence tasks.
+- Smoke test acceptance criteria defined: Stage A end must achieve first<15.0, tf<10.0, grad<100, KD<30; Stage B end must achieve FirstTok@1>12%, F1>0.10, latent≥25% of text baseline.
+
 ### 2025-09-28 — Smoke run defaults (Codex)
 - Updated `scripts/run_llama_single.sh` smoke configuration defaults so Stage A trains on 960 examples and Stage B on 1,280 (still 2 epochs apiece) while Stage B warm-up trims to `0.25` with `warmup_tail_prob=0.02`, keeping the smoke run quick but giving latent batches more coverage before evaluation.
 - Hero defaults remain at `8k/16k` samples with a trimmed warm-up (`0.5`, tail prob `0.02`), and the script now chooses warm-up/tail defaults per mode so we can flip between tiny validation sweeps and the full hero run without manual edits.
