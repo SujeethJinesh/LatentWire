@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# resume_hero_stageb.sh
+# Resume Stage B training from epoch 3 checkpoint after OOM error
+#
+# This script resumes the hero run that OOM'd at epoch 3.5/10 during Stage B.
+# It applies OOM fixes and continues training for the remaining 6.5 epochs.
+#
+# Key changes from original run:
+# - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (fix fragmentation)
+# - KD_TEACHER_CHUNK=1 (reduce memory per chunk)
+# - Resume from runs/hero/ckpt_stageb checkpoint
+# - Remaining epochs: 10 - 3 = 7 epochs (to be safe, we use 7 full epochs from current state)
+#
+# Usage:
+#   bash scripts/resume_hero_stageb.sh
+
+RUN_TAG="${RUN_TAG:-hero_resume}"
+BASE_RUN_TAG="$RUN_TAG"
+
+# OOM fixes - critical for avoiding fragmentation
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+# Hero run configuration (same as original)
+TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
+EPOCHS_STAGEB=${EPOCHS_STAGEB:-7}  # Remaining epochs from epoch 3
+SAMPLES="${SAMPLES:-1000}"
+
+# Stage B hyperparameters (same as original hero run)
+WARMUP_TEXT_LATENT_EPOCHS_STAGEB="${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:-2.0}"
+WARMUP_TAIL_PROB_STAGEB="${WARMUP_TAIL_PROB_STAGEB:-0.02}"
+FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-9.0}"
+LATENT_PRIVATE_LEN="${LATENT_PRIVATE_LEN:-24}"
+KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-1.0}"
+WARMUP_TEXT_TEACHER_WEIGHT_STAGEB="${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:-2.0}"
+WARMUP_TEXT_LATENT_WEIGHT_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:-0.2}"
+WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:-1.0}"
+
+# Model configuration
+LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
+DATASET="${DATASET:-squad}"
+MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-16}"
+CHUNK_SIZE="${CHUNK_SIZE:-88}"
+
+# Architecture parameters
+LATENT_LEN="${LATENT_LEN:-64}"
+D_Z="${D_Z:-256}"
+BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-36}"
+GRAD_ACCUM_STAGEB="${GRAD_ACCUM_STAGEB:-12}"
+DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-100}"
+DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.05}"
+REFINER_LAYERS="${REFINER_LAYERS:-2}"
+REFINER_HEADS="${REFINER_HEADS:-4}"
+
+# LoRA parameters
+USE_LORA="${USE_LORA:-1}"
+LORA_R="${LORA_R:-16}"
+LORA_ALPHA="${LORA_ALPHA:-16}"
+LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
+LORA_FIRSTN="${LORA_FIRSTN:-16}"
+
+# Gist head (disabled by default)
+USE_GIST_HEAD="${USE_GIST_HEAD:-0}"
+GIST_TARGET_LEN="${GIST_TARGET_LEN:-48}"
+GIST_HIDDEN="${GIST_HIDDEN:-512}"
+GIST_LAYERS="${GIST_LAYERS:-2}"
+GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
+GIST_WEIGHT="${GIST_WEIGHT:-0.02}"
+GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
+
+# Environment setup
+export LW_APPLY_CHAT_TEMPLATE=1
+export PYTHONPATH="${PYTHONPATH:-.}"
+export TOKENIZERS_PARALLELISM="false"
+export TEXT_TEACHER_CHUNK="${TEXT_TEACHER_CHUNK:-1}"
+export KD_TEACHER_CHUNK="${KD_TEACHER_CHUNK:-1}"  # REDUCED from 2 to 1 for OOM fix
+
+export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
+LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
+DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
+LLAMA_DEVICE_MAP="${LLAMA_DEVICE_MAP:-$DEFAULT_LLAMA_DEVICE_MAP}"
+GPU_MEM_GIB="${GPU_MEM_GIB:-70}"
+
+SAVE_EVERY_STAGEB="${SAVE_EVERY_STAGEB:-0}"
+
+# Checkpoint paths - CRITICAL: Resume from existing hero checkpoint
+CHECKPOINT_BASE="${CHECKPOINT_BASE:-runs/hero/ckpt_stageb}"
+SAVE_DIR="${SAVE_DIR:-runs/${RUN_TAG}/ckpt_stageb}"
+LOG="runs/${RUN_TAG}/pipeline_$(date +%Y%m%d_%H%M%S).log"
+DIAGNOSTIC_LOG="runs/${RUN_TAG}/diagnostics.jsonl"
+
+mkdir -p "runs/${RUN_TAG}"
+
+COMMON_ARGS=(
+  --models llama
+  --llama_id "$LLAMA_ID"
+  --dataset "$DATASET"
+  --use_chat_template
+  --encoder_type stq
+  --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2
+  --encoder_use_chat_template
+  --llama_device_map "$LLAMA_DEVICE_MAP"
+  --llama_devices "$LLAMA_DEVICES"
+  --gpu_mem_gib "$GPU_MEM_GIB"
+  --latent_len "$LATENT_LEN"
+  --d_z "$D_Z"
+  --refiner_layers "$REFINER_LAYERS"
+  --refiner_heads "$REFINER_HEADS"
+)
+
+if [[ $USE_GIST_HEAD -eq 1 ]]; then
+  GIST_ARGS=(
+    --use_gist_head
+    --gist_target_len "$GIST_TARGET_LEN"
+    --gist_hidden "$GIST_HIDDEN"
+    --gist_layers "$GIST_LAYERS"
+    --gist_dropout "$GIST_DROPOUT"
+    --gist_weight "$GIST_WEIGHT"
+    --gist_mask_prob "$GIST_MASK_PROB"
+  )
+  GRAD_COMPONENTS_LATENT="tf,first,kce,kd,align,latent_align,latent_prefix_align,gist"
+else
+  GIST_ARGS=()
+  GRAD_COMPONENTS_LATENT="tf,first,kce,kd,align,latent_align,latent_prefix_align"
+fi
+
+if [[ $USE_LORA -eq 1 ]]; then
+  LORA_ARGS=(
+    --use_lora
+    --lora_r "$LORA_R"
+    --lora_alpha "$LORA_ALPHA"
+    --lora_dropout "$LORA_DROPOUT"
+    --lora_firstN "$LORA_FIRSTN"
+  )
+else
+  LORA_ARGS=()
+fi
+
+WARMUP_FLAG=(--kd_skip_text)
+
+echo "=== Resume Hero Stage B Training ===" | tee "$LOG"
+echo "Run tag: $RUN_TAG" | tee -a "$LOG"
+echo "Resuming from checkpoint: $CHECKPOINT_BASE" | tee -a "$LOG"
+echo "Saving to: $SAVE_DIR" | tee -a "$LOG"
+echo "Remaining epochs: $EPOCHS_STAGEB" | tee -a "$LOG"
+echo "" | tee -a "$LOG"
+echo "OOM fixes applied:" | tee -a "$LOG"
+echo "  - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" | tee -a "$LOG"
+echo "  - KD_TEACHER_CHUNK=1 (reduced from 2)" | tee -a "$LOG"
+echo "" | tee -a "$LOG"
+
+# CUDA preflight check
+python3 -c "import os, torch; print('torch:', torch.__version__, 'cuda:', torch.version.cuda, 'available:', torch.cuda.is_available()); print('CUDA_VISIBLE_DEVICES:', os.getenv('CUDA_VISIBLE_DEVICES')); print('PYTORCH_CUDA_ALLOC_CONF:', os.getenv('PYTORCH_CUDA_ALLOC_CONF'))" 2>&1 | tee -a "$LOG"
+
+echo -e "\n=== Stage B Resume: Llama prefix training (epochs 4-10) ===\n" | tee -a "$LOG"
+
+steps_per_epoch_stageb=$(( (TRAIN_SAMPLES_STAGEB + BATCH_SIZE_STAGEB - 1) / BATCH_SIZE_STAGEB ))
+save_every_stageb=$SAVE_EVERY_STAGEB
+if [[ $save_every_stageb -le 0 ]]; then
+  save_every_stageb=$steps_per_epoch_stageb
+fi
+
+CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
+  "${COMMON_ARGS[@]}" \
+  --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
+  --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps "$GRAD_ACCUM_STAGEB" \
+  --resume_from "$CHECKPOINT_BASE" \
+  --save_dir "$SAVE_DIR" --auto_resume --save_training_stats \
+  --use_prefix --prefix_tokens "$DEEP_PREFIX_LEN" --prefix_projection --peft_prefix_all_layers yes \
+  --train_append_bos_after_prefix yes \
+  --warm_anchor_mode chat \
+  --latent_private_len "$LATENT_PRIVATE_LEN" \
+  --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
+  --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule none \
+  --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
+  --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
+  --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
+  --warmup_text_latent_epochs "$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" \
+  --warmup_align_tokens 8 --warmup_align_weight 1.5 \
+  --warmup_text_teacher_weight "$WARMUP_TEXT_TEACHER_WEIGHT_STAGEB" \
+  --warmup_text_latent_weight "$WARMUP_TEXT_LATENT_WEIGHT_STAGEB" --warmup_text_latent_weight_end "$WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB" \
+  --warmup_tail_prob "$WARMUP_TAIL_PROB_STAGEB" \
+  --adapter_hidden_mult 4 --adapter_dropout 0.1 \
+  --max_answer_tokens 24 --lr 5e-5 --max_grad_norm 1.0 \
+  --grad_diag_interval 25 --grad_diag_components "$GRAD_COMPONENTS_LATENT" \
+  --diagnostic_log "$DIAGNOSTIC_LOG" \
+  --save_every "$save_every_stageb" \
+  "${GIST_ARGS[@]}" \
+  "${LORA_ARGS[@]}" \
+  "${WARMUP_FLAG[@]}" \
+  2>&1 | tee -a "$LOG"
+
+# --- Evaluation ---
+echo -e "\n=== Evaluation (Llama only) ===\n" | tee -a "$LOG"
+CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
+  --models llama \
+  --ckpt "$SAVE_DIR" \
+  --llama_id "$LLAMA_ID" \
+  --samples "$SAMPLES" --dataset "$DATASET" \
+  --fresh_eval --max_new_tokens "$MAX_NEW_TOKENS" \
+  --chunk_size "$CHUNK_SIZE" \
+  --latent_anchor_mode chat --append_bos_after_prefix yes \
+  --use_chat_template yes \
+  --first_token_top_p 1.0 --first_token_temperature 0.0 \
+  --prefix_gain 1.1 \
+  --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
+  2>&1 | tee -a "$LOG"
+
+echo -e "\n✓ Hero Stage B resume complete. Logs: $LOG\n"
