@@ -89,7 +89,7 @@ BASE_RUN_TAG="$RUN_TAG"
 DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
 
 KD_WEIGHT_STAGEA_DEFAULT="1.0"
-KD_WEIGHT_STAGEB_DEFAULT="2.0"
+KD_WEIGHT_STAGEB_DEFAULT="1.0"
 
 KD_WEIGHT_STAGEA="${KD_WEIGHT_STAGEA:-$KD_WEIGHT_STAGEA_DEFAULT}"
 KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-$KD_WEIGHT_STAGEB_DEFAULT}"

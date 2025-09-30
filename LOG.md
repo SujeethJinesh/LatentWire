@@ -4,7 +4,9 @@
 - Increased `FIRST_TOKEN_CE_WEIGHT_STAGEB` from 6.0 → 9.0 and reduced `KD_WEIGHT_STAGEB` from 2.0 → 1.0 based on smoke run analysis showing insufficient acceptance pressure. Smoke run with triple fix (first_weight=6.0, warm-up=1.0, epochs=4) achieved training stability (grad<50, KD=11.32) and Stage A breakthrough (first=9.58, KD=16.97), but Stage B remained below acceptance bar with FirstTok@1=5.0%, F1=0.0.
 - **Root cause**: `first_weight=6.0` provides insufficient acceptance pressure—model learns to compress (low KD) but learned representation isn't decodable. FirstTok@1=5.0% vs 8% target indicates argmax not shifting toward correct tokens. Meanwhile `KD_WEIGHT=2.0` may compete with CE signal.
 - **Balanced escalation**: Raise first_weight to 9.0 (not 10, staying below collapse point at 12) to increase acceptance pressure while maintaining stability. Reduce KD to 1.0 to let CE gradients dominate and actually move the argmax. Keep 4-epoch schedule and 1.0 warm-up (proven stable).
-- **Expected impact**: FirstTok@1 should break into double digits (8-12% range), enabling F1>0.05. If hero run shows FirstTok@1<8% after first epoch, may need to halt and revisit (bump to 10-11 or extend to 6 epochs).
+- **Critical bug fix**: Fixed `KD_WEIGHT_STAGEB_DEFAULT=2.0 → 1.0` on line 92—previously this default would override the line 82 setting, reverting KD weight back to 2.0 and negating the fix.
+- **Hero run scale**: 6 epochs Stage A (8K samples), 10 epochs Stage B (16K samples), ~9.5 hours total. Stage A over-provisioned for robustness (smoke converged at 4 epochs). Stage B 10 epochs gives 2.5× training time vs smoke's 4 epochs for full convergence.
+- **Expected impact**: FirstTok@1 should break into double digits (8-12% range), enabling F1>0.05. If hero run shows FirstTok@1<8% after first epoch, may need to halt and revisit (bump to 10-11).
 - **Hero run monitoring**: Watch runs/hero/diagnostics.jsonl closely. Target: FirstTok@1>8% within first hero epoch, F1>0.05 by Stage B end.
 
 ### 2025-09-29 (d) — Stage B acceptance pressure, warm-up, and training extension (Claude Code)
