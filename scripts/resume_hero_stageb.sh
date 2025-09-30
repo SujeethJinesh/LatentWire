@@ -5,13 +5,15 @@ set -euo pipefail
 # Resume Stage B training from epoch 3 checkpoint after OOM error
 #
 # This script resumes the hero run that OOM'd at epoch 3.5/10 during Stage B.
-# It applies OOM fixes and continues training for the remaining 6.5 epochs.
+# It applies OOM fixes and increases acceptance pressure for better quality.
 #
 # Key changes from original run:
 # - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (fix fragmentation)
 # - KD_TEACHER_CHUNK=1 (reduce memory per chunk)
+# - FIRST_TOKEN_CE_WEIGHT_STAGEB: 9.0 → 11.0 (increase acceptance pressure)
+# - KD_WEIGHT_STAGEB: 1.0 → 0.5 (reduce competing gradients, free memory)
 # - Resume from runs/hero/ckpt_stageb checkpoint
-# - Remaining epochs: 10 - 3 = 7 epochs (to be safe, we use 7 full epochs from current state)
+# - Remaining epochs: 7 epochs from epoch 3
 #
 # Usage:
 #   bash scripts/resume_hero_stageb.sh
@@ -28,12 +30,12 @@ TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
 EPOCHS_STAGEB=${EPOCHS_STAGEB:-7}  # Remaining epochs from epoch 3
 SAMPLES="${SAMPLES:-1000}"
 
-# Stage B hyperparameters (same as original hero run)
+# Stage B hyperparameters - INCREASED acceptance pressure for better quality
 WARMUP_TEXT_LATENT_EPOCHS_STAGEB="${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:-2.0}"
 WARMUP_TAIL_PROB_STAGEB="${WARMUP_TAIL_PROB_STAGEB:-0.02}"
-FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-9.0}"
+FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-11.0}"  # INCREASED from 9.0 to 11.0
 LATENT_PRIVATE_LEN="${LATENT_PRIVATE_LEN:-24}"
-KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-1.0}"
+KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-0.5}"  # REDUCED from 1.0 to 0.5 (let CE dominate, reduce memory)
 WARMUP_TEXT_TEACHER_WEIGHT_STAGEB="${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:-2.0}"
 WARMUP_TEXT_LATENT_WEIGHT_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:-0.2}"
 WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:-1.0}"
@@ -149,6 +151,10 @@ echo "" | tee -a "$LOG"
 echo "OOM fixes applied:" | tee -a "$LOG"
 echo "  - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" | tee -a "$LOG"
 echo "  - KD_TEACHER_CHUNK=1 (reduced from 2)" | tee -a "$LOG"
+echo "" | tee -a "$LOG"
+echo "Quality improvements:" | tee -a "$LOG"
+echo "  - FIRST_TOKEN_CE_WEIGHT_STAGEB=11.0 (increased from 9.0)" | tee -a "$LOG"
+echo "  - KD_WEIGHT_STAGEB=0.5 (reduced from 1.0 to let CE dominate)" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 
 # CUDA preflight check
