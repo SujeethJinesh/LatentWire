@@ -65,7 +65,7 @@ else
 fi
 
 if [[ $hero -eq 1 ]]; then
-  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=1.0}"
+  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=2.0}"
   : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
   : "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=9.0}"
   : "${LATENT_PRIVATE_LEN:=24}"
