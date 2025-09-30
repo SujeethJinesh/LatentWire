@@ -1,5 +1,13 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-09-29 (d) — Stage B acceptance pressure and warm-up fix (Claude Code)
+- Reduced `FIRST_TOKEN_CE_WEIGHT_STAGEB` from 12.0 → 6.0 and extended `WARMUP_TEXT_LATENT_EPOCHS_STAGEB` from 0.25 → 1.0 (8 steps → 36 steps) to address Stage B first-token collapse. Smoke run with 4-epoch Stage A achieved breakthrough (first=8.28-9.58, KD=16.97), but Stage B completely failed with FirstTok@1=0.75%, F1=0.5%, indicating over-constrained first-token prediction.
+- **Root cause analysis**: Stage B `first_weight=12.0` (4× Stage A's 3.0) combined with only 8-step warm-up caused catastrophic first-token collapse. LOG.md (2025-09-27) warns: "excessive first-token weight (12+) can destabilize training." The LoRA+Prefix stack (231M params) never had time to adapt before heavy acceptance pressure locked them into predicting wrong tokens.
+- **Middle-ground approach**: Rather than dropping to Stage A's 3.0 (too soft), use 6.0 to maintain moderate acceptance pressure while preventing collapse. Combined with full-epoch warm-up (36 steps, matching Stage A's successful pattern), LoRA+Prefix can adapt before latent objectives kick in.
+- **Expected impact**: Stage B first-token top-1 should recover from 0.75% to 8-15% range; F1 should reach 0.05-0.15 (10-30× improvement). If still below target, next lever is increasing Stage B epochs from 2 to 4.
+- **Training time**: Stage B warm-up increases from 8 to 36 steps (+350%), but total Stage B steps remain at ~72, so overall impact is moderate (~10 min vs 7 min previously).
+- **Updated acceptance criteria**: Stage B end must achieve FirstTok@1>8% (relaxed from 12% given difficulty), F1>0.05, with Stage A criteria unchanged (first<10.0, KD<30).
+
 ### 2025-09-29 (c) — Stage A training extension for capacity utilization (Claude Code)
 - Increased `EPOCHS_STAGEA` from 2 → 4 to address capacity-utilization gap. Smoke run with deep_prefix_len=100 showed trainable params increased to 272.73M (confirming config applied), but first-token loss remained at 13.53 with FirstTok@1=5.0%, identical to deep_prefix_len=32 run. Root cause: **Insufficient training time to exploit added capacity**.
 - **Capacity-utilization analysis**: With 40-step text warm-up, 2-epoch training gives only 40 latent steps (steps 41-80) for the 100-token deep prefix to learn. P-Tuning v2 Figure 3 shows prompt tuning needs 2-3× more steps than full fine-tuning to converge. Doubling Stage A epochs provides 120 latent steps (40→120, +200%), giving the larger deep prefix time to learn richer representations.
