@@ -1,5 +1,12 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-09-29 (c) — Stage A training extension for capacity utilization (Claude Code)
+- Increased `EPOCHS_STAGEA` from 2 → 4 to address capacity-utilization gap. Smoke run with deep_prefix_len=100 showed trainable params increased to 272.73M (confirming config applied), but first-token loss remained at 13.53 with FirstTok@1=5.0%, identical to deep_prefix_len=32 run. Root cause: **Insufficient training time to exploit added capacity**.
+- **Capacity-utilization analysis**: With 40-step text warm-up, 2-epoch training gives only 40 latent steps (steps 41-80) for the 100-token deep prefix to learn. P-Tuning v2 Figure 3 shows prompt tuning needs 2-3× more steps than full fine-tuning to converge. Doubling Stage A epochs provides 120 latent steps (40→120, +200%), giving the larger deep prefix time to learn richer representations.
+- **Training trajectory expectation**: First-token loss should show continued descent beyond step 80. Previous run plateaued at first=13.53 (step 80), indicating premature termination. With 160 total steps, expect convergence to first<10.0 by epoch 3-4.
+- **Compute trade-off**: Stage A smoke run time increases from ~7 min to ~14 min (2× longer due to doubling epochs). Hero run remains acceptable (~35 min Stage A vs 18 min previously). This is necessary to validate that deep_prefix_len=100 can deliver quality improvements.
+- **Acceptance criteria unchanged**: Stage A end (step 160) must achieve first<10.0, tf<10.0, grad<100, KD<30; Stage B end must achieve FirstTok@1>12%, F1>0.10, latent≥25% of text baseline.
+
 ### 2025-09-29 (b) — Deep prefix capacity increase (Claude Code)
 - Increased `DEEP_PREFIX_LEN` from 32 → 100 to address capacity bottleneck identified in smoke run analysis. After fixes #2 and #3 stabilized training (grad<100, KD<30), Stage A still showed first=13.53 at end and Stage B achieved only FirstTok@1=5.0% with F1=0.0, indicating the model cannot "read" the compressed prefix.
 - **P-Tuning v2 Table 2 evidence**: "For hard sequence labeling tasks, prompt length around 100 tokens is preferred" vs <20 for simple tasks. SQuAD answer generation is a hard sequence task requiring reasoning over context; deep_prefix_len=32 was 3× too small to encode question semantics + answer reasoning traces + grounding pointers.
