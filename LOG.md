@@ -1,5 +1,12 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-09-29 (e) — Stage B acceptance pressure refinement for hero run (Claude Code)
+- Increased `FIRST_TOKEN_CE_WEIGHT_STAGEB` from 6.0 → 9.0 and reduced `KD_WEIGHT_STAGEB` from 2.0 → 1.0 based on smoke run analysis showing insufficient acceptance pressure. Smoke run with triple fix (first_weight=6.0, warm-up=1.0, epochs=4) achieved training stability (grad<50, KD=11.32) and Stage A breakthrough (first=9.58, KD=16.97), but Stage B remained below acceptance bar with FirstTok@1=5.0%, F1=0.0.
+- **Root cause**: `first_weight=6.0` provides insufficient acceptance pressure—model learns to compress (low KD) but learned representation isn't decodable. FirstTok@1=5.0% vs 8% target indicates argmax not shifting toward correct tokens. Meanwhile `KD_WEIGHT=2.0` may compete with CE signal.
+- **Balanced escalation**: Raise first_weight to 9.0 (not 10, staying below collapse point at 12) to increase acceptance pressure while maintaining stability. Reduce KD to 1.0 to let CE gradients dominate and actually move the argmax. Keep 4-epoch schedule and 1.0 warm-up (proven stable).
+- **Expected impact**: FirstTok@1 should break into double digits (8-12% range), enabling F1>0.05. If hero run shows FirstTok@1<8% after first epoch, may need to halt and revisit (bump to 10-11 or extend to 6 epochs).
+- **Hero run monitoring**: Watch runs/hero/diagnostics.jsonl closely. Target: FirstTok@1>8% within first hero epoch, F1>0.05 by Stage B end.
+
 ### 2025-09-29 (d) — Stage B acceptance pressure, warm-up, and training extension (Claude Code)
 - Reduced `FIRST_TOKEN_CE_WEIGHT_STAGEB` from 12.0 → 6.0, extended `WARMUP_TEXT_LATENT_EPOCHS_STAGEB` from 0.25 → 1.0 (8 steps → 36 steps), and increased `EPOCHS_STAGEB` from 2 → 4 to address Stage B first-token collapse. Smoke run with 4-epoch Stage A achieved breakthrough (first=8.28-9.58, KD=16.97), but Stage B completely failed with FirstTok@1=0.75%, F1=0.5%, indicating over-constrained first-token prediction.
 - **Root cause analysis**: Stage B `first_weight=12.0` (4× Stage A's 3.0) combined with only 8-step warm-up caused catastrophic first-token collapse. LOG.md (2025-09-27) warns: "excessive first-token weight (12+) can destabilize training." The LoRA+Prefix stack (231M params) never had time to adapt before heavy acceptance pressure locked them into predicting wrong tokens.
