@@ -1465,6 +1465,11 @@ def main():
         t = min(max(t, 0.0), 1.0)
         cosine = 0.5 * (1.0 + math.cos(math.pi * t))
         return base + (peak - base) * cosine
+
+    # Peak checkpointing: track best first_acc for latent mode
+    best_first_acc = -1.0
+    best_checkpoint_step = -1
+
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
 
@@ -2075,6 +2080,112 @@ def main():
                     except Exception as exc:
                         if args.debug:
                             print(f"[WARN] Failed to append diagnostic log: {exc}")
+
+            # ---- Peak checkpointing: save when first_acc improves in latent mode
+            if training_mode == "latent" and model_contexts:
+                # Get first_acc from first model (typically llama)
+                current_first_acc = float(_to_float(per_model_losses[model_contexts[0].name].get("first_acc", 0.0)))
+                if current_first_acc > best_first_acc and current_first_acc >= 0.10:
+                    # New peak detected (and above 10% threshold)
+                    best_first_acc = current_first_acc
+                    best_checkpoint_step = global_step
+
+                    # Save "best" checkpoint
+                    best_save_dir = os.path.join(os.path.dirname(args.save_dir), f"{os.path.basename(args.save_dir)}_best")
+                    os.makedirs(best_save_dir, exist_ok=True)
+
+                    cfg = {
+                        "d_z": args.d_z,
+                        "latent_len": total_latent_len,
+                        "latent_shared_len": latent_shared_len,
+                        "latent_private_len": latent_private_len,
+                        "byte_max": args.max_bytes,
+                        "llama_id": args.llama_id,
+                        "qwen_id": args.qwen_id,
+                        "encoder_type": args.encoder_type,
+                        "encoder_use_chat_template": bool(args.encoder_use_chat_template),
+                        "hf_encoder_id": (args.hf_encoder_id if hasattr(args, "hf_encoder_id") else ""),
+                        "max_enc_tokens": (args.max_enc_tokens if hasattr(args, "max_enc_tokens") else 1024),
+                        "encoder_backbone": (args.encoder_backbone or ""),
+                        "freeze_encoder": bool(args.freeze_encoder),
+                        "use_chat_template": bool(args.use_chat_template),
+                        "warm_anchor_mode": args.warm_anchor_mode,
+                        "strip_anchor_text": strip_anchor_literal,
+                        "max_anchor_tokens": args.max_anchor_tokens,
+                        "train_append_bos_after_prefix": args.train_append_bos_after_prefix,
+                        "first_token_ce_weight": args.first_token_ce_weight,
+                        "first_token_ce_schedule": args.first_token_ce_schedule,
+                        "first_token_ce_peak": args.first_token_ce_peak,
+                        "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
+                        "adapter_hidden_mult": args.adapter_hidden_mult,
+                        "adapter_dropout": args.adapter_dropout,
+                        "adapter_colorize": bool(args.adapter_colorize),
+                        "adapter_enable_metadata": bool(args.adapter_metadata),
+                        "llama_device_map": args.llama_device_map,
+                        "qwen_device_map": args.qwen_device_map,
+                        "llama_devices": args.llama_devices,
+                        "qwen_devices": args.qwen_devices,
+                        "gpu_mem_gib": args.gpu_mem_gib,
+                        "use_lora": bool(args.use_lora),
+                        "lora_r": args.lora_r,
+                        "lora_alpha": args.lora_alpha,
+                        "lora_dropout": args.lora_dropout,
+                        "lora_target_modules": args.lora_target_modules,
+                        "lora_firstN": args.lora_firstN,
+                    }
+                    dp_len_cfg = int(
+                        args.deep_prefix_len
+                        if (args.use_deep_prefix and args.deep_prefix_len is not None)
+                        else (latent_shared_len + latent_private_len)
+                    ) if args.use_deep_prefix else 0
+                    cfg["deep_prefix"] = {
+                        "enabled": bool(args.use_deep_prefix),
+                        "len": dp_len_cfg,
+                        "dropout": float(args.deep_prefix_dropout),
+                    }
+                    cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
+                    cfg["warm_anchor_texts"] = anchor_texts
+                    cfg["warm_anchor_modes"] = anchor_modes
+                    cfg["best_first_acc"] = float(best_first_acc)
+                    cfg["best_step"] = int(best_checkpoint_step)
+
+                    state_blob = {
+                        "epoch": epoch,
+                        "global_step": global_step,
+                        "args": vars(args),
+                        "rng": {
+                            "torch": torch.get_rng_state(),
+                            "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+                        },
+                        "optimizer": optimizer.state_dict(),
+                        "adapter_scale": {
+                            name: float(adapter.scale.detach().cpu().item())
+                            for name, adapter in adapters.items()
+                            if getattr(adapter, "scale", None) is not None
+                        },
+                        "encoder": encoder.state_dict(),
+                        "best_first_acc": float(best_first_acc),
+                        "best_step": int(best_checkpoint_step),
+                    }
+                    for name, adapter in adapters.items():
+                        state_blob[f"adp_{name}"] = adapter.state_dict()
+                    for name, gen in deep_prefix_generators.items():
+                        state_blob[f"deep_prefix_{name}"] = gen.state_dict()
+                    if latent_refiner is not None:
+                        state_blob["refiner"] = latent_refiner.state_dict()
+                    artifacts = {
+                        "encoder.pt": encoder.state_dict(),
+                        "state.pt": state_blob,
+                        "config.json": cfg,
+                    }
+                    for name, adapter in adapters.items():
+                        artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
+                    for name, gen in deep_prefix_generators.items():
+                        artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
+                    if latent_refiner is not None:
+                        artifacts["refiner.pt"] = latent_refiner.state_dict()
+                    save_latest_checkpoint(best_save_dir, artifacts, pre_prune=False, post_prune=False, verbose=False)
+                    print(f"  🌟 NEW PEAK: first_acc={best_first_acc:.1%} at step {global_step} → saved to {best_save_dir}")
 
             # ---- Periodic checkpoint: save + prune
             if args.save_every and (global_step % args.save_every == 0):

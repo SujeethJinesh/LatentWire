@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # resume_hero_stageb.sh
-# Resume Stage B training from epoch 3 checkpoint after OOM error
+# Resume Stage B training with schedule fixes for dropout retention
 #
-# This script resumes the hero run that OOM'd at epoch 3.5/10 during Stage B.
-# It applies OOM fixes and increases acceptance pressure for better quality.
+# Based on v1 analysis showing peak performance (19.4% first_acc) at keep_prob=0.6-0.85,
+# with regression when annealing to 1.0. This is NOT an architecture limit—schedule issue.
 #
 # Key changes from original run:
 # OOM fixes:
@@ -16,8 +16,10 @@ set -euo pipefail
 # Quality improvements:
 # - FIRST_TOKEN_CE_WEIGHT_STAGEB: 9.0 → 11.0 (increase acceptance pressure)
 # - KD_WEIGHT_STAGEB: 1.0 → 0.5 (reduce competing gradients, free memory)
-# - Resume from runs/hero/ckpt_stageb checkpoint
-# - Remaining epochs: 6 epochs (resumes after epoch 4 completes, runs epochs 5-10)
+# Schedule fixes (based on v1 hero_resume analysis):
+# - LATENT_KEEP_END: 1.0 → 0.85 (freeze dropout at sweet spot)
+# - EPOCHS_STAGEB: 6 → 8 (consolidate with frozen dropout)
+# - Peak checkpointing: train.py now saves "_best" checkpoint automatically
 #
 # Usage:
 #   bash scripts/resume_hero_stageb.sh
@@ -29,20 +31,25 @@ BASE_RUN_TAG="$RUN_TAG"
 export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 
-# Hero run configuration (same as original)
+# Hero run configuration
 TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
-EPOCHS_STAGEB=${EPOCHS_STAGEB:-6}  # Remaining epochs from epoch 4 (after current epoch completes)
+EPOCHS_STAGEB=${EPOCHS_STAGEB:-8}  # EXTENDED from 6 to 8 for consolidation with frozen dropout
 SAMPLES="${SAMPLES:-1000}"
 
-# Stage B hyperparameters - INCREASED acceptance pressure for better quality
+# Stage B hyperparameters - Quality improvements
 WARMUP_TEXT_LATENT_EPOCHS_STAGEB="${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:-2.0}"
 WARMUP_TAIL_PROB_STAGEB="${WARMUP_TAIL_PROB_STAGEB:-0.02}"
-FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-11.0}"  # INCREASED from 9.0 to 11.0
+FIRST_TOKEN_CE_WEIGHT_STAGEB="${FIRST_TOKEN_CE_WEIGHT_STAGEB:-11.0}"
 LATENT_PRIVATE_LEN="${LATENT_PRIVATE_LEN:-24}"
-KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-0.5}"  # REDUCED from 1.0 to 0.5 (let CE dominate, reduce memory)
+KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-0.5}"
 WARMUP_TEXT_TEACHER_WEIGHT_STAGEB="${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:-2.0}"
 WARMUP_TEXT_LATENT_WEIGHT_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:-0.2}"
 WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB="${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:-1.0}"
+
+# SCHEDULE FIX: Freeze dropout at 0.85 (sweet spot from v1 analysis)
+LATENT_KEEP_START="${LATENT_KEEP_START:-0.5}"
+LATENT_KEEP_END="${LATENT_KEEP_END:-0.85}"  # CHANGED from 1.0 to 0.85
+LATENT_KEEP_POWER="${LATENT_KEEP_POWER:-2.0}"
 
 # Model configuration
 LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
@@ -146,28 +153,33 @@ fi
 
 WARMUP_FLAG=(--kd_skip_text)
 
-echo "=== Resume Hero Stage B Training ===" | tee "$LOG"
+echo "=== Resume Hero Stage B Training (Schedule Fix) ===" | tee "$LOG"
 echo "Run tag: $RUN_TAG" | tee -a "$LOG"
 echo "Resuming from checkpoint: $CHECKPOINT_BASE" | tee -a "$LOG"
 echo "Saving to: $SAVE_DIR" | tee -a "$LOG"
-echo "Remaining epochs: $EPOCHS_STAGEB (epochs 5-10)" | tee -a "$LOG"
+echo "Epochs: $EPOCHS_STAGEB (extended for consolidation)" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
-echo "OOM fixes applied:" | tee -a "$LOG"
-echo "  - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" | tee -a "$LOG"
-echo "  - KD_TEACHER_CHUNK=1 (latent mode, OOM safety)" | tee -a "$LOG"
+echo "SCHEDULE FIXES (based on v1 analysis):" | tee -a "$LOG"
+echo "  - LATENT_KEEP_END: 1.0 → 0.85 (freeze at sweet spot)" | tee -a "$LOG"
+echo "  - EPOCHS extended to 8 (consolidate with frozen dropout)" | tee -a "$LOG"
+echo "  - Peak checkpointing: train.py saves '_best' automatically" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
-echo "Performance improvements:" | tee -a "$LOG"
-echo "  - TEXT_TEACHER_CHUNK=4 (increased from 1, 4× faster warm-up)" | tee -a "$LOG"
+echo "Analysis showed peak at keep_prob=0.6-0.85:" | tee -a "$LOG"
+echo "  - Peak: 19.4% first_acc at keep_prob=0.613" | tee -a "$LOG"
+echo "  - 26 steps achieved ≥10% (all at keep_prob 0.55-0.82)" | tee -a "$LOG"
+echo "  - Final eval (keep_prob=1.0) only 4.4% - model never learned full latents" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
-echo "Quality improvements:" | tee -a "$LOG"
-echo "  - FIRST_TOKEN_CE_WEIGHT_STAGEB=11.0 (increased from 9.0)" | tee -a "$LOG"
-echo "  - KD_WEIGHT_STAGEB=0.5 (reduced from 1.0 to let CE dominate)" | tee -a "$LOG"
+echo "Retained from v1:" | tee -a "$LOG"
+echo "  - FIRST_TOKEN_CE_WEIGHT=11.0" | tee -a "$LOG"
+echo "  - KD_WEIGHT=0.5" | tee -a "$LOG"
+echo "  - OOM fixes: expandable_segments, KD_TEACHER_CHUNK=1" | tee -a "$LOG"
+echo "  - Performance: TEXT_TEACHER_CHUNK=4" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 
 # CUDA preflight check
 python3 -c "import os, torch; print('torch:', torch.__version__, 'cuda:', torch.version.cuda, 'available:', torch.cuda.is_available()); print('CUDA_VISIBLE_DEVICES:', os.getenv('CUDA_VISIBLE_DEVICES')); print('PYTORCH_CUDA_ALLOC_CONF:', os.getenv('PYTORCH_CUDA_ALLOC_CONF'))" 2>&1 | tee -a "$LOG"
 
-echo -e "\n=== Stage B Resume: Llama prefix training (epochs 5-10) ===\n" | tee -a "$LOG"
+echo -e "\n=== Stage B: Training with frozen dropout (keep_prob→0.85) ===\n" | tee -a "$LOG"
 
 steps_per_epoch_stageb=$(( (TRAIN_SAMPLES_STAGEB + BATCH_SIZE_STAGEB - 1) / BATCH_SIZE_STAGEB ))
 save_every_stageb=$SAVE_EVERY_STAGEB
@@ -189,7 +201,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule none \
   --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
   --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
-  --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
+  --latent_keep_start "$LATENT_KEEP_START" --latent_keep_end "$LATENT_KEEP_END" --latent_keep_power "$LATENT_KEEP_POWER" \
   --warmup_text_latent_epochs "$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" \
   --warmup_align_tokens 8 --warmup_align_weight 1.5 \
   --warmup_text_teacher_weight "$WARMUP_TEXT_TEACHER_WEIGHT_STAGEB" \
@@ -221,4 +233,6 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
   2>&1 | tee -a "$LOG"
 
-echo -e "\n✓ Hero Stage B resume complete. Logs: $LOG\n"
+echo -e "\n✓ Hero Stage B (schedule fix) complete. Logs: $LOG\n"
+echo "Note: Evaluate using the _best checkpoint for peak performance:"
+echo "  --ckpt ${SAVE_DIR}_best"
