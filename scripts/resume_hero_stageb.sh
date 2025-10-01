@@ -108,8 +108,8 @@ COMMON_ARGS=(
   --gpu_mem_gib "$GPU_MEM_GIB"
   --latent_len "$LATENT_LEN"
   --d_z "$D_Z"
-  --refiner_layers "$REFINER_LAYERS"
-  --refiner_heads "$REFINER_HEADS"
+  --latent_refiner_layers "$REFINER_LAYERS"
+  --latent_refiner_heads "$REFINER_HEADS"
 )
 
 if [[ $USE_GIST_HEAD -eq 1 ]]; then
