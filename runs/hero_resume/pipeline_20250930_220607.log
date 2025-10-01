@@ -1,0 +1,1426 @@
+=== Resume Hero Stage B Training ===
+Run tag: hero_resume
+Resuming from checkpoint: runs/hero/ckpt_stageb
+Saving to: runs/hero_resume/ckpt_stageb
+Remaining epochs: 6 (epochs 5-10)
+
+OOM fixes applied:
+  - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+  - KD_TEACHER_CHUNK=1 (latent mode, OOM safety)
+
+Performance improvements:
+  - TEXT_TEACHER_CHUNK=4 (increased from 1, 4× faster warm-up)
+
+Quality improvements:
+  - FIRST_TOKEN_CE_WEIGHT_STAGEB=11.0 (increased from 9.0)
+  - KD_WEIGHT_STAGEB=0.5 (reduced from 1.0 to let CE dominate)
+
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+=== Stage B Resume: Llama prefix training (epochs 5-10) ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3501.09it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.07s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.90s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.36s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+trainable params: 41,943,040 || all params: 8,072,204,288 || trainable%: 0.5196
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/peft/mapping_func.py:73: UserWarning: You are trying to modify a model with PEFT for a second time. If you want to reload the model with a different config, make sure to call `.unload()` before.
+  warnings.warn(
+trainable params: 272,801,792 || all params: 8,345,006,080 || trainable%: 3.2690
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+[INFO] llama anchor tokens: 3
+⏪ Resuming from: runs/hero/ckpt_stageb
+   -> start_epoch=0, global_step=0
+[warmup] alternating text/latent for first 890 steps
+Epoch 1/6
+[warmup] step=0 mode=text (warm-up)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  1/445 | (warm-up text) | align=0.0003 | text_tf=11.3445 | latent_scale=0.20
+[warmup] step=1 mode=text (warm-up)
+  step  2/445 | (warm-up text) | align=0.0003 | text_tf=10.7604 | latent_scale=0.20
+[warmup] step=2 mode=text (warm-up)
+  step  3/445 | (warm-up text) | align=0.0003 | text_tf=10.6791 | latent_scale=0.20
+[warmup] step=3 mode=text (warm-up)
+  step  4/445 | (warm-up text) | align=0.0003 | text_tf=11.3121 | latent_scale=0.20
+[warmup] step=4 mode=text (warm-up)
+  step  5/445 | (warm-up text) | align=0.0003 | text_tf=10.3264 | latent_scale=0.20
+[warmup] step=5 mode=text (warm-up)
+  step  6/445 | (warm-up text) | align=0.0003 | text_tf=10.3952 | latent_scale=0.20
+[warmup] step=6 mode=text (warm-up)
+  step  7/445 | (warm-up text) | align=0.0003 | text_tf=10.6840 | latent_scale=0.21
+[warmup] step=7 mode=text (warm-up)
+  step  8/445 | (warm-up text) | align=0.0003 | text_tf=11.2707 | latent_scale=0.21
+[warmup] step=8 mode=text (warm-up)
+  step  9/445 | (warm-up text) | align=0.0003 | text_tf=10.5088 | latent_scale=0.21
+[warmup] step=9 mode=text (warm-up)
+  step  10/445 | (warm-up text) | align=0.0003 | text_tf=10.7101 | latent_scale=0.21
+  step  10/445 | grad_norm=0.00 | sec/step~7.35 | keep=0.50 | K=8 | llama(T): tf=2.5315 first=3.2240 kCE=2.5518 KD=0.0000 acc=0.000 state=8.4681 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  11/445 | (warm-up text) | align=0.0003 | text_tf=10.8913 | latent_scale=0.21
+  step  12/445 | (warm-up text) | align=0.0003 | text_tf=10.8126 | latent_scale=0.21
+  step  13/445 | (warm-up text) | align=0.0003 | text_tf=9.3054 | latent_scale=0.21
+  step  14/445 | (warm-up text) | align=0.0003 | text_tf=9.2365 | latent_scale=0.21
+  step  15/445 | (warm-up text) | align=0.0003 | text_tf=10.1646 | latent_scale=0.21
+  step  16/445 | (warm-up text) | align=0.0003 | text_tf=9.8153 | latent_scale=0.21
+  step  17/445 | (warm-up text) | align=0.0003 | text_tf=9.8557 | latent_scale=0.21
+  step  18/445 | (warm-up text) | align=0.0003 | text_tf=9.7739 | latent_scale=0.22
+  step  19/445 | (warm-up text) | align=0.0003 | text_tf=10.3091 | latent_scale=0.22
+  step  20/445 | (warm-up text) | align=0.0003 | text_tf=9.2364 | latent_scale=0.22
+  step  20/445 | grad_norm=0.00 | sec/step~7.01 | keep=0.50 | K=8 | llama(T): tf=2.4135 first=2.4992 kCE=2.2766 KD=0.0000 acc=0.000 state=8.9764 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.2737e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  21/445 | (warm-up text) | align=0.0003 | text_tf=9.5607 | latent_scale=0.22
+  step  22/445 | (warm-up text) | align=0.0003 | text_tf=9.8598 | latent_scale=0.22
+  step  23/445 | (warm-up text) | align=0.0003 | text_tf=10.1412 | latent_scale=0.22
+  step  24/445 | (warm-up text) | align=0.0003 | text_tf=9.7505 | latent_scale=0.22
+  step  25/445 | (warm-up text) | align=0.0003 | text_tf=10.1583 | latent_scale=0.22
+  step  26/445 | (warm-up text) | align=0.0003 | text_tf=10.0067 | latent_scale=0.22
+  step  27/445 | (warm-up text) | align=0.0003 | text_tf=10.2317 | latent_scale=0.22
+  step  28/445 | (warm-up text) | align=0.0003 | text_tf=9.9456 | latent_scale=0.22
+  step  29/445 | (warm-up text) | align=0.0003 | text_tf=10.2733 | latent_scale=0.23
+  step  30/445 | (warm-up text) | align=0.0003 | text_tf=10.0111 | latent_scale=0.23
+  step  30/445 | grad_norm=0.00 | sec/step~7.24 | keep=0.50 | K=8 | llama(T): tf=2.4715 first=2.2018 kCE=2.7063 KD=0.0000 acc=0.000 state=9.4467 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=7.7149e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  31/445 | (warm-up text) | align=0.0003 | text_tf=10.1256 | latent_scale=0.23
+  step  32/445 | (warm-up text) | align=0.0003 | text_tf=10.5714 | latent_scale=0.23
+  step  33/445 | (warm-up text) | align=0.0003 | text_tf=9.8549 | latent_scale=0.23
+  step  34/445 | (warm-up text) | align=0.0003 | text_tf=9.7989 | latent_scale=0.23
+  step  35/445 | (warm-up text) | align=0.0003 | text_tf=10.3260 | latent_scale=0.23
+  step  36/445 | (warm-up text) | align=0.0003 | text_tf=10.1409 | latent_scale=0.23
+  step  37/445 | (warm-up text) | align=0.0003 | text_tf=9.0936 | latent_scale=0.23
+  step  38/445 | (warm-up text) | align=0.0003 | text_tf=9.2874 | latent_scale=0.23
+  step  39/445 | (warm-up text) | align=0.0003 | text_tf=8.9407 | latent_scale=0.23
+  step  40/445 | (warm-up text) | align=0.0003 | text_tf=9.1610 | latent_scale=0.24
+  step  40/445 | grad_norm=0.00 | sec/step~7.23 | keep=0.50 | K=8 | llama(T): tf=2.4142 first=2.0894 kCE=2.7698 KD=0.0000 acc=0.028 state=9.0804 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.5476e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  41/445 | (warm-up text) | align=0.0003 | text_tf=9.0255 | latent_scale=0.24
+  step  42/445 | (warm-up text) | align=0.0003 | text_tf=9.1677 | latent_scale=0.24
+  step  43/445 | (warm-up text) | align=0.0003 | text_tf=8.9751 | latent_scale=0.24
+  step  44/445 | (warm-up text) | align=0.0003 | text_tf=9.0707 | latent_scale=0.24
+  step  45/445 | (warm-up text) | align=0.0003 | text_tf=9.3423 | latent_scale=0.24
+  step  46/445 | (warm-up text) | align=0.0003 | text_tf=8.8622 | latent_scale=0.24
+  step  47/445 | (warm-up text) | align=0.0003 | text_tf=8.8103 | latent_scale=0.24
+  step  48/445 | (warm-up text) | align=0.0003 | text_tf=9.5498 | latent_scale=0.24
+  step  49/445 | (warm-up text) | align=0.0003 | text_tf=8.8192 | latent_scale=0.24
+  step  50/445 | (warm-up text) | align=0.0003 | text_tf=9.0554 | latent_scale=0.24
+  step  50/445 | grad_norm=0.00 | sec/step~7.22 | keep=0.50 | K=8 | llama(T): tf=2.3978 first=2.0141 kCE=2.9537 KD=0.0000 acc=0.028 state=8.6496 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=6.5996e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  51/445 | (warm-up text) | align=0.0003 | text_tf=8.6892 | latent_scale=0.24
+  step  52/445 | (warm-up text) | align=0.0003 | text_tf=8.8837 | latent_scale=0.25
+  step  53/445 | (warm-up text) | align=0.0003 | text_tf=8.3868 | latent_scale=0.25
+  step  54/445 | (warm-up text) | align=0.0003 | text_tf=8.9230 | latent_scale=0.25
+  step  55/445 | (warm-up text) | align=0.0003 | text_tf=8.1776 | latent_scale=0.25
+  step  56/445 | (warm-up text) | align=0.0003 | text_tf=9.0919 | latent_scale=0.25
+  step  57/445 | (warm-up text) | align=0.0003 | text_tf=8.9320 | latent_scale=0.25
+  step  58/445 | (warm-up text) | align=0.0003 | text_tf=8.9434 | latent_scale=0.25
+  step  59/445 | (warm-up text) | align=0.0003 | text_tf=8.8106 | latent_scale=0.25
+  step  60/445 | (warm-up text) | align=0.0003 | text_tf=8.9201 | latent_scale=0.25
+  step  60/445 | grad_norm=0.00 | sec/step~7.07 | keep=0.50 | K=8 | llama(T): tf=2.5325 first=2.1733 kCE=3.0257 KD=0.0000 acc=0.000 state=8.9207 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.4521e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  61/445 | (warm-up text) | align=0.0003 | text_tf=8.5584 | latent_scale=0.25
+  step  62/445 | (warm-up text) | align=0.0003 | text_tf=8.4003 | latent_scale=0.25
+  step  63/445 | (warm-up text) | align=0.0003 | text_tf=8.4512 | latent_scale=0.26
+  step  64/445 | (warm-up text) | align=0.0003 | text_tf=8.5792 | latent_scale=0.26
+  step  65/445 | (warm-up text) | align=0.0003 | text_tf=8.9300 | latent_scale=0.26
+  step  66/445 | (warm-up text) | align=0.0003 | text_tf=8.8763 | latent_scale=0.26
+  step  67/445 | (warm-up text) | align=0.0003 | text_tf=8.7436 | latent_scale=0.26
+  step  68/445 | (warm-up text) | align=0.0003 | text_tf=8.9103 | latent_scale=0.26
+  step  69/445 | (warm-up text) | align=0.0003 | text_tf=9.1567 | latent_scale=0.26
+  step  70/445 | (warm-up text) | align=0.0003 | text_tf=8.3812 | latent_scale=0.26
+  step  70/445 | grad_norm=0.00 | sec/step~6.92 | keep=0.50 | K=8 | llama(T): tf=2.5388 first=2.1725 kCE=3.0041 KD=0.0000 acc=0.028 state=8.1813 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.4521e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  71/445 | (warm-up text) | align=0.0003 | text_tf=8.6556 | latent_scale=0.26
+  step  72/445 | (warm-up text) | align=0.0003 | text_tf=8.7631 | latent_scale=0.26
+  step  73/445 | (warm-up text) | align=0.0003 | text_tf=8.8110 | latent_scale=0.26
+  step  74/445 | (warm-up text) | align=0.0003 | text_tf=8.3087 | latent_scale=0.27
+  step  75/445 | (warm-up text) | align=0.0003 | text_tf=8.3453 | latent_scale=0.27
+  step  76/445 | (warm-up text) | align=0.0003 | text_tf=8.5287 | latent_scale=0.27
+  step  77/445 | (warm-up text) | align=0.0003 | text_tf=8.1150 | latent_scale=0.27
+  step  78/445 | (warm-up text) | align=0.0003 | text_tf=8.6434 | latent_scale=0.27
+  step  79/445 | (warm-up text) | align=0.0003 | text_tf=8.3138 | latent_scale=0.27
+  step  80/445 | (warm-up text) | align=0.0003 | text_tf=7.9836 | latent_scale=0.27
+  step  80/445 | grad_norm=0.00 | sec/step~7.84 | keep=0.50 | K=8 | llama(T): tf=2.5647 first=2.0863 kCE=3.2249 KD=0.0000 acc=0.056 state=7.7124 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.6890e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  81/445 | (warm-up text) | align=0.0003 | text_tf=8.1774 | latent_scale=0.27
+  step  82/445 | (warm-up text) | align=0.0003 | text_tf=8.6177 | latent_scale=0.27
+  step  83/445 | (warm-up text) | align=0.0003 | text_tf=8.9176 | latent_scale=0.27
+  step  84/445 | (warm-up text) | align=0.0003 | text_tf=8.2129 | latent_scale=0.27
+  step  85/445 | (warm-up text) | align=0.0003 | text_tf=8.4061 | latent_scale=0.28
+  step  86/445 | (warm-up text) | align=0.0003 | text_tf=8.0457 | latent_scale=0.28
+  step  87/445 | (warm-up text) | align=0.0003 | text_tf=8.5134 | latent_scale=0.28
+  step  88/445 | (warm-up text) | align=0.0003 | text_tf=8.3938 | latent_scale=0.28
+  step  89/445 | (warm-up text) | align=0.0003 | text_tf=7.9168 | latent_scale=0.28
+  step  90/445 | (warm-up text) | align=0.0003 | text_tf=8.0948 | latent_scale=0.28
+  step  90/445 | grad_norm=0.00 | sec/step~7.88 | keep=0.50 | K=8 | llama(T): tf=2.7322 first=2.2911 kCE=3.5604 KD=0.0000 acc=0.028 state=6.9138 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.3371e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  91/445 | (warm-up text) | align=0.0003 | text_tf=8.1954 | latent_scale=0.28
+  step  92/445 | (warm-up text) | align=0.0003 | text_tf=8.4866 | latent_scale=0.28
+  step  93/445 | (warm-up text) | align=0.0003 | text_tf=7.9480 | latent_scale=0.28
+  step  94/445 | (warm-up text) | align=0.0003 | text_tf=8.5655 | latent_scale=0.28
+  step  95/445 | (warm-up text) | align=0.0003 | text_tf=8.0465 | latent_scale=0.28
+  step  96/445 | (warm-up text) | align=0.0003 | text_tf=8.1489 | latent_scale=0.29
+  step  97/445 | (warm-up text) | align=0.0003 | text_tf=7.7959 | latent_scale=0.29
+  step  98/445 | (warm-up text) | align=0.0003 | text_tf=7.6683 | latent_scale=0.29
+  step  99/445 | (warm-up text) | align=0.0003 | text_tf=7.5641 | latent_scale=0.29
+  step  100/445 | (warm-up text) | align=0.0003 | text_tf=8.0613 | latent_scale=0.29
+  step  100/445 | grad_norm=0.00 | sec/step~7.11 | keep=0.50 | K=8 | llama(T): tf=2.7822 first=2.2316 kCE=3.6164 KD=0.0000 acc=0.028 state=6.3817 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.7757e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  101/445 | (warm-up text) | align=0.0003 | text_tf=7.8840 | latent_scale=0.29
+  step  102/445 | (warm-up text) | align=0.0003 | text_tf=8.0144 | latent_scale=0.29
+  step  103/445 | (warm-up text) | align=0.0003 | text_tf=8.0806 | latent_scale=0.29
+  step  104/445 | (warm-up text) | align=0.0003 | text_tf=7.9446 | latent_scale=0.29
+  step  105/445 | (warm-up text) | align=0.0003 | text_tf=7.9904 | latent_scale=0.29
+  step  106/445 | (warm-up text) | align=0.0003 | text_tf=7.7049 | latent_scale=0.29
+  step  107/445 | (warm-up text) | align=0.0003 | text_tf=8.0783 | latent_scale=0.30
+  step  108/445 | (warm-up text) | align=0.0003 | text_tf=8.0205 | latent_scale=0.30
+  step  109/445 | (warm-up text) | align=0.0003 | text_tf=7.6655 | latent_scale=0.30
+  step  110/445 | (warm-up text) | align=0.0003 | text_tf=8.0008 | latent_scale=0.30
+  step  110/445 | grad_norm=0.00 | sec/step~6.96 | keep=0.50 | K=8 | llama(T): tf=2.8257 first=2.0533 kCE=3.6050 KD=0.0000 acc=0.167 state=5.6093 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.6284e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  111/445 | (warm-up text) | align=0.0003 | text_tf=8.1331 | latent_scale=0.30
+  step  112/445 | (warm-up text) | align=0.0003 | text_tf=7.6353 | latent_scale=0.30
+  step  113/445 | (warm-up text) | align=0.0003 | text_tf=7.7915 | latent_scale=0.30
+  step  114/445 | (warm-up text) | align=0.0003 | text_tf=7.5768 | latent_scale=0.30
+  step  115/445 | (warm-up text) | align=0.0003 | text_tf=7.9930 | latent_scale=0.30
+  step  116/445 | (warm-up text) | align=0.0003 | text_tf=7.7224 | latent_scale=0.30
+  step  117/445 | (warm-up text) | align=0.0003 | text_tf=7.9481 | latent_scale=0.30
+  step  118/445 | (warm-up text) | align=0.0003 | text_tf=7.9262 | latent_scale=0.31
+  step  119/445 | (warm-up text) | align=0.0003 | text_tf=7.7616 | latent_scale=0.31
+  step  120/445 | (warm-up text) | align=0.0003 | text_tf=7.8499 | latent_scale=0.31
+  step  120/445 | grad_norm=0.00 | sec/step~7.25 | keep=0.50 | K=8 | llama(T): tf=2.9829 first=2.4218 kCE=3.6692 KD=0.0000 acc=0.056 state=6.0951 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.4120e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  121/445 | (warm-up text) | align=0.0003 | text_tf=7.4112 | latent_scale=0.31
+  step  122/445 | (warm-up text) | align=0.0003 | text_tf=7.9284 | latent_scale=0.31
+  step  123/445 | (warm-up text) | align=0.0003 | text_tf=7.7135 | latent_scale=0.31
+  step  124/445 | (warm-up text) | align=0.0003 | text_tf=7.4822 | latent_scale=0.31
+  step  125/445 | (warm-up text) | align=0.0003 | text_tf=7.1182 | latent_scale=0.31
+  step  126/445 | (warm-up text) | align=0.0003 | text_tf=7.2911 | latent_scale=0.31
+  step  127/445 | (warm-up text) | align=0.0003 | text_tf=7.7723 | latent_scale=0.31
+  step  128/445 | (warm-up text) | align=0.0003 | text_tf=8.1385 | latent_scale=0.31
+  step  129/445 | (warm-up text) | align=0.0003 | text_tf=7.5601 | latent_scale=0.32
+  step  130/445 | (warm-up text) | align=0.0003 | text_tf=7.6914 | latent_scale=0.32
+  step  130/445 | grad_norm=0.00 | sec/step~7.54 | keep=0.50 | K=8 | llama(T): tf=3.0881 first=2.3909 kCE=3.8017 KD=0.0000 acc=0.083 state=5.8515 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.4120e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  131/445 | (warm-up text) | align=0.0003 | text_tf=7.3015 | latent_scale=0.32
+  step  132/445 | (warm-up text) | align=0.0003 | text_tf=7.4786 | latent_scale=0.32
+  step  133/445 | (warm-up text) | align=0.0003 | text_tf=7.2994 | latent_scale=0.32
+  step  134/445 | (warm-up text) | align=0.0003 | text_tf=7.3839 | latent_scale=0.32
+  step  135/445 | (warm-up text) | align=0.0003 | text_tf=7.2071 | latent_scale=0.32
+  step  136/445 | (warm-up text) | align=0.0003 | text_tf=7.1616 | latent_scale=0.32
+  step  137/445 | (warm-up text) | align=0.0003 | text_tf=7.1640 | latent_scale=0.32
+  step  138/445 | (warm-up text) | align=0.0003 | text_tf=7.6867 | latent_scale=0.32
+  step  139/445 | (warm-up text) | align=0.0003 | text_tf=7.3534 | latent_scale=0.32
+  step  140/445 | (warm-up text) | align=0.0003 | text_tf=7.5204 | latent_scale=0.32
+  step  140/445 | grad_norm=0.00 | sec/step~7.29 | keep=0.50 | K=8 | llama(T): tf=3.1981 first=2.5029 kCE=3.8258 KD=0.0000 acc=0.056 state=5.9884 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.7691e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  141/445 | (warm-up text) | align=0.0003 | text_tf=7.0707 | latent_scale=0.33
+  step  142/445 | (warm-up text) | align=0.0003 | text_tf=7.6181 | latent_scale=0.33
+  step  143/445 | (warm-up text) | align=0.0003 | text_tf=7.3039 | latent_scale=0.33
+  step  144/445 | (warm-up text) | align=0.0003 | text_tf=8.0174 | latent_scale=0.33
+  step  145/445 | (warm-up text) | align=0.0003 | text_tf=6.9697 | latent_scale=0.33
+  step  146/445 | (warm-up text) | align=0.0003 | text_tf=7.6218 | latent_scale=0.33
+  step  147/445 | (warm-up text) | align=0.0003 | text_tf=7.2620 | latent_scale=0.33
+  step  148/445 | (warm-up text) | align=0.0003 | text_tf=7.3902 | latent_scale=0.33
+  step  149/445 | (warm-up text) | align=0.0003 | text_tf=7.4825 | latent_scale=0.33
+  step  150/445 | (warm-up text) | align=0.0003 | text_tf=7.1791 | latent_scale=0.33
+  step  150/445 | grad_norm=0.00 | sec/step~7.74 | keep=0.50 | K=8 | llama(T): tf=3.0876 first=2.6055 kCE=4.1072 KD=0.0000 acc=0.056 state=6.3825 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.9787e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  151/445 | (warm-up text) | align=0.0003 | text_tf=7.4653 | latent_scale=0.33
+  step  152/445 | (warm-up text) | align=0.0003 | text_tf=7.0652 | latent_scale=0.34
+  step  153/445 | (warm-up text) | align=0.0003 | text_tf=7.1581 | latent_scale=0.34
+  step  154/445 | (warm-up text) | align=0.0003 | text_tf=7.1533 | latent_scale=0.34
+  step  155/445 | (warm-up text) | align=0.0003 | text_tf=7.3520 | latent_scale=0.34
+  step  156/445 | (warm-up text) | align=0.0003 | text_tf=6.8615 | latent_scale=0.34
+  step  157/445 | (warm-up text) | align=0.0003 | text_tf=6.8039 | latent_scale=0.34
+  step  158/445 | (warm-up text) | align=0.0003 | text_tf=7.3388 | latent_scale=0.34
+  step  159/445 | (warm-up text) | align=0.0003 | text_tf=7.3162 | latent_scale=0.34
+  step  160/445 | (warm-up text) | align=0.0003 | text_tf=6.8535 | latent_scale=0.34
+  step  160/445 | grad_norm=0.00 | sec/step~7.11 | keep=0.50 | K=8 | llama(T): tf=3.1773 first=2.8286 kCE=4.1129 KD=0.0000 acc=0.028 state=5.8215 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.2027e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  161/445 | (warm-up text) | align=0.0003 | text_tf=7.0855 | latent_scale=0.34
+  step  162/445 | (warm-up text) | align=0.0003 | text_tf=7.2886 | latent_scale=0.34
+  step  163/445 | (warm-up text) | align=0.0003 | text_tf=6.9902 | latent_scale=0.35
+  step  164/445 | (warm-up text) | align=0.0003 | text_tf=7.4416 | latent_scale=0.35
+  step  165/445 | (warm-up text) | align=0.0003 | text_tf=7.4517 | latent_scale=0.35
+  step  166/445 | (warm-up text) | align=0.0003 | text_tf=7.0293 | latent_scale=0.35
+  step  167/445 | (warm-up text) | align=0.0003 | text_tf=6.9723 | latent_scale=0.35
+  step  168/445 | (warm-up text) | align=0.0003 | text_tf=7.4512 | latent_scale=0.35
+  step  169/445 | (warm-up text) | align=0.0003 | text_tf=6.6328 | latent_scale=0.35
+  step  170/445 | (warm-up text) | align=0.0003 | text_tf=6.8658 | latent_scale=0.35
+  step  170/445 | grad_norm=0.00 | sec/step~8.03 | keep=0.50 | K=8 | llama(T): tf=3.2679 first=2.6062 kCE=4.0811 KD=0.0000 acc=0.056 state=6.9170 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=8.5354e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  171/445 | (warm-up text) | align=0.0003 | text_tf=7.0503 | latent_scale=0.35
+  step  172/445 | (warm-up text) | align=0.0003 | text_tf=6.9831 | latent_scale=0.35
+  step  173/445 | (warm-up text) | align=0.0003 | text_tf=7.2630 | latent_scale=0.35
+  step  174/445 | (warm-up text) | align=0.0003 | text_tf=7.0505 | latent_scale=0.36
+  step  175/445 | (warm-up text) | align=0.0003 | text_tf=6.8637 | latent_scale=0.36
+  step  176/445 | (warm-up text) | align=0.0003 | text_tf=7.0981 | latent_scale=0.36
+  step  177/445 | (warm-up text) | align=0.0003 | text_tf=6.5498 | latent_scale=0.36
+  step  178/445 | (warm-up text) | align=0.0003 | text_tf=7.0522 | latent_scale=0.36
+  step  179/445 | (warm-up text) | align=0.0003 | text_tf=7.5428 | latent_scale=0.36
+  step  180/445 | (warm-up text) | align=0.0003 | text_tf=7.3349 | latent_scale=0.36
+  step  180/445 | grad_norm=0.00 | sec/step~7.17 | keep=0.50 | K=8 | llama(T): tf=3.4463 first=2.8404 kCE=4.6828 KD=0.0000 acc=0.056 state=6.4169 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.2790e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  181/445 | (warm-up text) | align=0.0003 | text_tf=6.8010 | latent_scale=0.36
+  step  182/445 | (warm-up text) | align=0.0003 | text_tf=6.3546 | latent_scale=0.36
+  step  183/445 | (warm-up text) | align=0.0003 | text_tf=6.7680 | latent_scale=0.36
+  step  184/445 | (warm-up text) | align=0.0003 | text_tf=6.8048 | latent_scale=0.36
+  step  185/445 | (warm-up text) | align=0.0003 | text_tf=6.1446 | latent_scale=0.37
+  step  186/445 | (warm-up text) | align=0.0003 | text_tf=6.6301 | latent_scale=0.37
+  step  187/445 | (warm-up text) | align=0.0003 | text_tf=7.0467 | latent_scale=0.37
+  step  188/445 | (warm-up text) | align=0.0003 | text_tf=6.4360 | latent_scale=0.37
+  step  189/445 | (warm-up text) | align=0.0003 | text_tf=6.5646 | latent_scale=0.37
+  step  190/445 | (warm-up text) | align=0.0003 | text_tf=6.4289 | latent_scale=0.37
+  step  190/445 | grad_norm=0.00 | sec/step~8.58 | keep=0.50 | K=8 | llama(T): tf=3.2571 first=2.6219 kCE=4.3491 KD=0.0000 acc=0.056 state=7.7965 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.2790e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  191/445 | (warm-up text) | align=0.0003 | text_tf=6.3566 | latent_scale=0.37
+  step  192/445 | (warm-up text) | align=0.0003 | text_tf=6.2338 | latent_scale=0.37
+  step  193/445 | (warm-up text) | align=0.0003 | text_tf=6.4094 | latent_scale=0.37
+  step  194/445 | (warm-up text) | align=0.0003 | text_tf=6.1248 | latent_scale=0.37
+  step  195/445 | (warm-up text) | align=0.0003 | text_tf=6.2526 | latent_scale=0.37
+  step  196/445 | (warm-up text) | align=0.0003 | text_tf=6.4768 | latent_scale=0.38
+  step  197/445 | (warm-up text) | align=0.0003 | text_tf=6.8675 | latent_scale=0.38
+  step  198/445 | (warm-up text) | align=0.0003 | text_tf=6.6184 | latent_scale=0.38
+  step  199/445 | (warm-up text) | align=0.0003 | text_tf=6.5758 | latent_scale=0.38
+  step  200/445 | (warm-up text) | align=0.0003 | text_tf=6.1838 | latent_scale=0.38
+  step  200/445 | grad_norm=0.00 | sec/step~7.35 | keep=0.50 | K=8 | llama(T): tf=3.4828 first=3.0893 kCE=4.5148 KD=0.0000 acc=0.000 state=6.6405 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=6.0041e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  201/445 | (warm-up text) | align=0.0003 | text_tf=5.9253 | latent_scale=0.38
+  step  202/445 | (warm-up text) | align=0.0003 | text_tf=6.4968 | latent_scale=0.38
+  step  203/445 | (warm-up text) | align=0.0003 | text_tf=6.5780 | latent_scale=0.38
+  step  204/445 | (warm-up text) | align=0.0003 | text_tf=6.4421 | latent_scale=0.38
+  step  205/445 | (warm-up text) | align=0.0003 | text_tf=6.3203 | latent_scale=0.38
+  step  206/445 | (warm-up text) | align=0.0003 | text_tf=6.8560 | latent_scale=0.38
+  step  207/445 | (warm-up text) | align=0.0003 | text_tf=6.1741 | latent_scale=0.39
+  step  208/445 | (warm-up text) | align=0.0003 | text_tf=6.5364 | latent_scale=0.39
+  step  209/445 | (warm-up text) | align=0.0003 | text_tf=6.0738 | latent_scale=0.39
+  step  210/445 | (warm-up text) | align=0.0003 | text_tf=6.7729 | latent_scale=0.39
+  step  210/445 | grad_norm=0.00 | sec/step~7.21 | keep=0.50 | K=8 | llama(T): tf=3.6149 first=2.8704 kCE=4.3942 KD=0.0000 acc=0.083 state=7.0574 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.3648e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  211/445 | (warm-up text) | align=0.0003 | text_tf=6.3830 | latent_scale=0.39
+  step  212/445 | (warm-up text) | align=0.0003 | text_tf=6.1796 | latent_scale=0.39
+  step  213/445 | (warm-up text) | align=0.0003 | text_tf=6.0913 | latent_scale=0.39
+  step  214/445 | (warm-up text) | align=0.0003 | text_tf=6.1516 | latent_scale=0.39
+  step  215/445 | (warm-up text) | align=0.0003 | text_tf=5.9629 | latent_scale=0.39
+  step  216/445 | (warm-up text) | align=0.0003 | text_tf=6.3500 | latent_scale=0.39
+  step  217/445 | (warm-up text) | align=0.0003 | text_tf=6.0760 | latent_scale=0.39
+  step  218/445 | (warm-up text) | align=0.0003 | text_tf=6.0511 | latent_scale=0.40
+  step  219/445 | (warm-up text) | align=0.0003 | text_tf=6.0398 | latent_scale=0.40
+  step  220/445 | (warm-up text) | align=0.0003 | text_tf=6.2717 | latent_scale=0.40
+  step  220/445 | grad_norm=0.00 | sec/step~6.96 | keep=0.50 | K=8 | llama(T): tf=3.6806 first=3.2129 kCE=4.6780 KD=0.0000 acc=0.028 state=6.6876 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.0510e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  221/445 | (warm-up text) | align=0.0003 | text_tf=6.1922 | latent_scale=0.40
+  step  222/445 | (warm-up text) | align=0.0003 | text_tf=6.1762 | latent_scale=0.40
+  step  223/445 | (warm-up text) | align=0.0003 | text_tf=6.3855 | latent_scale=0.40
+  step  224/445 | (warm-up text) | align=0.0003 | text_tf=5.8088 | latent_scale=0.40
+  step  225/445 | (warm-up text) | align=0.0003 | text_tf=6.0008 | latent_scale=0.40
+  step  226/445 | (warm-up text) | align=0.0003 | text_tf=6.1861 | latent_scale=0.40
+  step  227/445 | (warm-up text) | align=0.0003 | text_tf=6.3820 | latent_scale=0.40
+  step  228/445 | (warm-up text) | align=0.0003 | text_tf=5.4249 | latent_scale=0.40
+  step  229/445 | (warm-up text) | align=0.0003 | text_tf=5.9376 | latent_scale=0.40
+  step  230/445 | (warm-up text) | align=0.0003 | text_tf=5.6102 | latent_scale=0.41
+  step  230/445 | grad_norm=0.00 | sec/step~7.14 | keep=0.50 | K=8 | llama(T): tf=3.5172 first=3.0240 kCE=4.3095 KD=0.0000 acc=0.056 state=7.5280 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.1615e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  231/445 | (warm-up text) | align=0.0003 | text_tf=5.9238 | latent_scale=0.41
+  step  232/445 | (warm-up text) | align=0.0003 | text_tf=5.9619 | latent_scale=0.41
+  step  233/445 | (warm-up text) | align=0.0003 | text_tf=5.2559 | latent_scale=0.41
+  step  234/445 | (warm-up text) | align=0.0003 | text_tf=5.7696 | latent_scale=0.41
+  step  235/445 | (warm-up text) | align=0.0003 | text_tf=5.3793 | latent_scale=0.41
+  step  236/445 | (warm-up text) | align=0.0003 | text_tf=6.1563 | latent_scale=0.41
+  step  237/445 | (warm-up text) | align=0.0003 | text_tf=5.6772 | latent_scale=0.41
+  step  238/445 | (warm-up text) | align=0.0003 | text_tf=6.4245 | latent_scale=0.41
+  step  239/445 | (warm-up text) | align=0.0003 | text_tf=6.2423 | latent_scale=0.41
+  step  240/445 | (warm-up text) | align=0.0003 | text_tf=5.9403 | latent_scale=0.41
+  step  240/445 | grad_norm=0.00 | sec/step~6.70 | keep=0.50 | K=8 | llama(T): tf=3.9003 first=3.4363 kCE=4.6189 KD=0.0000 acc=0.000 state=6.8391 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.9721e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  241/445 | (warm-up text) | align=0.0003 | text_tf=5.8679 | latent_scale=0.42
+  step  242/445 | (warm-up text) | align=0.0003 | text_tf=6.5063 | latent_scale=0.42
+  step  243/445 | (warm-up text) | align=0.0003 | text_tf=5.5221 | latent_scale=0.42
+  step  244/445 | (warm-up text) | align=0.0003 | text_tf=6.1436 | latent_scale=0.42
+  step  245/445 | (warm-up text) | align=0.0003 | text_tf=5.9176 | latent_scale=0.42
+  step  246/445 | (warm-up text) | align=0.0003 | text_tf=5.6681 | latent_scale=0.42
+  step  247/445 | (warm-up text) | align=0.0003 | text_tf=5.7424 | latent_scale=0.42
+  step  248/445 | (warm-up text) | align=0.0003 | text_tf=5.8986 | latent_scale=0.42
+  step  249/445 | (warm-up text) | align=0.0003 | text_tf=5.3046 | latent_scale=0.42
+  step  250/445 | (warm-up text) | align=0.0003 | text_tf=5.5508 | latent_scale=0.42
+  step  250/445 | grad_norm=0.00 | sec/step~6.90 | keep=0.50 | K=8 | llama(T): tf=3.8193 first=3.0986 kCE=4.6218 KD=0.0000 acc=0.083 state=7.8719 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.9721e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  251/445 | (warm-up text) | align=0.0003 | text_tf=5.3637 | latent_scale=0.42
+  step  252/445 | (warm-up text) | align=0.0003 | text_tf=5.7430 | latent_scale=0.43
+  step  253/445 | (warm-up text) | align=0.0003 | text_tf=5.7857 | latent_scale=0.43
+  step  254/445 | (warm-up text) | align=0.0003 | text_tf=5.6161 | latent_scale=0.43
+  step  255/445 | (warm-up text) | align=0.0003 | text_tf=5.4280 | latent_scale=0.43
+  step  256/445 | (warm-up text) | align=0.0003 | text_tf=5.6000 | latent_scale=0.43
+  step  257/445 | (warm-up text) | align=0.0003 | text_tf=5.3029 | latent_scale=0.43
+  step  258/445 | (warm-up text) | align=0.0003 | text_tf=5.7236 | latent_scale=0.43
+  step  259/445 | (warm-up text) | align=0.0003 | text_tf=5.7713 | latent_scale=0.43
+  step  260/445 | (warm-up text) | align=0.0003 | text_tf=5.7805 | latent_scale=0.43
+  step  260/445 | grad_norm=0.00 | sec/step~6.72 | keep=0.50 | K=8 | llama(T): tf=3.7790 first=3.1942 kCE=4.5319 KD=0.0000 acc=0.028 state=7.3148 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=6.2844e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  261/445 | (warm-up text) | align=0.0003 | text_tf=6.2062 | latent_scale=0.43
+  step  262/445 | (warm-up text) | align=0.0003 | text_tf=5.2976 | latent_scale=0.43
+  step  263/445 | (warm-up text) | align=0.0003 | text_tf=5.3295 | latent_scale=0.44
+  step  264/445 | (warm-up text) | align=0.0003 | text_tf=6.1069 | latent_scale=0.44
+  step  265/445 | (warm-up text) | align=0.0003 | text_tf=5.8836 | latent_scale=0.44
+  step  266/445 | (warm-up text) | align=0.0003 | text_tf=5.9209 | latent_scale=0.44
+  step  267/445 | (warm-up text) | align=0.0003 | text_tf=5.2837 | latent_scale=0.44
+  step  268/445 | (warm-up text) | align=0.0003 | text_tf=5.7430 | latent_scale=0.44
+  step  269/445 | (warm-up text) | align=0.0003 | text_tf=5.9315 | latent_scale=0.44
+  step  270/445 | (warm-up text) | align=0.0003 | text_tf=5.3188 | latent_scale=0.44
+  step  270/445 | grad_norm=0.00 | sec/step~7.85 | keep=0.51 | K=8 | llama(T): tf=3.8867 first=3.3601 kCE=4.5827 KD=0.0000 acc=0.083 state=8.6340 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=9.0949e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  271/445 | (warm-up text) | align=0.0003 | text_tf=5.5883 | latent_scale=0.44
+  step  272/445 | (warm-up text) | align=0.0003 | text_tf=5.1481 | latent_scale=0.44
+  step  273/445 | (warm-up text) | align=0.0003 | text_tf=5.6283 | latent_scale=0.44
+  step  274/445 | (warm-up text) | align=0.0003 | text_tf=5.6111 | latent_scale=0.45
+  step  275/445 | (warm-up text) | align=0.0003 | text_tf=5.9411 | latent_scale=0.45
+  step  276/445 | (warm-up text) | align=0.0003 | text_tf=5.2915 | latent_scale=0.45
+  step  277/445 | (warm-up text) | align=0.0003 | text_tf=5.4319 | latent_scale=0.45
+  step  278/445 | (warm-up text) | align=0.0003 | text_tf=5.2639 | latent_scale=0.45
+  step  279/445 | (warm-up text) | align=0.0003 | text_tf=5.2759 | latent_scale=0.45
+  step  280/445 | (warm-up text) | align=0.0003 | text_tf=5.2914 | latent_scale=0.45
+  step  280/445 | grad_norm=0.00 | sec/step~7.15 | keep=0.51 | K=8 | llama(T): tf=3.9710 first=3.4858 kCE=4.5909 KD=0.0000 acc=0.028 state=8.2334 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.7805e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  281/445 | (warm-up text) | align=0.0002 | text_tf=5.1584 | latent_scale=0.45
+  step  282/445 | (warm-up text) | align=0.0003 | text_tf=4.6507 | latent_scale=0.45
+  step  283/445 | (warm-up text) | align=0.0003 | text_tf=5.4346 | latent_scale=0.45
+  step  284/445 | (warm-up text) | align=0.0003 | text_tf=5.7972 | latent_scale=0.45
+  step  285/445 | (warm-up text) | align=0.0003 | text_tf=6.1133 | latent_scale=0.46
+  step  286/445 | (warm-up text) | align=0.0002 | text_tf=5.0119 | latent_scale=0.46
+  step  287/445 | (warm-up text) | align=0.0003 | text_tf=4.6475 | latent_scale=0.46
+  step  288/445 | (warm-up text) | align=0.0003 | text_tf=5.7467 | latent_scale=0.46
+  step  289/445 | (warm-up text) | align=0.0003 | text_tf=4.9042 | latent_scale=0.46
+  step  290/445 | (warm-up text) | align=0.0003 | text_tf=5.5829 | latent_scale=0.46
+  step  290/445 | grad_norm=0.00 | sec/step~7.35 | keep=0.51 | K=8 | llama(T): tf=4.0963 first=3.2512 kCE=4.4596 KD=0.0000 acc=0.028 state=8.9020 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.7853e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  291/445 | (warm-up text) | align=0.0002 | text_tf=4.8599 | latent_scale=0.46
+  step  292/445 | (warm-up text) | align=0.0003 | text_tf=5.2353 | latent_scale=0.46
+  step  293/445 | (warm-up text) | align=0.0003 | text_tf=5.4038 | latent_scale=0.46
+  step  294/445 | (warm-up text) | align=0.0003 | text_tf=5.4983 | latent_scale=0.46
+  step  295/445 | (warm-up text) | align=0.0003 | text_tf=4.8725 | latent_scale=0.46
+  step  296/445 | (warm-up text) | align=0.0003 | text_tf=5.6861 | latent_scale=0.47
+  step  297/445 | (warm-up text) | align=0.0003 | text_tf=5.2689 | latent_scale=0.47
+  step  298/445 | (warm-up text) | align=0.0003 | text_tf=5.2456 | latent_scale=0.47
+  step  299/445 | (warm-up text) | align=0.0003 | text_tf=5.7053 | latent_scale=0.47
+  step  300/445 | (warm-up text) | align=0.0003 | text_tf=5.2397 | latent_scale=0.47
+  step  300/445 | grad_norm=0.00 | sec/step~7.25 | keep=0.51 | K=8 | llama(T): tf=4.1641 first=3.8670 kCE=4.6399 KD=0.0000 acc=0.000 state=9.1348 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.4552e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  301/445 | (warm-up text) | align=0.0002 | text_tf=5.0453 | latent_scale=0.47
+  step  302/445 | (warm-up text) | align=0.0003 | text_tf=5.1809 | latent_scale=0.47
+  step  303/445 | (warm-up text) | align=0.0003 | text_tf=5.1340 | latent_scale=0.47
+  step  304/445 | (warm-up text) | align=0.0003 | text_tf=5.8743 | latent_scale=0.47
+  step  305/445 | (warm-up text) | align=0.0003 | text_tf=5.1534 | latent_scale=0.47
+  step  306/445 | (warm-up text) | align=0.0003 | text_tf=4.8604 | latent_scale=0.47
+  step  307/445 | (warm-up text) | align=0.0003 | text_tf=5.4568 | latent_scale=0.48
+  step  308/445 | (warm-up text) | align=0.0003 | text_tf=5.3627 | latent_scale=0.48
+  step  309/445 | (warm-up text) | align=0.0003 | text_tf=5.6243 | latent_scale=0.48
+  step  310/445 | (warm-up text) | align=0.0003 | text_tf=5.9514 | latent_scale=0.48
+  step  310/445 | grad_norm=0.00 | sec/step~6.36 | keep=0.51 | K=8 | llama(T): tf=4.2002 first=3.8043 kCE=4.4623 KD=0.0000 acc=0.000 state=7.4153 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.4552e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  311/445 | (warm-up text) | align=0.0003 | text_tf=4.8663 | latent_scale=0.48
+  step  312/445 | (warm-up text) | align=0.0003 | text_tf=5.0724 | latent_scale=0.48
+  step  313/445 | (warm-up text) | align=0.0003 | text_tf=5.0870 | latent_scale=0.48
+  step  314/445 | (warm-up text) | align=0.0002 | text_tf=4.7631 | latent_scale=0.48
+  step  315/445 | (warm-up text) | align=0.0003 | text_tf=4.8685 | latent_scale=0.48
+  step  316/445 | (warm-up text) | align=0.0003 | text_tf=5.0012 | latent_scale=0.48
+  step  317/445 | (warm-up text) | align=0.0003 | text_tf=5.4710 | latent_scale=0.48
+  step  318/445 | (warm-up text) | align=0.0003 | text_tf=5.3135 | latent_scale=0.48
+  step  319/445 | (warm-up text) | align=0.0003 | text_tf=5.6962 | latent_scale=0.49
+  step  320/445 | (warm-up text) | align=0.0003 | text_tf=4.9447 | latent_scale=0.49
+  step  320/445 | grad_norm=0.00 | sec/step~6.77 | keep=0.51 | K=8 | llama(T): tf=4.1988 first=3.6711 kCE=4.3869 KD=0.0000 acc=0.000 state=8.5499 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.9468e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  321/445 | (warm-up text) | align=0.0003 | text_tf=5.4846 | latent_scale=0.49
+  step  322/445 | (warm-up text) | align=0.0003 | text_tf=4.3780 | latent_scale=0.49
+  step  323/445 | (warm-up text) | align=0.0003 | text_tf=5.4201 | latent_scale=0.49
+  step  324/445 | (warm-up text) | align=0.0003 | text_tf=4.4569 | latent_scale=0.49
+  step  325/445 | (warm-up text) | align=0.0003 | text_tf=5.2255 | latent_scale=0.49
+  step  326/445 | (warm-up text) | align=0.0003 | text_tf=4.5134 | latent_scale=0.49
+  step  327/445 | (warm-up text) | align=0.0003 | text_tf=5.3660 | latent_scale=0.49
+  step  328/445 | (warm-up text) | align=0.0003 | text_tf=5.7341 | latent_scale=0.49
+  step  329/445 | (warm-up text) | align=0.0003 | text_tf=5.0381 | latent_scale=0.49
+  step  330/445 | (warm-up text) | align=0.0003 | text_tf=5.0500 | latent_scale=0.50
+  step  330/445 | grad_norm=0.00 | sec/step~7.01 | keep=0.51 | K=8 | llama(T): tf=4.4341 first=3.7293 kCE=4.3587 KD=0.0000 acc=0.028 state=8.9693 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.6171e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  331/445 | (warm-up text) | align=0.0003 | text_tf=5.1165 | latent_scale=0.50
+  step  332/445 | (warm-up text) | align=0.0002 | text_tf=5.2769 | latent_scale=0.50
+  step  333/445 | (warm-up text) | align=0.0003 | text_tf=4.5781 | latent_scale=0.50
+  step  334/445 | (warm-up text) | align=0.0003 | text_tf=4.5930 | latent_scale=0.50
+  step  335/445 | (warm-up text) | align=0.0002 | text_tf=5.4179 | latent_scale=0.50
+  step  336/445 | (warm-up text) | align=0.0003 | text_tf=4.5803 | latent_scale=0.50
+  step  337/445 | (warm-up text) | align=0.0002 | text_tf=4.6276 | latent_scale=0.50
+  step  338/445 | (warm-up text) | align=0.0003 | text_tf=4.7929 | latent_scale=0.50
+  step  339/445 | (warm-up text) | align=0.0003 | text_tf=5.4155 | latent_scale=0.50
+  step  340/445 | (warm-up text) | align=0.0002 | text_tf=4.9475 | latent_scale=0.50
+  step  340/445 | grad_norm=0.00 | sec/step~6.47 | keep=0.51 | K=8 | llama(T): tf=4.3017 first=3.7018 kCE=4.1597 KD=0.0000 acc=0.083 state=7.7870 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.2790e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  341/445 | (warm-up text) | align=0.0003 | text_tf=5.0702 | latent_scale=0.51
+  step  342/445 | (warm-up text) | align=0.0003 | text_tf=4.8876 | latent_scale=0.51
+  step  343/445 | (warm-up text) | align=0.0003 | text_tf=4.8152 | latent_scale=0.51
+  step  344/445 | (warm-up text) | align=0.0003 | text_tf=4.8655 | latent_scale=0.51
+  step  345/445 | (warm-up text) | align=0.0003 | text_tf=5.3866 | latent_scale=0.51
+  step  346/445 | (warm-up text) | align=0.0002 | text_tf=5.1258 | latent_scale=0.51
+  step  347/445 | (warm-up text) | align=0.0003 | text_tf=5.0052 | latent_scale=0.51
+  step  348/445 | (warm-up text) | align=0.0002 | text_tf=5.3797 | latent_scale=0.51
+  step  349/445 | (warm-up text) | align=0.0003 | text_tf=4.5167 | latent_scale=0.51
+  step  350/445 | (warm-up text) | align=0.0003 | text_tf=4.8275 | latent_scale=0.51
+  step  350/445 | grad_norm=0.00 | sec/step~7.10 | keep=0.51 | K=8 | llama(T): tf=4.3890 first=3.9146 kCE=3.8726 KD=0.0000 acc=0.028 state=9.6553 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.0267e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  351/445 | (warm-up text) | align=0.0002 | text_tf=4.6722 | latent_scale=0.51
+  step  352/445 | (warm-up text) | align=0.0002 | text_tf=4.6069 | latent_scale=0.52
+  step  353/445 | (warm-up text) | align=0.0003 | text_tf=5.0700 | latent_scale=0.52
+  step  354/445 | (warm-up text) | align=0.0003 | text_tf=5.1858 | latent_scale=0.52
+  step  355/445 | (warm-up text) | align=0.0002 | text_tf=4.5547 | latent_scale=0.52
+  step  356/445 | (warm-up text) | align=0.0002 | text_tf=4.0310 | latent_scale=0.52
+  step  357/445 | (warm-up text) | align=0.0002 | text_tf=4.4479 | latent_scale=0.52
+  step  358/445 | (warm-up text) | align=0.0003 | text_tf=4.7971 | latent_scale=0.52
+  step  359/445 | (warm-up text) | align=0.0003 | text_tf=5.1604 | latent_scale=0.52
+  step  360/445 | (warm-up text) | align=0.0003 | text_tf=4.3947 | latent_scale=0.52
+  step  360/445 | grad_norm=0.00 | sec/step~6.92 | keep=0.51 | K=8 | llama(T): tf=4.5233 first=3.9328 kCE=4.0286 KD=0.0000 acc=0.083 state=8.7460 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.2737e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  361/445 | (warm-up text) | align=0.0002 | text_tf=4.3395 | latent_scale=0.52
+  step  362/445 | (warm-up text) | align=0.0003 | text_tf=4.9232 | latent_scale=0.52
+  step  363/445 | (warm-up text) | align=0.0003 | text_tf=4.9907 | latent_scale=0.53
+  step  364/445 | (warm-up text) | align=0.0002 | text_tf=4.7141 | latent_scale=0.53
+  step  365/445 | (warm-up text) | align=0.0002 | text_tf=4.6779 | latent_scale=0.53
+  step  366/445 | (warm-up text) | align=0.0003 | text_tf=4.8900 | latent_scale=0.53
+  step  367/445 | (warm-up text) | align=0.0003 | text_tf=4.6030 | latent_scale=0.53
+  step  368/445 | (warm-up text) | align=0.0003 | text_tf=4.5974 | latent_scale=0.53
+  step  369/445 | (warm-up text) | align=0.0002 | text_tf=4.8437 | latent_scale=0.53
+  step  370/445 | (warm-up text) | align=0.0002 | text_tf=4.9562 | latent_scale=0.53
+  step  370/445 | grad_norm=0.00 | sec/step~7.22 | keep=0.51 | K=8 | llama(T): tf=4.6884 first=3.7386 kCE=3.8560 KD=0.0000 acc=0.139 state=9.7986 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.2737e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  371/445 | (warm-up text) | align=0.0002 | text_tf=5.2899 | latent_scale=0.53
+  step  372/445 | (warm-up text) | align=0.0002 | text_tf=4.6153 | latent_scale=0.53
+  step  373/445 | (warm-up text) | align=0.0003 | text_tf=5.5067 | latent_scale=0.53
+  step  374/445 | (warm-up text) | align=0.0003 | text_tf=4.3468 | latent_scale=0.54
+  step  375/445 | (warm-up text) | align=0.0003 | text_tf=5.1528 | latent_scale=0.54
+  step  376/445 | (warm-up text) | align=0.0002 | text_tf=4.2512 | latent_scale=0.54
+  step  377/445 | (warm-up text) | align=0.0003 | text_tf=5.3034 | latent_scale=0.54
+  step  378/445 | (warm-up text) | align=0.0003 | text_tf=4.4640 | latent_scale=0.54
+  step  379/445 | (warm-up text) | align=0.0002 | text_tf=4.5451 | latent_scale=0.54
+  step  380/445 | (warm-up text) | align=0.0003 | text_tf=5.4019 | latent_scale=0.54
+  step  380/445 | grad_norm=0.00 | sec/step~7.01 | keep=0.51 | K=8 | llama(T): tf=4.9242 first=4.2184 kCE=3.7928 KD=0.0000 acc=0.056 state=9.4785 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.6241e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  381/445 | (warm-up text) | align=0.0003 | text_tf=4.9312 | latent_scale=0.54
+  step  382/445 | (warm-up text) | align=0.0003 | text_tf=4.8051 | latent_scale=0.54
+  step  383/445 | (warm-up text) | align=0.0002 | text_tf=4.2813 | latent_scale=0.54
+  step  384/445 | (warm-up text) | align=0.0003 | text_tf=5.0246 | latent_scale=0.54
+  step  385/445 | (warm-up text) | align=0.0003 | text_tf=4.5904 | latent_scale=0.55
+  step  386/445 | (warm-up text) | align=0.0002 | text_tf=4.4221 | latent_scale=0.55
+  step  387/445 | (warm-up text) | align=0.0002 | text_tf=5.6497 | latent_scale=0.55
+  step  388/445 | (warm-up text) | align=0.0003 | text_tf=4.5752 | latent_scale=0.55
+  step  389/445 | (warm-up text) | align=0.0003 | text_tf=4.4194 | latent_scale=0.55
+  step  390/445 | (warm-up text) | align=0.0003 | text_tf=4.2339 | latent_scale=0.55
+  step  390/445 | grad_norm=0.00 | sec/step~6.70 | keep=0.51 | K=8 | llama(T): tf=4.9551 first=4.2081 kCE=3.7693 KD=0.0000 acc=0.056 state=9.1308 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.9984e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  391/445 | (warm-up text) | align=0.0002 | text_tf=4.8448 | latent_scale=0.55
+  step  392/445 | (warm-up text) | align=0.0002 | text_tf=5.1417 | latent_scale=0.55
+  step  393/445 | (warm-up text) | align=0.0003 | text_tf=4.3098 | latent_scale=0.55
+  step  394/445 | (warm-up text) | align=0.0003 | text_tf=4.7878 | latent_scale=0.55
+  step  395/445 | (warm-up text) | align=0.0002 | text_tf=4.5620 | latent_scale=0.55
+  step  396/445 | (warm-up text) | align=0.0003 | text_tf=4.5191 | latent_scale=0.56
+  step  397/445 | (warm-up text) | align=0.0002 | text_tf=4.8239 | latent_scale=0.56
+  step  398/445 | (warm-up text) | align=0.0002 | text_tf=4.2972 | latent_scale=0.56
+  step  399/445 | (warm-up text) | align=0.0002 | text_tf=4.8916 | latent_scale=0.56
+  step  400/445 | (warm-up text) | align=0.0002 | text_tf=4.6214 | latent_scale=0.56
+  step  400/445 | grad_norm=0.00 | sec/step~6.39 | keep=0.51 | K=8 | llama(T): tf=5.2373 first=4.2431 kCE=3.7804 KD=0.0000 acc=0.083 state=8.8542 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.0267e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  401/445 | (warm-up text) | align=0.0002 | text_tf=4.0124 | latent_scale=0.56
+  step  402/445 | (warm-up text) | align=0.0002 | text_tf=5.1294 | latent_scale=0.56
+  step  403/445 | (warm-up text) | align=0.0002 | text_tf=4.3416 | latent_scale=0.56
+  step  404/445 | (warm-up text) | align=0.0002 | text_tf=4.3619 | latent_scale=0.56
+  step  405/445 | (warm-up text) | align=0.0002 | text_tf=4.5874 | latent_scale=0.56
+  step  406/445 | (warm-up text) | align=0.0003 | text_tf=4.1739 | latent_scale=0.56
+  step  407/445 | (warm-up text) | align=0.0002 | text_tf=4.3456 | latent_scale=0.56
+  step  408/445 | (warm-up text) | align=0.0002 | text_tf=4.6691 | latent_scale=0.57
+  step  409/445 | (warm-up text) | align=0.0003 | text_tf=4.7411 | latent_scale=0.57
+  step  410/445 | (warm-up text) | align=0.0002 | text_tf=4.3957 | latent_scale=0.57
+  step  410/445 | grad_norm=0.00 | sec/step~6.89 | keep=0.51 | K=8 | llama(T): tf=4.8988 first=4.3232 kCE=3.5565 KD=0.0000 acc=0.056 state=9.6142 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=6.8781e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  411/445 | (warm-up text) | align=0.0002 | text_tf=4.4317 | latent_scale=0.57
+  step  412/445 | (warm-up text) | align=0.0003 | text_tf=5.3120 | latent_scale=0.57
+  step  413/445 | (warm-up text) | align=0.0003 | text_tf=5.2049 | latent_scale=0.57
+  step  414/445 | (warm-up text) | align=0.0002 | text_tf=4.8590 | latent_scale=0.57
+  step  415/445 | (warm-up text) | align=0.0002 | text_tf=4.0147 | latent_scale=0.57
+  step  416/445 | (warm-up text) | align=0.0002 | text_tf=4.3402 | latent_scale=0.57
+  step  417/445 | (warm-up text) | align=0.0002 | text_tf=4.7414 | latent_scale=0.57
+  step  418/445 | (warm-up text) | align=0.0002 | text_tf=4.0525 | latent_scale=0.57
+  step  419/445 | (warm-up text) | align=0.0002 | text_tf=5.7108 | latent_scale=0.58
+  step  420/445 | (warm-up text) | align=0.0003 | text_tf=4.4026 | latent_scale=0.58
+  step  420/445 | grad_norm=0.00 | sec/step~6.45 | keep=0.51 | K=8 | llama(T): tf=4.9409 first=4.4247 kCE=3.8384 KD=0.0000 acc=0.028 state=9.3519 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.1615e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  421/445 | (warm-up text) | align=0.0002 | text_tf=4.3672 | latent_scale=0.58
+  step  422/445 | (warm-up text) | align=0.0002 | text_tf=4.4631 | latent_scale=0.58
+  step  423/445 | (warm-up text) | align=0.0002 | text_tf=5.0132 | latent_scale=0.58
+  step  424/445 | (warm-up text) | align=0.0002 | text_tf=4.1741 | latent_scale=0.58
+  step  425/445 | (warm-up text) | align=0.0002 | text_tf=4.3224 | latent_scale=0.58
+  step  426/445 | (warm-up text) | align=0.0003 | text_tf=4.4767 | latent_scale=0.58
+  step  427/445 | (warm-up text) | align=0.0002 | text_tf=4.0979 | latent_scale=0.58
+  step  428/445 | (warm-up text) | align=0.0003 | text_tf=5.1633 | latent_scale=0.58
+  step  429/445 | (warm-up text) | align=0.0002 | text_tf=4.3368 | latent_scale=0.58
+  step  430/445 | (warm-up text) | align=0.0002 | text_tf=4.7153 | latent_scale=0.59
+  step  430/445 | grad_norm=0.00 | sec/step~6.74 | keep=0.51 | K=8 | llama(T): tf=4.8635 first=4.4010 kCE=3.5419 KD=0.0000 acc=0.056 state=10.0724 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.1615e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  431/445 | (warm-up text) | align=0.0003 | text_tf=4.8449 | latent_scale=0.59
+  step  432/445 | (warm-up text) | align=0.0002 | text_tf=4.9518 | latent_scale=0.59
+  step  433/445 | (warm-up text) | align=0.0002 | text_tf=5.0115 | latent_scale=0.59
+  step  434/445 | (warm-up text) | align=0.0002 | text_tf=4.7818 | latent_scale=0.59
+  step  435/445 | (warm-up text) | align=0.0002 | text_tf=4.0747 | latent_scale=0.59
+  step  436/445 | (warm-up text) | align=0.0002 | text_tf=5.2302 | latent_scale=0.59
+  step  437/445 | (warm-up text) | align=0.0002 | text_tf=4.2317 | latent_scale=0.59
+  step  438/445 | (warm-up text) | align=0.0002 | text_tf=4.4516 | latent_scale=0.59
+  step  439/445 | (warm-up text) | align=0.0002 | text_tf=4.3244 | latent_scale=0.59
+  step  440/445 | (warm-up text) | align=0.0002 | text_tf=4.4965 | latent_scale=0.59
+  step  440/445 | grad_norm=0.00 | sec/step~6.69 | keep=0.51 | K=8 | llama(T): tf=5.1721 first=4.2476 kCE=3.6937 KD=0.0000 acc=0.139 state=10.1690 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.7408e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  441/445 | (warm-up text) | align=0.0003 | text_tf=4.9394 | latent_scale=0.60
+  step  442/445 | (warm-up text) | align=0.0002 | text_tf=4.9991 | latent_scale=0.60
+  step  443/445 | (warm-up text) | align=0.0002 | text_tf=4.1659 | latent_scale=0.60
+  step  444/445 | (warm-up text) | align=0.0002 | text_tf=4.7176 | latent_scale=0.60
+  step  445/445 | (warm-up text) | align=0.0003 | text_tf=4.7120 | latent_scale=0.60
+  step  445/445 | grad_norm=0.00 | sec/step~4.57 | keep=0.51 | K=8 | llama(T): tf=5.2630 first=4.7715 kCE=3.3498 KD=0.0000 acc=0.062 state=11.2765 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.1159e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 3.6KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 445
+Epoch 2/6
+  step  1/445 | (warm-up text) | align=0.0002 | text_tf=4.2857 | latent_scale=0.60
+  step  2/445 | (warm-up text) | align=0.0002 | text_tf=4.5768 | latent_scale=0.60
+  step  3/445 | (warm-up text) | align=0.0002 | text_tf=4.4446 | latent_scale=0.60
+  step  4/445 | (warm-up text) | align=0.0002 | text_tf=4.9690 | latent_scale=0.60
+  step  5/445 | (warm-up text) | align=0.0002 | text_tf=4.1685 | latent_scale=0.60
+  step  6/445 | (warm-up text) | align=0.0002 | text_tf=4.7360 | latent_scale=0.60
+  step  7/445 | (warm-up text) | align=0.0003 | text_tf=4.7212 | latent_scale=0.61
+  step  8/445 | (warm-up text) | align=0.0002 | text_tf=4.5963 | latent_scale=0.61
+  step  9/445 | (warm-up text) | align=0.0002 | text_tf=5.1059 | latent_scale=0.61
+  step  10/445 | (warm-up text) | align=0.0002 | text_tf=4.0703 | latent_scale=0.61
+  step  10/445 | grad_norm=0.00 | sec/step~6.80 | keep=0.51 | K=8 | llama(T): tf=5.2468 first=4.7737 kCE=3.5690 KD=0.0000 acc=0.000 state=10.7043 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.1159e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  11/445 | (warm-up text) | align=0.0002 | text_tf=4.6445 | latent_scale=0.61
+  step  12/445 | (warm-up text) | align=0.0002 | text_tf=4.6754 | latent_scale=0.61
+  step  13/445 | (warm-up text) | align=0.0002 | text_tf=4.0778 | latent_scale=0.61
+  step  14/445 | (warm-up text) | align=0.0002 | text_tf=4.0194 | latent_scale=0.61
+  step  15/445 | (warm-up text) | align=0.0002 | text_tf=4.0211 | latent_scale=0.61
+  step  16/445 | (warm-up text) | align=0.0002 | text_tf=3.8890 | latent_scale=0.61
+  step  17/445 | (warm-up text) | align=0.0003 | text_tf=5.0828 | latent_scale=0.61
+  step  18/445 | (warm-up text) | align=0.0002 | text_tf=3.8067 | latent_scale=0.62
+  step  19/445 | (warm-up text) | align=0.0002 | text_tf=4.7819 | latent_scale=0.62
+  step  20/445 | (warm-up text) | align=0.0002 | text_tf=4.9025 | latent_scale=0.62
+  step  20/445 | grad_norm=0.00 | sec/step~7.09 | keep=0.52 | K=8 | llama(T): tf=5.5054 first=4.9487 kCE=3.3773 KD=0.0000 acc=0.111 state=11.0186 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=6.5690e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  21/445 | (warm-up text) | align=0.0002 | text_tf=4.3036 | latent_scale=0.62
+  step  22/445 | (warm-up text) | align=0.0002 | text_tf=4.3611 | latent_scale=0.62
+  step  23/445 | (warm-up text) | align=0.0002 | text_tf=3.9879 | latent_scale=0.62
+  step  24/445 | (warm-up text) | align=0.0002 | text_tf=5.0542 | latent_scale=0.62
+  step  25/445 | (warm-up text) | align=0.0002 | text_tf=5.0689 | latent_scale=0.62
+  step  26/445 | (warm-up text) | align=0.0002 | text_tf=4.2480 | latent_scale=0.62
+  step  27/445 | (warm-up text) | align=0.0002 | text_tf=4.4917 | latent_scale=0.62
+  step  28/445 | (warm-up text) | align=0.0002 | text_tf=4.0917 | latent_scale=0.62
+  step  29/445 | (warm-up text) | align=0.0002 | text_tf=4.3803 | latent_scale=0.63
+  step  30/445 | (warm-up text) | align=0.0002 | text_tf=3.8644 | latent_scale=0.63
+  step  30/445 | grad_norm=0.00 | sec/step~7.44 | keep=0.52 | K=8 | llama(T): tf=5.5433 first=4.4493 kCE=4.0884 KD=0.0000 acc=0.028 state=10.7708 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=9.2406e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  31/445 | (warm-up text) | align=0.0002 | text_tf=4.4174 | latent_scale=0.63
+  step  32/445 | (warm-up text) | align=0.0002 | text_tf=5.1379 | latent_scale=0.63
+  step  33/445 | (warm-up text) | align=0.0002 | text_tf=4.1571 | latent_scale=0.63
+  step  34/445 | (warm-up text) | align=0.0002 | text_tf=4.6123 | latent_scale=0.63
+  step  35/445 | (warm-up text) | align=0.0002 | text_tf=4.6194 | latent_scale=0.63
+  step  36/445 | (warm-up text) | align=0.0002 | text_tf=4.2695 | latent_scale=0.63
+  step  37/445 | (warm-up text) | align=0.0002 | text_tf=4.7198 | latent_scale=0.63
+  step  38/445 | (warm-up text) | align=0.0002 | text_tf=4.5190 | latent_scale=0.63
+  step  39/445 | (warm-up text) | align=0.0002 | text_tf=3.9142 | latent_scale=0.63
+  step  40/445 | (warm-up text) | align=0.0002 | text_tf=4.1892 | latent_scale=0.64
+  step  40/445 | grad_norm=0.00 | sec/step~6.97 | keep=0.52 | K=8 | llama(T): tf=5.3897 first=4.7337 kCE=3.7138 KD=0.0000 acc=0.028 state=12.1232 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.8689e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  41/445 | (warm-up text) | align=0.0002 | text_tf=4.1898 | latent_scale=0.64
+  step  42/445 | (warm-up text) | align=0.0003 | text_tf=4.3836 | latent_scale=0.64
+  step  43/445 | (warm-up text) | align=0.0002 | text_tf=3.9677 | latent_scale=0.64
+  step  44/445 | (warm-up text) | align=0.0002 | text_tf=3.4304 | latent_scale=0.64
+  step  45/445 | (warm-up text) | align=0.0003 | text_tf=4.9046 | latent_scale=0.64
+  step  46/445 | (warm-up text) | align=0.0002 | text_tf=3.8635 | latent_scale=0.64
+  step  47/445 | (warm-up text) | align=0.0002 | text_tf=4.4784 | latent_scale=0.64
+  step  48/445 | (warm-up text) | align=0.0002 | text_tf=4.4823 | latent_scale=0.64
+  step  49/445 | (warm-up text) | align=0.0002 | text_tf=4.3248 | latent_scale=0.64
+  step  50/445 | (warm-up text) | align=0.0002 | text_tf=4.5416 | latent_scale=0.64
+  step  50/445 | grad_norm=0.00 | sec/step~6.93 | keep=0.52 | K=8 | llama(T): tf=5.5560 first=5.1352 kCE=3.8182 KD=0.0000 acc=0.000 state=11.2709 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  51/445 | (warm-up text) | align=0.0002 | text_tf=3.7787 | latent_scale=0.64
+  step  52/445 | (warm-up text) | align=0.0002 | text_tf=3.8426 | latent_scale=0.65
+  step  53/445 | (warm-up text) | align=0.0002 | text_tf=3.3803 | latent_scale=0.65
+  step  54/445 | (warm-up text) | align=0.0002 | text_tf=4.2308 | latent_scale=0.65
+  step  55/445 | (warm-up text) | align=0.0002 | text_tf=3.9969 | latent_scale=0.65
+  step  56/445 | (warm-up text) | align=0.0002 | text_tf=4.0691 | latent_scale=0.65
+  step  57/445 | (warm-up text) | align=0.0002 | text_tf=4.2594 | latent_scale=0.65
+  step  58/445 | (warm-up text) | align=0.0002 | text_tf=3.6860 | latent_scale=0.65
+  step  59/445 | (warm-up text) | align=0.0002 | text_tf=4.8552 | latent_scale=0.65
+  step  60/445 | (warm-up text) | align=0.0002 | text_tf=4.0428 | latent_scale=0.65
+  step  60/445 | grad_norm=0.00 | sec/step~7.10 | keep=0.52 | K=8 | llama(T): tf=5.4344 first=4.3096 kCE=4.0915 KD=0.0000 acc=0.111 state=12.5917 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.1974e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  61/445 | (warm-up text) | align=0.0002 | text_tf=4.2971 | latent_scale=0.65
+  step  62/445 | (warm-up text) | align=0.0003 | text_tf=3.9040 | latent_scale=0.65
+  step  63/445 | (warm-up text) | align=0.0002 | text_tf=4.2797 | latent_scale=0.66
+  step  64/445 | (warm-up text) | align=0.0002 | text_tf=4.4030 | latent_scale=0.66
+  step  65/445 | (warm-up text) | align=0.0002 | text_tf=4.4703 | latent_scale=0.66
+  step  66/445 | (warm-up text) | align=0.0003 | text_tf=4.2449 | latent_scale=0.66
+  step  67/445 | (warm-up text) | align=0.0002 | text_tf=4.1003 | latent_scale=0.66
+  step  68/445 | (warm-up text) | align=0.0002 | text_tf=3.9469 | latent_scale=0.66
+  step  69/445 | (warm-up text) | align=0.0002 | text_tf=4.2027 | latent_scale=0.66
+  step  70/445 | (warm-up text) | align=0.0002 | text_tf=4.0256 | latent_scale=0.66
+  step  70/445 | grad_norm=0.00 | sec/step~6.54 | keep=0.52 | K=8 | llama(T): tf=5.7082 first=4.8899 kCE=3.8486 KD=0.0000 acc=0.000 state=11.2255 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.1974e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  71/445 | (warm-up text) | align=0.0002 | text_tf=4.5865 | latent_scale=0.66
+  step  72/445 | (warm-up text) | align=0.0002 | text_tf=4.3959 | latent_scale=0.66
+  step  73/445 | (warm-up text) | align=0.0002 | text_tf=4.3086 | latent_scale=0.66
+  step  74/445 | (warm-up text) | align=0.0002 | text_tf=4.3103 | latent_scale=0.67
+  step  75/445 | (warm-up text) | align=0.0002 | text_tf=4.8079 | latent_scale=0.67
+  step  76/445 | (warm-up text) | align=0.0002 | text_tf=3.8095 | latent_scale=0.67
+  step  77/445 | (warm-up text) | align=0.0002 | text_tf=4.0437 | latent_scale=0.67
+  step  78/445 | (warm-up text) | align=0.0002 | text_tf=4.4664 | latent_scale=0.67
+  step  79/445 | (warm-up text) | align=0.0002 | text_tf=4.3378 | latent_scale=0.67
+  step  80/445 | (warm-up text) | align=0.0002 | text_tf=4.5009 | latent_scale=0.67
+  step  80/445 | grad_norm=0.00 | sec/step~6.87 | keep=0.52 | K=8 | llama(T): tf=5.5426 first=4.2771 kCE=3.7115 KD=0.0000 acc=0.111 state=10.9960 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.6843e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  81/445 | (warm-up text) | align=0.0002 | text_tf=4.4142 | latent_scale=0.67
+  step  82/445 | (warm-up text) | align=0.0002 | text_tf=3.8111 | latent_scale=0.67
+  step  83/445 | (warm-up text) | align=0.0002 | text_tf=4.9378 | latent_scale=0.67
+  step  84/445 | (warm-up text) | align=0.0002 | text_tf=3.8807 | latent_scale=0.67
+  step  85/445 | (warm-up text) | align=0.0002 | text_tf=3.9443 | latent_scale=0.68
+  step  86/445 | (warm-up text) | align=0.0002 | text_tf=4.4286 | latent_scale=0.68
+  step  87/445 | (warm-up text) | align=0.0002 | text_tf=4.5800 | latent_scale=0.68
+  step  88/445 | (warm-up text) | align=0.0002 | text_tf=4.3911 | latent_scale=0.68
+  step  89/445 | (warm-up text) | align=0.0002 | text_tf=4.1517 | latent_scale=0.68
+  step  90/445 | (warm-up text) | align=0.0002 | text_tf=5.0190 | latent_scale=0.68
+  step  90/445 | grad_norm=0.00 | sec/step~6.76 | keep=0.52 | K=8 | llama(T): tf=6.1111 first=5.1736 kCE=3.8104 KD=0.0000 acc=0.028 state=11.7098 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.7853e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  91/445 | (warm-up text) | align=0.0002 | text_tf=3.8739 | latent_scale=0.68
+  step  92/445 | (warm-up text) | align=0.0002 | text_tf=3.8492 | latent_scale=0.68
+  step  93/445 | (warm-up text) | align=0.0003 | text_tf=5.0833 | latent_scale=0.68
+  step  94/445 | (warm-up text) | align=0.0002 | text_tf=4.3207 | latent_scale=0.68
+  step  95/445 | (warm-up text) | align=0.0002 | text_tf=3.9342 | latent_scale=0.68
+  step  96/445 | (warm-up text) | align=0.0002 | text_tf=3.6702 | latent_scale=0.69
+  step  97/445 | (warm-up text) | align=0.0002 | text_tf=4.0896 | latent_scale=0.69
+  step  98/445 | (warm-up text) | align=0.0002 | text_tf=4.8618 | latent_scale=0.69
+  step  99/445 | (warm-up text) | align=0.0002 | text_tf=4.9987 | latent_scale=0.69
+  step  100/445 | (warm-up text) | align=0.0002 | text_tf=4.0841 | latent_scale=0.69
+  step  100/445 | grad_norm=0.00 | sec/step~7.30 | keep=0.52 | K=8 | llama(T): tf=5.9619 first=5.5551 kCE=4.0998 KD=0.0000 acc=0.028 state=13.0876 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  101/445 | (warm-up text) | align=0.0002 | text_tf=4.1325 | latent_scale=0.69
+  step  102/445 | (warm-up text) | align=0.0002 | text_tf=4.3805 | latent_scale=0.69
+  step  103/445 | (warm-up text) | align=0.0002 | text_tf=4.7979 | latent_scale=0.69
+  step  104/445 | (warm-up text) | align=0.0002 | text_tf=4.2239 | latent_scale=0.69
+  step  105/445 | (warm-up text) | align=0.0002 | text_tf=3.3521 | latent_scale=0.69
+  step  106/445 | (warm-up text) | align=0.0002 | text_tf=4.0281 | latent_scale=0.69
+  step  107/445 | (warm-up text) | align=0.0002 | text_tf=3.6964 | latent_scale=0.70
+  step  108/445 | (warm-up text) | align=0.0002 | text_tf=4.2230 | latent_scale=0.70
+  step  109/445 | (warm-up text) | align=0.0002 | text_tf=4.6885 | latent_scale=0.70
+  step  110/445 | (warm-up text) | align=0.0002 | text_tf=3.8910 | latent_scale=0.70
+  step  110/445 | grad_norm=0.00 | sec/step~7.96 | keep=0.52 | K=8 | llama(T): tf=5.9236 first=4.8780 kCE=4.0752 KD=0.0000 acc=0.083 state=14.7053 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.2204e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  111/445 | (warm-up text) | align=0.0002 | text_tf=4.2800 | latent_scale=0.70
+  step  112/445 | (warm-up text) | align=0.0002 | text_tf=3.7040 | latent_scale=0.70
+  step  113/445 | (warm-up text) | align=0.0002 | text_tf=4.4220 | latent_scale=0.70
+  step  114/445 | (warm-up text) | align=0.0002 | text_tf=3.9523 | latent_scale=0.70
+  step  115/445 | (warm-up text) | align=0.0002 | text_tf=4.2093 | latent_scale=0.70
+  step  116/445 | (warm-up text) | align=0.0002 | text_tf=3.4259 | latent_scale=0.70
+  step  117/445 | (warm-up text) | align=0.0002 | text_tf=4.0640 | latent_scale=0.70
+  step  118/445 | (warm-up text) | align=0.0002 | text_tf=4.0395 | latent_scale=0.71
+  step  119/445 | (warm-up text) | align=0.0002 | text_tf=4.1674 | latent_scale=0.71
+  step  120/445 | (warm-up text) | align=0.0002 | text_tf=4.0574 | latent_scale=0.71
+  step  120/445 | grad_norm=0.00 | sec/step~6.94 | keep=0.52 | K=8 | llama(T): tf=6.0451 first=5.1580 kCE=4.4355 KD=0.0000 acc=0.056 state=13.0387 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.3521e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  step  121/445 | (warm-up text) | align=0.0002 | text_tf=4.0062 | latent_scale=0.71
+  step  122/445 | (warm-up text) | align=0.0002 | text_tf=4.1013 | latent_scale=0.71
+  step  123/445 | (warm-up text) | align=0.0002 | text_tf=3.9518 | latent_scale=0.71
+  step  124/445 | (warm-up text) | align=0.0002 | text_tf=4.1867 | latent_scale=0.71
+  step  125/445 | (warm-up text) | align=0.0002 | text_tf=3.5125 | latent_scale=0.71
+  step  126/445 | (warm-up text) | align=0.0002 | text_tf=4.0967 | latent_scale=0.71
+  step  127/445 | (warm-up text) | align=0.0002 | text_tf=4.5924 | latent_scale=0.71
+  step  128/445 | (warm-up text) | align=0.0002 | text_tf=4.4068 | latent_scale=0.71
+  step  129/445 | (warm-up text) | align=0.0002 | text_tf=4.7428 | latent_scale=0.72
+  step  130/445 | (warm-up text) | align=0.0002 | text_tf=4.4806 | latent_scale=0.72
+  step  130/445 | grad_norm=0.00 | sec/step~6.29 | keep=0.52 | K=8 | llama(T): tf=6.2219 first=5.2755 kCE=4.2952 KD=0.0000 acc=0.111 state=11.0709 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.3521e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  131/445 | (warm-up text) | align=0.0002 | text_tf=4.3245 | latent_scale=0.72
+  step  132/445 | (warm-up text) | align=0.0002 | text_tf=4.4074 | latent_scale=0.72
+  step  133/445 | (warm-up text) | align=0.0002 | text_tf=3.9749 | latent_scale=0.72
+  step  134/445 | (warm-up text) | align=0.0002 | text_tf=4.3573 | latent_scale=0.72
+  step  135/445 | (warm-up text) | align=0.0002 | text_tf=4.1684 | latent_scale=0.72
+  step  136/445 | (warm-up text) | align=0.0002 | text_tf=4.0968 | latent_scale=0.72
+  step  137/445 | (warm-up text) | align=0.0002 | text_tf=3.9937 | latent_scale=0.72
+  step  138/445 | (warm-up text) | align=0.0002 | text_tf=3.5074 | latent_scale=0.72
+  step  139/445 | (warm-up text) | align=0.0002 | text_tf=4.3387 | latent_scale=0.72
+  step  140/445 | (warm-up text) | align=0.0002 | text_tf=4.2038 | latent_scale=0.72
+  step  140/445 | grad_norm=0.00 | sec/step~6.81 | keep=0.52 | K=8 | llama(T): tf=5.6351 first=5.3235 kCE=3.9339 KD=0.0000 acc=0.000 state=12.7496 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.4016e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  141/445 | (warm-up text) | align=0.0002 | text_tf=3.6230 | latent_scale=0.73
+  step  142/445 | (warm-up text) | align=0.0002 | text_tf=4.2293 | latent_scale=0.73
+  step  143/445 | (warm-up text) | align=0.0002 | text_tf=4.3227 | latent_scale=0.73
+  step  144/445 | (warm-up text) | align=0.0002 | text_tf=3.9604 | latent_scale=0.73
+  step  145/445 | (warm-up text) | align=0.0002 | text_tf=4.2532 | latent_scale=0.73
+  step  146/445 | (warm-up text) | align=0.0002 | text_tf=4.0392 | latent_scale=0.73
+  step  147/445 | (warm-up text) | align=0.0002 | text_tf=5.2767 | latent_scale=0.73
+  step  148/445 | (warm-up text) | align=0.0002 | text_tf=3.9986 | latent_scale=0.73
+  step  149/445 | (warm-up text) | align=0.0002 | text_tf=4.7403 | latent_scale=0.73
+  step  150/445 | (warm-up text) | align=0.0002 | text_tf=4.8297 | latent_scale=0.73
+  step  150/445 | grad_norm=0.00 | sec/step~6.74 | keep=0.52 | K=8 | llama(T): tf=6.5010 first=5.5845 kCE=4.2025 KD=0.0000 acc=0.000 state=13.0357 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  151/445 | (warm-up text) | align=0.0002 | text_tf=4.1885 | latent_scale=0.73
+  step  152/445 | (warm-up text) | align=0.0002 | text_tf=4.3520 | latent_scale=0.74
+  step  153/445 | (warm-up text) | align=0.0002 | text_tf=4.1911 | latent_scale=0.74
+  step  154/445 | (warm-up text) | align=0.0002 | text_tf=4.1400 | latent_scale=0.74
+  step  155/445 | (warm-up text) | align=0.0002 | text_tf=4.7695 | latent_scale=0.74
+  step  156/445 | (warm-up text) | align=0.0002 | text_tf=4.6147 | latent_scale=0.74
+  step  157/445 | (warm-up text) | align=0.0002 | text_tf=3.8144 | latent_scale=0.74
+  step  158/445 | (warm-up text) | align=0.0002 | text_tf=4.1788 | latent_scale=0.74
+  step  159/445 | (warm-up text) | align=0.0002 | text_tf=3.5478 | latent_scale=0.74
+  step  160/445 | (warm-up text) | align=0.0002 | text_tf=4.8258 | latent_scale=0.74
+  step  160/445 | grad_norm=0.00 | sec/step~6.78 | keep=0.53 | K=8 | llama(T): tf=6.6599 first=6.2973 kCE=3.9910 KD=0.0000 acc=0.000 state=13.3985 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.1511e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  161/445 | (warm-up text) | align=0.0002 | text_tf=4.1687 | latent_scale=0.74
+  step  162/445 | (warm-up text) | align=0.0002 | text_tf=4.0977 | latent_scale=0.74
+  step  163/445 | (warm-up text) | align=0.0002 | text_tf=4.0645 | latent_scale=0.75
+  step  164/445 | (warm-up text) | align=0.0002 | text_tf=4.1318 | latent_scale=0.75
+  step  165/445 | (warm-up text) | align=0.0002 | text_tf=4.1442 | latent_scale=0.75
+  step  166/445 | (warm-up text) | align=0.0002 | text_tf=3.8676 | latent_scale=0.75
+  step  167/445 | (warm-up text) | align=0.0002 | text_tf=4.1739 | latent_scale=0.75
+  step  168/445 | (warm-up text) | align=0.0002 | text_tf=3.8807 | latent_scale=0.75
+  step  169/445 | (warm-up text) | align=0.0002 | text_tf=3.8966 | latent_scale=0.75
+  step  170/445 | (warm-up text) | align=0.0002 | text_tf=3.6946 | latent_scale=0.75
+  step  170/445 | grad_norm=0.00 | sec/step~6.94 | keep=0.53 | K=8 | llama(T): tf=6.4260 first=5.7629 kCE=4.1406 KD=0.0000 acc=0.000 state=14.0525 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.4016e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  171/445 | (warm-up text) | align=0.0002 | text_tf=4.0796 | latent_scale=0.75
+  step  172/445 | (warm-up text) | align=0.0002 | text_tf=3.6675 | latent_scale=0.75
+  step  173/445 | (warm-up text) | align=0.0002 | text_tf=3.6580 | latent_scale=0.75
+  step  174/445 | (warm-up text) | align=0.0002 | text_tf=4.5876 | latent_scale=0.76
+  step  175/445 | (warm-up text) | align=0.0002 | text_tf=4.1905 | latent_scale=0.76
+  step  176/445 | (warm-up text) | align=0.0002 | text_tf=4.1669 | latent_scale=0.76
+  step  177/445 | (warm-up text) | align=0.0002 | text_tf=3.9841 | latent_scale=0.76
+  step  178/445 | (warm-up text) | align=0.0002 | text_tf=4.3221 | latent_scale=0.76
+  step  179/445 | (warm-up text) | align=0.0002 | text_tf=3.9459 | latent_scale=0.76
+  step  180/445 | (warm-up text) | align=0.0002 | text_tf=3.9711 | latent_scale=0.76
+  step  180/445 | grad_norm=0.00 | sec/step~6.35 | keep=0.53 | K=8 | llama(T): tf=6.4440 first=5.5326 kCE=4.1423 KD=0.0000 acc=0.056 state=12.3656 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.1511e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  181/445 | (warm-up text) | align=0.0002 | text_tf=3.5957 | latent_scale=0.76
+  step  182/445 | (warm-up text) | align=0.0002 | text_tf=3.4900 | latent_scale=0.76
+  step  183/445 | (warm-up text) | align=0.0002 | text_tf=3.5287 | latent_scale=0.76
+  step  184/445 | (warm-up text) | align=0.0002 | text_tf=4.0980 | latent_scale=0.76
+  step  185/445 | (warm-up text) | align=0.0002 | text_tf=3.4745 | latent_scale=0.77
+  step  186/445 | (warm-up text) | align=0.0002 | text_tf=3.9174 | latent_scale=0.77
+  step  187/445 | (warm-up text) | align=0.0002 | text_tf=4.5261 | latent_scale=0.77
+  step  188/445 | (warm-up text) | align=0.0002 | text_tf=3.7974 | latent_scale=0.77
+  step  189/445 | (warm-up text) | align=0.0002 | text_tf=3.9459 | latent_scale=0.77
+  step  190/445 | (warm-up text) | align=0.0002 | text_tf=3.3935 | latent_scale=0.77
+  step  190/445 | grad_norm=0.00 | sec/step~7.18 | keep=0.53 | K=8 | llama(T): tf=6.5314 first=5.4864 kCE=4.6045 KD=0.0000 acc=0.028 state=14.1024 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.1511e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  191/445 | (warm-up text) | align=0.0002 | text_tf=4.7034 | latent_scale=0.77
+  step  192/445 | (warm-up text) | align=0.0002 | text_tf=4.1303 | latent_scale=0.77
+  step  193/445 | (warm-up text) | align=0.0002 | text_tf=3.2994 | latent_scale=0.77
+  step  194/445 | (warm-up text) | align=0.0002 | text_tf=3.5644 | latent_scale=0.77
+  step  195/445 | (warm-up text) | align=0.0002 | text_tf=3.3670 | latent_scale=0.77
+  step  196/445 | (warm-up text) | align=0.0002 | text_tf=4.7839 | latent_scale=0.78
+  step  197/445 | (warm-up text) | align=0.0002 | text_tf=4.2903 | latent_scale=0.78
+  step  198/445 | (warm-up text) | align=0.0002 | text_tf=3.2627 | latent_scale=0.78
+  step  199/445 | (warm-up text) | align=0.0002 | text_tf=4.1443 | latent_scale=0.78
+  step  200/445 | (warm-up text) | align=0.0002 | text_tf=3.7958 | latent_scale=0.78
+  step  200/445 | grad_norm=0.00 | sec/step~8.76 | keep=0.53 | K=8 | llama(T): tf=6.2772 first=5.6081 kCE=4.2051 KD=0.0000 acc=0.056 state=17.4122 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  201/445 | (warm-up text) | align=0.0002 | text_tf=3.0184 | latent_scale=0.78
+  step  202/445 | (warm-up text) | align=0.0002 | text_tf=4.2636 | latent_scale=0.78
+  step  203/445 | (warm-up text) | align=0.0002 | text_tf=3.8232 | latent_scale=0.78
+  step  204/445 | (warm-up text) | align=0.0002 | text_tf=3.7125 | latent_scale=0.78
+  step  205/445 | (warm-up text) | align=0.0002 | text_tf=4.1746 | latent_scale=0.78
+  step  206/445 | (warm-up text) | align=0.0002 | text_tf=4.2655 | latent_scale=0.78
+  step  207/445 | (warm-up text) | align=0.0002 | text_tf=4.0980 | latent_scale=0.79
+  step  208/445 | (warm-up text) | align=0.0002 | text_tf=3.6251 | latent_scale=0.79
+  step  209/445 | (warm-up text) | align=0.0002 | text_tf=3.7661 | latent_scale=0.79
+  step  210/445 | (warm-up text) | align=0.0002 | text_tf=4.5616 | latent_scale=0.79
+  step  210/445 | grad_norm=0.00 | sec/step~6.96 | keep=0.53 | K=8 | llama(T): tf=7.4414 first=6.7786 kCE=4.1003 KD=0.0000 acc=0.028 state=14.2254 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.0267e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  211/445 | (warm-up text) | align=0.0002 | text_tf=3.3494 | latent_scale=0.79
+  step  212/445 | (warm-up text) | align=0.0002 | text_tf=3.6957 | latent_scale=0.79
+  step  213/445 | (warm-up text) | align=0.0002 | text_tf=3.8781 | latent_scale=0.79
+  step  214/445 | (warm-up text) | align=0.0002 | text_tf=4.3928 | latent_scale=0.79
+  step  215/445 | (warm-up text) | align=0.0002 | text_tf=3.9225 | latent_scale=0.79
+  step  216/445 | (warm-up text) | align=0.0002 | text_tf=4.4329 | latent_scale=0.79
+  step  217/445 | (warm-up text) | align=0.0002 | text_tf=4.1409 | latent_scale=0.79
+  step  218/445 | (warm-up text) | align=0.0002 | text_tf=3.3691 | latent_scale=0.80
+  step  219/445 | (warm-up text) | align=0.0002 | text_tf=4.1899 | latent_scale=0.80
+  step  220/445 | (warm-up text) | align=0.0002 | text_tf=3.9505 | latent_scale=0.80
+  step  220/445 | grad_norm=0.00 | sec/step~6.30 | keep=0.53 | K=8 | llama(T): tf=6.5529 first=6.2883 kCE=4.3750 KD=0.0000 acc=0.028 state=13.5024 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.8794e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  221/445 | (warm-up text) | align=0.0002 | text_tf=3.5182 | latent_scale=0.80
+  step  222/445 | (warm-up text) | align=0.0002 | text_tf=3.9143 | latent_scale=0.80
+  step  223/445 | (warm-up text) | align=0.0002 | text_tf=3.6527 | latent_scale=0.80
+  step  224/445 | (warm-up text) | align=0.0002 | text_tf=3.6776 | latent_scale=0.80
+  step  225/445 | (warm-up text) | align=0.0002 | text_tf=3.5203 | latent_scale=0.80
+  step  226/445 | (warm-up text) | align=0.0002 | text_tf=3.6047 | latent_scale=0.80
+  step  227/445 | (warm-up text) | align=0.0002 | text_tf=4.7686 | latent_scale=0.80
+  step  228/445 | (warm-up text) | align=0.0002 | text_tf=3.9679 | latent_scale=0.80
+  step  229/445 | (warm-up text) | align=0.0002 | text_tf=3.5150 | latent_scale=0.80
+  step  230/445 | (warm-up text) | align=0.0002 | text_tf=4.4695 | latent_scale=0.81
+  step  230/445 | grad_norm=0.00 | sec/step~7.24 | keep=0.53 | K=8 | llama(T): tf=6.9622 first=6.6274 kCE=4.4477 KD=0.0000 acc=0.000 state=15.9712 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=9.0949e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  231/445 | (warm-up text) | align=0.0002 | text_tf=3.6934 | latent_scale=0.81
+  step  232/445 | (warm-up text) | align=0.0002 | text_tf=3.9038 | latent_scale=0.81
+  step  233/445 | (warm-up text) | align=0.0002 | text_tf=4.4425 | latent_scale=0.81
+  step  234/445 | (warm-up text) | align=0.0002 | text_tf=4.5193 | latent_scale=0.81
+  step  235/445 | (warm-up text) | align=0.0002 | text_tf=4.0147 | latent_scale=0.81
+  step  236/445 | (warm-up text) | align=0.0002 | text_tf=4.0117 | latent_scale=0.81
+  step  237/445 | (warm-up text) | align=0.0002 | text_tf=3.7317 | latent_scale=0.81
+  step  238/445 | (warm-up text) | align=0.0002 | text_tf=3.4263 | latent_scale=0.81
+  step  239/445 | (warm-up text) | align=0.0002 | text_tf=4.6345 | latent_scale=0.81
+  step  240/445 | (warm-up text) | align=0.0002 | text_tf=3.7984 | latent_scale=0.81
+  step  240/445 | grad_norm=0.00 | sec/step~7.51 | keep=0.53 | K=8 | llama(T): tf=6.6760 first=5.8978 kCE=4.4560 KD=0.0000 acc=0.111 state=15.9964 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  241/445 | (warm-up text) | align=0.0002 | text_tf=3.7507 | latent_scale=0.82
+  step  242/445 | (warm-up text) | align=0.0002 | text_tf=3.4036 | latent_scale=0.82
+  step  243/445 | (warm-up text) | align=0.0002 | text_tf=3.7896 | latent_scale=0.82
+  step  244/445 | (warm-up text) | align=0.0002 | text_tf=4.4506 | latent_scale=0.82
+  step  245/445 | (warm-up text) | align=0.0002 | text_tf=4.1350 | latent_scale=0.82
+  step  246/445 | (warm-up text) | align=0.0002 | text_tf=3.5235 | latent_scale=0.82
+  step  247/445 | (warm-up text) | align=0.0002 | text_tf=4.3605 | latent_scale=0.82
+  step  248/445 | (warm-up text) | align=0.0002 | text_tf=3.3564 | latent_scale=0.82
+  step  249/445 | (warm-up text) | align=0.0002 | text_tf=4.4834 | latent_scale=0.82
+  step  250/445 | (warm-up text) | align=0.0002 | text_tf=3.8899 | latent_scale=0.82
+  step  250/445 | grad_norm=0.00 | sec/step~6.98 | keep=0.53 | K=8 | llama(T): tf=7.0752 first=6.6386 kCE=4.3224 KD=0.0000 acc=0.028 state=14.6147 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  step  251/445 | (warm-up text) | align=0.0002 | text_tf=3.7808 | latent_scale=0.82
+  step  252/445 | (warm-up text) | align=0.0002 | text_tf=3.9941 | latent_scale=0.83
+  step  253/445 | (warm-up text) | align=0.0002 | text_tf=4.7216 | latent_scale=0.83
+  step  254/445 | (warm-up text) | align=0.0002 | text_tf=4.7124 | latent_scale=0.83
+  step  255/445 | (warm-up text) | align=0.0002 | text_tf=3.4392 | latent_scale=0.83
+  step  256/445 | (warm-up text) | align=0.0002 | text_tf=4.2250 | latent_scale=0.83
+  step  257/445 | (warm-up text) | align=0.0002 | text_tf=4.1608 | latent_scale=0.83
+  step  258/445 | (warm-up text) | align=0.0002 | text_tf=3.9717 | latent_scale=0.83
+  step  259/445 | (warm-up text) | align=0.0002 | text_tf=3.5369 | latent_scale=0.83
+  step  260/445 | (warm-up text) | align=0.0002 | text_tf=4.4608 | latent_scale=0.83
+  step  260/445 | grad_norm=0.00 | sec/step~7.05 | keep=0.53 | K=8 | llama(T): tf=6.9439 first=5.9876 kCE=4.5065 KD=0.0000 acc=0.139 state=16.0346 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.1159e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  261/445 | (warm-up text) | align=0.0002 | text_tf=3.7544 | latent_scale=0.83
+  step  262/445 | (warm-up text) | align=0.0002 | text_tf=3.6580 | latent_scale=0.83
+  step  263/445 | (warm-up text) | align=0.0002 | text_tf=3.9590 | latent_scale=0.84
+  step  264/445 | (warm-up text) | align=0.0002 | text_tf=4.3208 | latent_scale=0.84
+  step  265/445 | (warm-up text) | align=0.0002 | text_tf=4.2208 | latent_scale=0.84
+  step  266/445 | (warm-up text) | align=0.0002 | text_tf=4.1112 | latent_scale=0.84
+  step  267/445 | (warm-up text) | align=0.0002 | text_tf=4.2237 | latent_scale=0.84
+  step  268/445 | (warm-up text) | align=0.0002 | text_tf=3.3428 | latent_scale=0.84
+  step  269/445 | (warm-up text) | align=0.0002 | text_tf=4.6421 | latent_scale=0.84
+  step  270/445 | (warm-up text) | align=0.0002 | text_tf=3.9864 | latent_scale=0.84
+  step  270/445 | grad_norm=0.00 | sec/step~7.40 | keep=0.54 | K=8 | llama(T): tf=6.9080 first=6.2970 kCE=4.3225 KD=0.0000 acc=0.056 state=17.4030 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=9.0949e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  271/445 | (warm-up text) | align=0.0002 | text_tf=3.3457 | latent_scale=0.84
+  step  272/445 | (warm-up text) | align=0.0002 | text_tf=3.6826 | latent_scale=0.84
+  step  273/445 | (warm-up text) | align=0.0002 | text_tf=3.8827 | latent_scale=0.84
+  step  274/445 | (warm-up text) | align=0.0002 | text_tf=4.2158 | latent_scale=0.85
+  step  275/445 | (warm-up text) | align=0.0002 | text_tf=3.5527 | latent_scale=0.85
+  step  276/445 | (warm-up text) | align=0.0002 | text_tf=3.7302 | latent_scale=0.85
+  step  277/445 | (warm-up text) | align=0.0002 | text_tf=3.2966 | latent_scale=0.85
+  step  278/445 | (warm-up text) | align=0.0002 | text_tf=3.3390 | latent_scale=0.85
+  step  279/445 | (warm-up text) | align=0.0002 | text_tf=4.0121 | latent_scale=0.85
+  step  280/445 | (warm-up text) | align=0.0002 | text_tf=4.2743 | latent_scale=0.85
+  step  280/445 | grad_norm=0.00 | sec/step~7.06 | keep=0.54 | K=8 | llama(T): tf=7.2907 first=6.6813 kCE=4.2878 KD=0.0000 acc=0.000 state=16.6461 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.5527e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  281/445 | (warm-up text) | align=0.0002 | text_tf=4.2226 | latent_scale=0.85
+  step  282/445 | (warm-up text) | align=0.0002 | text_tf=4.1775 | latent_scale=0.85
+  step  283/445 | (warm-up text) | align=0.0002 | text_tf=3.3371 | latent_scale=0.85
+  step  284/445 | (warm-up text) | align=0.0002 | text_tf=3.5612 | latent_scale=0.85
+  step  285/445 | (warm-up text) | align=0.0002 | text_tf=3.7868 | latent_scale=0.86
+  step  286/445 | (warm-up text) | align=0.0002 | text_tf=3.5508 | latent_scale=0.86
+  step  287/445 | (warm-up text) | align=0.0002 | text_tf=3.3700 | latent_scale=0.86
+  step  288/445 | (warm-up text) | align=0.0002 | text_tf=4.0333 | latent_scale=0.86
+  step  289/445 | (warm-up text) | align=0.0002 | text_tf=3.6736 | latent_scale=0.86
+  step  290/445 | (warm-up text) | align=0.0002 | text_tf=3.9604 | latent_scale=0.86
+  step  290/445 | grad_norm=0.00 | sec/step~6.70 | keep=0.54 | K=8 | llama(T): tf=7.5304 first=6.7216 kCE=4.9877 KD=0.0000 acc=0.028 state=14.8032 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  291/445 | (warm-up text) | align=0.0002 | text_tf=3.4559 | latent_scale=0.86
+  step  292/445 | (warm-up text) | align=0.0002 | text_tf=4.0643 | latent_scale=0.86
+  step  293/445 | (warm-up text) | align=0.0002 | text_tf=2.9739 | latent_scale=0.86
+  step  294/445 | (warm-up text) | align=0.0002 | text_tf=4.0796 | latent_scale=0.86
+  step  295/445 | (warm-up text) | align=0.0002 | text_tf=5.1817 | latent_scale=0.86
+  step  296/445 | (warm-up text) | align=0.0002 | text_tf=4.1301 | latent_scale=0.87
+  step  297/445 | (warm-up text) | align=0.0002 | text_tf=3.7708 | latent_scale=0.87
+  step  298/445 | (warm-up text) | align=0.0002 | text_tf=3.7643 | latent_scale=0.87
+  step  299/445 | (warm-up text) | align=0.0002 | text_tf=3.9500 | latent_scale=0.87
+  step  300/445 | (warm-up text) | align=0.0002 | text_tf=3.5616 | latent_scale=0.87
+  step  300/445 | grad_norm=0.00 | sec/step~7.08 | keep=0.54 | K=8 | llama(T): tf=7.4850 first=6.0739 kCE=4.6165 KD=0.0000 acc=0.056 state=16.8584 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=6.9633e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  301/445 | (warm-up text) | align=0.0002 | text_tf=4.1279 | latent_scale=0.87
+  step  302/445 | (warm-up text) | align=0.0002 | text_tf=3.9999 | latent_scale=0.87
+  step  303/445 | (warm-up text) | align=0.0002 | text_tf=3.8120 | latent_scale=0.87
+  step  304/445 | (warm-up text) | align=0.0002 | text_tf=3.5549 | latent_scale=0.87
+  step  305/445 | (warm-up text) | align=0.0002 | text_tf=3.8472 | latent_scale=0.87
+  step  306/445 | (warm-up text) | align=0.0002 | text_tf=3.2932 | latent_scale=0.87
+  step  307/445 | (warm-up text) | align=0.0002 | text_tf=3.6401 | latent_scale=0.88
+  step  308/445 | (warm-up text) | align=0.0002 | text_tf=4.0260 | latent_scale=0.88
+  step  309/445 | (warm-up text) | align=0.0002 | text_tf=4.0293 | latent_scale=0.88
+  step  310/445 | (warm-up text) | align=0.0002 | text_tf=4.1253 | latent_scale=0.88
+  step  310/445 | grad_norm=0.00 | sec/step~7.04 | keep=0.54 | K=8 | llama(T): tf=7.2788 first=6.0808 kCE=4.5982 KD=0.0000 acc=0.056 state=15.6731 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=6.9633e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  311/445 | (warm-up text) | align=0.0002 | text_tf=4.0669 | latent_scale=0.88
+  step  312/445 | (warm-up text) | align=0.0002 | text_tf=3.6649 | latent_scale=0.88
+  step  313/445 | (warm-up text) | align=0.0002 | text_tf=4.2181 | latent_scale=0.88
+  step  314/445 | (warm-up text) | align=0.0002 | text_tf=3.6825 | latent_scale=0.88
+  step  315/445 | (warm-up text) | align=0.0002 | text_tf=4.7015 | latent_scale=0.88
+  step  316/445 | (warm-up text) | align=0.0002 | text_tf=3.5839 | latent_scale=0.88
+  step  317/445 | (warm-up text) | align=0.0002 | text_tf=3.4414 | latent_scale=0.88
+  step  318/445 | (warm-up text) | align=0.0002 | text_tf=3.2423 | latent_scale=0.88
+  step  319/445 | (warm-up text) | align=0.0002 | text_tf=3.0790 | latent_scale=0.89
+  step  320/445 | (warm-up text) | align=0.0002 | text_tf=3.9686 | latent_scale=0.89
+  step  320/445 | grad_norm=0.00 | sec/step~7.08 | keep=0.54 | K=8 | llama(T): tf=7.6590 first=6.8940 kCE=4.9188 KD=0.0000 acc=0.056 state=16.6495 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=9.0949e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  321/445 | (warm-up text) | align=0.0002 | text_tf=3.2195 | latent_scale=0.89
+  step  322/445 | (warm-up text) | align=0.0002 | text_tf=3.8789 | latent_scale=0.89
+  step  323/445 | (warm-up text) | align=0.0002 | text_tf=3.7726 | latent_scale=0.89
+  step  324/445 | (warm-up text) | align=0.0002 | text_tf=3.9598 | latent_scale=0.89
+  step  325/445 | (warm-up text) | align=0.0002 | text_tf=3.5171 | latent_scale=0.89
+  step  326/445 | (warm-up text) | align=0.0002 | text_tf=3.4472 | latent_scale=0.89
+  step  327/445 | (warm-up text) | align=0.0002 | text_tf=3.6727 | latent_scale=0.89
+  step  328/445 | (warm-up text) | align=0.0002 | text_tf=3.9023 | latent_scale=0.89
+  step  329/445 | (warm-up text) | align=0.0002 | text_tf=3.3531 | latent_scale=0.89
+  step  330/445 | (warm-up text) | align=0.0002 | text_tf=4.3792 | latent_scale=0.90
+  step  330/445 | grad_norm=0.00 | sec/step~6.76 | keep=0.54 | K=8 | llama(T): tf=7.7603 first=6.8975 kCE=4.6339 KD=0.0000 acc=0.056 state=16.2277 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.2737e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  331/445 | (warm-up text) | align=0.0002 | text_tf=3.7575 | latent_scale=0.90
+  step  332/445 | (warm-up text) | align=0.0002 | text_tf=3.9873 | latent_scale=0.90
+  step  333/445 | (warm-up text) | align=0.0002 | text_tf=3.7138 | latent_scale=0.90
+  step  334/445 | (warm-up text) | align=0.0002 | text_tf=3.8129 | latent_scale=0.90
+  step  335/445 | (warm-up text) | align=0.0002 | text_tf=3.6945 | latent_scale=0.90
+  step  336/445 | (warm-up text) | align=0.0002 | text_tf=3.8307 | latent_scale=0.90
+  step  337/445 | (warm-up text) | align=0.0002 | text_tf=3.8024 | latent_scale=0.90
+  step  338/445 | (warm-up text) | align=0.0002 | text_tf=4.1104 | latent_scale=0.90
+  step  339/445 | (warm-up text) | align=0.0002 | text_tf=3.9491 | latent_scale=0.90
+  step  340/445 | (warm-up text) | align=0.0002 | text_tf=4.0575 | latent_scale=0.90
+  step  340/445 | grad_norm=0.00 | sec/step~6.69 | keep=0.54 | K=8 | llama(T): tf=7.5465 first=6.5861 kCE=4.6590 KD=0.0000 acc=0.028 state=15.7346 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  341/445 | (warm-up text) | align=0.0002 | text_tf=3.8328 | latent_scale=0.91
+  step  342/445 | (warm-up text) | align=0.0002 | text_tf=3.4556 | latent_scale=0.91
+  step  343/445 | (warm-up text) | align=0.0002 | text_tf=3.2604 | latent_scale=0.91
+  step  344/445 | (warm-up text) | align=0.0002 | text_tf=3.0767 | latent_scale=0.91
+  step  345/445 | (warm-up text) | align=0.0002 | text_tf=4.0822 | latent_scale=0.91
+  step  346/445 | (warm-up text) | align=0.0002 | text_tf=3.9317 | latent_scale=0.91
+  step  347/445 | (warm-up text) | align=0.0002 | text_tf=3.9584 | latent_scale=0.91
+  step  348/445 | (warm-up text) | align=0.0002 | text_tf=3.8732 | latent_scale=0.91
+  step  349/445 | (warm-up text) | align=0.0002 | text_tf=3.4022 | latent_scale=0.91
+  step  350/445 | (warm-up text) | align=0.0002 | text_tf=3.3137 | latent_scale=0.91
+  step  350/445 | grad_norm=0.00 | sec/step~7.05 | keep=0.54 | K=8 | llama(T): tf=7.9272 first=6.9116 kCE=4.9551 KD=0.0000 acc=0.056 state=16.5207 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.1159e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  351/445 | (warm-up text) | align=0.0002 | text_tf=3.9464 | latent_scale=0.91
+  step  352/445 | (warm-up text) | align=0.0002 | text_tf=3.7101 | latent_scale=0.92
+  step  353/445 | (warm-up text) | align=0.0002 | text_tf=3.4006 | latent_scale=0.92
+  step  354/445 | (warm-up text) | align=0.0002 | text_tf=3.2827 | latent_scale=0.92
+  step  355/445 | (warm-up text) | align=0.0002 | text_tf=3.6547 | latent_scale=0.92
+  step  356/445 | (warm-up text) | align=0.0002 | text_tf=3.4938 | latent_scale=0.92
+  step  357/445 | (warm-up text) | align=0.0002 | text_tf=3.8800 | latent_scale=0.92
+  step  358/445 | (warm-up text) | align=0.0002 | text_tf=3.3227 | latent_scale=0.92
+  step  359/445 | (warm-up text) | align=0.0002 | text_tf=3.3845 | latent_scale=0.92
+  step  360/445 | (warm-up text) | align=0.0002 | text_tf=3.9152 | latent_scale=0.92
+  step  360/445 | grad_norm=0.00 | sec/step~6.78 | keep=0.55 | K=8 | llama(T): tf=7.4526 first=6.2564 kCE=4.5208 KD=0.0000 acc=0.083 state=15.2988 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.5527e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  361/445 | (warm-up text) | align=0.0002 | text_tf=3.7684 | latent_scale=0.92
+  step  362/445 | (warm-up text) | align=0.0002 | text_tf=4.0020 | latent_scale=0.92
+  step  363/445 | (warm-up text) | align=0.0002 | text_tf=3.9586 | latent_scale=0.93
+  step  364/445 | (warm-up text) | align=0.0002 | text_tf=3.9228 | latent_scale=0.93
+  step  365/445 | (warm-up text) | align=0.0002 | text_tf=3.8031 | latent_scale=0.93
+  step  366/445 | (warm-up text) | align=0.0002 | text_tf=3.2749 | latent_scale=0.93
+  step  367/445 | (warm-up text) | align=0.0002 | text_tf=3.4324 | latent_scale=0.93
+  step  368/445 | (warm-up text) | align=0.0002 | text_tf=3.6433 | latent_scale=0.93
+  step  369/445 | (warm-up text) | align=0.0002 | text_tf=3.5500 | latent_scale=0.93
+  step  370/445 | (warm-up text) | align=0.0002 | text_tf=3.1018 | latent_scale=0.93
+  step  370/445 | grad_norm=0.00 | sec/step~6.69 | keep=0.55 | K=8 | llama(T): tf=7.6627 first=7.3225 kCE=5.4743 KD=0.0000 acc=0.028 state=15.9396 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.5527e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  371/445 | (warm-up text) | align=0.0002 | text_tf=3.5007 | latent_scale=0.93
+  step  372/445 | (warm-up text) | align=0.0002 | text_tf=3.5256 | latent_scale=0.93
+  step  373/445 | (warm-up text) | align=0.0002 | text_tf=3.3372 | latent_scale=0.93
+  step  374/445 | (warm-up text) | align=0.0002 | text_tf=3.7806 | latent_scale=0.94
+  step  375/445 | (warm-up text) | align=0.0002 | text_tf=3.2880 | latent_scale=0.94
+  step  376/445 | (warm-up text) | align=0.0002 | text_tf=3.4168 | latent_scale=0.94
+  step  377/445 | (warm-up text) | align=0.0002 | text_tf=3.7796 | latent_scale=0.94
+  step  378/445 | (warm-up text) | align=0.0002 | text_tf=3.6756 | latent_scale=0.94
+  step  379/445 | (warm-up text) | align=0.0002 | text_tf=3.9964 | latent_scale=0.94
+  step  380/445 | (warm-up text) | align=0.0002 | text_tf=3.9178 | latent_scale=0.94
+  step  380/445 | grad_norm=0.00 | sec/step~7.00 | keep=0.55 | K=8 | llama(T): tf=8.0209 first=7.4241 kCE=4.6886 KD=0.0000 acc=0.083 state=17.1264 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0004 rms_cal~0.0106 embed_rms~0.01058]
+  step  381/445 | (warm-up text) | align=0.0002 | text_tf=3.2722 | latent_scale=0.94
+  step  382/445 | (warm-up text) | align=0.0002 | text_tf=4.2359 | latent_scale=0.94
+  step  383/445 | (warm-up text) | align=0.0002 | text_tf=3.6411 | latent_scale=0.94
+  step  384/445 | (warm-up text) | align=0.0002 | text_tf=3.7061 | latent_scale=0.94
+  step  385/445 | (warm-up text) | align=0.0002 | text_tf=4.3049 | latent_scale=0.95
+  step  386/445 | (warm-up text) | align=0.0002 | text_tf=3.9811 | latent_scale=0.95
+  step  387/445 | (warm-up text) | align=0.0002 | text_tf=3.4249 | latent_scale=0.95
+  step  388/445 | (warm-up text) | align=0.0002 | text_tf=3.2241 | latent_scale=0.95
+  step  389/445 | (warm-up text) | align=0.0002 | text_tf=3.5410 | latent_scale=0.95
+  step  390/445 | (warm-up text) | align=0.0002 | text_tf=3.6065 | latent_scale=0.95
+  step  390/445 | grad_norm=0.00 | sec/step~7.63 | keep=0.55 | K=8 | llama(T): tf=7.2789 first=6.6398 kCE=4.5933 KD=0.0000 acc=0.056 state=17.9580 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.8777e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  391/445 | (warm-up text) | align=0.0002 | text_tf=3.0809 | latent_scale=0.95
+  step  392/445 | (warm-up text) | align=0.0002 | text_tf=4.0178 | latent_scale=0.95
+  step  393/445 | (warm-up text) | align=0.0002 | text_tf=3.7739 | latent_scale=0.95
+  step  394/445 | (warm-up text) | align=0.0002 | text_tf=2.8144 | latent_scale=0.95
+  step  395/445 | (warm-up text) | align=0.0002 | text_tf=3.7843 | latent_scale=0.95
+  step  396/445 | (warm-up text) | align=0.0002 | text_tf=3.2751 | latent_scale=0.96
+  step  397/445 | (warm-up text) | align=0.0002 | text_tf=3.9438 | latent_scale=0.96
+  step  398/445 | (warm-up text) | align=0.0002 | text_tf=4.1767 | latent_scale=0.96
+  step  399/445 | (warm-up text) | align=0.0002 | text_tf=3.7929 | latent_scale=0.96
+  step  400/445 | (warm-up text) | align=0.0002 | text_tf=3.0687 | latent_scale=0.96
+  step  400/445 | grad_norm=0.00 | sec/step~7.51 | keep=0.55 | K=8 | llama(T): tf=7.5070 first=6.9923 kCE=4.9494 KD=0.0000 acc=0.028 state=19.2804 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.1159e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  401/445 | (warm-up text) | align=0.0002 | text_tf=4.0141 | latent_scale=0.96
+  step  402/445 | (warm-up text) | align=0.0002 | text_tf=4.5528 | latent_scale=0.96
+  step  403/445 | (warm-up text) | align=0.0002 | text_tf=3.7827 | latent_scale=0.96
+  step  404/445 | (warm-up text) | align=0.0002 | text_tf=4.1354 | latent_scale=0.96
+  step  405/445 | (warm-up text) | align=0.0002 | text_tf=3.3646 | latent_scale=0.96
+  step  406/445 | (warm-up text) | align=0.0002 | text_tf=4.3312 | latent_scale=0.96
+  step  407/445 | (warm-up text) | align=0.0002 | text_tf=4.8343 | latent_scale=0.96
+  step  408/445 | (warm-up text) | align=0.0002 | text_tf=3.3514 | latent_scale=0.97
+  step  409/445 | (warm-up text) | align=0.0002 | text_tf=3.4847 | latent_scale=0.97
+  step  410/445 | (warm-up text) | align=0.0002 | text_tf=3.2969 | latent_scale=0.97
+  step  410/445 | grad_norm=0.00 | sec/step~7.42 | keep=0.55 | K=8 | llama(T): tf=8.1626 first=7.3000 kCE=5.4055 KD=0.0000 acc=0.056 state=19.0118 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.7408e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  411/445 | (warm-up text) | align=0.0002 | text_tf=3.3992 | latent_scale=0.97
+  step  412/445 | (warm-up text) | align=0.0002 | text_tf=3.5843 | latent_scale=0.97
+  step  413/445 | (warm-up text) | align=0.0002 | text_tf=3.7115 | latent_scale=0.97
+  step  414/445 | (warm-up text) | align=0.0002 | text_tf=4.4273 | latent_scale=0.97
+  step  415/445 | (warm-up text) | align=0.0002 | text_tf=3.4007 | latent_scale=0.97
+  step  416/445 | (warm-up text) | align=0.0002 | text_tf=4.0512 | latent_scale=0.97
+  step  417/445 | (warm-up text) | align=0.0002 | text_tf=3.7129 | latent_scale=0.97
+  step  418/445 | (warm-up text) | align=0.0002 | text_tf=3.9376 | latent_scale=0.97
+  step  419/445 | (warm-up text) | align=0.0002 | text_tf=3.9198 | latent_scale=0.98
+  step  420/445 | (warm-up text) | align=0.0002 | text_tf=3.8872 | latent_scale=0.98
+  step  420/445 | grad_norm=0.00 | sec/step~7.80 | keep=0.55 | K=8 | llama(T): tf=8.1119 first=7.2067 kCE=4.7654 KD=0.0000 acc=0.028 state=20.8367 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  421/445 | (warm-up text) | align=0.0002 | text_tf=3.0434 | latent_scale=0.98
+  step  422/445 | (warm-up text) | align=0.0002 | text_tf=2.9721 | latent_scale=0.98
+  step  423/445 | (warm-up text) | align=0.0002 | text_tf=3.0813 | latent_scale=0.98
+  step  424/445 | (warm-up text) | align=0.0002 | text_tf=3.9885 | latent_scale=0.98
+  step  425/445 | (warm-up text) | align=0.0002 | text_tf=3.6140 | latent_scale=0.98
+  step  426/445 | (warm-up text) | align=0.0002 | text_tf=3.8849 | latent_scale=0.98
+  step  427/445 | (warm-up text) | align=0.0002 | text_tf=4.4490 | latent_scale=0.98
+  step  428/445 | (warm-up text) | align=0.0002 | text_tf=3.0645 | latent_scale=0.98
+  step  429/445 | (warm-up text) | align=0.0002 | text_tf=3.7773 | latent_scale=0.98
+  step  430/445 | (warm-up text) | align=0.0002 | text_tf=4.1163 | latent_scale=0.99
+  step  430/445 | grad_norm=0.00 | sec/step~7.04 | keep=0.55 | K=8 | llama(T): tf=8.7505 first=8.0896 kCE=5.0661 KD=0.0000 acc=0.028 state=19.6284 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  431/445 | (warm-up text) | align=0.0002 | text_tf=4.6415 | latent_scale=0.99
+  step  432/445 | (warm-up text) | align=0.0002 | text_tf=3.0360 | latent_scale=0.99
+  step  433/445 | (warm-up text) | align=0.0002 | text_tf=4.1316 | latent_scale=0.99
+  step  434/445 | (warm-up text) | align=0.0002 | text_tf=3.7082 | latent_scale=0.99
+  step  435/445 | (warm-up text) | align=0.0002 | text_tf=3.1865 | latent_scale=0.99
+  step  436/445 | (warm-up text) | align=0.0002 | text_tf=4.2128 | latent_scale=0.99
+  step  437/445 | (warm-up text) | align=0.0002 | text_tf=3.8331 | latent_scale=0.99
+  step  438/445 | (warm-up text) | align=0.0002 | text_tf=3.4942 | latent_scale=0.99
+  step  439/445 | (warm-up text) | align=0.0002 | text_tf=3.4726 | latent_scale=0.99
+  step  440/445 | (warm-up text) | align=0.0002 | text_tf=3.7677 | latent_scale=0.99
+  step  440/445 | grad_norm=0.00 | sec/step~6.95 | keep=0.55 | K=8 | llama(T): tf=7.9495 first=7.2803 kCE=4.9845 KD=0.0000 acc=0.083 state=19.1399 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.2737e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  441/445 | (warm-up text) | align=0.0002 | text_tf=4.0308 | latent_scale=1.00
+  step  442/445 | (warm-up text) | align=0.0002 | text_tf=3.7556 | latent_scale=1.00
+  step  443/445 | (warm-up text) | align=0.0002 | text_tf=4.2456 | latent_scale=1.00
+  step  444/445 | (warm-up text) | align=0.0002 | text_tf=4.4274 | latent_scale=1.00
+  step  445/445 | (warm-up text) | align=0.0002 | text_tf=3.4414 | latent_scale=1.00
+  step  445/445 | grad_norm=0.00 | sec/step~3.92 | keep=0.56 | K=8 | llama(T): tf=8.3266 first=6.9576 kCE=5.1481 KD=0.0000 acc=0.000 state=20.6225 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 890
+Epoch 3/6
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+  step  10/445 | grad_norm=32.80 | sec/step~8.35 | keep=0.56 | K=8 | llama(L): tf=8.1181 first=7.2212 kCE=4.9796 KD=23.4772 acc=0.028 state=19.9849 align=0.0000 latA=0.8191 latP=0.4696 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+[warmup] step=909 mode=text (tail)
+  step  20/445 | (tail text) | align=0.0002 | text_tf=3.8632 | latent_scale=1.00
+  step  20/445 | grad_norm=54.72 | sec/step~6.95 | keep=0.56 | K=8 | llama(T): tf=8.5939 first=7.2322 kCE=6.5386 KD=0.0000 acc=0.083 state=20.3868 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/445 | grad_norm=5.62 | sec/step~7.84 | keep=0.56 | K=8 | llama(L): tf=8.3451 first=6.8594 kCE=5.3890 KD=20.3542 acc=0.111 state=17.9547 align=0.0000 latA=0.7934 latP=0.4668 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/445 | grad_norm=2.08 | sec/step~8.92 | keep=0.56 | K=8 | llama(L): tf=8.6949 first=7.8032 kCE=4.8559 KD=19.6564 acc=0.028 state=21.5882 align=0.0000 latA=0.8303 latP=0.4697 | scale_pen(llama)=1.7408e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/445 | grad_norm=3.10 | sec/step~8.53 | keep=0.56 | K=8 | llama(L): tf=8.6448 first=7.7153 kCE=5.0328 KD=20.5131 acc=0.056 state=19.7635 align=0.0000 latA=0.8270 latP=0.4671 | scale_pen(llama)=3.5527e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/445 | grad_norm=18.41 | sec/step~9.08 | keep=0.56 | K=8 | llama(L): tf=8.2055 first=8.5200 kCE=4.2153 KD=20.2344 acc=0.000 state=20.3261 align=0.0000 latA=0.8418 latP=0.4704 | scale_pen(llama)=6.0041e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/445 | grad_norm=5.82 | sec/step~9.68 | keep=0.56 | K=8 | llama(L): tf=8.6771 first=7.9808 kCE=5.7416 KD=19.0302 acc=0.028 state=22.2252 align=0.0000 latA=0.8347 latP=0.4655 | scale_pen(llama)=6.0041e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  80/445 | grad_norm=3.17 | sec/step~8.61 | keep=0.57 | K=8 | llama(L): tf=8.1132 first=7.5981 kCE=4.9056 KD=17.4102 acc=0.083 state=20.0604 align=0.0000 latA=0.8283 latP=0.4678 | scale_pen(llama)=7.9936e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  90/445 | grad_norm=2.62 | sec/step~8.81 | keep=0.57 | K=8 | llama(L): tf=8.6720 first=6.9133 kCE=5.6160 KD=17.5829 acc=0.056 state=20.6787 align=0.0000 latA=0.8175 latP=0.4683 | scale_pen(llama)=9.0949e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01058]
+  step  100/445 | grad_norm=2.03 | sec/step~8.20 | keep=0.57 | K=8 | llama(L): tf=8.3876 first=6.9770 kCE=5.5687 KD=15.5969 acc=0.028 state=18.8360 align=0.0000 latA=0.8257 latP=0.4671 | scale_pen(llama)=7.9936e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  101/445 | (tail text) | align=0.0002 | text_tf=4.9630 | latent_scale=1.00
+  step  110/445 | grad_norm=1.10 | sec/step~9.08 | keep=0.57 | K=8 | llama(L): tf=8.5038 first=7.8081 kCE=5.7506 KD=14.6520 acc=0.056 state=21.7593 align=0.0000 latA=0.8427 latP=0.4614 | scale_pen(llama)=6.0041e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  120/445 | grad_norm=6.53 | sec/step~8.49 | keep=0.57 | K=8 | llama(L): tf=8.5154 first=7.1874 kCE=5.9822 KD=12.6317 acc=0.028 state=18.7900 align=0.0000 latA=0.8173 latP=0.4616 | scale_pen(llama)=3.5527e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  125/445 | (tail text) | align=0.0002 | text_tf=3.5908 | latent_scale=1.00
+  step  127/445 | (tail text) | align=0.0002 | text_tf=4.1786 | latent_scale=1.00
+  step  130/445 | grad_norm=2.88 | sec/step~7.69 | keep=0.57 | K=8 | llama(L): tf=8.8863 first=7.5618 kCE=5.5688 KD=11.1464 acc=0.056 state=18.0732 align=0.0000 latA=0.8485 latP=0.4660 | scale_pen(llama)=3.5527e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  140/445 | grad_norm=18.09 | sec/step~7.68 | keep=0.57 | K=8 | llama(L): tf=8.1736 first=6.9615 kCE=5.3957 KD=14.6042 acc=0.000 state=17.6776 align=0.0000 latA=0.8212 latP=0.4626 | scale_pen(llama)=1.2790e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  150/445 | grad_norm=8.55 | sec/step~9.10 | keep=0.58 | K=8 | llama(L): tf=8.2432 first=6.8839 kCE=5.0797 KD=12.0522 acc=0.139 state=19.9903 align=0.0000 latA=0.8373 latP=0.4632 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  160/445 | grad_norm=0.69 | sec/step~8.37 | keep=0.58 | K=8 | llama(L): tf=9.1505 first=7.5867 kCE=5.2272 KD=10.2647 acc=0.028 state=18.5118 align=0.0000 latA=0.8554 latP=0.4618 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  170/445 | grad_norm=0.77 | sec/step~8.18 | keep=0.58 | K=8 | llama(L): tf=8.5277 first=7.0779 kCE=4.5886 KD=10.7694 acc=0.111 state=17.9189 align=0.0000 latA=0.8503 latP=0.4601 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  180/445 | grad_norm=4.64 | sec/step~8.24 | keep=0.58 | K=8 | llama(L): tf=8.7521 first=7.1716 kCE=4.5220 KD=11.1343 acc=0.028 state=18.5126 align=0.0000 latA=0.8399 latP=0.4620 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  190/445 | grad_norm=3.81 | sec/step~8.36 | keep=0.58 | K=8 | llama(L): tf=8.2394 first=8.0373 kCE=4.7892 KD=11.9787 acc=0.000 state=22.2321 align=0.0000 latA=0.8558 latP=0.4572 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  200/445 | grad_norm=2.78 | sec/step~8.20 | keep=0.58 | K=8 | llama(L): tf=8.7981 first=6.9863 kCE=4.8563 KD=11.5189 acc=0.111 state=26.3500 align=0.0000 latA=0.8454 latP=0.4565 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  210/445 | grad_norm=1.75 | sec/step~7.98 | keep=0.58 | K=8 | llama(L): tf=9.1617 first=8.1491 kCE=5.2606 KD=10.1992 acc=0.028 state=26.7768 align=0.0000 latA=0.8645 latP=0.4559 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  220/445 | grad_norm=0.90 | sec/step~8.11 | keep=0.59 | K=8 | llama(L): tf=8.4639 first=7.6594 kCE=9.6036 KD=9.4580 acc=0.000 state=26.2336 align=0.0000 latA=0.8735 latP=0.4538 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  230/445 | grad_norm=0.31 | sec/step~8.59 | keep=0.59 | K=8 | llama(L): tf=8.7485 first=7.8424 kCE=10.3923 KD=8.5296 acc=0.028 state=26.5007 align=0.0000 latA=0.8667 latP=0.4525 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  240/445 | grad_norm=1.84 | sec/step~8.38 | keep=0.59 | K=8 | llama(L): tf=8.8415 first=7.4683 kCE=11.4997 KD=9.0585 acc=0.028 state=26.4315 align=0.0000 latA=0.8702 latP=0.4536 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  250/445 | grad_norm=4.15 | sec/step~7.95 | keep=0.59 | K=8 | llama(L): tf=9.0762 first=7.5625 kCE=9.6140 KD=9.0849 acc=0.000 state=24.9816 align=0.0000 latA=0.8655 latP=0.4504 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  260/445 | grad_norm=2.19 | sec/step~7.99 | keep=0.59 | K=8 | llama(L): tf=8.8933 first=7.7291 kCE=10.3785 KD=8.1639 acc=0.000 state=24.5088 align=0.0000 latA=0.8785 latP=0.4485 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  270/445 | (tail text) | align=0.0003 | text_tf=9.1293 | latent_scale=1.00
+  step  270/445 | grad_norm=2.40 | sec/step~7.08 | keep=0.59 | K=8 | llama(T): tf=8.9442 first=7.7709 kCE=10.3803 KD=0.0000 acc=0.000 state=24.0726 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0006 rms_cal~0.0106 embed_rms~0.01058]
+  step  280/445 | grad_norm=1.76 | sec/step~7.91 | keep=0.60 | K=8 | llama(L): tf=8.6234 first=7.6537 kCE=9.9862 KD=8.1063 acc=0.083 state=20.6907 align=0.0000 latA=0.8754 latP=0.4447 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  290/445 | grad_norm=0.67 | sec/step~9.11 | keep=0.60 | K=8 | llama(L): tf=8.4792 first=7.5333 kCE=10.0893 KD=8.2343 acc=0.028 state=26.6425 align=0.0000 latA=0.8788 latP=0.4432 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  291/445 | (tail text) | align=0.0003 | text_tf=9.2955 | latent_scale=1.00
+  step  298/445 | (tail text) | align=0.0003 | text_tf=9.3161 | latent_scale=1.00
+  step  300/445 | grad_norm=3.63 | sec/step~9.05 | keep=0.60 | K=8 | llama(L): tf=8.6467 first=7.3380 kCE=9.4541 KD=9.5393 acc=0.028 state=24.1632 align=0.0000 latA=0.8789 latP=0.4432 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  310/445 | grad_norm=5.17 | sec/step~8.34 | keep=0.60 | K=8 | llama(L): tf=8.3783 first=7.7828 kCE=9.4114 KD=7.8882 acc=0.000 state=21.5165 align=0.0000 latA=0.8938 latP=0.4421 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  320/445 | grad_norm=2.80 | sec/step~8.22 | keep=0.60 | K=8 | llama(L): tf=8.8379 first=7.4551 kCE=9.1021 KD=7.5743 acc=0.028 state=21.2749 align=0.0000 latA=0.8883 latP=0.4404 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  330/445 | grad_norm=2.13 | sec/step~8.45 | keep=0.60 | K=8 | llama(L): tf=8.7978 first=7.6313 kCE=8.8230 KD=8.6134 acc=0.056 state=23.2363 align=0.0000 latA=0.8842 latP=0.4385 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  340/445 | grad_norm=1.20 | sec/step~7.87 | keep=0.61 | K=8 | llama(L): tf=8.2761 first=7.3592 kCE=8.6218 KD=6.3902 acc=0.000 state=21.3281 align=0.0000 latA=0.8855 latP=0.4367 | scale_pen(llama)=8.8818e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  350/445 | grad_norm=0.45 | sec/step~8.97 | keep=0.61 | K=8 | llama(L): tf=8.5612 first=7.4734 kCE=8.9773 KD=6.0720 acc=0.000 state=23.1449 align=0.0000 latA=0.8898 latP=0.4349 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  360/445 | grad_norm=2.99 | sec/step~8.28 | keep=0.61 | K=8 | llama(L): tf=7.9984 first=7.0854 kCE=8.6078 KD=5.9773 acc=0.056 state=19.9521 align=0.0000 latA=0.8797 latP=0.4351 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  369/445 | (tail text) | align=0.0003 | text_tf=8.4759 | latent_scale=1.00
+  step  370/445 | grad_norm=3.27 | sec/step~8.07 | keep=0.61 | K=8 | llama(L): tf=8.0355 first=6.8694 kCE=8.9938 KD=5.8513 acc=0.111 state=20.5305 align=0.0000 latA=0.8834 latP=0.4333 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  380/445 | grad_norm=2.04 | sec/step~8.14 | keep=0.61 | K=8 | llama(L): tf=8.1743 first=7.2170 kCE=8.7075 KD=5.3256 acc=0.194 state=19.5027 align=0.0000 latA=0.8825 latP=0.4315 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  390/445 | grad_norm=2.47 | sec/step~8.92 | keep=0.61 | K=8 | llama(L): tf=8.3354 first=7.2693 kCE=9.4461 KD=5.2580 acc=0.111 state=21.3734 align=0.0000 latA=0.8907 latP=0.4309 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  395/445 | (tail text) | align=0.0003 | text_tf=7.9457 | latent_scale=1.00
+  step  400/445 | grad_norm=1.05 | sec/step~9.24 | keep=0.62 | K=8 | llama(L): tf=7.9997 first=7.2483 kCE=9.0438 KD=5.1407 acc=0.083 state=20.3113 align=0.0000 latA=0.8893 latP=0.4283 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  410/445 | grad_norm=0.49 | sec/step~8.33 | keep=0.62 | K=8 | llama(L): tf=8.0859 first=7.5374 kCE=8.9937 KD=6.9760 acc=0.083 state=16.8119 align=0.0000 latA=0.8905 latP=0.4258 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  420/445 | grad_norm=2.54 | sec/step~9.79 | keep=0.62 | K=8 | llama(L): tf=8.8191 first=7.3421 kCE=8.7827 KD=5.3872 acc=0.139 state=20.1136 align=0.0000 latA=0.8872 latP=0.4258 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  428/445 | (tail text) | align=0.0003 | text_tf=6.5271 | latent_scale=1.00
+  step  430/445 | grad_norm=1.18 | sec/step~8.42 | keep=0.62 | K=8 | llama(L): tf=8.7176 first=7.4786 kCE=9.7121 KD=5.0053 acc=0.000 state=15.0991 align=0.0000 latA=0.8812 latP=0.4225 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  440/445 | grad_norm=0.90 | sec/step~8.07 | keep=0.62 | K=8 | llama(L): tf=7.9178 first=7.0273 kCE=8.5211 KD=4.9690 acc=0.056 state=14.3205 align=0.0000 latA=0.8738 latP=0.4249 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0007 rms_cal~0.0106 embed_rms~0.01058]
+  step  445/445 | grad_norm=0.24 | sec/step~5.19 | keep=0.62 | K=8 | llama(L): tf=8.2277 first=7.8883 kCE=10.1930 KD=4.7291 acc=0.125 state=11.1422 align=0.0000 latA=0.8836 latP=0.4180 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 1335
+Epoch 4/6
+  step  10/445 | grad_norm=3.13 | sec/step~8.43 | keep=0.63 | K=8 | llama(L): tf=8.0265 first=7.1093 kCE=9.1622 KD=5.1145 acc=0.028 state=13.3406 align=0.0000 latA=0.8759 latP=0.4169 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/445 | grad_norm=0.97 | sec/step~8.29 | keep=0.63 | K=8 | llama(L): tf=8.2863 first=7.5418 kCE=8.2468 KD=5.6526 acc=0.056 state=10.8658 align=0.0000 latA=0.8895 latP=0.4140 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/445 | grad_norm=0.82 | sec/step~8.12 | keep=0.63 | K=8 | llama(L): tf=7.8126 first=6.9565 kCE=4.6491 KD=4.9922 acc=0.056 state=10.4956 align=0.0000 latA=0.8738 latP=0.4121 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  37/445 | (tail text) | align=0.0003 | text_tf=4.7720 | latent_scale=1.00
+  step  40/445 | grad_norm=0.33 | sec/step~8.12 | keep=0.63 | K=8 | llama(L): tf=8.3202 first=7.1246 kCE=4.6441 KD=5.3651 acc=0.139 state=10.3653 align=0.0000 latA=0.8824 latP=0.4108 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/445 | grad_norm=0.19 | sec/step~8.27 | keep=0.63 | K=8 | llama(L): tf=8.6263 first=8.1325 kCE=4.2594 KD=4.6857 acc=0.000 state=7.6857 align=0.0000 latA=0.8915 latP=0.4064 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/445 | grad_norm=1.30 | sec/step~8.42 | keep=0.64 | K=8 | llama(L): tf=8.3976 first=7.3131 kCE=4.6176 KD=6.9405 acc=0.028 state=7.3885 align=0.0000 latA=0.8916 latP=0.4073 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/445 | grad_norm=1.37 | sec/step~8.16 | keep=0.64 | K=8 | llama(L): tf=7.7935 first=7.2455 kCE=4.5985 KD=6.5775 acc=0.000 state=7.6348 align=0.0000 latA=0.8698 latP=0.4068 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  74/445 | (tail text) | align=0.0003 | text_tf=4.5421 | latent_scale=1.00
+  step  80/445 | grad_norm=1.04 | sec/step~8.08 | keep=0.64 | K=8 | llama(L): tf=7.8533 first=7.0085 kCE=4.6669 KD=4.7725 acc=0.056 state=6.7997 align=0.0000 latA=0.8660 latP=0.4036 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  90/445 | grad_norm=0.65 | sec/step~7.68 | keep=0.64 | K=8 | llama(L): tf=7.7871 first=7.7185 kCE=4.4628 KD=4.9384 acc=0.028 state=4.4247 align=0.0000 latA=0.8854 latP=0.3998 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  100/445 | grad_norm=0.25 | sec/step~9.36 | keep=0.64 | K=8 | llama(L): tf=7.9152 first=7.1188 kCE=4.1163 KD=5.5300 acc=0.083 state=5.0434 align=0.0000 latA=0.8654 latP=0.3952 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  110/445 | grad_norm=0.11 | sec/step~8.06 | keep=0.65 | K=8 | llama(L): tf=7.8551 first=7.5669 kCE=4.5268 KD=5.1417 acc=0.028 state=3.8137 align=0.0000 latA=0.8728 latP=0.3941 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  120/445 | grad_norm=0.66 | sec/step~9.14 | keep=0.65 | K=8 | llama(L): tf=7.7201 first=6.9689 kCE=4.5472 KD=4.5818 acc=0.056 state=4.6817 align=0.0000 latA=0.8734 latP=0.3936 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  130/445 | grad_norm=0.58 | sec/step~8.09 | keep=0.65 | K=8 | llama(L): tf=8.3754 first=8.1636 kCE=4.6574 KD=6.2796 acc=0.028 state=3.4994 align=0.0000 latA=0.8811 latP=0.3906 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  140/445 | grad_norm=0.57 | sec/step~7.83 | keep=0.65 | K=8 | llama(L): tf=8.2233 first=7.7603 kCE=4.0783 KD=4.4467 acc=0.000 state=3.0668 align=0.0000 latA=0.8759 latP=0.3821 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  150/445 | grad_norm=0.28 | sec/step~8.07 | keep=0.65 | K=8 | llama(L): tf=8.7879 first=6.5777 kCE=4.1608 KD=4.0971 acc=0.111 state=2.0795 align=0.0000 latA=0.8540 latP=0.3798 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  154/445 | (tail text) | align=0.0003 | text_tf=4.5793 | latent_scale=1.00
+  step  160/445 | grad_norm=0.24 | sec/step~8.30 | keep=0.66 | K=8 | llama(L): tf=8.4730 first=7.8033 kCE=4.5091 KD=4.5344 acc=0.028 state=2.7974 align=0.0000 latA=0.8827 latP=0.3767 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0008 rms_cal~0.0106 embed_rms~0.01058]
+  step  170/445 | grad_norm=0.08 | sec/step~8.78 | keep=0.66 | K=8 | llama(L): tf=8.0240 first=7.3234 kCE=4.3477 KD=4.2139 acc=0.167 state=4.2304 align=0.0000 latA=0.8685 latP=0.3734 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  180/445 | grad_norm=0.41 | sec/step~8.92 | keep=0.66 | K=8 | llama(L): tf=7.7711 first=7.7617 kCE=4.2362 KD=4.1670 acc=0.028 state=3.6593 align=0.0000 latA=0.8843 latP=0.3743 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  190/445 | grad_norm=0.43 | sec/step~9.39 | keep=0.66 | K=8 | llama(L): tf=7.8821 first=7.4557 kCE=4.3212 KD=4.0262 acc=0.028 state=4.5847 align=0.0000 latA=0.8746 latP=0.3699 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  193/445 | (tail text) | align=0.0003 | text_tf=4.3389 | latent_scale=1.00
+  step  200/445 | grad_norm=0.26 | sec/step~8.26 | keep=0.67 | K=8 | llama(L): tf=8.0900 first=7.1536 kCE=4.1653 KD=5.0245 acc=0.028 state=4.1871 align=0.0000 latA=0.8640 latP=0.3618 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  210/445 | grad_norm=0.27 | sec/step~8.33 | keep=0.67 | K=8 | llama(L): tf=8.2054 first=7.6283 kCE=4.7681 KD=3.9504 acc=0.028 state=4.0921 align=0.0000 latA=0.8765 latP=0.3638 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  220/445 | grad_norm=0.22 | sec/step~8.79 | keep=0.67 | K=8 | llama(L): tf=8.4141 first=7.7612 kCE=4.3177 KD=4.3683 acc=0.056 state=5.6364 align=0.0000 latA=0.8673 latP=0.3532 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  230/445 | grad_norm=0.09 | sec/step~7.95 | keep=0.67 | K=8 | llama(L): tf=7.7145 first=7.1990 kCE=4.5642 KD=5.2746 acc=0.056 state=4.3095 align=0.0000 latA=0.8582 latP=0.3521 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  240/445 | (tail text) | align=0.0003 | text_tf=5.0266 | latent_scale=1.00
+  step  240/445 | grad_norm=0.58 | sec/step~7.72 | keep=0.67 | K=8 | llama(T): tf=8.1275 first=6.9802 kCE=4.4358 KD=0.0000 acc=0.028 state=5.5536 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  250/445 | grad_norm=0.45 | sec/step~8.54 | keep=0.68 | K=8 | llama(L): tf=8.0243 first=7.7713 kCE=4.5103 KD=4.8083 acc=0.028 state=5.7705 align=0.0000 latA=0.8747 latP=0.3510 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  260/445 | grad_norm=0.60 | sec/step~9.90 | keep=0.68 | K=8 | llama(L): tf=8.3594 first=7.2253 kCE=4.5922 KD=5.4310 acc=0.028 state=9.7496 align=0.0000 latA=0.8674 latP=0.3444 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  270/445 | grad_norm=0.27 | sec/step~8.45 | keep=0.68 | K=8 | llama(L): tf=8.1771 first=7.2787 kCE=4.1528 KD=3.7253 acc=0.028 state=6.1207 align=0.0000 latA=0.8751 latP=0.3377 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  280/445 | grad_norm=0.19 | sec/step~8.12 | keep=0.68 | K=8 | llama(L): tf=7.7214 first=7.8880 kCE=4.6037 KD=5.2237 acc=0.000 state=5.9077 align=0.0000 latA=0.8839 latP=0.3361 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  290/445 | grad_norm=0.14 | sec/step~7.94 | keep=0.69 | K=8 | llama(L): tf=7.8520 first=7.3488 kCE=4.3825 KD=5.2402 acc=0.028 state=5.2585 align=0.0000 latA=0.8667 latP=0.3304 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  300/445 | grad_norm=1.03 | sec/step~7.99 | keep=0.69 | K=8 | llama(L): tf=8.0357 first=7.0676 kCE=4.0475 KD=3.8750 acc=0.028 state=5.2205 align=0.0000 latA=0.8554 latP=0.3250 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  310/445 | grad_norm=0.56 | sec/step~8.60 | keep=0.69 | K=8 | llama(L): tf=7.9763 first=7.0650 kCE=4.5048 KD=4.1098 acc=0.056 state=5.2858 align=0.0000 latA=0.8538 latP=0.3253 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  320/445 | grad_norm=0.74 | sec/step~8.07 | keep=0.69 | K=8 | llama(L): tf=8.0292 first=7.1512 kCE=4.1584 KD=3.8502 acc=0.056 state=5.3570 align=0.0000 latA=0.8634 latP=0.3161 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  330/445 | grad_norm=0.41 | sec/step~8.24 | keep=0.69 | K=8 | llama(L): tf=7.5322 first=7.3747 kCE=4.0627 KD=4.9334 acc=0.000 state=5.7745 align=0.0000 latA=0.8649 latP=0.3190 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  340/445 | grad_norm=0.23 | sec/step~8.25 | keep=0.70 | K=8 | llama(L): tf=8.1612 first=7.3871 kCE=5.0626 KD=3.7823 acc=0.111 state=6.1216 align=0.0000 latA=0.8591 latP=0.3247 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  350/445 | grad_norm=0.10 | sec/step~8.03 | keep=0.70 | K=8 | llama(L): tf=7.9005 first=7.0908 kCE=4.4635 KD=4.2493 acc=0.083 state=6.5123 align=0.0000 latA=0.8591 latP=0.3084 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  360/445 | grad_norm=0.75 | sec/step~8.15 | keep=0.70 | K=8 | llama(L): tf=7.9953 first=7.4033 kCE=4.1583 KD=4.0112 acc=0.028 state=4.9526 align=0.0000 latA=0.8591 latP=0.3079 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  370/445 | grad_norm=0.41 | sec/step~9.29 | keep=0.70 | K=8 | llama(L): tf=8.5259 first=7.7135 kCE=4.0919 KD=3.5409 acc=0.028 state=5.9704 align=0.0000 latA=0.8624 latP=0.2959 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  380/445 | grad_norm=0.47 | sec/step~8.18 | keep=0.71 | K=8 | llama(L): tf=7.6969 first=7.4101 kCE=4.4085 KD=4.3615 acc=0.056 state=4.9574 align=0.0000 latA=0.8615 latP=0.3027 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0009 rms_cal~0.0106 embed_rms~0.01058]
+  step  390/445 | grad_norm=0.40 | sec/step~7.61 | keep=0.71 | K=8 | llama(L): tf=7.9467 first=7.3376 kCE=4.1911 KD=3.7174 acc=0.111 state=4.8093 align=0.0000 latA=0.8465 latP=0.2887 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  400/445 | grad_norm=0.14 | sec/step~8.59 | keep=0.71 | K=8 | llama(L): tf=7.9062 first=7.6327 kCE=4.4238 KD=4.9950 acc=0.028 state=5.1383 align=0.0000 latA=0.8666 latP=0.2933 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  410/445 | grad_norm=0.13 | sec/step~7.90 | keep=0.71 | K=8 | llama(L): tf=7.9857 first=7.7281 kCE=4.0048 KD=3.7422 acc=0.028 state=4.7158 align=0.0000 latA=0.8624 latP=0.2825 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  420/445 | grad_norm=0.42 | sec/step~7.65 | keep=0.72 | K=8 | llama(L): tf=7.8050 first=7.6778 kCE=4.2050 KD=3.6927 acc=0.000 state=4.3170 align=0.0000 latA=0.8640 latP=0.2886 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  430/445 | grad_norm=0.23 | sec/step~8.32 | keep=0.72 | K=8 | llama(L): tf=8.2841 first=7.4948 kCE=4.5085 KD=3.6869 acc=0.028 state=4.2287 align=0.0000 latA=0.8588 latP=0.2824 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  438/445 | (tail text) | align=0.0003 | text_tf=4.1913 | latent_scale=1.00
+  step  440/445 | grad_norm=0.23 | sec/step~8.07 | keep=0.72 | K=8 | llama(L): tf=7.9157 first=7.4719 kCE=4.2384 KD=4.2880 acc=0.028 state=5.1477 align=0.0000 latA=0.8633 latP=0.2746 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  445/445 | grad_norm=0.12 | sec/step~5.12 | keep=0.72 | K=8 | llama(L): tf=7.8914 first=8.3807 kCE=3.7622 KD=4.0759 acc=0.000 state=5.3210 align=0.0000 latA=0.8740 latP=0.2716 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 1780
+Epoch 5/6
+  step  10/445 | grad_norm=0.67 | sec/step~8.26 | keep=0.72 | K=8 | llama(L): tf=8.3612 first=7.0194 kCE=4.3636 KD=3.3706 acc=0.083 state=4.9311 align=0.0000 latA=0.8486 latP=0.2736 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/445 | grad_norm=1.55 | sec/step~8.48 | keep=0.73 | K=8 | llama(L): tf=7.6096 first=7.0622 kCE=4.1361 KD=3.5422 acc=0.028 state=4.6641 align=0.0000 latA=0.8487 latP=0.2635 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/445 | grad_norm=0.97 | sec/step~8.92 | keep=0.73 | K=8 | llama(L): tf=7.9141 first=7.0821 kCE=4.4115 KD=3.9490 acc=0.083 state=5.3321 align=0.0000 latA=0.8433 latP=0.2694 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/445 | grad_norm=0.28 | sec/step~7.83 | keep=0.73 | K=8 | llama(L): tf=7.5756 first=7.1653 kCE=4.1736 KD=3.7627 acc=0.028 state=4.2915 align=0.0000 latA=0.8439 latP=0.2670 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/445 | grad_norm=0.21 | sec/step~8.11 | keep=0.73 | K=8 | llama(L): tf=7.6342 first=7.1274 kCE=4.3724 KD=3.3284 acc=0.111 state=4.1938 align=0.0000 latA=0.8452 latP=0.2722 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  60/445 | grad_norm=0.74 | sec/step~7.73 | keep=0.74 | K=8 | llama(L): tf=7.8228 first=8.0640 kCE=4.2600 KD=4.1995 acc=0.028 state=3.6938 align=0.0000 latA=0.8609 latP=0.2635 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  67/445 | (tail text) | align=0.0002 | text_tf=4.5568 | latent_scale=1.00
+  step  70/445 | grad_norm=1.29 | sec/step~8.57 | keep=0.74 | K=8 | llama(L): tf=7.9486 first=6.9685 kCE=3.8933 KD=3.6435 acc=0.056 state=4.8406 align=0.0000 latA=0.8384 latP=0.2522 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  80/445 | grad_norm=0.70 | sec/step~8.30 | keep=0.74 | K=8 | llama(L): tf=7.3937 first=6.8229 kCE=3.9868 KD=3.6988 acc=0.028 state=3.8729 align=0.0000 latA=0.8273 latP=0.2601 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  90/445 | grad_norm=0.34 | sec/step~7.89 | keep=0.75 | K=8 | llama(L): tf=7.9476 first=7.4149 kCE=3.7667 KD=6.0811 acc=0.056 state=4.3005 align=0.0000 latA=0.8412 latP=0.2439 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  100/445 | grad_norm=0.46 | sec/step~7.99 | keep=0.75 | K=8 | llama(L): tf=8.0905 first=7.2273 kCE=3.7796 KD=3.4436 acc=0.056 state=3.6220 align=0.0000 latA=0.8522 latP=0.2448 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  110/445 | grad_norm=0.18 | sec/step~8.42 | keep=0.75 | K=8 | llama(L): tf=8.0557 first=7.3906 kCE=4.0978 KD=3.3553 acc=0.056 state=4.9078 align=0.0000 latA=0.8473 latP=0.2477 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  120/445 | grad_norm=0.77 | sec/step~8.45 | keep=0.75 | K=8 | llama(L): tf=7.7244 first=7.2083 kCE=4.2244 KD=4.1807 acc=0.111 state=3.6187 align=0.0000 latA=0.8322 latP=0.2590 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  130/445 | grad_norm=0.49 | sec/step~8.44 | keep=0.76 | K=8 | llama(L): tf=7.8046 first=6.6190 kCE=4.2047 KD=5.4020 acc=0.111 state=3.5961 align=0.0000 latA=0.8162 latP=0.2490 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  137/445 | (tail text) | align=0.0003 | text_tf=4.5905 | latent_scale=1.00
+  step  140/445 | grad_norm=0.74 | sec/step~8.10 | keep=0.76 | K=8 | llama(L): tf=7.7094 first=7.4961 kCE=3.9799 KD=4.0584 acc=0.028 state=3.3838 align=0.0000 latA=0.8453 latP=0.2432 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  145/445 | (tail text) | align=0.0003 | text_tf=4.2117 | latent_scale=1.00
+  step  150/445 | grad_norm=0.49 | sec/step~8.12 | keep=0.76 | K=8 | llama(L): tf=8.0010 first=7.3487 kCE=3.9090 KD=3.5183 acc=0.028 state=4.7442 align=0.0000 latA=0.8472 latP=0.2315 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  160/445 | grad_norm=0.22 | sec/step~8.67 | keep=0.76 | K=8 | llama(L): tf=7.6782 first=7.1730 kCE=3.7562 KD=3.2570 acc=0.111 state=3.7966 align=0.0000 latA=0.8377 latP=0.2279 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  170/445 | grad_norm=0.17 | sec/step~8.01 | keep=0.77 | K=8 | llama(L): tf=8.0352 first=7.4654 kCE=4.0825 KD=3.3309 acc=0.028 state=3.9212 align=0.0000 latA=0.8420 latP=0.2339 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0010 rms_cal~0.0106 embed_rms~0.01058]
+  step  180/445 | grad_norm=0.90 | sec/step~8.00 | keep=0.77 | K=8 | llama(L): tf=7.9678 first=7.8126 kCE=4.3205 KD=4.4259 acc=0.000 state=3.2646 align=0.0000 latA=0.8453 latP=0.2356 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  190/445 | grad_norm=0.80 | sec/step~7.91 | keep=0.77 | K=8 | llama(L): tf=8.2792 first=7.0835 kCE=4.1915 KD=4.8861 acc=0.028 state=3.5838 align=0.0000 latA=0.8311 latP=0.2227 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  200/445 | grad_norm=0.42 | sec/step~8.23 | keep=0.77 | K=8 | llama(L): tf=8.1217 first=6.9566 kCE=4.0200 KD=3.6683 acc=0.083 state=3.7126 align=0.0000 latA=0.8350 latP=0.2215 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  210/445 | grad_norm=0.19 | sec/step~8.37 | keep=0.78 | K=8 | llama(L): tf=7.8826 first=7.3774 kCE=4.3235 KD=3.7462 acc=0.056 state=3.7985 align=0.0000 latA=0.8385 latP=0.2326 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  220/445 | grad_norm=0.21 | sec/step~8.06 | keep=0.78 | K=8 | llama(L): tf=7.8112 first=7.8380 kCE=4.0708 KD=3.1737 acc=0.000 state=4.0327 align=0.0000 latA=0.8500 latP=0.2229 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  230/445 | grad_norm=0.11 | sec/step~9.14 | keep=0.78 | K=8 | llama(L): tf=7.1934 first=6.9100 kCE=4.1638 KD=2.9270 acc=0.083 state=5.2218 align=0.0000 latA=0.8321 latP=0.2277 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  240/445 | grad_norm=0.49 | sec/step~7.75 | keep=0.79 | K=8 | llama(L): tf=7.6481 first=6.9543 kCE=4.1388 KD=4.2141 acc=0.028 state=3.8618 align=0.0000 latA=0.8153 latP=0.2183 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  244/445 | (tail text) | align=0.0003 | text_tf=4.9062 | latent_scale=1.00
+  step  250/445 | grad_norm=0.37 | sec/step~7.93 | keep=0.79 | K=8 | llama(L): tf=8.2159 first=7.6210 kCE=4.4066 KD=2.9620 acc=0.000 state=3.0634 align=0.0000 latA=0.8404 latP=0.2182 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  260/445 | grad_norm=0.50 | sec/step~8.70 | keep=0.79 | K=8 | llama(L): tf=7.6604 first=7.7708 kCE=3.6298 KD=3.5027 acc=0.028 state=4.3454 align=0.0000 latA=0.8395 latP=0.2094 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  270/445 | grad_norm=0.25 | sec/step~7.72 | keep=0.79 | K=8 | llama(L): tf=7.3893 first=7.4979 kCE=3.7034 KD=3.3882 acc=0.083 state=3.0847 align=0.0000 latA=0.8308 latP=0.2097 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  279/445 | (tail text) | align=0.0002 | text_tf=4.2039 | latent_scale=1.00
+  step  280/445 | grad_norm=0.21 | sec/step~8.07 | keep=0.80 | K=8 | llama(L): tf=8.1378 first=7.5959 kCE=4.1816 KD=5.0599 acc=0.000 state=3.0899 align=0.0000 latA=0.8380 latP=0.2089 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  285/445 | (tail text) | align=0.0003 | text_tf=4.5535 | latent_scale=1.00
+  step  290/445 | grad_norm=0.15 | sec/step~7.78 | keep=0.80 | K=8 | llama(L): tf=6.9005 first=6.6440 kCE=3.5782 KD=2.8102 acc=0.083 state=2.6409 align=0.0000 latA=0.8027 latP=0.2069 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  296/445 | (tail text) | align=0.0003 | text_tf=4.1086 | latent_scale=1.00
+  step  300/445 | grad_norm=0.57 | sec/step~8.17 | keep=0.80 | K=8 | llama(L): tf=7.2065 first=7.6865 kCE=3.6054 KD=3.1779 acc=0.000 state=2.7853 align=0.0000 latA=0.8411 latP=0.2061 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  310/445 | grad_norm=0.94 | sec/step~8.13 | keep=0.81 | K=8 | llama(L): tf=8.0490 first=7.4315 kCE=4.5683 KD=2.9710 acc=0.056 state=3.7395 align=0.0000 latA=0.8279 latP=0.2121 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  320/445 | grad_norm=1.66 | sec/step~9.34 | keep=0.81 | K=8 | llama(L): tf=7.6682 first=7.3303 kCE=4.0741 KD=3.2613 acc=0.083 state=4.8744 align=0.0000 latA=0.8197 latP=0.2046 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  330/445 | grad_norm=0.71 | sec/step~8.02 | keep=0.81 | K=8 | llama(L): tf=8.0953 first=7.1324 kCE=4.1179 KD=3.1564 acc=0.056 state=3.1040 align=0.0000 latA=0.8092 latP=0.1978 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  340/445 | grad_norm=0.28 | sec/step~7.82 | keep=0.82 | K=8 | llama(L): tf=7.9032 first=7.0396 kCE=4.3029 KD=3.2509 acc=0.139 state=3.1102 align=0.0000 latA=0.7908 latP=0.2097 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  350/445 | grad_norm=0.32 | sec/step~9.21 | keep=0.82 | K=8 | llama(L): tf=7.5487 first=7.3058 kCE=3.9164 KD=3.3069 acc=0.056 state=4.7249 align=0.0000 latA=0.8242 latP=0.2096 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  360/445 | grad_norm=1.92 | sec/step~8.28 | keep=0.82 | K=8 | llama(L): tf=7.9094 first=7.7351 kCE=4.6639 KD=3.1162 acc=0.056 state=2.6345 align=0.0000 latA=0.8201 latP=0.1997 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  370/445 | grad_norm=0.83 | sec/step~8.01 | keep=0.82 | K=8 | llama(L): tf=7.6573 first=7.2327 kCE=4.1375 KD=3.5270 acc=0.028 state=3.9363 align=0.0000 latA=0.8145 latP=0.1982 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  380/445 | grad_norm=0.97 | sec/step~7.88 | keep=0.83 | K=8 | llama(L): tf=7.5080 first=6.5252 kCE=4.3602 KD=3.7258 acc=0.111 state=2.5692 align=0.0000 latA=0.7898 latP=0.2079 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  390/445 | grad_norm=0.43 | sec/step~7.80 | keep=0.83 | K=8 | llama(L): tf=7.7743 first=7.5056 kCE=3.8953 KD=4.6888 acc=0.083 state=3.7546 align=0.0000 latA=0.8278 latP=0.1850 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  400/445 | grad_norm=0.70 | sec/step~8.41 | keep=0.83 | K=8 | llama(L): tf=7.6673 first=7.3586 kCE=4.0046 KD=3.7891 acc=0.083 state=3.9910 align=0.0000 latA=0.8146 latP=0.2023 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  410/445 | grad_norm=0.18 | sec/step~8.29 | keep=0.84 | K=8 | llama(L): tf=7.1093 first=7.2559 kCE=3.9407 KD=2.9500 acc=0.083 state=2.9042 align=0.0000 latA=0.8088 latP=0.1974 | scale_pen(llama)=3.1974e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  420/445 | grad_norm=0.97 | sec/step~8.33 | keep=0.84 | K=8 | llama(L): tf=7.2922 first=8.1022 kCE=3.8405 KD=4.2073 acc=0.000 state=3.6195 align=0.0000 latA=0.8218 latP=0.1889 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  430/445 | grad_norm=0.36 | sec/step~8.12 | keep=0.84 | K=8 | llama(L): tf=7.3154 first=7.0917 kCE=4.0025 KD=4.0502 acc=0.111 state=3.1954 align=0.0000 latA=0.8015 latP=0.1920 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0011 rms_cal~0.0106 embed_rms~0.01058]
+  step  440/445 | grad_norm=0.59 | sec/step~8.23 | keep=0.85 | K=8 | llama(L): tf=8.0412 first=7.5719 kCE=4.0462 KD=3.3213 acc=0.000 state=3.4800 align=0.0000 latA=0.8235 latP=0.1830 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  445/445 | grad_norm=0.11 | sec/step~4.93 | keep=0.85 | K=8 | llama(L): tf=7.5483 first=6.9554 kCE=3.7594 KD=4.0871 acc=0.062 state=3.4991 align=0.0000 latA=0.7948 latP=0.1741 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 2225
+Epoch 6/6
+  step  10/445 | grad_norm=2.64 | sec/step~7.84 | keep=0.85 | K=8 | llama(L): tf=7.3051 first=6.9473 kCE=4.0590 KD=3.2042 acc=0.111 state=2.9486 align=0.0000 latA=0.7946 latP=0.1853 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  20/445 | grad_norm=1.46 | sec/step~9.07 | keep=0.85 | K=8 | llama(L): tf=7.7941 first=7.5302 kCE=4.0774 KD=4.2308 acc=0.028 state=4.9595 align=0.0000 latA=0.8169 latP=0.1861 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  30/445 | grad_norm=0.84 | sec/step~8.30 | keep=0.86 | K=8 | llama(L): tf=8.0586 first=7.8031 kCE=3.7136 KD=3.0192 acc=0.000 state=3.4512 align=0.0000 latA=0.8259 latP=0.1652 | scale_pen(llama)=5.6843e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  40/445 | grad_norm=0.53 | sec/step~7.90 | keep=0.86 | K=8 | llama(L): tf=7.3398 first=7.2564 kCE=3.8924 KD=4.3314 acc=0.056 state=3.2604 align=0.0000 latA=0.8011 latP=0.1740 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  50/445 | grad_norm=0.39 | sec/step~8.09 | keep=0.86 | K=8 | llama(L): tf=7.2451 first=7.2653 kCE=4.2211 KD=3.4468 acc=0.056 state=3.6600 align=0.0000 latA=0.8078 latP=0.1845 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  57/445 | (tail text) | align=0.0003 | text_tf=4.9009 | latent_scale=1.00
+  step  60/445 | grad_norm=2.17 | sec/step~8.42 | keep=0.87 | K=8 | llama(L): tf=8.0213 first=6.6724 kCE=4.0978 KD=3.4907 acc=0.111 state=3.4732 align=0.0000 latA=0.7897 latP=0.1759 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  70/445 | grad_norm=1.24 | sec/step~8.23 | keep=0.87 | K=8 | llama(L): tf=7.7725 first=7.6133 kCE=4.3586 KD=3.9080 acc=0.056 state=3.9159 align=0.0000 latA=0.7987 latP=0.2027 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  74/445 | (tail text) | align=0.0002 | text_tf=3.4879 | latent_scale=1.00
+  step  80/445 | grad_norm=1.25 | sec/step~9.72 | keep=0.87 | K=8 | llama(L): tf=7.4767 first=6.7093 kCE=4.1213 KD=3.9086 acc=0.083 state=7.5018 align=0.0000 latA=0.7885 latP=0.1934 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  90/445 | grad_norm=0.65 | sec/step~8.34 | keep=0.88 | K=8 | llama(L): tf=8.0718 first=7.7487 kCE=4.1785 KD=3.7044 acc=0.028 state=3.3264 align=0.0000 latA=0.8192 latP=0.1809 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  95/445 | (tail text) | align=0.0003 | text_tf=4.5706 | latent_scale=1.00
+  step  100/445 | grad_norm=0.79 | sec/step~8.60 | keep=0.88 | K=8 | llama(L): tf=7.5159 first=7.1291 kCE=4.0301 KD=3.2550 acc=0.111 state=3.0693 align=0.0000 latA=0.7975 latP=0.1867 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  110/445 | grad_norm=0.30 | sec/step~8.45 | keep=0.88 | K=8 | llama(L): tf=8.2281 first=7.4724 kCE=4.3434 KD=4.6084 acc=0.028 state=3.1159 align=0.0000 latA=0.8097 latP=0.1748 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  120/445 | grad_norm=1.59 | sec/step~8.00 | keep=0.89 | K=8 | llama(L): tf=7.5684 first=7.1148 kCE=3.9326 KD=3.0735 acc=0.083 state=2.5064 align=0.0000 latA=0.7871 latP=0.1701 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  130/445 | grad_norm=0.90 | sec/step~8.21 | keep=0.89 | K=8 | llama(L): tf=7.3554 first=6.9466 kCE=3.7875 KD=2.6053 acc=0.028 state=3.6774 align=0.0000 latA=0.7714 latP=0.1646 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  140/445 | grad_norm=0.47 | sec/step~8.41 | keep=0.89 | K=8 | llama(L): tf=7.7518 first=7.0720 kCE=3.7009 KD=2.9048 acc=0.083 state=3.6311 align=0.0000 latA=0.7852 latP=0.1595 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  150/445 | grad_norm=0.55 | sec/step~7.93 | keep=0.90 | K=8 | llama(L): tf=7.9441 first=7.1462 kCE=3.9663 KD=3.3792 acc=0.056 state=3.5687 align=0.0000 latA=0.7894 latP=0.1544 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  160/445 | grad_norm=0.26 | sec/step~8.63 | keep=0.90 | K=8 | llama(L): tf=7.3927 first=7.2789 kCE=3.8176 KD=3.1417 acc=0.056 state=3.6319 align=0.0000 latA=0.7959 latP=0.1668 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  170/445 | grad_norm=0.12 | sec/step~7.97 | keep=0.90 | K=8 | llama(L): tf=6.9765 first=6.6665 kCE=3.6944 KD=2.9593 acc=0.083 state=3.3016 align=0.0000 latA=0.7686 latP=0.1638 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  180/445 | grad_norm=0.53 | sec/step~9.32 | keep=0.91 | K=8 | llama(L): tf=7.8312 first=7.6813 kCE=4.3572 KD=4.7532 acc=0.000 state=4.5212 align=0.0000 latA=0.8037 latP=0.1750 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  190/445 | grad_norm=0.76 | sec/step~8.21 | keep=0.91 | K=8 | llama(L): tf=7.8026 first=8.0803 kCE=3.9079 KD=3.2662 acc=0.028 state=3.1142 align=0.0000 latA=0.8075 latP=0.1595 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  200/445 | grad_norm=0.69 | sec/step~8.08 | keep=0.91 | K=8 | llama(L): tf=7.2989 first=7.7883 kCE=4.0224 KD=3.1891 acc=0.000 state=4.6021 align=0.0000 latA=0.8079 latP=0.1785 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  210/445 | grad_norm=0.63 | sec/step~8.19 | keep=0.92 | K=8 | llama(L): tf=7.4235 first=7.0898 kCE=3.6487 KD=5.4740 acc=0.083 state=3.0281 align=0.0000 latA=0.7800 latP=0.1474 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  220/445 | grad_norm=0.51 | sec/step~8.35 | keep=0.92 | K=8 | llama(L): tf=7.4594 first=7.2539 kCE=4.2412 KD=3.0855 acc=0.083 state=3.0268 align=0.0000 latA=0.7826 latP=0.1591 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  230/445 | grad_norm=0.13 | sec/step~8.08 | keep=0.92 | K=8 | llama(L): tf=7.5418 first=7.8443 kCE=3.9658 KD=3.1420 acc=0.056 state=3.8187 align=0.0000 latA=0.7829 latP=0.1477 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  240/445 | grad_norm=0.85 | sec/step~7.82 | keep=0.93 | K=8 | llama(L): tf=7.3388 first=7.1845 kCE=4.0437 KD=4.5667 acc=0.028 state=3.6076 align=0.0000 latA=0.7823 latP=0.1666 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  250/445 | grad_norm=0.63 | sec/step~7.84 | keep=0.93 | K=8 | llama(L): tf=7.9595 first=8.2881 kCE=4.3303 KD=3.3341 acc=0.000 state=3.1561 align=0.0000 latA=0.8091 latP=0.1505 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  260/445 | grad_norm=0.65 | sec/step~8.56 | keep=0.93 | K=8 | llama(L): tf=7.9934 first=7.6292 kCE=4.0256 KD=3.0096 acc=0.056 state=4.1407 align=0.0000 latA=0.8026 latP=0.1469 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  270/445 | grad_norm=0.86 | sec/step~8.93 | keep=0.94 | K=8 | llama(L): tf=7.3908 first=7.4855 kCE=4.1724 KD=3.1166 acc=0.056 state=5.0070 align=0.0000 latA=0.7859 latP=0.1543 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  280/445 | grad_norm=0.40 | sec/step~8.38 | keep=0.94 | K=8 | llama(L): tf=7.5890 first=7.1977 kCE=3.6320 KD=3.8257 acc=0.056 state=4.0767 align=0.0000 latA=0.7807 latP=0.1339 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  290/445 | grad_norm=0.34 | sec/step~8.04 | keep=0.94 | K=8 | llama(L): tf=7.3014 first=7.4243 kCE=3.9851 KD=3.7396 acc=0.056 state=3.8338 align=0.0000 latA=0.7824 latP=0.1524 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  300/445 | grad_norm=1.52 | sec/step~8.38 | keep=0.95 | K=8 | llama(L): tf=7.8102 first=7.7993 kCE=3.9417 KD=2.9392 acc=0.083 state=3.3658 align=0.0000 latA=0.7840 latP=0.1407 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0012 rms_cal~0.0106 embed_rms~0.01058]
+  step  310/445 | grad_norm=0.67 | sec/step~9.36 | keep=0.95 | K=8 | llama(L): tf=8.1223 first=7.5142 kCE=3.6379 KD=2.9072 acc=0.056 state=5.4840 align=0.0000 latA=0.7923 latP=0.1240 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  320/445 | grad_norm=0.63 | sec/step~7.79 | keep=0.95 | K=8 | llama(L): tf=7.4823 first=7.4399 kCE=4.2556 KD=3.2455 acc=0.167 state=3.5065 align=0.0000 latA=0.7774 latP=0.1518 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  330/445 | grad_norm=0.52 | sec/step~8.00 | keep=0.96 | K=8 | llama(L): tf=7.3419 first=7.3882 kCE=3.9962 KD=3.8234 acc=0.056 state=4.2109 align=0.0000 latA=0.7731 latP=0.1485 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  340/445 | grad_norm=0.33 | sec/step~8.35 | keep=0.96 | K=8 | llama(L): tf=7.0063 first=7.4693 kCE=3.8462 KD=3.7414 acc=0.083 state=4.5178 align=0.0000 latA=0.7875 latP=0.1344 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  350/445 | grad_norm=0.32 | sec/step~7.92 | keep=0.97 | K=8 | llama(L): tf=7.6337 first=7.4655 kCE=3.8759 KD=4.3364 acc=0.028 state=3.6754 align=0.0000 latA=0.7788 latP=0.1392 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  360/445 | grad_norm=1.12 | sec/step~8.19 | keep=0.97 | K=8 | llama(L): tf=7.2761 first=6.5558 kCE=4.1449 KD=3.0904 acc=0.111 state=3.9563 align=0.0000 latA=0.7526 latP=0.1630 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  370/445 | grad_norm=1.27 | sec/step~8.97 | keep=0.97 | K=8 | llama(L): tf=7.6396 first=7.0680 kCE=3.8340 KD=3.2177 acc=0.056 state=4.8093 align=0.0000 latA=0.7714 latP=0.1318 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  380/445 | grad_norm=0.41 | sec/step~9.53 | keep=0.98 | K=8 | llama(L): tf=8.0851 first=7.9669 kCE=3.6894 KD=3.2758 acc=0.000 state=7.6521 align=0.0000 latA=0.8006 latP=0.1308 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  390/445 | grad_norm=0.35 | sec/step~9.19 | keep=0.98 | K=8 | llama(L): tf=7.9516 first=6.7797 kCE=4.0822 KD=2.9219 acc=0.000 state=3.8880 align=0.0000 latA=0.7716 latP=0.1353 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  400/445 | grad_norm=0.53 | sec/step~8.05 | keep=0.98 | K=8 | llama(L): tf=7.0217 first=6.6480 kCE=3.8007 KD=3.5696 acc=0.056 state=3.6290 align=0.0000 latA=0.7582 latP=0.1382 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  404/445 | (tail text) | align=0.0003 | text_tf=4.0888 | latent_scale=1.00
+  step  410/445 | grad_norm=0.21 | sec/step~8.97 | keep=0.99 | K=8 | llama(L): tf=7.5026 first=7.4422 kCE=4.0008 KD=3.5116 acc=0.028 state=4.2847 align=0.0000 latA=0.7714 latP=0.1504 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  420/445 | grad_norm=0.76 | sec/step~8.20 | keep=0.99 | K=8 | llama(L): tf=8.0022 first=7.6046 kCE=4.2209 KD=4.0537 acc=0.028 state=4.4715 align=0.0000 latA=0.7850 latP=0.1415 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  430/445 | grad_norm=1.40 | sec/step~8.26 | keep=0.99 | K=8 | llama(L): tf=7.9162 first=7.6109 kCE=4.0957 KD=3.2441 acc=0.028 state=3.3478 align=0.0000 latA=0.7913 latP=0.1351 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  440/445 | grad_norm=1.20 | sec/step~8.17 | keep=1.00 | K=8 | llama(L): tf=7.7374 first=6.9766 kCE=4.0273 KD=3.1673 acc=0.083 state=3.2539 align=0.0000 latA=0.7606 latP=0.1280 | scale_pen(llama)=3.5527e-15 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+  step  445/445 | grad_norm=0.18 | sec/step~4.93 | keep=1.00 | K=8 | llama(L): tf=8.0993 first=7.5754 kCE=4.2570 KD=2.9725 acc=0.062 state=4.3069 align=0.0000 latA=0.7787 latP=0.1234 | scale_pen(llama)=1.4211e-14 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0013 rms_cal~0.0106 embed_rms~0.01058]
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 2670
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/hero_resume/ckpt_stageb
+📝 Saved LoRA adapters for Llama
+📝 Saved Prefix-Tuning adapters for Llama
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 1.0012897443682067, 'rms_mean_cal': 0.010571284644821944, 'embed_rms': 0.01057521253824234, 'count': 2670}}
+
+=== Evaluation (Llama only) ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Loaded training_stats.json: runs/hero_resume/ckpt_stageb/training_stats.json
+Encoder input alignment: mode=neutral_chat | strip_anchor=yes | samples=1000
+Building encoder and computing Z...
+
+[Standard Evaluation Mode]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3330.80it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.80s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.64s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.43s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.04it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.19s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+✓ Loaded deep prefix generator for llama
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+
+— Text baseline summary:
+llama: EM=0.585 F1=0.789
+trainable params: 41,943,040 || all params: 8,072,204,288 || trainable%: 0.5196
+✓ Loaded LoRA adapters for llama
+✓ Loaded Prefix-Tuning adapters for llama
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 1000  |  Max new tokens: 16
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 245.5 | (Qwen): - | Latent length M: 64
+Compression ratio (Llama): 3.8x | (Qwen): -x
+Approx interlingua payload per example: 65536000 bytes (fp32); fp16 reference: 32768000 bytes; fp32 reference: 65536000 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.585  F1: 0.789  |  NLL/token (gold): 13.715866133954693
+Wall clock: 39.93s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 7.68116203115679
+       First-token acc: top1=0.044  top5=0.083
+Wall clock: 11.92s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.000  F1: 0.000
+Wall clock: 16.50s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint metrics unavailable (single-model evaluation).
+
+==== METRICS_JSON ====
+{
+  "samples": 1000,
+  "max_new_tokens": 16,
+  "latent_len": 64,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 245.507
+  },
+  "compression": {
+    "llama": 3.836046875
+  },
+  "payload_bytes": 65536000,
+  "payload_bytes_detail": {
+    "fp32": 65536000,
+    "fp16": 32768000,
+    "selected": null
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 1243739
+    },
+    "prompt_count": 1000,
+    "latent_shape": [
+      1000,
+      64,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 65536000,
+      "fp16": 32768000
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_latent_bytes": null,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.585,
+      "f1": 0.7894288979645536,
+      "nll_token": 13.715866133954693
+    },
+    "wall_clock_sec": 39.93326807022095
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll": 7.68116203115679,
+      "first_token_top1": 0.044,
+      "first_token_top5": 0.083,
+      "nll_token": 7.68116203115679
+    },
+    "wall_clock_sec": 11.922912836074829
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 64,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0
+    },
+    "wall_clock_sec": 16.504149198532104
+  },
+  "joint": {
+    "em": null,
+    "f1": null,
+    "agreement": null,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  },
+  "debug": {
+    "llama": {
+      "latent_anchor_text": "Answer: "
+    },
+    "settings": {
+      "latent_anchor_mode": "chat",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.1,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "yes",
+      "decode": {
+        "min_new_tokens": 1,
+        "eos_ban_steps": 0,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "dataset": "squad"
+}
