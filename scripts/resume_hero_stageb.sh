@@ -8,8 +8,12 @@ set -euo pipefail
 # It applies OOM fixes and increases acceptance pressure for better quality.
 #
 # Key changes from original run:
+# OOM fixes:
 # - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (fix fragmentation)
-# - KD_TEACHER_CHUNK=1 (reduce memory per chunk)
+# - KD_TEACHER_CHUNK=1 (reduce memory per chunk in latent mode)
+# Performance improvements:
+# - TEXT_TEACHER_CHUNK=4 (speed up warm-up 4× by batching text teacher)
+# Quality improvements:
 # - FIRST_TOKEN_CE_WEIGHT_STAGEB: 9.0 → 11.0 (increase acceptance pressure)
 # - KD_WEIGHT_STAGEB: 1.0 → 0.5 (reduce competing gradients, free memory)
 # - Resume from runs/hero/ckpt_stageb checkpoint
@@ -76,8 +80,8 @@ GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
 export TOKENIZERS_PARALLELISM="false"
-export TEXT_TEACHER_CHUNK="${TEXT_TEACHER_CHUNK:-1}"
-export KD_TEACHER_CHUNK="${KD_TEACHER_CHUNK:-1}"  # REDUCED from 2 to 1 for OOM fix
+export TEXT_TEACHER_CHUNK="${TEXT_TEACHER_CHUNK:-4}"  # INCREASED from 1 to 4 for speed (warm-up)
+export KD_TEACHER_CHUNK="${KD_TEACHER_CHUNK:-1}"  # Keep at 1 for OOM safety (latent mode)
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
@@ -150,7 +154,10 @@ echo "Remaining epochs: $EPOCHS_STAGEB" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 echo "OOM fixes applied:" | tee -a "$LOG"
 echo "  - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" | tee -a "$LOG"
-echo "  - KD_TEACHER_CHUNK=1 (reduced from 2)" | tee -a "$LOG"
+echo "  - KD_TEACHER_CHUNK=1 (latent mode, OOM safety)" | tee -a "$LOG"
+echo "" | tee -a "$LOG"
+echo "Performance improvements:" | tee -a "$LOG"
+echo "  - TEXT_TEACHER_CHUNK=4 (increased from 1, 4× faster warm-up)" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 echo "Quality improvements:" | tee -a "$LOG"
 echo "  - FIRST_TOKEN_CE_WEIGHT_STAGEB=11.0 (increased from 9.0)" | tee -a "$LOG"
