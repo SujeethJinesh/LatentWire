@@ -1,0 +1,42 @@
+
+>>> Combination 1: m64_dz256_rl2_rh4
+    RUN_TAG=smoke
+
+=== CUDA preflight ===
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+
+=== Stage A: Llama latent fit ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1705.69it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:35, 11.71s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:21<00:21, 10.68s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:31<00:10, 10.28s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:33<00:00,  7.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:33<00:00,  8.43s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+trainable params: 41,943,040 || all params: 8,072,204,288 || trainable%: 0.5196
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+[INFO] llama anchor tokens: 3
+⚠️  No valid checkpoint found to resume; starting fresh.
+[warmup] alternating text/latent for first 40 steps
+Epoch 1/4
+[warmup] step=0 mode=text (warm-up)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  1/40 | (warm-up text) | align=0.0002 | text_tf=14.4855 | latent_scale=0.00
+[warmup] step=1 mode=text (warm-up)
+  step  2/40 | (warm-up text) | align=0.0002 | text_tf=16.1272 | latent_scale=0.01
+[warmup] step=2 mode=text (warm-up)
+  step  3/40 | (warm-up text) | align=0.0002 | text_tf=15.7793 | latent_scale=0.03
+[warmup] step=3 mode=text (warm-up)
+  step  4/40 | (warm-up text) | align=0.0002 | text_tf=14.5327 | latent_scale=0.04
+[warmup] step=4 mode=text (warm-up)
+  step  5/40 | (warm-up text) | align=0.0002 | text_tf=13.0389 | latent_scale=0.05
+[warmup] step=5 mode=text (warm-up)
+  step  6/40 | (warm-up text) | align=0.0002 | text_tf=15.1051 | latent_scale=0.06
+[warmup] step=6 mode=text (warm-up)
+  step  7/40 | (warm-up text) | align=0.0002 | text_tf=16.4085 | latent_scale=0.07
+[warmup] step=7 mode=text (warm-up)
+  step  8/40 | (warm-up text) | align=0.0002 | text_tf=13.0293 | latent_scale=0.09
