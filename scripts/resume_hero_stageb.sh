@@ -17,7 +17,7 @@ set -euo pipefail
 # - FIRST_TOKEN_CE_WEIGHT_STAGEB: 9.0 → 11.0 (increase acceptance pressure)
 # - KD_WEIGHT_STAGEB: 1.0 → 0.5 (reduce competing gradients, free memory)
 # - Resume from runs/hero/ckpt_stageb checkpoint
-# - Remaining epochs: 7 epochs from epoch 3
+# - Remaining epochs: 6 epochs (resumes after epoch 4 completes, runs epochs 5-10)
 #
 # Usage:
 #   bash scripts/resume_hero_stageb.sh
@@ -31,7 +31,7 @@ export PYTORCH_ENABLE_MPS_FALLBACK=1
 
 # Hero run configuration (same as original)
 TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
-EPOCHS_STAGEB=${EPOCHS_STAGEB:-7}  # Remaining epochs from epoch 3
+EPOCHS_STAGEB=${EPOCHS_STAGEB:-6}  # Remaining epochs from epoch 4 (after current epoch completes)
 SAMPLES="${SAMPLES:-1000}"
 
 # Stage B hyperparameters - INCREASED acceptance pressure for better quality
@@ -150,7 +150,7 @@ echo "=== Resume Hero Stage B Training ===" | tee "$LOG"
 echo "Run tag: $RUN_TAG" | tee -a "$LOG"
 echo "Resuming from checkpoint: $CHECKPOINT_BASE" | tee -a "$LOG"
 echo "Saving to: $SAVE_DIR" | tee -a "$LOG"
-echo "Remaining epochs: $EPOCHS_STAGEB" | tee -a "$LOG"
+echo "Remaining epochs: $EPOCHS_STAGEB (epochs 5-10)" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 echo "OOM fixes applied:" | tee -a "$LOG"
 echo "  - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" | tee -a "$LOG"
@@ -167,7 +167,7 @@ echo "" | tee -a "$LOG"
 # CUDA preflight check
 python3 -c "import os, torch; print('torch:', torch.__version__, 'cuda:', torch.version.cuda, 'available:', torch.cuda.is_available()); print('CUDA_VISIBLE_DEVICES:', os.getenv('CUDA_VISIBLE_DEVICES')); print('PYTORCH_CUDA_ALLOC_CONF:', os.getenv('PYTORCH_CUDA_ALLOC_CONF'))" 2>&1 | tee -a "$LOG"
 
-echo -e "\n=== Stage B Resume: Llama prefix training (epochs 4-10) ===\n" | tee -a "$LOG"
+echo -e "\n=== Stage B Resume: Llama prefix training (epochs 5-10) ===\n" | tee -a "$LOG"
 
 steps_per_epoch_stageb=$(( (TRAIN_SAMPLES_STAGEB + BATCH_SIZE_STAGEB - 1) / BATCH_SIZE_STAGEB ))
 save_every_stageb=$SAVE_EVERY_STAGEB
