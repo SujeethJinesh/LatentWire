@@ -82,3 +82,28 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   step  23/445 | (warm-up text) | align=0.0003 | text_tf=10.1429 | latent_scale=0.22
   step  24/445 | (warm-up text) | align=0.0003 | text_tf=9.7617 | latent_scale=0.22
   step  25/445 | (warm-up text) | align=0.0003 | text_tf=10.0703 | latent_scale=0.22
+  step  26/445 | (warm-up text) | align=0.0003 | text_tf=9.8643 | latent_scale=0.22
+  step  27/445 | (warm-up text) | align=0.0003 | text_tf=10.2411 | latent_scale=0.22
+  step  28/445 | (warm-up text) | align=0.0003 | text_tf=9.7702 | latent_scale=0.22
+  step  29/445 | (warm-up text) | align=0.0003 | text_tf=10.1698 | latent_scale=0.23
+  step  30/445 | (warm-up text) | align=0.0003 | text_tf=9.9520 | latent_scale=0.23
+  step  30/445 | grad_norm=0.00 | sec/step~7.04 | keep=0.50 | K=8 | llama(T): tf=2.4567 first=2.1841 kCE=2.6992 KD=0.0000 acc=0.000 state=9.4326 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=7.7149e-10 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  31/445 | (warm-up text) | align=0.0003 | text_tf=9.8542 | latent_scale=0.23
+  step  32/445 | (warm-up text) | align=0.0003 | text_tf=10.5283 | latent_scale=0.23
+  step  33/445 | (warm-up text) | align=0.0003 | text_tf=9.6906 | latent_scale=0.23
+  step  34/445 | (warm-up text) | align=0.0003 | text_tf=9.8076 | latent_scale=0.23
+  step  35/445 | (warm-up text) | align=0.0003 | text_tf=10.2855 | latent_scale=0.23
+  step  36/445 | (warm-up text) | align=0.0003 | text_tf=9.9721 | latent_scale=0.23
+  step  37/445 | (warm-up text) | align=0.0003 | text_tf=9.0692 | latent_scale=0.23
+  step  38/445 | (warm-up text) | align=0.0003 | text_tf=9.2326 | latent_scale=0.23
+  step  39/445 | (warm-up text) | align=0.0003 | text_tf=8.9431 | latent_scale=0.23
+  step  40/445 | (warm-up text) | align=0.0003 | text_tf=9.0622 | latent_scale=0.24
+  step  40/445 | grad_norm=0.00 | sec/step~6.91 | keep=0.50 | K=8 | llama(T): tf=2.4538 first=2.0946 kCE=2.7182 KD=0.0000 acc=0.028 state=9.1906 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.5476e-11 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  41/445 | (warm-up text) | align=0.0003 | text_tf=8.9199 | latent_scale=0.24
+  step  42/445 | (warm-up text) | align=0.0003 | text_tf=9.1201 | latent_scale=0.24
+  step  43/445 | (warm-up text) | align=0.0003 | text_tf=8.9576 | latent_scale=0.24
+  step  44/445 | (warm-up text) | align=0.0003 | text_tf=9.0216 | latent_scale=0.24
+  step  45/445 | (warm-up text) | align=0.0003 | text_tf=9.3301 | latent_scale=0.24
+  step  46/445 | (warm-up text) | align=0.0003 | text_tf=8.7801 | latent_scale=0.24
+  step  47/445 | (warm-up text) | align=0.0003 | text_tf=8.8154 | latent_scale=0.24
+  step  48/445 | (warm-up text) | align=0.0003 | text_tf=9.5137 | latent_scale=0.24
