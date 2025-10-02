@@ -99,20 +99,22 @@ GPU_MEM_GIB="${GPU_MEM_GIB:-70}"
 SAVE_EVERY_STAGEB="${SAVE_EVERY_STAGEB:-0}"
 
 # Checkpoint paths
+ORIGINAL_CHECKPOINT="${CHECKPOINT_BASE:-runs/hero/ckpt_stageb}"
 SAVE_DIR="${SAVE_DIR:-runs/${RUN_TAG}/ckpt_stageb}"
 LOG="runs/${RUN_TAG}/pipeline_$(date +%Y%m%d_%H%M%S).log"
 DIAGNOSTIC_LOG="runs/${RUN_TAG}/diagnostics.jsonl"
 
 mkdir -p "runs/${RUN_TAG}"
 
-# Resume logic: If hero_resume checkpoint exists, use it; otherwise use original hero checkpoint
-if [ -f "${SAVE_DIR}/state.pt" ]; then
-  RESUME_FROM="${SAVE_DIR}"
-  echo "Found existing checkpoint in ${SAVE_DIR}, resuming from there"
-else
-  RESUME_FROM="${CHECKPOINT_BASE:-runs/hero/ckpt_stageb}"
-  echo "No existing checkpoint found, will resume from original: ${RESUME_FROM}"
+# Resume logic: Copy original checkpoint to save_dir if save_dir is empty
+# This allows --auto_resume to find it on first run, and find the latest on subsequent runs
+if [ ! -f "${SAVE_DIR}/state.pt" ]; then
+  echo "No checkpoint in ${SAVE_DIR}, copying from ${ORIGINAL_CHECKPOINT}..."
+  mkdir -p "${SAVE_DIR}"
+  cp -r "${ORIGINAL_CHECKPOINT}"/* "${SAVE_DIR}/" 2>/dev/null || true
+  echo "Copied original checkpoint to ${SAVE_DIR}"
 fi
+echo "Will use --auto_resume to find latest checkpoint in ${SAVE_DIR}"
 
 COMMON_ARGS=(
   --models llama
@@ -163,8 +165,7 @@ WARMUP_FLAG=(--kd_skip_text)
 
 echo "=== Resume Hero Stage B Training (Schedule Fix) ===" | tee "$LOG"
 echo "Run tag: $RUN_TAG" | tee -a "$LOG"
-echo "Resuming from checkpoint: $RESUME_FROM" | tee -a "$LOG"
-echo "Saving to: $SAVE_DIR" | tee -a "$LOG"
+echo "Checkpoint directory: $SAVE_DIR (using --auto_resume)" | tee -a "$LOG"
 echo "Epochs: $EPOCHS_STAGEB (extended for consolidation)" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 echo "SCHEDULE FIXES (based on v1 analysis):" | tee -a "$LOG"
@@ -199,7 +200,6 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   "${COMMON_ARGS[@]}" \
   --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
   --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps "$GRAD_ACCUM_STAGEB" \
-  --resume_from "$RESUME_FROM" \
   --save_dir "$SAVE_DIR" --auto_resume --save_training_stats \
   --use_prefix --prefix_tokens "$DEEP_PREFIX_LEN" --prefix_projection --peft_prefix_all_layers yes \
   --train_append_bos_after_prefix yes \
