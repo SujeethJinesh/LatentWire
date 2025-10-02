@@ -1,0 +1,22 @@
+=== Resume Hero Stage B Training (Schedule Fix) ===
+Run tag: hero_resume
+Resuming from checkpoint: runs/hero/ckpt_stageb
+Saving to: runs/hero_resume/ckpt_stageb
+Epochs: 8 (extended for consolidation)
+
+SCHEDULE FIXES (based on v1 analysis):
+  - LATENT_KEEP_END: 1.0 → 0.85 (freeze at sweet spot)
+  - EPOCHS extended to 8 (consolidate with frozen dropout)
+  - Peak checkpointing: train.py saves '_best' automatically
+
+Analysis showed peak at keep_prob=0.6-0.85:
+  - Peak: 19.4% first_acc at keep_prob=0.613
+  - 26 steps achieved ≥10% (all at keep_prob 0.55-0.82)
+  - Final eval (keep_prob=1.0) only 4.4% - model never learned full latents
+
+Retained from v1:
+  - FIRST_TOKEN_CE_WEIGHT=11.0
+  - KD_WEIGHT=0.5
+  - OOM fixes: expandable_segments, KD_TEACHER_CHUNK=1
+  - Performance: TEXT_TEACHER_CHUNK=4
+
