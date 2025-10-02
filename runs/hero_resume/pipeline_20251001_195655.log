@@ -65,3 +65,5 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   step  9/445 | (warm-up text) | align=0.0003 | text_tf=10.5088 | latent_scale=0.21
 [warmup] step=9 mode=text (warm-up)
   step  10/445 | (warm-up text) | align=0.0003 | text_tf=10.7101 | latent_scale=0.21
+  step  10/445 | grad_norm=0.00 | sec/step~6.97 | keep=0.50 | K=8 | llama(T): tf=2.5315 first=3.2240 kCE=2.5518 KD=0.0000 acc=0.000 state=8.4681 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=0.0000e+00 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  11/445 | (warm-up text) | align=0.0003 | text_tf=10.8913 | latent_scale=0.21
