@@ -1,0 +1,15 @@
+=== Evaluating Hero Best Checkpoint ===
+Checkpoint: runs/hero_resume/ckpt_stageb_best
+Dataset: squad
+Samples: 1000
+Output: runs/hero_resume/eval_best_20251002_134629
+
+=== CUDA preflight ===
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+
+=== Running Evaluation ===
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 16, in <module>
+    from latentwire.models import (
+ModuleNotFoundError: No module named 'latentwire'
