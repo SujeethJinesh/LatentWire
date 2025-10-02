@@ -2,7 +2,10 @@
 set -euo pipefail
 
 # resume_hero_stageb.sh
-# Resume Stage B training with schedule fixes for dropout retention
+# Resume/Continue Stage B training with schedule fixes for dropout retention
+#
+# This script can be run multiple times - it will automatically resume from the latest
+# checkpoint in runs/hero_resume/ckpt_stageb and continue training until 8 epochs total.
 #
 # Based on v1 analysis showing peak performance (19.4% first_acc) at keep_prob=0.6-0.85,
 # with regression when annealing to 1.0. This is NOT an architecture limit—schedule issue.
@@ -19,10 +22,18 @@ set -euo pipefail
 # Schedule fixes (based on v1 hero_resume analysis):
 # - LATENT_KEEP_END: 1.0 → 0.85 (freeze dropout at sweet spot)
 # - EPOCHS_STAGEB: 6 → 8 (consolidate with frozen dropout)
-# - Peak checkpointing: train.py now saves "_best" checkpoint automatically
+# - Peak checkpointing: train.py now saves "_best" checkpoint with LoRA/Prefix weights
+#
+# IMPORTANT: Peak checkpoint bug was fixed in train.py on 2025-10-02 to save LoRA/Prefix
+# weights. Previous _best checkpoint is invalid. Run this script to capture new peak.
 #
 # Usage:
 #   bash scripts/resume_hero_stageb.sh
+#
+# The script will:
+# - Resume from latest checkpoint in runs/hero_resume/ckpt_stageb
+# - Continue training until 8 epochs complete
+# - Save new peak checkpoints with complete LoRA/Prefix weights to ckpt_stageb_best
 
 RUN_TAG="${RUN_TAG:-hero_resume}"
 BASE_RUN_TAG="$RUN_TAG"

@@ -2185,6 +2185,23 @@ def main():
                     if latent_refiner is not None:
                         artifacts["refiner.pt"] = latent_refiner.state_dict()
                     save_latest_checkpoint(best_save_dir, artifacts, pre_prune=False, post_prune=False, verbose=False)
+
+                    # Save LoRA and Prefix-tuning weights (critical for proper evaluation)
+                    try:
+                        from peft import PeftModel  # type: ignore
+                        if isinstance(getattr(llama, "model", None), PeftModel):
+                            if args.use_lora:
+                                llama.model.save_pretrained(os.path.join(best_save_dir, "lora_llama"))
+                            if args.use_prefix:
+                                llama.model.save_pretrained(os.path.join(best_save_dir, "prefix_llama"))
+                        if isinstance(getattr(qwen, "model", None), PeftModel):
+                            if args.use_lora:
+                                qwen.model.save_pretrained(os.path.join(best_save_dir, "lora_qwen"))
+                            if args.use_prefix:
+                                qwen.model.save_pretrained(os.path.join(best_save_dir, "prefix_qwen"))
+                    except ImportError:
+                        pass
+
                     print(f"  🌟 NEW PEAK: first_acc={best_first_acc:.1%} at step {global_step} → saved to {best_save_dir}")
 
             # ---- Periodic checkpoint: save + prune

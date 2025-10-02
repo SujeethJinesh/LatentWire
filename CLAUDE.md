@@ -4,6 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands for Development
 
+### Important Note on Training Infrastructure
+**Training runs on a remote server** - checkpoints, logs, and diagnostics are saved there. When analyzing training progress locally, only the synced log files (diagnostics.jsonl, pipeline_*.log) are available. Checkpoint files themselves remain on the training server.
+
 ### Running Training & Evaluation Pipeline
 ```bash
 # Main pipeline script - handles training and evaluation
