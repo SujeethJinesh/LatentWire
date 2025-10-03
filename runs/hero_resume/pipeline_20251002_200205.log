@@ -1,0 +1,79 @@
+=== Resume Hero Stage B Training (Schedule Fix) ===
+Run tag: hero_resume
+Checkpoint directory: runs/hero_resume/ckpt_stageb (using --auto_resume)
+Epochs: 8 (extended for consolidation)
+
+SCHEDULE FIXES (based on v1 analysis):
+  - LATENT_KEEP_END: 1.0 → 0.85 (freeze at sweet spot)
+  - EPOCHS extended to 8 (consolidate with frozen dropout)
+  - Peak checkpointing: train.py saves '_best' automatically
+
+Analysis showed peak at keep_prob=0.6-0.85:
+  - Peak: 19.4% first_acc at keep_prob=0.613
+  - 26 steps achieved ≥10% (all at keep_prob 0.55-0.82)
+  - Final eval (keep_prob=1.0) only 4.4% - model never learned full latents
+
+Retained from v1:
+  - FIRST_TOKEN_CE_WEIGHT=11.0
+  - KD_WEIGHT=0.5
+  - OOM fixes: expandable_segments, KD_TEACHER_CHUNK=1
+  - Performance: TEXT_TEACHER_CHUNK=4
+
+Archiving existing diagnostics to runs/hero_resume/diagnostics_20251002_200205.jsonl.bak
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+=== Stage B: Training with frozen dropout (keep_prob→0.85) ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2840.23it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.38s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.21s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.23s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.19it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.01it/s]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+trainable params: 41,943,040 || all params: 8,072,204,288 || trainable%: 0.5196
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/peft/mapping_func.py:73: UserWarning: You are trying to modify a model with PEFT for a second time. If you want to reload the model with a different config, make sure to call `.unload()` before.
+  warnings.warn(
+trainable params: 272,801,792 || all params: 8,345,006,080 || trainable%: 3.2690
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+[INFO] llama anchor tokens: 3
+⏪ Resuming from: runs/hero_resume/ckpt_stageb/state.pt
+   -> loaded encoder/adapters/deep_prefix/refiner FROM state.pt
+[DEBUG] Optimizer state devices:
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+  param_dev=cuda:0 state_devs={'step': 'cuda:0', 'exp_avg': 'cuda:0', 'exp_avg_sq': 'cuda:0'}
+   -> restored optimizer state
+   -> restored RNG state
+   -> start_epoch=0, global_step=445
+[warmup] alternating text/latent for first 890 steps
+Epoch 1/8
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  1/445 | (warm-up text) | align=0.0003 | text_tf=11.3445 | latent_scale=0.60
+  step  2/445 | (warm-up text) | align=0.0002 | text_tf=10.7604 | latent_scale=0.60
+  step  3/445 | (warm-up text) | align=0.0002 | text_tf=10.6791 | latent_scale=0.60
+  step  4/445 | (warm-up text) | align=0.0002 | text_tf=11.3121 | latent_scale=0.60
+  step  5/445 | (warm-up text) | align=0.0002 | text_tf=10.3264 | latent_scale=0.60
+  step  6/445 | (warm-up text) | align=0.0002 | text_tf=10.3952 | latent_scale=0.60
+  step  7/445 | (warm-up text) | align=0.0002 | text_tf=10.6840 | latent_scale=0.61
+  step  8/445 | (warm-up text) | align=0.0003 | text_tf=11.2707 | latent_scale=0.61
+  step  9/445 | (warm-up text) | align=0.0002 | text_tf=10.5088 | latent_scale=0.61
+  step  10/445 | (warm-up text) | align=0.0002 | text_tf=10.7101 | latent_scale=0.61
+  step  10/445 | grad_norm=0.00 | sec/step~6.63 | keep=0.50 | K=8 | llama(T): tf=7.3976 first=9.4214 kCE=7.4569 KD=0.0000 acc=0.000 state=24.7460 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.1159e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0005 rms_cal~0.0106 embed_rms~0.01057]
+  step  11/445 | (warm-up text) | align=0.0002 | text_tf=10.8913 | latent_scale=0.61
+  step  12/445 | (warm-up text) | align=0.0002 | text_tf=10.8126 | latent_scale=0.61
+  step  13/445 | (warm-up text) | align=0.0002 | text_tf=10.0443 | latent_scale=0.61
+  step  14/445 | (warm-up text) | align=0.0002 | text_tf=9.5773 | latent_scale=0.61
+  step  15/445 | (warm-up text) | align=0.0002 | text_tf=10.9945 | latent_scale=0.61
+  step  16/445 | (warm-up text) | align=0.0002 | text_tf=10.4008 | latent_scale=0.61
+  step  17/445 | (warm-up text) | align=0.0002 | text_tf=10.7954 | latent_scale=0.61
+  step  18/445 | (warm-up text) | align=0.0002 | text_tf=10.5127 | latent_scale=0.62
+  step  19/445 | (warm-up text) | align=0.0002 | text_tf=11.3405 | latent_scale=0.62
