@@ -1,0 +1,4 @@
+group,model,EM,F1,NLL/token,wall_clock_sec,compression,payload_bytes,samples,M,token_budget_mode,token_budget_k,dataset
+text,llama,0.585,0.7894288979645536,13.715866133954693,36.83497953414917,3.836046875,65536000,1000,64,content_only,64,squad
+latent,llama,0.0,0.0,8.685344561134897,11.306361675262451,3.836046875,65536000,1000,64,content_only,64,squad
+token_budget,llama,0.0,0.0,,7.589957237243652,3.836046875,65536000,1000,64,content_only,64,squad
