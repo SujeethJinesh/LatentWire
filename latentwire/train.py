@@ -1467,8 +1467,11 @@ def main():
         return base + (peak - base) * cosine
 
     # Peak checkpointing: track best first_acc for latent mode
+    # Use exponential moving average (EMA) to smooth out batch-level noise
     best_first_acc = -1.0
     best_checkpoint_step = -1
+    first_acc_ema = 0.0  # Exponential moving average of first_acc
+    ema_alpha = 0.1      # Smoothing factor (0.1 = 10% current, 90% history)
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
@@ -2084,10 +2087,16 @@ def main():
             # ---- Peak checkpointing: save when first_acc improves in latent mode
             if training_mode == "latent" and model_contexts:
                 # Get first_acc from first model (typically llama)
-                current_first_acc = float(_to_float(per_model_losses[model_contexts[0].name].get("first_acc", 0.0)))
-                if current_first_acc > best_first_acc and current_first_acc >= 0.10:
+                current_first_acc_raw = float(_to_float(per_model_losses[model_contexts[0].name].get("first_acc", 0.0)))
+
+                # Update exponential moving average to smooth out batch-level noise
+                # EMA reduces false peaks from lucky batches (e.g., 9/36 correct = 25% but not sustained)
+                first_acc_ema = ema_alpha * current_first_acc_raw + (1.0 - ema_alpha) * first_acc_ema
+
+                # Use smoothed EMA for peak detection instead of noisy batch-level accuracy
+                if first_acc_ema > best_first_acc and first_acc_ema >= 0.10:
                     # New peak detected (and above 10% threshold)
-                    best_first_acc = current_first_acc
+                    best_first_acc = first_acc_ema
                     best_checkpoint_step = global_step
 
                     # Save "best" checkpoint
@@ -2202,7 +2211,7 @@ def main():
                     except ImportError:
                         pass
 
-                    print(f"  🌟 NEW PEAK: first_acc={best_first_acc:.1%} at step {global_step} → saved to {best_save_dir}")
+                    print(f"  🌟 NEW PEAK: first_acc_ema={best_first_acc:.1%} (raw_batch={current_first_acc_raw:.1%}) at step {global_step} → saved to {best_save_dir}")
 
             # ---- Periodic checkpoint: save + prune
             if args.save_every and (global_step % args.save_every == 0):

@@ -196,6 +196,14 @@ echo "  - OOM fixes: expandable_segments, KD_TEACHER_CHUNK=1" | tee -a "$LOG"
 echo "  - Performance: TEXT_TEACHER_CHUNK=4" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 
+# Archive old diagnostics to avoid pollution from multiple runs
+DIAGNOSTIC_LOG="runs/${RUN_TAG}/diagnostics.jsonl"
+if [ -f "$DIAGNOSTIC_LOG" ]; then
+  BACKUP_NAME="runs/${RUN_TAG}/diagnostics_$(date +%Y%m%d_%H%M%S).jsonl.bak"
+  echo "Archiving existing diagnostics to $BACKUP_NAME" | tee -a "$LOG"
+  mv "$DIAGNOSTIC_LOG" "$BACKUP_NAME"
+fi
+
 # CUDA preflight check
 python3 -c "import os, torch; print('torch:', torch.__version__, 'cuda:', torch.version.cuda, 'available:', torch.cuda.is_available()); print('CUDA_VISIBLE_DEVICES:', os.getenv('CUDA_VISIBLE_DEVICES')); print('PYTORCH_CUDA_ALLOC_CONF:', os.getenv('PYTORCH_CUDA_ALLOC_CONF'))" 2>&1 | tee -a "$LOG"
 

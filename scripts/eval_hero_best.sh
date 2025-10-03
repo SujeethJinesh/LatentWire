@@ -49,6 +49,7 @@ fi
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --models llama \
   --ckpt "$CKPT_DIR" \
+  --out_dir "$EVAL_DIR" \
   --llama_id "$LLAMA_ID" \
   --samples "$SAMPLES" \
   --dataset "$DATASET" \
@@ -65,8 +66,14 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --token_budget_k "$LATENT_LEN" \
   2>&1 | tee -a "$LOG"
 
-echo -e "\n✓ Evaluation complete. Results saved to: $EVAL_DIR\n" | tee -a "$LOG"
-echo "Key files:" | tee -a "$LOG"
-echo "  - Metrics: ${EVAL_DIR}/metrics.json" | tee -a "$LOG"
-echo "  - Predictions: ${EVAL_DIR}/predictions.jsonl" | tee -a "$LOG"
-echo "  - Log: ${LOG}" | tee -a "$LOG"
+echo -e "\n✓ Evaluation complete.\n" | tee -a "$LOG"
+if [ -f "${EVAL_DIR}/metrics.json" ]; then
+  echo "Results saved to: $EVAL_DIR" | tee -a "$LOG"
+  echo "Key files:" | tee -a "$LOG"
+  echo "  - Metrics: ${EVAL_DIR}/metrics.json" | tee -a "$LOG"
+  echo "  - Predictions: ${EVAL_DIR}/predictions.jsonl" | tee -a "$LOG"
+  echo "  - Log: ${LOG}" | tee -a "$LOG"
+else
+  echo "[WARN] Metrics files not created - eval may have failed" | tee -a "$LOG"
+  echo "Check log: ${LOG}" | tee -a "$LOG"
+fi
