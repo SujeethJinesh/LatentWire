@@ -2094,8 +2094,11 @@ def main():
                 first_acc_ema = ema_alpha * current_first_acc_raw + (1.0 - ema_alpha) * first_acc_ema
 
                 # Use smoothed EMA for peak detection instead of noisy batch-level accuracy
-                if first_acc_ema > best_first_acc and first_acc_ema >= 0.10:
-                    # New peak detected (and above 10% threshold)
+                if first_acc_ema > best_first_acc and first_acc_ema >= 0.05:
+                    # New peak detected (and above 5% threshold)
+                    # Lowered from 10% to 5% because EMA takes hundreds of steps to reach 10% from 0.0
+                    # even when model is learning. 5% threshold catches peaks earlier while still
+                    # using smoothing to avoid lucky-batch false peaks.
                     best_first_acc = first_acc_ema
                     best_checkpoint_step = global_step
 
