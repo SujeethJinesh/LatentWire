@@ -283,7 +283,6 @@ PY
           --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps "$GRAD_ACCUM_STAGEB" \
           --resume_from "$CKPT_STAGEA" \
           --save_dir "$CKPT_STAGEB" --auto_resume --no_load_optimizer --reset_epoch --save_training_stats \
-          --use_prefix --prefix_tokens "$DEEP_PREFIX_LEN" --prefix_projection --peft_prefix_all_layers yes \
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
           --latent_private_len "$LATENT_PRIVATE_LEN" \
