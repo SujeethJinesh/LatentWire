@@ -57,7 +57,7 @@ else
   # Ultra-fast smoke test: ~10 steps per epoch, 2 epochs each stage
   # Uses SAME hyperparameters as hero (100% accurate except duration)
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-240}  # 240 ÷ 24 batch = 10 steps/epoch
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-360}  # 360 ÷ 36 batch = 10 steps/epoch
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-240}  # 240 ÷ 24 batch = 10 steps/epoch
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-2}
   SAMPLES="${SAMPLES:-100}"
@@ -93,7 +93,7 @@ KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-$KD_WEIGHT_STAGEB_DEFAULT}"
 LATENT_LEN="${LATENT_LEN:-64}"
 D_Z="${D_Z:-256}"
 BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-24}"
-BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-36}"
+BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-24}"  # Reduced from 36 to prevent OOM with LoRA
 GRAD_ACCUM_STAGEA="${GRAD_ACCUM_STAGEA:-14}"
 GRAD_ACCUM_STAGEB="${GRAD_ACCUM_STAGEB:-12}"
 DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-100}"
@@ -199,6 +199,7 @@ for LATENT_LEN_CURRENT in "${LATENT_LEN_GRID[@]}"; do
 import os, torch
 print("torch:", torch.__version__, "cuda:", torch.version.cuda, "available:", torch.cuda.is_available())
 print("CUDA_VISIBLE_DEVICES:", os.getenv("CUDA_VISIBLE_DEVICES"))
+print("PYTORCH_CUDA_ALLOC_CONF:", os.getenv("PYTORCH_CUDA_ALLOC_CONF"))
 PY
 
         if [[ $USE_GIST_HEAD -eq 1 ]]; then
