@@ -183,6 +183,15 @@ for LATENT_LEN_CURRENT in "${LATENT_LEN_GRID[@]}"; do
         DIAGNOSTIC_LOG="${RUN_DIR}/diagnostics.jsonl"
         : > "$DIAGNOSTIC_LOG"
 
+        # Start GPU monitoring in background
+        GPU_LOG="${RUN_DIR}/gpu_monitor.log"
+        echo "Starting GPU monitoring → $GPU_LOG" | tee -a "$LOG"
+        bash scripts/monitor_gpu.sh "$GPU_LOG" 10 > /dev/null 2>&1 &
+        GPU_MONITOR_PID=$!
+
+        # Ensure GPU monitoring stops when script exits (success or error)
+        trap "echo 'Stopping GPU monitoring (PID $GPU_MONITOR_PID)' | tee -a '$LOG'; kill $GPU_MONITOR_PID 2>/dev/null || true" EXIT
+
         COMMON_ARGS=(
           "${COMMON_ARGS_BASE[@]}"
           --latent_len "$LATENT_LEN_CURRENT"
@@ -323,7 +332,10 @@ PY
           --token_budget_mode content_only --token_budget_k "$LATENT_LEN_CURRENT" \
           2>&1 | tee -a "$LOG"
 
-        echo -e "\n✓ Llama-only pipeline complete for $RUN_TAG. Logs: $LOG\n"
+        echo -e "\n✓ Llama-only pipeline complete for $RUN_TAG"
+        echo -e "  Training log: $LOG"
+        echo -e "  GPU monitor:  $GPU_LOG"
+        echo -e ""
       done
     done
   done
