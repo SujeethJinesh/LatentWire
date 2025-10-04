@@ -2,6 +2,8 @@ Starting GPU monitoring → runs/smoke/gpu_monitor.log
 
 >>> Combination 1: m64_dz256_rl2_rh4
     RUN_TAG=smoke
+    EPOCHS_STAGEA=2 | EPOCHS_STAGEB=4
+    WARMUP_TEXT_LATENT_EPOCHS_STAGEB=2.0
 
 === CUDA preflight ===
 torch: 2.4.0+cu121 cuda: 12.1 available: True
@@ -14,8 +16,8 @@ PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2953.74it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.75s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.77s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.75s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.39s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2943.89it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.08s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.77s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.73s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.41s/it]
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
 trainable params: 41,943,040 || all params: 8,072,204,288 || trainable%: 0.5196
 Llama hidden size: 4096
@@ -46,15 +48,15 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   step  9/10 | (warm-up text) | align=0.0002 | text_tf=14.9678 | latent_scale=0.40
 [warmup] step=9 mode=text (warm-up)
   step  10/10 | (warm-up text) | align=0.0002 | text_tf=14.8932 | latent_scale=0.45
-  step  10/10 | grad_norm=41.17 | sec/step~6.53 | keep=0.77 | K=8 | first_w=3.00 | llama(T): tf=6.6731 first=6.2913 kCE=6.5846 KD=0.0000 acc=0.000 state=6.6641 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.1511e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  10/10 | grad_norm=41.17 | sec/step~7.10 | keep=0.77 | K=8 | first_w=3.00 | llama(T): tf=6.6731 first=6.2913 kCE=6.5846 KD=0.0000 acc=0.000 state=6.6641 align=0.0002 latA=0.0000 latP=0.0000 | scale_pen(llama)=3.5527e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
 Epoch 2/2
-  step  10/10 | grad_norm=849.87 | sec/step~4.87 | keep=1.00 | K=8 | first_w=3.00 | llama(L): tf=40.9168 first=44.8583 kCE=55.0289 KD=82.0509 acc=0.000 state=14.2272 align=0.0000 latA=0.4989 latP=0.2468 | scale_pen(llama)=2.0464e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  10/10 | grad_norm=849.91 | sec/step~4.29 | keep=1.00 | K=8 | first_w=3.00 | llama(L): tf=40.9256 first=44.8583 kCE=55.0239 KD=82.0808 acc=0.000 state=14.2271 align=0.0000 latA=0.4989 latP=0.2468 | scale_pen(llama)=1.0267e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
 [checkpoint] Freed 3.5KB before save.
 [checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
 [checkpoint] Freed 0.0B after save (non-canonical).
 ✅ Saved latest checkpoint to runs/smoke/ckpt/stageA
 📝 Saved LoRA adapters for Llama
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.999975660443306, 'rms_mean_cal': 0.01057194583117962, 'embed_rms': 0.01057521253824234, 'count': 20}}
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.9999748259782791, 'rms_mean_cal': 0.01057194583117962, 'embed_rms': 0.01057521253824234, 'count': 20}}
 
 === Stage B: Llama prefix training + warm-up ===
 
@@ -62,8 +64,8 @@ Epoch 2/2
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 423.87it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.13s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.69s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.73s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.20s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.42s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3071.06it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.75s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.74s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.79s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.21s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.41s/it]
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
 trainable params: 41,943,040 || all params: 8,072,204,288 || trainable%: 0.5196
 Llama hidden size: 4096
@@ -75,7 +77,7 @@ Llama hidden size: 4096
    -> reset epoch/global_step to zero as requested
    -> start_epoch=0, global_step=0
 [warmup] alternating text/latent for first 20 steps
-Epoch 1/2
+Epoch 1/4
 [warmup] step=0 mode=text (warm-up)
 We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
@@ -98,25 +100,31 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   step  9/10 | (warm-up text) | align=0.0003 | text_tf=14.9678 | latent_scale=0.52
 [warmup] step=9 mode=text (warm-up)
   step  10/10 | (warm-up text) | align=0.0003 | text_tf=14.8932 | latent_scale=0.56
-  step  10/10 | grad_norm=167.20 | sec/step~6.39 | keep=0.58 | K=8 | llama(T): tf=10.0475 first=9.1063 kCE=13.8562 KD=0.0000 acc=0.000 state=13.1160 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=8.5301e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
-Epoch 2/2
-  step  1/10 | (warm-up text) | align=0.0003 | text_tf=13.6720 | latent_scale=0.60
-  step  2/10 | (warm-up text) | align=0.0003 | text_tf=11.7868 | latent_scale=0.64
-  step  3/10 | (warm-up text) | align=0.0003 | text_tf=14.0275 | latent_scale=0.68
-  step  4/10 | (warm-up text) | align=0.0003 | text_tf=13.6577 | latent_scale=0.72
-  step  5/10 | (warm-up text) | align=0.0003 | text_tf=16.7849 | latent_scale=0.76
-  step  6/10 | (warm-up text) | align=0.0003 | text_tf=13.3356 | latent_scale=0.80
-  step  7/10 | (warm-up text) | align=0.0003 | text_tf=13.4866 | latent_scale=0.84
-  step  8/10 | (warm-up text) | align=0.0003 | text_tf=13.8573 | latent_scale=0.88
-  step  9/10 | (warm-up text) | align=0.0003 | text_tf=12.0416 | latent_scale=0.92
-  step  10/10 | (warm-up text) | align=0.0003 | text_tf=12.7723 | latent_scale=0.96
-  step  10/10 | grad_norm=217.45 | sec/step~6.31 | keep=0.85 | K=8 | llama(T): tf=13.7297 first=11.7509 kCE=13.3152 KD=0.0000 acc=0.000 state=21.8378 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=4.8637e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  10/10 | grad_norm=167.28 | sec/step~6.55 | keep=0.52 | K=8 | llama(T): tf=10.0476 first=9.1091 kCE=13.8556 KD=0.0000 acc=0.000 state=13.1160 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=5.1159e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 2/4
+  step  1/10 | (warm-up text) | align=0.0003 | text_tf=13.6776 | latent_scale=0.60
+  step  2/10 | (warm-up text) | align=0.0003 | text_tf=11.7771 | latent_scale=0.64
+  step  3/10 | (warm-up text) | align=0.0003 | text_tf=14.0208 | latent_scale=0.68
+  step  4/10 | (warm-up text) | align=0.0003 | text_tf=13.6607 | latent_scale=0.72
+  step  5/10 | (warm-up text) | align=0.0003 | text_tf=16.7975 | latent_scale=0.76
+  step  6/10 | (warm-up text) | align=0.0003 | text_tf=13.3337 | latent_scale=0.80
+  step  7/10 | (warm-up text) | align=0.0003 | text_tf=13.4759 | latent_scale=0.84
+  step  8/10 | (warm-up text) | align=0.0003 | text_tf=13.8624 | latent_scale=0.88
+  step  9/10 | (warm-up text) | align=0.0003 | text_tf=11.9939 | latent_scale=0.92
+  step  10/10 | (warm-up text) | align=0.0003 | text_tf=12.7633 | latent_scale=0.96
+  step  10/10 | grad_norm=217.50 | sec/step~6.16 | keep=0.58 | K=8 | llama(T): tf=13.7323 first=11.7575 kCE=13.3149 KD=0.0000 acc=0.000 state=21.8377 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=1.4211e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 3/4
+  step  10/10 | grad_norm=111.04 | sec/step~4.92 | keep=0.69 | K=8 | llama(L): tf=11.9491 first=9.6444 kCE=14.2844 KD=24.8744 acc=0.042 state=23.7887 align=0.0000 latA=0.9902 latP=0.4930 | scale_pen(llama)=6.9633e-13 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 4/4
+[warmup] step=39 mode=text (tail)
+  step  10/10 | (tail text) | align=0.0003 | text_tf=9.2473 | latent_scale=1.00
+  step  10/10 | grad_norm=145.49 | sec/step~6.08 | keep=0.85 | K=8 | llama(T): tf=11.0855 first=8.8928 kCE=14.2481 KD=0.0000 acc=0.000 state=22.0619 align=0.0003 latA=0.0000 latP=0.0000 | scale_pen(llama)=2.9878e-12 | K=8 tau=2.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
 [checkpoint] Freed 3.5KB before save.
 [checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
 [checkpoint] Freed 0.0B after save (non-canonical).
 ✅ Saved latest checkpoint to runs/smoke/ckpt/stageB
 📝 Saved LoRA adapters for Llama
-📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.9999867588281631, 'rms_mean_cal': 0.010570609802380204, 'embed_rms': 0.010575930587947369, 'count': 20}}
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 0.9999940171837807, 'rms_mean_cal': 0.010571535234339536, 'embed_rms': 0.010575930587947369, 'count': 40}}
 
 === Stage C: Evaluation (Llama only) ===
 
@@ -129,8 +137,8 @@ Building encoder and computing Z...
 
 [Standard Evaluation Mode]
 (Use --sequential_eval to enable per-model encoder text auto-alignment.)
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2971.00it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.91s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.79s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.84s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.46s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2672.81it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.55s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.84s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.63s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.38s/it]
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
 ✓ Loaded deep prefix generator for llama
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
@@ -156,16 +164,16 @@ latent/text bytes (one-copy, fp16): n/a
 
 — Baseline: Text prompting
 Llama  EM: 0.550  F1: 0.794  |  NLL/token (gold): 13.435916301896434
-Wall clock: 6.67s
+Wall clock: 6.58s
 
 — Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 12.486155784928258
-       First-token acc: top1=0.030  top5=0.040
-Wall clock: 1.03s
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 10.930519671471021
+       First-token acc: top1=0.030  top5=0.070
+Wall clock: 1.15s
 
 — Token-budget baseline (mode: content_only)
 Llama  EM: 0.010  F1: 0.077
-Wall clock: 1.50s
+Wall clock: 1.44s
 
 — 2-LLM joint (rescored pick on latent runs)
 Joint metrics unavailable (single-model evaluation).
@@ -214,18 +222,18 @@ Joint metrics unavailable (single-model evaluation).
       "f1": 0.7943254477973284,
       "nll_token": 13.435916301896434
     },
-    "wall_clock_sec": 6.66939115524292
+    "wall_clock_sec": 6.584733247756958
   },
   "latent": {
     "llama": {
       "em": 0.0,
       "f1": 0.0,
-      "nll": 12.486155784928258,
+      "nll": 10.930519671471021,
       "first_token_top1": 0.03,
-      "first_token_top5": 0.04,
-      "nll_token": 12.486155784928258
+      "first_token_top5": 0.07,
+      "nll_token": 10.930519671471021
     },
-    "wall_clock_sec": 1.0326120853424072
+    "wall_clock_sec": 1.1503632068634033
   },
   "token_budget": {
     "mode": "content_only",
@@ -234,7 +242,7 @@ Joint metrics unavailable (single-model evaluation).
       "em": 0.01,
       "f1": 0.076877593783239
     },
-    "wall_clock_sec": 1.498002290725708
+    "wall_clock_sec": 1.4391131401062012
   },
   "joint": {
     "em": null,
@@ -269,4 +277,4 @@ Joint metrics unavailable (single-model evaluation).
   },
   "dataset": "squad"
 }
-Stopping GPU monitoring (PID 1335041)
+Stopping GPU monitoring (PID 1422390)
