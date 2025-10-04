@@ -59,7 +59,7 @@ else
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-240}  # 240 ÷ 24 batch = 10 steps/epoch
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-240}  # 240 ÷ 24 batch = 10 steps/epoch
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-2}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}  # 4 epochs: 2 warm-up + 2 latent (ensures LoRA training)
   SAMPLES="${SAMPLES:-100}"
   if [[ "$RUN_TAG" == llama_single_* ]]; then
     RUN_TAG="smoke"
