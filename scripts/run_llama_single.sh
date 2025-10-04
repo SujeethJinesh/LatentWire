@@ -54,27 +54,23 @@ if [[ $hero -eq 1 ]]; then
   fi
   BASE_RUN_TAG="$RUN_TAG"
 else
-  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-960}
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-1280}
-  EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}
-  SAMPLES="${SAMPLES:-400}"
+  # Ultra-fast smoke test: ~10 steps per epoch, 2 epochs each stage
+  # Uses SAME hyperparameters as hero (100% accurate except duration)
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-240}  # 240 ÷ 24 batch = 10 steps/epoch
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-360}  # 360 ÷ 36 batch = 10 steps/epoch
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-2}
+  SAMPLES="${SAMPLES:-100}"
   if [[ "$RUN_TAG" == llama_single_* ]]; then
     RUN_TAG="smoke"
   fi
 fi
 
-if [[ $hero -eq 1 ]]; then
-  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=2.0}"
-  : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
-  : "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=9.0}"
-  : "${LATENT_PRIVATE_LEN:=24}"
-else
-  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=1.0}"
-  : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
-  : "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=9.0}"
-  : "${LATENT_PRIVATE_LEN:=16}"
-fi
+# Use HERO hyperparameters for both smoke and hero (smoke is just shorter duration)
+: "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=2.0}"
+: "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
+: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=9.0}"
+: "${LATENT_PRIVATE_LEN:=24}"
 
 : "${FIRST_TOKEN_CE_WEIGHT_STAGEA:=3.0}"
 : "${FIRST_TOKEN_CE_PEAK_STAGEA:=3.0}"
