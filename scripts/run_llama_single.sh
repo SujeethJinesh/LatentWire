@@ -255,6 +255,7 @@ PY
         if [[ $hero -eq 1 && $save_every_stagea -le 0 ]]; then
           save_every_stagea=$steps_per_epoch_stagea
         fi
+        # NOTE: Stage A does NOT use LoRA - only encoder/adapter/deep_prefix training
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
@@ -279,7 +280,6 @@ PY
           --diagnostic_log "$DIAGNOSTIC_LOG" \
           --save_every "$save_every_stagea" \
           "${GIST_ARGS[@]}" \
-          "${LORA_ARGS[@]}" \
           "${WARMUP_FLAG[@]}" \
           2>&1 | tee -a "$LOG"
 

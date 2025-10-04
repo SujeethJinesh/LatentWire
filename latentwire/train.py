@@ -866,6 +866,36 @@ def main():
     def _collect_trainable(module: nn.Module) -> List[nn.Parameter]:
         return [p for p in module.parameters() if p.requires_grad]
 
+    def _count_params(module: nn.Module) -> tuple[int, int]:
+        """Returns (trainable_params, total_params)"""
+        trainable = sum(p.numel() for p in module.parameters() if p.requires_grad)
+        total = sum(p.numel() for p in module.parameters())
+        return trainable, total
+
+    def _compute_lora_weight_norms(model: nn.Module) -> dict[str, float]:
+        """Compute L2 norms of LoRA weights for diagnostic tracking"""
+        lora_norms = {}
+        try:
+            from peft import PeftModel
+            if isinstance(model, PeftModel):
+                for name, param in model.named_parameters():
+                    if 'lora_' in name and param.requires_grad:
+                        norm = param.data.norm(2).item()
+                        # Simplify name: "base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight" -> "L0_q_A"
+                        parts = name.split('.')
+                        layer_idx = next((p.replace('layers', 'L') for p in parts if 'layers' in p and parts[parts.index(p)+1].isdigit()), '')
+                        if layer_idx:
+                            layer_idx = layer_idx + parts[parts.index('layers')+1]
+                        module_name = next((p for p in parts if p in ['q_proj', 'k_proj', 'v_proj', 'o_proj', 'gate_proj', 'up_proj', 'down_proj']), '')
+                        module_name = module_name.replace('_proj', '')
+                        lora_type = next((p for p in parts if p in ['lora_A', 'lora_B']), '')
+                        lora_type = lora_type.replace('lora_', '')
+                        short_name = f"{layer_idx}_{module_name}_{lora_type}" if all([layer_idx, module_name, lora_type]) else name[-20:]
+                        lora_norms[short_name] = norm
+        except Exception:
+            pass
+        return lora_norms
+
     extra_llama_params: List[nn.Parameter] = []
     extra_qwen_params: List[nn.Parameter] = []
 
@@ -877,13 +907,24 @@ def main():
             "target_modules": args.lora_target_modules,
             "first_n": args.lora_firstN,
         }
+        print(f"\n🔧 Applying LoRA (r={lora_cfg['r']}, alpha={lora_cfg['alpha']})...")
         if llama is not None:
+            before_trainable, before_total = _count_params(llama.model)
+            print(f"   Llama BEFORE LoRA: {before_trainable:,} trainable / {before_total:,} total")
             llama.model = apply_lora_if_requested(llama.model, lora_cfg, args.llama_id)
+            after_trainable, after_total = _count_params(llama.model)
+            print(f"   Llama AFTER LoRA:  {after_trainable:,} trainable / {after_total:,} total")
+            print(f"   ✓ Added {after_trainable - before_trainable:,} LoRA parameters to Llama")
             extra_llama_params.extend(_collect_trainable(llama.model))
             llama.model.train()
             llama.input_embed = llama.model.get_input_embeddings()
         if qwen is not None:
+            before_trainable, before_total = _count_params(qwen.model)
+            print(f"   Qwen BEFORE LoRA: {before_trainable:,} trainable / {before_total:,} total")
             qwen.model = apply_lora_if_requested(qwen.model, lora_cfg, args.qwen_id)
+            after_trainable, after_total = _count_params(qwen.model)
+            print(f"   Qwen AFTER LoRA:  {after_trainable:,} trainable / {after_total:,} total")
+            print(f"   ✓ Added {after_trainable - before_trainable:,} LoRA parameters to Qwen")
             extra_qwen_params.extend(_collect_trainable(qwen.model))
             qwen.model.train()
             qwen.input_embed = qwen.model.get_input_embeddings()
@@ -2072,6 +2113,16 @@ def main():
                             "latent_prefix_align": _to_float(metrics.get("latent_prefix_align", 0.0)),
                             "gist": _to_float(metrics.get("gist", 0.0)),
                         }
+                        # Add LoRA weight norms if available
+                        if args.use_lora and ctx.wrapper.model is not None:
+                            lora_norms = _compute_lora_weight_norms(ctx.wrapper.model)
+                            if lora_norms:
+                                # Compute average norm across all LoRA weights for summary
+                                avg_lora_norm = sum(lora_norms.values()) / len(lora_norms) if lora_norms else 0.0
+                                diag_entry["models"][ctx.name]["lora_avg_norm"] = float(avg_lora_norm)
+                                # Store first few layer norms as examples
+                                example_norms = {k: v for k, v in list(lora_norms.items())[:3]}
+                                diag_entry["models"][ctx.name]["lora_examples"] = example_norms
                         for diag_name in grad_diag_components:
                             key = f"grad_{diag_name}"
                             if key in metrics:
