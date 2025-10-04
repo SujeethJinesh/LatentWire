@@ -903,22 +903,24 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "target_modules": cfg.get("lora_target_modules", "auto"),
         }
         for name, wrapper in wrappers.items():
-            try:
-                wrapper.model = apply_lora_if_requested(wrapper.model, lora_cfg, wrapper.cfg.model_id)
-            except Exception as exc:
-                print(f"[WARN] LoRA attach failed for {name}: {exc}")
-                continue
             lora_path = os.path.join(ckpt_dir, f"lora_{name}")
+
+            # Check for checkpoint first to avoid double PEFT wrapping
             if os.path.isdir(lora_path):
+                # Checkpoint exists - load directly without creating fresh adapters
                 try:
                     from peft import PeftModel
-
                     wrapper.model = PeftModel.from_pretrained(wrapper.model, lora_path).eval()
                     print(f"✓ Loaded LoRA adapters for {name}")
                 except Exception as exc:
                     print(f"[WARN] Failed to load LoRA adapters for {name}: {exc}")
             else:
-                print(f"[WARN] LoRA path missing for {name}: {lora_path}")
+                # No checkpoint - create fresh adapters only if requested
+                try:
+                    wrapper.model = apply_lora_if_requested(wrapper.model, lora_cfg, wrapper.cfg.model_id)
+                    print(f"✓ Created fresh LoRA adapters for {name} (no checkpoint found)")
+                except Exception as exc:
+                    print(f"[WARN] LoRA attach failed for {name}: {exc}")
 
     # NOTE: PEFT Prefix-Tuning removed (redundant with DeepPrefixGenerator)
     # DeepPrefixGenerator provides Z-conditional prefix generation, which is the core
