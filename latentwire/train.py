@@ -2198,19 +2198,15 @@ def main():
                         artifacts["refiner.pt"] = latent_refiner.state_dict()
                     save_latest_checkpoint(best_save_dir, artifacts, pre_prune=False, post_prune=False, verbose=False)
 
-                    # Save LoRA and Prefix-tuning weights (critical for proper evaluation)
+                    # Save LoRA weights (critical for proper evaluation)
                     try:
                         from peft import PeftModel  # type: ignore
                         if isinstance(getattr(llama, "model", None), PeftModel):
                             if args.use_lora:
                                 llama.model.save_pretrained(os.path.join(best_save_dir, "lora_llama"))
-                            if args.use_prefix:
-                                llama.model.save_pretrained(os.path.join(best_save_dir, "prefix_llama"))
                         if isinstance(getattr(qwen, "model", None), PeftModel):
                             if args.use_lora:
                                 qwen.model.save_pretrained(os.path.join(best_save_dir, "lora_qwen"))
-                            if args.use_prefix:
-                                qwen.model.save_pretrained(os.path.join(best_save_dir, "prefix_qwen"))
                     except ImportError:
                         pass
 
@@ -2470,7 +2466,7 @@ def main():
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
     print(f"✅ Saved latest checkpoint to {args.save_dir}")
 
-    # Persist PEFT adapters (LoRA / Prefix) if present
+    # Persist PEFT adapters (LoRA) if present
     try:
         from peft import PeftModel  # type: ignore
 
@@ -2482,16 +2478,10 @@ def main():
             if args.use_lora:
                 _save_peft(llama.model, os.path.join(args.save_dir, "lora_llama"))
                 print("📝 Saved LoRA adapters for Llama")
-            if args.use_prefix:
-                _save_peft(llama.model, os.path.join(args.save_dir, "prefix_llama"))
-                print("📝 Saved Prefix-Tuning adapters for Llama")
         if isinstance(getattr(qwen, "model", None), PeftModel):
             if args.use_lora:
                 _save_peft(qwen.model, os.path.join(args.save_dir, "lora_qwen"))
                 print("📝 Saved LoRA adapters for Qwen")
-            if args.use_prefix:
-                _save_peft(qwen.model, os.path.join(args.save_dir, "prefix_qwen"))
-                print("📝 Saved Prefix-Tuning adapters for Qwen")
     except Exception as exc:
         print(f"[WARN] Skipped PEFT adapter save: {exc}")
 

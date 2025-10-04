@@ -22,10 +22,12 @@ set -euo pipefail
 # Schedule fixes (based on v1 hero_resume analysis):
 # - LATENT_KEEP_END: 1.0 → 0.85 (freeze dropout at sweet spot)
 # - EPOCHS_STAGEB: 6 → 8 (consolidate with frozen dropout)
-# - Peak checkpointing: train.py now saves "_best" checkpoint with LoRA/Prefix weights
+# - Peak checkpointing: train.py now saves "_best" checkpoint with LoRA weights
 #
-# IMPORTANT: Peak checkpoint bug was fixed in train.py on 2025-10-02 to save LoRA/Prefix
-# weights. Previous _best checkpoint is invalid. Run this script to capture new peak.
+# Architecture fix (2025-10-03):
+# - Removed PEFT Prefix-tuning (redundant with DeepPrefixGenerator)
+# - Now uses only: DeepPrefixGenerator (Z-conditional prefix) + LoRA (task adaptation)
+# - Fixes PEFT adapter stacking bug that caused eval mode collapse
 #
 # Usage:
 #   bash scripts/resume_hero_stageb.sh
@@ -33,7 +35,7 @@ set -euo pipefail
 # The script will:
 # - Resume from latest checkpoint in runs/hero_resume/ckpt_stageb
 # - Continue training until 8 epochs complete
-# - Save new peak checkpoints with complete LoRA/Prefix weights to ckpt_stageb_best
+# - Save peak checkpoints with LoRA weights to ckpt_stageb_best
 
 RUN_TAG="${RUN_TAG:-hero_resume}"
 BASE_RUN_TAG="$RUN_TAG"
@@ -174,26 +176,26 @@ fi
 
 WARMUP_FLAG=(--kd_skip_text)
 
-echo "=== Resume Hero Stage B Training (Schedule Fix) ===" | tee "$LOG"
+echo "=== Resume Hero Stage B Training (Clean Architecture) ===" | tee "$LOG"
 echo "Run tag: $RUN_TAG" | tee -a "$LOG"
 echo "Checkpoint directory: $SAVE_DIR (using --auto_resume)" | tee -a "$LOG"
 echo "Epochs: $EPOCHS_STAGEB (extended for consolidation)" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
-echo "SCHEDULE FIXES (based on v1 analysis):" | tee -a "$LOG"
-echo "  - LATENT_KEEP_END: 1.0 → 0.85 (freeze at sweet spot)" | tee -a "$LOG"
-echo "  - EPOCHS extended to 8 (consolidate with frozen dropout)" | tee -a "$LOG"
-echo "  - Peak checkpointing: train.py saves '_best' automatically" | tee -a "$LOG"
+echo "ARCHITECTURE FIX (2025-10-03):" | tee -a "$LOG"
+echo "  - Removed redundant PEFT Prefix-tuning (--use_prefix)" | tee -a "$LOG"
+echo "  - Kept DeepPrefixGenerator (Z-conditional, core functionality)" | tee -a "$LOG"
+echo "  - Kept LoRA (task adaptation)" | tee -a "$LOG"
+echo "  - Fixes PEFT adapter stacking bug causing eval mode collapse" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
-echo "Analysis showed peak at keep_prob=0.6-0.85:" | tee -a "$LOG"
-echo "  - Peak: 19.4% first_acc at keep_prob=0.613" | tee -a "$LOG"
-echo "  - 26 steps achieved ≥10% (all at keep_prob 0.55-0.82)" | tee -a "$LOG"
-echo "  - Final eval (keep_prob=1.0) only 4.4% - model never learned full latents" | tee -a "$LOG"
+echo "Previous bug: PEFT Prefix + LoRA stacking incorrectly" | tee -a "$LOG"
+echo "  - Training: 272.8M params (LoRA 42M + PEFT Prefix 231M)" | tee -a "$LOG"
+echo "  - Eval: Only 41.9M loaded (Prefix lost, caused 100% 'the' mode collapse)" | tee -a "$LOG"
+echo "  - Root cause: save_pretrained() on stacked adapters lost Prefix weights" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
-echo "Retained from v1:" | tee -a "$LOG"
-echo "  - FIRST_TOKEN_CE_WEIGHT=11.0" | tee -a "$LOG"
-echo "  - KD_WEIGHT=0.5" | tee -a "$LOG"
+echo "Retained config from v1:" | tee -a "$LOG"
+echo "  - LATENT_KEEP_END=0.85 (freeze dropout at sweet spot)" | tee -a "$LOG"
+echo "  - FIRST_TOKEN_CE_WEIGHT=11.0, KD_WEIGHT=0.5" | tee -a "$LOG"
 echo "  - OOM fixes: expandable_segments, KD_TEACHER_CHUNK=1" | tee -a "$LOG"
-echo "  - Performance: TEXT_TEACHER_CHUNK=4" | tee -a "$LOG"
 echo "" | tee -a "$LOG"
 
 # Archive old diagnostics to avoid pollution from multiple runs
@@ -220,7 +222,6 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
   --samples "$TRAIN_SAMPLES_STAGEB" --epochs "$EPOCHS_STAGEB" \
   --batch_size "$BATCH_SIZE_STAGEB" --grad_accum_steps "$GRAD_ACCUM_STAGEB" \
   --save_dir "$SAVE_DIR" --auto_resume --save_training_stats \
-  --use_prefix --prefix_tokens "$DEEP_PREFIX_LEN" --prefix_projection --peft_prefix_all_layers yes \
   --train_append_bos_after_prefix yes \
   --warm_anchor_mode chat \
   --latent_private_len "$LATENT_PRIVATE_LEN" \
@@ -260,6 +261,6 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/eval.py \
   --token_budget_mode content_only --token_budget_k "$LATENT_LEN" \
   2>&1 | tee -a "$LOG"
 
-echo -e "\n✓ Hero Stage B (schedule fix) complete. Logs: $LOG\n"
+echo -e "\n✓ Hero Stage B (clean architecture) complete. Logs: $LOG\n"
 echo "Note: Evaluate using the _best checkpoint for peak performance:"
 echo "  --ckpt ${SAVE_DIR}_best"

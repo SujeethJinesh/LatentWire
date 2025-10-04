@@ -920,22 +920,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             else:
                 print(f"[WARN] LoRA path missing for {name}: {lora_path}")
 
-    # Reattach Prefix-Tuning adapters if available (for latent runs)
-    try:
-        from peft import PeftModel  # type: ignore
-
-        prefix_paths = {
-            "llama": os.path.join(ckpt_dir, "prefix_llama"),
-            "qwen": os.path.join(ckpt_dir, "prefix_qwen"),
-        }
-        for name, path in prefix_paths.items():
-            if name not in wrappers:
-                continue
-            if os.path.isdir(path):
-                wrappers[name].model = PeftModel.from_pretrained(wrappers[name].model, path).eval()
-                print(f"✓ Loaded Prefix-Tuning adapters for {name}")
-    except Exception as exc:
-        print(f"[WARN] Prefix-Tuning reload skipped: {exc}")
+    # NOTE: PEFT Prefix-Tuning removed (redundant with DeepPrefixGenerator)
+    # DeepPrefixGenerator provides Z-conditional prefix generation, which is the core
+    # functionality. PEFT Prefix-tuning was just learned constants, not Z-conditional.
 
     adapters = {}
     for name in list(wrappers.keys()):
