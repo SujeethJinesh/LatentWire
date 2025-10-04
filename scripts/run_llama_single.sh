@@ -202,6 +202,8 @@ for LATENT_LEN_CURRENT in "${LATENT_LEN_GRID[@]}"; do
 
         echo -e "\n>>> Combination $combo_index: $combo_suffix" | tee -a "$LOG"
         echo -e "    RUN_TAG=$RUN_TAG" | tee -a "$LOG"
+        echo -e "    EPOCHS_STAGEA=$EPOCHS_STAGEA | EPOCHS_STAGEB=$EPOCHS_STAGEB" | tee -a "$LOG"
+        echo -e "    WARMUP_TEXT_LATENT_EPOCHS_STAGEB=$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" | tee -a "$LOG"
 
         echo -e "\n=== CUDA preflight ===" | tee -a "$LOG"
         python - <<'PY' 2>&1 | tee -a "$LOG"
