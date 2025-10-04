@@ -48,18 +48,20 @@ if [[ $hero -eq 1 ]]; then
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-16000}
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-6}
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-10}
+  WARMUP_TEXT_LATENT_EPOCHS_STAGEA=${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:-1.0}
   SAMPLES="${SAMPLES:-1000}"
   if [[ "$RUN_TAG" == llama_single_* ]]; then
     RUN_TAG="hero"
   fi
   BASE_RUN_TAG="$RUN_TAG"
 else
-  # Ultra-fast smoke test: ~10 steps per epoch, 2 epochs each stage
+  # Ultra-fast smoke test: ~10 steps per epoch
   # Uses SAME hyperparameters as hero (100% accurate except duration)
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-240}  # 240 ÷ 24 batch = 10 steps/epoch
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-240}  # 240 ÷ 24 batch = 10 steps/epoch
-  EPOCHS_STAGEA=${EPOCHS_STAGEA:-2}
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}  # 4 epochs: 2 warm-up + 2 latent (prevents gradient explosion)
   EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}  # 4 epochs: 2 warm-up + 2 latent (ensures LoRA training)
+  WARMUP_TEXT_LATENT_EPOCHS_STAGEA=${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:-2.0}  # 20 steps warm-up (2x more than old 10)
   SAMPLES="${SAMPLES:-100}"
   if [[ "$RUN_TAG" == llama_single_* ]]; then
     RUN_TAG="smoke"
@@ -76,7 +78,6 @@ fi
 : "${FIRST_TOKEN_CE_PEAK_STAGEA:=3.0}"
 : "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEA:=0.3}"
 : "${KD_WEIGHT_STAGEB:=1.0}"
-: "${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:=1.0}"
 : "${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:=2.0}"
 : "${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:=0.2}"
 : "${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:=1.0}"
@@ -203,7 +204,7 @@ for LATENT_LEN_CURRENT in "${LATENT_LEN_GRID[@]}"; do
         echo -e "\n>>> Combination $combo_index: $combo_suffix" | tee -a "$LOG"
         echo -e "    RUN_TAG=$RUN_TAG" | tee -a "$LOG"
         echo -e "    EPOCHS_STAGEA=$EPOCHS_STAGEA | EPOCHS_STAGEB=$EPOCHS_STAGEB" | tee -a "$LOG"
-        echo -e "    WARMUP_TEXT_LATENT_EPOCHS_STAGEB=$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" | tee -a "$LOG"
+        echo -e "    WARMUP_TEXT_LATENT_EPOCHS_STAGEA=$WARMUP_TEXT_LATENT_EPOCHS_STAGEA | WARMUP_TEXT_LATENT_EPOCHS_STAGEB=$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" | tee -a "$LOG"
 
         echo -e "\n=== CUDA preflight ===" | tee -a "$LOG"
         python - <<'PY' 2>&1 | tee -a "$LOG"
