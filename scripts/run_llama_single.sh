@@ -126,7 +126,11 @@ export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
 export TOKENIZERS_PARALLELISM="false"
 export TEXT_TEACHER_CHUNK="${TEXT_TEACHER_CHUNK:-1}"
-export KD_TEACHER_CHUNK="${KD_TEACHER_CHUNK:-2}"
+export KD_TEACHER_CHUNK="${KD_TEACHER_CHUNK:-1}"  # Reduced from 2 to prevent OOM
+
+# OOM fixes - critical for avoiding fragmentation
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
+export PYTORCH_ENABLE_MPS_FALLBACK=1
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
@@ -290,7 +294,7 @@ PY
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule none \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
-          --latent_keep_start 0.5 --latent_keep_end 1.0 --latent_keep_power 2.0 \
+          --latent_keep_start 0.5 --latent_keep_end 0.85 --latent_keep_power 2.0 \
           --warmup_text_latent_epochs "$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" \
           --warmup_align_tokens 8 --warmup_align_weight 1.5 \
           --warmup_text_teacher_weight "$WARMUP_TEXT_TEACHER_WEIGHT_STAGEB" \
