@@ -1,7 +1,0 @@
-=== Evaluating Peak Checkpoint ===
-Checkpoint: runs/hero_resume/ckpt_stageb_best
-Samples: 1000
-Output: runs/hero_resume/eval_best_20251002_200550
-
-ERROR: Checkpoint directory not found: runs/hero_resume/ckpt_stageb_best
-Make sure training has completed and created a peak checkpoint.
