@@ -69,8 +69,20 @@ else
 fi
 
 # Use HERO hyperparameters for both smoke and hero (smoke is just shorter duration)
-: "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=2.0}"
-: "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
+# Stage B warm-up: Keep short (0.5 epochs = 5 steps for smoke) because LoRA needs latent training, not text warm-up
+if [[ $hero -eq 1 ]]; then
+  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=2.0}"  # Hero: 2 epochs warm-up
+else
+  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=0.5}"  # Smoke: 0.5 epochs = 5 steps (minimal warm-up, max latent training for LoRA)
+fi
+
+# Warmup tail probability: 0.02 for hero (negligible with 1000s of steps), 0.0 for smoke (significant with only 40 steps)
+if [[ $hero -eq 1 ]]; then
+  : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
+else
+  : "${WARMUP_TAIL_PROB_STAGEB:=0.0}"
+fi
+
 : "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=9.0}"
 : "${LATENT_PRIVATE_LEN:=24}"
 
