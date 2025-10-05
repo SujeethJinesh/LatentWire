@@ -1,0 +1,20 @@
+
+# config/snippets.yaml
+use_coprocessor: true
+coprocessor:
+  d_z: 256
+  width: 256
+  kv_scale: 0.8
+  heads_per_layer: [32,32,32,32,32,32,32,32,32,32,32,32]
+  z_dropout: 0.1
+train:
+  first_token_ce_weight: 12.0
+  k_steps: 8
+  k_ce_weight: 0.5
+  kd_first_k_weight: 2.0
+  kd_tau: 2.0
+  state_kd_weight: 0.1
+logging:
+  log_first_token_acc: true
+  log_kd: true
+  log_cache_delta_norms: true

@@ -1,0 +1,12 @@
+
+# config/snippets.yaml
+use_anchor_tokens: true
+anchor:
+  window: 64
+  insert_at: ["end_of_segment", "assistant_start"]
+  train_anchor_embeddings: true
+eval:
+  keep_only_anchors: true
+logging:
+  log_anchor_density: true
+  log_anchor_positions: true

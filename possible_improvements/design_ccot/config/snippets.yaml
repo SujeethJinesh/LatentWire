@@ -1,0 +1,11 @@
+
+# config/snippets.yaml
+use_ccot: true
+ccot:
+  k_latent: 6
+  d_thought: 512
+  thought_injection: "kv"    # or "residual"
+train:
+  use_teacher_cot: true
+  kd_tau: 2.0
+  first_token_ce_weight: 8.0
