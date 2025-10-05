@@ -55,28 +55,29 @@ if [[ $hero -eq 1 ]]; then
   fi
   BASE_RUN_TAG="$RUN_TAG"
 else
-  # Ultra-fast smoke test: ~10 steps per epoch
-  # Uses SAME hyperparameters as hero (100% accurate except duration)
-  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-240}  # 240 ÷ 24 batch = 10 steps/epoch
-  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-240}  # 240 ÷ 24 batch = 10 steps/epoch
-  EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}  # 4 epochs: 2 warm-up + 2 latent (prevents gradient explosion)
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}  # 4 epochs: 2 warm-up + 2 latent (ensures LoRA training)
-  WARMUP_TEXT_LATENT_EPOCHS_STAGEA=${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:-2.0}  # 20 steps warm-up (2x more than old 10)
-  SAMPLES="${SAMPLES:-100}"
+  # Extended smoke test: ~40 steps per epoch for meaningful quality signals
+  # Matches minimal viable training (160 total steps: 80 warm-up + 80 latent)
+  # Based on LOG.md requirement: "Stage A needed 120 latent steps to converge"
+  TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-960}  # 960 ÷ 24 batch = 40 steps/epoch
+  TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-960}  # 960 ÷ 24 batch = 40 steps/epoch
+  EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}  # 4 epochs: 2 warm-up + 2 latent = 160 steps total
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}  # 4 epochs: ~20 warm-up + ~140 latent = 160 steps total
+  WARMUP_TEXT_LATENT_EPOCHS_STAGEA=${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:-2.0}  # 80 steps warm-up
+  SAMPLES="${SAMPLES:-200}"  # Increased eval samples to match longer training
   if [[ "$RUN_TAG" == llama_single_* ]]; then
     RUN_TAG="smoke"
   fi
 fi
 
 # Use HERO hyperparameters for both smoke and hero (smoke is just shorter duration)
-# Stage B warm-up: Keep short (0.5 epochs = 5 steps for smoke) because LoRA needs latent training, not text warm-up
+# Stage B warm-up: Keep short (0.5 epochs = 20 steps for smoke) because LoRA needs latent training, not text warm-up
 if [[ $hero -eq 1 ]]; then
   : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=2.0}"  # Hero: 2 epochs warm-up
 else
-  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=0.5}"  # Smoke: 0.5 epochs = 5 steps (minimal warm-up, max latent training for LoRA)
+  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=0.5}"  # Smoke: 0.5 epochs = 20 steps (minimal warm-up, max latent training for LoRA)
 fi
 
-# Warmup tail probability: 0.02 for hero (negligible with 1000s of steps), 0.0 for smoke (significant with only 40 steps)
+# Warmup tail probability: 0.02 for hero (negligible with 1000s of steps), 0.0 for smoke (significant with only 160 steps)
 if [[ $hero -eq 1 ]]; then
   : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
 else
