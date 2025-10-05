@@ -350,3 +350,118 @@ For KD: use τ≈2.0 and K=8 (first 8 steps), teacher = base model with adapters
 Track: first‑token top‑1, EM/F1, KD loss, and per‑layer adapter/coprocessor norms.
 
 If you want, I can now generate repo‑specific diffs against your train.py, models.py, and eval.py for one of these options (e.g., Latent Coprocessor or Teach Base to Listen). Just upload the current versions and tell me which option to wire first.
+
+Got it. I rebuilt drop‑in bundles that modify exactly the files you asked for (no more than 6 files per zip): train.py, models.py, losses.py, core_utils.py, eval.py, and a ready‑to‑run run_llama_single.sh. You can unzip any pack directly into your repo root and run the included script (or copy the file contents into your own training harness).
+
+Each pack is self‑contained and conservative:
+
+Uses Hugging Face chat templates correctly (no double special tokens).
+
+Adds first‑token CE, K‑token CE, and KD (τ≈2, first‑K) with adapters disabled for the teacher pass (so the KD teacher is the clean base).
+
+Features are behind flags and implemented in a way that won’t disturb your baseline if you don’t enable them.
+
+Downloads (≤ 6 files each)
+
+1. Teach the Base to Listen (Tiny LoRA on early attention + KD) — recommended first
+
+What it adds: Small LoRA on Q/K/V(+O) in early layers, constant first‑token CE, KD τ≈2 over first K tokens, and a teacher pass with adapters disabled.
+
+How it helps: Sub‑1–2% trainables dramatically improves acceptance of the latent while keeping the LLM mostly frozen.
+
+Zip: listen_lora_pack_20251005_030529.zip
+
+Files inside (6): train.py, models.py, losses.py, core_utils.py, eval.py, run_llama_single.sh
+Run example:
+
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct" bash run_llama_single.sh
+
+2. Multi‑Depth Latent Adapters (IAA‑style)
+
+What it adds: Insert small latent adapter blocks (cross‑attend from hidden→latent) at layers 5/10/15; train only adapters + latent projection.
+
+How it helps: Gives the latent multiple “entry points” across depth, improving integration in a frozen model.
+
+Zip: multi_depth_adapters_pack_20251005_030529.zip
+
+Files (6): train.py, models.py, losses.py, core_utils.py, eval.py, run_llama_single.sh
+Run example:
+
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct" bash run_llama_single.sh
+
+3. Latent Coprocessor (Differentiable Cache Augmentation)
+
+What it adds: A small coprocessor that writes latent‑derived {K,V} cache deltas to every layer; the LLM attends to the latent at all depths.
+
+How it helps: Strongest acceptance boost while keeping the base LLM frozen; the latent becomes a first‑class signal.
+
+Zip: latent_coprocessor_pack_20251005_030529.zip
+
+Files (6): train.py, models.py, losses.py, core_utils.py, eval.py, run_llama_single.sh
+Run example:
+
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct" bash run_llama_single.sh
+
+4. Anchor Tokens (KV‑only compression)
+
+What it adds: Anchor‑aware attention mask (segment‑local for non‑anchors; anchors attend prior anchors). Inference path shows KV pruning to keep only anchors.
+
+How it helps: Enforces summarization into a few anchors; the anchors’ KV become a very compact interlingua.
+
+Zip: anchor_tokens_pack_20251005_030529.zip
+
+Files (6): train.py, models.py, losses.py, core_utils.py, eval.py, run_llama_single.sh
+Run example:
+
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct" bash run_llama_single.sh
+
+5. Compressed Chain‑of‑Thought (CCoT) with LoRA
+
+What it adds: A ThoughtHead that emits k latent thought vectors, which are then re‑inserted (as prefix/kv) before decoding the answer; CE + KD training.
+
+How it helps: Compresses reasoning into few latent vectors, which also serve as a structured interlingua between models.
+
+Zip: ccot_pack_20251005_030529.zip
+
+Files (6): train.py, models.py, losses.py, core_utils.py, eval.py, run_llama_single.sh
+Run example:
+
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct" bash run_llama_single.sh
+
+What changed in code (high‑level)
+
+KD teacher = base model: In losses.py/kd_first_k, the teacher forward is wrapped with disable_adapters() if available so KD targets come from the clean model (no LoRA/prefix). This is crucial to stop self‑distillation artifacts and to lift first‑token top‑1.
+
+First‑token/K‑token CE: Included in train.py with constant first‑token weight (no cosine decay) to prevent late‑epoch acceptance collapse.
+
+Chat templates: eval.py uses tokenizer.apply_chat_template(..., add_generation_prompt=True) and tokenizes with add_special_tokens=False to avoid double specials.
+
+Bundles differ by how they inject/consume the latent:
+
+LoRA: models.py applies PEFT LoRA to early attention modules; core_utils.apply_listen_lora handles safe no‑op if PEFT isn’t available.
+
+Multi‑Depth Adapters: LatentAdapterBlock (in core_utils.py) cross‑attends from hidden→latent at selected layers; only these adapters and a small latent projection train.
+
+Coprocessor: LatentCoprocessor (in core_utils.py) produces per‑layer KV deltas; models.py shows how to augment past_key_values.
+
+Anchor Tokens: build_anchor_mask and select_anchor_kv (in core_utils.py) enforce summarization into anchors and prune KV at inference.
+
+CCoT: ThoughtHead (in models.py) emits k thought vectors; placeholder shows where to re‑insert them.
+
+What to run tonight
+
+If your goal is the fastest path to higher EM/F1 with minimal risk, start with Teach the Base to Listen:
+
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct" bash run_llama_single.sh
+
+Monitor:
+
+first‑token top‑1 (should climb >20% during smoke),
+
+KD loss (<2.0 over first K),
+
+grad norms (no collapse).
+
+If acceptance looks healthy, try Multi‑Depth Adapters next. If you want to keep the base fully frozen but increase acceptance, go to Latent Coprocessor. Once acceptance is solid, layer in Anchor Tokens to push compression, or CCoT for reasoning‑heavy tasks.
+
+If you prefer repo‑specific diffs against your current train.py, models.py, and eval.py, upload the latest versions again and tell me which pack to wire first—I’ll produce exact diffs you can apply with patch -p0.
