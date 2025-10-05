@@ -8,7 +8,9 @@ scripts/run_llama_single.sh. Then determine what happened, what's good, what's
 bad, and what are our next steps. Always commit and push your code when done.
 When appropriate, please update LOG.md with why a change was made, evidence for it,
 what was expected, and the result with data after we analyze the next set of runs.
-For larger architectural changes, we should always update the RESEARCH_PROPOSAL.md
+For larger architectural changes, we should always update the RESEARCH_PROPOSAL.md.
+I also highly prefer you not make new scripts unless necessary and just modify existing ones. Also
+prefer keeping logic into one script over many. It may be worth writing python scripts instead of bash scripts to make things much easier or converting them
 
 ---
 
