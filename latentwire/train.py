@@ -1274,6 +1274,17 @@ def main():
 
     optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 
+    # ===== Learning rate scheduler (cosine annealing for stability) =====
+    from torch.optim.lr_scheduler import CosineAnnealingLR
+
+    total_steps = (args.samples // args.batch_size) * args.epochs
+    lr_scheduler = CosineAnnealingLR(
+        optimizer,
+        T_max=total_steps,
+        eta_min=args.lr * 0.02  # Decay to 2% of initial LR (5e-5 → 1e-6)
+    )
+    print(f"[INFO] LR scheduler: CosineAnnealingLR (T_max={total_steps}, eta_min={args.lr * 0.02:.2e})")
+
     # ===== Tokenize answers (teacher forcing) =====
     token_ids_map: Dict[str, torch.Tensor] = {}
     answer_lengths_map: Dict[str, torch.Tensor] = {}
@@ -1669,6 +1680,10 @@ def main():
                     with torch.no_grad():
                         first_pred = logits_first.argmax(dim=-1)
                         first_acc_raw = (first_pred == first_targets).float().mean()
+
+                        # Store predictions for logging (cache in per_model_losses for later access)
+                        per_model_losses[ctx.name]["first_pred"] = first_pred
+                        per_model_losses[ctx.name]["first_targets"] = first_targets
                 else:
                     loss_first_raw = torch.zeros((), device=target_device)
                     first_acc_raw = torch.zeros((), device=target_device)
@@ -2022,6 +2037,7 @@ def main():
                     torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
                 _align_optimizer_state_to_param_devices(optimizer)
                 optimizer.step()
+                lr_scheduler.step()  # Update learning rate after optimizer step
                 optimizer.zero_grad(set_to_none=True)
             total_norm = grad_norm_val
 
@@ -2031,10 +2047,12 @@ def main():
             ema_step_time = dt if (locals().get("ema_step_time", None) is None) else (0.9 * locals()["ema_step_time"] + 0.1 * dt)
 
             if (step+1) % 10 == 0 or (step+1) == steps_per_epoch:
+                current_lr = lr_scheduler.get_last_lr()[0]
                 parts = [
                     f"  step  {step+1}/{steps_per_epoch}",
                     f"grad_norm={total_norm:.2f}",
                     f"sec/step~{dt:.2f}",
+                    f"lr={current_lr:.2e}",
                     f"keep={keep_prob:.2f}",
                     f"K={current_K}",
                 ]
@@ -2051,6 +2069,20 @@ def main():
                         f" KD={_to_float(metrics['kd']):.4f}"
                     )
                     msg_ctx += f" acc={_to_float(metrics.get('first_acc', 0.0)):.3f}"
+
+                    # Log predictions when accuracy > 0 (for debugging learning)
+                    if training_mode == "latent" and _to_float(metrics.get('first_acc', 0.0)) > 0.0:
+                        if "first_pred" in metrics and "first_targets" in metrics:
+                            preds = metrics["first_pred"]
+                            targets = metrics["first_targets"]
+                            # Find matches for debugging
+                            matches = (preds == targets).nonzero(as_tuple=True)[0]
+                            if len(matches) > 0:
+                                # Show first correct prediction
+                                idx = matches[0].item()
+                                pred_tok = ctx.wrapper.tokenizer.decode([preds[idx].item()], skip_special_tokens=False)
+                                msg_ctx += f" [✓'{pred_tok}']"
+
                     if args.state_kd_weight > 0.0:
                         msg_ctx += f" state={_to_float(metrics['state']):.4f}"
                     if args.manifold_stat_weight > 0.0:
@@ -2262,6 +2294,36 @@ def main():
                         pass
 
                     print(f"  🌟 NEW PEAK: first_acc_ema={best_first_acc:.1%} (raw_batch={current_first_acc_raw:.1%}) at step {global_step} → saved to {best_save_dir}")
+
+                    # Log sample predictions to verify quality (not just lucky guesses)
+                    ctx_name = model_contexts[0].name
+                    if "first_pred" in per_model_losses[ctx_name] and "first_targets" in per_model_losses[ctx_name]:
+                        preds = per_model_losses[ctx_name]["first_pred"]
+                        targets = per_model_losses[ctx_name]["first_targets"]
+                        tokenizer = model_contexts[0].wrapper.tokenizer
+
+                        # Show first 5 predictions vs targets
+                        print(f"      Sample predictions (first 5):")
+                        for i in range(min(5, len(preds))):
+                            pred_tok = tokenizer.decode([preds[i].item()], skip_special_tokens=False)
+                            targ_tok = tokenizer.decode([targets[i].item()], skip_special_tokens=False)
+                            match = "✓" if preds[i] == targets[i] else "✗"
+                            print(f"        {match} pred='{pred_tok}' | gold='{targ_tok}'")
+
+                        # Check diversity: unique predictions
+                        unique_preds = len(torch.unique(preds))
+                        print(f"      Prediction diversity: {unique_preds}/{len(preds)} unique tokens")
+
+                        # Top-3 most frequent predictions
+                        pred_counts = {}
+                        for p in preds.cpu().tolist():
+                            pred_counts[p] = pred_counts.get(p, 0) + 1
+                        top_preds = sorted(pred_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+                        print(f"      Top-3 predictions:", end=" ")
+                        for tok_id, count in top_preds:
+                            tok_str = tokenizer.decode([tok_id], skip_special_tokens=False)
+                            print(f"'{tok_str}'({count})", end=" ")
+                        print()
 
             # ---- Periodic checkpoint: save + prune
             if args.save_every and (global_step % args.save_every == 0):
