@@ -12,10 +12,11 @@
 #SBATCH --signal=B:TERM@30
 
 WORK_DIR="/projects/m000066/sujinesh/LatentWire"
-LOGIN_HOST="${SLURM_SUBMIT_HOST:-marlowe}"
+LOGIN_HOST="marlowe"                          # fixed login host
 PORT="$(shuf -i 8000-9999 -n 1)"
 INFO_FILE="${WORK_DIR}/code-server-${SLURM_JOB_ID}-info.txt"
 TUNNEL_PID_FILE="/tmp/revtun-${SLURM_JOB_ID}.pid"
+TMUX_SESSION="dev_${SLURM_JOB_ID}"
 
 cd "$WORK_DIR" || exit 1
 
@@ -31,7 +32,7 @@ cleanup() {
   rm -f "${WORK_DIR}/code-server-${SLURM_JOB_ID}.log" \
         "${WORK_DIR}/code-server-${SLURM_JOB_ID}.err" \
         "${WORK_DIR}/code-server-${SLURM_JOB_ID}-info.txt" 2>/dev/null || true
-  # Remove ALL other code-server info/logs so only current job remains
+  # Remove ALL other code-server logs/info so only the current job remains
   rm -f ${WORK_DIR}/code-server-*.log ${WORK_DIR}/code-server-*.err ${WORK_DIR}/code-server-*-info.txt 2>/dev/null || true
   # Temp + caches
   rm -rf "/tmp/code-server-${SLURM_JOB_ID}" "/tmp/code-server-ext-${SLURM_JOB_ID}" 2>/dev/null || true
@@ -44,29 +45,45 @@ rm -f ${WORK_DIR}/code-server-*.log ${WORK_DIR}/code-server-*.err ${WORK_DIR}/co
 
 module load code-server/4.93.1
 
-# Start reverse tunnel compute -> login
+# Reverse tunnel compute -> marlowe
 ssh -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
     -N -R ${PORT}:127.0.0.1:${PORT} "${LOGIN_HOST}" &
 echo $! > "$TUNNEL_PID_FILE"
 
-# Emit a single, canonical info file (easy to `cat`)
+# Canonical info file (easy to `cat`)
 {
   echo "========================================="
   echo "CODE-SERVER CONNECTION INFO"
-  echo "Created:      $(date)"
-  echo "Job ID:       ${SLURM_JOB_ID}"
-  echo "Compute node: $(hostname)"
-  echo "Port:         ${PORT}"
-  echo "Login host:   ${LOGIN_HOST}"
+  echo "Created:          $(date)"
+  echo "Job ID:           ${SLURM_JOB_ID}"
+  echo "Compute node:     $(hostname)"
+  echo "Login host:       ${LOGIN_HOST}"
+  echo "Port:             ${PORT}"
+  echo "TMUX session:     ${TMUX_SESSION}"
   echo ""
   echo "SSH TUNNEL (run on YOUR LAPTOP):"
-  echo "ssh -L ${PORT}:localhost:${PORT} ${LOGIN_HOST}"
+  echo "  ssh -L ${PORT}:localhost:${PORT} ${LOGIN_HOST}"
   echo ""
   echo "BROWSER URL:"
-  echo "http://localhost:${PORT}"
+  echo "  http://localhost:${PORT}"
   echo ""
-  echo "To cancel job:"
-  echo "scancel ${SLURM_JOB_ID}"
+  echo "RE-ATTACH (on marlowe login node):"
+  echo "  # reattach tmux workspace"
+  echo "  tmux attach -t ${TMUX_SESSION}"
+  echo "  # if you forgot the name, list sessions:"
+  echo "  tmux ls"
+  echo ""
+  echo "OPEN NEW SHELL ON COMPUTE NODE (inside this job):"
+  echo "  srun --jobid=${SLURM_JOB_ID} --pty bash -l"
+  echo ""
+  echo "GPU MONITOR ON COMPUTE NODE:"
+  echo "  srun --jobid=${SLURM_JOB_ID} --pty bash -l -c 'watch -n1 nvidia-smi'"
+  echo ""
+  echo "QUEUE WATCH (on login node):"
+  echo "  watch -n2 squeue -u sujinesh"
+  echo ""
+  echo "CANCEL THIS JOB:"
+  echo "  scancel ${SLURM_JOB_ID}"
   echo "========================================="
 } | tee "$INFO_FILE"
 

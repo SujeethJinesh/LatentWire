@@ -5,7 +5,7 @@ set -euo pipefail
 SBATCH_FILE="${SBATCH_FILE:-start_compute_node.sbatch}"
 JOB_NAME="code-server"
 POLL_SECS=5
-KILL_BUFFER_SECS=30   # kill tmux ~30 seconds before job end
+KILL_BUFFER_SECS=30   # kill tmux ~5 minutes before job end
 
 # Submit the job
 jid_line="$(sbatch "$SBATCH_FILE")"
@@ -26,77 +26,56 @@ while true; do
   sleep "$POLL_SECS"
 done
 
-# Wait for info file and parse port/login host
+# Wait for info file and parse values
 info_file="/projects/m000066/sujinesh/LatentWire/code-server-${jid}-info.txt"
 echo -n "Waiting for connection info ${info_file}"
 until [[ -f "$info_file" ]]; do echo -n "."; sleep "$POLL_SECS"; done
 echo
 port="$(awk '/^Port:/{print $2}' "$info_file")"
-login_host="$(awk '/^Login host:/{print $3}' "$info_file")"
+login_host="$(awk '/^Login host:/{print $3}' "$info_file")"   # will be "marlowe"
 
 echo "------------------------------------------------------------"
 echo "From YOUR LAPTOP:"
 echo "ssh -L ${port}:localhost:${port} ${login_host}"
 echo "Then browse: http://localhost:${port}"
-echo "Info file to cat later: $info_file"
+echo "Info file: $info_file"
 echo "------------------------------------------------------------"
 
-# Make a single tmux session name; kill any stale session with same name
+# One tmux session with 3 panes
 session="dev_${jid}"
 if tmux has-session -t "$session" 2>/dev/null; then
   tmux kill-session -t "$session"
 fi
 
-# Create tmux with 3 panes
 if command -v tmux >/dev/null 2>&1 && [ -z "${TMUX:-}" ]; then
-  # Left: interactive shell on compute node
   tmux new-session -d -s "$session" "srun --jobid=${jid} --pty bash -l"
-
-  # Right-top: nvidia-smi watch on compute
   tmux split-window -h -t "$session" "srun --jobid=${jid} --pty bash -l -c 'watch -n1 nvidia-smi'"
-
-  # Right-bottom: squeue watch on login node
   tmux split-window -v -t "$session" "watch -n2 squeue -u sujinesh"
-
   tmux select-pane -L
   tmux display-message -t "$session" "Tunnel: ssh -L ${port}:localhost:${port} ${login_host} | URL: http://localhost:${port}"
 
-  # --- Auto-kill tmux before the job ends ---
-  # Get job end time from scontrol (naive but effective)
+  # Auto-kill tmux ~5 min before job end
   if command -v scontrol >/dev/null 2>&1; then
-    job_end_epoch="$(scontrol show jobid -dd "$jid" | awk -F= '/EndTime=/{print $2}' | awk '{print $1" "$2" "$3" "$4" "$5}')"
-    # Convert EndTime to seconds since epoch if it's not "Unknown"
-    if [[ "$job_end_epoch" != *"Unknown"* ]]; then
-      # Slurm often formats: "YYYY-MM-DDTHH:MM:SS"
-      end_iso="$(scontrol show jobid -dd "$jid" | awk -F= '/EndTime=/{print $2}' | awk '{print $1}')"
-      # Fallback: assume 12h from now if parsing fails
-      if date -d "$end_iso" +"%s" >/dev/null 2>&1; then
-        end_secs="$(date -d "$end_iso" +"%s")"
-      else
-        end_secs="$(( $(date +%s) + 12*3600 ))"
-      fi
+    end_iso="$(scontrol show jobid -dd "$jid" | awk -F= '/EndTime=/{print $2}' | awk '{print $1}')"
+    if date -d "$end_iso" +"%s" >/dev/null 2>&1; then
+      end_secs="$(date -d "$end_iso" +"%s")"
     else
       end_secs="$(( $(date +%s) + 12*3600 ))"
     fi
   else
     end_secs="$(( $(date +%s) + 12*3600 ))"
   fi
-
-  # Sleep until (end - buffer), then kill tmux session if still there
   now_secs="$(date +%s)"
   sleep_secs="$(( end_secs - now_secs - KILL_BUFFER_SECS ))"
   if (( sleep_secs > 0 )); then
-    (
-      sleep "$sleep_secs" || true
-      tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session" || true
-    ) >/dev/null 2>&1 &
+    ( sleep "$sleep_secs" || true; tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session" || true ) >/dev/null 2>&1 &
   fi
 
   tmux attach -t "$session"
 else
-  echo "(tmux not available or you’re already inside tmux)"
+  echo "(tmux not available or already inside tmux)"
   echo "Opening one interactive shell on the compute node..."
   srun --jobid="${jid}" --pty bash -l
-  echo "For GPU watch:  srun --jobid='${jid}' --pty bash -l -c 'watch -n1 nvidia-smi'"
-  echo "Queue watch:    watch -n2 squeue -u sujinesh"
+  echo "GPU watch:  srun --jobid='${jid}' --pty bash -l -c 'watch -n1 nvidia-smi'"
+  echo "Queue watch: watch -n2 squeue -u sujinesh"
 fi
