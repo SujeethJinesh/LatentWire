@@ -33,6 +33,7 @@ until [[ -f "$info_file" ]]; do echo -n "."; sleep "$POLL_SECS"; done
 echo
 port="$(awk '/^Port:/{print $2}' "$info_file")"
 login_host="$(awk '/^Login host:/{print $3}' "$info_file")"   # "marlowe"
+compute_node="$(awk '/^Compute node:/{print $3}' "$info_file")"
 
 echo "------------------------------------------------------------"
 echo "From YOUR LAPTOP:"
@@ -41,26 +42,32 @@ echo "Then browse: http://localhost:${port}"
 echo "Info file: $info_file"
 echo "------------------------------------------------------------"
 
-# One tmux session with 3 panes
+# One login-side tmux session; compute panes live inside a single srun step
 session="dev_${jid}"
-if tmux has-session -t "$session" 2>/dev/null; then
-  tmux kill-session -t "$session"
-fi
+tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session" || true
 
 if command -v tmux >/dev/null 2>&1 && [ -z "${TMUX:-}" ]; then
-  # Left: interactive shell on compute node
-  tmux new-session -d -s "$session" "srun --jobid=${jid} --pty bash -l"
+  # Pane A (left): one long-lived compute step that hosts its own tmux with 2 panes
+  tmux new-session -d -s "$session" \
+    "srun --jobid=${jid} --pty bash -lc '
+       csess=\"cs_${jid}\"
+       # start compute-side tmux session if not already present
+       if ! tmux has-session -t \"\$csess\" 2>/dev/null; then
+         # left: interactive shell
+         tmux new-session -d -s \"\$csess\" \"bash -l\"
+         # right: nvidia-smi watcher -> sticky (Ctrl-C drops to shell)
+         tmux split-window -h -t \"\$csess\" \"bash -lc \\\"watch -n1 nvidia-smi; echo; echo [watch exited] Dropping to shell...; exec bash -l\\\"\"
+       fi
+       tmux attach -t \"\$csess\"
+     '"
 
-  # Right-top: GPU watch on compute node -> 0 GPUs, 1 CPU; sticky on Ctrl-C
-  tmux split-window -h -t "$session" \
-    "srun --jobid=${jid} --gres=gpu:0 -c1 --cpu-bind=none --pty bash -lc 'watch -n1 nvidia-smi; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'"
-
-  # Right-bottom: queue watch on login node -> sticky on Ctrl-C
+  # Pane B (bottom-right on login): squeue watch -> sticky (Ctrl-C drops to shell)
   tmux split-window -v -t "$session" \
     "bash -lc 'watch -n2 squeue -u sujinesh; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'"
 
+  # Layout & helpful status
   tmux select-pane -L
-  tmux display-message -t "$session" "Tunnel: ssh -L ${port}:localhost:${port} ${login_host} | URL: http://localhost:${port}"
+  tmux display-message -t "$session" "Node: ${compute_node} | Tunnel: ssh -L ${port}:localhost:${port} ${login_host} | URL: http://localhost:${port}"
 
   # Auto-kill tmux shortly before job end
   if command -v scontrol >/dev/null 2>&1; then
@@ -85,8 +92,6 @@ if command -v tmux >/dev/null 2>&1 && [ -z "${TMUX:-}" ]; then
   tmux attach -t "$session"
 else
   echo "(tmux not available or already inside tmux)"
-  echo "Opening one interactive shell on the compute node..."
+  echo "Opening a single interactive shell on the compute node..."
   srun --jobid="${jid}" --pty bash -l
-  echo "GPU watch (no GPU reservation):  srun --jobid='${jid}' --gres=gpu:0 -c1 --cpu-bind=none --pty bash -lc 'watch -n1 nvidia-smi; exec bash -l'"
-  echo "Queue watch (login node):        bash -lc 'watch -n2 squeue -u sujinesh; exec bash -l'"
 fi
