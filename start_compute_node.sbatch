@@ -2,7 +2,7 @@
 #SBATCH --job-name=code-server
 #SBATCH --nodes=1
 #SBATCH --gpus=4
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8             # headroom for interactive shells/steps
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
@@ -68,16 +68,14 @@ echo $! > "$TUNNEL_PID_FILE"
   echo "  http://localhost:${PORT}"
   echo ""
   echo "RE-ATTACH (on marlowe login node):"
-  echo "  # reattach tmux workspace"
   echo "  tmux attach -t ${TMUX_SESSION}"
-  echo "  # if you forgot the name, list sessions:"
-  echo "  tmux ls"
+  echo "  tmux ls     # if you forgot the name"
   echo ""
   echo "OPEN NEW SHELL ON COMPUTE NODE (inside this job):"
   echo "  srun --jobid=${SLURM_JOB_ID} --pty bash -l"
   echo ""
-  echo "GPU MONITOR ON COMPUTE NODE:"
-  echo "  srun --jobid=${SLURM_JOB_ID} --pty bash -l -c 'watch -n1 nvidia-smi'"
+  echo "GPU MONITOR ON COMPUTE NODE (no GPU reservation):"
+  echo "  srun --jobid=${SLURM_JOB_ID} --gres=gpu:0 -c1 --cpu-bind=none --pty bash -lc 'watch -n1 nvidia-smi; exec bash -l'"
   echo ""
   echo "QUEUE WATCH (on login node):"
   echo "  watch -n2 squeue -u sujinesh"
@@ -87,24 +85,26 @@ echo $! > "$TUNNEL_PID_FILE"
   echo "========================================="
 } | tee "$INFO_FILE"
 
-# Run code-server bound to localhost; restart if it exits and time remains
-while true; do
-  echo "Starting code-server @ $(date)"
-  code-server \
-    --bind-addr 127.0.0.1:${PORT} \
-    --auth none \
-    --disable-workspace-trust \
-    --disable-telemetry \
-    --disable-update-check \
-    --user-data-dir "/tmp/code-server-${SLURM_JOB_ID}" \
-    --extensions-dir "/tmp/code-server-ext-${SLURM_JOB_ID}" \
-    "$WORK_DIR"
-  ec=$?
-  echo "code-server exited with $ec @ $(date)"
-
-  if [ -n "$SLURM_JOB_END_TIME" ]; then
-    now=$(date +%s); left=$((SLURM_JOB_END_TIME - now))
-    [ "$left" -lt 300 ] && echo "Under 5m left; exiting." && break
-  fi
-  echo "Restarting in 5s..."; sleep 5
-done
+# --- Run code-server as its OWN tiny Slurm step (0 GPUs, 1 CPU) ---
+# This prevents it from conflicting with your interactive shells or training steps.
+srun -n1 -c1 --gres=gpu:0 --cpu-bind=none bash -lc '
+  while true; do
+    echo "Starting code-server @ $(date)"
+    code-server \
+      --bind-addr 127.0.0.1:'"${PORT}"' \
+      --auth none \
+      --disable-workspace-trust \
+      --disable-telemetry \
+      --disable-update-check \
+      --user-data-dir "/tmp/code-server-'"${SLURM_JOB_ID}"'" \
+      --extensions-dir "/tmp/code-server-ext-'"${SLURM_JOB_ID}"'" \
+      "'"$WORK_DIR"'"
+    ec=$?
+    echo "code-server exited with $ec @ $(date)"
+    if [ -n "$SLURM_JOB_END_TIME" ]; then
+      now=$(date +%s); left=$((SLURM_JOB_END_TIME - now))
+      [ "$left" -lt 300 ] && echo "Under 5m left; exiting." && break
+    fi
+    echo "Restarting in 5s..."; sleep 5
+  done
+'

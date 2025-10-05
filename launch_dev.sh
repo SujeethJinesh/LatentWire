@@ -51,11 +51,11 @@ if command -v tmux >/dev/null 2>&1 && [ -z "${TMUX:-}" ]; then
   # Left: interactive shell on compute node
   tmux new-session -d -s "$session" "srun --jobid=${jid} --pty bash -l"
 
-  # Right-top: GPU watch on compute node -> drop to shell if watch exits (Ctrl-C)
+  # Right-top: GPU watch on compute node -> 0 GPUs, 1 CPU; sticky on Ctrl-C
   tmux split-window -h -t "$session" \
-    "srun --jobid=${jid} --pty bash -lc 'watch -n1 nvidia-smi; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'"
+    "srun --jobid=${jid} --gres=gpu:0 -c1 --cpu-bind=none --pty bash -lc 'watch -n1 nvidia-smi; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'"
 
-  # Right-bottom: queue watch on login node -> drop to shell if watch exits (Ctrl-C)
+  # Right-bottom: queue watch on login node -> sticky on Ctrl-C
   tmux split-window -v -t "$session" \
     "bash -lc 'watch -n2 squeue -u sujinesh; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'"
 
@@ -76,7 +76,8 @@ if command -v tmux >/dev/null 2>&1 && [ -z "${TMUX:-}" ]; then
   now_secs="$(date +%s)"
   sleep_secs="$(( end_secs - now_secs - KILL_BUFFER_SECS ))"
   if (( sleep_secs > 0 )); then
-    ( sleep "$sleep_secs" || true
+    (
+      sleep "$sleep_secs" || true
       tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session" || true
     ) >/dev/null 2>&1 &
   fi
@@ -86,6 +87,6 @@ else
   echo "(tmux not available or already inside tmux)"
   echo "Opening one interactive shell on the compute node..."
   srun --jobid="${jid}" --pty bash -l
-  echo "GPU watch:  srun --jobid='${jid}' --pty bash -lc 'watch -n1 nvidia-smi; exec bash -l'"
-  echo "Queue watch: bash -lc 'watch -n2 squeue -u sujinesh; exec bash -l'"
+  echo "GPU watch (no GPU reservation):  srun --jobid='${jid}' --gres=gpu:0 -c1 --cpu-bind=none --pty bash -lc 'watch -n1 nvidia-smi; exec bash -l'"
+  echo "Queue watch (login node):        bash -lc 'watch -n2 squeue -u sujinesh; exec bash -l'"
 fi
