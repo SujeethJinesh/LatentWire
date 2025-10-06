@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Minimal launcher: start/reuse code-server job, then
-# create & attach a compute-side tmux session "dev" with:
-#   left       : dev shell (prints code-server tunnel info first)
-#   right-top  : watch -n1 nvidia-smi  (~80% height, sticky)
-#   right-bot  : watch -n2 squeue -u sujinesh (sticky)
+# Minimal launcher: ensure code-server job exists, then open ONE interactive step
+# to the compute node and create a tmux session "dev" with:
+#   left       = dev shell (prints code-server info first)
+#   right-top  = watch -n1 nvidia-smi (~80% height, sticky)
+#   right-bot  = watch -n2 squeue -u sujinesh (sticky)
+#
+# If the "dev" session already exists, the script errors out.
 
 SBATCH_FILE="${SBATCH_FILE:-start_compute_node.sbatch}"
 JOB_NAME="code-server"
@@ -15,7 +17,7 @@ SESSION_NAME="${SESSION_NAME:-dev}"
 # 1) Reuse running job or submit a new one
 jid="$(squeue -u "$USER" -h -t R -n "$JOB_NAME" -o %A | tail -n1 || true)"
 if [[ -z "${jid}" ]]; then
-  echo "No running ${JOB_NAME} job found; submitting ${SBATCH_FILE}…"
+  echo "No running ${JOB_NAME} job found; submitting ${SBATCH_FILE}..."
   out="$(sbatch "$SBATCH_FILE")"
   jid="$(awk '{print $4}' <<<"$out")"
   echo "Submitted ${JOB_NAME} job: JID=${jid}"
@@ -34,48 +36,64 @@ while true; do
   sleep "$POLL_SECS"
 done
 
-# 3) One interactive step -> build tmux layout on compute node
-echo "Opening compute session '${SESSION_NAME}' on ${node} (job ${jid})…"
-exec srun --jobid="${jid}" -w "${node}" --pty bash -lc '
+# 3) Open a single interactive step and build the tmux layout on the compute node
+INFO_FILE="/projects/m000066/sujinesh/LatentWire/code-server-${jid}-info.txt"
+echo "Opening compute session '${SESSION_NAME}' on ${node} (job ${jid})..."
+exec srun --jobid="${jid}" -w "${node}" --pty bash -lc "
   set -euo pipefail
+  export SESSION_NAME='${SESSION_NAME}'
+  export INFO_FILE='${INFO_FILE}'
+
+  # Try to load tmux (ignore failure)
   (module load tmux 2>/dev/null || true) || true
 
-  if ! command -v tmux >/dev/null 2>&1; then
-    echo "[error] tmux not found on compute node. Aborting."
-    exit 1
-  fi
+  # Write a tiny setup script on the compute node and run it
+  cat > /tmp/dev_setup_${jid}.sh <<'CS_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
 
-  sess="'"${SESSION_NAME}"'"
-  if tmux has-session -t "$sess" 2>/dev/null; then
-    echo "[error] tmux session '\''"'"${SESSION_NAME}"''\'' already exists. Aborting."
-    exit 1
-  fi
+sess=\"${SESSION_NAME}\"
 
-  # Path to the info file produced by the batch job
-  INFO_FILE="/projects/m000066/sujinesh/LatentWire/code-server-${SLURM_JOB_ID}-info.txt"
+if ! command -v tmux >/dev/null 2>&1; then
+  echo \"[error] tmux not found on compute node. Aborting.\"
+  exit 1
+fi
 
-  # Left pane: print tunnel instructions, then drop to a login shell
-  tmux new-session -d -s "$sess" \
-    "bash -lc 'clear; echo \"=== code-server connection info ===\"; if [ -f ${INFO_FILE} ]; then cat ${INFO_FILE}; else echo \"[warn] Info file not found: ${INFO_FILE}\"; fi; echo; echo \"(Tip) Create tunnel on your laptop, then open http://localhost:\$(awk \\\"/^Port:/{print \\$2}\\\" ${INFO_FILE} 2>/dev/null)\"; echo; exec bash -l'"
+# Error out if session already exists
+if tmux has-session -t \"\$sess\" 2>/dev/null; then
+  echo \"[error] tmux session '\$sess' already exists. Aborting.\"
+  exit 1
+fi
 
-  # Right-top: GPU watch (sticky: Ctrl-C -> shell)
-  tmux split-window -h -t "$sess" \
-    "bash -lc 'watch -n1 nvidia-smi; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'"
+# Left pane: print tunnel info, then shell
+tmux new-session -d -s \"\$sess\" \
+  \"bash -lc 'clear; echo === code-server connection info ===; \
+    if [ -f \"${INFO_FILE}\" ]; then cat \"${INFO_FILE}\"; else echo \"[warn] Info file not found: ${INFO_FILE}\"; fi; \
+    echo; exec bash -l'\"
 
-  # Right-bottom: squeue watch (sticky)
-  tmux split-window -v -t "$sess:0.1" \
-    "bash -lc 'watch -n2 squeue -u sujinesh; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'"
+# Right-top: nvidia-smi (sticky: Ctrl-C -> shell)
+tmux split-window -h -t \"\$sess\" \
+  \"bash -lc 'watch -n1 nvidia-smi; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'\"
 
-  # Resize: make right-top ~80% of total window height
-  win=\"$sess:0\"
-  right_top=\"$sess:0.1\"
-  h=\$(tmux display -p -t \"\$win\" \"#{window_height}\")
-  top=\$(( h * 80 / 100 ))
-  if (( top < 5 )); then top=5; fi
-  tmux resize-pane -t \"\$right_top\" -y \"\$top\"
+# Right-bottom: squeue (sticky)
+tmux split-window -v -t \"\$sess:0.1\" \
+  \"bash -lc 'watch -n2 squeue -u sujinesh; echo; echo \"[watch exited] Dropping to shell...\"; exec bash -l'\"
 
-  # Focus back to left dev pane
-  tmux select-pane -L -t \"$sess\"
+# Resize right-top to ~80% of window height
+win=\"\$sess:0\"
+right_top=\"\$sess:0.1\"
+h=\$(tmux display -p -t \"\$win\" \"#{window_height}\")
+top=\$(( h * 80 / 100 ))
+if (( top < 5 )); then top=5; fi
+tmux resize-pane -t \"\$right_top\" -y \"\$top\"
 
-  exec tmux attach -t \"$sess\"
-'
+# Focus back to left pane
+tmux select-pane -L -t \"\$sess\"
+
+exec tmux attach -t \"\$sess\"
+CS_EOF
+
+  chmod +x /tmp/dev_setup_${jid}.sh
+  exec /tmp/dev_setup_${jid}.sh
+"
+
