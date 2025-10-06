@@ -2,7 +2,7 @@
 #SBATCH --job-name=code-server
 #SBATCH --nodes=1
 #SBATCH --gpus=4
-#SBATCH --cpus-per-task=1            # keep batch step light so interactive srun can start
+#SBATCH --cpus-per-task=1                 # keep batch step tiny so interactive srun can start
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
@@ -12,7 +12,8 @@
 #SBATCH --signal=B:TERM@30
 
 WORK_DIR="/projects/m000066/sujinesh/LatentWire"
-LOGIN_HOST="marlowe"
+# Use the actual submit host when available (resolves from compute nodes)
+LOGIN_HOST="${SLURM_SUBMIT_HOST:-marlowe}"
 PORT="$(shuf -i 8000-9999 -n 1)"
 INFO_FILE="${WORK_DIR}/code-server-${SLURM_JOB_ID}-info.txt"
 TUNNEL_PID_FILE="/tmp/revtun-${SLURM_JOB_ID}.pid"
@@ -38,9 +39,12 @@ trap cleanup EXIT TERM INT
 # best-effort clean
 rm -f ${WORK_DIR}/code-server-*.log ${WORK_DIR}/code-server-*.err ${WORK_DIR}/code-server-*-info.txt 2>/dev/null || true
 
+# Ensure modules are initialized, then load code-server
+[ -r /etc/profile.d/modules.sh ] && . /etc/profile.d/modules.sh || true
+[ -r /usr/share/Modules/init/bash ] && . /usr/share/Modules/init/bash || true
 module load code-server/4.93.1
 
-# Reverse tunnel compute -> login
+# Reverse tunnel compute -> login (background)
 ssh -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
     -N -R ${PORT}:127.0.0.1:${PORT} "${LOGIN_HOST}" &
 echo $! > "$TUNNEL_PID_FILE"
@@ -49,11 +53,11 @@ echo $! > "$TUNNEL_PID_FILE"
 {
   echo "========================================="
   echo "CODE-SERVER CONNECTION INFO"
-  echo "Created:    $(date)"
-  echo "Job ID:     ${SLURM_JOB_ID}"
+  echo "Created:      $(date)"
+  echo "Job ID:       ${SLURM_JOB_ID}"
   echo "Compute node: $(hostname)"
-  echo "Login host: ${LOGIN_HOST}"
-  echo "Port:       ${PORT}"
+  echo "Login host:   ${LOGIN_HOST}"
+  echo "Port:         ${PORT}"
   echo ""
   echo "SSH TUNNEL (run on YOUR LAPTOP):"
   echo "  ssh -L ${PORT}:localhost:${PORT} ${LOGIN_HOST}"
@@ -62,7 +66,8 @@ echo $! > "$TUNNEL_PID_FILE"
   echo "  http://localhost:${PORT}"
   echo ""
   echo "OPEN SHELL ON COMPUTE NODE (from login):"
-  echo "  srun --jobid=${SLURM_JOB_ID} -w $(hostname) --pty bash -l"
+  echo "  srun --jobid=${SLURM_JOB_ID} -w $(hostname) --overlap -c1 --gres=gpu:0 --cpu-bind=none --pty bash -l"
+  echo "  # (use --oversubscribe instead of --overlap if your Slurm lacks --overlap)"
   echo ""
   echo "CANCEL THIS JOB:"
   echo "  scancel ${SLURM_JOB_ID}"
