@@ -1,6 +1,115 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
-### 2025-10-05 — Warmup-correlated regression + scaffolding fixes (Claude Code + Codex)
+### 2025-10-05 (b) — Critical Architecture Analysis: Training-Eval Gap + Mode Collapse (Claude Code)
+- **Smoke test results (runs/smoke/pipeline_20251005_205815.log)**: Completed full Stage A (4 epochs) + Stage B (8 epochs) with all Path A+B fixes. Training showed **BEST PEAK EVER: 16.67% raw batch accuracy at step 210 (Stage A, epoch 5)**, but evaluation completely failed with **F1=0.0159 (1.6%), EM=0.0, FirstTok@1=2.5%**. Text baseline strong (F1=0.794, EM=0.59), confirming LLM quality is fine.
+- **CRITICAL ISSUE: Severe mode collapse identified**:
+  - **Stage A predictions**: Model predicts ONLY "a" for every example (100% of batches)
+  - **Stage B predictions**: Model alternates between "the", "a", and "$" (1-2 unique tokens per batch of 24)
+  - **Prediction diversity**: Stage A: 1/24 unique (100% "a"), Stage B: 1-2/24 unique (mostly "the")
+  - Sample from Stage B step 212: `pred='a' gold='liv'`, `pred='a' gold='to'`, `pred='a' gold='early'`, `pred='a' gold='that'` — **ALL "a"**
+  - Even when raw batch accuracy hits 20.8% (step 246), it's because gold answer happened to be "the" 5 times out of 24
+- **Training-eval gap analysis**: Massive discrepancy between training peaks and eval performance:
+  - Training peak: 16.67% raw batch (Stage A step 210), 20.8% raw batch (Stage B step 246)
+  - Eval first-token: 2.5% @ top-1
+  - **Gap: 16.67% → 2.5% = 85% performance loss from train to eval**
+  - Peak detection triggered correctly (dual-trigger working), but peaks were "lucky batches" not real learning
+- **Token-budget baseline reveals fundamental issue**: Truncated text prompts (M=64 tokens only) achieve **F1=0.063 (6.3%), 4× better than latent's 1.6%**. This proves:
+  1. The encoder is NOT learning useful compressed representations
+  2. Simply providing M text tokens (no compression) outperforms the learned latent
+  3. Architecture may be fundamentally broken — latent should match or exceed token-budget, not fall below it
+- **NLL paradox — conditioning works but generation doesn't**:
+  - Latent NLL/token: 9.889 (better than text baseline's 13.676)
+  - This means the model CAN condition on latents to predict gold tokens teacher-forced
+  - But first-token generation accuracy is 2.5% (10× worse than training)
+  - **Implication**: Encoder produces representations the LLM can "read" during teacher-forcing, but NOT autoregressively
+  - This is classic **exposure bias** — model never learns to generate from its own predictions
+- **Stage A quality determines Stage B success? YES, CONFIRMED**:
+  - Stage A showed severe mode collapse (only "a" predictions) from start
+  - Stage B couldn't fix this even with LoRA (20.97M trainable params)
+  - If Stage A learns to predict only mode token, Stage B's LoRA just reinforces that pattern
+  - **Without diverse Stage A learning, Stage B has nothing to build on**
+- **Architecture assessment — fundamental issues identified**:
+  1. **Encoder-adapter not learning semantic compression**: Token-budget > latent proves this
+  2. **No diversity loss/regularization**: Nothing prevents mode collapse to "the"/"a"
+  3. **First-token objective too weak**: K-token CE (K=8) helps but isn't enough
+  4. **Missing scheduled sampling**: Model trained on gold context, can't generate autoregressively
+  5. **Deep prefix may be wrong abstraction**: 100 tokens/layer (3200 total tokens) is NOT compression vs M=64 text tokens
+- **Data quality assessment (SQuAD)**:
+  - Text baseline: F1=0.794, EM=0.59 — **data is GOOD, LLM understands task**
+  - SQuAD answers are short (1-5 tokens usually), which makes first-token critical
+  - First-token distribution: Heavy bias toward articles ("the", "a"), numbers, proper nouns
+  - **Data is appropriate BUT architecture can't leverage it**
+- **Comparison to compression benchmarks**:
+  - Naive 4× text compression (M=64 instead of M=246): F1=0.063 (8% of baseline)
+  - Latent compression (M=64 latent @ d_z=256): F1=0.016 (2% of baseline)
+  - **Learned compression performs 4× WORSE than naive truncation**
+  - Target should be: latent ≥ token-budget (at same M), approaching text baseline
+- **All fixes from 2025-10-05(a) were correctly applied**:
+  - ✅ Extended warmup: 1.5 epochs (60 steps) — WORKING (warmup through step 60)
+  - ✅ Warmup tail probability: 10% — WORKING (saw "tail text" annotations)
+  - ✅ Tighter LoRA: r=8, alpha=8, 8 layers — WORKING (20.97M params, not 42M)
+  - ✅ First-token CE tapering: 9.0 → 6.06 — WORKING (saw first_w decay)
+  - ✅ LR scheduling: Cosine decay — WORKING (lr 5.00e-05 → 4.93e-05)
+  - ✅ Dual-trigger peak detection — WORKING (saved peaks at both EMA and raw thresholds)
+  - **All training infrastructure correct, but OUTPUT is mode collapsed**
+- **Off-the-shelf alternatives to consider**:
+  1. **Gist tokens** (Mu et al. 2024): Compress prompts to <10 "gist" tokens via distillation
+     - Achieves 26× compression with minimal quality loss
+     - Uses full instruction finetuning (not just adapters)
+  2. **Prompt compression** (Jiang et al. 2023): Learn soft prompt representations
+     - Uses contrastive learning to avoid mode collapse
+     - Adds diversity regularization (entropy bonus)
+  3. **AutoCompressors** (Chevalier et al. 2023): Recursive summary tokens
+     - Compresses incrementally, not all-at-once
+     - Uses summary-conditioned generation (autoregressive training)
+  4. **ICAE** (Ge et al. 2024): In-context autoencoding with reconstruction loss
+     - Adds explicit reconstruction objective (not just task loss)
+     - Uses bidirectional attention in encoder
+- **Critical missing components identified**:
+  1. **No reconstruction/cycle-consistency loss**: Encoder never trained to preserve information
+  2. **No contrastive learning**: Nothing to separate different questions' latents
+  3. **No diversity regularization**: Entropy of predictions never maximized
+  4. **No scheduled sampling**: Teacher-forcing → autoregressive mismatch
+  5. **No intermediate evaluation**: Can't detect mode collapse until full eval
+- **Why we keep getting "the" and "a"**:
+  - SQuAD answer distribution: "the" ~8%, "a" ~3%, numbers ~15%, proper nouns ~40%
+  - Model learns to maximize expected accuracy: always predict mode token
+  - K-token CE should help (forces K=8 tokens correct) but isn't strong enough
+  - Without diversity penalty, mode collapse is the optimal solution to minimize CE loss
+- **Fundamental questions raised**:
+  1. **Is continuous latent space the right approach?** Discrete codes (VQ-VAE style) might prevent collapse
+  2. **Should we compress at all?** Token-budget baseline outperforms learned latent
+  3. **Is frozen LLM viable?** Maybe we need to finetune LLM, not just add adapters
+  4. **Is teacher-forcing fundamentally broken?** Exposure bias seems insurmountable with current setup
+- **RECOMMENDATION — Three paths forward**:
+  - **Path 1 (Quick diagnostic)**: Add entropy regularization + scheduled sampling, rerun smoke
+    - Add `-λ * H(predictions)` to loss to penalize mode collapse
+    - Gradually increase autoregressive generation during training (0% → 30%)
+    - Expected: Diversity improves, but may not fix underlying issues
+  - **Path 2 (Architecture rethink)**: Switch to reconstruction-based training
+    - Add decoder to reconstruct question from latent: `question → Z → reconstructed question`
+    - Train with reconstruction loss + task loss
+    - Only use task-trained latents for LLM conditioning
+    - Expected: Encoder learns to preserve information, not just task shortcuts
+  - **Path 3 (Baseline validation)**: Try Gist tokens implementation (off-the-shelf)
+    - Validates if prompt compression is even viable with frozen LLMs
+    - If Gist tokens work (F1 > 0.5) but ours doesn't, architecture is wrong
+    - If Gist tokens also fail (F1 < 0.1), task may be impossible with frozen LLMs
+- **CRITICAL INSIGHT**: The training-eval gap (16.67% → 2.5%) + mode collapse + worse-than-token-budget performance suggests **the current architecture cannot learn semantic compression**. It can learn to predict mode tokens during teacher-forcing (low NLL), but this doesn't transfer to autoregressive generation. We may be optimizing the wrong objective entirely.
+- **ANSWER TO "Are we training correctly?"**: Training code works correctly (all objectives computed, gradients flow, checkpoints save), but we're optimizing for teacher-forced prediction, not autoregressive generation. The model is "successfully" learning the wrong thing.
+- **ANSWER TO "Is our data good?"**: Yes, SQuAD is appropriate (text baseline F1=0.794). The issue is architecture/training, not data.
+- **ANSWER TO "Does our architecture make sense?"**: No. Latent compression should outperform naive truncation, but it's 4× worse. Deep prefix (3200 tokens across layers) is not "compression" vs 64 text tokens. The encoder-adapter-deep_prefix pipeline has no mechanism to prevent information loss or mode collapse.
+- **ANSWER TO "If Stage A isn't trained, does Stage B fail?"**: Confirmed YES. Stage A showed only "a" predictions, Stage B couldn't escape to diverse tokens despite 20.97M LoRA params.
+- **ANSWER TO "How do we fix things?"**: Need fundamental changes: add reconstruction loss OR diversity regularization OR scheduled sampling OR switch to different architecture (Gist tokens, AutoCompressors). Hyperparameter tuning won't fix mode collapse.
+- **ANSWER TO "Are we using the right data?"**: Yes, but it doesn't matter if architecture can't leverage it.
+- **FILES ANALYZED**:
+  - `runs/smoke/diagnostics.jsonl`: 48 training steps, peak 16.67% at step 210, 50% regression
+  - `runs/smoke/pipeline_20251005_205815.log`: Full Stage A+B logs with prediction samples
+  - Prediction samples (lines 44-99, 650-750): Confirmed 100% mode collapse
+  - Eval metrics (lines 976-980): F1=0.016 latent vs 0.794 text, 0.063 token-budget
+- **NEXT STEPS**: User must decide path: (1) Quick diagnostic (entropy + sampling), (2) Architecture rethink (reconstruction), or (3) Baseline validation (try Gist tokens). DO NOT continue current approach — more epochs/warmup won't fix mode collapse or worse-than-truncation performance.
+
+### 2025-10-05 (a) — Warmup-correlated regression + scaffolding fixes (Claude Code + Codex)
 - **Smoke test results (runs/smoke/)**: Training completed with LR scheduling and prediction logging enabled. Peak first_acc=8.33% at step 110 (epoch 2), but **100% regression to 0.0% by epoch 4 end**. Text baseline strong (F1=0.794), latent collapsed (F1=0.000, FirstTok@1=2.0%).
 - **NEW FEATURES VERIFIED WORKING**:
   - ✅ **LR scheduling active**: `lr=5.00e-05 → 4.99e-05 → ... → 4.91e-05` (cosine decay working)
