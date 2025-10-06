@@ -61,7 +61,7 @@ else
   TRAIN_SAMPLES_STAGEA=${TRAIN_SAMPLES_STAGEA:-960}  # 960 ÷ 24 batch = 40 steps/epoch
   TRAIN_SAMPLES_STAGEB=${TRAIN_SAMPLES_STAGEB:-960}  # 960 ÷ 24 batch = 40 steps/epoch
   EPOCHS_STAGEA=${EPOCHS_STAGEA:-4}  # 4 epochs: 2 warm-up + 2 latent = 160 steps total
-  EPOCHS_STAGEB=${EPOCHS_STAGEB:-4}  # 4 epochs: ~20 warm-up + ~140 latent = 160 steps total
+  EPOCHS_STAGEB=${EPOCHS_STAGEB:-8}  # 8 epochs: ~60 warm-up + ~260 latent = 320 steps total (extended for convergence)
   WARMUP_TEXT_LATENT_EPOCHS_STAGEA=${WARMUP_TEXT_LATENT_EPOCHS_STAGEA:-2.0}  # 80 steps warm-up
   SAMPLES="${SAMPLES:-200}"  # Increased eval samples to match longer training
   if [[ "$RUN_TAG" == llama_single_* ]]; then
@@ -70,21 +70,25 @@ else
 fi
 
 # Use HERO hyperparameters for both smoke and hero (smoke is just shorter duration)
-# Stage B warm-up: Keep short (0.5 epochs = 20 steps for smoke) because LoRA needs latent training, not text warm-up
+# Stage B warm-up: CRITICAL - extended to 1.5 epochs based on LOG.md 2025-10-05 finding
+# Regression occurs immediately after warmup ends; model needs longer text scaffolding
 if [[ $hero -eq 1 ]]; then
   : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=2.0}"  # Hero: 2 epochs warm-up
 else
-  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=0.5}"  # Smoke: 0.5 epochs = 20 steps (minimal warm-up, max latent training for LoRA)
+  : "${WARMUP_TEXT_LATENT_EPOCHS_STAGEB:=1.5}"  # Smoke: 1.5 epochs = 60 steps (extended from 0.5 to prevent post-warmup collapse)
 fi
 
-# Warmup tail probability: 0.02 for hero (negligible with 1000s of steps), 0.0 for smoke (significant with only 160 steps)
+# Warmup tail probability: CRITICAL - keep 10% text batches throughout training (never fully unsupported)
+# LOG.md 2025-10-05: Model collapses when text batches stop; continuous mixing prevents this
 if [[ $hero -eq 1 ]]; then
-  : "${WARMUP_TAIL_PROB_STAGEB:=0.02}"
+  : "${WARMUP_TAIL_PROB_STAGEB:=0.1}"  # Hero: 10% text batches (increased from 0.02)
 else
-  : "${WARMUP_TAIL_PROB_STAGEB:=0.0}"
+  : "${WARMUP_TAIL_PROB_STAGEB:=0.1}"  # Smoke: 10% text batches (increased from 0.0 to provide continuous scaffolding)
 fi
 
-: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=9.0}"
+: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=3.0}"  # Final weight after tapering (reduced from 9.0)
+: "${FIRST_TOKEN_CE_PEAK_STAGEB:=9.0}"  # Peak weight during warmup (same as previous constant)
+: "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEB:=0.5}"  # Hold peak for 50% of training, then decay
 : "${LATENT_PRIVATE_LEN:=24}"
 
 : "${FIRST_TOKEN_CE_WEIGHT_STAGEA:=3.0}"
@@ -127,10 +131,12 @@ GIST_DROPOUT="${GIST_DROPOUT:-0.1}"
 GIST_WEIGHT="${GIST_WEIGHT:-0.02}"
 GIST_MASK_PROB="${GIST_MASK_PROB:-0.15}"
 USE_LORA="${USE_LORA:-1}"
-LORA_R="${LORA_R:-16}"
-LORA_ALPHA="${LORA_ALPHA:-16}"
+# Tighter LoRA scope based on LOG.md 2025-10-05: Reduce capacity to prevent divergence
+# Previous r=16, layers=16 may be too aggressive; narrowing to r=8, layers=8
+LORA_R="${LORA_R:-8}"  # Reduced from 16 to 8 (smaller rank)
+LORA_ALPHA="${LORA_ALPHA:-8}"  # Match r (standard practice)
 LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
-LORA_FIRSTN="${LORA_FIRSTN:-16}"
+LORA_FIRSTN="${LORA_FIRSTN:-8}"  # Reduced from 16 to 8 (first 8 layers only)
 
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -313,7 +319,7 @@ PY
           --warm_anchor_mode chat \
           --latent_private_len "$LATENT_PRIVATE_LEN" \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-          --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule none \
+          --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule cosine --first_token_ce_peak "$FIRST_TOKEN_CE_PEAK_STAGEB" --first_token_ce_warmup_frac "$FIRST_TOKEN_CE_WARMUP_FRAC_STAGEB" \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
           --latent_keep_start 0.5 --latent_keep_end 0.85 --latent_keep_power 2.0 \

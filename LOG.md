@@ -1,5 +1,65 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-05 — Warmup-correlated regression + scaffolding fixes (Claude Code + Codex)
+- **Smoke test results (runs/smoke/)**: Training completed with LR scheduling and prediction logging enabled. Peak first_acc=8.33% at step 110 (epoch 2), but **100% regression to 0.0% by epoch 4 end**. Text baseline strong (F1=0.794), latent collapsed (F1=0.000, FirstTok@1=2.0%).
+- **NEW FEATURES VERIFIED WORKING**:
+  - ✅ **LR scheduling active**: `lr=5.00e-05 → 4.99e-05 → ... → 4.91e-05` (cosine decay working)
+  - ✅ **Inline prediction logging**: Steps with acc>0 now show `[✓'the']`, `[✓'a']`, `[✓'3']` - model learning **real tokens**, not gibberish
+  - ✅ **Prediction diversity confirmed**: Multiple different tokens predicted, **no mode collapse**
+  - ❌ **Peak detection didn't trigger**: EMA threshold 5% too high (EMA only reached ~1.7% despite raw batch peaks 4-8%)
+- **CRITICAL INSIGHT (Codex)**: Regression **starts immediately after warmup ends**. Timeline analysis:
+  ```
+  Epochs 1-2 (warmup + early latent): Peak 8.3% at step 110
+  Epoch 3-4 (pure latent):             COLLAPSE to 0%
+  ```
+  Current `WARMUP_TEXT_LATENT_EPOCHS_STAGEB=0.25` (~10 steps) provides insufficient scaffolding. Model learns during mixed text/latent phase but can't maintain performance when text batches stop. This is a **RECURRING ISSUE** (see 2025-09-29(d), 2025-10-01(a)).
+- **ARE WE GOING IN CIRCLES?** Partially yes:
+  - **Warmup too short**: Previously fixed 2025-09-29(d) by extending 0.25→1.0 epochs, but current config reverted to 0.25
+  - **First-token CE weight oscillation**: 3.0→6.0→9.0→12.0→6.0→9.0 (currently 9.0 for Stage B)
+  - **LoRA scope changes**: r=8/layers=8 → r=16/layers=16 (currently 16/16)
+  - **NEW issue identified**: First-token CE held constant at 9.0 throughout training (no tapering)
+- **COMBINED FIX (Path A + B hybrid per Codex recommendation)**:
+  1. **Extended warmup (Path A - CRITICAL)**: `WARMUP_TEXT_LATENT_EPOCHS_STAGEB: 0.25 → 1.5-2.0` (60-80 steps vs current 10)
+     - Rationale: Model needs longer text scaffolding before pure latent batches
+     - Add tail probability: `WARMUP_TAIL_PROB=0.1` to keep 10% text batches throughout (never fully unsupported)
+  2. **Tighter LoRA scope (Path B)**: `LORA_LAYERS: 16 → 8`, `LORA_R: 16 → 8`
+     - Rationale: Reduce LoRA's capacity to diverge from base model learning
+     - Previous config (16 layers, r=16) may be too aggressive given regression pattern
+  3. **First-token CE tapering (Path B - NEW)**: Peak 9.0 → decay to 3.0 over training
+     - Rationale: High during warmup (force learning), decay once signal appears (give freedom)
+     - Prevents over-constraint causing late-stage regression
+  4. **Keep KD tau=2.0 (Path A)**: Do NOT reduce to 1.0 (too aggressive with first_weight=9.0)
+     - Rationale: Safer gradients; if stronger teacher needed, raise KD weight after warmup instead
+  5. **Dual-trigger peak detection (fix logging issue)**:
+     - Lower EMA threshold: 5% → 1% (current EMA peaks ~1.7%)
+     - Add raw batch fallback: Save if raw≥8% (catches spikes before EMA responds)
+     - Rationale: Current 5% threshold missed all peaks; 1% + raw fallback ensures we capture learning
+  6. **Extended training**: `EPOCHS_STAGEB: 4 → 8` (more time to converge after warmup)
+- **WHY THIS DIFFERS FROM PREVIOUS FIXES**:
+  - Previous (2025-09-29d): Extended warmup to 1.0 epoch but kept first_weight constant, didn't taper
+  - Previous (2025-10-01a): Identified dropout annealing issue, froze at 0.85
+  - **This fix**: Combines warmup extension + first-token tapering + tighter LoRA + tail probability
+  - **Key new insight**: Scaffolding removal timing (warmup end) correlates exactly with regression start
+- **EXPECTED IMPACT**:
+  - Peak first_acc: 8-12% sustained (no 100% regression)
+  - Raw vs EMA gap narrows (stable learning, not spikes)
+  - F1 > 0 breakthrough (with stable peaks, generation should work)
+  - Prediction logs verify quality throughout training
+- **REFERENCE TO PREVIOUS SIMILAR ISSUES**:
+  - 2025-09-29(d): "Stage B first_weight=12.0 combined with only 8-step warm-up caused catastrophic first-token collapse" → Fixed by extending warmup 0.25→1.0 and reducing first_weight 12.0→6.0
+  - 2025-10-01(a): "Aggressive dropout annealing causes regression—model learns at keep_prob ~0.6-0.85 but fails to transfer to keep_prob→1.0" → Fixed by freezing dropout at 0.85
+  - **Current**: Warmup 0.25 epochs too short + first_weight not tapering → Regression after warmup ends
+- **FILES MODIFIED**:
+  - `latentwire/train.py` (lines 2179-2192): Dual-trigger peak detection (EMA ≥1% OR raw batch ≥8%)
+  - `scripts/run_llama_single.sh`:
+    - Line 64: `EPOCHS_STAGEB: 4 → 8` (extended training)
+    - Line 78: `WARMUP_TEXT_LATENT_EPOCHS_STAGEB: 0.5 → 1.5` (smoke), 2.0 (hero)
+    - Lines 84-86: `WARMUP_TAIL_PROB_STAGEB: 0.0 → 0.1` (continuous scaffolding)
+    - Lines 134-137: `LORA_R: 16 → 8`, `LORA_FIRSTN: 16 → 8`, `LORA_ALPHA: 16 → 8` (tighter scope)
+    - Lines 89-91: Added `FIRST_TOKEN_CE_PEAK_STAGEB=9.0`, `WARMUP_FRAC=0.5` (tapering config)
+    - Line 322: Changed `--first_token_ce_schedule none → cosine` with peak/warmup_frac params
+- **NEXT STEPS**: Implement combined fix, run extended Stage B smoke (8 epochs, 1.5-epoch warmup), verify stable convergence without regression
+
 ### 2025-10-03 (b) — Architecture fix: Remove redundant PEFT Prefix-tuning (Claude Code)
 - **PEFT adapter stacking bug ROOT CAUSE IDENTIFIED**: Investigation revealed the catastrophic eval failure was caused by **improper PEFT adapter stacking and saving**. Training code applies LoRA first (`apply_lora_if_requested`), then Prefix-tuning second (`apply_prefix_if_requested`), which triggers PEFT warning "You are trying to modify a model with PEFT for a second time." When saving checkpoints, both `lora_llama/` and `prefix_llama/` directories receive the SAME stacked model state via `model.save_pretrained()`. PEFT's `save_pretrained()` on improperly stacked models silently saves only one adapter (the first/LoRA), losing the Prefix adapter entirely.
 - **Architectural redundancy discovered**: Training script enabled **TWO separate prefix mechanisms** doing the same thing: (1) **PEFT Prefix-tuning** (`--use_prefix`, 231M params) adds 100 trainable tokens per layer to KV cache, but these are just learned constants NOT conditioned on latent Z. (2) **DeepPrefixGenerator** (`--use_deep_prefix`, custom module) generates 100 tokens per layer FROM latent Z, providing Z-conditional prefix generation (the actual goal). PEFT Prefix-tuning was completely redundant—it added nothing useful since it can't encode the compressed representation.

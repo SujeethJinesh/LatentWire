@@ -2176,13 +2176,19 @@ def main():
                 # EMA reduces false peaks from lucky batches (e.g., 9/36 correct = 25% but not sustained)
                 first_acc_ema = ema_alpha * current_first_acc_raw + (1.0 - ema_alpha) * first_acc_ema
 
-                # Use smoothed EMA for peak detection instead of noisy batch-level accuracy
-                if first_acc_ema > best_first_acc and first_acc_ema >= 0.05:
-                    # New peak detected (and above 5% threshold)
-                    # Lowered from 10% to 5% because EMA takes hundreds of steps to reach 10% from 0.0
-                    # even when model is learning. 5% threshold catches peaks earlier while still
-                    # using smoothing to avoid lucky-batch false peaks.
-                    best_first_acc = first_acc_ema
+                # Dual-trigger peak detection:
+                # (a) EMA improves and >= 1%, OR
+                # (b) Raw batch >= 8% (hero threshold, catches spikes before EMA responds)
+                should_save_peak = (
+                    (first_acc_ema > best_first_acc and first_acc_ema >= 0.01) or  # EMA trigger (lowered from 5%)
+                    (current_first_acc_raw >= 0.08)  # Raw batch trigger (catches transient spikes)
+                )
+
+                if should_save_peak:
+                    # New peak detected via dual trigger (EMA >= 1% OR raw batch >= 8%)
+                    # Lowered EMA threshold from 5% → 1% (previous runs showed EMA ~1.7% at peaks)
+                    # Added raw batch fallback to catch spikes before EMA responds (e.g., 12.5% raw at step 263)
+                    best_first_acc = max(best_first_acc, first_acc_ema)  # Track best EMA seen
                     best_checkpoint_step = global_step
 
                     # Save "best" checkpoint
