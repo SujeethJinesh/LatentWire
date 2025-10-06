@@ -2,7 +2,7 @@
 #SBATCH --job-name=code-server
 #SBATCH --nodes=1
 #SBATCH --gpus=4
-#SBATCH --cpus-per-task=1            # keep the batch step tiny so srun can start
+#SBATCH --cpus-per-task=1            # keep batch step light so interactive srun can start
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
@@ -35,6 +35,7 @@ cleanup() {
 }
 trap cleanup EXIT TERM INT
 
+# best-effort clean
 rm -f ${WORK_DIR}/code-server-*.log ${WORK_DIR}/code-server-*.err ${WORK_DIR}/code-server-*-info.txt 2>/dev/null || true
 
 module load code-server/4.93.1
@@ -68,7 +69,7 @@ echo $! > "$TUNNEL_PID_FILE"
   echo "========================================="
 } | tee "$INFO_FILE"
 
-# Run code-server directly (no srun)
+# Run code-server directly (NO srun here)
 while true; do
   echo "Starting code-server @ $(date)"
   code-server \
