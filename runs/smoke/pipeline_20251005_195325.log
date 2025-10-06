@@ -1,0 +1,38 @@
+Starting GPU monitoring → runs/smoke/gpu_monitor.log
+
+>>> Combination 1: m64_dz256_rl2_rh4
+    RUN_TAG=smoke
+    EPOCHS_STAGEA=4 | EPOCHS_STAGEB=4
+    WARMUP_TEXT_LATENT_EPOCHS_STAGEA=2.0 | WARMUP_TEXT_LATENT_EPOCHS_STAGEB=0.5
+
+=== CUDA preflight ===
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+=== Stage A: Llama latent fit ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1484.45it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:10<00:31, 10.57s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:19<00:19,  9.61s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:28<00:09,  9.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:30<00:00,  6.29s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:30<00:00,  7.51s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+[INFO] llama anchor tokens: 3
+[INFO] LR scheduler: CosineAnnealingLR (T_max=160, eta_min=1.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+[warmup] alternating text/latent for first 80 steps
+Epoch 1/4
+[warmup] step=0 mode=text (warm-up)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 2617, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1685, in main
+    per_model_losses[ctx.name]["first_pred"] = first_pred
+KeyError: 'llama'
+Stopping GPU monitoring (PID 1308645)
