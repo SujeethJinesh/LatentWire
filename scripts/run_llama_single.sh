@@ -86,13 +86,13 @@ else
   : "${WARMUP_TAIL_PROB_STAGEB:=0.1}"  # Smoke: 10% text batches (increased from 0.0 to provide continuous scaffolding)
 fi
 
-: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=3.0}"  # Final weight after tapering (reduced from 9.0)
-: "${FIRST_TOKEN_CE_PEAK_STAGEB:=9.0}"  # Peak weight during warmup (same as previous constant)
-: "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEB:=0.5}"  # Hold peak for 50% of training, then decay
+: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=12.0}"  # Increased for stronger first-token signal (ChatGPT recommendation)
+: "${FIRST_TOKEN_CE_PEAK_STAGEB:=12.0}"  # Keep constant, no decay for smoke test
+: "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEB:=0.0}"  # No decay, maintain constant weight
 : "${LATENT_PRIVATE_LEN:=24}"
 
-: "${FIRST_TOKEN_CE_WEIGHT_STAGEA:=3.0}"
-: "${FIRST_TOKEN_CE_PEAK_STAGEA:=3.0}"
+: "${FIRST_TOKEN_CE_WEIGHT_STAGEA:=12.0}"  # Increased for stronger signal
+: "${FIRST_TOKEN_CE_PEAK_STAGEA:=12.0}"  # Keep constant
 : "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEA:=0.3}"
 : "${KD_WEIGHT_STAGEB:=1.0}"
 : "${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:=2.0}"
@@ -102,8 +102,8 @@ BASE_RUN_TAG="$RUN_TAG"
 
 DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
 
-KD_WEIGHT_STAGEA_DEFAULT="1.0"
-KD_WEIGHT_STAGEB_DEFAULT="1.0"
+KD_WEIGHT_STAGEA_DEFAULT="2.0"  # Increased for stronger KD signal (ChatGPT recommendation)
+KD_WEIGHT_STAGEB_DEFAULT="2.0"  # Increased for stronger KD signal
 
 KD_WEIGHT_STAGEA="${KD_WEIGHT_STAGEA:-$KD_WEIGHT_STAGEA_DEFAULT}"
 KD_WEIGHT_STAGEB="${KD_WEIGHT_STAGEB:-$KD_WEIGHT_STAGEB_DEFAULT}"
@@ -136,7 +136,8 @@ USE_LORA="${USE_LORA:-1}"
 LORA_R="${LORA_R:-8}"  # Reduced from 16 to 8 (smaller rank)
 LORA_ALPHA="${LORA_ALPHA:-8}"  # Match r (standard practice)
 LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
-LORA_FIRSTN="${LORA_FIRSTN:-8}"  # Reduced from 16 to 8 (first 8 layers only)
+LORA_FIRSTN="${LORA_FIRSTN:-12}"  # Target first 12 layers (ChatGPT recommendation: 8-12)
+LORA_TARGET_MODULES="${LORA_TARGET_MODULES:-attn_firstN:${LORA_FIRSTN}}"  # Attention-only (no MLP) for stability
 
 export LW_APPLY_CHAT_TEMPLATE=1
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -256,6 +257,7 @@ PY
             --lora_alpha "$LORA_ALPHA"
             --lora_dropout "$LORA_DROPOUT"
             --lora_firstN "$LORA_FIRSTN"
+            --lora_target_modules "$LORA_TARGET_MODULES"
           )
         else
           LORA_ARGS=()

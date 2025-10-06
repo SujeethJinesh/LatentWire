@@ -49,6 +49,10 @@ def k_token_ce_from_prefix(
 
     anchor_tensor = _maybe_to_anchor_tensor(anchor_ids, device)
 
+    # Get pad token id for masking (critical for proper gradient computation)
+    pad_id = getattr(getattr(llm, "tokenizer", None), "pad_token_id", None)
+    ignore_index = int(pad_id) if pad_id is not None else -100
+
     for t in range(min(K, gold_ids.size(1))):
         inputs_embeds, attn_mask, prepared_past = llm._compose_inputs_from_prefix(
             prefix_embeds,
@@ -64,7 +68,8 @@ def k_token_ce_from_prefix(
             use_cache=bool(prepared_past),
             return_dict=True,
         ).logits[:, -1, :]
-        total = total + F.cross_entropy(logits, gold_ids[:, t], reduction="mean")
+        # Use ignore_index to properly mask PAD tokens
+        total = total + F.cross_entropy(logits, gold_ids[:, t], ignore_index=ignore_index, reduction="mean")
         steps += 1
 
     return total / max(steps, 1)
@@ -106,9 +111,9 @@ def kd_first_k_prefix_vs_text(
     if scaffold_ids_teacher.size(1) <= 1 or gold_ids_teacher.size(1) <= 1:
         return torch.zeros((), device=student_device)
 
-    teacher_model = teacher_llm.model
+    # Use the new LMWrapper.disable_adapter() method for proper teacher cleanup
     disable_adapter_ctx = nullcontext()
-    disable_adapter = getattr(teacher_model, "disable_adapter", None)
+    disable_adapter = getattr(teacher_llm, "disable_adapter", None)  # Changed from teacher_model to teacher_llm
     if callable(disable_adapter):
         try:
             disable_adapter_ctx = disable_adapter()

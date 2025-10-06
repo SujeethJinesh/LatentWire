@@ -1460,6 +1460,32 @@ class LMWrapper(nn.Module):
             past = out.past_key_values
         return generated
 
+    def disable_adapter(self):
+        """Temporarily disable PEFT adapters (LoRA/Prefix) if available."""
+        from contextlib import contextmanager
+
+        model = getattr(self, "model", None)
+        if model is None:
+            @contextmanager
+            def noop():
+                yield
+            return noop()
+
+        # Try different PEFT API names
+        for method_name in ["disable_adapter", "disable_adapters"]:
+            method = getattr(model, method_name, None)
+            if callable(method):
+                return method()
+
+        # No PEFT adapters found, return no-op
+        @contextmanager
+        def noop():
+            yield
+        return noop()
+
+    # Alias for compatibility
+    disable_adapters = disable_adapter
+
 
 class STQueryEncoder(nn.Module):
     """Sentence-Transformer encoder with learned query pooling to produce latent slots."""
