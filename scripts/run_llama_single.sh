@@ -86,13 +86,13 @@ else
   : "${WARMUP_TAIL_PROB_STAGEB:=0.1}"  # Smoke: 10% text batches (increased from 0.0 to provide continuous scaffolding)
 fi
 
-: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=12.0}"  # Increased for stronger first-token signal (ChatGPT recommendation)
-: "${FIRST_TOKEN_CE_PEAK_STAGEB:=12.0}"  # Keep constant, no decay for smoke test
+: "${FIRST_TOKEN_CE_WEIGHT_STAGEB:=6.0}"  # Reduced from 12.0 to prevent NaN/Inf gradient explosions
+: "${FIRST_TOKEN_CE_PEAK_STAGEB:=6.0}"  # Keep constant, no decay for smoke test
 : "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEB:=0.0}"  # No decay, maintain constant weight
 : "${LATENT_PRIVATE_LEN:=24}"
 
-: "${FIRST_TOKEN_CE_WEIGHT_STAGEA:=12.0}"  # Increased for stronger signal
-: "${FIRST_TOKEN_CE_PEAK_STAGEA:=12.0}"  # Keep constant
+: "${FIRST_TOKEN_CE_WEIGHT_STAGEA:=6.0}"  # Reduced from 12.0 to prevent NaN/Inf
+: "${FIRST_TOKEN_CE_PEAK_STAGEA:=6.0}"  # Keep constant
 : "${FIRST_TOKEN_CE_WARMUP_FRAC_STAGEA:=0.3}"
 : "${KD_WEIGHT_STAGEB:=2.0}"
 : "${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:=2.0}"
@@ -287,7 +287,7 @@ PY
           --latent_private_len "$LATENT_PRIVATE_LEN" \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEA" --first_token_ce_schedule cosine --first_token_ce_peak "$FIRST_TOKEN_CE_PEAK_STAGEA" --first_token_ce_warmup_frac "$FIRST_TOKEN_CE_WARMUP_FRAC_STAGEA" \
-          --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEA" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
+          --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEA" --kd_tau 4.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
           --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
           --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
           --warmup_text_latent_epochs "$WARMUP_TEXT_LATENT_EPOCHS_STAGEA" \
@@ -322,7 +322,7 @@ PY
           --latent_private_len "$LATENT_PRIVATE_LEN" \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule cosine --first_token_ce_peak "$FIRST_TOKEN_CE_PEAK_STAGEB" --first_token_ce_warmup_frac "$FIRST_TOKEN_CE_WARMUP_FRAC_STAGEB" \
-          --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 2.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
+          --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 4.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
           --latent_keep_start 0.5 --latent_keep_end 0.85 --latent_keep_power 2.0 \
           --warmup_text_latent_epochs "$WARMUP_TEXT_LATENT_EPOCHS_STAGEB" \

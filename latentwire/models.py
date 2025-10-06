@@ -40,6 +40,13 @@ def resolve_lora_targets(arg: str, model_name_or_path: str) -> Tuple[List[str], 
         except ValueError:
             first_n = None
         return default_lora_targets_for(model_name_or_path), first_n
+    if spec.startswith("attn_firstN:"):
+        # Attention-only modules (no MLP)
+        try:
+            first_n = int(spec.split(":", 1)[1])
+        except ValueError:
+            first_n = None
+        return ["q_proj", "k_proj", "v_proj", "o_proj"], first_n
     modules = [tok.strip() for tok in spec.split(",") if tok.strip()]
     return modules or default_lora_targets_for(model_name_or_path), None
 
