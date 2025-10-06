@@ -1681,9 +1681,9 @@ def main():
                         first_pred = logits_first.argmax(dim=-1)
                         first_acc_raw = (first_pred == first_targets).float().mean()
 
-                        # Store predictions for logging (cache in per_model_losses for later access)
-                        per_model_losses[ctx.name]["first_pred"] = first_pred
-                        per_model_losses[ctx.name]["first_targets"] = first_targets
+                        # Store predictions for logging (will be accessible via per_model_losses later)
+                        losses_record["first_pred"] = first_pred
+                        losses_record["first_targets"] = first_targets
                 else:
                     loss_first_raw = torch.zeros((), device=target_device)
                     first_acc_raw = torch.zeros((), device=target_device)
