@@ -1,0 +1,115 @@
+Starting GPU monitoring → runs/smoke/gpu_monitor.log
+
+>>> Combination 1: m64_dz256_rl2_rh4
+    RUN_TAG=smoke
+    EPOCHS_STAGEA=4 | EPOCHS_STAGEB=8
+    WARMUP_TEXT_LATENT_EPOCHS_STAGEA=2.0 | WARMUP_TEXT_LATENT_EPOCHS_STAGEB=1.5
+
+=== CUDA preflight ===
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+=== Stage A: Llama latent fit ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[Optimization] Enabled FlashAttention-2 and memory-efficient kernels
+[Optimization] Enabled TF32 for matmul and cuDNN
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3677.60it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.70s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.37s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.54s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.22s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+[meta-llama/Meta-Llama-3.1-8B-Instruct] Initializing 3 latent adapters at layers (5, 10, 15)
+[meta-llama/Meta-Llama-3.1-8B-Instruct] Latent adapters: 459,399,171 trainable parameters
+
+🔧 Applying LoRA (r=8, alpha=8)...
+   Llama BEFORE LoRA: 0 trainable / 8,030,261,248 total
+trainable params: 6,815,744 || all params: 8,037,076,992 || trainable%: 0.0848
+   Llama AFTER LoRA:  6,815,744 trainable / 8,037,076,992 total
+   ✓ Added 6,815,744 LoRA parameters to Llama
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+[After Model Loading] [GPU Memory] GPU0:5.5GB(6%), GPU1:3.5GB(4%), GPU2:3.5GB(4%), GPU3:4.5GB(5%) | Total: 17.0GB allocated, 17.1GB reserved, 323.1GB free, Peak: 17.0GB
+[INFO] llama anchor tokens: 3
+[Optimization] Compiled encoder with torch.compile
+[Optimization] Compiled 1 adapters with torch.compile
+[Optimization] Compiled 1 deep prefix generators
+[Optimization] Compiled latent refiner
+[Optimization] Using fused AdamW optimizer
+[INFO] LR scheduler: CosineAnnealingLR (T_max=120, eta_min=1.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+[warmup] alternating text/latent for first 60 steps
+Epoch 1/4
+[Epoch 1 Start] [GPU Memory] GPU0:6.8GB(11%), GPU1:3.5GB(4%), GPU2:3.5GB(4%), GPU3:4.5GB(5%) | Total: 18.3GB allocated, 21.0GB reserved, 319.1GB free, Peak: 21.0GB
+[warmup] step=0 mode=text (warm-up)
+    [Memory after encoder] 18.4GB allocated
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  1/30 | (warm-up text) | align=0.0002 | text_tf=16.2679 | latent_scale=0.00
+W1008 16:53:41.988406 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] d0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:41.988765 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] d2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:41.994340 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] d0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:41.994515 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] d1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:41.994599 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] d2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.445794 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] q2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.446103 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.459540 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] q2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.459737 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.459834 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] q1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.557668 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] z0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.557817 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] z1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:42.557884 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] z2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:43.011421 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] x0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:43.011626 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] x1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:43.011765 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [6/0] r2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:47.614092 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] d0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:47.614387 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] d2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:47.625504 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] d0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:47.625661 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] d1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:47.625729 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] d2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:47.999400 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:47.999651 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.007123 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.007309 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.007397 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.091533 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.091717 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.098555 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.098718 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.098804 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.157414 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.157554 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.165114 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.165280 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.224891 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.225070 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.230603 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.230768 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.294231 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.294409 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.294500 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.372694 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.372837 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.372904 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.422833 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.422986 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] q1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.477811 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.477956 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] z0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.728126 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.728344 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] r2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.735225 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.735505 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.735594 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] r2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.833151 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.833398 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.839564 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.839806 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.917050 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.917349 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x1 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.917447 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] r2 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.989222 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x0 is not in var_ranges, defaulting to unknown range.
+W1008 16:53:48.989385 23443105904192 torch/fx/experimental/symbolic_shapes.py:4449] [5/0] x1 is not in var_ranges, defaulting to unknown range.
+    [Memory after backward] 20.4GB allocated, peak 175.3GB
+[warmup] step=1 mode=latent (warm-up)
