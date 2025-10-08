@@ -1386,6 +1386,10 @@ class LMWrapper(nn.Module):
         # Convert tuple to list for modification
         hs_list = list(hidden_states)
 
+        # Cast latent to match model dtype (critical for bfloat16 models)
+        if len(hs_list) > 0 and latent.dtype != hs_list[0].dtype:
+            latent = latent.to(dtype=hs_list[0].dtype)
+
         # Apply adapter at each specified layer
         for layer_idx in self.latent_adapter_layers:
             if layer_idx < len(hs_list):
