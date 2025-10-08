@@ -16,8 +16,8 @@ PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
   warnings.warn(
 Loading dataset subset...
 Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3662.35it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.37s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:03,  1.51s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.41s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.23s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3959.69it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.65s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.35s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.41s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.04it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.14s/it]
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
 [meta-llama/Meta-Llama-3.1-8B-Instruct] Initializing 3 latent adapters at layers (5, 10, 15)
 [meta-llama/Meta-Llama-3.1-8B-Instruct] Latent adapters: 459,399,171 trainable parameters
@@ -36,20 +36,13 @@ Llama hidden size: 4096
 Epoch 1/4
 [warmup] step=0 mode=text (warm-up)
 We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
 Traceback (most recent call last):
   File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 2794, in <module>
     main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1749, in main
-    loss_tf_latent = ctx.wrapper.forward_with_prefix_loss(
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/models.py", line 1194, in forward_with_prefix_loss
-    loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/loss.py", line 1188, in forward
-    return F.cross_entropy(input, target, weight=self.weight,
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/functional.py", line 3104, in cross_entropy
-    return torch._C._nn.cross_entropy_loss(input, target, weight, _Reduction.get_enum(reduction), ignore_index, label_smoothing)
-RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:3 and cuda:0! (when checking argument for argument target in method wrapper_CUDA_nll_loss_forward)
-Stopping GPU monitoring (PID 4136183)
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1826, in main
+    loss_kce_raw = k_token_ce_from_prefix(
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/losses.py", line 88, in k_token_ce_from_prefix
+    total = total + F.cross_entropy(logits, target, ignore_index=ignore_index, reduction="mean")
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:3!
+Stopping GPU monitoring (PID 4142824)
