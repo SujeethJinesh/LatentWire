@@ -182,6 +182,7 @@ def load_checkpoint(
     optimizer: Optional[optim.Optimizer] = None,
     strict: bool = True,
     device: str = "cpu",
+    wrappers: Optional[Dict[str, LMWrapper]] = None,
 ) -> Tuple[int, int]:
     if path and os.path.isfile(path):
         state = _safe_load(path, map_location="cpu")
@@ -203,6 +204,10 @@ def load_checkpoint(
     gist_loaded: Dict[str, bool] = (
         {name: False for name in (gist_heads or {}).keys()}
         if gist_heads else {}
+    )
+    latent_adapters_loaded: Dict[str, bool] = (
+        {name: False for name, wrapper in (wrappers or {}).items() if wrapper.use_latent_adapters}
+        if wrappers else {}
     )
     if isinstance(state, dict) and "encoder" in state:
         try:
@@ -253,6 +258,19 @@ def load_checkpoint(
                             gist_loaded[name] = False
                     else:
                         print(f"   -> gist head '{name}' missing in state.pt; will retry from disk")
+            if wrappers:
+                for name, wrapper in wrappers.items():
+                    if wrapper.use_latent_adapters:
+                        key = f"latent_adapters_{name}"
+                        if key in state:
+                            try:
+                                wrapper.latent_adapters.load_state_dict(state[key], strict=strict)
+                                latent_adapters_loaded[name] = True
+                            except Exception as exc:
+                                print(f"   -> latent adapters '{name}' from state.pt failed ({exc}); will retry from disk")
+                                latent_adapters_loaded[name] = False
+                        else:
+                            print(f"   -> latent adapters '{name}' missing in state.pt; will retry from disk")
         if refiner is not None and "refiner" in state:
             try:
                 refiner.load_state_dict(state["refiner"], strict=strict)
@@ -264,7 +282,8 @@ def load_checkpoint(
             refiner_loaded = refiner is None
     deep_prefix_ok = True if not deep_prefix_generators else all(deep_prefix_loaded.values())
     gist_ok = True if not gist_heads else all(gist_loaded.values())
-    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded and deep_prefix_ok and gist_ok:
+    latent_adapters_ok = True if not latent_adapters_loaded else all(latent_adapters_loaded.values())
+    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded and deep_prefix_ok and gist_ok and latent_adapters_ok:
         suffix = "encoder/adapters"
         if deep_prefix_generators:
             suffix += "/deep_prefix"
@@ -272,6 +291,8 @@ def load_checkpoint(
             suffix += "/refiner"
         if gist_heads:
             suffix += "/gist"
+        if latent_adapters_loaded:
+            suffix += "/latent_adapters"
         print(f"   -> loaded {suffix} FROM state.pt")
 
     if (not enc_loaded or not all(adapters_loaded.values()) or not refiner_loaded) and ckpt_dir:
@@ -324,6 +345,16 @@ def load_checkpoint(
                     gist_loaded[name] = True
                 else:
                     missing.append(gist_path)
+
+        if wrappers:
+            for name, wrapper in wrappers.items():
+                if wrapper.use_latent_adapters and not latent_adapters_loaded.get(name, True):
+                    adapters_path = os.path.join(ckpt_dir, f"latent_adapters_{name}.pt")
+                    if os.path.isfile(adapters_path):
+                        wrapper.latent_adapters.load_state_dict(_safe_load(adapters_path, map_location=device), strict=strict)
+                        latent_adapters_loaded[name] = True
+                    else:
+                        missing.append(adapters_path)
 
         if missing:
             raise FileNotFoundError(
@@ -1280,6 +1311,12 @@ def main():
     for head in gist_heads.values():
         gist_params.extend([p for p in head.parameters() if p.requires_grad])
 
+    # Collect latent adapter params from all wrappers
+    latent_adapter_params: List[torch.nn.Parameter] = []
+    for wrapper in wrappers_in_use:
+        if wrapper.use_latent_adapters:
+            latent_adapter_params.extend([p for p in wrapper.latent_adapters.parameters() if p.requires_grad])
+
     optim_groups = []
     if enc_params:
         optim_groups.append({"params": enc_params, "lr": args.lr})
@@ -1297,6 +1334,8 @@ def main():
         optim_groups.append({"params": deep_prefix_params, "lr": args.lr})
     if gist_params:
         optim_groups.append({"params": gist_params, "lr": args.lr})
+    if latent_adapter_params:
+        optim_groups.append({"params": latent_adapter_params, "lr": args.lr})
 
     optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
 
@@ -1357,6 +1396,12 @@ def main():
 
     if ckpt_path:
         print(f"⏪ Resuming from: {ckpt_path}")
+        # Build wrappers dict for latent adapter loading
+        wrappers_dict = {}
+        if llama is not None:
+            wrappers_dict["llama"] = llama
+        if qwen is not None:
+            wrappers_dict["qwen"] = qwen
         epoch_loaded, global_loaded = load_checkpoint(
             ckpt_path,
             encoder,
@@ -1367,6 +1412,7 @@ def main():
             optimizer=None if args.no_load_optimizer else optimizer,
             strict=True,
             device=device,
+            wrappers=wrappers_dict,
         )
         start_epoch = epoch_loaded
         global_step = global_loaded
@@ -2335,6 +2381,10 @@ def main():
                         "lora_dropout": args.lora_dropout,
                         "lora_target_modules": args.lora_target_modules,
                         "lora_firstN": args.lora_firstN,
+                        "use_latent_adapters": bool(args.use_latent_adapters),
+                        "latent_adapter_layers": args.latent_adapter_layers,
+                        "latent_adapter_heads": args.latent_adapter_heads,
+                        "latent_adapter_dropout": args.latent_adapter_dropout,
                     }
                     dp_len_cfg = int(
                         args.deep_prefix_len
@@ -2376,6 +2426,12 @@ def main():
                         state_blob[f"deep_prefix_{name}"] = gen.state_dict()
                     if latent_refiner is not None:
                         state_blob["refiner"] = latent_refiner.state_dict()
+                    # Save latent adapters
+                    for wrapper in wrappers_in_use:
+                        if wrapper.use_latent_adapters:
+                            # Find wrapper name (llama or qwen)
+                            wrapper_name = "llama" if wrapper is llama else "qwen"
+                            state_blob[f"latent_adapters_{wrapper_name}"] = wrapper.latent_adapters.state_dict()
                     artifacts = {
                         "encoder.pt": encoder.state_dict(),
                         "state.pt": state_blob,
@@ -2387,6 +2443,11 @@ def main():
                         artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
                     if latent_refiner is not None:
                         artifacts["refiner.pt"] = latent_refiner.state_dict()
+                    # Save latent adapters as separate .pt files
+                    for wrapper in wrappers_in_use:
+                        if wrapper.use_latent_adapters:
+                            wrapper_name = "llama" if wrapper is llama else "qwen"
+                            artifacts[f"latent_adapters_{wrapper_name}.pt"] = wrapper.latent_adapters.state_dict()
                     save_latest_checkpoint(best_save_dir, artifacts, pre_prune=False, post_prune=False, verbose=False)
 
                     # Save LoRA weights (critical for proper evaluation)
