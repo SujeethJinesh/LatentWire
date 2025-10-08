@@ -85,7 +85,9 @@ def k_token_ce_from_prefix(
         # Use ignore_index to properly mask PAD tokens
         # Move gold_ids to same device as logits (critical for multi-GPU models)
         target = gold_ids[:, t].to(logits.device)
-        total = total + F.cross_entropy(logits, target, ignore_index=ignore_index, reduction="mean")
+        loss_step = F.cross_entropy(logits, target, ignore_index=ignore_index, reduction="mean")
+        # Move loss to accumulator device before adding (multi-GPU compatibility)
+        total = total + loss_step.to(total.device)
         steps += 1
 
     return total / max(steps, 1)
@@ -404,7 +406,9 @@ def kd_hidden_states_first_k(
         for layer in layers:
             teacher_state = teacher_states[layer][:, gather_index, :]
             student_state = student_states[layer][:, -1, :]
-            total = total + (student_state - teacher_state).pow(2).mean()
+            loss_step = (student_state - teacher_state).pow(2).mean()
+            # Move loss to accumulator device before adding (multi-GPU compatibility)
+            total = total + loss_step.to(total.device)
         steps += 1
 
     return total / max(steps, 1)
