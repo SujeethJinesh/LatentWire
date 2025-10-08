@@ -1193,13 +1193,7 @@ class LMWrapper(nn.Module):
                 ids_list = list(anchor_ids)
                 if ids_list:
                     anchor_tensor = torch.tensor(ids_list, dtype=torch.long, device=model_device)
-        if anchor_tensor is not None and anchor_tensor.numel() > 0:
-            anchor_tensor = anchor_tensor.view(1, -1).expand(B, -1)
-            anchor_part = self.input_embed(anchor_tensor)
-            parts.append(anchor_part)
-            segment_lengths.append(anchor_part.size(1))
-            segment_tags.append("anchor")
-
+        # BOS must come before anchor for proper chat decode contract
         if append_bos_after_prefix is None:
             append_bos_after_prefix = not (anchor_tensor is not None and anchor_tensor.numel() > 0)
         if append_bos_after_prefix:
@@ -1210,6 +1204,13 @@ class LMWrapper(nn.Module):
                 parts.append(bos_part)
                 segment_lengths.append(bos_part.size(1))
                 segment_tags.append("bos")
+
+        if anchor_tensor is not None and anchor_tensor.numel() > 0:
+            anchor_tensor = anchor_tensor.view(1, -1).expand(B, -1)
+            anchor_part = self.input_embed(anchor_tensor)
+            parts.append(anchor_part)
+            segment_lengths.append(anchor_part.size(1))
+            segment_tags.append("anchor")
 
         if prev_token_ids is not None and prev_token_ids.numel() > 0:
             prev = prev_token_ids.to(model_device)

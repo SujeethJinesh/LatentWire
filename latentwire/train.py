@@ -541,8 +541,8 @@ def main():
                     help="If set, fix adapter.scale at 1.0 (no learning).")
     ap.add_argument("--first_token_ce_weight", type=float, default=0.5,
                     help="Weight for the first-token CE objective; 0 disables.")
-    ap.add_argument("--first_token_ce_schedule", type=str, default="none", choices=["none", "cosine"],
-                    help="Optional schedule for first-token CE weights (default: none).")
+    ap.add_argument("--first_token_ce_schedule", type=str, default="none", choices=["none", "cosine", "warmup"],
+                    help="Optional schedule for first-token CE weights (default: none; warmup=linear 0→weight over 200 steps).")
     ap.add_argument("--first_token_ce_peak", type=float, default=None,
                     help="Peak first-token CE weight during warmup when using a schedule.")
     ap.add_argument("--first_token_ce_warmup_frac", type=float, default=0.4,
@@ -1504,6 +1504,15 @@ def main():
         base = max(float(args.first_token_ce_weight), 0.0)
         if first_ce_schedule == "none" or total_batches <= 0:
             return base
+
+        # "warmup" schedule: linear ramp 0 → base over first 200 steps, then hold
+        if first_ce_schedule == "warmup":
+            warmup_steps = 200
+            if step_idx < warmup_steps:
+                return base * (step_idx / warmup_steps)
+            return base
+
+        # "cosine" schedule: hold at peak, then cosine decay to base
         total = max(int(total_batches), 1)
         peak = peak_override if (peak_override is not None and peak_override > 0.0) else max(8.0, 2.0 * max(base, 1e-6))
         warm_frac = min(max(float(args.first_token_ce_warmup_frac), 0.0), 1.0)
