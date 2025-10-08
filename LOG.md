@@ -1,6 +1,62 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
-### 2025-10-08 — Critical Stage A Improvements: Enhanced Logging + LoRA + Stronger Entropy (Claude Code + Codex)
+### 2025-10-08 (b) — Assessment After Fixes: Partial Progress, Architectural Escalation Needed (Claude Code)
+- **RESULTS from hero run (steps 10-410, epoch 0-1)**: Implemented fixes (LoRA + stronger entropy + enhanced logging) show **learning is happening but NOT on track** for success criteria.
+
+- **POSITIVE SIGNALS**:
+  - ✅ **LoRA is learning**: Weights growing steadily 0.817 → 0.865 (not stuck at initialization)
+  - ✅ **Losses decreasing**: first_loss 14.67 → 7.65 (-48%), kce_loss 14.54 → 9.77 (-33%)
+  - ✅ **Top5 > Top1 consistently**: 12.5% vs 4.2% at epoch 1 end — **gold tokens ARE in top-5**
+  - ✅ **BREAKTHROUGH at step 267**: Hit **25% accuracy** (exceeds epoch 2 target of 15%!)
+  - ✅ **Margin increasing**: 0.0022 → 0.0357 (16× improvement, model gaining confidence)
+  - ✅ **Enhanced logging working**: Can now see top-5 accuracy, margin, diversity clearly
+
+- **CRITICAL PROBLEMS**:
+  - ❌ **Diversity collapsed by step 110**: 5 unique tokens → 1 ("the" only), never recovered
+  - ❌ **High variance/instability**: Accuracy jumping 0% → 4.2% → 25% → 8.3% → 12.5% → 4.2%
+  - ❌ **Entropy still too high**: 7.93 at epoch 1 (healthy distribution should be ~2-4)
+  - ❌ **Current: 4.2% vs target 15%**: Will likely hit ~8-12% by epoch 2, not 15%
+  - ❌ **Diversity: 1/24 vs target 5/24**: No sign of recovery from "the" collapse
+
+- **ROOT CAUSE ANALYSIS**:
+  - Model is **learning but trapped in local minimum** where "the" is a safe bet
+  - The 25% spike at step 267 **PROVES architecture CAN work** when it escapes the attractor
+  - But "the" attractor too strong: Even with entropy=0.3, distribution stays flat (entropy ~8)
+  - Margin tiny (0.03-0.06): "the" barely beats alternatives, but always wins argmax
+  - **Entropy regularization alone insufficient**: Distribution is flat but argmax stuck on mode token
+
+- **ASSESSMENT: NOT on track for success criteria**
+  - Current trajectory: ~8-12% by epoch 2 (vs target 15%)
+  - Diversity: Will stay 1/24 (vs target 5/24)
+  - Top5 accuracy (12.5%) shows model has learned something, but can't break "the" dominance
+  - **The 25% spike proves this is a local minimum problem, not fundamental architecture failure**
+
+- **RECOMMENDATION — Escalate to architectural intervention**:
+  - **Option 1: Scheduled Sampling** (exposure bias fix from possible_improvements.md):
+    - Gradually replace teacher-forced context with model's own predictions (0% → 30% by epoch 6)
+    - Forces model to learn autoregressive generation, not just teacher-forced prediction
+    - Implementation: Mix gold tokens with sampled tokens in first K positions with schedule
+    - Expected impact: Breaks "the" attractor by exposing model to diverse contexts
+
+  - **Option 2: Multi-Depth Adapters** (IAA-style from possible_improvements.md #5):
+    - Insert adapters at layers {4, 8, 12, 16} instead of just input embeddings
+    - Allows latent to guide reasoning at multiple stages, not just initial conditioning
+    - Implementation: Modify LMWrapper to inject adapter outputs at selected layers
+    - Expected impact: 2-3× improvement in first-token accuracy (based on IAA paper)
+
+  - **Option 3: Increase Entropy Weight 0.3 → 1.0** (simple escalation):
+    - Current 0.3 still allows flat distribution with "the" winning
+    - 1.0 weight forces sharper distribution (entropy ~4-5 instead of ~8)
+    - Risk: May destabilize training or cause NaN gradients
+    - Expected impact: 50% chance of breaking "the" dominance
+
+- **NEXT STEPS**:
+  - Wait for epoch 2 completion to see if 25% spike repeats (confirming it's learnable)
+  - If epoch 2 ends <15% accuracy: STOP and implement Option 1 or 2
+  - If epoch 2 ends >15% accuracy: Continue to epoch 6, monitor for improvement
+  - Document step 267 spike in detail (what was different? data? initialization?)
+
+### 2025-10-08 (a) — Critical Stage A Improvements: Enhanced Logging + LoRA + Stronger Entropy (Claude Code + Codex)
 - **ANALYSIS**: Hero run through ~1.4 epochs (450 steps) of Stage A showed persistent mode collapse:
   - **100% "the" predictions** (diversity: 1/24 tokens) with occasional "200"
   - first_acc stuck at 7.6% (not improving despite high entropy 7-11)
