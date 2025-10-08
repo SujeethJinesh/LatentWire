@@ -1,5 +1,54 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-08 — Critical Stage A Improvements: Enhanced Logging + LoRA + Stronger Entropy (Claude Code + Codex)
+- **ANALYSIS**: Hero run through ~1.4 epochs (450 steps) of Stage A showed persistent mode collapse:
+  - **100% "the" predictions** (diversity: 1/24 tokens) with occasional "200"
+  - first_acc stuck at 7.6% (not improving despite high entropy 7-11)
+  - Entropy regularization (weight=0.1) kept distribution FLAT but argmax still selected "the"
+  - Root cause: Model learned P("the")≈0.08, everything else≈0.07 — high entropy but "the" always wins
+  - **Entropy alone is necessary but NOT sufficient** to break mode collapse
+
+- **IMPLEMENTED FIXES**:
+  1. **Enhanced diagnostic logging** (train.py:1705-1738, 2211-2221):
+     - `first_token_logit_stats`: max_prob, second_prob, margin, top5_entropy
+     - `first_acc_top5`: Does gold appear in top-5 predictions? (Critical new metric)
+     - `prediction_histogram`: Token frequency counts (top 10)
+     - These metrics track whether diversity is actually improving or just entropy is high
+
+  2. **Enable LoRA in Stage A** (run_llama_single.sh:293, 319):
+     - Previous: Stage A had NO LoRA (only encoder/adapter training)
+     - Now: Tiny LoRA (r=8) on first 12 attention layers (Q/K/V/O)
+     - Implements "Teach Base to Listen" from possible_improvements.md
+     - Allows frozen LLM to learn to respond to latent perturbations
+     - Expected impact: 10-20× improvement in first_acc based on related work
+
+  3. **Increased entropy weight** (run_llama_single.sh:101-102):
+     - Stage A: 0.1 → 0.3 (3× stronger diversity penalty)
+     - Stage B: 0.1 → 0.3 (3× stronger diversity penalty)
+     - Combined with LoRA, should break "the" dominance
+
+  4. **Stronger supervision signals** (already enabled):
+     - latent_align_weight: 0.5 (preserves token-level info)
+     - KD with teacher = base model (adapters disabled)
+     - K-token CE (K=8) with constant first_token weight
+
+- **MONITORING STRATEGY**:
+  - Watch `first_acc_top5` in diagnostics.jsonl — if gold appears in top-5 but not top-1, we're learning but need more training
+  - Check `prediction_histogram` — should see >5 unique tokens per batch after epoch 2
+  - Monitor `first_token_logit_stats.margin` — should increase from ~0.005 to >0.02 as learning progresses
+  - Track `lora_avg_norm` — LoRA weights should grow as model learns to listen
+
+- **SUCCESS CRITERIA** (to decide if architecture changes needed):
+  - **By end of Epoch 2**: first_acc > 15%, first_acc_top5 > 30%, diversity > 5/24
+  - **By end of Stage A (Epoch 6)**: first_acc > 25%, F1 > 0.15, diverse predictions
+  - **If still failing**: Escalate to multi-depth adapters or latent coprocessor from possible_improvements.md
+
+- **NEXT STEPS**:
+  - Stop current hero run (wasting compute on old config)
+  - Relaunch with new logging + LoRA + stronger entropy
+  - Monitor diagnostics.jsonl for first_acc_top5 and prediction_histogram trends
+  - Evaluate after Epoch 2 to decide if bigger architecture changes needed
+
 ### 2025-10-06 — Stage A diversification safeguards (Codex)
 - **Entropy regularisation:** latent batches now apply a first-token entropy bonus (`--first_token_entropy_weight`) to discourage the single-token collapse we observed in smoke runs. Diagnostics log `first_entropy`/`entropy_loss` so we can gate Stage A health.
 - **True alternating warm-up:** the warm-up window actually alternates text ↔ latent steps (odd steps latent) instead of staying text-only, so the encoder sees latent supervision from the very first epoch.

@@ -1702,6 +1702,41 @@ def main():
                         first_pred = logits_first.argmax(dim=-1)
                         first_acc_raw = (first_pred == first_targets).float().mean()
 
+                        # Enhanced logging: top-k probabilities, margins, and top-5 accuracy
+                        if training_mode == "latent":
+                            probs_for_stats = torch.softmax(logits_first.float(), dim=-1)
+                            top5_probs, top5_idx = torch.topk(probs_for_stats, k=min(5, probs_for_stats.size(-1)), dim=-1)
+
+                            # Top-k statistics
+                            max_prob = top5_probs[:, 0].mean().item()
+                            second_prob = top5_probs[:, 1].mean().item() if top5_probs.size(-1) > 1 else 0.0
+                            margin = (top5_probs[:, 0] - top5_probs[:, 1]).mean().item() if top5_probs.size(-1) > 1 else 0.0
+
+                            # Top-5 entropy (entropy over just the top 5 tokens)
+                            top5_entropy = -(top5_probs * torch.log(top5_probs.clamp_min(1e-8))).sum(-1).mean().item()
+
+                            # Top-5 accuracy: does gold appear in top-5 predictions?
+                            first_targets_expanded = first_targets.unsqueeze(-1).expand_as(top5_idx)
+                            top5_match = (top5_idx == first_targets_expanded).any(dim=-1)
+                            first_acc_top5 = top5_match.float().mean().item()
+
+                            # Store enhanced stats
+                            losses_record["first_token_logit_stats"] = {
+                                "max_prob": max_prob,
+                                "second_prob": second_prob,
+                                "margin": margin,
+                                "top5_entropy": top5_entropy,
+                            }
+                            losses_record["first_acc_top5"] = first_acc_top5
+
+                            # Prediction histogram: collect token strings
+                            try:
+                                pred_tokens = [ctx.wrapper.tokenizer.decode([p.item()], skip_special_tokens=False)
+                                             for p in first_pred[:24]]  # Limit to 24 for logging
+                                losses_record["pred_tokens"] = pred_tokens
+                            except Exception:
+                                losses_record["pred_tokens"] = []
+
                         # Store predictions for logging (will be accessible via per_model_losses later)
                         losses_record["first_pred"] = first_pred
                         losses_record["first_targets"] = first_targets
@@ -2173,6 +2208,17 @@ def main():
                             "latent_prefix_align": _to_float(metrics.get("latent_prefix_align", 0.0)),
                             "gist": _to_float(metrics.get("gist", 0.0)),
                         }
+                        # Add enhanced first-token statistics
+                        if "first_token_logit_stats" in metrics:
+                            diag_entry["models"][ctx.name]["first_token_logit_stats"] = metrics["first_token_logit_stats"]
+                        if "first_acc_top5" in metrics:
+                            diag_entry["models"][ctx.name]["first_acc_top5"] = _to_float(metrics.get("first_acc_top5", 0.0))
+                        # Add prediction histogram (token counts)
+                        if "pred_tokens" in metrics and metrics["pred_tokens"]:
+                            from collections import Counter
+                            token_counts = Counter(metrics["pred_tokens"])
+                            # Store top 10 most frequent predictions
+                            diag_entry["models"][ctx.name]["prediction_histogram"] = dict(token_counts.most_common(10))
                         # Add LoRA weight norms if available
                         if args.use_lora and ctx.wrapper.model is not None:
                             lora_norms = _compute_lora_weight_norms(ctx.wrapper.model)

@@ -98,8 +98,8 @@ fi
 : "${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:=2.0}"
 : "${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:=0.2}"
 : "${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:=1.0}"
-: "${FIRST_TOKEN_ENTROPY_WEIGHT_STAGEA:=0.1}"
-: "${FIRST_TOKEN_ENTROPY_WEIGHT_STAGEB:=0.1}"
+: "${FIRST_TOKEN_ENTROPY_WEIGHT_STAGEA:=0.3}"  # Increased from 0.1 to 0.3 to combat mode collapse
+: "${FIRST_TOKEN_ENTROPY_WEIGHT_STAGEB:=0.3}"  # Increased from 0.1 to 0.3 to combat mode collapse
 BASE_RUN_TAG="$RUN_TAG"
 
 DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
@@ -290,7 +290,7 @@ PY
         if [[ $hero -eq 1 && $save_every_stagea -le 0 ]]; then
           save_every_stagea=$steps_per_epoch_stagea
         fi
-        # NOTE: Stage A does NOT use LoRA - only encoder/adapter/deep_prefix training
+        # NOTE: Stage A NOW uses tiny LoRA on early attention to help base model listen to latent
         CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" python -u latentwire/train.py \
           "${COMMON_ARGS[@]}" \
           --samples "$TRAIN_SAMPLES_STAGEA" --epochs "$EPOCHS_STAGEA" \
@@ -316,6 +316,7 @@ PY
           --diagnostic_log "$DIAGNOSTIC_LOG" \
           --save_every "$save_every_stagea" \
           "${GIST_ARGS[@]}" \
+          "${LORA_ARGS[@]}" \
           "${WARMUP_FLAG[@]}" \
           2>&1 | tee -a "$LOG"
 
