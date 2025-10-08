@@ -543,6 +543,8 @@ def main():
                     help="Weight for the first-token CE objective; 0 disables.")
     ap.add_argument("--first_token_ce_schedule", type=str, default="none", choices=["none", "cosine", "warmup"],
                     help="Optional schedule for first-token CE weights (default: none; warmup=linear 0→weight over 200 steps).")
+    ap.add_argument("--first_token_entropy_weight", type=float, default=0.0,
+                    help="If >0, adds a negative-entropy penalty on latent first-token logits to discourage mode collapse.")
     ap.add_argument("--first_token_ce_peak", type=float, default=None,
                     help="Peak first-token CE weight during warmup when using a schedule.")
     ap.add_argument("--first_token_ce_warmup_frac", type=float, default=0.4,
@@ -1609,18 +1611,21 @@ def main():
                     scaffolds[ctx.name] = tok["input_ids"].to(device)
 
             effective_texts = batch_user_texts if args.use_chat_template else batch_texts
-            warmup_active = warmup_total_steps > 0 and global_step < warmup_total_steps
+            batch_index = epoch * steps_per_epoch + step
+            warmup_active = warmup_total_steps > 0 and batch_index < warmup_total_steps
             training_mode = "latent"
             if warmup_active:
-                training_mode = "text"
+                training_mode = "text" if (batch_index % 2 == 0) else "latent"
             elif args.warmup_tail_prob > 0.0 and random.random() < float(args.warmup_tail_prob):
                 training_mode = "text"
 
-            if training_mode == "text":
-                if warmup_active and global_step < 10:
-                    print(f"[warmup] step={global_step} mode=text (warm-up)")
-                elif not warmup_active and global_step < warmup_total_steps + 50:
-                    print(f"[warmup] step={global_step} mode=text (tail)")
+            if warmup_active:
+                if training_mode == "text" and batch_index < 10:
+                    print(f"[warmup] step={batch_index} mode=text (warm-up)")
+                elif training_mode == "latent" and batch_index < 10:
+                    print(f"[warmup] step={batch_index} mode=latent (warm-up)")
+            elif training_mode == "text" and batch_index < warmup_total_steps + 50:
+                print(f"[warmup] step={batch_index} mode=text (tail)")
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
             total_model_loss = torch.zeros((), device=device)
@@ -1677,6 +1682,8 @@ def main():
                 )
 
                 first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
+                entropy_bonus = torch.zeros((), device=target_device)
+                first_entropy = torch.zeros((), device=target_device)
                 if enable_first_token_loss:
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
@@ -1686,6 +1693,11 @@ def main():
                     )
                     first_targets = ctx.first_token_ids[idx].to(target_device)
                     loss_first_raw = nn.functional.cross_entropy(logits_first.float(), first_targets)
+                    if training_mode == "latent" and args.first_token_entropy_weight > 0.0:
+                        probs = torch.softmax(logits_first.float(), dim=-1)
+                        entropy_vals = -(probs * torch.log(probs.clamp_min(1e-8))).sum(dim=-1)
+                        first_entropy = entropy_vals.mean()
+                        entropy_bonus = -first_entropy * float(args.first_token_entropy_weight)
                     with torch.no_grad():
                         first_pred = logits_first.argmax(dim=-1)
                         first_acc_raw = (first_pred == first_targets).float().mean()
@@ -1877,7 +1889,7 @@ def main():
                     start_scale = float(max(args.warmup_text_latent_weight, 0.0))
                     end_scale = float(max(args.warmup_text_latent_weight_end, 0.0))
                     if warmup_active and warmup_total_steps > 0:
-                        frac = min(1.0, max(0.0, global_step / float(max(1, warmup_total_steps))))
+                        frac = min(1.0, max(0.0, batch_index / float(max(1, warmup_total_steps))))
                         latent_scale = start_scale + (end_scale - start_scale) * frac
                     else:
                         latent_scale = end_scale
@@ -1974,6 +1986,7 @@ def main():
                     + latent_align_loss
                     + latent_prefix_align_loss
                     + float(max(args.warmup_text_teacher_weight, 0.0)) * text_teacher_loss
+                    + entropy_bonus
                     + gist_loss
                 ).to(device)
                 total_model_loss = total_model_loss + model_loss
@@ -1991,6 +2004,8 @@ def main():
                     "first": loss_first,
                     "first_weight": torch.tensor(float(effective_first_weight), device=target_device),
                     "first_acc": first_acc_raw,
+                    "first_entropy": first_entropy,
+                    "entropy_loss": entropy_bonus,
                     "kce": loss_kce,
                     "kd": loss_kd,
                     "state": loss_state,
@@ -2094,6 +2109,8 @@ def main():
 
                     if args.state_kd_weight > 0.0:
                         msg_ctx += f" state={_to_float(metrics['state']):.4f}"
+                    if args.first_token_entropy_weight > 0.0 and "first_entropy" in metrics:
+                        msg_ctx += f" ent={_to_float(metrics['first_entropy']):.3f}"
                     if args.manifold_stat_weight > 0.0:
                         msg_ctx += f" man={_to_float(metrics['manifold']):.4f}"
                     if args.warmup_align_weight > 0.0:
@@ -2146,6 +2163,8 @@ def main():
                             "tf": _to_float(metrics.get("tf", 0.0)),
                             "first": _to_float(metrics.get("first", 0.0)),
                             "first_acc": _to_float(metrics.get("first_acc", 0.0)),
+                            "first_entropy": _to_float(metrics.get("first_entropy", 0.0)),
+                            "entropy_loss": _to_float(metrics.get("entropy_loss", 0.0)),
                             "kce": _to_float(metrics.get("kce", 0.0)),
                             "kd": _to_float(metrics.get("kd", 0.0)),
                             "state": _to_float(metrics.get("state", 0.0)),
@@ -2227,6 +2246,7 @@ def main():
                         "first_token_ce_schedule": args.first_token_ce_schedule,
                         "first_token_ce_peak": args.first_token_ce_peak,
                         "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
+                        "first_token_entropy_weight": args.first_token_entropy_weight,
                         "adapter_hidden_mult": args.adapter_hidden_mult,
                         "adapter_dropout": args.adapter_dropout,
                         "adapter_colorize": bool(args.adapter_colorize),
@@ -2366,6 +2386,7 @@ def main():
                     "first_token_ce_schedule": args.first_token_ce_schedule,
                     "first_token_ce_peak": args.first_token_ce_peak,
                     "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
+                    "first_token_entropy_weight": args.first_token_entropy_weight,
                     "adapter_hidden_mult": args.adapter_hidden_mult,
                     "adapter_dropout": args.adapter_dropout,
                     "adapter_colorize": bool(args.adapter_colorize),
@@ -2493,6 +2514,7 @@ def main():
         "first_token_ce_schedule": args.first_token_ce_schedule,
         "first_token_ce_peak": args.first_token_ce_peak,
         "first_token_ce_warmup_frac": args.first_token_ce_warmup_frac,
+        "first_token_entropy_weight": args.first_token_entropy_weight,
         "adapter_hidden_mult": args.adapter_hidden_mult,
         "adapter_dropout": args.adapter_dropout,
         "adapter_colorize": bool(args.adapter_colorize),

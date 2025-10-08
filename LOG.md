@@ -1,5 +1,10 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-06 — Stage A diversification safeguards (Codex)
+- **Entropy regularisation:** latent batches now apply a first-token entropy bonus (`--first_token_entropy_weight`) to discourage the single-token collapse we observed in smoke runs. Diagnostics log `first_entropy`/`entropy_loss` so we can gate Stage A health.
+- **True alternating warm-up:** the warm-up window actually alternates text ↔ latent steps (odd steps latent) instead of staying text-only, so the encoder sees latent supervision from the very first epoch.
+- **Runner defaults:** `scripts/run_llama_single.sh` passes a 0.1 entropy weight through Stage A/B by default. Re-run `bash scripts/run_llama_single.sh` to confirm diversity before launching the hero sweep.
+
 ### 2025-10-05 (b) — Critical Architecture Analysis: Training-Eval Gap + Mode Collapse (Claude Code)
 - **Smoke test results (runs/smoke/pipeline_20251005_205815.log)**: Completed full Stage A (4 epochs) + Stage B (8 epochs) with all Path A+B fixes. Training showed **BEST PEAK EVER: 16.67% raw batch accuracy at step 210 (Stage A, epoch 5)**, but evaluation completely failed with **F1=0.0159 (1.6%), EM=0.0, FirstTok@1=2.5%**. Text baseline strong (F1=0.794, EM=0.59), confirming LLM quality is fine.
 - **CRITICAL ISSUE: Severe mode collapse identified**:

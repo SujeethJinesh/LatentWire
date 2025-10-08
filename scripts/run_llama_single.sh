@@ -98,6 +98,8 @@ fi
 : "${WARMUP_TEXT_TEACHER_WEIGHT_STAGEB:=2.0}"
 : "${WARMUP_TEXT_LATENT_WEIGHT_STAGEB:=0.2}"
 : "${WARMUP_TEXT_LATENT_WEIGHT_END_STAGEB:=1.0}"
+: "${FIRST_TOKEN_ENTROPY_WEIGHT_STAGEA:=0.1}"
+: "${FIRST_TOKEN_ENTROPY_WEIGHT_STAGEB:=0.1}"
 BASE_RUN_TAG="$RUN_TAG"
 
 DEFAULT_LLAMA_DEVICE_MAP='{"model.embed_tokens":0,"model.rotary_emb":0,"model.layers.0":0,"model.layers.1":0,"model.layers.2":0,"model.layers.3":0,"model.layers.4":0,"model.layers.5":0,"model.layers.6":0,"model.layers.7":0,"model.layers.8":1,"model.layers.9":1,"model.layers.10":1,"model.layers.11":1,"model.layers.12":1,"model.layers.13":1,"model.layers.14":1,"model.layers.15":1,"model.layers.16":2,"model.layers.17":2,"model.layers.18":2,"model.layers.19":2,"model.layers.20":2,"model.layers.21":2,"model.layers.22":2,"model.layers.23":2,"model.layers.24":3,"model.layers.25":3,"model.layers.26":3,"model.layers.27":3,"model.layers.28":3,"model.layers.29":3,"model.layers.30":3,"model.layers.31":3,"model.norm":3,"lm_head":3}'
@@ -299,6 +301,7 @@ PY
           --latent_private_len "$LATENT_PRIVATE_LEN" \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEA" --first_token_ce_schedule warmup \
+          --first_token_entropy_weight "$FIRST_TOKEN_ENTROPY_WEIGHT_STAGEA" \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEA" --kd_tau 4.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
           --latent_align_weight 0.5 --latent_prefix_align_weight 0.25 \
           --latent_keep_start 0.7 --latent_keep_end 1.0 --latent_keep_power 2.0 \
@@ -334,6 +337,7 @@ PY
           --latent_private_len "$LATENT_PRIVATE_LEN" \
           --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule warmup \
+          --first_token_entropy_weight "$FIRST_TOKEN_ENTROPY_WEIGHT_STAGEB" \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 4.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
           --latent_align_weight 1.0 --latent_prefix_align_weight 0.5 \
           --latent_keep_start 0.5 --latent_keep_end 0.85 --latent_keep_power 2.0 \
