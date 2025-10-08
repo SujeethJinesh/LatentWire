@@ -1089,6 +1089,7 @@ class LMWrapper(nn.Module):
         anchor_token_ids: Optional[List[int]] = None,
         *,
         deep_prefix_past: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
+        latent: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
         Teacher-forced CE over the gold answer conditioned on a latent prefix,
@@ -1167,14 +1168,33 @@ class LMWrapper(nn.Module):
                 stop = start + tf_inputs.size(1)
                 attn_mask[:, start:stop] = (~tf_pad).long()
 
+        # Request hidden states if using latent adapters
+        output_hidden_states = self.use_latent_adapters and latent is not None
+
         out = self.model(
             inputs_embeds=inputs_embeds,
             attention_mask=attn_mask,
             labels=labels_full,
             past_key_values=prepared_past,
             use_cache=bool(prepared_past),
+            output_hidden_states=output_hidden_states,
+            return_dict=True,
         )
-        return out.loss
+
+        # Apply latent adapters if enabled (recompute loss from modified hidden states)
+        if output_hidden_states and latent is not None:
+            modified_hidden_states = self._apply_latent_adapters(out.hidden_states, latent)
+            # Recompute logits from modified final hidden state
+            final_hidden = modified_hidden_states[-1]  # [B, T, d_model]
+            logits = self.model.lm_head(final_hidden)  # [B, T, vocab_size]
+            # Recompute loss with modified logits
+            loss_fct = torch.nn.CrossEntropyLoss()
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = labels_full[..., 1:].contiguous()
+            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+            return loss
+        else:
+            return out.loss
 
 
     def loss_with_text_prompt(

@@ -41,6 +41,7 @@ def k_token_ce_from_prefix(
     append_bos_after_prefix: Optional[bool] = None,
     *,
     deep_prefix_past: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
+    latent: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
     """Cross-entropy over the first `K` decoding steps under latent-prefix conditioning."""
     device = next(llm.model.parameters()).device
@@ -53,6 +54,9 @@ def k_token_ce_from_prefix(
     pad_id = getattr(getattr(llm, "tokenizer", None), "pad_token_id", None)
     ignore_index = int(pad_id) if pad_id is not None else -100
 
+    # Request hidden states if using latent adapters
+    output_hidden_states = llm.use_latent_adapters and latent is not None
+
     for t in range(min(K, gold_ids.size(1))):
         inputs_embeds, attn_mask, prepared_past = llm._compose_inputs_from_prefix(
             prefix_embeds,
@@ -61,13 +65,23 @@ def k_token_ce_from_prefix(
             append_bos_after_prefix=append_bos_after_prefix,
             deep_prefix=deep_prefix_past,
         )
-        logits = llm.model(
+        out = llm.model(
             inputs_embeds=inputs_embeds,
             attention_mask=attn_mask,
             past_key_values=prepared_past,
             use_cache=bool(prepared_past),
+            output_hidden_states=output_hidden_states,
             return_dict=True,
-        ).logits[:, -1, :]
+        )
+
+        # Apply latent adapters if enabled
+        if output_hidden_states and latent is not None:
+            modified_hidden_states = llm._apply_latent_adapters(out.hidden_states, latent)
+            final_hidden = modified_hidden_states[-1][:, -1, :]  # [B, d_model]
+            logits = llm.model.lm_head(final_hidden)  # [B, vocab_size]
+        else:
+            logits = out.logits[:, -1, :]
+
         # Use ignore_index to properly mask PAD tokens
         total = total + F.cross_entropy(logits, gold_ids[:, t], ignore_index=ignore_index, reduction="mean")
         steps += 1

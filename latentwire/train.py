@@ -1744,11 +1744,14 @@ def main():
                         f"[DEBUG:{ctx.name}] scaffold_len={scaffold.size(1)} anchor_mode={ctx.anchor_mode}",
                         flush=True,
                     )
+                # Pass latent for multi-depth adapters
+                latent_for_adapters_tf = latents_for_adapter if ctx.wrapper.use_latent_adapters else None
                 loss_tf_latent = ctx.wrapper.forward_with_prefix_loss(
                     prefix,
                     targets,
                     anchor_token_ids=ctx.anchor_ids,
                     deep_prefix_past=deep_prefix_cache,
+                    latent=latent_for_adapters_tf,
                 )
 
                 first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
@@ -1818,6 +1821,8 @@ def main():
                     first_acc_raw = torch.zeros((), device=target_device)
 
                 if args.k_ce_weight and args.k_ce_weight > 0.0:
+                    # Pass latent for multi-depth adapters
+                    latent_for_adapters_kce = latents_for_adapter if ctx.wrapper.use_latent_adapters else None
                     loss_kce_raw = k_token_ce_from_prefix(
                         ctx.wrapper,
                         prefix,
@@ -1826,6 +1831,7 @@ def main():
                         anchor_ids=ctx.anchor_ids,
                         append_bos_after_prefix=ctx.bos_flag,
                         deep_prefix_past=deep_prefix_cache,
+                        latent=latent_for_adapters_kce,
                     )
                 else:
                     loss_kce_raw = torch.zeros((), device=target_device)
