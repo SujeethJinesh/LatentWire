@@ -127,12 +127,17 @@ def log_gpu_memory(prefix="", reset_peak=False):
     return stats
 
 
-def suggest_batch_size_adjustment(current_batch_size, target_utilization=0.85):
-    """Suggest batch size adjustment based on current GPU memory utilization.
+def suggest_batch_size_adjustment(current_batch_size, peak_allocated_gb, after_forward_pass=False, target_utilization=0.75):
+    """Suggest batch size adjustment based on GPU memory utilization AFTER forward passes.
+
+    IMPORTANT: Only call this AFTER at least one forward+backward pass to get accurate
+    activation memory estimates. Pre-forward memory is misleading (model memory != activation memory)!
 
     Args:
         current_batch_size: Current batch size
-        target_utilization: Target GPU utilization (0.0-1.0), default 0.85 (85%)
+        peak_allocated_gb: Peak allocated memory from get_gpu_memory_stats()
+        after_forward_pass: Whether we've run at least one forward+backward pass
+        target_utilization: Target GPU utilization (0.0-1.0), default 0.75 (75% - conservative)
 
     Returns:
         Tuple of (suggested_batch_size, reason_message)
@@ -141,21 +146,29 @@ def suggest_batch_size_adjustment(current_batch_size, target_utilization=0.85):
     if not stats or not stats['gpus']:
         return current_batch_size, "No GPU stats available"
 
-    # Use the most utilized GPU as reference
-    max_util = max(g['utilization_pct'] / 100.0 for g in stats['gpus'])
-    total_free_gb = stats['total_free_gb']
+    # Never suggest changes before we've seen actual activation memory
+    if not after_forward_pass:
+        return current_batch_size, "Waiting for forward pass to measure activation memory"
 
-    # Safety margins
-    if max_util > 0.95:
-        # Very high utilization - reduce batch size
-        suggested = max(1, int(current_batch_size * 0.7))
-        return suggested, f"High memory pressure ({max_util:.1%}), reducing batch size"
-    elif max_util < target_utilization and total_free_gb > 30:
-        # Low utilization with plenty of free memory - can increase
-        suggested = int(current_batch_size * 1.3)
-        return suggested, f"Low utilization ({max_util:.1%}, {total_free_gb:.0f}GB free), can increase batch size"
+    # Use peak allocated (not reserved) to account for actual usage
+    total_capacity_gb = sum(g['total_gb'] for g in stats['gpus'])
+    peak_util = peak_allocated_gb / total_capacity_gb if total_capacity_gb > 0 else 0
+
+    # Very conservative safety margins (activation memory can be 3-5x model memory!)
+    if peak_util > 0.90:
+        # Dangerous territory - reduce significantly
+        suggested = max(1, int(current_batch_size * 0.5))
+        return suggested, f"CRITICAL: Peak memory {peak_util:.1%}, reduce batch size immediately"
+    elif peak_util > 0.80:
+        # High utilization - reduce conservatively
+        suggested = max(1, int(current_batch_size * 0.75))
+        return suggested, f"High peak memory ({peak_util:.1%}), reducing batch size for safety"
+    elif peak_util < target_utilization - 0.15 and peak_allocated_gb < total_capacity_gb * 0.6:
+        # Only suggest increase if we're well below target AND have significant headroom
+        suggested = int(current_batch_size * 1.2)  # Conservative 20% increase
+        return suggested, f"Low peak memory ({peak_util:.1%}), can cautiously increase batch size"
     else:
-        return current_batch_size, f"Current utilization ({max_util:.1%}) is optimal"
+        return current_batch_size, f"Current peak memory ({peak_util:.1%}) is in safe range"
 
 
 def _align_optimizer_state_to_param_devices(optimizer):
@@ -1774,14 +1787,6 @@ def main():
         # Log GPU memory at epoch start, reset peak stats
         log_gpu_memory(prefix=f"[Epoch {epoch+1} Start] ", reset_peak=True)
 
-        # Check if batch size could be adjusted for better GPU utilization (first epoch only)
-        if epoch == start_epoch:
-            suggested_batch, reason = suggest_batch_size_adjustment(args.batch_size)
-            if suggested_batch != args.batch_size:
-                print(f"[Batch Size Suggestion] {reason}")
-                print(f"  Current: {args.batch_size}, Suggested: {suggested_batch}")
-                print(f"  Note: To apply, set BATCH_SIZE_STAGEA/B={suggested_batch} in run script")
-
         g = torch.Generator(device="cpu")
         g.manual_seed(int(args.seed) + int(epoch))
         perm = torch.randperm(N, generator=g)
@@ -2451,6 +2456,19 @@ def main():
 
                 # Log GPU memory every 10 steps
                 gpu_stats = log_gpu_memory(prefix=f"  [Step {step+1}] ")
+
+                # Check batch size after step 5 (once we have real activation memory data)
+                if (step + 1) == 5 and epoch == start_epoch and gpu_stats:
+                    peak_gb = gpu_stats.get('peak_allocated_gb', 0)
+                    suggested_batch, reason = suggest_batch_size_adjustment(
+                        args.batch_size,
+                        peak_gb,
+                        after_forward_pass=True
+                    )
+                    if suggested_batch != args.batch_size:
+                        print(f"  [Batch Size Suggestion after {step+1} steps] {reason}")
+                        print(f"    Current: {args.batch_size}, Suggested: {suggested_batch}")
+                        print(f"    To apply: set BATCH_SIZE_STAGEA/B={suggested_batch} in run script")
 
                 if diagnostic_log_path and ((step + 1) % 10 == 0 or (step + 1) == steps_per_epoch):
                     diag_entry: Dict[str, Any] = {
