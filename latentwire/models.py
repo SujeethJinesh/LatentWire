@@ -1504,6 +1504,7 @@ class LMWrapper(nn.Module):
         append_bos_after_prefix: Optional[bool] = None,  # None => auto: only if NO anchor
         *,
         deep_prefix_past: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
+        latent: Optional[torch.Tensor] = None,
     ) -> List[List[int]]:
         anchor_ids_seq = self._encode_anchor_text(anchor_token_text) if anchor_token_text else None
         inputs_embeds, attn_mask, prepared_past = self._compose_inputs_from_prefix(
@@ -1517,15 +1518,26 @@ class LMWrapper(nn.Module):
         B = inputs_embeds.size(0)
         model_device = next(self.model.parameters()).device
 
+        # Request hidden states if using latent adapters
+        output_hidden_states = self.use_latent_adapters and latent is not None
+
         out = self.model(
             inputs_embeds=inputs_embeds,
             attention_mask=attn_mask,
             use_cache=True,
             past_key_values=prepared_past,
+            output_hidden_states=output_hidden_states,
             return_dict=True,
         )
         past = out.past_key_values
-        next_token_logits = out.logits[:, -1, :]
+
+        # Apply latent adapters if enabled (first-token only for now)
+        if output_hidden_states and latent is not None:
+            modified_hidden_states = self._apply_latent_adapters(out.hidden_states, latent)
+            final_hidden = modified_hidden_states[-1][:, -1, :]  # [B, d_model]
+            next_token_logits = self.model.lm_head(final_hidden)  # [B, vocab_size]
+        else:
+            next_token_logits = out.logits[:, -1, :]
 
         pad_id = self.tokenizer.pad_token_id or 0
         stop_ids = set(self._stop_token_ids)

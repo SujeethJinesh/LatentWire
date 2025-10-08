@@ -347,6 +347,7 @@ def avg_nll_latent(
     device: str,
     anchor_token_text: Optional[str] = None,
     deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
+    latent: Optional[torch.Tensor] = None,
 ) -> Optional[float]:
     if wrapper is None:
         return None
@@ -364,11 +365,13 @@ def avg_nll_latent(
     tot_w, tot_tok, skipped = 0.0, 0, 0
     for i, a in enumerate(answers):
         a_ids = _to_long(tokenizer(a, return_tensors="pt", add_special_tokens=True).input_ids, device)
+        latent_slice = latent[i:i+1] if latent is not None else None
         loss = wrapper.forward_with_prefix_loss(
             prefix[i:i+1],
             a_ids,
             anchor_token_ids=anchor_ids,
             deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, i, i + 1),
+            latent=latent_slice if wrapper.use_latent_adapters else None,
         )
         if not torch.isfinite(loss):
             skipped += 1
@@ -421,6 +424,7 @@ def first_token_topk_acc(
     skip: bool = False,
     chunk_size: int = 16,
     deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
+    latent: Optional[torch.Tensor] = None,
 ) -> Dict[str, float]:
     """
     Compute top-k accuracy for the very first answer token predicted from
@@ -440,11 +444,13 @@ def first_token_topk_acc(
     for start in range(0, total, chunk):
         end = min(total, start + chunk)
         prefix_chunk = prefix[start:end]
+        latent_chunk = latent[start:end] if latent is not None else None
         logits = wrapper.first_token_logits_from_prefix(
             prefix_chunk,
             anchor_token_text=anchor_token_text,
             append_bos_after_prefix=append_bos_after_prefix,
             deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, start, end),
+            latent=latent_chunk if wrapper.use_latent_adapters else None,
         )
         probs = torch.softmax(logits, dim=-1)
         V = probs.size(-1)
@@ -535,6 +541,7 @@ def evaluate_model_chunked_latent(
     append_bos_after_prefix: Optional[bool] = None,
     lengths: Optional[torch.Tensor] = None,
     deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
+    latent: Optional[torch.Tensor] = None,
 ):
     N = prefix_embeds.size(0)
     if chunk_size is None or chunk_size <= 0:
@@ -545,6 +552,7 @@ def evaluate_model_chunked_latent(
     for start_idx in range(0, N, chunk_size):
         end_idx = min(N, start_idx + chunk_size)
         pb = prefix_embeds[start_idx:end_idx]
+        latent_chunk = latent[start_idx:end_idx] if latent is not None else None
         cap = max_new_tokens
         if lengths is not None and lengths.numel() > 0:
             chunk_len = lengths[start_idx:end_idx]
@@ -562,6 +570,7 @@ def evaluate_model_chunked_latent(
             first_token_temperature=first_token_temperature,
             append_bos_after_prefix=append_bos_after_prefix,
             deep_prefix_past=_slice_deep_prefix(deep_prefix_cache, start_idx, end_idx),
+            latent=latent_chunk if wrapper.use_latent_adapters else None,
         )
         preds.extend(wrapper.decode_batch_then_clean(out_ids))
     if torch.cuda.is_available():
@@ -619,6 +628,7 @@ def _run_latent_path(
     latent_len: int,
     answer_lengths: Optional[torch.Tensor],
     deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
+    latent: Optional[torch.Tensor] = None,
 ):
     acc = first_token_topk_acc(
         wrapper,
@@ -629,6 +639,7 @@ def _run_latent_path(
         skip=bool(getattr(args, "skip_prefix_acc", False)),
         chunk_size=max(1, getattr(args, "chunk_size", 8)),
         deep_prefix_cache=deep_prefix_cache,
+        latent=latent,
     )
 
     latent_preds, t_latent = evaluate_model_chunked_latent(
@@ -645,6 +656,7 @@ def _run_latent_path(
         append_bos_after_prefix=append_bos,
         lengths=answer_lengths,
         deep_prefix_cache=deep_prefix_cache,
+        latent=latent,
     )
 
     if args.debug and args.debug_print_first > 0:
@@ -688,6 +700,7 @@ def _run_latent_path(
         prefix.device,
         anchor_text or None,
         deep_prefix_cache=deep_prefix_cache,
+        latent=latent,
     )
 
     return {
@@ -744,6 +757,17 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     if qwen_map is None and qwen_max_memory is not None and device == "cuda":
         qwen_map = "auto"
 
+    # Extract latent adapter configuration from checkpoint
+    use_latent_adapters = bool(cfg.get("use_latent_adapters", False))
+    latent_adapter_layers_str = cfg.get("latent_adapter_layers", "5,10,15")
+    if isinstance(latent_adapter_layers_str, str):
+        latent_adapter_layers_tuple = tuple(int(x.strip()) for x in latent_adapter_layers_str.split(",") if x.strip())
+    else:
+        # Already a list/tuple from config
+        latent_adapter_layers_tuple = tuple(int(x) for x in latent_adapter_layers_str)
+    latent_adapter_heads = int(cfg.get("latent_adapter_heads", 8))
+    latent_adapter_dropout = float(cfg.get("latent_adapter_dropout", 0.1))
+
     requested = models or ["llama", "qwen"]
     wrappers: Dict[str, LMWrapper] = {}
 
@@ -755,6 +779,11 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             load_4bit=args.load_4bit,
             device_map=llama_map,
             max_memory=llama_max_memory,
+            use_latent_adapters=use_latent_adapters,
+            latent_adapter_layers=latent_adapter_layers_tuple,
+            latent_d_z=d_z,
+            latent_adapter_heads=latent_adapter_heads,
+            latent_adapter_dropout=latent_adapter_dropout,
         ))
         try:
             if hasattr(llama.model.config, "use_cache"):
@@ -771,6 +800,11 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             load_4bit=args.load_4bit,
             device_map=qwen_map,
             max_memory=qwen_max_memory,
+            use_latent_adapters=use_latent_adapters,
+            latent_adapter_layers=latent_adapter_layers_tuple,
+            latent_d_z=d_z,
+            latent_adapter_heads=latent_adapter_heads,
+            latent_adapter_dropout=latent_adapter_dropout,
         ))
         try:
             if hasattr(qwen.model.config, "use_cache"):
@@ -781,6 +815,21 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
 
     if not wrappers:
         raise ValueError("No models selected for evaluation.")
+
+    # Load latent adapter weights from checkpoint if enabled
+    if use_latent_adapters:
+        for name, wrapper in wrappers.items():
+            adapter_path = os.path.join(ckpt_dir, f"latent_adapters_{name}.pt")
+            if os.path.isfile(adapter_path):
+                try:
+                    state = _safe_load(adapter_path, map_location="cpu")
+                    wrapper.latent_adapters.load_state_dict(state, strict=True)
+                    wrapper.latent_adapters.to(_primary_device(wrapper)).eval()
+                    print(f"✓ Loaded latent adapters for {name} from {adapter_path}")
+                except Exception as exc:
+                    print(f"[WARN] Failed to load latent adapters for {name}: {exc}")
+            else:
+                print(f"[WARN] latent_adapters_{name}.pt not found; continuing without adapters for {name}")
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 
@@ -1033,6 +1082,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             latent_len,
             answer_lengths[name],
             deep_prefix_cache_map[name],
+            latent=combined_latents[name],
         )
         latent_results[name] = res
         latent_wall += res["latent"]["time"]
