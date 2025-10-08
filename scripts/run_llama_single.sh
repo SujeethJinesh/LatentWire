@@ -147,7 +147,16 @@ export KD_TEACHER_CHUNK="${KD_TEACHER_CHUNK:-1}"  # Reduced from 2 to prevent OO
 
 # OOM fixes - critical for avoiding fragmentation
 export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
-export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+# Mac-specific MPS fallback (Metal Performance Shaders)
+if [[ "$(uname)" == "Darwin" ]]; then
+  export PYTORCH_ENABLE_MPS_FALLBACK=1
+else
+  # Linux: Disable NVIDIA MPS to avoid daemon connection errors
+  # Use direct CUDA instead of MPS
+  unset CUDA_MPS_PIPE_DIRECTORY
+  unset CUDA_MPS_LOG_DIRECTORY
+fi
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 LLAMA_DEVICES="${LLAMA_DEVICES:-0,1,2,3}"
