@@ -51,7 +51,7 @@ rm -f ${WORK_DIR}/code-server-*-info.txt 2>/dev/null
 module load code-server/4.93.1
 
 # Generate port and hostname
-PORT=$(shuf -i 8000-9999 -n 1)
+PORT=8800
 HOSTNAME=$(hostname)
 
 # Write connection info to temporary file
