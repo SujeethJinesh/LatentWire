@@ -47,6 +47,117 @@ from latentwire.models import (
 )
 from latentwire.checkpointing import save_latest_checkpoint
 
+
+def get_gpu_memory_stats():
+    """Get current GPU memory usage across all visible GPUs.
+
+    Returns dict with per-GPU stats and summary:
+    {
+        'gpus': [{'id': 0, 'allocated_gb': 12.5, 'reserved_gb': 14.2, 'free_gb': 65.8, 'total_gb': 80.0}, ...],
+        'total_allocated_gb': 25.0,
+        'total_reserved_gb': 28.4,
+        'total_free_gb': 131.6,
+        'peak_allocated_gb': 30.2
+    }
+    """
+    if not torch.cuda.is_available():
+        return {}
+
+    stats = {'gpus': []}
+    total_allocated = 0.0
+    total_reserved = 0.0
+    total_free = 0.0
+    peak_allocated = 0.0
+
+    for device_id in range(torch.cuda.device_count()):
+        allocated = torch.cuda.memory_allocated(device_id) / 1e9
+        reserved = torch.cuda.memory_reserved(device_id) / 1e9
+        total = torch.cuda.get_device_properties(device_id).total_memory / 1e9
+        free = total - reserved
+        peak = torch.cuda.max_memory_allocated(device_id) / 1e9
+
+        stats['gpus'].append({
+            'id': device_id,
+            'allocated_gb': round(allocated, 2),
+            'reserved_gb': round(reserved, 2),
+            'free_gb': round(free, 2),
+            'total_gb': round(total, 2),
+            'utilization_pct': round(100 * reserved / total, 1),
+        })
+
+        total_allocated += allocated
+        total_reserved += reserved
+        total_free += free
+        peak_allocated += peak
+
+    stats['total_allocated_gb'] = round(total_allocated, 2)
+    stats['total_reserved_gb'] = round(total_reserved, 2)
+    stats['total_free_gb'] = round(total_free, 2)
+    stats['peak_allocated_gb'] = round(peak_allocated, 2)
+
+    return stats
+
+
+def log_gpu_memory(prefix="", reset_peak=False):
+    """Log GPU memory usage with optional prefix. Optionally reset peak stats."""
+    stats = get_gpu_memory_stats()
+    if not stats:
+        return
+
+    # Per-GPU summary
+    gpu_summary = ", ".join([
+        f"GPU{g['id']}:{g['allocated_gb']:.1f}GB({g['utilization_pct']:.0f}%)"
+        for g in stats['gpus']
+    ])
+
+    # Overall summary
+    total_msg = (
+        f"{prefix}[GPU Memory] {gpu_summary} | "
+        f"Total: {stats['total_allocated_gb']:.1f}GB allocated, "
+        f"{stats['total_reserved_gb']:.1f}GB reserved, "
+        f"{stats['total_free_gb']:.1f}GB free, "
+        f"Peak: {stats['peak_allocated_gb']:.1f}GB"
+    )
+    print(total_msg)
+
+    if reset_peak:
+        for device_id in range(torch.cuda.device_count()):
+            torch.cuda.reset_peak_memory_stats(device_id)
+
+    return stats
+
+
+def suggest_batch_size_adjustment(current_batch_size, target_utilization=0.85):
+    """Suggest batch size adjustment based on current GPU memory utilization.
+
+    Args:
+        current_batch_size: Current batch size
+        target_utilization: Target GPU utilization (0.0-1.0), default 0.85 (85%)
+
+    Returns:
+        Tuple of (suggested_batch_size, reason_message)
+    """
+    stats = get_gpu_memory_stats()
+    if not stats or not stats['gpus']:
+        return current_batch_size, "No GPU stats available"
+
+    # Use the most utilized GPU as reference
+    max_util = max(g['utilization_pct'] / 100.0 for g in stats['gpus'])
+    total_free_gb = stats['total_free_gb']
+
+    # Safety margins
+    if max_util > 0.95:
+        # Very high utilization - reduce batch size
+        suggested = max(1, int(current_batch_size * 0.7))
+        return suggested, f"High memory pressure ({max_util:.1%}), reducing batch size"
+    elif max_util < target_utilization and total_free_gb > 30:
+        # Low utilization with plenty of free memory - can increase
+        suggested = int(current_batch_size * 1.3)
+        return suggested, f"Low utilization ({max_util:.1%}, {total_free_gb:.0f}GB free), can increase batch size"
+    else:
+        return current_batch_size, f"Current utilization ({max_util:.1%}) is optimal"
+
+
 def _align_optimizer_state_to_param_devices(optimizer):
     """Ensure optimizer state tensors live on the same device as their params (multi-GPU safety)."""
     try:
@@ -1037,6 +1148,9 @@ def main():
     except Exception:
         pass
 
+    # Log GPU memory after model loading
+    log_gpu_memory(prefix="[After Model Loading] ")
+
     strip_anchor_literal = args.warm_anchor_text if args.warm_anchor_text else DEFAULT_ANSWER_PREFIX
     if strip_anchor_literal and not strip_anchor_literal.endswith(" "):
         strip_anchor_literal = strip_anchor_literal + " "
@@ -1657,6 +1771,17 @@ def main():
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
 
+        # Log GPU memory at epoch start, reset peak stats
+        log_gpu_memory(prefix=f"[Epoch {epoch+1} Start] ", reset_peak=True)
+
+        # Check if batch size could be adjusted for better GPU utilization (first epoch only)
+        if epoch == start_epoch:
+            suggested_batch, reason = suggest_batch_size_adjustment(args.batch_size)
+            if suggested_batch != args.batch_size:
+                print(f"[Batch Size Suggestion] {reason}")
+                print(f"  Current: {args.batch_size}, Suggested: {suggested_batch}")
+                print(f"  Note: To apply, set BATCH_SIZE_STAGEA/B={suggested_batch} in run script")
+
         g = torch.Generator(device="cpu")
         g.manual_seed(int(args.seed) + int(epoch))
         perm = torch.randperm(N, generator=g)
@@ -1753,6 +1878,13 @@ def main():
             encoded_latents = encode_fn(effective_texts)
             shared_latents = encoded_latents["shared"]
             private_latents = encoded_latents["private"]
+
+            # Detailed memory profiling for first few steps
+            if batch_index < 3:
+                mem_stats = get_gpu_memory_stats()
+                if mem_stats:
+                    print(f"    [Memory after encoder] {mem_stats['total_allocated_gb']:.1f}GB allocated")
+
             dropout_keep = keep_prob if training_mode == "latent" else 1.0
             if shared_latents.size(1) > 0 and dropout_keep < 1.0:
                 mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < dropout_keep).float()
@@ -2211,6 +2343,12 @@ def main():
             loss_backward = loss / float(grad_accum_steps)
             loss_backward.backward()
 
+            # Detailed memory profiling for first few steps
+            if batch_index < 3:
+                mem_stats = get_gpu_memory_stats()
+                if mem_stats:
+                    print(f"    [Memory after backward] {mem_stats['total_allocated_gb']:.1f}GB allocated, peak {mem_stats['peak_allocated_gb']:.1f}GB")
+
             grad_norm_val = _grad_norm(params_for_clip)
             if not math.isfinite(grad_norm_val):
                 print("⚠️  Non-finite gradient detected; skipping optimizer step for this batch.")
@@ -2225,6 +2363,13 @@ def main():
                 optimizer.step()
                 lr_scheduler.step()  # Update learning rate after optimizer step
                 optimizer.zero_grad(set_to_none=True)
+
+                # Detailed memory profiling for first few steps
+                if batch_index < 3:
+                    mem_stats = get_gpu_memory_stats()
+                    if mem_stats:
+                        print(f"    [Memory after optimizer] {mem_stats['total_allocated_gb']:.1f}GB allocated")
+
             total_norm = grad_norm_val
 
             # Grad norm (monitor) – encoder only as a proxy
@@ -2304,6 +2449,9 @@ def main():
                     parts.append("stats=[" + "; ".join(stats_msgs) + "]")
                 print(" | ".join(parts))
 
+                # Log GPU memory every 10 steps
+                gpu_stats = log_gpu_memory(prefix=f"  [Step {step+1}] ")
+
                 if diagnostic_log_path and ((step + 1) % 10 == 0 or (step + 1) == steps_per_epoch):
                     diag_entry: Dict[str, Any] = {
                         "epoch": epoch,
@@ -2316,6 +2464,7 @@ def main():
                         "grad_norm": float(total_norm),
                         "sec_per_step": float(dt),
                         "latent_scale": float(latent_scale),
+                        "gpu_memory": gpu_stats if gpu_stats else {},
                         "models": {},
                     }
                     for ctx in model_contexts:
