@@ -152,10 +152,13 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 if [[ "$(uname)" == "Darwin" ]]; then
   export PYTORCH_ENABLE_MPS_FALLBACK=1
 else
-  # Linux: Disable NVIDIA MPS to avoid daemon connection errors
-  # Use direct CUDA instead of MPS
+  # Linux: Disable NVIDIA MPS to avoid daemon connection errors (Error 805)
+  # Force direct CUDA mode instead of MPS client mode
   unset CUDA_MPS_PIPE_DIRECTORY
   unset CUDA_MPS_LOG_DIRECTORY
+  export CUDA_VISIBLE_DEVICES_MPS_CLIENT=0
+  export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=0
+  export CUDA_DEVICE_MAX_CONNECTIONS=1
 fi
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
