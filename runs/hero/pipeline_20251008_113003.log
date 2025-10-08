@@ -1,0 +1,253 @@
+Starting GPU monitoring → runs/hero/gpu_monitor.log
+
+>>> Combination 1: m64_dz256_rl2_rh4
+    RUN_TAG=hero
+    EPOCHS_STAGEA=6 | EPOCHS_STAGEB=10
+    WARMUP_TEXT_LATENT_EPOCHS_STAGEA=1.0 | WARMUP_TEXT_LATENT_EPOCHS_STAGEB=2.0
+
+=== CUDA preflight ===
+torch: 2.4.0+cu121 cuda: 12.1 available: True
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+=== Stage A: Llama latent fit ===
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3103.44it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:08,  2.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:06<00:06,  3.24s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:10<00:03,  3.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:11<00:00,  2.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:11<00:00,  2.88s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.rotary_emb': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 0, 'model.layers.6': 0, 'model.layers.7': 0, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 1, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'lm_head': 3}
+[INFO] llama anchor tokens: 3
+[INFO] LR scheduler: CosineAnnealingLR (T_max=1998, eta_min=1.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+[warmup] alternating text/latent for first 334 steps
+Epoch 1/6
+[warmup] step=0 mode=text (warm-up)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  step  1/334 | (warm-up text) | align=0.0002 | text_tf=14.1440 | latent_scale=0.00
+[warmup] step=1 mode=latent (warm-up)
+[warmup] step=2 mode=text (warm-up)
+  step  3/334 | (warm-up text) | align=0.0002 | text_tf=16.1955 | latent_scale=0.00
+[warmup] step=3 mode=latent (warm-up)
+[warmup] step=4 mode=text (warm-up)
+  step  5/334 | (warm-up text) | align=0.0002 | text_tf=16.4431 | latent_scale=0.01
+[warmup] step=5 mode=latent (warm-up)
+[warmup] step=6 mode=text (warm-up)
+  step  7/334 | (warm-up text) | align=0.0002 | text_tf=13.0606 | latent_scale=0.01
+[warmup] step=7 mode=latent (warm-up)
+[warmup] step=8 mode=text (warm-up)
+  step  9/334 | (warm-up text) | align=0.0002 | text_tf=14.7693 | latent_scale=0.01
+[warmup] step=9 mode=latent (warm-up)
+  step  10/334 | grad_norm=37.07 | sec/step~3.62 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=0.27 | llama(L): tf=13.1623 first=13.7645 kCE=13.4336 KD=5.9187 acc=0.000 state=14.1096 ent=9.471 align=0.0000 latA=0.4980 latP=0.2501 | scale_pen(llama)=0.0000e+00 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  11/334 | (warm-up text) | align=0.0002 | text_tf=16.6695 | latent_scale=0.01
+  step  13/334 | (warm-up text) | align=0.0002 | text_tf=17.3862 | latent_scale=0.02
+  step  15/334 | (warm-up text) | align=0.0002 | text_tf=13.5440 | latent_scale=0.02
+  step  17/334 | (warm-up text) | align=0.0002 | text_tf=16.2537 | latent_scale=0.02
+  step  19/334 | (warm-up text) | align=0.0002 | text_tf=14.5216 | latent_scale=0.03
+  step  20/334 | grad_norm=327.71 | sec/step~3.61 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=0.57 | llama(L): tf=41.4229 first=45.0915 kCE=42.7475 KD=61.6928 acc=0.000 state=13.9935 ent=0.003 align=0.0000 latA=0.4987 latP=0.2495 | scale_pen(llama)=1.4211e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  21/334 | (warm-up text) | align=0.0002 | text_tf=12.9778 | latent_scale=0.03
+  step  23/334 | (warm-up text) | align=0.0002 | text_tf=15.5627 | latent_scale=0.03
+  step  25/334 | (warm-up text) | align=0.0002 | text_tf=14.2935 | latent_scale=0.04
+  step  27/334 | (warm-up text) | align=0.0002 | text_tf=16.7596 | latent_scale=0.04
+  step  29/334 | (warm-up text) | align=0.0002 | text_tf=15.6576 | latent_scale=0.04
+  step  30/334 | grad_norm=18.08 | sec/step~3.42 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=0.87 | llama(L): tf=15.6164 first=16.3335 kCE=15.6825 KD=8.5395 acc=0.000 state=13.1680 ent=2.249 align=0.0000 latA=0.4965 latP=0.2494 | scale_pen(llama)=1.4211e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  31/334 | (warm-up text) | align=0.0002 | text_tf=13.8690 | latent_scale=0.04
+  step  33/334 | (warm-up text) | align=0.0002 | text_tf=15.6109 | latent_scale=0.05
+  step  35/334 | (warm-up text) | align=0.0002 | text_tf=13.5669 | latent_scale=0.05
+  step  37/334 | (warm-up text) | align=0.0002 | text_tf=13.5652 | latent_scale=0.05
+  step  39/334 | (warm-up text) | align=0.0002 | text_tf=13.2911 | latent_scale=0.06
+  step  40/334 | grad_norm=117.02 | sec/step~3.47 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=1.17 | llama(L): tf=14.7874 first=16.7954 kCE=15.1780 KD=8.2549 acc=0.000 state=14.2719 ent=2.253 align=0.0000 latA=0.4978 latP=0.2494 | scale_pen(llama)=1.4211e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  41/334 | (warm-up text) | align=0.0002 | text_tf=15.0910 | latent_scale=0.06
+  step  43/334 | (warm-up text) | align=0.0002 | text_tf=16.3098 | latent_scale=0.06
+  step  45/334 | (warm-up text) | align=0.0002 | text_tf=14.8531 | latent_scale=0.07
+  step  47/334 | (warm-up text) | align=0.0002 | text_tf=14.4771 | latent_scale=0.07
+  step  49/334 | (warm-up text) | align=0.0002 | text_tf=16.4848 | latent_scale=0.07
+  step  50/334 | grad_norm=15.60 | sec/step~3.53 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=1.47 | llama(L): tf=11.8527 first=10.4785 kCE=11.7691 KD=4.8474 acc=0.000 state=13.1165 ent=9.536 align=0.0000 latA=0.4999 latP=0.2493 | scale_pen(llama)=2.8777e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  51/334 | (warm-up text) | align=0.0002 | text_tf=12.0506 | latent_scale=0.07
+  step  53/334 | (warm-up text) | align=0.0002 | text_tf=13.5034 | latent_scale=0.08
+  step  55/334 | (warm-up text) | align=0.0002 | text_tf=12.4523 | latent_scale=0.08
+  step  57/334 | (warm-up text) | align=0.0002 | text_tf=13.8574 | latent_scale=0.08
+  step  59/334 | (warm-up text) | align=0.0002 | text_tf=14.3947 | latent_scale=0.09
+  step  60/334 | grad_norm=12.32 | sec/step~4.12 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=1.77 | llama(L): tf=12.9668 first=11.8573 kCE=12.5505 KD=4.6101 acc=0.000 state=10.9363 ent=10.589 align=0.0000 latA=0.4985 latP=0.2492 | scale_pen(llama)=1.4211e-12 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  61/334 | (warm-up text) | align=0.0002 | text_tf=14.8436 | latent_scale=0.09
+  step  63/334 | (warm-up text) | align=0.0002 | text_tf=14.3059 | latent_scale=0.09
+  step  65/334 | (warm-up text) | align=0.0002 | text_tf=13.6471 | latent_scale=0.10
+  step  67/334 | (warm-up text) | align=0.0002 | text_tf=15.6946 | latent_scale=0.10
+  step  69/334 | (warm-up text) | align=0.0002 | text_tf=13.4403 | latent_scale=0.10
+  step  70/334 | grad_norm=45.10 | sec/step~3.41 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=2.07 | llama(L): tf=12.9968 first=11.7550 kCE=12.4263 KD=4.5074 acc=0.000 state=10.4914 ent=10.589 align=0.0000 latA=0.4990 latP=0.2493 | scale_pen(llama)=8.8818e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  71/334 | (warm-up text) | align=0.0002 | text_tf=13.4332 | latent_scale=0.10
+  step  73/334 | (warm-up text) | align=0.0002 | text_tf=14.4721 | latent_scale=0.11
+  step  75/334 | (warm-up text) | align=0.0002 | text_tf=16.3250 | latent_scale=0.11
+  step  77/334 | (warm-up text) | align=0.0002 | text_tf=16.0136 | latent_scale=0.11
+  step  79/334 | (warm-up text) | align=0.0002 | text_tf=16.5936 | latent_scale=0.12
+  step  80/334 | grad_norm=31.04 | sec/step~2.87 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=2.37 | llama(L): tf=13.3693 first=11.1350 kCE=13.0740 KD=4.4772 acc=0.000 state=10.8700 ent=10.751 align=0.0000 latA=0.4975 latP=0.2491 | scale_pen(llama)=8.8818e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  81/334 | (warm-up text) | align=0.0002 | text_tf=14.9463 | latent_scale=0.12
+  step  83/334 | (warm-up text) | align=0.0002 | text_tf=13.9848 | latent_scale=0.12
+  step  85/334 | (warm-up text) | align=0.0002 | text_tf=14.5882 | latent_scale=0.13
+  step  87/334 | (warm-up text) | align=0.0002 | text_tf=15.2140 | latent_scale=0.13
+  step  89/334 | (warm-up text) | align=0.0002 | text_tf=13.5290 | latent_scale=0.13
+  step  90/334 | grad_norm=16.63 | sec/step~4.06 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=2.67 | llama(L): tf=12.6075 first=10.9582 kCE=12.0407 KD=4.2467 acc=0.000 state=10.0476 ent=10.906 align=0.0000 latA=0.4985 latP=0.2490 | scale_pen(llama)=4.2988e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  91/334 | (warm-up text) | align=0.0002 | text_tf=17.5114 | latent_scale=0.13
+  step  93/334 | (warm-up text) | align=0.0002 | text_tf=14.0508 | latent_scale=0.14
+  step  95/334 | (warm-up text) | align=0.0002 | text_tf=12.5050 | latent_scale=0.14
+  step  97/334 | (warm-up text) | align=0.0002 | text_tf=14.3814 | latent_scale=0.14
+  step  99/334 | (warm-up text) | align=0.0002 | text_tf=14.1252 | latent_scale=0.15
+  step  100/334 | grad_norm=5.69 | sec/step~3.60 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=2.97 | llama(L): tf=11.3460 first=9.1412 kCE=11.0454 KD=4.0778 acc=0.125 [✓'the'] state=9.5248 ent=10.853 align=0.0000 latA=0.4979 latP=0.2489 | scale_pen(llama)=5.1159e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=1.3% (raw_batch=12.5%) at step 100 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='Tai'
+        ✗ pred='the' | gold='V'
+        ✗ pred='the' | gold='setting'
+        ✗ pred='the' | gold='Um'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  101/334 | (warm-up text) | align=0.0002 | text_tf=14.0787 | latent_scale=0.15
+  step  103/334 | (warm-up text) | align=0.0002 | text_tf=13.6866 | latent_scale=0.15
+  🌟 NEW PEAK: first_acc_ema=1.9% (raw_batch=8.3%) at step 104 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Charles'
+        ✗ pred='the' | gold='And'
+        ✗ pred='the' | gold='Cou'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='December'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  105/334 | (warm-up text) | align=0.0002 | text_tf=14.4098 | latent_scale=0.16
+  step  107/334 | (warm-up text) | align=0.0002 | text_tf=14.1943 | latent_scale=0.16
+  🌟 NEW PEAK: first_acc_ema=2.8% (raw_batch=12.5%) at step 108 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Al'
+        ✗ pred='the' | gold='larg'
+        ✗ pred='the' | gold='an'
+        ✗ pred='the' | gold='968'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  109/334 | (warm-up text) | align=0.0002 | text_tf=14.1506 | latent_scale=0.16
+  step  110/334 | grad_norm=29.53 | sec/step~3.50 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=3.27 | llama(L): tf=11.4858 first=10.2570 kCE=11.3693 KD=4.1617 acc=0.042 [✓'the'] state=8.8138 ent=10.851 align=0.0000 latA=0.4951 latP=0.2489 | scale_pen(llama)=5.1159e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=2.9% (raw_batch=4.2%) at step 110 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Super'
+        ✗ pred='the' | gold='high'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='allow'
+        ✗ pred='the' | gold='local'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  111/334 | (warm-up text) | align=0.0002 | text_tf=16.4857 | latent_scale=0.16
+  🌟 NEW PEAK: first_acc_ema=3.0% (raw_batch=4.2%) at step 112 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Matt'
+        ✗ pred='the' | gold='mor'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Jer'
+        ✗ pred='the' | gold='Mid'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  113/334 | (warm-up text) | align=0.0002 | text_tf=13.8110 | latent_scale=0.17
+  🌟 NEW PEAK: first_acc_ema=4.8% (raw_batch=20.8%) at step 114 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Ex'
+        ✗ pred='the' | gold='*'
+        ✗ pred='the' | gold='Jeff'
+        ✗ pred='the' | gold='early'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  115/334 | (warm-up text) | align=0.0002 | text_tf=14.5715 | latent_scale=0.17
+  🌟 NEW PEAK: first_acc_ema=5.2% (raw_batch=8.3%) at step 116 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='S'
+        ✗ pred='the' | gold='š'
+        ✗ pred='the' | gold='legal'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='BBC'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  117/334 | (warm-up text) | align=0.0002 | text_tf=13.3807 | latent_scale=0.17
+  🌟 NEW PEAK: first_acc_ema=5.9% (raw_batch=12.5%) at step 118 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='200'
+        ✗ pred='the' | gold='January'
+        ✗ pred='the' | gold='re'
+        ✗ pred='the' | gold='until'
+        ✗ pred='the' | gold='.'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  119/334 | (warm-up text) | align=0.0002 | text_tf=16.0550 | latent_scale=0.18
+  step  120/334 | grad_norm=10.60 | sec/step~3.49 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=3.57 | llama(L): tf=10.9263 first=9.1432 kCE=10.8639 KD=4.1904 acc=0.083 [✓'the'] state=8.1595 ent=9.829 align=0.0000 latA=0.4988 latP=0.2488 | scale_pen(llama)=1.2790e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=6.1% (raw_batch=8.3%) at step 120 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Ar'
+        ✗ pred='the' | gold='skin'
+        ✗ pred='the' | gold='South'
+        ✗ pred='the' | gold='Wars'
+        ✗ pred='the' | gold='From'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  121/334 | (warm-up text) | align=0.0002 | text_tf=15.2174 | latent_scale=0.18
+  🌟 NEW PEAK: first_acc_ema=6.4% (raw_batch=8.3%) at step 122 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Hay'
+        ✗ pred='the' | gold='firm'
+        ✗ pred='the' | gold='Q'
+        ✗ pred='the' | gold='Florida'
+        ✗ pred='the' | gold='a'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  123/334 | (warm-up text) | align=0.0002 | text_tf=15.9012 | latent_scale=0.18
+  step  125/334 | (warm-up text) | align=0.0002 | text_tf=16.1969 | latent_scale=0.19
+  🌟 NEW PEAK: first_acc_ema=6.8% (raw_batch=12.5%) at step 126 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Grand'
+        ✗ pred='the' | gold='every'
+        ✗ pred='the' | gold='199'
+        ✗ pred='the' | gold='Z'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  127/334 | (warm-up text) | align=0.0002 | text_tf=14.0111 | latent_scale=0.19
+  🌟 NEW PEAK: first_acc_ema=6.9% (raw_batch=8.3%) at step 128 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='164'
+        ✗ pred='the' | gold='201'
+        ✗ pred='the' | gold='Anthony'
+        ✗ pred='the' | gold='197'
+        ✗ pred='the' | gold='discord'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  129/334 | (warm-up text) | align=0.0002 | text_tf=16.0831 | latent_scale=0.19
+  step  130/334 | grad_norm=11.36 | sec/step~4.36 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=3.87 | llama(L): tf=11.1447 first=7.6482 kCE=11.4526 KD=4.4957 acc=0.125 [✓'the'] state=8.8888 ent=6.662 align=0.0000 latA=0.4963 latP=0.2486 | scale_pen(llama)=2.9878e-12 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 130 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='B'
+        ✗ pred='the' | gold='as'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='internet'
+        ✗ pred='the' | gold='AB'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  131/334 | (warm-up text) | align=0.0002 | text_tf=16.6490 | latent_scale=0.19
+  step  133/334 | (warm-up text) | align=0.0002 | text_tf=13.5698 | latent_scale=0.20
+  step  135/334 | (warm-up text) | align=0.0002 | text_tf=13.2239 | latent_scale=0.20
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 136 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='z'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='R'
+        ✗ pred='the' | gold='jh'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  137/334 | (warm-up text) | align=0.0002 | text_tf=16.2834 | latent_scale=0.20
+  step  139/334 | (warm-up text) | align=0.0002 | text_tf=13.0756 | latent_scale=0.21
+  step  140/334 | grad_norm=43.70 | sec/step~3.48 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=4.17 | llama(L): tf=11.0789 first=9.2044 kCE=11.4237 KD=4.5634 acc=0.042 [✓'the'] state=8.4906 ent=6.660 align=0.0000 latA=0.4973 latP=0.2486 | scale_pen(llama)=9.0949e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  141/334 | (warm-up text) | align=0.0002 | text_tf=15.4188 | latent_scale=0.21
+  step  143/334 | (warm-up text) | align=0.0002 | text_tf=14.7464 | latent_scale=0.21
+  step  145/334 | (warm-up text) | align=0.0002 | text_tf=14.6593 | latent_scale=0.22
