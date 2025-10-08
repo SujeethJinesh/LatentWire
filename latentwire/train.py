@@ -793,6 +793,23 @@ def main():
     else:
         dtype = torch.float32
 
+    # Enable kernel optimizations for better GPU utilization
+    if device == "cuda":
+        # Enable cuDNN autotuner to select best algorithms for your hardware
+        torch.backends.cudnn.benchmark = True
+        # Enable FlashAttention-2 and memory-efficient attention kernels
+        try:
+            torch.backends.cuda.enable_flash_sdp(True)
+            torch.backends.cuda.enable_mem_efficient_sdp(True)
+            torch.backends.cuda.enable_math_sdp(False)  # Disable slower fallback
+            print("[Optimization] Enabled FlashAttention-2 and memory-efficient kernels")
+        except AttributeError:
+            print("[Optimization] FlashAttention APIs not available in this PyTorch version")
+        # Enable TF32 for matrix multiplications on Ampere+ GPUs (H100 benefits)
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        print("[Optimization] Enabled TF32 for matmul and cuDNN")
+
     supported_models = ["llama", "qwen"]
     requested_models = [m.strip() for m in (args.models or "").split(",") if m.strip()]
     if not requested_models:
@@ -1299,6 +1316,33 @@ def main():
             ).to(_primary_device(wrapper))
             gist_heads[name] = head
 
+    # ===== torch.compile Optimization =====
+    # Compile encoder and adapters for ~20-30% speedup on forward/backward
+    if device == "cuda":
+        try:
+            # Compile encoder (biggest win - runs every batch)
+            encoder = torch.compile(encoder, mode="reduce-overhead")
+            print("[Optimization] Compiled encoder with torch.compile")
+
+            # Compile adapters (moderate win - runs every batch)
+            for name, adapter in adapters.items():
+                adapters[name] = torch.compile(adapter, mode="reduce-overhead")
+            print(f"[Optimization] Compiled {len(adapters)} adapters with torch.compile")
+
+            # Compile deep prefix generators if enabled
+            if deep_prefix_generators:
+                for name, gen in deep_prefix_generators.items():
+                    deep_prefix_generators[name] = torch.compile(gen, mode="reduce-overhead")
+                print(f"[Optimization] Compiled {len(deep_prefix_generators)} deep prefix generators")
+
+            # Compile latent refiner if enabled
+            if latent_refiner is not None:
+                latent_refiner = torch.compile(latent_refiner, mode="reduce-overhead")
+                print("[Optimization] Compiled latent refiner")
+
+        except Exception as e:
+            print(f"[Optimization] torch.compile not available or failed: {e}")
+
     # ===== Optimizer =====
     enc_params = [p for p in encoder.parameters() if p.requires_grad]
     llama_params = [p for p in adp_llama.parameters() if p.requires_grad] if adp_llama is not None else []
@@ -1337,7 +1381,11 @@ def main():
     if latent_adapter_params:
         optim_groups.append({"params": latent_adapter_params, "lr": args.lr})
 
-    optimizer = optim.AdamW(optim_groups, lr=args.lr, foreach=False)
+    # Enable fused AdamW for better performance on CUDA (15-20% faster optimizer step)
+    use_fused = device == "cuda" and torch.cuda.is_available()
+    optimizer = optim.AdamW(optim_groups, lr=args.lr, fused=use_fused, foreach=False)
+    if use_fused:
+        print("[Optimization] Using fused AdamW optimizer")
 
     # ===== Learning rate scheduler (cosine annealing for stability) =====
     from torch.optim.lr_scheduler import CosineAnnealingLR

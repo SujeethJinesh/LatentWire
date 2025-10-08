@@ -104,8 +104,8 @@ while true; do
     # Check time limit
     if [ -n "$SLURM_JOB_END_TIME" ]; then
         TIME_LEFT=$((SLURM_JOB_END_TIME - $(date +%s)))
-        if [ $TIME_LEFT -lt 300 ]; then
-            echo "Less than 5 minutes left, exiting..."
+        if [ $TIME_LEFT -lt 30 ]; then
+            echo "Less than 30 seconds left, exiting..."
             break
         fi
     fi
