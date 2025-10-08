@@ -328,3 +328,12 @@ Logging to: runs/smoke/gpu_monitor.log every 10s
 1, NVIDIA H100 80GB HBM3, 0, 81559, 0, 29
 2, NVIDIA H100 80GB HBM3, 0, 81559, 0, 33
 3, NVIDIA H100 80GB HBM3, 0, 81559, 0, 31
+GPU Monitoring started at Tue Oct  7 08:17:33 PM PDT 2025
+Logging to: runs/smoke/gpu_monitor.log every 10s
+---
+
+=== Tue Oct  7 08:17:33 PM PDT 2025 ===
+0, NVIDIA H100 80GB HBM3, 0, 81559, 0, 28
+1, NVIDIA H100 80GB HBM3, 0, 81559, 0, 29
+2, NVIDIA H100 80GB HBM3, 0, 81559, 0, 32
+3, NVIDIA H100 80GB HBM3, 0, 81559, 0, 31
