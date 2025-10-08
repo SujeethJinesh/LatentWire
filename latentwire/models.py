@@ -1191,6 +1191,8 @@ class LMWrapper(nn.Module):
             loss_fct = torch.nn.CrossEntropyLoss()
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels_full[..., 1:].contiguous()
+            # Move labels to same device as logits (critical for multi-GPU models)
+            shift_labels = shift_labels.to(shift_logits.device)
             loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
             return loss
         else:

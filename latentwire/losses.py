@@ -83,7 +83,9 @@ def k_token_ce_from_prefix(
             logits = out.logits[:, -1, :]
 
         # Use ignore_index to properly mask PAD tokens
-        total = total + F.cross_entropy(logits, gold_ids[:, t], ignore_index=ignore_index, reduction="mean")
+        # Move gold_ids to same device as logits (critical for multi-GPU models)
+        target = gold_ids[:, t].to(logits.device)
+        total = total + F.cross_entropy(logits, target, ignore_index=ignore_index, reduction="mean")
         steps += 1
 
     return total / max(steps, 1)
