@@ -29,6 +29,14 @@ fi
 tmux new-session -d -s "$SESSION" "bash -lc '
   set -e
   echo \"[alloc] Requesting 1 node, ${GPUS} GPU(s), ${MEM}, ${TIME} on ${PARTITION}...\"
+
+  # Disable NVIDIA MPS to prevent Error 805
+  export CUDA_MPS_PIPE_DIRECTORY=\"\"
+  export CUDA_MPS_LOG_DIRECTORY=\"\"
+  export CUDA_VISIBLE_DEVICES_MPS_CLIENT=0
+  export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=0
+  export CUDA_DEVICE_MAX_CONNECTIONS=1
+
   salloc -N 1 -p \"${PARTITION}\" --gpus=\"${GPUS}\" --mem=\"${MEM}\" --time=\"${TIME}\" \
          --account=\"${ACCOUNT}\" --job-name=\"${JOB_NAME}\" \
          srun --pty bash -l
