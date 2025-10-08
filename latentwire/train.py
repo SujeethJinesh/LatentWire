@@ -1938,6 +1938,8 @@ def main():
                     deep_prefix_past=deep_prefix_cache,
                     latent=latent_for_adapters_tf,
                 )
+                # Move loss to target device (critical for multi-GPU where lm_head may be on different GPU)
+                loss_tf_latent = loss_tf_latent.to(target_device)
 
                 first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
                 entropy_bonus = torch.zeros((), device=target_device)
