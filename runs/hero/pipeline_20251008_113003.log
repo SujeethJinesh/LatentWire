@@ -251,3 +251,837 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
   step  141/334 | (warm-up text) | align=0.0002 | text_tf=15.4188 | latent_scale=0.21
   step  143/334 | (warm-up text) | align=0.0002 | text_tf=14.7464 | latent_scale=0.21
   step  145/334 | (warm-up text) | align=0.0002 | text_tf=14.6593 | latent_scale=0.22
+  step  147/334 | (warm-up text) | align=0.0002 | text_tf=14.4658 | latent_scale=0.22
+  step  149/334 | (warm-up text) | align=0.0002 | text_tf=14.6694 | latent_scale=0.22
+  step  150/334 | grad_norm=36.16 | sec/step~3.56 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=4.47 | llama(L): tf=10.8811 first=9.0580 kCE=10.7752 KD=4.2550 acc=0.042 [✓'the'] state=7.1665 ent=6.429 align=0.0000 latA=0.4977 latP=0.2487 | scale_pen(llama)=9.0949e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  151/334 | (warm-up text) | align=0.0002 | text_tf=13.3639 | latent_scale=0.22
+  step  153/334 | (warm-up text) | align=0.0002 | text_tf=14.7639 | latent_scale=0.23
+NaN/Inf loss; skipping step
+  step  155/334 | (warm-up text) | align=0.0002 | text_tf=14.1008 | latent_scale=0.23
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 155 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='$'
+        ✗ pred='the' | gold='Am'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='a'
+        ✗ pred='the' | gold='which'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  157/334 | (warm-up text) | align=0.0002 | text_tf=12.3841 | latent_scale=0.23
+  step  159/334 | (warm-up text) | align=0.0002 | text_tf=14.1344 | latent_scale=0.24
+  step  160/334 | grad_norm=67.62 | sec/step~4.03 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=4.74 | llama(L): tf=10.8189 first=9.8956 kCE=10.7367 KD=4.4446 acc=0.000 state=7.3666 ent=6.403 align=0.0000 latA=0.4958 latP=0.2486 | scale_pen(llama)=9.0949e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  161/334 | (warm-up text) | align=0.0002 | text_tf=15.7542 | latent_scale=0.24
+NaN/Inf loss; skipping step
+  step  163/334 | (warm-up text) | align=0.0002 | text_tf=14.2572 | latent_scale=0.24
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=16.7%) at step 162 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='C'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='it'
+        ✗ pred='the' | gold='Inside'
+        ✗ pred='the' | gold='etch'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  165/334 | (warm-up text) | align=0.0002 | text_tf=13.3761 | latent_scale=0.25
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 164 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='six'
+        ✗ pred='the' | gold='178'
+        ✗ pred='the' | gold='De'
+        ✗ pred='the' | gold='two'
+        ✗ pred='the' | gold='Peter'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  167/334 | (warm-up text) | align=0.0002 | text_tf=16.5631 | latent_scale=0.25
+  step  169/334 | (warm-up text) | align=0.0002 | text_tf=15.5637 | latent_scale=0.25
+  step  170/334 | grad_norm=2.89 | sec/step~3.50 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=5.01 | llama(L): tf=10.0265 first=9.0232 kCE=10.1172 KD=4.4067 acc=0.083 [✓'the'] state=5.5516 ent=8.949 align=0.0000 latA=0.4939 latP=0.2487 | scale_pen(llama)=9.0949e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 168 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='san'
+        ✗ pred='the' | gold='Civil'
+        ✗ pred='the' | gold='William'
+        ✗ pred='the' | gold='a'
+        ✗ pred='the' | gold='phil'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  171/334 | (warm-up text) | align=0.0002 | text_tf=14.3578 | latent_scale=0.25
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 170 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Beth'
+        ✗ pred='the' | gold='B'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Numer'
+        ✗ pred='the' | gold='236'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  173/334 | (warm-up text) | align=0.0002 | text_tf=16.1316 | latent_scale=0.26
+  step  175/334 | (warm-up text) | align=0.0002 | text_tf=13.5593 | latent_scale=0.26
+  step  177/334 | (warm-up text) | align=0.0002 | text_tf=16.0257 | latent_scale=0.26
+  step  179/334 | (warm-up text) | align=0.0002 | text_tf=14.7899 | latent_scale=0.27
+  step  180/334 | grad_norm=11.11 | sec/step~4.17 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=5.31 | llama(L): tf=9.5835 first=8.7958 kCE=9.9703 KD=4.5125 acc=0.000 state=5.6640 ent=8.932 align=0.0000 latA=0.4964 latP=0.2486 | scale_pen(llama)=9.0949e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  181/334 | (warm-up text) | align=0.0002 | text_tf=17.2918 | latent_scale=0.27
+  step  183/334 | (warm-up text) | align=0.0002 | text_tf=16.0149 | latent_scale=0.27
+  step  185/334 | (warm-up text) | align=0.0002 | text_tf=14.6250 | latent_scale=0.28
+  step  187/334 | (warm-up text) | align=0.0002 | text_tf=13.4824 | latent_scale=0.28
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 186 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='food'
+        ✗ pred='the' | gold='mt'
+        ✗ pred='the' | gold='electric'
+        ✗ pred='the' | gold='L'
+        ✗ pred='the' | gold='risk'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  189/334 | (warm-up text) | align=0.0002 | text_tf=13.9085 | latent_scale=0.28
+NaN/Inf loss; skipping step
+  step  191/334 | (warm-up text) | align=0.0002 | text_tf=16.2866 | latent_scale=0.28
+  step  193/334 | (warm-up text) | align=0.0002 | text_tf=14.2975 | latent_scale=0.29
+  step  195/334 | (warm-up text) | align=0.0002 | text_tf=15.8826 | latent_scale=0.29
+  step  197/334 | (warm-up text) | align=0.0002 | text_tf=15.0493 | latent_scale=0.29
+  step  199/334 | (warm-up text) | align=0.0002 | text_tf=14.4651 | latent_scale=0.30
+  step  200/334 | grad_norm=7.68 | sec/step~3.98 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=5.88 | llama(L): tf=9.7368 first=8.5890 kCE=9.7553 KD=3.8745 acc=0.083 [✓'the'] state=4.0623 ent=10.391 align=0.0000 latA=0.4976 latP=0.2489 | scale_pen(llama)=1.4211e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 197 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='C'
+        ✗ pred='the' | gold='198'
+        ✗ pred='the' | gold='pr'
+        ✗ pred='the' | gold='Big'
+        ✗ pred='the' | gold='m'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  201/334 | (warm-up text) | align=0.0002 | text_tf=17.0656 | latent_scale=0.30
+  step  203/334 | (warm-up text) | align=0.0002 | text_tf=15.8267 | latent_scale=0.30
+  step  205/334 | (warm-up text) | align=0.0002 | text_tf=12.3346 | latent_scale=0.31
+  step  207/334 | (warm-up text) | align=0.0002 | text_tf=14.3833 | latent_scale=0.31
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 205 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='UN'
+        ✗ pred='the' | gold='182'
+        ✗ pred='the' | gold='heavy'
+        ✗ pred='the' | gold='106'
+        ✗ pred='the' | gold='pres'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  209/334 | (warm-up text) | align=0.0002 | text_tf=14.3453 | latent_scale=0.31
+  step  210/334 | grad_norm=24.29 | sec/step~3.67 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=6.00 | llama(L): tf=9.7563 first=9.0822 kCE=9.9430 KD=4.1230 acc=0.042 [✓'the'] state=4.0134 ent=10.399 align=0.0000 latA=0.4983 latP=0.2490 | scale_pen(llama)=2.0464e-12 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0000 rms_cal~0.0106 embed_rms~0.01058]
+  step  211/334 | (warm-up text) | align=0.0002 | text_tf=12.7212 | latent_scale=0.31
+  step  213/334 | (warm-up text) | align=0.0002 | text_tf=14.6282 | latent_scale=0.32
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 211 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✓ pred='200' | gold='200'
+        ✗ pred='200' | gold='the'
+        ✗ pred='200' | gold='between'
+        ✗ pred='200' | gold='silver'
+        ✗ pred='200' | gold='Internet'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: '200'(24) 
+  step  215/334 | (warm-up text) | align=0.0002 | text_tf=15.6839 | latent_scale=0.32
+  step  217/334 | (warm-up text) | align=0.0002 | text_tf=14.2157 | latent_scale=0.32
+  step  219/334 | (warm-up text) | align=0.0002 | text_tf=14.5369 | latent_scale=0.33
+  step  220/334 | grad_norm=16.09 | sec/step~3.69 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=6.00 | llama(L): tf=9.1686 first=9.1546 kCE=9.2636 KD=3.8608 acc=0.000 state=2.1134 ent=10.254 align=0.0000 latA=0.4970 latP=0.2490 | scale_pen(llama)=2.0464e-12 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  221/334 | (warm-up text) | align=0.0002 | text_tf=16.6972 | latent_scale=0.33
+  step  223/334 | (warm-up text) | align=0.0002 | text_tf=15.5356 | latent_scale=0.33
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 221 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='200' | gold='nine'
+        ✗ pred='200' | gold='jud'
+        ✗ pred='the' | gold='G'
+        ✗ pred='200' | gold='P'
+        ✓ pred='200' | gold='200'
+      Prediction diversity: 2/24 unique tokens
+      Top-3 predictions: '200'(23) 'the'(1) 
+  step  225/334 | (warm-up text) | align=0.0002 | text_tf=14.7499 | latent_scale=0.34
+  step  227/334 | (warm-up text) | align=0.0002 | text_tf=14.1513 | latent_scale=0.34
+  step  229/334 | (warm-up text) | align=0.0002 | text_tf=17.1527 | latent_scale=0.34
+  step  230/334 | grad_norm=9.18 | sec/step~3.65 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=6.00 | llama(L): tf=9.5067 first=8.9375 kCE=9.6180 KD=4.0780 acc=0.000 state=2.5322 ent=9.551 align=0.0000 latA=0.4977 latP=0.2492 | scale_pen(llama)=8.8818e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  231/334 | (warm-up text) | align=0.0002 | text_tf=14.1316 | latent_scale=0.34
+  step  233/334 | (warm-up text) | align=0.0002 | text_tf=14.2163 | latent_scale=0.35
+  step  235/334 | (warm-up text) | align=0.0002 | text_tf=16.9111 | latent_scale=0.35
+  step  237/334 | (warm-up text) | align=0.0002 | text_tf=14.5437 | latent_scale=0.35
+  step  239/334 | (warm-up text) | align=0.0002 | text_tf=14.0671 | latent_scale=0.36
+  step  240/334 | grad_norm=4.21 | sec/step~3.47 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=6.00 | llama(L): tf=10.1952 first=9.0199 kCE=10.4223 KD=3.7871 acc=0.000 state=2.1812 ent=8.525 align=0.0000 latA=0.4980 latP=0.2492 | scale_pen(llama)=1.0267e-12 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  241/334 | (warm-up text) | align=0.0002 | text_tf=13.9580 | latent_scale=0.36
+  step  243/334 | (warm-up text) | align=0.0002 | text_tf=14.6861 | latent_scale=0.36
+  step  245/334 | (warm-up text) | align=0.0002 | text_tf=13.2991 | latent_scale=0.37
+  step  247/334 | (warm-up text) | align=0.0002 | text_tf=14.6396 | latent_scale=0.37
+  step  249/334 | (warm-up text) | align=0.0002 | text_tf=11.8624 | latent_scale=0.37
+  step  250/334 | grad_norm=14.91 | sec/step~3.60 | lr=5.00e-05 | keep=0.70 | K=8 | first_w=6.00 | llama(L): tf=9.2198 first=8.4472 kCE=9.5378 KD=4.0075 acc=0.000 state=2.3600 ent=8.532 align=0.0000 latA=0.4972 latP=0.2492 | scale_pen(llama)=1.0267e-12 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  251/334 | (warm-up text) | align=0.0002 | text_tf=14.4452 | latent_scale=0.37
+  step  253/334 | (warm-up text) | align=0.0002 | text_tf=16.2758 | latent_scale=0.38
+  step  255/334 | (warm-up text) | align=0.0002 | text_tf=14.7885 | latent_scale=0.38
+  step  257/334 | (warm-up text) | align=0.0002 | text_tf=14.3397 | latent_scale=0.38
+  step  259/334 | (warm-up text) | align=0.0002 | text_tf=13.9420 | latent_scale=0.39
+  step  260/334 | grad_norm=9.47 | sec/step~3.58 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.5104 first=8.9622 kCE=9.8565 KD=4.2262 acc=0.000 state=1.5748 ent=7.838 align=0.0000 latA=0.5009 latP=0.2492 | scale_pen(llama)=6.9633e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  261/334 | (warm-up text) | align=0.0002 | text_tf=14.9638 | latent_scale=0.39
+  step  263/334 | (warm-up text) | align=0.0002 | text_tf=15.6829 | latent_scale=0.39
+  step  265/334 | (warm-up text) | align=0.0002 | text_tf=12.7228 | latent_scale=0.40
+  step  267/334 | (warm-up text) | align=0.0002 | text_tf=15.0038 | latent_scale=0.40
+  step  269/334 | (warm-up text) | align=0.0002 | text_tf=13.7117 | latent_scale=0.40
+  step  270/334 | grad_norm=6.19 | sec/step~3.86 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.5014 first=7.8987 kCE=9.8861 KD=3.9896 acc=0.250 [✓'the'] state=1.5347 ent=7.512 align=0.0000 latA=0.4954 latP=0.2492 | scale_pen(llama)=5.6843e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=25.0%) at step 267 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='163'
+        ✗ pred='the' | gold='social'
+        ✗ pred='the' | gold='Cl'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='am'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  271/334 | (warm-up text) | align=0.0002 | text_tf=14.1997 | latent_scale=0.40
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 269 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Sam'
+        ✗ pred='the' | gold='tw'
+        ✗ pred='the' | gold='Anne'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='relations'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  273/334 | (warm-up text) | align=0.0002 | text_tf=14.8137 | latent_scale=0.41
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 271 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='January'
+        ✗ pred='the' | gold='Chair'
+        ✗ pred='the' | gold='R'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='L'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  275/334 | (warm-up text) | align=0.0002 | text_tf=14.6937 | latent_scale=0.41
+  step  277/334 | (warm-up text) | align=0.0002 | text_tf=16.0838 | latent_scale=0.41
+  step  279/334 | (warm-up text) | align=0.0002 | text_tf=15.0986 | latent_scale=0.42
+  step  280/334 | grad_norm=17.71 | sec/step~3.96 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.2357 first=7.3954 kCE=9.4252 KD=3.8417 acc=0.125 [✓'the'] state=1.4804 ent=7.507 align=0.0000 latA=0.4944 latP=0.2492 | scale_pen(llama)=4.2988e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 277 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✓ pred='the' | gold='the'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='SH'
+        ✗ pred='the' | gold='c'
+        ✗ pred='the' | gold='R'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  281/334 | (warm-up text) | align=0.0002 | text_tf=14.4461 | latent_scale=0.42
+  step  283/334 | (warm-up text) | align=0.0002 | text_tf=14.3660 | latent_scale=0.42
+  step  285/334 | (warm-up text) | align=0.0002 | text_tf=14.9667 | latent_scale=0.43
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 283 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Queen'
+        ✗ pred='the' | gold='Pol'
+        ✗ pred='the' | gold='complex'
+        ✗ pred='the' | gold='Z'
+        ✗ pred='the' | gold='"F'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  287/334 | (warm-up text) | align=0.0002 | text_tf=14.3933 | latent_scale=0.43
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 285 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='imp'
+        ✗ pred='the' | gold='pro'
+        ✗ pred='the' | gold='par'
+        ✗ pred='the' | gold='50'
+        ✗ pred='the' | gold='stre'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  289/334 | (warm-up text) | align=0.0002 | text_tf=16.5722 | latent_scale=0.43
+  step  290/334 | grad_norm=12.50 | sec/step~4.17 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.5641 first=8.5608 kCE=9.9133 KD=4.1686 acc=0.042 [✓'the'] state=1.4830 ent=7.618 align=0.0000 latA=0.4996 latP=0.2494 | scale_pen(llama)=4.2988e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  291/334 | (warm-up text) | align=0.0002 | text_tf=14.2043 | latent_scale=0.43
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 289 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Third'
+        ✗ pred='the' | gold='mult'
+        ✗ pred='the' | gold='Spanish'
+        ✗ pred='the' | gold='D'
+        ✗ pred='the' | gold='non'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  293/334 | (warm-up text) | align=0.0002 | text_tf=16.9579 | latent_scale=0.44
+  step  295/334 | (warm-up text) | align=0.0002 | text_tf=13.7829 | latent_scale=0.44
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=16.7%) at step 293 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='element'
+        ✗ pred='the' | gold='Roger'
+        ✗ pred='the' | gold='Prince'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Pers'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  297/334 | (warm-up text) | align=0.0002 | text_tf=14.1058 | latent_scale=0.44
+  step  299/334 | (warm-up text) | align=0.0002 | text_tf=14.8966 | latent_scale=0.45
+  step  300/334 | grad_norm=5.67 | sec/step~3.98 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.4444 first=8.2380 kCE=9.8436 KD=4.1478 acc=0.000 state=1.6069 ent=8.236 align=0.0000 latA=0.4974 latP=0.2496 | scale_pen(llama)=3.5527e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  301/334 | (warm-up text) | align=0.0002 | text_tf=14.4502 | latent_scale=0.45
+  step  303/334 | (warm-up text) | align=0.0002 | text_tf=15.9826 | latent_scale=0.45
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=16.7%) at step 301 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='President'
+        ✗ pred='the' | gold='World'
+        ✗ pred='the' | gold='Richard'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Pale'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  305/334 | (warm-up text) | align=0.0002 | text_tf=13.6161 | latent_scale=0.46
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 303 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='two'
+        ✗ pred='the' | gold='power'
+        ✗ pred='the' | gold='m'
+        ✓ pred='the' | gold='the'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  307/334 | (warm-up text) | align=0.0002 | text_tf=11.0940 | latent_scale=0.46
+  step  309/334 | (warm-up text) | align=0.0002 | text_tf=13.4999 | latent_scale=0.46
+  step  310/334 | grad_norm=3.41 | sec/step~3.54 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.4137 first=8.2516 kCE=9.6220 KD=3.8917 acc=0.000 state=1.6678 ent=8.695 align=0.0000 latA=0.4950 latP=0.2497 | scale_pen(llama)=6.0041e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  step  311/334 | (warm-up text) | align=0.0002 | text_tf=15.8368 | latent_scale=0.46
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 309 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='white'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='G'
+        ✗ pred='the' | gold='52'
+        ✗ pred='the' | gold='Asia'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  313/334 | (warm-up text) | align=0.0002 | text_tf=13.9309 | latent_scale=0.47
+  step  315/334 | (warm-up text) | align=0.0002 | text_tf=15.8455 | latent_scale=0.47
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 313 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='French'
+        ✗ pred='the' | gold='187'
+        ✗ pred='the' | gold='145'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='258'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  317/334 | (warm-up text) | align=0.0002 | text_tf=14.7531 | latent_scale=0.47
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 315 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='carrier'
+        ✗ pred='the' | gold='system'
+        ✗ pred='the' | gold='Gram'
+        ✗ pred='the' | gold='a'
+        ✗ pred='the' | gold='Emp'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  319/334 | (warm-up text) | align=0.0002 | text_tf=15.6141 | latent_scale=0.48
+  step  320/334 | grad_norm=10.68 | sec/step~3.61 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.2644 first=7.9599 kCE=9.4149 KD=3.9008 acc=0.083 [✓'the'] state=1.6584 ent=8.696 align=0.0000 latA=0.4969 latP=0.2498 | scale_pen(llama)=6.0041e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 317 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='191'
+        ✗ pred='the' | gold='without'
+        ✗ pred='the' | gold='one'
+        ✗ pred='the' | gold='527'
+        ✗ pred='the' | gold='Ath'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  321/334 | (warm-up text) | align=0.0002 | text_tf=14.4524 | latent_scale=0.48
+  step  323/334 | (warm-up text) | align=0.0002 | text_tf=12.4096 | latent_scale=0.48
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 321 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='lake'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='path'
+        ✗ pred='the' | gold='R'
+        ✗ pred='the' | gold='K'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  325/334 | (warm-up text) | align=0.0002 | text_tf=16.2367 | latent_scale=0.49
+  step  327/334 | (warm-up text) | align=0.0002 | text_tf=13.6810 | latent_scale=0.49
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 325 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='in'
+        ✗ pred='the' | gold='197'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='an'
+        ✗ pred='the' | gold='ability'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  329/334 | (warm-up text) | align=0.0002 | text_tf=14.6494 | latent_scale=0.49
+  step  330/334 | grad_norm=10.54 | sec/step~3.79 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=8.9387 first=7.5477 kCE=9.2740 KD=3.9610 acc=0.083 [✓'the'] state=1.5958 ent=8.840 align=0.0000 latA=0.4974 latP=0.2497 | scale_pen(llama)=5.6843e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 327 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='At'
+        ✗ pred='the' | gold='C'
+        ✗ pred='the' | gold='mat'
+        ✗ pred='the' | gold='E'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  331/334 | (warm-up text) | align=0.0002 | text_tf=12.1548 | latent_scale=0.49
+NaN/Inf loss; skipping step
+  step  333/334 | (warm-up text) | align=0.0002 | text_tf=13.5931 | latent_scale=0.50
+  step  334/334 | grad_norm=14.23 | sec/step~4.02 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.7509 first=8.3590 kCE=10.0992 KD=3.7038 acc=0.000 state=1.6893 ent=8.878 align=0.0000 latA=0.4991 latP=0.2498 | scale_pen(llama)=3.5527e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+Epoch 2/6
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 331 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='birth'
+        ✗ pred='the' | gold='25'
+        ✗ pred='the' | gold='five'
+        ✗ pred='the' | gold='co'
+        ✗ pred='the' | gold='13'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 332 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='balance'
+        ✗ pred='the' | gold='national'
+        ✗ pred='the' | gold='South'
+        ✗ pred='the' | gold='14'
+        ✗ pred='the' | gold='Ay'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 333 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='po'
+        ✗ pred='the' | gold='Spanish'
+        ✗ pred='the' | gold='430'
+        ✗ pred='the' | gold='ball'
+        ✗ pred='the' | gold='Traditional'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 334 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='comp'
+        ✗ pred='the' | gold='var'
+        ✗ pred='the' | gold='G'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='natural'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+[checkpoint] Freed 3.4KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt, refiner.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 334
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 336 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='25'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Wo'
+        ✗ pred='the' | gold='An'
+        ✗ pred='the' | gold='a'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 339 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Arch'
+        ✗ pred='the' | gold='f'
+        ✗ pred='the' | gold='Jack'
+        ✗ pred='the' | gold='C'
+        ✗ pred='the' | gold='50'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  10/334 | grad_norm=15.70 | sec/step~3.86 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.1497 first=7.1657 kCE=9.3958 KD=3.8484 acc=0.125 [✓'the'] state=1.5162 ent=8.655 align=0.0000 latA=0.4975 latP=0.2498 | scale_pen(llama)=3.5527e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 340 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='K'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='early'
+        ✗ pred='the' | gold='nine'
+        ✗ pred='the' | gold='Russian'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 342 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='B'
+        ✗ pred='the' | gold='Hal'
+        ✗ pred='the' | gold='Ex'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='163'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 343 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='exp'
+        ✗ pred='the' | gold='Port'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='young'
+        ✗ pred='the' | gold='198'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 344 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Cou'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='L'
+        ✗ pred='the' | gold='200'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 345 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Robert'
+        ✗ pred='the' | gold='popular'
+        ✗ pred='the' | gold='70'
+        ✗ pred='the' | gold='M'
+        ✗ pred='the' | gold='inter'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  20/334 | grad_norm=7.18 | sec/step~3.75 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=8.9058 first=7.4058 kCE=9.3311 KD=4.1939 acc=0.042 [✓'the'] state=1.6196 ent=7.849 align=0.0000 latA=0.4962 latP=0.2499 | scale_pen(llama)=1.7408e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 351 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='art'
+        ✗ pred='the' | gold='J'
+        ✗ pred='the' | gold='Cal'
+        ✗ pred='the' | gold='Alexander'
+        ✗ pred='the' | gold='invest'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 352 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='R'
+        ✗ pred='the' | gold='six'
+        ✗ pred='the' | gold='continental'
+        ✗ pred='the' | gold='bo'
+        ✗ pred='the' | gold='Flat'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 354 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='10'
+        ✗ pred='the' | gold='35'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='more'
+        ✗ pred='the' | gold='Battle'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=16.7%) at step 355 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Amb'
+        ✗ pred='the' | gold='Ed'
+        ✗ pred='the' | gold='Cy'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='L'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  30/334 | grad_norm=3.90 | sec/step~3.55 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=8.9319 first=6.7769 kCE=9.5859 KD=3.8211 acc=0.125 [✓'the'] state=1.3362 ent=7.208 align=0.0000 latA=0.4961 latP=0.2499 | scale_pen(llama)=1.4211e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 360 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='tour'
+        ✗ pred='the' | gold='Q'
+        ✗ pred='the' | gold='During'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='v'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=12.5%) at step 362 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Royal'
+        ✗ pred='the' | gold='str'
+        ✗ pred='the' | gold='cr'
+        ✗ pred='the' | gold='God'
+        ✗ pred='the' | gold='Simon'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.5% (raw_batch=8.3%) at step 363 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Germany'
+        ✗ pred='the' | gold='Chinese'
+        ✗ pred='the' | gold='Western'
+        ✗ pred='the' | gold='84'
+        ✗ pred='the' | gold='b'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=12.5%) at step 364 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='nine'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='3'
+        ✗ pred='the' | gold='Northern'
+        ✗ pred='the' | gold='55'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  40/334 | grad_norm=19.88 | sec/step~3.44 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.2857 first=7.4372 kCE=9.6741 KD=4.0642 acc=0.083 [✓'the'] state=1.3866 ent=7.209 align=0.0000 latA=0.4997 latP=0.2500 | scale_pen(llama)=1.4211e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 370 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Br'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='225'
+        ✗ pred='the' | gold='Apple'
+        ✗ pred='the' | gold='Bur'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 377 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='12'
+        ✗ pred='the' | gold='rac'
+        ✗ pred='the' | gold='National'
+        ✗ pred='the' | gold='K'
+        ✗ pred='the' | gold='E'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 378 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='before'
+        ✗ pred='the' | gold='dogs'
+        ✗ pred='the' | gold='less'
+        ✗ pred='the' | gold='supported'
+        ✗ pred='the' | gold='G'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  50/334 | grad_norm=10.96 | sec/step~3.69 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=8.9569 first=7.0189 kCE=8.8890 KD=3.9239 acc=0.125 [✓'the'] state=1.2634 ent=7.381 align=0.0000 latA=0.4979 latP=0.2499 | scale_pen(llama)=1.2790e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=12.5%) at step 380 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='more'
+        ✗ pred='the' | gold='S'
+        ✗ pred='the' | gold='40'
+        ✗ pred='the' | gold='social'
+        ✗ pred='the' | gold='progress'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 381 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='external'
+        ✗ pred='the' | gold='Ge'
+        ✗ pred='the' | gold='15'
+        ✗ pred='the' | gold='Gas'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 382 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='P'
+        ✗ pred='the' | gold='re'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='both'
+        ✗ pred='the' | gold='private'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 384 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='bring'
+        ✗ pred='the' | gold='16'
+        ✗ pred='the' | gold='149'
+        ✗ pred='the' | gold='Jur'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 385 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='V'
+        ✗ pred='the' | gold='ego'
+        ✗ pred='the' | gold='7'
+        ✗ pred='the' | gold='one'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=16.7%) at step 386 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='$'
+        ✗ pred='the' | gold='700'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='M'
+        ✗ pred='the' | gold='M'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 387 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='j'
+        ✗ pred='the' | gold='over'
+        ✗ pred='the' | gold='start'
+        ✗ pred='the' | gold='N'
+        ✗ pred='the' | gold='Mari'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 389 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='rice'
+        ✗ pred='the' | gold='Gab'
+        ✗ pred='the' | gold='Nich'
+        ✗ pred='the' | gold='Z'
+        ✗ pred='the' | gold='eth'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  60/334 | grad_norm=5.50 | sec/step~3.64 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=8.8347 first=7.3737 kCE=9.0621 KD=3.8255 acc=0.000 state=1.3198 ent=7.900 align=0.0000 latA=0.4982 latP=0.2499 | scale_pen(llama)=3.5527e-15 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 391 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Robert'
+        ✗ pred='the' | gold='Con'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='special'
+        ✗ pred='the' | gold='President'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=12.5%) at step 392 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='from'
+        ✗ pred='the' | gold='comm'
+        ✗ pred='the' | gold='236'
+        ✗ pred='the' | gold='unic'
+        ✗ pred='the' | gold='an'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 396 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='104'
+        ✗ pred='the' | gold='sentence'
+        ✗ pred='the' | gold='number'
+        ✗ pred='the' | gold='James'
+        ✗ pred='the' | gold='pro'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 397 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Anthony'
+        ✗ pred='the' | gold='d'
+        ✗ pred='the' | gold='ét'
+        ✗ pred='the' | gold='A'
+        ✗ pred='the' | gold='Pa'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  70/334 | grad_norm=15.13 | sec/step~4.06 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.4848 first=7.6398 kCE=9.6046 KD=3.9639 acc=0.000 state=1.2897 ent=7.906 align=0.0000 latA=0.4965 latP=0.2500 | scale_pen(llama)=1.2790e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 402 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='108'
+        ✗ pred='the' | gold='tw'
+        ✗ pred='the' | gold='191'
+        ✗ pred='the' | gold='US'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 404 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='B'
+        ✗ pred='the' | gold='194'
+        ✗ pred='the' | gold='photo'
+        ✗ pred='the' | gold='26'
+        ✗ pred='the' | gold='Roman'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 408 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='172'
+        ✗ pred='the' | gold='North'
+        ✗ pred='the' | gold='H'
+        ✗ pred='the' | gold='chunk'
+        ✗ pred='the' | gold='I'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  80/334 | grad_norm=15.90 | sec/step~4.30 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=9.2482 first=7.4627 kCE=9.5036 KD=3.5237 acc=0.042 [✓'the'] state=1.1129 ent=8.281 align=0.0000 latA=0.4956 latP=0.2498 | scale_pen(llama)=1.2790e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 413 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Between'
+        ✗ pred='the' | gold='"'
+        ✗ pred='the' | gold='177'
+        ✗ pred='the' | gold='C'
+        ✗ pred='the' | gold='Eastern'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=12.5%) at step 414 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='l'
+        ✗ pred='the' | gold='191'
+        ✗ pred='the' | gold='DVD'
+        ✗ pred='the' | gold='Miss'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 415 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='French'
+        ✗ pred='the' | gold='199'
+        ✗ pred='the' | gold='198'
+        ✗ pred='the' | gold='201'
+        ✗ pred='the' | gold='30'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=12.5%) at step 419 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Go'
+        ✗ pred='the' | gold='int'
+        ✗ pred='the' | gold='M'
+        ✗ pred='the' | gold='28'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  90/334 | grad_norm=8.10 | sec/step~3.64 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=8.7319 first=7.2284 kCE=8.4159 KD=3.7047 acc=0.125 [✓'the'] state=1.0060 ent=8.099 align=0.0000 latA=0.4973 latP=0.2499 | scale_pen(llama)=8.8818e-14 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=12.5%) at step 420 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='drive'
+        ✗ pred='the' | gold='soft'
+        ✗ pred='the' | gold='was'
+        ✗ pred='the' | gold='475'
+        ✗ pred='the' | gold='E'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=12.5%) at step 421 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='B'
+        ✗ pred='the' | gold='Los'
+        ✗ pred='the' | gold='John'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='lake'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 423 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Dao'
+        ✗ pred='the' | gold='God'
+        ✗ pred='the' | gold='simp'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Chris'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=20.8%) at step 426 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='185'
+        ✗ pred='the' | gold='Management'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='to'
+        ✗ pred='the' | gold='God'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 428 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='G'
+        ✗ pred='the' | gold='lime'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='c'
+        ✗ pred='the' | gold='Mel'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 429 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='phot'
+        ✗ pred='the' | gold='cl'
+        ✗ pred='the' | gold='Secretary'
+        ✗ pred='the' | gold='Sit'
+        ✗ pred='the' | gold='193'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  step  100/334 | grad_norm=3.73 | sec/step~3.61 | lr=5.00e-05 | keep=0.71 | K=8 | first_w=6.00 | llama(L): tf=8.9177 first=7.7439 kCE=9.0866 KD=3.7479 acc=0.083 [✓'the'] state=0.9251 ent=7.423 align=0.0000 latA=0.4973 latP=0.2499 | scale_pen(llama)=2.2737e-13 | K=8 tau=4.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 430 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='before'
+        ✗ pred='the' | gold='will'
+        ✗ pred='the' | gold='They'
+        ✗ pred='the' | gold='lower'
+        ✗ pred='the' | gold='R'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 431 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='Bay'
+        ✗ pred='the' | gold='chosen'
+        ✗ pred='the' | gold='job'
+        ✗ pred='the' | gold='199'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 433 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='B'
+        ✗ pred='the' | gold='L'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='Jer'
+        ✗ pred='the' | gold='R'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
+  🌟 NEW PEAK: first_acc_ema=7.6% (raw_batch=8.3%) at step 435 → saved to runs/hero/ckpt/stageA_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='d'
+        ✗ pred='the' | gold='individual'
+        ✗ pred='the' | gold='B'
+        ✗ pred='the' | gold='architecture'
+        ✗ pred='the' | gold='Over'
+      Prediction diversity: 1/24 unique tokens
+      Top-3 predictions: 'the'(24) 
