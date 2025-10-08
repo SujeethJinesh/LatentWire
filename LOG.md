@@ -1,5 +1,70 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-08 (c) — Implementing Multi-Depth Latent Adapters (IAA-style) (Claude Code)
+- **DECISION**: After epoch 1 assessment showing NOT on track (4.2% vs target 15%), escalating to **Multi-Depth Latent Adapters** (IAA-style architecture from possible_improvements.md #5).
+
+- **WHY MULTI-DEPTH ADAPTERS NOW**:
+  - **Proven architecture works**: The 25% spike at step 267 proves base architecture CAN learn
+  - **ChatGPT's "bugs" don't exist**: Verified all 5 claimed bugs already fixed or never existed:
+    - ❌ KD teacher contamination - `disable_adapter()` already exists at models.py:1471
+    - ❌ Anchor downgrade - script uses `--warm_anchor_mode chat` explicitly
+    - ❌ BOS placement - already correct (BOS before anchor)
+    - ❌ PAD not ignored - `ignore_index` already set at losses.py:52-72
+    - ❌ LoRA too broad - already `attn_firstN:12` at run_llama_single.sh:142
+  - **Local minimum problem, not architecture failure**: Entropy regularization + LoRA helped but insufficient
+  - **Need deeper integration**: Single-depth prefix too easy to ignore; latent needs multiple entry points
+  - **IAA paper evidence**: Wang et al. (AAAI 2025) achieved SOTA on vision-language tasks by injecting modality at multiple layers
+
+- **WHAT ARE MULTI-DEPTH ADAPTERS**:
+  - **Concept**: Insert small cross-attention adapter blocks at layers {5, 10, 15} that read latent Z
+  - **Each adapter**: LayerNorm → CrossAttn(hidden, latent) → MLP → residual with learned gating (alpha)
+  - **Training**: Only adapters + latent projection trainable (~3-5M params), base LLM stays frozen
+  - **Advantage**: Latent guides reasoning at multiple abstraction levels:
+    - Layer 5: Low-level token patterns
+    - Layer 10: Mid-level semantic grouping
+    - Layer 15: High-level task planning
+  - **Similar to**: IAA (Inner-Adaptor Architecture) which injected vision features to text LLM
+
+- **IMPLEMENTATION PLAN**:
+  1. Add `LatentAdapterBlock` to models.py:
+     - Cross-attention: Q from hidden state, K/V from latent
+     - Multi-head (8 heads), LayerNorm, gated residual (learned alpha)
+     - MLP expansion (4×) with GELU activation
+
+  2. Modify `LMWrapper` to support adapters:
+     - `self.adapters = ModuleDict({str(l): LatentAdapterBlock(...) for l in layers})`
+     - Forward: extract hidden_states, apply adapters at specified layers, recompute logits
+     - `disable_adapters()` context manager already exists
+
+  3. Update training flow:
+     - Pass latent to LMWrapper.forward() via new `latent_adapters=` parameter
+     - Adapters process latent at each specified layer
+     - Keep existing losses: first-token CE, K-token CE, KD
+
+  4. Hyperparameters:
+     - Adapter layers: {5, 10, 15} (3 adapters for 32-layer Llama)
+     - n_heads: 8 (matches typical attention heads)
+     - Initial alpha: 0.5 (balanced residual gating)
+     - Dropout: 0.1 (standard)
+
+- **EXPECTED IMPACT**:
+  - **First-token accuracy**: 4.2% → 20-30% (IAA paper shows 2-3× improvement)
+  - **Diversity**: 1/24 → 8-12/24 (latent information reaches all layers, breaks mode collapse)
+  - **F1 score**: 0.0 → 0.10-0.20 (better integration enables generation)
+  - **Training stability**: Reduced variance (multiple guidance points vs single prefix)
+
+- **SUCCESS CRITERIA** (updated for multi-depth run):
+  - **By step 250 (early Stage A)**: first_acc > 15%, diversity > 3/24, KD < 2.5
+  - **By end of Stage A (epoch 6)**: first_acc > 30%, F1 > 0.15, latent ≥ 50% of text baseline
+  - **If still failing**: Escalate to Latent Coprocessor (differentiable cache augmentation)
+
+- **NEXT STEPS**:
+  1. Implement LatentAdapterBlock in models.py
+  2. Wire adapters into LMWrapper forward pass
+  3. Update train.py to pass latent to model
+  4. Run smoke test (320 samples, 2 epochs) with new architecture
+  5. If successful: Run full hero (87k samples, 6+8 epochs)
+
 ### 2025-10-08 (b) — Assessment After Fixes: Partial Progress, Architectural Escalation Needed (Claude Code)
 - **RESULTS from hero run (steps 10-410, epoch 0-1)**: Implemented fixes (LoRA + stronger entropy + enhanced logging) show **learning is happening but NOT on track** for success criteria.
 

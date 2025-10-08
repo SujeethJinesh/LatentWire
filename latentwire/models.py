@@ -705,6 +705,91 @@ class LMConfig:
     load_4bit: bool = False
     device_map: Optional[Union[str, int, Dict[str, int]]] = None
     max_memory: Optional[Dict[Union[int, str], Union[int, str]]] = None
+    # Multi-depth latent adapters (IAA-style)
+    use_latent_adapters: bool = False
+    latent_adapter_layers: Tuple[int, ...] = (5, 10, 15)
+    latent_d_z: int = 256
+    latent_adapter_heads: int = 8
+    latent_adapter_dropout: float = 0.1
+
+
+class LatentAdapterBlock(nn.Module):
+    """Multi-depth latent adapter (IAA-style): cross-attend from hidden states to latent Z.
+
+    Injects latent information at intermediate layers via:
+    - LayerNorm on hidden state
+    - Cross-attention: Q from hidden, K/V from latent
+    - MLP expansion (4×) with GELU
+    - Gated residual connection (learned alpha parameter)
+
+    Based on Inner-Adaptor Architecture (Wang et al., AAAI 2025).
+    """
+    def __init__(self, d_model: int, d_z: int, n_heads: int = 8, dropout: float = 0.1):
+        super().__init__()
+        self.d_model = d_model
+        self.d_z = d_z
+        self.n_heads = n_heads
+
+        # Layer norm for hidden state
+        self.ln = nn.LayerNorm(d_model)
+
+        # Cross-attention projections: Q from hidden, K/V from latent
+        self.q_proj = nn.Linear(d_model, d_model)
+        self.k_proj = nn.Linear(d_z, d_model)
+        self.v_proj = nn.Linear(d_z, d_model)
+
+        self.dropout = nn.Dropout(dropout)
+
+        # MLP expansion (4× typical)
+        self.out = nn.Sequential(
+            nn.Linear(d_model, d_model * 4),
+            nn.GELU(),
+            nn.Linear(d_model * 4, d_model),
+        )
+
+        # Learned gating parameter (initialized to 0.5 for balanced contribution)
+        self.alpha = nn.Parameter(torch.tensor(0.5))
+
+    def _split_heads(self, x: torch.Tensor, B: int) -> torch.Tensor:
+        """Split last dimension into [B, n_heads, seq_len, d_head]."""
+        D = x.shape[-1]
+        H = self.n_heads
+        d_h = D // H
+        return x.view(B, -1, H, d_h).transpose(1, 2)  # [B, H, T, d_h]
+
+    def forward(self, h: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
+        """Apply cross-attention from hidden state h to latent z.
+
+        Args:
+            h: Hidden state [B, T, d_model]
+            z: Latent embeddings [B, M, d_z]
+
+        Returns:
+            Updated hidden state [B, T, d_model] with latent information injected
+        """
+        B, T, D = h.shape
+
+        # Normalize hidden state
+        h_ = self.ln(h)
+
+        # Cross-attention: hidden queries latent
+        Q = self._split_heads(self.q_proj(h_), B)      # [B, H, T, d_h]
+        K = self._split_heads(self.k_proj(z), B)       # [B, H, M, d_h]
+        V = self._split_heads(self.v_proj(z), B)       # [B, H, M, d_h]
+
+        # Attention scores
+        attn = torch.matmul(Q, K.transpose(-2, -1)) / (Q.shape[-1] ** 0.5)  # [B, H, T, M]
+        w = torch.softmax(attn, dim=-1)
+        w = self.dropout(w)
+
+        # Apply attention to values
+        ctx = torch.matmul(w, V)  # [B, H, T, d_h]
+        ctx = ctx.transpose(1, 2).contiguous().view(B, T, D)  # [B, T, D]
+
+        # MLP and gated residual
+        out = self.out(ctx)
+        return h + torch.tanh(self.alpha) * out
+
 
 class LMWrapper(nn.Module):
     def __init__(self, cfg: LMConfig):
@@ -787,6 +872,30 @@ class LMWrapper(nn.Module):
         self.d_model = int(d_model)
 
         self._stop_token_ids = self._collect_eos_token_ids()
+
+        # Multi-depth latent adapters (IAA-style)
+        self.use_latent_adapters = cfg.use_latent_adapters
+        self.latent_adapter_layers = cfg.latent_adapter_layers
+        if self.use_latent_adapters:
+            print(f"[{cfg.model_id}] Initializing {len(cfg.latent_adapter_layers)} latent adapters at layers {cfg.latent_adapter_layers}")
+            self.latent_adapters = nn.ModuleDict({
+                str(layer): LatentAdapterBlock(
+                    d_model=self.d_model,
+                    d_z=cfg.latent_d_z,
+                    n_heads=cfg.latent_adapter_heads,
+                    dropout=cfg.latent_adapter_dropout,
+                )
+                for layer in cfg.latent_adapter_layers
+            })
+            # Move adapters to correct device
+            device_target = next(self.model.parameters()).device
+            for adapter in self.latent_adapters.values():
+                adapter.to(device=device_target, dtype=cfg.dtype)
+            # Count trainable parameters
+            adapter_params = sum(p.numel() for p in self.latent_adapters.parameters() if p.requires_grad)
+            print(f"[{cfg.model_id}] Latent adapters: {adapter_params:,} trainable parameters")
+        else:
+            self.latent_adapters = nn.ModuleDict()
 
     # ---- utility ----
 
@@ -1237,6 +1346,34 @@ class LMWrapper(nn.Module):
 
         return full, attn_mask, prepared_past
 
+    def _apply_latent_adapters(
+        self,
+        hidden_states: Tuple[torch.Tensor, ...],
+        latent: torch.Tensor,
+    ) -> Tuple[torch.Tensor, ...]:
+        """Apply multi-depth latent adapters to hidden states at specified layers.
+
+        Args:
+            hidden_states: Tuple of hidden states from model, one per layer [B, T, D]
+            latent: Latent tensor [B, M, d_z]
+
+        Returns:
+            Modified hidden states with adapter outputs injected at specified layers
+        """
+        if not self.use_latent_adapters or latent is None:
+            return hidden_states
+
+        # Convert tuple to list for modification
+        hs_list = list(hidden_states)
+
+        # Apply adapter at each specified layer
+        for layer_idx in self.latent_adapter_layers:
+            if layer_idx < len(hs_list):
+                adapter = self.latent_adapters[str(layer_idx)]
+                hs_list[layer_idx] = adapter(hs_list[layer_idx], latent)
+
+        return tuple(hs_list)
+
     def first_token_logits_from_prefix(
         self,
         prefix_embeds: torch.Tensor,
@@ -1244,11 +1381,22 @@ class LMWrapper(nn.Module):
         append_bos_after_prefix: Optional[bool] = None,  # None => auto: only if NO anchor
         *,
         deep_prefix_past: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None,
+        latent: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
         Returns logits for the very first token conditioned ONLY on:
            [latent prefix] + optional [anchor tokens] + optional [BOS]
         Used in training (first-token CE) and eval diagnostics.
+
+        Args:
+            prefix_embeds: Prefix embeddings [B, M, d_model]
+            anchor_token_text: Optional anchor text (e.g., "Answer: ")
+            append_bos_after_prefix: Whether to append BOS after prefix
+            deep_prefix_past: Optional deep prefix KV cache
+            latent: Optional latent tensor [B, M, d_z] for multi-depth adapters
+
+        Returns:
+            Logits for first token [B, vocab_size]
         """
         anchor_ids_seq = self._encode_anchor_text(anchor_token_text) if anchor_token_text else None
         inputs_embeds, attn_mask, prepared_past = self._compose_inputs_from_prefix(
@@ -1258,14 +1406,28 @@ class LMWrapper(nn.Module):
             append_bos_after_prefix=append_bos_after_prefix,
             deep_prefix=deep_prefix_past,
         )
+
+        # Request hidden states if using latent adapters
+        output_hidden_states = self.use_latent_adapters and latent is not None
+
         out = self.model(
             inputs_embeds=inputs_embeds,
             attention_mask=attn_mask,
             use_cache=bool(prepared_past),
             past_key_values=prepared_past,
+            output_hidden_states=output_hidden_states,
             return_dict=True,
         )
-        logits = out.logits[:, -1, :]
+
+        # Apply latent adapters if enabled
+        if output_hidden_states and latent is not None:
+            modified_hidden_states = self._apply_latent_adapters(out.hidden_states, latent)
+            # Recompute logits from modified final hidden state
+            final_hidden = modified_hidden_states[-1][:, -1, :]  # [B, d_model]
+            logits = self.model.lm_head(final_hidden)  # [B, vocab_size]
+        else:
+            logits = out.logits[:, -1, :]
+
         return logits
 
     @torch.no_grad()

@@ -597,6 +597,15 @@ def main():
     ap.add_argument("--prefix_projection", action="store_true")
     ap.add_argument("--peft_prefix_all_layers", type=str, default="yes",
                     help="yes/no toggle to apply prefix adapters across every transformer layer.")
+    # Multi-depth latent adapters (IAA-style)
+    ap.add_argument("--use_latent_adapters", action="store_true",
+                    help="Enable multi-depth latent adapters (IAA-style) that inject latent at multiple layers.")
+    ap.add_argument("--latent_adapter_layers", type=str, default="5,10,15",
+                    help="Comma-separated list of layer indices for latent adapters (e.g., '5,10,15').")
+    ap.add_argument("--latent_adapter_heads", type=int, default=8,
+                    help="Number of attention heads in latent adapter cross-attention.")
+    ap.add_argument("--latent_adapter_dropout", type=float, default=0.1,
+                    help="Dropout rate for latent adapters.")
     ap.add_argument("--use_deep_prefix", action="store_true",
                     help="Enable learned per-layer prefixes derived from the latent interlingua.")
     ap.add_argument("--deep_prefix_len", type=int, default=None,
@@ -836,6 +845,9 @@ def main():
     if qwen_device_map is None and qwen_max_memory is not None and device == "cuda":
         qwen_device_map = "auto"
 
+    # Parse latent adapter layers
+    latent_adapter_layers_tuple = tuple(int(x.strip()) for x in args.latent_adapter_layers.split(",") if x.strip())
+
     llama = None
     if "llama" in model_keys:
         llama = LMWrapper(LMConfig(
@@ -845,6 +857,12 @@ def main():
             load_4bit=args.load_4bit,
             device_map=llama_device_map,
             max_memory=llama_max_memory,
+            # Multi-depth latent adapters
+            use_latent_adapters=args.use_latent_adapters,
+            latent_adapter_layers=latent_adapter_layers_tuple,
+            latent_d_z=args.d_z,
+            latent_adapter_heads=args.latent_adapter_heads,
+            latent_adapter_dropout=args.latent_adapter_dropout,
         ))
     qwen = None
     if "qwen" in model_keys:
@@ -855,6 +873,12 @@ def main():
             load_4bit=args.load_4bit,
             device_map=qwen_device_map,
             max_memory=qwen_max_memory,
+            # Multi-depth latent adapters
+            use_latent_adapters=args.use_latent_adapters,
+            latent_adapter_layers=latent_adapter_layers_tuple,
+            latent_d_z=args.d_z,
+            latent_adapter_heads=args.latent_adapter_heads,
+            latent_adapter_dropout=args.latent_adapter_dropout,
         ))
 
     wrappers_in_use: List[LMWrapper] = [w for w in (llama, qwen) if w is not None]
@@ -1685,11 +1709,14 @@ def main():
                 entropy_bonus = torch.zeros((), device=target_device)
                 first_entropy = torch.zeros((), device=target_device)
                 if enable_first_token_loss:
+                    # Pass raw latent for multi-depth adapters
+                    latent_for_adapters = latents_for_adapter if ctx.wrapper.use_latent_adapters else None
                     logits_first = ctx.wrapper.first_token_logits_from_prefix(
                         prefix,
                         anchor_token_text=first_anchor_text,
                         append_bos_after_prefix=ctx.bos_flag,
                         deep_prefix_past=deep_prefix_cache,
+                        latent=latent_for_adapters,
                     )
                     first_targets = ctx.first_token_ids[idx].to(target_device)
                     loss_first_raw = nn.functional.cross_entropy(logits_first.float(), first_targets)
