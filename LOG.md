@@ -1,12 +1,12 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
 ### 2025-10-08 (d) — Fixed Latent Adapter Integration (Codex Review + Claude Code)
-- **CRITICAL FIXES COMPLETED** (4 out of 5 from Codex's review):
+- **CRITICAL FIXES COMPLETED** (ALL 5/5 from Codex's review):
   - ✅ **Fix 1/5**: Latent adapter parameters now in optimizer (train.py:1283-1307)
   - ✅ **Fix 2/5**: Checkpoints save/load adapter state (train.py:175-415, 2346-2412)
   - ✅ **Fix 4/5**: Adapters applied in teacher-forced & K-token losses (models.py:1172-1197, losses.py:58-89)
-  - ⏳ **Fix 3/5**: Pass latent to evaluation paths (DEFERRED - eval-only, doesn't block training)
-  - ⏳ **Fix 5/5**: Rebuild adapters in Stage C eval (DEFERRED - eval-only, doesn't block training)
+  - ✅ **Fix 3/5**: Thread latent through all eval paths (eval.py:342-380,414-460,530-578,618-714; models.py:1493-1540)
+  - ✅ **Fix 5/5**: Rebuild adapters in Stage C eval from checkpoint config (eval.py:760-832)
 
 - **WHAT WAS BROKEN** (Codex's diagnosis was correct):
   - Adapters initialized but never trained (no optimizer update)
@@ -23,11 +23,12 @@
     - First-token CE: 5% (first_token_ce_weight=3.0)
   - **Expected impact**: 10-40× faster convergence, 2-3× better quality at convergence
 
-- **WHY FIXES 3 & 5 DEFERRED**:
-  - Fixes 1, 2, 4 are **training-critical** → must complete before next run
-  - Fixes 3 & 5 are **evaluation-only** → can implement after smoke test confirms training works
-  - Training will now proceed correctly with adapters receiving full gradient signal
-  - Eval metrics may be slightly degraded without fix 3, but we can still see training progress
+- **FIXES 3 & 5 NOW COMPLETED** (2025-10-08 evening):
+  - Initially deferred as eval-only (training blocked on fixes 1, 2, 4)
+  - Now implemented for complete end-to-end adapter integration
+  - **Fix 3 impact**: All eval paths (first_token_topk_acc, avg_nll_latent, generate_from_prefix) now use adapters
+  - **Fix 5 impact**: Stage C evaluation rebuilds adapter architecture from checkpoint and loads trained weights
+  - Evaluation metrics now measure full adapted model, not base model
 
 - **UPDATED SMOKE TEST EXPECTATIONS**:
   - **By step 250** (was: first_acc > 15%, now: first_acc > 20% with 34× more gradient)
