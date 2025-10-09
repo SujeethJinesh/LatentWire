@@ -1877,6 +1877,7 @@ def main():
 
             per_model_losses: Dict[str, Dict[str, torch.Tensor]] = {}
             total_model_loss = torch.zeros((), device=device)
+            loss_device = total_model_loss.device  # Explicit device for loss aggregation in multi-GPU
             penalty = torch.zeros((), device=device)
             rms_pen = torch.zeros((), device=device)
 
@@ -1938,8 +1939,8 @@ def main():
                     deep_prefix_past=deep_prefix_cache,
                     latent=latent_for_adapters_tf,
                 )
-                # Move loss to target device (critical for multi-GPU where lm_head may be on different GPU)
-                loss_tf_latent = loss_tf_latent.to(target_device)
+                # Move loss to device for aggregation (use non_blocking to avoid hang in multi-GPU)
+                loss_tf_latent = loss_tf_latent.to(loss_device, non_blocking=True)
 
                 first_anchor_text = ctx.anchor_text if ctx.anchor_mode == "text" else strip_anchor_literal
                 entropy_bonus = torch.zeros((), device=target_device)
@@ -1954,13 +1955,17 @@ def main():
                         deep_prefix_past=deep_prefix_cache,
                         latent=latent_for_adapters,
                     )
-                    first_targets = ctx.first_token_ids[idx].to(target_device)
+                    first_targets = ctx.first_token_ids[idx].to(logits_first.device, non_blocking=True)
                     loss_first_raw = nn.functional.cross_entropy(logits_first.float(), first_targets)
+                    # Move loss to device for aggregation (avoid device mismatch in multi-GPU)
+                    loss_first_raw = loss_first_raw.to(loss_device, non_blocking=True)
                     if training_mode == "latent" and args.first_token_entropy_weight > 0.0:
                         probs = torch.softmax(logits_first.float(), dim=-1)
                         entropy_vals = -(probs * torch.log(probs.clamp_min(1e-8))).sum(dim=-1)
                         first_entropy = entropy_vals.mean()
                         entropy_bonus = -first_entropy * float(args.first_token_entropy_weight)
+                        # Move entropy_bonus to device for aggregation
+                        entropy_bonus = entropy_bonus.to(loss_device, non_blocking=True)
                     with torch.no_grad():
                         first_pred = logits_first.argmax(dim=-1)
                         first_acc_raw = (first_pred == first_targets).float().mean()
@@ -2092,10 +2097,12 @@ def main():
                         diff = (gist_pred - gist_targets) * mask
                         diff_sq = diff.pow(2).sum(dim=-1)
                         gist_loss_raw = diff_sq.sum() / (denom * gist_targets.size(-1))
+                        # Move gist_loss_raw to device for aggregation
+                        gist_loss_raw = gist_loss_raw.to(loss_device, non_blocking=True)
 
-                align_loss = torch.zeros((), device=target_device)
-                latent_align_loss = torch.zeros((), device=target_device)
-                latent_prefix_align_loss = torch.zeros((), device=target_device)
+                align_loss = torch.zeros((), device=device)
+                latent_align_loss = torch.zeros((), device=device)
+                latent_prefix_align_loss = torch.zeros((), device=device)
                 if training_mode == "text" and args.warmup_align_tokens > 0 and args.warmup_align_weight > 0.0:
                     max_align = min(int(args.warmup_align_tokens), prefix.shape[1])
                     pad_id = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
@@ -2115,6 +2122,8 @@ def main():
                             prefix_slice = prefix[:, : token_slice.size(1), :]
                             align_loss = alignment_mse(prefix_slice, teacher_embeds, mask)
                             align_loss = align_loss * float(max(args.warmup_align_weight, 0.0))
+                            # Move align_loss to device for aggregation
+                            align_loss = align_loss.to(loss_device, non_blocking=True)
                 if training_mode == "latent" and args.latent_align_weight > 0.0 and prefix.shape[1] > 0:
                     teacher_first_ids = ctx.first_token_ids[idx].to(target_device, non_blocking=True)
                     teacher_first_ids = teacher_first_ids.view(-1, 1)
@@ -2126,6 +2135,8 @@ def main():
                     if args.latent_align_metric in ("mse", "both"):
                         latent_align_loss = latent_align_loss + nn.functional.mse_loss(latent_embed, teacher_emb)
                     latent_align_loss = latent_align_loss * float(max(args.latent_align_weight, 0.0))
+                    # Move latent_align_loss to device for aggregation
+                    latent_align_loss = latent_align_loss.to(loss_device, non_blocking=True)
                 if training_mode == "latent" and args.latent_prefix_align_weight > 0.0 and prefix.shape[1] > 0:
                     prefix_len = prefix.shape[1]
                     teacher_prefix_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
@@ -2133,7 +2144,7 @@ def main():
                     teacher_prefix_emb = teacher_prefix_emb[:, :prefix_len]
                     overlap = min(prefix_len, teacher_prefix_emb.size(1))
                     if overlap > 0:
-                        latent_prefix_align_loss = torch.zeros((), device=target_device)
+                        latent_prefix_align_loss = torch.zeros((), device=device)
                         if args.latent_align_metric in ("cosine", "both"):
                             cos = 1.0 - nn.functional.cosine_similarity(
                                 prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :], dim=-1
@@ -2144,6 +2155,8 @@ def main():
                                 prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :]
                             )
                         latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
+                        # Move latent_prefix_align_loss to device for aggregation
+                        latent_prefix_align_loss = latent_prefix_align_loss.to(loss_device, non_blocking=True)
 
                 grad_diag_values: Dict[str, torch.Tensor] = {}
                 if (
@@ -2218,11 +2231,13 @@ def main():
                             effective_first_weight *= max(min(ratio, 8.0), 1.0)
 
                 manifold_loss = manifold_stat_loss(prefix, ctx.name)
+                # Move manifold_loss to device for aggregation (avoid device mismatch in multi-GPU)
+                manifold_loss = manifold_loss.to(loss_device, non_blocking=True)
 
-                text_teacher_loss = torch.zeros((), device=target_device)
-                align_loss = torch.zeros((), device=target_device)
-                latent_align_loss = torch.zeros((), device=target_device)
-                latent_prefix_align_loss = torch.zeros((), device=target_device)
+                text_teacher_loss = torch.zeros((), device=device)
+                align_loss = torch.zeros((), device=device)
+                latent_align_loss = torch.zeros((), device=device)
+                latent_prefix_align_loss = torch.zeros((), device=device)
                 if training_mode == "text" and args.warmup_align_tokens > 0 and args.warmup_align_weight > 0.0:
                     max_align = min(int(args.warmup_align_tokens), prefix.shape[1])
                     pad_id = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
@@ -2242,6 +2257,8 @@ def main():
                             prefix_slice = prefix[:, : token_slice.size(1), :]
                             align_loss = alignment_mse(prefix_slice, teacher_embeds, mask)
                             align_loss = align_loss * float(max(args.warmup_align_weight, 0.0))
+                            # Move align_loss to device for aggregation
+                            align_loss = align_loss.to(loss_device, non_blocking=True)
                 if training_mode == "latent" and args.latent_align_weight > 0.0 and prefix.shape[1] > 0:
                     teacher_first_ids = ctx.first_token_ids[idx].to(target_device, non_blocking=True)
                     teacher_first_ids = teacher_first_ids.view(-1, 1)
@@ -2253,6 +2270,8 @@ def main():
                     if args.latent_align_metric in ("mse", "both"):
                         latent_align_loss = latent_align_loss + nn.functional.mse_loss(latent_embed, teacher_emb)
                     latent_align_loss = latent_align_loss * float(max(args.latent_align_weight, 0.0))
+                    # Move latent_align_loss to device for aggregation
+                    latent_align_loss = latent_align_loss.to(loss_device, non_blocking=True)
                 if training_mode == "latent" and args.latent_prefix_align_weight > 0.0 and prefix.shape[1] > 0:
                     prefix_len = prefix.shape[1]
                     teacher_prefix_ids = ctx.token_ids[idx].to(target_device, non_blocking=True)
@@ -2260,7 +2279,7 @@ def main():
                     teacher_prefix_emb = teacher_prefix_emb[:, :prefix_len]
                     overlap = min(prefix_len, teacher_prefix_emb.size(1))
                     if overlap > 0:
-                        latent_prefix_align_loss = torch.zeros((), device=target_device)
+                        latent_prefix_align_loss = torch.zeros((), device=device)
                         if args.latent_align_metric in ("cosine", "both"):
                             cos = 1.0 - nn.functional.cosine_similarity(
                                 prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :], dim=-1
@@ -2271,10 +2290,14 @@ def main():
                                 prefix[:, :overlap, :], teacher_prefix_emb[:, :overlap, :]
                             )
                         latent_prefix_align_loss = latent_prefix_align_loss * float(max(args.latent_prefix_align_weight, 0.0))
+                        # Move latent_prefix_align_loss to device for aggregation
+                        latent_prefix_align_loss = latent_prefix_align_loss.to(loss_device, non_blocking=True)
                 if training_mode == "text" and float(max(args.warmup_text_teacher_weight, 0.0)) > 0.0:
                     text_teacher_loss, _, _ = _loss_with_text_prompt_chunked(ctx.wrapper, scaffold, targets)
+                    # Move loss to device for aggregation (avoid device mismatch in multi-GPU)
+                    text_teacher_loss = text_teacher_loss.to(loss_device, non_blocking=True)
                 else:
-                    text_teacher_loss = torch.zeros((), device=target_device)
+                    text_teacher_loss = torch.zeros((), device=device)
 
                 model_loss = (
                     loss_tf
