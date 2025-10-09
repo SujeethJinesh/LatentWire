@@ -41,6 +41,7 @@ from latentwire.models import (
     SimpleEncoder,
     STQueryEncoder,
     DeepPrefixGenerator,
+    LatentCoprocessor,
     apply_lora_if_requested,
     apply_prefix_if_requested,
 )
@@ -281,12 +282,29 @@ def _debug_print_optimizer_state_devices(optimizer: optim.Optimizer, limit: int 
     _debug_print_optimizer_state_devices._printed = True
 
 
+def _merge_kv_caches(
+    primary: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
+    secondary: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
+) -> Optional[List[Tuple[torch.Tensor, torch.Tensor]]]:
+    if primary is None or len(primary) == 0:
+        return list(secondary) if secondary else None
+    if secondary is None or len(secondary) == 0:
+        return list(primary)
+    if len(primary) != len(secondary):
+        raise ValueError("KV cache length mismatch when merging prefix sources")
+    merged: List[Tuple[torch.Tensor, torch.Tensor]] = []
+    for (pk, pv), (sk, sv) in zip(primary, secondary):
+        merged.append((torch.cat([pk, sk], dim=2), torch.cat([pv, sv], dim=2)))
+    return merged
+
+
 def load_checkpoint(
     path: str,
     encoder: InterlinguaEncoder,
     adapters: Dict[str, Adapter],
     refiner: Optional[LatentRefiner] = None,
     deep_prefix_generators: Optional[Dict[str, DeepPrefixGenerator]] = None,
+    coprocessors: Optional[Dict[str, LatentCoprocessor]] = None,
     gist_heads: Optional[Dict[str, GistReconstructionHead]] = None,
     optimizer: Optional[optim.Optimizer] = None,
     strict: bool = True,
@@ -309,6 +327,10 @@ def load_checkpoint(
     deep_prefix_loaded: Dict[str, bool] = (
         {name: False for name in (deep_prefix_generators or {}).keys()}
         if deep_prefix_generators else {}
+    )
+    coprocessor_loaded: Dict[str, bool] = (
+        {name: False for name in (coprocessors or {}).keys()}
+        if coprocessors else {}
     )
     gist_loaded: Dict[str, bool] = (
         {name: False for name in (gist_heads or {}).keys()}
@@ -355,6 +377,18 @@ def load_checkpoint(
                             deep_prefix_loaded[name] = False
                     else:
                         print(f"   -> deep prefix '{name}' missing in state.pt; will retry from disk")
+            if coprocessors:
+                for name, module in coprocessors.items():
+                    key = f"coprocessor_{name}"
+                    if key in state:
+                        try:
+                            module.load_state_dict(state[key], strict=strict)
+                            coprocessor_loaded[name] = True
+                        except Exception as exc:
+                            print(f"   -> coprocessor '{name}' from state.pt failed ({exc}); will retry from disk")
+                            coprocessor_loaded[name] = False
+                    else:
+                        print(f"   -> coprocessor '{name}' missing in state.pt; will retry from disk")
             if gist_heads:
                 for name, head in gist_heads.items():
                     key = f"gist_{name}"
@@ -390,12 +424,15 @@ def load_checkpoint(
         else:
             refiner_loaded = refiner is None
     deep_prefix_ok = True if not deep_prefix_generators else all(deep_prefix_loaded.values())
+    coprocessor_ok = True if not coprocessors else all(coprocessor_loaded.values())
     gist_ok = True if not gist_heads else all(gist_loaded.values())
     latent_adapters_ok = True if not latent_adapters_loaded else all(latent_adapters_loaded.values())
-    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded and deep_prefix_ok and gist_ok and latent_adapters_ok:
+    if enc_loaded and all(adapters_loaded.values()) and refiner_loaded and deep_prefix_ok and coprocessor_ok and gist_ok and latent_adapters_ok:
         suffix = "encoder/adapters"
         if deep_prefix_generators:
             suffix += "/deep_prefix"
+        if coprocessors:
+            suffix += "/coprocessor"
         if refiner is not None:
             suffix += "/refiner"
         if gist_heads:
@@ -404,7 +441,7 @@ def load_checkpoint(
             suffix += "/latent_adapters"
         print(f"   -> loaded {suffix} FROM state.pt")
 
-    if (not enc_loaded or not all(adapters_loaded.values()) or not refiner_loaded) and ckpt_dir:
+    if (not enc_loaded or not all(adapters_loaded.values()) or not refiner_loaded or not coprocessor_ok) and ckpt_dir:
         enc_path = os.path.join(ckpt_dir, "encoder.pt")
         missing: List[str] = []
         if not enc_loaded:
@@ -436,6 +473,16 @@ def load_checkpoint(
                     deep_prefix_loaded[name] = True
                 else:
                     missing.append(prefix_path)
+        if coprocessors:
+            for name, module in coprocessors.items():
+                if coprocessor_loaded.get(name):
+                    continue
+                coproc_path = os.path.join(ckpt_dir, f"coprocessor_{name}.pt")
+                if os.path.isfile(coproc_path):
+                    module.load_state_dict(_safe_load(coproc_path, map_location=device), strict=strict)
+                    coprocessor_loaded[name] = True
+                else:
+                    missing.append(coproc_path)
 
         if refiner is not None and not refiner_loaded:
             refiner_path = os.path.join(ckpt_dir, "refiner.pt")
@@ -723,6 +770,20 @@ def main():
                     help="Weight for the gist reconstruction loss (0 disables).")
     ap.add_argument("--gist_mask_prob", type=float, default=0.15,
                     help="Probability of masking each gist target token when computing the loss (simulates gist masking).")
+    ap.add_argument("--use_coprocessor", action="store_true",
+                    help="Enable latent coprocessor that injects KV deltas derived from the latent wire.")
+    ap.add_argument("--coprocessor_len", type=int, default=1,
+                    help="Number of KV positions per layer produced by the coprocessor (default: 1).")
+    ap.add_argument("--coprocessor_width", type=int, default=256,
+                    help="Hidden width of the coprocessor MLP.")
+    ap.add_argument("--coprocessor_dropout", type=float, default=0.1,
+                    help="Dropout probability inside the coprocessor.")
+    ap.add_argument("--coprocessor_kv_scale", type=float, default=0.8,
+                    help="Scale factor applied to coprocessor-generated KV vectors.")
+    ap.add_argument("--coprocessor_pool", type=str, default="mean",
+                    help="Pooling strategy for latent inputs before the coprocessor MLP (mean|first|max).")
+    ap.add_argument("--coprocessor_heads", type=str, default="",
+                    help="Optional comma-separated override for KV head counts per layer (blank = use model defaults).")
     # PEFT toggles
     ap.add_argument("--use_lora", action="store_true")
     ap.add_argument("--lora_r", type=int, default=8)
@@ -1117,6 +1178,10 @@ def main():
     extra_llama_params.extend(feature_extra_params.get("llama", []))
     extra_qwen_params.extend(feature_extra_params.get("qwen", []))
     deep_prefix_generators = feature_registry.state.get("deep_prefix_generators", {})
+    latent_adapter_param_map = feature_registry.state.get("latent_adapter_params", {})
+    latent_adapter_summaries = feature_registry.state.get("latent_adapter_summaries", {})
+    coprocessors = feature_registry.state.get("coprocessors", {})
+    coprocessor_summaries = feature_registry.state.get("coprocessor_summaries", {})
 
     if args.use_prefix:
         prefix_cfg = {
@@ -1446,24 +1511,34 @@ def main():
     for head in gist_heads.values():
         gist_params.extend([p for p in head.parameters() if p.requires_grad])
 
-    # Collect latent adapter params from all wrappers
+    # Collect latent adapter params via feature registry (fallbacks if missing)
     latent_adapter_params: List[torch.nn.Parameter] = []
-    print(f"[Optimizer] Gathering latent adapter parameters...")
-    for wrapper in wrappers_in_use:
-        wrapper_name = getattr(wrapper.cfg, 'model_id', 'unknown').split('/')[-1]
-        if wrapper.use_latent_adapters:
-            adapter_params_list = [p for p in wrapper.latent_adapters.parameters() if p.requires_grad]
-            num_params = sum(p.numel() for p in adapter_params_list)
-            num_tensors = len(adapter_params_list)
-            latent_adapter_params.extend(adapter_params_list)
-            print(f"[Optimizer]   {wrapper_name}: {num_params:,} params in {num_tensors} tensors (use_latent_adapters=True)")
-
-            if num_params == 0:
-                print(f"[Optimizer]   ⚠️  WARNING: {wrapper_name} has use_latent_adapters=True but contributed 0 parameters!")
-                print(f"[Optimizer]       Adapter layers configured: {wrapper.latent_adapter_layers}")
-                print(f"[Optimizer]       Check that adapters were initialized before optimizer creation")
-        else:
-            print(f"[Optimizer]   {wrapper_name}: skipped (use_latent_adapters=False)")
+    if latent_adapter_param_map:
+        print("[Optimizer] Gathering latent adapter parameters from feature registry...")
+        for name, params in latent_adapter_param_map.items():
+            latent_adapter_params.extend(params)
+            summary = latent_adapter_summaries.get(name, {})
+            num_params = summary.get("num_params", sum(p.numel() for p in params))
+            num_tensors = summary.get("num_tensors", len(params))
+            layers = summary.get("layers", [])
+            layer_str = ",".join(str(x) for x in layers) if layers else "-"
+            print(f"[Optimizer]   {name}: {num_params:,} params in {num_tensors} tensors (layers={layer_str})")
+    else:
+        print("[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...")
+        for wrapper in wrappers_in_use:
+            wrapper_name = getattr(wrapper.cfg, "model_id", "unknown").split("/")[-1]
+            if wrapper.use_latent_adapters:
+                adapter_params_list = [p for p in wrapper.latent_adapters.parameters() if p.requires_grad]
+                num_params = sum(p.numel() for p in adapter_params_list)
+                num_tensors = len(adapter_params_list)
+                latent_adapter_params.extend(adapter_params_list)
+                print(f"[Optimizer]   {wrapper_name}: {num_params:,} params in {num_tensors} tensors (use_latent_adapters=True)")
+                if num_params == 0:
+                    print(f"[Optimizer]   ⚠️  WARNING: {wrapper_name} has use_latent_adapters=True but contributed 0 parameters!")
+                    print(f"[Optimizer]       Adapter layers configured: {wrapper.latent_adapter_layers}")
+                    print(f"[Optimizer]       Check that adapters were initialized before optimizer creation")
+            else:
+                print(f"[Optimizer]   {wrapper_name}: skipped (use_latent_adapters=False)")
 
     # Log total adapter params collected
     total_adapter_params = sum(p.numel() for p in latent_adapter_params)
@@ -1492,8 +1567,7 @@ def main():
         optim_groups.append({"params": refiner_params, "lr": args.lr})
     if gist_params:
         optim_groups.append({"params": gist_params, "lr": args.lr})
-    if latent_adapter_params:
-        optim_groups.append({"params": latent_adapter_params, "lr": args.lr})
+    # Latent adapter groups are injected via feature registry (optimizer_param_groups)
 
     # Allow features to contribute additional parameter groups.
     optim_groups.extend(feature_registry.optimizer_param_groups())
@@ -1595,6 +1669,7 @@ def main():
             adapters,
             refiner=latent_refiner,
             deep_prefix_generators=deep_prefix_generators,
+            coprocessors=coprocessors,
             gist_heads=gist_heads,
             optimizer=None if args.no_load_optimizer else optimizer,
             strict=True,
@@ -1912,6 +1987,10 @@ def main():
                 deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None
                 if ctx.name in deep_prefix_generators:
                     deep_prefix_cache = deep_prefix_generators[ctx.name](prefix)
+                coprocessor_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None
+                if ctx.name in coprocessors:
+                    coprocessor_cache = coprocessors[ctx.name](latents_for_adapter)
+                prefix_kv_cache = _merge_kv_caches(deep_prefix_cache, coprocessor_cache)
                 if args.debug and epoch == start_epoch and step == 0:
                     print(
                         f"[DEBUG:{ctx.name}] prefix_len={prefix.shape[1]} anchor_ids={len(ctx.anchor_ids)} tf_len={targets.size(1)}",
@@ -1927,7 +2006,7 @@ def main():
                     prefix,
                     targets,
                     anchor_token_ids=ctx.anchor_ids,
-                    deep_prefix_past=deep_prefix_cache,
+                    deep_prefix_past=prefix_kv_cache,
                     latent=latent_for_adapters_tf,
                 )
                 # Move loss to device for aggregation (use non_blocking to avoid hang in multi-GPU)
@@ -1943,7 +2022,7 @@ def main():
                         prefix,
                         anchor_token_text=first_anchor_text,
                         append_bos_after_prefix=ctx.bos_flag,
-                        deep_prefix_past=deep_prefix_cache,
+                        deep_prefix_past=prefix_kv_cache,
                         latent=latent_for_adapters,
                     )
                     first_targets = ctx.first_token_ids[idx].to(logits_first.device, non_blocking=True)
@@ -2013,7 +2092,7 @@ def main():
                         K=current_K,
                         anchor_ids=ctx.anchor_ids,
                         append_bos_after_prefix=ctx.bos_flag,
-                        deep_prefix_past=deep_prefix_cache,
+                        deep_prefix_past=prefix_kv_cache,
                         latent=latent_for_adapters_kce,
                     )
                 else:
@@ -2032,11 +2111,11 @@ def main():
                                 scaffold.to(teacher_device, non_blocking=True),
                                 targets,
                                 K=current_K,
-                                tau=args.kd_tau,
-                                anchor_ids=ctx.anchor_ids,
-                                append_bos_after_prefix=ctx.bos_flag,
-                                deep_prefix_past=deep_prefix_cache,
-                            )
+                            tau=args.kd_tau,
+                            anchor_ids=ctx.anchor_ids,
+                            append_bos_after_prefix=ctx.bos_flag,
+                            deep_prefix_past=prefix_kv_cache,
+                        )
                     else:
                         loss_kd_raw = kd_first_k_prefix_vs_text(
                             ctx.wrapper,
@@ -2048,7 +2127,7 @@ def main():
                             tau=args.kd_tau,
                             anchor_ids=ctx.anchor_ids,
                             append_bos_after_prefix=ctx.bos_flag,
-                            deep_prefix_past=deep_prefix_cache,
+                            deep_prefix_past=prefix_kv_cache,
                         )
                 else:
                     loss_kd_raw = torch.zeros((), device=target_device)
@@ -2063,7 +2142,7 @@ def main():
                         layers=state_kd_layers,
                         append_bos_after_prefix=ctx.bos_flag,
                         anchor_ids=ctx.anchor_ids,
-                        deep_prefix_past=deep_prefix_cache,
+                        deep_prefix_past=prefix_kv_cache,
                     )
                 else:
                     loss_state_raw = torch.zeros((), device=target_device)
@@ -2662,6 +2741,15 @@ def main():
                         "len": dp_len_cfg,
                         "dropout": float(args.deep_prefix_dropout),
                     }
+                    cfg["coprocessor"] = {
+                        "enabled": feature_registry.has("coprocessor"),
+                        "len": int(args.coprocessor_len) if feature_registry.has("coprocessor") else 0,
+                        "width": int(args.coprocessor_width),
+                        "dropout": float(args.coprocessor_dropout),
+                        "kv_scale": float(args.coprocessor_kv_scale),
+                        "pool": args.coprocessor_pool,
+                        "summaries": coprocessor_summaries,
+                    }
                     cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
                     cfg["warm_anchor_texts"] = anchor_texts
                     cfg["warm_anchor_modes"] = anchor_modes
@@ -2690,6 +2778,8 @@ def main():
                         state_blob[f"adp_{name}"] = adapter.state_dict()
                     for name, gen in deep_prefix_generators.items():
                         state_blob[f"deep_prefix_{name}"] = gen.state_dict()
+                    for name, module in coprocessors.items():
+                        state_blob[f"coprocessor_{name}"] = module.state_dict()
                     if latent_refiner is not None:
                         state_blob["refiner"] = latent_refiner.state_dict()
                     # Save latent adapters
@@ -2707,6 +2797,8 @@ def main():
                         artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
                     for name, gen in deep_prefix_generators.items():
                         artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
+                    for name, module in coprocessors.items():
+                        artifacts[f"coprocessor_{name}.pt"] = module.state_dict()
                     if latent_refiner is not None:
                         artifacts["refiner.pt"] = latent_refiner.state_dict()
                     # Save latent adapters as separate .pt files
@@ -2847,6 +2939,15 @@ def main():
                     "len": dp_len_cfg,
                     "dropout": float(args.deep_prefix_dropout),
                 }
+                cfg["coprocessor"] = {
+                    "enabled": feature_registry.has("coprocessor"),
+                    "len": int(args.coprocessor_len) if feature_registry.has("coprocessor") else 0,
+                    "width": int(args.coprocessor_width),
+                    "dropout": float(args.coprocessor_dropout),
+                    "kv_scale": float(args.coprocessor_kv_scale),
+                    "pool": args.coprocessor_pool,
+                    "summaries": coprocessor_summaries,
+                }
                 cfg["warm_anchor_text"] = anchor_texts.get("llama", "")
                 cfg["warm_anchor_texts"] = anchor_texts
                 cfg["warm_anchor_modes"] = anchor_modes
@@ -2871,6 +2972,8 @@ def main():
                     state_blob[f"adp_{name}"] = adapter.state_dict()
                 for name, gen in deep_prefix_generators.items():
                     state_blob[f"deep_prefix_{name}"] = gen.state_dict()
+                for name, module in coprocessors.items():
+                    state_blob[f"coprocessor_{name}"] = module.state_dict()
                 if latent_refiner is not None:
                     state_blob["refiner"] = latent_refiner.state_dict()
                 artifacts = {
@@ -2882,6 +2985,8 @@ def main():
                     artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
                 for name, gen in deep_prefix_generators.items():
                     artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
+                for name, module in coprocessors.items():
+                    artifacts[f"coprocessor_{name}.pt"] = module.state_dict()
                 if latent_refiner is not None:
                     artifacts["refiner.pt"] = latent_refiner.state_dict()
                 save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
@@ -2975,6 +3080,15 @@ def main():
         "len": dp_len_cfg,
         "dropout": float(args.deep_prefix_dropout),
     }
+    cfg["coprocessor"] = {
+        "enabled": feature_registry.has("coprocessor"),
+        "len": int(args.coprocessor_len) if feature_registry.has("coprocessor") else 0,
+        "width": int(args.coprocessor_width),
+        "dropout": float(args.coprocessor_dropout),
+        "kv_scale": float(args.coprocessor_kv_scale),
+        "pool": args.coprocessor_pool,
+        "summaries": coprocessor_summaries,
+    }
     state_blob = {
         "epoch": epoch + 1 if 'epoch' in locals() else None,
         "global_step": global_step if 'global_step' in locals() else None,
@@ -2995,6 +3109,8 @@ def main():
         state_blob[f"adp_{name}"] = adapter.state_dict()
     for name, gen in deep_prefix_generators.items():
         state_blob[f"deep_prefix_{name}"] = gen.state_dict()
+    for name, module in coprocessors.items():
+        state_blob[f"coprocessor_{name}"] = module.state_dict()
     if latent_refiner is not None:
         state_blob["refiner"] = latent_refiner.state_dict()
     for name, head in gist_heads.items():
@@ -3009,6 +3125,8 @@ def main():
         artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
     for name, gen in deep_prefix_generators.items():
         artifacts[f"deep_prefix_{name}.pt"] = gen.state_dict()
+    for name, module in coprocessors.items():
+        artifacts[f"coprocessor_{name}.pt"] = module.state_dict()
     if latent_refiner is not None:
         artifacts["refiner.pt"] = latent_refiner.state_dict()
     for name, head in gist_heads.items():

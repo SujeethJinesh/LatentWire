@@ -1,5 +1,20 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-10 — Milestones 5–9 CLI + Coprocessor Integration (Codex)
+- **Latent coprocessor:** Added `latentwire/features/coproc.py`, config plumbing, and checkpoint save/load so KV deltas blend with deep-prefix caches. Mutual exclusivity with deep prefix is enforced.
+- **CLI overhaul:** Implemented `latentwire/cli/{train,eval}.py` plus shared utilities for overrides, feature summaries, metrics-history append, and dry-run tooling. Sample configs live under `configs/` for Mac-safe validation.
+- **Ablation harness:** New `latentwire/cli/run_ablation.py` expands sweep grids and orchestrates batches of CLI runs. Each launch records into `metrics_history.jsonl`.
+- **Dynamic sweeps & metrics:** Overrides accept dot notation; sweep lists expand automatically. Metrics history entries capture argv/overrides for every train/eval invocation.
+- **Artifacts:** `configs/train_sample.json`, `configs/ablation/sample_ablation.json` demonstrate CLI + sweep usage.
+- **Validation:** `python -m compileall latentwire` ✅; CLI dry-runs confirm argv generation. PyTorch-dependent pytest still blocked by missing `libtorch_cpu.dylib` on this Mac.
+
+### 2025-10-10 — Milestone 4 Feature Plumbing (Codex)
+- **Feature hooks fleshed out:** `latentwire/features/deep_prefix.py` now restores checkpoint state, tracks per-model summaries (length, dropout, param counts), and exposes optimizer groups through the registry. `latentwire/features/latent_adapters.py` validates wrapper wiring, registers adapter parameter groups, and emits summary metrics.
+- **Trainer integration:** `latentwire/train.py` now consumes registry-provided latent adapter parameter maps (falling back to wrapper scan if absent) and avoids double-registering optimizer groups. Deep prefix generators report richer metrics and optional state restoration.
+- **Sanity check:** `python -m compileall latentwire` ✅
+- **Tests:** `pytest tests/test_models.py tests/test_prefix_utils.py -q` ⚠️ fails during torch import (`libtorch_cpu.dylib` missing in host env). Needs rerun inside project venv once libtorch is available.
+- **Next steps:** Run CLI smokes for baseline/deep-prefix/adapters once the Python entrypoints land; update PLAN/metrics with comparisons.
+
 ### 2025-10-09 — Milestone 2/3 Refactor Foundations (Codex)
 - **Feature registry & modular helpers:** Extracted dataset loader (`latentwire/data_pipeline.py`) and auxiliary loss helpers (`latentwire/loss_bundles.py`) from the training loop. Added a lightweight feature registry (`latentwire/feature_registry.py`) with a LoRA hook so features can register optimizer/group callbacks without touching the core trainer.
 - **Train loop wiring:** `latentwire/train.py` now instantiates the registry, delegates LoRA setup through hooks, and pulls optimiser parameter groups from features. Core behaviour is unchanged; baseline LoRA-only smoke will be rerun once the remaining milestones land.

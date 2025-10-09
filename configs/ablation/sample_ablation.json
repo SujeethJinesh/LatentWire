@@ -1,0 +1,22 @@
+{
+  "base_config": "configs/train_sample.json",
+  "base_overrides": [
+    "checkpoint.save_dir=runs/ablation_sample/ckpt"
+  ],
+  "runs": [
+    {
+      "name": "baseline",
+      "overrides": {}
+    },
+    {
+      "name": "deep_prefix",
+      "overrides": {
+        "features.use_deep_prefix": true,
+        "deep_prefix.deep_prefix_len": 4
+      }
+    }
+  ],
+  "sweeps": {
+    "losses.first_token_ce_weight": [0.3, 0.7]
+  }
+}

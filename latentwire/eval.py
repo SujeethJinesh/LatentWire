@@ -167,6 +167,22 @@ def _slice_deep_prefix(
     return tuple((k[start:end], v[start:end]) for (k, v) in cache)
 
 
+def _merge_prefix_caches(
+    primary: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
+    secondary: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
+) -> Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]]:
+    if primary is None or len(primary) == 0:
+        return tuple(secondary) if secondary else None
+    if secondary is None or len(secondary) == 0:
+        return tuple(primary)
+    if len(primary) != len(secondary):
+        raise ValueError("Cannot merge prefix caches of different lengths")
+    merged = []
+    for (pk, pv), (sk, sv) in zip(primary, secondary):
+        merged.append((torch.cat([pk, sk], dim=1), torch.cat([pv, sv], dim=1)))
+    return tuple(merged)
+
+
 def _answer_lengths_eval(wrapper: LMWrapper, answers: List[str], max_answer_tokens: int, device: str) -> torch.Tensor:
     tokens = wrapper.tokenizer(
         answers,
@@ -768,10 +784,22 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     latent_adapter_heads = int(cfg.get("latent_adapter_heads", 8))
     latent_adapter_dropout = float(cfg.get("latent_adapter_dropout", 0.1))
 
+    coprocessor_cfg = cfg.get("coprocessor", {}) or {}
+    coprocessor_enabled_global = bool(coprocessor_cfg.get("enabled", False))
+    coprocessor_len = int(coprocessor_cfg.get("len", 1))
+    coprocessor_width = int(coprocessor_cfg.get("width", 256))
+    coprocessor_dropout = float(coprocessor_cfg.get("dropout", 0.1))
+    coprocessor_kv_scale = float(coprocessor_cfg.get("kv_scale", 0.8))
+    coprocessor_pool = coprocessor_cfg.get("pool", "mean")
+    coprocessor_summaries = coprocessor_cfg.get("summaries", {}) or {}
+
     requested = models or ["llama", "qwen"]
     wrappers: Dict[str, LMWrapper] = {}
 
     if "llama" in requested:
+        llama_copro_summary = coprocessor_summaries.get("llama", {})
+        llama_heads_tuple = tuple(int(h) for h in llama_copro_summary.get("heads", [])) if llama_copro_summary else ()
+        llama_use_coprocessor = coprocessor_enabled_global and bool(llama_copro_summary)
         llama = LMWrapper(LMConfig(
             model_id=llama_id,
             device=device,
@@ -784,6 +812,13 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             latent_d_z=d_z,
             latent_adapter_heads=latent_adapter_heads,
             latent_adapter_dropout=latent_adapter_dropout,
+            use_coprocessor=llama_use_coprocessor,
+            coprocessor_len=coprocessor_len,
+            coprocessor_width=coprocessor_width,
+            coprocessor_dropout=coprocessor_dropout,
+            coprocessor_kv_scale=coprocessor_kv_scale,
+            coprocessor_pool=coprocessor_pool,
+            coprocessor_heads=llama_heads_tuple,
         ))
         try:
             if hasattr(llama.model.config, "use_cache"):
@@ -793,6 +828,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         wrappers["llama"] = llama
 
     if "qwen" in requested:
+        qwen_copro_summary = coprocessor_summaries.get("qwen", {})
+        qwen_heads_tuple = tuple(int(h) for h in qwen_copro_summary.get("heads", [])) if qwen_copro_summary else ()
+        qwen_use_coprocessor = coprocessor_enabled_global and bool(qwen_copro_summary)
         qwen = LMWrapper(LMConfig(
             model_id=qwen_id,
             device=device,
@@ -805,6 +843,13 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             latent_d_z=d_z,
             latent_adapter_heads=latent_adapter_heads,
             latent_adapter_dropout=latent_adapter_dropout,
+            use_coprocessor=qwen_use_coprocessor,
+            coprocessor_len=coprocessor_len,
+            coprocessor_width=coprocessor_width,
+            coprocessor_dropout=coprocessor_dropout,
+            coprocessor_kv_scale=coprocessor_kv_scale,
+            coprocessor_pool=coprocessor_pool,
+            coprocessor_heads=qwen_heads_tuple,
         ))
         try:
             if hasattr(qwen.model.config, "use_cache"):
@@ -830,6 +875,22 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                     print(f"[WARN] Failed to load latent adapters for {name}: {exc}")
             else:
                 print(f"[WARN] latent_adapters_{name}.pt not found; continuing without adapters for {name}")
+
+    if coprocessor_enabled_global:
+        for name, wrapper in wrappers.items():
+            if not getattr(wrapper, "use_coprocessor", False) or getattr(wrapper, "coprocessor", None) is None:
+                continue
+            coproc_path = os.path.join(ckpt_dir, f"coprocessor_{name}.pt")
+            if os.path.isfile(coproc_path):
+                try:
+                    state = _safe_load(coproc_path, map_location="cpu")
+                    wrapper.coprocessor.load_state_dict(state, strict=True)
+                    wrapper.coprocessor.to(_primary_device(wrapper)).eval()
+                    print(f"✓ Loaded coprocessor for {name} from {coproc_path}")
+                except Exception as exc:
+                    print(f"[WARN] Failed to load coprocessor for {name}: {exc}")
+            else:
+                print(f"[WARN] coprocessor_{name}.pt not found; continuing without coprocessor for {name}")
 
     max_answer_tokens = int(cfg.get("max_answer_tokens", getattr(args, "max_answer_tokens", 32)))
 
@@ -1012,6 +1073,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     quant_group = getattr(args, "latent_quant_group_size", 32)
     prefix_map = {}
     deep_prefix_cache_map: Dict[str, Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]]] = {}
+    coprocessor_cache_map: Dict[str, Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]]] = {}
     debug_map = {name: {} for name in model_contexts}
     with torch.no_grad():
         for name, ctx in model_contexts.items():
@@ -1054,6 +1116,13 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                 deep_prefix_cache_map[name] = cache
             else:
                 deep_prefix_cache_map[name] = None
+            coproc_module = getattr(ctx["wrapper"], "coprocessor", None)
+            if getattr(ctx["wrapper"], "use_coprocessor", False) and coproc_module is not None:
+                coproc_module = coproc_module.to(target_device).eval()
+                with torch.no_grad():
+                    coprocessor_cache_map[name] = coproc_module(latents_for_adapter)
+            else:
+                coprocessor_cache_map[name] = None
 
     # Align latent-anchor usage with training: use the anchor computed by
     # make_anchor_text() which handles all modes correctly (text, chat, none).
@@ -1071,6 +1140,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     for name, ctx in model_contexts.items():
         anchor_payload = latent_anchor_texts[name]
         append_bos = anchor_info[name]["bos"]
+        merged_cache = _merge_prefix_caches(deep_prefix_cache_map.get(name), coprocessor_cache_map.get(name))
         res = _run_latent_path(
             args,
             name,
@@ -1083,7 +1153,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             golds,
             latent_len,
             answer_lengths[name],
-            deep_prefix_cache_map[name],
+            merged_cache,
             latent=combined_latents[name],
         )
         latent_results[name] = res
@@ -1136,29 +1206,33 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             B_ids_Q = _to_long(wrappers["qwen"].tokenizer(candB,  return_tensors="pt", add_special_tokens=True).input_ids, device)
             deep_ll = _slice_deep_prefix(deep_prefix_cache_map.get("llama"), i, i + 1)
             deep_qw = _slice_deep_prefix(deep_prefix_cache_map.get("qwen"), i, i + 1)
+            cop_ll = _slice_deep_prefix(coprocessor_cache_map.get("llama"), i, i + 1)
+            cop_qw = _slice_deep_prefix(coprocessor_cache_map.get("qwen"), i, i + 1)
+            cache_ll = _merge_prefix_caches(deep_ll, cop_ll)
+            cache_qw = _merge_prefix_caches(deep_qw, cop_qw)
             scoreA = wrappers["llama"].score_prefix_logprob(
                 prefix_ll,
                 A_ids_L,
                 anchor_token_ids=anchor_ids["llama"],
-                deep_prefix_past=deep_ll,
+                deep_prefix_past=cache_ll,
             )
             scoreA += wrappers["qwen"].score_prefix_logprob(
                 prefix_qw,
                 A_ids_Q,
                 anchor_token_ids=anchor_ids["qwen"],
-                deep_prefix_past=deep_qw,
+                deep_prefix_past=cache_qw,
             )
             scoreB = wrappers["llama"].score_prefix_logprob(
                 prefix_ll,
                 B_ids_L,
                 anchor_token_ids=anchor_ids["llama"],
-                deep_prefix_past=deep_ll,
+                deep_prefix_past=cache_ll,
             )
             scoreB += wrappers["qwen"].score_prefix_logprob(
                 prefix_qw,
                 B_ids_Q,
                 anchor_token_ids=anchor_ids["qwen"],
-                deep_prefix_past=deep_qw,
+                deep_prefix_past=cache_qw,
             )
             pick = candA if scoreA >= scoreB else candB
             joint_preds.append(pick)

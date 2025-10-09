@@ -602,6 +602,85 @@ class DeepPrefixGenerator(nn.Module):
         return past
 
 
+class LatentCoprocessor(nn.Module):
+    """Produces per-layer KV deltas from latent slots."""
+
+    def __init__(
+        self,
+        d_z: int,
+        heads_per_layer: Sequence[int],
+        head_dim: int,
+        *,
+        kv_len: int = 1,
+        width: int = 256,
+        dropout: float = 0.1,
+        kv_scale: float = 0.8,
+        pool: str = "mean",
+    ):
+        super().__init__()
+        heads = [int(max(h, 1)) for h in heads_per_layer]
+        if not heads:
+            raise ValueError("coprocessor requires at least one layer")
+        if head_dim <= 0:
+            raise ValueError("coprocessor needs positive head dimension")
+        self.num_layers = len(heads)
+        self.heads_per_layer = heads
+        self.head_dim = int(head_dim)
+        self.kv_len = max(int(kv_len), 1)
+        self.width = int(width)
+        self.kv_scale = float(kv_scale)
+        self.pool = pool.lower()
+
+        self.layer_norm = nn.LayerNorm(d_z)
+        self.pre_proj = nn.Sequential(
+            nn.Linear(d_z, self.width),
+            nn.GELU(),
+            nn.Linear(self.width, self.width),
+            nn.GELU(),
+        )
+        self.token_proj = nn.Linear(self.width, self.kv_len * self.width)
+        self.dropout = nn.Dropout(dropout) if dropout and dropout > 0.0 else None
+
+        self.key_layers = nn.ModuleList()
+        self.value_layers = nn.ModuleList()
+        for head_count in self.heads_per_layer:
+            out_dim = head_count * self.head_dim
+            self.key_layers.append(nn.Linear(self.width, out_dim, bias=False))
+            self.value_layers.append(nn.Linear(self.width, out_dim, bias=False))
+        for linear in list(self.key_layers) + list(self.value_layers):
+            nn.init.xavier_uniform_(linear.weight)
+
+    def _pool_latents(self, latents: torch.Tensor) -> torch.Tensor:
+        if self.pool == "mean":
+            return latents.mean(dim=1)
+        if self.pool == "first":
+            return latents[:, 0, :]
+        if self.pool == "max":
+            return latents.max(dim=1).values
+        raise ValueError(f"Unknown coprocessor pool mode '{self.pool}'")
+
+    def forward(self, latents: torch.Tensor) -> List[Tuple[torch.Tensor, torch.Tensor]]:
+        if latents.dim() != 3:
+            raise ValueError("latents must be [batch, latent_len, d_z]")
+        latents = self.layer_norm(latents)
+        pooled = self._pool_latents(latents)
+        hidden = self.pre_proj(pooled)
+        tokens = self.token_proj(hidden).view(latents.size(0), self.kv_len, self.width)
+        if self.dropout is not None and self.training:
+            tokens = self.dropout(tokens)
+
+        flat = tokens.view(latents.size(0) * self.kv_len, self.width)
+
+        outputs: List[Tuple[torch.Tensor, torch.Tensor]] = []
+        for head_count, proj_k, proj_v in zip(self.heads_per_layer, self.key_layers, self.value_layers):
+            k_flat = proj_k(flat).view(latents.size(0), self.kv_len, head_count, self.head_dim)
+            v_flat = proj_v(flat).view(latents.size(0), self.kv_len, head_count, self.head_dim)
+            key = (self.kv_scale * k_flat).permute(0, 2, 1, 3).contiguous()
+            value = (self.kv_scale * v_flat).permute(0, 2, 1, 3).contiguous()
+            outputs.append((key, value))
+        return outputs
+
+
 class GistReconstructionHead(nn.Module):
     """Reconstructs teacher prompt embeddings from latent slots via cross-attention."""
 
@@ -711,6 +790,14 @@ class LMConfig:
     latent_d_z: int = 256
     latent_adapter_heads: int = 8
     latent_adapter_dropout: float = 0.1
+    # Latent coprocessor
+    use_coprocessor: bool = False
+    coprocessor_len: int = 1
+    coprocessor_width: int = 256
+    coprocessor_dropout: float = 0.1
+    coprocessor_kv_scale: float = 0.8
+    coprocessor_pool: str = "mean"
+    coprocessor_heads: Tuple[int, ...] = ()
 
 
 class LatentAdapterBlock(nn.Module):
@@ -908,6 +995,37 @@ class LMWrapper(nn.Module):
             print(f"[{cfg.model_id}] Latent adapters: {adapter_params:,} trainable parameters")
         else:
             self.latent_adapters = nn.ModuleDict()
+
+        self.use_coprocessor = cfg.use_coprocessor
+        self.coprocessor: Optional[LatentCoprocessor] = None
+        if self.use_coprocessor:
+            num_layers = getattr(self.model.config, "num_hidden_layers", None)
+            num_attention_heads = getattr(self.model.config, "num_attention_heads", getattr(self.model.config, "n_head", None))
+            num_kv_heads = getattr(self.model.config, "num_key_value_heads", num_attention_heads)
+            if num_layers is None or num_attention_heads is None or num_kv_heads is None:
+                raise ValueError("Cannot initialize coprocessor: missing model head configuration")
+            head_dim = self.d_model // int(num_attention_heads)
+            if cfg.coprocessor_heads and len(cfg.coprocessor_heads) == int(num_layers):
+                heads_per_layer = cfg.coprocessor_heads
+            elif cfg.coprocessor_heads and len(cfg.coprocessor_heads) == 1:
+                heads_per_layer = tuple(cfg.coprocessor_heads[0] for _ in range(int(num_layers)))
+            elif cfg.coprocessor_heads:
+                heads_per_layer = tuple(cfg.coprocessor_heads[i] if i < len(cfg.coprocessor_heads) else cfg.coprocessor_heads[-1] for i in range(int(num_layers)))
+            else:
+                heads_per_layer = tuple(int(num_kv_heads) for _ in range(int(num_layers)))
+            self.coprocessor = LatentCoprocessor(
+                d_z=cfg.latent_d_z,
+                heads_per_layer=heads_per_layer,
+                head_dim=head_dim,
+                kv_len=max(int(cfg.coprocessor_len), 1),
+                width=cfg.coprocessor_width,
+                dropout=cfg.coprocessor_dropout,
+                kv_scale=cfg.coprocessor_kv_scale,
+                pool=cfg.coprocessor_pool,
+            ).to(next(self.model.parameters()).device)
+            self.coprocessor.train()
+            print(f"[{cfg.model_id}] Coprocessor: len={cfg.coprocessor_len}, width={cfg.coprocessor_width}, heads={heads_per_layer}")
+
 
     # ---- utility ----
 

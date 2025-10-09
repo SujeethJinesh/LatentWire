@@ -771,3 +771,10 @@ We will report, per model and jointly:
 6. **Transformers docs** — chat templates & correct serialization. [Hugging Face](https://huggingface.co/docs/transformers)
 
 7. **Transformers KV cache guide** — grouped-key/value cache API and device placement notes. [Hugging Face](https://huggingface.co/docs/transformers/kv_cache)
+- **Next steps:** Implement hook wiring for the remaining features, migrate CLI entrypoints to Python, and run systematic ablations once the refactor is complete.
+
+## Update (2025-10-10): Coprocessor integration & CLI harness
+
+- Added a latent coprocessor feature module that injects KV deltas alongside deep prefixes. Coprocessor weights load/save with checkpoints and remain mutually exclusive with deep prefix to avoid double-counting.
+- Introduced a configuration-driven CLI (`latentwire/cli/{train,eval,run_ablation}.py`) replacing bespoke bash scripts. The CLI prints feature toggles, supports dot-notation overrides, records every run to `metrics_history.jsonl`, and powers an ablation harness that expands sweep grids.
+- Sample configs (`configs/train_sample.json`, `configs/ablation/sample_ablation.json`) provide Mac-safe dry runs while full smokes await GPU availability.

@@ -93,6 +93,7 @@ class FeatureToggles:
     # Advanced conditioning
     use_deep_prefix: bool = False
     use_latent_adapters: bool = False
+    use_coprocessor: bool = False
     use_gist_head: bool = False
 
     # Refinement
@@ -130,6 +131,17 @@ class LatentAdapterConfig:
     latent_adapter_layers: str = "8,16,24"
     latent_adapter_heads: int = 8
     latent_adapter_dropout: float = 0.1
+
+
+@dataclass
+class CoprocessorConfig:
+    """Latent coprocessor configuration (only used if FeatureToggles.use_coprocessor=True)."""
+    coprocessor_len: int = 1
+    coprocessor_width: int = 256
+    coprocessor_dropout: float = 0.1
+    coprocessor_kv_scale: float = 0.8
+    coprocessor_pool: str = "mean"  # mean, first, max
+    coprocessor_heads: str = ""     # optional comma-separated override per layer
 
 
 @dataclass
@@ -269,6 +281,7 @@ class TrainingConfig:
     prefix: PrefixTuningConfig = field(default_factory=PrefixTuningConfig)
     deep_prefix: DeepPrefixConfig = field(default_factory=DeepPrefixConfig)
     latent_adapters: LatentAdapterConfig = field(default_factory=LatentAdapterConfig)
+    coprocessor: CoprocessorConfig = field(default_factory=CoprocessorConfig)
     gist: GistConfig = field(default_factory=GistConfig)
     latent_refiner: LatentRefinerConfig = field(default_factory=LatentRefinerConfig)
 
@@ -307,6 +320,11 @@ class TrainingConfig:
             warnings.append(
                 "WARNING: Both deep_prefix and latent_adapters enabled. "
                 "Research papers typically use ONE approach. May cause interference."
+            )
+
+        if self.features.use_deep_prefix and self.features.use_coprocessor:
+            warnings.append(
+                "ERROR: deep_prefix and coprocessor are mutually exclusive. Disable one of the features."
             )
 
         # Validate dataset choice
@@ -361,6 +379,7 @@ class TrainingConfig:
         # Disable advanced features
         self.features.use_deep_prefix = False
         self.features.use_latent_adapters = False
+        self.features.use_coprocessor = False
         self.features.use_gist_head = False
 
         # Zero out KD weights
@@ -394,6 +413,7 @@ class TrainingConfig:
             prefix=PrefixTuningConfig(**data.get("prefix", {})),
             deep_prefix=DeepPrefixConfig(**data.get("deep_prefix", {})),
             latent_adapters=LatentAdapterConfig(**data.get("latent_adapters", {})),
+            coprocessor=CoprocessorConfig(**data.get("coprocessor", {})),
             gist=GistConfig(**data.get("gist", {})),
             latent_refiner=LatentRefinerConfig(**data.get("latent_refiner", {})),
             losses=LossWeights(**data.get("losses", {})),
@@ -480,6 +500,7 @@ class TrainingConfig:
                 use_prefix=get("use_prefix", False),
                 use_deep_prefix=get("use_deep_prefix", False),
                 use_latent_adapters=get("use_latent_adapters", False),
+                 use_coprocessor=get("use_coprocessor", False),
                 use_gist_head=get("use_gist_head", False),
                 use_latent_refiner=(get("latent_refiner_layers", 0) or 0) > 0,
             ),
@@ -503,6 +524,14 @@ class TrainingConfig:
                 latent_adapter_layers=get("latent_adapter_layers", "8,16,24"),
                 latent_adapter_heads=get("latent_adapter_heads", 8),
                 latent_adapter_dropout=get("latent_adapter_dropout", 0.1),
+            ),
+            coprocessor=CoprocessorConfig(
+                coprocessor_len=get("coprocessor_len", 1),
+                coprocessor_width=get("coprocessor_width", 256),
+                coprocessor_dropout=get("coprocessor_dropout", 0.1),
+                coprocessor_kv_scale=get("coprocessor_kv_scale", 0.8),
+                coprocessor_pool=get("coprocessor_pool", "mean"),
+                coprocessor_heads=get("coprocessor_heads", ""),
             ),
             gist=GistConfig(
                 gist_target_len=get("gist_target_len", 48),

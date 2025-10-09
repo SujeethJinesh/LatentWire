@@ -15,6 +15,7 @@ from typing import Dict, List, Optional, Any
 import torch.nn as nn
 
 from latentwire.models import LMWrapper, apply_lora_if_requested
+from latentwire.features import CoprocessorFeature
 
 
 @dataclass
@@ -75,6 +76,9 @@ class FeatureRegistry:
             from latentwire.features import LatentAdaptersFeature
 
             self.features.append(LatentAdaptersFeature())
+
+        if getattr(args, "use_coprocessor", False):
+            self.features.append(CoprocessorFeature())
 
         # Placeholder for future features (deep prefix, adapters, coprocessor, ...)
 

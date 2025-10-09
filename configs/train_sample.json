@@ -1,0 +1,50 @@
+{
+  "model": {
+    "llama_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "qwen_id": "Qwen/Qwen2-0.5B-Instruct",
+    "models": "llama",
+    "sequential_models": true,
+    "load_4bit": false
+  },
+  "data": {
+    "dataset": "squad",
+    "samples": 2,
+    "epochs": 1,
+    "batch_size": 1,
+    "grad_accum_steps": 1
+  },
+  "encoder": {
+    "encoder_type": "simple-st",
+    "latent_len": 4,
+    "d_z": 128,
+    "train_encoder": true
+  },
+  "adapter": {
+    "adapter_hidden_mult": 2,
+    "adapter_dropout": 0.0
+  },
+  "features": {
+    "use_lora": false,
+    "use_prefix": false,
+    "use_deep_prefix": false,
+    "use_latent_adapters": false,
+    "use_coprocessor": false,
+    "use_gist_head": false,
+    "use_latent_refiner": false
+  },
+  "losses": {
+    "first_token_ce_weight": 0.5,
+    "k_ce_weight": 0.5,
+    "kd_first_k_weight": 0.0
+  },
+  "optimizer": {
+    "lr": 0.0001,
+    "max_grad_norm": 1.0,
+    "grad_ckpt": false
+  },
+  "checkpoint": {
+    "save_dir": "runs/sample_train/ckpt",
+    "save_every": 0,
+    "auto_resume": false
+  }
+}
