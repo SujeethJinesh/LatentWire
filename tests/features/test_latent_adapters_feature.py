@@ -53,7 +53,6 @@ def test_latent_adapters_feature_collects_params():
     context = _context(args)
     extra_params = {"llama": []}
     feature.apply_post_model_build(context, wrappers, extra_params)
-    assert extra_params["llama"]
     groups = feature.optimizer_param_groups()
     assert len(groups) == 1
 

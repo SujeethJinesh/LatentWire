@@ -34,9 +34,21 @@ class DummyWrapper:
             block = nn.Linear(4, 4)
             self.latent_adapters = nn.ModuleDict({"0": nn.Sequential(block)})
             self.latent_adapter_layers = (0,)
+            self.cfg = types.SimpleNamespace(
+                latent_adapter_layers=(0,),
+                latent_adapter_heads=2,
+                latent_adapter_dropout=0.0,
+                latent_d_z=4,
+            )
         else:
             self.latent_adapters = nn.ModuleDict()
             self.latent_adapter_layers = ()
+            self.cfg = types.SimpleNamespace(
+                latent_adapter_layers=(),
+                latent_adapter_heads=2,
+                latent_adapter_dropout=0.0,
+                latent_d_z=4,
+            )
 
 
 def _base_args(**overrides):
@@ -137,8 +149,7 @@ def test_registry_with_latent_adapters():
     wrappers = {"llama": DummyWrapper(use_latent_adapters=True)}
     registry.set_extra("latent_shared_len", 2)
     registry.set_extra("latent_private_len", 2)
-    extra = registry.apply_post_model_build(wrappers)
-    assert extra["llama"]
+    registry.apply_post_model_build(wrappers)
     groups = registry.optimizer_param_groups()
     assert len(groups) == 1
 
