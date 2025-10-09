@@ -44,9 +44,10 @@ flowchart LR
 ## Update (2025-10-09): Modular training stack & feature registry
 
 - **Training loop modularization:** Extracted dataset preparation into `latentwire/data_pipeline.py` and auxiliary loss helpers into `latentwire/loss_bundles.py`, shrinking the core loop to orchestration only.
-- **Feature registry:** Added `latentwire/feature_registry.py` with a hook-based `FeatureRegistry`. LoRA now registers through this system, and the optional deep-prefix and multi-depth adapter stacks live under `latentwire/features/`, paving the way for the latent coprocessor and future toggles without touching the trainer.
-- **Config alignment:** The registry consumes the existing CLI/config flags (default-off) so feature toggles remain declarative. Optional modules own their optimizer groups and diagnostics.
-- **Next steps:** Implement hook wiring for the remaining features, migrate CLI entrypoints to Python, and run systematic ablations once the refactor is complete.
+- **Feature registry:** Added `latentwire/feature_registry.py` with a hook-based `FeatureRegistry`. LoRA now registers through this system, and optional deep-prefix, multi-depth adapters, and the latent coprocessor live under `latentwire/features/`, so future toggles require no trainer changes.
+- **CLI & automation:** Python entrypoints in `latentwire/cli/` (train/eval/run_ablation) replace shell scripts, support overrides/sweeps, and append JSONL metrics history. Sample configs under `configs/` document usage.
+- **Test suite:** Added coverage for registry hooks, feature modules, CLI utilities, checkpoint round-trips, data pipeline helpers, and loss bundles. `PYTHONPATH=. python -m pytest` now exercises the modular stack on CPU before we move to GPUs.
+- **Next steps:** Run the new CLI smoke tests on the H100 cluster (baseline, deep prefix, adapters, coprocessor) and capture before/after metrics.
 
 ## Update (2025-09-25): Single-model warm-up scaffolding
 

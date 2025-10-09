@@ -6,7 +6,7 @@
 - **Ablation harness:** New `latentwire/cli/run_ablation.py` expands sweep grids and orchestrates batches of CLI runs. Each launch records into `metrics_history.jsonl`.
 - **Dynamic sweeps & metrics:** Overrides accept dot notation; sweep lists expand automatically. Metrics history entries capture argv/overrides for every train/eval invocation.
 - **Artifacts:** `configs/train_sample.json`, `configs/ablation/sample_ablation.json` demonstrate CLI + sweep usage.
-- **Validation:** `python -m compileall latentwire` ✅; CLI dry-runs confirm argv generation. PyTorch-dependent pytest still blocked by missing `libtorch_cpu.dylib` on this Mac.
+- **Validation:** `python -m compileall latentwire` ✅; full `PYTHONPATH=. python -m pytest` after sourcing `.venv` now passes (17 tests, 8 skips). CLI dry-runs confirm argv generation.
 
 ### 2025-10-10 — Milestone 4 Feature Plumbing (Codex)
 - **Feature hooks fleshed out:** `latentwire/features/deep_prefix.py` now restores checkpoint state, tracks per-model summaries (length, dropout, param counts), and exposes optimizer groups through the registry. `latentwire/features/latent_adapters.py` validates wrapper wiring, registers adapter parameter groups, and emits summary metrics.
