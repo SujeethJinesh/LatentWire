@@ -25,7 +25,6 @@ from latentwire.core_utils import (
     first_non_bos,
     anchor_token_ids,
     tensor_rms,
-    tensor_rms_d,
     assistant_header_anchor,
     SYSTEM_PROMPT,
     split_user_and_anchor,
@@ -46,6 +45,14 @@ from latentwire.models import (
     apply_prefix_if_requested,
 )
 from latentwire.checkpointing import save_latest_checkpoint
+from latentwire.data_pipeline import prepare_training_data
+from latentwire.loss_bundles import (
+    loss_with_text_prompt_chunked,
+    alignment_mse,
+    manifold_stat_loss,
+    scale_penalty,
+    rms_raw_penalty,
+)
 
 
 def get_gpu_memory_stats():
@@ -188,7 +195,6 @@ def _align_optimizer_state_to_param_devices(optimizer):
                     pass
     except Exception:
         pass
-from latentwire.data import load_examples
 from latentwire.losses import (
     k_token_ce_from_prefix,
     kd_first_k_prefix_vs_text,
@@ -197,28 +203,6 @@ from latentwire.losses import (
 
 DEFAULT_SEED = 42
 DEFAULT_ANSWER_PREFIX = "Answer: "
-
-
-def _loss_with_text_prompt_chunked(wrapper, scaffold_ids, target_ids):
-    chunk_env = os.getenv("TEXT_TEACHER_CHUNK", "4")
-    try:
-        chunk_size = max(1, int(chunk_env))
-    except ValueError:
-        chunk_size = 4
-
-    batch_size = scaffold_ids.size(0)
-    total_loss = torch.zeros((), device=scaffold_ids.device)
-    count = 0
-    for start in range(0, batch_size, chunk_size):
-        end = min(batch_size, start + chunk_size)
-        loss, _, _ = wrapper.loss_with_text_prompt(
-            scaffold_ids[start:end], target_ids[start:end]
-        )
-        total_loss = total_loss + loss * (end - start)
-        count += end - start
-    avg_loss = total_loss / max(count, 1)
-    return avg_loss, None, None
-
 
 @contextmanager
 def _temp_padding_side(tokenizer, side: str):
@@ -1006,19 +990,12 @@ def main():
         torch.cuda.manual_seed_all(args.seed)
 
     # ===== Data =====
-    print("Loading dataset subset...")
-    if args.dataset.startswith("squad"):
-        print("Loading SQuAD subset...")
-        examples = load_examples(dataset=args.dataset, split="train", samples=args.samples, seed=args.data_seed)
-    else:
-        print("Loading HotpotQA subset...")
-        examples = load_examples(dataset="hotpot", split="train", samples=args.samples, seed=args.data_seed, config=args.hotpot_config)
-
-    if len(examples) == 0:
-        raise RuntimeError("No training examples loaded.")
-
-    texts = [e["source"] for e in examples]
-    answers = [e["answer"] for e in examples]
+    texts, answers = prepare_training_data(
+        dataset=args.dataset,
+        samples=args.samples,
+        data_seed=args.data_seed,
+        hotpot_config=args.hotpot_config,
+    )
 
     # ===== Models =====
     def _build_max_memory(devices_csv: Optional[str], budget_gib: float):
@@ -1755,40 +1732,6 @@ def main():
     # ===== Train =====
     ema_step_time = None
 
-    def scale_penalty(adapter: Adapter) -> torch.Tensor:
-        if args.scale_l2 <= 0.0 or (adapter.scale is None) or (not adapter.scale.requires_grad):
-            return torch.zeros((), device=device)
-        return (adapter.scale - 1.0).pow(2).mean()
-
-    def rms_raw_penalty(prefix_raw: torch.Tensor, wrapper: LMWrapper) -> torch.Tensor:
-        if args.adapter_rms_l2 <= 0.0:
-            return torch.zeros((), device=device)
-        tgt = prefix_raw.new_tensor(wrapper.input_embedding_rms())
-        cur = tensor_rms_d(prefix_raw)
-        return (cur - tgt).pow(2)
-
-    def manifold_stat_loss(prefix: torch.Tensor, model_key: str) -> torch.Tensor:
-        if args.manifold_stat_weight <= 0.0:
-            return torch.zeros((), device=prefix.device)
-        mu, sd = embed_stats[model_key]
-        mu = mu.to(prefix.device, dtype=prefix.dtype)
-        sd = sd.to(prefix.device, dtype=prefix.dtype)
-        cur_mu = prefix.float().mean(dim=[0, 1])
-        cur_sd = prefix.float().std(dim=[0, 1]).clamp_min(1e-6)
-        return (cur_mu - mu).pow(2).mean() + (cur_sd - sd).pow(2).mean()
-
-    def alignment_mse(pred: torch.Tensor, target: torch.Tensor, mask: Optional[torch.Tensor]) -> torch.Tensor:
-        if pred.numel() == 0:
-            return torch.zeros((), device=pred.device, dtype=pred.dtype)
-        diff = (pred - target).pow(2)
-        if mask is not None:
-            mask_base = mask.to(pred.device, dtype=pred.dtype)
-            diff = diff * mask_base.unsqueeze(-1)
-            denom = (mask_base.sum().clamp_min(1.0)) * pred.size(-1)
-        else:
-            denom = torch.tensor(float(diff.numel()), device=pred.device, dtype=pred.dtype)
-        return diff.sum() / denom
-
     def _parse_layers_arg(value: str) -> Tuple[int, ...]:
         try:
             items = [int(v) for v in re.split(r"[\s,]+", value.strip()) if v != ""]
@@ -2324,7 +2267,11 @@ def main():
                         if ratio > 1.0:
                             effective_first_weight *= max(min(ratio, 8.0), 1.0)
 
-                manifold_loss = manifold_stat_loss(prefix, ctx.name)
+                manifold_loss = manifold_stat_loss(
+                    prefix,
+                    embed_stats[ctx.name],
+                    args.manifold_stat_weight,
+                )
                 # Move manifold_loss to device for aggregation (avoid device mismatch in multi-GPU)
                 manifold_loss = manifold_loss.to(loss_device)
 
@@ -2387,7 +2334,7 @@ def main():
                         # Move latent_prefix_align_loss to device for aggregation
                         latent_prefix_align_loss = latent_prefix_align_loss.to(loss_device)
                 if training_mode == "text" and float(max(args.warmup_text_teacher_weight, 0.0)) > 0.0:
-                    text_teacher_loss, _, _ = _loss_with_text_prompt_chunked(ctx.wrapper, scaffold, targets)
+                    text_teacher_loss, _, _ = loss_with_text_prompt_chunked(ctx.wrapper, scaffold, targets)
                     # Move loss to device for aggregation (avoid device mismatch in multi-GPU)
                     text_teacher_loss = text_teacher_loss.to(loss_device)
                 else:
@@ -2409,8 +2356,8 @@ def main():
                 ).to(device)
                 total_model_loss = total_model_loss + model_loss
 
-                penalty = penalty + scale_penalty(ctx.adapter).to(device)
-                rms_pen = rms_pen + rms_raw_penalty(prefix_raw, ctx.wrapper).to(device)
+                penalty = penalty + scale_penalty(ctx.adapter, args.scale_l2, device).to(device)
+                rms_pen = rms_pen + rms_raw_penalty(prefix_raw, ctx.wrapper, args.adapter_rms_l2).to(device)
 
                 rms_raw_val = tensor_rms(prefix_raw)
                 rms_cal_val = tensor_rms(prefix)
@@ -2582,7 +2529,9 @@ def main():
                                 msg_ctx += f" {key}={_to_float(metrics[key]):.3e}"
                     parts.append(msg_ctx)
                     if args.scale_l2 > 0.0:
-                        parts.append(f"scale_pen({ctx.name})={scale_penalty(ctx.adapter).item():.4e}")
+                        parts.append(
+                            f"scale_pen({ctx.name})={scale_penalty(ctx.adapter, args.scale_l2, device).item():.4e}"
+                        )
                 parts.append(f"K={current_K} tau={args.kd_tau:.2f}")
                 if args.save_training_stats:
                     stats_msgs = []

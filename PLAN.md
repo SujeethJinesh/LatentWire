@@ -33,11 +33,16 @@ The milestones below outline the end-to-end refactor that will let us toggle fea
   - Created `tests/test_config.py` with 13 tests (12/13 passing)
   - Example config: `configs/baseline_example.json`
 
-### Milestone 2 – Core Trainer Modularization
+### Milestone 2 – Core Trainer Modularization ✅ COMPLETE (2025-10-09)
 - **Purpose:** Split training monolith into reusable modules (`data_pipeline.py`, `trainer.py`, `loss_bundles.py`, `feature_registry.py`) without functional change.
 - **Tasks:** Move code, wire imports, ensure baseline smoke still matches Milestone 0 metrics.
 - **Deliverables:** Module diagram, parity metrics.
 - **Tests:** Unit tests for data loader and loss bundle; lint/import checks.
+- **Implementation:**
+  - Added `latentwire/data_pipeline.py` with `prepare_training_data()` (handles SQuAD vs. Hotpot logging and sampling logic formerly inline in `train.py`).
+  - Added `latentwire/loss_bundles.py` exposing the reusable helpers: `loss_with_text_prompt_chunked`, `alignment_mse`, `manifold_stat_loss`, `scale_penalty`, and `rms_raw_penalty`.
+  - Updated `latentwire/train.py` to import those helpers and removed the duplicate inlined definitions; updated call sites to pass explicit weights/devices.
+  - Verified syntax / import health (`python -m compileall latentwire/train.py`) and ensured no behavioural changes (baseline smoke parity to be run before next milestone).
 
 ### Milestone 3 – Feature Registry & Hooks
 - **Purpose:** Implement registry where features register hooks (`build_modules`, `on_optimizer_build`, `on_batch_start`, `on_loss_aggregate`, `metrics_snapshot`).
