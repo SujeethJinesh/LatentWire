@@ -5,8 +5,18 @@ set -euo pipefail
 # End-to-end pipeline for the single-model (Llama-only) LatentWire workflow.
 #
 # Usage examples:
-#   bash scripts/run_llama_single.sh            # smoke run aligned with hero settings
-#   bash scripts/run_llama_single.sh --hero     # full "hero" configuration
+#   bash scripts/run_llama_single.sh                              # baseline: encoder + adapter only
+#   bash scripts/run_llama_single.sh --hero                       # full "hero" configuration
+#   USE_DEEP_PREFIX=1 bash scripts/run_llama_single.sh            # with deep prefix (P-Tuning v2)
+#   USE_LATENT_ADAPTERS=1 bash scripts/run_llama_single.sh        # with multi-depth adapters (IAA)
+#   USE_DEEP_PREFIX=1 USE_LATENT_ADAPTERS=1 bash ...              # both (not recommended)
+#
+# Architecture flags (set via environment variables, default=0):
+#   USE_DEEP_PREFIX       - Enable deep prefix (100 tokens/layer, P-Tuning v2 style)
+#   USE_LATENT_ADAPTERS   - Enable multi-depth adapters (layers 8,16,24, IAA style)
+#   LATENT_ADAPTER_LAYERS - Override adapter layers (default: "8,16,24")
+#
+# NOTE: Research papers use ONE approach. Using both may cause interference.
 #
 # The pipeline performs:
 #   Stage A – latent encoder warm-up on Llama.
@@ -116,8 +126,16 @@ BATCH_SIZE_STAGEA="${BATCH_SIZE_STAGEA:-32}"  # Reduced from 64: OOM with deep_p
 BATCH_SIZE_STAGEB="${BATCH_SIZE_STAGEB:-32}"  # Reduced from 64: activation memory ~1GB/example with current architecture
 GRAD_ACCUM_STAGEA="${GRAD_ACCUM_STAGEA:-10}"  # Increased from 5 to maintain effective batch ~320 (32*10=320)
 GRAD_ACCUM_STAGEB="${GRAD_ACCUM_STAGEB:-10}"  # Increased from 5 to maintain effective batch ~320
+# Architecture flags: deep prefix vs multi-depth adapters
+# NOTE: Research papers use ONE approach (P-Tuning v2: deep prefix, IAA: adapters)
+# Using both may cause interference. Defaults: both OFF for clean baseline.
+USE_DEEP_PREFIX="${USE_DEEP_PREFIX:-0}"  # 1=enable deep prefix (P-Tuning v2 style)
 DEEP_PREFIX_LEN="${DEEP_PREFIX_LEN:-100}"
 DEEP_PREFIX_DROPOUT="${DEEP_PREFIX_DROPOUT:-0.05}"
+USE_LATENT_ADAPTERS="${USE_LATENT_ADAPTERS:-0}"  # 1=enable multi-depth adapters (IAA style)
+LATENT_ADAPTER_LAYERS="${LATENT_ADAPTER_LAYERS:-8,16,24}"  # Even spacing for 32-layer models
+LATENT_ADAPTER_HEADS="${LATENT_ADAPTER_HEADS:-8}"
+LATENT_ADAPTER_DROPOUT="${LATENT_ADAPTER_DROPOUT:-0.1}"
 REFINER_LAYERS="${REFINER_LAYERS:-2}"
 REFINER_HEADS="${REFINER_HEADS:-4}"
 
@@ -277,6 +295,37 @@ PY
           LORA_ARGS=()
         fi
 
+        # Deep prefix (P-Tuning v2 style)
+        if [[ $USE_DEEP_PREFIX -eq 1 ]]; then
+          DEEP_PREFIX_ARGS=(
+            --use_deep_prefix
+            --deep_prefix_len "$DEEP_PREFIX_LEN"
+            --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT"
+          )
+          echo "[Architecture] Using deep prefix (P-Tuning v2): $DEEP_PREFIX_LEN tokens/layer" | tee -a "$LOG"
+        else
+          DEEP_PREFIX_ARGS=()
+        fi
+
+        # Multi-depth latent adapters (IAA style)
+        if [[ $USE_LATENT_ADAPTERS -eq 1 ]]; then
+          ADAPTER_ARGS=(
+            --use_latent_adapters
+            --latent_adapter_layers "$LATENT_ADAPTER_LAYERS"
+            --latent_adapter_heads "$LATENT_ADAPTER_HEADS"
+            --latent_adapter_dropout "$LATENT_ADAPTER_DROPOUT"
+          )
+          echo "[Architecture] Using multi-depth adapters (IAA): layers $LATENT_ADAPTER_LAYERS" | tee -a "$LOG"
+        else
+          ADAPTER_ARGS=()
+        fi
+
+        # Warn if both enabled
+        if [[ $USE_DEEP_PREFIX -eq 1 && $USE_LATENT_ADAPTERS -eq 1 ]]; then
+          echo "⚠️  WARNING: Both deep prefix AND multi-depth adapters enabled!" | tee -a "$LOG"
+          echo "   Research papers use ONE approach. This may cause interference." | tee -a "$LOG"
+        fi
+
         if [[ $USE_GIST_HEAD -eq 1 ]]; then
           WARMUP_FLAG=(--kd_skip_text)
         else
@@ -316,6 +365,8 @@ PY
           --save_every "$save_every_stagea" \
           "${GIST_ARGS[@]}" \
           "${LORA_ARGS[@]}" \
+          "${DEEP_PREFIX_ARGS[@]}" \
+          "${ADAPTER_ARGS[@]}" \
           "${WARMUP_FLAG[@]}" \
           2>&1 | tee -a "$LOG"
 
@@ -352,6 +403,8 @@ PY
           --save_every "$save_every_stageb" \
           "${GIST_ARGS[@]}" \
           "${LORA_ARGS[@]}" \
+          "${DEEP_PREFIX_ARGS[@]}" \
+          "${ADAPTER_ARGS[@]}" \
           "${WARMUP_FLAG[@]}" \
           2>&1 | tee -a "$LOG"
 
