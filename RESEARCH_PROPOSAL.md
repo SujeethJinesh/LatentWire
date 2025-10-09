@@ -41,6 +41,13 @@ flowchart LR
 - **Lean adapters**: LoRA, prefix projection MLPs, and gist heads remain disabled for the Llama-only run so the acceptance objectives dominate. Adapters are still residual two-layer MLPs with private latent slices.
 - **Smokes mirror the hero**: the default run of `scripts/run_llama_single.sh` uses Stage A≈2 k / Stage B≈6 k samples for 2 epochs apiece while keeping the same LoRA+prefix stack and acceptance weights as the hero (`--hero` switches to 8 k / 16 k, 6 / 10 epochs). This gives us a faithful but shorter regression run before overnight jobs.
 
+## Update (2025-10-09): Modular training stack & feature registry
+
+- **Training loop modularization:** Extracted dataset preparation into `latentwire/data_pipeline.py` and auxiliary loss helpers into `latentwire/loss_bundles.py`, shrinking the core loop to orchestration only.
+- **Feature registry:** Added `latentwire/feature_registry.py` with a hook-based `FeatureRegistry`. LoRA now registers through this system, paving the way for deep prefix, multi-depth adapters, and the latent coprocessor to plug in without touching the trainer.
+- **Config alignment:** The registry consumes the existing CLI/config flags (default-off) so feature toggles remain declarative. Optional modules own their optimizer groups and diagnostics.
+- **Next steps:** Implement hook wiring for the remaining features, migrate CLI entrypoints to Python, and run systematic ablations once the refactor is complete.
+
 ## Update (2025-09-25): Single-model warm-up scaffolding
 
 We now have a focused path for iterating on Llama in isolation. The trainer respects `--models` so we can skip Qwen entirely (smaller footprint, faster spin-up), Stage B keeps the first warm-up epochs purely in text teacher-forcing mode, and `scripts/run_llama_single.sh` wires those pieces together into a reproducible Stage A→B→C loop. During warm-up we match the first few gold answer embeddings (default 4 tokens) against the adapter output and include a teacher-forced CE term. The adapters are residual two-layer MLPs with dropout, we reserve a 16-vector private latent block, and we keep tail text batches (50% probability) after the three-epoch warm-up so the encoder/adapter stack continues to absorb the teacher signal before we fold Qwen back in.

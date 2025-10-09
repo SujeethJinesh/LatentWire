@@ -1,5 +1,10 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-09 — Milestone 2/3 Refactor Foundations (Codex)
+- **Feature registry & modular helpers:** Extracted dataset loader (`latentwire/data_pipeline.py`) and auxiliary loss helpers (`latentwire/loss_bundles.py`) from the training loop. Added a lightweight feature registry (`latentwire/feature_registry.py`) with a LoRA hook so features can register optimizer/group callbacks without touching the core trainer.
+- **Train loop wiring:** `latentwire/train.py` now instantiates the registry, delegates LoRA setup through hooks, and pulls optimiser parameter groups from features. Core behaviour is unchanged; baseline LoRA-only smoke will be rerun once the remaining milestones land.
+- **Sanity checks:** `python -m compileall latentwire` (passes). No GPU smoke executed yet (not available in this environment); mark for follow-up once the refactor is complete.
+
 ### 2025-10-08 (d) — Fixed Latent Adapter Integration (Codex Review + Claude Code)
 - **CRITICAL FIXES COMPLETED** (ALL 5/5 from Codex's review):
   - ✅ **Fix 1/5**: Latent adapter parameters now in optimizer (train.py:1283-1307)

@@ -46,6 +46,7 @@ from latentwire.models import (
 )
 from latentwire.checkpointing import save_latest_checkpoint
 from latentwire.data_pipeline import prepare_training_data
+from latentwire.feature_registry import FeatureRegistry
 from latentwire.loss_bundles import (
     loss_with_text_prompt_chunked,
     alignment_mse,
@@ -1076,12 +1077,6 @@ def main():
     def _collect_trainable(module: nn.Module) -> List[nn.Parameter]:
         return [p for p in module.parameters() if p.requires_grad]
 
-    def _count_params(module: nn.Module) -> tuple[int, int]:
-        """Returns (trainable_params, total_params)"""
-        trainable = sum(p.numel() for p in module.parameters() if p.requires_grad)
-        total = sum(p.numel() for p in module.parameters())
-        return trainable, total
-
     def _compute_lora_weight_norms(model: nn.Module) -> dict[str, float]:
         """Compute L2 norms of LoRA weights for diagnostic tracking"""
         lora_norms = {}
@@ -1109,35 +1104,16 @@ def main():
     extra_llama_params: List[nn.Parameter] = []
     extra_qwen_params: List[nn.Parameter] = []
 
-    if args.use_lora:
-        lora_cfg = {
-            "r": args.lora_r,
-            "alpha": args.lora_alpha,
-            "dropout": args.lora_dropout,
-            "target_modules": args.lora_target_modules,
-            "first_n": args.lora_firstN,
-        }
-        print(f"\n🔧 Applying LoRA (r={lora_cfg['r']}, alpha={lora_cfg['alpha']})...")
-        if llama is not None:
-            before_trainable, before_total = _count_params(llama.model)
-            print(f"   Llama BEFORE LoRA: {before_trainable:,} trainable / {before_total:,} total")
-            llama.model = apply_lora_if_requested(llama.model, lora_cfg, args.llama_id)
-            after_trainable, after_total = _count_params(llama.model)
-            print(f"   Llama AFTER LoRA:  {after_trainable:,} trainable / {after_total:,} total")
-            print(f"   ✓ Added {after_trainable - before_trainable:,} LoRA parameters to Llama")
-            extra_llama_params.extend(_collect_trainable(llama.model))
-            llama.model.train()
-            llama.input_embed = llama.model.get_input_embeddings()
-        if qwen is not None:
-            before_trainable, before_total = _count_params(qwen.model)
-            print(f"   Qwen BEFORE LoRA: {before_trainable:,} trainable / {before_total:,} total")
-            qwen.model = apply_lora_if_requested(qwen.model, lora_cfg, args.qwen_id)
-            after_trainable, after_total = _count_params(qwen.model)
-            print(f"   Qwen AFTER LoRA:  {after_trainable:,} trainable / {after_total:,} total")
-            print(f"   ✓ Added {after_trainable - before_trainable:,} LoRA parameters to Qwen")
-            extra_qwen_params.extend(_collect_trainable(qwen.model))
-            qwen.model.train()
-            qwen.input_embed = qwen.model.get_input_embeddings()
+    feature_registry = FeatureRegistry(args)
+    feature_wrappers: Dict[str, LMWrapper] = {}
+    if llama is not None:
+        feature_wrappers["llama"] = llama
+    if qwen is not None:
+        feature_wrappers["qwen"] = qwen
+
+    feature_extra_params = feature_registry.apply_post_model_build(feature_wrappers)
+    extra_llama_params.extend(feature_extra_params.get("llama", []))
+    extra_qwen_params.extend(feature_extra_params.get("qwen", []))
 
     if args.use_prefix:
         prefix_cfg = {
@@ -1156,7 +1132,7 @@ def main():
             qwen.model.train()
             qwen.input_embed = qwen.model.get_input_embeddings()
 
-    if (args.use_lora or args.use_prefix) and not (extra_llama_params or extra_qwen_params):
+    if (feature_registry.has("lora") or args.use_prefix) and not (extra_llama_params or extra_qwen_params):
         raise RuntimeError("No trainable PEFT parameters detected – check LoRA/Prefix flags")
 
     if llama is not None and qwen is not None:
@@ -1550,6 +1526,9 @@ def main():
         optim_groups.append({"params": gist_params, "lr": args.lr})
     if latent_adapter_params:
         optim_groups.append({"params": latent_adapter_params, "lr": args.lr})
+
+    # Allow features to contribute additional parameter groups.
+    optim_groups.extend(feature_registry.optimizer_param_groups())
 
     # Enable fused AdamW for better performance on CUDA (15-20% faster optimizer step)
     use_fused = device == "cuda" and torch.cuda.is_available()
