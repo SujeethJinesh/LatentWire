@@ -1,5 +1,37 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-11-09 — Preserved Data Analysis: Performance Still Critical (Claude Code Review)
+- **FINDING: Complete experiment archives from 8B_clean_answer run (16 epochs) and 1B trainability test**
+- **8B Results (best checkpoint)**:
+  - **Text baseline**: F1=0.799 (Llama), 0.853 (Qwen) - Strong baseline performance
+  - **Latent (M=16)**: F1=0.030 (Llama), 0.026 (Qwen) - **CRITICAL: Only 3% of text baseline**
+  - **Token-budget**: F1=0.038 (Llama), 0.043 (Qwen) - Latent WORSE than naive truncation
+  - **NLL improvement**: 8.64 (latent) vs 12.72 (text) for Llama - Shows model CAN read latents
+  - **Joint rescoring**: F1=0.024 - No meaningful synergy due to poor individual performance
+  - **Compression**: 15.3× achieved but meaningless given quality collapse
+
+- **1B Model Trainability Results**:
+  - **Text baseline**: F1=0.131 (TinyLlama), 0.598 (Qwen-0.5B) - Qwen surprisingly competent
+  - **Latent**: F1=0.0007 (Llama), 0.0014 (Qwen) - Complete failure (<0.2% of baseline)
+  - **NLL**: 10.25 (latent) vs 15.68 (text) - Again shows training "works" but generation fails
+  - **Confirms capacity threshold**: 1B models fundamentally cannot decode soft prompts
+
+- **Critical Observations**:
+  1. **NO IMPROVEMENT across 16 epochs**: F1 stayed flat at ~0.03 throughout training
+  2. **Training-eval gap persists**: Low NLL (good) but terrible F1 (bad) = exposure bias
+  3. **Worse than truncation**: Learned compression performs WORSE than simply cutting text
+  4. **Architecture fundamentally broken**: Not a tuning problem, needs redesign
+
+- **CLI Error Found**: Latest run failed on `--train_encoder` argument (should be `--freeze_encoder` flag instead)
+  - Config system expects boolean flags, not explicit `--train_encoder`
+  - Fix: Update configs to use `freeze_encoder: false` instead of `train_encoder: true`
+
+- **RECOMMENDATION**: Project needs fundamental pivot - either:
+  1. Add reconstruction objective to force information preservation
+  2. Switch to discrete codes (VQ-VAE style) to prevent mode collapse
+  3. Implement proven baseline (Gist Tokens) to validate feasibility
+  4. Lower expectations to match token-budget baseline first
+
 ### 2025-10-10 — Milestones 5–9 CLI + Coprocessor Integration (Codex)
 - **Latent coprocessor:** Added `latentwire/features/coproc.py`, config plumbing, and checkpoint save/load so KV deltas blend with deep-prefix caches. Mutual exclusivity with deep prefix is enforced.
 - **CLI overhaul:** Implemented `latentwire/cli/{train,eval}.py` plus shared utilities for overrides, feature summaries, metrics-history append, and dry-run tooling. Sample configs live under `configs/` for Mac-safe validation.
