@@ -266,13 +266,26 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:T].unsqueeze(0).to(x.dtype)
 
 class ByteEncoder(nn.Module):
-    def __init__(self, d_z: int = 256, n_layers: int = 6, n_heads: int = 8, ff_mult: int = 4, max_len: int = 2048):
+    def __init__(
+        self,
+        d_z: int = 256,
+        n_layers: int = 6,
+        n_heads: int = 8,
+        ff_mult: int = 4,
+        max_len: int = 2048,
+        dropout: float = 0.0,
+    ):
         super().__init__()
         assert d_z % n_heads == 0, "d_z must be divisible by n_heads"
         self.byte_emb = nn.Embedding(256, d_z)
         self.pos = PositionalEncoding(d_z, max_len=max_len)
         enc_layer = nn.TransformerEncoderLayer(
-            d_model=d_z, nhead=n_heads, dim_feedforward=ff_mult*d_z, batch_first=True, activation='gelu'
+            d_model=d_z,
+            nhead=n_heads,
+            dim_feedforward=ff_mult * d_z,
+            batch_first=True,
+            activation="gelu",
+            dropout=dropout,
         )
         self.encoder = nn.TransformerEncoder(enc_layer, num_layers=n_layers)
         self.ln = nn.LayerNorm(d_z)
