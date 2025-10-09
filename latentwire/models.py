@@ -887,10 +887,21 @@ class LMWrapper(nn.Module):
                 )
                 for layer in cfg.latent_adapter_layers
             })
-            # Move adapters to correct device
-            device_target = next(self.model.parameters()).device
-            for adapter in self.latent_adapters.values():
-                adapter.to(device=device_target, dtype=cfg.dtype)
+            # Move each adapter to the device of its corresponding layer (for multi-GPU models)
+            for layer_idx_str, adapter in self.latent_adapters.items():
+                layer_idx = int(layer_idx_str)
+                # Get the device of the target layer
+                if hasattr(self.model, 'model') and hasattr(self.model.model, 'layers'):
+                    # For models with nested structure (e.g., LlamaForCausalLM)
+                    if layer_idx < len(self.model.model.layers):
+                        layer_device = next(self.model.model.layers[layer_idx].parameters()).device
+                    else:
+                        layer_device = next(self.model.parameters()).device
+                else:
+                    # Fallback: use first parameter device
+                    layer_device = next(self.model.parameters()).device
+                adapter.to(device=layer_device, dtype=cfg.dtype)
+                print(f"[{cfg.model_id}] Placed latent adapter for layer {layer_idx} on device {layer_device}")
             # Count trainable parameters
             adapter_params = sum(p.numel() for p in self.latent_adapters.parameters() if p.requires_grad)
             print(f"[{cfg.model_id}] Latent adapters: {adapter_params:,} trainable parameters")
@@ -1388,15 +1399,15 @@ class LMWrapper(nn.Module):
         # Convert tuple to list for modification
         hs_list = list(hidden_states)
 
-        # Cast latent to match model dtype (critical for bfloat16 models)
-        if len(hs_list) > 0 and latent.dtype != hs_list[0].dtype:
-            latent = latent.to(dtype=hs_list[0].dtype)
-
         # Apply adapter at each specified layer
         for layer_idx in self.latent_adapter_layers:
             if layer_idx < len(hs_list):
                 adapter = self.latent_adapters[str(layer_idx)]
-                hs_list[layer_idx] = adapter(hs_list[layer_idx], latent)
+                # Move latent to the same device as the hidden state and adapter
+                layer_device = hs_list[layer_idx].device
+                layer_dtype = hs_list[layer_idx].dtype
+                latent_on_device = latent.to(device=layer_device, dtype=layer_dtype)
+                hs_list[layer_idx] = adapter(hs_list[layer_idx], latent_on_device)
 
         return tuple(hs_list)
 
