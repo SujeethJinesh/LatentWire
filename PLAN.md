@@ -44,17 +44,24 @@ The milestones below outline the end-to-end refactor that will let us toggle fea
   - Updated `latentwire/train.py` to import those helpers and removed the duplicate inlined definitions; updated call sites to pass explicit weights/devices.
   - Verified syntax / import health (`python -m compileall latentwire/train.py`) and ensured no behavioural changes (baseline smoke parity to be run before next milestone).
 
-### Milestone 3 – Feature Registry & Hooks
+### Milestone 3 – Feature Registry & Hooks ✅ COMPLETE (2025-10-09)
 - **Purpose:** Implement registry where features register hooks (`build_modules`, `on_optimizer_build`, `on_batch_start`, `on_loss_aggregate`, `metrics_snapshot`).
 - **Tasks:** Port LoRA feature first; implement validation preventing incompatible combos; expose hook scaffolding for logging and metrics.
 - **Deliverables:** Registry API doc, smoke run showing hooks invoked with logging.
 - **Tests:** Unit tests toggling features on/off; validation tests raising when conflicting toggles enabled.
+- **Implementation:**
+  - Added `latentwire/feature_registry.py` with `FeatureRegistry`, `FeatureContext`, and a LoRA feature hook (`LoRAFeature`). Trainer now instantiates the registry, delegates LoRA setup through hooks, and collects additional optimizer groups via `FeatureRegistry.optimizer_param_groups()`.
+  - Plumbed latent-shared/private lengths into the registry via `set_extra` so downstream features can access layout metadata.
+  - Placed placeholder modules under `latentwire/features/` (deep prefix, latent adapters) to prepare for Milestone 4; these need thorough testing and ablations before marking Milestone 4 complete.
+  - **TODO for next executor:** run the LoRA-only baseline smoke once the Python CLI (Milestone 6) replaces the shell scripts, and expand registry validation when more features land.
+
 
 ### Milestone 4 – Optional Feature Ports (Deep Prefix & Multi-depth Adapters)
 - **Purpose:** Move these features into `latentwire/features/` with evenly spaced defaults, but keep them disabled unless explicitly toggled.
 - **Tasks:** Parameterize layer lists/dropout; ensure logging prints feature status; expose dynamic hyper-parameters (no hardcoded K or keep probabilities).
 - **Deliverables:** Feature docs, smoke runs: (a) baseline off, (b) deep prefix only, (c) adapters only.
 - **Tests:** Optimizer logging asserting parameters added when enabled; unit tests for layer selection logic.
+- **Current status:** Stub feature modules exist (`latentwire/features/deep_prefix.py`, `latentwire/features/latent_adapters.py`) wired through the registry, but they still need parity verification, targeted smokes, and documentation before calling the milestone done.
 
 ### Milestone 5 – Latent Coprocessor Feature
 - **Purpose:** Implement pluggable coprocessor (`latentwire/features/coproc.py`) with sensible defaults (latent dim 256, evenly spaced layers, optional decode-state conditioning).
