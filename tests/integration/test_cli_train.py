@@ -22,6 +22,7 @@ def test_cli_train_dry_run(tmp_path, monkeypatch, capsys):
     assert "LatentWire Train CLI" in out
     assert "Derived argv" in out
     assert not list(tmp_path.glob("pipeline_*.log"))
+    assert "--train_encoder" not in out
 
 
 @pytest.fixture

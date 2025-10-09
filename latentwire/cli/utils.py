@@ -111,6 +111,9 @@ def config_to_argv(flat_cfg: Dict[str, Any]) -> List[str]:
     for key, value in flat_cfg.items():
         if value is None:
             continue
+        if key == "train_encoder":
+            # train_encoder is implied; --freeze_encoder toggles the opposite.
+            continue
         if key in BOOL_ENABLE_FLAGS:
             if bool(value):
                 argv.append(BOOL_ENABLE_FLAGS[key])
