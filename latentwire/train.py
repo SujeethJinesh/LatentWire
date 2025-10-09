@@ -1444,31 +1444,32 @@ def main():
             gist_heads[name] = head
 
     # ===== torch.compile Optimization =====
+    # DISABLED: torch.compile causes symbolic_shapes warnings and slow first steps
     # Compile encoder and adapters for ~20-30% speedup on forward/backward
-    if device == "cuda":
-        try:
-            # Compile encoder (biggest win - runs every batch)
-            encoder = torch.compile(encoder, mode="reduce-overhead")
-            print("[Optimization] Compiled encoder with torch.compile")
-
-            # Compile adapters (moderate win - runs every batch)
-            for name, adapter in adapters.items():
-                adapters[name] = torch.compile(adapter, mode="reduce-overhead")
-            print(f"[Optimization] Compiled {len(adapters)} adapters with torch.compile")
-
-            # Compile deep prefix generators if enabled
-            if deep_prefix_generators:
-                for name, gen in deep_prefix_generators.items():
-                    deep_prefix_generators[name] = torch.compile(gen, mode="reduce-overhead")
-                print(f"[Optimization] Compiled {len(deep_prefix_generators)} deep prefix generators")
-
-            # Compile latent refiner if enabled
-            if latent_refiner is not None:
-                latent_refiner = torch.compile(latent_refiner, mode="reduce-overhead")
-                print("[Optimization] Compiled latent refiner")
-
-        except Exception as e:
-            print(f"[Optimization] torch.compile not available or failed: {e}")
+    # if device == "cuda":
+    #     try:
+    #         # Compile encoder (biggest win - runs every batch)
+    #         encoder = torch.compile(encoder, mode="reduce-overhead")
+    #         print("[Optimization] Compiled encoder with torch.compile")
+    #
+    #         # Compile adapters (moderate win - runs every batch)
+    #         for name, adapter in adapters.items():
+    #             adapters[name] = torch.compile(adapter, mode="reduce-overhead")
+    #         print(f"[Optimization] Compiled {len(adapters)} adapters with torch.compile")
+    #
+    #         # Compile deep prefix generators if enabled
+    #         if deep_prefix_generators:
+    #             for name, gen in deep_prefix_generators.items():
+    #                 deep_prefix_generators[name] = torch.compile(gen, mode="reduce-overhead")
+    #             print(f"[Optimization] Compiled {len(deep_prefix_generators)} deep prefix generators")
+    #
+    #         # Compile latent refiner if enabled
+    #         if latent_refiner is not None:
+    #             latent_refiner = torch.compile(latent_refiner, mode="reduce-overhead")
+    #             print("[Optimization] Compiled latent refiner")
+    #
+    #     except Exception as e:
+    #         print(f"[Optimization] torch.compile not available or failed: {e}")
 
     # ===== Optimizer =====
     enc_params = [p for p in encoder.parameters() if p.requires_grad]
