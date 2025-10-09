@@ -900,8 +900,8 @@ class LMWrapper(nn.Module):
                 else:
                     # Fallback: use first parameter device
                     layer_device = next(self.model.parameters()).device
-                # Move adapter and update the ModuleDict entry
-                self.latent_adapters[layer_idx_str] = self.latent_adapters[layer_idx_str].to(device=layer_device, dtype=cfg.dtype)
+                # Move adapter in-place (modifies the module directly in the ModuleDict)
+                self.latent_adapters[layer_idx_str].to(device=layer_device, dtype=cfg.dtype)
                 print(f"[{cfg.model_id}] Placed latent adapter for layer {layer_idx} on device {layer_device}")
             # Count trainable parameters
             adapter_params = sum(p.numel() for p in self.latent_adapters.parameters() if p.requires_grad)
@@ -1404,11 +1404,16 @@ class LMWrapper(nn.Module):
         for layer_idx in self.latent_adapter_layers:
             if layer_idx < len(hs_list):
                 adapter = self.latent_adapters[str(layer_idx)]
-                # Move latent to the same device as the hidden state and adapter
-                layer_device = hs_list[layer_idx].device
-                layer_dtype = hs_list[layer_idx].dtype
-                latent_on_device = latent.to(device=layer_device, dtype=layer_dtype)
-                hs_list[layer_idx] = adapter(hs_list[layer_idx], latent_on_device)
+                # Get adapter device and move hidden state + latent to match
+                adapter_device = next(adapter.parameters()).device
+                adapter_dtype = next(adapter.parameters()).dtype
+
+                # Move hidden state and latent to adapter's device
+                h_on_device = hs_list[layer_idx].to(device=adapter_device, dtype=adapter_dtype)
+                latent_on_device = latent.to(device=adapter_device, dtype=adapter_dtype)
+
+                # Apply adapter and store result (keep on adapter's device)
+                hs_list[layer_idx] = adapter(h_on_device, latent_on_device)
 
         return tuple(hs_list)
 
