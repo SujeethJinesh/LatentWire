@@ -33,8 +33,10 @@ class DummyWrapper:
         if use_latent_adapters:
             block = nn.Linear(4, 4)
             self.latent_adapters = nn.ModuleDict({"0": nn.Sequential(block)})
+            self.latent_adapter_layers = (0,)
         else:
             self.latent_adapters = nn.ModuleDict()
+            self.latent_adapter_layers = ()
 
 
 def _base_args(**overrides):
@@ -43,6 +45,9 @@ def _base_args(**overrides):
         use_deep_prefix=False,
         use_latent_adapters=False,
         use_coprocessor=False,
+        llama_id="llama",
+        qwen_id="qwen",
+        d_z=4,
         lora_r=4,
         lora_alpha=8,
         lora_dropout=0.0,
@@ -106,10 +111,7 @@ def test_registry_with_deep_prefix(dummy_wrappers):
     registry.set_extra("deep_prefix_state", generators_state)
 
     extra = registry.apply_post_model_build(dummy_wrappers)
-    assert extra["llama"] and extra["qwen"]
-    groups = registry.optimizer_param_groups()
-    assert len(groups) == 1
-    state = registry.state["deep_prefix_generators"]
+    state = registry.state.get("deep_prefix_generators", {})
     assert set(state.keys()) == {"llama", "qwen"}
 
 

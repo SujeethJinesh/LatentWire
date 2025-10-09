@@ -32,6 +32,7 @@ def test_coprocessor_feature_builds_generators():
     args = types.SimpleNamespace(
         use_coprocessor=True,
         use_deep_prefix=False,
+        d_z=4,
         coprocessor_len=1,
         coprocessor_width=8,
         coprocessor_dropout=0.0,
@@ -60,6 +61,7 @@ def test_coprocessor_feature_mutual_exclusion():
     args = types.SimpleNamespace(
         use_coprocessor=True,
         use_deep_prefix=True,
+        d_z=4,
         coprocessor_len=1,
         coprocessor_width=8,
         coprocessor_dropout=0.0,

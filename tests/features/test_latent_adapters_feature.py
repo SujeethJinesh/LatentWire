@@ -24,6 +24,7 @@ class WrapperWithAdapters:
             latent_adapter_dropout=0.0,
             latent_d_z=4,
         )
+        self.latent_adapter_layers = (0,)
 
 
 class WrapperWithoutAdapters:
@@ -36,6 +37,7 @@ class WrapperWithoutAdapters:
             latent_adapter_dropout=0.0,
             latent_d_z=4,
         )
+        self.latent_adapter_layers = ()
 
 
 def _context(args, extras=None):
