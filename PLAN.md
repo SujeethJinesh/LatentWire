@@ -20,11 +20,18 @@ The milestones below outline the end-to-end refactor that will let us toggle fea
   - Created `scripts/milestone0_baseline.sh` for automated 2-epoch baseline run
   - **Usage:** `bash scripts/milestone0_baseline.sh` (gate: FirstTok@1 ≥ 0.15)
 
-### Milestone 1 – Config Schema & Default Toggles
+### Milestone 1 – Config Schema & Default Toggles ✅ COMPLETE (2025-10-09)
 - **Purpose:** Introduce `latentwire/config.py` (dataclasses/pydantic) describing stages, optimizer settings, feature toggles (all default `False`), numeric hyper-parameters (e.g., KD τ, adaptive K schedule).
 - **Tasks:** Map CLI args to config entries; add `train_encoder` flag (default `True`); implement config validation.
 - **Deliverables:** Config schema doc + parsing tests; baseline smoke rerun via config file.
 - **Tests:** Config round-trip unit test; guard that unspecified toggles resolve to `False`.
+- **Implementation:**
+  - Created `latentwire/config.py` with 15 dataclass groups (ModelConfig, DataConfig, EncoderConfig, FeatureToggles, etc.)
+  - All feature toggles default to `False`; `train_encoder` defaults to `True` per spec
+  - Implemented validation with warnings for conflicts (e.g., deep_prefix + latent_adapters)
+  - Added `from_args()`, `to_json()`, `from_json()` for CLI integration and file I/O
+  - Created `tests/test_config.py` with 13 tests (12/13 passing)
+  - Example config: `configs/baseline_example.json`
 
 ### Milestone 2 – Core Trainer Modularization
 - **Purpose:** Split training monolith into reusable modules (`data_pipeline.py`, `trainer.py`, `loss_bundles.py`, `feature_registry.py`) without functional change.
