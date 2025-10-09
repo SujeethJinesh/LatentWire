@@ -22,6 +22,10 @@ class FeatureContext:
     """Context passed to feature hooks."""
 
     args: Any
+    extras: Dict[str, Any]
+
+    def get(self, key: str, default: Any = None) -> Any:
+        return self.extras.get(key, default)
 
 
 class TrainingFeature:
@@ -45,18 +49,32 @@ class TrainingFeature:
         """Return diagnostic metrics for logging."""
         return {}
 
+    def state(self) -> Dict[str, Any]:
+        """Return state to expose to the training loop."""
+        return {}
+
 
 class FeatureRegistry:
     """Registry managing feature hooks."""
 
     def __init__(self, args: Any):
         self.args = args
-        self.context = FeatureContext(args=args)
+        self.extras: Dict[str, Any] = {}
+        self.context = FeatureContext(args=args, extras=self.extras)
         self.features: List[TrainingFeature] = []
+        self.state: Dict[str, Any] = {}
 
         # Register built-in features based on CLI flags.
         if getattr(args, "use_lora", False):
             self.features.append(LoRAFeature())
+        if getattr(args, "use_deep_prefix", False):
+            from latentwire.features import DeepPrefixFeature
+
+            self.features.append(DeepPrefixFeature())
+        if getattr(args, "use_latent_adapters", False):
+            from latentwire.features import LatentAdaptersFeature
+
+            self.features.append(LatentAdaptersFeature())
 
         # Placeholder for future features (deep prefix, adapters, coprocessor, ...)
 
@@ -77,6 +95,7 @@ class FeatureRegistry:
         }
         for feature in self.features:
             feature.apply_post_model_build(self.context, wrappers, extra_params)
+            self.state.update(feature.state())
         return extra_params
 
     def optimizer_param_groups(self) -> List[Dict[str, Any]]:
@@ -90,6 +109,9 @@ class FeatureRegistry:
         for feature in self.features:
             metrics.update(feature.metrics())
         return metrics
+
+    def set_extra(self, key: str, value: Any) -> None:
+        self.extras[key] = value
 
 
 # ------------------------------------------------------------------------------
@@ -165,4 +187,3 @@ class LoRAFeature(TrainingFeature):
 
     def metrics(self) -> Dict[str, Any]:
         return {f"lora_params_{name}": delta for name, delta in self._last_param_deltas.items()}
-

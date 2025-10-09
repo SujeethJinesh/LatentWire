@@ -5,6 +5,11 @@
 - **Train loop wiring:** `latentwire/train.py` now instantiates the registry, delegates LoRA setup through hooks, and pulls optimiser parameter groups from features. Core behaviour is unchanged; baseline LoRA-only smoke will be rerun once the remaining milestones land.
 - **Sanity checks:** `python -m compileall latentwire` (passes). No GPU smoke executed yet (not available in this environment); mark for follow-up once the refactor is complete.
 
+### 2025-10-09 — Milestone 4 Feature Modules (Codex)
+- **Deep prefix & latent adapters as features:** Added `latentwire/features/deep_prefix.py` and `latentwire/features/latent_adapters.py`, wiring them through the registry so each optional block registers its own optimizer parameters and state.
+- **Trainer cleanup:** Deep prefix generator construction now lives in the feature hook; the trainer simply reads `registry.state['deep_prefix_generators']`. Optimizer group logging reflects feature contributions.
+- **Validation:** `python -m compileall latentwire` (passes). Smoke not run yet—queued after CLI migration so we can exercise the new toggles end-to-end.
+
 ### 2025-10-08 (d) — Fixed Latent Adapter Integration (Codex Review + Claude Code)
 - **CRITICAL FIXES COMPLETED** (ALL 5/5 from Codex's review):
   - ✅ **Fix 1/5**: Latent adapter parameters now in optimizer (train.py:1283-1307)

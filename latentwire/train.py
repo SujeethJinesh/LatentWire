@@ -1105,6 +1105,8 @@ def main():
     extra_qwen_params: List[nn.Parameter] = []
 
     feature_registry = FeatureRegistry(args)
+    feature_registry.set_extra("latent_shared_len", latent_shared_len)
+    feature_registry.set_extra("latent_private_len", latent_private_len)
     feature_wrappers: Dict[str, LMWrapper] = {}
     if llama is not None:
         feature_wrappers["llama"] = llama
@@ -1114,6 +1116,7 @@ def main():
     feature_extra_params = feature_registry.apply_post_model_build(feature_wrappers)
     extra_llama_params.extend(feature_extra_params.get("llama", []))
     extra_qwen_params.extend(feature_extra_params.get("qwen", []))
+    deep_prefix_generators = feature_registry.state.get("deep_prefix_generators", {})
 
     if args.use_prefix:
         prefix_cfg = {
@@ -1342,7 +1345,6 @@ def main():
 
     # ===== Adapters =====
     adapters: Dict[str, Adapter] = {}
-    deep_prefix_generators: Dict[str, DeepPrefixGenerator] = {}
     gist_heads: Dict[str, GistReconstructionHead] = {}
     adp_llama: Optional[Adapter] = None
     adp_qwen: Optional[Adapter] = None
@@ -1392,35 +1394,6 @@ def main():
             with torch.no_grad():
                 adapter.scale.fill_(1.0)
 
-    if args.use_deep_prefix:
-        cfg_prefix_len = args.deep_prefix_len if args.deep_prefix_len is not None else (latent_shared_len + latent_private_len)
-        if cfg_prefix_len <= 0:
-            raise ValueError("--use_deep_prefix requires deep_prefix_len > 0 or non-zero latent length")
-        prefix_len = int(cfg_prefix_len)
-        dropout = float(max(args.deep_prefix_dropout, 0.0))
-        for name, wrapper in (('llama', llama), ('qwen', qwen)):
-            if wrapper is None:
-                continue
-            num_layers = getattr(wrapper.model.config, "num_hidden_layers", None)
-            num_attention_heads = getattr(wrapper.model.config, "num_attention_heads", getattr(wrapper.model.config, "n_head", None))
-            num_kv_heads = getattr(wrapper.model.config, "num_key_value_heads", None)
-            if num_layers is None or num_attention_heads is None:
-                print(f"[WARN] Skipping deep prefix for {name}: model config missing layer/head counts")
-                continue
-            if num_kv_heads is None:
-                num_kv_heads = num_attention_heads
-            head_dim = wrapper.d_model // int(num_attention_heads)
-            generator = DeepPrefixGenerator(
-                d_z=wrapper.d_model,
-                prefix_len=prefix_len,
-                num_layers=int(num_layers),
-                num_kv_heads=int(num_kv_heads),
-                head_dim=int(head_dim),
-                dropout=dropout,
-            ).to(_primary_device(wrapper))
-            generator.train()
-            deep_prefix_generators[name] = generator
-
     if args.use_gist_head and args.gist_weight > 0.0:
         gist_len = max(1, int(args.gist_target_len))
         for name, wrapper in (('llama', llama), ('qwen', qwen)):
@@ -1469,9 +1442,6 @@ def main():
     llama_params = [p for p in adp_llama.parameters() if p.requires_grad] if adp_llama is not None else []
     qwen_params = [p for p in adp_qwen.parameters() if p.requires_grad] if adp_qwen is not None else []
     refiner_params = [p for p in latent_refiner.parameters() if p.requires_grad] if latent_refiner is not None else []
-    deep_prefix_params: List[torch.nn.Parameter] = []
-    for generator in deep_prefix_generators.values():
-        deep_prefix_params.extend([p for p in generator.parameters() if p.requires_grad])
     gist_params: List[torch.nn.Parameter] = []
     for head in gist_heads.values():
         gist_params.extend([p for p in head.parameters() if p.requires_grad])
@@ -1520,8 +1490,6 @@ def main():
         optim_groups.append({"params": extra_qwen_params, "lr": args.lr})
     if refiner_params:
         optim_groups.append({"params": refiner_params, "lr": args.lr})
-    if deep_prefix_params:
-        optim_groups.append({"params": deep_prefix_params, "lr": args.lr})
     if gist_params:
         optim_groups.append({"params": gist_params, "lr": args.lr})
     if latent_adapter_params:
@@ -1545,7 +1513,14 @@ def main():
     if extra_llama_params: group_names.append(f"llama_extra({len(extra_llama_params)} tensors)")
     if extra_qwen_params: group_names.append(f"qwen_extra({len(extra_qwen_params)} tensors)")
     if refiner_params: group_names.append(f"refiner({len(refiner_params)} tensors)")
-    if deep_prefix_params: group_names.append(f"deep_prefix({len(deep_prefix_params)} tensors)")
+    if feature_registry.has("deep_prefix") and deep_prefix_generators:
+        tensor_count = sum(
+            1
+            for gen in deep_prefix_generators.values()
+            for p in gen.parameters()
+            if p.requires_grad
+        )
+        group_names.append(f"deep_prefix({tensor_count} tensors)")
     if gist_params: group_names.append(f"gist({len(gist_params)} tensors)")
     if latent_adapter_params: group_names.append(f"latent_adapters({len(latent_adapter_params)} tensors)")
     for i, name in enumerate(group_names):
@@ -2679,11 +2654,11 @@ def main():
                     }
                     dp_len_cfg = int(
                         args.deep_prefix_len
-                        if (args.use_deep_prefix and args.deep_prefix_len is not None)
+                        if (feature_registry.has("deep_prefix") and args.deep_prefix_len is not None)
                         else (latent_shared_len + latent_private_len)
-                    ) if args.use_deep_prefix else 0
+                    ) if feature_registry.has("deep_prefix") else 0
                     cfg["deep_prefix"] = {
-                        "enabled": bool(args.use_deep_prefix),
+                        "enabled": feature_registry.has("deep_prefix"),
                         "len": dp_len_cfg,
                         "dropout": float(args.deep_prefix_dropout),
                     }
@@ -2864,11 +2839,11 @@ def main():
                 }
                 dp_len_cfg = int(
                     args.deep_prefix_len
-                    if (args.use_deep_prefix and args.deep_prefix_len is not None)
+                    if (feature_registry.has("deep_prefix") and args.deep_prefix_len is not None)
                     else (latent_shared_len + latent_private_len)
-                ) if args.use_deep_prefix else 0
+                ) if feature_registry.has("deep_prefix") else 0
                 cfg["deep_prefix"] = {
-                    "enabled": bool(args.use_deep_prefix),
+                    "enabled": feature_registry.has("deep_prefix"),
                     "len": dp_len_cfg,
                     "dropout": float(args.deep_prefix_dropout),
                 }
@@ -2992,11 +2967,11 @@ def main():
     }
     dp_len_cfg = int(
         args.deep_prefix_len
-        if (args.use_deep_prefix and args.deep_prefix_len is not None)
+        if (feature_registry.has("deep_prefix") and args.deep_prefix_len is not None)
         else (latent_shared_len + latent_private_len)
-    ) if args.use_deep_prefix else 0
+    ) if feature_registry.has("deep_prefix") else 0
     cfg["deep_prefix"] = {
-        "enabled": bool(args.use_deep_prefix),
+        "enabled": feature_registry.has("deep_prefix"),
         "len": dp_len_cfg,
         "dropout": float(args.deep_prefix_dropout),
     }

@@ -44,7 +44,7 @@ flowchart LR
 ## Update (2025-10-09): Modular training stack & feature registry
 
 - **Training loop modularization:** Extracted dataset preparation into `latentwire/data_pipeline.py` and auxiliary loss helpers into `latentwire/loss_bundles.py`, shrinking the core loop to orchestration only.
-- **Feature registry:** Added `latentwire/feature_registry.py` with a hook-based `FeatureRegistry`. LoRA now registers through this system, paving the way for deep prefix, multi-depth adapters, and the latent coprocessor to plug in without touching the trainer.
+- **Feature registry:** Added `latentwire/feature_registry.py` with a hook-based `FeatureRegistry`. LoRA now registers through this system, and the optional deep-prefix and multi-depth adapter stacks live under `latentwire/features/`, paving the way for the latent coprocessor and future toggles without touching the trainer.
 - **Config alignment:** The registry consumes the existing CLI/config flags (default-off) so feature toggles remain declarative. Optional modules own their optimizer groups and diagnostics.
 - **Next steps:** Implement hook wiring for the remaining features, migrate CLI entrypoints to Python, and run systematic ablations once the refactor is complete.
 
