@@ -157,8 +157,23 @@ def summarize_features(cfg_dict: Dict[str, Any]) -> Dict[str, bool]:
     return summary
 
 
+class TeeStream:
+    """Write text to multiple underlying streams."""
+
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, data: str) -> int:
+        for stream in self.streams:
+            stream.write(data)
+        return len(data)
+
+    def flush(self) -> None:
+        for stream in self.streams:
+            stream.flush()
+
+
 def namespace_from_argv(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("argv", nargs="*")
     return parser.parse_args(["dummy", *argv])
-

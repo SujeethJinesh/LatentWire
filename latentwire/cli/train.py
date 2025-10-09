@@ -1,10 +1,14 @@
 import argparse
 import os
 import sys
+from contextlib import ExitStack, redirect_stderr, redirect_stdout
 from copy import deepcopy
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from latentwire.cli.utils import (
+    TeeStream,
     append_metrics_history,
     apply_overrides,
     config_to_argv,
@@ -78,24 +82,43 @@ def main(cli_args: Optional[List[str]] = None) -> None:
     cfg_dict: Dict[str, Any] = result["config_dict"]
     argv: List[str] = result["argv"]
 
-    print("=== LatentWire Train CLI ===")
-    print(f"Config: {os.path.abspath(args.config)}")
-    if args.override:
-        print("Overrides:")
-        for item in args.override:
-            print(f"  - {item}")
-    print("Feature toggles:")
+    run_dir = Path(cfg.checkpoint.save_dir).expanduser().resolve().parent
+    run_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    log_filename = f"pipeline_{args.tag}_{timestamp}.log" if args.tag else f"pipeline_{timestamp}.log"
+    log_path = run_dir / log_filename
+
     feature_summary = summarize_features(cfg_dict)
-    for name, enabled in feature_summary.items():
-        status = "ON" if enabled else "off"
-        print(f"  {name}: {status}")
-    print("Derived argv:", " ".join(argv))
+    pipeline_log: Optional[Path] = None
 
-    if args.print_argv or args.dry_run:
-        print("[CLI] Dry run complete; training not launched.")
-        return
+    with ExitStack() as stack:
+        if not args.print_argv and not args.dry_run:
+            log_file = stack.enter_context(log_path.open("w", encoding="utf-8", buffering=1))
+            tee_out = TeeStream(sys.stdout, log_file)
+            tee_err = TeeStream(sys.stderr, log_file)
+            stack.enter_context(redirect_stdout(tee_out))
+            stack.enter_context(redirect_stderr(tee_err))
+            pipeline_log = log_path
+            print(f"[CLI] Writing pipeline log to {log_path}")
 
-    run_train(argv)
+        print("=== LatentWire Train CLI ===")
+        print(f"Config: {os.path.abspath(args.config)}")
+        if args.override:
+            print("Overrides:")
+            for item in args.override:
+                print(f"  - {item}")
+        print("Feature toggles:")
+        for name, enabled in feature_summary.items():
+            status = "ON" if enabled else "off"
+            print(f"  {name}: {status}")
+        print("Derived argv:", " ".join(argv))
+
+        if args.print_argv or args.dry_run:
+            print("[CLI] Dry run complete; training not launched.")
+            pipeline_log = None
+            return
+
+        run_train(argv)
 
     save_dir = cfg.checkpoint.save_dir
     record = {
@@ -106,9 +129,13 @@ def main(cli_args: Optional[List[str]] = None) -> None:
         "argv": argv,
         "features": feature_summary,
     }
+    if pipeline_log is not None:
+        record["pipeline_log"] = str(pipeline_log)
     try:
         append_metrics_history(save_dir, record)
         print(f"[CLI] Recorded metrics history entry in {save_dir}")
+        if pipeline_log is not None:
+            print(f"[CLI] Pipeline log: {pipeline_log}")
     except Exception as exc:
         print(f"[CLI] Warning: failed to append metrics history ({exc})")
 

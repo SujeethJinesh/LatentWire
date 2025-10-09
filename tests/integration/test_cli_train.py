@@ -21,6 +21,7 @@ def test_cli_train_dry_run(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "LatentWire Train CLI" in out
     assert "Derived argv" in out
+    assert not list(tmp_path.glob("pipeline_*.log"))
 
 
 @pytest.fixture
@@ -42,4 +43,9 @@ def test_cli_train_records_history(tmp_path, monkeypatch, temp_history):
     monkeypatch.setattr(train_cli, "run_train", lambda argv: None)
     train_cli.main(["--config", str(config_path), "--tag", "unit"])
     lines = temp_history.read_text().strip().splitlines()
-    assert lines and json.loads(lines[-1])["tag"] == "unit"
+    assert lines
+    record = json.loads(lines[-1])
+    assert record["tag"] == "unit"
+    assert "pipeline_log" in record
+    log_path = pathlib.Path(record["pipeline_log"])
+    assert log_path.exists()
