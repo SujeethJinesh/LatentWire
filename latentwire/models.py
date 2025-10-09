@@ -888,7 +888,7 @@ class LMWrapper(nn.Module):
                 for layer in cfg.latent_adapter_layers
             })
             # Move each adapter to the device of its corresponding layer (for multi-GPU models)
-            for layer_idx_str, adapter in self.latent_adapters.items():
+            for layer_idx_str in list(self.latent_adapters.keys()):
                 layer_idx = int(layer_idx_str)
                 # Get the device of the target layer
                 if hasattr(self.model, 'model') and hasattr(self.model.model, 'layers'):
@@ -900,7 +900,8 @@ class LMWrapper(nn.Module):
                 else:
                     # Fallback: use first parameter device
                     layer_device = next(self.model.parameters()).device
-                adapter.to(device=layer_device, dtype=cfg.dtype)
+                # Move adapter and update the ModuleDict entry
+                self.latent_adapters[layer_idx_str] = self.latent_adapters[layer_idx_str].to(device=layer_device, dtype=cfg.dtype)
                 print(f"[{cfg.model_id}] Placed latent adapter for layer {layer_idx} on device {layer_device}")
             # Count trainable parameters
             adapter_params = sum(p.numel() for p in self.latent_adapters.parameters() if p.requires_grad)
