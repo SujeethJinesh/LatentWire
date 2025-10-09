@@ -25,6 +25,7 @@ class WrapperWithAdapters:
             latent_d_z=4,
         )
         self.latent_adapter_layers = (0,)
+        self.latent_adapters_parameters = list(self.latent_adapters.parameters())
 
 
 class WrapperWithoutAdapters:

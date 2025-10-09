@@ -91,8 +91,24 @@ def test_registry_with_lora(monkeypatch, dummy_wrappers):
 
     def fake_apply(model, lora_args, model_name):
         # add a trainable parameter so optimizer groups are non-empty
-        model.lora_head = nn.Parameter(torch.ones(1, requires_grad=True))
-        return model
+        class DummyWithEmbed(nn.Module):
+            def __init__(self, base):
+                super().__init__()
+                self.base = base
+                self.embed = nn.Linear(4, 4)
+
+            def forward(self, *args, **kwargs):  # pragma: no cover - unused
+                return self.base(*args, **kwargs)
+
+            def get_input_embeddings(self):
+                return self.embed
+
+            def train(self, mode=True):
+                self.base.train(mode)
+                super().train(mode)
+                return self
+
+        return DummyWithEmbed(model)
 
     monkeypatch.setattr("latentwire.feature_registry.apply_lora_if_requested", fake_apply)
 
