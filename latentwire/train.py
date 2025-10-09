@@ -860,7 +860,42 @@ def main():
     # Training stats (for eval-time calibration)
     ap.add_argument("--save_training_stats", action="store_true", help="Record running mean of prefix RMS per model and save to training_stats.json")
 
+    # Milestone 0: Baseline Verification Mode
+    ap.add_argument("--baseline_verification", action="store_true",
+                    help="[Milestone 0] Disable all advanced features (deep prefix, latent adapters, KD, gist) "
+                         "for baseline verification. Keeps only encoder + LoRA trainable.")
+
     args = ap.parse_args()
+
+    # Apply baseline verification overrides if requested
+    if args.baseline_verification:
+        print("\n" + "="*80)
+        print("BASELINE VERIFICATION MODE (Milestone 0)")
+        print("="*80)
+        print("Disabling advanced features:")
+        print("  - Deep prefix: OFF")
+        print("  - Latent adapters: OFF")
+        print("  - Knowledge distillation: OFF (all KD weights → 0)")
+        print("  - Gist reconstruction head: OFF")
+        print("  - State KD: OFF")
+        print("Keeping enabled:")
+        print("  - Encoder: TRAINABLE")
+        print("  - LoRA: ENABLED (if --use_lora is set)")
+        print("  - Basic adapters: TRAINABLE")
+        print("="*80 + "\n")
+
+        # Disable advanced features
+        args.use_deep_prefix = False
+        args.use_latent_adapters = False
+        args.use_gist_head = False
+
+        # Zero out all KD weights
+        args.kd_first_k_weight = 0.0
+        args.state_kd_weight = 0.0
+        args.gist_weight = 0.0
+
+        # Ensure encoder stays trainable
+        args.freeze_encoder = False
     # global runtime patches
     patch_dataloader_defaults()
     apply_anchor_normalization(args)

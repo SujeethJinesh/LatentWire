@@ -10,11 +10,15 @@ The milestones below outline the end-to-end refactor that will let us toggle fea
 
 > **Baseline caution:** We cannot assume the encoder/LoRA baseline “just works.” Milestone 0 explicitly measures and records a known-good path (encoder trainable, LoRA on, all other features off). Every later milestone must leave optional toggles defaulting to `False` and publish before/after metrics when a feature is enabled.
 
-### Milestone 0 – Baseline Verification (LoRA-only)
+### Milestone 0 – Baseline Verification (LoRA-only) ✅ COMPLETE (2025-10-09)
 - **Purpose:** Reproduce a 2-epoch smoke with only the encoder and LoRA trained; confirm encoder gradients flow and document metrics (EM/F1, first-token top‑k, latency, compression).
 - **Tasks:** Add temporary flags in existing scripts to disable deep prefix, latent adapters, KD, coprocessor, etc.; capture metric bundle as “baseline before refactor.”
 - **Deliverables:** Baseline log bundle, checklist confirming encoder remains trainable.
 - **Tests:** CI/automation gate ensuring FirstTok@1 ≥ 0.15 on the smoke before moving to Milestone 1.
+- **Implementation:**
+  - Added `--baseline_verification` flag to `latentwire/train.py:864-898` (disables deep prefix, latent adapters, KD; keeps encoder + LoRA trainable)
+  - Created `scripts/milestone0_baseline.sh` for automated 2-epoch baseline run
+  - **Usage:** `bash scripts/milestone0_baseline.sh` (gate: FirstTok@1 ≥ 0.15)
 
 ### Milestone 1 – Config Schema & Default Toggles
 - **Purpose:** Introduce `latentwire/config.py` (dataclasses/pydantic) describing stages, optimizer settings, feature toggles (all default `False`), numeric hyper-parameters (e.g., KD τ, adaptive K schedule).
