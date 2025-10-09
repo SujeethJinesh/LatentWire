@@ -132,11 +132,22 @@ def kd_first_k_prefix_vs_text(
     # Use the new LMWrapper.disable_adapter() method for proper teacher cleanup
     disable_adapter_ctx = nullcontext()
     disable_adapter = getattr(teacher_llm, "disable_adapter", None)  # Changed from teacher_model to teacher_llm
+    adapter_disabled = False
     if callable(disable_adapter):
         try:
             disable_adapter_ctx = disable_adapter()
-        except Exception:
+            adapter_disabled = True
+        except Exception as e:
+            print(f"[WARN] Failed to disable KD teacher adapters: {e}")
             disable_adapter_ctx = nullcontext()
+
+    # Log adapter status on first call (global flag to avoid spam)
+    if not hasattr(kd_first_k_prefix_vs_text, "_logged_adapter_status"):
+        if adapter_disabled:
+            print("[INFO] KD teacher: adapters disabled successfully (clean text baseline)")
+        else:
+            print("[WARN] KD teacher: adapters NOT disabled - KD may be contaminated")
+        kd_first_k_prefix_vs_text._logged_adapter_status = True
 
     max_batch_chunk = int(os.getenv("KD_TEACHER_CHUNK", "4"))
     max_batch_chunk = max(1, max_batch_chunk)

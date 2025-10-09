@@ -1187,10 +1187,8 @@ def main():
             return "", "none"
         if mode == "chat":
             header = assistant_header_anchor(wrapper.tokenizer) or ""
-            literal = DEFAULT_ANSWER_PREFIX if DEFAULT_ANSWER_PREFIX else ""
-            if literal and not literal.endswith(" "):
-                literal = literal + " "
-            return header + literal, "chat"
+            # FIX: Don't append "Answer: " literal in chat mode - breaks first-token contract
+            return header, "chat"
         if mode == "text":
             base = fallback or ""
             if not base and args.use_chat_template:
