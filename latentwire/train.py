@@ -1907,6 +1907,9 @@ def main():
                 for name in model_keys:
                     model_latents[name] = latent_refiner(model_latents[name])
 
+            # Flag to skip batch if NaN detected early
+            skip_batch_due_to_nan = False
+
             for ctx in model_contexts:
                 target_device = _primary_device(ctx.wrapper)
                 targets = ctx.token_ids[idx].to(target_device, non_blocking=True)
@@ -1918,6 +1921,16 @@ def main():
 
                 prefix_raw = ctx.adapter(latents_for_adapter, answer_lengths=answer_lengths)
                 prefix = calibrate_to_embed_rms(prefix_raw, ctx.wrapper)
+
+                # Check for NaN/Inf in prefix after calibration
+                if not torch.isfinite(prefix).all():
+                    print(f"⚠️  NaN/Inf detected in prefix for {ctx.name} at step {step+1}")
+                    print(f"    prefix_raw finite: {torch.isfinite(prefix_raw).all()}")
+                    print(f"    latents finite: {torch.isfinite(latents_for_adapter).all()}")
+                    # Set flag and break out of model loop
+                    skip_batch_due_to_nan = True
+                    break
+
                 deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None
                 if ctx.name in deep_prefix_generators:
                     deep_prefix_cache = deep_prefix_generators[ctx.name](prefix)
@@ -2350,6 +2363,12 @@ def main():
                 if training_mode == "text":
                     per_model_losses[ctx.name]["mode"] = "text"
 
+            # Skip batch if NaN detected early in prefix
+            if skip_batch_due_to_nan:
+                optimizer.zero_grad(set_to_none=True)
+                torch.cuda.empty_cache()
+                continue
+
             if training_mode == "text":
                 parts_text = [
                     f"  step  {step+1}/{steps_per_epoch}",
@@ -2368,6 +2387,9 @@ def main():
 
             if not torch.isfinite(loss):
                 print("NaN/Inf loss; skipping step")
+                # Clean up gradients and memory before skipping
+                optimizer.zero_grad(set_to_none=True)
+                torch.cuda.empty_cache()
                 continue
 
             loss_backward = loss / float(grad_accum_steps)
