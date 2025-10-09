@@ -1,0 +1,8 @@
+Starting GPU monitoring → runs/smoke/gpu_monitor.log
+
+>>> Combination 1: m64_dz256_rl2_rh4
+    RUN_TAG=smoke
+    EPOCHS_STAGEA=4 | EPOCHS_STAGEB=8
+    WARMUP_TEXT_LATENT_EPOCHS_STAGEA=2.0 | WARMUP_TEXT_LATENT_EPOCHS_STAGEB=1.5
+
+=== CUDA preflight ===
