@@ -1052,16 +1052,15 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             else:
                 deep_prefix_cache_map[name] = None
 
-    # Align latent-anchor usage with training: chat-mode runs still expect the raw
-    # literal (e.g., "Answer: ") even though we render the assistant header via the
-    # chat template. Reuse the strip_literal computed above so the first decoded
-    # token sees the same conditioning as training.
+    # Align latent-anchor usage with training: use the anchor computed by
+    # make_anchor_text() which handles all modes correctly (text, chat, none).
+    # For chat mode, this will be the assistant header from the tokenizer.
+    # For text mode, this will be the explicit text (e.g., "Answer: ").
+    # For none mode, this will be empty string.
     latent_anchor_texts: Dict[str, Optional[str]] = {}
     for name, info in anchor_info.items():
-        if info["mode"] == "text":
-            latent_anchor_texts[name] = info["anchor"] or None
-        else:
-            latent_anchor_texts[name] = strip_literal or None
+        # Use the anchor that was computed for this mode (consistent across all modes)
+        latent_anchor_texts[name] = info["anchor"] or None
 
     latent_results = {}
     latent_wall = 0.0

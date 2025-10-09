@@ -195,22 +195,27 @@ def make_anchor_text(mode: str, wrapper, explicit_text: str) -> str:
 
 
 def infer_anchor_mode_and_text(wrapper, cfg: dict, cli_mode: str, cli_text: str):
+    # Determine the mode (from CLI or config)
     if cli_mode != "auto":
-        return cli_mode, cli_text
-    mode = (cfg.get("warm_anchor_mode") or "auto").lower()
-    train_anchor = (cfg.get("warm_anchor_text") or "").strip()
+        mode = cli_mode
+        explicit_text = cli_text
+    else:
+        mode = (cfg.get("warm_anchor_mode") or "auto").lower()
+        explicit_text = (cfg.get("warm_anchor_text") or "").strip()
 
+    # Apply mode-specific logic (consistent for CLI and config)
     if mode == "none":
         return "none", ""
     if mode == "text":
-        return "text", train_anchor
+        return "text", explicit_text
     if mode == "chat":
         # Always derive assistant header from tokenizer; ignore any provided text
+        # CRITICAL: Never use explicit_text for chat mode (breaks first-token contract)
         return "chat", ""
 
     # auto/legacy fallback: prefer explicit text, otherwise chat header
-    if train_anchor:
-        return "text", train_anchor
+    if explicit_text:
+        return "text", explicit_text
     return "chat", ""
 
 

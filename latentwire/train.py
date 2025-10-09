@@ -755,8 +755,8 @@ def main():
     # Multi-depth latent adapters (IAA-style)
     ap.add_argument("--use_latent_adapters", action="store_true",
                     help="Enable multi-depth latent adapters (IAA-style) that inject latent at multiple layers.")
-    ap.add_argument("--latent_adapter_layers", type=str, default="5,10,15",
-                    help="Comma-separated list of layer indices for latent adapters (e.g., '5,10,15').")
+    ap.add_argument("--latent_adapter_layers", type=str, default="8,16,24",
+                    help="Comma-separated list of layer indices for latent adapters (default: 8,16,24 for even spacing in 32-layer models, matching IAA paper).")
     ap.add_argument("--latent_adapter_heads", type=int, default=8,
                     help="Number of attention heads in latent adapter cross-attention.")
     ap.add_argument("--latent_adapter_dropout", type=float, default=0.1,
@@ -1485,7 +1485,19 @@ def main():
     latent_adapter_params: List[torch.nn.Parameter] = []
     for wrapper in wrappers_in_use:
         if wrapper.use_latent_adapters:
-            latent_adapter_params.extend([p for p in wrapper.latent_adapters.parameters() if p.requires_grad])
+            adapter_params_list = [p for p in wrapper.latent_adapters.parameters() if p.requires_grad]
+            latent_adapter_params.extend(adapter_params_list)
+            # Log adapter param collection for debugging
+            wrapper_name = getattr(wrapper.cfg, 'model_id', 'unknown').split('/')[-1]
+            num_params = sum(p.numel() for p in adapter_params_list)
+            print(f"[Optimizer] Collected {num_params:,} latent adapter params from {wrapper_name} (use_latent_adapters={wrapper.use_latent_adapters})")
+
+    # Log total adapter params collected
+    total_adapter_params = sum(p.numel() for p in latent_adapter_params)
+    if latent_adapter_params:
+        print(f"[Optimizer] Total latent adapter params to train: {total_adapter_params:,} ({len(latent_adapter_params)} tensors)")
+    else:
+        print(f"[Optimizer] ⚠️  No latent adapter params collected (adapters may not be training!)")
 
     optim_groups = []
     if enc_params:
@@ -1512,6 +1524,28 @@ def main():
     optimizer = optim.AdamW(optim_groups, lr=args.lr, fused=use_fused, foreach=False)
     if use_fused:
         print("[Optimization] Using fused AdamW optimizer")
+
+    # Log optimizer groups for debugging
+    print(f"[Optimizer] Created {len(optim_groups)} parameter groups:")
+    group_names = []
+    if enc_params: group_names.append(f"encoder({len(enc_params)} tensors)")
+    if llama_params: group_names.append(f"llama_adapter({len(llama_params)} tensors)")
+    if qwen_params: group_names.append(f"qwen_adapter({len(qwen_params)} tensors)")
+    if extra_llama_params: group_names.append(f"llama_extra({len(extra_llama_params)} tensors)")
+    if extra_qwen_params: group_names.append(f"qwen_extra({len(extra_qwen_params)} tensors)")
+    if refiner_params: group_names.append(f"refiner({len(refiner_params)} tensors)")
+    if deep_prefix_params: group_names.append(f"deep_prefix({len(deep_prefix_params)} tensors)")
+    if gist_params: group_names.append(f"gist({len(gist_params)} tensors)")
+    if latent_adapter_params: group_names.append(f"latent_adapters({len(latent_adapter_params)} tensors)")
+    for i, name in enumerate(group_names):
+        print(f"  [{i+1}] {name}")
+
+    # Sanity check: if adapters were initialized but not in optimizer, warn
+    for wrapper in wrappers_in_use:
+        if wrapper.use_latent_adapters and not latent_adapter_params:
+            wrapper_name = getattr(wrapper.cfg, 'model_id', 'unknown').split('/')[-1]
+            print(f"[Optimizer] ⚠️  WARNING: {wrapper_name} has use_latent_adapters=True but no params collected!")
+            print(f"             This likely means adapters were initialized AFTER wrappers_in_use was created.")
 
     # ===== Learning rate scheduler (cosine annealing for stability) =====
     from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -2393,6 +2427,20 @@ def main():
 
             loss_backward = loss / float(grad_accum_steps)
             loss_backward.backward()
+
+            # On first step, verify latent adapters are receiving gradients
+            if global_step == 0 and latent_adapter_params:
+                adapter_grads_exist = sum(1 for p in latent_adapter_params if p.grad is not None)
+                adapter_grad_norms = [p.grad.norm().item() for p in latent_adapter_params if p.grad is not None]
+                print(f"[Gradient Check] Latent adapters: {adapter_grads_exist}/{len(latent_adapter_params)} have gradients")
+                if adapter_grad_norms:
+                    avg_grad = sum(adapter_grad_norms) / len(adapter_grad_norms)
+                    max_grad = max(adapter_grad_norms)
+                    print(f"[Gradient Check] Adapter gradient norms: avg={avg_grad:.6f}, max={max_grad:.6f}")
+                    if avg_grad < 1e-8:
+                        print(f"[Gradient Check] ⚠️  WARNING: Adapter gradients are near-zero (not learning!)")
+                else:
+                    print(f"[Gradient Check] ⚠️  WARNING: No adapter gradients found (adapters not training!)")
 
             # Detailed memory profiling for first few steps
             if batch_index < 3:

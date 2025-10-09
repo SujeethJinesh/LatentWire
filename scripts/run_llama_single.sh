@@ -299,8 +299,6 @@ PY
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
           --latent_private_len "$LATENT_PRIVATE_LEN" \
-          --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-          --use_latent_adapters --latent_adapter_layers "5,10,15" --latent_adapter_heads 8 --latent_adapter_dropout 0.1 \
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEA" --first_token_ce_schedule warmup \
           --first_token_entropy_weight "$FIRST_TOKEN_ENTROPY_WEIGHT_STAGEA" \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEA" --kd_tau 4.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3 \
@@ -337,8 +335,6 @@ PY
           --train_append_bos_after_prefix yes \
           --warm_anchor_mode chat \
           --latent_private_len "$LATENT_PRIVATE_LEN" \
-          --use_deep_prefix --deep_prefix_len "$DEEP_PREFIX_LEN" --deep_prefix_dropout "$DEEP_PREFIX_DROPOUT" \
-          --use_latent_adapters --latent_adapter_layers "5,10,15" --latent_adapter_heads 8 --latent_adapter_dropout 0.1 \
           --first_token_ce_weight "$FIRST_TOKEN_CE_WEIGHT_STAGEB" --first_token_ce_schedule warmup \
           --first_token_entropy_weight "$FIRST_TOKEN_ENTROPY_WEIGHT_STAGEB" \
           --K 8 --k_ce_weight 0.5 --kd_first_k_weight "$KD_WEIGHT_STAGEB" --kd_tau 4.0 --state_kd_weight 0.1 --state_kd_layers 0,1,2,3,4 \
