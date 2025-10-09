@@ -4,6 +4,80 @@ This document replaces PLAN_v2 with a detailed roadmap for pushing latent perfor
 
 ---
 
+## Refactor & Modularization Roadmap (Execution Owner: Claude)
+
+The milestones below outline the end-to-end refactor that will let us toggle features independently, introduce the latent coprocessor, and run disciplined ablations. Claude owns implementation; Codex reviews every milestone before merge.
+
+> **Baseline caution:** We cannot assume the encoder/LoRA baseline “just works.” Milestone 0 explicitly measures and records a known-good path (encoder trainable, LoRA on, all other features off). Every later milestone must leave optional toggles defaulting to `False` and publish before/after metrics when a feature is enabled.
+
+### Milestone 0 – Baseline Verification (LoRA-only)
+- **Purpose:** Reproduce a 2-epoch smoke with only the encoder and LoRA trained; confirm encoder gradients flow and document metrics (EM/F1, first-token top‑k, latency, compression).
+- **Tasks:** Add temporary flags in existing scripts to disable deep prefix, latent adapters, KD, coprocessor, etc.; capture metric bundle as “baseline before refactor.”
+- **Deliverables:** Baseline log bundle, checklist confirming encoder remains trainable.
+- **Tests:** CI/automation gate ensuring FirstTok@1 ≥ 0.15 on the smoke before moving to Milestone 1.
+
+### Milestone 1 – Config Schema & Default Toggles
+- **Purpose:** Introduce `latentwire/config.py` (dataclasses/pydantic) describing stages, optimizer settings, feature toggles (all default `False`), numeric hyper-parameters (e.g., KD τ, adaptive K schedule).
+- **Tasks:** Map CLI args to config entries; add `train_encoder` flag (default `True`); implement config validation.
+- **Deliverables:** Config schema doc + parsing tests; baseline smoke rerun via config file.
+- **Tests:** Config round-trip unit test; guard that unspecified toggles resolve to `False`.
+
+### Milestone 2 – Core Trainer Modularization
+- **Purpose:** Split training monolith into reusable modules (`data_pipeline.py`, `trainer.py`, `loss_bundles.py`, `feature_registry.py`) without functional change.
+- **Tasks:** Move code, wire imports, ensure baseline smoke still matches Milestone 0 metrics.
+- **Deliverables:** Module diagram, parity metrics.
+- **Tests:** Unit tests for data loader and loss bundle; lint/import checks.
+
+### Milestone 3 – Feature Registry & Hooks
+- **Purpose:** Implement registry where features register hooks (`build_modules`, `on_optimizer_build`, `on_batch_start`, `on_loss_aggregate`, `metrics_snapshot`).
+- **Tasks:** Port LoRA feature first; implement validation preventing incompatible combos; expose hook scaffolding for logging and metrics.
+- **Deliverables:** Registry API doc, smoke run showing hooks invoked with logging.
+- **Tests:** Unit tests toggling features on/off; validation tests raising when conflicting toggles enabled.
+
+### Milestone 4 – Optional Feature Ports (Deep Prefix & Multi-depth Adapters)
+- **Purpose:** Move these features into `latentwire/features/` with evenly spaced defaults, but keep them disabled unless explicitly toggled.
+- **Tasks:** Parameterize layer lists/dropout; ensure logging prints feature status; expose dynamic hyper-parameters (no hardcoded K or keep probabilities).
+- **Deliverables:** Feature docs, smoke runs: (a) baseline off, (b) deep prefix only, (c) adapters only.
+- **Tests:** Optimizer logging asserting parameters added when enabled; unit tests for layer selection logic.
+
+### Milestone 5 – Latent Coprocessor Feature
+- **Purpose:** Implement pluggable coprocessor (`latentwire/features/coproc.py`) with sensible defaults (latent dim 256, evenly spaced layers, optional decode-state conditioning).
+- **Tasks:** Wire into registry hooks (provide KV deltas); add logging summarizing configuration; ensure mutual exclusivity rules (coprocessor vs deep prefix) enforced unless overridden.
+- **Deliverables:** Design doc, comparative smoke (baseline vs +coprocessor) with before/after metric table.
+- **Tests:** Shape and gradient unit tests; optimizer registration check; smoke verifying baseline unaffected when coprocessor disabled.
+
+### Milestone 6 – Python CLI Conversion & Logging
+- **Purpose:** Replace bash scripts with Python entrypoints under `latentwire/cli/` (`train.py`, `eval.py`, etc.) for richer control, logging, and error handling.
+- **Tasks:** Port multi-stage flow, resume logic, checkpoint handling; add logging summarizing feature toggles, layer lists, hyper-parameters vs defaults.
+- **Deliverables:** New CLI tooling, usage docs, baseline smoke logs demonstrating enriched logging.
+- **Tests:** Integration tests invoking CLI with minimal config; verify logs include feature toggle summary.
+
+### Milestone 7 – Ablation Harness & Sweeps
+- **Purpose:** Provide `latentwire/cli/run_ablation.py` that reads YAML/JSON grids (feature toggles plus numeric sweeps), runs short smokes, and aggregates metrics.
+- **Tasks:** Implement metric collector outputting before/after comparisons; ensure sweeps cover KD τ, layer spans, dropout, etc.
+- **Deliverables:** Example ablation config, aggregated report template.
+- **Tests:** Dry-run executing at least two configs; verify metrics JSON contains toggle info and baseline comparison.
+
+### Milestone 8 – Enhanced Metrics & Monitoring
+- **Purpose:** Standardize logging and metric files (`metrics_history.jsonl`) so we can diff runs easily.
+- **Tasks:** Add logging inside feature hooks; include feature status in eval summaries; ensure metrics capture EM/F1, first-token stats, latency, compression, payload bytes.
+- **Deliverables:** Logging style guide, script for generating before/after tables.
+- **Tests:** Logging format unit tests; smoke verifying metric file produced with toggle metadata.
+
+### Milestone 9 – Dynamic Hyper-Parameters & Sweep Support
+- **Purpose:** Remove hardcoded knobs (KD τ, adaptive K schedule, latent dropout) in favor of config-driven values or sweeps.
+- **Tasks:** Update feature configs to accept scalars or lists/ranges; integrate with ablation harness; confirm defaults replicate baseline behaviour.
+- **Deliverables:** Config examples showing scalar vs sweep definitions; documentation on sweeps.
+- **Tests:** Config parsing tests ensuring sweeps expand correctly; smoke run verifying defaults untouched.
+
+**Across all milestones:**
+- Optional features remain disabled by default.
+- Encoder stays trainable unless `train_encoder=False`.
+- Each run logs feature toggles, hyper-parameters, and compares against the recorded baseline.
+- Claude implements; Codex reviews and signs off before merge.
+
+---
+
 ## 1. Encoder & Adapter Capacity Upgrades
 
 | Item | Current State (code) | Proposed After State | Cost / Impact | Expected F1 Δ (latent) | Risks & Alignment |

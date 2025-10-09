@@ -910,8 +910,11 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     for name, ctx in model_contexts.items():
         if apply_chat_template:
             info = anchor_info.get(name, {})
-            assistant_prefill = strip_literal or None
-            chat_user = [split_user_and_anchor(raw, strip_literal or "")[0] for raw in prompts_raw]
+            # Use the actual anchor (header in chat mode, explicit text in text mode)
+            assistant_prefill = info.get("anchor") or None
+            # Split using the same anchor that was used in training
+            split_anchor = info.get("anchor") or strip_literal or ""
+            chat_user = [split_user_and_anchor(raw, split_anchor)[0] for raw in prompts_raw]
             ctx["chat"] = [
                 format_with_chat_template(
                     ctx["wrapper"].tokenizer,

@@ -1232,8 +1232,7 @@ def main():
         text, mode = _anchor_text_for(wrapper, args.warm_anchor_text)
         if mode == "text":
             text = _truncate_anchor(wrapper, text)
-        elif mode == "chat":
-            text = strip_anchor_literal
+        # In chat mode, text is already the header from _anchor_text_for - don't override
         anchor_texts[name] = text
         anchor_modes[name] = mode
 
@@ -1243,7 +1242,8 @@ def main():
         except Exception as exc:
             print(f"[WARN] A0 sanity check skipped/failed for {name}: {exc}")
 
-        anchor_tokens_source = text if mode == "text" else strip_anchor_literal
+        # Use the actual anchor text for both text and chat modes
+        anchor_tokens_source = text
         anchor_ids = anchor_token_ids(wrapper, anchor_tokens_source) if anchor_tokens_source else []
         anchor_token_lists[name] = anchor_ids
         if anchor_ids:
@@ -1256,6 +1256,13 @@ def main():
     if 'llama' in anchor_texts and 'qwen' in anchor_texts:
         if anchor_texts['llama'] != anchor_texts['qwen']:
             print("[WARN] Anchor strings differ between models; using Llama variant for shared config.")
+
+    # Update strip_anchor_literal to match the actual anchor in chat mode
+    if anchor_modes.get('llama') == 'chat' or anchor_modes.get('qwen') == 'chat':
+        # Use llama's header if available, otherwise qwen's
+        chat_header = anchor_texts.get('llama') or anchor_texts.get('qwen') or ""
+        strip_anchor_literal = chat_header
+        print(f"[INFO] Chat mode: updated strip_anchor_literal to header: {repr(strip_anchor_literal)}")
 
     if args.grad_ckpt:
         if llama is not None:
@@ -1483,21 +1490,34 @@ def main():
 
     # Collect latent adapter params from all wrappers
     latent_adapter_params: List[torch.nn.Parameter] = []
+    print(f"[Optimizer] Gathering latent adapter parameters...")
     for wrapper in wrappers_in_use:
+        wrapper_name = getattr(wrapper.cfg, 'model_id', 'unknown').split('/')[-1]
         if wrapper.use_latent_adapters:
             adapter_params_list = [p for p in wrapper.latent_adapters.parameters() if p.requires_grad]
-            latent_adapter_params.extend(adapter_params_list)
-            # Log adapter param collection for debugging
-            wrapper_name = getattr(wrapper.cfg, 'model_id', 'unknown').split('/')[-1]
             num_params = sum(p.numel() for p in adapter_params_list)
-            print(f"[Optimizer] Collected {num_params:,} latent adapter params from {wrapper_name} (use_latent_adapters={wrapper.use_latent_adapters})")
+            num_tensors = len(adapter_params_list)
+            latent_adapter_params.extend(adapter_params_list)
+            print(f"[Optimizer]   {wrapper_name}: {num_params:,} params in {num_tensors} tensors (use_latent_adapters=True)")
+
+            if num_params == 0:
+                print(f"[Optimizer]   ⚠️  WARNING: {wrapper_name} has use_latent_adapters=True but contributed 0 parameters!")
+                print(f"[Optimizer]       Adapter layers configured: {wrapper.latent_adapter_layers}")
+                print(f"[Optimizer]       Check that adapters were initialized before optimizer creation")
+        else:
+            print(f"[Optimizer]   {wrapper_name}: skipped (use_latent_adapters=False)")
 
     # Log total adapter params collected
     total_adapter_params = sum(p.numel() for p in latent_adapter_params)
-    if latent_adapter_params:
-        print(f"[Optimizer] Total latent adapter params to train: {total_adapter_params:,} ({len(latent_adapter_params)} tensors)")
-    else:
-        print(f"[Optimizer] ⚠️  No latent adapter params collected (adapters may not be training!)")
+    total_tensors = len(latent_adapter_params)
+    print(f"[Optimizer] Latent adapter summary: {total_adapter_params:,} params in {total_tensors} tensors")
+
+    if not latent_adapter_params:
+        any_enabled = any(w.use_latent_adapters for w in wrappers_in_use)
+        if any_enabled:
+            print(f"[Optimizer] ⚠️  ERROR: Adapters enabled but 0 parameters collected - optimizer will not train them!")
+        else:
+            print(f"[Optimizer] No latent adapters enabled (expected)")
 
     optim_groups = []
     if enc_params:
@@ -1539,13 +1559,6 @@ def main():
     if latent_adapter_params: group_names.append(f"latent_adapters({len(latent_adapter_params)} tensors)")
     for i, name in enumerate(group_names):
         print(f"  [{i+1}] {name}")
-
-    # Sanity check: if adapters were initialized but not in optimizer, warn
-    for wrapper in wrappers_in_use:
-        if wrapper.use_latent_adapters and not latent_adapter_params:
-            wrapper_name = getattr(wrapper.cfg, 'model_id', 'unknown').split('/')[-1]
-            print(f"[Optimizer] ⚠️  WARNING: {wrapper_name} has use_latent_adapters=True but no params collected!")
-            print(f"             This likely means adapters were initialized AFTER wrappers_in_use was created.")
 
     # ===== Learning rate scheduler (cosine annealing for stability) =====
     from torch.optim.lr_scheduler import CosineAnnealingLR

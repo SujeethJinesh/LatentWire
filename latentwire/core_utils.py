@@ -198,7 +198,8 @@ def infer_anchor_mode_and_text(wrapper, cfg: dict, cli_mode: str, cli_text: str)
     # Determine the mode (from CLI or config)
     if cli_mode != "auto":
         mode = cli_mode
-        explicit_text = cli_text
+        # For chat mode, always ignore provided text (will be derived from tokenizer)
+        explicit_text = "" if cli_mode == "chat" else cli_text
     else:
         mode = (cfg.get("warm_anchor_mode") or "auto").lower()
         explicit_text = (cfg.get("warm_anchor_text") or "").strip()
