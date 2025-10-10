@@ -105,6 +105,8 @@ class CoprocessorFeature:
             self.coprocessors[name] = module
             params = [p for p in module.parameters() if p.requires_grad]
             self._param_bank[name] = params
+            # Add parameters to extra_params for the registry
+            extra_params.setdefault(name, []).extend(params)
 
             self._summaries[name] = {
                 "kv_len": kv_len,

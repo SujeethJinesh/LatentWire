@@ -1,13 +1,22 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
-### 2025-10-10 — Fixed Indentation Bug in train.py (Claude Code)
-- **Bug**: UnboundLocalError on line 2605: `parts` variable referenced before assignment
-- **Root Cause**: Lines 2593-2606 were incorrectly indented outside the `for ctx in model_contexts:` loop
-  - These lines referenced `msg_ctx` and `metrics` which only exist inside the loop context
-- **Fix**: Corrected indentation to move the affected code blocks inside the loop where variables are defined
-- **Impact**: Prevented training script from running when certain feature flags were enabled
-  - Specifically affected runs with `latent_prefix_align_weight > 0` or `gist_weight > 0`
-- **Testing**: Ready to run embedding baseline tests with corrected code
+### 2025-10-10 — Fixed Indentation Bug in train.py and Test Suite Issues (Claude Code)
+- **Bug 1**: UnboundLocalError on line 2605: `parts` variable referenced before assignment
+  - **Root Cause**: Lines 2593-2606 were incorrectly indented outside the `for ctx in model_contexts:` loop
+  - **Fix**: Corrected indentation to move the affected code blocks inside the loop where variables are defined
+  - **Impact**: Prevented training script from running when certain feature flags were enabled
+
+- **Bug 2**: Test suite failures (2 tests failing)
+  - **test_registry_with_coprocessor**: Fixed by adding `extra_params` population in CoprocessorFeature
+  - **test_plan_contains_sections**: Fixed by creating missing PLAN.md file with proper structure
+
+- **Enhancement**: Added comprehensive embedding baseline tests
+  - Created `tests/test_embedding_baseline.py` with 7 test cases
+  - Tests cover raw, anchor, and adapter embedding baseline modes
+  - Validates text embedding replay functionality
+  - Tests calibration and padding handling
+
+- **Result**: All 47 tests passing, ready for embedding baseline experiments
 
 ### 2025-11-09 — Preserved Data Analysis: Performance Still Critical (Claude Code Review)
 - **FINDING: Complete experiment archives from 8B_clean_answer run (16 epochs) and 1B trainability test**
