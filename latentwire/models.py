@@ -1,6 +1,7 @@
 # latentwire/models.py
 import math
 import re
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, List, Tuple, Dict, Any, Sequence, Union, Set
 
@@ -462,6 +463,8 @@ class Adapter(nn.Module):
         dropout: float = 0.0,
     ):
         super().__init__()
+        self.d_z = d_z
+        self.latent_length = latent_length
         self.enable_metadata = enable_metadata
         self.length_norm = max(length_norm, 1.0)
         self.hidden_mult = max(int(hidden_mult), 1)
@@ -976,6 +979,9 @@ class LMWrapper(nn.Module):
         # Multi-depth latent adapters (IAA-style)
         self.use_latent_adapters = cfg.use_latent_adapters
         self.latent_adapter_layers = cfg.latent_adapter_layers
+        self._adapter_context_latent: Optional[torch.Tensor] = None
+        self._adapter_context_cache: Dict[int, torch.Tensor] = {}
+        self._adapter_hooks: List[Any] = []
         if self.use_latent_adapters:
             print(f"[{cfg.model_id}] Initializing {len(cfg.latent_adapter_layers)} latent adapters at layers {cfg.latent_adapter_layers}")
             self.latent_adapters = nn.ModuleDict({
@@ -1006,6 +1012,7 @@ class LMWrapper(nn.Module):
             # Count trainable parameters
             adapter_params = sum(p.numel() for p in self.latent_adapters.parameters() if p.requires_grad)
             print(f"[{cfg.model_id}] Latent adapters: {adapter_params:,} trainable parameters")
+            self._register_latent_adapter_hooks()
         else:
             self.latent_adapters = nn.ModuleDict()
 
@@ -1038,6 +1045,65 @@ class LMWrapper(nn.Module):
             ).to(next(self.model.parameters()).device)
             self.coprocessor.train()
             print(f"[{cfg.model_id}] Coprocessor: len={cfg.coprocessor_len}, width={cfg.coprocessor_width}, heads={heads_per_layer}")
+
+    def _register_latent_adapter_hooks(self) -> None:
+        if not self.use_latent_adapters:
+            return
+        model_layers = getattr(getattr(self.model, "model", None), "layers", None)
+        if model_layers is None:
+            print(f"[{self.cfg.model_id if hasattr(self, 'cfg') else 'LM'}] ⚠️ Unable to install latent adapter hooks; decoder layers not accessible.")
+            self.use_latent_adapters = False
+            self.latent_adapters = nn.ModuleDict()
+            return
+        self._adapter_hooks = []
+        total_layers = len(model_layers)
+        for layer_idx in self.latent_adapter_layers:
+            if layer_idx >= total_layers:
+                print(f"[{self.cfg.model_id if hasattr(self, 'cfg') else 'LM'}] ⚠️ Latent adapter layer {layer_idx} exceeds model depth {total_layers}; skipping hook.")
+                continue
+            handle = model_layers[layer_idx].register_forward_hook(self._make_latent_adapter_hook(layer_idx))
+            self._adapter_hooks.append(handle)
+
+    def _make_latent_adapter_hook(self, layer_idx: int):
+        adapter_key = str(layer_idx)
+
+        def hook(module, inputs, output):
+            latent = self._adapter_context_latent
+            if latent is None or adapter_key not in self.latent_adapters:
+                return output
+            adapter = self.latent_adapters[adapter_key]
+            adapter_device = next(adapter.parameters()).device
+            adapter_dtype = next(adapter.parameters()).dtype
+            cached_latent = self._adapter_context_cache.get(layer_idx)
+            if cached_latent is None or cached_latent.shape != latent.shape:
+                cached_latent = latent.to(device=adapter_device, dtype=adapter_dtype)
+                self._adapter_context_cache[layer_idx] = cached_latent
+            if isinstance(output, tuple):
+                hidden = output[0]
+            else:
+                hidden = output
+            hidden_local = hidden.to(device=adapter_device, dtype=adapter_dtype)
+            adapted = adapter(hidden_local, cached_latent)
+            adapted = adapted.to(device=hidden.device, dtype=hidden.dtype)
+            if isinstance(output, tuple):
+                return (adapted,) + tuple(output[1:])
+            return adapted
+
+        return hook
+
+    @contextmanager
+    def _adapter_context(self, latent: Optional[torch.Tensor]):
+        if self.use_latent_adapters and latent is not None:
+            self._adapter_context_latent = latent
+            self._adapter_context_cache = {}
+        else:
+            self._adapter_context_latent = None
+            self._adapter_context_cache = {}
+        try:
+            yield
+        finally:
+            self._adapter_context_latent = None
+            self._adapter_context_cache = {}
 
 
     # ---- utility ----
@@ -1311,35 +1377,17 @@ class LMWrapper(nn.Module):
                 stop = start + tf_inputs.size(1)
                 attn_mask[:, start:stop] = (~tf_pad).long()
 
-        # Request hidden states if using latent adapters
-        output_hidden_states = self.use_latent_adapters and latent is not None
+        with self._adapter_context(latent if (self.use_latent_adapters and latent is not None) else None):
+            out = self.model(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attn_mask,
+                labels=labels_full,
+                past_key_values=prepared_past,
+                use_cache=bool(prepared_past),
+                return_dict=True,
+            )
 
-        out = self.model(
-            inputs_embeds=inputs_embeds,
-            attention_mask=attn_mask,
-            labels=labels_full,
-            past_key_values=prepared_past,
-            use_cache=bool(prepared_past),
-            output_hidden_states=output_hidden_states,
-            return_dict=True,
-        )
-
-        # Apply latent adapters if enabled (recompute loss from modified hidden states)
-        if output_hidden_states and latent is not None:
-            modified_hidden_states = self._apply_latent_adapters(out.hidden_states, latent)
-            # Recompute logits from modified final hidden state
-            final_hidden = modified_hidden_states[-1]  # [B, T, d_model]
-            logits = self.model.lm_head(final_hidden)  # [B, T, vocab_size]
-            # Recompute loss with modified logits
-            loss_fct = torch.nn.CrossEntropyLoss()
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = labels_full[..., 1:].contiguous()
-            # Move labels to same device as logits (critical for multi-GPU models)
-            shift_labels = shift_labels.to(shift_logits.device)
-            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
-            return loss
-        else:
-            return out.loss
+        return out.loss
 
 
     def loss_with_text_prompt(
@@ -1403,6 +1451,62 @@ class LMWrapper(nn.Module):
         logits = out.logits if return_logits else None
         loss = out.loss if compute_loss else None
         return loss, int(n_tokens.item()), logits
+
+    def loss_with_text_embedding_replay(
+        self,
+        prompt_ids: torch.Tensor,
+        target_ids: torch.Tensor,
+        *,
+        compute_loss: bool = True,
+    ):
+        """
+        Mirror loss_with_text_prompt but route through inputs_embeds to validate the embedding pipeline.
+        """
+        device = next(self.model.parameters()).device
+        pad_id = getattr(self.tokenizer, "pad_token_id", None)
+        eos_id = getattr(self.tokenizer, "eos_token_id", None)
+
+        B = prompt_ids.size(0)
+        prompt_ids = prompt_ids.to(device)
+        target_ids = target_ids.to(device)
+
+        tf_inputs_tail = target_ids[:, :-1]
+        tf_inputs = torch.cat([prompt_ids, tf_inputs_tail], dim=1)
+        tf_embeds = self.input_embed(tf_inputs)
+
+        attn_mask = torch.ones_like(tf_inputs, dtype=torch.long, device=device)
+        if pad_id is not None:
+            tail_pad = tf_inputs_tail.eq(int(pad_id))
+            if tail_pad.any():
+                S = prompt_ids.size(1)
+                attn_mask[:, S:S + tf_inputs_tail.size(1)] = (~tail_pad).long()
+
+        labels_tail = target_ids[:, 1:].clone()
+        if pad_id is not None:
+            ignore = labels_tail.eq(int(pad_id))
+            if (eos_id is not None) and (int(eos_id) != int(pad_id)):
+                pass
+            labels_tail = torch.where(ignore, torch.full_like(labels_tail, -100), labels_tail)
+
+        labels = torch.cat([
+            torch.full((B, prompt_ids.size(1)), -100, dtype=torch.long, device=device),
+            labels_tail
+        ], dim=1)
+
+        model_kwargs = {
+            "inputs_embeds": tf_embeds,
+            "attention_mask": attn_mask,
+            "use_cache": False,
+        }
+        if compute_loss:
+            model_kwargs["labels"] = labels
+
+        with self._adapter_context(None):
+            out = self.model(**model_kwargs)
+
+        n_tokens = (labels != -100).sum()
+        loss = out.loss if compute_loss else None
+        return loss, int(n_tokens.item())
 
     def score_prefix_logprob(
         self,
@@ -1581,26 +1685,16 @@ class LMWrapper(nn.Module):
             deep_prefix=deep_prefix_past,
         )
 
-        # Request hidden states if using latent adapters
-        output_hidden_states = self.use_latent_adapters and latent is not None
+        with self._adapter_context(latent if (self.use_latent_adapters and latent is not None) else None):
+            out = self.model(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attn_mask,
+                use_cache=bool(prepared_past),
+                past_key_values=prepared_past,
+                return_dict=True,
+            )
 
-        out = self.model(
-            inputs_embeds=inputs_embeds,
-            attention_mask=attn_mask,
-            use_cache=bool(prepared_past),
-            past_key_values=prepared_past,
-            output_hidden_states=output_hidden_states,
-            return_dict=True,
-        )
-
-        # Apply latent adapters if enabled
-        if output_hidden_states and latent is not None:
-            modified_hidden_states = self._apply_latent_adapters(out.hidden_states, latent)
-            # Recompute logits from modified final hidden state
-            final_hidden = modified_hidden_states[-1][:, -1, :]  # [B, d_model]
-            logits = self.model.lm_head(final_hidden)  # [B, vocab_size]
-        else:
-            logits = out.logits[:, -1, :]
+        logits = out.logits[:, -1, :]
 
         return logits
 
@@ -1672,26 +1766,16 @@ class LMWrapper(nn.Module):
         B = inputs_embeds.size(0)
         model_device = next(self.model.parameters()).device
 
-        # Request hidden states if using latent adapters
-        output_hidden_states = self.use_latent_adapters and latent is not None
-
-        out = self.model(
-            inputs_embeds=inputs_embeds,
-            attention_mask=attn_mask,
-            use_cache=True,
-            past_key_values=prepared_past,
-            output_hidden_states=output_hidden_states,
-            return_dict=True,
-        )
+        with self._adapter_context(latent if (self.use_latent_adapters and latent is not None) else None):
+            out = self.model(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attn_mask,
+                use_cache=True,
+                past_key_values=prepared_past,
+                return_dict=True,
+            )
         past = out.past_key_values
-
-        # Apply latent adapters if enabled (first-token only for now)
-        if output_hidden_states and latent is not None:
-            modified_hidden_states = self._apply_latent_adapters(out.hidden_states, latent)
-            final_hidden = modified_hidden_states[-1][:, -1, :]  # [B, d_model]
-            next_token_logits = self.model.lm_head(final_hidden)  # [B, vocab_size]
-        else:
-            next_token_logits = out.logits[:, -1, :]
+        next_token_logits = out.logits[:, -1, :]
 
         pad_id = self.tokenizer.pad_token_id or 0
         stop_ids = set(self._stop_token_ids)
@@ -1812,6 +1896,77 @@ class LMWrapper(nn.Module):
             attn_mask_step = torch.ones((B, 1), dtype=torch.long, device=input_ids.device)
             out = self.model(input_ids=feed_tokens.unsqueeze(-1), attention_mask=attn_mask_step,
                              use_cache=True, past_key_values=past, return_dict=True)
+            next_token_logits = out.logits[:, -1, :]
+            past = out.past_key_values
+        return generated
+
+    @torch.no_grad()
+    def generate_from_text_embeddings(
+        self,
+        prompt_texts: List[str],
+        max_new_tokens: int = 64,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+    ) -> List[List[int]]:
+        enc = self.tokenizer(
+            prompt_texts,
+            return_tensors="pt",
+            padding=True,
+            truncation=False,
+            add_special_tokens=False,
+        )
+        input_ids = enc["input_ids"].to(next(self.model.parameters()).device)
+        attn_mask = enc["attention_mask"].to(input_ids.device)
+        inputs_embeds = self.input_embed(input_ids)
+
+        with self._adapter_context(None):
+            out = self.model(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attn_mask,
+                use_cache=True,
+                return_dict=True,
+            )
+
+        past = out.past_key_values
+        next_token_logits = out.logits[:, -1, :]
+
+        pad_id = self.tokenizer.pad_token_id or 0
+        stop_ids = set(self._stop_token_ids)
+
+        generated = [[] for _ in range(input_ids.size(0))]
+        finished = torch.zeros(input_ids.size(0), dtype=torch.bool, device=input_ids.device)
+
+        for _ in range(max_new_tokens):
+            step_logits = next_token_logits.clone()
+            step_logits[finished] = -1e9
+
+            if temperature <= 0.0:
+                next_tokens = torch.argmax(step_logits, dim=-1)
+            else:
+                next_tokens = self._sample_top_p(step_logits, top_p=top_p, temperature=temperature)
+
+            for b in range(input_ids.size(0)):
+                if finished[b]:
+                    continue
+                nid = int(next_tokens[b].item())
+                if nid in stop_ids:
+                    finished[b] = True
+                else:
+                    generated[b].append(nid)
+
+            if bool(torch.all(finished).item()):
+                break
+
+            feed_tokens = next_tokens.clone()
+            feed_tokens[finished] = pad_id
+            attn_mask_step = torch.ones((input_ids.size(0), 1), dtype=torch.long, device=input_ids.device)
+            out = self.model(
+                input_ids=feed_tokens.unsqueeze(-1),
+                attention_mask=attn_mask_step,
+                use_cache=True,
+                past_key_values=past,
+                return_dict=True,
+            )
             next_token_logits = out.logits[:, -1, :]
             past = out.past_key_values
         return generated

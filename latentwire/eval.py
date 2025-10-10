@@ -12,6 +12,7 @@ from typing import List, Dict, Any, Tuple, Optional, Sequence
 
 import torch
 import math
+import torch.nn.functional as F
 
 from latentwire.models import (
     InterlinguaEncoder,
@@ -336,14 +337,18 @@ def _select_best_encoder_mode_for_model(
 # ---------------------------
 
 @torch.no_grad()
-def avg_nll_text(wrapper: LMWrapper, prompts_text: List[str], answers: List[str], tokenizer, device: str) -> Optional[float]:
+def avg_nll_text(wrapper: LMWrapper, prompts_text: List[str], answers: List[str], tokenizer, device: str, *, use_embeddings: bool = False) -> Optional[float]:
     if wrapper is None:
         return None
     tot_w, tot_tok, skipped = 0.0, 0, 0
     for i in range(len(prompts_text)):
         enc_p = _to_long(tokenizer(prompts_text[i], return_tensors="pt", add_special_tokens=False).input_ids, device)
         enc_a = _to_long(tokenizer(answers[i], return_tensors="pt", add_special_tokens=True).input_ids, device)
-        loss, n_tok, _ = wrapper.loss_with_text_prompt(enc_p, enc_a)
+        if use_embeddings:
+            loss, n_tok = wrapper.loss_with_text_embedding_replay(enc_p, enc_a)
+            logits = None
+        else:
+            loss, n_tok, logits = wrapper.loss_with_text_prompt(enc_p, enc_a)
         if (loss is None) or (not torch.isfinite(loss)):
             skipped += 1
             continue
@@ -522,6 +527,7 @@ def evaluate_model_chunked_text(
     chunk_size: int,
     tag: str = "",
     lengths: Optional[torch.Tensor] = None,
+    use_embeddings: bool = False,
 ):
     if chunk_size is None or chunk_size <= 0:
         chunk_size = len(prompts) if len(prompts) > 0 else 1
@@ -535,7 +541,10 @@ def evaluate_model_chunked_text(
             chunk_len = lengths[i:i + chunk_size]
             if chunk_len.numel() > 0:
                 cap = max(1, min(max_new_tokens, int(chunk_len.max().item())))
-        out_ids = wrapper.generate_from_text(batch, max_new_tokens=cap, temperature=0.0)
+        if use_embeddings:
+            out_ids = wrapper.generate_from_text_embeddings(batch, max_new_tokens=cap, temperature=0.0)
+        else:
+            out_ids = wrapper.generate_from_text(batch, max_new_tokens=cap, temperature=0.0)
         preds.extend(wrapper.decode_batch_then_clean(out_ids))
     if torch.cuda.is_available():
         torch.cuda.synchronize()
@@ -607,6 +616,8 @@ def _run_text_path(
     args,
     name: str,
     answer_lengths: Optional[torch.Tensor],
+    *,
+    use_embeddings: bool = False,
 ):
     preds, t_text = evaluate_model_chunked_text(
         wrapper,
@@ -615,9 +626,10 @@ def _run_text_path(
         args.chunk_size,
         name,
         lengths=answer_lengths,
+        use_embeddings=use_embeddings,
     )
     em_score, f1_score = batch_metrics(preds, golds)
-    nll = avg_nll_text(wrapper, chat_prompts, golds, wrapper.tokenizer, wrapper.model.device)
+    nll = avg_nll_text(wrapper, chat_prompts, golds, wrapper.tokenizer, wrapper.model.device, use_embeddings=use_embeddings)
     prompt_tok = wrapper.tokenizer(
         chat_prompts, return_tensors="pt", padding=True, truncation=True, add_special_tokens=False
     )
@@ -731,6 +743,159 @@ def _run_latent_path(
             "time": t_trunc,
         },
     }
+
+
+def _run_embedding_baselines(
+    wrapper: LMWrapper,
+    prompts: List[str],
+    golds: List[str],
+    modes: List[str],
+    args,
+    answer_lengths: Optional[torch.Tensor],
+    anchor_entry: Dict[str, Any],
+    adapter: Optional[Adapter],
+    train_stats: Optional[dict],
+    model_name: str,
+    latent_len: int,
+):
+    modes = [m.lower() for m in modes if m]
+    if not modes:
+        return {}
+
+    device = _primary_device(wrapper)
+    results: Dict[str, Dict[str, Any]] = {}
+    default_anchor = anchor_entry.get("text") or DEFAULT_ANSWER_PREFIX
+
+    for mode in modes:
+        if mode == "adapter" and adapter is None:
+            print(f"[EmbeddingBaseline] Skipping adapter mode for {model_name}: adapter unavailable.")
+            continue
+
+        mode_prompts: List[str] = []
+        prefix_tensors: List[torch.Tensor] = []
+        latent_tensors: List[torch.Tensor] = []
+        preds: List[str] = []
+
+        start = time.time()
+        for idx, base_prompt in enumerate(prompts):
+            prompt_text = base_prompt
+            append_bos = False
+            if mode == "anchor":
+                anchor_append = default_anchor or ""
+                if anchor_append:
+                    if not prompt_text.endswith(anchor_append):
+                        spacer = "" if anchor_append.startswith(" ") else ""
+                        prompt_text = prompt_text + spacer + anchor_append
+                append_bos = bool(anchor_entry.get("bos"))
+
+            mode_prompts.append(prompt_text)
+
+            tokenized = wrapper.tokenizer(prompt_text, return_tensors="pt", add_special_tokens=False)
+            ids = tokenized.input_ids.to(device)
+            embeds = wrapper.input_embed(ids)
+            if append_bos:
+                bos_id = wrapper.tokenizer.bos_token_id
+                if bos_id is not None and bos_id >= 0:
+                    bos_tensor = torch.tensor([[bos_id]], device=device)
+                    bos_embed = wrapper.input_embed(bos_tensor)
+                    embeds = torch.cat([embeds, bos_embed], dim=1)
+
+            latent_tensor = None
+            prefix = embeds
+            if mode == "adapter":
+                if adapter is None:
+                    continue
+                latent_len_local = getattr(adapter, "latent_length", latent_len)
+                d_z = getattr(adapter, "d_z", adapter.input_norm.normalized_shape[0] if hasattr(adapter.input_norm, "normalized_shape") else adapter.proj_out.in_features)
+                seq = embeds.transpose(1, 2)
+                pooled = F.interpolate(seq, size=latent_len_local, mode="linear", align_corners=False).transpose(1, 2)
+                if pooled.size(-1) < d_z:
+                    pad = torch.zeros(pooled.size(0), pooled.size(1), d_z - pooled.size(-1), device=pooled.device, dtype=pooled.dtype)
+                    fake_z = torch.cat([pooled, pad], dim=-1)
+                else:
+                    fake_z = pooled[..., :d_z]
+                latent_tensor = fake_z
+                ans_len = None
+                if answer_lengths is not None:
+                    ans_len = answer_lengths[idx:idx + 1]
+                prefix = adapter(fake_z, answer_lengths=ans_len)
+
+            prefix, _, _ = _calibrate_prefix(
+                prefix,
+                wrapper,
+                args.calibration,
+                args.prefix_target_rms,
+                train_stats,
+                model_name,
+            )
+            prefix_tensors.append(prefix)
+            if latent_tensor is not None:
+                latent_tensors.append(latent_tensor)
+
+            out_ids = wrapper.generate_from_prefix(
+                prefix,
+                max_new_tokens=args.max_new_tokens,
+                temperature=0.0,
+                top_p=1.0,
+                anchor_token_text=None,
+                min_new_tokens=args.min_new_tokens,
+                eos_ban_steps=args.eos_ban_steps,
+                first_token_top_p=args.first_token_top_p,
+                first_token_temperature=args.first_token_temperature,
+                append_bos_after_prefix=False,
+                latent=latent_tensor if (latent_tensor is not None and wrapper.use_latent_adapters) else None,
+            )
+            decoded = wrapper.decode_batch_then_clean(out_ids)
+            preds.append(decoded[0] if decoded else "")
+
+        if not prefix_tensors:
+            continue
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        elapsed = time.time() - start
+
+        prefix_batch = torch.cat(prefix_tensors, dim=0)
+        latent_batch = torch.cat(latent_tensors, dim=0) if latent_tensors else None
+        acc = first_token_topk_acc(
+            wrapper,
+            prefix_batch,
+            golds,
+            None,
+            append_bos_after_prefix=False,
+            skip=bool(getattr(args, "skip_prefix_acc", False)),
+            chunk_size=max(1, getattr(args, "chunk_size", 8)),
+            deep_prefix_cache=None,
+            latent=latent_batch,
+        )
+        em_score, f1_score = batch_metrics(preds, golds)
+        if mode == "adapter":
+            nll = avg_nll_latent(
+                wrapper,
+                prefix_batch,
+                golds,
+                wrapper.tokenizer,
+                wrapper.model.device,
+                latent=latent_batch,
+            )
+        else:
+            nll = avg_nll_text(
+                wrapper,
+                mode_prompts,
+                golds,
+                wrapper.tokenizer,
+                wrapper.model.device,
+                use_embeddings=True,
+            )
+
+        metrics = {"em": em_score, "f1": f1_score, "nll": nll, **acc}
+        results[mode] = {
+            "preds": preds,
+            "metrics": metrics,
+            "time": elapsed,
+        }
+
+    return results
 
 def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
                       llama_id, qwen_id, latent_len, d_z, cfg, train_stats,
@@ -1008,6 +1173,27 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         metrics = text_results[name]["metrics"]
         print(f"{name}: EM={metrics['em']:.3f} F1={metrics['f1']:.3f}")
 
+    embed_replay_enabled = bool(getattr(args, "embedding_replay", False) or cfg.get("embedding_replay", False))
+    embed_results: Dict[str, Dict[str, Any]] = {}
+    embed_wall = 0.0
+    if embed_replay_enabled:
+        print("\n— Text embedding-replay summary:")
+        for name, ctx in model_contexts.items():
+            res = _run_text_path(
+                ctx["wrapper"],
+                ctx["chat"],
+                prompts_raw,
+                golds,
+                args,
+                name,
+                answer_lengths[name],
+                use_embeddings=True,
+            )
+            embed_results[name] = res
+            embed_wall += res["time"]
+            metrics = res["metrics"]
+            print(f"{name}: EM={metrics['em']:.3f} F1={metrics['f1']:.3f}")
+
     if cfg.get("use_lora"):
         lora_cfg = {
             "r": cfg.get("lora_r", 0),
@@ -1160,7 +1346,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         latent_wall += res["latent"]["time"]
         trunc_wall += res["trunc"]["time"]
 
-    model_outputs = {}
+    model_outputs: Dict[str, Dict[str, Any]] = {}
     for name in model_contexts.keys():
         model_outputs[name] = {
             "avg_prompt_tokens": text_results[name]["avg_prompt_tokens"],
@@ -1174,15 +1360,40 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             },
             "metrics": {
                 "text": text_results[name]["metrics"],
-            "latent": latent_results[name]["latent"]["metrics"],
-            "trunc": latent_results[name]["trunc"]["metrics"],
-        },
+                "latent": latent_results[name]["latent"]["metrics"],
+                "trunc": latent_results[name]["trunc"]["metrics"],
+            },
             "chat_prompts": model_contexts[name]["chat"],
             "debug": {
                 **debug_map.get(name, {}),
                 "latent_anchor_text": anchor_payload,
             },
+            "embedding_baselines": {},
         }
+    if embed_replay_enabled and name in embed_results:
+        model_outputs[name]["text_embed_preds"] = embed_results[name]["preds"]
+        model_outputs[name]["times"]["text_embed"] = embed_results[name]["time"]
+        model_outputs[name]["metrics"]["text_embed"] = embed_results[name]["metrics"]
+
+    embedding_results: Dict[str, Dict[str, Any]] = {}
+    if getattr(args, "embedding_baseline_modes", []):
+        for name, ctx in model_contexts.items():
+            res = _run_embedding_baselines(
+                wrapper=ctx["wrapper"],
+                prompts=ctx["chat"],
+                golds=golds,
+                modes=args.embedding_baseline_modes,
+                args=args,
+                answer_lengths=answer_lengths[name],
+                anchor_entry=anchor_info.get(name, {}),
+                adapter=ctx.get("adapter"),
+                train_stats=train_stats,
+                model_name=name,
+                latent_len=per_model_latent_len,
+            )
+            if res:
+                embedding_results[name] = res
+                model_outputs[name]["embedding_baselines"] = res
 
     joint_em = joint_f1 = agreement_rate = float("nan")
     joint_preds = []
@@ -1348,6 +1559,24 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         "oracle": {"em": oracle_em, "f1": oracle_f1},
     }
     summary["text"]["wall_clock_sec"] = text_wall
+    if embed_replay_enabled:
+        summary["text_embed"] = {
+            name: {
+                "em": embed_results[name]["metrics"]["em"],
+                "f1": embed_results[name]["metrics"]["f1"],
+                "nll_token": embed_results[name]["metrics"]["nll"],
+            }
+            for name in embed_results
+        }
+        summary["text_embed"]["wall_clock_sec"] = embed_wall
+    if embedding_results:
+        eb_summary: Dict[str, Dict[str, Any]] = {}
+        for name, modes_dict in embedding_results.items():
+            for mode, payload in modes_dict.items():
+                entry = eb_summary.setdefault(mode, {"metrics": {}, "wall_clock_sec": {}})
+                entry["metrics"][name] = payload["metrics"]
+                entry["wall_clock_sec"][name] = payload["time"]
+        summary["embedding_baselines"] = eb_summary
     summary.setdefault("latent", {})
     summary["latent"]["wall_clock_sec"] = latent_wall
     summary.setdefault("token_budget", {})
@@ -1369,6 +1598,8 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "first_token_top_p": args.first_token_top_p,
             "first_token_temperature": args.first_token_temperature,
         },
+        "embedding_replay": embed_replay_enabled,
+        "embedding_baseline_modes": args.embedding_baseline_modes,
     }
 
     preds_dump = []
@@ -1382,6 +1613,12 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             entry[f"text_pred_{name}"] = outputs["text_preds"][i]
             entry[f"latent_pred_{name}"] = outputs["latent_preds"][i]
             entry[f"trunc_pred_{name}"] = outputs["trunc_preds"][i]
+            if embed_replay_enabled and "text_embed_preds" in outputs:
+                entry[f"text_embed_pred_{name}"] = outputs["text_embed_preds"][i]
+            if outputs.get("embedding_baselines"):
+                for mode, payload in outputs["embedding_baselines"].items():
+                    key = f"embedding_{mode}_pred_{name}"
+                    entry[key] = payload["preds"][i]
         preds_dump.append(entry)
 
     for wrapper in wrappers.values():
@@ -1440,6 +1677,9 @@ def main():
     ap.add_argument("--hf_encoder_id", type=str, default="sentence-transformers/all-MiniLM-L6-v2")
     ap.add_argument("--max_enc_tokens", type=int, default=1024)
     ap.add_argument("--fresh_eval", action="store_true")
+    ap.add_argument("--embedding_replay", action="store_true", help="Replay text prompts through inputs_embeds for baseline verification")
+    ap.add_argument("--embedding_baseline_modes", type=str, default="",
+                    help="Comma-separated list or JSON list of embedding baseline modes to run (raw,anchor,adapter)")
 
     ap.add_argument("--debug", action="store_true")
     ap.add_argument("--debug_print_first", type=int, default=0)
@@ -1479,6 +1719,27 @@ def main():
     args = ap.parse_args()
     patch_dataloader_defaults()
     apply_anchor_normalization(args)
+
+    def _parse_modes(raw_value) -> List[str]:
+        if not raw_value:
+            return []
+        if isinstance(raw_value, list):
+            return [str(item).strip() for item in raw_value if str(item).strip()]
+        if isinstance(raw_value, str):
+            val = raw_value.strip()
+            if not val:
+                return []
+            if val.startswith("["):
+                try:
+                    data = json.loads(val)
+                    if isinstance(data, list):
+                        return [str(item).strip() for item in data if str(item).strip()]
+                except Exception:
+                    pass
+            return [tok.strip() for tok in val.split(",") if tok.strip()]
+        return []
+
+    args.embedding_baseline_modes = _parse_modes(getattr(args, "embedding_baseline_modes", []))
 
     selected_models = _parse_models_arg(getattr(args, "models", ""))
 
@@ -1704,6 +1965,13 @@ def main():
     if summary['text'].get('qwen') is not None:
         print(f"Qwen   EM: {summary['text']['qwen']['em']:.3f}   F1: {summary['text']['qwen']['f1']:.3f}   |  NLL/token (gold): {summary['text']['qwen']['nll_token']}")
     print(f"Wall clock: {summary['text']['wall_clock_sec']:.2f}s")
+    if summary.get("text_embed"):
+        print("\n— Text embedding replay (inputs_embeds)")
+        if summary['text_embed'].get('llama') is not None:
+            print(f"Llama  EM: {summary['text_embed']['llama']['em']:.3f}  F1: {summary['text_embed']['llama']['f1']:.3f}  |  NLL/token (gold): {summary['text_embed']['llama']['nll_token']}")
+        if summary['text_embed'].get('qwen') is not None:
+            print(f"Qwen   EM: {summary['text_embed']['qwen']['em']:.3f}   F1: {summary['text_embed']['qwen']['f1']:.3f}   |  NLL/token (gold): {summary['text_embed']['qwen']['nll_token']}")
+        print(f"Wall clock: {summary['text_embed']['wall_clock_sec']:.2f}s")
 
     print("\n— Latent prompting (shared interlingua)")
     if summary['latent'].get('llama') is not None:
@@ -1715,6 +1983,26 @@ def main():
         if "first_token_top1" in summary['latent']['qwen']:
             print(f"       First-token acc: top1={summary['latent']['qwen']['first_token_top1']:.3f}  top5={summary['latent']['qwen']['first_token_top5']:.3f}")
     print(f"Wall clock: {summary['latent']['wall_clock_sec']:.2f}s")
+
+    if summary.get('embedding_baselines'):
+        print("\n— Embedding baselines (inputs_embeds)")
+        for mode, payload in summary['embedding_baselines'].items():
+            print(f"[{mode}]")
+            metrics_map = payload.get('metrics', {})
+            for mdl, stats in metrics_map.items():
+                nll_tok = stats.get('nll')
+                nll_str = _fmt_float(nll_tok) if nll_tok is not None else "-"
+                ft1 = stats.get('first_token_top1')
+                ft5 = stats.get('first_token_top5')
+                extra = ""
+                if ft1 is not None and ft5 is not None:
+                    extra = f"  |  First-token acc: top1={_fmt_float(ft1)} top5={_fmt_float(ft5)}"
+                print(f" {mdl}  EM: {_fmt_float(stats.get('em'))}  F1: {_fmt_float(stats.get('f1'))}  |  NLL/token: {nll_str}{extra}")
+            wall = payload.get('wall_clock_sec', {})
+            if wall:
+                total = sum(wall.values())
+                per_model = ", ".join(f"{mdl}:{time_val:.2f}s" for mdl, time_val in wall.items())
+                print(f"  Wall clock: {total:.2f}s ({per_model})")
 
     print(f"\n— Token-budget baseline (mode: {summary['token_budget'].get('mode','content_only')})")
     if summary['token_budget'].get('llama') is not None:
@@ -1749,6 +2037,12 @@ def main():
                     w.writerow(["text", mdl, summary["text"][mdl]["em"], summary["text"][mdl]["f1"], summary["text"][mdl]["nll_token"],
                                 summary["text"]["wall_clock_sec"], summary["compression"].get(mdl,""), summary["payload_bytes"],
                                 summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
+            if summary.get("text_embed"):
+                for mdl in ["llama","qwen"]:
+                    if summary["text_embed"].get(mdl) is not None:
+                        w.writerow(["text_embed", mdl, summary["text_embed"][mdl]["em"], summary["text_embed"][mdl]["f1"], summary["text_embed"][mdl]["nll_token"],
+                                    summary["text_embed"]["wall_clock_sec"], summary["compression"].get(mdl,""), summary["payload_bytes"],
+                                    summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
             for mdl in ["llama","qwen"]:
                 if summary["latent"].get(mdl) is not None:
                     w.writerow(["latent", mdl, summary["latent"][mdl]["em"], summary["latent"][mdl]["f1"], summary["latent"][mdl]["nll_token"],
@@ -1759,6 +2053,26 @@ def main():
                     w.writerow(["token_budget", mdl, summary["token_budget"][mdl]["em"], summary["token_budget"][mdl]["f1"], "",
                                 summary["token_budget"]["wall_clock_sec"], summary["compression"].get(mdl,""), summary["payload_bytes"],
                                 summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])
+            if summary.get("embedding_baselines"):
+                for mode, payload in summary["embedding_baselines"].items():
+                    metrics_map = payload.get("metrics", {})
+                    wall_map = payload.get("wall_clock_sec", {})
+                    for mdl, stats in metrics_map.items():
+                        w.writerow([
+                            f"embedding_{mode}",
+                            mdl,
+                            stats.get("em"),
+                            stats.get("f1"),
+                            stats.get("nll"),
+                            wall_map.get(mdl, ""),
+                            summary["compression"].get(mdl, ""),
+                            summary["payload_bytes"],
+                            summary["samples"],
+                            summary["latent_len"],
+                            summary["token_budget"].get("mode", ""),
+                            summary["token_budget"].get("k", None),
+                            args.dataset,
+                        ])
             if summary.get("joint", {}).get("em") is not None:
                 w.writerow(["joint","both", summary["joint"]["em"], summary["joint"]["f1"], "", "", "", summary["payload_bytes"],
                             summary["samples"], summary["latent_len"], summary["token_budget"]["mode"], summary["token_budget"].get("k", None), args.dataset])

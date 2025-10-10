@@ -54,9 +54,6 @@ def k_token_ce_from_prefix(
     pad_id = getattr(getattr(llm, "tokenizer", None), "pad_token_id", None)
     ignore_index = int(pad_id) if pad_id is not None else -100
 
-    # Request hidden states if using latent adapters
-    output_hidden_states = llm.use_latent_adapters and latent is not None
-
     for t in range(min(K, gold_ids.size(1))):
         inputs_embeds, attn_mask, prepared_past = llm._compose_inputs_from_prefix(
             prefix_embeds,
@@ -65,22 +62,16 @@ def k_token_ce_from_prefix(
             append_bos_after_prefix=append_bos_after_prefix,
             deep_prefix=deep_prefix_past,
         )
-        out = llm.model(
-            inputs_embeds=inputs_embeds,
-            attention_mask=attn_mask,
-            past_key_values=prepared_past,
-            use_cache=bool(prepared_past),
-            output_hidden_states=output_hidden_states,
-            return_dict=True,
-        )
+        with llm._adapter_context(latent if (llm.use_latent_adapters and latent is not None) else None):
+            out = llm.model(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attn_mask,
+                past_key_values=prepared_past,
+                use_cache=bool(prepared_past),
+                return_dict=True,
+            )
 
-        # Apply latent adapters if enabled
-        if output_hidden_states and latent is not None:
-            modified_hidden_states = llm._apply_latent_adapters(out.hidden_states, latent)
-            final_hidden = modified_hidden_states[-1][:, -1, :]  # [B, d_model]
-            logits = llm.model.lm_head(final_hidden)  # [B, vocab_size]
-        else:
-            logits = out.logits[:, -1, :]
+        logits = out.logits[:, -1, :]
 
         # Use ignore_index to properly mask PAD tokens
         # Move gold_ids to same device as logits (critical for multi-GPU models)

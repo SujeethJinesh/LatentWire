@@ -184,6 +184,8 @@ class EvaluationConfig:
     out_dir: Optional[str] = None
     hf_encoder_id: Optional[str] = None
     max_enc_tokens: Optional[int] = None
+    embedding_replay: bool = False
+    embedding_baseline_modes: List[str] = field(default_factory=list)
 
 
 @dataclass

@@ -864,6 +864,8 @@ def main():
                     help="If >0, use a Transformer refiner with this many layers on latent slots before adapters.")
     ap.add_argument("--latent_refiner_heads", type=int, default=4,
                     help="Number of attention heads for the latent refiner (when enabled).")
+    ap.add_argument("--use_latent_refiner", action="store_true",
+                    help="Enable latent refiner before adapters (requires latent_refiner_layers > 0).")
 
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--sequential_models", action="store_true")
@@ -1182,6 +1184,7 @@ def main():
     latent_adapter_summaries = feature_registry.state.get("latent_adapter_summaries", {})
     coprocessors = feature_registry.state.get("coprocessors", {})
     coprocessor_summaries = feature_registry.state.get("coprocessor_summaries", {})
+    coprocessor_param_bank = feature_registry.state.get("coprocessor_params", {})
 
     if args.use_prefix:
         prefix_cfg = {
@@ -1396,12 +1399,15 @@ def main():
             return _structure_latents(raw)
 
     latent_refiner = None
-    if int(args.latent_refiner_layers) > 0:
+    if getattr(args, "use_latent_refiner", False) and int(args.latent_refiner_layers) > 0:
         latent_refiner = LatentRefiner(
             d_z=args.d_z,
             num_layers=int(args.latent_refiner_layers),
             num_heads=int(max(args.latent_refiner_heads, 1)),
         ).to(device)
+        latent_refiner.train()
+    elif getattr(args, "use_latent_refiner", False) and int(args.latent_refiner_layers) <= 0:
+        print("[WARN] --use_latent_refiner specified but --latent_refiner_layers <= 0; refiner disabled.")
 
     if args.freeze_encoder:
         for param in encoder.parameters():
@@ -1933,6 +1939,7 @@ def main():
             loss_device = total_model_loss.device  # Explicit device for loss aggregation in multi-GPU
             penalty = torch.zeros((), device=device)
             rms_pen = torch.zeros((), device=device)
+            feature_grad_norms: Dict[str, float] = {}
 
             encoded_latents = encode_fn(effective_texts)
             shared_latents = encoded_latents["shared"]
@@ -2476,6 +2483,34 @@ def main():
                 if mem_stats:
                     print(f"    [Memory after backward] {mem_stats['total_allocated_gb']:.1f}GB allocated, peak {mem_stats['peak_allocated_gb']:.1f}GB")
 
+            def _safe_grad_norm(params: Sequence[torch.nn.Parameter]) -> float:
+                return float(_grad_norm(params)) if params else 0.0
+
+            feature_grad_norms: Dict[str, float] = {}
+            if enc_params:
+                feature_grad_norms["encoder"] = _safe_grad_norm(enc_params)
+            if llama_params:
+                feature_grad_norms["adapter_llama"] = _safe_grad_norm(llama_params)
+            if qwen_params:
+                feature_grad_norms["adapter_qwen"] = _safe_grad_norm(qwen_params)
+            if extra_llama_params:
+                feature_grad_norms["extra_llama"] = _safe_grad_norm(extra_llama_params)
+            if extra_qwen_params:
+                feature_grad_norms["extra_qwen"] = _safe_grad_norm(extra_qwen_params)
+            if latent_adapter_params:
+                feature_grad_norms["latent_adapter"] = _safe_grad_norm(latent_adapter_params)
+            if refiner_params:
+                feature_grad_norms["latent_refiner"] = _safe_grad_norm(refiner_params)
+            if gist_params:
+                feature_grad_norms["gist"] = _safe_grad_norm(gist_params)
+            if deep_prefix_generators:
+                dp_params = [p for gen in deep_prefix_generators.values() for p in gen.parameters() if p.requires_grad]
+                if dp_params:
+                    feature_grad_norms["deep_prefix"] = _safe_grad_norm(dp_params)
+            for name, plist in coprocessor_param_bank.items():
+                if plist:
+                    feature_grad_norms[f"coprocessor_{name}"] = _safe_grad_norm(plist)
+
             grad_norm_val = _grad_norm(params_for_clip)
             if not math.isfinite(grad_norm_val):
                 print("⚠️  Non-finite gradient detected; skipping optimizer step for this batch.")
@@ -2551,50 +2586,53 @@ def main():
                         msg_ctx += f" align={_to_float(metrics['align']):.4f}"
                     if args.latent_align_weight > 0.0:
                         msg_ctx += f" latA={_to_float(metrics['latent_align']):.4f}"
-                    if args.latent_prefix_align_weight > 0.0:
-                        msg_ctx += f" latP={_to_float(metrics['latent_prefix_align']):.4f}"
-                    if args.use_gist_head and args.gist_weight > 0.0:
-                        msg_ctx += f" gist={_to_float(metrics['gist']):.4f}"
-                    if grad_diag_components:
-                        for diag_name in grad_diag_components:
-                            key = f"grad_{diag_name}"
-                            if key in metrics:
-                                msg_ctx += f" {key}={_to_float(metrics[key]):.3e}"
-                    parts.append(msg_ctx)
-                    if args.scale_l2 > 0.0:
-                        parts.append(
-                            f"scale_pen({ctx.name})={scale_penalty(ctx.adapter, args.scale_l2, device).item():.4e}"
-                        )
-                parts.append(f"K={current_K} tau={args.kd_tau:.2f}")
-                if args.save_training_stats:
-                    stats_msgs = []
-                    for ctx in model_contexts:
-                        tracker = stats_trackers[ctx.name]
-                        stats_msgs.append(
-                            f"{ctx.name}: rms_raw~{tracker['rms_raw'].mean:.4f}"
-                            f" rms_cal~{tracker['rms_cal'].mean:.4f}"
-                            f" embed_rms~{tracker['embed_rms']:.5f}"
-                        )
-                    parts.append("stats=[" + "; ".join(stats_msgs) + "]")
-                print(" | ".join(parts))
-
-                # Log GPU memory every 10 steps
-                gpu_stats = log_gpu_memory(prefix=f"  [Step {step+1}] ")
-
-                # Check batch size after step 5 (once we have real activation memory data)
-                if (step + 1) == 5 and epoch == start_epoch and gpu_stats:
-                    peak_gb = gpu_stats.get('peak_allocated_gb', 0)
-                    suggested_batch, reason = suggest_batch_size_adjustment(
-                        args.batch_size,
-                        peak_gb,
-                        after_forward_pass=True
+                if args.latent_prefix_align_weight > 0.0:
+                    msg_ctx += f" latP={_to_float(metrics['latent_prefix_align']):.4f}"
+                if args.use_gist_head and args.gist_weight > 0.0:
+                    msg_ctx += f" gist={_to_float(metrics['gist']):.4f}"
+                if grad_diag_components:
+                    for diag_name in grad_diag_components:
+                        key = f"grad_{diag_name}"
+                        if key in metrics:
+                            msg_ctx += f" {key}={_to_float(metrics[key]):.3e}"
+                parts.append(msg_ctx)
+                if args.scale_l2 > 0.0:
+                    parts.append(
+                        f"scale_pen({ctx.name})={scale_penalty(ctx.adapter, args.scale_l2, device).item():.4e}"
                     )
-                    if suggested_batch != args.batch_size:
-                        print(f"  [Batch Size Suggestion after {step+1} steps] {reason}")
-                        print(f"    Current: {args.batch_size}, Suggested: {suggested_batch}")
-                        print(f"    To apply: set BATCH_SIZE_STAGEA/B={suggested_batch} in run script")
+            if feature_grad_norms:
+                grad_bits = ", ".join(f"{k}={v:.3e}" for k, v in feature_grad_norms.items())
+                parts.append(f"feature_grads[{grad_bits}]")
+            parts.append(f"K={current_K} tau={args.kd_tau:.2f}")
+            if args.save_training_stats:
+                stats_msgs = []
+                for ctx in model_contexts:
+                    tracker = stats_trackers[ctx.name]
+                    stats_msgs.append(
+                        f"{ctx.name}: rms_raw~{tracker['rms_raw'].mean:.4f}"
+                        f" rms_cal~{tracker['rms_cal'].mean:.4f}"
+                        f" embed_rms~{tracker['embed_rms']:.5f}"
+                    )
+                parts.append("stats=[" + "; ".join(stats_msgs) + "]")
+            print(" | ".join(parts))
 
-                if diagnostic_log_path and ((step + 1) % 10 == 0 or (step + 1) == steps_per_epoch):
+            # Log GPU memory every 10 steps
+            gpu_stats = log_gpu_memory(prefix=f"  [Step {step+1}] ")
+
+            # Check batch size after step 5 (once we have real activation memory data)
+            if (step + 1) == 5 and epoch == start_epoch and gpu_stats:
+                peak_gb = gpu_stats.get('peak_allocated_gb', 0)
+                suggested_batch, reason = suggest_batch_size_adjustment(
+                    args.batch_size,
+                    peak_gb,
+                    after_forward_pass=True
+                )
+                if suggested_batch != args.batch_size:
+                    print(f"  [Batch Size Suggestion after {step+1} steps] {reason}")
+                    print(f"    Current: {args.batch_size}, Suggested: {suggested_batch}")
+                    print(f"    To apply: set BATCH_SIZE_STAGEA/B={suggested_batch} in run script")
+
+            if diagnostic_log_path and ((step + 1) % 10 == 0 or (step + 1) == steps_per_epoch):
                     diag_entry: Dict[str, Any] = {
                         "epoch": epoch,
                         "global_step": global_step,
@@ -2653,6 +2691,8 @@ def main():
                                 diag_entry["models"][ctx.name][key] = _to_float(metrics[key])
                     try:
                         with open(diagnostic_log_path, "a") as diag_f:
+                            if feature_grad_norms:
+                                diag_entry["feature_grads"] = {k: float(v) for k, v in feature_grad_norms.items()}
                             json.dump(diag_entry, diag_f)
                             diag_f.write("\n")
                     except Exception as exc:

@@ -150,6 +150,12 @@ def _prepare_eval_config(cfg: TrainingConfig, eval_cfg: Dict[str, Any]) -> Dict[
     settings.setdefault("first_token_top_p", cfg.evaluation.first_token_top_p)
     settings.setdefault("first_token_temperature", cfg.evaluation.first_token_temperature)
     settings.setdefault("chunk_size", cfg.evaluation.chunk_size)
+    if settings.get("embedding_replay") is None:
+        settings["embedding_replay"] = bool(getattr(cfg.evaluation, "embedding_replay", False))
+    if settings.get("embedding_baseline_modes") is None:
+        modes = getattr(cfg.evaluation, "embedding_baseline_modes", [])
+        if modes:
+            settings["embedding_baseline_modes"] = list(modes)
 
     settings["fresh_eval"] = bool(settings.get("fresh_eval"))
     settings["sequential_eval"] = bool(settings.get("sequential_eval"))

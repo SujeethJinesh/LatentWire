@@ -18,6 +18,7 @@ class CoprocessorFeature:
         self.coprocessors: Dict[str, LatentCoprocessor] = {}
         self._lr: float = 1e-4
         self._summaries: Dict[str, Dict[str, Any]] = {}
+        self._param_bank: Dict[str, List[nn.Parameter]] = {}
 
     @staticmethod
     def _primary_device(wrapper: LMWrapper) -> torch.device:
@@ -73,6 +74,7 @@ class CoprocessorFeature:
 
         self.coprocessors.clear()
         self._summaries.clear()
+        self._param_bank.clear()
         self._lr = float(getattr(args, "lr", 1e-4))
 
         for name, wrapper in wrappers.items():
@@ -102,7 +104,7 @@ class CoprocessorFeature:
             self._load_saved_state(name, module, context)
             self.coprocessors[name] = module
             params = [p for p in module.parameters() if p.requires_grad]
-            extra_params.setdefault(name, []).extend(params)
+            self._param_bank[name] = params
 
             self._summaries[name] = {
                 "kv_len": kv_len,
@@ -116,10 +118,9 @@ class CoprocessorFeature:
             }
 
     def optimizer_param_groups(self) -> List[Dict[str, Any]]:
-        params = [
-            p for module in self.coprocessors.values()
-            for p in module.parameters() if p.requires_grad
-        ]
+        params: List[nn.Parameter] = []
+        for plist in self._param_bank.values():
+            params.extend(plist)
         if not params:
             return []
         return [{"params": params, "lr": self._lr}]
@@ -136,4 +137,8 @@ class CoprocessorFeature:
         return {
             "coprocessors": self.coprocessors,
             "coprocessor_summaries": self._summaries,
+            "coprocessor_params": self._param_bank,
         }
+
+    def parameters(self) -> Dict[str, List[nn.Parameter]]:
+        return self._param_bank

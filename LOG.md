@@ -47,6 +47,14 @@
   - `python -m latentwire.cli.train --config configs/smoke/gist_head.json --tag smoke-gist`
   - `python -m latentwire.cli.train --config configs/smoke/refiner.json --tag smoke-refiner`
 
+### 2025-10-10 — Feature instrumentation & embedding replay (Codex)
+- **Coprocessor optimizer fix:** Coprocessor parameters now live exclusively inside their feature optimizer group (no double registration) and the registry exposes them for diagnostics.
+- **Latent adapters hooked in-loop:** Registered forward hooks on decoder blocks so IAA adapters inject updates during the model forward pass; removed the post-hoc hidden-state rewrite that produced zero gradients.
+- **Gradient diagnostics:** Training logs feature-specific grad norms (encoder, adapters, refiner, coprocessor, etc.) to both stdout and `diagnostics.jsonl` for the smoke configs.
+- **Latent refiner flag:** Added `--use_latent_refiner` (plus config plumbing) to gate the refiner explicitly and warn when layers stay at zero.
+- **Embedding replay baseline:** Eval optionally replays text prompts via `inputs_embeds`, emitting metrics alongside text/latent baselines when `evaluation.embedding_replay=true`.
+- **Embedding baseline suite:** Added `configs/baseline/embedding_baselines.json` and `scripts/run_embedding_baselines.sh` to compare raw/anchor/adapter passthrough accuracy against latent runs without touching the smoke configs.
+
 ### 2025-10-10 — Auto Eval Defaults (Codex)
 - **Train CLI always evaluates:** Added an `evaluation` block to the config schema and wired `latentwire/cli/train.py` to invoke `latentwire.eval` immediately after each training run, recording both phases in metrics history.
 - **Config plumbing:** `flatten_training_config` now skips `evaluation` keys so training argv remain unchanged; helpers build eval argv using the training config (models, latent length, checkpoints).
