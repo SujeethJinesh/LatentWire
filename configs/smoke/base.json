@@ -1,12 +1,10 @@
 {
   "model": {
     "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    "models": "llama,qwen",
-    "sequential_models": true,
+    "models": "llama",
+    "sequential_models": false,
     "load_4bit": false,
-    "qwen_id": "Qwen/Qwen2.5-7B-Instruct",
-    "llama_device_map": "0,1",
-    "qwen_device_map": "2,3"
+    "llama_device_map": "auto"
   },
   "data": {
     "dataset": "squad",
@@ -67,7 +65,7 @@
     "token_budget_k": 32,
     "max_new_tokens": 24,
     "fresh_eval": true,
-    "sequential_eval": true,
+    "sequential_eval": false,
     "out_dir": "runs/smoke/base/ckpt"
   },
   "system": {

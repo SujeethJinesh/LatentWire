@@ -34,6 +34,7 @@
 
 ### 2025-10-10 — Smoke Config Suite (Codex)
 - **Feature-specific smokes:** Replaced the old sample config with `configs/smoke/*.json`, giving per-feature runners (baseline, LoRA, prefix, deep prefix, latent adapters, coprocessor, gist head, refiner) tuned for 20-step/epoch smokes on the 4×H100 cluster (8× batch, 2 epochs).
+- **LLaMA-only focus:** Temporarily disable Qwen in these configs (`model.models="llama"`, `llama_device_map="auto"`) so we can validate latent compression on a single backbone before re-enabling heterogeneous cooperation.
 - **Ablation refresh:** `configs/ablation/sample_ablation.json` now references the baseline smoke config so sweeps inherit the new defaults.
 - **Docs:** Updated the research proposal to point at the `configs/smoke` directory.
 - **Commands:**
