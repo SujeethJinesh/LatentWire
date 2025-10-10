@@ -779,3 +779,9 @@ We will report, per model and jointly:
 - Added a latent coprocessor feature module that injects KV deltas alongside deep prefixes. Coprocessor weights load/save with checkpoints and remain mutually exclusive with deep prefix to avoid double-counting.
 - Introduced a configuration-driven CLI (`latentwire/cli/{train,eval,run_ablation}.py`) replacing bespoke bash scripts. The CLI prints feature toggles, supports dot-notation overrides, records every run to `metrics_history.jsonl`, and powers an ablation harness that expands sweep grids.
 - Sample configs (see `configs/smoke/*.json` and `configs/ablation/sample_ablation.json`) provide Mac-safe dry runs while full smokes await GPU availability.
+
+### Operational Notes (handoff)
+
+- **Smoke feature matrix:** `bash scripts/run_all_smokes.sh` exercises the feature toggles (baseline, LoRA, prefix, deep-prefix, latent adapters, coprocessor, gist head, refiner). Each run drops `pipeline_*.log`, `diagnostics.jsonl`, and checkpoints under `runs/smoke/<tag>/` with feature-level grad norms for quick regression checks.
+- **Embedding control suite:** `bash scripts/run_embedding_baselines.sh` replays prompts through the model’s own embeddings using `configs/baseline/embedding_baselines.json`, comparing raw, anchor-augmented, and adapter-projected passthrough against the latent pipeline. Results land in `runs/baseline/embedding/ckpt/metrics.{json,csv}` and `predictions.jsonl`.
+- **Analysis cadence:** After each batch, inspect (1) text vs latent F1/NLL in `metrics.json`, (2) embedding-baseline parity (should stay near the text baseline), and (3) `diagnostics.jsonl` grad norms. Use these controls to isolate encoder/adapters before re-introducing Qwen or additional features.
