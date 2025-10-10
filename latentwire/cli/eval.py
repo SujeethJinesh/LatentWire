@@ -86,6 +86,20 @@ def dict_to_argv(config: Dict[str, Any]) -> List[str]:
 
 
 def run_eval(argv: List[str]) -> None:
+    # Check PyTorch before importing eval module
+    try:
+        import torch
+    except ImportError as e:
+        print("\n" + "="*60)
+        print("ERROR: PyTorch is not properly installed or configured.")
+        print("="*60)
+        print(f"\nOriginal error: {e}")
+        print("\nPlease install PyTorch by running:")
+        print("  pip install torch torchvision torchaudio")
+        print("\nOr visit https://pytorch.org for platform-specific instructions.")
+        print("="*60 + "\n")
+        sys.exit(1)
+
     from latentwire import eval as eval_module
 
     argv = ["latentwire-eval"] + argv

@@ -12,9 +12,14 @@ from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, List, Union, Any, Sequence
 from contextlib import contextmanager
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
+try:
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    PYTORCH_AVAILABLE = True
+except ImportError as e:
+    PYTORCH_AVAILABLE = False
+    PYTORCH_IMPORT_ERROR = str(e)
 from latentwire.core_utils import (
     capture_env_snapshot,
     patch_dataloader_defaults,
@@ -661,6 +666,19 @@ def _answer_lengths(token_ids: torch.Tensor, tokenizer) -> torch.Tensor:
 
 
 def main():
+    # Check PyTorch availability first
+    if not PYTORCH_AVAILABLE:
+        print("\n" + "="*60)
+        print("ERROR: PyTorch is not properly installed or configured.")
+        print("="*60)
+        print(f"\nOriginal error: {PYTORCH_IMPORT_ERROR}")
+        print("\nPlease install PyTorch by running:")
+        print("  pip install torch torchvision torchaudio")
+        print("\nOr visit https://pytorch.org for platform-specific instructions.")
+        print("="*60 + "\n")
+        import sys
+        sys.exit(1)
+
     ap = argparse.ArgumentParser()
     # Models & data
     ap.add_argument("--llama_id", type=str, default="TinyLlama/TinyLlama-1.1B-Chat-v1.0")

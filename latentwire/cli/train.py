@@ -197,6 +197,20 @@ def run_eval_from_config(
 
 
 def run_train(argv: List[str]) -> None:
+    # Check PyTorch before importing train module
+    try:
+        import torch
+    except ImportError as e:
+        print("\n" + "="*60)
+        print("ERROR: PyTorch is not properly installed or configured.")
+        print("="*60)
+        print(f"\nOriginal error: {e}")
+        print("\nPlease install PyTorch by running:")
+        print("  pip install torch torchvision torchaudio")
+        print("\nOr visit https://pytorch.org for platform-specific instructions.")
+        print("="*60 + "\n")
+        sys.exit(1)
+
     from latentwire import train as train_module
 
     argv = ["latentwire-train"] + argv

@@ -10,9 +10,15 @@ import gc
 import ast
 from typing import List, Dict, Any, Tuple, Optional, Sequence
 
-import torch
+try:
+    import torch
+    import torch.nn.functional as F
+    PYTORCH_AVAILABLE = True
+except ImportError as e:
+    PYTORCH_AVAILABLE = False
+    PYTORCH_IMPORT_ERROR = str(e)
+
 import math
-import torch.nn.functional as F
 
 from latentwire.models import (
     InterlinguaEncoder,
@@ -1640,6 +1646,19 @@ def run_sequential_eval(args, device, dtype, encoded_latents, prompts_raw, golds
 
 
 def main():
+    # Check PyTorch availability first
+    if not PYTORCH_AVAILABLE:
+        print("\n" + "="*60)
+        print("ERROR: PyTorch is not properly installed or configured.")
+        print("="*60)
+        print(f"\nOriginal error: {PYTORCH_IMPORT_ERROR}")
+        print("\nPlease install PyTorch by running:")
+        print("  pip install torch torchvision torchaudio")
+        print("\nOr visit https://pytorch.org for platform-specific instructions.")
+        print("="*60 + "\n")
+        import sys
+        sys.exit(1)
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", type=str, required=True)
     ap.add_argument("--llama_id", type=str, default=None)
