@@ -1,0 +1,234 @@
+/cm/local/apps/python3/lib/python3.9/runpy.py:127: RuntimeWarning: 'latentwire.cli.eval' found in sys.modules after import of package 'latentwire.cli', but prior to execution of 'latentwire.cli.eval'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+=== LatentWire Eval CLI ===
+Config: /projects/m000066/sujinesh/LatentWire/configs/baseline/embedding_baselines.json
+Overrides:
+  - ckpt=runs/smoke/embedding_test/ckpt
+  - samples=30
+  - out_dir=runs/smoke/embedding_test/eval
+  - llama_id=meta-llama/Meta-Llama-3.1-8B-Instruct
+  - dataset=squad
+  - max_new_tokens=24
+  - embedding_replay=true
+  - embedding_baseline_modes=["raw","anchor","adapter"]
+Derived argv: --ckpt runs/smoke/embedding_test/ckpt --models llama --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --dataset squad --samples 30 --max_new_tokens 24 --latent_anchor_mode auto --latent_anchor_text Answer:  --append_bos_after_prefix auto --use_chat_template yes --token_budget_mode content_only --token_budget_k 32 --chunk_size 8 --fresh_eval --embedding_replay --embedding_baseline_modes ["raw", "anchor", "adapter"] --out_dir runs/smoke/embedding_test/eval --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 1 --eos_ban_steps 0 --calibration embed_rms --prefix_gain 1.0 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto
+Auto-detected device: cuda
+Encoder input alignment: mode=raw | strip_anchor=yes | samples=30
+Building encoder and computing Z...
+Saved Z to runs/smoke/embedding_test/eval/Z.pt
+
+[Standard Evaluation Mode]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2853.75it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.03s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.21s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.10it/s]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+
+— Text baseline summary:
+llama: EM=0.467 F1=0.738
+
+— Text embedding-replay summary:
+llama: EM=0.467 F1=0.738
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 30  |  Max new tokens: 24
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 267.3 | (Qwen): - | Latent length M: 32
+Compression ratio (Llama): 8.4x | (Qwen): -x
+Approx interlingua payload per example: 983040 bytes (fp32); fp16 reference: 491520 bytes; fp32 reference: 983040 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.467  F1: 0.738  |  NLL/token (gold): 12.674708925365275
+Wall clock: 1.88s
+
+— Text embedding replay (inputs_embeds)
+Llama  EM: 0.467  F1: 0.738  |  NLL/token (gold): 12.674708925365275
+Wall clock: 1.49s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.006  |  NLL/token (gold): 10.615517264918276
+       First-token acc: top1=0.000  top5=0.000
+Wall clock: 1.22s
+
+— Embedding baselines (inputs_embeds)
+[raw]
+ llama  EM: 0.5  F1: 0.8  |  NLL/token: 12.7  |  First-token acc: top1=0.0 top5=0.0
+  Wall clock: 4.57s (llama:4.57s)
+[anchor]
+ llama  EM: 0.7  F1: 0.8  |  NLL/token: 11.9  |  First-token acc: top1=0.0 top5=0.0
+  Wall clock: 4.65s (llama:4.65s)
+[adapter]
+ llama  EM: 0.0  F1: 0.0  |  NLL/token: 11.0  |  First-token acc: top1=0.0 top5=0.0
+  Wall clock: 16.94s (llama:16.94s)
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.000  F1: 0.052
+Wall clock: 0.89s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint metrics unavailable (single-model evaluation).
+
+==== METRICS_JSON ====
+{
+  "samples": 30,
+  "max_new_tokens": 24,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 267.3333333333333
+  },
+  "compression": {
+    "llama": 8.354166666666666
+  },
+  "payload_bytes": 983040,
+  "payload_bytes_detail": {
+    "fp32": 983040,
+    "fp16": 491520,
+    "selected": null
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 41105
+    },
+    "prompt_count": 30,
+    "latent_shape": [
+      30,
+      32,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 983040,
+      "fp16": 491520
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_latent_bytes": null,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.4666666666666667,
+      "f1": 0.737991448664498,
+      "nll_token": 12.674708925365275
+    },
+    "wall_clock_sec": 1.8760628700256348
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.006060605895316808,
+      "nll": 10.615517264918276,
+      "first_token_top1": 0.0,
+      "first_token_top5": 0.0,
+      "nll_token": 10.615517264918276
+    },
+    "wall_clock_sec": 1.224363088607788
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.05230880174640422
+    },
+    "wall_clock_sec": 0.8857913017272949
+  },
+  "joint": {
+    "em": null,
+    "f1": null,
+    "agreement": null,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  },
+  "debug": {
+    "llama": {
+      "latent_anchor_text": "Answer:"
+    },
+    "settings": {
+      "latent_anchor_mode": "auto",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.0,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "auto",
+      "decode": {
+        "min_new_tokens": 1,
+        "eos_ban_steps": 0,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      },
+      "embedding_replay": true,
+      "embedding_baseline_modes": [
+        "raw",
+        "anchor",
+        "adapter"
+      ]
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "text_embed": {
+    "llama": {
+      "em": 0.4666666666666667,
+      "f1": 0.737991448664498,
+      "nll_token": 12.674708925365275
+    },
+    "wall_clock_sec": 1.4865751266479492
+  },
+  "embedding_baselines": {
+    "raw": {
+      "metrics": {
+        "llama": {
+          "em": 0.5333333333333333,
+          "f1": 0.7682141206608112,
+          "nll": 12.674708925365275,
+          "first_token_top1": 0.0,
+          "first_token_top5": 0.0
+        }
+      },
+      "wall_clock_sec": {
+        "llama": 4.570751905441284
+      }
+    },
+    "anchor": {
+      "metrics": {
+        "llama": {
+          "em": 0.6666666666666666,
+          "f1": 0.8379120831945316,
+          "nll": 11.858278525503058,
+          "first_token_top1": 0.0,
+          "first_token_top5": 0.0
+        }
+      },
+      "wall_clock_sec": {
+        "llama": 4.650776147842407
+      }
+    },
+    "adapter": {
+      "metrics": {
+        "llama": {
+          "em": 0.0,
+          "f1": 0.0,
+          "nll": 11.045411954846298,
+          "first_token_top1": 0.0,
+          "first_token_top5": 0.0
+        }
+      },
+      "wall_clock_sec": {
+        "llama": 16.9409921169281
+      }
+    }
+  },
+  "dataset": "squad"
+}
+Wrote per-example predictions to runs/smoke/embedding_test/eval/predictions.jsonl
+[CLI] Appended metrics history entry to runs/smoke/embedding_test/eval

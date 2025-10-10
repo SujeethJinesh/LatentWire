@@ -1,0 +1,229 @@
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[Optimization] Enabled FlashAttention-2 and memory-efficient kernels
+[Optimization] Enabled TF32 for matmul and cuDNN
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2876.26it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.04s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.04s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.02s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.39it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.20it/s]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+[After Model Loading] [GPU Memory] GPU0:3.2GB(4%), GPU1:4.4GB(5%), GPU2:4.4GB(5%), GPU3:4.1GB(5%) | Total: 16.1GB allocated, 16.2GB reserved, 323.9GB free, Peak: 16.1GB
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[INFO] llama anchor tokens: 3
+[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...
+[Optimizer]   Meta-Llama-3.1-8B-Instruct: skipped (use_latent_adapters=False)
+[Optimizer] Latent adapter summary: 0 params in 0 tensors
+[Optimizer] No latent adapters enabled (expected)
+[Optimization] Using fused AdamW optimizer
+[Optimizer] Created 2 parameter groups:
+  [1] encoder(90 tensors)
+  [2] llama_adapter(20 tensors)
+[INFO] LR scheduler: CosineAnnealingLR (T_max=80, eta_min=2.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/2
+[Epoch 1 Start] [GPU Memory] GPU0:3.3GB(9%), GPU1:4.4GB(5%), GPU2:4.4GB(5%), GPU3:4.1GB(5%) | Total: 16.1GB allocated, 20.7GB reserved, 319.4GB free, Peak: 19.2GB
+    [Memory after encoder] 16.2GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] KD teacher: adapters NOT disabled - KD may be contaminated
+    [Memory after backward] 16.4GB allocated, peak 20.9GB
+    [Memory after optimizer] 16.5GB allocated
+  [Step 1] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(6%), GPU2:4.4GB(6%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.1GB reserved, 317.1GB free, Peak: 20.9GB
+    [Memory after encoder] 16.5GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+    [Memory after backward] 16.6GB allocated, peak 21.1GB
+    [Memory after optimizer] 16.5GB allocated
+  [Step 2] [GPU Memory] GPU0:3.5GB(10%), GPU1:4.4GB(6%), GPU2:4.4GB(6%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.2GB reserved, 316.9GB free, Peak: 21.1GB
+    [Memory after encoder] 16.5GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+    [Memory after backward] 16.6GB allocated, peak 21.1GB
+    [Memory after optimizer] 16.5GB allocated
+  [Step 3] [GPU Memory] GPU0:3.5GB(10%), GPU1:4.4GB(6%), GPU2:4.4GB(6%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.2GB reserved, 316.9GB free, Peak: 21.1GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 5] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 6] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.6GB reserved, 315.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 7] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.6GB reserved, 315.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 8] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.6GB reserved, 315.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  10/40 | grad_norm=676.11 | sec/step~1.12 | lr=9.76e-05 | keep=1.00 | K=4 | llama(L): tf=10.6344 first=7.7285 kCE=11.2122 KD=4.7210 acc=0.000 align=0.0000 | scale_pen(llama)=7.9936e-11 | feature_grads[encoder=3.312e+02, adapter_llama=5.894e+02] | K=4 tau=2.00
+  [Step 10] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 12] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 13] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.5GB reserved, 315.6GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 14] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.5GB reserved, 315.6GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 15] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.5GB reserved, 315.6GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 16] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.5GB reserved, 315.6GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 17] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.5GB reserved, 315.6GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  20/40 | grad_norm=56.67 | sec/step~0.99 | lr=9.17e-05 | keep=1.00 | K=4 | llama(L): tf=10.8485 first=6.9207 kCE=12.0348 KD=11.0701 acc=0.000 align=0.0000 | scale_pen(llama)=3.1392e-11 | feature_grads[encoder=2.656e+01, adapter_llama=5.006e+01] | K=4 tau=2.00
+  [Step 20] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.8GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 21] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.9GB reserved, 316.2GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 22] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.1GB reserved, 316.0GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 23] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.1GB reserved, 316.0GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 24] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.1GB reserved, 316.0GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 25] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.1GB reserved, 316.0GB free, Peak: 22.8GB
+[checkpoint] Freed 1.0KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 20
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 28] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.6GB reserved, 316.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 29] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.6GB reserved, 316.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 31] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 32] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.5GB reserved, 315.6GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 36] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.7GB reserved, 316.4GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 37] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.7GB reserved, 316.4GB free, Peak: 22.8GB
+  🌟 NEW PEAK: first_acc_ema=10.0% (raw_batch=100.0%) at step 26 → saved to runs/smoke/embedding_test/ckpt_best
+      Sample predictions (first 5):
+        ✓ pred='The' | gold='The'
+      Prediction diversity: 1/1 unique tokens
+      Top-3 predictions: 'The'(1) 
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 38] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.7GB reserved, 316.4GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 39] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.7GB reserved, 316.4GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+Epoch 2/2
+[Epoch 2 Start] [GPU Memory] GPU0:3.8GB(4%), GPU1:5.0GB(6%), GPU2:5.0GB(6%), GPU3:4.6GB(6%) | Total: 18.3GB allocated, 18.5GB reserved, 321.6GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 2] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.9GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 3] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.9GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 5] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 7] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.9GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 8] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.0GB reserved, 316.1GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 9] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.1GB reserved, 316.0GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 11] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 12] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.6GB reserved, 315.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 13] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.6GB reserved, 315.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 15] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 17] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.8GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 18] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.9GB reserved, 316.2GB free, Peak: 22.8GB
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+  ✅ Saved (and pruned to) latest at step 40
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 19] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.9GB reserved, 316.2GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  20/40 | grad_norm=21.66 | sec/step~0.50 | lr=4.72e-05 | keep=1.00 | K=4 | llama(L): tf=8.2047 first=9.1726 kCE=7.8937 KD=5.6182 acc=0.000 align=0.0000 | scale_pen(llama)=5.1301e-12 | feature_grads[encoder=9.456e+00, adapter_llama=1.949e+01] | K=4 tau=2.00
+  [Step 20] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.1GB reserved, 316.1GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 21] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.1GB reserved, 316.1GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 23] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 24] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.6GB reserved, 315.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 26] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.1GB reserved, 317.0GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 27] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.2GB reserved, 315.9GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 28] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.3GB reserved, 315.8GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 31] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.6GB reserved, 316.5GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 33] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.8GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 34] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.8GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 35] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.8GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 36] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.8GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 37] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.8GB reserved, 316.3GB free, Peak: 22.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+NaN/Inf loss; skipping step
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 39] [GPU Memory] GPU0:3.5GB(8%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 23.3GB reserved, 316.8GB free, Peak: 22.8GB
+  🌟 NEW PEAK: first_acc_ema=10.5% (raw_batch=100.0%) at step 55 → saved to runs/smoke/embedding_test/ckpt_best
+      Sample predictions (first 5):
+        ✓ pred='The' | gold='The'
+      Prediction diversity: 1/1 unique tokens
+      Top-3 predictions: 'The'(1) 
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  40/40 | grad_norm=23.52 | sec/step~0.52 | lr=2.22e-05 | keep=1.00 | K=4 | llama(L): tf=9.9179 first=7.8802 kCE=8.2938 KD=4.8918 acc=0.000 align=0.0000 | scale_pen(llama)=2.2204e-12 | feature_grads[encoder=1.071e+01, adapter_llama=2.094e+01] | K=4 tau=2.00
+  [Step 40] [GPU Memory] GPU0:3.5GB(9%), GPU1:4.4GB(7%), GPU2:4.4GB(7%), GPU3:4.2GB(6%) | Total: 16.5GB allocated, 24.4GB reserved, 315.7GB free, Peak: 22.8GB
+[checkpoint] Freed 0.0B before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/smoke/embedding_test/ckpt
