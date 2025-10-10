@@ -186,15 +186,12 @@ def test_smoke_configs_validation():
         # Validation should not raise errors
         warnings = config.validate()
 
-        # Check for critical warnings
-        for warning in warnings:
-            # These are acceptable warnings
-            if "mutually exclusive" in warning.lower():
-                continue
-            if "experimental" in warning.lower():
-                continue
-            # Unexpected warning
-            print(f"Warning in {config_name}: {warning}")
+        unexpected = [
+            warning for warning in warnings
+            if "mutually exclusive" not in warning.lower()
+            and "experimental" not in warning.lower()
+        ]
+        assert not unexpected, f"Unexpected validation warnings in {config_name}: {unexpected}"
 
 
 def test_smoke_config_overrides():
@@ -223,8 +220,8 @@ def test_smoke_config_overrides():
 
 def test_smoke_configs_consistent_structure():
     """Test that all smoke configs have consistent structure."""
-    first_config = None
-    first_name = None
+    if BASE_CONFIG_KEYS is None:
+        pytest.skip("Base smoke config missing; cannot compare structure")
 
     for config_name in SMOKE_CONFIGS:
         config_path = Path("configs/smoke") / config_name
@@ -235,18 +232,6 @@ def test_smoke_configs_consistent_structure():
         with open(config_path) as f:
             config_dict = json.load(f)
 
-        if first_config is None:
-            first_config = set(config_dict.keys())
-            first_name = config_name
-        else:
-            current_keys = set(config_dict.keys())
-
-            # Check for major structural differences
-            # (small differences are OK for feature-specific configs)
-            major_keys = {"models", "dataset", "samples", "epochs", "batch_size"}
-
-            first_major = first_config.intersection(major_keys)
-            current_major = current_keys.intersection(major_keys)
-
-            assert first_major == current_major, \
-                f"Structural difference between {first_name} and {config_name}"
+        current_keys = set(config_dict.keys())
+        missing = BASE_CONFIG_KEYS - current_keys
+        assert not missing, f"{config_name}: missing keys {sorted(missing)}"
