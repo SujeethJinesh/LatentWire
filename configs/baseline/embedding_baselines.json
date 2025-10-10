@@ -3,7 +3,7 @@
   "models": "llama",
   "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
   "dataset": "squad",
-  "samples": 5,
+  "samples": 30,
   "max_new_tokens": 24,
   "latent_anchor_mode": "auto",
   "latent_anchor_text": "Answer: ",
