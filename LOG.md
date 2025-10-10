@@ -32,6 +32,11 @@
   3. Implement proven baseline (Gist Tokens) to validate feasibility
   4. Lower expectations to match token-budget baseline first
 
+### 2025-10-10 — Smoke Config Suite (Codex)
+- **Feature-specific smokes:** Replaced the old sample config with `configs/smoke/*.json`, giving per-feature runners (baseline, LoRA, prefix, deep prefix, latent adapters, coprocessor, gist head, refiner) tuned for 20×2 CPU-friendly steps.
+- **Ablation refresh:** `configs/ablation/sample_ablation.json` now references the baseline smoke config so sweeps inherit the new defaults.
+- **Docs:** Updated the research proposal to point at the `configs/smoke` directory.
+
 ### 2025-10-10 — Auto Eval Defaults (Codex)
 - **Train CLI always evaluates:** Added an `evaluation` block to the config schema and wired `latentwire/cli/train.py` to invoke `latentwire.eval` immediately after each training run, recording both phases in metrics history.
 - **Config plumbing:** `flatten_training_config` now skips `evaluation` keys so training argv remain unchanged; helpers build eval argv using the training config (models, latent length, checkpoints).
@@ -43,7 +48,7 @@
 - **CLI overhaul:** Implemented `latentwire/cli/{train,eval}.py` plus shared utilities for overrides, feature summaries, metrics-history append, and dry-run tooling. Sample configs live under `configs/` for Mac-safe validation.
 - **Ablation harness:** New `latentwire/cli/run_ablation.py` expands sweep grids and orchestrates batches of CLI runs. Each launch records into `metrics_history.jsonl`.
 - **Dynamic sweeps & metrics:** Overrides accept dot notation; sweep lists expand automatically. Metrics history entries capture argv/overrides for every train/eval invocation.
-- **Artifacts:** `configs/train_sample.json`, `configs/ablation/sample_ablation.json` demonstrate CLI + sweep usage.
+- **Artifacts:** `configs/smoke/*.json`, `configs/ablation/sample_ablation.json` demonstrate CLI + sweep usage.
 - **Validation:** `python -m compileall latentwire` ✅; full `PYTHONPATH=. python -m pytest` after sourcing `.venv` now passes (17 tests, 8 skips). CLI dry-runs confirm argv generation.
 
 ### 2025-10-10 — Milestone 4 Feature Plumbing (Codex)

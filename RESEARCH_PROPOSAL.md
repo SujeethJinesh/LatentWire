@@ -778,4 +778,4 @@ We will report, per model and jointly:
 
 - Added a latent coprocessor feature module that injects KV deltas alongside deep prefixes. Coprocessor weights load/save with checkpoints and remain mutually exclusive with deep prefix to avoid double-counting.
 - Introduced a configuration-driven CLI (`latentwire/cli/{train,eval,run_ablation}.py`) replacing bespoke bash scripts. The CLI prints feature toggles, supports dot-notation overrides, records every run to `metrics_history.jsonl`, and powers an ablation harness that expands sweep grids.
-- Sample configs (`configs/train_sample.json`, `configs/ablation/sample_ablation.json`) provide Mac-safe dry runs while full smokes await GPU availability.
+- Sample configs (see `configs/smoke/*.json` and `configs/ablation/sample_ablation.json`) provide Mac-safe dry runs while full smokes await GPU availability.

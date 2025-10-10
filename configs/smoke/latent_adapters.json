@@ -1,0 +1,78 @@
+{
+  "model": {
+    "llama_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "models": "llama",
+    "sequential_models": true,
+    "load_4bit": false
+  },
+  "data": {
+    "dataset": "squad",
+    "samples": 20,
+    "epochs": 2,
+    "batch_size": 1,
+    "grad_accum_steps": 1,
+    "max_answer_tokens": 24
+  },
+  "encoder": {
+    "encoder_type": "byte",
+    "latent_len": 32,
+    "d_z": 256,
+    "train_encoder": true,
+    "encoder_use_chat_template": true
+  },
+  "adapter": {
+    "adapter_hidden_mult": 2,
+    "adapter_dropout": 0.0,
+    "scale_l2": 0.05
+  },
+  "features": {
+    "use_lora": false,
+    "use_prefix": false,
+    "use_deep_prefix": false,
+    "use_latent_adapters": true,
+    "use_coprocessor": false,
+    "use_gist_head": false,
+    "use_latent_refiner": false
+  },
+  "latent_adapters": {
+    "latent_adapter_layers": "4,8,12",
+    "latent_adapter_heads": 8,
+    "latent_adapter_dropout": 0.1
+  },
+  "losses": {
+    "first_token_ce_weight": 0.5,
+    "k_ce_weight": 0.5,
+    "kd_first_k_weight": 0.0
+  },
+  "optimizer": {
+    "lr": 0.0001,
+    "max_grad_norm": 1.0
+  },
+  "anchor": {
+    "warm_anchor_mode": "chat",
+    "train_append_bos_after_prefix": "yes",
+    "use_chat_template": true
+  },
+  "diagnostics": {
+    "grad_diag_interval": 10,
+    "diagnostic_log": "runs/smoke/latent_adapters/diagnostics.jsonl"
+  },
+  "checkpoint": {
+    "save_dir": "runs/smoke/latent_adapters/ckpt",
+    "save_every": 0,
+    "auto_resume": false,
+    "save_training_stats": true
+  },
+  "evaluation": {
+    "samples": 5,
+    "dataset": "squad",
+    "token_budget_k": 32,
+    "max_new_tokens": 24,
+    "fresh_eval": true,
+    "sequential_eval": true,
+    "out_dir": "runs/smoke/latent_adapters/ckpt"
+  },
+  "system": {
+    "require_cuda": "no"
+  }
+}
