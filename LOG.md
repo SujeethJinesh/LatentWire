@@ -33,7 +33,7 @@
   4. Lower expectations to match token-budget baseline first
 
 ### 2025-10-10 — Smoke Config Suite (Codex)
-- **Feature-specific smokes:** Replaced the old sample config with `configs/smoke/*.json`, giving per-feature runners (baseline, LoRA, prefix, deep prefix, latent adapters, coprocessor, gist head, refiner) tuned for 20×2 CPU-friendly steps.
+- **Feature-specific smokes:** Replaced the old sample config with `configs/smoke/*.json`, giving per-feature runners (baseline, LoRA, prefix, deep prefix, latent adapters, coprocessor, gist head, refiner) tuned for 20-step/epoch smokes on the 4×H100 cluster (8× batch, 2 epochs).
 - **Ablation refresh:** `configs/ablation/sample_ablation.json` now references the baseline smoke config so sweeps inherit the new defaults.
 - **Docs:** Updated the research proposal to point at the `configs/smoke` directory.
 

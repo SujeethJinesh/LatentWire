@@ -1,15 +1,18 @@
 {
   "model": {
-    "llama_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-    "models": "llama",
+    "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "models": "llama,qwen",
     "sequential_models": true,
-    "load_4bit": false
+    "load_4bit": false,
+    "qwen_id": "Qwen/Qwen2.5-7B-Instruct",
+    "llama_device_map": "0,1",
+    "qwen_device_map": "2,3"
   },
   "data": {
     "dataset": "squad",
-    "samples": 20,
+    "samples": 160,
     "epochs": 2,
-    "batch_size": 1,
+    "batch_size": 8,
     "grad_accum_steps": 1,
     "max_answer_tokens": 24
   },
@@ -73,6 +76,6 @@
     "out_dir": "runs/smoke/latent_adapters/ckpt"
   },
   "system": {
-    "require_cuda": "no"
+    "require_cuda": "yes"
   }
 }
