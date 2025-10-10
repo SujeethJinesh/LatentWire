@@ -1,5 +1,35 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-10 — Critical Cleanup: Removed Small Models and Fake Data (Claude Code)
+
+**CRITICAL FIXES for Data Integrity:**
+
+1. **Removed all TinyLlama and small model references**
+   - Updated all defaults from TinyLlama-1.1B to Llama-3.1-8B-Instruct
+   - Updated all defaults from Qwen2-0.5B to Qwen2.5-7B-Instruct
+   - Files updated: train.py, config.py, configs/*, RESEARCH_PROPOSAL.md, Makefile
+   - **Rationale**: Small models fundamentally cannot decode soft prompts (see 1B model results below)
+
+2. **Eliminated fake checkpoint contamination**
+   - Discovered and removed fake checkpoint files created with torch.randn()
+   - Deleted all results from runs using these fake checkpoints
+   - Reverted dangerous "skip encoder loading" logic in eval.py
+   - **Impact**: Ensures all future evaluations use real trained weights only
+
+3. **Fixed embedding baseline evaluation integrity**
+   - Fixed KeyErrors for missing qwen_id and d_z in config (using .get() with defaults)
+   - Fixed tensor padding issues for concatenation
+   - Fixed MPS float16 interpolation by converting to float32
+   - Added proper None latent handling throughout
+   - **Result**: Embedding baselines now run with real evaluation, not dummy results
+
+4. **PyTorch import error handling**
+   - Added graceful error handling for missing PyTorch installations
+   - Clear user instructions when PyTorch is not properly configured
+   - Prevents cryptic dlopen errors on HPC/Mac systems
+
+**Key Takeaway**: Production integrity restored - no fake data, no toy models, real evaluation only.
+
 ### 2025-10-10 — Fixed Indentation Bug in train.py and Test Suite Issues (Claude Code)
 - **Bug 1**: UnboundLocalError on line 2605: `parts` variable referenced before assignment
   - **Root Cause**: Lines 2593-2606 were incorrectly indented outside the `for ctx in model_contexts:` loop
