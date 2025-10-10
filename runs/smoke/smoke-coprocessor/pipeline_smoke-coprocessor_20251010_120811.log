@@ -1,59 +1,0 @@
-=== Starting python -m latentwire.cli.train --config configs/smoke/coprocessor.json --tag smoke-coprocessor ===
-/cm/local/apps/python3/lib/python3.9/runpy.py:127: RuntimeWarning: 'latentwire.cli.train' found in sys.modules after import of package 'latentwire.cli', but prior to execution of 'latentwire.cli.train'; this may result in unpredictable behaviour
-  warn(RuntimeWarning(msg))
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-[CLI] Writing pipeline log to /projects/m000066/sujinesh/LatentWire/runs/smoke/coprocessor/pipeline_smoke-coprocessor_20251010_190811.log
-=== LatentWire Train CLI ===
-Config: /projects/m000066/sujinesh/LatentWire/configs/smoke/coprocessor.json
-Feature toggles:
-  use_lora: off
-  use_prefix: off
-  use_deep_prefix: off
-  use_latent_adapters: off
-  use_coprocessor: ON
-  use_gist_head: off
-  use_latent_refiner: off
-Derived argv: --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --qwen_id Qwen/Qwen2-0.5B-Instruct --llama_device_map auto --models llama --gpu_mem_gib 78.0 --dataset squad --hotpot_config fullwiki --samples 160 --epochs 2 --batch_size 8 --grad_accum_steps 1 --max_answer_tokens 24 --seed 42 --data_seed 42 --encoder_type byte --latent_len 32 --latent_private_len 0 --d_z 256 --max_bytes 512 --encoder_use_chat_template --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --adapter_hidden_mult 2 --adapter_dropout 0.0 --scale_l2 0.05 --adapter_rms_l2 0.0 --use_coprocessor --lora_r 8 --lora_alpha 16 --lora_dropout 0.05 --lora_target_modules auto --prefix_tokens 16 --peft_prefix_all_layers yes --deep_prefix_dropout 0.1 --latent_adapter_layers 8,16,24 --latent_adapter_heads 8 --latent_adapter_dropout 0.1 --coprocessor_len 2 --coprocessor_width 256 --coprocessor_dropout 0.1 --coprocessor_kv_scale 0.8 --coprocessor_pool mean --coprocessor_heads  --gist_target_len 48 --gist_hidden 512 --gist_layers 2 --gist_dropout 0.1 --gist_weight 0.0 --gist_mask_prob 0.15 --latent_refiner_layers 0 --latent_refiner_heads 4 --first_token_ce_weight 0.5 --first_token_ce_schedule none --first_token_ce_warmup_frac 0.4 --first_token_autoscale yes --first_token_entropy_weight 0.0 --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.0 --kd_tau 2.0 --state_kd_weight 0.0 --state_kd_layers 0,1,2 --latent_align_weight 0.0 --latent_prefix_align_weight 0.0 --latent_align_metric cosine --manifold_stat_weight 0.0 --latent_keep_start 1.0 --latent_keep_end 1.0 --latent_keep_power 1.0 --warmup_text_latent_steps 0 --warmup_text_latent_epochs 0.0 --warmup_tail_prob 0.0 --warmup_align_tokens 1 --warmup_align_weight 1.0 --warmup_text_teacher_weight 1.0 --warmup_text_latent_weight 0.2 --warmup_text_latent_weight_end 1.0 --lr 0.0001 --max_grad_norm 1.0 --warm_anchor_text  --warm_anchor_mode chat --train_append_bos_after_prefix yes --max_anchor_tokens 32 --use_chat_template --grad_diag_interval 10 --grad_diag_components tf,first,kce,kd,align,latent_align,latent_prefix_align --diagnostic_log runs/smoke/coprocessor/diagnostics.jsonl --save_dir runs/smoke/coprocessor/ckpt --save_every 0 --resume_from  --save_training_stats --require_cuda yes
-[Optimization] Enabled FlashAttention-2 and memory-efficient kernels
-[Optimization] Enabled TF32 for matmul and cuDNN
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 6778.67it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:01<00:03,  1.10s/it]Loading checkpoint shards:  50%|#####     | 2/4 [00:02<00:02,  1.24s/it]Loading checkpoint shards:  75%|#######5  | 3/4 [00:03<00:01,  1.19s/it]Loading checkpoint shards: 100%|##########| 4/4 [00:03<00:00,  1.21it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:03<00:00,  1.04it/s]
-Traceback (most recent call last):
-  File "/cm/local/apps/python3/lib/python3.9/runpy.py", line 197, in _run_module_as_main
-    return _run_code(code, main_globals, None,
-  File "/cm/local/apps/python3/lib/python3.9/runpy.py", line 87, in _run_code
-    exec(code, run_globals)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/cli/train.py", line 292, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/cli/train.py", line 251, in main
-    run_train(argv)
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/cli/train.py", line 200, in run_train
-    train_module.main()
-  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 1577, in main
-    optimizer = optim.AdamW(optim_groups, lr=args.lr, fused=use_fused, foreach=False)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/adamw.py", line 72, in __init__
-    super().__init__(params, defaults)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/optimizer.py", line 367, in __init__
-    self.add_param_group(cast(dict, param_group))
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/_compile.py", line 31, in inner
-    return disable_fn(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/_dynamo/eval_frame.py", line 600, in _fn
-    return fn(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/optim/optimizer.py", line 1045, in add_param_group
-    raise ValueError("some parameters appear in more than one parameter group")
-ValueError: some parameters appear in more than one parameter group
-[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-Llama hidden size: 4096
-[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-[After Model Loading] [GPU Memory] GPU0:3.3GB(4%), GPU1:4.4GB(5%), GPU2:4.4GB(5%), GPU3:4.1GB(5%) | Total: 16.1GB allocated, 16.3GB reserved, 323.9GB free, Peak: 16.1GB
-[INFO] llama anchor tokens: 32
-[INFO] Chat mode: updated strip_anchor_literal to header: '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n<|eot_id|>'
-[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...
-[Optimizer]   Meta-Llama-3.1-8B-Instruct: skipped (use_latent_adapters=False)
-[Optimizer] Latent adapter summary: 0 params in 0 tensors
-[Optimizer] No latent adapters enabled (expected)
---- smoke-coprocessor failed with exit code 1 ---
-
