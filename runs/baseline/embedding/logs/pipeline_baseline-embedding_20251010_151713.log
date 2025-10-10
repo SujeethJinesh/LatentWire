@@ -1,0 +1,28 @@
+=== Starting python -m latentwire.cli.eval --config configs/baseline/embedding_baselines.json --override ckpt=runs/smoke/base/ckpt --override out_dir=runs/baseline/embedding/eval --tag baseline-embedding ===
+/cm/local/apps/python3/lib/python3.9/runpy.py:127: RuntimeWarning: 'latentwire.cli.eval' found in sys.modules after import of package 'latentwire.cli', but prior to execution of 'latentwire.cli.eval'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/cm/local/apps/python3/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/cm/local/apps/python3/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/cli/eval.py", line 139, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/cli/eval.py", line 120, in main
+    run_eval(argv)
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/cli/eval.py", line 95, in run_eval
+    eval_module.main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/eval.py", line 1779, in main
+    with open(os.path.join(ckpt_dir, "config.json")) as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'runs/smoke/base/ckpt/config.json'
+=== LatentWire Eval CLI ===
+Config: /projects/m000066/sujinesh/LatentWire/configs/baseline/embedding_baselines.json
+Overrides:
+  - ckpt=runs/smoke/base/ckpt
+  - out_dir=runs/baseline/embedding/eval
+Derived argv: --ckpt runs/smoke/base/ckpt --models llama --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --dataset squad --samples 5 --max_new_tokens 24 --latent_anchor_mode auto --latent_anchor_text Answer:  --append_bos_after_prefix auto --use_chat_template yes --token_budget_mode content_only --token_budget_k 32 --chunk_size 8 --fresh_eval --embedding_replay --embedding_baseline_modes ["raw", "anchor", "adapter"] --out_dir runs/baseline/embedding/eval --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 1 --eos_ban_steps 0 --calibration embed_rms --prefix_gain 1.0 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto
+Auto-detected device: cuda
+--- baseline-embedding failed with exit code 1 ---
+
