@@ -17,4 +17,4 @@ eval:
 
 .PHONY: prefetch
 prefetch:
-	bash scripts/prefetch_assets.sh "TinyLlama/TinyLlama-1.1B-Chat-v1.0" "Qwen/Qwen2-0.5B-Instruct"
+	bash scripts/prefetch_assets.sh "meta-llama/Meta-Llama-3.1-8B-Instruct" "Qwen/Qwen2.5-7B-Instruct"

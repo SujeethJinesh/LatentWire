@@ -1271,13 +1271,9 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         adapters[name] = adapter
         model_contexts[name]["adapter"] = adapter
 
-    # Only create combined_latents if we have encoded_latents (not for embedding-only baselines)
-    if encoded_latents is not None:
-        combined_latents = {
-            name: combine_latents(encoded_latents, name) for name in model_contexts
-        }
-    else:
-        combined_latents = {name: None for name in model_contexts}
+    combined_latents = {
+        name: combine_latents(encoded_latents, name) for name in model_contexts
+    }
     quant_bits = getattr(args, "latent_quant_bits", None)
     quant_group = getattr(args, "latent_quant_group_size", 32)
     prefix_map = {}
@@ -1287,12 +1283,6 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     with torch.no_grad():
         for name, ctx in model_contexts.items():
             latents = combined_latents[name]
-            if latents is None:
-                # Skip processing if no latents (embedding-only baseline)
-                prefix_map[name] = None
-                deep_prefix_cache_map[name] = None
-                coprocessor_cache_map[name] = None
-                continue
             if quant_bits is not None:
                 latents = quantize_dequantize(latents, quant_bits, group_size=quant_group)
                 combined_latents[name] = latents
@@ -1353,47 +1343,28 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     latent_wall = 0.0
     trunc_wall = 0.0
 
-    # Skip latent evaluation if we're only doing embedding baselines
-    skip_latent_eval = all(latent is None for latent in combined_latents.values())
-
-    if not skip_latent_eval:
-        for name, ctx in model_contexts.items():
-            if combined_latents[name] is None:
-                # Create dummy results for models without latents
-                latent_results[name] = {
-                    "latent": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0, "nll": float("inf")}, "time": 0},
-                    "trunc": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0}, "time": 0}
-                }
-                continue
-
-            anchor_payload = latent_anchor_texts[name]
-            append_bos = anchor_info[name]["bos"]
-            merged_cache = _merge_prefix_caches(deep_prefix_cache_map.get(name), coprocessor_cache_map.get(name))
-            res = _run_latent_path(
-                args,
-                name,
-                ctx["wrapper"],
-                prefix_map[name],
-                anchor_payload,
-                append_bos,
-                prompts_raw,
-                ctx["chat"],
-                golds,
-                latent_len,
-                answer_lengths[name],
-                merged_cache,
-                latent=combined_latents[name],
-            )
-            latent_results[name] = res
-            latent_wall += res["latent"]["time"]
-            trunc_wall += res["trunc"]["time"]
-    else:
-        # Create dummy results when skipping latent evaluation
-        for name in model_contexts.keys():
-            latent_results[name] = {
-                "latent": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0, "nll": float("inf")}, "time": 0},
-                "trunc": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0}, "time": 0}
-            }
+    for name, ctx in model_contexts.items():
+        anchor_payload = latent_anchor_texts[name]
+        append_bos = anchor_info[name]["bos"]
+        merged_cache = _merge_prefix_caches(deep_prefix_cache_map.get(name), coprocessor_cache_map.get(name))
+        res = _run_latent_path(
+            args,
+            name,
+            ctx["wrapper"],
+            prefix_map[name],
+            anchor_payload,
+            append_bos,
+            prompts_raw,
+            ctx["chat"],
+            golds,
+            latent_len,
+            answer_lengths[name],
+            merged_cache,
+            latent=combined_latents[name],
+        )
+        latent_results[name] = res
+        latent_wall += res["latent"]["time"]
+        trunc_wall += res["trunc"]["time"]
 
     model_outputs: Dict[str, Dict[str, Any]] = {}
     for name in model_contexts.keys():
@@ -1926,19 +1897,9 @@ def main():
 
     print(f"Encoder input alignment: mode={encoder_text_mode} | strip_anchor={'yes' if strip_literal else 'no'} | samples={len(encoder_inputs)}")
 
-    # Check if we're only doing embedding baselines (no latent evaluation needed)
-    only_embedding_baselines = (
-        getattr(args, "embedding_baseline_modes", []) and
-        getattr(args, "embedding_replay", False) and
-        not getattr(args, "skip_latent_eval", False)  # We'll use this to determine if latent eval should be skipped
-    )
-
     # Build a Z for wire metrics
     Z_path = os.path.join(args.out_dir, "Z.pt") if args.out_dir else None
-    if only_embedding_baselines:
-        print("Skipping encoder loading (only running embedding baselines)")
-        encoded_latents = None  # Will not be used for embedding baselines
-    elif Z_path and (not args.fresh_eval) and os.path.exists(Z_path):
+    if Z_path and (not args.fresh_eval) and os.path.exists(Z_path):
         print(f"Loading Z from {Z_path}")
         encoded_latents = torch.load(Z_path, map_location=device)
     else:

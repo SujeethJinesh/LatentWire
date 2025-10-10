@@ -14,8 +14,8 @@ from pathlib import Path
 @dataclass
 class ModelConfig:
     """LLM model configuration."""
-    llama_id: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-    qwen_id: str = "Qwen/Qwen2-0.5B-Instruct"
+    llama_id: str = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    qwen_id: str = "Qwen/Qwen2.5-7B-Instruct"
     llama_device_map: Optional[str] = None
     qwen_device_map: Optional[str] = None
     llama_devices: Optional[str] = None
@@ -483,8 +483,8 @@ class TrainingConfig:
 
         config = cls(
             model=ModelConfig(
-                llama_id=get("llama_id", "TinyLlama/TinyLlama-1.1B-Chat-v1.0"),
-                qwen_id=get("qwen_id", "Qwen/Qwen2-0.5B-Instruct"),
+                llama_id=get("llama_id", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
+                qwen_id=get("qwen_id", "Qwen/Qwen2.5-7B-Instruct"),
                 llama_device_map=get("llama_device_map"),
                 qwen_device_map=get("qwen_device_map"),
                 llama_devices=get("llama_devices"),

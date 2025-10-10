@@ -111,7 +111,7 @@ We hypothesize that at moderate compression (≥4×), a shared interlingua match
 
 **Why now?** Modern toolchains expose `inputs_embeds` for direct prefix seeding, and lightweight adapters make it practical to learn small front‑ends while keeping giant LLMs frozen. The community has shown soft prompt/prefix tuning for single models; we extend the idea to **cross‑model shared prefixes** with **frozen heterogeneous LLMs**.
 
-**Scope.** We target question answering (HotpotQA) to measure facts + reasoning under strong baselines. We start with **TinyLlama‑1.1B** and **Qwen2‑0.5B** for feasibility on commodity hardware, and our code supports larger variants (e.g., Llama‑3.1‑8B, Qwen2‑7B).
+**Scope.** We target question answering (HotpotQA) to measure facts + reasoning under strong baselines. We use **Llama‑3.1‑8B** and **Qwen2.5‑7B** as our primary models for maximum quality and real-world relevance.
 
 **Novelty.** While soft prompts have been explored extensively since 2021 for single models, and multi-model ensembles exist, **no prior work demonstrates heterogeneous LLMs consuming the same learned continuous prefix**. This positions LatentWire as the first practical wire protocol for embedding-level LLM communication.
 
@@ -254,7 +254,7 @@ We let **both** models generate answers from the same latent prefix and then **s
 
 ### 6.2 Models
 
-- **TinyLlama/TinyLlama‑1.1B‑Chat‑v1.0** and **Qwen/Qwen2‑0.5B‑Instruct** (baseline feasibility). Larger (8B/7B) with `--load_4bit` later.
+- **meta-llama/Meta-Llama‑3.1‑8B‑Instruct** and **Qwen/Qwen2.5‑7B‑Instruct** as primary models with `--load_4bit` for memory efficiency.
 
 ### 6.3 Metrics (Figures of Merit)
 
@@ -458,8 +458,8 @@ export OUT="runs/$RUN"; mkdir -p "$OUT"
 
 PYTHONPATH=. PYTORCH_ENABLE_MPS_FALLBACK=1 \
 python latentwire/train.py \
-  --llama_id "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
-  --qwen_id  "Qwen/Qwen2-0.5B-Instruct" \
+  --llama_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
+  --qwen_id  "Qwen/Qwen2.5-7B-Instruct" \
   --samples  512 \
   --epochs   1 \
   --batch_size 1 \
@@ -624,7 +624,7 @@ We will include more sentences per context item (k=4) and up to 3 items, with a 
 
 ### 3. Mac Feasibility vs Realistic Benchmarks
 
-On Mac MPS we use TinyLlama‑1.1B and Qwen2‑0.5B to validate mechanics (compression/latency, frozen acceptance). For quality claims we will run Llama‑3.1‑8B + Qwen2‑7B (4‑bit) on GPU.
+We use Llama‑3.1‑8B and Qwen2.5‑7B (with `--load_4bit` for memory efficiency) as our primary models on both GPU and Mac MPS systems for consistent quality assessment.
 
 ### 4. Sanity Dataset
 

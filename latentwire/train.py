@@ -681,8 +681,8 @@ def main():
 
     ap = argparse.ArgumentParser()
     # Models & data
-    ap.add_argument("--llama_id", type=str, default="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
-    ap.add_argument("--qwen_id", type=str, default="Qwen/Qwen2-0.5B-Instruct")
+    ap.add_argument("--llama_id", type=str, default="meta-llama/Meta-Llama-3.1-8B-Instruct")
+    ap.add_argument("--qwen_id", type=str, default="Qwen/Qwen2.5-7B-Instruct")
     ap.add_argument("--llama_device_map", type=str, default=None,
                     help=("Device map for the Llama wrapper (e.g., 0, 'auto', or JSON dict). "
                           "Pins the model to a subset of GPUs when running multi-model training."))
