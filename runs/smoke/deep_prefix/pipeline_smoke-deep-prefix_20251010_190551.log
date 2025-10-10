@@ -1,0 +1,227 @@
+[CLI] Writing pipeline log to /projects/m000066/sujinesh/LatentWire/runs/smoke/deep_prefix/pipeline_smoke-deep-prefix_20251010_190551.log
+=== LatentWire Train CLI ===
+Config: /projects/m000066/sujinesh/LatentWire/configs/smoke/deep_prefix.json
+Feature toggles:
+  use_lora: off
+  use_prefix: off
+  use_deep_prefix: ON
+  use_latent_adapters: off
+  use_coprocessor: off
+  use_gist_head: off
+  use_latent_refiner: off
+Derived argv: --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --qwen_id Qwen/Qwen2-0.5B-Instruct --llama_device_map auto --models llama --gpu_mem_gib 78.0 --dataset squad --hotpot_config fullwiki --samples 160 --epochs 2 --batch_size 8 --grad_accum_steps 1 --max_answer_tokens 24 --seed 42 --data_seed 42 --encoder_type byte --latent_len 32 --latent_private_len 0 --d_z 256 --max_bytes 512 --encoder_use_chat_template --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --adapter_hidden_mult 2 --adapter_dropout 0.0 --scale_l2 0.05 --adapter_rms_l2 0.0 --use_deep_prefix --lora_r 8 --lora_alpha 16 --lora_dropout 0.05 --lora_target_modules auto --prefix_tokens 16 --peft_prefix_all_layers yes --deep_prefix_len 32 --deep_prefix_dropout 0.1 --latent_adapter_layers 8,16,24 --latent_adapter_heads 8 --latent_adapter_dropout 0.1 --coprocessor_len 1 --coprocessor_width 256 --coprocessor_dropout 0.1 --coprocessor_kv_scale 0.8 --coprocessor_pool mean --coprocessor_heads  --gist_target_len 48 --gist_hidden 512 --gist_layers 2 --gist_dropout 0.1 --gist_weight 0.0 --gist_mask_prob 0.15 --latent_refiner_layers 0 --latent_refiner_heads 4 --first_token_ce_weight 0.5 --first_token_ce_schedule none --first_token_ce_warmup_frac 0.4 --first_token_autoscale yes --first_token_entropy_weight 0.0 --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.0 --kd_tau 2.0 --state_kd_weight 0.0 --state_kd_layers 0,1,2 --latent_align_weight 0.0 --latent_prefix_align_weight 0.0 --latent_align_metric cosine --manifold_stat_weight 0.0 --latent_keep_start 1.0 --latent_keep_end 1.0 --latent_keep_power 1.0 --warmup_text_latent_steps 0 --warmup_text_latent_epochs 0.0 --warmup_tail_prob 0.0 --warmup_align_tokens 1 --warmup_align_weight 1.0 --warmup_text_teacher_weight 1.0 --warmup_text_latent_weight 0.2 --warmup_text_latent_weight_end 1.0 --lr 0.0001 --max_grad_norm 1.0 --warm_anchor_text  --warm_anchor_mode chat --train_append_bos_after_prefix yes --max_anchor_tokens 32 --use_chat_template --grad_diag_interval 10 --grad_diag_components tf,first,kce,kd,align,latent_align,latent_prefix_align --diagnostic_log runs/smoke/deep_prefix/diagnostics.jsonl --save_dir runs/smoke/deep_prefix/ckpt --save_every 0 --resume_from  --save_training_stats --require_cuda yes
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[Optimization] Enabled FlashAttention-2 and memory-efficient kernels
+[Optimization] Enabled TF32 for matmul and cuDNN
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 5441.85it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:01<00:03,  1.21s/it]Loading checkpoint shards:  50%|#####     | 2/4 [00:02<00:02,  1.35s/it]Loading checkpoint shards:  75%|#######5  | 3/4 [00:03<00:01,  1.31s/it]Loading checkpoint shards: 100%|##########| 4/4 [00:04<00:00,  1.05it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:04<00:00,  1.08s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+[After Model Loading] [GPU Memory] GPU0:4.4GB(5%), GPU1:4.4GB(5%), GPU2:4.4GB(5%), GPU3:4.1GB(5%) | Total: 17.2GB allocated, 17.3GB reserved, 322.8GB free, Peak: 17.2GB
+[INFO] llama anchor tokens: 32
+[INFO] Chat mode: updated strip_anchor_literal to header: '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n<|eot_id|>'
+[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...
+[Optimizer]   Meta-Llama-3.1-8B-Instruct: skipped (use_latent_adapters=False)
+[Optimizer] Latent adapter summary: 0 params in 0 tensors
+[Optimizer] No latent adapters enabled (expected)
+[Optimization] Using fused AdamW optimizer
+[Optimizer] Created 3 parameter groups:
+  [1] encoder(90 tensors)
+  [2] llama_adapter(20 tensors)
+  [3] deep_prefix(67 tensors)
+[INFO] LR scheduler: CosineAnnealingLR (T_max=40, eta_min=2.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/2
+[Epoch 1 Start] [GPU Memory] GPU0:4.4GB(10%), GPU1:4.4GB(5%), GPU2:4.4GB(5%), GPU3:4.1GB(5%) | Total: 17.2GB allocated, 21.9GB reserved, 318.2GB free, Peak: 20.4GB
+    [Memory after encoder] 17.7GB allocated
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+    [Memory after backward] 18.9GB allocated, peak 29.5GB
+    [Memory after optimizer] 20.1GB allocated
+    [Memory after encoder] 20.6GB allocated
+    [Memory after backward] 21.5GB allocated, peak 32.4GB
+    [Memory after optimizer] 20.3GB allocated
+    [Memory after encoder] 20.6GB allocated
+    [Memory after backward] 21.5GB allocated, peak 32.4GB
+    [Memory after optimizer] 20.3GB allocated
+  step  10/20 | grad_norm=8.15 | sec/step~0.35 | lr=8.56e-05 | keep=1.00 | K=4 | llama(L): tf=10.3642 first=11.3045 kCE=11.5979 KD=0.0000 acc=0.000 align=0.0000 | scale_pen(llama)=6.2074e-10 | K=4 tau=2.00 | stats=[llama: rms_raw~1.0001 rms_cal~0.0106 embed_rms~0.01058]
+  [Step 10] [GPU Memory] GPU0:7.1GB(13%), GPU1:4.4GB(9%), GPU2:4.4GB(9%), GPU3:4.2GB(9%) | Total: 20.1GB allocated, 34.3GB reserved, 305.8GB free, Peak: 32.4GB
+  step  20/20 | grad_norm=10.42 | sec/step~0.46 | lr=5.10e-05 | keep=1.00 | K=4 | llama(L): tf=10.5995 first=11.4231 kCE=10.2288 KD=0.0000 acc=0.000 align=0.0000 | scale_pen(llama)=5.1159e-11 | K=4 tau=2.00 | stats=[llama: rms_raw~1.0002 rms_cal~0.0106 embed_rms~0.01058]
+  [Step 20] [GPU Memory] GPU0:7.1GB(15%), GPU1:4.4GB(9%), GPU2:4.4GB(9%), GPU3:4.2GB(9%) | Total: 20.1GB allocated, 35.4GB reserved, 304.8GB free, Peak: 32.4GB
+Epoch 2/2
+[Epoch 2 Start] [GPU Memory] GPU0:7.1GB(15%), GPU1:4.4GB(9%), GPU2:4.4GB(9%), GPU3:4.2GB(9%) | Total: 20.1GB allocated, 35.4GB reserved, 304.8GB free, Peak: 32.4GB
+  🌟 NEW PEAK: first_acc_ema=1.2% (raw_batch=12.5%) at step 24 → saved to runs/smoke/deep_prefix/ckpt_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='An'
+        ✗ pred='the' | gold='J'
+        ✗ pred='the' | gold='Between'
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='child'
+      Prediction diversity: 1/8 unique tokens
+      Top-3 predictions: 'the'(8) 
+  🌟 NEW PEAK: first_acc_ema=2.2% (raw_batch=12.5%) at step 27 → saved to runs/smoke/deep_prefix/ckpt_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='virtual'
+        ✗ pred='the' | gold='k'
+        ✓ pred='the' | gold='the'
+        ✗ pred='the' | gold='184'
+        ✗ pred='the' | gold='legal'
+      Prediction diversity: 1/8 unique tokens
+      Top-3 predictions: 'the'(8) 
+  step  10/20 | grad_norm=9.98 | sec/step~0.36 | lr=1.64e-05 | keep=1.00 | K=4 | llama(L): tf=9.0630 first=9.3712 kCE=8.6808 KD=0.0000 acc=0.000 align=0.0000 | scale_pen(llama)=4.4565e-11 | K=4 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  [Step 10] [GPU Memory] GPU0:7.1GB(15%), GPU1:4.4GB(9%), GPU2:4.4GB(9%), GPU3:4.2GB(9%) | Total: 20.1GB allocated, 35.4GB reserved, 304.8GB free, Peak: 32.4GB
+  step  20/20 | grad_norm=9.79 | sec/step~0.36 | lr=2.00e-06 | keep=1.00 | K=4 | llama(L): tf=8.6478 first=7.7027 kCE=6.5887 KD=0.0000 acc=0.000 align=0.0000 | scale_pen(llama)=1.1141e-11 | K=4 tau=2.00 | stats=[llama: rms_raw~1.0003 rms_cal~0.0106 embed_rms~0.01058]
+  [Step 20] [GPU Memory] GPU0:7.1GB(15%), GPU1:4.4GB(9%), GPU2:4.4GB(9%), GPU3:4.2GB(9%) | Total: 20.1GB allocated, 35.4GB reserved, 304.8GB free, Peak: 32.4GB
+[checkpoint] Freed 3.9KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, deep_prefix_llama.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/smoke/deep_prefix/ckpt
+📝 Saved training_stats.json: {'llama': {'rms_mean_raw': 1.0003257051110268, 'rms_mean_cal': 0.010569950891658663, 'embed_rms': 0.01057521253824234, 'count': 40}}
+
+=== LatentWire Eval (auto) ===
+Derived eval argv: --samples 5 --dataset squad --max_new_tokens 24 --latent_anchor_mode auto --latent_anchor_text Answer:  --append_bos_after_prefix auto --use_chat_template yes --fresh_eval --token_budget_mode content_only --token_budget_k 32 --first_token_top_p 1.0 --first_token_temperature 0.0 --chunk_size 8 --encoder_text_mode auto --out_dir runs/smoke/deep_prefix/ckpt --ckpt runs/smoke/deep_prefix/ckpt --models llama --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --llama_device_map auto --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024
+Auto-detected device: cuda
+Loaded training_stats.json: runs/smoke/deep_prefix/ckpt/training_stats.json
+Encoder input alignment: mode=neutral_chat | strip_anchor=yes | samples=5
+Building encoder and computing Z...
+Saved Z to runs/smoke/deep_prefix/ckpt/Z.pt
+
+[Standard Evaluation Mode]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4172.40it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:01<00:04,  1.60s/it]Loading checkpoint shards:  50%|#####     | 2/4 [00:02<00:02,  1.47s/it]Loading checkpoint shards:  75%|#######5  | 3/4 [00:04<00:01,  1.48s/it]Loading checkpoint shards: 100%|##########| 4/4 [00:04<00:00,  1.01s/it]Loading checkpoint shards: 100%|##########| 4/4 [00:04<00:00,  1.19s/it]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+✓ Loaded deep prefix generator for llama
+
+— Text baseline summary:
+llama: EM=0.600 F1=0.737
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 5  |  Max new tokens: 24
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 276.0 | (Qwen): - | Latent length M: 32
+Compression ratio (Llama): 8.6x | (Qwen): -x
+Approx interlingua payload per example: 163840 bytes (fp32); fp16 reference: 81920 bytes; fp32 reference: 163840 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.600  F1: 0.737  |  NLL/token (gold): 12.67516507600483
+Wall clock: 0.34s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 9.918767979270534
+       First-token acc: top1=0.000  top5=0.000
+Wall clock: 0.27s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.000  F1: 0.000
+Wall clock: 0.53s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint metrics unavailable (single-model evaluation).
+
+==== METRICS_JSON ====
+{
+  "samples": 5,
+  "max_new_tokens": 24,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 276.0
+  },
+  "compression": {
+    "llama": 8.625
+  },
+  "payload_bytes": 163840,
+  "payload_bytes_detail": {
+    "fp32": 163840,
+    "fp16": 81920,
+    "selected": null
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 7109
+    },
+    "prompt_count": 5,
+    "latent_shape": [
+      5,
+      32,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 163840,
+      "fp16": 81920
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_latent_bytes": null,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.6,
+      "f1": 0.7371428526930612,
+      "nll_token": 12.67516507600483
+    },
+    "wall_clock_sec": 0.3423748016357422
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll": 9.918767979270534,
+      "first_token_top1": 0.0,
+      "first_token_top5": 0.0,
+      "nll_token": 9.918767979270534
+    },
+    "wall_clock_sec": 0.2730374336242676
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0
+    },
+    "wall_clock_sec": 0.5311527252197266
+  },
+  "joint": {
+    "em": null,
+    "f1": null,
+    "agreement": null,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  },
+  "debug": {
+    "llama": {
+      "latent_anchor_text": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n<|eot_id|>"
+    },
+    "settings": {
+      "latent_anchor_mode": "auto",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.0,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "auto",
+      "decode": {
+        "min_new_tokens": 1,
+        "eos_ban_steps": 0,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      }
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "dataset": "squad"
+}
+Wrote per-example predictions to runs/smoke/deep_prefix/ckpt/predictions.jsonl
