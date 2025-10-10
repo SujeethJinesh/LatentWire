@@ -36,6 +36,15 @@
 - **Feature-specific smokes:** Replaced the old sample config with `configs/smoke/*.json`, giving per-feature runners (baseline, LoRA, prefix, deep prefix, latent adapters, coprocessor, gist head, refiner) tuned for 20-step/epoch smokes on the 4×H100 cluster (8× batch, 2 epochs).
 - **Ablation refresh:** `configs/ablation/sample_ablation.json` now references the baseline smoke config so sweeps inherit the new defaults.
 - **Docs:** Updated the research proposal to point at the `configs/smoke` directory.
+- **Commands:**
+  - `python -m latentwire.cli.train --config configs/smoke/base.json --tag smoke-base`
+  - `python -m latentwire.cli.train --config configs/smoke/lora.json --tag smoke-lora`
+  - `python -m latentwire.cli.train --config configs/smoke/prefix.json --tag smoke-prefix`
+  - `python -m latentwire.cli.train --config configs/smoke/deep_prefix.json --tag smoke-deep-prefix`
+  - `python -m latentwire.cli.train --config configs/smoke/latent_adapters.json --tag smoke-latent-adapters`
+  - `python -m latentwire.cli.train --config configs/smoke/coprocessor.json --tag smoke-coprocessor`
+  - `python -m latentwire.cli.train --config configs/smoke/gist_head.json --tag smoke-gist`
+  - `python -m latentwire.cli.train --config configs/smoke/refiner.json --tag smoke-refiner`
 
 ### 2025-10-10 — Auto Eval Defaults (Codex)
 - **Train CLI always evaluates:** Added an `evaluation` block to the config schema and wired `latentwire/cli/train.py` to invoke `latentwire.eval` immediately after each training run, recording both phases in metrics history.
