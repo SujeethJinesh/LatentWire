@@ -76,6 +76,7 @@
     "out_dir": "runs/smoke/latent_adapters/ckpt"
   },
   "system": {
-    "require_cuda": "yes"
+    "require_cuda": "yes",
+    "cuda_visible_devices": "0,1,2,3"
   }
 }

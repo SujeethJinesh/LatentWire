@@ -79,6 +79,7 @@
     "out_dir": "runs/smoke/gist_head/ckpt"
   },
   "system": {
-    "require_cuda": "yes"
+    "require_cuda": "yes",
+    "cuda_visible_devices": "0,1,2,3"
   }
 }

@@ -54,11 +54,17 @@ def config_to_argv_list(config_path: str, overrides: List[str]) -> Dict[str, Any
     cfg_obj, cfg_dict = load_training_config(config_path)
     effective_dict = apply_overrides(cfg_dict, overrides) if overrides else cfg_dict
     cfg = TrainingConfig.from_dict(effective_dict)
-    flat = flatten_training_config(cfg.to_dict())
+    if cfg.system.cuda_visible_devices:
+        os.environ["CUDA_VISIBLE_DEVICES"] = cfg.system.cuda_visible_devices
+    cfg_dict_for_cli = cfg.to_dict()
+    if "system" in cfg_dict_for_cli:
+        cfg_dict_for_cli["system"].pop("cuda_visible_devices", None)
+    flat = flatten_training_config(cfg_dict_for_cli)
+    cfg_dict_clean = cfg_dict_for_cli
     argv = config_to_argv(flat)
     return {
         "config": cfg,
-        "config_dict": cfg.to_dict(),
+        "config_dict": cfg_dict_clean,
         "argv": argv,
     }
 

@@ -285,6 +285,7 @@ class SystemConfig:
     """System-level configuration."""
     require_cuda: str = "yes"
     fp16_mps: bool = False
+    cuda_visible_devices: Optional[str] = None
 
 
 @dataclass
