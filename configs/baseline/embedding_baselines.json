@@ -1,7 +1,7 @@
 {
   "ckpt": "runs/smoke/base/ckpt",
   "models": "llama",
-  "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+  "llama_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
   "dataset": "squad",
   "samples": 5,
   "max_new_tokens": 24,

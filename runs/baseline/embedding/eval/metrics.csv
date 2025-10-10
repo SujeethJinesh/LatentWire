@@ -1,0 +1,8 @@
+group,model,EM,F1,NLL/token,wall_clock_sec,compression,payload_bytes,samples,M,token_budget_mode,token_budget_k,dataset
+text,llama,0.0,0.06666666577777779,15.741616361281451,2.9658639430999756,8.45625,0,5,32,content_only,32,squad
+text_embed,llama,0.0,0.06666666577777779,15.741616361281451,1.8356142044067383,8.45625,0,5,32,content_only,32,squad
+latent,llama,0,0,inf,0.0,8.45625,0,5,32,content_only,32,squad
+token_budget,llama,0,0,,0.0,8.45625,0,5,32,content_only,32,squad
+embedding_raw,llama,0.0,0.11481481317592598,15.741616361281451,14.643549919128418,8.45625,0,5,32,content_only,32,squad
+embedding_anchor,llama,0.0,0.1759999981184001,13.123125020195456,11.024034023284912,8.45625,0,5,32,content_only,32,squad
+embedding_adapter,llama,0.0,0.0,10.091252775753246,8.40767788887024,8.45625,0,5,32,content_only,32,squad

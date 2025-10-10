@@ -1,0 +1,49 @@
+=== Starting python -m latentwire.cli.eval --config configs/baseline/embedding_baselines.json --override ckpt=runs/smoke/base/ckpt --override out_dir=runs/baseline/embedding/eval --tag baseline-embedding ===
+<frozen runpy>:128: RuntimeWarning: 'latentwire.cli.eval' found in sys.modules after import of package 'latentwire.cli', but prior to execution of 'latentwire.cli.eval'; this may result in unpredictable behaviour
+Using the latest cached version of the dataset since rajpurkar/squad couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'plain_text' at /Users/sujeethjinesh/.cache/huggingface/datasets/rajpurkar___squad/plain_text/0.0.0/7b6d24c440a36b6815f21b70d25016731768db1f (last modified on Tue Sep  9 13:23:47 2025).
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+/Users/sujeethjinesh/Desktop/LatentWire/.venv/lib/python3.11/site-packages/torch/nn/functional.py:4024: UserWarning: The operator 'aten::upsample_linear1d.out' is not currently supported on the MPS backend and will fall back to run on the CPU. This may have performance implications. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/aten/src/ATen/mps/MPSFallback.mm:13.)
+  return torch._C._nn.upsample_linear1d(input, output_size, align_corners, scale_factors)
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/cli/eval.py", line 153, in <module>
+    main()
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/cli/eval.py", line 134, in main
+    run_eval(argv)
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/cli/eval.py", line 109, in run_eval
+    eval_module.main()
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/eval.py", line 1987, in main
+    summary, preds_dump = run_standard_eval(
+                          ^^^^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/eval.py", line 1527, in run_standard_eval
+    num_latent = latent_tensor.numel()
+                 ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'numel'
+=== LatentWire Eval CLI ===
+Config: /Users/sujeethjinesh/Desktop/LatentWire/configs/baseline/embedding_baselines.json
+Overrides:
+  - ckpt=runs/smoke/base/ckpt
+  - out_dir=runs/baseline/embedding/eval
+Derived argv: --ckpt runs/smoke/base/ckpt --models llama --llama_id TinyLlama/TinyLlama-1.1B-Chat-v1.0 --dataset squad --samples 5 --max_new_tokens 24 --latent_anchor_mode auto --latent_anchor_text Answer:  --append_bos_after_prefix auto --use_chat_template yes --token_budget_mode content_only --token_budget_k 32 --chunk_size 8 --fresh_eval --embedding_replay --embedding_baseline_modes ["raw", "anchor", "adapter"] --out_dir runs/baseline/embedding/eval --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 1 --eos_ban_steps 0 --calibration embed_rms --prefix_gain 1.0 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto
+Auto-detected device: mps
+Using fp16 precision on MPS for memory efficiency
+Encoder input alignment: mode=raw | strip_anchor=yes | samples=5
+Skipping encoder loading (only running embedding baselines)
+
+[Standard Evaluation Mode]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+[TinyLlama/TinyLlama-1.1B-Chat-v1.0] hf_device_map: {'': 'mps'}
+
+— Text baseline summary:
+llama: EM=0.000 F1=0.067
+
+— Text embedding-replay summary:
+llama: EM=0.000 F1=0.067
+⚠️  Adapter(llama) strict load failed; retrying with strict=False (Error(s) in loading state_dict for Adapter:
+	Missing key(s) in state_dict: "position_emb", "scale", "length_proj.0.weight", "length_proj.0.bias", "input_norm.weight", "input_norm.bias", "proj_out.weight", "proj_out.bias", "out_norm.weight", "out_norm.bias", "film_scale.weight", "film_scale.bias", "film_shift.weight", "film_shift.bias". 
+	Unexpected key(s) in state_dict: "proj_down.weight", "proj_down.bias", "proj_up.weight", "proj_up.bias", "ln.weight", "ln.bias". )
+--- baseline-embedding failed with exit code 1 ---
+

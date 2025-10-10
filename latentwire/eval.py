@@ -814,7 +814,11 @@ def _run_embedding_baselines(
                 latent_len_local = getattr(adapter, "latent_length", latent_len)
                 d_z = getattr(adapter, "d_z", adapter.input_norm.normalized_shape[0] if hasattr(adapter.input_norm, "normalized_shape") else adapter.proj_out.in_features)
                 seq = embeds.transpose(1, 2)
-                pooled = F.interpolate(seq, size=latent_len_local, mode="linear", align_corners=False).transpose(1, 2)
+                # Convert to float32 for interpolation (MPS doesn't support Half), then back to original dtype
+                orig_dtype = seq.dtype
+                seq_float = seq.float()
+                pooled_float = F.interpolate(seq_float, size=latent_len_local, mode="linear", align_corners=False)
+                pooled = pooled_float.to(orig_dtype).transpose(1, 2)
                 if pooled.size(-1) < d_z:
                     pad = torch.zeros(pooled.size(0), pooled.size(1), d_z - pooled.size(-1), device=pooled.device, dtype=pooled.dtype)
                     fake_z = torch.cat([pooled, pad], dim=-1)
@@ -861,7 +865,16 @@ def _run_embedding_baselines(
             torch.cuda.synchronize()
         elapsed = time.time() - start
 
-        prefix_batch = torch.cat(prefix_tensors, dim=0)
+        # Pad prefix tensors to the same length before concatenating
+        max_len = max(p.size(1) for p in prefix_tensors)
+        padded_prefix_tensors = []
+        for p in prefix_tensors:
+            if p.size(1) < max_len:
+                padding = torch.zeros(p.size(0), max_len - p.size(1), p.size(2),
+                                    device=p.device, dtype=p.dtype)
+                p = torch.cat([p, padding], dim=1)
+            padded_prefix_tensors.append(p)
+        prefix_batch = torch.cat(padded_prefix_tensors, dim=0)
         latent_batch = torch.cat(latent_tensors, dim=0) if latent_tensors else None
         acc = first_token_topk_acc(
             wrapper,
@@ -1258,9 +1271,13 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         adapters[name] = adapter
         model_contexts[name]["adapter"] = adapter
 
-    combined_latents = {
-        name: combine_latents(encoded_latents, name) for name in model_contexts
-    }
+    # Only create combined_latents if we have encoded_latents (not for embedding-only baselines)
+    if encoded_latents is not None:
+        combined_latents = {
+            name: combine_latents(encoded_latents, name) for name in model_contexts
+        }
+    else:
+        combined_latents = {name: None for name in model_contexts}
     quant_bits = getattr(args, "latent_quant_bits", None)
     quant_group = getattr(args, "latent_quant_group_size", 32)
     prefix_map = {}
@@ -1270,6 +1287,12 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     with torch.no_grad():
         for name, ctx in model_contexts.items():
             latents = combined_latents[name]
+            if latents is None:
+                # Skip processing if no latents (embedding-only baseline)
+                prefix_map[name] = None
+                deep_prefix_cache_map[name] = None
+                coprocessor_cache_map[name] = None
+                continue
             if quant_bits is not None:
                 latents = quantize_dequantize(latents, quant_bits, group_size=quant_group)
                 combined_latents[name] = latents
@@ -1329,28 +1352,48 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     latent_results = {}
     latent_wall = 0.0
     trunc_wall = 0.0
-    for name, ctx in model_contexts.items():
-        anchor_payload = latent_anchor_texts[name]
-        append_bos = anchor_info[name]["bos"]
-        merged_cache = _merge_prefix_caches(deep_prefix_cache_map.get(name), coprocessor_cache_map.get(name))
-        res = _run_latent_path(
-            args,
-            name,
-            ctx["wrapper"],
-            prefix_map[name],
-            anchor_payload,
-            append_bos,
-            prompts_raw,
-            ctx["chat"],
-            golds,
-            latent_len,
-            answer_lengths[name],
-            merged_cache,
-            latent=combined_latents[name],
-        )
-        latent_results[name] = res
-        latent_wall += res["latent"]["time"]
-        trunc_wall += res["trunc"]["time"]
+
+    # Skip latent evaluation if we're only doing embedding baselines
+    skip_latent_eval = all(latent is None for latent in combined_latents.values())
+
+    if not skip_latent_eval:
+        for name, ctx in model_contexts.items():
+            if combined_latents[name] is None:
+                # Create dummy results for models without latents
+                latent_results[name] = {
+                    "latent": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0, "nll": float("inf")}, "time": 0},
+                    "trunc": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0}, "time": 0}
+                }
+                continue
+
+            anchor_payload = latent_anchor_texts[name]
+            append_bos = anchor_info[name]["bos"]
+            merged_cache = _merge_prefix_caches(deep_prefix_cache_map.get(name), coprocessor_cache_map.get(name))
+            res = _run_latent_path(
+                args,
+                name,
+                ctx["wrapper"],
+                prefix_map[name],
+                anchor_payload,
+                append_bos,
+                prompts_raw,
+                ctx["chat"],
+                golds,
+                latent_len,
+                answer_lengths[name],
+                merged_cache,
+                latent=combined_latents[name],
+            )
+            latent_results[name] = res
+            latent_wall += res["latent"]["time"]
+            trunc_wall += res["trunc"]["time"]
+    else:
+        # Create dummy results when skipping latent evaluation
+        for name in model_contexts.keys():
+            latent_results[name] = {
+                "latent": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0, "nll": float("inf")}, "time": 0},
+                "trunc": {"preds": [""] * len(prompts_raw), "metrics": {"em": 0, "f1": 0}, "time": 0}
+            }
 
     model_outputs: Dict[str, Dict[str, Any]] = {}
     for name in model_contexts.keys():
@@ -1372,7 +1415,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "chat_prompts": model_contexts[name]["chat"],
             "debug": {
                 **debug_map.get(name, {}),
-                "latent_anchor_text": anchor_payload,
+                "latent_anchor_text": latent_anchor_texts.get(name, ""),
             },
             "embedding_baselines": {},
         }
@@ -1481,21 +1524,38 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     else:
         name, latent_tensor = next(iter(combined_latents.items()))
         prompts = model_outputs[name]["chat_prompts"]
-        num_latent = latent_tensor.numel()
-        base_bytes_per_latent = int(num_latent * 4)
-        bytes_per_latent = base_bytes_per_latent
-        wire = {
-            "prompt_chars": {name: sum(len(p) for p in prompts)},
-            "prompt_count": len(prompts),
-            "latent_shape": list(latent_tensor.shape),
-            "latent_bytes": {
-                "fp32": base_bytes_per_latent,
-                "fp16": int(num_latent * 2),
-            },
+        # Handle case where latent_tensor is None (embedding-only baselines)
+        if latent_tensor is not None:
+            num_latent = latent_tensor.numel()
+            base_bytes_per_latent = int(num_latent * 4)
+            bytes_per_latent = base_bytes_per_latent
+            wire = {
+                "prompt_chars": {name: sum(len(p) for p in prompts)},
+                "prompt_count": len(prompts),
+                "latent_shape": list(latent_tensor.shape),
+                "latent_bytes": {
+                    "fp32": base_bytes_per_latent,
+                    "fp16": int(num_latent * 2),
+                },
             "group_size": int(group_size),
             "scale_bits": int(scale_bits),
             "selected_latent_bytes": None,
         }
+        else:
+            # Create dummy wire stats when no latents (embedding-only baselines)
+            wire = {
+                "prompt_chars": {name: sum(len(p) for p in prompts)},
+                "prompt_count": len(prompts),
+                "latent_shape": [0, 0, 0],
+                "latent_bytes": {
+                    "fp32": 0,
+                    "fp16": 0,
+                },
+                "group_size": 0,
+                "scale_bits": 0,
+                "selected_latent_bytes": None,
+            }
+            bytes_per_latent = 0
 
     oracle_em = 0.0
     oracle_f1 = 0.0
@@ -1804,8 +1864,8 @@ def main():
         print("⚠️  Detected SimpleEncoder trained with a chat-style wrapper, but Standard eval is about to reuse a cached Z.pt.")
         print("    Add --fresh_eval (or use --sequential_eval) so Z is recomputed with the correct wrapper.")
 
-    llama_id = args.llama_id or cfg["llama_id"]
-    qwen_id  = args.qwen_id  or cfg["qwen_id"]
+    llama_id = args.llama_id or cfg.get("llama_id", "meta-llama/Meta-Llama-3.1-8B-Instruct")
+    qwen_id  = args.qwen_id  or cfg.get("qwen_id", "Qwen/Qwen2.5-7B-Instruct")
     latent_len = int(cfg.get("latent_len", getattr(args, "latent_len", 0) or 0))
     latent_shared_len = int(cfg.get("latent_shared_len", latent_len))
     latent_private_len = int(cfg.get("latent_private_len", 0))
@@ -1817,7 +1877,7 @@ def main():
             model_keys = ("llama", "qwen")
     if latent_private_len > 0 and latent_shared_len + latent_private_len * len(model_keys) != latent_len:
         latent_len = latent_shared_len + latent_private_len * len(model_keys)
-    d_z = int(cfg["d_z"])
+    d_z = int(cfg.get("d_z", 256))
     byte_max = cfg.get("byte_max", 512)
 
     # Try to load training-time prefix stats (optional)
@@ -1866,9 +1926,19 @@ def main():
 
     print(f"Encoder input alignment: mode={encoder_text_mode} | strip_anchor={'yes' if strip_literal else 'no'} | samples={len(encoder_inputs)}")
 
+    # Check if we're only doing embedding baselines (no latent evaluation needed)
+    only_embedding_baselines = (
+        getattr(args, "embedding_baseline_modes", []) and
+        getattr(args, "embedding_replay", False) and
+        not getattr(args, "skip_latent_eval", False)  # We'll use this to determine if latent eval should be skipped
+    )
+
     # Build a Z for wire metrics
     Z_path = os.path.join(args.out_dir, "Z.pt") if args.out_dir else None
-    if Z_path and (not args.fresh_eval) and os.path.exists(Z_path):
+    if only_embedding_baselines:
+        print("Skipping encoder loading (only running embedding baselines)")
+        encoded_latents = None  # Will not be used for embedding baselines
+    elif Z_path and (not args.fresh_eval) and os.path.exists(Z_path):
         print(f"Loading Z from {Z_path}")
         encoded_latents = torch.load(Z_path, map_location=device)
     else:

@@ -1,0 +1,35 @@
+[CLI] Writing pipeline log to /Users/sujeethjinesh/Desktop/LatentWire/runs/smoke/base/pipeline_run_20251010_221922.log
+=== LatentWire Train CLI ===
+Config: /Users/sujeethjinesh/Desktop/LatentWire/configs/smoke/base.json
+Overrides:
+  - data.samples=5
+  - data.epochs=1
+  - checkpoint.save_dir=runs/smoke/base/ckpt
+  - system.require_cuda=no
+Feature toggles:
+  use_lora: off
+  use_prefix: off
+  use_deep_prefix: off
+  use_latent_adapters: off
+  use_coprocessor: off
+  use_gist_head: off
+  use_latent_refiner: off
+Derived argv: --llama_id TinyLlama/TinyLlama-1.1B-Chat-v1.0 --qwen_id Qwen/Qwen2-0.5B-Instruct --llama_device_map auto --models llama --gpu_mem_gib 78.0 --dataset squad --hotpot_config fullwiki --samples 5 --epochs 1 --batch_size 8 --grad_accum_steps 1 --max_answer_tokens 24 --seed 42 --data_seed 42 --encoder_type byte --latent_len 32 --latent_private_len 0 --d_z 256 --max_bytes 512 --encoder_use_chat_template --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --adapter_hidden_mult 2 --adapter_dropout 0.0 --scale_l2 0.05 --adapter_rms_l2 0.0 --lora_r 8 --lora_alpha 16 --lora_dropout 0.05 --lora_target_modules auto --prefix_tokens 16 --peft_prefix_all_layers yes --deep_prefix_dropout 0.1 --latent_adapter_layers 8,16,24 --latent_adapter_heads 8 --latent_adapter_dropout 0.1 --coprocessor_len 1 --coprocessor_width 256 --coprocessor_dropout 0.1 --coprocessor_kv_scale 0.8 --coprocessor_pool mean --coprocessor_heads  --gist_target_len 48 --gist_hidden 512 --gist_layers 2 --gist_dropout 0.1 --gist_weight 0.0 --gist_mask_prob 0.15 --latent_refiner_layers 0 --latent_refiner_heads 4 --first_token_ce_weight 0.5 --first_token_ce_schedule none --first_token_ce_warmup_frac 0.4 --first_token_autoscale yes --first_token_entropy_weight 0.0 --K 4 --k_ce_weight 0.5 --kd_first_k_weight 0.0 --kd_tau 2.0 --state_kd_weight 0.0 --state_kd_layers 0,1,2 --latent_align_weight 0.0 --latent_prefix_align_weight 0.0 --latent_align_metric cosine --manifold_stat_weight 0.0 --latent_keep_start 1.0 --latent_keep_end 1.0 --latent_keep_power 1.0 --warmup_text_latent_steps 0 --warmup_text_latent_epochs 0.0 --warmup_tail_prob 0.0 --warmup_align_tokens 1 --warmup_align_weight 1.0 --warmup_text_teacher_weight 1.0 --warmup_text_latent_weight 0.2 --warmup_text_latent_weight_end 1.0 --lr 0.0001 --max_grad_norm 1.0 --warm_anchor_text  --warm_anchor_mode chat --train_append_bos_after_prefix yes --max_anchor_tokens 32 --use_chat_template --grad_diag_interval 10 --grad_diag_components tf,first,kce,kd,align,latent_align,latent_prefix_align --diagnostic_log runs/smoke/base/diagnostics.jsonl --save_dir runs/smoke/base/ckpt --save_every 0 --resume_from  --save_training_stats --require_cuda no
+Loading dataset subset...
+Loading SQuAD subset...
+[TinyLlama/TinyLlama-1.1B-Chat-v1.0] hf_device_map: {'': 'mps'}
+Llama hidden size: 2048
+[DeviceMap] Llama: {'': 'mps'}
+[INFO] llama anchor tokens: 11
+[INFO] Chat mode: updated strip_anchor_literal to header: '<|assistant|>\n</s>\n'
+[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...
+[Optimizer]   TinyLlama-1.1B-Chat-v1.0: skipped (use_latent_adapters=False)
+[Optimizer] Latent adapter summary: 0 params in 0 tensors
+[Optimizer] No latent adapters enabled (expected)
+[Optimizer] Created 2 parameter groups:
+  [1] encoder(90 tensors)
+  [2] llama_adapter(20 tensors)
+[INFO] LR scheduler: CosineAnnealingLR (T_max=0, eta_min=2.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/1
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)

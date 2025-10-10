@@ -1,0 +1,25 @@
+=== Starting python -m latentwire.cli.eval --config configs/baseline/embedding_baselines.json --override ckpt=runs/smoke/base/ckpt --override out_dir=runs/baseline/embedding/eval --tag baseline-embedding ===
+<frozen runpy>:128: RuntimeWarning: 'latentwire.cli.eval' found in sys.modules after import of package 'latentwire.cli', but prior to execution of 'latentwire.cli.eval'; this may result in unpredictable behaviour
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/cli/eval.py", line 153, in <module>
+    main()
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/cli/eval.py", line 134, in main
+    run_eval(argv)
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/cli/eval.py", line 109, in run_eval
+    eval_module.main()
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latentwire/eval.py", line 1808, in main
+    qwen_id  = args.qwen_id  or cfg["qwen_id"]
+                                ~~~^^^^^^^^^^^
+KeyError: 'qwen_id'
+=== LatentWire Eval CLI ===
+Config: /Users/sujeethjinesh/Desktop/LatentWire/configs/baseline/embedding_baselines.json
+Overrides:
+  - ckpt=runs/smoke/base/ckpt
+  - out_dir=runs/baseline/embedding/eval
+Derived argv: --ckpt runs/smoke/base/ckpt --models llama --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --dataset squad --samples 5 --max_new_tokens 24 --latent_anchor_mode auto --latent_anchor_text Answer:  --append_bos_after_prefix auto --use_chat_template yes --token_budget_mode content_only --token_budget_k 32 --chunk_size 8 --fresh_eval --embedding_replay --embedding_baseline_modes ["raw", "anchor", "adapter"] --out_dir runs/baseline/embedding/eval --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 1 --eos_ban_steps 0 --calibration embed_rms --prefix_gain 1.0 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto
+Auto-detected device: mps
+Using fp16 precision on MPS for memory efficiency
+--- baseline-embedding failed with exit code 1 ---
+
