@@ -1,5 +1,11 @@
 # LatentWire Quickstart
 
+[![CI](https://github.com/SujeethJinesh/LatentWire/actions/workflows/ci.yml/badge.svg)](https://github.com/SujeethJinesh/LatentWire/actions/workflows/ci.yml)
+[![Tests](https://github.com/SujeethJinesh/LatentWire/actions/workflows/tests.yml/badge.svg)](https://github.com/SujeethJinesh/LatentWire/actions/workflows/tests.yml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 LatentWire turns latent soft-prompts into a shared wire that both Llama and Qwen can decode. The repo now contains smoke-scale runners, hero-scale automation, and structured diagnostics so you can reproduce the staged pipeline end-to-end.
 
 ---

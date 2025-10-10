@@ -8,6 +8,13 @@ import pytest
 from latentwire.config import TrainingConfig
 from latentwire.cli.utils import apply_overrides
 
+BASE_CONFIG_PATH = Path("configs/smoke/base.json")
+if BASE_CONFIG_PATH.exists():
+    with open(BASE_CONFIG_PATH) as _base_f:
+        BASE_CONFIG_KEYS = set(json.load(_base_f).keys())
+else:
+    BASE_CONFIG_KEYS = None
+
 
 # List all smoke configurations
 SMOKE_CONFIGS = [

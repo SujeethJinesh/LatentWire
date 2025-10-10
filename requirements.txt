@@ -1,11 +1,31 @@
+# Core dependencies
 torch>=2.2
 # Pin transformers to avoid torch>=2.6 restriction for .bin weights on older Pythons
 transformers==4.45.2
 datasets>=4.0.0
 accelerate>=1.10.0
 numpy>=2.0
+scipy>=1.7.0
+scikit-learn>=1.0.0
 tqdm
-pytest
+sentence-transformers
+sentencepiece>=0.1.99
+protobuf>=3.20.0
+tokenizers>=0.13.0
+
+# Optional dependencies
 # bitsandbytes is Linux/CUDA specific; safely ignored on macOS
 bitsandbytes>=0.43.0 ; platform_system == "Linux"
-sentence-transformers
+# peft>=0.5.0  # Uncomment if using prefix tuning or LoRA
+
+# Testing dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.0
+pytest-timeout>=2.1.0
+
+# Code quality (optional, for development)
+# black>=23.0.0
+# isort>=5.12.0
+# ruff>=0.1.0
+# mypy>=1.5.0

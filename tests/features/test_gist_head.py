@@ -73,7 +73,7 @@ def test_gist_reconstruction_head_layers():
 
 
 def test_gist_reconstruction_head_dropout():
-    """Test that dropout is applied during training."""
+    """Test that dropout produces stochastic outputs in training mode and deterministic outputs in eval mode."""
     d_latent = 64
     d_model = 128
     target_len = 16
@@ -87,25 +87,21 @@ def test_gist_reconstruction_head_dropout():
         dropout=0.5  # High dropout for testing
     )
 
-    # Set to training mode
-    head.train()
-
-    # Create identical inputs
     x = torch.randn(1, 8, d_latent)
 
-    # Run forward pass twice
-    with torch.no_grad():
-        # Temporarily enable grad for dropout to work
-        head.eval()
-        out1_eval = head(x).clone()
-        out2_eval = head(x).clone()
+    head.train()
+    torch.manual_seed(0)
+    out_train_1 = head(x)
+    torch.manual_seed(1)
+    out_train_2 = head(x)
+    assert not torch.allclose(out_train_1, out_train_2), "Dropout should introduce stochasticity in training mode"
 
-        head.train()
-        # In training mode, dropout should make outputs different
-        # but we can't test this easily without seeding
-
-    # In eval mode, outputs should be identical
-    assert torch.allclose(out1_eval, out2_eval)
+    head.eval()
+    torch.manual_seed(0)
+    out_eval_1 = head(x)
+    torch.manual_seed(1)
+    out_eval_2 = head(x)
+    assert torch.allclose(out_eval_1, out_eval_2), "Eval mode should be deterministic"
 
 
 def test_gist_reconstruction_head_gradient_flow():
@@ -167,40 +163,28 @@ def test_gist_config_integration():
     assert config.gist_mask_prob == 0.2
 
 
-def test_gist_masking_functionality():
-    """Test basic gist masking concept."""
-    batch_size = 2
-    seq_len = 10
-    d_model = 128
+def test_gist_dropout_masks_attention():
+    """Ensure the internal dropout zeros out some attention weights when training."""
+    head = GistReconstructionHead(
+        d_latent=32,
+        d_model=64,
+        target_len=8,
+        hidden=64,
+        num_layers=1,
+        dropout=0.5,
+    )
 
-    # Create dummy tensors
-    z = torch.randn(batch_size, seq_len, d_model)
+    assert head.dropout is not None
+    head.train()
 
-    # Create a random mask with probability 0.5
-    mask_prob = 0.5
-    mask = torch.rand(batch_size, seq_len) < mask_prob
+    attn = torch.ones(4, 8, 10)
+    torch.manual_seed(0)
+    dropped = head.dropout(attn)
 
-    # Apply masking manually
-    masked_z = z.clone()
-    for b in range(batch_size):
-        for s in range(seq_len):
-            if mask[b, s]:
-                masked_z[b, s] = 0
-
-    # Check shapes
-    assert masked_z.shape == z.shape
-    assert mask.shape == (batch_size, seq_len)
-
-    # Check that some positions are masked (set to 0)
-    # With 0.5 probability, we expect roughly half to be masked
-    assert mask.float().mean() > 0.2
-    assert mask.float().mean() < 0.8
-
-    # Check that masked positions have zero values
-    for b in range(batch_size):
-        for s in range(seq_len):
-            if mask[b, s]:
-                assert torch.allclose(masked_z[b, s], torch.zeros(d_model))
+    # Dropout should zero some entries and rescale others
+    zero_count = (dropped == 0).sum().item()
+    assert zero_count > 0, "Expected dropout to zero attention weights"
+    assert torch.unique(dropped).numel() > 1, "Dropout should rescale surviving weights"
 
 
 def test_gist_loss_computation():
