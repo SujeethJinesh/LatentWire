@@ -163,6 +163,30 @@ class LatentRefinerConfig:
 
 
 @dataclass
+class EvaluationConfig:
+    """Evaluation configuration automatically executed after training."""
+
+    samples: int = 100
+    dataset: Optional[str] = None
+    max_new_tokens: int = 16
+    latent_anchor_mode: str = "auto"
+    latent_anchor_text: str = "Answer: "
+    append_bos_after_prefix: str = "auto"  # auto, yes, no
+    use_chat_template: str = "yes"  # yes, no
+    sequential_eval: bool = True
+    fresh_eval: bool = True
+    token_budget_mode: str = "content_only"
+    token_budget_k: Optional[int] = None
+    first_token_top_p: float = 1.0
+    first_token_temperature: float = 0.0
+    chunk_size: int = 8
+    encoder_text_mode: str = "auto"
+    out_dir: Optional[str] = None
+    hf_encoder_id: Optional[str] = None
+    max_enc_tokens: Optional[int] = None
+
+
+@dataclass
 class LossWeights:
     """Training loss weights and KD configuration."""
     # First-token objectives
@@ -299,6 +323,9 @@ class TrainingConfig:
     # Milestone 0: Baseline verification mode
     baseline_verification: bool = False
 
+    # Automatic evaluation settings
+    evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
+
     def validate(self) -> List[str]:
         """Validate configuration and return list of warnings/errors.
 
@@ -369,6 +396,10 @@ class TrainingConfig:
                     "(deep_prefix, latent_adapters, gist_head will be disabled)"
                 )
 
+        # Validate evaluation dataset if explicitly set
+        if self.evaluation.dataset and self.evaluation.dataset not in ["hotpot", "squad", "squad_v2"]:
+            warnings.append(f"ERROR: Unknown evaluation dataset '{self.evaluation.dataset}'")
+
         return warnings
 
     def apply_baseline_verification(self):
@@ -424,6 +455,7 @@ class TrainingConfig:
             checkpoint=CheckpointConfig(**data.get("checkpoint", {})),
             system=SystemConfig(**data.get("system", {})),
             baseline_verification=data.get("baseline_verification", False),
+            evaluation=EvaluationConfig(**data.get("evaluation", {})),
         )
 
     @classmethod

@@ -65,6 +65,8 @@ def _infer_type(value: str) -> Any:
 def flatten_training_config(cfg_dict: Dict[str, Any]) -> Dict[str, Any]:
     flat: Dict[str, Any] = {}
     for group, payload in cfg_dict.items():
+        if group == "evaluation":
+            continue
         if isinstance(payload, dict):
             for key, value in payload.items():
                 flat[key] = value

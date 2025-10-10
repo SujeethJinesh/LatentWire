@@ -32,6 +32,12 @@
   3. Implement proven baseline (Gist Tokens) to validate feasibility
   4. Lower expectations to match token-budget baseline first
 
+### 2025-10-10 — Auto Eval Defaults (Codex)
+- **Train CLI always evaluates:** Added an `evaluation` block to the config schema and wired `latentwire/cli/train.py` to invoke `latentwire.eval` immediately after each training run, recording both phases in metrics history.
+- **Config plumbing:** `flatten_training_config` now skips `evaluation` keys so training argv remain unchanged; helpers build eval argv using the training config (models, latent length, checkpoints).
+- **Ablation parity:** `latentwire/cli/run_ablation.py` now mirrors the auto-eval flow so every sweep iteration captures eval metrics.
+- **Regression safety:** Updated CLI integration tests to stub the auto-eval path and assert that both train and eval records are written.
+
 ### 2025-10-10 — Milestones 5–9 CLI + Coprocessor Integration (Codex)
 - **Latent coprocessor:** Added `latentwire/features/coproc.py`, config plumbing, and checkpoint save/load so KV deltas blend with deep-prefix caches. Mutual exclusivity with deep prefix is enforced.
 - **CLI overhaul:** Implemented `latentwire/cli/{train,eval}.py` plus shared utilities for overrides, feature summaries, metrics-history append, and dry-run tooling. Sample configs live under `configs/` for Mac-safe validation.

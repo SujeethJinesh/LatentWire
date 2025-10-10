@@ -1,7 +1,0 @@
-[Sequential Evaluation Mode - one model at a time]
-[align:llama] encoder_text_mode candidates=['raw', 'neutral_chat', 'llama_chat'] | nlls={'raw': 7.648946731256884, 'neutral_chat': 7.710875178935916, 'llama_chat': 7.74808314966601} | picked=raw
-[calib:llama] mode=embed_rms prefix_rms=0.65588 -> target=0.01491
-[debug:llama] adapter.scale=1.0018 | Z.std=0.9995 Z.mean||=15.9917 | prefix.std=0.0149 prefix.mean||=0.6727 | embed.RMS=0.0149
-[align:qwen] encoder_text_mode candidates=['raw', 'neutral_chat', 'qwen_chat'] | nlls={'raw': 9.141582128862856, 'neutral_chat': 9.155404976751438, 'qwen_chat': 8.999436044188403} | picked=qwen_chat
-[calib:qwen]  mode=embed_rms prefix_rms=0.65834 -> target=0.01522
-[debug:qwen] adapter.scale=1.0002 | Z.std=0.9998 Z.mean||=15.9973 | prefix.std=0.0152 prefix.mean||=0.4550 | embed.RMS=0.0152

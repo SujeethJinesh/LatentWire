@@ -17,6 +17,9 @@ def test_cli_train_dry_run(tmp_path, monkeypatch, capsys):
     }))
 
     monkeypatch.setattr(train_cli, "run_train", lambda argv: None)
+    def _fail_eval(*args, **kwargs):
+        raise AssertionError("run_eval_from_config should not be called for dry runs")
+    monkeypatch.setattr(train_cli, "run_eval_from_config", _fail_eval)
     train_cli.main(["--config", str(config_path), "--dry-run"])
     out = capsys.readouterr().out
     assert "LatentWire Train CLI" in out
@@ -42,11 +45,26 @@ def test_cli_train_records_history(tmp_path, monkeypatch, temp_history):
     }))
 
     monkeypatch.setattr(train_cli, "run_train", lambda argv: None)
+    def _fake_eval(cfg, eval_cfg, tag, pipeline_log=None):
+        record = {
+            "kind": "eval",
+            "tag": f"{tag}-eval",
+            "config": {"out_dir": str(temp_history.parent)},
+            "argv": ["--ckpt", "dummy"],
+        }
+        if pipeline_log is not None:
+            record["pipeline_log"] = str(pipeline_log)
+        return record
+    monkeypatch.setattr(train_cli, "run_eval_from_config", _fake_eval)
     train_cli.main(["--config", str(config_path), "--tag", "unit"])
     lines = temp_history.read_text().strip().splitlines()
-    assert lines
-    record = json.loads(lines[-1])
-    assert record["tag"] == "unit"
-    assert "pipeline_log" in record
-    log_path = pathlib.Path(record["pipeline_log"])
+    assert len(lines) >= 2
+    train_record = json.loads(lines[-2])
+    eval_record = json.loads(lines[-1])
+    assert train_record["kind"] == "train"
+    assert train_record["tag"] == "unit"
+    assert eval_record["kind"] == "eval"
+    assert eval_record["tag"] == "unit-eval"
+    assert "pipeline_log" in train_record
+    log_path = pathlib.Path(train_record["pipeline_log"])
     assert log_path.exists()

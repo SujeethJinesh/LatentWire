@@ -1,37 +1,0 @@
-=========================================
-Starting pipeline at Fri Sep 12 20:01:45 PDT 2025
-=========================================
-
-=========================================
-PHASE 1: TRAINING
-=========================================
-Starting training at Fri Sep 12 20:01:45 PDT 2025
-Checkpoint will be saved to: preserved_data/show_that_1B_is_trainable_w_low_nll/ckpt
-
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading dataset subset...
-Loading SQuAD subset...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1924.65it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.27s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.14s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.71s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.51s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 433.73it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.29it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.31s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.95s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.73s/it]
-Llama hidden size: 4096, Qwen hidden size: 3584
-Epoch 1/3
-  step 10/2738 | loss_L=2.4804 | loss_Q=7.8175 | scale_pen(L)= 7.7608e-09 | scale_pen(Q)= 1.4047e-07 | grad_norm=10.65 | sec/step~0.61 | rms_L~0.5582 rms_Q~0.5562
-  step 20/2738 | loss_L=3.1456 | loss_Q=6.7638 | scale_pen(L)= 1.0360e-11 | scale_pen(Q)= 2.9485e-07 | grad_norm=3.90 | sec/step~0.40 | rms_L~0.5584 rms_Q~0.5568
-  step 30/2738 | loss_L=1.8663 | loss_Q=4.2938 | scale_pen(L)= 1.7608e-09 | scale_pen(Q)= 3.6041e-07 | grad_norm=3.31 | sec/step~0.32 | rms_L~0.5587 rms_Q~0.5574
-  step 40/2738 | loss_L=2.1230 | loss_Q=3.9746 | scale_pen(L)= 3.0126e-08 | scale_pen(Q)= 3.6471e-07 | grad_norm=2.35 | sec/step~0.30 | rms_L~0.5591 rms_Q~0.5580
-  step 50/2738 | loss_L=2.2629 | loss_Q=3.7656 | scale_pen(L)= 5.1409e-08 | scale_pen(Q)= 3.7282e-07 | grad_norm=1.85 | sec/step~0.29 | rms_L~0.5594 rms_Q~0.5585
-  step 60/2738 | loss_L=1.8778 | loss_Q=3.0051 | scale_pen(L)= 1.1125e-07 | scale_pen(Q)= 3.9648e-07 | grad_norm=1.46 | sec/step~0.28 | rms_L~0.5598 rms_Q~0.5590
-  step 70/2738 | loss_L=2.1118 | loss_Q=3.2558 | scale_pen(L)= 2.4451e-07 | scale_pen(Q)= 4.5316e-07 | grad_norm=1.23 | sec/step~0.29 | rms_L~0.5602 rms_Q~0.5595
-  step 80/2738 | loss_L=2.0645 | loss_Q=3.1274 | scale_pen(L)= 4.1746e-07 | scale_pen(Q)= 5.3976e-07 | grad_norm=1.19 | sec/step~0.29 | rms_L~0.5607 rms_Q~0.5599
-  step 90/2738 | loss_L=2.1689 | loss_Q=3.2743 | scale_pen(L)= 7.2325e-07 | scale_pen(Q)= 6.3052e-07 | grad_norm=1.38 | sec/step~0.29 | rms_L~0.5611 rms_Q~0.5602
-  step 100/2738 | loss_L=1.8555 | loss_Q=2.6592 | scale_pen(L)= 1.1373e-06 | scale_pen(Q)= 7.4038e-07 | grad_norm=1.30 | sec/step~0.28 | rms_L~0.5615 rms_Q~0.5605
-  step 110/2738 | loss_L=1.8681 | loss_Q=2.3798 | scale_pen(L)= 1.4794e-06 | scale_pen(Q)= 8.6326e-07 | grad_norm=1.27 | sec/step~0.28 | rms_L~0.5620 rms_Q~0.5608
-  step 120/2738 | loss_L=1.7532 | loss_Q=2.3875 | scale_pen(L)= 2.0847e-06 | scale_pen(Q)= 9.7498e-07 | grad_norm=0.98 | sec/step~0.28 | rms_L~0.5624 rms_Q~0.5610
-  step 130/2738 | loss_L=2.0247 | loss_Q=2.6218 | scale_pen(L)= 2.6750e-06 | scale_pen(Q)= 1.0734e-06 | grad_norm=0.85 | sec/step~0.28 | rms_L~0.5629 rms_Q~0.5612
-  step 140/2738 | loss_L=1.9365 | loss_Q=2.4031 | scale_pen(L)= 3.5055e-06 | scale_pen(Q)= 1.1916e-06 | grad_norm=0.92 | sec/step~0.29 | rms_L~0.5633 rms_Q~0.5614
-  step 150/2738 | loss_L=1.8327 | loss_Q=2.3311 | scale_pen(L)= 4.4950e-06 | scale_pen(Q)= 1.3059e-06 | grad_norm=0.92 | sec/step~0.29 | rms_L~0.5638 rms_Q~0.5616
-  step 160/2738 | loss_L=1.7251 | loss_Q=2.0102 | scale_pen(L)= 5.3882e-06 | scale_pen(Q)= 1.4542e-06 | grad_norm=1.02 | sec/step~0.29 | rms_L~0.5643 rms_Q~0.5618
-  step 170/2738 | loss_L=1.4047 | loss_Q=1.6521 | scale_pen(L)= 6.3148e-06 | scale_pen(Q)= 1.5614e-06 | grad_norm=0.86 | sec/step~0.28 | rms_L~0.5648 rms_Q~0.5620

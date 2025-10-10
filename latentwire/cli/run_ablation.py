@@ -105,6 +105,17 @@ def run_ablation(config_path: str, args: argparse.Namespace) -> None:
         except Exception as exc:
             print(f"[Ablation] Warning: failed to append metrics history ({exc})")
 
+        try:
+            eval_record = train_cli.run_eval_from_config(
+                cfg_obj,
+                getattr(cfg_obj, "evaluation", None),
+                tag,
+            )
+            eval_out_dir = eval_record.get("config", {}).get("out_dir") or cfg_obj.checkpoint.save_dir
+            append_metrics_history(eval_out_dir, eval_record)
+        except Exception as exc:
+            print(f"[Ablation] Warning: evaluation failed ({exc})")
+
 
 def main(cli_args: Optional[List[str]] = None) -> None:
     parser = build_parser()
@@ -114,4 +125,3 @@ def main(cli_args: Optional[List[str]] = None) -> None:
 
 if __name__ == "__main__":
     main()
-
