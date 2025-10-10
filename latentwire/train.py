@@ -1874,6 +1874,7 @@ def main():
             enable_first_token_loss = current_first_weight > 0.0
 
             scaffolds = {}
+            bad_latent_sources: List[str] = []
             for ctx in model_contexts:
                 if args.use_chat_template:
                     pad_token = getattr(ctx.wrapper.tokenizer, "pad_token_id", None)
@@ -1989,6 +1990,7 @@ def main():
                     print(f"    latents finite: {torch.isfinite(latents_for_adapter).all()}")
                     # Set flag and break out of model loop
                     skip_batch_due_to_nan = True
+                    bad_latent_sources.append(ctx.name)
                     break
 
                 deep_prefix_cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]] = None
@@ -2433,6 +2435,8 @@ def main():
 
             # Skip batch if NaN detected early in prefix
             if skip_batch_due_to_nan:
+                if bad_latent_sources:
+                    print(f"[WARN] Skipping batch due to non-finite prefix for {', '.join(bad_latent_sources)}")
                 optimizer.zero_grad(set_to_none=True)
                 torch.cuda.empty_cache()
                 continue
@@ -2586,35 +2590,35 @@ def main():
                         msg_ctx += f" align={_to_float(metrics['align']):.4f}"
                     if args.latent_align_weight > 0.0:
                         msg_ctx += f" latA={_to_float(metrics['latent_align']):.4f}"
-                if args.latent_prefix_align_weight > 0.0:
-                    msg_ctx += f" latP={_to_float(metrics['latent_prefix_align']):.4f}"
-                if args.use_gist_head and args.gist_weight > 0.0:
-                    msg_ctx += f" gist={_to_float(metrics['gist']):.4f}"
-                if grad_diag_components:
-                    for diag_name in grad_diag_components:
-                        key = f"grad_{diag_name}"
-                        if key in metrics:
-                            msg_ctx += f" {key}={_to_float(metrics[key]):.3e}"
-                parts.append(msg_ctx)
-                if args.scale_l2 > 0.0:
-                    parts.append(
-                        f"scale_pen({ctx.name})={scale_penalty(ctx.adapter, args.scale_l2, device).item():.4e}"
-                    )
-            if feature_grad_norms:
-                grad_bits = ", ".join(f"{k}={v:.3e}" for k, v in feature_grad_norms.items())
-                parts.append(f"feature_grads[{grad_bits}]")
-            parts.append(f"K={current_K} tau={args.kd_tau:.2f}")
-            if args.save_training_stats:
-                stats_msgs = []
-                for ctx in model_contexts:
-                    tracker = stats_trackers[ctx.name]
-                    stats_msgs.append(
-                        f"{ctx.name}: rms_raw~{tracker['rms_raw'].mean:.4f}"
-                        f" rms_cal~{tracker['rms_cal'].mean:.4f}"
-                        f" embed_rms~{tracker['embed_rms']:.5f}"
-                    )
-                parts.append("stats=[" + "; ".join(stats_msgs) + "]")
-            print(" | ".join(parts))
+                    if args.latent_prefix_align_weight > 0.0:
+                        msg_ctx += f" latP={_to_float(metrics['latent_prefix_align']):.4f}"
+                    if args.use_gist_head and args.gist_weight > 0.0:
+                        msg_ctx += f" gist={_to_float(metrics['gist']):.4f}"
+                    if grad_diag_components:
+                        for diag_name in grad_diag_components:
+                            key = f"grad_{diag_name}"
+                            if key in metrics:
+                                msg_ctx += f" {key}={_to_float(metrics[key]):.3e}"
+                    parts.append(msg_ctx)
+                    if args.scale_l2 > 0.0:
+                        parts.append(
+                            f"scale_pen({ctx.name})={scale_penalty(ctx.adapter, args.scale_l2, device).item():.4e}"
+                        )
+                if feature_grad_norms:
+                    grad_bits = ", ".join(f"{k}={v:.3e}" for k, v in feature_grad_norms.items())
+                    parts.append(f"feature_grads[{grad_bits}]")
+                parts.append(f"K={current_K} tau={args.kd_tau:.2f}")
+                if args.save_training_stats:
+                    stats_msgs = []
+                    for ctx in model_contexts:
+                        tracker = stats_trackers[ctx.name]
+                        stats_msgs.append(
+                            f"{ctx.name}: rms_raw~{tracker['rms_raw'].mean:.4f}"
+                            f" rms_cal~{tracker['rms_cal'].mean:.4f}"
+                            f" embed_rms~{tracker['embed_rms']:.5f}"
+                        )
+                    parts.append("stats=[" + "; ".join(stats_msgs) + "]")
+                print(" | ".join(parts))
 
             # Log GPU memory every 10 steps
             gpu_stats = log_gpu_memory(prefix=f"  [Step {step+1}] ")
