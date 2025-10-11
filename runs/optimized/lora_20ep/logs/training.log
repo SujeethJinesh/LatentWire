@@ -1,91 +1,66 @@
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
-usage: train.py [-h] [--llama_id LLAMA_ID] [--qwen_id QWEN_ID]
-                [--llama_device_map LLAMA_DEVICE_MAP]
-                [--qwen_device_map QWEN_DEVICE_MAP] [--require_cuda {yes,no}]
-                [--dataset {hotpot,squad,squad_v2}] [--models MODELS]
-                [--hotpot_config HOTPOT_CONFIG] [--samples SAMPLES]
-                [--epochs EPOCHS] [--batch_size BATCH_SIZE]
-                [--grad_accum_steps GRAD_ACCUM_STEPS] [--seed SEED]
-                [--data_seed DATA_SEED] [--latent_len LATENT_LEN]
-                [--latent_shared_len LATENT_SHARED_LEN]
-                [--latent_private_len LATENT_PRIVATE_LEN] [--d_z D_Z]
-                [--max_bytes MAX_BYTES] [--encoder_type {byte,simple-st,stq}]
-                [--encoder_use_chat_template]
-                [--encoder_backbone ENCODER_BACKBONE]
-                [--hf_encoder_id HF_ENCODER_ID]
-                [--max_enc_tokens MAX_ENC_TOKENS] [--freeze_encoder]
-                [--use_chat_template] [--max_answer_tokens MAX_ANSWER_TOKENS]
-                [--lr LR] [--scale_l2 SCALE_L2]
-                [--adapter_rms_l2 ADAPTER_RMS_L2]
-                [--max_grad_norm MAX_GRAD_NORM]
-                [--grad_diag_interval GRAD_DIAG_INTERVAL]
-                [--grad_diag_components GRAD_DIAG_COMPONENTS]
-                [--diagnostic_log DIAGNOSTIC_LOG] [--adapter_freeze_scale]
-                [--first_token_ce_weight FIRST_TOKEN_CE_WEIGHT]
-                [--first_token_ce_schedule {none,cosine,warmup}]
-                [--first_token_entropy_weight FIRST_TOKEN_ENTROPY_WEIGHT]
-                [--first_token_ce_peak FIRST_TOKEN_CE_PEAK]
-                [--first_token_ce_warmup_frac FIRST_TOKEN_CE_WARMUP_FRAC]
-                [--first_token_autoscale {yes,no}]
-                [--train_append_bos_after_prefix {auto,yes,no}]
-                [--adapter_hidden_mult ADAPTER_HIDDEN_MULT]
-                [--adapter_dropout ADAPTER_DROPOUT] [--adapter_colorize]
-                [--no_adapter_metadata]
-                [--manifold_stat_weight MANIFOLD_STAT_WEIGHT]
-                [--state_kd_weight STATE_KD_WEIGHT]
-                [--state_kd_layers STATE_KD_LAYERS] [--use_gist_head]
-                [--gist_target_len GIST_TARGET_LEN]
-                [--gist_hidden GIST_HIDDEN] [--gist_layers GIST_LAYERS]
-                [--gist_dropout GIST_DROPOUT] [--gist_weight GIST_WEIGHT]
-                [--gist_mask_prob GIST_MASK_PROB] [--use_coprocessor]
-                [--coprocessor_len COPROCESSOR_LEN]
-                [--coprocessor_width COPROCESSOR_WIDTH]
-                [--coprocessor_dropout COPROCESSOR_DROPOUT]
-                [--coprocessor_kv_scale COPROCESSOR_KV_SCALE]
-                [--coprocessor_pool COPROCESSOR_POOL]
-                [--coprocessor_heads COPROCESSOR_HEADS] [--use_lora]
-                [--lora_r LORA_R] [--lora_alpha LORA_ALPHA]
-                [--lora_dropout LORA_DROPOUT] [--lora_firstN LORA_FIRSTN]
-                [--lora_target_modules LORA_TARGET_MODULES] [--use_prefix]
-                [--prefix_tokens PREFIX_TOKENS] [--prefix_projection]
-                [--peft_prefix_all_layers PEFT_PREFIX_ALL_LAYERS]
-                [--use_latent_adapters]
-                [--latent_adapter_layers LATENT_ADAPTER_LAYERS]
-                [--latent_adapter_heads LATENT_ADAPTER_HEADS]
-                [--latent_adapter_dropout LATENT_ADAPTER_DROPOUT]
-                [--use_deep_prefix] [--deep_prefix_len DEEP_PREFIX_LEN]
-                [--deep_prefix_dropout DEEP_PREFIX_DROPOUT] [--K K]
-                [--adaptive_k_start ADAPTIVE_K_START]
-                [--adaptive_k_end ADAPTIVE_K_END]
-                [--latent_keep_start LATENT_KEEP_START]
-                [--latent_keep_end LATENT_KEEP_END]
-                [--latent_keep_power LATENT_KEEP_POWER]
-                [--warmup_text_latent_steps WARMUP_TEXT_LATENT_STEPS]
-                [--warmup_text_latent_epochs WARMUP_TEXT_LATENT_EPOCHS]
-                [--warmup_align_tokens WARMUP_ALIGN_TOKENS]
-                [--warmup_align_weight WARMUP_ALIGN_WEIGHT]
-                [--warmup_text_teacher_weight WARMUP_TEXT_TEACHER_WEIGHT]
-                [--warmup_text_latent_weight WARMUP_TEXT_LATENT_WEIGHT]
-                [--warmup_text_latent_weight_end WARMUP_TEXT_LATENT_WEIGHT_END]
-                [--warmup_tail_prob WARMUP_TAIL_PROB]
-                [--latent_align_weight LATENT_ALIGN_WEIGHT]
-                [--latent_prefix_align_weight LATENT_PREFIX_ALIGN_WEIGHT]
-                [--latent_align_metric {mse,cosine,both}]
-                [--k_ce_weight K_CE_WEIGHT]
-                [--kd_first_k_weight KD_FIRST_K_WEIGHT] [--kd_tau KD_TAU]
-                [--teacher_llama_id TEACHER_LLAMA_ID]
-                [--teacher_qwen_id TEACHER_QWEN_ID] [--kd_skip_text]
-                [--latent_refiner_layers LATENT_REFINER_LAYERS]
-                [--latent_refiner_heads LATENT_REFINER_HEADS]
-                [--use_latent_refiner] [--load_4bit] [--sequential_models]
-                [--llama_devices LLAMA_DEVICES] [--qwen_devices QWEN_DEVICES]
-                [--gpu_mem_gib GPU_MEM_GIB] [--grad_ckpt] [--fp16_mps]
-                [--warm_anchor_text WARM_ANCHOR_TEXT]
-                [--warm_anchor_mode {auto,text,chat,none}]
-                [--max_anchor_tokens MAX_ANCHOR_TOKENS] [--debug]
-                [--save_dir SAVE_DIR] [--save_every SAVE_EVERY]
-                [--resume_from RESUME_FROM] [--auto_resume]
-                [--no_load_optimizer] [--no_load_lr_scheduler] [--reset_epoch]
-                [--save_training_stats] [--baseline_verification]
-train.py: error: unrecognized arguments: --lr_scheduler cosine --warmup_steps 100 --weight_decay 0.01 --k_token_ce_weight 1.5 --k_token_ce_k 8 --kd_weight 0.5 --entropy_weight 0.5 1 --max_checkpoints_to_keep 5 --save_best --eval_every 200 --eval_samples 200 --early_stopping_patience 5 --early_stopping_metric first_token_top1 --diagnostic_interval 20 --gradient_checkpointing --mixed_precision bf16
+[Optimization] Enabled FlashAttention-2 and memory-efficient kernels
+[Optimization] Enabled TF32 for matmul and cuDNN
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2170.68it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:10<00:31, 10.49s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:21<00:22, 11.03s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  7.78s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  8.95s/it]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py:92: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/utils/checkpoint.py:295: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
+  with torch.enable_grad(), device_autocast_ctx, torch.cpu.amp.autocast(**ctx.cpu_autocast_kwargs):  # type: ignore[attr-defined]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+
+🔧 Applying LoRA (r=64, alpha=128)...
+   Llama BEFORE LoRA: 0 trainable / 8,030,261,248 total
+trainable params: 167,772,160 || all params: 8,198,033,408 || trainable%: 2.0465
+   Llama AFTER LoRA:  167,772,160 trainable / 8,198,033,408 total
+   ✓ Added 167,772,160 LoRA parameters to Llama
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+[After Model Loading] [GPU Memory] GPU0:3.3GB(4%), GPU1:4.6GB(5%), GPU2:4.6GB(5%), GPU3:4.3GB(5%) | Total: 16.8GB allocated, 16.8GB reserved, 323.3GB free, Peak: 16.8GB
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[INFO] llama anchor tokens: 3
+[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...
+[Optimizer]   Meta-Llama-3.1-8B-Instruct: skipped (use_latent_adapters=False)
+[Optimizer] Latent adapter summary: 0 params in 0 tensors
+[Optimizer] No latent adapters enabled (expected)
+[Optimization] Using fused AdamW optimizer
+[Optimizer] Created 3 parameter groups:
+  [1] encoder(90 tensors)
+  [2] llama_adapter(20 tensors)
+  [3] llama_extra(448 tensors)
+[INFO] LR scheduler: CosineAnnealingLR (T_max=4160, eta_min=4.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/20
+[Epoch 1 Start] [GPU Memory] GPU0:3.4GB(9%), GPU1:4.6GB(5%), GPU2:4.6GB(5%), GPU3:4.3GB(5%) | Total: 16.8GB allocated, 21.4GB reserved, 318.8GB free, Peak: 19.9GB
+    [Memory after encoder] 27.5GB allocated
+[INFO] KD teacher: adapters disabled successfully (clean text baseline)
+    [Memory after backward] 19.7GB allocated, peak 136.1GB
+  [Step 1] [GPU Memory] GPU0:5.5GB(93%), GPU1:4.9GB(16%), GPU2:4.9GB(16%), GPU3:4.5GB(50%) | Total: 19.7GB allocated, 148.3GB reserved, 191.8GB free, Peak: 136.1GB
+    [Memory after encoder] 30.4GB allocated
+    [Memory after backward] 21.7GB allocated, peak 136.5GB
+    [Memory after optimizer] 22.4GB allocated
+  [Step 2] [GPU Memory] GPU0:5.7GB(98%), GPU1:5.1GB(16%), GPU2:5.1GB(16%), GPU3:4.6GB(50%) | Total: 20.4GB allocated, 153.6GB reserved, 186.5GB free, Peak: 136.5GB
+    [Memory after encoder] 31.1GB allocated
+    [Memory after backward] 23.1GB allocated, peak 136.9GB
+  [Step 3] [GPU Memory] GPU0:5.8GB(98%), GPU1:5.3GB(17%), GPU2:5.3GB(17%), GPU3:4.8GB(50%) | Total: 21.2GB allocated, 154.1GB reserved, 186.0GB free, Peak: 136.9GB
+  [Step 4] [GPU Memory] GPU0:5.7GB(98%), GPU1:5.1GB(17%), GPU2:5.1GB(17%), GPU3:4.6GB(50%) | Total: 20.4GB allocated, 154.3GB reserved, 185.8GB free, Peak: 137.4GB
+[WARN] KD teacher forward failed; retrying per-example: CUDA out of memory. Tried to allocate 24.08 GiB. GPU 0 has a total capacity of 79.19 GiB of which 8.55 GiB is free. Including non-PyTorch memory, this process has 70.63 GiB memory in use. Of the allocated memory 43.58 GiB is allocated by PyTorch, and 26.31 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/losses.py", line 162, in kd_first_k_prefix_vs_text
+    teacher_logits_full = torch.cat(logits_chunks, dim=0)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 24.08 GiB. GPU 0 has a total capacity of 79.19 GiB of which 8.55 GiB is free. Including non-PyTorch memory, this process has 70.63 GiB memory in use. Of the allocated memory 43.58 GiB is allocated by PyTorch, and 26.31 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 3234, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/train.py", line 2134, in main
+    loss_kd_raw = kd_first_k_prefix_vs_text(
+  File "/projects/m000066/sujinesh/LatentWire/latentwire/losses.py", line 184, in kd_first_k_prefix_vs_text
+    teacher_logits_full = torch.cat(logits_chunks, dim=0)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 24.08 GiB. GPU 0 has a total capacity of 79.19 GiB of which 8.55 GiB is free. Including non-PyTorch memory, this process has 70.63 GiB memory in use. Of the allocated memory 44.59 GiB is allocated by PyTorch, and 25.31 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
