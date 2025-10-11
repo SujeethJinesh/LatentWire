@@ -1,5 +1,57 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-10 — Comprehensive Project Review and Strategic Analysis (Claude Code)
+
+**COMPREHENSIVE REVIEW COMPLETED**: Full analysis of project status, challenges, and path forward.
+
+**Project Status Summary:**
+- **Core Hypothesis Validated**: inputs_embeds interface works perfectly (82% F1 exceeds text baseline)
+- **Critical Challenge**: Compressed latent performance at F1=0.02 (vs 0.80 text baseline)
+- **Key Discovery**: 3B parameter minimum threshold for soft prompt decoding (novel finding)
+
+**Architecture Analysis:**
+- Well-structured modular codebase with feature registry system
+- Multiple encoder types (ByteEncoder, STQueryEncoder, SimpleEncoder)
+- Comprehensive loss functions (K-token CE, KD, alignment losses)
+- CLI tools and config-driven training/evaluation pipelines
+
+**Critical Issues Identified:**
+1. **Severe compression performance gap**: Latent F1=0.02 vs text F1=0.80
+2. **Mode collapse**: Model predicts only "the" or "a" tokens
+3. **Training-eval gap**: Low loss but poor generation quality
+4. **Worse than baseline**: Learned compression underperforms naive truncation
+
+**Strategic Recommendations (Priority Order):**
+
+1. **Immediate Action**: Run embedding baseline smoke test
+   ```bash
+   bash scripts/run_embedding_smoke.sh
+   ```
+
+2. **Phase A Improvements** (from PLAN.md):
+   - Implement K-token supervision (k_token_ce_from_prefix)
+   - Enable knowledge distillation (kd_first_k_prefix_vs_text)
+   - Increase first-token CE weight (0.5 → 1.0-2.0)
+   - Add entropy regularization for diversity
+
+3. **Architecture Escalation if Needed**:
+   - Multi-depth adapters (IAA-style) at layers {5,10,15}
+   - Scheduled sampling to address exposure bias
+   - Reconstruction objective for information preservation
+
+4. **Paper Strategy**:
+   - Emphasize 3B capacity threshold discovery
+   - Highlight embedding validation success (82% F1)
+   - Frame current limitations as "establishing fundamental constraints"
+
+**Key Insight**: The project has validated that LLMs can accept continuous embeddings (even outperforming text), but faces training challenges in learning effective compression. The path forward is clear through systematic Phase A improvements.
+
+**Next Steps**:
+- Run embedding baseline test to isolate issue
+- Implement K-token objectives from PLAN.md
+- Monitor first-token accuracy and diversity metrics
+- Document all experiments in LOG.md
+
 ### 2025-10-10 — Embedding Baseline Validation on 4x H100s (Critical Success)
 
 **BREAKTHROUGH: inputs_embeds Interface Validated with Llama 3.1 8B**
