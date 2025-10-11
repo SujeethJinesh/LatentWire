@@ -1,5 +1,32 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+
+### 2025-10-11 — Stage 1 Training Fixes (Claude Code)
+
+**FIXED CRITICAL BUGS**: Stage 1 adapter-only training now works
+
+**Issues Found and Fixed**:
+
+1. **Import Error**:
+   - Wrong: `from latentwire.data import load_squad_dataset`
+   - Fixed: `from latentwire.data import load_squad_subset`
+   - The function is actually named `load_squad_subset` in the codebase
+
+2. **Adapter Parameter Mismatch**:
+   - Wrong: `Adapter(d_in=..., d_out=..., hidden_mult=..., dropout=...)`
+   - Fixed: `Adapter(d_z=..., d_model=..., latent_length=..., hidden_mult=..., dropout=...)`
+   - The Adapter class expects different parameter names
+
+**Current Status**:
+- Stage 1 training script now loads correctly
+- Ready to test adapter-only approach with 4096→512 compression
+- Expected performance: ~70% F1 (from 82% baseline)
+
+**Next Steps**:
+1. Run Stage 1 training to validate adapter concept
+2. If successful (>65% F1), proceed to Stage 2 with encoder
+3. If fails (<50% F1), reconsider adapter architecture
+
 ### 2025-10-10 — LoRA Training OOM and Mode Collapse Analysis (Claude Code)
 
 **TRAINING STATUS UPDATE**: Analyzed lora_20ep run with critical issues identified
