@@ -1,4 +1,4 @@
-Starting training at Sat Oct 11 00:31:47 PDT 2025
+Starting training at Sat Oct 11 10:29:25 PDT 2025
 
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
@@ -27,25 +27,55 @@ Compression: 4096 → 512
 Samples: 10000
 ============================================================
 Logging diagnostics to: runs/stage1_adapter_only/logs/diagnostics.jsonl
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3578.76it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.07s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.24s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.29it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.10it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2000.62it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  4.76it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  4.74it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00,  4.76it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  5.55it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  5.23it/s]
 
 Adapter params: 19,952,641
 
 Fitting compressor...
-Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]Collecting embeddings: 100%|██████████| 100/100 [00:00<00:00, 1105.25it/s]
+Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]Collecting embeddings:   2%|▏         | 2/100 [00:00<00:07, 13.82it/s]Collecting embeddings:   5%|▌         | 5/100 [00:00<00:05, 18.35it/s]Collecting embeddings:   7%|▋         | 7/100 [00:00<00:05, 18.54it/s]Collecting embeddings:   9%|▉         | 9/100 [00:00<00:06, 14.49it/s]Collecting embeddings:  14%|█▍        | 14/100 [00:00<00:03, 23.64it/s]Collecting embeddings:  19%|█▉        | 19/100 [00:00<00:02, 28.98it/s]Collecting embeddings:  27%|██▋       | 27/100 [00:00<00:01, 39.55it/s]Collecting embeddings:  34%|███▍      | 34/100 [00:01<00:01, 46.42it/s]Collecting embeddings:  43%|████▎     | 43/100 [00:01<00:01, 55.25it/s]Collecting embeddings:  51%|█████     | 51/100 [00:01<00:00, 61.19it/s]Collecting embeddings:  61%|██████    | 61/100 [00:01<00:00, 70.61it/s]Collecting embeddings:  69%|██████▉   | 69/100 [00:01<00:00, 71.04it/s]Collecting embeddings:  77%|███████▋  | 77/100 [00:01<00:00, 71.11it/s]Collecting embeddings:  85%|████████▌ | 85/100 [00:01<00:00, 41.20it/s]Collecting embeddings:  92%|█████████▏| 92/100 [00:02<00:00, 46.07it/s]Collecting embeddings: 100%|██████████| 100/100 [00:02<00:00, 46.42it/s]
 Compressor fitted on 17408 embedding vectors
 
 Training adapter...
-Epoch 1/3:   0%|          | 0/78 [00:00<?, ?it/s]Epoch 1/3:   0%|          | 0/78 [00:00<?, ?it/s]
+Epoch 1/3:   0%|          | 0/78 [00:00<?, ?it/s]Epoch 1/3:   0%|          | 0/78 [00:19<?, ?it/s]
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 464, in main
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 465, in main
     train_adapter_only(args)
-  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 229, in train_adapter_only
-    full_mask = torch.cat([attention_mask, answer_inputs.attention_mask], dim=1)
-RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument tensors in method wrapper_CUDA_cat)
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 240, in train_adapter_only
+    outputs = model(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 1189, in forward
+    outputs = self.model(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 1000, in forward
+    layer_outputs = decoder_layer(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 729, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 612, in forward
+    query_states = self.q_proj(hidden_states)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/linear.py", line 117, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: expected m1 and m2 to have the same dtype, but got: float != c10::BFloat16
 
 ============================================================
 ERROR: Training failed!
 ============================================================
-Error: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument tensors in method wrapper_CUDA_cat)
+Error: expected m1 and m2 to have the same dtype, but got: float != c10::BFloat16
