@@ -11,6 +11,7 @@ export TF32_MODE=1
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 export TOKENIZERS_PARALLELISM=false
 export CUDA_LAUNCH_BLOCKING=0
+export KD_TEACHER_CHUNK=2  # Process KD in chunks of 2 to avoid OOM
 
 # Training Configuration
 SAMPLES=80000        # Full dataset (was 640 in smoke test)

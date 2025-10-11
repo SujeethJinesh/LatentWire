@@ -9,6 +9,7 @@ export TORCH_COMPILE=1
 export USE_FLASH_ATTENTION_2=1
 export TF32_MODE=1
 export PYTORCH_ENABLE_MPS_FALLBACK=1
+export KD_TEACHER_CHUNK=2  # Process KD in chunks of 2 to avoid OOM
 
 # === OPTIMIZED CONFIGURATION ===
 # Reduced but still viable for meaningful results
@@ -16,7 +17,7 @@ SAMPLES=20000       # 25% of full dataset (was 80000)
 EPOCHS=20          # Reduced from 50 (still 10x more than smoke test)
 BATCH_SIZE=64      # Reduced from 96 to avoid OOM with KD (proven safe)
 GRAD_ACCUM=3       # Effective batch = 192
-# NOTE: KD disabled (kd_first_k_weight=0.0) to avoid OOM issues
+# NOTE: KD enabled with chunking (KD_TEACHER_CHUNK=2) to avoid OOM
 LR=2e-4           # Slightly higher LR for faster convergence
 
 # Checkpoint Configuration
@@ -60,7 +61,7 @@ python latentwire/train.py \
   --first_token_entropy_weight 0.5 \
   --k_ce_weight 1.5 \
   --K 8 \
-  --kd_first_k_weight 0.0 \
+  --kd_first_k_weight 0.5 \
   --kd_tau 2.0 \
   --use_lora \
   --lora_r 64 \

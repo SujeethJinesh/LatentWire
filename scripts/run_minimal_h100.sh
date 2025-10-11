@@ -8,6 +8,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 export TORCH_COMPILE=1
 export USE_FLASH_ATTENTION_2=1
 export TF32_MODE=1
+export KD_TEACHER_CHUNK=2  # Process KD in chunks of 2 to avoid OOM
 
 # === MINIMAL CONFIGURATION ===
 # Absolute minimum for meaningful signal
