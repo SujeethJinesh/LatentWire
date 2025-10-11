@@ -1,4 +1,4 @@
-Starting training at Sat Oct 11 00:07:17 PDT 2025
+Starting training at Sat Oct 11 00:14:15 PDT 2025
 
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
@@ -27,16 +27,21 @@ Compression: 4096 → 512
 Samples: 10000
 ============================================================
 Logging diagnostics to: runs/stage1_adapter_only/logs/diagnostics.jsonl
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3766.78it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.05s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.26s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.29it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.10it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4017.53it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.23s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.32s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.25it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.05it/s]
+
+Adapter params: 19,952,641
+
+Fitting compressor...
+Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 455, in main
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 459, in main
     train_adapter_only(args)
-  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 111, in train_adapter_only
-    adapter = Adapter(
-TypeError: __init__() got an unexpected keyword argument 'd_in'
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 139, in train_adapter_only
+    text = f"Context: {item['context']}\nQuestion: {item['question']}\nAnswer: "
+KeyError: 'context'
 
 ============================================================
 ERROR: Training failed!
 ============================================================
-Error: __init__() got an unexpected keyword argument 'd_in'
+Error: 'context'
