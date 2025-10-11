@@ -1,7 +1,9 @@
-Starting training at Sat Oct 11 11:01:03 PDT 2025
+Starting training at Sat Oct 11 11:05:21 PDT 2025
 
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/cuda/__init__.py:128: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 805: MPS client failed to connect to the MPS control daemon or the MPS server (Triggered internally at ../c10/cuda/CUDAFunctions.cpp:108.)
+  return torch._C._cuda_getDeviceCount() > 0
 
 Configuration:
   model_id: meta-llama/Meta-Llama-3.1-8B-Instruct
@@ -26,14 +28,16 @@ Model: meta-llama/Meta-Llama-3.1-8B-Instruct
 Compression: 4096 → 512
 Samples: 10000
 ============================================================
+
+WARNING: No CUDA GPUs detected! Training will be slow.
 Logging diagnostics to: runs/stage1_adapter_only/logs/diagnostics.jsonl
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3416.25it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  3.20it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.98it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00,  4.02it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  4.87it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  4.21it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3404.47it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  6.56it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  7.12it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00,  7.31it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  7.33it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  7.23it/s]
 
 Adapter params: 19,952,641
 
 Fitting compressor...
-Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]Collecting embeddings:  80%|████████  | 80/100 [00:00<00:00, 786.13it/s]Collecting embeddings: 100%|██████████| 100/100 [00:00<00:00, 744.76it/s]
+Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]Collecting embeddings:  80%|████████  | 80/100 [00:00<00:00, 796.94it/s]Collecting embeddings: 100%|██████████| 100/100 [00:00<00:00, 745.75it/s]
 Compressor fitted on 17408 embedding vectors
 
 Training adapter...
