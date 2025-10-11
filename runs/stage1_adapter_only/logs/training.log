@@ -1,4 +1,4 @@
-Starting training at Sat Oct 11 16:16:26 PDT 2025
+Starting training at Sat Oct 11 16:22:13 PDT 2025
 
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
@@ -8,7 +8,7 @@ Configuration:
   compress_dim: 1024
   compress_method: pca
   input_dim: 4096
-  pca_samples: 20000
+  pca_samples: 10000
   adapter_hidden_mult: 4
   adapter_dropout: 0.1
   adapter_lr: 0.0005
@@ -24,7 +24,7 @@ STAGE 1 PHASE 1: PURE RECONSTRUCTION TRAINING
 Model: meta-llama/Meta-Llama-3.1-8B-Instruct
 Compression: 4096 → 1024 (4.0× compression)
 Training samples: 10000
-PCA samples: 20000
+PCA samples: 10000
 ============================================================
 
 GPU Information:
@@ -38,8 +38,8 @@ GPU Information:
 Logging diagnostics to: runs/stage1_adapter_only/logs/diagnostics.jsonl
 
 Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2149.82it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:07<00:22,  7.37s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:14<00:14,  7.34s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:21<00:07,  7.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:23<00:00,  5.04s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:23<00:00,  5.85s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3077.82it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.67s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.60s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.09s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.30s/it]
 
 Creating adapter...
 Adapter parameters: 50,366,465
@@ -48,7 +48,7 @@ Loading dataset...
 Training samples: 10000
 Validation samples: 500
 
-Fitting PCA compressor on 20,000 samples...
+Fitting PCA compressor on 10,000 samples...
 
 GPU memory status:
   GPU 0: 80.9 GB free / 85.0 GB total (allocated: 3.3 GB)
@@ -58,19 +58,19 @@ GPU memory status:
 
 Using GPU 0 for PCA (80.9 GB free)
 Collecting embeddings...
-Collecting embeddings:   0%|          | 0/313 [00:00<?, ?it/s]Collecting embeddings:   0%|          | 1/313 [00:00<00:32,  9.63it/s]Collecting embeddings:   2%|▏         | 6/313 [00:00<00:09, 31.55it/s]Collecting embeddings:   4%|▎         | 11/313 [00:00<00:07, 39.45it/s]Collecting embeddings:   5%|▌         | 16/313 [00:00<00:06, 43.47it/s]Collecting embeddings:   7%|▋         | 21/313 [00:00<00:06, 44.74it/s]Collecting embeddings:   8%|▊         | 26/313 [00:00<00:07, 38.62it/s]Collecting embeddings:  10%|▉         | 31/313 [00:01<00:11, 23.61it/s]Collecting embeddings:  12%|█▏        | 36/313 [00:01<00:09, 28.16it/s]Collecting embeddings:  13%|█▎        | 42/313 [00:01<00:08, 33.58it/s]Collecting embeddings:  15%|█▌        | 47/313 [00:01<00:07, 37.20it/s]Collecting embeddings:  17%|█▋        | 53/313 [00:01<00:06, 40.80it/s]Collecting embeddings:  19%|█▉        | 59/313 [00:01<00:05, 43.74it/s]Collecting embeddings:  21%|██        | 65/313 [00:01<00:05, 45.97it/s]Collecting embeddings:  23%|██▎       | 71/313 [00:01<00:05, 47.70it/s]Collecting embeddings:  25%|██▍       | 77/313 [00:01<00:04, 48.91it/s]Collecting embeddings:  27%|██▋       | 83/313 [00:02<00:04, 49.40it/s]Collecting embeddings:  28%|██▊       | 89/313 [00:02<00:04, 48.55it/s]Collecting embeddings:  30%|███       | 94/313 [00:02<00:05, 41.67it/s]Collecting embeddings:  32%|███▏      | 99/313 [00:02<00:08, 26.10it/s]Collecting embeddings:  33%|███▎      | 104/313 [00:02<00:07, 29.41it/s]Collecting embeddings:  35%|███▌      | 110/313 [00:02<00:05, 34.18it/s]Collecting embeddings:  37%|███▋      | 116/313 [00:03<00:05, 37.90it/s]Collecting embeddings:  39%|███▊      | 121/313 [00:03<00:04, 40.52it/s]Collecting embeddings:  41%|████      | 127/313 [00:03<00:04, 43.23it/s]Collecting embeddings:  42%|████▏     | 133/313 [00:03<00:03, 45.23it/s]Collecting embeddings:  44%|████▍     | 139/313 [00:03<00:03, 47.09it/s]Collecting embeddings:  46%|████▋     | 145/313 [00:03<00:03, 48.13it/s]Collecting embeddings:  48%|████▊     | 151/313 [00:03<00:03, 49.22it/s]Collecting embeddings:  50%|█████     | 157/313 [00:03<00:03, 43.11it/s]Collecting embeddings:  52%|█████▏    | 162/313 [00:04<00:04, 37.22it/s]Collecting embeddings:  53%|█████▎    | 166/313 [00:04<00:05, 26.99it/s]Collecting embeddings:  55%|█████▍    | 171/313 [00:04<00:04, 31.00it/s]Collecting embeddings:  56%|█████▌    | 176/313 [00:04<00:03, 34.91it/s]Collecting embeddings:  58%|█████▊    | 181/313 [00:04<00:03, 38.25it/s]Collecting embeddings:  59%|█████▉    | 186/313 [00:04<00:03, 40.96it/s]Collecting embeddings:  61%|██████▏   | 192/313 [00:04<00:02, 43.75it/s]Collecting embeddings:  63%|██████▎   | 198/313 [00:05<00:02, 45.64it/s]Collecting embeddings:  65%|██████▌   | 204/313 [00:05<00:02, 47.24it/s]Collecting embeddings:  67%|██████▋   | 209/313 [00:05<00:02, 41.44it/s]Collecting embeddings:  68%|██████▊   | 214/313 [00:05<00:02, 38.88it/s]Collecting embeddings:  70%|██████▉   | 219/313 [00:05<00:02, 36.20it/s]Collecting embeddings:  71%|███████   | 223/313 [00:05<00:02, 32.78it/s]Collecting embeddings:  73%|███████▎  | 227/313 [00:06<00:03, 24.24it/s]Collecting embeddings:  74%|███████▍  | 232/313 [00:06<00:02, 28.57it/s]Collecting embeddings:  76%|███████▌  | 238/313 [00:06<00:02, 33.91it/s]Collecting embeddings:  77%|███████▋  | 242/313 [00:06<00:02, 35.26it/s]Collecting embeddings:  79%|███████▉  | 247/313 [00:06<00:01, 38.71it/s]Collecting embeddings:  81%|████████  | 252/313 [00:06<00:01, 41.04it/s]Collecting embeddings:  82%|████████▏ | 257/313 [00:06<00:01, 42.79it/s]Collecting embeddings:  84%|████████▎ | 262/313 [00:06<00:01, 44.16it/s]Collecting embeddings:  86%|████████▌ | 268/313 [00:06<00:00, 46.38it/s]Collecting embeddings:  88%|████████▊ | 274/313 [00:07<00:00, 48.03it/s]Collecting embeddings:  89%|████████▉ | 279/313 [00:07<00:00, 48.19it/s]Collecting embeddings:  91%|█████████ | 284/313 [00:07<00:00, 42.61it/s]Collecting embeddings:  92%|█████████▏| 289/313 [00:07<00:00, 28.17it/s]Collecting embeddings:  94%|█████████▎| 293/313 [00:07<00:00, 27.93it/s]Collecting embeddings:  96%|█████████▌| 299/313 [00:07<00:00, 32.69it/s]Collecting embeddings:  97%|█████████▋| 305/313 [00:08<00:00, 37.06it/s]Collecting embeddings:  99%|█████████▉| 311/313 [00:08<00:00, 40.56it/s]Collecting embeddings: 100%|██████████| 313/313 [00:08<00:00, 38.11it/s]
+Collecting embeddings:   0%|          | 0/157 [00:00<?, ?it/s]Collecting embeddings:   1%|▏         | 2/157 [00:00<00:08, 18.94it/s]Collecting embeddings:   4%|▍         | 7/157 [00:00<00:04, 34.90it/s]Collecting embeddings:   8%|▊         | 13/157 [00:00<00:03, 42.57it/s]Collecting embeddings:  12%|█▏        | 19/157 [00:00<00:03, 45.33it/s]Collecting embeddings:  16%|█▌        | 25/157 [00:00<00:02, 48.22it/s]Collecting embeddings:  20%|█▉        | 31/157 [00:00<00:02, 48.12it/s]Collecting embeddings:  23%|██▎       | 36/157 [00:00<00:03, 35.17it/s]Collecting embeddings:  26%|██▌       | 41/157 [00:01<00:03, 33.50it/s]Collecting embeddings:  29%|██▊       | 45/157 [00:01<00:04, 27.22it/s]Collecting embeddings:  32%|███▏      | 51/157 [00:01<00:03, 32.54it/s]Collecting embeddings:  36%|███▋      | 57/157 [00:01<00:02, 37.08it/s]Collecting embeddings:  40%|████      | 63/157 [00:01<00:02, 40.77it/s]Collecting embeddings:  44%|████▍     | 69/157 [00:01<00:02, 43.94it/s]Collecting embeddings:  48%|████▊     | 75/157 [00:01<00:01, 46.24it/s]Collecting embeddings:  51%|█████     | 80/157 [00:01<00:01, 46.97it/s]Collecting embeddings:  54%|█████▍    | 85/157 [00:02<00:01, 46.79it/s]Collecting embeddings:  57%|█████▋    | 90/157 [00:02<00:01, 47.32it/s]Collecting embeddings:  61%|██████    | 96/157 [00:02<00:01, 48.92it/s]Collecting embeddings:  64%|██████▍   | 101/157 [00:02<00:01, 47.08it/s]Collecting embeddings:  68%|██████▊   | 106/157 [00:02<00:01, 36.04it/s]Collecting embeddings:  71%|███████   | 111/157 [00:02<00:01, 34.21it/s]Collecting embeddings:  73%|███████▎  | 115/157 [00:02<00:01, 32.18it/s]Collecting embeddings:  76%|███████▌  | 119/157 [00:03<00:01, 30.62it/s]Collecting embeddings:  79%|███████▉  | 124/157 [00:03<00:00, 34.38it/s]Collecting embeddings:  82%|████████▏ | 129/157 [00:03<00:00, 37.87it/s]Collecting embeddings:  86%|████████▌ | 135/157 [00:03<00:00, 41.95it/s]Collecting embeddings:  90%|████████▉ | 141/157 [00:03<00:00, 44.68it/s]Collecting embeddings:  93%|█████████▎| 146/157 [00:03<00:00, 45.47it/s]Collecting embeddings:  96%|█████████▌| 151/157 [00:03<00:00, 46.60it/s]Collecting embeddings: 100%|██████████| 157/157 [00:03<00:00, 49.93it/s]Collecting embeddings: 100%|██████████| 157/157 [00:03<00:00, 40.57it/s]
 Traceback (most recent call last):
   File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 624, in main
     best_f1 = train_adapter_phase1(args)
   File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 295, in train_adapter_phase1
     compressor.fit(all_embeddings, device=pca_device)
-  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 58, in fit
-    embeddings = embeddings.to(device).float()
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 52.81 GiB. GPU 0 has a total capacity of 79.19 GiB of which 48.83 GiB is free. Including non-PyTorch memory, this process has 30.35 GiB memory in use. Of the allocated memory 29.61 GiB is allocated by PyTorch, and 143.86 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-Concatenating 3,460,941 embedding vectors...
-  Fitting PCA on CPU with 3,460,941 embedding vectors...
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 67, in fit
+    U, S, Vt = torch.linalg.svd(centered, full_matrices=False)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 26.37 GiB. GPU 0 has a total capacity of 79.19 GiB of which 9.38 GiB is free. Including non-PyTorch memory, this process has 69.80 GiB memory in use. Of the allocated memory 69.07 GiB is allocated by PyTorch, and 135.79 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Concatenating 1,727,893 embedding vectors...
+  Fitting PCA on CPU with 1,727,893 embedding vectors...
 
 ============================================================
 ERROR: Training failed!
 ============================================================
-Error: CUDA out of memory. Tried to allocate 52.81 GiB. GPU 0 has a total capacity of 79.19 GiB of which 48.83 GiB is free. Including non-PyTorch memory, this process has 30.35 GiB memory in use. Of the allocated memory 29.61 GiB is allocated by PyTorch, and 143.86 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Error: CUDA out of memory. Tried to allocate 26.37 GiB. GPU 0 has a total capacity of 79.19 GiB of which 9.38 GiB is free. Including non-PyTorch memory, this process has 69.80 GiB memory in use. Of the allocated memory 69.07 GiB is allocated by PyTorch, and 135.79 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
