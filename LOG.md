@@ -1,5 +1,28 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Evaluation Bug Fixes (Claude Code)
+
+**CRITICAL BUG FIX**: Fixed 0.0% F1/EM evaluation bug
+
+**Root Cause**: Missing `attention_mask` in `model.generate()` calls. When using `inputs_embeds`, the model cannot infer attention mask from pad tokens, causing undefined behavior and garbage outputs.
+
+**Fixes Applied**:
+1. Added attention_mask to all generation calls (4 locations in both scripts)
+2. Explicitly set `temperature=None` and `top_p=None` to fix warnings
+3. Fixed both `train_adapter_only_phase1.py` and `train_adapter_only.py`
+
+**Investigation Findings**:
+- HPC logs showing 0.0% F1/EM were from OLD `train_adapter_only.py` script (not Phase 1)
+- User ran training before pulling Phase 1 implementation (commit `6f7688b`)
+- Logs show "ADAPTER-ONLY TRAINING" + CE loss (should be "PHASE 1" + only recon loss)
+- PCA fitted on 100 samples in logs (should be 80k in Phase 1)
+
+**Impact**: Evaluation bug is now fixed. Next run should show real non-zero F1/EM scores.
+
+**Commit**: `79a24c1`
+
+---
+
 ### 2025-10-11 — Stage 1 Phase 1 Implementation: Pure Reconstruction Training (Claude Code)
 
 **MAJOR REFACTOR**: Rewrote Stage 1 training for scientific rigor and 100% correctness
