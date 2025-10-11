@@ -232,12 +232,32 @@ def train_adapter_phase1(args):
     # Fit compressor
     if args.compress_method == "pca":
         print(f"\nFitting PCA compressor on {args.pca_samples:,} samples...")
-        print(f"Using CPU-based PyTorch PCA (avoids GPU OOM)...")
+
+        # Find GPU with most free memory
+        if torch.cuda.is_available():
+            gpu_count = torch.cuda.device_count()
+            max_free = 0
+            best_gpu = 0
+            print("\nGPU memory status:")
+            for i in range(gpu_count):
+                free_mem = torch.cuda.mem_get_info(i)[0] / 1e9
+                total_mem = torch.cuda.mem_get_info(i)[1] / 1e9
+                allocated = torch.cuda.memory_allocated(i) / 1e9
+                print(f"  GPU {i}: {free_mem:.1f} GB free / {total_mem:.1f} GB total (allocated: {allocated:.1f} GB)")
+                if free_mem > max_free:
+                    max_free = free_mem
+                    best_gpu = i
+
+            pca_device = f"cuda:{best_gpu}"
+            print(f"\nUsing GPU {best_gpu} for PCA ({max_free:.1f} GB free)")
+        else:
+            pca_device = "cpu"
+            print("\nUsing CPU for PCA")
 
         pca_dataset = load_squad_subset("train", args.pca_samples, seed=42)
         BATCH_SIZE = 64
 
-        # Collect embeddings (move to CPU immediately to avoid GPU OOM)
+        # Collect embeddings (move to best GPU for PCA)
         all_embeddings = []
         total_vectors = 0
 
@@ -258,8 +278,8 @@ def train_adapter_phase1(args):
 
             with torch.no_grad():
                 embeds = model.get_input_embeddings()(input_ids)
-                # Get valid (non-padded) embeddings, move to CPU immediately
-                valid_embeds = embeds[attention_mask.bool()].cpu()
+                # Get valid (non-padded) embeddings, move to PCA device
+                valid_embeds = embeds[attention_mask.bool()].to(pca_device)
                 all_embeddings.append(valid_embeds)
                 total_vectors += valid_embeds.shape[0]
 
@@ -267,12 +287,12 @@ def train_adapter_phase1(args):
             if i % (BATCH_SIZE * 10) == 0:
                 torch.cuda.empty_cache()
 
-        # Concatenate on CPU (avoids GPU OOM)
-        print(f"Concatenating {total_vectors:,} embedding vectors on CPU...")
+        # Concatenate on PCA device
+        print(f"Concatenating {total_vectors:,} embedding vectors...")
         all_embeddings = torch.cat(all_embeddings, dim=0)
 
-        # Fit PCA on CPU (fast enough with torch, avoids GPU OOM)
-        compressor.fit(all_embeddings, device='cpu')
+        # Fit PCA on selected device (GPU if available, CPU otherwise)
+        compressor.fit(all_embeddings, device=pca_device)
         print(f"✓ PCA fitted on {total_vectors:,} embedding vectors")
 
     elif args.compress_method == "random":
