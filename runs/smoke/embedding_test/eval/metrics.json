@@ -1,34 +1,34 @@
 {
-  "samples": 30,
+  "samples": 200,
   "max_new_tokens": 24,
   "latent_len": 32,
   "device": "cuda",
   "dtype": "torch.bfloat16",
   "avg_prompt_tokens": {
-    "llama": 267.3333333333333
+    "llama": 246.03
   },
   "compression": {
-    "llama": 8.354166666666666
+    "llama": 7.6884375
   },
-  "payload_bytes": 983040,
+  "payload_bytes": 6553600,
   "payload_bytes_detail": {
-    "fp32": 983040,
-    "fp16": 491520,
+    "fp32": 6553600,
+    "fp16": 3276800,
     "selected": null
   },
   "wire": {
     "prompt_chars": {
-      "llama": 41105
+      "llama": 251558
     },
-    "prompt_count": 30,
+    "prompt_count": 200,
     "latent_shape": [
-      30,
+      200,
       32,
       256
     ],
     "latent_bytes": {
-      "fp32": 983040,
-      "fp16": 491520
+      "fp32": 6553600,
+      "fp16": 3276800
     },
     "group_size": 32,
     "scale_bits": 16,
@@ -37,31 +37,31 @@
   },
   "text": {
     "llama": {
-      "em": 0.4666666666666667,
-      "f1": 0.737991448664498,
-      "nll_token": 12.674708925365275
+      "em": 0.59,
+      "f1": 0.7958243517451916,
+      "nll_token": 13.675748455854526
     },
-    "wall_clock_sec": 1.8760628700256348
+    "wall_clock_sec": 7.361482620239258
   },
   "latent": {
     "llama": {
       "em": 0.0,
-      "f1": 0.006060605895316808,
-      "nll": 10.615517264918276,
+      "f1": 0.0,
+      "nll": 9.331006917283108,
       "first_token_top1": 0.0,
       "first_token_top5": 0.0,
-      "nll_token": 10.615517264918276
+      "nll_token": 9.331006917283108
     },
-    "wall_clock_sec": 1.224363088607788
+    "wall_clock_sec": 1.9895601272583008
   },
   "token_budget": {
     "mode": "content_only",
     "k": 32,
     "llama": {
-      "em": 0.0,
-      "f1": 0.05230880174640422
+      "em": 0.005,
+      "f1": 0.048777777166363785
     },
-    "wall_clock_sec": 0.8857913017272949
+    "wall_clock_sec": 1.8387491703033447
   },
   "joint": {
     "em": null,
@@ -102,53 +102,53 @@
   },
   "text_embed": {
     "llama": {
-      "em": 0.4666666666666667,
-      "f1": 0.737991448664498,
-      "nll_token": 12.674708925365275
+      "em": 0.59,
+      "f1": 0.7958243517451916,
+      "nll_token": 13.675748455854526
     },
-    "wall_clock_sec": 1.4865751266479492
+    "wall_clock_sec": 6.831209421157837
   },
   "embedding_baselines": {
     "raw": {
       "metrics": {
         "llama": {
-          "em": 0.5333333333333333,
-          "f1": 0.7682141206608112,
-          "nll": 12.674708925365275,
+          "em": 0.595,
+          "f1": 0.8055916297639502,
+          "nll": 13.675748455854526,
           "first_token_top1": 0.0,
           "first_token_top5": 0.0
         }
       },
       "wall_clock_sec": {
-        "llama": 4.570751905441284
+        "llama": 30.00700831413269
       }
     },
     "anchor": {
       "metrics": {
         "llama": {
-          "em": 0.6666666666666666,
-          "f1": 0.8379120831945316,
-          "nll": 11.858278525503058,
+          "em": 0.645,
+          "f1": 0.8195118725299646,
+          "nll": 12.751180602309384,
           "first_token_top1": 0.0,
           "first_token_top5": 0.0
         }
       },
       "wall_clock_sec": {
-        "llama": 4.650776147842407
+        "llama": 29.7332763671875
       }
     },
     "adapter": {
       "metrics": {
         "llama": {
           "em": 0.0,
-          "f1": 0.0,
-          "nll": 11.045411954846298,
+          "f1": 0.010155969191806216,
+          "nll": 9.753239258076329,
           "first_token_top1": 0.0,
           "first_token_top5": 0.0
         }
       },
       "wall_clock_sec": {
-        "llama": 16.9409921169281
+        "llama": 54.7069730758667
       }
     }
   },

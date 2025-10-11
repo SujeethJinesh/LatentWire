@@ -6,105 +6,107 @@
 Config: /projects/m000066/sujinesh/LatentWire/configs/baseline/embedding_baselines.json
 Overrides:
   - ckpt=runs/smoke/embedding_test/ckpt
-  - samples=30
+  - samples=200
   - out_dir=runs/smoke/embedding_test/eval
   - llama_id=meta-llama/Meta-Llama-3.1-8B-Instruct
   - dataset=squad
   - max_new_tokens=24
+  - chunk_size=64
   - embedding_replay=true
   - embedding_baseline_modes=["raw","anchor","adapter"]
-Derived argv: --ckpt runs/smoke/embedding_test/ckpt --models llama --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --dataset squad --samples 30 --max_new_tokens 24 --latent_anchor_mode auto --latent_anchor_text Answer:  --append_bos_after_prefix auto --use_chat_template yes --token_budget_mode content_only --token_budget_k 32 --chunk_size 8 --fresh_eval --embedding_replay --embedding_baseline_modes ["raw", "anchor", "adapter"] --out_dir runs/smoke/embedding_test/eval --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 1 --eos_ban_steps 0 --calibration embed_rms --prefix_gain 1.0 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto
+  - llama_device_map=auto
+Derived argv: --ckpt runs/smoke/embedding_test/ckpt --models llama --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct --dataset squad --samples 200 --max_new_tokens 24 --latent_anchor_mode auto --latent_anchor_text Answer:  --append_bos_after_prefix auto --use_chat_template yes --token_budget_mode content_only --token_budget_k 32 --chunk_size 64 --fresh_eval --embedding_replay --embedding_baseline_modes ["raw", "anchor", "adapter"] --out_dir runs/smoke/embedding_test/eval --first_token_top_p 1.0 --first_token_temperature 0.0 --min_new_tokens 1 --eos_ban_steps 0 --calibration embed_rms --prefix_gain 1.0 --hf_encoder_id sentence-transformers/all-MiniLM-L6-v2 --max_enc_tokens 1024 --llama_device_map auto
 Auto-detected device: cuda
-Encoder input alignment: mode=raw | strip_anchor=yes | samples=30
+Encoder input alignment: mode=raw | strip_anchor=yes | samples=200
 Building encoder and computing Z...
 Saved Z to runs/smoke/embedding_test/eval/Z.pt
 
 [Standard Evaluation Mode]
 (Use --sequential_eval to enable per-model encoder text auto-alignment.)
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2853.75it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.03s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.21s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.10it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2843.11it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.39s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.15s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.10s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.15it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.02it/s]
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
 We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
 [meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
 
 — Text baseline summary:
-llama: EM=0.467 F1=0.738
+llama: EM=0.590 F1=0.796
 
 — Text embedding-replay summary:
-llama: EM=0.467 F1=0.738
+llama: EM=0.590 F1=0.796
 
 ==== LatentWire Evaluation ====
 Dataset: squad
-Samples: 30  |  Max new tokens: 24
+Samples: 200  |  Max new tokens: 24
 Device: cuda  |  Dtype: bfloat16
-Avg prompt tokens (Llama): 267.3 | (Qwen): - | Latent length M: 32
-Compression ratio (Llama): 8.4x | (Qwen): -x
-Approx interlingua payload per example: 983040 bytes (fp32); fp16 reference: 491520 bytes; fp32 reference: 983040 bytes
+Avg prompt tokens (Llama): 246.0 | (Qwen): - | Latent length M: 32
+Compression ratio (Llama): 7.7x | (Qwen): -x
+Approx interlingua payload per example: 6553600 bytes (fp32); fp16 reference: 3276800 bytes; fp32 reference: 6553600 bytes
 latent/text bytes (one-copy, fp16): n/a
 
 — Baseline: Text prompting
-Llama  EM: 0.467  F1: 0.738  |  NLL/token (gold): 12.674708925365275
-Wall clock: 1.88s
+Llama  EM: 0.590  F1: 0.796  |  NLL/token (gold): 13.675748455854526
+Wall clock: 7.36s
 
 — Text embedding replay (inputs_embeds)
-Llama  EM: 0.467  F1: 0.738  |  NLL/token (gold): 12.674708925365275
-Wall clock: 1.49s
+Llama  EM: 0.590  F1: 0.796  |  NLL/token (gold): 13.675748455854526
+Wall clock: 6.83s
 
 — Latent prompting (shared interlingua)
-Llama  EM: 0.000  F1: 0.006  |  NLL/token (gold): 10.615517264918276
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 9.331006917283108
        First-token acc: top1=0.000  top5=0.000
-Wall clock: 1.22s
+Wall clock: 1.99s
 
 — Embedding baselines (inputs_embeds)
 [raw]
- llama  EM: 0.5  F1: 0.8  |  NLL/token: 12.7  |  First-token acc: top1=0.0 top5=0.0
-  Wall clock: 4.57s (llama:4.57s)
+ llama  EM: 0.6  F1: 0.8  |  NLL/token: 13.7  |  First-token acc: top1=0.0 top5=0.0
+  Wall clock: 30.01s (llama:30.01s)
 [anchor]
- llama  EM: 0.7  F1: 0.8  |  NLL/token: 11.9  |  First-token acc: top1=0.0 top5=0.0
-  Wall clock: 4.65s (llama:4.65s)
+ llama  EM: 0.6  F1: 0.8  |  NLL/token: 12.8  |  First-token acc: top1=0.0 top5=0.0
+  Wall clock: 29.73s (llama:29.73s)
 [adapter]
- llama  EM: 0.0  F1: 0.0  |  NLL/token: 11.0  |  First-token acc: top1=0.0 top5=0.0
-  Wall clock: 16.94s (llama:16.94s)
+ llama  EM: 0.0  F1: 0.0  |  NLL/token: 9.8  |  First-token acc: top1=0.0 top5=0.0
+  Wall clock: 54.71s (llama:54.71s)
 
 — Token-budget baseline (mode: content_only)
-Llama  EM: 0.000  F1: 0.052
-Wall clock: 0.89s
+Llama  EM: 0.005  F1: 0.049
+Wall clock: 1.84s
 
 — 2-LLM joint (rescored pick on latent runs)
 Joint metrics unavailable (single-model evaluation).
 
 ==== METRICS_JSON ====
 {
-  "samples": 30,
+  "samples": 200,
   "max_new_tokens": 24,
   "latent_len": 32,
   "device": "cuda",
   "dtype": "torch.bfloat16",
   "avg_prompt_tokens": {
-    "llama": 267.3333333333333
+    "llama": 246.03
   },
   "compression": {
-    "llama": 8.354166666666666
+    "llama": 7.6884375
   },
-  "payload_bytes": 983040,
+  "payload_bytes": 6553600,
   "payload_bytes_detail": {
-    "fp32": 983040,
-    "fp16": 491520,
+    "fp32": 6553600,
+    "fp16": 3276800,
     "selected": null
   },
   "wire": {
     "prompt_chars": {
-      "llama": 41105
+      "llama": 251558
     },
-    "prompt_count": 30,
+    "prompt_count": 200,
     "latent_shape": [
-      30,
+      200,
       32,
       256
     ],
     "latent_bytes": {
-      "fp32": 983040,
-      "fp16": 491520
+      "fp32": 6553600,
+      "fp16": 3276800
     },
     "group_size": 32,
     "scale_bits": 16,
@@ -113,31 +115,31 @@ Joint metrics unavailable (single-model evaluation).
   },
   "text": {
     "llama": {
-      "em": 0.4666666666666667,
-      "f1": 0.737991448664498,
-      "nll_token": 12.674708925365275
+      "em": 0.59,
+      "f1": 0.7958243517451916,
+      "nll_token": 13.675748455854526
     },
-    "wall_clock_sec": 1.8760628700256348
+    "wall_clock_sec": 7.361482620239258
   },
   "latent": {
     "llama": {
       "em": 0.0,
-      "f1": 0.006060605895316808,
-      "nll": 10.615517264918276,
+      "f1": 0.0,
+      "nll": 9.331006917283108,
       "first_token_top1": 0.0,
       "first_token_top5": 0.0,
-      "nll_token": 10.615517264918276
+      "nll_token": 9.331006917283108
     },
-    "wall_clock_sec": 1.224363088607788
+    "wall_clock_sec": 1.9895601272583008
   },
   "token_budget": {
     "mode": "content_only",
     "k": 32,
     "llama": {
-      "em": 0.0,
-      "f1": 0.05230880174640422
+      "em": 0.005,
+      "f1": 0.048777777166363785
     },
-    "wall_clock_sec": 0.8857913017272949
+    "wall_clock_sec": 1.8387491703033447
   },
   "joint": {
     "em": null,
@@ -178,53 +180,53 @@ Joint metrics unavailable (single-model evaluation).
   },
   "text_embed": {
     "llama": {
-      "em": 0.4666666666666667,
-      "f1": 0.737991448664498,
-      "nll_token": 12.674708925365275
+      "em": 0.59,
+      "f1": 0.7958243517451916,
+      "nll_token": 13.675748455854526
     },
-    "wall_clock_sec": 1.4865751266479492
+    "wall_clock_sec": 6.831209421157837
   },
   "embedding_baselines": {
     "raw": {
       "metrics": {
         "llama": {
-          "em": 0.5333333333333333,
-          "f1": 0.7682141206608112,
-          "nll": 12.674708925365275,
+          "em": 0.595,
+          "f1": 0.8055916297639502,
+          "nll": 13.675748455854526,
           "first_token_top1": 0.0,
           "first_token_top5": 0.0
         }
       },
       "wall_clock_sec": {
-        "llama": 4.570751905441284
+        "llama": 30.00700831413269
       }
     },
     "anchor": {
       "metrics": {
         "llama": {
-          "em": 0.6666666666666666,
-          "f1": 0.8379120831945316,
-          "nll": 11.858278525503058,
+          "em": 0.645,
+          "f1": 0.8195118725299646,
+          "nll": 12.751180602309384,
           "first_token_top1": 0.0,
           "first_token_top5": 0.0
         }
       },
       "wall_clock_sec": {
-        "llama": 4.650776147842407
+        "llama": 29.7332763671875
       }
     },
     "adapter": {
       "metrics": {
         "llama": {
           "em": 0.0,
-          "f1": 0.0,
-          "nll": 11.045411954846298,
+          "f1": 0.010155969191806216,
+          "nll": 9.753239258076329,
           "first_token_top1": 0.0,
           "first_token_top5": 0.0
         }
       },
       "wall_clock_sec": {
-        "llama": 16.9409921169281
+        "llama": 54.7069730758667
       }
     }
   },
