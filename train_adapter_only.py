@@ -21,7 +21,6 @@ import traceback
 
 from latentwire.data import load_squad_dataset
 from latentwire.models import Adapter
-from latentwire.eval import evaluate_on_squad
 
 
 class EmbeddingCompressor:
@@ -372,6 +371,7 @@ def train_adapter_only(args):
     print(f"Training complete! Best F1: {best_f1:.3f}")
     if diagnostic_log:
         print(f"Diagnostics saved to: {diagnostic_log}")
+    save_dir = Path(args.save_dir)
     if save_dir.exists():
         print(f"Checkpoints saved to: {save_dir}")
     print("="*60)
@@ -407,10 +407,10 @@ def evaluate_compressed_adapter(model, tokenizer, adapter, compressor, dataset):
         references.append(item['answer'])
 
     # Calculate metrics
-    from latentwire.metrics import calculate_squad_metrics
-    metrics = calculate_squad_metrics(predictions, references)
+    from latentwire.core_utils import batch_metrics
+    em_score, f1_score = batch_metrics(predictions, references)
 
-    return metrics
+    return {'em': em_score, 'f1': f1_score}
 
 
 def main():
@@ -451,7 +451,16 @@ def main():
     for key, value in vars(args).items():
         print(f"  {key}: {value}")
 
-    train_adapter_only(args)
+    try:
+        train_adapter_only(args)
+    except Exception as e:
+        print(f"\n{'='*60}")
+        print(f"ERROR: Training failed!")
+        print(f"{'='*60}")
+        print(f"Error: {e}")
+        traceback.print_exc()
+        import sys
+        sys.exit(1)
 
 
 if __name__ == "__main__":

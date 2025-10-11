@@ -3,6 +3,9 @@
 # Tests if adapter can reconstruct from compressed embeddings
 set -euo pipefail
 
+# Set PYTHONPATH if not already set
+export PYTHONPATH="${PYTHONPATH:-.}"
+
 # H100 Optimizations
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 export TORCH_COMPILE=1
