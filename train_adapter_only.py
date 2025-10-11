@@ -36,7 +36,8 @@ class EmbeddingCompressor:
         """Fit compression on sample embeddings"""
         if self.method == "pca":
             # Use PCA for compression
-            embeddings_flat = embeddings.reshape(-1, self.input_dim).cpu().numpy()
+            # Convert BFloat16 to Float32 for numpy compatibility
+            embeddings_flat = embeddings.reshape(-1, self.input_dim).cpu().float().numpy()
             pca = PCA(n_components=self.output_dim)
             pca.fit(embeddings_flat[:10000])  # Fit on subset
 

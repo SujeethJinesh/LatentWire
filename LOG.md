@@ -1,5 +1,37 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 BFloat16 Compatibility Fix (Claude Code)
+
+**CRITICAL FIX**: Stage 1 adapter training failed due to BFloat16 → NumPy conversion error
+
+**Issue Found**:
+- **Error**: `TypeError: Got unsupported ScalarType BFloat16` at line 39 of `train_adapter_only.py`
+- **Root Cause**: Model embeddings are in BFloat16 format (from `torch_dtype=torch.bfloat16`)
+- **Impact**: PCA fitting failed immediately as NumPy doesn't support BFloat16
+- **Location**: `EmbeddingCompressor.fit()` method when converting embeddings to numpy for PCA
+
+**Fix Applied**:
+```python
+# Before (line 39):
+embeddings_flat = embeddings.reshape(-1, self.input_dim).cpu().numpy()
+
+# After (line 40):
+embeddings_flat = embeddings.reshape(-1, self.input_dim).cpu().float().numpy()
+```
+
+**Solution**: Added `.float()` conversion before `.numpy()` to convert BFloat16 → Float32
+
+**Training Configuration Attempted**:
+- Model: Llama-3.1-8B-Instruct
+- Compression: 4096 → 512 (8× compression via PCA)
+- Samples: 10,000
+- Batch size: 128
+- Adapter: 19.9M parameters (residual MLP with dropout)
+
+**Next Steps**:
+- Re-run Stage 1 training with the BFloat16 fix
+- Monitor adapter reconstruction loss and CE loss
+- Target: Maintain >70% F1 with 8× compression
 
 ### 2025-10-11 — Stage 1 Training Fixes (Claude Code)
 
