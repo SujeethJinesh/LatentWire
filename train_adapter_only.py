@@ -16,6 +16,8 @@ from tqdm import tqdm
 import argparse
 import json
 from pathlib import Path
+import time
+import traceback
 
 from latentwire.data import load_squad_dataset
 from latentwire.models import Adapter
@@ -65,6 +67,19 @@ class EmbeddingCompressor:
         return embeddings[..., :self.output_dim]  # Simple truncation fallback
 
 
+def log_diagnostics(diagnostic_log, step, epoch, metrics):
+    """Log diagnostics in JSONL format"""
+    if diagnostic_log:
+        entry = {
+            "step": step,
+            "epoch": epoch,
+            "timestamp": time.time(),
+            **metrics
+        }
+        with open(diagnostic_log, 'a') as f:
+            f.write(json.dumps(entry) + '\n')
+
+
 def train_adapter_only(args):
     """Train only the adapter with pre-computed compressed embeddings"""
 
@@ -74,6 +89,12 @@ def train_adapter_only(args):
     print(f"Compression: {args.input_dim} → {args.compress_dim}")
     print(f"Samples: {args.samples}")
     print("="*60)
+
+    # Setup diagnostic logging
+    diagnostic_log = args.diagnostic_log if hasattr(args, 'diagnostic_log') else None
+    if diagnostic_log:
+        Path(diagnostic_log).parent.mkdir(parents=True, exist_ok=True)
+        print(f"Logging diagnostics to: {diagnostic_log}")
 
     # Load model
     model = AutoModelForCausalLM.from_pretrained(
@@ -238,6 +259,27 @@ def train_adapter_only(args):
                 "ce": f"{ce_loss.item():.4f}"
             })
 
+            # Log diagnostics
+            if step % 10 == 0:
+                # Get GPU memory stats
+                if torch.cuda.is_available():
+                    gpu_mem = torch.cuda.max_memory_allocated() / 1e9  # GB
+                    gpu_util = torch.cuda.memory_allocated() / torch.cuda.max_memory_reserved()
+                else:
+                    gpu_mem = 0
+                    gpu_util = 0
+
+                log_diagnostics(diagnostic_log, step, epoch, {
+                    "loss": loss.item(),
+                    "recon_loss": recon_loss.item(),
+                    "ce_loss": ce_loss.item(),
+                    "lr": scheduler.get_last_lr()[0],
+                    "compression_ratio": args.input_dim / args.compress_dim,
+                    "batch_size": args.batch_size,
+                    "gpu_memory_gb": gpu_mem,
+                    "gpu_utilization": gpu_util
+                })
+
             # Periodic evaluation
             if step % 100 == 0:
                 adapter.eval()
@@ -270,6 +312,12 @@ def train_adapter_only(args):
                 quick_acc = correct / 10
                 print(f"\n  Step {step}: Quick accuracy = {quick_acc:.1%}")
 
+                # Log quick eval
+                log_diagnostics(diagnostic_log, step, epoch, {
+                    "quick_eval_acc": quick_acc,
+                    "type": "quick_eval"
+                })
+
                 adapter.train()
 
         # End of epoch evaluation
@@ -295,6 +343,14 @@ def train_adapter_only(args):
             print(f"  F1: {f1:.3f}")
             print(f"  EM: {em:.3f}")
 
+            # Log full evaluation
+            log_diagnostics(diagnostic_log, step, epoch, {
+                "f1": f1,
+                "em": em,
+                "type": "full_eval",
+                "eval_samples": args.eval_samples
+            })
+
             if f1 > best_f1:
                 best_f1 = f1
                 # Save checkpoint
@@ -314,6 +370,10 @@ def train_adapter_only(args):
 
     print("\n" + "="*60)
     print(f"Training complete! Best F1: {best_f1:.3f}")
+    if diagnostic_log:
+        print(f"Diagnostics saved to: {diagnostic_log}")
+    if save_dir.exists():
+        print(f"Checkpoints saved to: {save_dir}")
     print("="*60)
 
 
@@ -382,6 +442,7 @@ def main():
 
     # Output
     parser.add_argument("--save_dir", default="runs/adapter_only")
+    parser.add_argument("--diagnostic_log", default=None, help="Path to diagnostic log file (JSONL)")
 
     args = parser.parse_args()
 
