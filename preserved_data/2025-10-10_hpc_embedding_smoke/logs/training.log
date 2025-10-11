@@ -1,0 +1,119 @@
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[Optimization] Enabled FlashAttention-2 and memory-efficient kernels
+[Optimization] Enabled TF32 for matmul and cuDNN
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2822.55it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.28s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.19s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.21it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.03it/s]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Llama hidden size: 4096
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+[After Model Loading] [GPU Memory] GPU0:3.2GB(4%), GPU1:4.4GB(5%), GPU2:4.4GB(5%), GPU3:4.1GB(5%) | Total: 16.1GB allocated, 16.2GB reserved, 323.9GB free, Peak: 16.1GB
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[INFO] llama anchor tokens: 3
+[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...
+[Optimizer]   Meta-Llama-3.1-8B-Instruct: skipped (use_latent_adapters=False)
+[Optimizer] Latent adapter summary: 0 params in 0 tensors
+[Optimizer] No latent adapters enabled (expected)
+[Optimization] Using fused AdamW optimizer
+[Optimizer] Created 2 parameter groups:
+  [1] encoder(90 tensors)
+  [2] llama_adapter(20 tensors)
+[INFO] LR scheduler: CosineAnnealingLR (T_max=20, eta_min=2.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/2
+[Epoch 1 Start] [GPU Memory] GPU0:3.3GB(9%), GPU1:4.4GB(5%), GPU2:4.4GB(5%), GPU3:4.1GB(5%) | Total: 16.1GB allocated, 20.7GB reserved, 319.4GB free, Peak: 19.2GB
+    [Memory after encoder] 19.7GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] KD teacher: adapters NOT disabled - KD may be contaminated
+    [Memory after backward] 17.7GB allocated, peak 180.6GB
+    [Memory after optimizer] 17.7GB allocated
+  [Step 1] [GPU Memory] GPU0:4.7GB(64%), GPU1:4.4GB(52%), GPU2:4.4GB(52%), GPU3:4.2GB(52%) | Total: 17.7GB allocated, 187.4GB reserved, 152.7GB free, Peak: 180.6GB
+    [Memory after encoder] 21.3GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+    [Memory after backward] 19.0GB allocated, peak 186.4GB
+    [Memory after optimizer] 19.0GB allocated
+  [Step 2] [GPU Memory] GPU0:4.7GB(80%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(53%) | Total: 17.7GB allocated, 202.3GB reserved, 137.8GB free, Peak: 186.4GB
+    [Memory after encoder] 21.3GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+    [Memory after backward] 19.0GB allocated, peak 187.6GB
+    [Memory after optimizer] 19.0GB allocated
+  [Step 3] [GPU Memory] GPU0:4.7GB(80%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(55%) | Total: 17.7GB allocated, 203.6GB reserved, 136.5GB free, Peak: 187.6GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 4] [GPU Memory] GPU0:4.7GB(80%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 204.8GB reserved, 135.3GB free, Peak: 188.7GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 5] [GPU Memory] GPU0:4.7GB(97%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 219.3GB reserved, 120.8GB free, Peak: 190.9GB
+  [Batch Size Suggestion after 5 steps] Low peak memory (56.1%), can cautiously increase batch size
+    Current: 64, Suggested: 76
+    To apply: set BATCH_SIZE_STAGEA/B=76 in run script
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 6] [GPU Memory] GPU0:4.7GB(97%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 219.3GB reserved, 120.8GB free, Peak: 190.9GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 7] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.1GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 8] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.1GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 9] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.1GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  10/10 | grad_norm=12.50 | sec/step~2.64 | lr=5.10e-05 | keep=1.00 | K=4 | llama(L): tf=9.2661 first=8.6126 kCE=8.4767 KD=3.8549 acc=0.000 align=0.0000 | scale_pen(llama)=9.3237e-11 | feature_grads[encoder=5.650e+00, adapter_llama=1.115e+01] | K=4 tau=2.00
+  [Step 10] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.1GB
+Epoch 2/2
+[Epoch 2 Start] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.1GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 1] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 187.0GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 2] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 187.0GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 3] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 187.0GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 4] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 188.7GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 5] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.0GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 6] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.0GB
+  🌟 NEW PEAK: first_acc_ema=1.4% (raw_batch=6.2%) at step 16 → saved to runs/smoke/embedding_test/ckpt_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='The'
+        ✗ pred='the' | gold='total'
+        ✗ pred='the' | gold='de'
+        ✗ pred='the' | gold='170'
+        ✓ pred='the' | gold='the'
+      Prediction diversity: 2/64 unique tokens
+      Top-3 predictions: 'the'(62) ' '(2) 
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 7] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.0GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 8] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.0GB
+  🌟 NEW PEAK: first_acc_ema=1.8% (raw_batch=6.2%) at step 18 → saved to runs/smoke/embedding_test/ckpt_best
+      Sample predictions (first 5):
+        ✗ pred=' ' | gold='Red'
+        ✗ pred='the' | gold='Cast'
+        ✗ pred='the' | gold='N'
+        ✗ pred='the' | gold='a'
+        ✗ pred='the' | gold='very'
+      Prediction diversity: 2/64 unique tokens
+      Top-3 predictions: 'the'(46) ' '(18) 
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 9] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.0GB
+  🌟 NEW PEAK: first_acc_ema=1.9% (raw_batch=3.1%) at step 19 → saved to runs/smoke/embedding_test/ckpt_best
+      Sample predictions (first 5):
+        ✗ pred='the' | gold='Modern'
+        ✗ pred='the' | gold='book'
+        ✗ pred='the' | gold='Ent'
+        ✗ pred='the' | gold='delay'
+        ✗ pred=' ' | gold='240'
+      Prediction diversity: 2/64 unique tokens
+      Top-3 predictions: 'the'(51) ' '(13) 
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  10/10 | grad_norm=14.38 | sec/step~2.56 | lr=2.00e-06 | keep=1.00 | K=4 | llama(L): tf=9.0719 first=8.1854 kCE=8.4854 KD=4.3674 acc=0.000 align=0.0000 | scale_pen(llama)=1.1951e-11 | feature_grads[encoder=6.499e+00, adapter_llama=1.283e+01] | K=4 tau=2.00
+  [Step 10] [GPU Memory] GPU0:4.7GB(83%), GPU1:4.4GB(53%), GPU2:4.4GB(53%), GPU3:4.2GB(56%) | Total: 17.7GB allocated, 207.7GB reserved, 132.4GB free, Peak: 199.0GB
+[checkpoint] Freed 1.1KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/smoke/embedding_test/ckpt
