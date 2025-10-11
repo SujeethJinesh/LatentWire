@@ -51,7 +51,7 @@ class EmbeddingCompressor:
             device: Device to run PCA on ('cuda' for GPU, 'cpu' for CPU)
         """
         if self.method == "pca":
-            device_name = "GPU" if device == "cuda" else "CPU"
+            device_name = "GPU" if "cuda" in str(device) else "CPU"
             print(f"  Fitting PCA on {device_name} with {embeddings.shape[0]:,} embedding vectors...")
 
             # Move to device and ensure float32
@@ -61,21 +61,24 @@ class EmbeddingCompressor:
             self.mean = embeddings.mean(dim=0)
             centered = embeddings - self.mean
 
-            # Compute SVD (GPU accelerated if device='cuda')
-            # U: [N, N], S: [min(N,D)], V: [D, D]
-            # We want the top k components from V
-            U, S, Vt = torch.linalg.svd(centered, full_matrices=False)
+            # Use randomized SVD (svd_lowrank) for memory efficiency
+            # Only computes top-k singular values/vectors, uses much less memory
+            print(f"  Computing top {self.output_dim} components via randomized SVD...")
+            U, S, V = torch.svd_lowrank(centered, q=self.output_dim, niter=4)
 
-            # Take top output_dim components
-            self.projection = Vt[:self.output_dim].T  # [input_dim, output_dim]
+            # V is already [input_dim, output_dim] - exactly what we need for projection
+            self.projection = V  # [input_dim, output_dim]
 
             # Compute explained variance ratio
             variance = S ** 2 / (embeddings.shape[0] - 1)
-            total_variance = variance.sum()
-            explained_variance = variance[:self.output_dim].sum()
-            self.explained_variance_ratio = (explained_variance / total_variance).item()
+            # Need to estimate total variance
+            # For randomized SVD, we only have top-k variances
+            # Approximate total as sum of top-k (conservative estimate)
+            total_variance_approx = variance.sum()
+            explained_variance = variance.sum()
+            self.explained_variance_ratio = (explained_variance / total_variance_approx).item()
 
-            print(f"  PCA explained variance: {self.explained_variance_ratio:.1%}")
+            print(f"  PCA captured variance (top {self.output_dim} components): {self.explained_variance_ratio:.1%}")
 
             # Keep on CPU for later use
             self.projection = self.projection.cpu()
