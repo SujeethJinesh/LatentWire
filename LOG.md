@@ -1,5 +1,49 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-10 — LoRA Training OOM and Mode Collapse Analysis (Claude Code)
+
+**TRAINING STATUS UPDATE**: Analyzed lora_20ep run with critical issues identified
+
+**Training Progress (Step 36/6250)**:
+- First-token accuracy: 2.7% (slowly improving from 0%)
+- Mode collapse: 87.5% predictions are "the" token
+- Training crashed at step 36 due to KD OOM
+
+**Critical Issues Found**:
+1. **Persistent OOM in KD**:
+   - Even with KD_TEACHER_CHUNK=2, still requires 23GB allocation
+   - Chunking isn't preventing final logit concatenation OOM
+   - Solution: Reduced to KD_TEACHER_CHUNK=1 (per-example processing)
+
+2. **Severe Mode Collapse**:
+   - Step 10: 24/24 predictions = "def" (100%)
+   - Step 20: 17/24 predictions = "Question" (71%)
+   - Step 30: 21/24 predictions = "the" (87.5%)
+   - First-token entropy collapsed to 0.345 (very low)
+
+3. **Slow Learning Rate**:
+   - Only 2.7% first-token accuracy after 36 steps
+   - LoRA weights updating slowly (norm 2.43→2.55)
+   - Need stronger signal from objectives
+
+**Fixes Applied**:
+```bash
+# Memory fixes
+export KD_TEACHER_CHUNK=1  # Per-example KD processing
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+# Combat mode collapse
+--first_token_entropy_weight 1.0  # Increased from 0.5
+--kd_first_k_weight 0.3  # Reduced from 0.5 to not overwhelm CE
+```
+
+**Next Steps**:
+- Monitor if KD_TEACHER_CHUNK=1 prevents OOM
+- Track entropy improvement with stronger regularization
+- Consider increasing learning rate if progress remains slow
+- May need to temporarily disable KD if OOM persists
+
+
 ### 2025-10-10 — HPC 4x H100 Run Analysis and Scaling Recommendations (Claude Code)
 
 **HPC SMOKE TEST RESULTS**: Analyzed embedding baseline run on 4x H100 cluster
