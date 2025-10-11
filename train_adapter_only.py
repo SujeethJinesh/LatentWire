@@ -52,6 +52,7 @@ class EmbeddingCompressor:
     def compress(self, embeddings):
         """Compress embeddings"""
         device = embeddings.device
+        dtype = embeddings.dtype  # Preserve input dtype (bfloat16)
         shape = embeddings.shape[:-1]
 
         # Flatten
@@ -59,8 +60,9 @@ class EmbeddingCompressor:
 
         # Project
         if self.projection is not None:
-            proj = self.projection.to(device)
-            mean = self.mean.to(device)
+            # Convert projection matrices to match dtype
+            proj = self.projection.to(device).to(dtype)
+            mean = self.mean.to(device).to(dtype)
             compressed = (flat - mean) @ proj
             return compressed.reshape(*shape, self.output_dim)
 
@@ -118,7 +120,7 @@ def train_adapter_only(args):
         dropout=args.adapter_dropout,
         enable_metadata=False,
         colorize=False
-    ).to(device)
+    ).to(device).to(torch.bfloat16)  # Match model dtype
 
     print(f"\nAdapter params: {sum(p.numel() for p in adapter.parameters()):,}")
 
@@ -212,11 +214,14 @@ def train_adapter_only(args):
             with torch.no_grad():
                 orig_embeds = model.get_input_embeddings()(input_ids)
 
-            # Compress
+            # Compress (preserves bfloat16 dtype)
             compressed = compressor.compress(orig_embeds)
 
-            # Adapt
+            # Adapt (ensure output matches model dtype)
             reconstructed = adapter(compressed)
+            # Ensure adapter output matches model dtype
+            if reconstructed.dtype != orig_embeds.dtype:
+                reconstructed = reconstructed.to(orig_embeds.dtype)
 
             # Loss 1: Reconstruction
             recon_loss = F.mse_loss(
@@ -305,6 +310,9 @@ def train_adapter_only(args):
                         orig_embeds = model.get_input_embeddings()(input_ids)
                         compressed = compressor.compress(orig_embeds)
                         adapted = adapter(compressed)
+                        # Ensure dtype matches for generation
+                        if adapted.dtype != orig_embeds.dtype:
+                            adapted = adapted.to(orig_embeds.dtype)
 
                         # Generate
                         outputs = model.generate(
@@ -402,6 +410,9 @@ def evaluate_compressed_adapter(model, tokenizer, adapter, compressor, dataset):
             orig_embeds = model.get_input_embeddings()(input_ids)
             compressed = compressor.compress(orig_embeds)
             adapted = adapter(compressed)
+            # Ensure dtype matches for generation
+            if adapted.dtype != orig_embeds.dtype:
+                adapted = adapted.to(orig_embeds.dtype)
 
             # Generate
             outputs = model.generate(

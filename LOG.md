@@ -1,5 +1,43 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Dtype Mismatch Fix (Claude Code)
+
+**CRITICAL FIX**: Stage 1 adapter training failed due to dtype mismatch
+
+**Issue Found**:
+- **Error**: `RuntimeError: expected m1 and m2 to have the same dtype, but got: float != c10::BFloat16`
+- **Location**: Line 75 in model forward pass (q_proj linear layer)
+- **Root Cause**: Adapter and compressor outputting float32 while model expects bfloat16
+- **Impact**: Training crashed immediately after first batch started
+
+**Fixes Applied**:
+1. **Compressor dtype preservation** (lines 54-67):
+   ```python
+   dtype = embeddings.dtype  # Preserve input dtype (bfloat16)
+   proj = self.projection.to(device).to(dtype)
+   mean = self.mean.to(device).to(dtype)
+   ```
+
+2. **Adapter dtype conversion** (line 123):
+   ```python
+   adapter = Adapter(...).to(device).to(torch.bfloat16)  # Match model dtype
+   ```
+
+3. **Runtime dtype checks** (added throughout):
+   ```python
+   if reconstructed.dtype != orig_embeds.dtype:
+       reconstructed = reconstructed.to(orig_embeds.dtype)
+   ```
+
+**Locations Fixed**:
+- Training loop: Lines 220-224
+- Quick evaluation: Lines 313-315
+- Full evaluation: Lines 413-415
+
+**Training Progress**:
+- Compressor successfully fitted on 17,408 embedding vectors
+- Ready to proceed with training after dtype fixes
+
 ### 2025-10-11 — Stage 1 Training Fixes Part 2 (Claude Code)
 
 **FIX 1: Device Mismatch Error**
