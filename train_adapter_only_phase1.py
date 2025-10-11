@@ -437,10 +437,19 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
             if adapted.dtype != orig_embeds.dtype:
                 adapted = adapted.to(orig_embeds.dtype)
 
+            # Create attention mask (all 1s for embeddings we're passing)
+            attention_mask = torch.ones(
+                adapted.shape[0], adapted.shape[1],
+                dtype=torch.long, device=adapted.device
+            )
+
             outputs = model.generate(
                 inputs_embeds=adapted,
+                attention_mask=attention_mask,
                 max_new_tokens=10,
                 do_sample=False,
+                temperature=None,
+                top_p=None,
                 pad_token_id=tokenizer.pad_token_id
             )
 
@@ -473,10 +482,19 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
             if adapted.dtype != orig_embeds.dtype:
                 adapted = adapted.to(orig_embeds.dtype)
 
+            # Create attention mask (all 1s for embeddings we're passing)
+            attention_mask = torch.ones(
+                adapted.shape[0], adapted.shape[1],
+                dtype=torch.long, device=adapted.device
+            )
+
             outputs = model.generate(
                 inputs_embeds=adapted,
+                attention_mask=attention_mask,
                 max_new_tokens=20,
                 do_sample=False,
+                temperature=None,
+                top_p=None,
                 pad_token_id=tokenizer.pad_token_id
             )
 
