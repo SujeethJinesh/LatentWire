@@ -108,11 +108,15 @@ def train_adapter_only(args):
     device = model.device
 
     # Create adapter
+    # Note: We use a dummy latent_length here as it's required but not used for our simple mapping
     adapter = Adapter(
-        d_in=args.compress_dim,
-        d_out=embed_dim,
+        d_z=args.compress_dim,
+        d_model=embed_dim,
+        latent_length=32,  # Not used in our simple reconstruction task
         hidden_mult=args.adapter_hidden_mult,
-        dropout=args.adapter_dropout
+        dropout=args.adapter_dropout,
+        enable_metadata=False,
+        colorize=False
     ).to(device)
 
     print(f"\nAdapter params: {sum(p.numel() for p in adapter.parameters()):,}")
