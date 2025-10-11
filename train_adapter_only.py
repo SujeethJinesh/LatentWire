@@ -136,7 +136,8 @@ def train_adapter_only(args):
     print("\nFitting compressor...")
     sample_embeds = []
     for item in tqdm(dataset[:100], desc="Collecting embeddings"):
-        text = f"Context: {item['context']}\nQuestion: {item['question']}\nAnswer: "
+        # The 'source' field already contains "Context: ... \nQuestion: ..."
+        text = item['source'] + "Answer: "
         inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
         input_ids = inputs.input_ids.to(device)
 
@@ -178,7 +179,7 @@ def train_adapter_only(args):
             batch_items = [dataset[i] for i in batch_indices]
 
             # Prepare texts
-            texts = [f"Context: {item['context']}\nQuestion: {item['question']}\nAnswer: " for item in batch_items]
+            texts = [item['source'] + "Answer: " for item in batch_items]
             answers = [item['answer'] for item in batch_items]
 
             # Tokenize
@@ -290,7 +291,7 @@ def train_adapter_only(args):
                 # Quick eval on 10 samples
                 correct = 0
                 for val_item in val_dataset[:10]:
-                    text = f"Context: {val_item['context']}\nQuestion: {val_item['question']}\nAnswer: "
+                    text = val_item['source'] + "Answer: "
                     inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
                     input_ids = inputs.input_ids.to(device)
 
@@ -387,7 +388,7 @@ def evaluate_compressed_adapter(model, tokenizer, adapter, compressor, dataset):
     references = []
 
     for item in tqdm(dataset, desc="Evaluating"):
-        text = f"Context: {item['context']}\nQuestion: {item['question']}\nAnswer: "
+        text = item['source'] + "Answer: "
         inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
         input_ids = inputs.input_ids.to(model.device)
 
