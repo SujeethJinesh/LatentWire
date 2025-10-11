@@ -28,6 +28,11 @@
    - Fixed: `item['source']` which contains "Context: ... Question: ..."
    - The data structure from load_squad_subset is different than expected
 
+4. **Tensor Concatenation Error**:
+   - Wrong: Direct `torch.cat(sample_embeds, dim=0)` with different sequence lengths
+   - Fixed: `squeeze(0)` to remove batch dim, then concat along sequence dimension
+   - Different samples have different token counts (191 vs 186), must handle properly
+
 **Verification Complete**:
 - All Stage 1 components now working correctly
 - Data loading: ✓
