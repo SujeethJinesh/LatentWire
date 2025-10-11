@@ -22,6 +22,20 @@
 - Ready to test adapter-only approach with 4096→512 compression
 - Expected performance: ~70% F1 (from 82% baseline)
 
+**Additional Fix - Data Format**:
+3. **Data Field Access Error**:
+   - Wrong: `item['context']` and `item['question']` (KeyError)
+   - Fixed: `item['source']` which contains "Context: ... Question: ..."
+   - The data structure from load_squad_subset is different than expected
+
+**Verification Complete**:
+- All Stage 1 components now working correctly
+- Data loading: ✓
+- Tokenization: ✓
+- Adapter creation: ✓
+- Forward pass: ✓
+
+
 **Next Steps**:
 1. Run Stage 1 training to validate adapter concept
 2. If successful (>65% F1), proceed to Stage 2 with encoder
