@@ -216,18 +216,28 @@ def train_adapter_phase1(args):
     pca_dataset = load_squad_subset("train", args.pca_samples, seed=42)  # Different seed for independence
 
     sample_embeds = []
-    for item in tqdm(pca_dataset, desc="Collecting embeddings for PCA"):
+    batch_embeds_gpu = []  # Accumulate on GPU
+    BATCH_SIZE = 1000  # Transfer to CPU every 1000 samples to reduce PCIe overhead
+
+    for idx, item in enumerate(tqdm(pca_dataset, desc="Collecting embeddings for PCA")):
         text = item['source'] + "Answer: "
         inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
         input_ids = inputs.input_ids.to(device)
 
         with torch.no_grad():
             embeds = model.get_input_embeddings()(input_ids)
-            # CRITICAL: Move to CPU immediately to avoid OOM
-            # GPU can't hold 80k samples in memory at once
-            sample_embeds.append(embeds.squeeze(0).cpu())
+            batch_embeds_gpu.append(embeds.squeeze(0))
 
-    # Concatenate: [total_tokens, embed_dim]
+            # Transfer to CPU in batches to reduce overhead
+            # Single transfer of 1000 samples >> 1000 individual transfers
+            if len(batch_embeds_gpu) >= BATCH_SIZE or idx == len(pca_dataset) - 1:
+                # Concatenate and move batch to CPU in one operation
+                batch_concat = torch.cat(batch_embeds_gpu, dim=0).cpu()
+                sample_embeds.append(batch_concat)
+                batch_embeds_gpu = []  # Clear GPU batch
+                torch.cuda.empty_cache()  # Free GPU memory
+
+    # Concatenate all CPU batches: [total_tokens, embed_dim]
     sample_embeds = torch.cat(sample_embeds, dim=0)
     print(f"Collected {sample_embeds.shape[0]:,} embedding vectors")
 
