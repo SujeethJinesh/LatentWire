@@ -12,7 +12,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import numpy as np
 from pathlib import Path
 import json
+import pytest
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Requires GPU for 8B model")
 def test_embedding_preservation():
     """Test if we can preserve information through encode→adapt cycle"""
 

@@ -65,7 +65,8 @@ def test_stage1_components():
     print("✅ All Stage 1 components working correctly!")
     print("Ready to run full training.")
 
-    return True
+    # Tests should not return values
+    assert True
 
 if __name__ == "__main__":
     try:

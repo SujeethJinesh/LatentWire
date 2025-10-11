@@ -1,5 +1,31 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Training Fixes Part 2 (Claude Code)
+
+**FIX 1: Device Mismatch Error**
+- **Error**: `RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!`
+- **Location**: Line 229 of `train_adapter_only.py`
+- **Root Cause**: `answer_inputs.attention_mask` was not moved to GPU
+- **Solution**:
+  ```python
+  # Added device transfer for answer attention mask
+  answer_attention_mask = answer_inputs.attention_mask.to(device)
+  full_mask = torch.cat([attention_mask, answer_attention_mask], dim=1)
+  ```
+
+**FIX 2: Test Suite Updates**
+- **GPU Test Skip**: Added `@pytest.mark.skipif(not torch.cuda.is_available())` to `test_embedding_match.py`
+  - Test loads 8B model which requires GPU memory
+  - Prevents failure on local MacBook development
+- **Pytest Warning**: Fixed `test_stage1_quick.py` returning value instead of using assert
+  - Changed `return True` to `assert True`
+- **Test Results**: ✅ 103 passed, 5 skipped (GPU-specific), 0 failed
+
+**Ready for H100 Deployment**:
+- All critical bugs fixed (BFloat16, device mismatch)
+- Test suite passes on local development
+- Stage 1 training script ready for 4x H100 cluster
+
 ### 2025-10-11 — Stage 1 BFloat16 Compatibility Fix (Claude Code)
 
 **CRITICAL FIX**: Stage 1 adapter training failed due to BFloat16 → NumPy conversion error

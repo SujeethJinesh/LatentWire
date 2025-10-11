@@ -206,6 +206,7 @@ def train_adapter_only(args):
                 padding=True
             )
             answer_ids = answer_inputs.input_ids.to(device)
+            answer_attention_mask = answer_inputs.attention_mask.to(device)
 
             # Get original embeddings
             with torch.no_grad():
@@ -226,7 +227,7 @@ def train_adapter_only(args):
             # Loss 2: Generation quality
             # Concatenate prompt embeddings with answer tokens
             full_ids = torch.cat([input_ids, answer_ids], dim=1)
-            full_mask = torch.cat([attention_mask, answer_inputs.attention_mask], dim=1)
+            full_mask = torch.cat([attention_mask, answer_attention_mask], dim=1)
 
             # Get answer embeddings
             with torch.no_grad():
