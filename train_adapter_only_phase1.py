@@ -245,48 +245,48 @@ def train_adapter_phase1(args):
     print(f"Training samples: {len(dataset)}")
     print(f"Validation samples: {len(val_dataset)}")
 
-    # Fit PCA on large sample for best generalization
-    print(f"\nFitting PCA compressor on {args.pca_samples:,} samples...")
-    pca_dataset = load_squad_subset("train", args.pca_samples, seed=42)  # Different seed for independence
+    # Fit compressor
+    if args.compress_method == "pca":
+        print(f"\nFitting PCA compressor on {args.pca_samples:,} samples...")
+        print(f"WARNING: PCA fitting is VERY slow (~19 hours for 80k samples)")
+        print(f"Recommendation: Use --compress_method random for instant initialization")
 
-    BATCH_SIZE = 64  # Process multiple samples in parallel
-    total_vectors = 0
+        pca_dataset = load_squad_subset("train", args.pca_samples, seed=42)
+        BATCH_SIZE = 64
+        total_vectors = 0
 
-    # Process in batches with incremental PCA fitting
-    # This avoids loading all embeddings into RAM at once
-    for i in tqdm(range(0, len(pca_dataset), BATCH_SIZE), desc="Collecting embeddings for PCA"):
-        batch_items = pca_dataset[i:i+BATCH_SIZE]
-        texts = [item['source'] + "Answer: " for item in batch_items]
+        # Process in batches with incremental PCA fitting
+        for i in tqdm(range(0, len(pca_dataset), BATCH_SIZE), desc="Collecting embeddings for PCA"):
+            batch_items = pca_dataset[i:i+BATCH_SIZE]
+            texts = [item['source'] + "Answer: " for item in batch_items]
 
-        # Batch tokenization with padding
-        inputs = tokenizer(
-            texts,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=256
-        )
-        input_ids = inputs.input_ids.to(device)
-        attention_mask = inputs.attention_mask.to(device)
+            inputs = tokenizer(
+                texts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=256
+            )
+            input_ids = inputs.input_ids.to(device)
+            attention_mask = inputs.attention_mask.to(device)
 
-        with torch.no_grad():
-            # Get embeddings for entire batch: [batch, seq, 4096]
-            embeds = model.get_input_embeddings()(input_ids)
+            with torch.no_grad():
+                embeds = model.get_input_embeddings()(input_ids)
+                valid_embeds = embeds[attention_mask.bool()]
+                compressor.partial_fit(valid_embeds)
+                total_vectors += valid_embeds.shape[0]
 
-            # Only keep valid (non-padded) embeddings using attention mask
-            valid_embeds = embeds[attention_mask.bool()]  # [total_valid_tokens, 4096]
+            if i % (BATCH_SIZE * 10) == 0:
+                torch.cuda.empty_cache()
 
-            # Incrementally fit PCA on this batch (no accumulation in RAM!)
-            compressor.partial_fit(valid_embeds)
-            total_vectors += valid_embeds.shape[0]
+        compressor.finalize_fit()
+        print(f"✓ PCA fitted on {total_vectors:,} embedding vectors")
 
-        # Clear GPU cache periodically
-        if i % (BATCH_SIZE * 10) == 0:
-            torch.cuda.empty_cache()
-
-    # Finalize PCA fitting
-    compressor.finalize_fit()
-    print(f"✓ PCA fitted on {total_vectors:,} embedding vectors")
+    elif args.compress_method == "random":
+        # Random projection - instant initialization, no fitting needed
+        print(f"\nInitializing random projection compressor (instant)...")
+        # Random projection matrix already initialized in __init__
+        print(f"✓ Random projection ready ({args.input_dim} → {args.compress_dim})")
 
     # Training setup
     optimizer = torch.optim.AdamW(adapter.parameters(), lr=args.adapter_lr)

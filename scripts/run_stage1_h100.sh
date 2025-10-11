@@ -43,7 +43,7 @@ echo "===================================="
 echo ""
 echo "Configuration:"
 echo "  - Model: meta-llama/Meta-Llama-3.1-8B-Instruct"
-echo "  - Compression: 4096 → 512 (8x compression via PCA)"
+echo "  - Compression: 4096 → 512 (8x compression via Random Projection)"
 echo "  - Batch Size: $BATCH_SIZE (2x increase with device fixes, ~50-60GB/85GB expected)"
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
@@ -74,7 +74,7 @@ echo "" | tee -a "$CHECKPOINT_DIR/logs/training.log"
 python train_adapter_only_phase1.py \
   --model_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
   --compress_dim 512 \
-  --compress_method pca \
+  --compress_method random \
   --adapter_hidden_mult 4 \
   --adapter_dropout 0.1 \
   --adapter_lr 5e-4 \
