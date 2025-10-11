@@ -92,16 +92,27 @@ def train_adapter_only(args):
     print(f"Samples: {args.samples}")
     print("="*60)
 
+    # Require GPU for training
+    if not torch.cuda.is_available():
+        print("\n" + "="*60)
+        print("ERROR: No CUDA GPUs detected!")
+        print("="*60)
+        print("This script requires GPU for training.")
+        print("Please check:")
+        print("  - CUDA is installed")
+        print("  - GPUs are visible to PyTorch")
+        print("  - Driver and runtime are compatible")
+        print("="*60)
+        import sys
+        sys.exit(1)
+
     # Print GPU information
-    if torch.cuda.is_available():
-        print(f"\nGPU Information:")
-        print(f"  CUDA available: Yes")
-        print(f"  Number of GPUs: {torch.cuda.device_count()}")
-        for i in range(torch.cuda.device_count()):
-            props = torch.cuda.get_device_properties(i)
-            print(f"  GPU {i}: {props.name} ({props.total_memory / 1e9:.1f} GB)")
-    else:
-        print("\nWARNING: No CUDA GPUs detected! Training will be slow.")
+    print(f"\nGPU Information:")
+    print(f"  CUDA available: Yes")
+    print(f"  Number of GPUs: {torch.cuda.device_count()}")
+    for i in range(torch.cuda.device_count()):
+        props = torch.cuda.get_device_properties(i)
+        print(f"  GPU {i}: {props.name} ({props.total_memory / 1e9:.1f} GB)")
 
     # Setup diagnostic logging
     diagnostic_log = args.diagnostic_log if hasattr(args, 'diagnostic_log') else None

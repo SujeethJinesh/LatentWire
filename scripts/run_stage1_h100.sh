@@ -8,8 +8,27 @@ export PYTHONPATH="${PYTHONPATH:-.}"
 
 # H100 Optimizations
 export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
 export TORCH_COMPILE=1
-export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+# Disable NVIDIA MPS to avoid daemon connection errors (Error 805)
+# MPS can cause CUDA initialization failures on some HPC configurations
+export CUDA_MPS_PIPE_DIRECTORY=/dev/null
+export CUDA_MPS_LOG_DIRECTORY=/dev/null
+
+# Verify GPU detection before training
+echo "Checking GPU availability..."
+python -c "import torch; print(f'  CUDA available: {torch.cuda.is_available()}'); print(f'  GPU count: {torch.cuda.device_count()}'); [print(f\"  GPU {i}: {torch.cuda.get_device_name(i)}\") for i in range(torch.cuda.device_count())] if torch.cuda.is_available() else print('  ERROR: No GPUs detected!')"
+echo ""
+
+if ! python -c "import torch; import sys; sys.exit(0 if torch.cuda.is_available() else 1)"; then
+    echo "ERROR: No CUDA GPUs detected! Cannot proceed with training."
+    echo "Please check:"
+    echo "  - nvidia-smi shows GPUs"
+    echo "  - CUDA drivers are loaded"
+    echo "  - PyTorch CUDA installation: pip list | grep torch"
+    exit 1
+fi
 
 # Configuration
 CHECKPOINT_DIR="runs/stage1_adapter_only"

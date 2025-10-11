@@ -1,5 +1,87 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 CUDA MPS Error - GPUs Not Detected on H100 Cluster (Claude Code)
+
+**CRITICAL ISSUE**: CUDA Error 805 - MPS daemon connection failure preventing GPU detection
+
+**Error Found**:
+```
+CUDA initialization: Unexpected error from cudaGetDeviceCount().
+Error 805: MPS client failed to connect to the MPS control daemon or the MPS server
+```
+
+**Root Cause**:
+- NVIDIA MPS (Multi-Process Service) is configured but not running properly on HPC cluster
+- PyTorch cannot enumerate GPUs due to MPS daemon communication failure
+- `torch.cuda.is_available()` returns False despite 4x H100 GPUs being physically present
+
+**Fix Applied**:
+1. **Added fail-fast GPU check** (lines 95-107 in train_adapter_only.py):
+```python
+if not torch.cuda.is_available():
+    print("\n" + "="*60)
+    print("ERROR: No CUDA GPUs detected!")
+    print("="*60)
+    print("This script requires GPU for training.")
+    sys.exit(1)
+```
+
+**Troubleshooting Steps for HPC Cluster**:
+
+1. **Check CUDA environment variables**:
+```bash
+echo $CUDA_VISIBLE_DEVICES
+nvidia-smi  # Verify GPUs are visible at system level
+```
+
+2. **Disable or fix MPS** (choose one):
+```bash
+# Option A: Disable MPS entirely
+export CUDA_MPS_PIPE_DIRECTORY=/dev/null
+export CUDA_MPS_LOG_DIRECTORY=/dev/null
+unset CUDA_MPS_PIPE_DIRECTORY CUDA_MPS_LOG_DIRECTORY
+
+# Option B: Restart MPS daemon (requires permissions)
+nvidia-cuda-mps-control -d  # Start daemon
+echo quit | nvidia-cuda-mps-control  # Stop if needed
+
+# Option C: Use exclusive compute mode instead of MPS
+# (requires admin/SLURM configuration)
+```
+
+3. **Set compute mode explicitly**:
+```bash
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+```
+
+4. **Check PyTorch CUDA installation**:
+```bash
+python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+python -c "import torch; print(f'CUDA version: {torch.version.cuda}')"
+```
+
+**Recommended Fix for HPC Cluster**:
+Add to SLURM job script or run script before training:
+```bash
+# Disable MPS to avoid daemon issues
+export CUDA_MPS_PIPE_DIRECTORY=/dev/null
+export CUDA_MPS_LOG_DIRECTORY=/dev/null
+
+# Ensure all GPUs are visible
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
+
+# Verify before running
+nvidia-smi
+python -c "import torch; print(f'GPUs: {torch.cuda.device_count()}')"
+```
+
+**Training Status**:
+- Fail-fast check added to prevent CPU training
+- Awaiting MPS configuration fix on HPC cluster
+- Once resolved, training should properly utilize all 4 H100s
+
 ### 2025-10-11 — Stage 1 GPU Device Placement Fix for H100 Cluster (Claude Code)
 
 **CRITICAL FIX**: No GPU utilization on 4x H100 cluster due to device placement issues
