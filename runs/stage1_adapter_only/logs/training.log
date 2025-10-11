@@ -1,9 +1,7 @@
-Starting training at Sat Oct 11 11:05:21 PDT 2025
+Starting training at Sat Oct 11 11:10:17 PDT 2025
 
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/cuda/__init__.py:128: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 805: MPS client failed to connect to the MPS control daemon or the MPS server (Triggered internally at ../c10/cuda/CUDAFunctions.cpp:108.)
-  return torch._C._cuda_getDeviceCount() > 0
 
 Configuration:
   model_id: meta-llama/Meta-Llama-3.1-8B-Instruct
@@ -29,16 +27,49 @@ Compression: 4096 → 512
 Samples: 10000
 ============================================================
 
-WARNING: No CUDA GPUs detected! Training will be slow.
+GPU Information:
+  CUDA available: Yes
+  Number of GPUs: 4
+  GPU 0: NVIDIA H100 80GB HBM3 (85.0 GB)
+  GPU 1: NVIDIA H100 80GB HBM3 (85.0 GB)
+  GPU 2: NVIDIA H100 80GB HBM3 (85.0 GB)
+  GPU 3: NVIDIA H100 80GB HBM3 (85.0 GB)
 Logging diagnostics to: runs/stage1_adapter_only/logs/diagnostics.jsonl
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3404.47it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  6.56it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  7.12it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00,  7.31it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  7.33it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  7.23it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2331.46it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:09<00:28,  9.50s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:19<00:19,  9.72s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:28<00:09,  9.58s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:31<00:00,  6.68s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:31<00:00,  7.76s/it]
 
 Adapter params: 19,952,641
 
 Fitting compressor...
-Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]Collecting embeddings:  80%|████████  | 80/100 [00:00<00:00, 796.94it/s]Collecting embeddings: 100%|██████████| 100/100 [00:00<00:00, 745.75it/s]
+Collecting embeddings:   0%|          | 0/100 [00:00<?, ?it/s]Collecting embeddings: 100%|██████████| 100/100 [00:00<00:00, 1138.84it/s]
 Compressor fitted on 17408 embedding vectors
 
 Training adapter...
-Epoch 1/3:   0%|          | 0/78 [00:00<?, ?it/s]
+Epoch 1/3:   0%|          | 0/78 [00:00<?, ?it/s]Epoch 1/3:   0%|          | 0/78 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 519, in main
+    train_adapter_only(args)
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only.py", line 271, in train_adapter_only
+    outputs = model(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/accelerate/hooks.py", line 175, in new_forward
+    output = module._old_forward(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/models/llama/modeling_llama.py", line 1214, in forward
+    logits = self.lm_head(hidden_states[:, -num_logits_to_keep:, :]).float()
+RuntimeError: CUDA error: unspecified launch failure
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+
+============================================================
+ERROR: Training failed!
+============================================================
+Error: CUDA error: unspecified launch failure
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
