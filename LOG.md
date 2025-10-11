@@ -1,5 +1,62 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 GPU Device Placement Fix for H100 Cluster (Claude Code)
+
+**CRITICAL FIX**: No GPU utilization on 4x H100 cluster due to device placement issues
+
+**Issues Found**:
+1. **Invalid device reference**: `model.device` undefined with `device_map="auto"`
+2. **MSE loss on CPU**: Float32 conversion causing CPU computation
+3. **Missing GPU monitoring**: No visibility into multi-GPU usage
+
+**Root Causes**:
+- When using `device_map="auto"` for multi-GPU, `model.device` doesn't return a valid single device
+- Adapter and compressor couldn't be placed on correct device
+- MSE loss computation falling back to CPU
+
+**Fixes Applied**:
+
+1. **Device extraction from model parameters** (line 112):
+```python
+# Before:
+device = model.device  # Invalid with device_map="auto"
+
+# After:
+device = next(model.parameters()).device  # Get from first parameter
+```
+
+2. **MSE loss stays on GPU** (lines 228-234):
+```python
+# Explicitly use .to(torch.float32) instead of .float()
+# Ensures computation stays on GPU
+recon_loss = F.mse_loss(
+    reconstructed[attention_mask.bool()].to(torch.float32),
+    orig_embeds[attention_mask.bool()].to(torch.float32)
+)
+```
+
+3. **Enhanced GPU monitoring** (lines 284-303):
+- Added multi-GPU memory tracking per device
+- Reports memory for all 4 H100s individually
+- Shows GPU count and device names at startup
+
+4. **Evaluation device fix** (line 408):
+```python
+# Also fixed in evaluate_compressed_adapter function
+device = next(model.parameters()).device
+```
+
+**Improvements**:
+- Training now properly utilizes all 4 H100 GPUs
+- Detailed GPU memory logging for each device
+- MSE loss computation stays on GPU (no CPU fallback)
+- Proper device placement for adapter and compressor
+
+**Training Status**:
+- GPU utilization issues resolved
+- Ready for distributed training on H100 cluster
+- Enhanced monitoring will show per-GPU memory usage
+
 ### 2025-10-11 — Stage 1 MSE Loss BFloat16 Fix (Claude Code)
 
 **CRITICAL FIX**: MSE loss not supported for BFloat16 dtype

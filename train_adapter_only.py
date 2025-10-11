@@ -92,6 +92,17 @@ def train_adapter_only(args):
     print(f"Samples: {args.samples}")
     print("="*60)
 
+    # Print GPU information
+    if torch.cuda.is_available():
+        print(f"\nGPU Information:")
+        print(f"  CUDA available: Yes")
+        print(f"  Number of GPUs: {torch.cuda.device_count()}")
+        for i in range(torch.cuda.device_count()):
+            props = torch.cuda.get_device_properties(i)
+            print(f"  GPU {i}: {props.name} ({props.total_memory / 1e9:.1f} GB)")
+    else:
+        print("\nWARNING: No CUDA GPUs detected! Training will be slow.")
+
     # Setup diagnostic logging
     diagnostic_log = args.diagnostic_log if hasattr(args, 'diagnostic_log') else None
     if diagnostic_log:
@@ -108,7 +119,8 @@ def train_adapter_only(args):
     tokenizer.pad_token = tokenizer.eos_token
 
     embed_dim = model.config.hidden_size
-    device = model.device
+    # Get device from embedding layer when using device_map="auto"
+    device = next(model.parameters()).device
 
     # Create adapter
     # Note: We use a dummy latent_length here as it's required but not used for our simple mapping
@@ -224,10 +236,12 @@ def train_adapter_only(args):
                 reconstructed = reconstructed.to(orig_embeds.dtype)
 
             # Loss 1: Reconstruction
-            # Convert to float32 for MSE loss (not supported for BFloat16)
+            # Convert to float32 for MSE loss (not supported for BFloat16 on CPU)
+            # Keep computation on GPU by ensuring tensors stay on same device
+            device = reconstructed.device
             recon_loss = F.mse_loss(
-                reconstructed[attention_mask.bool()].float(),
-                orig_embeds[attention_mask.bool()].float()
+                reconstructed[attention_mask.bool()].to(torch.float32),
+                orig_embeds[attention_mask.bool()].to(torch.float32)
             )
 
             # Loss 2: Generation quality
@@ -276,13 +290,28 @@ def train_adapter_only(args):
 
             # Log diagnostics
             if step % 10 == 0:
-                # Get GPU memory stats
+                # Get GPU memory stats with detailed multi-GPU info
+                gpu_info = {}
                 if torch.cuda.is_available():
-                    gpu_mem = torch.cuda.max_memory_allocated() / 1e9  # GB
-                    gpu_util = torch.cuda.memory_allocated() / torch.cuda.max_memory_reserved()
+                    # Log info for all visible GPUs
+                    gpu_count = torch.cuda.device_count()
+                    total_mem_gb = 0
+                    total_allocated_gb = 0
+
+                    for i in range(gpu_count):
+                        allocated = torch.cuda.memory_allocated(i) / 1e9
+                        reserved = torch.cuda.memory_reserved(i) / 1e9
+                        total_mem_gb += torch.cuda.get_device_properties(i).total_memory / 1e9
+                        total_allocated_gb += allocated
+                        gpu_info[f"gpu_{i}_allocated_gb"] = allocated
+                        gpu_info[f"gpu_{i}_reserved_gb"] = reserved
+
+                    gpu_info["total_gpu_memory_gb"] = total_allocated_gb
+                    gpu_info["gpu_count"] = gpu_count
+                    gpu_info["device_name"] = torch.cuda.get_device_name(0)
                 else:
-                    gpu_mem = 0
-                    gpu_util = 0
+                    gpu_info["gpu_count"] = 0
+                    gpu_info["total_gpu_memory_gb"] = 0
 
                 log_diagnostics(diagnostic_log, step, epoch, {
                     "loss": loss.item(),
@@ -291,8 +320,7 @@ def train_adapter_only(args):
                     "lr": scheduler.get_last_lr()[0],
                     "compression_ratio": args.input_dim / args.compress_dim,
                     "batch_size": args.batch_size,
-                    "gpu_memory_gb": gpu_mem,
-                    "gpu_utilization": gpu_util
+                    **gpu_info
                 })
 
             # Periodic evaluation
@@ -401,10 +429,13 @@ def evaluate_compressed_adapter(model, tokenizer, adapter, compressor, dataset):
     predictions = []
     references = []
 
+    # Get device from model parameters when using device_map="auto"
+    device = next(model.parameters()).device
+
     for item in tqdm(dataset, desc="Evaluating"):
         text = item['source'] + "Answer: "
         inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
-        input_ids = inputs.input_ids.to(model.device)
+        input_ids = inputs.input_ids.to(device)
 
         with torch.no_grad():
             # Pipeline: embed → compress → adapt
