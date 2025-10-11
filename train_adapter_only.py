@@ -270,11 +270,16 @@ def train_adapter_only(args):
             # Concatenate reconstructed prompt with answer
             full_embeds = torch.cat([reconstructed, answer_embeds], dim=1)
 
+            # CRITICAL: Ensure labels and mask are on same device as embeddings for multi-GPU
+            # With device_map="auto", different tensors may end up on different GPUs
+            full_ids_device = full_ids.to(full_embeds.device)
+            full_mask_device = full_mask.to(full_embeds.device)
+
             # Forward through model
             outputs = model(
                 inputs_embeds=full_embeds,
-                attention_mask=full_mask,
-                labels=full_ids
+                attention_mask=full_mask_device,
+                labels=full_ids_device
             )
 
             ce_loss = outputs.loss

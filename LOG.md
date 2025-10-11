@@ -1,8 +1,58 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
-### 2025-10-11 — Stage 1 Memory Optimization for H100 Cluster (Claude Code)
+### 2025-10-11 — Stage 1 Labels Device Fix After Batch Size 96 Failure (Claude Code)
 
-**OPTIMIZATION**: Increased batch size 3× based on observed GPU memory usage
+**CRITICAL FIX**: Labels device mismatch at larger batch sizes
+
+**Error Found with batch_size=96**:
+```
+RuntimeError: CUDA error: unspecified launch failure
+Location: line 1229 in transformers/models/llama/modeling_llama.py
+Function: loss = loss_fct(shift_logits, shift_labels)
+```
+
+**Root Cause**:
+- Larger batch sizes (96) exposed a latent device mismatch bug
+- Labels (`full_ids`) and attention mask (`full_mask`) remained on initial device
+- Embeddings (`full_embeds`) were on adapter's device (may differ with `device_map="auto"`)
+- Cross-entropy loss computation failed due to device mismatch between logits and labels
+- Smaller batch size (32) worked by luck - tensors happened to be on same device
+
+**Fix Applied** (lines 273-276):
+```python
+# CRITICAL: Ensure labels and mask are on same device as embeddings for multi-GPU
+# With device_map="auto", different tensors may end up on different GPUs
+full_ids_device = full_ids.to(full_embeds.device)
+full_mask_device = full_mask.to(full_embeds.device)
+
+outputs = model(
+    inputs_embeds=full_embeds,
+    attention_mask=full_mask_device,
+    labels=full_ids_device
+)
+```
+
+**Why This Matters**:
+- With `device_map="auto"`, model layers distributed across 4 H100s
+- Adapter may be on GPU 0, but model's loss computation on GPU 3
+- All inputs to model.forward() must be on compatible devices
+- Previous fix (line 268) only addressed embeddings, not labels/masks
+
+**Decision: Revert to batch_size=32**:
+- Batch size 32 known to work reliably
+- Device fix should enable larger batches, but need to test incrementally
+- Can try 48 or 64 once this fix is validated
+- Priority: Stability over speed for initial runs
+
+**Next Steps**:
+- Validate training completes successfully with batch_size=32 + device fix
+- If stable, test batch_size=48 as next increment
+- Monitor for any other device-related issues
+- Eventually target batch_size=96 once all device issues resolved
+
+### 2025-10-11 — Stage 1 Memory Optimization Attempt (Failed) (Claude Code)
+
+**ATTEMPTED OPTIMIZATION**: Increased batch size 3× based on observed GPU memory usage
 
 **Observation**:
 Steady-state GPU memory usage at batch_size=32:

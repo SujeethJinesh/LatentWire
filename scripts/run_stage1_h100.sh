@@ -32,7 +32,7 @@ fi
 
 # Configuration
 CHECKPOINT_DIR="runs/stage1_adapter_only"
-BATCH_SIZE=96  # Optimized for H100 memory usage (~35-54GB/85GB observed)
+BATCH_SIZE=32  # Conservative: Works reliably with multi-GPU setup
 SAMPLES=10000
 EPOCHS=3
 
@@ -43,16 +43,11 @@ echo ""
 echo "Configuration:"
 echo "  - Model: meta-llama/Meta-Llama-3.1-8B-Instruct"
 echo "  - Compression: 4096 → 512 (8x compression via PCA)"
-echo "  - Batch Size: $BATCH_SIZE (optimized for H100 memory: ~40GB/85GB baseline)"
+echo "  - Batch Size: $BATCH_SIZE (conservative, stable with multi-GPU)"
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
 echo "  - Steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) total"
 echo "  - Output: $CHECKPOINT_DIR"
-echo ""
-echo "Memory Optimization:"
-echo "  - Observed usage: 35-54GB per H100 with batch_size=32"
-echo "  - Headroom: ~45GB average → 3x batch size increase to 96"
-echo "  - Expected speedup: 3x fewer steps (312 → 104 steps/epoch)"
 echo ""
 echo "Expected Performance:"
 echo "  - Baseline (no compression): 82% F1"
