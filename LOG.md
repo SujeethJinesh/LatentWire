@@ -1,5 +1,62 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Memory Optimization for H100 Cluster (Claude Code)
+
+**OPTIMIZATION**: Increased batch size 3× based on observed GPU memory usage
+
+**Observation**:
+Steady-state GPU memory usage at batch_size=32:
+```
+GPU 0: 35.5 GB / 85 GB (42% utilization)
+GPU 1: 39.3 GB / 85 GB (46% utilization)
+GPU 2: 39.3 GB / 85 GB (46% utilization)
+GPU 3: 54.3 GB / 85 GB (64% utilization)
+Average: ~42 GB / 85 GB
+```
+
+**Analysis**:
+- Conservative batch size of 32 was underutilizing H100s
+- ~43 GB average headroom per GPU (~50% unused)
+- No memory pressure or OOM risk observed
+- Training limited by compute throughput, not memory
+
+**Optimization Applied**:
+```bash
+# Before:
+BATCH_SIZE=32  # Reduced to avoid OOM on multi-GPU setup
+
+# After:
+BATCH_SIZE=96  # Optimized for H100 memory usage (~35-54GB/85GB observed)
+```
+
+**Expected Impact**:
+- **3× fewer gradient steps** per epoch (312 → 104 steps)
+- **~3× faster training** (assuming compute-bound)
+- Better GPU utilization (~60-70% memory vs ~45%)
+- Still safe margin for peak memory spikes
+
+**Trade-offs**:
+- Larger batches may slightly affect convergence dynamics
+- Learning rate might need tuning (currently 5e-4)
+- But: with 10K samples, 96 is still only ~1% of dataset
+
+**Memory Headroom**:
+- Estimated peak usage at batch_size=96: ~60-75 GB per GPU
+- Still ~10-25 GB safety margin on each GPU
+- Can push to 128 if 96 proves stable
+
+**Training Speed Improvement**:
+```
+Batch 32:  10000 / 32  = 312 steps/epoch × 3 epochs = 936 total steps
+Batch 96:  10000 / 96  = 104 steps/epoch × 3 epochs = 312 total steps
+Speedup:   936 / 312 = 3× fewer steps
+```
+
+**Next Steps**:
+- Monitor memory usage with batch_size=96
+- If stable and <70GB, consider pushing to 128
+- If OOM occurs, fall back to 64
+
 ### 2025-10-11 — Stage 1 Device Mismatch Fix + Unit Tests (Claude Code)
 
 **CRITICAL FIX**: CUDA kernel launch failure due to cross-GPU tensor concatenation
