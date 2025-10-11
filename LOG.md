@@ -1,5 +1,37 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 MSE Loss BFloat16 Fix (Claude Code)
+
+**CRITICAL FIX**: MSE loss not supported for BFloat16 dtype
+
+**Issue Found**:
+- **Error**: `RuntimeError: "mse_cpu" not implemented for 'BFloat16'`
+- **Location**: Line 227 in reconstruction loss calculation
+- **Root Cause**: PyTorch's MSE loss function doesn't support BFloat16 on CPU
+- **Impact**: Training crashed immediately when calculating reconstruction loss
+
+**Fix Applied**:
+```python
+# Before (line 227-230):
+recon_loss = F.mse_loss(
+    reconstructed[attention_mask.bool()],
+    orig_embeds[attention_mask.bool()]
+)
+
+# After:
+recon_loss = F.mse_loss(
+    reconstructed[attention_mask.bool()].float(),
+    orig_embeds[attention_mask.bool()].float()
+)
+```
+
+**Solution**: Convert tensors to float32 temporarily for loss calculation only
+
+**Training Status**:
+- All dtype issues now resolved
+- MSE loss calculation fixed
+- Ready for Stage 1 training to proceed
+
 ### 2025-10-11 — Stage 1 Dtype Mismatch Fix (Claude Code)
 
 **CRITICAL FIX**: Stage 1 adapter training failed due to dtype mismatch

@@ -224,9 +224,10 @@ def train_adapter_only(args):
                 reconstructed = reconstructed.to(orig_embeds.dtype)
 
             # Loss 1: Reconstruction
+            # Convert to float32 for MSE loss (not supported for BFloat16)
             recon_loss = F.mse_loss(
-                reconstructed[attention_mask.bool()],
-                orig_embeds[attention_mask.bool()]
+                reconstructed[attention_mask.bool()].float(),
+                orig_embeds[attention_mask.bool()].float()
             )
 
             # Loss 2: Generation quality
