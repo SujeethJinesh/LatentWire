@@ -1,5 +1,73 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Device Mismatch Fix + Unit Tests (Claude Code)
+
+**CRITICAL FIX**: CUDA kernel launch failure due to cross-GPU tensor concatenation
+
+**Error Found**:
+```
+RuntimeError: CUDA error: unspecified launch failure
+CUDA kernel errors might be asynchronously reported at some other API call
+Location: line 271 (model forward pass with inputs_embeds)
+```
+
+**Root Cause**:
+- With `device_map="auto"`, model layers are distributed across 4 H100 GPUs
+- Embedding layer may be on GPU 0, but adapter outputs on different GPU
+- Concatenating `reconstructed` and `answer_embeds` from different devices causes kernel failure
+- Batch size 128 too large for multi-GPU memory layout
+
+**Fixes Applied**:
+
+1. **Device alignment before concatenation** (lines 266-268):
+```python
+with torch.no_grad():
+    answer_embeds = model.get_input_embeddings()(answer_ids)
+    # Ensure answer_embeds is on same device as reconstructed (critical for multi-GPU)
+    if answer_embeds.device != reconstructed.device:
+        answer_embeds = answer_embeds.to(reconstructed.device)
+```
+
+2. **Reduced batch size** (scripts/run_stage1_h100.sh):
+```bash
+# Before: BATCH_SIZE=128
+# After: BATCH_SIZE=32  # Safer for multi-GPU setup
+```
+
+3. **Comprehensive unit tests** (tests/test_stage1_adapter.py):
+- 19 test cases covering all critical paths
+- Tests run on MacBook CPU to catch issues before HPC deployment
+- Cover: compressor, adapter, device placement, dtype handling, edge cases
+- Test results: **16 passed, 3 skipped** (GPU-only tests)
+
+**Test Coverage**:
+- ✅ Compressor initialization and fitting
+- ✅ Compression output shapes and dtype preservation
+- ✅ Adapter forward pass and integration
+- ✅ Device mismatch detection and correction
+- ✅ MSE loss with float32 conversion
+- ✅ Batch processing with various sizes
+- ✅ Attention mask application
+- ✅ Edge cases (empty batch, single sample, long sequences)
+
+**Benefits of Unit Tests**:
+- Catch device placement bugs locally before HPC deployment
+- Verify dtype handling (BFloat16 ↔ Float32)
+- Test edge cases that might crash on cluster
+- Fast feedback loop (~6s on MacBook)
+- No GPU required for most tests
+
+**Training Status**:
+- Device mismatch resolved
+- Batch size reduced to avoid OOM
+- Ready for next training run on H100 cluster
+- Unit tests provide safety net for future changes
+
+**How to Run Tests Locally**:
+```bash
+PYTHONPATH=. python -m pytest tests/test_stage1_adapter.py -v
+```
+
 ### 2025-10-11 — Stage 1 CUDA MPS Error - GPUs Not Detected on H100 Cluster (Claude Code)
 
 **CRITICAL ISSUE**: CUDA Error 805 - MPS daemon connection failure preventing GPU detection

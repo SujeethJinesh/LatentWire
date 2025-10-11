@@ -32,7 +32,7 @@ fi
 
 # Configuration
 CHECKPOINT_DIR="runs/stage1_adapter_only"
-BATCH_SIZE=128  # Much larger than before since no KD/encoder!
+BATCH_SIZE=32  # Reduced to avoid OOM on multi-GPU setup
 SAMPLES=10000
 EPOCHS=3
 

@@ -263,6 +263,9 @@ def train_adapter_only(args):
             # Get answer embeddings
             with torch.no_grad():
                 answer_embeds = model.get_input_embeddings()(answer_ids)
+                # Ensure answer_embeds is on same device as reconstructed (critical for multi-GPU)
+                if answer_embeds.device != reconstructed.device:
+                    answer_embeds = answer_embeds.to(reconstructed.device)
 
             # Concatenate reconstructed prompt with answer
             full_embeds = torch.cat([reconstructed, answer_embeds], dim=1)
