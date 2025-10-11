@@ -216,28 +216,40 @@ def train_adapter_phase1(args):
     pca_dataset = load_squad_subset("train", args.pca_samples, seed=42)  # Different seed for independence
 
     sample_embeds = []
-    batch_embeds_gpu = []  # Accumulate on GPU
-    BATCH_SIZE = 1000  # Transfer to CPU every 1000 samples to reduce PCIe overhead
+    BATCH_SIZE = 64  # Process multiple samples in parallel
 
-    for idx, item in enumerate(tqdm(pca_dataset, desc="Collecting embeddings for PCA")):
-        text = item['source'] + "Answer: "
-        inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
+    # Process in batches for efficiency
+    for i in tqdm(range(0, len(pca_dataset), BATCH_SIZE), desc="Collecting embeddings for PCA"):
+        batch_items = pca_dataset[i:i+BATCH_SIZE]
+        texts = [item['source'] + "Answer: " for item in batch_items]
+
+        # Batch tokenization with padding
+        inputs = tokenizer(
+            texts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=256
+        )
         input_ids = inputs.input_ids.to(device)
+        attention_mask = inputs.attention_mask.to(device)
 
         with torch.no_grad():
+            # Get embeddings for entire batch: [batch, seq, 4096]
             embeds = model.get_input_embeddings()(input_ids)
-            batch_embeds_gpu.append(embeds.squeeze(0))
 
-            # Transfer to CPU in batches to reduce overhead
-            # Single transfer of 1000 samples >> 1000 individual transfers
-            if len(batch_embeds_gpu) >= BATCH_SIZE or idx == len(pca_dataset) - 1:
-                # Concatenate and move batch to CPU in one operation
-                batch_concat = torch.cat(batch_embeds_gpu, dim=0).cpu()
-                sample_embeds.append(batch_concat)
-                batch_embeds_gpu = []  # Clear GPU batch
-                torch.cuda.empty_cache()  # Free GPU memory
+            # Only keep valid (non-padded) embeddings using attention mask
+            # This ensures we don't include padding in PCA fitting
+            valid_embeds = embeds[attention_mask.bool()]  # [total_valid_tokens, 4096]
 
-    # Concatenate all CPU batches: [total_tokens, embed_dim]
+            # Move to CPU in one transfer per batch
+            sample_embeds.append(valid_embeds.cpu())
+
+        # Clear GPU cache periodically
+        if i % (BATCH_SIZE * 10) == 0:
+            torch.cuda.empty_cache()
+
+    # Concatenate all batches: [total_tokens, embed_dim]
     sample_embeds = torch.cat(sample_embeds, dim=0)
     print(f"Collected {sample_embeds.shape[0]:,} embedding vectors")
 
