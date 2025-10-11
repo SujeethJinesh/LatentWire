@@ -52,23 +52,19 @@ python latentwire/train.py \
   --batch_size $BATCH_SIZE \
   --grad_accum_steps $GRAD_ACCUM \
   --lr $LR \
-  --weight_decay 0.01 \
-  --warmup_steps 500 \
   --latent_len 32 \
   --d_z 256 \
   --encoder_type byte \
   --max_enc_tokens 2048 \
   --sequential_models \
   --first_token_ce_weight 2.0 \
-  --k_token_ce_weight 1.0 \
-  --k_token_ce_k 8 \
-  --kd_weight 0.5 \
+  --first_token_entropy_weight 0.5 \
+  --k_ce_weight 1.0 \
+  --K 8 \
+  --kd_first_k_weight 0.5 \
   --kd_tau 2.0 \
-  --kd_first_k 8 \
   --latent_align_weight 0.5 \
-  --entropy_weight 0.5 \
-  --label_smoothing 0.1 \
-  --use_lora 1 \
+  --use_lora \
   --lora_r 64 \
   --lora_alpha 128 \
   --lora_dropout 0.1 \
@@ -76,18 +72,12 @@ python latentwire/train.py \
   --warm_anchor_text "Answer: " \
   --save_dir "$CHECKPOINT_DIR" \
   --save_every 1000 \
-  --save_best \
-  --eval_every 500 \
-  --eval_samples 500 \
   --diagnostic_log "$LOG_DIR/diagnostics.jsonl" \
-  --diagnostic_interval 50 \
+  --grad_diag_interval 50 \
   --llama_device_map "auto" \
-  --gradient_checkpointing \
-  --mixed_precision bf16 \
+  --grad_ckpt \
   --max_grad_norm 1.0 \
   --seed 42 \
-  --deterministic \
-  --log_level INFO \
   --require_cuda "yes" \
   2>&1 | tee "$LOG_DIR/training.log"
 
@@ -99,14 +89,12 @@ echo ""
 # Run evaluation on the best checkpoint
 echo "Running evaluation on best checkpoint..."
 python latentwire/eval.py \
-  --ckpt "$CHECKPOINT_DIR/ckpt_best" \
+  --ckpt "$CHECKPOINT_DIR" \
   --samples 1000 \
   --dataset squad \
   --max_new_tokens 24 \
   --chunk_size 64 \
   --out_dir "$CHECKPOINT_DIR/eval" \
-  --embedding_replay true \
-  --embedding_baseline_modes '["raw","anchor","adapter"]' \
   --llama_device_map "auto" \
   2>&1 | tee "$LOG_DIR/evaluation.log"
 

@@ -51,37 +51,27 @@ python latentwire/train.py \
   --batch_size $BATCH_SIZE \
   --grad_accum_steps $GRAD_ACCUM \
   --lr $LR \
-  --lr_scheduler "cosine" \
-  --warmup_steps 100 \
-  --weight_decay 0.01 \
   --latent_len 32 \
   --d_z 256 \
   --encoder_type byte \
   --sequential_models \
   --first_token_ce_weight 3.0 \
-  --k_token_ce_weight 1.5 \
-  --k_token_ce_k 8 \
-  --kd_weight 0.5 \
+  --first_token_entropy_weight 0.5 \
+  --k_ce_weight 1.5 \
+  --K 8 \
+  --kd_first_k_weight 0.5 \
   --kd_tau 2.0 \
-  --entropy_weight 0.5 \
-  --use_lora 1 \
+  --use_lora \
   --lora_r 64 \
   --lora_alpha 128 \
   --lora_dropout 0.05 \
   --warm_anchor_text "Answer: " \
   --save_dir "$CHECKPOINT_DIR" \
   --save_every $SAVE_EVERY \
-  --max_checkpoints_to_keep $MAX_CHECKPOINTS \
-  --save_best \
-  --eval_every 200 \
-  --eval_samples 200 \
-  --early_stopping_patience 5 \
-  --early_stopping_metric "first_token_top1" \
   --diagnostic_log "$CHECKPOINT_DIR/logs/diagnostics.jsonl" \
-  --diagnostic_interval 20 \
+  --grad_diag_interval 20 \
   --llama_device_map "auto" \
-  --gradient_checkpointing \
-  --mixed_precision bf16 \
+  --grad_ckpt \
   --max_grad_norm 0.5 \
   --seed 42 \
   2>&1 | tee "$CHECKPOINT_DIR/logs/training.log"
@@ -91,7 +81,7 @@ echo "=== Training Complete ==="
 echo "Running quick evaluation..."
 
 python latentwire/eval.py \
-  --ckpt "$CHECKPOINT_DIR/ckpt_best" \
+  --ckpt "$CHECKPOINT_DIR" \
   --samples 500 \
   --dataset squad \
   --max_new_tokens 12 \

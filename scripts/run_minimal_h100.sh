@@ -37,27 +37,23 @@ python latentwire/train.py \
   --epochs $EPOCHS \
   --batch_size $BATCH_SIZE \
   --lr $LR \
-  --lr_scheduler "linear" \
-  --warmup_steps 20 \
   --latent_len 32 \
   --d_z 256 \
   --encoder_type byte \
   --first_token_ce_weight 5.0 \
-  --k_token_ce_weight 2.0 \
-  --k_token_ce_k 4 \
-  --entropy_weight 1.0 \
-  --use_lora 1 \
+  --first_token_entropy_weight 1.0 \
+  --k_ce_weight 2.0 \
+  --K 4 \
+  --use_lora \
   --lora_r 64 \
   --lora_alpha 128 \
   --warm_anchor_text "Answer: " \
   --save_dir "$CHECKPOINT_DIR" \
   --save_every 50 \
-  --max_checkpoints_to_keep 2 \
-  --diagnostic_interval 10 \
+  --grad_diag_interval 10 \
   --diagnostic_log "$CHECKPOINT_DIR/logs/diagnostics.jsonl" \
   --llama_device_map "auto" \
-  --mixed_precision bf16 \
-  --gradient_checkpointing \
+  --grad_ckpt \
   --seed 42 \
   2>&1 | tee "$CHECKPOINT_DIR/logs/training.log"
 
