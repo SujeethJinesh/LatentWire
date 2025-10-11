@@ -1,4 +1,4 @@
-Starting training at Sat Oct 11 15:38:04 PDT 2025
+Starting training at Sat Oct 11 15:54:55 PDT 2025
 
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
@@ -8,7 +8,7 @@ Configuration:
   compress_dim: 1024
   compress_method: pca
   input_dim: 4096
-  pca_samples: 10000
+  pca_samples: 20000
   adapter_hidden_mult: 4
   adapter_dropout: 0.1
   adapter_lr: 0.0005
@@ -24,7 +24,7 @@ STAGE 1 PHASE 1: PURE RECONSTRUCTION TRAINING
 Model: meta-llama/Meta-Llama-3.1-8B-Instruct
 Compression: 4096 → 1024 (4.0× compression)
 Training samples: 10000
-PCA samples: 10000
+PCA samples: 20000
 ============================================================
 
 GPU Information:
@@ -38,8 +38,8 @@ GPU Information:
 Logging diagnostics to: runs/stage1_adapter_only/logs/diagnostics.jsonl
 
 Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2113.53it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:07<00:22,  7.61s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:14<00:14,  7.45s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:22<00:07,  7.37s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:24<00:00,  5.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:24<00:00,  6.00s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3256.45it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.67s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.62s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.58s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.27s/it]
 
 Creating adapter...
 Adapter parameters: 50,366,465
@@ -48,6 +48,22 @@ Loading dataset...
 Training samples: 10000
 Validation samples: 500
 
-Fitting PCA compressor on 10,000 samples...
-Using memory-efficient chunked collection (5k samples per chunk)...
-Collecting embeddings in chunks:   0%|          | 0/157 [00:00<?, ?it/s]Collecting embeddings in chunks:   1%|          | 1/157 [00:28<1:13:37, 28.32s/it]Collecting embeddings in chunks:   1%|▏         | 2/157 [01:26<1:58:55, 46.04s/it]Collecting embeddings in chunks:   2%|▏         | 3/157 [02:24<2:11:19, 51.16s/it]Collecting embeddings in chunks:   3%|▎         | 4/157 [03:21<2:17:09, 53.79s/it]Collecting embeddings in chunks:   3%|▎         | 5/157 [04:17<2:18:09, 54.53s/it]Collecting embeddings in chunks:   4%|▍         | 6/157 [05:14<2:19:18, 55.36s/it]Collecting embeddings in chunks:   4%|▍         | 7/157 [06:10<2:19:03, 55.63s/it]Collecting embeddings in chunks:   5%|▌         | 8/157 [07:07<2:19:19, 56.10s/it]Collecting embeddings in chunks:   6%|▌         | 9/157 [08:03<2:18:10, 56.02s/it]Collecting embeddings in chunks:   6%|▋         | 10/157 [08:59<2:16:55, 55.88s/it]Collecting embeddings in chunks:   7%|▋         | 11/157 [09:55<2:16:05, 55.92s/it]
+Fitting PCA compressor on 20,000 samples...
+Using GPU-accelerated PCA (fast!)...
+Collecting embeddings...
+Collecting embeddings:   0%|          | 0/313 [00:00<?, ?it/s]Collecting embeddings:   1%|          | 2/313 [00:00<00:19, 16.22it/s]Collecting embeddings:   1%|▏         | 4/313 [00:00<00:17, 17.37it/s]Collecting embeddings:   3%|▎         | 9/313 [00:00<00:10, 30.28it/s]Collecting embeddings:   4%|▍         | 14/313 [00:00<00:08, 36.56it/s]Collecting embeddings:   6%|▌         | 19/313 [00:00<00:07, 38.02it/s]Collecting embeddings:   8%|▊         | 24/313 [00:00<00:07, 40.71it/s]Collecting embeddings:   9%|▉         | 29/313 [00:00<00:07, 36.35it/s]Collecting embeddings:  11%|█         | 34/313 [00:00<00:07, 38.90it/s]Collecting embeddings:  12%|█▏        | 39/313 [00:01<00:06, 41.88it/s]Collecting embeddings:  14%|█▍        | 44/313 [00:01<00:06, 40.90it/s]Collecting embeddings:  16%|█▌        | 49/313 [00:01<00:09, 27.92it/s]Collecting embeddings:  17%|█▋        | 53/313 [00:01<00:10, 24.05it/s]Collecting embeddings:  19%|█▊        | 58/313 [00:01<00:08, 28.70it/s]Collecting embeddings:  20%|██        | 63/313 [00:01<00:07, 32.78it/s]Collecting embeddings:  22%|██▏       | 69/313 [00:02<00:06, 37.41it/s]Collecting embeddings:  24%|██▍       | 75/313 [00:02<00:05, 41.20it/s]Collecting embeddings:  26%|██▌       | 80/313 [00:02<00:06, 37.67it/s]Collecting embeddings:  27%|██▋       | 85/313 [00:02<00:06, 35.14it/s]Collecting embeddings:  29%|██▉       | 90/313 [00:02<00:05, 38.24it/s]Collecting embeddings:  30%|███       | 95/313 [00:02<00:05, 40.16it/s]Collecting embeddings:  32%|███▏      | 100/313 [00:02<00:05, 38.53it/s]Collecting embeddings:  34%|███▎      | 105/313 [00:03<00:07, 26.21it/s]Collecting embeddings:  35%|███▍      | 109/313 [00:03<00:07, 26.53it/s]Collecting embeddings:  36%|███▌      | 113/313 [00:03<00:07, 25.81it/s]Collecting embeddings:  38%|███▊      | 119/313 [00:03<00:06, 31.39it/s]Collecting embeddings:  40%|███▉      | 125/313 [00:03<00:05, 36.00it/s]Collecting embeddings:  42%|████▏     | 131/313 [00:03<00:04, 39.95it/s]Collecting embeddings:  43%|████▎     | 136/313 [00:03<00:04, 42.07it/s]Collecting embeddings:  45%|████▌     | 142/313 [00:04<00:03, 44.64it/s]Collecting embeddings:  47%|████▋     | 148/313 [00:04<00:03, 46.59it/s]Collecting embeddings:  49%|████▉     | 153/313 [00:04<00:03, 47.14it/s]Collecting embeddings:  51%|█████     | 159/313 [00:04<00:03, 48.26it/s]Collecting embeddings:  52%|█████▏    | 164/313 [00:04<00:03, 48.44it/s]Collecting embeddings:  54%|█████▍    | 169/313 [00:04<00:03, 46.71it/s]Collecting embeddings:  56%|█████▌    | 174/313 [00:04<00:03, 35.03it/s]Collecting embeddings:  57%|█████▋    | 178/313 [00:05<00:05, 24.87it/s]Collecting embeddings:  58%|█████▊    | 182/313 [00:05<00:04, 27.43it/s]Collecting embeddings:  60%|█████▉    | 187/313 [00:05<00:03, 31.66it/s]Collecting embeddings:  61%|██████▏   | 192/313 [00:05<00:03, 35.64it/s]Collecting embeddings:  63%|██████▎   | 197/313 [00:05<00:02, 38.93it/s]Collecting embeddings:  65%|██████▍   | 202/313 [00:05<00:02, 41.56it/s]Collecting embeddings:  66%|██████▋   | 208/313 [00:05<00:02, 44.31it/s]Collecting embeddings:  68%|██████▊   | 213/313 [00:05<00:02, 45.82it/s]Collecting embeddings:  70%|██████▉   | 219/313 [00:06<00:01, 47.48it/s]Collecting embeddings:  72%|███████▏  | 224/313 [00:06<00:01, 47.84it/s]Collecting embeddings:  73%|███████▎  | 230/313 [00:06<00:01, 48.37it/s]Collecting embeddings:  75%|███████▌  | 235/313 [00:06<00:01, 42.18it/s]Collecting embeddings:  77%|███████▋  | 240/313 [00:06<00:01, 36.59it/s]Collecting embeddings:  78%|███████▊  | 244/313 [00:06<00:02, 25.95it/s]Collecting embeddings:  80%|███████▉  | 249/313 [00:06<00:02, 29.67it/s]Collecting embeddings:  81%|████████  | 254/313 [00:07<00:01, 33.55it/s]Collecting embeddings:  83%|████████▎ | 260/313 [00:07<00:01, 37.98it/s]Collecting embeddings:  85%|████████▍ | 265/313 [00:07<00:01, 40.49it/s]Collecting embeddings:  87%|████████▋ | 271/313 [00:07<00:00, 43.49it/s]Collecting embeddings:  88%|████████▊ | 276/313 [00:07<00:00, 43.65it/s]Collecting embeddings:  90%|████████▉ | 281/313 [00:07<00:00, 43.18it/s]Collecting embeddings:  91%|█████████▏| 286/313 [00:07<00:00, 43.67it/s]Collecting embeddings:  93%|█████████▎| 291/313 [00:07<00:00, 42.18it/s]Collecting embeddings:  95%|█████████▍| 296/313 [00:08<00:00, 36.57it/s]Collecting embeddings:  96%|█████████▌| 300/313 [00:08<00:00, 32.56it/s]Collecting embeddings:  97%|█████████▋| 304/313 [00:08<00:00, 27.02it/s]Collecting embeddings:  98%|█████████▊| 307/313 [00:08<00:00, 25.58it/s]Collecting embeddings: 100%|██████████| 313/313 [00:08<00:00, 32.31it/s]Collecting embeddings: 100%|██████████| 313/313 [00:08<00:00, 35.99it/s]
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 604, in main
+    best_f1 = train_adapter_phase1(args)
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 275, in train_adapter_phase1
+    compressor.fit(all_embeddings, device=device)
+  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 58, in fit
+    embeddings = embeddings.to(device).float()
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 52.81 GiB. GPU 0 has a total capacity of 79.19 GiB of which 48.83 GiB is free. Including non-PyTorch memory, this process has 30.35 GiB memory in use. Of the allocated memory 29.61 GiB is allocated by PyTorch, and 143.86 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Concatenating 3,460,941 embedding vectors on GPU...
+  Fitting PCA on CPU with 3,460,941 embedding vectors...
+
+============================================================
+ERROR: Training failed!
+============================================================
+Error: CUDA out of memory. Tried to allocate 52.81 GiB. GPU 0 has a total capacity of 79.19 GiB of which 48.83 GiB is free. Including non-PyTorch memory, this process has 30.35 GiB memory in use. Of the allocated memory 29.61 GiB is allocated by PyTorch, and 143.86 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
