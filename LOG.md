@@ -1,5 +1,34 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Batch Size Increase to 64 (Claude Code)
+
+**OPTIMIZATION**: Increased batch size to 64 after device fixes
+
+**Rationale**:
+- Device mismatch bugs now fixed (labels, masks, embeddings all aligned)
+- Observed memory usage at batch_size=32: 35-54GB / 85GB per H100
+- ~45GB average headroom → safe to double batch size
+- Estimated usage at batch_size=64: ~50-65GB per H100
+- Still 20-35GB safety margin for peak usage
+
+**Performance Impact**:
+```
+Batch 32:  10000 / 32  = 312 steps/epoch × 3 epochs = 936 total steps
+Batch 64:  10000 / 64  = 156 steps/epoch × 3 epochs = 468 total steps
+Speedup:   936 / 468 = 2× fewer steps
+```
+
+**Risk Assessment**:
+- ✅ All device placement bugs fixed
+- ✅ Conservative increase (2× not 3×)
+- ✅ Plenty of memory headroom
+- ⚠️ If OOM occurs, can fall back to 48 or 32
+
+**Training Status**:
+- Ready to run with batch_size=64
+- ~2× faster than batch_size=32
+- Can push to 96 if stable and memory allows
+
 ### 2025-10-11 — Stage 1 Labels Device Fix After Batch Size 96 Failure (Claude Code)
 
 **CRITICAL FIX**: Labels device mismatch at larger batch sizes

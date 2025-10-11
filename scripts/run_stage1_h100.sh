@@ -32,7 +32,7 @@ fi
 
 # Configuration
 CHECKPOINT_DIR="runs/stage1_adapter_only"
-BATCH_SIZE=32  # Conservative: Works reliably with multi-GPU setup
+BATCH_SIZE=64  # Optimized: 2x increase with device fixes in place
 SAMPLES=10000
 EPOCHS=3
 
@@ -43,11 +43,16 @@ echo ""
 echo "Configuration:"
 echo "  - Model: meta-llama/Meta-Llama-3.1-8B-Instruct"
 echo "  - Compression: 4096 → 512 (8x compression via PCA)"
-echo "  - Batch Size: $BATCH_SIZE (conservative, stable with multi-GPU)"
+echo "  - Batch Size: $BATCH_SIZE (2x increase with device fixes, ~50-60GB/85GB expected)"
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
 echo "  - Steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) total"
 echo "  - Output: $CHECKPOINT_DIR"
+echo ""
+echo "Memory Profile:"
+echo "  - Batch 32: 35-54GB per H100 (tested, stable)"
+echo "  - Batch 64: ~50-65GB per H100 (estimated, plenty of headroom)"
+echo "  - Device fixes: All tensors properly aligned for multi-GPU"
 echo ""
 echo "Expected Performance:"
 echo "  - Baseline (no compression): 82% F1"
