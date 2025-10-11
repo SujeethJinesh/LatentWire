@@ -223,8 +223,9 @@ def train_adapter_phase1(args):
 
         with torch.no_grad():
             embeds = model.get_input_embeddings()(input_ids)
-            # Flatten to individual vectors
-            sample_embeds.append(embeds.squeeze(0))
+            # CRITICAL: Move to CPU immediately to avoid OOM
+            # GPU can't hold 80k samples in memory at once
+            sample_embeds.append(embeds.squeeze(0).cpu())
 
     # Concatenate: [total_tokens, embed_dim]
     sample_embeds = torch.cat(sample_embeds, dim=0)
