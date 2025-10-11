@@ -3,7 +3,7 @@
   "models": "llama",
   "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
   "dataset": "squad",
-  "samples": 30,
+  "samples": 200,
   "max_new_tokens": 24,
   "latent_anchor_mode": "auto",
   "latent_anchor_text": "Answer: ",
@@ -11,7 +11,7 @@
   "use_chat_template": "yes",
   "token_budget_mode": "content_only",
   "token_budget_k": 32,
-  "chunk_size": 8,
+  "chunk_size": 64,
   "fresh_eval": true,
   "embedding_replay": true,
   "embedding_baseline_modes": [
