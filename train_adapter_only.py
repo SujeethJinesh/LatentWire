@@ -143,11 +143,14 @@ def train_adapter_only(args):
 
         with torch.no_grad():
             embeds = model.get_input_embeddings()(input_ids)
-            sample_embeds.append(embeds)
+            # Flatten to get individual embedding vectors
+            sample_embeds.append(embeds.squeeze(0))  # Remove batch dimension
 
+    # Concatenate all embeddings along the sequence dimension (dim=0)
+    # This gives us a tensor of shape [total_tokens, embed_dim]
     sample_embeds = torch.cat(sample_embeds, dim=0)
     compressor.fit(sample_embeds)
-    print(f"Compressor fitted on {sample_embeds.shape[0]} sequences")
+    print(f"Compressor fitted on {sample_embeds.shape[0]} embedding vectors")
 
     # Training setup
     optimizer = torch.optim.AdamW(adapter.parameters(), lr=args.adapter_lr)
