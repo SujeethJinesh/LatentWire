@@ -15,8 +15,8 @@ export CUDA_LAUNCH_BLOCKING=0
 # Training Configuration
 SAMPLES=80000        # Full dataset (was 640 in smoke test)
 EPOCHS=50           # Extended training (was 2 in smoke test)
-BATCH_SIZE=96       # 1.5x smoke test, safe for memory
-GRAD_ACCUM=3        # Effective batch = 288
+BATCH_SIZE=64       # Safe size to avoid OOM with KD
+GRAD_ACCUM=4        # Effective batch = 256
 LR=1e-4            # Higher learning rate for faster convergence
 CHECKPOINT_DIR="runs/hero/lora_50ep"
 LOG_DIR="$CHECKPOINT_DIR/logs"
@@ -29,10 +29,10 @@ echo "Configuration:"
 echo "  - Hardware: 4x H100 GPUs (320GB total VRAM)"
 echo "  - Samples: $SAMPLES (full SQuAD training set)"
 echo "  - Epochs: $EPOCHS"
-echo "  - Batch Size: $BATCH_SIZE (1.5x smoke test)"
+echo "  - Batch Size: $BATCH_SIZE (safe size to avoid OOM)"
 echo "  - Gradient Accumulation: $GRAD_ACCUM steps"
 echo "  - Effective Batch Size: $((BATCH_SIZE * GRAD_ACCUM))"
-echo "  - Total Steps: ~$((SAMPLES * EPOCHS / BATCH_SIZE)) steps"
+echo "  - Total Steps: ~$((SAMPLES * EPOCHS / BATCH_SIZE)) = ~62,500 steps"
 echo "  - Learning Rate: $LR"
 echo "  - Checkpoint Dir: $CHECKPOINT_DIR"
 echo ""

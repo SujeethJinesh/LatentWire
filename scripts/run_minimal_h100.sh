@@ -13,7 +13,7 @@ export TF32_MODE=1
 # Absolute minimum for meaningful signal
 SAMPLES=5000       # 6% of full dataset
 EPOCHS=10         # Minimal epochs
-BATCH_SIZE=80     # Slightly larger than smoke test
+BATCH_SIZE=64     # Safe size, same as smoke test
 LR=3e-4          # Higher LR for fast convergence
 
 CHECKPOINT_DIR="runs/minimal/test_$(date +%Y%m%d_%H%M%S)"
@@ -23,7 +23,7 @@ echo "=== LatentWire Minimal Training (15 min) ==="
 echo "Configuration:"
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
-echo "  - Total steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) = ~625"
+echo "  - Total steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) = ~781"
 echo "  - Estimated time: 15 minutes"
 echo "  - Expected first-token acc: 15-20%"
 echo "  - Expected F1: 0.05-0.10"
