@@ -69,8 +69,8 @@ python latentwire/train.py \
   --entropy_weight 0.5 \
   --label_smoothing 0.1 \
   --use_lora 1 \
-  --lora_r 16 \
-  --lora_alpha 32 \
+  --lora_r 64 \
+  --lora_alpha 128 \
   --lora_dropout 0.1 \
   --lora_target_modules "q_proj,k_proj,v_proj,o_proj" \
   --warm_anchor_text "Answer: " \

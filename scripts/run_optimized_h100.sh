@@ -65,8 +65,8 @@ python latentwire/train.py \
   --kd_tau 2.0 \
   --entropy_weight 0.5 \
   --use_lora 1 \
-  --lora_r 32 \
-  --lora_alpha 64 \
+  --lora_r 64 \
+  --lora_alpha 128 \
   --lora_dropout 0.05 \
   --warm_anchor_text "Answer: " \
   --save_dir "$CHECKPOINT_DIR" \
