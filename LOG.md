@@ -1,5 +1,75 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Phase 1 Implementation: Pure Reconstruction Training (Claude Code)
+
+**MAJOR REFACTOR**: Rewrote Stage 1 training for scientific rigor and 100% correctness
+
+**Critical Issues Fixed**:
+
+1. **Train/Eval Mismatch (BLOCKER)**:
+   - **Problem**: Training used teacher forcing with answer embeddings, evaluation didn't
+   - **Impact**: Tests wrong hypothesis, results would be misleading
+   - **Fix**: Phase 1 uses pure MSE reconstruction loss only (no CE, no teacher forcing)
+
+2. **Insufficient PCA Training Data**:
+   - **Problem**: PCA fitted on only 100 samples, applied to 10k samples
+   - **Impact**: Principal components don't generalize properly
+   - **Fix**: PCA now fitted on full 80k training samples
+
+3. **Loss Magnitude Imbalance**:
+   - **Problem**: CE loss (~2-5) dominated MSE loss (~0.1-1.0) by 5-10×
+   - **Impact**: Reconstruction loss essentially ignored
+   - **Fix**: Phase 1 removes CE loss entirely, focuses on reconstruction
+
+4. **Quick Eval Too Loose**:
+   - **Problem**: Substring matching caused false positives
+   - **Fix**: Now uses F1 score for all evaluations
+
+**Phase 1 Approach**:
+```python
+# Test hypothesis: Good reconstruction → Good generation
+loss = F.mse_loss(reconstructed, original)  # Pure reconstruction, no CE
+```
+
+**Success Criteria**:
+- F1 ≥70%: Hypothesis validated (reconstruction sufficient)
+- F1 50-70%: Partial success (need Phase 2 with generation training)
+- F1 <50%: Investigate compression or architecture
+
+**New Files Created**:
+- `train_adapter_only_phase1.py`: Corrected Phase 1 implementation (590 lines)
+- `tests/test_stage1_phase1.py`: Comprehensive pytest suite (420 lines, 24 tests)
+- `STAGE1_ANALYSIS.md`: Detailed issue analysis
+- `STAGE1_CORRECTED_PLAN.md`: Implementation plan
+
+**Test Results**:
+```
+tests/test_stage1_phase1.py: 23 passed, 1 skipped (GPU-only) in 10.34s
+All tests verified on MacBook (CPU-compatible)
+```
+
+**Testing Coverage**:
+- EmbeddingCompressor: PCA fitting, compression, dtype preservation (7 tests)
+- Reconstruction metrics: MSE, cosine similarity, relative error (4 tests)
+- Adapter integration: Forward pass, full pipeline (3 tests)
+- Data loading: SQuAD formatting, reproducibility (3 tests)
+- Diagnostic logging: JSON logging (2 tests)
+- Edge cases: Empty batches, single samples, long sequences (4 tests)
+- Import verification (1 test)
+
+**Scripts Updated**:
+- `scripts/run_stage1_h100.sh`: Now calls Phase 1 script with updated documentation
+
+**What Phase 1 Tests**:
+1. Can PCA compress 8× (4096→512) without losing critical information?
+2. Can 19.9M parameter adapter reconstruct well enough for generation?
+3. Is reconstruction quality predictive of generation quality?
+
+**Next Steps**:
+- Run Phase 1 on HPC cluster
+- If F1 <70%, implement Phase 2 (add generation-aware training)
+- Phase 2 will use prompt perplexity loss (no teacher forcing)
+
 ### 2025-10-11 — Stage 1 Batch Size Increase to 64 (Claude Code)
 
 **OPTIMIZATION**: Increased batch size to 64 after device fixes

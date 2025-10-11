@@ -1,6 +1,7 @@
 #!/bin/bash
-# Stage 1: Adapter-only training with compression
-# Tests if adapter can reconstruct from compressed embeddings
+# Stage 1 Phase 1: Pure reconstruction training
+# Tests hypothesis: Good reconstruction → Good generation
+# No CE loss, no teacher forcing - pure MSE reconstruction only
 set -euo pipefail
 
 # Set PYTHONPATH if not already set
@@ -36,9 +37,9 @@ BATCH_SIZE=64  # Optimized: 2x increase with device fixes in place
 SAMPLES=10000
 EPOCHS=3
 
-echo "==================================="
-echo "STAGE 1: ADAPTER-ONLY TRAINING"
-echo "==================================="
+echo "===================================="
+echo "STAGE 1 PHASE 1: PURE RECONSTRUCTION"
+echo "===================================="
 echo ""
 echo "Configuration:"
 echo "  - Model: meta-llama/Meta-Llama-3.1-8B-Instruct"
@@ -54,10 +55,12 @@ echo "  - Batch 32: 35-54GB per H100 (tested, stable)"
 echo "  - Batch 64: ~50-65GB per H100 (estimated, plenty of headroom)"
 echo "  - Device fixes: All tensors properly aligned for multi-GPU"
 echo ""
-echo "Expected Performance:"
-echo "  - Baseline (no compression): 82% F1"
-echo "  - Target (with compression): 70% F1"
-echo "  - If <50% F1: Adapter architecture issue"
+echo "Phase 1 Goals:"
+echo "  - Test hypothesis: Good reconstruction → Good generation"
+echo "  - Pure MSE reconstruction loss (no CE, no teacher forcing)"
+echo "  - Target: ≥70% F1 validates hypothesis"
+echo "  - If 50-70% F1: Need Phase 2 (generation-aware training)"
+echo "  - If <50% F1: Investigate compression/architecture"
 echo ""
 
 # Create log directory
@@ -67,8 +70,8 @@ mkdir -p "$CHECKPOINT_DIR/logs"
 echo "Starting training at $(date)" | tee "$CHECKPOINT_DIR/logs/training.log"
 echo "" | tee -a "$CHECKPOINT_DIR/logs/training.log"
 
-# Run training with output logged
-python train_adapter_only.py \
+# Run Phase 1 training with output logged
+python train_adapter_only_phase1.py \
   --model_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
   --compress_dim 512 \
   --compress_method pca \
@@ -78,8 +81,6 @@ python train_adapter_only.py \
   --samples $SAMPLES \
   --epochs $EPOCHS \
   --batch_size $BATCH_SIZE \
-  --recon_weight 1.0 \
-  --ce_weight 1.0 \
   --eval_every 1 \
   --eval_samples 500 \
   --save_dir "$CHECKPOINT_DIR" \
@@ -122,9 +123,9 @@ fi
 
 # Display results summary
 echo "" | tee -a "$CHECKPOINT_DIR/logs/training.log"
-echo "==================================" | tee -a "$CHECKPOINT_DIR/logs/training.log"
-echo "STAGE 1 RESULTS SUMMARY" | tee -a "$CHECKPOINT_DIR/logs/training.log"
-echo "==================================" | tee -a "$CHECKPOINT_DIR/logs/training.log"
+echo "====================================" | tee -a "$CHECKPOINT_DIR/logs/training.log"
+echo "STAGE 1 PHASE 1 RESULTS SUMMARY" | tee -a "$CHECKPOINT_DIR/logs/training.log"
+echo "====================================" | tee -a "$CHECKPOINT_DIR/logs/training.log"
 
 if [ -f "$CHECKPOINT_DIR/summary.json" ]; then
     python -c "
@@ -136,12 +137,12 @@ with open('$CHECKPOINT_DIR/summary.json') as f:
     print(f\"  Best F1: {s['best_f1']:.1%}\")
     print(f\"  Achieved in epoch: {s['epoch']}\")
     print('')
-    if s['best_f1'] > 0.65:
-        print('  ✅ SUCCESS: Adapter works! Proceed to Stage 2.')
-    elif s['best_f1'] > 0.50:
-        print('  ⚠️ PARTIAL: Adapter partially works. May need tuning.')
+    if s['best_f1'] >= 0.70:
+        print('  ✅ SUCCESS: Hypothesis validated! Reconstruction → generation works.')
+    elif s['best_f1'] >= 0.50:
+        print('  ⚠️ PARTIAL: Reconstruction helps but not sufficient. Proceed to Phase 2.')
     else:
-        print('  ❌ FAILURE: Adapter concept may be flawed.')
+        print('  ❌ NEEDS INVESTIGATION: Either compression too lossy or architecture issue.')
 " 2>&1 | tee -a "$CHECKPOINT_DIR/logs/training.log"
 else
     echo "  No results found. Check logs for errors." | tee -a "$CHECKPOINT_DIR/logs/training.log"
