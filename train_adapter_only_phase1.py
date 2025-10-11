@@ -596,7 +596,7 @@ def main():
     parser.add_argument("--compress_dim", type=int, default=1024, help="Compressed dimension")
     parser.add_argument("--compress_method", default="pca", choices=["pca", "random"])
     parser.add_argument("--input_dim", type=int, default=4096, help="Input embedding dimension")
-    parser.add_argument("--pca_samples", type=int, default=10000, help="Samples for fitting PCA (10k=~26GB, fits in single H100)")
+    parser.add_argument("--pca_samples", type=int, default=5000, help="Samples for fitting PCA (5k=~13GB embeddings + 13GB centered + 4GB SVD = 30GB total)")
 
     # Adapter
     parser.add_argument("--adapter_hidden_mult", type=int, default=4)
