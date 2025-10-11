@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from sklearn.decomposition import PCA
+from sklearn.decomposition import IncrementalPCA
 import numpy as np
 from tqdm import tqdm
 import argparse
@@ -54,7 +54,7 @@ class EmbeddingCompressor:
             embeddings_np = embeddings.cpu().float().numpy()
 
             print(f"  Fitting PCA on {embeddings_np.shape[0]:,} embedding vectors...")
-            pca = PCA(n_components=self.output_dim)
+            pca = IncrementalPCA(n_components=self.output_dim, batch_size=10000)
             pca.fit(embeddings_np)
 
             # Store components and statistics
@@ -67,6 +67,40 @@ class EmbeddingCompressor:
             # Random projection fallback
             self.projection = torch.randn(self.input_dim, self.output_dim) / np.sqrt(self.output_dim)
             self.mean = torch.zeros(self.input_dim)
+
+    def partial_fit(self, embeddings: torch.Tensor):
+        """
+        Incrementally fit PCA on a batch of embeddings.
+        Must be called with consistent batches to build up the PCA model.
+
+        Args:
+            embeddings: [N, input_dim] tensor of embedding vectors for this batch
+        """
+        if self.method == "pca":
+            embeddings_np = embeddings.cpu().float().numpy()
+
+            if not hasattr(self, '_pca'):
+                # Initialize IncrementalPCA on first call
+                self._pca = IncrementalPCA(n_components=self.output_dim, batch_size=5000)
+
+            # Partial fit on this batch
+            self._pca.partial_fit(embeddings_np)
+
+    def finalize_fit(self):
+        """
+        Finalize incremental PCA fitting and store components.
+        Call this after all partial_fit calls are complete.
+        """
+        if self.method == "pca" and hasattr(self, '_pca'):
+            # Store components and statistics
+            self.projection = torch.tensor(self._pca.components_.T, dtype=torch.float32)
+            self.mean = torch.tensor(self._pca.mean_, dtype=torch.float32)
+            self.explained_variance_ratio = self._pca.explained_variance_ratio_.sum()
+
+            print(f"  PCA explained variance: {self.explained_variance_ratio:.1%}")
+
+            # Clean up
+            delattr(self, '_pca')
 
     def compress(self, embeddings: torch.Tensor) -> torch.Tensor:
         """Compress embeddings: [batch, seq, input_dim] -> [batch, seq, output_dim]"""
@@ -215,10 +249,11 @@ def train_adapter_phase1(args):
     print(f"\nFitting PCA compressor on {args.pca_samples:,} samples...")
     pca_dataset = load_squad_subset("train", args.pca_samples, seed=42)  # Different seed for independence
 
-    sample_embeds = []
     BATCH_SIZE = 64  # Process multiple samples in parallel
+    total_vectors = 0
 
-    # Process in batches for efficiency
+    # Process in batches with incremental PCA fitting
+    # This avoids loading all embeddings into RAM at once
     for i in tqdm(range(0, len(pca_dataset), BATCH_SIZE), desc="Collecting embeddings for PCA"):
         batch_items = pca_dataset[i:i+BATCH_SIZE]
         texts = [item['source'] + "Answer: " for item in batch_items]
@@ -239,22 +274,19 @@ def train_adapter_phase1(args):
             embeds = model.get_input_embeddings()(input_ids)
 
             # Only keep valid (non-padded) embeddings using attention mask
-            # This ensures we don't include padding in PCA fitting
             valid_embeds = embeds[attention_mask.bool()]  # [total_valid_tokens, 4096]
 
-            # Move to CPU in one transfer per batch
-            sample_embeds.append(valid_embeds.cpu())
+            # Incrementally fit PCA on this batch (no accumulation in RAM!)
+            compressor.partial_fit(valid_embeds)
+            total_vectors += valid_embeds.shape[0]
 
         # Clear GPU cache periodically
         if i % (BATCH_SIZE * 10) == 0:
             torch.cuda.empty_cache()
 
-    # Concatenate all batches: [total_tokens, embed_dim]
-    sample_embeds = torch.cat(sample_embeds, dim=0)
-    print(f"Collected {sample_embeds.shape[0]:,} embedding vectors")
-
-    compressor.fit(sample_embeds)
-    print(f"✓ PCA fitted successfully")
+    # Finalize PCA fitting
+    compressor.finalize_fit()
+    print(f"✓ PCA fitted on {total_vectors:,} embedding vectors")
 
     # Training setup
     optimizer = torch.optim.AdamW(adapter.parameters(), lr=args.adapter_lr)
