@@ -14,8 +14,8 @@ export PYTORCH_ENABLE_MPS_FALLBACK=1
 # Reduced but still viable for meaningful results
 SAMPLES=20000       # 25% of full dataset (was 80000)
 EPOCHS=20          # Reduced from 50 (still 10x more than smoke test)
-BATCH_SIZE=256     # Larger batch for faster training (was 128)
-GRAD_ACCUM=1       # Effective batch = 256
+BATCH_SIZE=96      # 1.5x smoke test, safe for memory (was 64)
+GRAD_ACCUM=2       # Effective batch = 192
 LR=2e-4           # Slightly higher LR for faster convergence
 
 # Checkpoint Configuration
@@ -27,9 +27,10 @@ echo "=== LatentWire Optimized Training on 4x H100s ==="
 echo "Configuration:"
 echo "  - Samples: $SAMPLES (25% of full dataset)"
 echo "  - Epochs: $EPOCHS (10x smoke test)"
-echo "  - Batch Size: $BATCH_SIZE (2x hero config)"
-echo "  - Steps per epoch: $((SAMPLES / BATCH_SIZE)) = 78"
-echo "  - Total steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) = 1,560"
+echo "  - Batch Size: $BATCH_SIZE (1.5x smoke test)"
+echo "  - Gradient Accumulation: $GRAD_ACCUM (effective batch = $((BATCH_SIZE * GRAD_ACCUM)))"
+echo "  - Steps per epoch: $((SAMPLES / BATCH_SIZE)) = ~208"
+echo "  - Total steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) = ~4,160"
 echo "  - Checkpoints: Every $SAVE_EVERY steps (~3 per training)"
 echo "  - Estimated training time: ~45 minutes"
 echo ""
