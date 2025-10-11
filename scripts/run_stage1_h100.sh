@@ -44,7 +44,7 @@ echo ""
 echo "Configuration:"
 echo "  - Model: meta-llama/Meta-Llama-3.1-8B-Instruct"
 echo "  - Compression: 4096 → 1024 (4x compression via GPU-accelerated PCA)"
-echo "  - PCA: Intelligent GPU selection + PyTorch SVD on 20k samples (~30-60 sec)"
+echo "  - PCA: Intelligent GPU selection + PyTorch SVD on 10k samples (~30 sec)"
 echo "  - Loss: MSE + Cosine Similarity (0.1 weight)"
 echo "  - Batch Size: $BATCH_SIZE (2x increase with device fixes, ~50-60GB/85GB expected)"
 echo "  - Samples: $SAMPLES"
@@ -78,7 +78,7 @@ python train_adapter_only_phase1.py \
   --model_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
   --compress_dim 1024 \
   --compress_method pca \
-  --pca_samples 20000 \
+  --pca_samples 10000 \
   --adapter_hidden_mult 4 \
   --adapter_dropout 0.1 \
   --adapter_lr 5e-4 \
