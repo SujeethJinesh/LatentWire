@@ -19,7 +19,7 @@ from pathlib import Path
 import time
 import traceback
 
-from latentwire.data import load_squad_dataset
+from latentwire.data import load_squad_subset
 from latentwire.models import Adapter
 
 
@@ -125,8 +125,8 @@ def train_adapter_only(args):
     )
 
     # Load data
-    dataset = load_squad_dataset("train", args.samples)
-    val_dataset = load_squad_dataset("validation", 500)
+    dataset = load_squad_subset("train", args.samples)
+    val_dataset = load_squad_subset("validation", 500)
 
     # Pre-compute embeddings for fitting compressor
     print("\nFitting compressor...")
