@@ -8,17 +8,17 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 
 # Configuration optimized for 4x H100
-SAMPLES_TRAIN=80  # Can handle more with H100 memory (80GB per GPU)
-SAMPLES_EVAL=50   # More samples for better statistics
-BATCH_SIZE=4      # Leverage H100 memory (4 samples across 4 GPUs = 1 per GPU)
+SAMPLES_TRAIN=640  # 10 batches × 64 samples/batch for 2 epochs
+SAMPLES_EVAL=200   # Good statistical coverage
+BATCH_SIZE=64      # Fully utilize H100 memory (320GB total across 4 GPUs)
 CHECKPOINT_DIR="runs/smoke/embedding_test/ckpt"
 EVAL_DIR="runs/smoke/embedding_test/eval"
 LOG_DIR="runs/smoke/embedding_test/logs"
 
 echo "=== LatentWire Embedding Baseline Smoke Test (4x H100 Config) ==="
-echo "Hardware: 4x H100 GPUs (80GB each)"
-echo "Creating checkpoint with $SAMPLES_TRAIN training samples (batch_size=$BATCH_SIZE)"
-echo "Then evaluating on $SAMPLES_EVAL samples with 3 embedding modes"
+echo "Hardware: 4x H100 GPUs (80GB each, 320GB total)"
+echo "Training: $SAMPLES_TRAIN samples, batch_size=$BATCH_SIZE (10 batches/epoch × 2 epochs)"
+echo "Evaluation: $SAMPLES_EVAL samples with 3 embedding modes (raw, anchor, adapter)"
 echo
 
 # Step 1: Create a minimal checkpoint with quick training
@@ -40,7 +40,7 @@ python latentwire/train.py \
   --first_token_ce_weight 0.5 \
   --warm_anchor_text "Answer: " \
   --save_dir "$CHECKPOINT_DIR" \
-  --save_every 40 \
+  --save_every 320 \
   --diagnostic_log "$LOG_DIR/train_diagnostics.jsonl" \
   --llama_device_map "auto" \
   --require_cuda "yes" \
@@ -59,7 +59,7 @@ python -m latentwire.cli.eval \
   --override "llama_id=meta-llama/Meta-Llama-3.1-8B-Instruct" \
   --override "dataset=squad" \
   --override "max_new_tokens=24" \
-  --override "chunk_size=16" \
+  --override "chunk_size=64" \
   --override "embedding_replay=true" \
   --override 'embedding_baseline_modes=["raw","anchor","adapter"]' \
   --override "llama_device_map=auto" \
