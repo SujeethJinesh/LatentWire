@@ -188,7 +188,7 @@ class TestAdapterIntegration:
     def test_adapter_forward_pass(self):
         """Test adapter produces correct output shape"""
         adapter = Adapter(
-            d_z=512,
+            d_z=1024,
             d_model=4096,
             latent_length=32,
             hidden_mult=4,
@@ -197,7 +197,7 @@ class TestAdapterIntegration:
             colorize=False
         )
 
-        compressed = torch.randn(8, 20, 512)
+        compressed = torch.randn(8, 20, 1024)
         output = adapter(compressed)
 
         assert output.shape == (8, 20, 4096)
@@ -205,7 +205,7 @@ class TestAdapterIntegration:
     def test_adapter_dtype_preservation(self):
         """Test adapter handles different dtypes"""
         adapter = Adapter(
-            d_z=512,
+            d_z=1024,
             d_model=4096,
             latent_length=32,
             hidden_mult=4,
@@ -214,7 +214,7 @@ class TestAdapterIntegration:
             colorize=False
         ).to(torch.bfloat16)
 
-        compressed = torch.randn(4, 10, 512).to(torch.bfloat16)
+        compressed = torch.randn(4, 10, 1024).to(torch.bfloat16)
         output = adapter(compressed)
 
         assert output.dtype == torch.bfloat16

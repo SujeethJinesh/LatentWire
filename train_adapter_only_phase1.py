@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from sklearn.decomposition import IncrementalPCA
+from sklearn.decomposition import PCA
 import numpy as np
 from tqdm import tqdm
 import argparse
@@ -54,7 +54,7 @@ class EmbeddingCompressor:
             embeddings_np = embeddings.cpu().float().numpy()
 
             print(f"  Fitting PCA on {embeddings_np.shape[0]:,} embedding vectors...")
-            pca = IncrementalPCA(n_components=self.output_dim, batch_size=10000)
+            pca = PCA(n_components=self.output_dim)
             pca.fit(embeddings_np)
 
             # Store components and statistics
@@ -67,40 +67,6 @@ class EmbeddingCompressor:
             # Random projection fallback
             self.projection = torch.randn(self.input_dim, self.output_dim) / np.sqrt(self.output_dim)
             self.mean = torch.zeros(self.input_dim)
-
-    def partial_fit(self, embeddings: torch.Tensor):
-        """
-        Incrementally fit PCA on a batch of embeddings.
-        Must be called with consistent batches to build up the PCA model.
-
-        Args:
-            embeddings: [N, input_dim] tensor of embedding vectors for this batch
-        """
-        if self.method == "pca":
-            embeddings_np = embeddings.cpu().float().numpy()
-
-            if not hasattr(self, '_pca'):
-                # Initialize IncrementalPCA on first call
-                self._pca = IncrementalPCA(n_components=self.output_dim, batch_size=5000)
-
-            # Partial fit on this batch
-            self._pca.partial_fit(embeddings_np)
-
-    def finalize_fit(self):
-        """
-        Finalize incremental PCA fitting and store components.
-        Call this after all partial_fit calls are complete.
-        """
-        if self.method == "pca" and hasattr(self, '_pca'):
-            # Store components and statistics
-            self.projection = torch.tensor(self._pca.components_.T, dtype=torch.float32)
-            self.mean = torch.tensor(self._pca.mean_, dtype=torch.float32)
-            self.explained_variance_ratio = self._pca.explained_variance_ratio_.sum()
-
-            print(f"  PCA explained variance: {self.explained_variance_ratio:.1%}")
-
-            # Clean up
-            delattr(self, '_pca')
 
     def compress(self, embeddings: torch.Tensor) -> torch.Tensor:
         """Compress embeddings: [batch, seq, input_dim] -> [batch, seq, output_dim]"""
@@ -248,14 +214,14 @@ def train_adapter_phase1(args):
     # Fit compressor
     if args.compress_method == "pca":
         print(f"\nFitting PCA compressor on {args.pca_samples:,} samples...")
-        print(f"WARNING: PCA fitting is VERY slow (~19 hours for 80k samples)")
-        print(f"Recommendation: Use --compress_method random for instant initialization")
 
         pca_dataset = load_squad_subset("train", args.pca_samples, seed=42)
         BATCH_SIZE = 64
+
+        # Collect embeddings in batches (move to CPU to avoid GPU OOM)
+        all_embeddings = []
         total_vectors = 0
 
-        # Process in batches with incremental PCA fitting
         for i in tqdm(range(0, len(pca_dataset), BATCH_SIZE), desc="Collecting embeddings for PCA"):
             batch_items = pca_dataset[i:i+BATCH_SIZE]
             texts = [item['source'] + "Answer: " for item in batch_items]
@@ -272,14 +238,21 @@ def train_adapter_phase1(args):
 
             with torch.no_grad():
                 embeds = model.get_input_embeddings()(input_ids)
-                valid_embeds = embeds[attention_mask.bool()]
-                compressor.partial_fit(valid_embeds)
+                # Get valid (non-padded) embeddings and move to CPU immediately
+                valid_embeds = embeds[attention_mask.bool()].cpu()
+                all_embeddings.append(valid_embeds)
                 total_vectors += valid_embeds.shape[0]
 
+            # Periodic GPU cache cleanup
             if i % (BATCH_SIZE * 10) == 0:
                 torch.cuda.empty_cache()
 
-        compressor.finalize_fit()
+        # Concatenate all embeddings and fit PCA once
+        print(f"\nConcatenating {total_vectors:,} embedding vectors...")
+        all_embeddings = torch.cat(all_embeddings, dim=0)
+        print(f"Total embedding tensor: {all_embeddings.shape}")
+
+        compressor.fit(all_embeddings)
         print(f"✓ PCA fitted on {total_vectors:,} embedding vectors")
 
     elif args.compress_method == "random":
@@ -349,11 +322,19 @@ def train_adapter_phase1(args):
             if reconstructed.dtype != orig_embeds.dtype:
                 reconstructed = reconstructed.to(orig_embeds.dtype)
 
-            # PHASE 1: Pure reconstruction loss (no CE, no teacher forcing)
-            loss = F.mse_loss(
-                reconstructed[attention_mask.bool()].to(torch.float32),
-                orig_embeds[attention_mask.bool()].to(torch.float32)
-            )
+            # PHASE 1: Combined reconstruction loss (MSE + Cosine similarity)
+            # MSE loss for magnitude
+            rec_valid = reconstructed[attention_mask.bool()].to(torch.float32)
+            orig_valid = orig_embeds[attention_mask.bool()].to(torch.float32)
+
+            mse_loss = F.mse_loss(rec_valid, orig_valid)
+
+            # Cosine similarity loss for direction (1 - cosine_sim as loss)
+            cosine_sim = F.cosine_similarity(rec_valid, orig_valid, dim=-1).mean()
+            cosine_loss = 1.0 - cosine_sim
+
+            # Combined loss (weighted)
+            loss = mse_loss + 0.1 * cosine_loss
 
             # Backward
             optimizer.zero_grad()
@@ -569,10 +550,10 @@ def main():
     parser.add_argument("--model_id", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
 
     # Compression
-    parser.add_argument("--compress_dim", type=int, default=512, help="Compressed dimension")
+    parser.add_argument("--compress_dim", type=int, default=1024, help="Compressed dimension")
     parser.add_argument("--compress_method", default="pca", choices=["pca", "random"])
     parser.add_argument("--input_dim", type=int, default=4096, help="Input embedding dimension")
-    parser.add_argument("--pca_samples", type=int, default=80000, help="Samples for fitting PCA")
+    parser.add_argument("--pca_samples", type=int, default=20000, help="Samples for fitting PCA")
 
     # Adapter
     parser.add_argument("--adapter_hidden_mult", type=int, default=4)

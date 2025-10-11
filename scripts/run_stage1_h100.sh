@@ -43,7 +43,8 @@ echo "===================================="
 echo ""
 echo "Configuration:"
 echo "  - Model: meta-llama/Meta-Llama-3.1-8B-Instruct"
-echo "  - Compression: 4096 → 512 (8x compression via Random Projection)"
+echo "  - Compression: 4096 → 1024 (4x compression via PCA on 20k samples)"
+echo "  - Loss: MSE + Cosine Similarity (0.1 weight)"
 echo "  - Batch Size: $BATCH_SIZE (2x increase with device fixes, ~50-60GB/85GB expected)"
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
@@ -57,7 +58,8 @@ echo "  - Device fixes: All tensors properly aligned for multi-GPU"
 echo ""
 echo "Phase 1 Goals:"
 echo "  - Test hypothesis: Good reconstruction → Good generation"
-echo "  - Pure MSE reconstruction loss (no CE, no teacher forcing)"
+echo "  - Combined MSE + Cosine loss (no CE, no teacher forcing)"
+echo "  - 4x compression (less aggressive than 8x) + PCA (better than random)"
 echo "  - Target: ≥70% F1 validates hypothesis"
 echo "  - If 50-70% F1: Need Phase 2 (generation-aware training)"
 echo "  - If <50% F1: Investigate compression/architecture"
@@ -73,8 +75,9 @@ echo "" | tee -a "$CHECKPOINT_DIR/logs/training.log"
 # Run Phase 1 training with output logged
 python train_adapter_only_phase1.py \
   --model_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
-  --compress_dim 512 \
-  --compress_method random \
+  --compress_dim 1024 \
+  --compress_method pca \
+  --pca_samples 20000 \
   --adapter_hidden_mult 4 \
   --adapter_dropout 0.1 \
   --adapter_lr 5e-4 \
@@ -91,7 +94,7 @@ echo "" | tee -a "$CHECKPOINT_DIR/logs/training.log"
 echo "=== Training Complete at $(date) ===" | tee -a "$CHECKPOINT_DIR/logs/training.log"
 
 # Run evaluation if checkpoint exists
-if [ -f "$CHECKPOINT_DIR/adapter_only_best.pt" ]; then
+if [ -f "$CHECKPOINT_DIR/adapter_phase1_best.pt" ]; then
     echo "Running evaluation..." | tee -a "$CHECKPOINT_DIR/logs/training.log"
 
     python -c "
@@ -99,7 +102,7 @@ import torch
 import json
 from pathlib import Path
 
-checkpoint = torch.load('$CHECKPOINT_DIR/adapter_only_best.pt', map_location='cpu')
+checkpoint = torch.load('$CHECKPOINT_DIR/adapter_phase1_best.pt', map_location='cpu')
 config = checkpoint.get('config', {})
 best_f1 = checkpoint.get('best_f1', 0)
 epoch = checkpoint.get('epoch', 0)
