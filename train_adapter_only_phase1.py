@@ -505,7 +505,12 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
     predictions = []
     references = []
 
-    for item in dataset:
+    # Track aggregate statistics
+    total_norm_ratio = 0
+    total_cos_sim = 0
+    count = 0
+
+    for idx, item in enumerate(dataset):
         text = item['source'] + "Answer: "
         inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
         input_ids = inputs.input_ids.to(device)
@@ -517,6 +522,19 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
 
             if adapted.dtype != orig_embeds.dtype:
                 adapted = adapted.to(orig_embeds.dtype)
+
+            # Compute diagnostics
+            orig_norm = orig_embeds.norm(dim=-1).mean().item()
+            recon_norm = adapted.norm(dim=-1).mean().item()
+            norm_ratio = recon_norm / (orig_norm + 1e-8)
+
+            orig_flat = orig_embeds.flatten()
+            recon_flat = adapted.flatten()
+            cos_sim = F.cosine_similarity(orig_flat.unsqueeze(0), recon_flat.unsqueeze(0), dim=-1).item()
+
+            total_norm_ratio += norm_ratio
+            total_cos_sim += cos_sim
+            count += 1
 
             # Create attention mask (all 1s for embeddings we're passing)
             attention_mask = torch.ones(
@@ -536,8 +554,20 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
 
             generated = tokenizer.decode(outputs[0][len(input_ids[0]):], skip_special_tokens=True)
 
+            # Log first example for quick diagnostics
+            if idx == 0:
+                print(f"\n  Quick eval example:")
+                print(f"    Expected: '{item['answer']}'")
+                print(f"    Generated: '{generated.strip()}'")
+                print(f"    Norm ratio: {norm_ratio:.3f} | Cosine: {cos_sim:.3f}")
+
         predictions.append(generated.strip())
         references.append(item['answer'])
+
+    # Print aggregate statistics
+    avg_norm_ratio = total_norm_ratio / count
+    avg_cos_sim = total_cos_sim / count
+    print(f"  Avg norm ratio: {avg_norm_ratio:.3f} | Avg cosine: {avg_cos_sim:.3f}")
 
     _, f1_score = batch_metrics(predictions, references)
     return f1_score
@@ -550,7 +580,11 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
     predictions = []
     references = []
 
-    for item in tqdm(dataset, desc="Evaluating"):
+    print("\n" + "="*80)
+    print("EVALUATION DIAGNOSTICS (First 10 examples)")
+    print("="*80)
+
+    for idx, item in enumerate(tqdm(dataset, desc="Evaluating")):
         text = item['source'] + "Answer: "
         inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
         input_ids = inputs.input_ids.to(device)
@@ -581,8 +615,33 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
 
             generated = tokenizer.decode(outputs[0][len(input_ids[0]):], skip_special_tokens=True)
 
+            # DIAGNOSTIC LOGGING: First 10 examples
+            if idx < 10:
+                # Compute embedding norms
+                orig_norm = orig_embeds.norm(dim=-1).mean().item()
+                recon_norm = adapted.norm(dim=-1).mean().item()
+                norm_ratio = recon_norm / (orig_norm + 1e-8)
+
+                # Compute cosine similarity
+                orig_flat = orig_embeds.flatten()
+                recon_flat = adapted.flatten()
+                cos_sim = F.cosine_similarity(orig_flat.unsqueeze(0), recon_flat.unsqueeze(0), dim=-1).item()
+
+                print(f"\n{'─'*80}")
+                print(f"Example {idx + 1}:")
+                print(f"  Question: {text[:80]}...")
+                print(f"  Expected: '{item['answer']}'")
+                print(f"  Generated: '{generated.strip()}'")
+                print(f"  Embedding norms:")
+                print(f"    Original:  {orig_norm:.2f}")
+                print(f"    Reconstructed: {recon_norm:.2f}")
+                print(f"    Ratio: {norm_ratio:.3f} ({'TOO LOW' if norm_ratio < 0.8 else 'TOO HIGH' if norm_ratio > 1.2 else 'OK'})")
+                print(f"  Cosine similarity: {cos_sim:.3f}")
+
         predictions.append(generated.strip())
         references.append(item['answer'])
+
+    print("\n" + "="*80)
 
     em_score, f1_score = batch_metrics(predictions, references)
     return {'em': em_score, 'f1': f1_score}
