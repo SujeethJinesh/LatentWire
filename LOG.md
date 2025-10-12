@@ -1,25 +1,134 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
-### 2025-10-11 — Stage 1 Phase 1: Cosine Loss Fix + Comprehensive Diagnostics (Claude Code)
+### 2025-10-11 — Stage 1 Phase 1: 🔥 ROOT CAUSE IDENTIFIED - Embedding Magnitude Catastrophe (Claude Code)
 
-**STATUS**: Cosine similarity fix WORKED (0.47→0.89), but F1 still 0%. Added token-level diagnostics to identify root cause.
+**STATUS**: **SMOKING GUN FOUND!** Token reconstruction is PERFECT ✅, but embedding magnitudes are **115-120× too large** ❌
+
+## Critical Discovery
+
+**Token-Level Reconstruction: PERFECT** ✅
+```
+Original tokens:     <|begin_of_text|>Context: Tesla was the fourth of five children...
+Reconstructed →:     <|begin_of_text|>Context: Tesla was the fourth of five children...
+                     ^^^^^ EXACT MATCH ^^^^^
+```
+- All 10 examples show **perfect token-level reconstruction**
+- PCA+adapter is preserving semantic information correctly
+- Tokens don't drift, don't collapse - they match exactly!
+
+**Embedding Magnitude: CATASTROPHICALLY WRONG** ❌
+```
+Original embedding norm:     0.53-0.55  (SUSPICIOUSLY LOW!)
+Reconstructed norm:          63.25-63.75 (normal LLM range)
+Norm ratio:                  115-121×   (TOO HIGH)
+```
+- Reconstructed embeddings are **~120× larger** than originals
+- This is why F1=0% despite perfect token alignment
+
+**Generation: ALL EMPTY** ❌
+```
+Expected: 'Dane'
+Generated: ''    ← ALWAYS EMPTY!
+```
+- Every single generation produces empty string
+- LLM refuses to generate despite correct token mappings
+
+**Cosine Similarity: HIGH** ✅
+```
+Final: 0.894 (89.4%)
+```
+- Direction is preserved (our loss objective worked)
+- But magnitude is wrong
+
+## Root Cause Analysis
+
+**Why are original embeddings so small (0.53)?**
+
+This is likely a **normalization bug** in how we compute norms. The original embeddings from `model.get_input_embeddings()` should have norms around 30-50 for Llama models, NOT 0.5!
+
+**Hypothesis**: We're computing norms on normalized or scaled embeddings somewhere, giving false baselines.
+
+**Why does LLM generate empty strings?**
+
+When embeddings have wildly wrong magnitudes (115× too large), the LLM's LayerNorm and attention mechanisms may:
+1. Produce extreme values that hit numerical limits
+2. Generate logits that strongly favor EOS token
+3. Cause attention to collapse
+
+## Next Steps - URGENT FIXES NEEDED
+
+### Option 1: Fix Norm Computation Bug (Most Likely) ⚡
+**Investigate why original norms are 0.5 instead of ~30-50**
+
+The original embeddings norm calculation may be:
+1. Computed on wrong tensor (after some normalization?)
+2. Using wrong dimension for norm (per-token vs per-example?)
+3. Missing scaling factor
+
+**Action**: Add diagnostic logging to check raw `model.get_input_embeddings()` norms before any processing.
+
+### Option 2: Add Magnitude Normalization (Quick Fix) 🔧
+**Force reconstructed embeddings to match original magnitude**
+
+```python
+# After adapter forward pass
+reconstructed = adapter(compressed)
+
+# Normalize to match original RMS
+orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
+recon_rms = reconstructed.pow(2).mean(dim=-1, keepdim=True).sqrt()
+reconstructed = reconstructed * (orig_rms / (recon_rms + 1e-8))
+```
+
+Even if original norms are wrong, this ensures reconstructed matches original.
+
+### Option 3: Check Raw Embedding Norms (Diagnostic) 🔍
+**Verify what "normal" Llama embedding norms should be**
+
+```python
+# Get raw embeddings directly
+test_ids = torch.tensor([[1, 2, 3, 4, 5]])  # Some token IDs
+raw_embeds = model.get_input_embeddings()(test_ids)
+print(f"Raw embedding norm: {raw_embeds.norm(dim=-1).mean()}")
+# Should be ~30-50 for Llama models
+```
+
+## Key Metrics
 
 **Training Results (Latest Run)**:
 | Metric | Epoch 1 | Epoch 2 | Epoch 3 |
 |--------|---------|---------|---------|
 | Cosine Similarity | 0.875 | 0.888 | 0.894 |
 | MSE Loss | 0.978 | 0.962 | 0.962 |
+| Relative Error | 115.5 | 114.0 | 113.5 |
+| Original Norm | 0.53 | 0.54 | 0.55 |
+| Reconstructed Norm | 63.25 | 63.50 | 63.75 |
+| Norm Ratio | 119× | 118× | 116× |
 | F1 Score | 0.0% | 0.0% | 0.0% |
 | EM Score | 0.0% | 0.0% | 0.0% |
+| Generated Text | '' (empty) | '' (empty) | '' (empty) |
 
-**Loss Weight Fix Applied**:
+**Token Reconstruction**: PERFECT - All tokens match exactly!
+
+## What Worked ✅
+
+1. **Loss weight fix**: Cosine now increases (0.47→0.89) - direction optimization successful
+2. **Token-level diagnostics**: Revealed that PCA+adapter preserves semantics perfectly
+3. **PCA compression**: NOT the bottleneck - semantic information preserved
+4. **Adapter architecture**: Sufficient capacity - reconstructs correctly
+
+## What Failed ❌
+
+1. **Embedding magnitude**: Reconstructed norms are 115-120× too large
+2. **Generation**: All outputs are empty strings despite perfect token reconstruction
+3. **Norm computation**: Original norms suspiciously low (0.53 vs expected ~30-50)
+
+**Loss Weight Fix Applied (Previous)**:
 - **Problem**: Previous run showed cosine falling (0.65→0.51) because MSE dominated gradients
 - **Fix**: Changed loss from `mse + 0.1*cosine` to `0.1*mse + cosine` (prioritize direction over magnitude)
 - **Result**: Cosine now increases (0.47→0.89) ✅ BUT F1 still 0% ❌
 
-**Hypothesis**: High cosine (0.89) but zero F1 suggests embeddings are directionally aligned but semantically incorrect. The LLM receives "similar-looking" embeddings but generates garbage text.
-
-**Diagnostic Logging Added**:
+**Diagnostic Logging Added (This Run)**:
 
 1. **Token-level reconstruction** (`decode_embeddings_to_tokens()`):
    - Maps reconstructed embeddings to nearest vocab tokens via cosine similarity
