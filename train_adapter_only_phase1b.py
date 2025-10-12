@@ -201,21 +201,8 @@ def train_adapter_phase1(args):
         Path(diagnostic_log).parent.mkdir(parents=True, exist_ok=True)
         print(f"\nLogging diagnostics to: {diagnostic_log}")
 
-    # Load model
-    print(f"\nLoading model...")
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_id,
-        device_map="auto",
-        torch_dtype=torch.bfloat16
-    )
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
-    tokenizer.pad_token = tokenizer.eos_token
-
-    embed_dim = model.config.hidden_size
-    device = next(model.parameters()).device
-
-    # Create LMWrapper for loss functions
-    print(f"\nCreating LMWrapper for generation objectives...")
+    # Load model and create wrapper
+    print(f"\nLoading model and creating LMWrapper...")
     lm_config = LMConfig(
         model_id=args.model_id,
         device="cuda" if torch.cuda.is_available() else "cpu",
@@ -224,10 +211,19 @@ def train_adapter_phase1(args):
     )
     llm_wrapper = LMWrapper(lm_config)
 
+    # Reuse model and tokenizer from wrapper (avoid loading twice)
+    model = llm_wrapper.model
+    tokenizer = llm_wrapper.tokenizer
+    tokenizer.pad_token = tokenizer.eos_token
+
+    embed_dim = model.config.hidden_size
+    device = next(model.parameters()).device
+
     # Get anchor tokens for "Answer: " (used in K-token CE and KD)
     anchor_text = " Answer: "
     anchor_ids = tokenizer.encode(anchor_text, add_special_tokens=False)
     print(f"  Anchor text: '{anchor_text}' → {len(anchor_ids)} tokens: {anchor_ids}")
+    print(f"  Model loaded once (reused from LMWrapper to save memory)")
 
     # Create adapter
     print(f"\nCreating adapter...")
@@ -444,24 +440,32 @@ def train_adapter_phase1(args):
 
             # 3. Prefix KD loss (distill from text teacher)
             # Transfer QA behavior from full-text baseline to latent-conditioned model
-            try:
-                loss_kd = kd_first_k_prefix_vs_text(
-                    student_llm=llm_wrapper,
-                    teacher_llm=llm_wrapper,  # Same model, different conditioning
-                    prefix_embeds=reconstructed,
-                    scaffold_ids=input_ids,
-                    gold_ids=answer_ids,
-                    K=args.k_tokens,
-                    tau=args.kd_tau,
-                    anchor_ids=anchor_ids,
-                    append_bos_after_prefix=True
-                )
-            except Exception as e:
-                print(f"\n[WARN] Prefix KD failed: {e}")
+            # NOTE: KD is memory-intensive, can disable if OOM occurs
+            if args.lambda_kd > 0:
+                try:
+                    loss_kd = kd_first_k_prefix_vs_text(
+                        student_llm=llm_wrapper,
+                        teacher_llm=llm_wrapper,  # Same model, different conditioning
+                        prefix_embeds=reconstructed,
+                        scaffold_ids=input_ids,
+                        gold_ids=answer_ids,
+                        K=args.k_tokens,
+                        tau=args.kd_tau,
+                        anchor_ids=anchor_ids,
+                        append_bos_after_prefix=True
+                    )
+                except Exception as e:
+                    print(f"\n[WARN] Prefix KD failed: {e}")
+                    loss_kd = torch.zeros((), device=device)
+            else:
                 loss_kd = torch.zeros((), device=device)
 
             # Combined loss
             loss = loss_recon + args.lambda_kce * loss_kce + args.lambda_kd * loss_kd
+
+            # Aggressive cache clearing to prevent OOM
+            if batch_idx % 10 == 0:
+                torch.cuda.empty_cache()
 
             # Backward
             optimizer.zero_grad()

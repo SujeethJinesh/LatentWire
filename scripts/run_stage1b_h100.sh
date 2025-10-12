@@ -33,13 +33,16 @@ fi
 
 # Configuration
 CHECKPOINT_DIR="runs/stage1b_phase1b"
-BATCH_SIZE=32  # Reduced from 64 due to generation objectives requiring more memory
+BATCH_SIZE=8   # Reduced to 8 for memory (K-token CE and KD are memory-intensive)
 SAMPLES=10000
 EPOCHS=5      # Increased from 3 to allow generation objectives to converge
-K_TOKENS=4    # Supervise first 4 tokens
+K_TOKENS=2    # Reduced to 2 tokens (less memory, still effective)
 LAMBDA_KCE=0.5  # Weight for K-token CE
 LAMBDA_KD=0.5   # Weight for Prefix KD
 KD_TAU=1.0    # Temperature for KD
+
+# Memory optimization: Set chunking for KD teacher forward passes
+export KD_TEACHER_CHUNK=2  # Process 2 examples at a time in teacher forward pass
 
 echo "================================================"
 echo "STAGE 1 PHASE 1B: RECONSTRUCTION + GENERATION"
@@ -60,6 +63,13 @@ echo "Loss Components:"
 echo "  1. Reconstruction: Cosine (1.0×) + MSE (0.1×) - semantic preservation"
 echo "  2. K-token CE: K=$K_TOKENS, λ=$LAMBDA_KCE - supervise first K answer tokens"
 echo "  3. Prefix KD: τ=$KD_TAU, λ=$LAMBDA_KD - distill QA behavior from text teacher"
+echo ""
+echo "Memory Optimizations:"
+echo "  - Batch size: $BATCH_SIZE (reduced for generation objectives)"
+echo "  - K tokens: $K_TOKENS (reduced to save memory)"
+echo "  - KD teacher chunking: $KD_TEACHER_CHUNK examples at a time"
+echo "  - Model loaded once (reused from LMWrapper)"
+echo "  - If OOM persists: Set LAMBDA_KD=0 to disable KD (CE only)"
 echo ""
 echo "Phase 1b Goals:"
 echo "  - Improve over Phase 1a baseline (F1 24%)"
