@@ -365,8 +365,10 @@ def train_adapter_phase1(args):
             if reconstructed.dtype != orig_embeds.dtype:
                 reconstructed = reconstructed.to(orig_embeds.dtype)
 
-            # PHASE 1: Combined reconstruction loss (MSE + Cosine similarity)
-            # MSE loss for magnitude
+            # PHASE 1: Combined reconstruction loss (Cosine + MSE)
+            # PRIORITY: Directional alignment (cosine) over magnitude (MSE)
+            # Rationale: LLMs need high cosine similarity (>0.8) for coherent generation
+            # Previous run showed cosine falling (0.65→0.51) when MSE dominated
             rec_valid = reconstructed[attention_mask.bool()].to(torch.float32)
             orig_valid = orig_embeds[attention_mask.bool()].to(torch.float32)
 
@@ -376,8 +378,8 @@ def train_adapter_phase1(args):
             cosine_sim = F.cosine_similarity(rec_valid, orig_valid, dim=-1).mean()
             cosine_loss = 1.0 - cosine_sim
 
-            # Combined loss (weighted)
-            loss = mse_loss + 0.1 * cosine_loss
+            # Combined loss: Prioritize direction (1.0×) over magnitude (0.1×)
+            loss = 0.1 * mse_loss + cosine_loss
 
             # Backward
             optimizer.zero_grad()

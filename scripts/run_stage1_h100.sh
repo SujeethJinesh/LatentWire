@@ -1,7 +1,7 @@
 #!/bin/bash
 # Stage 1 Phase 1: Pure reconstruction training
 # Tests hypothesis: Good reconstruction → Good generation
-# No CE loss, no teacher forcing - pure MSE reconstruction only
+# No CE loss, no teacher forcing - cosine-dominant reconstruction (direction over magnitude)
 set -euo pipefail
 
 # Set PYTHONPATH if not already set
@@ -45,7 +45,7 @@ echo "Configuration:"
 echo "  - Model: meta-llama/Meta-Llama-3.1-8B-Instruct"
 echo "  - Compression: 4096 → 1024 (4x compression via GPU-accelerated PCA)"
 echo "  - PCA: Randomized SVD (memory-efficient, GPU-only) on 5k samples (~10-20 sec)"
-echo "  - Loss: MSE + Cosine Similarity (0.1 weight)"
+echo "  - Loss: Cosine Similarity (1.0×) + MSE (0.1×) - direction prioritized over magnitude"
 echo "  - Batch Size: $BATCH_SIZE (2x increase with device fixes, ~50-60GB/85GB expected)"
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
@@ -59,7 +59,7 @@ echo "  - Device fixes: All tensors properly aligned for multi-GPU"
 echo ""
 echo "Phase 1 Goals:"
 echo "  - Test hypothesis: Good reconstruction → Good generation"
-echo "  - Combined MSE + Cosine loss (no CE, no teacher forcing)"
+echo "  - Cosine-dominant loss (direction > magnitude, no CE, no teacher forcing)"
 echo "  - 4x compression (less aggressive than 8x) + PCA (better than random)"
 echo "  - Target: ≥70% F1 validates hypothesis"
 echo "  - If 50-70% F1: Need Phase 2 (generation-aware training)"
