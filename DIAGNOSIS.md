@@ -154,18 +154,22 @@ outputs = model.generate(
 
 **`evaluate_full()` now logs:**
 - First 10 generated examples with expected answers
+- **Token-level reconstruction**: Shows what tokens the reconstructed embeddings map to
+  - Original tokens (from input_ids)
+  - Nearest tokens for reconstructed embeddings (via cosine similarity to vocab)
 - Original vs reconstructed embedding norms
 - Norm ratio with status indicator (TOO LOW / OK / TOO HIGH)
 - Per-example cosine similarity
 
 **`evaluate_quick()` now logs:**
-- First example in each quick eval
+- First example in each quick eval with token-level reconstruction
 - Aggregate statistics: average norm ratio and cosine similarity
 
 **Next run will show:**
 1. What text the model is actually generating
 2. If it's complete garbage or partially correct
-3. If magnitude mismatch is causing the issue (norm ratio)
+3. **If reconstructed embeddings map to completely different tokens** (smoking gun!)
+4. If magnitude mismatch is causing the issue (norm ratio)
 
 ### Step 2: Check Embedding Magnitude Distribution ⚡ **NOW LOGGED**
 **Why**: Verify if magnitude mismatch is causing issues
@@ -244,18 +248,43 @@ Move to generation-aware training:
 
 ## Status Summary
 
-✅ **Logging Added** - The diagnostic logging is now in place!
+✅ **Logging Added** - Token-level diagnostic logging is now in place!
 
 **What happens on next training run:**
-1. Every 100 steps: Quick eval will show 1 example + aggregate norm/cosine stats
+1. Every 100 steps: Quick eval will show 1 example + aggregate norm/cosine stats + token mapping
 2. End of each epoch: Full eval will show first 10 examples with detailed diagnostics
 3. We'll see:
    - What text is actually being generated
    - If it's garbage, partially correct, or systematically wrong
+   - **Token-level reconstruction**: What tokens the reconstructed embeddings map to
    - Norm ratios to diagnose magnitude mismatch
    - Per-example cosine similarity
 
+**Key Diagnostic: Token-Level Reconstruction**
+
+The reconstructed embeddings are mapped back to their nearest tokens in vocabulary space:
+- `Original tokens:` → The actual input text tokens
+- `Reconstructed →:` → What tokens the reconstructed embeddings are closest to
+
+**What this reveals:**
+- If tokens match perfectly → PCA+adapter preserving token-level semantics ✅
+- If tokens are similar (synonyms) → Semantic drift but potentially recoverable
+- If tokens are completely different → Compression destroying semantic information ❌
+
+**Example scenarios:**
+```
+Original:     "Context: The Eiffel Tower is in Paris"
+Reconstructed: "Context: The Eiffel Tower is in Paris"  ← GOOD: exact match
+
+Original:     "Context: The Eiffel Tower is in Paris"
+Reconstructed: "Context: The France structure is in Paris"  ← OK: semantic drift
+
+Original:     "Context: The Eiffel Tower is in Paris"
+Reconstructed: "▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁"  ← BAD: collapsed to common tokens
+```
+
 **Next steps after we see the logs:**
+- If tokens match exactly but F1=0%: Check generation decode logic
+- If tokens drift to synonyms: Try magnitude normalization or less compression
+- If tokens collapse to common/garbage: PCA destroying semantics → Phase 2 or reduce compression
 - If norm ratio is consistently <0.8 or >1.2: Try magnitude normalization (Step 4)
-- If generated text is complete garbage: Try less aggressive compression (Step 3)
-- If text is partially correct but not good enough: Move to Phase 2 (generation-aware training)

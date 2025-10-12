@@ -556,9 +556,15 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
 
             # Log first example for quick diagnostics
             if idx == 0:
+                # Show token-level reconstruction for first example
+                reconstructed_tokens = decode_embeddings_to_tokens(adapted, model, tokenizer)[0]
+                original_text_decoded = tokenizer.decode(input_ids[0], skip_special_tokens=False)
+
                 print(f"\n  Quick eval example:")
                 print(f"    Expected: '{item['answer']}'")
                 print(f"    Generated: '{generated.strip()}'")
+                print(f"    Original tokens:  {original_text_decoded[:100]}...")
+                print(f"    Reconstructed →:  {reconstructed_tokens[:100]}...")
                 print(f"    Norm ratio: {norm_ratio:.3f} | Cosine: {cos_sim:.3f}")
 
         predictions.append(generated.strip())
@@ -571,6 +577,52 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
 
     _, f1_score = batch_metrics(predictions, references)
     return f1_score
+
+
+def decode_embeddings_to_tokens(embeddings, model, tokenizer, top_k=1):
+    """
+    Find nearest tokens for reconstructed embeddings.
+
+    Args:
+        embeddings: [batch, seq_len, hidden_dim] tensor
+        model: LLM model
+        tokenizer: tokenizer
+        top_k: number of nearest tokens to return
+
+    Returns:
+        List of decoded text strings showing what tokens embeddings are closest to
+    """
+    with torch.no_grad():
+        # Get full vocabulary embedding matrix
+        vocab_embeds = model.get_input_embeddings().weight  # [vocab_size, hidden_dim]
+
+        # Flatten sequence dimension
+        batch_size, seq_len, hidden_dim = embeddings.shape
+        flat_embeds = embeddings.view(-1, hidden_dim)  # [batch*seq_len, hidden_dim]
+
+        # Compute cosine similarity to all vocab tokens
+        # Normalize embeddings
+        flat_embeds_norm = F.normalize(flat_embeds, p=2, dim=-1)
+        vocab_embeds_norm = F.normalize(vocab_embeds, p=2, dim=-1)
+
+        # Similarity: [batch*seq_len, vocab_size]
+        similarities = torch.mm(flat_embeds_norm, vocab_embeds_norm.t())
+
+        # Get top-k nearest tokens
+        top_k_indices = similarities.topk(top_k, dim=-1).indices  # [batch*seq_len, top_k]
+
+        # Reshape back to sequence
+        top_k_indices = top_k_indices.view(batch_size, seq_len, top_k)
+
+        # Decode each sequence
+        decoded_texts = []
+        for b in range(batch_size):
+            # Get top-1 tokens for this sequence
+            token_ids = top_k_indices[b, :, 0].cpu().tolist()
+            decoded = tokenizer.decode(token_ids, skip_special_tokens=False)
+            decoded_texts.append(decoded)
+
+        return decoded_texts
 
 
 def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
@@ -627,12 +679,19 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
                 recon_flat = adapted.flatten()
                 cos_sim = F.cosine_similarity(orig_flat.unsqueeze(0), recon_flat.unsqueeze(0), dim=-1).item()
 
+                # Decode reconstructed embeddings to see what tokens they map to
+                reconstructed_tokens = decode_embeddings_to_tokens(adapted, model, tokenizer)[0]
+                original_text_decoded = tokenizer.decode(input_ids[0], skip_special_tokens=False)
+
                 print(f"\n{'─'*80}")
                 print(f"Example {idx + 1}:")
                 print(f"  Question: {text[:80]}...")
                 print(f"  Expected: '{item['answer']}'")
                 print(f"  Generated: '{generated.strip()}'")
-                print(f"  Embedding norms:")
+                print(f"\n  Token-level reconstruction:")
+                print(f"    Original tokens:  {original_text_decoded[:150]}...")
+                print(f"    Reconstructed →:  {reconstructed_tokens[:150]}...")
+                print(f"\n  Embedding norms:")
                 print(f"    Original:  {orig_norm:.2f}")
                 print(f"    Reconstructed: {recon_norm:.2f}")
                 print(f"    Ratio: {norm_ratio:.3f} ({'TOO LOW' if norm_ratio < 0.8 else 'TOO HIGH' if norm_ratio > 1.2 else 'OK'})")
