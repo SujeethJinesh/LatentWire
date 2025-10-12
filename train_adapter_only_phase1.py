@@ -213,7 +213,7 @@ def train_adapter_phase1(args):
         hidden_mult=args.adapter_hidden_mult,
         dropout=args.adapter_dropout,
         enable_metadata=False,
-        colorize=False
+        colorize=True  # Enable learnable calibration to fix magnitude mismatch
     ).to(device).to(torch.bfloat16)
 
     print(f"Adapter parameters: {sum(p.numel() for p in adapter.parameters()):,}")
@@ -364,6 +364,14 @@ def train_adapter_phase1(args):
             # Ensure dtype matches
             if reconstructed.dtype != orig_embeds.dtype:
                 reconstructed = reconstructed.to(orig_embeds.dtype)
+
+            # CRITICAL FIX: Match magnitude to original embeddings
+            # Llama embeddings have very small scale (RMS ≈0.01 per dim, norm ≈0.5-1.0)
+            # Adapter output has RMS ≈1 per dim (from LayerNorm), norm ≈64
+            # Without matching, embeddings are 120× too large → LLM generates empty strings
+            orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
+            recon_rms = reconstructed.pow(2).mean(dim=-1, keepdim=True).sqrt()
+            reconstructed = reconstructed * (orig_rms / (recon_rms + 1e-8))
 
             # PHASE 1: Combined reconstruction loss (Cosine + MSE)
             # PRIORITY: Directional alignment (cosine) over magnitude (MSE)
@@ -523,6 +531,11 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
             if adapted.dtype != orig_embeds.dtype:
                 adapted = adapted.to(orig_embeds.dtype)
 
+            # Match magnitude (same fix as training)
+            orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
+            adapted_rms = adapted.pow(2).mean(dim=-1, keepdim=True).sqrt()
+            adapted = adapted * (orig_rms / (adapted_rms + 1e-8))
+
             # Compute diagnostics
             orig_norm = orig_embeds.norm(dim=-1).mean().item()
             recon_norm = adapted.norm(dim=-1).mean().item()
@@ -648,6 +661,11 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
 
             if adapted.dtype != orig_embeds.dtype:
                 adapted = adapted.to(orig_embeds.dtype)
+
+            # Match magnitude (same fix as training)
+            orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
+            adapted_rms = adapted.pow(2).mean(dim=-1, keepdim=True).sqrt()
+            adapted = adapted * (orig_rms / (adapted_rms + 1e-8))
 
             # Create attention mask (all 1s for embeddings we're passing)
             attention_mask = torch.ones(
