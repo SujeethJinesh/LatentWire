@@ -1,7 +1,0 @@
-{
-  "best_f1": 0.24052714246867382,
-  "epoch": 2,
-  "compression": "4096 \u2192 1024",
-  "method": "pca",
-  "samples": 10000
-}

@@ -1,0 +1,129 @@
+Starting training at Sat Oct 11 20:12:37 PDT 2025
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+Configuration:
+  model_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  compress_dim: 1024
+  compress_method: pca
+  input_dim: 4096
+  pca_samples: 5000
+  adapter_hidden_mult: 4
+  adapter_dropout: 0.1
+  adapter_lr: 0.0005
+  samples: 10000
+  epochs: 5
+  batch_size: 32
+  k_tokens: 4
+  lambda_kce: 0.5
+  lambda_kd: 0.5
+  kd_tau: 1.0
+  eval_every: 1
+  eval_samples: 100
+  save_dir: runs/stage1b_phase1b
+  diagnostic_log: runs/stage1b_phase1b/logs/diagnostics.jsonl
+============================================================
+STAGE 1 PHASE 1B: RECONSTRUCTION + GENERATION TRAINING
+Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+Compression: 4096 → 1024 (4.0× compression)
+Training samples: 10000
+PCA samples: 5000
+
+Generation objectives:
+  K-token CE: K=4, λ=0.5
+  Prefix KD: τ=1.0, λ=0.5
+============================================================
+
+GPU Information:
+  CUDA available: Yes
+  GPU count: 4
+  GPU 0: NVIDIA H100 80GB HBM3 (85.0 GB)
+  GPU 1: NVIDIA H100 80GB HBM3 (85.0 GB)
+  GPU 2: NVIDIA H100 80GB HBM3 (85.0 GB)
+  GPU 3: NVIDIA H100 80GB HBM3 (85.0 GB)
+
+Logging diagnostics to: runs/stage1b_phase1b/logs/diagnostics.jsonl
+
+Loading model...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3368.24it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.39s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.15s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.23s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.19it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.01it/s]
+
+Creating LMWrapper for generation objectives...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4566.47it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.27s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.32s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.31s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.13it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.04s/it]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+  Anchor text: ' Answer: ' → 3 tokens: [22559, 25, 220]
+
+Creating adapter...
+Adapter parameters: 50,374,657
+
+Loading dataset...
+Training samples: 10000
+Validation samples: 500
+
+Fitting PCA compressor on 5,000 samples...
+
+GPU memory status:
+  GPU 0: 77.6 GB free / 85.0 GB total (allocated: 6.6 GB)
+  GPU 1: 75.7 GB free / 85.0 GB total (allocated: 8.7 GB)
+  GPU 2: 75.7 GB free / 85.0 GB total (allocated: 8.7 GB)
+  GPU 3: 76.2 GB free / 85.0 GB total (allocated: 8.2 GB)
+
+Using GPU 0 for PCA (77.6 GB free)
+Collecting embeddings...
+Collecting embeddings:   0%|          | 0/79 [00:00<?, ?it/s]Collecting embeddings:   1%|▏         | 1/79 [00:00<00:10,  7.74it/s]Collecting embeddings:   8%|▊         | 6/79 [00:00<00:02, 28.13it/s]Collecting embeddings:  13%|█▎        | 10/79 [00:00<00:02, 31.08it/s]Collecting embeddings:  18%|█▊        | 14/79 [00:00<00:02, 23.90it/s]Collecting embeddings:  23%|██▎       | 18/79 [00:00<00:02, 24.70it/s]Collecting embeddings:  27%|██▋       | 21/79 [00:00<00:02, 21.09it/s]Collecting embeddings:  33%|███▎      | 26/79 [00:01<00:01, 27.43it/s]Collecting embeddings:  41%|████      | 32/79 [00:01<00:01, 33.98it/s]Collecting embeddings:  47%|████▋     | 37/79 [00:01<00:01, 37.76it/s]Collecting embeddings:  53%|█████▎    | 42/79 [00:01<00:00, 40.39it/s]Collecting embeddings:  59%|█████▉    | 47/79 [00:01<00:00, 42.39it/s]Collecting embeddings:  66%|██████▌   | 52/79 [00:01<00:00, 44.24it/s]Collecting embeddings:  72%|███████▏  | 57/79 [00:01<00:00, 45.76it/s]Collecting embeddings:  80%|███████▉  | 63/79 [00:01<00:00, 47.59it/s]Collecting embeddings:  87%|████████▋ | 69/79 [00:01<00:00, 49.02it/s]Collecting embeddings:  95%|█████████▍| 75/79 [00:02<00:00, 50.60it/s]Collecting embeddings: 100%|██████████| 79/79 [00:02<00:00, 38.30it/s]
+Concatenating 863,997 embedding vectors...
+  Fitting PCA on GPU with 863,997 embedding vectors...
+  Computing top 1024 components via randomized SVD...
+  PCA captured variance (top 1024 components): 100.0%
+✓ PCA fitted on 863,997 embedding vectors
+
+============================================================
+TRAINING
+============================================================
+
+Epoch 1/5:   0%|          | 0/312 [00:00<?, ?it/s]Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Epoch 1/5:   0%|          | 0/312 [00:04<?, ?it/s, loss=6.0562, recon=1.001, kce=10.110, kd=0.000, cos=-0.001]Epoch 1/5:   0%|          | 1/312 [00:04<21:22,  4.12s/it, loss=6.0562, recon=1.001, kce=10.110, kd=0.000, cos=-0.001]Epoch 1/5:   0%|          | 1/312 [00:07<21:22,  4.12s/it, loss=6.7974, recon=0.997, kce=11.600, kd=0.000, cos=0.003] Epoch 1/5:   1%|          | 2/312 [00:07<18:07,  3.51s/it, loss=6.7974, recon=0.997, kce=11.600, kd=0.000, cos=0.003]Epoch 1/5:   1%|          | 2/312 [00:10<18:07,  3.51s/it, loss=6.0347, recon=0.989, kce=10.092, kd=0.000, cos=0.011]Epoch 1/5:   1%|          | 3/312 [00:10<16:33,  3.22s/it, loss=6.0347, recon=0.989, kce=10.092, kd=0.000, cos=0.011]Epoch 1/5:   1%|          | 3/312 [00:12<16:33,  3.22s/it, loss=5.8815, recon=0.980, kce=9.803, kd=0.000, cos=0.020] Epoch 1/5:   1%|▏         | 4/312 [00:12<15:50,  3.09s/it, loss=5.8815, recon=0.980, kce=9.803, kd=0.000, cos=0.020]Epoch 1/5:   1%|▏         | 4/312 [00:15<15:50,  3.09s/it, loss=5.3540, recon=0.975, kce=8.757, kd=0.000, cos=0.025]Epoch 1/5:   2%|▏         | 5/312 [00:15<15:02,  2.94s/it, loss=5.3540, recon=0.975, kce=8.757, kd=0.000, cos=0.025]Epoch 1/5:   2%|▏         | 5/312 [00:18<15:02,  2.94s/it, loss=5.3699, recon=0.970, kce=8.800, kd=0.000, cos=0.030]Epoch 1/5:   2%|▏         | 6/312 [00:18<14:47,  2.90s/it, loss=5.3699, recon=0.970, kce=8.800, kd=0.000, cos=0.030]Epoch 1/5:   2%|▏         | 6/312 [00:21<14:47,  2.90s/it, loss=6.0072, recon=0.967, kce=10.080, kd=0.000, cos=0.033]Epoch 1/5:   2%|▏         | 7/312 [00:21<14:25,  2.84s/it, loss=6.0072, recon=0.967, kce=10.080, kd=0.000, cos=0.033]Epoch 1/5:   2%|▏         | 7/312 [00:23<14:25,  2.84s/it, loss=5.6087, recon=0.966, kce=9.286, kd=0.000, cos=0.034] Epoch 1/5:   3%|▎         | 8/312 [00:23<14:14,  2.81s/it, loss=5.6087, recon=0.966, kce=9.286, kd=0.000, cos=0.034]Epoch 1/5:   3%|▎         | 8/312 [00:26<14:14,  2.81s/it, loss=4.7162, recon=0.965, kce=7.502, kd=0.000, cos=0.035]Epoch 1/5:   3%|▎         | 9/312 [00:26<14:04,  2.79s/it, loss=4.7162, recon=0.965, kce=7.502, kd=0.000, cos=0.035]Epoch 1/5:   3%|▎         | 9/312 [00:29<14:04,  2.79s/it, loss=4.7708, recon=0.965, kce=7.611, kd=0.000, cos=0.035]Epoch 1/5:   3%|▎         | 10/312 [00:29<13:51,  2.75s/it, loss=4.7708, recon=0.965, kce=7.611, kd=0.000, cos=0.035]Epoch 1/5:   3%|▎         | 10/312 [00:32<13:51,  2.75s/it, loss=4.6494, recon=0.964, kce=7.370, kd=0.000, cos=0.036]Epoch 1/5:   4%|▎         | 11/312 [00:32<13:55,  2.78s/it, loss=4.6494, recon=0.964, kce=7.370, kd=0.000, cos=0.036]Epoch 1/5:   4%|▎         | 11/312 [00:34<13:55,  2.78s/it, loss=4.3363, recon=0.962, kce=6.749, kd=0.000, cos=0.038]Epoch 1/5:   4%|▍         | 12/312 [00:34<13:39,  2.73s/it, loss=4.3363, recon=0.962, kce=6.749, kd=0.000, cos=0.038][WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] KD teacher: adapters NOT disabled - KD may be contaminated
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 132.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 113.00 MiB is free. Including non-PyTorch memory, this process has 79.07 GiB memory in use. Of the allocated memory 76.17 GiB is allocated by PyTorch, and 2.24 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 43.00 MiB is free. Including non-PyTorch memory, this process has 79.14 GiB memory in use. Of the allocated memory 76.20 GiB is allocated by PyTorch, and 2.21 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 76.20 GiB is allocated by PyTorch, and 2.25 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+
+[WARN] Prefix KD failed: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 7.00 MiB is free. Including non-PyTorch memory, this process has 79.17 GiB memory in use. Of the allocated memory 75.04 GiB is allocated by PyTorch, and 3.41 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+Epoch 1/5:   4%|▍         | 12/312 [00:37<13:39,  2.73s/it, loss=3.8739, recon=0.959, kce=5.830, kd=0.000, cos=0.041]Epoch 1/5:   4%|▍         | 13/312 [00:37<13:50,  2.78s/it, loss=3.8739, recon=0.959, kce=5.830, kd=0.000, cos=0.041]Epoch 1/5:   4%|▍         | 13/312 [00:40<13:50,  2.78s/it, loss=4.0244, recon=0.955, kce=6.138, kd=0.000, cos=0.045]Epoch 1/5:   4%|▍         | 14/312 [00:40<13:43,  2.76s/it, loss=4.0244, recon=0.955, kce=6.138, kd=0.000, cos=0.045]Epoch 1/5:   4%|▍         | 14/312 [00:43<13:43,  2.76s/it, loss=3.9649, recon=0.953, kce=6.024, kd=0.000, cos=0.047]Epoch 1/5:   5%|▍         | 15/312 [00:43<13:45,  2.78s/it, loss=3.9649, recon=0.953, kce=6.024, kd=0.000, cos=0.047]Epoch 1/5:   5%|▍         | 15/312 [00:45<13:45,  2.78s/it, loss=3.8083, recon=0.949, kce=5.718, kd=0.000, cos=0.051]Epoch 1/5:   5%|▌         | 16/312 [00:45<13:29,  2.73s/it, loss=3.8083, recon=0.949, kce=5.718, kd=0.000, cos=0.051]Epoch 1/5:   5%|▌         | 16/312 [00:48<13:29,  2.73s/it, loss=3.7194, recon=0.947, kce=5.545, kd=0.000, cos=0.053]Epoch 1/5:   5%|▌         | 17/312 [00:48<13:31,  2.75s/it, loss=3.7194, recon=0.947, kce=5.545, kd=0.000, cos=0.053]Epoch 1/5:   5%|▌         | 17/312 [00:51<13:31,  2.75s/it, loss=3.3808, recon=0.944, kce=4.873, kd=0.000, cos=0.056]Epoch 1/5:   6%|▌         | 18/312 [00:51<13:21,  2.72s/it, loss=3.3808, recon=0.944, kce=4.873, kd=0.000, cos=0.056]
