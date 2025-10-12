@@ -4392,3 +4392,211 @@ python train_adapter_only_phase1b.py \
 
 ---
 
+## Critical Realization: Phase 1a Didn't Test Sequence Compression
+
+### What Phase 1a Actually Tested
+
+**Phase 1a architecture:**
+```
+Text → Tokenize → Embed [300, 4096]
+                 → PCA [300, 1024]  (dimension compression)
+                 → Adapter [300, 4096]
+                 → Still 300 tokens!
+```
+
+**Key insight:** Phase 1a only compressed **embedding dimension** (4096→1024), NOT **sequence length**.
+
+**Result:** F1=24%, cosine=87%
+- High reconstruction quality
+- Poor task performance
+- Still processing 300 tokens → NO efficiency gain for prefill
+
+### What We Actually Need to Test
+
+**For compressed interlingua, we need:**
+```
+Text → Embed [300, 4096]
+     → Sequence pooling [M, 4096]  ← THIS is the core compression!
+     → M << 300 (e.g., M=75, 4× compression)
+```
+
+**This is what enables efficiency:**
+- Prefill: O(M²) vs O(300²) = 16× speedup for M=75
+- Communication: M tokens vs 300 tokens = 4× reduction
+- Multi-model: Same M tokens for Llama and Qwen
+
+### Sequence Compression Test Suite
+
+**Created:** `scripts/test_sequence_compression.sh`
+
+**Three experiments to run:**
+
+**Experiment 1: Phase 1a Baseline (Replication)**
+```
+Architecture: Embed [300, 4096] → PCA [300, 1024] → Adapter [300, 4096]
+Purpose: Confirm we can replicate F1=24% baseline
+No sequence compression: Still 300 tokens
+```
+
+**Experiment 2: Phase 1a + Sequence Pooling**
+```
+Architecture: Embed [300, 4096]
+            → PCA [300, 1024]
+            → SequencePooler [75, 1024]  ← NEW: 4× sequence compression
+            → Adapter [75, 4096]
+
+Hypothesis: Learned cross-attention pooling can compress 300→75 tokens
+           while preserving enough information for F1 ≥ 30%
+
+Tests: Is 4× sequence compression viable?
+```
+
+**Experiment 3: Phase 1a + Pooling + LoRA**
+```
+Architecture: Embed [300, 4096]
+            → PCA [300, 1024]
+            → SequencePooler [75, 1024]
+            → Adapter [75, 4096]
+            → LLM with LoRA (first 4 layers) ← NEW: help LLM adapt
+
+Hypothesis: LoRA enables LLM to better process compressed sequences
+           If Exp2 achieves F1=30-40%, LoRA should push to F1=40-50%
+
+Tests: Does LLM adaptation help with compressed input?
+```
+
+### SequencePooler Architecture
+
+```python
+class SequencePooler(nn.Module):
+    """Compress [300, d] → [M, d] via learned cross-attention"""
+
+    def __init__(self, M=75, d_model=1024):
+        # Learned queries: what information to extract
+        self.queries = nn.Parameter(torch.randn(M, d_model))
+
+        # Cross-attention: queries attend to full sequence
+        self.cross_attn = nn.MultiheadAttention(d_model, num_heads=8)
+
+    def forward(self, x):
+        # x: [batch, 300, d_model]
+        # queries: [batch, M, d_model]
+        pooled = self.cross_attn(queries, x, x)  # Attend to full context
+        return pooled  # [batch, M, d_model]
+```
+
+**Key design:**
+- Queries learn to extract task-relevant information
+- Attends to full 300-token sequence
+- Compresses to M=75 tokens (4× reduction)
+- Differentiable: trains end-to-end with adapter
+
+### Success Criteria
+
+**Strong success (sequence compression works):**
+- Experiment 2 (pooling): F1 ≥ 40%
+- → Proceed to more compression (300→50, 300→32 tokens)
+- → Add second model (Qwen) for shared interlingua
+- → This is the path to full LatentWire
+
+**Moderate success (compression viable but needs help):**
+- Experiment 2: F1 = 30-40%
+- Experiment 3 (+ LoRA): F1 ≥ 40%
+- → LoRA helps, use in full system
+- → Validate compression ratio is acceptable
+
+**Partial success (compression somewhat lossy):**
+- Experiment 2: F1 = 20-30%
+- → Reduce compression ratio (300→100 tokens, 3×)
+- → Try different pooling methods (hierarchical, convolutional)
+- → May need architectural changes
+
+**Failure (compression too aggressive):**
+- Experiment 2: F1 < 20%
+- → 4× compression loses too much information
+- → Try 2× compression (300→150 tokens) first
+- → Or pivot to different compression approach
+- → Research contribution: Understanding compression limits
+
+### Why This Is the Right Experiment
+
+**Addresses the core unknown:**
+- Phase 1a tested dimension compression (✓ works, F1=24%)
+- This tests sequence compression (? unknown)
+- Sequence compression is what enables efficiency gains
+
+**One logical change at a time:**
+- Experiment 1: Baseline (no changes)
+- Experiment 2: + SequencePooler (one new component)
+- Experiment 3: + LoRA (one more component if needed)
+
+**Fast iteration:**
+- ~1-1.5 hours per experiment
+- ~3-4 hours total for all three
+- Quick feedback on viability
+
+**Clear decision tree:**
+```
+IF Exp2 ≥ 40%:
+  → Sequence compression works!
+  → Try more compression (→50, →32)
+  → Add second model
+  → Path to full LatentWire
+
+ELIF Exp2 = 30-40%:
+  → Check if Exp3 (LoRA) helps
+  → IF Exp3 ≥ 40%: Use LoRA
+  → ELSE: Reduce compression
+
+ELIF Exp2 = 20-30%:
+  → Compression too lossy
+  → Reduce to 3× or 2×
+  → Try different architecture
+
+ELSE (Exp2 < 20%):
+  → Fundamental issue
+  → Pivot to different approach
+  → Document why it fails
+```
+
+### What We Learn Either Way
+
+**If it works (F1 ≥ 30%):**
+- ✅ Sequence compression is viable
+- ✅ Learned pooling preserves task information
+- ✅ Path to compressed interlingua validated
+- → Next: Scale to more compression + multi-model
+
+**If it fails (F1 < 20%):**
+- ✗ 4× sequence compression too aggressive
+- ? Need to understand what information is lost
+- ? Try less compression or different method
+- Research value: Understanding limits of compression
+
+**Either way:**
+- Clear empirical evidence about sequence compression
+- Publishable results (success OR understanding failure)
+- Informed decision about next steps
+
+### Running the Experiments
+
+```bash
+# Clone latest, remove old runs, execute test suite
+git pull && rm -rf runs && PYTHONPATH=. bash scripts/test_sequence_compression.sh
+```
+
+**Timeline:** ~3-4 hours for all 3 experiments
+
+**Outputs:**
+- `runs/exp1_baseline/diagnostics.jsonl` - Phase 1a replication
+- `runs/exp2_pooling/diagnostics.jsonl` - Sequence compression test
+- `runs/exp3_pooling_lora/diagnostics.jsonl` - LoRA enhancement test
+
+**Analysis:**
+- Compare F1 scores across experiments
+- Check if sequence compression preserves information
+- Determine if LoRA helps with compressed sequences
+- Make go/no-go decision on full LatentWire approach
+
+---
+
