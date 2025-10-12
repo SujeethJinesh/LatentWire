@@ -1,5 +1,63 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-11 — Stage 1 Phase 1: Cosine Loss Fix + Comprehensive Diagnostics (Claude Code)
+
+**STATUS**: Cosine similarity fix WORKED (0.47→0.89), but F1 still 0%. Added token-level diagnostics to identify root cause.
+
+**Training Results (Latest Run)**:
+| Metric | Epoch 1 | Epoch 2 | Epoch 3 |
+|--------|---------|---------|---------|
+| Cosine Similarity | 0.875 | 0.888 | 0.894 |
+| MSE Loss | 0.978 | 0.962 | 0.962 |
+| F1 Score | 0.0% | 0.0% | 0.0% |
+| EM Score | 0.0% | 0.0% | 0.0% |
+
+**Loss Weight Fix Applied**:
+- **Problem**: Previous run showed cosine falling (0.65→0.51) because MSE dominated gradients
+- **Fix**: Changed loss from `mse + 0.1*cosine` to `0.1*mse + cosine` (prioritize direction over magnitude)
+- **Result**: Cosine now increases (0.47→0.89) ✅ BUT F1 still 0% ❌
+
+**Hypothesis**: High cosine (0.89) but zero F1 suggests embeddings are directionally aligned but semantically incorrect. The LLM receives "similar-looking" embeddings but generates garbage text.
+
+**Diagnostic Logging Added**:
+
+1. **Token-level reconstruction** (`decode_embeddings_to_tokens()`):
+   - Maps reconstructed embeddings to nearest vocab tokens via cosine similarity
+   - Shows what LLM "perceives" vs original input
+   - Will reveal if tokens match, drift to synonyms, or collapse to garbage
+
+2. **evaluate_full()** logs (first 10 examples each epoch):
+   - Expected answer vs generated text
+   - Original tokens vs reconstructed token mapping
+   - Embedding norms (original vs reconstructed)
+   - Norm ratio with status: TOO LOW (<0.8) / OK (0.8-1.2) / TOO HIGH (>1.2)
+   - Per-example cosine similarity
+
+3. **evaluate_quick()** logs (every 100 steps):
+   - First example with token mapping
+   - Aggregate stats: avg norm ratio, avg cosine
+
+**What Next Run Will Reveal**:
+- **If tokens match exactly**: PCA+adapter preserving semantics → problem elsewhere
+- **If tokens drift (synonyms)**: Semantic drift → try less compression or magnitude normalization
+- **If tokens collapse (garbage)**: PCA destroying semantics → need Phase 2 or reduce compression
+- **Norm ratio**: Reveals if magnitude mismatch causing issues
+
+**Possible Root Causes** (ranked by likelihood):
+1. Embedding magnitude mismatch (relative error = 114, norm mismatch)
+2. PCA destroying semantic structure (4× compression too aggressive)
+3. Training objective insufficient (reconstruction ≠ generation)
+4. Adapter architecture inadequate
+5. Evaluation setup wrong (missing BOS, attention mask issues)
+
+**Files Modified**:
+- `train_adapter_only_phase1.py`: Loss fix + comprehensive token-level diagnostics
+- `LOG.md`: Current status documentation
+
+**Commits**: `0ebd06f` (logging), `218ed71` (token-level diagnostics)
+
+---
+
 ### 2025-10-11 — Stage 1 Evaluation Bug Fixes (Claude Code)
 
 **CRITICAL BUG FIX**: Fixed 0.0% F1/EM evaluation bug
