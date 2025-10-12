@@ -3525,3 +3525,412 @@ The fast weight sweep demonstrated that **generation objectives are fragile** - 
 
 **Key takeaway:** Don't add generation objectives from step 1. Use annealing schedule starting from λ=0 and ramping up over 500-1000 steps.
 
+---
+
+## Strategic Decision: Moving LatentWire Forward After Phase 1
+
+### What Phase 1 Taught Us
+
+**What Works:**
+- ✅ Adapter training (learns quickly, ~100 steps to 77% cosine)
+- ✅ Fixed PCA compression (4096 → 1024, 87% cosine reconstruction)
+- ✅ RMS magnitude matching (critical for generation quality)
+- ✅ Fast iteration pipeline (1 min per experiment)
+
+**What Doesn't Work:**
+- ❌ Generation objectives without warm-up (mode collapse even at λ=0.001)
+- ❌ Constant loss weights from step 1 (reconstruction needs to stabilize first)
+- ❌ Strong supervision (λ=0.5) on reconstruction tasks
+
+**Key Limitation of Phase 1a:**
+- **Problem**: Answer present but buried in extra text ("Dane. Dane was killed in a horse-riding accident...")
+- **Root cause**: Pure reconstruction preserves semantics but loses task framing (stopping behavior, output format)
+- **F1**: 24% (not competitive)
+
+### Three Paths Forward
+
+#### Path A: Full LatentWire with Learned Encoder (RECOMMENDED)
+
+**Architecture:**
+```
+Text → ByteEncoder → Latent Z (M=32, d_z=256)
+                   ↓
+         ┌─────────┴─────────┐
+         ↓                   ↓
+    Llama Adapter       Qwen Adapter
+         ↓                   ↓
+      Llama 8B           Qwen 7B
+         ↓                   ↓
+    Answer (F1_llama)   Answer (F1_qwen)
+```
+
+**Why this is best:**
+1. **Learned compression** can adapt to preserve task-relevant information (not just semantics)
+2. **Encoder + adapter co-training** allows both to shape latent space together
+3. **Dual-LLM setup** provides mutual supervision and ensemble benefits
+4. **Research novelty** - this is the core LatentWire contribution
+
+**Key modifications from Phase 1 lessons:**
+
+1. **Staged curriculum learning:**
+```python
+# Stage 1: Pure reconstruction (0-500 steps)
+# Goal: Encoder learns good semantic compression
+if step < 500:
+    loss = reconstruction_loss
+
+# Stage 2: Add weak generation objectives (500-2000 steps)
+# Goal: Learn task framing while maintaining reconstruction
+elif step < 2000:
+    alpha = (step - 500) / 1500  # Ramp 0 → 1
+    loss = reconstruction_loss + alpha * 0.01 * generation_loss
+
+# Stage 3: Full training (2000+ steps)
+# Goal: Optimize for task performance
+else:
+    loss = reconstruction_loss + 0.01 * generation_loss
+```
+
+2. **Start with weaker generation weights:**
+```python
+# NOT these defaults:
+k_ce_weight = 0.5        # ❌ Too strong
+kd_first_k_weight = 1.0  # ❌ Too strong
+
+# Use these instead:
+k_ce_weight = 0.01       # ✅ Start weak
+kd_first_k_weight = 0.01 # ✅ Start weak
+```
+
+3. **Monitor reconstruction quality:**
+```python
+# Safety check: If reconstruction degrades, back off generation objectives
+if cosine_similarity < 0.70:
+    print("⚠️ Reconstruction degrading, reducing generation weight")
+    effective_k_ce_weight *= 0.5
+```
+
+4. **Optional: Initialize Llama adapter from Phase 1a:**
+```python
+# Warm start Llama adapter with Phase 1a checkpoint
+llama_adapter.load_state_dict(phase1a_checkpoint['adapter'])
+# Keep trainable, but start from good reconstruction baseline
+```
+
+**Expected outcomes:**
+- **Encoder**: Should learn better compression than PCA (task-aware features)
+- **F1**: Target 40-60% (significant improvement over 24%)
+- **Training time**: Longer than Phase 1 (~hours not minutes) but manageable
+- **Risk**: Generation objectives might still interfere, need careful monitoring
+
+**Implementation complexity:** Medium
+- Existing code in `latentwire/train.py` mostly ready
+- Need to add annealing schedule
+- Need to lower default generation weights
+- Need reconstruction quality monitoring
+
+---
+
+#### Path B: Hybrid - Fixed PCA + Learned Refinement
+
+**Architecture:**
+```
+Text → Embeddings (4096)
+     → Fixed PCA (1024) [frozen from Phase 1]
+     → ByteEncoder refinement → Latent Z (M=32, d_z=256)
+                              ↓
+                    ┌─────────┴─────────┐
+                    ↓                   ↓
+               Llama Adapter       Qwen Adapter
+                    ↓                   ↓
+                 Llama 8B           Qwen 7B
+```
+
+**Why consider this:**
+1. **PCA baseline**: Guarantees semantic preservation (87% cosine)
+2. **Encoder focuses on refinement**: Doesn't need to learn compression from scratch
+3. **More stable training**: PCA provides good starting features
+4. **Can reuse Phase 1a adapter**: Initialize Llama adapter with Phase 1a checkpoint
+
+**Pros:**
+- More stable than end-to-end learning
+- Faster convergence (PCA features already good)
+- Can still improve over Phase 1a (encoder learns task framing)
+
+**Cons:**
+- Limited by PCA's linear bottleneck (4096 → 1024)
+- More complex architecture
+- May not learn much better than PCA alone
+
+**When to use:**
+- If Path A training is too unstable
+- If we want guaranteed baseline performance
+- If compute/time limited
+
+**Implementation complexity:** High
+- Need to integrate fixed PCA projection into encoder
+- More architectural changes to existing code
+- Hybrid training can be tricky
+
+---
+
+#### Path C: Post-Processing + Simple Architecture Changes (QUICK WIN)
+
+**Approach:**
+1. **Keep Phase 1a** (24% F1, 87% cosine)
+2. **Add lightweight post-processing:**
+```python
+def extract_answer(generated_text):
+    # Method 1: Regex extraction
+    match = re.match(r'^[:\s]*([^.!?\n]+)', generated_text)
+    if match:
+        return match.group(1).strip()
+
+    # Method 2: Split on punctuation
+    answer = generated_text.split('.')[0].split('!')[0].split('?')[0]
+    return answer.strip()
+
+# Expected improvement: 24% → 40-50% F1
+```
+
+3. **Add simple output formatting:**
+```python
+# During generation, use constrained decoding
+# Ban period/newline tokens for first 10 tokens
+banned_tokens = ['.', '\n', '!', '?']
+for step in range(10):
+    logits = model(...)
+    logits[:, banned_token_ids] = -float('inf')  # Force continuation
+```
+
+**Pros:**
+- ✅ Fastest path to improvement (hours not days)
+- ✅ No retraining needed
+- ✅ Can combine with Path A later
+- ✅ Expected 40-50% F1 (2× improvement)
+
+**Cons:**
+- ❌ Not as principled as learned solution
+- ❌ Ceiling limited (~50% F1 max)
+- ❌ Doesn't address root cause
+
+**When to use:**
+- Need quick baseline improvement
+- Want to validate that stopping behavior is the main issue
+- Limited compute/time resources
+- As stepping stone to Path A
+
+**Implementation complexity:** Low
+- Just modify eval script
+- No training changes needed
+
+---
+
+### Recommended Strategy: Hybrid Approach
+
+**Phase 2A: Quick Win (1-2 days)**
+1. Implement Path C (post-processing on Phase 1a)
+2. Validate that F1 improves to 40-50%
+3. This confirms stopping behavior is the main issue
+4. Provides baseline for Path A comparison
+
+**Phase 2B: Full System (1-2 weeks)**
+1. Implement Path A (full LatentWire with annealing)
+2. Use Phase 1a checkpoint to initialize Llama adapter (warm start)
+3. Use staged curriculum: pure reconstruction → weak generation → full training
+4. Monitor reconstruction quality throughout
+5. Target: 50-70% F1
+
+**Phase 2C: Research Experiments (optional)**
+1. Compare Path A vs Path B (learned vs hybrid)
+2. Ablation studies on curriculum learning
+3. Paper: "Curriculum Learning for Compression + Generation"
+
+---
+
+### Specific Architectural Recommendations for Path A
+
+Based on Phase 1 lessons, here are concrete changes to `latentwire/train.py`:
+
+**1. Add annealing schedule:**
+```python
+def get_generation_weight(step, target_weight, warmup_steps=500):
+    """Anneal generation objectives from 0 to target over warmup_steps."""
+    if step < warmup_steps:
+        return target_weight * (step / warmup_steps)
+    else:
+        return target_weight
+
+# In training loop
+effective_k_ce = get_generation_weight(step, args.k_ce_weight, warmup_steps=500)
+effective_kd = get_generation_weight(step, args.kd_first_k_weight, warmup_steps=500)
+```
+
+**2. Lower default weights:**
+```python
+# Current defaults (will fail)
+k_ce_weight = 0.5
+kd_first_k_weight = 1.0
+
+# New defaults (safer)
+k_ce_weight = 0.01
+kd_first_k_weight = 0.01
+```
+
+**3. Add reconstruction monitoring:**
+```python
+# Log cosine similarity between encoder output and embeddings
+if step % 100 == 0:
+    with torch.no_grad():
+        # Encode → decode → compare with original
+        latents = encoder(text_embeds)
+        reconstructed_llama = llama_adapter(latents)
+        reconstructed_qwen = qwen_adapter(latents)
+
+        cos_llama = F.cosine_similarity(
+            reconstructed_llama.flatten(),
+            text_embeds.flatten(),
+            dim=0
+        )
+
+        print(f"Step {step}: Reconstruction cosine = {cos_llama:.3f}")
+
+        # Safety: Reduce generation weight if reconstruction degrading
+        if cos_llama < 0.70:
+            args.k_ce_weight *= 0.5
+            args.kd_first_k_weight *= 0.5
+            print(f"⚠️ Reconstruction degraded, reducing gen weights to {args.k_ce_weight:.3f}")
+```
+
+**4. Optional: Warm start Llama adapter:**
+```python
+# In model initialization
+if args.init_llama_from_phase1:
+    checkpoint = torch.load('runs/stage1_adapter_only/adapter_phase1_best.pt')
+    llama_adapter.load_state_dict(checkpoint['adapter'])
+    print("✅ Initialized Llama adapter from Phase 1a")
+```
+
+**5. Keep RMS magnitude matching:**
+```python
+# CRITICAL: Keep this from Phase 1a
+# Already in prefix_utils.py, just ensure it's used
+calibrated = calibrate_via_embed_rms(
+    adapted_embeds,
+    model.get_input_embeddings().weight,
+    mode=args.calibration
+)
+```
+
+---
+
+### Success Metrics
+
+**Minimum viable (justify moving to Path A):**
+- F1 ≥ 40% on SQuAD (Path C post-processing should achieve this)
+
+**Good result (Path A working):**
+- F1 ≥ 50% on SQuAD
+- Reconstruction cosine ≥ 70% throughout training
+- FirstTok@1 ≥ 15%
+
+**Great result (competitive system):**
+- F1 ≥ 60% on SQuAD
+- Dual-LLM ensemble ≥ 65% F1
+- Honest compression ≥ 4× (bytes)
+- Faster than text baseline (wall-clock)
+
+**Paper-worthy result:**
+- F1 ≥ 70% on SQuAD
+- Cross-model generalization (Llama ↔ Qwen interchange)
+- Demonstrates learned compression beats PCA
+
+---
+
+### Timeline Estimate
+
+**Phase 2A (Post-processing):** 1-2 days
+- Implement extraction logic
+- Evaluate on Phase 1a outputs
+- Expected: 40-50% F1
+
+**Phase 2B (Full LatentWire):** 1-2 weeks
+- Implement annealing + monitoring
+- Train with reduced generation weights
+- Iterate on hyperparameters
+- Expected: 50-70% F1
+
+**Phase 2C (Research polish):** 1-2 weeks
+- Ablations and comparisons
+- Write paper sections
+- Final experiments
+
+**Total:** 3-5 weeks to competitive system
+
+---
+
+### Immediate Next Steps (This Week)
+
+1. **Implement Path C post-processing** (2-3 hours)
+   - Modify `evaluate_full()` in `train_adapter_only_phase1.py`
+   - Add answer extraction logic
+   - Re-evaluate Phase 1a checkpoint
+   - Target: Validate 40-50% F1
+
+2. **Modify `latentwire/train.py` for annealing** (3-4 hours)
+   - Add `get_generation_weight()` function
+   - Lower default k_ce_weight and kd_first_k_weight
+   - Add reconstruction monitoring
+   - Add `--init_llama_from_phase1` flag
+
+3. **Run pilot LatentWire experiment** (1 day)
+   - Small scale: 5k samples, 3 epochs
+   - Verify annealing works
+   - Check reconstruction doesn't degrade
+   - Iterate if needed
+
+4. **Full training run** (2-3 days)
+   - Full scale: 87k samples, 24 epochs
+   - Monitor closely for mode collapse
+   - Save checkpoints every epoch
+   - Evaluate both Llama and Qwen
+
+---
+
+### Risk Mitigation
+
+**High risk: Generation objectives still cause mode collapse**
+- **Mitigation**: Start with even weaker weights (λ=0.001)
+- **Backup**: Use Path B (hybrid with fixed PCA)
+
+**Medium risk: Learned encoder doesn't improve over PCA**
+- **Mitigation**: Monitor reconstruction + task metrics separately
+- **Backup**: Fall back to Path C (post-processing)
+
+**Low risk: Training too slow / expensive**
+- **Mitigation**: Use Phase 1a warm start, reduce sample count
+- **Backup**: Multi-GPU / longer wall-clock time acceptable
+
+---
+
+### Conclusion
+
+**Recommended path:**
+1. ✅ **This week**: Implement post-processing (Path C) → validate 40-50% F1
+2. ✅ **Next week**: Full LatentWire with annealing (Path A) → target 50-70% F1
+3. ✅ **Week 3+**: Polish and experiments
+
+**Key architectural changes:**
+- Annealing schedule (0 → 0.01 over 500 steps)
+- Reconstruction monitoring (cosine > 70%)
+- Weaker generation weights (0.01 not 0.5)
+- Optional: Warm start from Phase 1a
+
+**This approach:**
+- Builds on Phase 1 successes (adapter training, RMS matching)
+- Avoids Phase 1 failures (strong generation objectives from start)
+- Provides multiple fallback options (Path B, Path C)
+- Clear success criteria and risk mitigation
+
+Ready to move forward with full LatentWire system.
+
