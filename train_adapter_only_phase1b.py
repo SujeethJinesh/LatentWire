@@ -349,6 +349,18 @@ def train_adapter_phase1(args):
             "rel_error": 0
         }
 
+        # Compute annealing factor for generation objectives
+        if args.anneal_gen_objectives:
+            # Linearly ramp from 0 to 1 over anneal_epochs
+            anneal_factor = min(1.0, epoch / max(1, args.anneal_epochs))
+            effective_lambda_kce = args.lambda_kce * anneal_factor
+            effective_lambda_kd = args.lambda_kd * anneal_factor
+            print(f"\nEpoch {epoch+1}: Annealing factor = {anneal_factor:.3f}")
+            print(f"  Effective λ_kce = {effective_lambda_kce:.4f}, λ_kd = {effective_lambda_kd:.4f}")
+        else:
+            effective_lambda_kce = args.lambda_kce
+            effective_lambda_kd = args.lambda_kd
+
         # Random shuffle
         indices = torch.randperm(len(dataset))
         num_batches = len(dataset) // args.batch_size
@@ -460,8 +472,8 @@ def train_adapter_phase1(args):
             else:
                 loss_kd = torch.zeros((), device=device)
 
-            # Combined loss
-            loss = loss_recon + args.lambda_kce * loss_kce + args.lambda_kd * loss_kd
+            # Combined loss (use effective lambdas which may be annealed)
+            loss = loss_recon + effective_lambda_kce * loss_kce + effective_lambda_kd * loss_kd
 
             # Aggressive cache clearing to prevent OOM
             if batch_idx % 10 == 0:
@@ -511,6 +523,8 @@ def train_adapter_phase1(args):
                     "loss_recon": loss_recon.item(),
                     "loss_kce": loss_kce.item(),
                     "loss_kd": loss_kd.item(),
+                    "effective_lambda_kce": effective_lambda_kce,
+                    "effective_lambda_kd": effective_lambda_kd,
                     **metrics,
                     "lr": scheduler.get_last_lr()[0],
                     "compression_ratio": args.input_dim / args.compress_dim,
@@ -961,6 +975,8 @@ def main():
     parser.add_argument("--lambda_kce", type=float, default=0.5, help="Weight for K-token CE loss")
     parser.add_argument("--lambda_kd", type=float, default=0.5, help="Weight for Prefix KD loss")
     parser.add_argument("--kd_tau", type=float, default=1.0, help="Temperature for knowledge distillation")
+    parser.add_argument("--anneal_gen_objectives", action="store_true", help="Anneal generation objectives from 0 to target over epochs")
+    parser.add_argument("--anneal_epochs", type=int, default=3, help="Number of epochs to anneal over")
 
     # Evaluation
     parser.add_argument("--eval_every", type=int, default=1)
