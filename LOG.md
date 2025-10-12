@@ -4600,3 +4600,151 @@ git pull && rm -rf runs && PYTHONPATH=. bash scripts/test_sequence_compression.s
 
 ---
 
+## Initial Results: Sequence Pooling Failed
+
+### Results from First Test Suite
+
+```
+Experiment 1 (Baseline):        F1 = 24.2%  ✅ Successfully replicated Phase 1a
+Experiment 2 (+ Pooling):       F1 = 0.7%   ❌ CATASTROPHIC FAILURE
+Experiment 3 (+ Pooling + LoRA): F1 = 0.7%   ❌ LoRA doesn't help
+```
+
+**Key observations:**
+1. Baseline works perfectly (F1 24.2%, cosine 0.91)
+2. Sequence pooling destroys performance (F1 0.7%, 97% degradation)
+3. Paradox: Pooling has HIGHER cosine (0.95) but LOWER F1
+4. LoRA provides zero benefit
+
+### Root Cause Analysis
+
+**The training objective was fundamentally flawed:**
+
+```python
+# What we did (BROKEN):
+target_pooled = orig_embeds.mean(dim=1)  # Average 300 tokens → 1 embedding
+target_pooled = target_pooled.expand(75, -1)  # Repeat 75 times
+loss = cosine_loss(reconstructed, target_pooled)
+
+# Problem:
+# 1. Averaging destroys all sequential/positional information
+# 2. Repeating the same embedding 75 times has no structure
+# 3. Model learns to reconstruct averaged embedding (93% cosine!)
+# 4. But averaged embedding can't condition generation → F1 0.7%
+```
+
+**Phase 1a lesson repeated:** High reconstruction ≠ task performance
+- Phase 1a: PCA preserved semantics, lost task framing → F1 24%
+- Pooling: Averaging preserved... nothing useful → F1 0.7%
+
+### Comprehensive Strategy Test Suite
+
+Created `scripts/test_compression_strategies.sh` to test 7 different approaches:
+
+**Experiment 1: Baseline (no compression)**
+- Dimension compression only
+- Expected F1: 24%
+- Purpose: Confirm replication
+
+**Experiment 3: Pooling 4× + Generation Loss**
+- Architecture: Embed → PCA → Pooler [75] → Adapter
+- Loss: Direct generation loss (NO reconstruction)
+- Tests: Can proper objective make pooling work?
+- Skip reconstruction target entirely
+
+**Experiment 4: Pooling 2× + Generation Loss**
+- Architecture: Embed → PCA → Pooler [150] → Adapter
+- Less aggressive compression (2× vs 4×)
+- Tests: Does easier compression work?
+
+**Experiment 5: Hierarchical Pooling 4×**
+- Architecture: Embed → PCA → Multi-stage pooler → [75]
+- Stages: 300 → 225 → 150 → 75 (gradual 1.33× each)
+- Tests: Does gradual compression preserve structure?
+
+**Experiment 6: Convolutional Downsampling 4×**
+- Architecture: Embed → PCA → Conv1D(stride=4) → [75]
+- Preserves local context better than global pooling
+- Tests: Does local structure matter?
+
+**Experiment 7: Hybrid Pool-Expand-Reconstruct**
+- Architecture: Embed → PCA → Pooler [75] → Expand [300] → Adapter
+- Training: Reconstruction loss on expanded
+- Inference: Use compressed [75] directly
+- Tests: Can we train with reconstruction but test with compression?
+
+### Key Architectural Changes
+
+**Created: `train_adapter_only_phase1_pooling_v2.py`**
+
+Supports 4 pooling modes:
+
+1. **generation_loss:** Train with generation loss directly
+   ```python
+   # Forward through pooled embeddings
+   adapted = adapter(pooler(compressed))
+
+   # Concatenate with answer embeddings
+   combined = [adapted, answer_embeds]
+
+   # Generation loss on answer tokens
+   loss = model(inputs_embeds=combined, labels=answer_labels).loss
+   ```
+
+2. **hierarchical:** Multi-stage gradual pooling
+   ```python
+   class HierarchicalPooler:
+       def forward(self, x):
+           x = self.stage1(x)  # 300 → 225
+           x = self.stage2(x)  # 225 → 150
+           x = self.stage3(x)  # 150 → 75
+           return x
+   ```
+
+3. **convolutional:** Strided conv downsampling
+   ```python
+   class ConvolutionalPooler:
+       def __init__(self):
+           self.conv = nn.Conv1d(d_model, d_model, kernel_size=4, stride=4)
+   ```
+
+4. **hybrid_expand:** Pool, expand, reconstruct
+   ```python
+   # Training: Expand pooled back to full sequence
+   pooled = pooler(compressed)  # [batch, 75, d]
+   expanded = pooled.repeat_interleave(4, dim=1)  # [batch, 300, d]
+   loss = reconstruction_loss(adapter(expanded), original)
+
+   # Inference: Use compressed directly
+   adapted = adapter(pooled)  # [batch, 75, d]
+   ```
+
+### Success Criteria
+
+**Strong success (F1 ≥ 30%):**
+- Sequence compression works!
+- Proceed to more compression (6×, 8×, 10×)
+- Add second model for shared interlingua
+
+**Moderate success (F1 = 15-30%):**
+- Marginal but viable
+- Try improvements: LoRA, more training, combined methods
+
+**Failure (F1 < 15%):**
+- Sequence compression fundamentally difficult
+- Document limits for research contribution
+- Consider alternatives
+
+### Running Comprehensive Suite
+
+```bash
+git pull && rm -rf runs && PYTHONPATH=. bash scripts/test_compression_strategies.sh
+```
+
+**Timeline:** ~8-10 hours for 6 experiments
+**Expected:** ~2 minutes per epoch, clear results
+
+**This will definitively answer:** Can we compress sequences 2-4× while maintaining task performance?
+
+---
+
