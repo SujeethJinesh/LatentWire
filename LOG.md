@@ -2724,3 +2724,342 @@ Generated: 'the the was a, the is a, the'
 
 **Validated:** Pure reconstruction is a solid baseline. Generation-aware training needs careful design to avoid mode collapse.
 
+
+---
+
+## 🔄 HANDOFF - Current State & Next Steps
+
+**Date:** 2025-10-11  
+**Status:** Phase 1 Complete - Baseline Established  
+**Best Result:** Phase 1a Pure Reconstruction - F1 24.0%
+
+### TL;DR
+
+We validated that **adapter-only reconstruction on compressed embeddings works** but has limitations:
+- ✅ **Infrastructure solid:** Fast training (1 min), batched eval, all bugs fixed
+- ✅ **Reconstruction quality:** 89.5% cosine similarity, perfect magnitude matching
+- ✅ **Generation works:** Model produces coherent text with correct semantic content
+- ❌ **Format problem:** Answer present but buried in extra text (F1 24% not 70%)
+- ❌ **Generation objectives fail:** Adding K-token CE + KD caused mode collapse (F1 0%)
+
+**Key Insight:** Pure reconstruction preserves semantics but loses task pragmatics. Generation objectives with strong weights cause mode collapse. Need different approach.
+
+---
+
+### What Works (Phase 1a - Pure Reconstruction)
+
+**Files:**
+- `train_adapter_only_phase1.py` - Working adapter-only training with PCA compression
+- `scripts/run_stage1_h100.sh` - HPC run script (1 min training, 3 epochs, batch_size=64)
+- `runs/stage1_adapter_only/` - Phase 1a results (F1 24%, best checkpoint)
+
+**Configuration:**
+```bash
+Model: Llama-3.1-8B-Instruct (frozen)
+Compression: 4096 → 1024 via PCA (4× compression)
+Adapter: 50M params, residual MLP with dropout
+Training: 10k samples, 3 epochs, batch_size=64
+Loss: Cosine (1.0×) + MSE (0.1×) + RMS magnitude matching
+Result: F1 24.0%, EM 0%, Cosine sim 89.5%
+```
+
+**What Phase 1a Generates:**
+```
+Expected: 'Dane'
+Generated: ': Dane. Dane was killed in a horse-riding accident when Nikola was five...'
+```
+Answer IS present, just continues generating. This is NOT a training bug—it's the fundamental limitation of pure reconstruction.
+
+**Critical Fixes Applied:**
+1. **RMS magnitude matching** - Without this, model generates empty strings (120× magnitude mismatch)
+2. **Generation output decoding** - Fixed slicing bug when using `inputs_embeds`
+3. **Batched evaluation** - 80× speedup (4 min → 3 sec)
+
+---
+
+### What Doesn't Work (Phase 1b - Generation Objectives)
+
+**Files:**
+- `train_adapter_only_phase1b.py` - Added K-token CE + Prefix KD (caused mode collapse)
+- `scripts/run_stage1b_h100.sh` - Phase 1b run script (FAILED)
+- `runs/stage1b_phase1b/` - Phase 1b results showing mode collapse
+
+**Configuration:**
+```bash
+Same as Phase 1a, plus:
+K-token CE: K=2, λ=0.5 (supervise first 2 tokens)
+Prefix KD: λ=0.5 (distill from text teacher)
+Loss: loss_recon + 0.5*loss_kce + 0.5*loss_kd
+Result: F1 0%, EM 0%, Mode collapse to "the the the"
+```
+
+**What Phase 1b Generates:**
+```
+Expected: 'Dane'
+Generated: 'the the was a, the is a, the'
+```
+Complete catastrophic failure. Model devolved to predicting only common words.
+
+**Why It Failed:**
+- Loss weighting: Generation objectives contributed 85% of loss despite "0.5×" weight
+- Conflicting gradients: Token-level CE (discrete) fights with embedding reconstruction (continuous)
+- Mode collapse: Model learns to predict common tokens to minimize expected CE loss
+- **Lesson:** Can't force generation format with strong supervision on reconstruction-based training
+
+---
+
+### Key Files & Their Purpose
+
+**Training Scripts:**
+- `train_adapter_only_phase1.py` ✅ - Pure reconstruction (WORKING - Use this!)
+- `train_adapter_only_phase1b.py` ❌ - With generation objectives (FAILED - Don't use)
+- `latentwire/train.py` - Full LatentWire training (not used in Phase 1)
+
+**Run Scripts:**
+- `scripts/run_stage1_h100.sh` ✅ - Phase 1a launcher (WORKING)
+- `scripts/run_stage1b_h100.sh` ❌ - Phase 1b launcher (FAILED)
+
+**Core Modules:**
+- `latentwire/models.py` - Adapter, LMWrapper, Encoder classes
+- `latentwire/losses.py` - K-token CE, Prefix KD (exist but cause issues when used naively)
+- `latentwire/data.py` - SQuAD dataset loading
+- `latentwire/metrics.py` - F1/EM scoring
+- `latentwire/core_utils.py` - RMS matching, calibration utilities
+
+**Results:**
+- `runs/stage1_adapter_only/` - Phase 1a (F1 24%, BASELINE)
+- `runs/stage1_adapter_only/adapter_phase1_best.pt` - Best checkpoint (epoch 2)
+- `runs/stage1_adapter_only/logs/diagnostics.jsonl` - Per-step metrics
+- `runs/stage1b_phase1b/` - Phase 1b failure (F1 0%, mode collapse)
+
+---
+
+### Critical Lessons Learned
+
+**1. Pure Reconstruction Has Fundamental Limits**
+- Preserves: Semantic content, linguistic structure, token information ✅
+- Loses: Task framing, output format, stopping behavior ❌
+- Training longer won't help: No gradient signal for format/stopping
+- F1 will stay ~24% regardless of epochs
+
+**2. Generation Objectives Cause Mode Collapse**
+- Token-level CE fights with embedding-level reconstruction
+- Equal loss weights (λ=0.5) means generation DOMINATES (85% of loss)
+- Model learns: "Can't predict right token → predict 'the' to minimize CE"
+- Result: Complete collapse to common words ("the the the")
+
+**3. RMS Magnitude Matching is CRITICAL**
+```python
+# Without this, model generates empty strings!
+orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
+recon_rms = reconstructed.pow(2).mean(dim=-1, keepdim=True).sqrt()
+reconstructed = reconstructed * (orig_rms / (recon_rms + 1e-8))
+```
+Llama embeddings have norm ≈0.5-1.0. Adapter output has norm ≈64 (from LayerNorm). Without matching, 120× mismatch causes generation failure.
+
+**4. Fast Iteration is Valuable**
+- 1 minute training cycles enable rapid experimentation
+- Batched evaluation (80× speedup) makes iteration practical
+- Infrastructure investment pays off in iteration speed
+
+---
+
+### Recommended Next Steps
+
+**Option 1: Post-Processing (RECOMMENDED - Quick Win)**
+
+Phase 1a already has the answer in the output. Just extract it:
+
+```python
+def extract_answer(generated_text, max_tokens=5):
+    """Extract first N tokens after punctuation or before period."""
+    # Method 1: First N tokens
+    tokens = generated_text.split()[:max_tokens]
+    return ' '.join(tokens)
+    
+    # Method 2: Before punctuation
+    match = re.match(r'^[:\s]*([^.!?\n]+)', generated_text)
+    return match.group(1).strip() if match else tokens[0]
+```
+
+**Expected Impact:** F1 24% → 40-50% (just better extraction, no retraining)
+
+**Action:**
+1. Load Phase 1a checkpoint: `runs/stage1_adapter_only/adapter_phase1_best.pt`
+2. Run evaluation with post-processing
+3. Measure F1 improvement
+
+---
+
+**Option 2: Architecture Changes (If Need >50% F1)**
+
+If post-processing doesn't achieve target, modify architecture:
+
+**2a. Two-Stage Generation:**
+```python
+# Stage 1: Generate with reconstructed embeddings (current)
+generated = model.generate(inputs_embeds=reconstructed, max_new_tokens=20)
+
+# Stage 2: Extract answer with small classifier
+answer_logits = extraction_head(generated_embeddings)
+answer_span = extract_span(answer_logits)
+```
+
+**2b. Task Embedding:**
+Add special token to latent representation:
+```python
+# Prepend task token to compressed latent
+task_embedding = task_embed_layer(task_id="qa")  # vs "summarization", "translation"
+latent_with_task = torch.cat([task_embedding, compressed], dim=1)
+```
+
+**2c. Learned Encoder (Full LatentWire):**
+Replace PCA with learned encoder that preserves task information:
+- Use `InterlinguaEncoder` from `latentwire/models.py`
+- Train end-to-end with generation objectives
+- May handle task preservation better than PCA
+
+---
+
+**Option 3: Fix Phase 1b (Advanced - Requires Careful Tuning)**
+
+If you want to try generation objectives again, much weaker weights:
+
+```python
+# Was: loss = recon + 0.5*kce + 0.5*kd  (FAILED)
+# Try: loss = recon + 0.01*kce          (100× weaker)
+
+# Or gradual annealing:
+alpha = min(1.0, epoch / 10)  # Ramp up over 10 epochs
+loss = recon + alpha * 0.01 * kce
+```
+
+**Warning:** High risk of mode collapse. Only try if you understand the failure mode well.
+
+---
+
+### Common Pitfalls to Avoid
+
+**❌ DON'T:**
+1. ~~Train Phase 1a longer~~ - Won't improve F1 (wrong optimization target)
+2. ~~Add strong generation objectives~~ - Causes mode collapse (we tried, it failed)
+3. ~~Load model twice~~ - OOM (was bug in Phase 1b, now fixed)
+4. ~~Forget RMS matching~~ - Empty string generation (critical bug)
+5. ~~Use equal loss weights~~ - Generation dominates even with "0.5×" (learned this hard way)
+
+**✅ DO:**
+1. Start with Phase 1a checkpoint (`runs/stage1_adapter_only/adapter_phase1_best.pt`)
+2. Try post-processing first before changing training
+3. Keep RMS magnitude matching in any new implementation
+4. Use batched evaluation for speed
+5. Monitor for mode collapse: Check if output is "the the the"
+
+---
+
+### Quick Start Commands
+
+**Run Phase 1a (Pure Reconstruction - WORKING):**
+```bash
+cd /path/to/LatentWire
+git pull
+rm -rf runs
+PYTHONPATH=. bash scripts/run_stage1_h100.sh
+# Training: 1 minute, Result: F1 ~24%
+```
+
+**Evaluate Existing Checkpoint:**
+```bash
+# Load and test Phase 1a checkpoint
+python -c "
+import torch
+checkpoint = torch.load('runs/stage1_adapter_only/adapter_phase1_best.pt')
+print(f\"Best F1: {checkpoint['best_f1']:.1%}\")
+print(f\"Epoch: {checkpoint['epoch']}\")
+print(f\"Config: {checkpoint['config']}\")
+"
+```
+
+**Test Post-Processing:**
+```python
+# Quick experiment: Extract answers from Phase 1a outputs
+# (Add extraction logic to evaluate_full function in train_adapter_only_phase1.py)
+```
+
+---
+
+### Questions for New Claude Instance
+
+If you're picking this up, here are the key decisions to make:
+
+1. **Goal:** What F1 target are we aiming for?
+   - If 40-50%: Try post-processing (quick)
+   - If 60-70%: Need architecture changes (medium effort)
+   - If 80%+: Need full LatentWire system (long effort)
+
+2. **Approach:** Post-processing or architecture?
+   - Post-processing: Fast, low risk, limited upside (F1 ~40-50%)
+   - Architecture: Slower, higher risk, higher upside (F1 60-70%+)
+
+3. **Timeline:** How much training time available?
+   - Phase 1a training: 1 minute (instant iteration)
+   - Full LatentWire: Hours to days (slower iteration)
+
+4. **Risk Tolerance:** Proven baseline or new experiments?
+   - Baseline: Phase 1a + post-processing (safe, known F1 24-50%)
+   - Experiments: New architectures (risky, unknown F1)
+
+---
+
+### Current Best Practice
+
+**For next experiment, follow this checklist:**
+
+```python
+# 1. Start from Phase 1a checkpoint
+checkpoint = torch.load('runs/stage1_adapter_only/adapter_phase1_best.pt')
+
+# 2. Ensure RMS matching (CRITICAL!)
+orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
+recon_rms = reconstructed.pow(2).mean(dim=-1, keepdim=True).sqrt()
+reconstructed = reconstructed * (orig_rms / (recon_rms + 1e-8))
+
+# 3. Use batched evaluation for speed
+batch_size = 32  # Not 1 (too slow)
+
+# 4. If adding generation objectives, use VERY weak weights
+loss = loss_recon + 0.01 * loss_kce  # Not 0.5!
+
+# 5. Monitor for mode collapse
+if "the the the" in generated_text:
+    print("⚠️ MODE COLLAPSE DETECTED!")
+```
+
+---
+
+### Summary for Handoff
+
+**What we have:**
+- ✅ Working Phase 1a: F1 24%, answer present but buried
+- ✅ Fast training pipeline: 1 min per run, batched eval
+- ✅ All infrastructure bugs fixed: RMS matching, generation decoding, memory optimization
+- ❌ Phase 1b failed: Mode collapse from generation objectives
+
+**What to do next:**
+1. **Try post-processing** on Phase 1a outputs (expected F1 40-50%)
+2. **If need more:** Architecture changes (two-stage, task embeddings)
+3. **Don't repeat:** Strong generation objectives on reconstruction training
+
+**Key file to use:**
+- `train_adapter_only_phase1.py` (Phase 1a - WORKING)
+- `runs/stage1_adapter_only/adapter_phase1_best.pt` (Best checkpoint)
+
+**Key file to avoid:**
+- `train_adapter_only_phase1b.py` (Phase 1b - FAILED, mode collapse)
+
+**Questions?** Check the detailed analysis above for:
+- Why Phase 1b failed (mode collapse explanation)
+- Why training Phase 1a longer won't help (optimization target mismatch)
+- What options exist for >50% F1 (architecture changes)
+
+Good luck! The infrastructure is solid, the baseline is established. Time to decide: post-processing for quick wins, or architecture changes for higher ceiling.
+
