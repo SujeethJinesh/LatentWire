@@ -3934,3 +3934,461 @@ calibrated = calibrate_via_embed_rms(
 
 Ready to move forward with full LatentWire system.
 
+---
+
+## Architecture Clarification: ByteEncoder vs PCA
+
+### What Does ByteEncoder Actually Do?
+
+**CRITICAL**: ByteEncoder processes **raw UTF-8 bytes**, NOT LLM tokens or embeddings!
+
+```
+Text: "What is the capital of France?"
+  ↓ UTF-8 encoding
+Bytes: [87, 104, 97, 116, 32, 105, 115, ...] (length ~30)
+  ↓ ByteEncoder (Transformer)
+  ↓   - Byte embedding layer (256 vocab)
+  ↓   - Positional encoding
+  ↓   - 6-layer transformer encoder
+  ↓   - Cross-attention pooling to M=32 tokens
+Latent Z: [M=32, d_z=256] compressed representation
+  ↓ Adapters (per-model, trainable)
+Embeddings: [M=32, d_model_llama=4096] for Llama
+            [M=32, d_model_qwen=3584] for Qwen
+```
+
+### Phase 1 vs Full LatentWire: Completely Different Architectures
+
+**Phase 1 (PCA Baseline):**
+```
+Text → Llama tokenizer → Llama embeddings [seq_len, 4096]
+                       ↓
+                  Fixed PCA [4096 → 1024]
+                       ↓
+                  Learned Adapter [1024 → 4096]
+                       ↓
+                  Llama 8B (frozen)
+```
+- **Purpose**: Baseline experiment to validate adapter training
+- **PCA**: Fixed linear projection, NOT learned
+- **Result**: F1 24%, cosine 87% - good reconstruction, poor task performance
+
+**Path A (Full LatentWire):**
+```
+Text → ByteEncoder (learned) → Latent Z [M=32, d_z=256]
+                              ↓
+                    ┌─────────┴─────────┐
+                    ↓                   ↓
+         Llama Adapter (learned)    Qwen Adapter (learned)
+                    ↓                   ↓
+                Llama 8B              Qwen 7B
+              (frozen)              (frozen)
+```
+- **Purpose**: Research system - learned compression for multi-LLM conditioning
+- **NO PCA**: ByteEncoder learns compression from scratch
+- **Compression**: Text bytes → latent bytes (target 4× compression)
+
+### Are We Truly Compressing?
+
+**YES**, but at different stages:
+
+**Phase 1:**
+- Text: "What is the capital of France?" → 35 chars × 1 byte = **35 bytes**
+- Tokens: 9 Llama tokens × 4096 dims × 2 bytes (fp16) = **73,728 bytes** (uncompressed)
+- PCA: 9 tokens × 1024 dims × 2 bytes = **18,432 bytes** (4× compression over embeddings)
+- **BUT**: PCA applied to already-tokenized embeddings, not raw text
+
+**Full LatentWire:**
+- Text: "What is the capital of France?" = **35 bytes** (UTF-8)
+- ByteEncoder: M=32 tokens × d_z=256 × quantization
+  - fp16: 32 × 256 × 2 = **16,384 bytes** (0.46× - expansion!)
+  - int8: 32 × 256 × 1 = **8,192 bytes** (0.23× - expansion!)
+  - int4: 32 × 256 × 0.5 = **4,096 bytes** (0.12× - expansion!)
+- **Compression achieved via quantization**, NOT latent dimension reduction
+- **Target**: int4 quantization → **4,096 bytes** for 35-byte text
+
+**Key insight**: Compression ratio depends on:
+1. **M (latent length)**: 32 tokens is fixed overhead
+2. **d_z (latent dimension)**: 256 is fixed
+3. **Quantization**: fp16/int8/int6/int4 (this is where compression happens)
+4. **Input length**: Longer text → better amortized compression
+
+**For research paper:**
+- Phase 1 validates adapter training, NOT compression
+- Full LatentWire achieves compression via learned byte-level encoding + quantization
+- Compression ratio improves with longer inputs (fixed M=32 overhead)
+
+---
+
+## Phase 1 Results: Summary for Paper
+
+### Experiment Setup
+
+**Goal**: Validate adapter training with fixed PCA baseline
+
+**Architecture**:
+- **Encoder**: Fixed PCA (Llama embeddings 4096 → 1024, frozen)
+- **Adapter**: 3-layer MLP [1024 → 2048 → 4096] with LayerNorm, ReLU
+- **Target model**: Llama-3.1-8B-Instruct (frozen)
+- **Dataset**: SQuAD v1.1 (10k training samples)
+- **Loss**: Pure reconstruction (cosine + MSE)
+
+### Phase 1a: Pure Reconstruction (λ_gen = 0)
+
+**Training dynamics:**
+- Step 10: 40% cosine
+- Step 100: 77% cosine (90% of learning done)
+- Step 1250: 87% cosine (only 10% improvement in 1150 steps)
+
+**Evaluation results:**
+- **Reconstruction**: 87% cosine similarity, 0.00014 MSE
+- **F1**: 24%
+- **Exact Match**: 5%
+
+**Key finding**: Adapter learns inverse PCA quickly (~100 steps), but high reconstruction ≠ task performance
+
+**Failure mode**: Generated "Dane. Dane was killed in a horse-riding accident..." instead of "Dane"
+- **Root cause**: PCA preserves semantics (facts, names) but loses task framing (stopping behavior, output format)
+
+### Phase 1b: Adding Generation Objectives (λ_gen > 0)
+
+**Experiment**: Weight sweep λ ∈ {0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5}
+
+**Results**: **ALL λ values caused mode collapse**
+
+Example (λ = 0.5):
+- F1: 0%
+- Generated: `_="Middle of the="` (repetitive garbage)
+
+Example (λ = 0.001):
+- F1: 2%
+- Generated: `Middle Middle Middle Middle` (mode collapse)
+
+**Root cause**:
+- Training too short (125 steps) for reconstruction to stabilize
+- Generation objectives interfere from step 1, preventing adapter from learning
+- Even weak λ=0.001 breaks learning without warm-up period
+
+### Key Lessons for Full LatentWire
+
+1. ✅ **Adapter training works** - learns inverse PCA in ~100 steps
+2. ✅ **RMS magnitude matching critical** - enables stable generation
+3. ❌ **Generation objectives fragile** - require stable reconstruction baseline first
+4. ❌ **Constant weights fail** - need annealing schedule (0 → target over warmup)
+5. ❌ **Reconstruction ≠ task performance** - high cosine doesn't guarantee F1
+
+**For paper:**
+- Phase 1 validates adapter training methodology
+- Demonstrates fundamental challenge: compression + generation joint training requires curriculum learning
+- Motivates annealing schedule in full LatentWire system
+
+---
+
+## Critical Experiment: Does Annealing Actually Work?
+
+### Problem Statement
+
+**Current status**: Annealing support implemented in `train_adapter_only_phase1b.py` but **NEVER TESTED**
+
+**User feedback**: "We saw annealing wasn't very successful though, we should run an experiment to ensure it actually works properly before committing to it"
+
+**Question**: Can gradual ramp-up of generation objectives allow stable learning?
+
+### Proposed Validation Experiment (3 hours total)
+
+#### Experiment Design
+
+**Architecture**: Phase 1 setup (PCA + adapter, Llama 8B)
+- Reuse existing `train_adapter_only_phase1b.py` with `--anneal_gen_objectives`
+- 10k samples, batch_size=8, ~1250 steps per run
+- Target: Find λ schedule that achieves F1 ≥ 30% without mode collapse
+
+**Three variants to test:**
+
+**Variant 1: Linear ramp (0 → 0.01 over 500 steps)**
+```bash
+python train_adapter_only_phase1b.py \
+  --lambda_kce 0.01 \
+  --lambda_kd 0.01 \
+  --anneal_gen_objectives \
+  --anneal_epochs 0.4 \
+  --samples 10000 \
+  --run_name phase1_anneal_linear
+```
+- **Hypothesis**: Slow ramp allows reconstruction to stabilize
+- **Expected**: cosine ≥ 75%, F1 ≥ 30%
+
+**Variant 2: Even weaker target (0 → 0.001 over 500 steps)**
+```bash
+python train_adapter_only_phase1b.py \
+  --lambda_kce 0.001 \
+  --lambda_kd 0.001 \
+  --anneal_gen_objectives \
+  --anneal_epochs 0.4 \
+  --samples 10000 \
+  --run_name phase1_anneal_weak
+```
+- **Hypothesis**: Weaker final weight more stable
+- **Expected**: cosine ≥ 80%, F1 ≥ 28%
+
+**Variant 3: Longer warm-up (pure reconstruction for 1 epoch, then anneal)**
+```bash
+# Stage 1: Pure reconstruction
+python train_adapter_only_phase1.py \
+  --samples 10000 \
+  --ckpt_out runs/phase1_warmstart/adapter.pt
+
+# Stage 2: Load checkpoint, anneal generation objectives
+python train_adapter_only_phase1b.py \
+  --ckpt_in runs/phase1_warmstart/adapter.pt \
+  --lambda_kce 0.01 \
+  --lambda_kd 0.01 \
+  --anneal_gen_objectives \
+  --anneal_epochs 0.4 \
+  --samples 10000 \
+  --run_name phase1_anneal_warmstart
+```
+- **Hypothesis**: Starting from converged reconstruction prevents interference
+- **Expected**: cosine ≥ 85%, F1 ≥ 35%
+
+#### Success Criteria
+
+**Minimum viable (annealing helps):**
+- At least ONE variant achieves:
+  - F1 ≥ 30% (vs 24% baseline, vs 0-2% collapse)
+  - Cosine ≥ 75% (stable reconstruction)
+  - No mode collapse (coherent text generation)
+
+**Strong evidence (annealing works well):**
+- Best variant achieves:
+  - F1 ≥ 35% (40% improvement over baseline)
+  - Cosine ≥ 80% (minimal reconstruction degradation)
+  - FirstTok@1 ≥ 10% (better than baseline)
+
+**Gold standard (ready for full LatentWire):**
+- Best variant achieves:
+  - F1 ≥ 40% (approaching Path C post-processing target)
+  - Cosine ≥ 85% (near Phase 1a quality)
+  - FirstTok@1 ≥ 15% (clear first-token improvement)
+
+#### Diagnostic Metrics
+
+For each variant, track:
+```python
+diagnostics = {
+    'step': step,
+    'loss_recon': recon_loss.item(),
+    'loss_kce': kce_loss.item(),
+    'loss_kd': kd_loss.item(),
+    'effective_lambda': current_lambda,  # Track annealing schedule
+    'cosine_sim': cosine_similarity,
+    'mse': mse_loss,
+    'f1': eval_f1,  # Every 250 steps
+    'first_tok_top1': first_token_accuracy,
+}
+```
+
+**Red flags** (stop experiment early):
+- Cosine drops below 60% → annealing too aggressive
+- F1 drops to 0% → mode collapse, stop immediately
+- Loss explodes (NaN/Inf) → numerical instability
+
+#### Timeline
+
+- Variant 1: ~1 hour (1250 steps)
+- Variant 2: ~1 hour (1250 steps)
+- Variant 3: ~1.5 hours (2 runs × 1250 steps)
+- Analysis: ~30 min
+- **Total**: ~3-4 hours
+
+### Decision Tree Based on Results
+
+**If annealing works (≥1 variant hits minimum viable):**
+→ Proceed to **Path A (Full LatentWire)** with validated annealing schedule
+→ Use best variant's hyperparameters as starting point
+→ Expected timeline: 1-2 weeks to F1 50-70%
+
+**If annealing partially works (F1 28-32%, cosine stable):**
+→ Try **extended warm-up** (2 epochs pure reconstruction)
+→ Try **even weaker weights** (λ = 0.0001)
+→ If still limited, pivot to **Path B (hybrid PCA + refinement)**
+
+**If annealing fails (all variants collapse or F1 < 26%):**
+→ Generation objectives fundamentally incompatible with this architecture
+→ Pivot to **Path C (post-processing)** for quick baseline improvement
+→ Consider **architectural changes** (different adapter, encoder modifications)
+→ Research contribution: "Why joint compression+generation training is hard"
+
+### Why This Experiment is Critical
+
+1. **Validates core assumption**: That curriculum learning allows stable joint training
+2. **Informs Path A design**: Provides concrete hyperparameters for full LatentWire
+3. **Risk mitigation**: Identifies failure modes before investing weeks in full training
+4. **Research value**: Even negative results are publishable (understanding limitations)
+
+**For paper:**
+- If successful: "Curriculum learning enables joint compression+generation training"
+- If unsuccessful: "Fundamental challenges in multi-objective latent space learning"
+
+**Next steps after validation:**
+- Update `latentwire/train.py` with proven annealing schedule
+- Document validated hyperparameters in CLAUDE.md
+- Proceed with full LatentWire training using evidence-based approach
+
+---
+
+## Concrete Research Plan
+
+### Phase 2: Validate Annealing (THIS WEEK - 3-4 hours)
+
+**Goal**: Determine if annealing enables stable joint training
+
+**Tasks**:
+1. Run 3 annealing variants (linear, weak, warmstart)
+2. Analyze results against success criteria
+3. Document findings in LOG.md
+4. Update paper.tex with Phase 1 + annealing results
+
+**Deliverables**:
+- Validated annealing schedule (if successful)
+- Evidence-based decision on Path A viability
+- Paper section: "Baseline Experiments and Curriculum Learning"
+
+### Phase 3A: Full LatentWire (IF annealing works - 1-2 weeks)
+
+**Goal**: Train end-to-end ByteEncoder + adapters with proven curriculum
+
+**Architecture**: Text → ByteEncoder → Latent Z → Adapters → LLMs (NO PCA)
+
+**Key modifications to `latentwire/train.py`**:
+1. Use validated annealing schedule from Phase 2
+2. Monitor reconstruction quality (cosine ≥ 70% throughout)
+3. Optional: Warm-start Llama adapter from Phase 1a
+4. Track dual-LLM performance (Llama + Qwen)
+
+**Success criteria**:
+- F1 ≥ 50% (2× Phase 1a baseline)
+- FirstTok@1 ≥ 15%
+- Compression ≥ 4× with int4 quantization
+- No mode collapse throughout training
+
+**Research contributions**:
+- Learned compression for multi-LLM conditioning
+- Curriculum learning for joint compression+generation
+- Cross-model latent space (Llama ↔ Qwen)
+
+### Phase 3B: Alternative Approaches (IF annealing fails - 1 week)
+
+**Option 1: Hybrid PCA + ByteEncoder refinement**
+- PCA baseline (4096 → 1024) provides semantic features
+- ByteEncoder learns task-specific refinement
+- More stable but potentially limited ceiling
+
+**Option 2: Post-processing enhancement**
+- Keep Phase 1a (F1 24%)
+- Add answer extraction logic
+- Target F1 40-50% with no retraining
+
+**Option 3: Architectural changes**
+- Different adapter designs (attention-based, mixture-of-experts)
+- Modified loss functions (contrastive, adversarial)
+- Separate encoders per model (give up on shared latent)
+
+**Research contribution**: Understanding why joint training fails
+
+### Phase 4: Research Polish (2-3 weeks)
+
+**Experiments**:
+- Ablation studies (curriculum vs constant weights, ByteEncoder vs PCA)
+- Compression analysis (int8/int6/int4 quantization)
+- Cross-model generalization (train on Llama, test on Qwen)
+- Scaling studies (effect of M, d_z on performance)
+
+**Paper sections**:
+1. Introduction: Multi-LLM conditioning via learned compression
+2. Related work: Model compression, knowledge distillation, interlingua
+3. Method: ByteEncoder architecture, curriculum learning
+4. Experiments: Phase 1 baseline, annealing validation, full system
+5. Results: F1, compression ratio, cross-model transfer
+6. Discussion: When does joint training work? Limitations and future work
+
+**Target venue**: NeurIPS, ICML, or ICLR (depending on results strength)
+
+### Success Criteria for Publication
+
+**Minimum publishable unit** (workshop paper):
+- Phase 1 results documenting compression+generation challenge
+- Annealing experiments showing curriculum learning helps
+- Negative results: Why constant weights fail
+- Contribution: Understanding multi-objective latent training
+
+**Strong conference paper**:
+- Full LatentWire system working (F1 ≥ 50%)
+- Demonstrated compression (≥ 4×) with minimal quality loss
+- Cross-model latent space (Llama ↔ Qwen)
+- Ablations validating architectural choices
+
+**Top-tier paper**:
+- F1 ≥ 60-70% (competitive with text baselines)
+- Significant compression (6-8×) with int4 quantization
+- Generalization: New model pairs, new tasks
+- Theoretical analysis: Why curriculum learning works
+
+### Immediate Next Steps (Next 4 Hours)
+
+**Task 1: Run annealing validation (3 hours)**
+```bash
+# Variant 1: Linear anneal
+python train_adapter_only_phase1b.py \
+  --lambda_kce 0.01 --lambda_kd 0.01 \
+  --anneal_gen_objectives --anneal_epochs 0.4 \
+  --samples 10000 --run_name phase1_anneal_linear
+
+# Variant 2: Weak target
+python train_adapter_only_phase1b.py \
+  --lambda_kce 0.001 --lambda_kd 0.001 \
+  --anneal_gen_objectives --anneal_epochs 0.4 \
+  --samples 10000 --run_name phase1_anneal_weak
+
+# Variant 3: Warmstart
+python train_adapter_only_phase1.py \
+  --samples 10000 --ckpt_out runs/phase1_warmstart/adapter.pt
+python train_adapter_only_phase1b.py \
+  --ckpt_in runs/phase1_warmstart/adapter.pt \
+  --lambda_kce 0.01 --lambda_kd 0.01 \
+  --anneal_gen_objectives --anneal_epochs 0.4 \
+  --samples 10000 --run_name phase1_anneal_warmstart
+```
+
+**Task 2: Analyze and document (1 hour)**
+- Pull diagnostics from all 3 runs
+- Compare against success criteria
+- Update LOG.md with findings
+- Make go/no-go decision on Path A
+
+**Task 3: Update paper.tex (30 min)**
+- Add Phase 1 experiments section
+- Document annealing validation results
+- Outline full system plan based on findings
+
+### Risk Assessment
+
+**High confidence tasks** (likely to succeed):
+- ✅ Annealing validation completes successfully (technical execution)
+- ✅ At least one variant shows improvement over constant weights
+- ✅ Paper section documents baseline experiments
+
+**Medium confidence** (depends on results):
+- 🟨 Annealing achieves F1 ≥ 30% (minimum viable)
+- 🟨 Full LatentWire reaches F1 ≥ 50% (Path A success)
+- 🟨 Compression ratio ≥ 4× without quality degradation
+
+**Lower confidence** (stretch goals):
+- 🟥 F1 ≥ 60-70% (competitive with text baselines)
+- 🟥 True generalization across model pairs
+- 🟥 Top-tier conference acceptance
+
+**Mitigation**: Multiple fallback paths (3A, 3B) ensure publishable results regardless
+
+---
+

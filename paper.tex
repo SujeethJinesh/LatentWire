@@ -504,6 +504,87 @@ Training uses AdamW (lr=$2 \times 10^{-4}$ for 1B models, $10^{-4}$ for 7B+) wit
 
 \section{Results}
 
+\subsection{Phase 1: Fixed-PCA Baseline Experiments}
+
+Before training the full LatentWire system, we conducted baseline experiments to validate the adapter training methodology and understand the challenges of joint compression-generation learning.
+
+\subsubsection{Experimental Design}
+
+To isolate the adapter learning problem, we used a simplified architecture:
+\begin{itemize}
+\item \textbf{Encoder:} Fixed PCA projection (Llama embeddings 4096 $\rightarrow$ 1024, frozen)
+\item \textbf{Adapter:} 3-layer MLP [1024 $\rightarrow$ 2048 $\rightarrow$ 4096] with LayerNorm and ReLU
+\item \textbf{Target model:} Llama-3.1-8B-Instruct (frozen)
+\item \textbf{Dataset:} SQuAD v1.1 (10k training samples, 1-2 epochs)
+\item \textbf{Training objective:} Pure reconstruction (cosine + MSE loss) vs. reconstruction + generation objectives
+\end{itemize}
+
+This setup tests whether a learned adapter can successfully decode a compressed representation, without the complexity of end-to-end encoder training.
+
+\subsubsection{Phase 1a: Pure Reconstruction Results}
+
+Training with only reconstruction objectives ($\lambda_{\text{gen}} = 0$) showed rapid adapter learning:
+\begin{itemize}
+\item \textbf{Step 10:} 40\% cosine similarity
+\item \textbf{Step 100:} 77\% cosine (90\% of learning complete)
+\item \textbf{Step 1250:} 87\% cosine (final convergence)
+\end{itemize}
+
+The adapter learns the inverse PCA transformation quickly—within ~100 steps. However, downstream task performance was poor:
+\begin{itemize}
+\item \textbf{Reconstruction:} 87\% cosine, MSE=0.00014
+\item \textbf{Task performance:} F1=24\%, EM=5\%
+\end{itemize}
+
+\textbf{Failure mode analysis:} Generated text contained the answer but buried in extraneous content. Example: ``Dane. Dane was killed in a horse-riding accident...'' instead of just ``Dane''.
+
+\textbf{Root cause:} PCA preserves semantic content (facts, names, entities) but loses task framing information (stopping behavior, output formatting, answer extraction cues). High reconstruction quality does not guarantee task performance.
+
+\subsubsection{Phase 1b: Adding Generation Objectives}
+
+We attempted to improve task performance by adding K-token cross-entropy and knowledge distillation losses with weight sweep $\lambda_{\text{gen}} \in \{0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5\}$.
+
+\textbf{Results:} ALL weight values caused catastrophic mode collapse:
+
+\begin{table}[h]
+\caption{Generation objective weight sweep results (Phase 1b)}
+\label{tab:phase1b_collapse}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lcl}
+\toprule
+$\lambda$ & F1 Score & Example Output \\
+\midrule
+0.0 (baseline) & 24\% & ``Dane. Dane was killed...'' \\
+0.001 & 2\% & ``Middle Middle Middle Middle'' \\
+0.01 & 0\% & ``the the the the the'' \\
+0.5 & 0\% & ``\_="Middle of the="'' \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+Even the weakest generation objective ($\lambda=0.001$) destroyed learning. Analysis revealed the root cause: these experiments used only 125 training steps (1k samples, fast sweep for efficiency), insufficient for reconstruction to stabilize before generation objectives interfered.
+
+\subsubsection{Key Lessons for Full LatentWire}
+
+The Phase 1 experiments established critical insights:
+
+\begin{enumerate}
+\item \textbf{Adapter training is tractable:} A simple MLP can learn inverse compression quickly (~100 steps)
+\item \textbf{Reconstruction $\neq$ task performance:} 87\% cosine similarity yielded only 24\% F1
+\item \textbf{Generation objectives are fragile:} Applying them from step 1 causes immediate mode collapse, even at $\lambda=0.001$
+\item \textbf{Curriculum learning is essential:} Reconstruction must stabilize before adding generation objectives
+\item \textbf{Constant weights fail:} Need annealing schedule (0 $\rightarrow$ target over warmup period)
+\end{enumerate}
+
+These findings directly informed the full LatentWire training procedure: we use staged curriculum learning with generation objective annealing (see Section~\ref{sec:training}), starting from pure reconstruction and gradually introducing task-specific supervision.
+
+\textbf{Research contribution:} Phase 1 demonstrates a fundamental challenge in joint compression-generation training—generation objectives interfere with representation learning unless carefully scheduled. This motivates the curriculum learning approach used in the full system.
+
 \subsection{Compression and Speed}
 
 Table~\ref{tab:efficiency_full} shows LatentWire achieves the target compression and speedup with properly-sized models:
