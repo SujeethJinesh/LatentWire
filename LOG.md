@@ -3164,3 +3164,215 @@ Results will show exactly where mode collapse threshold is. Sweet spot likely λ
 
 **Next action**: Run fast sweep to get complete λ profile for full LatentWire training.
 
+---
+
+## Research Question: Using PCA Adapter in Full LatentWire
+
+### Context
+
+Phase 1 trained an adapter that achieves:
+- **87% cosine similarity** (excellent reconstruction)
+- **24% F1** (limited by fixed PCA + lack of stopping behavior)
+- **Fast training**: Learns 90% in first 100 steps
+- **Checkpoint**: `runs/stage1_adapter_only/adapter_phase1_best.pt`
+
+Can we leverage this trained adapter in the full LatentWire system?
+
+### Option 1: Pre-trained Adapter as Fixed Decoder (RECOMMENDED)
+
+**Setup:**
+- Use **trained PCA adapter** for Llama (freeze it)
+- Train **learned encoder** to produce latents that work with this fixed adapter
+- Train **fresh adapter** for Qwen normally
+
+**Research question:** Does a good fixed decoder help encoder training? Can the encoder learn to produce latents that work with a pre-trained adapter?
+
+**Implementation:**
+```python
+# In latentwire/train.py
+# Load Phase 1 PCA adapter for Llama
+llama_adapter = Adapter(d_z=1024, d_model=4096, ...)
+checkpoint = torch.load('runs/stage1_adapter_only/adapter_phase1_best.pt')
+llama_adapter.load_state_dict(checkpoint['adapter'])
+llama_adapter.requires_grad_(False)  # Freeze it
+
+# Train encoder + Qwen adapter normally
+encoder = ByteEncoder(...)  # Learnable
+qwen_adapter = Adapter(...)  # Learnable
+```
+
+**Pros:**
+- Most novel research question
+- Faster training (fewer parameters to optimize)
+- Built-in Llama baseline (24% F1 guaranteed minimum)
+- Tests if fixed target helps encoder convergence
+
+**Cons:**
+- Asymmetric (one frozen, one learned)
+- PCA adapter might be suboptimal for learned latents
+- Limits Llama's potential improvement
+
+**Expected outcomes:**
+- **Best case**: Encoder learns faster with fixed target, Llama F1 improves beyond 24%
+- **Worst case**: Frozen adapter limits system, proves joint training necessary
+- **Either way**: Valuable research insight!
+
+---
+
+### Option 2: PCA Adapter as Initialization (Warm Start)
+
+**Setup:**
+- Initialize Llama adapter with trained PCA adapter weights
+- Fine-tune from there during full training
+
+**Research question:** Does good initialization speed up convergence?
+
+**Implementation:**
+```python
+# In latentwire/train.py
+llama_adapter = Adapter(d_z=1024, d_model=4096, ...)
+checkpoint = torch.load('runs/stage1_adapter_only/adapter_phase1_best.pt')
+llama_adapter.load_state_dict(checkpoint['adapter'])
+# Don't freeze - let it adapt during training
+```
+
+**Pros:**
+- Good initialization, should converge faster
+- Symmetric (both adapters learnable)
+- No architectural constraints
+
+**Cons:**
+- Might forget good reconstruction if training is unstable
+- Unclear if initialization matters much (adapters learn quickly)
+- May not provide significant benefit
+
+**Expected outcomes:**
+- Faster convergence in early epochs
+- Similar final performance to random init
+- Useful if training is sample-limited
+
+---
+
+### Option 3: PCA Baseline for Comparison (Research Metric)
+
+**Setup:**
+- Train LatentWire normally
+- Compare learned adapters vs PCA adapter at checkpoints
+
+**Research question:** How much better is learned adapter vs fixed PCA?
+
+**Implementation:**
+```python
+# During evaluation
+# Test with learned adapter (normal)
+f1_learned = eval_with_adapter(learned_adapter)
+
+# Test with fixed PCA adapter
+f1_pca = eval_with_adapter(pca_adapter_frozen)
+
+# Report improvement
+print(f"Improvement: {f1_learned - f1_pca:.1%}")
+```
+
+**Pros:**
+- Good research baseline
+- Shows value of learned adapters
+- No training changes needed
+
+**Cons:**
+- Just analysis, not improving training
+- Extra eval time
+
+**Expected outcomes:**
+- Learned adapter should improve over PCA
+- Quantifies benefit of joint encoder-adapter training
+
+---
+
+### Option 4: Hybrid - PCA Compression + Learned Refinement
+
+**Setup:**
+- Keep PCA projection fixed (4096 → 1024)
+- Encoder learns refinement on top of PCA features
+- Adapter trained normally
+
+**Research question:** Can encoder improve on PCA's feature selection?
+
+**Implementation:**
+```python
+# In encoder forward():
+x = text_embedding  # [batch, seq, hidden]
+x_pca = apply_fixed_pca(x)  # [batch, seq, 1024] - frozen PCA
+x_refined = learned_refinement(x_pca)  # [batch, M, d_z] - learned on top
+```
+
+**Architecture:**
+```
+Text → Embeddings (4096)
+     → Fixed PCA (1024)  [frozen from Phase 1]
+     → Transformer refinement (d_z) [learned]
+     → Latent Z
+     → Adapter → LLM
+```
+
+**Pros:**
+- Guaranteed to preserve PCA's good properties
+- Encoder focuses on refinement, not feature extraction from scratch
+- Combines benefits of PCA with learned compression
+
+**Cons:**
+- Limited by PCA's linear bottleneck
+- More complex architecture
+- May not be necessary if encoder works well
+
+**Expected outcomes:**
+- More stable training (PCA provides good baseline features)
+- May not improve over end-to-end learning
+
+---
+
+### Recommendation: Try Option 1 First
+
+**Why:**
+1. **Most novel research question** - Does fixed decoder help encoder training?
+2. **Practical speedup** - Fewer parameters to optimize
+3. **Built-in baseline** - Guarantees at least 24% F1 for Llama
+4. **Easy to implement** - Just load checkpoint and freeze
+5. **Informative either way** - Success validates approach, failure shows joint training necessary
+
+**Implementation steps:**
+1. Add flag to `latentwire/train.py`: `--freeze_llama_adapter <checkpoint_path>`
+2. Load Phase 1 adapter checkpoint
+3. Freeze Llama adapter parameters
+4. Train encoder + Qwen adapter normally
+5. Compare convergence speed and final performance
+
+**Metrics to track:**
+- Llama F1 (should start at 24%, hopefully improve)
+- Qwen F1 (trained normally)
+- Training speed (should be faster with fewer params)
+- Encoder gradients (are they stable with fixed target?)
+
+**If successful:** Paper contribution on curriculum learning / staged training
+**If unsuccessful:** Validates full joint training, but faster negative result
+
+---
+
+### Next Steps
+
+After fast weight sweep completes, we can:
+1. Implement Option 1 (frozen PCA adapter for Llama)
+2. Run short experiment (few epochs) to see if it helps
+3. Compare against baseline LatentWire training
+4. Document findings in LOG.md
+
+**Quick experiment command:**
+```bash
+# Modify train.py to support --freeze_llama_adapter flag
+python latentwire/train.py \
+  --freeze_llama_adapter runs/stage1_adapter_only/adapter_phase1_best.pt \
+  --samples 10000 \
+  --epochs 3 \
+  ...
+```
+
