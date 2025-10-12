@@ -3063,3 +3063,104 @@ if "the the the" in generated_text:
 
 Good luck! The infrastructure is solid, the baseline is established. Time to decide: post-processing for quick wins, or architecture changes for higher ceiling.
 
+---
+
+## 2025-10-11: Understanding What Phase 1 Actually Learns
+
+### What Is The Adapter Learning?
+
+The adapter learns the **inverse of a fixed linear PCA projection**. This is an easy problem!
+
+**Learning curve from λ=0.001 sweep:**
+```
+Step  10:  cos = 0.40  (learning basic linear map)
+Step 100:  cos = 0.77  (90% of learning done!)
+Step 1250: cos = 0.87  (only 10% improvement in 1150 steps)
+```
+
+**Key insight**: The adapter approximates a good PCA inverse in ~100 steps, then spends 1150 steps on marginal refinement (0.77 → 0.87).
+
+### Why This Matters
+
+Since learning happens so quickly, we don't need full epochs to detect problems:
+- **1000 samples** (~125 steps) is enough to see mode collapse
+- **10× speedup** for weight sweep (2 min per λ instead of 16 min)
+
+### Why High Cosine ≠ Good F1
+
+**PCA preserves** (cosine similarity measures this):
+- ✅ Semantic content (facts, names, dates)
+- ✅ Linguistic structure (grammar)
+- ✅ Overall "meaning" direction
+
+**PCA loses** (cosine doesn't measure this):
+- ❌ Task framing ("this is QA not text continuation")
+- ❌ Stopping behavior (when to end generation)
+- ❌ Output format cues
+
+**Result**: 87% cosine similarity but only 24% F1. Embeddings point in the right semantic direction, but the model doesn't know to stop after answering.
+
+### Weight Sweep Results
+
+From early sweep (slow version, 10k samples):
+
+| λ | F1 | Cosine | Interpretation |
+|---|----|----|----------------|
+| 0.001 | 23% | 87% | Gen objectives too weak (6% of loss), no improvement |
+| 0.005 | TBD | 67% | Reconstruction degrading, gen objectives interfering |
+| 0.5 | 0% | 9.5% | Total mode collapse ("the the the") |
+
+**Loss breakdown for λ=0.001:**
+```
+loss_recon:  0.12  (94% of total loss)
+loss_gen:    0.001 × (2.6 + 4.7) = 0.007  (6% of total loss)
+```
+Generation objectives barely affect training → no improvement over Phase 1a.
+
+### The Fundamental Conflict
+
+Generation objectives (token-level, discrete) conflict with reconstruction objectives (embedding-level, continuous) when compression is **fixed**:
+
+1. **Reconstruction**: "Make embeddings close to originals"
+2. **K-token CE**: "Predict specific next tokens correctly"
+3. **Problem**: Close embeddings don't guarantee correct tokens
+
+With **learned encoders** (full LatentWire), both objectives shape the latent space. With **fixed PCA**, only the decoder adapts → conflicting gradients.
+
+### Implications For Full LatentWire
+
+Full system defaults (latentwire/train.py):
+```python
+k_ce_weight = 0.5        # Same value that caused Phase 1b collapse!
+kd_first_k_weight = 1.0  # Even stronger!
+```
+
+If λ=0.5 breaks with fixed PCA, it might be too strong for early training with learned encoders.
+
+### Recommendations For Full LatentWire
+
+1. **Start weaker**: λ ≈ 0.01-0.05 instead of 0.5-1.0
+2. **Use annealing**: Ramp from 0 → target over first epochs
+3. **Monitor cosine**: If drops below 60%, gen objectives too strong
+4. **Fast sweep first**: Run updated sweep to find safe λ values
+
+### Updated Fast Sweep
+
+Created: `scripts/run_phase1b_weight_sweep.sh` (updated for speed)
+
+**Changes:**
+- 1000 samples instead of 10k (10× faster)
+- Tests 8 values: λ ∈ {0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5}
+- ~2 minutes per λ, ~16 minutes total
+- Automatically classifies: ✅ IMPROVED / ⚠️ STABLE / ⚠️ DEGRADED / ❌ COLLAPSED
+
+**To run:**
+```bash
+git pull
+bash scripts/run_phase1b_weight_sweep.sh
+```
+
+Results will show exactly where mode collapse threshold is. Sweet spot likely λ ≈ 0.01-0.02 if it exists.
+
+**Next action**: Run fast sweep to get complete λ profile for full LatentWire training.
+

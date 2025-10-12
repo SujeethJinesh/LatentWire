@@ -1,6 +1,7 @@
 #!/bin/bash
-# Phase 1b Weight Sweep: Find λ values that work
-# Tests: λ ∈ {0.001, 0.005, 0.01, 0.05, 0.1}
+# Fast Phase 1b Weight Sweep: Find λ values that work
+# Tests: λ ∈ {0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5}
+# Fast mode: 1000 samples (~125 steps, ~2 min per λ, ~16 min total)
 set -euo pipefail
 
 export PYTHONPATH="${PYTHONPATH:-.}"
@@ -13,15 +14,16 @@ export CUDA_MPS_PIPE_DIRECTORY=/dev/null
 export CUDA_MPS_LOG_DIRECTORY=/dev/null
 
 echo "================================================"
-echo "PHASE 1B WEIGHT SWEEP"
+echo "FAST PHASE 1B WEIGHT SWEEP"
 echo "================================================"
 echo ""
-echo "Testing λ_kce and λ_kd values to find stable configuration"
-echo "Goal: Find weights where generation helps without mode collapse"
+echo "Fast sweep: 1000 samples, ~125 steps per λ, ~2 min each"
+echo "Goal: Quickly identify mode collapse threshold"
+echo "Total time: ~16 minutes for 8 lambda values"
 echo ""
 
-# Test different lambda values
-LAMBDAS=(0.001 0.005 0.01 0.05 0.1)
+# Test different lambda values (expanded range)
+LAMBDAS=(0.001 0.005 0.01 0.02 0.05 0.1 0.2 0.5)
 
 for LAMBDA in "${LAMBDAS[@]}"; do
     echo ""
@@ -35,7 +37,7 @@ for LAMBDA in "${LAMBDAS[@]}"; do
 
     echo "Starting training at $(date)" | tee "$CHECKPOINT_DIR/logs/training.log"
 
-    # Run short training (1 epoch to see if it collapses)
+    # Run fast training (1000 samples, ~125 steps, ~2 minutes)
     python train_adapter_only_phase1b.py \
       --model_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
       --compress_dim 1024 \
@@ -44,7 +46,7 @@ for LAMBDA in "${LAMBDAS[@]}"; do
       --adapter_hidden_mult 4 \
       --adapter_dropout 0.1 \
       --adapter_lr 5e-4 \
-      --samples 10000 \
+      --samples 1000 \
       --epochs 1 \
       --batch_size 8 \
       --k_tokens 2 \
@@ -66,7 +68,8 @@ for LAMBDA in "${LAMBDAS[@]}"; do
         tail -1 "$CHECKPOINT_DIR/logs/diagnostics.jsonl" | python -c "
 import sys, json
 d = json.load(sys.stdin)
-print(f\"  F1: {d.get('eval_f1', 0):.1%}\")
+eval_f1 = d.get('f1', d.get('eval_f1', 0))
+print(f\"  F1: {eval_f1:.1%}\")
 print(f\"  Cosine sim: {d.get('recon_cosine_sim', 0):.3f}\")
 print(f\"  loss_recon: {d.get('loss_recon', 0):.3f}\")
 print(f\"  loss_kce: {d.get('loss_kce', 0):.3f}\")
@@ -77,39 +80,48 @@ done
 
 echo ""
 echo "========================================"
-echo "WEIGHT SWEEP COMPLETE"
+echo "FAST WEIGHT SWEEP COMPLETE"
 echo "========================================"
 echo ""
 echo "Analyzing results across all λ values..."
 echo ""
 
-# Compare all results
+# Compare all results in table format
+echo "λ value | F1    | Cosine | Status"
+echo "--------|-------|--------|------------------"
+
 for LAMBDA in "${LAMBDAS[@]}"; do
     CHECKPOINT_DIR="runs/phase1b_sweep/lambda_${LAMBDA}"
     if [ -f "$CHECKPOINT_DIR/logs/diagnostics.jsonl" ]; then
-        echo "λ = $LAMBDA:"
         tail -1 "$CHECKPOINT_DIR/logs/diagnostics.jsonl" | python -c "
 import sys, json
 d = json.load(sys.stdin)
-f1 = d.get('eval_f1', 0)
+eval_f1 = d.get('f1', d.get('eval_f1', 0))
 cosine = d.get('recon_cosine_sim', 0)
-loss_r = d.get('loss_recon', 0)
-loss_k = d.get('loss_kce', 0)
-loss_d = d.get('loss_kd', 0)
 
 # Check for mode collapse
-collapsed = cosine < 0.3 or f1 < 0.05
+collapsed = cosine < 0.3 or eval_f1 < 0.05
 
-status = '❌ COLLAPSED' if collapsed else ('✅ STABLE' if f1 > 0.20 else '⚠️  PARTIAL')
+if collapsed:
+    status = '❌ COLLAPSED'
+elif eval_f1 > 0.25:
+    status = '✅ IMPROVED'
+elif eval_f1 > 0.20:
+    status = '⚠️  STABLE'
+else:
+    status = '⚠️  DEGRADED'
 
-print(f\"  {status}: F1={f1:.1%}, Cosine={cosine:.3f}, recon={loss_r:.2f}, kce={loss_k:.2f}, kd={loss_d:.2f}\")
+print(f\"$LAMBDA      | {eval_f1:.1%} | {cosine:.3f}  | {status}\")
 "
     fi
 done
 
 echo ""
-echo "Recommendations:"
-echo "  - ✅ STABLE: Use this λ for full LatentWire"
-echo "  - ⚠️  PARTIAL: Consider even weaker λ or annealing"
-echo "  - ❌ COLLAPSED: λ too strong, mode collapse occurred"
+echo "Legend:"
+echo "  ✅ IMPROVED: F1 > 25% (better than Phase 1a baseline of 24%)"
+echo "  ⚠️  STABLE: F1 ≥ 20% (similar to baseline, reconstruction intact)"
+echo "  ⚠️  DEGRADED: F1 < 20% (worse than baseline)"
+echo "  ❌ COLLAPSED: Cosine < 0.3 or F1 < 5% (mode collapse)"
+echo ""
+echo "Recommendation: Use highest λ that maintains ✅ IMPROVED or ⚠️  STABLE status"
 echo ""
