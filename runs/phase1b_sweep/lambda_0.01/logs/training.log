@@ -1,299 +1,0 @@
-Starting training at Sat Oct 11 21:14:50 PDT 2025
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-
-Configuration:
-  model_id: meta-llama/Meta-Llama-3.1-8B-Instruct
-  compress_dim: 1024
-  compress_method: pca
-  input_dim: 4096
-  pca_samples: 5000
-  adapter_hidden_mult: 4
-  adapter_dropout: 0.1
-  adapter_lr: 0.0005
-  samples: 1000
-  epochs: 1
-  batch_size: 8
-  k_tokens: 2
-  lambda_kce: 0.01
-  lambda_kd: 0.01
-  kd_tau: 1.0
-  anneal_gen_objectives: False
-  anneal_epochs: 3
-  eval_every: 1
-  eval_samples: 100
-  save_dir: runs/phase1b_sweep/lambda_0.01
-  diagnostic_log: runs/phase1b_sweep/lambda_0.01/logs/diagnostics.jsonl
-============================================================
-STAGE 1 PHASE 1B: RECONSTRUCTION + GENERATION TRAINING
-Model: meta-llama/Meta-Llama-3.1-8B-Instruct
-Compression: 4096 → 1024 (4.0× compression)
-Training samples: 1000
-PCA samples: 5000
-
-Generation objectives:
-  K-token CE: K=2, λ=0.01
-  Prefix KD: τ=1.0, λ=0.01
-============================================================
-
-GPU Information:
-  CUDA available: Yes
-  GPU count: 4
-  GPU 0: NVIDIA H100 80GB HBM3 (85.0 GB)
-  GPU 1: NVIDIA H100 80GB HBM3 (85.0 GB)
-  GPU 2: NVIDIA H100 80GB HBM3 (85.0 GB)
-  GPU 3: NVIDIA H100 80GB HBM3 (85.0 GB)
-
-Logging diagnostics to: runs/phase1b_sweep/lambda_0.01/logs/diagnostics.jsonl
-
-Loading model and creating LMWrapper...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3530.56it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.44s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.28s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.29s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.13it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.04s/it]
-huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
-To disable this warning, you can either:
-	- Avoid using `tokenizers` before the fork if possible
-	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
-[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
-  Anchor text: ' Answer: ' → 3 tokens: [22559, 25, 220]
-  Model loaded once (reused from LMWrapper to save memory)
-
-Creating adapter...
-Adapter parameters: 50,374,657
-
-Loading dataset...
-Training samples: 1000
-Validation samples: 500
-
-Fitting PCA compressor on 5,000 samples...
-
-GPU memory status:
-  GPU 0: 80.9 GB free / 85.0 GB total (allocated: 3.3 GB)
-  GPU 1: 80.1 GB free / 85.0 GB total (allocated: 4.4 GB)
-  GPU 2: 80.1 GB free / 85.0 GB total (allocated: 4.4 GB)
-  GPU 3: 80.3 GB free / 85.0 GB total (allocated: 4.1 GB)
-
-Using GPU 0 for PCA (80.9 GB free)
-Collecting embeddings...
-Collecting embeddings:   0%|          | 0/79 [00:00<?, ?it/s]Collecting embeddings:   3%|▎         | 2/79 [00:00<00:04, 15.65it/s]Collecting embeddings:   6%|▋         | 5/79 [00:00<00:03, 22.68it/s]Collecting embeddings:  10%|█         | 8/79 [00:00<00:03, 21.66it/s]Collecting embeddings:  15%|█▌        | 12/79 [00:00<00:02, 24.17it/s]Collecting embeddings:  19%|█▉        | 15/79 [00:00<00:03, 19.83it/s]Collecting embeddings:  25%|██▌       | 20/79 [00:00<00:02, 26.77it/s]Collecting embeddings:  33%|███▎      | 26/79 [00:00<00:01, 34.41it/s]Collecting embeddings:  41%|████      | 32/79 [00:01<00:01, 39.54it/s]Collecting embeddings:  48%|████▊     | 38/79 [00:01<00:00, 43.46it/s]Collecting embeddings:  56%|█████▌    | 44/79 [00:01<00:00, 45.89it/s]Collecting embeddings:  63%|██████▎   | 50/79 [00:01<00:00, 47.43it/s]Collecting embeddings:  71%|███████   | 56/79 [00:01<00:00, 48.76it/s]Collecting embeddings:  78%|███████▊  | 62/79 [00:01<00:00, 50.13it/s]Collecting embeddings:  86%|████████▌ | 68/79 [00:01<00:00, 51.12it/s]Collecting embeddings:  94%|█████████▎| 74/79 [00:01<00:00, 47.90it/s]Collecting embeddings: 100%|██████████| 79/79 [00:02<00:00, 43.96it/s]Collecting embeddings: 100%|██████████| 79/79 [00:02<00:00, 38.97it/s]
-Concatenating 863,997 embedding vectors...
-  Fitting PCA on GPU with 863,997 embedding vectors...
-  Computing top 1024 components via randomized SVD...
-  PCA captured variance (top 1024 components): 100.0%
-✓ PCA fitted on 863,997 embedding vectors
-
-============================================================
-TRAINING
-============================================================
-
-Epoch 1/1:   0%|          | 0/125 [00:00<?, ?it/s]Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Epoch 1/1:   0%|          | 0/125 [00:01<?, ?it/s, loss=1.2363, recon=1.001, kce=13.760, kd=9.755, cos=-0.001]Epoch 1/1:   1%|          | 1/125 [00:01<03:32,  1.71s/it, loss=1.2363, recon=1.001, kce=13.760, kd=9.755, cos=-0.001]Epoch 1/1:   1%|          | 1/125 [00:02<03:32,  1.71s/it, loss=1.1630, recon=0.996, kce=9.224, kd=7.507, cos=0.004]  Epoch 1/1:   2%|▏         | 2/125 [00:02<02:42,  1.32s/it, loss=1.1630, recon=0.996, kce=9.224, kd=7.507, cos=0.004]Epoch 1/1:   2%|▏         | 2/125 [00:03<02:42,  1.32s/it, loss=1.1724, recon=0.973, kce=12.992, kd=6.993, cos=0.027]Epoch 1/1:   2%|▏         | 3/125 [00:03<01:55,  1.06it/s, loss=1.1724, recon=0.973, kce=12.992, kd=6.993, cos=0.027]Epoch 1/1:   2%|▏         | 3/125 [00:03<01:55,  1.06it/s, loss=1.1706, recon=0.944, kce=13.184, kd=9.432, cos=0.056]Epoch 1/1:   3%|▎         | 4/125 [00:03<01:34,  1.28it/s, loss=1.1706, recon=0.944, kce=13.184, kd=9.432, cos=0.056]Epoch 1/1:   3%|▎         | 4/125 [00:04<01:34,  1.28it/s, loss=1.1088, recon=0.911, kce=12.381, kd=7.432, cos=0.089]Epoch 1/1:   4%|▍         | 5/125 [00:04<01:39,  1.21it/s, loss=1.1088, recon=0.911, kce=12.381, kd=7.432, cos=0.089]Epoch 1/1:   4%|▍         | 5/125 [00:05<01:39,  1.21it/s, loss=1.0984, recon=0.887, kce=12.638, kd=8.544, cos=0.113]Epoch 1/1:   5%|▍         | 6/125 [00:05<01:31,  1.29it/s, loss=1.0984, recon=0.887, kce=12.638, kd=8.544, cos=0.113]Epoch 1/1:   5%|▍         | 6/125 [00:06<01:31,  1.29it/s, loss=1.0661, recon=0.859, kce=12.781, kd=7.897, cos=0.141]Epoch 1/1:   6%|▌         | 7/125 [00:06<01:37,  1.21it/s, loss=1.0661, recon=0.859, kce=12.781, kd=7.897, cos=0.141]Epoch 1/1:   6%|▌         | 7/125 [00:06<01:37,  1.21it/s, loss=1.0408, recon=0.824, kce=12.557, kd=9.165, cos=0.177]Epoch 1/1:   6%|▋         | 8/125 [00:06<01:30,  1.29it/s, loss=1.0408, recon=0.824, kce=12.557, kd=9.165, cos=0.177]Epoch 1/1:   6%|▋         | 8/125 [00:07<01:30,  1.29it/s, loss=1.0071, recon=0.806, kce=11.539, kd=8.549, cos=0.194]Epoch 1/1:   7%|▋         | 9/125 [00:07<01:33,  1.24it/s, loss=1.0071, recon=0.806, kce=11.539, kd=8.549, cos=0.194]Epoch 1/1:   7%|▋         | 9/125 [00:08<01:33,  1.24it/s, loss=0.9601, recon=0.788, kce=10.036, kd=7.172, cos=0.212]Epoch 1/1:   8%|▊         | 10/125 [00:08<01:24,  1.36it/s, loss=0.9601, recon=0.788, kce=10.036, kd=7.172, cos=0.212]Epoch 1/1:   8%|▊         | 10/125 [00:09<01:24,  1.36it/s, loss=0.9326, recon=0.771, kce=10.391, kd=5.739, cos=0.229]Epoch 1/1:   9%|▉         | 11/125 [00:09<01:24,  1.34it/s, loss=0.9326, recon=0.771, kce=10.391, kd=5.739, cos=0.229]Epoch 1/1:   9%|▉         | 11/125 [00:10<01:24,  1.34it/s, loss=0.9170, recon=0.761, kce=9.855, kd=5.773, cos=0.239] Epoch 1/1:  10%|▉         | 12/125 [00:10<01:28,  1.28it/s, loss=0.9170, recon=0.761, kce=9.855, kd=5.773, cos=0.239]Epoch 1/1:  10%|▉         | 12/125 [00:10<01:28,  1.28it/s, loss=0.9043, recon=0.747, kce=8.849, kd=6.912, cos=0.254]Epoch 1/1:  10%|█         | 13/125 [00:10<01:20,  1.39it/s, loss=0.9043, recon=0.747, kce=8.849, kd=6.912, cos=0.254]Epoch 1/1:  10%|█         | 13/125 [00:11<01:20,  1.39it/s, loss=0.9125, recon=0.748, kce=10.285, kd=6.182, cos=0.252]Epoch 1/1:  11%|█         | 14/125 [00:11<01:25,  1.29it/s, loss=0.9125, recon=0.748, kce=10.285, kd=6.182, cos=0.252]Epoch 1/1:  11%|█         | 14/125 [00:12<01:25,  1.29it/s, loss=0.8803, recon=0.723, kce=8.475, kd=7.271, cos=0.277] Epoch 1/1:  12%|█▏        | 15/125 [00:12<01:16,  1.43it/s, loss=0.8803, recon=0.723, kce=8.475, kd=7.271, cos=0.277]Epoch 1/1:  12%|█▏        | 15/125 [00:12<01:16,  1.43it/s, loss=0.8661, recon=0.718, kce=8.150, kd=6.695, cos=0.283]Epoch 1/1:  13%|█▎        | 16/125 [00:12<01:15,  1.45it/s, loss=0.8661, recon=0.718, kce=8.150, kd=6.695, cos=0.283]Epoch 1/1:  13%|█▎        | 16/125 [00:13<01:15,  1.45it/s, loss=0.8839, recon=0.712, kce=8.285, kd=8.863, cos=0.287]Epoch 1/1:  14%|█▎        | 17/125 [00:13<01:19,  1.35it/s, loss=0.8839, recon=0.712, kce=8.285, kd=8.863, cos=0.287]Epoch 1/1:  14%|█▎        | 17/125 [00:14<01:19,  1.35it/s, loss=0.8305, recon=0.688, kce=6.177, kd=8.108, cos=0.312]Epoch 1/1:  14%|█▍        | 18/125 [00:14<01:10,  1.52it/s, loss=0.8305, recon=0.688, kce=6.177, kd=8.108, cos=0.312]Epoch 1/1:  14%|█▍        | 18/125 [00:14<01:10,  1.52it/s, loss=0.7764, recon=0.686, kce=3.702, kd=5.293, cos=0.314]Epoch 1/1:  15%|█▌        | 19/125 [00:14<01:11,  1.47it/s, loss=0.7764, recon=0.686, kce=3.702, kd=5.293, cos=0.314]Epoch 1/1:  15%|█▌        | 19/125 [00:15<01:11,  1.47it/s, loss=0.8283, recon=0.691, kce=5.517, kd=8.185, cos=0.309]Epoch 1/1:  16%|█▌        | 20/125 [00:15<01:16,  1.37it/s, loss=0.8283, recon=0.691, kce=5.517, kd=8.185, cos=0.309]Epoch 1/1:  16%|█▌        | 20/125 [00:16<01:16,  1.37it/s, loss=0.8061, recon=0.673, kce=4.836, kd=8.466, cos=0.328]Epoch 1/1:  17%|█▋        | 21/125 [00:16<01:11,  1.45it/s, loss=0.8061, recon=0.673, kce=4.836, kd=8.466, cos=0.328]Epoch 1/1:  17%|█▋        | 21/125 [00:17<01:11,  1.45it/s, loss=0.8060, recon=0.676, kce=5.082, kd=7.892, cos=0.324]Epoch 1/1:  18%|█▊        | 22/125 [00:17<01:20,  1.29it/s, loss=0.8060, recon=0.676, kce=5.082, kd=7.892, cos=0.324]Epoch 1/1:  18%|█▊        | 22/125 [00:17<01:20,  1.29it/s, loss=0.7631, recon=0.663, kce=4.285, kd=5.729, cos=0.338]Epoch 1/1:  18%|█▊        | 23/125 [00:17<01:16,  1.34it/s, loss=0.7631, recon=0.663, kce=4.285, kd=5.729, cos=0.338]Epoch 1/1:  18%|█▊        | 23/125 [00:18<01:16,  1.34it/s, loss=0.7767, recon=0.664, kce=3.474, kd=7.781, cos=0.336]Epoch 1/1:  19%|█▉        | 24/125 [00:18<01:18,  1.29it/s, loss=0.7767, recon=0.664, kce=3.474, kd=7.781, cos=0.336]Epoch 1/1:  19%|█▉        | 24/125 [00:19<01:18,  1.29it/s, loss=0.7787, recon=0.658, kce=4.871, kd=7.179, cos=0.342]Epoch 1/1:  20%|██        | 25/125 [00:19<01:14,  1.34it/s, loss=0.7787, recon=0.658, kce=4.871, kd=7.179, cos=0.342]Epoch 1/1:  20%|██        | 25/125 [00:19<01:14,  1.34it/s, loss=0.7978, recon=0.651, kce=5.534, kd=9.115, cos=0.350]Epoch 1/1:  21%|██        | 26/125 [00:19<01:07,  1.46it/s, loss=0.7978, recon=0.651, kce=5.534, kd=9.115, cos=0.350]Epoch 1/1:  21%|██        | 26/125 [00:20<01:07,  1.46it/s, loss=0.7888, recon=0.650, kce=6.723, kd=7.177, cos=0.350]Epoch 1/1:  22%|██▏       | 27/125 [00:20<01:13,  1.34it/s, loss=0.7888, recon=0.650, kce=6.723, kd=7.177, cos=0.350]Epoch 1/1:  22%|██▏       | 27/125 [00:21<01:13,  1.34it/s, loss=0.7674, recon=0.640, kce=6.392, kd=6.357, cos=0.359]Epoch 1/1:  22%|██▏       | 28/125 [00:21<01:10,  1.38it/s, loss=0.7674, recon=0.640, kce=6.392, kd=6.357, cos=0.359]Epoch 1/1:  22%|██▏       | 28/125 [00:22<01:10,  1.38it/s, loss=0.8416, recon=0.651, kce=12.209, kd=6.809, cos=0.350]Epoch 1/1:  23%|██▎       | 29/125 [00:22<01:11,  1.34it/s, loss=0.8416, recon=0.651, kce=12.209, kd=6.809, cos=0.350]Epoch 1/1:  23%|██▎       | 29/125 [00:23<01:11,  1.34it/s, loss=0.8238, recon=0.643, kce=10.530, kd=7.578, cos=0.357]Epoch 1/1:  24%|██▍       | 30/125 [00:23<01:10,  1.35it/s, loss=0.8238, recon=0.643, kce=10.530, kd=7.578, cos=0.357]Epoch 1/1:  24%|██▍       | 30/125 [00:23<01:10,  1.35it/s, loss=0.7780, recon=0.617, kce=7.493, kd=8.595, cos=0.383] Epoch 1/1:  25%|██▍       | 31/125 [00:23<01:05,  1.44it/s, loss=0.7780, recon=0.617, kce=7.493, kd=8.595, cos=0.383]Epoch 1/1:  25%|██▍       | 31/125 [00:24<01:05,  1.44it/s, loss=0.7672, recon=0.625, kce=7.857, kd=6.371, cos=0.375]Epoch 1/1:  26%|██▌       | 32/125 [00:24<01:10,  1.32it/s, loss=0.7672, recon=0.625, kce=7.857, kd=6.371, cos=0.375]Epoch 1/1:  26%|██▌       | 32/125 [00:25<01:10,  1.32it/s, loss=0.7794, recon=0.630, kce=6.798, kd=8.173, cos=0.371]Epoch 1/1:  26%|██▋       | 33/125 [00:25<01:04,  1.43it/s, loss=0.7794, recon=0.630, kce=6.798, kd=8.173, cos=0.371]Epoch 1/1:  26%|██▋       | 33/125 [00:25<01:04,  1.43it/s, loss=0.7514, recon=0.616, kce=5.080, kd=8.505, cos=0.385]Epoch 1/1:  27%|██▋       | 34/125 [00:25<01:05,  1.40it/s, loss=0.7514, recon=0.616, kce=5.080, kd=8.505, cos=0.385]Epoch 1/1:  27%|██▋       | 34/125 [00:26<01:05,  1.40it/s, loss=0.7122, recon=0.601, kce=3.268, kd=7.874, cos=0.398]Epoch 1/1:  28%|██▊       | 35/125 [00:26<01:05,  1.38it/s, loss=0.7122, recon=0.601, kce=3.268, kd=7.874, cos=0.398]Epoch 1/1:  28%|██▊       | 35/125 [00:27<01:05,  1.38it/s, loss=0.7237, recon=0.607, kce=3.200, kd=8.467, cos=0.393]Epoch 1/1:  29%|██▉       | 36/125 [00:27<01:03,  1.40it/s, loss=0.7237, recon=0.607, kce=3.200, kd=8.467, cos=0.393]Epoch 1/1:  29%|██▉       | 36/125 [00:28<01:03,  1.40it/s, loss=0.7675, recon=0.618, kce=7.517, kd=7.398, cos=0.381]Epoch 1/1:  30%|██▉       | 37/125 [00:28<01:08,  1.28it/s, loss=0.7675, recon=0.618, kce=7.517, kd=7.398, cos=0.381]Epoch 1/1:  30%|██▉       | 37/125 [00:28<01:08,  1.28it/s, loss=0.7295, recon=0.610, kce=5.690, kd=6.295, cos=0.391]Epoch 1/1:  30%|███       | 38/125 [00:28<01:05,  1.33it/s, loss=0.7295, recon=0.610, kce=5.690, kd=6.295, cos=0.391]Epoch 1/1:  30%|███       | 38/125 [00:29<01:05,  1.33it/s, loss=0.7228, recon=0.601, kce=6.050, kd=6.160, cos=0.400]Epoch 1/1:  31%|███       | 39/125 [00:29<01:03,  1.36it/s, loss=0.7228, recon=0.601, kce=6.050, kd=6.160, cos=0.400]Epoch 1/1:  31%|███       | 39/125 [00:30<01:03,  1.36it/s, loss=0.7186, recon=0.587, kce=6.500, kd=6.636, cos=0.412]Epoch 1/1:  32%|███▏      | 40/125 [00:30<01:02,  1.36it/s, loss=0.7186, recon=0.587, kce=6.500, kd=6.636, cos=0.412]Epoch 1/1:  32%|███▏      | 40/125 [00:30<01:02,  1.36it/s, loss=0.7254, recon=0.585, kce=4.500, kd=9.488, cos=0.414]Epoch 1/1:  33%|███▎      | 41/125 [00:30<00:57,  1.47it/s, loss=0.7254, recon=0.585, kce=4.500, kd=9.488, cos=0.414]Epoch 1/1:  33%|███▎      | 41/125 [00:31<00:57,  1.47it/s, loss=0.7548, recon=0.597, kce=7.667, kd=8.063, cos=0.402]Epoch 1/1:  34%|███▎      | 42/125 [00:31<01:03,  1.30it/s, loss=0.7548, recon=0.597, kce=7.667, kd=8.063, cos=0.402]Epoch 1/1:  34%|███▎      | 42/125 [00:32<01:03,  1.30it/s, loss=0.7531, recon=0.561, kce=9.653, kd=9.537, cos=0.439]Epoch 1/1:  34%|███▍      | 43/125 [00:32<01:00,  1.36it/s, loss=0.7531, recon=0.561, kce=9.653, kd=9.537, cos=0.439]Epoch 1/1:  34%|███▍      | 43/125 [00:33<01:00,  1.36it/s, loss=0.7519, recon=0.575, kce=9.103, kd=8.553, cos=0.426]Epoch 1/1:  35%|███▌      | 44/125 [00:33<01:00,  1.35it/s, loss=0.7519, recon=0.575, kce=9.103, kd=8.553, cos=0.426]Epoch 1/1:  35%|███▌      | 44/125 [00:33<01:00,  1.35it/s, loss=0.7452, recon=0.574, kce=8.481, kd=8.656, cos=0.426]Epoch 1/1:  36%|███▌      | 45/125 [00:33<00:57,  1.39it/s, loss=0.7452, recon=0.574, kce=8.481, kd=8.656, cos=0.426]Epoch 1/1:  36%|███▌      | 45/125 [00:34<00:57,  1.39it/s, loss=0.7396, recon=0.592, kce=7.841, kd=6.919, cos=0.408]Epoch 1/1:  37%|███▋      | 46/125 [00:34<00:56,  1.41it/s, loss=0.7396, recon=0.592, kce=7.841, kd=6.919, cos=0.408]Epoch 1/1:  37%|███▋      | 46/125 [00:35<00:56,  1.41it/s, loss=0.7322, recon=0.578, kce=9.053, kd=6.406, cos=0.422]Epoch 1/1:  38%|███▊      | 47/125 [00:35<00:58,  1.33it/s, loss=0.7322, recon=0.578, kce=9.053, kd=6.406, cos=0.422]Epoch 1/1:  38%|███▊      | 47/125 [00:36<00:58,  1.33it/s, loss=0.7028, recon=0.557, kce=7.338, kd=7.276, cos=0.443]Epoch 1/1:  38%|███▊      | 48/125 [00:36<00:56,  1.37it/s, loss=0.7028, recon=0.557, kce=7.338, kd=7.276, cos=0.443]Epoch 1/1:  38%|███▊      | 48/125 [00:36<00:56,  1.37it/s, loss=0.7097, recon=0.566, kce=8.519, kd=5.821, cos=0.434]Epoch 1/1:  39%|███▉      | 49/125 [00:36<00:57,  1.31it/s, loss=0.7097, recon=0.566, kce=8.519, kd=5.821, cos=0.434]Epoch 1/1:  39%|███▉      | 49/125 [00:37<00:57,  1.31it/s, loss=0.6978, recon=0.561, kce=7.450, kd=6.231, cos=0.439]Epoch 1/1:  40%|████      | 50/125 [00:37<00:55,  1.36it/s, loss=0.6978, recon=0.561, kce=7.450, kd=6.231, cos=0.439]Epoch 1/1:  40%|████      | 50/125 [00:38<00:55,  1.36it/s, loss=0.7257, recon=0.576, kce=7.343, kd=7.650, cos=0.424]Epoch 1/1:  41%|████      | 51/125 [00:38<00:55,  1.33it/s, loss=0.7257, recon=0.576, kce=7.343, kd=7.650, cos=0.424]Epoch 1/1:  41%|████      | 51/125 [00:39<00:55,  1.33it/s, loss=0.7124, recon=0.556, kce=9.167, kd=6.470, cos=0.445]Epoch 1/1:  42%|████▏     | 52/125 [00:39<00:53,  1.36it/s, loss=0.7124, recon=0.556, kce=9.167, kd=6.470, cos=0.445]Epoch 1/1:  42%|████▏     | 52/125 [00:39<00:53,  1.36it/s, loss=0.7363, recon=0.569, kce=8.877, kd=7.804, cos=0.432]Epoch 1/1:  42%|████▏     | 53/125 [00:39<00:51,  1.39it/s, loss=0.7363, recon=0.569, kce=8.877, kd=7.804, cos=0.432]Epoch 1/1:  42%|████▏     | 53/125 [00:40<00:51,  1.39it/s, loss=0.7313, recon=0.588, kce=7.212, kd=7.106, cos=0.412]Epoch 1/1:  43%|████▎     | 54/125 [00:40<00:54,  1.29it/s, loss=0.7313, recon=0.588, kce=7.212, kd=7.106, cos=0.412]Epoch 1/1:  43%|████▎     | 54/125 [00:41<00:54,  1.29it/s, loss=0.7090, recon=0.544, kce=8.142, kd=8.410, cos=0.457]Epoch 1/1:  44%|████▍     | 55/125 [00:41<00:52,  1.35it/s, loss=0.7090, recon=0.544, kce=8.142, kd=8.410, cos=0.457]Epoch 1/1:  44%|████▍     | 55/125 [00:42<00:52,  1.35it/s, loss=0.7043, recon=0.561, kce=8.023, kd=6.331, cos=0.439]Epoch 1/1:  45%|████▍     | 56/125 [00:42<00:49,  1.39it/s, loss=0.7043, recon=0.561, kce=8.023, kd=6.331, cos=0.439]Epoch 1/1:  45%|████▍     | 56/125 [00:42<00:49,  1.39it/s, loss=0.7528, recon=0.591, kce=9.355, kd=6.784, cos=0.408]Epoch 1/1:  46%|████▌     | 57/125 [00:42<00:51,  1.32it/s, loss=0.7528, recon=0.591, kce=9.355, kd=6.784, cos=0.408]Epoch 1/1:  46%|████▌     | 57/125 [00:43<00:51,  1.32it/s, loss=0.7190, recon=0.561, kce=8.606, kd=7.197, cos=0.439]Epoch 1/1:  46%|████▋     | 58/125 [00:43<00:45,  1.46it/s, loss=0.7190, recon=0.561, kce=8.606, kd=7.197, cos=0.439]Epoch 1/1:  46%|████▋     | 58/125 [00:44<00:45,  1.46it/s, loss=0.7251, recon=0.564, kce=7.831, kd=8.314, cos=0.438]Epoch 1/1:  47%|████▋     | 59/125 [00:44<00:45,  1.44it/s, loss=0.7251, recon=0.564, kce=7.831, kd=8.314, cos=0.438]Epoch 1/1:  47%|████▋     | 59/125 [00:44<00:45,  1.44it/s, loss=0.7211, recon=0.571, kce=8.165, kd=6.844, cos=0.430]Epoch 1/1:  48%|████▊     | 60/125 [00:44<00:47,  1.37it/s, loss=0.7211, recon=0.571, kce=8.165, kd=6.844, cos=0.430]Epoch 1/1:  48%|████▊     | 60/125 [00:45<00:47,  1.37it/s, loss=0.7369, recon=0.566, kce=7.999, kd=9.059, cos=0.434]Epoch 1/1:  49%|████▉     | 61/125 [00:45<00:45,  1.40it/s, loss=0.7369, recon=0.566, kce=7.999, kd=9.059, cos=0.434]Epoch 1/1:  49%|████▉     | 61/125 [00:46<00:45,  1.40it/s, loss=0.7364, recon=0.580, kce=7.354, kd=8.262, cos=0.420]Epoch 1/1:  50%|████▉     | 62/125 [00:46<00:49,  1.27it/s, loss=0.7364, recon=0.580, kce=7.354, kd=8.262, cos=0.420]Epoch 1/1:  50%|████▉     | 62/125 [00:47<00:49,  1.27it/s, loss=0.7098, recon=0.561, kce=7.892, kd=6.970, cos=0.439]Epoch 1/1:  50%|█████     | 63/125 [00:47<00:46,  1.33it/s, loss=0.7098, recon=0.561, kce=7.892, kd=6.970, cos=0.439]Epoch 1/1:  50%|█████     | 63/125 [00:48<00:46,  1.33it/s, loss=0.7120, recon=0.555, kce=7.957, kd=7.701, cos=0.445]Epoch 1/1:  51%|█████     | 64/125 [00:48<00:48,  1.27it/s, loss=0.7120, recon=0.555, kce=7.957, kd=7.701, cos=0.445]Epoch 1/1:  51%|█████     | 64/125 [00:48<00:48,  1.27it/s, loss=0.7204, recon=0.565, kce=7.315, kd=8.219, cos=0.436]Epoch 1/1:  52%|█████▏    | 65/125 [00:48<00:43,  1.39it/s, loss=0.7204, recon=0.565, kce=7.315, kd=8.219, cos=0.436]Epoch 1/1:  52%|█████▏    | 65/125 [00:49<00:43,  1.39it/s, loss=0.6796, recon=0.555, kce=4.676, kd=7.778, cos=0.445]Epoch 1/1:  53%|█████▎    | 66/125 [00:49<00:41,  1.41it/s, loss=0.6796, recon=0.555, kce=4.676, kd=7.778, cos=0.445]Epoch 1/1:  53%|█████▎    | 66/125 [00:50<00:41,  1.41it/s, loss=0.7023, recon=0.574, kce=5.244, kd=7.568, cos=0.426]Epoch 1/1:  54%|█████▎    | 67/125 [00:50<00:44,  1.29it/s, loss=0.7023, recon=0.574, kce=5.244, kd=7.568, cos=0.426]Epoch 1/1:  54%|█████▎    | 67/125 [00:50<00:44,  1.29it/s, loss=0.7092, recon=0.558, kce=6.751, kd=8.339, cos=0.441]Epoch 1/1:  54%|█████▍    | 68/125 [00:50<00:39,  1.45it/s, loss=0.7092, recon=0.558, kce=6.751, kd=8.339, cos=0.441]Epoch 1/1:  54%|█████▍    | 68/125 [00:51<00:39,  1.45it/s, loss=0.7062, recon=0.556, kce=6.752, kd=8.245, cos=0.443]Epoch 1/1:  55%|█████▌    | 69/125 [00:51<00:37,  1.51it/s, loss=0.7062, recon=0.556, kce=6.752, kd=8.245, cos=0.443]Epoch 1/1:  55%|█████▌    | 69/125 [00:52<00:37,  1.51it/s, loss=0.6929, recon=0.539, kce=9.064, kd=6.359, cos=0.461]Epoch 1/1:  56%|█████▌    | 70/125 [00:52<00:38,  1.42it/s, loss=0.6929, recon=0.539, kce=9.064, kd=6.359, cos=0.461]Epoch 1/1:  56%|█████▌    | 70/125 [00:52<00:38,  1.42it/s, loss=0.6803, recon=0.550, kce=8.323, kd=4.730, cos=0.451]Epoch 1/1:  57%|█████▋    | 71/125 [00:52<00:38,  1.42it/s, loss=0.6803, recon=0.550, kce=8.323, kd=4.730, cos=0.451]Epoch 1/1:  57%|█████▋    | 71/125 [00:53<00:38,  1.42it/s, loss=0.6623, recon=0.543, kce=5.589, kd=6.368, cos=0.457]Epoch 1/1:  58%|█████▊    | 72/125 [00:53<00:39,  1.34it/s, loss=0.6623, recon=0.543, kce=5.589, kd=6.368, cos=0.457]Epoch 1/1:  58%|█████▊    | 72/125 [00:54<00:39,  1.34it/s, loss=0.6842, recon=0.553, kce=4.625, kd=8.486, cos=0.447]Epoch 1/1:  58%|█████▊    | 73/125 [00:54<00:37,  1.38it/s, loss=0.6842, recon=0.553, kce=4.625, kd=8.486, cos=0.447]Epoch 1/1:  58%|█████▊    | 73/125 [00:55<00:37,  1.38it/s, loss=0.6922, recon=0.564, kce=5.660, kd=7.201, cos=0.438]Epoch 1/1:  59%|█████▉    | 74/125 [00:55<00:39,  1.29it/s, loss=0.6922, recon=0.564, kce=5.660, kd=7.201, cos=0.438]Epoch 1/1:  59%|█████▉    | 74/125 [00:55<00:39,  1.29it/s, loss=0.6835, recon=0.556, kce=5.264, kd=7.476, cos=0.443]Epoch 1/1:  60%|██████    | 75/125 [00:55<00:37,  1.34it/s, loss=0.6835, recon=0.556, kce=5.264, kd=7.476, cos=0.443]Epoch 1/1:  60%|██████    | 75/125 [00:56<00:37,  1.34it/s, loss=0.6890, recon=0.549, kce=5.368, kd=8.640, cos=0.451]Epoch 1/1:  61%|██████    | 76/125 [00:56<00:35,  1.38it/s, loss=0.6890, recon=0.549, kce=5.368, kd=8.640, cos=0.451]Epoch 1/1:  61%|██████    | 76/125 [00:57<00:35,  1.38it/s, loss=0.6685, recon=0.557, kce=5.114, kd=6.059, cos=0.443]Epoch 1/1:  62%|██████▏   | 77/125 [00:57<00:37,  1.28it/s, loss=0.6685, recon=0.557, kce=5.114, kd=6.059, cos=0.443]Epoch 1/1:  62%|██████▏   | 77/125 [00:58<00:37,  1.28it/s, loss=0.6792, recon=0.545, kce=4.902, kd=8.564, cos=0.455]Epoch 1/1:  62%|██████▏   | 78/125 [00:58<00:35,  1.33it/s, loss=0.6792, recon=0.545, kce=4.902, kd=8.564, cos=0.455]Epoch 1/1:  62%|██████▏   | 78/125 [00:59<00:35,  1.33it/s, loss=0.6410, recon=0.541, kce=3.040, kd=6.926, cos=0.459]Epoch 1/1:  63%|██████▎   | 79/125 [00:59<00:36,  1.27it/s, loss=0.6410, recon=0.541, kce=3.040, kd=6.926, cos=0.459]Epoch 1/1:  63%|██████▎   | 79/125 [00:59<00:36,  1.27it/s, loss=0.6676, recon=0.533, kce=5.667, kd=7.810, cos=0.467]Epoch 1/1:  64%|██████▍   | 80/125 [00:59<00:32,  1.40it/s, loss=0.6676, recon=0.533, kce=5.667, kd=7.810, cos=0.467]Epoch 1/1:  64%|██████▍   | 80/125 [01:00<00:32,  1.40it/s, loss=0.6788, recon=0.546, kce=4.899, kd=8.381, cos=0.455]Epoch 1/1:  65%|██████▍   | 81/125 [01:00<00:31,  1.40it/s, loss=0.6788, recon=0.546, kce=4.899, kd=8.381, cos=0.455]Epoch 1/1:  65%|██████▍   | 81/125 [01:01<00:31,  1.40it/s, loss=0.6955, recon=0.543, kce=7.988, kd=7.284, cos=0.457]Epoch 1/1:  66%|██████▌   | 82/125 [01:01<00:33,  1.29it/s, loss=0.6955, recon=0.543, kce=7.988, kd=7.284, cos=0.457]Epoch 1/1:  66%|██████▌   | 82/125 [01:01<00:33,  1.29it/s, loss=0.6774, recon=0.550, kce=4.456, kd=8.301, cos=0.451]Epoch 1/1:  66%|██████▋   | 83/125 [01:01<00:29,  1.44it/s, loss=0.6774, recon=0.550, kce=4.456, kd=8.301, cos=0.451]Epoch 1/1:  66%|██████▋   | 83/125 [01:02<00:29,  1.44it/s, loss=0.6727, recon=0.527, kce=6.470, kd=8.103, cos=0.473]Epoch 1/1:  67%|██████▋   | 84/125 [01:02<00:29,  1.40it/s, loss=0.6727, recon=0.527, kce=6.470, kd=8.103, cos=0.473]Epoch 1/1:  67%|██████▋   | 84/125 [01:03<00:29,  1.40it/s, loss=0.6777, recon=0.535, kce=6.661, kd=7.646, cos=0.465]Epoch 1/1:  68%|██████▊   | 85/125 [01:03<00:27,  1.45it/s, loss=0.6777, recon=0.535, kce=6.661, kd=7.646, cos=0.465][WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] KD teacher: adapters NOT disabled - KD may be contaminated
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-Epoch 1/1:  68%|██████▊   | 85/125 [01:03<00:27,  1.45it/s, loss=0.6478, recon=0.535, kce=5.855, kd=5.463, cos=0.467]Epoch 1/1:  69%|██████▉   | 86/125 [01:03<00:28,  1.39it/s, loss=0.6478, recon=0.535, kce=5.855, kd=5.463, cos=0.467]Epoch 1/1:  69%|██████▉   | 86/125 [01:04<00:28,  1.39it/s, loss=0.6754, recon=0.525, kce=6.691, kd=8.376, cos=0.477]Epoch 1/1:  70%|██████▉   | 87/125 [01:04<00:29,  1.30it/s, loss=0.6754, recon=0.525, kce=6.691, kd=8.376, cos=0.477]Epoch 1/1:  70%|██████▉   | 87/125 [01:05<00:29,  1.30it/s, loss=0.6888, recon=0.540, kce=6.814, kd=8.036, cos=0.461]Epoch 1/1:  70%|███████   | 88/125 [01:05<00:27,  1.35it/s, loss=0.6888, recon=0.540, kce=6.814, kd=8.036, cos=0.461]Epoch 1/1:  70%|███████   | 88/125 [01:06<00:27,  1.35it/s, loss=0.6648, recon=0.536, kce=4.257, kd=8.619, cos=0.465]Epoch 1/1:  71%|███████   | 89/125 [01:06<00:27,  1.33it/s, loss=0.6648, recon=0.536, kce=4.257, kd=8.619, cos=0.465]Epoch 1/1:  71%|███████   | 89/125 [01:06<00:27,  1.33it/s, loss=0.6348, recon=0.524, kce=4.846, kd=6.258, cos=0.477]Epoch 1/1:  72%|███████▏  | 90/125 [01:06<00:24,  1.46it/s, loss=0.6348, recon=0.524, kce=4.846, kd=6.258, cos=0.477]Epoch 1/1:  72%|███████▏  | 90/125 [01:07<00:24,  1.46it/s, loss=0.6332, recon=0.524, kce=4.518, kd=6.406, cos=0.477]Epoch 1/1:  73%|███████▎  | 91/125 [01:07<00:22,  1.49it/s, loss=0.6332, recon=0.524, kce=4.518, kd=6.406, cos=0.477]Epoch 1/1:  73%|███████▎  | 91/125 [01:08<00:22,  1.49it/s, loss=0.6808, recon=0.540, kce=4.790, kd=9.294, cos=0.461]Epoch 1/1:  74%|███████▎  | 92/125 [01:08<00:24,  1.34it/s, loss=0.6808, recon=0.540, kce=4.790, kd=9.294, cos=0.461]Epoch 1/1:  74%|███████▎  | 92/125 [01:09<00:24,  1.34it/s, loss=0.7136, recon=0.541, kce=9.530, kd=7.736, cos=0.459]Epoch 1/1:  74%|███████▍  | 93/125 [01:09<00:23,  1.38it/s, loss=0.7136, recon=0.541, kce=9.530, kd=7.736, cos=0.459]Epoch 1/1:  74%|███████▍  | 93/125 [01:10<00:23,  1.38it/s, loss=0.6296, recon=0.524, kce=4.613, kd=5.985, cos=0.477]Epoch 1/1:  75%|███████▌  | 94/125 [01:10<00:24,  1.28it/s, loss=0.6296, recon=0.524, kce=4.613, kd=5.985, cos=0.477]Epoch 1/1:  75%|███████▌  | 94/125 [01:10<00:24,  1.28it/s, loss=0.6513, recon=0.527, kce=5.568, kd=6.813, cos=0.473]Epoch 1/1:  76%|███████▌  | 95/125 [01:10<00:22,  1.34it/s, loss=0.6513, recon=0.527, kce=5.568, kd=6.813, cos=0.473]Epoch 1/1:  76%|███████▌  | 95/125 [01:11<00:22,  1.34it/s, loss=0.7086, recon=0.547, kce=4.554, kd=11.625, cos=0.453]Epoch 1/1:  77%|███████▋  | 96/125 [01:11<00:21,  1.37it/s, loss=0.7086, recon=0.547, kce=4.554, kd=11.625, cos=0.453]Epoch 1/1:  77%|███████▋  | 96/125 [01:12<00:21,  1.37it/s, loss=0.6311, recon=0.529, kce=4.840, kd=5.409, cos=0.473] Epoch 1/1:  78%|███████▊  | 97/125 [01:12<00:22,  1.27it/s, loss=0.6311, recon=0.529, kce=4.840, kd=5.409, cos=0.473]Epoch 1/1:  78%|███████▊  | 97/125 [01:12<00:22,  1.27it/s, loss=0.6687, recon=0.540, kce=6.326, kd=6.591, cos=0.461]Epoch 1/1:  78%|███████▊  | 98/125 [01:12<00:19,  1.40it/s, loss=0.6687, recon=0.540, kce=6.326, kd=6.591, cos=0.461]Epoch 1/1:  78%|███████▊  | 98/125 [01:13<00:19,  1.40it/s, loss=0.6500, recon=0.514, kce=6.158, kd=7.422, cos=0.486]Epoch 1/1:  79%|███████▉  | 99/125 [01:13<00:19,  1.33it/s, loss=0.6500, recon=0.514, kce=6.158, kd=7.422, cos=0.486]Epoch 1/1:  79%|███████▉  | 99/125 [01:14<00:19,  1.33it/s, loss=0.6342, recon=0.515, kce=3.596, kd=8.295, cos=0.484]Epoch 1/1:  80%|████████  | 100/125 [01:14<00:21,  1.15it/s, loss=0.6342, recon=0.515, kce=3.596, kd=8.295, cos=0.484]Epoch 1/1:  80%|████████  | 100/125 [01:15<00:21,  1.15it/s, loss=0.6232, recon=0.507, kce=4.819, kd=6.791, cos=0.494]Epoch 1/1:  81%|████████  | 101/125 [01:15<00:21,  1.12it/s, loss=0.6232, recon=0.507, kce=4.819, kd=6.791, cos=0.494]Epoch 1/1:  81%|████████  | 101/125 [01:16<00:21,  1.12it/s, loss=0.6414, recon=0.528, kce=3.968, kd=7.344, cos=0.473]Epoch 1/1:  82%|████████▏ | 102/125 [01:16<00:18,  1.27it/s, loss=0.6414, recon=0.528, kce=3.968, kd=7.344, cos=0.473]Epoch 1/1:  82%|████████▏ | 102/125 [01:17<00:18,  1.27it/s, loss=0.6307, recon=0.524, kce=3.262, kd=7.421, cos=0.477]Epoch 1/1:  82%|████████▏ | 103/125 [01:17<00:16,  1.31it/s, loss=0.6307, recon=0.524, kce=3.262, kd=7.421, cos=0.477]Epoch 1/1:  82%|████████▏ | 103/125 [01:17<00:16,  1.31it/s, loss=0.6426, recon=0.520, kce=5.915, kd=6.347, cos=0.480]Epoch 1/1:  83%|████████▎ | 104/125 [01:17<00:16,  1.28it/s, loss=0.6426, recon=0.520, kce=5.915, kd=6.347, cos=0.480]Epoch 1/1:  83%|████████▎ | 104/125 [01:18<00:16,  1.28it/s, loss=0.6253, recon=0.523, kce=4.384, kd=5.891, cos=0.479]Epoch 1/1:  84%|████████▍ | 105/125 [01:18<00:14,  1.34it/s, loss=0.6253, recon=0.523, kce=4.384, kd=5.891, cos=0.479]Epoch 1/1:  84%|████████▍ | 105/125 [01:19<00:14,  1.34it/s, loss=0.6287, recon=0.533, kce=4.244, kd=5.330, cos=0.467]Epoch 1/1:  85%|████████▍ | 106/125 [01:19<00:14,  1.30it/s, loss=0.6287, recon=0.533, kce=4.244, kd=5.330, cos=0.467]Epoch 1/1:  85%|████████▍ | 106/125 [01:19<00:14,  1.30it/s, loss=0.6535, recon=0.518, kce=5.287, kd=8.254, cos=0.482]Epoch 1/1:  86%|████████▌ | 107/125 [01:19<00:13,  1.35it/s, loss=0.6535, recon=0.518, kce=5.287, kd=8.254, cos=0.482]Epoch 1/1:  86%|████████▌ | 107/125 [01:20<00:13,  1.35it/s, loss=0.6534, recon=0.531, kce=5.331, kd=6.908, cos=0.469]Epoch 1/1:  86%|████████▋ | 108/125 [01:20<00:12,  1.32it/s, loss=0.6534, recon=0.531, kce=5.331, kd=6.908, cos=0.469]Epoch 1/1:  86%|████████▋ | 108/125 [01:21<00:12,  1.32it/s, loss=0.6494, recon=0.508, kce=5.737, kd=8.375, cos=0.492]Epoch 1/1:  87%|████████▋ | 109/125 [01:21<00:11,  1.34it/s, loss=0.6494, recon=0.508, kce=5.737, kd=8.375, cos=0.492]Epoch 1/1:  87%|████████▋ | 109/125 [01:22<00:11,  1.34it/s, loss=0.6655, recon=0.524, kce=6.023, kd=8.103, cos=0.477]Epoch 1/1:  88%|████████▊ | 110/125 [01:22<00:10,  1.38it/s, loss=0.6655, recon=0.524, kce=6.023, kd=8.103, cos=0.477]Epoch 1/1:  88%|████████▊ | 110/125 [01:23<00:10,  1.38it/s, loss=0.6577, recon=0.524, kce=5.302, kd=8.072, cos=0.477]Epoch 1/1:  89%|████████▉ | 111/125 [01:23<00:10,  1.33it/s, loss=0.6577, recon=0.524, kce=5.302, kd=8.072, cos=0.477]Epoch 1/1:  89%|████████▉ | 111/125 [01:23<00:10,  1.33it/s, loss=0.6654, recon=0.533, kce=5.821, kd=7.377, cos=0.467]Epoch 1/1:  90%|████████▉ | 112/125 [01:23<00:09,  1.37it/s, loss=0.6654, recon=0.533, kce=5.821, kd=7.377, cos=0.467]Epoch 1/1:  90%|████████▉ | 112/125 [01:24<00:09,  1.37it/s, loss=0.6447, recon=0.528, kce=5.487, kd=6.147, cos=0.473]Epoch 1/1:  90%|█████████ | 113/125 [01:24<00:08,  1.50it/s, loss=0.6447, recon=0.528, kce=5.487, kd=6.147, cos=0.473]Epoch 1/1:  90%|█████████ | 113/125 [01:25<00:08,  1.50it/s, loss=0.6474, recon=0.531, kce=5.028, kd=6.589, cos=0.469]Epoch 1/1:  91%|█████████ | 114/125 [01:25<00:08,  1.35it/s, loss=0.6474, recon=0.531, kce=5.028, kd=6.589, cos=0.469]Epoch 1/1:  91%|█████████ | 114/125 [01:25<00:08,  1.35it/s, loss=0.6322, recon=0.519, kce=4.834, kd=6.499, cos=0.482]Epoch 1/1:  92%|█████████▏| 115/125 [01:25<00:07,  1.38it/s, loss=0.6322, recon=0.519, kce=4.834, kd=6.499, cos=0.482]Epoch 1/1:  92%|█████████▏| 115/125 [01:26<00:07,  1.38it/s, loss=0.6381, recon=0.511, kce=5.769, kd=6.911, cos=0.490]Epoch 1/1:  93%|█████████▎| 116/125 [01:26<00:07,  1.28it/s, loss=0.6381, recon=0.511, kce=5.769, kd=6.911, cos=0.490]Epoch 1/1:  93%|█████████▎| 116/125 [01:27<00:07,  1.28it/s, loss=0.6649, recon=0.539, kce=6.342, kd=6.286, cos=0.463]Epoch 1/1:  94%|█████████▎| 117/125 [01:27<00:06,  1.33it/s, loss=0.6649, recon=0.539, kce=6.342, kd=6.286, cos=0.463]Epoch 1/1:  94%|█████████▎| 117/125 [01:28<00:06,  1.33it/s, loss=0.6605, recon=0.539, kce=5.894, kd=6.236, cos=0.461]Epoch 1/1:  94%|█████████▍| 118/125 [01:28<00:05,  1.28it/s, loss=0.6605, recon=0.539, kce=5.894, kd=6.236, cos=0.461]Epoch 1/1:  94%|█████████▍| 118/125 [01:28<00:05,  1.28it/s, loss=0.6911, recon=0.555, kce=5.779, kd=7.881, cos=0.445]Epoch 1/1:  95%|█████████▌| 119/125 [01:28<00:04,  1.31it/s, loss=0.6911, recon=0.555, kce=5.779, kd=7.881, cos=0.445]Epoch 1/1:  95%|█████████▌| 119/125 [01:29<00:04,  1.31it/s, loss=0.6854, recon=0.545, kce=6.502, kd=7.550, cos=0.455]Epoch 1/1:  96%|█████████▌| 120/125 [01:29<00:03,  1.35it/s, loss=0.6854, recon=0.545, kce=6.502, kd=7.550, cos=0.455]Epoch 1/1:  96%|█████████▌| 120/125 [01:30<00:03,  1.35it/s, loss=0.6267, recon=0.502, kce=5.609, kd=6.856, cos=0.498]Epoch 1/1:  97%|█████████▋| 121/125 [01:30<00:03,  1.26it/s, loss=0.6267, recon=0.502, kce=5.609, kd=6.856, cos=0.498]Epoch 1/1:  97%|█████████▋| 121/125 [01:31<00:03,  1.26it/s, loss=0.6447, recon=0.525, kce=4.963, kd=6.990, cos=0.475]Epoch 1/1:  98%|█████████▊| 122/125 [01:31<00:02,  1.33it/s, loss=0.6447, recon=0.525, kce=4.963, kd=6.990, cos=0.475]Epoch 1/1:  98%|█████████▊| 122/125 [01:32<00:02,  1.33it/s, loss=0.6607, recon=0.545, kce=4.860, kd=6.737, cos=0.455]Epoch 1/1:  98%|█████████▊| 123/125 [01:32<00:01,  1.25it/s, loss=0.6607, recon=0.545, kce=4.860, kd=6.737, cos=0.455]Epoch 1/1:  98%|█████████▊| 123/125 [01:32<00:01,  1.25it/s, loss=0.6434, recon=0.529, kce=4.606, kd=6.804, cos=0.471]Epoch 1/1:  99%|█████████▉| 124/125 [01:32<00:00,  1.30it/s, loss=0.6434, recon=0.529, kce=4.606, kd=6.804, cos=0.471]Epoch 1/1:  99%|█████████▉| 124/125 [01:37<00:00,  1.30it/s, loss=0.6877, recon=0.552, kce=5.793, kd=7.815, cos=0.449]Epoch 1/1: 100%|██████████| 125/125 [01:37<00:00,  1.87s/it, loss=0.6877, recon=0.552, kce=5.793, kd=7.815, cos=0.449]Epoch 1/1: 100%|██████████| 125/125 [01:37<00:00,  1.28it/s, loss=0.6877, recon=0.552, kce=5.793, kd=7.815, cos=0.449]
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-
-  Quick eval (first example):
-    Expected: 'Dane'
-    Generated: ''
-    Norm ratio: 1.000 | Cosine: 0.365
-  Avg norm ratio: 1.008 | Avg cosine: 0.370
-  FirstTok@1: 0.0% | Top-5: 0.0%
-
-  Step 100: Quick F1 = 0.0%, FirstTok@1 = 0.0%
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
-
-Epoch 1 complete:
-  Avg loss: 0.7451
-  Avg cosine similarity: 0.398
-  Avg relative error: 1.180
-
-Running full evaluation...
-
-================================================================================
-EVALUATION DIAGNOSTICS (Batched with size 32)
-================================================================================
-Evaluating:   0%|          | 0/4 [00:00<?, ?it/s]Evaluating:  25%|██▌       | 1/4 [00:00<00:02,  1.04it/s]Evaluating:  50%|█████     | 2/4 [00:01<00:01,  1.19it/s]Evaluating:  75%|███████▌  | 3/4 [00:02<00:00,  1.11it/s]Evaluating: 100%|██████████| 4/4 [00:03<00:00,  1.39it/s]Evaluating: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]
-
-────────────────────────────────────────────────────────────────────────────────
-Example 1:
-  Question: Context: Tesla was the fourth of five children. He had an older brother named Da...
-  Expected: 'Dane'
-  Generated: ''
-
-  Embedding diagnostics:
-    Original norm:  0.31
-    Reconstructed norm: 0.31
-    Ratio: 1.006 (OK)
-    Cosine similarity: 0.365
-
-  Token-level reconstruction (first example only):
-    Original tokens:  <|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|><|eot_id|>...
-    Reconstructed →:  <|begin_of_text|><|begin_of_text|><|begin_of_text|><|begin_of_text|><|begin_of_text|><|begin_of_text|><|begin_of_text|><|begin_of_text|><|begin_of_tex...
-
-────────────────────────────────────────────────────────────────────────────────
-Example 2:
-  Question: Context: Islamists have asked the question, "If Islam is a way of life, how can ...
-  Expected: 'Muslims'
-  Generated: ''
-
-  Embedding diagnostics:
-    Original norm:  0.36
-    Reconstructed norm: 0.36
-    Ratio: 1.000 (OK)
-    Cosine similarity: 0.375
-
-────────────────────────────────────────────────────────────────────────────────
-Example 3:
-  Question: Context: The concept environmental determinism served as a moral justification f...
-  Expected: 'orientalism and tropicality'
-  Generated: ''
-
-  Embedding diagnostics:
-    Original norm:  0.31
-    Reconstructed norm: 0.31
-    Ratio: 1.000 (OK)
-    Cosine similarity: 0.377
-
-================================================================================
-
-Computing FirstTok metrics on 50 examples...
-  F1: 0.003
-  EM: 0.000
-  FirstTok@1: 0.0%
-  FirstTok@5: 0.0%
-  → New best F1! Saved checkpoint
-
-============================================================
-Training complete!
-Best F1: 0.003
-============================================================
-
-============================================================
-PHASE 1B RESULTS
-============================================================
-Best F1: 0.3%
-❌ BELOW PHASE 1A: Generation objectives may not be working
-   Check: Loss function bugs? Anchor text alignment?
-============================================================
-Completed λ=0.01 at Sat Oct 11 21:16:58 PDT 2025
