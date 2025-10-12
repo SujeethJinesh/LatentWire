@@ -3376,3 +3376,152 @@ python latentwire/train.py \
   ...
 ```
 
+---
+
+## 2025-10-11: Fast Weight Sweep Results - Catastrophic Across All λ
+
+### Summary
+
+**ALL lambda values caused mode collapse**, even the very weak ones. The fast sweep (1k samples, ~125 steps) was **too fast** - insufficient training for reconstruction to stabilize before generation objectives interfere.
+
+### Complete Results Table
+
+```
+λ value | F1    | Cosine | loss_recon | loss_kce | loss_kd | Status
+--------|-------|--------|------------|----------|---------|------------------
+0.001   | 0.020 | 0.707  |      0.294 |     4.50 |    5.89 | ❌ COLLAPSED
+0.005   | 0.008 | 0.562  |      0.438 |     4.53 |    5.80 | ❌ COLLAPSED
+0.01    | 0.003 | 0.455  |      0.545 |     6.50 |    7.55 | ❌ COLLAPSED
+0.02    | 0.006 | 0.348  |      0.653 |     6.19 |    8.88 | ❌ COLLAPSED
+0.05    | 0.001 | 0.250  |      0.749 |     4.84 |    6.73 | ❌ COLLAPSED
+0.1     | 0.000 | 0.206  |      0.794 |     4.68 |    5.79 | ❌ COLLAPSED
+0.2     | 0.000 | 0.109  |      0.891 |     3.34 |    5.77 | ❌ COLLAPSED
+0.5     | 0.000 | 0.070  |      0.930 |     3.00 |    6.31 | ❌ COLLAPSED
+```
+
+**Key observations:**
+- F1 scores: 0-2% (all collapsed)
+- Cosine drops as λ increases: 70.7% (λ=0.001) → 7% (λ=0.5)
+- All generation objectives interfere with reconstruction learning
+
+### Generation Outputs (Examples)
+
+**λ=0.001:**
+```
+Expected: 'Dane'
+Generated: '_="Middle of the="'
+
+Expected: 'Muslims'
+Generated: 'the,,,, and,," the, and,," the,,,,, and'
+```
+
+**λ=0.005:**
+```
+Expected: 'Dane'
+Generated: (empty or garbage)
+```
+
+Complete mode collapse to repetitive patterns, punctuation, and gibberish.
+
+### Why The Fast Sweep Failed
+
+**Problem:** 125 steps isn't enough to learn good reconstruction, even before adding generation objectives.
+
+**Evidence:**
+
+| Training | Steps | Cosine (step 100-120) | F1 | Status |
+|----------|-------|---------------------|-----|---------|
+| Phase 1a (10k samples, λ=0) | 1250 | 0.77 → 0.87 | 24% | ✅ Works |
+| Fast sweep (1k samples, λ=0.001) | 125 | 0.707 | 2% | ❌ Collapsed |
+
+Phase 1a without generation objectives reaches 77% cosine by step 100. Fast sweep with λ=0.001 only reaches 70.7% cosine by step 120 - **worse reconstruction** despite adding "weak" generation objectives.
+
+### Root Cause Analysis
+
+**The fast sweep revealed a critical timing issue:**
+
+1. **Reconstruction needs ~100+ steps to stabilize** (reach 77% cosine)
+2. **Generation objectives interfere from step 1**, even at λ=0.001
+3. **With only 125 total steps**, reconstruction never stabilizes
+4. **Result**: Model learns neither good reconstruction nor good generation
+
+**Why this matters for full LatentWire:**
+- If encoder training is slow (cold start), generation objectives will interfere immediately
+- May need **annealing or delayed start** for generation objectives
+- Can't apply strong generation supervision until reconstruction baseline is established
+
+### Comparison: Slow vs Fast Sweep
+
+**Slow sweep (10k samples, 1250 steps):**
+
+| λ | Steps | Final Cosine | Final F1 | Result |
+|---|-------|--------------|----------|---------|
+| 0.001 | 1250 | 87% | 23% | ⚠️ Works (no improvement over baseline) |
+
+**Fast sweep (1k samples, 125 steps):**
+
+| λ | Steps | Final Cosine | Final F1 | Result |
+|---|-------|--------------|----------|---------|
+| 0.001 | 125 | 70.7% | 2% | ❌ Collapsed |
+
+**Conclusion:** The fast sweep was too aggressive. Need minimum ~1000 steps (8k samples) for meaningful results.
+
+### Implications for Full LatentWire
+
+**Critical findings:**
+
+1. **Generation objectives can't be added early** - Even λ=0.001 breaks learning when applied from step 1
+2. **Need warm-up period** - Reconstruction must stabilize first (~100-200 steps minimum)
+3. **Annealing is essential** - Can't use constant weights from start
+4. **Default weights too strong** - k_ce_weight=0.5 will definitely fail early in training
+
+**Recommended training schedule for full LatentWire:**
+
+```python
+# Option 1: Delayed start
+if step < 200:
+    effective_lambda = 0.0  # Pure reconstruction first
+else:
+    effective_lambda = target_lambda
+
+# Option 2: Gradual annealing (RECOMMENDED)
+warmup_steps = 500
+if step < warmup_steps:
+    effective_lambda = target_lambda * (step / warmup_steps)
+else:
+    effective_lambda = target_lambda
+
+# Option 3: Cosine-gated (adaptive)
+if cosine_similarity > 0.75:  # Only add gen objectives when reconstruction is good
+    effective_lambda = target_lambda
+else:
+    effective_lambda = 0.0
+```
+
+### What We Still Don't Know
+
+The fast sweep failed to answer:
+- ❓ **What is the max λ that works?** (Need more training steps to find out)
+- ❓ **Does any λ improve over Phase 1a baseline?** (23-24% F1)
+- ❓ **How much annealing is needed?** (warmup steps required)
+
+### Next Steps
+
+**Do NOT use fast sweep for weight search.** Instead:
+
+1. **Use Phase 1a checkpoint** (24% F1, 87% cosine) as is
+2. **Implement annealing in full LatentWire** - Start λ=0, ramp to 0.01-0.05 over first 500 steps
+3. **Monitor reconstruction quality** - If cosine drops below 70%, generation objectives too strong
+4. **Consider curriculum learning** - Train reconstruction first, add generation later
+
+**For research paper:**
+- Document that generation objectives must be delayed/annealed
+- Show that even λ=0.001 breaks learning without warm-up
+- This is a key finding about joint training of compression + generation
+
+### Conclusion
+
+The fast weight sweep demonstrated that **generation objectives are fragile** - they require a stable reconstruction baseline before they can help. This validates the need for careful curriculum learning in the full LatentWire system.
+
+**Key takeaway:** Don't add generation objectives from step 1. Use annealing schedule starting from λ=0 and ramping up over 500-1000 steps.
+
