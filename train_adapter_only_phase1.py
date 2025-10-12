@@ -507,87 +507,82 @@ def train_adapter_phase1(args):
 
 
 def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
-    """Quick evaluation on small sample using F1 score"""
+    """Quick evaluation on small sample using F1 score (batched for speed)"""
     from latentwire.core_utils import batch_metrics
 
     predictions = []
     references = []
 
-    # Track aggregate statistics
-    total_norm_ratio = 0
-    total_cos_sim = 0
-    count = 0
+    # Process all 10 examples in one batch (quick eval is small)
+    texts = [item['source'] + "Answer: " for item in dataset]
+    batch_references = [item['answer'] for item in dataset]
 
-    for idx, item in enumerate(dataset):
-        text = item['source'] + "Answer: "
-        inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
-        input_ids = inputs.input_ids.to(device)
+    # Tokenize batch
+    inputs = tokenizer(
+        texts,
+        return_tensors="pt",
+        truncation=True,
+        max_length=256,
+        padding=True
+    )
+    input_ids = inputs.input_ids.to(device)
+    attention_mask = inputs.attention_mask.to(device)
 
-        with torch.no_grad():
-            orig_embeds = model.get_input_embeddings()(input_ids)
-            compressed = compressor.compress(orig_embeds)
-            adapted = adapter(compressed)
+    with torch.no_grad():
+        # Forward pass: embed → compress → adapt
+        orig_embeds = model.get_input_embeddings()(input_ids)
+        compressed = compressor.compress(orig_embeds)
+        adapted = adapter(compressed)
 
-            if adapted.dtype != orig_embeds.dtype:
-                adapted = adapted.to(orig_embeds.dtype)
+        if adapted.dtype != orig_embeds.dtype:
+            adapted = adapted.to(orig_embeds.dtype)
 
-            # Match magnitude (same fix as training)
-            orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
-            adapted_rms = adapted.pow(2).mean(dim=-1, keepdim=True).sqrt()
-            adapted = adapted * (orig_rms / (adapted_rms + 1e-8))
+        # Match magnitude (same fix as training)
+        orig_rms = orig_embeds.pow(2).mean(dim=-1, keepdim=True).sqrt()
+        adapted_rms = adapted.pow(2).mean(dim=-1, keepdim=True).sqrt()
+        adapted = adapted * (orig_rms / (adapted_rms + 1e-8))
 
-            # Compute diagnostics
-            orig_norm = orig_embeds.norm(dim=-1).mean().item()
-            recon_norm = adapted.norm(dim=-1).mean().item()
-            norm_ratio = recon_norm / (orig_norm + 1e-8)
+        # Batch generate
+        outputs = model.generate(
+            inputs_embeds=adapted,
+            attention_mask=attention_mask,
+            max_new_tokens=10,
+            do_sample=False,
+            temperature=None,
+            top_p=None,
+            pad_token_id=tokenizer.pad_token_id
+        )
 
-            orig_flat = orig_embeds.flatten()
-            recon_flat = adapted.flatten()
+        # Decode batch outputs
+        batch_generated = [tokenizer.decode(out, skip_special_tokens=True) for out in outputs]
+
+        # Compute aggregate diagnostics
+        orig_norms = orig_embeds.norm(dim=-1).mean(dim=-1)  # [batch]
+        recon_norms = adapted.norm(dim=-1).mean(dim=-1)  # [batch]
+        norm_ratios = recon_norms / (orig_norms + 1e-8)
+
+        # Flatten for cosine similarity
+        batch_size = orig_embeds.shape[0]
+        cos_sims = []
+        for b in range(batch_size):
+            orig_flat = orig_embeds[b].flatten()
+            recon_flat = adapted[b].flatten()
             cos_sim = F.cosine_similarity(orig_flat.unsqueeze(0), recon_flat.unsqueeze(0), dim=-1).item()
+            cos_sims.append(cos_sim)
 
-            total_norm_ratio += norm_ratio
-            total_cos_sim += cos_sim
-            count += 1
+        # Print first example diagnostics
+        print(f"\n  Quick eval (first example):")
+        print(f"    Expected: '{batch_references[0]}'")
+        print(f"    Generated: '{batch_generated[0].strip()}'")
+        print(f"    Norm ratio: {norm_ratios[0].item():.3f} | Cosine: {cos_sims[0]:.3f}")
 
-            # Create attention mask (all 1s for embeddings we're passing)
-            attention_mask = torch.ones(
-                adapted.shape[0], adapted.shape[1],
-                dtype=torch.long, device=adapted.device
-            )
+        # Aggregate statistics
+        avg_norm_ratio = norm_ratios.mean().item()
+        avg_cos_sim = sum(cos_sims) / len(cos_sims)
+        print(f"  Avg norm ratio: {avg_norm_ratio:.3f} | Avg cosine: {avg_cos_sim:.3f}")
 
-            outputs = model.generate(
-                inputs_embeds=adapted,
-                attention_mask=attention_mask,
-                max_new_tokens=10,
-                do_sample=False,
-                temperature=None,
-                top_p=None,
-                pad_token_id=tokenizer.pad_token_id
-            )
-
-            # When using inputs_embeds, outputs contains ONLY generated tokens (not prompt)
-            generated = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-            # Log first example for quick diagnostics
-            if idx == 0:
-                # Show token-level reconstruction for first example
-                reconstructed_tokens = decode_embeddings_to_tokens(adapted, model, tokenizer)[0]
-                original_text_decoded = tokenizer.decode(input_ids[0], skip_special_tokens=False)
-
-                print(f"\n  Quick eval example:")
-                print(f"    Expected: '{item['answer']}'")
-                print(f"    Generated: '{generated.strip()}'")
-                print(f"    Original tokens:  {original_text_decoded[:100]}...")
-                print(f"    Reconstructed →:  {reconstructed_tokens[:100]}...")
-                print(f"    Norm ratio: {norm_ratio:.3f} | Cosine: {cos_sim:.3f}")
-
-        predictions.append(generated.strip())
-        references.append(item['answer'])
-
-    # Print aggregate statistics
-    avg_norm_ratio = total_norm_ratio / count
-    avg_cos_sim = total_cos_sim / count
-    print(f"  Avg norm ratio: {avg_norm_ratio:.3f} | Avg cosine: {avg_cos_sim:.3f}")
+    predictions = [g.strip() for g in batch_generated]
+    references = batch_references
 
     _, f1_score = batch_metrics(predictions, references)
     return f1_score
@@ -639,23 +634,48 @@ def decode_embeddings_to_tokens(embeddings, model, tokenizer, top_k=1):
         return decoded_texts
 
 
-def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
-    """Full evaluation with F1 and EM scores"""
+def evaluate_full(model, tokenizer, adapter, compressor, dataset, device, batch_size=32):
+    """
+    Full evaluation with F1 and EM scores using batched processing.
+
+    Args:
+        batch_size: Batch size for evaluation (default 32, since no gradients needed)
+    """
     from latentwire.core_utils import batch_metrics
 
     predictions = []
     references = []
 
     print("\n" + "="*80)
-    print("EVALUATION DIAGNOSTICS (First 3 examples with detailed output)")
+    print(f"EVALUATION DIAGNOSTICS (Batched with size {batch_size})")
     print("="*80)
 
-    for idx, item in enumerate(tqdm(dataset, desc="Evaluating")):
-        text = item['source'] + "Answer: "
-        inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
+    # Process in batches for speed
+    num_batches = (len(dataset) + batch_size - 1) // batch_size
+    global_idx = 0
+
+    for batch_idx in tqdm(range(num_batches), desc="Evaluating"):
+        start_idx = batch_idx * batch_size
+        end_idx = min(start_idx + batch_size, len(dataset))
+        batch_items = dataset[start_idx:end_idx]
+
+        # Prepare batch
+        texts = [item['source'] + "Answer: " for item in batch_items]
+        batch_references = [item['answer'] for item in batch_items]
+
+        # Tokenize batch with padding
+        inputs = tokenizer(
+            texts,
+            return_tensors="pt",
+            truncation=True,
+            max_length=256,
+            padding=True  # Left-padding for generation
+        )
         input_ids = inputs.input_ids.to(device)
+        attention_mask = inputs.attention_mask.to(device)
 
         with torch.no_grad():
+            # Forward pass: embed → compress → adapt
             orig_embeds = model.get_input_embeddings()(input_ids)
             compressed = compressor.compress(orig_embeds)
             adapted = adapter(compressed)
@@ -668,12 +688,7 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
             adapted_rms = adapted.pow(2).mean(dim=-1, keepdim=True).sqrt()
             adapted = adapted * (orig_rms / (adapted_rms + 1e-8))
 
-            # Create attention mask (all 1s for embeddings we're passing)
-            attention_mask = torch.ones(
-                adapted.shape[0], adapted.shape[1],
-                dtype=torch.long, device=adapted.device
-            )
-
+            # Batch generate
             outputs = model.generate(
                 inputs_embeds=adapted,
                 attention_mask=attention_mask,
@@ -684,42 +699,49 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
                 pad_token_id=tokenizer.pad_token_id
             )
 
+            # Decode batch outputs
             # When using inputs_embeds, outputs contains ONLY generated tokens (not prompt)
-            generated = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            batch_generated = [tokenizer.decode(out, skip_special_tokens=True) for out in outputs]
 
-            # DIAGNOSTIC LOGGING: First 3 examples only (token decoding is expensive!)
-            if idx < 3:
-                # Compute embedding norms
-                orig_norm = orig_embeds.norm(dim=-1).mean().item()
-                recon_norm = adapted.norm(dim=-1).mean().item()
-                norm_ratio = recon_norm / (orig_norm + 1e-8)
+            # Diagnostics for first 3 examples only
+            if global_idx < 3:
+                for local_idx in range(min(3 - global_idx, len(batch_items))):
+                    idx = global_idx + local_idx
 
-                # Compute cosine similarity
-                orig_flat = orig_embeds.flatten()
-                recon_flat = adapted.flatten()
-                cos_sim = F.cosine_similarity(orig_flat.unsqueeze(0), recon_flat.unsqueeze(0), dim=-1).item()
+                    # Compute per-example diagnostics
+                    orig_norm = orig_embeds[local_idx].norm(dim=-1).mean().item()
+                    recon_norm = adapted[local_idx].norm(dim=-1).mean().item()
+                    norm_ratio = recon_norm / (orig_norm + 1e-8)
 
-                print(f"\n{'─'*80}")
-                print(f"Example {idx + 1}:")
-                print(f"  Question: {text[:80]}...")
-                print(f"  Expected: '{item['answer']}'")
-                print(f"  Generated: '{generated.strip()}'")
-                print(f"\n  Embedding diagnostics:")
-                print(f"    Original norm:  {orig_norm:.2f}")
-                print(f"    Reconstructed norm: {recon_norm:.2f}")
-                print(f"    Ratio: {norm_ratio:.3f} ({'TOO LOW' if norm_ratio < 0.8 else 'TOO HIGH' if norm_ratio > 1.2 else 'OK'})")
-                print(f"    Cosine similarity: {cos_sim:.3f}")
+                    orig_flat = orig_embeds[local_idx].flatten()
+                    recon_flat = adapted[local_idx].flatten()
+                    cos_sim = F.cosine_similarity(orig_flat.unsqueeze(0), recon_flat.unsqueeze(0), dim=-1).item()
 
-                # Only decode tokens for first example (very expensive - cosine sim with 128k vocab)
-                if idx == 0:
-                    reconstructed_tokens = decode_embeddings_to_tokens(adapted, model, tokenizer)[0]
-                    original_text_decoded = tokenizer.decode(input_ids[0], skip_special_tokens=False)
-                    print(f"\n  Token-level reconstruction (first example only):")
-                    print(f"    Original tokens:  {original_text_decoded[:150]}...")
-                    print(f"    Reconstructed →:  {reconstructed_tokens[:150]}...")
+                    print(f"\n{'─'*80}")
+                    print(f"Example {idx + 1}:")
+                    print(f"  Question: {texts[local_idx][:80]}...")
+                    print(f"  Expected: '{batch_references[local_idx]}'")
+                    print(f"  Generated: '{batch_generated[local_idx].strip()}'")
+                    print(f"\n  Embedding diagnostics:")
+                    print(f"    Original norm:  {orig_norm:.2f}")
+                    print(f"    Reconstructed norm: {recon_norm:.2f}")
+                    print(f"    Ratio: {norm_ratio:.3f} ({'TOO LOW' if norm_ratio < 0.8 else 'TOO HIGH' if norm_ratio > 1.2 else 'OK'})")
+                    print(f"    Cosine similarity: {cos_sim:.3f}")
 
-        predictions.append(generated.strip())
-        references.append(item['answer'])
+                    # Only decode tokens for very first example (very expensive)
+                    if idx == 0:
+                        reconstructed_tokens = decode_embeddings_to_tokens(
+                            adapted[local_idx:local_idx+1], model, tokenizer
+                        )[0]
+                        original_text_decoded = tokenizer.decode(input_ids[local_idx], skip_special_tokens=False)
+                        print(f"\n  Token-level reconstruction (first example only):")
+                        print(f"    Original tokens:  {original_text_decoded[:150]}...")
+                        print(f"    Reconstructed →:  {reconstructed_tokens[:150]}...")
+
+        # Collect predictions
+        predictions.extend([g.strip() for g in batch_generated])
+        references.extend(batch_references)
+        global_idx += len(batch_items)
 
     print("\n" + "="*80)
 

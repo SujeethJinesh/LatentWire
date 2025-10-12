@@ -50,7 +50,7 @@ echo "  - Batch Size: $BATCH_SIZE (2x increase with device fixes, ~50-60GB/85GB 
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
 echo "  - Steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) total"
-echo "  - Eval: 100 samples (reduced from 500 for 5× faster evaluation)"
+echo "  - Eval: 100 samples (reduced from 500), batched (batch_size=32 for 16× speedup)"
 echo "  - Output: $CHECKPOINT_DIR"
 echo ""
 echo "Memory Profile:"
