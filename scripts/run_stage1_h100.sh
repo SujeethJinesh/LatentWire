@@ -50,6 +50,7 @@ echo "  - Batch Size: $BATCH_SIZE (2x increase with device fixes, ~50-60GB/85GB 
 echo "  - Samples: $SAMPLES"
 echo "  - Epochs: $EPOCHS"
 echo "  - Steps: $((SAMPLES * EPOCHS / BATCH_SIZE)) total"
+echo "  - Eval: 100 samples (reduced from 500 for 5× faster evaluation)"
 echo "  - Output: $CHECKPOINT_DIR"
 echo ""
 echo "Memory Profile:"
@@ -86,7 +87,7 @@ python train_adapter_only_phase1.py \
   --epochs $EPOCHS \
   --batch_size $BATCH_SIZE \
   --eval_every 1 \
-  --eval_samples 500 \
+  --eval_samples 100 \
   --save_dir "$CHECKPOINT_DIR" \
   --diagnostic_log "$CHECKPOINT_DIR/logs/diagnostics.jsonl" \
   2>&1 | tee -a "$CHECKPOINT_DIR/logs/training.log"

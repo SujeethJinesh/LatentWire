@@ -565,7 +565,8 @@ def evaluate_quick(model, tokenizer, adapter, compressor, dataset, device):
                 pad_token_id=tokenizer.pad_token_id
             )
 
-            generated = tokenizer.decode(outputs[0][len(input_ids[0]):], skip_special_tokens=True)
+            # When using inputs_embeds, outputs contains ONLY generated tokens (not prompt)
+            generated = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
             # Log first example for quick diagnostics
             if idx == 0:
@@ -646,7 +647,7 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
     references = []
 
     print("\n" + "="*80)
-    print("EVALUATION DIAGNOSTICS (First 10 examples)")
+    print("EVALUATION DIAGNOSTICS (First 3 examples with detailed output)")
     print("="*80)
 
     for idx, item in enumerate(tqdm(dataset, desc="Evaluating")):
@@ -683,10 +684,11 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
                 pad_token_id=tokenizer.pad_token_id
             )
 
-            generated = tokenizer.decode(outputs[0][len(input_ids[0]):], skip_special_tokens=True)
+            # When using inputs_embeds, outputs contains ONLY generated tokens (not prompt)
+            generated = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-            # DIAGNOSTIC LOGGING: First 10 examples
-            if idx < 10:
+            # DIAGNOSTIC LOGGING: First 3 examples only (token decoding is expensive!)
+            if idx < 3:
                 # Compute embedding norms
                 orig_norm = orig_embeds.norm(dim=-1).mean().item()
                 recon_norm = adapted.norm(dim=-1).mean().item()
@@ -697,23 +699,24 @@ def evaluate_full(model, tokenizer, adapter, compressor, dataset, device):
                 recon_flat = adapted.flatten()
                 cos_sim = F.cosine_similarity(orig_flat.unsqueeze(0), recon_flat.unsqueeze(0), dim=-1).item()
 
-                # Decode reconstructed embeddings to see what tokens they map to
-                reconstructed_tokens = decode_embeddings_to_tokens(adapted, model, tokenizer)[0]
-                original_text_decoded = tokenizer.decode(input_ids[0], skip_special_tokens=False)
-
                 print(f"\n{'─'*80}")
                 print(f"Example {idx + 1}:")
                 print(f"  Question: {text[:80]}...")
                 print(f"  Expected: '{item['answer']}'")
                 print(f"  Generated: '{generated.strip()}'")
-                print(f"\n  Token-level reconstruction:")
-                print(f"    Original tokens:  {original_text_decoded[:150]}...")
-                print(f"    Reconstructed →:  {reconstructed_tokens[:150]}...")
-                print(f"\n  Embedding norms:")
-                print(f"    Original:  {orig_norm:.2f}")
-                print(f"    Reconstructed: {recon_norm:.2f}")
+                print(f"\n  Embedding diagnostics:")
+                print(f"    Original norm:  {orig_norm:.2f}")
+                print(f"    Reconstructed norm: {recon_norm:.2f}")
                 print(f"    Ratio: {norm_ratio:.3f} ({'TOO LOW' if norm_ratio < 0.8 else 'TOO HIGH' if norm_ratio > 1.2 else 'OK'})")
-                print(f"  Cosine similarity: {cos_sim:.3f}")
+                print(f"    Cosine similarity: {cos_sim:.3f}")
+
+                # Only decode tokens for first example (very expensive - cosine sim with 128k vocab)
+                if idx == 0:
+                    reconstructed_tokens = decode_embeddings_to_tokens(adapted, model, tokenizer)[0]
+                    original_text_decoded = tokenizer.decode(input_ids[0], skip_special_tokens=False)
+                    print(f"\n  Token-level reconstruction (first example only):")
+                    print(f"    Original tokens:  {original_text_decoded[:150]}...")
+                    print(f"    Reconstructed →:  {reconstructed_tokens[:150]}...")
 
         predictions.append(generated.strip())
         references.append(item['answer'])
