@@ -1,0 +1,100 @@
+{
+  "samples": 10,
+  "max_new_tokens": 12,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "qwen": 236.5
+  },
+  "compression": {
+    "qwen": 7.390625
+  },
+  "payload_bytes": 327680,
+  "payload_bytes_detail": {
+    "fp32": 327680,
+    "fp16": 163840,
+    "selected": null
+  },
+  "wire": {
+    "prompt_chars": {
+      "qwen": 11044
+    },
+    "prompt_count": 10,
+    "latent_shape": [
+      10,
+      32,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 327680,
+      "fp16": 163840
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_latent_bytes": null,
+    "wire_ratio": {}
+  },
+  "text": {
+    "qwen": {
+      "em": 0.4,
+      "f1": 0.5833333298333334,
+      "nll_token": 21.862741708755493
+    },
+    "wall_clock_sec": 1.1322762966156006
+  },
+  "latent": {
+    "qwen": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll": 10.74841758939955,
+      "first_token_top1": 0.0,
+      "first_token_top5": 0.0,
+      "nll_token": 10.74841758939955
+    },
+    "wall_clock_sec": 0.32138705253601074
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "qwen": {
+      "em": 0.1,
+      "f1": 0.1953846139785799
+    },
+    "wall_clock_sec": 0.318178653717041
+  },
+  "joint": {
+    "em": null,
+    "f1": null,
+    "agreement": null,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  },
+  "debug": {
+    "qwen": {
+      "latent_anchor_text": "Answer: "
+    },
+    "settings": {
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.0,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "yes",
+      "decode": {
+        "min_new_tokens": 1,
+        "eos_ban_steps": 0,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      },
+      "embedding_replay": false,
+      "embedding_baseline_modes": []
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "dataset": "squad"
+}
