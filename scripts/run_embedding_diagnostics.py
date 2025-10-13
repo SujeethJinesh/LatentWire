@@ -259,11 +259,13 @@ def main():
         encoded = tokenizer(source_text, return_tensors='pt', padding=False, truncation=True, max_length=256)
         input_ids = encoded['input_ids'].to(device)
 
-        text_emb = model.get_input_embeddings()(input_ids)
-        text_embeddings_list.append(text_emb)
+        text_emb = model.get_input_embeddings()(input_ids)  # [1, seq_len, d_model]
+        text_embeddings_list.append(text_emb.squeeze(0))  # [seq_len, d_model]
 
-    # Concatenate
-    text_embeddings = torch.cat(text_embeddings_list, dim=0)  # [total_tokens, D]
+    # Concatenate along sequence dimension
+    text_embeddings = torch.cat(text_embeddings_list, dim=0)  # [total_tokens, d_model]
+    # Add batch dimension back for analysis functions
+    text_embeddings = text_embeddings.unsqueeze(0)  # [1, total_tokens, d_model]
     print(f"\nCollected text embeddings: {text_embeddings.shape}")
 
     # Analyze text embeddings
