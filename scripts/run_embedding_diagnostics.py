@@ -17,7 +17,9 @@ Usage:
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
+from datetime import datetime
 import numpy as np
 
 import torch
@@ -208,16 +210,33 @@ def main():
     parser.add_argument('--model_id', type=str, default='meta-llama/Meta-Llama-3.1-8B-Instruct')
     parser.add_argument('--checkpoint', type=str, default=None, help='Path to trained checkpoint (encoder+adapter)')
     parser.add_argument('--no-checkpoint', action='store_true', help='Run without checkpoint (synthetic bad embeddings)')
-    parser.add_argument('--samples', type=int, default=20, help='Number of samples to analyze')
+    parser.add_argument('--samples', type=int, default=100, help='Number of samples to analyze')
     parser.add_argument('--dataset', type=str, default='squad')
     parser.add_argument('--output_dir', type=str, default='runs/embed_diagnostics')
 
     args = parser.parse_args()
 
+    # Setup output directory
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Start timing
+    start_time = time.time()
+    experiment_log = {
+        'start_time': datetime.now().isoformat(),
+        'config': vars(args),
+        'device': str(torch.device('cuda' if torch.cuda.is_available() else 'cpu')),
+        'num_gpus': torch.cuda.device_count(),
+    }
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}\n")
+    print(f"Using device: {device}")
+    print(f"Number of GPUs: {torch.cuda.device_count()}")
+    print(f"Samples: {args.samples}")
+    print(f"Output: {output_dir}\n")
 
     # Load model
+    t0 = time.time()
     print(f"Loading model: {args.model_id}...")
     model = AutoModelForCausalLM.from_pretrained(
         args.model_id,
@@ -232,27 +251,52 @@ def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    print("Model loaded!")
+    model_load_time = time.time() - t0
+    print(f"Model loaded! ({model_load_time:.2f}s)")
+    experiment_log['model_load_time_sec'] = model_load_time
 
     # Cache vocab stats
+    t0 = time.time()
     print("\nCaching vocabulary statistics...")
     vocab_stats = get_vocab_embedding_stats(model)
+    vocab_cache_time = time.time() - t0
     print(f"  Vocab RMS: {vocab_stats['rms']:.4f}")
     print(f"  Vocab mean: {vocab_stats['mean']:.6f}")
     print(f"  Vocab std: {vocab_stats['std']:.4f}")
+    print(f"  Time: {vocab_cache_time:.2f}s")
+    experiment_log['vocab_cache_time_sec'] = vocab_cache_time
+
+    # Save vocab stats
+    vocab_stats_save = {
+        'rms': float(vocab_stats['rms']),
+        'mean': float(vocab_stats['mean']),
+        'std': float(vocab_stats['std']),
+        'vocab_size': vocab_stats['embeddings'].shape[0],
+        'embedding_dim': vocab_stats['embeddings'].shape[1],
+    }
+    with open(output_dir / 'vocab_stats.json', 'w') as f:
+        json.dump(vocab_stats_save, f, indent=2)
+    print(f"  Saved vocab stats to {output_dir / 'vocab_stats.json'}")
 
     # Load data
+    t0 = time.time()
     print(f"\nLoading {args.samples} examples from {args.dataset}...")
     examples = load_examples(dataset=args.dataset, split='validation', samples=args.samples, seed=42)
+    data_load_time = time.time() - t0
+    print(f"  Loaded {len(examples)} examples ({data_load_time:.2f}s)")
+    experiment_log['data_load_time_sec'] = data_load_time
+    experiment_log['num_examples'] = len(examples)
 
     # Collect text embeddings
     print("\n" + "="*80)
     print("ANALYZING TEXT EMBEDDINGS (Ground Truth)")
     print("="*80)
 
+    t0 = time.time()
     text_embeddings_list = []
+    total_tokens = 0
     for i, example in enumerate(examples):
-        if i % 10 == 0:
+        if i % 25 == 0:
             print(f"  Processing example {i}/{len(examples)}...")
 
         source_text = example['source']
@@ -261,15 +305,24 @@ def main():
 
         text_emb = model.get_input_embeddings()(input_ids)  # [1, seq_len, d_model]
         text_embeddings_list.append(text_emb.squeeze(0))  # [seq_len, d_model]
+        total_tokens += text_emb.shape[1]
 
     # Concatenate along sequence dimension
     text_embeddings = torch.cat(text_embeddings_list, dim=0)  # [total_tokens, d_model]
     # Add batch dimension back for analysis functions
     text_embeddings = text_embeddings.unsqueeze(0)  # [1, total_tokens, d_model]
+
+    text_collect_time = time.time() - t0
     print(f"\nCollected text embeddings: {text_embeddings.shape}")
+    print(f"  Total tokens: {total_tokens}")
+    print(f"  Time: {text_collect_time:.2f}s ({total_tokens/text_collect_time:.0f} tokens/sec)")
+    experiment_log['text_collect_time_sec'] = text_collect_time
+    experiment_log['total_tokens'] = total_tokens
 
     # Analyze text embeddings
+    t0 = time.time()
     text_stats = analyze_embeddings(text_embeddings, "text_embeddings", vocab_stats, device)
+    text_analysis_time = time.time() - t0
 
     print("\nText Embedding Statistics:")
     print(f"  Per-token RMS: min={text_stats['per_token_rms']['min']:.4f}, "
@@ -278,10 +331,26 @@ def main():
           f"std={text_stats['per_token_rms']['std']:.4f}")
     print(f"  Overall RMS: {text_stats['overall_rms']:.4f}")
     print(f"  Nearest vocab cosine: mean={text_stats['nearest_vocab_cosine']['mean']:.4f}")
+    print(f"  Analysis time: {text_analysis_time:.2f}s")
+    experiment_log['text_analysis_time_sec'] = text_analysis_time
+
+    # Save text embeddings analysis
+    with open(output_dir / 'text_embeddings_analysis.json', 'w') as f:
+        json.dump(text_stats, f, indent=2)
+    print(f"  Saved analysis to {output_dir / 'text_embeddings_analysis.json'}")
 
     # Test transforms on text embeddings
     print("\nTesting transforms on text embeddings...")
+    t0 = time.time()
     text_transform_results = test_transforms(text_embeddings, "text_embeddings", vocab_stats, device)
+    text_transform_time = time.time() - t0
+    print(f"  Transform testing time: {text_transform_time:.2f}s")
+    experiment_log['text_transform_time_sec'] = text_transform_time
+
+    # Save transform results
+    with open(output_dir / 'text_transforms.json', 'w') as f:
+        json.dump(text_transform_results, f, indent=2)
+    print(f"  Saved transforms to {output_dir / 'text_transforms.json'}")
 
     # Handle learned embeddings
     learned_stats = None
@@ -301,6 +370,7 @@ def main():
         print("="*80)
         print("\nGenerating synthetic embeddings that simulate common failure modes...")
 
+        t0 = time.time()
         # Create synthetic "bad" embeddings with known issues
         D = text_embeddings.size(-1)
 
@@ -308,11 +378,16 @@ def main():
         learned_embeddings = text_embeddings * 100.0
         learned_embeddings = learned_embeddings + torch.randn_like(learned_embeddings) * 10.0  # Add noise
 
+        learned_gen_time = time.time() - t0
         print(f"Synthetic embeddings: {learned_embeddings.shape}")
-        print("  Mode: 100× magnitude + noise")
+        print(f"  Mode: 100× magnitude + noise")
+        print(f"  Generation time: {learned_gen_time:.2f}s")
+        experiment_log['learned_gen_time_sec'] = learned_gen_time
 
         # Analyze synthetic embeddings
+        t0 = time.time()
         learned_stats = analyze_embeddings(learned_embeddings, "synthetic_100x", vocab_stats, device)
+        learned_analysis_time = time.time() - t0
 
         print("\nSynthetic Embedding Statistics:")
         print(f"  Per-token RMS: min={learned_stats['per_token_rms']['min']:.4f}, "
@@ -321,10 +396,26 @@ def main():
               f"std={learned_stats['per_token_rms']['std']:.4f}")
         print(f"  Overall RMS: {learned_stats['overall_rms']:.4f}")
         print(f"  Nearest vocab cosine: mean={learned_stats['nearest_vocab_cosine']['mean']:.4f}")
+        print(f"  Analysis time: {learned_analysis_time:.2f}s")
+        experiment_log['learned_analysis_time_sec'] = learned_analysis_time
+
+        # Save learned embeddings analysis
+        with open(output_dir / 'learned_embeddings_analysis.json', 'w') as f:
+            json.dump(learned_stats, f, indent=2)
+        print(f"  Saved analysis to {output_dir / 'learned_embeddings_analysis.json'}")
 
         # Test transforms
         print("\nTesting transforms on synthetic embeddings...")
+        t0 = time.time()
         learned_transform_results = test_transforms(learned_embeddings, "synthetic_100x", vocab_stats, device)
+        learned_transform_time = time.time() - t0
+        print(f"  Transform testing time: {learned_transform_time:.2f}s")
+        experiment_log['learned_transform_time_sec'] = learned_transform_time
+
+        # Save learned transform results
+        with open(output_dir / 'learned_transforms.json', 'w') as f:
+            json.dump(learned_transform_results, f, indent=2)
+        print(f"  Saved transforms to {output_dir / 'learned_transforms.json'}")
 
     # Comparison
     if learned_stats:
@@ -354,15 +445,18 @@ def main():
         print(f"  Learned CV (std/mean): {learned_rms_cv:.4f}")
         print(f"  → {'PRESERVED' if abs(text_rms_cv - learned_rms_cv) < 0.1 else 'DESTROYED'}")
 
-    # Save results
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Finalize experiment log
+    total_time = time.time() - start_time
+    experiment_log['end_time'] = datetime.now().isoformat()
+    experiment_log['total_time_sec'] = total_time
 
+    # Save comprehensive results
     results = {
+        'experiment_log': experiment_log,
         'vocab_stats': {
-            'rms': vocab_stats['rms'],
-            'mean': vocab_stats['mean'],
-            'std': vocab_stats['std'],
+            'rms': float(vocab_stats['rms']),
+            'mean': float(vocab_stats['mean']),
+            'std': float(vocab_stats['std']),
         },
         'text_embeddings': text_stats,
         'text_transforms': text_transform_results,
@@ -376,8 +470,21 @@ def main():
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=2)
 
+    # Save experiment log separately for easy access
+    with open(output_dir / 'experiment_log.json', 'w') as f:
+        json.dump(experiment_log, f, indent=2)
+
     print(f"\n{'='*80}")
-    print(f"Results saved to: {output_path}")
+    print(f"Results saved to: {output_dir}")
+    print(f"  - diagnostics.json (comprehensive results)")
+    print(f"  - experiment_log.json (timing and config)")
+    print(f"  - vocab_stats.json")
+    print(f"  - text_embeddings_analysis.json")
+    print(f"  - text_transforms.json")
+    if learned_stats:
+        print(f"  - learned_embeddings_analysis.json")
+        print(f"  - learned_transforms.json")
+    print(f"\nTotal time: {total_time:.2f}s ({total_time/60:.1f}min)")
     print(f"{'='*80}\n")
 
     # Key insights

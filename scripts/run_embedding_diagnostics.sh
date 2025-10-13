@@ -34,7 +34,7 @@ echo ""
 # Configuration
 MODEL_ID="${MODEL_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 DATASET="${DATASET:-squad}"
-SAMPLES="${SAMPLES:-20}"
+SAMPLES="${SAMPLES:-100}"
 OUTPUT_DIR="${OUTPUT_DIR:-runs/embed_diagnostics}"
 CHECKPOINT="${CHECKPOINT:-}"
 
