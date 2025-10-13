@@ -393,8 +393,9 @@ def test_architecture(args):
 
     print("\n[2/7] Instantiating new architecture components...")
 
-    # Determine dtype from frozen models (bfloat16 on CUDA, float32 on CPU)
-    model_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+    # Use mixed precision: learned components in float32, cast inputs/outputs as needed
+    # This avoids LayerNorm dtype issues with bfloat16
+    learned_dtype = torch.float32
 
     alignment_tf = AlignmentTransformer(
         d_model_llama=d_model_llama,
@@ -404,14 +405,14 @@ def test_architecture(args):
         n_heads=8,
         n_layers=4,
         dropout=0.1,
-    ).to(device=device, dtype=model_dtype)
+    ).to(device=device, dtype=learned_dtype)
 
     adapter_llama = InterlinguaAdapter(
         d_inter=args.d_inter,
         d_model=d_model_llama,
         num_slots=args.num_slots,
         dropout=0.1,
-    ).to(device=device, dtype=model_dtype)
+    ).to(device=device, dtype=learned_dtype)
 
     if qwen_model is not None:
         adapter_qwen = InterlinguaAdapter(
@@ -419,7 +420,7 @@ def test_architecture(args):
             d_model=d_model_qwen,
             num_slots=args.num_slots,
             dropout=0.1,
-        ).to(device=device, dtype=model_dtype)
+        ).to(device=device, dtype=learned_dtype)
     else:
         adapter_qwen = None
 
@@ -459,7 +460,7 @@ def test_architecture(args):
     with torch.no_grad():
         z_sem = torch.tensor(
             sem_encoder.encode([text], convert_to_tensor=False, show_progress_bar=False),
-            dtype=model_dtype,
+            dtype=learned_dtype,
             device=device,
         )
 
@@ -470,6 +471,8 @@ def test_architecture(args):
 
     with torch.no_grad():
         llama_embeds = llama_model.get_input_embeddings()(llama_input_ids)
+        # Cast to float32 for learned components (mixed precision)
+        llama_embeds = llama_embeds.to(learned_dtype)
 
     # Forward through alignment transformer
     z_llama = alignment_tf(
@@ -481,6 +484,8 @@ def test_architecture(args):
 
     # Forward through adapter
     prefix_embeds_llama = adapter_llama(z_llama)
+    # Cast back to model dtype for frozen LLM
+    prefix_embeds_llama = prefix_embeds_llama.to(llama_model.dtype)
 
     print(f"  ✓ z_sem shape: {z_sem.shape}")
     print(f"  ✓ llama_embeds shape: {llama_embeds.shape}")
@@ -508,6 +513,8 @@ def test_architecture(args):
 
         with torch.no_grad():
             qwen_embeds = qwen_model.get_input_embeddings()(qwen_input_ids)
+            # Cast to float32 for learned components
+            qwen_embeds = qwen_embeds.to(learned_dtype)
 
         z_qwen = alignment_tf(
             token_embeds=qwen_embeds,
@@ -517,6 +524,8 @@ def test_architecture(args):
         )
 
         prefix_embeds_qwen = adapter_qwen(z_qwen)
+        # Cast back to model dtype
+        prefix_embeds_qwen = prefix_embeds_qwen.to(qwen_model.dtype)
 
         print(f"  ✓ z_qwen shape: {z_qwen.shape}")
         print(f"  ✓ prefix_embeds_qwen shape: {prefix_embeds_qwen.shape}")
@@ -599,7 +608,7 @@ def test_architecture(args):
                 with torch.no_grad():
                     z_sem = torch.tensor(
                         sem_encoder.encode([text], convert_to_tensor=False, show_progress_bar=False),
-                        dtype=model_dtype,
+                        dtype=learned_dtype,
                         device=device,
                     )
 
@@ -610,9 +619,11 @@ def test_architecture(args):
 
                 with torch.no_grad():
                     llama_embeds = llama_model.get_input_embeddings()(llama_input_ids)
+                    llama_embeds = llama_embeds.to(learned_dtype)
 
                 z_llama = alignment_tf(llama_embeds, z_sem, 'llama', llama_attn_mask)
                 prefix_llama = adapter_llama(z_llama)
+                prefix_llama = prefix_llama.to(llama_model.dtype)
 
                 # Generation loss (Llama)
                 loss_gen_llama = k_token_ce_simple(
@@ -627,9 +638,11 @@ def test_architecture(args):
 
                     with torch.no_grad():
                         qwen_embeds = qwen_model.get_input_embeddings()(qwen_input_ids)
+                        qwen_embeds = qwen_embeds.to(learned_dtype)
 
                     z_qwen = alignment_tf(qwen_embeds, z_sem, 'qwen', qwen_attn_mask)
                     prefix_qwen = adapter_qwen(z_qwen)
+                    prefix_qwen = prefix_qwen.to(qwen_model.dtype)
 
                     # Generation loss (Qwen)
                     loss_gen_qwen = k_token_ce_simple(
