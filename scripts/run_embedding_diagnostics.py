@@ -10,6 +10,10 @@ Answers critical questions:
 4. What properties does the LLM actually need?
 
 Usage:
+  # Use via wrapper script (recommended - trains then analyzes end-to-end):
+  PYTHONPATH=. bash scripts/run_embedding_diagnostics.sh
+
+  # Or directly with existing checkpoint:
   python scripts/run_embedding_diagnostics.py --checkpoint path/to/checkpoint
 
 IMPORTANT: --checkpoint is REQUIRED. Synthetic testing is prohibited.

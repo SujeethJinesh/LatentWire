@@ -1,22 +1,28 @@
 #!/usr/bin/env bash
 #
 # Comprehensive Embedding Diagnostics
-# Analyzes REAL learned embeddings from trained checkpoints
+# Trains a quick checkpoint then analyzes REAL learned embeddings
 #
-# Usage: CHECKPOINT=path/to/checkpoint bash scripts/run_embedding_diagnostics.sh
+# Usage: PYTHONPATH=. bash scripts/run_embedding_diagnostics.sh
 #
-# IMPORTANT: CHECKPOINT environment variable is REQUIRED
-#            Synthetic testing is prohibited - only real data is analyzed
+# This script works END-TO-END from scratch:
+#   1. Runs quick training (500 steps) to generate real checkpoint
+#   2. Analyzes learned embeddings from that checkpoint
+#   3. Compares to text embeddings
+#
+# NO synthetic data - only real trained embeddings
 #
 
 set -e
 
 echo "========================================================================"
-echo "EMBEDDING DIAGNOSTICS (Real Data Only)"
+echo "EMBEDDING DIAGNOSTICS (Real Data - End-to-End)"
 echo "========================================================================"
 echo ""
-echo "This script analyzes REAL learned embeddings from trained checkpoints"
-echo "and compares them to text embeddings to understand failure modes."
+echo "This script:"
+echo "  1. TRAINS a quick checkpoint (500 steps, real data)"
+echo "  2. ANALYZES learned embeddings from that checkpoint"
+echo "  3. COMPARES to text embeddings"
 echo ""
 echo "Analysis includes:"
 echo "  - Per-token RMS distribution (min, max, mean, std)"
@@ -36,39 +42,27 @@ echo ""
 
 # Configuration
 MODEL_ID="${MODEL_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
+QWEN_ID="${QWEN_ID:-Qwen/Qwen2.5-7B-Instruct}"
 DATASET="${DATASET:-squad}"
-SAMPLES="${SAMPLES:-1000}"
-BATCH_SIZE="${BATCH_SIZE:-64}"
+TRAIN_SAMPLES="${TRAIN_SAMPLES:-1000}"
+TRAIN_EPOCHS="${TRAIN_EPOCHS:-1}"
+EVAL_SAMPLES="${EVAL_SAMPLES:-1000}"
+BATCH_SIZE="${BATCH_SIZE:-8}"
 OUTPUT_DIR="${OUTPUT_DIR:-runs/embed_diagnostics}"
-CHECKPOINT="${CHECKPOINT:-}"
-
-# Validate checkpoint
-if [ -z "$CHECKPOINT" ]; then
-    echo "ERROR: CHECKPOINT environment variable is required."
-    echo ""
-    echo "Usage: CHECKPOINT=path/to/checkpoint bash scripts/run_embedding_diagnostics.sh"
-    echo ""
-    echo "Synthetic testing is prohibited - you must provide a real checkpoint."
-    exit 1
-fi
-
-if [ ! -d "$CHECKPOINT" ]; then
-    echo "ERROR: Checkpoint directory does not exist: $CHECKPOINT"
-    exit 1
-fi
-
-if [ ! -f "$CHECKPOINT/encoder.pt" ]; then
-    echo "ERROR: No encoder.pt found in checkpoint: $CHECKPOINT"
-    exit 1
-fi
+LATENT_LEN="${LATENT_LEN:-32}"
+D_Z="${D_Z:-256}"
 
 echo "Configuration:"
-echo "  MODEL_ID: $MODEL_ID"
+echo "  LLAMA_ID: $MODEL_ID"
+echo "  QWEN_ID: $QWEN_ID"
 echo "  DATASET: $DATASET"
-echo "  SAMPLES: $SAMPLES"
+echo "  TRAIN_SAMPLES: $TRAIN_SAMPLES"
+echo "  TRAIN_EPOCHS: $TRAIN_EPOCHS"
+echo "  EVAL_SAMPLES: $EVAL_SAMPLES"
 echo "  BATCH_SIZE: $BATCH_SIZE"
+echo "  LATENT_LEN: $LATENT_LEN"
+echo "  D_Z: $D_Z"
 echo "  OUTPUT_DIR: $OUTPUT_DIR"
-echo "  CHECKPOINT: $CHECKPOINT"
 echo ""
 
 # Set up environment
@@ -81,8 +75,49 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="$OUTPUT_DIR/diagnostics_${TIMESTAMP}.log"
 
 echo "========================================================================"
-echo "Starting diagnostics..."
-echo "Log file: $LOG_FILE"
+echo "PHASE 1: TRAINING (Quick checkpoint generation)"
+echo "========================================================================"
+echo ""
+
+CHECKPOINT_DIR="$OUTPUT_DIR/checkpoint"
+
+# Run quick training to generate real checkpoint
+{
+echo "Training quick checkpoint with real data..."
+echo "  Epochs: $TRAIN_EPOCHS"
+echo "  Samples: $TRAIN_SAMPLES"
+echo "  Batch size: $BATCH_SIZE"
+echo "  Latent: M=$LATENT_LEN, d_z=$D_Z"
+echo ""
+
+python latentwire/train.py \
+    --llama_id "$MODEL_ID" \
+    --qwen_id "$QWEN_ID" \
+    --samples "$TRAIN_SAMPLES" \
+    --epochs "$TRAIN_EPOCHS" \
+    --batch_size "$BATCH_SIZE" \
+    --latent_len "$LATENT_LEN" \
+    --d_z "$D_Z" \
+    --encoder_type byte \
+    --dataset "$DATASET" \
+    --sequential_models \
+    --warm_anchor_text "Answer: " \
+    --first_token_ce_weight 0.5 \
+    --output_dir "$CHECKPOINT_DIR"
+
+echo ""
+echo "Training complete!"
+echo ""
+} 2>&1 | tee -a "$LOG_FILE"
+
+# Find the checkpoint (should be latest)
+if [ ! -f "$CHECKPOINT_DIR/encoder.pt" ]; then
+    echo "ERROR: Training did not produce checkpoint at $CHECKPOINT_DIR/encoder.pt"
+    exit 1
+fi
+
+echo "========================================================================"
+echo "PHASE 2: ANALYSIS (Embedding diagnostics)"
 echo "========================================================================"
 echo ""
 
@@ -91,11 +126,11 @@ echo ""
 python scripts/run_embedding_diagnostics.py \
     --model_id "$MODEL_ID" \
     --dataset "$DATASET" \
-    --samples "$SAMPLES" \
+    --samples "$EVAL_SAMPLES" \
     --batch_size "$BATCH_SIZE" \
     --output_dir "$OUTPUT_DIR" \
-    --checkpoint "$CHECKPOINT"
-} 2>&1 | tee "$LOG_FILE"
+    --checkpoint "$CHECKPOINT_DIR"
+} 2>&1 | tee -a "$LOG_FILE"
 
 echo ""
 echo "========================================================================"

@@ -6,6 +6,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ALWAYS follow these requirements when working on this codebase:**
 
+### 0. End-to-End Execution Model (CRITICAL)
+**Scripts must work completely from scratch with NO pre-existing checkpoints or data:**
+
+- **Standard run pattern**: `git pull && rm -rf runs && PYTHONPATH=. bash <script.sh>`
+- **Checkpoints are NOT saved between runs** - `rm -rf runs` deletes everything
+- **Scripts MUST be fully self-contained and work end-to-end**
+- **NO synthetic data or synthetic tests** - only real data from real training
+
+**What this means for script design:**
+1. **Diagnostic/analysis scripts must TRAIN first, then analyze**
+   - Example: `run_embedding_diagnostics.sh` trains a quick checkpoint, then analyzes it
+   - Cannot assume any pre-existing checkpoints exist
+2. **Scripts cannot rely on previous runs** - each execution starts fresh
+3. **All data must be generated from real training** - no synthetic or mocked data
+4. **Training must be fast enough for iteration** - use small sample counts for diagnostics
+
+**Example end-to-end script structure:**
+```bash
+# PHASE 1: Generate real data (train checkpoint)
+python latentwire/train.py --samples 1000 --epochs 1 --output_dir runs/diagnostic/checkpoint
+
+# PHASE 2: Analyze real data from checkpoint
+python scripts/analyze.py --checkpoint runs/diagnostic/checkpoint
+```
+
+**This is NON-NEGOTIABLE:** Scripts that require pre-existing checkpoints will fail in the standard workflow.
+
 ### 1. Logging and Output Capture (MANDATORY)
 - **ALL scripts MUST use `tee` to capture output to log files**
 - Log files should be timestamped: `{script_name}_$(date +"%Y%m%d_%H%M%S").log`
