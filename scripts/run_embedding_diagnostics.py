@@ -210,7 +210,8 @@ def main():
     parser.add_argument('--model_id', type=str, default='meta-llama/Meta-Llama-3.1-8B-Instruct')
     parser.add_argument('--checkpoint', type=str, default=None, help='Path to trained checkpoint (encoder+adapter)')
     parser.add_argument('--no-checkpoint', action='store_true', help='Run without checkpoint (synthetic bad embeddings)')
-    parser.add_argument('--samples', type=int, default=100, help='Number of samples to analyze')
+    parser.add_argument('--samples', type=int, default=1000, help='Number of samples to analyze')
+    parser.add_argument('--batch_size', type=int, default=64, help='Batch size for embedding extraction')
     parser.add_argument('--dataset', type=str, default='squad')
     parser.add_argument('--output_dir', type=str, default='runs/embed_diagnostics')
 
@@ -233,6 +234,7 @@ def main():
     print(f"Using device: {device}")
     print(f"Number of GPUs: {torch.cuda.device_count()}")
     print(f"Samples: {args.samples}")
+    print(f"Batch size: {args.batch_size}")
     print(f"Output: {output_dir}\n")
 
     # Load model
@@ -287,7 +289,7 @@ def main():
     experiment_log['data_load_time_sec'] = data_load_time
     experiment_log['num_examples'] = len(examples)
 
-    # Collect text embeddings
+    # Collect text embeddings (batch processing)
     print("\n" + "="*80)
     print("ANALYZING TEXT EMBEDDINGS (Ground Truth)")
     print("="*80)
@@ -295,17 +297,42 @@ def main():
     t0 = time.time()
     text_embeddings_list = []
     total_tokens = 0
-    for i, example in enumerate(examples):
-        if i % 25 == 0:
-            print(f"  Processing example {i}/{len(examples)}...")
+    batch_size = args.batch_size
+    num_batches = (len(examples) + batch_size - 1) // batch_size
 
-        source_text = example['source']
-        encoded = tokenizer(source_text, return_tensors='pt', padding=False, truncation=True, max_length=256)
-        input_ids = encoded['input_ids'].to(device)
+    print(f"Processing {len(examples)} examples in {num_batches} batches of size {batch_size}...")
 
-        text_emb = model.get_input_embeddings()(input_ids)  # [1, seq_len, d_model]
-        text_embeddings_list.append(text_emb.squeeze(0))  # [seq_len, d_model]
-        total_tokens += text_emb.shape[1]
+    for batch_idx in range(num_batches):
+        start_idx = batch_idx * batch_size
+        end_idx = min(start_idx + batch_size, len(examples))
+        batch = examples[start_idx:end_idx]
+
+        if batch_idx % 5 == 0 or batch_idx == num_batches - 1:
+            print(f"  Batch {batch_idx+1}/{num_batches} (examples {start_idx}-{end_idx})...")
+
+        # Extract source texts
+        source_texts = [ex['source'] for ex in batch]
+
+        # Tokenize with padding for batch processing
+        encoded = tokenizer(
+            source_texts,
+            return_tensors='pt',
+            padding=True,
+            truncation=True,
+            max_length=256
+        )
+        input_ids = encoded['input_ids'].to(device)  # [batch_size, max_seq_len]
+        attention_mask = encoded['attention_mask'].to(device)  # [batch_size, max_seq_len]
+
+        # Get embeddings for entire batch
+        batch_embeddings = model.get_input_embeddings()(input_ids)  # [batch_size, max_seq_len, d_model]
+
+        # Extract only non-padding tokens
+        for i in range(batch_embeddings.shape[0]):
+            mask = attention_mask[i].bool()  # [max_seq_len]
+            valid_embeddings = batch_embeddings[i][mask]  # [actual_seq_len, d_model]
+            text_embeddings_list.append(valid_embeddings)
+            total_tokens += valid_embeddings.shape[0]
 
     # Concatenate along sequence dimension
     text_embeddings = torch.cat(text_embeddings_list, dim=0)  # [total_tokens, d_model]
@@ -315,9 +342,13 @@ def main():
     text_collect_time = time.time() - t0
     print(f"\nCollected text embeddings: {text_embeddings.shape}")
     print(f"  Total tokens: {total_tokens}")
+    print(f"  Avg tokens/example: {total_tokens/len(examples):.1f}")
     print(f"  Time: {text_collect_time:.2f}s ({total_tokens/text_collect_time:.0f} tokens/sec)")
+    print(f"  Throughput: {len(examples)/text_collect_time:.1f} examples/sec")
     experiment_log['text_collect_time_sec'] = text_collect_time
     experiment_log['total_tokens'] = total_tokens
+    experiment_log['avg_tokens_per_example'] = total_tokens / len(examples)
+    experiment_log['examples_per_sec'] = len(examples) / text_collect_time
 
     # Analyze text embeddings
     t0 = time.time()

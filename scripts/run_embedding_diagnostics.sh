@@ -34,7 +34,8 @@ echo ""
 # Configuration
 MODEL_ID="${MODEL_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 DATASET="${DATASET:-squad}"
-SAMPLES="${SAMPLES:-100}"
+SAMPLES="${SAMPLES:-1000}"
+BATCH_SIZE="${BATCH_SIZE:-64}"
 OUTPUT_DIR="${OUTPUT_DIR:-runs/embed_diagnostics}"
 CHECKPOINT="${CHECKPOINT:-}"
 
@@ -42,6 +43,7 @@ echo "Configuration:"
 echo "  MODEL_ID: $MODEL_ID"
 echo "  DATASET: $DATASET"
 echo "  SAMPLES: $SAMPLES"
+echo "  BATCH_SIZE: $BATCH_SIZE"
 echo "  OUTPUT_DIR: $OUTPUT_DIR"
 if [ -n "$CHECKPOINT" ]; then
     echo "  CHECKPOINT: $CHECKPOINT"
@@ -65,6 +67,7 @@ if [ -n "$CHECKPOINT" ]; then
         --model_id "$MODEL_ID" \
         --dataset "$DATASET" \
         --samples "$SAMPLES" \
+        --batch_size "$BATCH_SIZE" \
         --output_dir "$OUTPUT_DIR" \
         --checkpoint "$CHECKPOINT"
 else
@@ -72,6 +75,7 @@ else
         --model_id "$MODEL_ID" \
         --dataset "$DATASET" \
         --samples "$SAMPLES" \
+        --batch_size "$BATCH_SIZE" \
         --output_dir "$OUTPUT_DIR" \
         --no-checkpoint
 fi
