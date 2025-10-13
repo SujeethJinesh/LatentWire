@@ -1,4 +1,4 @@
-Starting experiment suite at Sun Oct 12 21:55:16 PDT 2025
+Starting experiment suite at Sun Oct 12 22:21:58 PDT 2025
 
 ========================================================================
 PHASE 1/5: TEXT BASELINE - Upper Bound
@@ -16,8 +16,8 @@ Device: cuda
 GPUs: 4
 
 Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3472.11it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.67s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.60s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.55s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:14<00:00,  3.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:14<00:00,  3.66s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3744.08it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.92s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.98s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.69s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.36s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.90s/it]
 Model loaded!
 
 Loading 10000 examples from squad...
@@ -44,7 +44,7 @@ RESULTS
 ================================================================================
 
 Results saved to runs/full_suite/baselines/text_llama/results.json
-Total time: 258.6s
+Total time: 258.8s
 
 
 [1b] Skipping Qwen text baseline for speed...
@@ -68,8 +68,8 @@ Device: cuda
 GPUs: 4
 
 Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3392.08it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.80s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.54s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.26s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.78s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3767.62it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.95s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.93s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.77s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.37s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.92s/it]
 Model loaded!
 
 Loading 10000 examples from squad...
@@ -97,12 +97,12 @@ RESULTS
 ================================================================================
 
 Results saved to runs/full_suite/baselines/token_budget_llama_m32/results.json
-Total time: 52.8s
+Total time: 54.3s
 
 
 [2b] Skipping Qwen token budget for speed...
 
-✓ Phase 2 complete in 56s (0m)
+✓ Phase 2 complete in 58s (0m)
 
 ========================================================================
 PHASE 3/5: PCA BASELINE - Linear Compression
@@ -117,12 +117,13 @@ Using device: cuda
 GPUs: 4
 
 Loading meta-llama/Meta-Llama-3.1-8B-Instruct...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6420.67it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.96s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.67s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.67s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.29s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.82s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6792.40it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.94s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.85s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.32s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.88s/it]
 Model loaded!
 
 Loading 10000 examples from squad...
 Loaded 10000 examples
 
 Fitting IncrementalPCA (batched GPU extraction)...
+Embedding layer device: cuda:0
   Processing examples 0/10000...
