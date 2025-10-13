@@ -83,6 +83,10 @@ def main():
     # Initialize IncrementalPCA
     pca = IncrementalPCA(n_components=args.latent_len, batch_size=1000)
 
+    # Get device from embedding layer (important for device_map='auto')
+    embed_device = model.get_input_embeddings().weight.device
+    print(f"Embedding layer device: {embed_device}")
+
     # GPU batch size for embedding extraction
     gpu_batch_size = 128  # Process 128 examples per GPU forward pass (use more GPU memory)
     pca_fit_every = 500  # Fit PCA every 500 examples worth of embeddings
@@ -107,7 +111,7 @@ def main():
             max_length=256,
             padding=True
         )
-        input_ids = encoded['input_ids'].to(device)
+        input_ids = encoded['input_ids'].to(embed_device)  # Use embedding layer's device
 
         # Extract embeddings in a single batched forward pass
         with torch.no_grad():
@@ -171,7 +175,7 @@ def main():
 
         # Tokenize source
         encoded = tokenizer(ex['source'], return_tensors='pt', truncation=True, max_length=256)
-        input_ids = encoded['input_ids'].to(device)
+        input_ids = encoded['input_ids'].to(embed_device)  # Use embedding layer's device
 
         # Get text embeddings
         with torch.no_grad():
@@ -184,8 +188,8 @@ def main():
             # Decompress back
             reconstructed = pca.inverse_transform(compressed)  # [seq_len, d_model]
 
-            # Convert back to torch and to device
-            pca_embeds = torch.from_numpy(reconstructed).to(device).to(text_embeds.dtype)
+            # Convert back to torch and to embedding device
+            pca_embeds = torch.from_numpy(reconstructed).to(embed_device).to(text_embeds.dtype)
             pca_embeds = pca_embeds.unsqueeze(0)  # [1, seq_len, d_model]
 
             # Generate with reconstructed embeddings
