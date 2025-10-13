@@ -430,7 +430,6 @@ def main():
         print(f"\nCheckpoint: {args.checkpoint}")
 
         # Load config to get encoder/adapter architecture
-        import json
         ckpt_dir = Path(args.checkpoint)
         config_path = ckpt_dir / "config.json"
         if not config_path.exists():
