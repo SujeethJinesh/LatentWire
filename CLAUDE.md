@@ -2,11 +2,39 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Core Development Principles
+
+### 0. FIX ROOT CAUSES - DON'T SKIP OR WORKAROUND
+
+**When encountering bugs, OOMs, or performance issues:**
+
+✅ **DO**:
+- Fix the actual root cause (use IncrementalPCA for memory issues, add proper batching, optimize algorithms)
+- Make features work correctly and efficiently
+- Use proper data structures and algorithms for the problem
+- Optimize memory usage through better design
+
+❌ **DON'T**:
+- Skip features with flags like `SKIP_PCA=yes` because they OOM
+- Remove functionality because it's "hard to fix"
+- Add workarounds that hide problems
+- Give up when something is slow or memory-intensive
+
+**Examples:**
+- ❌ PCA OOMs → Don't skip it
+- ✅ PCA OOMs → Use IncrementalPCA for batch processing
+- ❌ Eval too slow → Don't reduce samples
+- ✅ Eval too slow → Add proper batching and parallelization
+
+**Deliberate design choices are different:**
+- Skipping Qwen to focus on Llama first = valid optimization choice
+- Skipping PCA because it OOMs = bug that needs fixing
+
 ## Critical Workflow Requirements
 
 **ALWAYS follow these requirements when working on this codebase:**
 
-### 0. End-to-End Execution Model (CRITICAL)
+### 1. End-to-End Execution Model (CRITICAL)
 **Scripts must work completely from scratch with NO pre-existing checkpoints or data:**
 
 - **Standard run pattern**: `git pull && rm -rf runs && PYTHONPATH=. bash <script.sh>`

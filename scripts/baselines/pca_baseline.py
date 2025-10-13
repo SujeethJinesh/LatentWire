@@ -23,7 +23,7 @@ from datetime import datetime
 
 import torch
 import torch.nn as nn
-from sklearn.decomposition import PCA
+from sklearn.decomposition import IncrementalPCA
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -75,34 +75,52 @@ def main():
     examples = load_examples(dataset=args.dataset, split='validation', samples=args.samples, seed=42)
     print(f"Loaded {len(examples)} examples\n")
 
-    # Extract text embeddings for PCA training
-    print("Extracting text embeddings for PCA...")
-    all_embeddings = []
+    # Fit IncrementalPCA in batches to avoid OOM
+    print("Fitting IncrementalPCA (batch processing to avoid OOM)...")
 
-    for i, ex in enumerate(examples):
-        if i % 100 == 0:
-            print(f"  Processing {i}/{len(examples)}...")
+    # Initialize IncrementalPCA
+    pca = IncrementalPCA(n_components=args.latent_len, batch_size=1000)
 
-        encoded = tokenizer(ex['source'], return_tensors='pt', truncation=True, max_length=256)
-        input_ids = encoded['input_ids'].to(device)
+    # Process in batches of examples (not to be confused with PCA's internal batch_size)
+    batch_size = 500  # Process 500 examples at a time
+    total_tokens = 0
+    embedding_dim = None
 
-        # Get embeddings
-        with torch.no_grad():
-            embeddings = model.get_input_embeddings()(input_ids)  # [1, seq_len, d_model]
-            # Flatten to [seq_len, d_model] and move to CPU
-            all_embeddings.append(embeddings[0].cpu().float().numpy())
+    for batch_start in range(0, len(examples), batch_size):
+        batch_end = min(batch_start + batch_size, len(examples))
+        batch = examples[batch_start:batch_end]
 
-    # Concatenate all embeddings
-    all_embeddings_np = np.concatenate(all_embeddings, axis=0)  # [total_tokens, d_model]
-    print(f"  Collected {all_embeddings_np.shape[0]} token embeddings")
-    print(f"  Embedding dim: {all_embeddings_np.shape[1]}\n")
+        print(f"  Processing examples {batch_start}-{batch_end}/{len(examples)}...")
 
-    # Fit PCA
-    print(f"Fitting PCA to reduce {all_embeddings_np.shape[1]}D → {args.latent_len}D...")
-    pca = PCA(n_components=args.latent_len)
-    pca.fit(all_embeddings_np)
+        # Extract embeddings for this batch
+        batch_embeddings = []
+        for ex in batch:
+            encoded = tokenizer(ex['source'], return_tensors='pt', truncation=True, max_length=256)
+            input_ids = encoded['input_ids'].to(device)
+
+            with torch.no_grad():
+                embeddings = model.get_input_embeddings()(input_ids)  # [1, seq_len, d_model]
+                batch_embeddings.append(embeddings[0].cpu().float().numpy())
+
+        # Concatenate batch
+        batch_embeddings_np = np.concatenate(batch_embeddings, axis=0)  # [batch_tokens, d_model]
+        total_tokens += batch_embeddings_np.shape[0]
+        embedding_dim = batch_embeddings_np.shape[1]
+
+        # Partial fit on this batch
+        pca.partial_fit(batch_embeddings_np)
+
+        # Clear memory
+        del batch_embeddings, batch_embeddings_np
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    print(f"  Collected {total_tokens} token embeddings")
+    print(f"  Embedding dim: {embedding_dim}\n")
+
+    # Compute explained variance
+    print(f"IncrementalPCA fitted: {embedding_dim}D → {args.latent_len}D")
     explained_var = np.sum(pca.explained_variance_ratio_)
-    print(f"  PCA fitted!")
     print(f"  Explained variance: {explained_var:.2%}")
     print(f"  First 5 components: {pca.explained_variance_ratio_[:5]}\n")
 
