@@ -84,7 +84,7 @@ def main():
     pca = IncrementalPCA(n_components=args.latent_len, batch_size=1000)
 
     # GPU batch size for embedding extraction
-    gpu_batch_size = 64  # Process 64 examples per GPU forward pass
+    gpu_batch_size = 128  # Process 128 examples per GPU forward pass (use more GPU memory)
     pca_fit_every = 500  # Fit PCA every 500 examples worth of embeddings
 
     total_tokens = 0
