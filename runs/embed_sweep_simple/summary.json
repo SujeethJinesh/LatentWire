@@ -1,0 +1,245 @@
+{
+  "total_experiments": 10,
+  "successful": 10,
+  "failed": 0,
+  "results": [
+    {
+      "experiment": "baseline",
+      "config": {
+        "type": "baseline"
+      },
+      "f1": 0.3445022666079664,
+      "em": 0.01,
+      "empty_rate": 0.01,
+      "num_samples": 100,
+      "time_sec": 29.75944972038269,
+      "description": "No transform (upper bound)"
+    },
+    {
+      "experiment": "rms_scale0.5",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.5
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.23496651649475098,
+      "description": "RMS matching (scale=0.5)"
+    },
+    {
+      "experiment": "rms_scale0.7",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.7
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.19399595260620117,
+      "description": "RMS matching (scale=0.7)"
+    },
+    {
+      "experiment": "rms_scale0.8",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.8
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.194166898727417,
+      "description": "RMS matching (scale=0.8)"
+    },
+    {
+      "experiment": "rms_scale0.9",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.9
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.3385162353515625,
+      "description": "RMS matching (scale=0.9)"
+    },
+    {
+      "experiment": "rms_scale1.0",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.0
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.2723712921142578,
+      "description": "RMS matching (scale=1.0)"
+    },
+    {
+      "experiment": "rms_scale1.1",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.1
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.19397902488708496,
+      "description": "RMS matching (scale=1.1)"
+    },
+    {
+      "experiment": "rms_scale1.2",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.2
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.19333457946777344,
+      "description": "RMS matching (scale=1.2)"
+    },
+    {
+      "experiment": "rms_scale1.5",
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.5
+      },
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "num_samples": 100,
+      "time_sec": 0.19317269325256348,
+      "description": "RMS matching (scale=1.5)"
+    },
+    {
+      "experiment": "batch_dist",
+      "config": {
+        "type": "batch_distribution"
+      },
+      "f1": 0.35052968363472603,
+      "em": 0.01,
+      "empty_rate": 0.01,
+      "num_samples": 100,
+      "time_sec": 28.330561637878418,
+      "description": "Batch distribution matching"
+    }
+  ],
+  "sorted_by_f1": [
+    {
+      "rank": 1,
+      "experiment": "batch_dist",
+      "f1": 0.35052968363472603,
+      "em": 0.01,
+      "empty_rate": 0.01,
+      "config": {
+        "type": "batch_distribution"
+      }
+    },
+    {
+      "rank": 2,
+      "experiment": "baseline",
+      "f1": 0.3445022666079664,
+      "em": 0.01,
+      "empty_rate": 0.01,
+      "config": {
+        "type": "baseline"
+      }
+    },
+    {
+      "rank": 3,
+      "experiment": "rms_scale0.5",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.5
+      }
+    },
+    {
+      "rank": 4,
+      "experiment": "rms_scale0.7",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.7
+      }
+    },
+    {
+      "rank": 5,
+      "experiment": "rms_scale0.8",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.8
+      }
+    },
+    {
+      "rank": 6,
+      "experiment": "rms_scale0.9",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 0.9
+      }
+    },
+    {
+      "rank": 7,
+      "experiment": "rms_scale1.0",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.0
+      }
+    },
+    {
+      "rank": 8,
+      "experiment": "rms_scale1.1",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.1
+      }
+    },
+    {
+      "rank": 9,
+      "experiment": "rms_scale1.2",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.2
+      }
+    },
+    {
+      "rank": 10,
+      "experiment": "rms_scale1.5",
+      "f1": 0.0,
+      "em": 0.0,
+      "empty_rate": 1.0,
+      "config": {
+        "type": "rms_matching",
+        "target_scale": 1.5
+      }
+    }
+  ]
+}

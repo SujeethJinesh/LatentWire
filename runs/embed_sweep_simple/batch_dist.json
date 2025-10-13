@@ -1,0 +1,12 @@
+{
+  "experiment": "batch_dist",
+  "config": {
+    "type": "batch_distribution"
+  },
+  "f1": 0.35052968363472603,
+  "em": 0.01,
+  "empty_rate": 0.01,
+  "num_samples": 100,
+  "time_sec": 28.330561637878418,
+  "description": "Batch distribution matching"
+}

@@ -1,0 +1,13 @@
+{
+  "experiment": "rms_scale1.1",
+  "config": {
+    "type": "rms_matching",
+    "target_scale": 1.1
+  },
+  "f1": 0.0,
+  "em": 0.0,
+  "empty_rate": 1.0,
+  "num_samples": 100,
+  "time_sec": 0.19397902488708496,
+  "description": "RMS matching (scale=1.1)"
+}

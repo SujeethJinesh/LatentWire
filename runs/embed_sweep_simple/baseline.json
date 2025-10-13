@@ -1,0 +1,12 @@
+{
+  "experiment": "baseline",
+  "config": {
+    "type": "baseline"
+  },
+  "f1": 0.3445022666079664,
+  "em": 0.01,
+  "empty_rate": 0.01,
+  "num_samples": 100,
+  "time_sec": 29.75944972038269,
+  "description": "No transform (upper bound)"
+}
