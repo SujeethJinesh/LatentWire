@@ -38,6 +38,7 @@ LLAMA_ID="${LLAMA_ID:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 QWEN_ID="${QWEN_ID:-Qwen/Qwen2.5-7B-Instruct}"
 DATASET="${DATASET:-squad}"
 EVAL_SAMPLES="${EVAL_SAMPLES:-10000}"     # Full validation set for baselines
+PCA_SAMPLES="${PCA_SAMPLES:-1000}"        # PCA uses fewer samples (CPU-bound)
 TRAIN_SAMPLES="${TRAIN_SAMPLES:-87599}"   # Full training set for LatentWire
 TRAIN_EPOCHS="${TRAIN_EPOCHS:-3}"
 BATCH_SIZE="${BATCH_SIZE:-32}"            # Training batch size
@@ -52,6 +53,7 @@ echo "  LLAMA_ID: $LLAMA_ID"
 echo "  QWEN_ID: $QWEN_ID"
 echo "  DATASET: $DATASET"
 echo "  EVAL_SAMPLES: $EVAL_SAMPLES"
+echo "  PCA_SAMPLES: $PCA_SAMPLES (reduced for CPU-bound PCA)"
 echo "  TRAIN_SAMPLES: $TRAIN_SAMPLES"
 echo "  TRAIN_EPOCHS: $TRAIN_EPOCHS"
 echo "  BATCH_SIZE (training): $BATCH_SIZE"
@@ -160,11 +162,11 @@ echo ""
 
 PHASE_START=$(date +%s)
 
-echo "[3] Running PCA baseline (M=$LATENT_LEN, samples=$EVAL_SAMPLES)..."
+echo "[3] Running PCA baseline (M=$LATENT_LEN, samples=$PCA_SAMPLES)..."
 python scripts/baselines/pca_baseline.py \
     --llama_id "$LLAMA_ID" \
     --dataset "$DATASET" \
-    --samples "$EVAL_SAMPLES" \
+    --samples "$PCA_SAMPLES" \
     --latent_len "$LATENT_LEN" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
     --save_dir "$BASE_OUTPUT_DIR/baselines/pca_m${LATENT_LEN}"
