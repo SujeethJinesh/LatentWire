@@ -2,9 +2,21 @@
 
 Clean, essential experiments for building a compressed interlingua.
 
-## Quick Start
+## Quick Start - Master Script (Recommended)
 
-Standard workflow (end-to-end from scratch):
+**Run everything at once** with comprehensive analysis:
+```bash
+git pull && rm -rf runs && PYTHONPATH=. bash scripts/run_all_experiments.sh
+```
+
+This runs all baselines + LatentWire training + evaluation + analysis in one go.
+**Estimated time: 4-6 hours on 4x H100**
+
+**Output**: `runs/full_suite/comparison_report.txt` with complete analysis
+
+---
+
+**Or run individual experiments** (see sections below):
 ```bash
 git pull && rm -rf runs && PYTHONPATH=. bash scripts/<experiment>.sh
 ```
@@ -14,6 +26,47 @@ All scripts:
 - Use tee logging (timestamped logs in output directories)
 - Optimize for 4x H100 GPUs
 - Use real data only (no synthetic tests)
+
+## Master Script
+
+### run_all_experiments.sh
+**What**: Runs complete experiment suite with comprehensive analysis
+**Pipeline**:
+1. Text baseline (Llama + Qwen)
+2. Token budget baseline (Llama + Qwen)
+3. PCA baseline (Llama)
+4. LatentWire training (encoder + adapters)
+5. LatentWire evaluation (Llama + Qwen)
+6. Comprehensive comparison analysis
+
+**Usage**:
+```bash
+PYTHONPATH=. bash scripts/run_all_experiments.sh
+```
+
+**Configuration**:
+```bash
+# Customize with environment variables
+EVAL_SAMPLES=10000 \
+TRAIN_SAMPLES=87599 \
+TRAIN_EPOCHS=3 \
+BATCH_SIZE=32 \
+LATENT_LEN=32 \
+PYTHONPATH=. bash scripts/run_all_experiments.sh
+```
+
+**Output**: `runs/full_suite/`
+- `comparison_report.txt` - Human-readable analysis
+- `comparison_report.json` - Structured results
+- `master_TIMESTAMP.log` - Complete execution log
+- All individual experiment results in subdirectories
+
+**What the analysis reports**:
+- ✓/✗ Does LatentWire beat token budget? (Critical test)
+- ✓/✗ Does LatentWire beat PCA? (Non-linear necessary?)
+- How much performance retained vs full text?
+- Cross-model generalization (Llama vs Qwen)
+- Overall success/failure determination
 
 ## Baseline Experiments
 
