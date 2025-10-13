@@ -1,0 +1,585 @@
+Starting experiment suite at Sun Oct 12 20:30:49 PDT 2025
+
+========================================================================
+PHASE 1/5: TEXT BASELINE - Upper Bound
+========================================================================
+
+Evaluating both LLMs with full text prompts...
+This establishes the best possible performance.
+
+[1a] Running Llama text baseline (batch_size=256)...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Text Baseline Evaluation
+Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+Device: cuda
+GPUs: 4
+
+Loading model...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3560.53it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.92s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.83s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.35s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.87s/it]
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Model loaded!
+
+Loading 10 examples from squad...
+Loaded 10 examples
+
+Generating answers with full text prompts (batch_size=256)...
+  0/10...
+
+Computing metrics...
+
+================================================================================
+RESULTS
+================================================================================
+  Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+  Samples: 10
+  EM: 0.00%
+  F1: 26.92%
+================================================================================
+
+Results saved to runs/full_suite/baselines/text_llama/results.json
+Total time: 22.4s
+
+
+[1b] Skipping Qwen text baseline for speed...
+
+✓ Phase 1 complete in 26s (0m)
+
+========================================================================
+PHASE 2/5: TOKEN BUDGET BASELINE - Fair Comparison
+========================================================================
+
+Evaluating with text truncated to M=32 tokens...
+This is the critical fairness baseline.
+
+[2a] Running Llama token budget (M=32, batch_size=256)...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Token Budget Baseline Evaluation
+Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+Token Budget: 32
+Device: cuda
+GPUs: 4
+
+Loading model...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7688.92it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.65s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.76s/it]
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Model loaded!
+
+Loading 10 examples from squad...
+Loaded 10 examples
+
+Generating answers with text truncated to 32 tokens (batch_size=256)...
+  0/10...
+
+Computing metrics...
+
+================================================================================
+RESULTS
+================================================================================
+  Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+  Token Budget: 32
+  Samples: 10
+  EM: 0.00%
+  F1: 0.00%
+================================================================================
+
+Results saved to runs/full_suite/baselines/token_budget_llama_m32/results.json
+Total time: 22.2s
+
+
+[2b] Skipping Qwen token budget for speed...
+
+✓ Phase 2 complete in 25s (0m)
+
+========================================================================
+PHASE 3/5: PCA BASELINE - Linear Compression
+========================================================================
+
+Testing if PCA (linear projection) is sufficient...
+
+[3] Running PCA baseline (M=32)...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Using device: cuda
+GPUs: 4
+
+Loading meta-llama/Meta-Llama-3.1-8B-Instruct...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7323.10it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.78s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.80s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.80s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.34s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.87s/it]
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Model loaded!
+
+Loading 10 examples from squad...
+Loaded 10 examples
+
+Extracting text embeddings for PCA...
+  Processing 0/10...
+  Collected 1724 token embeddings
+  Embedding dim: 4096
+
+Fitting PCA to reduce 4096D → 32D...
+  PCA fitted!
+  Explained variance: 25.10%
+  First 5 components: [0.03828775 0.02112159 0.0141998  0.0121368  0.01053393]
+
+Saved PCA to runs/full_suite/baselines/pca_m32/pca_M32.pkl
+
+================================================================================
+EVALUATION: Generating answers with PCA-compressed embeddings
+================================================================================
+
+  Example 0/10...
+
+Computing metrics...
+
+================================================================================
+RESULTS
+================================================================================
+  Samples: 10
+  Latent dim (M): 32
+  PCA explained variance: 25.10%
+  EM: 0.00%
+  F1: 0.00%
+================================================================================
+
+Results saved to runs/full_suite/baselines/pca_m32/results.json
+Total time: 25.7s
+
+INTERPRETATION:
+  If PCA F1 ≈ Text baseline → Linear compression is sufficient
+  If PCA F1 << Text baseline → Need learned non-linear encoder
+
+
+✓ Phase 3 complete in 29s (0m)
+
+========================================================================
+PHASE 4/5: LATENTWIRE TRAINING - Learned Compression
+========================================================================
+
+Training encoder + adapters for compressed interlingua...
+  Samples: 100
+  Epochs: 1
+  Batch size: 8
+  Latent: M=32, d_z=256
+
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[Optimization] Enabled FlashAttention-2 and memory-efficient kernels
+[Optimization] Enabled TF32 for matmul and cuDNN
+Loading dataset subset...
+Loading SQuAD subset...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6415.76it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.05s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.10s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:00,  1.00it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.21it/s]
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3704.40it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.34it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.39it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.16it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.31it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.29it/s]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+[Qwen/Qwen2.5-7B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 1, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+Llama hidden size: 4096, Qwen hidden size: 3584
+[DeviceMap] Llama: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+[DeviceMap] Qwen : {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 1, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 2, 'model.layers.14': 2, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 3, 'model.layers.23': 3, 'model.layers.24': 3, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+[After Model Loading] [GPU Memory] GPU0:6.2GB(7%), GPU1:8.6GB(10%), GPU2:8.6GB(10%), GPU3:8.0GB(9%) | Total: 31.4GB allocated, 31.5GB reserved, 308.6GB free, Peak: 31.4GB
+[WARN] t=0 alignment failed: t=0 mismatch: got 12366, expected 60704
+[INFO] llama anchor tokens: 3
+[WARN] t=0 alignment failed: t=0 mismatch: got 12095, expected 59604
+[INFO] qwen anchor tokens: 3
+[Optimizer] Gathering latent adapter parameters (direct wrappers fallback)...
+[Optimizer]   Meta-Llama-3.1-8B-Instruct: skipped (use_latent_adapters=False)
+[Optimizer]   Qwen2.5-7B-Instruct: skipped (use_latent_adapters=False)
+[Optimizer] Latent adapter summary: 0 params in 0 tensors
+[Optimizer] No latent adapters enabled (expected)
+[Optimization] Using fused AdamW optimizer
+[Optimizer] Created 3 parameter groups:
+  [1] encoder(90 tensors)
+  [2] llama_adapter(20 tensors)
+  [3] qwen_adapter(20 tensors)
+[INFO] LR scheduler: CosineAnnealingLR (T_max=12, eta_min=2.00e-06)
+⚠️  No valid checkpoint found to resume; starting fresh.
+Epoch 1/1
+[Epoch 1 Start] [GPU Memory] GPU0:6.3GB(14%), GPU1:8.6GB(10%), GPU2:8.6GB(10%), GPU3:8.0GB(9%) | Total: 31.4GB allocated, 37.1GB reserved, 303.0GB free, Peak: 34.5GB
+    [Memory after encoder] 31.9GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] KD teacher: adapters NOT disabled - KD may be contaminated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+    [Memory after backward] 31.9GB allocated, peak 70.5GB
+    [Memory after optimizer] 32.0GB allocated
+  [Step 1] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(22%), GPU2:8.6GB(22%), GPU3:8.1GB(22%) | Total: 32.0GB allocated, 73.6GB reserved, 266.6GB free, Peak: 70.5GB
+    [Memory after encoder] 32.5GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+    [Memory after backward] 32.2GB allocated, peak 70.5GB
+    [Memory after optimizer] 32.2GB allocated
+  [Step 2] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(22%) | Total: 32.0GB allocated, 74.5GB reserved, 265.6GB free, Peak: 70.5GB
+    [Memory after encoder] 32.5GB allocated
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+    [Memory after backward] 32.2GB allocated, peak 70.5GB
+    [Memory after optimizer] 32.2GB allocated
+  [Step 3] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(22%) | Total: 32.0GB allocated, 74.9GB reserved, 265.3GB free, Peak: 70.5GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 4] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(22%) | Total: 32.0GB allocated, 75.2GB reserved, 264.9GB free, Peak: 70.5GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 5] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(22%) | Total: 32.0GB allocated, 75.4GB reserved, 264.7GB free, Peak: 70.5GB
+  [Batch Size Suggestion after 5 steps] Low peak memory (20.7%), can cautiously increase batch size
+    Current: 8, Suggested: 9
+    To apply: set BATCH_SIZE_STAGEA/B=9 in run script
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 6] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 32.0GB allocated, 76.3GB reserved, 263.9GB free, Peak: 70.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 7] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 32.0GB allocated, 76.3GB reserved, 263.9GB free, Peak: 70.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 8] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 32.0GB allocated, 76.3GB reserved, 263.9GB free, Peak: 70.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 9] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 32.0GB allocated, 76.3GB reserved, 263.9GB free, Peak: 70.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  10/13 | grad_norm=12.56 | sec/step~1.21 | lr=8.56e-06 | keep=1.00 | K=4 | llama(L): tf=9.7396 first=9.1840 kCE=8.6595 KD=6.3428 acc=0.000 align=0.0000 | scale_pen(llama)=2.2737e-13 | qwen(L): tf=11.1319 first=14.5056 kCE=8.0971 KD=13.6156 acc=0.125 [✓'1'] align=0.0000 | scale_pen(qwen)=2.1151e-10 | feature_grads[encoder=5.623e+00, adapter_llama=7.853e+00, adapter_qwen=8.030e+00] | K=4 tau=2.00
+  [Step 10] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 32.0GB allocated, 76.3GB reserved, 263.9GB free, Peak: 70.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 11] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 32.0GB allocated, 76.3GB reserved, 263.9GB free, Peak: 70.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  [Step 12] [GPU Memory] GPU0:6.6GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 32.0GB allocated, 76.3GB reserved, 263.9GB free, Peak: 70.8GB
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+[WARN] Failed to disable KD teacher adapters: No adapter loaded. Please load an adapter first.
+  step  13/13 | grad_norm=19.81 | sec/step~1.74 | lr=3.67e-06 | keep=1.00 | K=4 | llama(L): tf=10.4999 first=8.8695 kCE=8.4032 KD=4.3618 acc=0.000 align=0.0000 | scale_pen(llama)=1.0360e-11 | qwen(L): tf=12.9944 first=13.6776 kCE=9.4936 KD=15.6929 acc=0.250 [✓'1'] align=0.0000 | scale_pen(qwen)=6.3793e-11 | feature_grads[encoder=9.916e+00, adapter_llama=1.250e+01, adapter_qwen=1.174e+01] | K=4 tau=2.00
+  [Step 13] [GPU Memory] GPU0:6.5GB(20%), GPU1:8.6GB(23%), GPU2:8.6GB(23%), GPU3:8.1GB(23%) | Total: 31.9GB allocated, 76.8GB reserved, 263.3GB free, Peak: 70.8GB
+[checkpoint] Freed 1.0KB before save.
+[checkpoint] Saved latest: encoder.pt, state.pt, config.json, adapter_llama.pt, adapter_qwen.pt
+[checkpoint] Freed 0.0B after save (non-canonical).
+✅ Saved latest checkpoint to runs/full_suite/latentwire
+
+✓ Phase 4 complete in 40s (0m)
+
+========================================================================
+PHASE 5/5: LATENTWIRE EVALUATION
+========================================================================
+
+Evaluating trained LatentWire system...
+
+WARNING: Best checkpoint not found, using latest
+Using checkpoint: runs/full_suite/latentwire
+
+[5a] Evaluating LatentWire on Llama...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Auto-detected device: cuda
+Encoder input alignment: mode=raw | strip_anchor=yes | samples=10
+Building encoder and computing Z...
+Saved Z to runs/full_suite/latentwire/eval_llama/Z.pt
+
+[Standard Evaluation Mode]
+(Use --sequential_eval to enable per-model encoder text auto-alignment.)
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6806.17it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.11it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.18s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.04s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.37it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.18it/s]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+[meta-llama/Meta-Llama-3.1-8B-Instruct] hf_device_map: {'model.embed_tokens': 0, 'model.layers.0': 0, 'model.layers.1': 0, 'model.layers.2': 0, 'model.layers.3': 0, 'model.layers.4': 0, 'model.layers.5': 1, 'model.layers.6': 1, 'model.layers.7': 1, 'model.layers.8': 1, 'model.layers.9': 1, 'model.layers.10': 1, 'model.layers.11': 1, 'model.layers.12': 1, 'model.layers.13': 1, 'model.layers.14': 1, 'model.layers.15': 2, 'model.layers.16': 2, 'model.layers.17': 2, 'model.layers.18': 2, 'model.layers.19': 2, 'model.layers.20': 2, 'model.layers.21': 2, 'model.layers.22': 2, 'model.layers.23': 2, 'model.layers.24': 2, 'model.layers.25': 3, 'model.layers.26': 3, 'model.layers.27': 3, 'model.layers.28': 3, 'model.layers.29': 3, 'model.layers.30': 3, 'model.layers.31': 3, 'model.norm': 3, 'model.rotary_emb': 3, 'lm_head': 3}
+
+— Text baseline summary:
+llama: EM=0.500 F1=0.694
+
+==== LatentWire Evaluation ====
+Dataset: squad
+Samples: 10  |  Max new tokens: 12
+Device: cuda  |  Dtype: bfloat16
+Avg prompt tokens (Llama): 251.4 | (Qwen): - | Latent length M: 32
+Compression ratio (Llama): 7.9x | (Qwen): -x
+Approx interlingua payload per example: 327680 bytes (fp32); fp16 reference: 163840 bytes; fp32 reference: 327680 bytes
+latent/text bytes (one-copy, fp16): n/a
+
+— Baseline: Text prompting
+Llama  EM: 0.500  F1: 0.694  |  NLL/token (gold): 12.929239363897414
+Wall clock: 1.18s
+
+— Latent prompting (shared interlingua)
+Llama  EM: 0.000  F1: 0.000  |  NLL/token (gold): 9.122395878746396
+       First-token acc: top1=0.000  top5=0.000
+Wall clock: 0.37s
+
+— Token-budget baseline (mode: content_only)
+Llama  EM: 0.000  F1: 0.000
+Wall clock: 0.38s
+
+— 2-LLM joint (rescored pick on latent runs)
+Joint metrics unavailable (single-model evaluation).
+
+==== METRICS_JSON ====
+{
+  "samples": 10,
+  "max_new_tokens": 12,
+  "latent_len": 32,
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "avg_prompt_tokens": {
+    "llama": 251.4
+  },
+  "compression": {
+    "llama": 7.85625
+  },
+  "payload_bytes": 327680,
+  "payload_bytes_detail": {
+    "fp32": 327680,
+    "fp16": 163840,
+    "selected": null
+  },
+  "wire": {
+    "prompt_chars": {
+      "llama": 12564
+    },
+    "prompt_count": 10,
+    "latent_shape": [
+      10,
+      32,
+      256
+    ],
+    "latent_bytes": {
+      "fp32": 327680,
+      "fp16": 163840
+    },
+    "group_size": 32,
+    "scale_bits": 16,
+    "selected_latent_bytes": null,
+    "wire_ratio": {}
+  },
+  "text": {
+    "llama": {
+      "em": 0.5,
+      "f1": 0.6939560396878883,
+      "nll_token": 12.929239363897414
+    },
+    "wall_clock_sec": 1.1834230422973633
+  },
+  "latent": {
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0,
+      "nll": 9.122395878746396,
+      "first_token_top1": 0.0,
+      "first_token_top5": 0.0,
+      "nll_token": 9.122395878746396
+    },
+    "wall_clock_sec": 0.3674142360687256
+  },
+  "token_budget": {
+    "mode": "content_only",
+    "k": 32,
+    "llama": {
+      "em": 0.0,
+      "f1": 0.0
+    },
+    "wall_clock_sec": 0.3791012763977051
+  },
+  "joint": {
+    "em": null,
+    "f1": null,
+    "agreement": null,
+    "oracle": {
+      "em": 0.0,
+      "f1": 0.0
+    }
+  },
+  "debug": {
+    "llama": {
+      "latent_anchor_text": "Answer: "
+    },
+    "settings": {
+      "latent_anchor_mode": "text",
+      "latent_anchor_text": "Answer: ",
+      "prefix_gain": 1.0,
+      "calibration_mode": "embed_rms",
+      "append_bos_after_prefix": "yes",
+      "decode": {
+        "min_new_tokens": 1,
+        "eos_ban_steps": 0,
+        "first_token_top_p": 1.0,
+        "first_token_temperature": 0.0
+      },
+      "embedding_replay": false,
+      "embedding_baseline_modes": []
+    }
+  },
+  "oracle": {
+    "em": 0.0,
+    "f1": 0.0
+  },
+  "dataset": "squad"
+}
+Wrote per-example predictions to runs/full_suite/latentwire/eval_llama/predictions.jsonl
+
+[5b] Skipping Qwen evaluation for speed...
+
+✓ Phase 5 complete in 16s (0m)
+
+========================================================================
+COMPREHENSIVE ANALYSIS
+========================================================================
+
+Analyzing all results...
+
+Loading results...
+
+================================================================================
+COMPREHENSIVE EXPERIMENT RESULTS
+================================================================================
+
+Analysis timestamp: 2025-10-12T20:33:05.320114
+Results directory: runs/full_suite
+
+================================================================================
+RESULTS SUMMARY
+================================================================================
+
+Experiment                                EM       F1 Status    
+--------------------------------------------------------------------------------
+TEXT BASELINE (Upper Bound):
+  Llama                                0.00%   26.92% success   
+
+TOKEN BUDGET BASELINE (Fair Comparison):
+  Llama                                0.00%    0.00% success   
+
+PCA BASELINE (Linear Compression):
+  Llama (PCA-compressed)              0.00%    0.00% success   
+
+LATENTWIRE (Learned Compression):
+  Llama                                0.00%    0.00% success   
+
+================================================================================
+KEY COMPARISONS
+================================================================================
+
+1. LatentWire vs Token Budget (same M) - CRITICAL TEST
+   Does learned compression beat simple truncation?
+
+   Llama:
+     LatentWire:   F1 = 0.00%
+     Token Budget: F1 = 0.00%
+     Difference:   +0.00% (+0.0% relative)
+     ✗ FAILURE: Not learning to compress effectively
+
+2. LatentWire vs PCA
+   Is non-linear encoding necessary?
+
+   LatentWire: F1 = 0.00%
+   PCA:        F1 = 0.00%
+   Difference: +0.00% (+0.0% relative)
+   ✗ Linear compression (PCA) is competitive
+
+3. LatentWire vs Text Baseline
+   How much information loss from compression?
+
+   Text (full):  F1 = 26.92%
+   LatentWire:   F1 = 0.00%
+   Retention:    0.0% of full-text performance
+   ✗ Poor: Severe information loss
+
+================================================================================
+CROSS-MODEL GENERALIZATION
+================================================================================
+
+Does the learned interlingua work for both models?
+
+   Data not available for cross-model comparison
+
+================================================================================
+OVERALL CONCLUSION
+================================================================================
+
+   ✗ Does not beat token budget baseline
+   ~ PCA is competitive (linear may suffice)
+   ⚠ Only retains 0% of full-text performance
+
+   ✗ NEEDS WORK: Compressed interlingua not yet effective.
+     Debug training, check embeddings, tune hyperparameters.
+
+================================================================================
+
+Report saved to: runs/full_suite/comparison_report.txt
+JSON summary saved to: runs/full_suite/comparison_report.json
+
+
+========================================================================
+EXPERIMENT SUITE COMPLETE!
+========================================================================
+
+Total time: 136s (2m / 0h)
+
+Results saved to: runs/full_suite
+  - baselines/text_llama/
+  - baselines/text_qwen/
+  - baselines/token_budget_llama_m32/
+  - baselines/token_budget_qwen_m32/
+  - baselines/pca_m32/
+  - latentwire/ (checkpoints)
+  - latentwire/eval_llama/
+  - latentwire/eval_qwen/
+  - comparison_report.json
+  - comparison_report.txt
+
+View report:
+  cat runs/full_suite/comparison_report.txt
+
