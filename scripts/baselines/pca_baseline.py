@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from latentwire.data import load_examples
 from latentwire.models import LMWrapper
-from latentwire.metrics import compute_em_f1
+from latentwire.core_utils import batch_metrics
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
@@ -156,11 +156,11 @@ def main():
             # Decode prediction
             pred_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
             predictions.append(pred_text)
-            references.append(ex['target'])
+            references.append(ex['answer'])
 
     # Compute metrics
     print("\nComputing metrics...")
-    results = compute_em_f1(predictions, references)
+    em_score, f1_score = batch_metrics(predictions, references)
 
     print("\n" + "="*80)
     print("RESULTS")
@@ -168,8 +168,8 @@ def main():
     print(f"  Samples: {len(examples)}")
     print(f"  Latent dim (M): {args.latent_len}")
     print(f"  PCA explained variance: {explained_var:.2%}")
-    print(f"  EM: {results['em']:.2%}")
-    print(f"  F1: {results['f1']:.2%}")
+    print(f"  EM: {em_score:.2%}")
+    print(f"  F1: {f1_score:.2%}")
     print("="*80)
 
     # Save results
@@ -177,9 +177,12 @@ def main():
         'config': vars(args),
         'pca_explained_variance': float(explained_var),
         'pca_first_5_components': pca.explained_variance_ratio_[:5].tolist(),
-        'em': float(results['em']),
-        'f1': float(results['f1']),
+        'em': float(em_score),
+        'f1': float(f1_score),
+        'exact_match': float(em_score),
+        'f1_score': float(f1_score),
         'num_examples': len(examples),
+        'n_examples': len(examples),
         'timestamp': datetime.now().isoformat(),
         'total_time_sec': time.time() - start_time,
     }
