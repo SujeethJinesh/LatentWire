@@ -484,6 +484,58 @@ This ensures truly independent runs with no carryover.
 
 **Next steps require architectural redesign**, not loss weight tuning.
 
+## Context: What Were We Testing and Why?
+
+**Original problem**: ByteEncoder complete collapse
+- ALL predictions: `"2019) 1. The answer is"` (F1=0%, EM=0%)
+- Root cause: Semantic impedance mismatch - byte-level encoding (0-255) has no alignment with LLM token space
+
+**Hypothesis tested**: Anchor-Guided Cross-Model Interlingua
+- **Claim**: ByteEncoder fails because it operates on "alien modality". If we start in LLM-native space (token embeddings), we can avoid collapse.
+- **Architecture**: Token embeddings → AlignmentTransformer → z ∈ R^512 → InterlinguaAdapter → M=32 soft tokens
+- **Expected**: F1 > 50% (vs ByteEncoder 0%), proving transfer works before adding compression
+
+**Result**: Same collapse, different flavor
+- ByteEncoder: Byte→Token mismatch → `"2019) 1..."`
+- Anchor-Guided: Mean-pooling bottleneck → `"the 1960s and 1970s..."`
+- Both: 0-20% diversity, F1 ≈ 0%
+
+**What the experiments revealed**:
+1. Starting in LLM-native space is NOT sufficient
+2. Mean-pooling bottleneck destroys input-specific information just as badly as byte encoding
+3. The problem is information loss during compression, not the input modality
+
+**Implication for LatentWire**: Need to preserve sequence structure during compression, not collapse to single vector then expand. The ~100 tokens → 1 vector → 32 tokens pipeline loses critical information regardless of input representation.
+
+---
+
+## Proposed Next Experiments (External Input)
+
+ChatGPT proposed 7 "injection method" experiments (deep prefix, LoRA, IA³, projector tokens, mid-layer injection, KV caching, compression).
+
+**Assessment: These are premature** because they assume we have a good interlingua that just needs better injection into the frozen LLM.
+
+**Reality**: Our interlingua (z ∈ R^512) is collapsed - it's nearly identical across different inputs due to mean pooling. Changing the injection method won't help if the representation itself has lost all input-specific information.
+
+**Analogy**:
+- Problem: Your message is gibberish
+- Proposed experiments: Try different fonts, colors, sizes
+- Reality: The message content itself is broken; changing presentation won't fix it
+
+**The right experiments would**:
+1. **Remove mean pooling**: Keep sequence structure (~100 tokens → 32 tokens directly via attention, not mean pool → single vector → expand)
+2. **Test information preservation**: Measure whether z vectors are actually different for different inputs (cosine similarity, PCA, etc.)
+3. **Ablate the bottleneck**: Compare single vector (R^512) vs sequence (32×512) as interlingua
+4. **Validate before injection tuning**: Only tune injection methods AFTER achieving >40% diversity and F1 >10%
+
+**Why injection experiments would fail**:
+- Deep prefix/LoRA/IA³: Help LLM "hear" the interlingua better, but if interlingua is collapsed (all identical), better hearing doesn't matter
+- Projector tokens: Maps z to K tokens, but if z has no information, projection can't add it
+- Mid-layer injection: Adds z at multiple layers, but collapsed z gives same signal everywhere
+- Compression: Makes the problem WORSE (we're already over-compressed)
+
+**Recommendation**: Pause on injection methods. First fix the representation collapse by removing mean pooling and preserving sequence structure. Only then test injection methods.
+
 ---
 
 ### 2025-10-12 — Baseline Infrastructure & PCA Analysis (Claude Code)
