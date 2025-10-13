@@ -9,18 +9,14 @@ Device: cuda
 [1/7] Loading frozen models...
   - SentenceTransformer...
   - Llama-3.1-8B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2260.17it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.04s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.25s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.30it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.10it/s]
-  - Qwen2.5-7B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3886.31it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.28it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.29it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.08it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.23it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.21it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2577.15it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.04s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.29s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.08it/s]
   ✓ All models loaded
 
 [2/7] Instantiating new architecture components...
-  ✓ AlignmentTransformer: 14,642,688 params
+  ✓ AlignmentTransformer: 13,856,256 params
   ✓ InterlinguaAdapter (Llama): 10,563,585 params
-  ✓ InterlinguaAdapter (Qwen): 10,299,905 params
-  Total trainable: 35,506,178 params (35.5M)
+  Total trainable: 24,419,841 params (24.4M)
 
 [3/7] Loading test data (SQuAD, n=1000)...
   ✓ Loaded 1000 examples
@@ -39,30 +35,24 @@ Device: cuda
 The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
   Gold answer: Dane
-  Pred (untrained): Question  Levelling by,  . Levelling by
-  ✓ z_qwen shape: torch.Size([1, 512])
-  ✓ prefix_embeds_qwen shape: torch.Size([1, 32, 3584])
-  Alignment distance (untrained): 0.4550
+  Pred (untrained): a new and a new anakhmemories of the memory
 
 [5/7] Testing loss computation...
-  ✓ Generation loss (K=4): 10.8914
-  ✓ Alignment loss: 0.4550
-  ✓ Semantic anchor loss: 1.9986
-  ✓ Total loss: 11.3187
+  ✓ Generation loss (K=4): 9.1895
+  ✓ Total loss: 9.1895
 
 [6/7] Running 500 training steps on 1000 examples...
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-  Step 1/500: loss=20.7199 gen=20.2536 align=0.5320 sem=2.0027
-  Step 51/500: loss=13.0824 gen=12.8664 align=0.0310 sem=2.0053
-  Step 101/500: loss=10.0033 gen=9.7991 align=0.0101 sem=1.9916
-  Step 151/500: loss=6.7501 gen=6.5464 align=0.0065 sem=2.0049
-  Step 201/500: loss=5.3606 gen=5.1595 align=0.0048 sem=1.9869
-  Step 251/500: loss=11.5366 gen=11.3375 align=0.0037 sem=1.9720
-  Step 301/500: loss=12.4986 gen=12.2995 align=0.0026 sem=1.9776
-  Step 351/500: loss=8.0371 gen=7.8386 align=0.0024 sem=1.9720
-  Step 401/500: loss=10.3186 gen=10.1212 align=0.0016 sem=1.9661
-  Step 451/500: loss=5.9488 gen=5.7520 align=0.0021 sem=1.9578
-  Step 500/500: loss=8.7961 gen=8.6014 align=0.0024 sem=1.9351
+  Step 1/500: loss=10.7594 gen=10.7594
+  Step 51/500: loss=2.9357 gen=2.9357
+  Step 101/500: loss=5.7505 gen=5.7505
+  Step 151/500: loss=4.4807 gen=4.4807
+  Step 201/500: loss=2.3193 gen=2.3193
+  Step 251/500: loss=3.4183 gen=3.4183
+  Step 301/500: loss=4.5284 gen=4.5284
+  Step 351/500: loss=3.2289 gen=3.2289
+  Step 401/500: loss=2.7308 gen=2.7308
+  Step 451/500: loss=2.5622 gen=2.5622
+  Step 500/500: loss=4.3274 gen=4.3274
   ✓ Training complete
 
 [7/7] Testing generation after training...
@@ -74,24 +64,24 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
   warnings.warn(
   [1] Gold: Dane
-      Pred: The first edition of the book was published in 199
+      Pred: 2000s, the company has been a major player
 
   [2] Gold: Muslims
-      Pred: The first edition of the book was published in 199
+      Pred: 2000s, the company's sales and profits have
 
   [3] Gold: orientalism and tropicality
-      Pred: The first edition of the book was published in 197
+      Pred: 2000s, the company has been a major player
 
   [4] Gold: numeracy
-      Pred: The first edition of the book was published in 197
+      Pred: 2000s, the company has been a major player
 
   [5] Gold: Mental Health (Care and Treatment) (Scotland) Act 2003
-      Pred: The first edition of the book was published in 199
+      Pred: 2000s, the company's market share in the
 
   ============================================================================
 
-  Diversity check: 2/5 unique predictions
-  ⚠️  WARNING: Low diversity (2/5)
+  Diversity check: 3/5 unique predictions
+  ✓ Good diversity!
 
 ================================================================================
 TEST COMPLETE
@@ -102,9 +92,9 @@ Key findings:
   ✓ Forward pass works (z_llama: torch.Size([1, 512]))
   ✓ Loss computation succeeds
   ✓ Training loop runs (500 steps)
-  ✓ Post-training predictions: 2/5 unique
+  ✓ Post-training predictions: 3/5 unique
 
-Total trainable parameters: 35,506,178 (35.5M)
+Total trainable parameters: 24,419,841 (24.4M)
 Architecture: d_inter=512, num_slots=32
 
 Next steps:
