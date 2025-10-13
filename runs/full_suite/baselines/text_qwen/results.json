@@ -1,0 +1,17 @@
+{
+  "config": {
+    "model_id": "Qwen/Qwen2.5-7B-Instruct",
+    "dataset": "squad",
+    "samples": 10,
+    "max_new_tokens": 12,
+    "save_dir": "runs/full_suite/baselines/text_qwen"
+  },
+  "em": 0.0,
+  "f1": 0.1771929807314143,
+  "exact_match": 0.0,
+  "f1_score": 0.1771929807314143,
+  "num_examples": 10,
+  "n_examples": 10,
+  "timestamp": "2025-10-12T19:45:48.528262",
+  "total_time_sec": 27.596784114837646
+}
