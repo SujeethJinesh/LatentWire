@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--samples', type=int, default=10000)
     parser.add_argument('--token_budget', type=int, required=True, help='M: max tokens to keep')
     parser.add_argument('--max_new_tokens', type=int, default=12)
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch size for faster evaluation')
+    parser.add_argument('--batch_size', type=int, default=128, help='Batch size for faster evaluation')
     parser.add_argument('--save_dir', type=str, required=True)
     args = parser.parse_args()
 

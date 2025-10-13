@@ -40,7 +40,8 @@ DATASET="${DATASET:-squad}"
 EVAL_SAMPLES="${EVAL_SAMPLES:-10000}"     # Full validation set for baselines
 TRAIN_SAMPLES="${TRAIN_SAMPLES:-87599}"   # Full training set for LatentWire
 TRAIN_EPOCHS="${TRAIN_EPOCHS:-3}"
-BATCH_SIZE="${BATCH_SIZE:-32}"
+BATCH_SIZE="${BATCH_SIZE:-32}"            # Training batch size
+EVAL_BATCH_SIZE="${EVAL_BATCH_SIZE:-128}" # Eval batch size (can be much larger)
 LATENT_LEN="${LATENT_LEN:-32}"
 D_Z="${D_Z:-256}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-12}"
@@ -53,7 +54,8 @@ echo "  DATASET: $DATASET"
 echo "  EVAL_SAMPLES: $EVAL_SAMPLES"
 echo "  TRAIN_SAMPLES: $TRAIN_SAMPLES"
 echo "  TRAIN_EPOCHS: $TRAIN_EPOCHS"
-echo "  BATCH_SIZE: $BATCH_SIZE"
+echo "  BATCH_SIZE (training): $BATCH_SIZE"
+echo "  EVAL_BATCH_SIZE (baselines): $EVAL_BATCH_SIZE"
 echo "  LATENT_LEN (M): $LATENT_LEN"
 echo "  D_Z: $D_Z"
 echo "  BASE_OUTPUT_DIR: $BASE_OUTPUT_DIR"
@@ -94,13 +96,13 @@ echo ""
 PHASE_START=$(date +%s)
 
 # Llama text baseline (QWEN SKIPPED FOR SPEED)
-echo "[1a] Running Llama text baseline..."
+echo "[1a] Running Llama text baseline (batch_size=$EVAL_BATCH_SIZE)..."
 python scripts/baselines/evaluate_text_baseline.py \
     --model_id "$LLAMA_ID" \
     --dataset "$DATASET" \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --batch_size 16 \
+    --batch_size "$EVAL_BATCH_SIZE" \
     --save_dir "$BASE_OUTPUT_DIR/baselines/text_llama"
 
 echo ""
@@ -126,14 +128,14 @@ echo ""
 PHASE_START=$(date +%s)
 
 # Llama token budget (QWEN SKIPPED FOR SPEED)
-echo "[2a] Running Llama token budget (M=$LATENT_LEN)..."
+echo "[2a] Running Llama token budget (M=$LATENT_LEN, batch_size=$EVAL_BATCH_SIZE)..."
 python scripts/baselines/evaluate_token_budget.py \
     --model_id "$LLAMA_ID" \
     --dataset "$DATASET" \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
     --token_budget "$LATENT_LEN" \
-    --batch_size 16 \
+    --batch_size "$EVAL_BATCH_SIZE" \
     --save_dir "$BASE_OUTPUT_DIR/baselines/token_budget_llama_m${LATENT_LEN}"
 
 echo ""
