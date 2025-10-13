@@ -60,9 +60,9 @@ def compute_nearest_vocab_cosine(embeddings, vocab_embeddings, chunk_size=1024, 
     flat = embeddings.view(-1, D)  # [B*S, D]
     num_tokens = flat.shape[0]
 
-    # Normalize
-    flat_norm = F.normalize(flat, dim=-1)
-    vocab_norm = F.normalize(vocab_embeddings, dim=-1)
+    # Normalize (convert to float32 to avoid fp16 numerical issues with normalize)
+    flat_norm = F.normalize(flat.float(), dim=-1, eps=1e-8)
+    vocab_norm = F.normalize(vocab_embeddings.float(), dim=-1, eps=1e-8)
 
     # Process in chunks to avoid OOM
     max_sims = []
