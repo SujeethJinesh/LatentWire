@@ -1,0 +1,26 @@
+{
+  "config": {
+    "llama_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "dataset": "squad",
+    "samples": 10,
+    "latent_len": 32,
+    "max_new_tokens": 12,
+    "save_dir": "runs/full_suite/baselines/pca_m32"
+  },
+  "pca_explained_variance": 0.25105389952659607,
+  "pca_first_5_components": [
+    0.03828775882720947,
+    0.021121622994542122,
+    0.014199795201420784,
+    0.0121367909014225,
+    0.010533914901316166
+  ],
+  "em": 0.0,
+  "f1": 0.0,
+  "exact_match": 0.0,
+  "f1_score": 0.0,
+  "num_examples": 10,
+  "n_examples": 10,
+  "timestamp": "2025-10-12T19:54:18.170359",
+  "total_time_sec": 24.20642066001892
+}

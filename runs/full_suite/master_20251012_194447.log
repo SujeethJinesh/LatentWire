@@ -1,201 +1,0 @@
-Starting experiment suite at Sun Oct 12 19:44:47 PDT 2025
-
-========================================================================
-PHASE 1/5: TEXT BASELINE - Upper Bound
-========================================================================
-
-Evaluating both LLMs with full text prompts...
-This establishes the best possible performance.
-
-[1a] Running Llama text baseline...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Text Baseline Evaluation
-Model: meta-llama/Meta-Llama-3.1-8B-Instruct
-Device: cuda
-GPUs: 4
-
-Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3495.25it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:13,  4.56s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.54s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.99s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  3.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  4.03s/it]
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Model loaded!
-
-Loading 10 examples from squad...
-Loaded 10 examples
-
-Generating answers with full text prompts...
-  0/10...
-
-Computing metrics...
-
-================================================================================
-RESULTS
-================================================================================
-  Model: meta-llama/Meta-Llama-3.1-8B-Instruct
-  Samples: 10
-  EM: 0.00%
-  F1: 26.92%
-================================================================================
-
-Results saved to runs/full_suite/baselines/text_llama/results.json
-Total time: 27.0s
-
-
-[1b] Running Qwen text baseline...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Text Baseline Evaluation
-Model: Qwen/Qwen2.5-7B-Instruct
-Device: cuda
-GPUs: 4
-
-Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3292.88it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.78s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.52s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.38s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:17<00:00,  4.27s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:17<00:00,  4.36s/it]
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.7` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.8` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:623: UserWarning: `do_sample` is set to `False`. However, `top_k` is set to `20` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_k`.
-  warnings.warn(
-The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Model loaded!
-
-Loading 10 examples from squad...
-Loaded 10 examples
-
-Generating answers with full text prompts...
-  0/10...
-
-Computing metrics...
-
-================================================================================
-RESULTS
-================================================================================
-  Model: Qwen/Qwen2.5-7B-Instruct
-  Samples: 10
-  EM: 0.00%
-  F1: 17.72%
-================================================================================
-
-Results saved to runs/full_suite/baselines/text_qwen/results.json
-Total time: 27.6s
-
-
-✓ Phase 1 complete in 63s (1m)
-
-========================================================================
-PHASE 2/5: TOKEN BUDGET BASELINE - Fair Comparison
-========================================================================
-
-Evaluating with text truncated to M=32 tokens...
-This is the critical fairness baseline.
-
-[2a] Running Llama token budget (M=32)...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Token Budget Baseline Evaluation
-Model: meta-llama/Meta-Llama-3.1-8B-Instruct
-Token Budget: 32
-Device: cuda
-GPUs: 4
-
-Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3830.41it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:16,  5.60s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:11<00:11,  5.68s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:16<00:05,  5.58s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  3.97s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.57s/it]
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Model loaded!
-
-Loading 10 examples from squad...
-Loaded 10 examples
-
-Generating answers with text truncated to 32 tokens...
-  0/10...
-
-Computing metrics...
-
-================================================================================
-RESULTS
-================================================================================
-  Model: meta-llama/Meta-Llama-3.1-8B-Instruct
-  Token Budget: 32
-  Samples: 10
-  EM: 0.00%
-  F1: 0.00%
-================================================================================
-
-Results saved to runs/full_suite/baselines/token_budget_llama_m32/results.json
-Total time: 28.6s
-
-
-[2b] Running Qwen token budget (M=32)...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Token Budget Baseline Evaluation
-Model: Qwen/Qwen2.5-7B-Instruct
-Token Budget: 32
-Device: cuda
-GPUs: 4
-
-Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3350.75it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:13,  4.62s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:08,  4.33s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.34s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  4.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  4.18s/it]
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.7` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.8` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:623: UserWarning: `do_sample` is set to `False`. However, `top_k` is set to `20` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_k`.
-  warnings.warn(
-The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
-Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Model loaded!
-
-Loading 10 examples from squad...
-Loaded 10 examples
-
-Generating answers with text truncated to 32 tokens...
-  0/10...
-
-Computing metrics...
-
-================================================================================
-RESULTS
-================================================================================
-  Model: Qwen/Qwen2.5-7B-Instruct
-  Token Budget: 32
-  Samples: 10
-  EM: 0.00%
-  F1: 0.00%
-================================================================================
-
-Results saved to runs/full_suite/baselines/token_budget_qwen_m32/results.json
-Total time: 27.2s
-
-
-✓ Phase 2 complete in 64s (1m)
-
-========================================================================
-PHASE 3/5: PCA BASELINE - Linear Compression
-========================================================================
-
-Testing if PCA (linear projection) is sufficient...
-
-[3] Running PCA baseline (M=32)...
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/scripts/baselines/pca_baseline.py", line 33, in <module>
-    from latentwire.metrics import compute_em_f1
-ModuleNotFoundError: No module named 'latentwire.metrics'
