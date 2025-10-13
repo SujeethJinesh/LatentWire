@@ -128,6 +128,99 @@ git pull && rm -rf runs && PYTHONPATH=. SAMPLES=1000 STEPS=500 TEST_QWEN=yes bas
 
 ---
 
+### 2025-10-13 — Anchor-Guided Architecture Test Results (Claude Code)
+
+**STATUS**: ⚠️ **Infrastructure works, but mode collapse detected**
+
+## Test Results (SAMPLES=1000, STEPS=500, TEST_QWEN=yes)
+
+**Technical success:**
+- ✓ All 7 test phases completed successfully
+- ✓ Mixed precision pattern resolved dtype errors (BFloat16/Float32 compatibility)
+- ✓ 35.5M trainable params instantiated correctly
+- ✓ Cross-model alignment achieved (Llama ↔ Qwen)
+- ✓ Training loop completes without crashes
+
+**Training dynamics:**
+```
+Step   1: loss=20.72  gen=20.25  align=0.532   sem=2.00
+Step 201: loss=5.36   gen=5.16   align=0.0048  sem=1.99
+Step 500: loss=8.80   gen=8.60   align=0.0024  sem=1.94
+```
+
+- Generation loss: 20.25 → 8.60 ✓ (57% reduction)
+- Alignment loss: 0.532 → 0.0024 ✓ (99.5% reduction - **TOO STRONG?**)
+- Semantic anchor loss: ~2.0 (stable)
+
+## Mode Collapse Observed
+
+**Post-training predictions (5 examples):**
+```
+[1] Gold: Dane                                 → Pred: "The first edition of the book was published in 199"
+[2] Gold: Muslims                              → Pred: "The first edition of the book was published in 199"
+[3] Gold: orientalism and tropicality          → Pred: "The first edition of the book was published in 197"
+[4] Gold: numeracy                             → Pred: "The first edition of the book was published in 197"
+[5] Gold: Mental Health (Care and Treatment)   → Pred: "The first edition of the book was published in 199"
+```
+
+**Diversity: 2/5 unique predictions** (only year differs: 199 vs 197)
+
+**Comparison:**
+- ByteEncoder: Immediate collapse → `"2019) 1. The answer is"` (F1=0%, no learning)
+- Anchor-Guided: Gradual collapse → `"The first edition..."` (learns but ignores input)
+
+**Key difference**: Architecture DOES learn (loss decreases), but converges to single mode instead of diverse predictions.
+
+## Root Cause Hypothesis
+
+**Alignment loss dominance**: Weight 0.5 with MSE(z_llama, z_qwen) forces representations to become nearly identical (align=0.0024), erasing input-specific information. The interlingua converges to a "mean" representation.
+
+**Evidence:**
+1. Alignment loss decreased 222× (0.532 → 0.0024) - extremely strong convergence
+2. All predictions ignore gold context (Dane, Muslims, numeracy, etc.)
+3. Single template learned: "The first edition of the book was published in 19X"
+4. Semantic anchor loss stable (~2.0) but not preventing collapse
+
+## Technical Achievement: Mixed Precision Pattern
+
+Successfully resolved PyTorch dtype incompatibility (scripts/test_new_interlingua.py):
+```python
+# Learned components in float32 (LayerNorm compatibility)
+learned_dtype = torch.float32
+alignment_tf = AlignmentTransformer(...).to(device=device, dtype=learned_dtype)
+
+# Cast at boundaries
+llama_embeds = llama_model.get_input_embeddings()(llama_input_ids)
+llama_embeds = llama_embeds.to(learned_dtype)  # bf16 → fp32
+
+z_llama = alignment_tf(llama_embeds, z_sem, 'llama', llama_attn_mask)
+prefix_llama = adapter_llama(z_llama).to(llama_model.dtype)  # fp32 → bf16
+```
+
+Applied across all 5 code paths (forward pass, training, evaluation).
+
+## Recommended Next Steps
+
+**Priority 1: Fix mode collapse**
+1. **Reduce alignment weight**: 0.5 → 0.1 or 0.05 (allow input-specific divergence)
+2. **Increase semantic anchor weight**: 0.1 → 0.3-0.5 (preserve input information)
+3. **Add diversity regularization**: Penalize identical z representations for different inputs
+4. **Test single-model mode**: Remove Qwen, eliminate alignment loss (isolate effect)
+
+**Priority 2: Diagnostic analysis**
+5. Inspect z_llama vectors: Measure cosine similarity across different examples
+6. Measure prefix_llama RMS per example (check if truly different)
+7. Visualize z_llama with t-SNE/UMAP (clustering patterns)
+
+**Priority 3: Architecture modifications**
+8. Try bottleneck z ∈ R^128 (vs R^512) - force compression earlier
+9. Add input reconstruction auxiliary loss (L_recon = MSE(text_embeds, decoder(z)))
+10. Use contrastive loss instead of MSE alignment (push different inputs apart)
+
+**Expected outcome**: Diverse predictions (4-5/5 unique) with gradually improving F1 (target: 10-20% after 500 steps).
+
+---
+
 ### 2025-10-12 — Baseline Infrastructure & PCA Analysis (Claude Code)
 
 **STATUS**: ✅ **Baseline pipeline complete.** Scientific evaluation framework ready.
