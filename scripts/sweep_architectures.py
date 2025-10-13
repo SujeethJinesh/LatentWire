@@ -441,9 +441,6 @@ def main():
         ("Direct Sequence Compression (PROPOSED)",
          DirectSequenceCompressor(d_model=d_model, M=args.M, n_layers=4).to(device, learned_dtype)),
 
-        ("Mean Pool Bottleneck (BROKEN)",
-         MeanPoolBottleneck(d_model=d_model, d_bottleneck=args.d_bottleneck).to(device, learned_dtype)),
-
         ("Mean Pool + Expand (CURRENT PIPELINE)",
          nn.Sequential(
              MeanPoolBottleneck(d_model=d_model, d_bottleneck=args.d_bottleneck),

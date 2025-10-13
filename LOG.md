@@ -538,9 +538,9 @@ ChatGPT proposed 7 "injection method" experiments (deep prefix, LoRA, IA³, proj
 
 ---
 
-### 2025-10-13 — Architecture Sweep to Fix Mode Collapse (Claude Code)
+### 2025-10-13 — Architecture Sweep: Direct Compression FAILED (Claude Code)
 
-**STATUS**: 🔬 **Systematic architecture diagnosis in progress**
+**STATUS**: 🚨 **Proposed solution failed - problem is NOT mean pooling**
 
 ## Problem Definition
 
@@ -668,6 +668,56 @@ SAMPLES=1000 STEPS=500 bash scripts/sweep_architectures.sh
 **If this succeeds**: Move to Phase 2 - add semantic grounding, cross-model alignment, and compression.
 
 **If this fails**: Problem is deeper than architecture - may be K-token CE supervision, dataset, or fundamental LLM limitation with soft prefix conditioning.
+
+## Sweep Results (SAMPLES=1000, STEPS=300)
+
+### Direct Sequence Compression (PROPOSED FIX) - FAILED
+
+**Metrics:**
+- **Diversity: 1/10 (10.0%)** - COMPLETE COLLAPSE ❌
+- **Avg cosine similarity: 0.999** - representations nearly identical (target: < 0.5) ❌
+- **PCA variance explained: 1.000** - technically good but misleading ⚠️
+- **NN diversity score: 0.000** - all examples collapsed to same point (target: > 0.7) ❌
+
+**Predictions:**
+```
+[1] Gold: Dane                        → Pred: the 19th century, and the 20th
+[2] Gold: Muslims                     → Pred: the 19th century, and the 20th
+[3] Gold: orientalism and tropicality → Pred: the 19th century, and the 20th
+[4] Gold: numeracy                    → Pred: the 19th century, and the 20th
+[5] Gold: Mental Health (Care...)     → Pred: the 19th century, and the 20th
+```
+
+**Training dynamics:**
+```
+Step   1: loss=7.91
+Step  51: loss=3.59
+Step 101: loss=3.17
+Step 151: loss=5.71
+Step 201: loss=3.60
+Step 251: loss=4.85
+Step 300: loss=3.01
+```
+
+Loss decreases but diversity remains at 10% - same as mean pooling variants.
+
+### Critical Finding
+
+**Direct Sequence Compression collapsed identically to Mean Pool + Expand.**
+
+This means:
+1. ❌ **Mean pooling is NOT the root cause** - we were wrong
+2. ❌ **Preserving sequence structure did NOT help** - cross-attention still collapses
+3. ❌ **The problem is deeper than architecture**
+
+**Possible true causes:**
+1. **K-token CE supervision too weak** - only supervises first K=4 tokens, rest unconstrained
+2. **Learned queries collapse during training** - all M=32 queries become similar
+3. **Frozen LLM limitation** - soft prefix embeddings fundamentally ineffective
+4. **Lack of auxiliary losses** - no semantic grounding, diversity regularization, or reconstruction
+5. **Dataset or task issue** - SQuAD answers may have common patterns that dominate
+
+**This invalidates our hypothesis.** Need to fundamentally rethink approach.
 
 ## Removed Old Scripts
 
