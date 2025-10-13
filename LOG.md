@@ -1,4 +1,60 @@
-# LatentWire — 8B_clean_answer_ftce — Experiment Log
+# LatentWire — Experiment Log
+
+## Summary: Mode Collapse Diagnosis (2025-10-12 to 2025-10-13)
+
+**Current Status**: 🚨 **Multiple architectural approaches have failed - fundamental rethink needed**
+
+### Failed Approaches
+
+**1. ByteEncoder (Original)**
+- **Issue**: Complete representational collapse - ALL outputs identical: `"2019) 1. The answer is"`
+- **Root cause**: Byte-level encoding (0-255) incompatible with LLM token space
+- **Metrics**: F1=0%, EM=0%, diversity=0%
+
+**2. Anchor-Guided Cross-Model Interlingua**
+- **Issue**: Mode collapse despite starting in LLM-native space
+- **Architecture**: Token embeddings → AlignmentTransformer → z ∈ R^512 → Expand → M=32 tokens
+- **Root cause identified**: Mean pooling bottleneck (~100 tokens → 1 vector → 32 tokens)
+- **Metrics**: Diversity 10-20%, all outputs: `"the 19th century..."`
+
+**3. Loss Weight Sweep** (7 configurations)
+- **Tested**: Semantic weights 0.0, 0.01, 0.05, 0.1, 0.5; K-tokens 4, 8, 12
+- **Result**: ALL collapsed to 10-20% diversity regardless of weights
+- **Conclusion**: Not a hyperparameter problem
+
+**4. Direct Sequence Compression** (CRITICAL FAILURE)
+- **Architecture**: ~100 tokens → cross-attention(M learned queries) → 32 tokens (NO mean pooling)
+- **Hypothesis**: Removing mean pooling would preserve information
+- **Result**: IDENTICAL collapse (10% diversity, cosine=0.999, all outputs: `"the 19th century, and the 20th"`)
+- **Conclusion**: ❌ Mean pooling is NOT the root cause - problem is deeper
+
+### Key Findings
+
+1. **Architecture changes alone are insufficient** - Both mean pooling AND direct cross-attention collapse equally
+2. **Starting in LLM-native space doesn't help** - Token embeddings collapse just like byte embeddings
+3. **Loss weights and K-token supervision don't matter** - Tested 0.0 to 0.5, K=4 to K=12
+4. **Learned queries collapse during training** - All M=32 queries become nearly identical (cosine=0.999)
+
+### Possible Root Causes (Remaining)
+
+1. **K-token CE supervision fundamentally too weak** - Only supervises first K tokens, rest completely unconstrained
+2. **Frozen LLM limitation** - Soft prefix embeddings may be fundamentally ineffective for conditioning
+3. **Missing auxiliary losses** - No semantic grounding, diversity regularization, or reconstruction
+4. **Dataset/task structure** - SQuAD answer patterns may dominate weak supervision
+5. **Gradient flow issues** - Learned components can't receive meaningful signal through frozen LLM
+
+### Next Steps (Require Fundamental Rethink)
+
+Current soft-prefix-only approach appears fundamentally limited. Need to explore:
+- Full sequence supervision (not just K=4 tokens)
+- Fine-tuning small parts of LLM (not fully frozen)
+- Different conditioning mechanisms (not soft prefix)
+- Stronger auxiliary losses (semantic, diversity, reconstruction)
+- Alternative datasets with more diverse answer patterns
+
+---
+
+## Detailed Experiment Logs
 
 ### 2025-10-12 — CRITICAL: Complete Representational Collapse Diagnosed (Claude Code)
 
