@@ -6,18 +6,99 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ALWAYS follow these requirements when working on this codebase:**
 
-### 1. Logging and Output Capture
+### 1. Logging and Output Capture (MANDATORY)
 - **ALL scripts MUST use `tee` to capture output to log files**
-- Log files should be timestamped: `diagnostics_$(date +"%Y%m%d_%H%M%S").log`
+- Log files should be timestamped: `{script_name}_$(date +"%Y%m%d_%H%M%S").log`
 - Both stdout and stderr must be captured: `{ command } 2>&1 | tee "$LOG_FILE"`
 - Log files must be saved in the same directory as other results
 - **Without logs, you are flying blind** - analysis is impossible
+- **This is a NON-NEGOTIABLE requirement for ALL scripts**
 
-Example:
+**Mandatory Template for ALL Bash Scripts:**
 ```bash
-LOG_FILE="$OUTPUT_DIR/script_name_$(date +"%Y%m%d_%H%M%S").log"
-{ python script.py } 2>&1 | tee "$LOG_FILE"
+#!/usr/bin/env bash
+set -e
+
+# Configuration
+OUTPUT_DIR="${OUTPUT_DIR:-runs/experiment_name}"
+
+# Set up environment
+export PYTHONPATH=.
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+# Create output directory and log file
+mkdir -p "$OUTPUT_DIR"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="$OUTPUT_DIR/script_name_${TIMESTAMP}.log"
+
+echo "Starting experiment..."
+echo "Log file: $LOG_FILE"
+echo ""
+
+# Run command with tee to capture ALL output
+{
+    python scripts/your_script.py \
+        --arg1 value1 \
+        --arg2 value2 \
+        --output_dir "$OUTPUT_DIR"
+} 2>&1 | tee "$LOG_FILE"
+
+echo "Complete! Results saved to:"
+echo "  - $OUTPUT_DIR/results.json"
+echo "  - $LOG_FILE"
 ```
+
+**When creating ANY new script:**
+1. Start with this template
+2. Replace `script_name` with actual script name
+3. Add any configuration variables needed
+4. Wrap the main command in `{ } 2>&1 | tee "$LOG_FILE"`
+5. Never skip this - it's required for debugging and analysis
+
+**For Python Scripts:**
+All Python scripts should:
+- Print progress updates to stdout (these will be captured by tee)
+- Save structured results to JSON files
+- Include timing information in output
+- Log configuration at start of execution
+
+Example Python script structure:
+```python
+import time
+from datetime import datetime
+
+def main():
+    start_time = time.time()
+    print(f"Starting {script_name} at {datetime.now().isoformat()}")
+    print(f"Configuration: {config}")
+
+    # ... do work with progress updates ...
+    print(f"Processing batch {i}/{total}...")
+
+    # Save results
+    results = {...}
+    with open(output_dir / 'results.json', 'w') as f:
+        json.dump(results, f, indent=2)
+
+    total_time = time.time() - start_time
+    print(f"\nComplete! Total time: {total_time:.2f}s")
+    print(f"Results saved to: {output_dir}")
+
+if __name__ == '__main__':
+    main()
+```
+
+**Checklist for ALL Scripts:**
+Before considering ANY script complete, verify:
+- [ ] Bash wrapper uses `{ } 2>&1 | tee "$LOG_FILE"` pattern
+- [ ] Log file is timestamped and saved in output directory
+- [ ] Python script prints progress updates to stdout
+- [ ] Results saved to JSON files with comprehensive data
+- [ ] Timing information included in output
+- [ ] Configuration logged at start
+- [ ] Script committed and pushed to git
+
+**If a script doesn't have tee logging, it is INCOMPLETE and must be fixed immediately.**
 
 ### 2. Version Control
 - **ALWAYS commit after completing a task or fix**
