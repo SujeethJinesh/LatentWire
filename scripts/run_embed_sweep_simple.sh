@@ -51,11 +51,19 @@ echo ""
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 
+# Create output directory and log file
+mkdir -p "$OUTPUT_DIR"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="$OUTPUT_DIR/sweep_${TIMESTAMP}.log"
+
 echo "========================================================================"
 echo "Starting experiments..."
+echo "Log file: $LOG_FILE"
 echo "========================================================================"
 echo ""
 
+# Run experiments with tee to capture output
+{
 python scripts/run_embed_sweep_simple.py \
     --model_id "$MODEL_ID" \
     --dataset "$DATASET" \
@@ -70,11 +78,17 @@ echo ""
 
 # Run analysis
 python scripts/analyze_sweep_results.py --summary "$OUTPUT_DIR/summary.json"
+} 2>&1 | tee "$LOG_FILE"
 
 echo ""
 echo "========================================================================"
-echo "Results saved to: $OUTPUT_DIR"
+echo "Results saved to:"
+echo "  - $OUTPUT_DIR/summary.json"
+echo "  - $LOG_FILE"
 echo "========================================================================"
+echo ""
+echo "To view logs:"
+echo "  cat $LOG_FILE | less"
 echo ""
 echo "To view raw summary:"
 echo "  cat $OUTPUT_DIR/summary.json | python -m json.tool"

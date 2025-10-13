@@ -2,6 +2,47 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Critical Workflow Requirements
+
+**ALWAYS follow these requirements when working on this codebase:**
+
+### 1. Logging and Output Capture
+- **ALL scripts MUST use `tee` to capture output to log files**
+- Log files should be timestamped: `diagnostics_$(date +"%Y%m%d_%H%M%S").log`
+- Both stdout and stderr must be captured: `{ command } 2>&1 | tee "$LOG_FILE"`
+- Log files must be saved in the same directory as other results
+- **Without logs, you are flying blind** - analysis is impossible
+
+Example:
+```bash
+LOG_FILE="$OUTPUT_DIR/script_name_$(date +"%Y%m%d_%H%M%S").log"
+{ python script.py } 2>&1 | tee "$LOG_FILE"
+```
+
+### 2. Version Control
+- **ALWAYS commit after completing a task or fix**
+- **ALWAYS push commits to remote immediately**
+- Use descriptive commit messages that explain what was fixed/changed
+- Never leave uncommitted changes unless explicitly asked to pause
+
+### 3. Communication Style
+- **Be matter of fact** - no superlatives, no fluff, no unnecessary praise
+- Focus on technical accuracy and objectivity
+- State what was done, what the results are, and what needs to happen next
+- If something is uncertain, investigate first rather than speculating
+
+### 4. Hardware Awareness
+- This project has access to **4 H100 GPUs** on HPC
+- Design for large-scale batch processing and high throughput
+- Don't artificially limit sample sizes or batch sizes
+- Use parallel processing and efficient memory management
+
+### 5. Script Design
+- Every experiment script must save comprehensive results
+- JSON files for structured data, log files for execution traces
+- Include timing, throughput metrics, and configuration in logs
+- Make results easy to analyze programmatically
+
 ## Commands for Development
 
 ### Important Note on Training Infrastructure

@@ -56,12 +56,19 @@ echo ""
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 
+# Create output directory and log file
+mkdir -p "$OUTPUT_DIR"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="$OUTPUT_DIR/diagnostics_${TIMESTAMP}.log"
+
 echo "========================================================================"
 echo "Starting diagnostics..."
+echo "Log file: $LOG_FILE"
 echo "========================================================================"
 echo ""
 
-# Run diagnostics
+# Run diagnostics with tee to capture output
+{
 if [ -n "$CHECKPOINT" ]; then
     python scripts/run_embedding_diagnostics.py \
         --model_id "$MODEL_ID" \
@@ -79,13 +86,19 @@ else
         --output_dir "$OUTPUT_DIR" \
         --no-checkpoint
 fi
+} 2>&1 | tee "$LOG_FILE"
 
 echo ""
 echo "========================================================================"
 echo "Diagnostics complete!"
 echo "========================================================================"
 echo ""
-echo "Results saved to: $OUTPUT_DIR/diagnostics.json"
+echo "Results saved to:"
+echo "  - $OUTPUT_DIR/diagnostics.json"
+echo "  - $LOG_FILE"
+echo ""
+echo "To view logs:"
+echo "  cat $LOG_FILE | less"
 echo ""
 echo "To view results:"
 echo "  cat $OUTPUT_DIR/diagnostics.json | python -m json.tool | less"
