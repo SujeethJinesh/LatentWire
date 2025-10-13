@@ -7,11 +7,20 @@ Quick validation to ensure:
 2. Forward pass works
 3. Loss computation succeeds
 4. Basic training step completes
-5. Generation produces non-collapsed output
+5. Generation produces non-collapsed output (NOT all identical like ByteEncoder)
 
-Usage:
-    python test_new_architecture.py --samples 10 --steps 5
-    python test_new_architecture.py --samples 100 --steps 50 --full_test
+Usage (via wrapper script):
+    # Quick smoke test (5 min)
+    git pull && rm -rf runs && PYTHONPATH=. SAMPLES=10 STEPS=5 bash scripts/test_new_interlingua.sh
+
+    # Realistic test (30 min)
+    git pull && rm -rf runs && PYTHONPATH=. SAMPLES=100 STEPS=50 bash scripts/test_new_interlingua.sh
+
+    # Full test with Qwen (2 hours)
+    git pull && rm -rf runs && PYTHONPATH=. SAMPLES=1000 STEPS=500 TEST_QWEN=yes bash scripts/test_new_interlingua.sh
+
+Direct usage:
+    python scripts/test_new_interlingua.py --samples 100 --steps 50
 """
 
 import argparse

@@ -78,16 +78,52 @@ Text
 - ✓ Per-model adaptation for different vocabularies
 - ✓ Compression deferred to Phase 2 (prove transfer first)
 
+**Components**:
+
+1. **AlignmentTransformer** (learned, ~10M params)
+   - Per-model projections: d_model → d_inter=512
+   - Cross-attention to semantic anchor (guides alignment)
+   - Transformer encoder refinement
+   - Mean pooling → single vector [512]
+
+2. **InterlinguaAdapter** (learned, ~4M params per model)
+   - Expand: [512] → [M, 512]
+   - Project: [M, 512] → [M, d_model]
+   - Scale parameter for calibration
+
+3. **Training loss** (4 terms):
+   - L_gen: K-token CE on both models
+   - L_align: MSE(z_llama, z_qwen) - force similarity
+   - L_sem: MSE to semantic anchor - prevent drift
+   - L_kd: Distill from text teacher (optional)
+
 **Expected results**:
 - Phase 1 (no compression): F1 > 50% (vs current 0%, text 69%)
 - Phase 2 (with compression): 4-8× at F1 > 45%
 
-**Full technical specification**: See [ARCHITECTURE_PROPOSAL.md](./ARCHITECTURE_PROPOSAL.md)
+**Test script**: `scripts/test_new_interlingua.sh`
+
+**Usage**:
+```bash
+# Quick smoke test (5 min, validates components)
+git pull && rm -rf runs && PYTHONPATH=. SAMPLES=10 STEPS=5 bash scripts/test_new_interlingua.sh
+
+# Realistic test (30 min, see learning)
+git pull && rm -rf runs && PYTHONPATH=. SAMPLES=100 STEPS=50 bash scripts/test_new_interlingua.sh
+
+# Full test with Qwen (2 hours, cross-model alignment)
+git pull && rm -rf runs && PYTHONPATH=. SAMPLES=1000 STEPS=500 TEST_QWEN=yes bash scripts/test_new_interlingua.sh
+```
+
+**Success criteria**:
+- Loss decreases (8.0 → 6.0)
+- Predictions are DIVERSE (4-5 unique, NOT all "2019) 1. The answer is")
+- Some predictions match/close to gold answers
 
 **Next steps**:
-1. Review proposal with team
-2. Implement `AlignmentTransformer` + `InterlinguaAdapter`
-3. Train with 4-term loss (generation + alignment + semantic + KD)
+1. Run smoke test to validate architecture works
+2. If diverse predictions: full training
+3. If collapsed: debug architecture
 4. Target: F1 > 50% at M=32, no compression
 
 ---
