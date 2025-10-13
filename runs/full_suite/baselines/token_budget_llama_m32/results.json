@@ -2,7 +2,7 @@
   "config": {
     "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
     "dataset": "squad",
-    "samples": 10000,
+    "samples": 10,
     "token_budget": 32,
     "max_new_tokens": 12,
     "batch_size": 256,
@@ -10,11 +10,11 @@
   },
   "token_budget": 32,
   "em": 0.0,
-  "f1": 0.04257118015529213,
+  "f1": 0.0,
   "exact_match": 0.0,
-  "f1_score": 0.04257118015529213,
-  "num_examples": 10000,
-  "n_examples": 10000,
-  "timestamp": "2025-10-12T22:27:17.216196",
-  "total_time_sec": 54.343727111816406
+  "f1_score": 0.0,
+  "num_examples": 10,
+  "n_examples": 10,
+  "timestamp": "2025-10-12T22:41:08.517787",
+  "total_time_sec": 22.114711046218872
 }

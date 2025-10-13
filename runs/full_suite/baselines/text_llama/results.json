@@ -2,17 +2,17 @@
   "config": {
     "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
     "dataset": "squad",
-    "samples": 10000,
+    "samples": 10,
     "max_new_tokens": 12,
     "batch_size": 256,
     "save_dir": "runs/full_suite/baselines/text_llama"
   },
-  "em": 0.0043,
-  "f1": 0.36279272734133794,
-  "exact_match": 0.0043,
-  "f1_score": 0.36279272734133794,
-  "num_examples": 10000,
-  "n_examples": 10000,
-  "timestamp": "2025-10-12T22:26:19.461986",
-  "total_time_sec": 258.83204793930054
+  "em": 0.0,
+  "f1": 0.2692436945976605,
+  "exact_match": 0.0,
+  "f1_score": 0.2692436945976605,
+  "num_examples": 10,
+  "n_examples": 10,
+  "timestamp": "2025-10-12T22:40:43.311840",
+  "total_time_sec": 23.04043436050415
 }
