@@ -565,7 +565,12 @@ def test_architecture(args):
         total_loss = loss_gen + 0.5 * loss_align + 0.1 * loss_sem
         print(f"  ✓ Total loss: {total_loss.item():.4f}")
     else:
-        total_loss = loss_gen
+        # Single-model mode: still use semantic anchor for grounding
+        z_sem_proj = alignment_tf.proj_sem(z_sem)
+        loss_sem = F.mse_loss(z_llama, z_sem_proj)
+        print(f"  ✓ Semantic anchor loss: {loss_sem.item():.4f}")
+
+        total_loss = loss_gen + 0.5 * loss_sem
         print(f"  ✓ Total loss: {total_loss.item():.4f}")
 
     # ========================================================================
@@ -663,8 +668,13 @@ def test_architecture(args):
                     batch_align_loss += loss_align.item()
                     batch_sem_loss += loss_sem.item()
                 else:
-                    loss = loss_gen_llama
+                    # Single-model mode: still use semantic anchor for grounding
+                    z_sem_proj = alignment_tf.proj_sem(z_sem)
+                    loss_sem = F.mse_loss(z_llama, z_sem_proj)
+
+                    loss = loss_gen_llama + 0.5 * loss_sem
                     batch_gen_loss += loss_gen_llama.item()
+                    batch_sem_loss += loss_sem.item()
 
                 batch_loss += loss.item()
                 loss = loss / args.batch_size  # Normalize for accumulation
@@ -678,11 +688,11 @@ def test_architecture(args):
             if step % max(1, args.steps // 10) == 0 or step == args.steps - 1:
                 avg_loss = batch_loss / args.batch_size
                 avg_gen = batch_gen_loss / args.batch_size
-                print(f"  Step {step+1}/{args.steps}: loss={avg_loss:.4f} gen={avg_gen:.4f}", end="")
+                avg_sem = batch_sem_loss / args.batch_size
+                print(f"  Step {step+1}/{args.steps}: loss={avg_loss:.4f} gen={avg_gen:.4f} sem={avg_sem:.4f}", end="")
                 if args.test_qwen and qwen_model is not None:
                     avg_align = batch_align_loss / args.batch_size
-                    avg_sem = batch_sem_loss / args.batch_size
-                    print(f" align={avg_align:.4f} sem={avg_sem:.4f}")
+                    print(f" align={avg_align:.4f}")
                 else:
                     print()
 
