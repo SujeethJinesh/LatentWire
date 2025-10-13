@@ -156,10 +156,13 @@ Before considering ANY script complete, verify:
 **If a script doesn't have tee logging, it is INCOMPLETE and must be fixed immediately.**
 
 ### 2. Version Control
+- **ALWAYS `git pull` BEFORE analyzing logs or results** - experiments run on HPC and push logs back
 - **ALWAYS commit after completing a task or fix**
 - **ALWAYS push commits to remote immediately**
 - Use descriptive commit messages that explain what was fixed/changed
 - Never leave uncommitted changes unless explicitly asked to pause
+
+**CRITICAL: When user mentions logs or asks to review results, FIRST do `git pull`**
 
 ### 3. Communication Style
 - **Be matter of fact** - no superlatives, no fluff, no unnecessary praise

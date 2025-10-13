@@ -42,7 +42,7 @@ except ImportError:
     subprocess.check_call(["pip", "install", "sentence-transformers"])
     from sentence_transformers import SentenceTransformer
 
-from latentwire.data import load_squad
+from latentwire.data import load_squad_subset
 
 
 # ============================================================================
@@ -438,7 +438,7 @@ def test_architecture(args):
 
     print(f"\n[3/7] Loading test data (SQuAD, n={args.samples})...")
 
-    examples = load_squad(split='validation', samples=args.samples)
+    examples = load_squad_subset(split='validation', samples=args.samples)
     print(f"  ✓ Loaded {len(examples)} examples")
     print(f"  Example: {examples[0]['source'][:100]}...")
 
