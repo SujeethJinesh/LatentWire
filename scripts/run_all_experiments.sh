@@ -42,6 +42,8 @@ TRAIN_SAMPLES="${TRAIN_SAMPLES:-87599}"   # Full training set for LatentWire
 TRAIN_EPOCHS="${TRAIN_EPOCHS:-3}"
 BATCH_SIZE="${BATCH_SIZE:-32}"            # Training batch size
 EVAL_BATCH_SIZE="${EVAL_BATCH_SIZE:-256}" # Eval batch size (256=safe ~50-60GB, 384=aggressive ~65-70GB, 512+=OOM risk)
+SKIP_PCA="${SKIP_PCA:-yes}"               # Skip PCA baseline (memory intensive, can OOM)
+PCA_SAMPLES="${PCA_SAMPLES:-1000}"        # PCA uses fewer samples if enabled
 LATENT_LEN="${LATENT_LEN:-32}"
 D_Z="${D_Z:-256}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-12}"
@@ -159,14 +161,18 @@ echo ""
 
 PHASE_START=$(date +%s)
 
-echo "[3] Running PCA baseline (M=$LATENT_LEN)..."
-python scripts/baselines/pca_baseline.py \
-    --llama_id "$LLAMA_ID" \
-    --dataset "$DATASET" \
-    --samples "$EVAL_SAMPLES" \
-    --latent_len "$LATENT_LEN" \
-    --max_new_tokens "$MAX_NEW_TOKENS" \
-    --save_dir "$BASE_OUTPUT_DIR/baselines/pca_m${LATENT_LEN}"
+if [ "$SKIP_PCA" = "yes" ]; then
+    echo "[3] Skipping PCA baseline (SKIP_PCA=yes, can cause OOM with 10k samples)..."
+else
+    echo "[3] Running PCA baseline (M=$LATENT_LEN, samples=$PCA_SAMPLES)..."
+    python scripts/baselines/pca_baseline.py \
+        --llama_id "$LLAMA_ID" \
+        --dataset "$DATASET" \
+        --samples "$PCA_SAMPLES" \
+        --latent_len "$LATENT_LEN" \
+        --max_new_tokens "$MAX_NEW_TOKENS" \
+        --save_dir "$BASE_OUTPUT_DIR/baselines/pca_m${LATENT_LEN}"
+fi
 
 PHASE_END=$(date +%s)
 PHASE_TIME=$((PHASE_END - PHASE_START))
