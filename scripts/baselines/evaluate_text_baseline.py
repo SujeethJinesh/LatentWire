@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--dataset', type=str, default='squad')
     parser.add_argument('--samples', type=int, default=10000)
     parser.add_argument('--max_new_tokens', type=int, default=12)
-    parser.add_argument('--batch_size', type=int, default=128, help='Batch size for faster evaluation')
+    parser.add_argument('--batch_size', type=int, default=512, help='Batch size for faster evaluation (512 uses ~60-70GB)')
     parser.add_argument('--save_dir', type=str, required=True)
     args = parser.parse_args()
 
@@ -61,6 +61,8 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    # CRITICAL: Use left padding for decoder-only models
+    tokenizer.padding_side = 'left'
 
     print(f"Model loaded!\n")
 
