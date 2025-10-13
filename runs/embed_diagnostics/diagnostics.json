@@ -1,6 +1,6 @@
 {
   "experiment_log": {
-    "start_time": "2025-10-12T18:33:03.932964",
+    "start_time": "2025-10-12T18:39:09.351094",
     "config": {
       "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
       "checkpoint": null,
@@ -12,21 +12,21 @@
     },
     "device": "cuda",
     "num_gpus": 4,
-    "model_load_time_sec": 16.617278814315796,
-    "vocab_cache_time_sec": 0.03597092628479004,
-    "data_load_time_sec": 1.9776346683502197,
+    "model_load_time_sec": 16.90623927116394,
+    "vocab_cache_time_sec": 0.03708076477050781,
+    "data_load_time_sec": 1.97060227394104,
     "num_examples": 1000,
-    "text_collect_time_sec": 1.7616469860076904,
+    "text_collect_time_sec": 1.9806344509124756,
     "total_tokens": 172209,
     "avg_tokens_per_example": 172.209,
-    "examples_per_sec": 567.6506178268082,
-    "text_analysis_time_sec": 0.9882488250732422,
-    "text_transform_time_sec": 0.6558990478515625,
-    "learned_gen_time_sec": 0.0012145042419433594,
-    "learned_analysis_time_sec": 0.34154677391052246,
-    "learned_transform_time_sec": 0.6560311317443848,
-    "end_time": "2025-10-12T18:33:28.828265",
-    "total_time_sec": 24.89529299736023
+    "examples_per_sec": 504.88872368109185,
+    "text_analysis_time_sec": 0.6282303333282471,
+    "text_transform_time_sec": 0.6690342426300049,
+    "learned_gen_time_sec": 0.0012285709381103516,
+    "learned_analysis_time_sec": 0.33509302139282227,
+    "learned_transform_time_sec": 0.6640920639038086,
+    "end_time": "2025-10-12T18:39:34.826850",
+    "total_time_sec": 25.475750207901
   },
   "vocab_stats": {
     "rms": 0.01049041748046875,
@@ -102,20 +102,20 @@
       4096
     ],
     "per_token_rms": {
-      "min": 9.5546875,
-      "max": 10.5546875,
+      "min": 9.515625,
+      "max": 10.5078125,
       "mean": 10.0390625,
-      "std": 0.112060546875,
+      "std": 0.11212158203125,
       "median": 10.0390625,
       "q25": 9.9609375,
       "q75": 10.109375
     },
     "overall_rms": 10.0390625,
     "per_dim": {
-      "mean_of_means": 0.004314422607421875,
-      "std_of_means": 0.2215576171875,
+      "mean_of_means": 0.004444122314453125,
+      "std_of_means": 0.221435546875,
       "mean_of_stds": 10.03125,
-      "std_of_stds": 0.040557861328125
+      "std_of_stds": 0.040924072265625
     },
     "nearest_vocab_cosine": {
       "min": NaN,
@@ -124,7 +124,7 @@
       "std": NaN,
       "median": NaN
     },
-    "global_mean": 0.0043182373046875,
+    "global_mean": 0.004444122314453125,
     "global_std": 10.0390625
   },
   "learned_transforms": {
@@ -144,11 +144,11 @@
     "batch_dist": {
       "target_mean": 2.2649765014648438e-05,
       "target_std": 0.0105743408203125,
-      "mean_after": 2.1398067474365234e-05,
+      "mean_after": 2.1457672119140625e-05,
       "std_after": 0.0105743408203125,
       "per_token_rms_after": {
         "mean": 0.0105743408203125,
-        "std": 0.00011801719665527344
+        "std": 0.00011807680130004883
       },
       "nearest_vocab_cosine_after": {
         "mean": NaN
