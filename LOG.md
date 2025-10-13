@@ -387,6 +387,105 @@ git pull && rm -rf runs && PYTHONPATH=. bash scripts/sweep_loss_weights.sh
 
 ---
 
+### 2025-10-13 — Sweep Results: Architecture-Level Mode Collapse (Claude Code)
+
+**STATUS**: 🚨 **Critical issue identified - not a loss weight problem, but architecture design flaw**
+
+## Sweep Results Summary
+
+Ran comprehensive sweep of 7 configurations. ALL showed extreme mode collapse:
+
+| Config | Sem Weight | K | Diversity | Collapsed Pattern |
+|--------|-----------|---|-----------|-------------------|
+| No semantic | 0.0 | 4 | **2/10 (20%)** | "the first time in 2003/2004. The team's" |
+| Very weak | 0.01 | 4 | 1/10 (10%) | "The first time I saw the movie, I was a" |
+| Weak | 0.05 | 4 | 2/10 (20%) | "The first of the three volumes of the 1960/1967" |
+| Medium | 0.1 | 4 | 1/10 (10%) | "2005, 2006, 2007," |
+| Strong | 0.5 | 4 | 1/10 (10%) | "the 1960s and 1970s saw" |
+| K=8 | 0.05 | 8 | 1/10 (10%) | "Question 1: What is the name of the first" |
+| K=12 | 0.05 | 12 | 2/10 (20%) | "2013) and the 2014 FIFA World Cup" |
+
+**Best: 20% diversity** (vs expected 60%+ from earlier single tests)
+
+## Critical Findings
+
+1. **Universal collapse across ALL weights**
+   - No configuration escapes mode collapse
+   - Loss weights (0.0 to 0.5) make no meaningful difference
+   - Even varying K (4 → 8 → 12) doesn't help
+
+2. **Each config collapses to DIFFERENT mode**
+   - Suggests parameter reset working correctly
+   - But within each run: near-complete collapse (1-2 unique predictions)
+   - Random initialization determines which mode it collapses to
+
+3. **This is NOT a loss weight problem**
+   - It's an **architecture design flaw**
+   - The Anchor-Guided Cross-Model Interlingua is inherently unstable
+   - 300 steps insufficient to escape local minima
+
+4. **Worse than original "buggy" tests**
+   - Original single test: 3/5 (60%) diversity
+   - Sweep result: 2/10 (20%) diversity
+   - Difference: 10 examples vs 5 examples reveals more collapse
+
+## Bug Fixed: Incomplete Parameter Reset
+
+**Issue found**: Original sweep had incomplete parameter reset:
+```python
+def reset_params(module):
+    if hasattr(module, 'reset_parameters'):
+        module.reset_parameters()  # Only resets Linear, LayerNorm
+    # BUT: nn.Parameter (queries, scale) NOT reset!
+```
+
+**Fix**: Create fresh model instances instead:
+```python
+# Each config gets brand new models
+alignment_tf = AlignmentTransformer(...).to(device, dtype)
+adapter_llama = InterlinguaAdapter(...).to(device, dtype)
+```
+
+This ensures truly independent runs with no carryover.
+
+## Root Cause Analysis
+
+**Why the architecture collapses:**
+
+1. **Weak gradient signal from K-token CE**
+   - Only supervises first K tokens (K=4-12)
+   - Doesn't constrain rest of generation behavior
+   - Model learns ONE pattern that minimizes this objective
+
+2. **AlignmentTransformer bottleneck**
+   - Mean-pools ALL token embeddings → single vector z ∈ R^512
+   - Loses positional and detailed information
+   - Different inputs → similar z → same generation
+
+3. **Cross-attention to semantic anchor doesn't help**
+   - SentenceTransformer produces similar embeddings for similar contexts
+   - Historical/scientific SQuAD contexts all map to similar space
+   - Anchor doesn't provide enough diversity signal
+
+4. **Training dynamics**
+   - Loss decreases but diversity collapses
+   - Model finds single "safe" pattern that works across examples
+   - 300-500 steps not enough to learn input-specific variations
+
+## Implications
+
+**The Anchor-Guided Cross-Model Interlingua approach is fundamentally flawed** for this task:
+
+❌ Mean pooling destroys input-specific information
+❌ Single vector bottleneck (z ∈ R^512) too severe
+❌ Semantic anchor doesn't provide diversity
+❌ K-token CE insufficient supervision
+❌ Architecture inherently prone to mode collapse
+
+**Next steps require architectural redesign**, not loss weight tuning.
+
+---
+
 ### 2025-10-12 — Baseline Infrastructure & PCA Analysis (Claude Code)
 
 **STATUS**: ✅ **Baseline pipeline complete.** Scientific evaluation framework ready.
