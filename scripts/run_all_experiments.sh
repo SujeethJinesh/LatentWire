@@ -64,6 +64,7 @@ echo ""
 # Set up environment
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
+export PYTHONUNBUFFERED=1  # Force real-time stdout for better logging
 
 # Create output directory and master log
 mkdir -p "$BASE_OUTPUT_DIR"
