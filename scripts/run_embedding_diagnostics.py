@@ -1,6 +1,8 @@
 """
 Comprehensive embedding diagnostics script.
 
+Analyzes REAL learned embeddings from trained checkpoints and compares them to text embeddings.
+
 Answers critical questions:
 1. Where did "115-120× magnitude mismatch" come from?
 2. What's actually different between text and learned embeddings?
@@ -10,8 +12,8 @@ Answers critical questions:
 Usage:
   python scripts/run_embedding_diagnostics.py --checkpoint path/to/checkpoint
 
-  Or without checkpoint (uses synthetic bad embeddings):
-  python scripts/run_embedding_diagnostics.py --no-checkpoint
+IMPORTANT: --checkpoint is REQUIRED. Synthetic testing is prohibited.
+Only real data from trained checkpoints is analyzed.
 """
 
 import argparse
@@ -231,8 +233,7 @@ def test_transforms(embeddings, name, vocab_stats, device):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_id', type=str, default='meta-llama/Meta-Llama-3.1-8B-Instruct')
-    parser.add_argument('--checkpoint', type=str, default=None, help='Path to trained checkpoint (encoder+adapter)')
-    parser.add_argument('--no-checkpoint', action='store_true', help='Run without checkpoint (synthetic bad embeddings)')
+    parser.add_argument('--checkpoint', type=str, required=True, help='Path to trained checkpoint (encoder+adapter) - REQUIRED')
     parser.add_argument('--samples', type=int, default=1000, help='Number of samples to analyze')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for embedding extraction')
     parser.add_argument('--dataset', type=str, default='squad')
@@ -423,35 +424,134 @@ def main():
         print("ANALYZING LEARNED EMBEDDINGS (from checkpoint)")
         print("="*80)
         print(f"\nCheckpoint: {args.checkpoint}")
-        # TODO: Load encoder+adapter from checkpoint and generate learned embeddings
-        print("WARNING: Checkpoint loading not implemented yet. Use --no-checkpoint for synthetic test.")
 
-    elif args.no_checkpoint:
-        print("\n" + "="*80)
-        print("ANALYZING SYNTHETIC 'BAD' EMBEDDINGS")
-        print("="*80)
-        print("\nGenerating synthetic embeddings that simulate common failure modes...")
+        # Load config to get encoder/adapter architecture
+        import json
+        ckpt_dir = Path(args.checkpoint)
+        config_path = ckpt_dir / "config.json"
+        if not config_path.exists():
+            raise FileNotFoundError(f"No config.json in checkpoint: {ckpt_dir}")
 
+        with open(config_path) as f:
+            ckpt_config = json.load(f)
+
+        # Import encoder and adapter classes
+        from latentwire.models import ByteEncoder, SimpleEncoder, InterlinguaEncoder
+        from latentwire.config import EncoderConfig, AdapterConfig, make_adapter
+
+        # Build encoder from config
+        enc_cfg = EncoderConfig(
+            encoder_type=ckpt_config['encoder_type'],
+            d_model=model.config.hidden_size,
+            d_z=ckpt_config['d_z'],
+            latent_len=ckpt_config['latent_len'],
+            vocab_size=len(tokenizer),
+        )
+
+        # Create encoder based on type
+        if enc_cfg.encoder_type == 'byte':
+            encoder = ByteEncoder(enc_cfg)
+        elif enc_cfg.encoder_type == 'simple':
+            encoder = SimpleEncoder(enc_cfg)
+        elif enc_cfg.encoder_type == 'interlingua':
+            encoder = InterlinguaEncoder(enc_cfg)
+        else:
+            raise ValueError(f"Unknown encoder_type: {enc_cfg.encoder_type}")
+
+        # Load encoder weights
+        encoder_path = ckpt_dir / "encoder.pt"
+        if not encoder_path.exists():
+            raise FileNotFoundError(f"No encoder.pt in checkpoint: {ckpt_dir}")
+        encoder.load_state_dict(torch.load(encoder_path, map_location=device))
+        encoder = encoder.to(device)
+        encoder.eval()
+
+        # Build adapter for this model
+        adp_cfg = AdapterConfig(
+            d_z=ckpt_config['d_z'],
+            d_model=model.config.hidden_size,
+            adapter_type=ckpt_config.get('adapter_type', 'mlp'),
+            use_learned_scale=ckpt_config.get('use_learned_scale', True),
+        )
+        adapter = make_adapter(adp_cfg)
+
+        # Load adapter weights (try model_id-based name)
+        # Checkpoints use adapter_llama.pt or adapter_qwen.pt
+        model_name = 'llama' if 'llama' in args.model_id.lower() else 'qwen'
+        adapter_path = ckpt_dir / f"adapter_{model_name}.pt"
+        if not adapter_path.exists():
+            raise FileNotFoundError(f"No {adapter_path.name} in checkpoint: {ckpt_dir}")
+        adapter.load_state_dict(torch.load(adapter_path, map_location=device))
+        adapter = adapter.to(device)
+        adapter.eval()
+
+        print(f"Loaded encoder: {enc_cfg.encoder_type}, d_z={enc_cfg.d_z}, M={enc_cfg.latent_len}")
+        print(f"Loaded adapter: {adp_cfg.adapter_type}")
+
+        # Generate learned embeddings from same texts
+        print(f"\nGenerating learned embeddings for {len(examples)} examples...")
         t0 = time.time()
-        # Create synthetic "bad" embeddings with known issues
-        D = text_embeddings.size(-1)
+        learned_embeddings_list = []
 
-        # Mode 1: 100× too large magnitude (simulates our original hypothesis)
-        learned_embeddings = text_embeddings * 100.0
-        learned_embeddings = learned_embeddings + torch.randn_like(learned_embeddings) * 10.0  # Add noise
+        for batch_idx in range(num_batches):
+            start_idx = batch_idx * batch_size
+            end_idx = min(start_idx + batch_size, len(examples))
+            batch = examples[start_idx:end_idx]
+
+            if batch_idx % 5 == 0 or batch_idx == num_batches - 1:
+                print(f"  Batch {batch_idx+1}/{num_batches} (examples {start_idx}-{end_idx})...")
+
+            # Extract source texts
+            source_texts = [ex['source'] for ex in batch]
+
+            # Tokenize
+            encoded = tokenizer(
+                source_texts,
+                return_tensors='pt',
+                padding=True,
+                truncation=True,
+                max_length=256
+            )
+            input_ids = encoded['input_ids'].to(device)
+            attention_mask = encoded['attention_mask'].to(device)
+
+            # Encode to latents
+            with torch.no_grad():
+                Z = encoder(input_ids, attention_mask)  # [batch_size, M, d_z]
+                # Adapt to embedding space
+                learned_batch = adapter(Z)  # [batch_size, M, d_model]
+
+            # Flatten across examples (keep all M tokens per example)
+            for i in range(learned_batch.shape[0]):
+                learned_embeddings_list.append(learned_batch[i].cpu())  # [M, d_model]
+
+            # Free GPU memory
+            if device.type == 'cuda':
+                torch.cuda.empty_cache()
+
+        # Concatenate all learned embeddings
+        learned_embeddings = torch.cat(learned_embeddings_list, dim=0)  # [total_latent_tokens, d_model]
+        learned_embeddings = learned_embeddings.unsqueeze(0)  # [1, total_latent_tokens, d_model]
 
         learned_gen_time = time.time() - t0
-        print(f"Synthetic embeddings: {learned_embeddings.shape}")
-        print(f"  Mode: 100× magnitude + noise")
+        num_latent_tokens = learned_embeddings.shape[1]
+        print(f"\nGenerated learned embeddings: {learned_embeddings.shape}")
+        print(f"  Total latent tokens: {num_latent_tokens} (M={enc_cfg.latent_len} × {len(examples)} examples)")
+        print(f"  Compression ratio: {total_tokens / num_latent_tokens:.1f}× ({total_tokens} text tokens → {num_latent_tokens} latent tokens)")
         print(f"  Generation time: {learned_gen_time:.2f}s")
         experiment_log['learned_gen_time_sec'] = learned_gen_time
+        experiment_log['num_latent_tokens'] = num_latent_tokens
+        experiment_log['compression_ratio'] = total_tokens / num_latent_tokens
 
-        # Analyze synthetic embeddings
+        # Move to device for analysis
+        learned_embeddings = learned_embeddings.to(device)
+
+        # Analyze learned embeddings
         t0 = time.time()
-        learned_stats = analyze_embeddings(learned_embeddings, "synthetic_100x", vocab_stats, device)
+        learned_stats = analyze_embeddings(learned_embeddings, f"checkpoint_{model_name}", vocab_stats, device)
         learned_analysis_time = time.time() - t0
 
-        print("\nSynthetic Embedding Statistics:")
+        print("\nLearned Embedding Statistics:")
         print(f"  Per-token RMS: min={learned_stats['per_token_rms']['min']:.4f}, "
               f"max={learned_stats['per_token_rms']['max']:.4f}, "
               f"mean={learned_stats['per_token_rms']['mean']:.4f}, "
@@ -467,9 +567,9 @@ def main():
         print(f"  Saved analysis to {output_dir / 'learned_embeddings_analysis.json'}")
 
         # Test transforms
-        print("\nTesting transforms on synthetic embeddings...")
+        print("\nTesting transforms on learned embeddings...")
         t0 = time.time()
-        learned_transform_results = test_transforms(learned_embeddings, "synthetic_100x", vocab_stats, device)
+        learned_transform_results = test_transforms(learned_embeddings, f"checkpoint_{model_name}", vocab_stats, device)
         learned_transform_time = time.time() - t0
         print(f"  Transform testing time: {learned_transform_time:.2f}s")
         experiment_log['learned_transform_time_sec'] = learned_transform_time
@@ -478,6 +578,14 @@ def main():
         with open(output_dir / 'learned_transforms.json', 'w') as f:
             json.dump(learned_transform_results, f, indent=2)
         print(f"  Saved transforms to {output_dir / 'learned_transforms.json'}")
+
+    else:
+        # Must provide checkpoint - no synthetic testing allowed
+        raise ValueError(
+            "ERROR: You must provide --checkpoint to analyze real learned embeddings.\n"
+            "Synthetic testing with --no-checkpoint is prohibited.\n"
+            "Run with: --checkpoint path/to/checkpoint"
+        )
 
     # Comparison
     if learned_stats:

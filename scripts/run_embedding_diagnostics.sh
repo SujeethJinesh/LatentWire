@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 #
 # Comprehensive Embedding Diagnostics
-# Answers critical questions about embedding distribution mismatch
+# Analyzes REAL learned embeddings from trained checkpoints
 #
-# Usage: PYTHONPATH=. bash scripts/run_embedding_diagnostics.sh
+# Usage: CHECKPOINT=path/to/checkpoint bash scripts/run_embedding_diagnostics.sh
+#
+# IMPORTANT: CHECKPOINT environment variable is REQUIRED
+#            Synthetic testing is prohibited - only real data is analyzed
 #
 
 set -e
 
 echo "========================================================================"
-echo "EMBEDDING DIAGNOSTICS"
+echo "EMBEDDING DIAGNOSTICS (Real Data Only)"
 echo "========================================================================"
 echo ""
-echo "This script performs comprehensive analysis of embedding statistics"
-echo "to understand why learned embeddings fail."
+echo "This script analyzes REAL learned embeddings from trained checkpoints"
+echo "and compares them to text embeddings to understand failure modes."
 echo ""
 echo "Analysis includes:"
 echo "  - Per-token RMS distribution (min, max, mean, std)"
@@ -39,17 +42,33 @@ BATCH_SIZE="${BATCH_SIZE:-64}"
 OUTPUT_DIR="${OUTPUT_DIR:-runs/embed_diagnostics}"
 CHECKPOINT="${CHECKPOINT:-}"
 
+# Validate checkpoint
+if [ -z "$CHECKPOINT" ]; then
+    echo "ERROR: CHECKPOINT environment variable is required."
+    echo ""
+    echo "Usage: CHECKPOINT=path/to/checkpoint bash scripts/run_embedding_diagnostics.sh"
+    echo ""
+    echo "Synthetic testing is prohibited - you must provide a real checkpoint."
+    exit 1
+fi
+
+if [ ! -d "$CHECKPOINT" ]; then
+    echo "ERROR: Checkpoint directory does not exist: $CHECKPOINT"
+    exit 1
+fi
+
+if [ ! -f "$CHECKPOINT/encoder.pt" ]; then
+    echo "ERROR: No encoder.pt found in checkpoint: $CHECKPOINT"
+    exit 1
+fi
+
 echo "Configuration:"
 echo "  MODEL_ID: $MODEL_ID"
 echo "  DATASET: $DATASET"
 echo "  SAMPLES: $SAMPLES"
 echo "  BATCH_SIZE: $BATCH_SIZE"
 echo "  OUTPUT_DIR: $OUTPUT_DIR"
-if [ -n "$CHECKPOINT" ]; then
-    echo "  CHECKPOINT: $CHECKPOINT"
-else
-    echo "  CHECKPOINT: None (will use synthetic embeddings)"
-fi
+echo "  CHECKPOINT: $CHECKPOINT"
 echo ""
 
 # Set up environment
@@ -69,23 +88,13 @@ echo ""
 
 # Run diagnostics with tee to capture output
 {
-if [ -n "$CHECKPOINT" ]; then
-    python scripts/run_embedding_diagnostics.py \
-        --model_id "$MODEL_ID" \
-        --dataset "$DATASET" \
-        --samples "$SAMPLES" \
-        --batch_size "$BATCH_SIZE" \
-        --output_dir "$OUTPUT_DIR" \
-        --checkpoint "$CHECKPOINT"
-else
-    python scripts/run_embedding_diagnostics.py \
-        --model_id "$MODEL_ID" \
-        --dataset "$DATASET" \
-        --samples "$SAMPLES" \
-        --batch_size "$BATCH_SIZE" \
-        --output_dir "$OUTPUT_DIR" \
-        --no-checkpoint
-fi
+python scripts/run_embedding_diagnostics.py \
+    --model_id "$MODEL_ID" \
+    --dataset "$DATASET" \
+    --samples "$SAMPLES" \
+    --batch_size "$BATCH_SIZE" \
+    --output_dir "$OUTPUT_DIR" \
+    --checkpoint "$CHECKPOINT"
 } 2>&1 | tee "$LOG_FILE"
 
 echo ""
