@@ -221,6 +221,84 @@ Applied across all 5 code paths (forward pass, training, evaluation).
 
 ---
 
+### 2025-10-13 — Critical Bug Found: Missing Semantic Anchor Loss (Claude Code)
+
+**STATUS**: 🔧 **Root cause identified and fixed**
+
+## Diagnostic Test Results (SAMPLES=1000, STEPS=500, single-model mode)
+
+Ran test WITHOUT Qwen to isolate alignment loss effect:
+
+**Observations:**
+- Diversity: **3/5 unique** (improvement from 2/5!)
+- Pattern: "2000s, the company..." (different mode than dual-model)
+- Final loss: 4.33 (vs 8.80 with Qwen)
+- Training logs showed: `loss=X gen=X` **NO semantic term!**
+
+**Critical discovery:** Semantic anchor loss was **completely missing** in single-model mode.
+
+## Root Cause: Loss Implementation Bug
+
+**Code inspection revealed:**
+```python
+# Dual-model mode (TEST_QWEN=yes)
+if args.test_qwen and qwen_model is not None:
+    z_sem_proj = alignment_tf.proj_sem(z_sem)
+    loss_sem = F.mse_loss(z_llama, z_sem_proj) + F.mse_loss(z_qwen, z_sem_proj)
+    loss = L_gen + 0.5*L_align + 0.1*L_sem  ✓
+
+# Single-model mode (TEST_QWEN=no)
+else:
+    loss = L_gen  # ❌ NO SEMANTIC ANCHOR!
+```
+
+**Why this caused collapse:**
+1. **No semantic grounding**: Only K-token CE supervised → learns common patterns
+2. **Cross-attention to anchor becomes meaningless**: Anchor exists in forward pass but never optimized
+3. **Mode collapse**: Without diversity signal, model converges to "2000s, the company..."
+4. **Partial diversity (3/5)**: Better than dual-model (2/5) because no alignment term forcing uniformity
+
+## The Fix
+
+**Added semantic anchor loss to single-model mode** (scripts/test_new_interlingua.py):
+
+```python
+# Single-model mode - NOW WITH SEMANTIC ANCHOR
+else:
+    z_sem_proj = alignment_tf.proj_sem(z_sem)
+    loss_sem = F.mse_loss(z_llama, z_sem_proj)
+    loss = L_gen + 0.5 * L_sem  # Higher weight (0.5 vs 0.1) since no alignment term
+```
+
+**Rationale for 0.5 weight:**
+- No alignment term to compete with (vs 0.1 in dual-model mode)
+- Stronger semantic grounding should prevent collapse
+- Still allows generation loss to dominate (coefficient 1.0)
+
+**Updated logging:**
+```python
+# Now shows semantic loss in both modes
+print(f"loss={X:.4f} gen={X:.4f} sem={X:.4f}", end="")
+if dual_model:
+    print(f" align={X:.4f}")  # Optional alignment term
+```
+
+## Expected Impact
+
+**Before fix:**
+- Single-model: `loss = L_gen` → collapse to common patterns (3/5 diverse)
+- Dual-model: `loss = L_gen + 0.5*L_align + 0.1*L_sem` → forced uniformity (2/5 diverse)
+
+**After fix:**
+- Single-model: `loss = L_gen + 0.5*L_sem` → semantic grounding (expect 4-5/5 diverse)
+- Dual-model: unchanged (still needs alignment weight reduction)
+
+**Next test:** Re-run single-model mode with semantic anchor loss to validate improvement.
+
+**If successful:** Apply similar principle to dual-model (increase semantic weight, decrease alignment weight).
+
+---
+
 ### 2025-10-12 — Baseline Infrastructure & PCA Analysis (Claude Code)
 
 **STATUS**: ✅ **Baseline pipeline complete.** Scientific evaluation framework ready.
