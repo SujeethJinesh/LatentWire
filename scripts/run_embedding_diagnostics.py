@@ -50,20 +50,39 @@ def compute_per_dim_stats(embeddings):
     }
 
 
-def compute_nearest_vocab_cosine(embeddings, vocab_embeddings):
-    """Compute cosine similarity to nearest vocab token for each position."""
+def compute_nearest_vocab_cosine(embeddings, vocab_embeddings, chunk_size=1024, verbose=False):
+    """Compute cosine similarity to nearest vocab token for each position.
+
+    Processes in chunks to avoid OOM with large token counts.
+    With 200K tokens and 128K vocab, the full similarity matrix would be 25B elements (~100GB).
+    """
     B, S, D = embeddings.shape
     flat = embeddings.view(-1, D)  # [B*S, D]
+    num_tokens = flat.shape[0]
 
     # Normalize
     flat_norm = F.normalize(flat, dim=-1)
     vocab_norm = F.normalize(vocab_embeddings, dim=-1)
 
-    # Cosine similarity to all vocab
-    sim = flat_norm @ vocab_norm.T  # [B*S, vocab_size]
+    # Process in chunks to avoid OOM
+    max_sims = []
+    num_chunks = (num_tokens + chunk_size - 1) // chunk_size
+    if verbose and num_chunks > 1:
+        print(f"    Computing vocab cosine similarity for {num_tokens} tokens in {num_chunks} chunks...")
 
-    # Max similarity per position
-    max_sim = sim.max(dim=-1).values  # [B*S]
+    for chunk_idx, i in enumerate(range(0, num_tokens, chunk_size)):
+        if verbose and num_chunks > 10 and chunk_idx % (num_chunks // 10) == 0:
+            print(f"      Chunk {chunk_idx+1}/{num_chunks}...")
+
+        chunk = flat_norm[i:i+chunk_size]  # [chunk_size, D]
+        # Cosine similarity to all vocab for this chunk
+        sim_chunk = chunk @ vocab_norm.T  # [chunk_size, vocab_size]
+        # Max similarity per position in chunk
+        max_sim_chunk = sim_chunk.max(dim=-1).values  # [chunk_size]
+        max_sims.append(max_sim_chunk)
+
+    # Concatenate results
+    max_sim = torch.cat(max_sims, dim=0)  # [B*S]
 
     return max_sim.view(B, S)
 
@@ -139,8 +158,8 @@ def analyze_embeddings(embeddings, name, vocab_stats, device):
         'std_of_stds': float(dim_stats['per_dim_std'].std()),
     }
 
-    # 4. Nearest vocab token cosine similarity
-    nearest_cos = compute_nearest_vocab_cosine(embeddings, vocab_stats['embeddings'].to(device))
+    # 4. Nearest vocab token cosine similarity (chunked to avoid OOM)
+    nearest_cos = compute_nearest_vocab_cosine(embeddings, vocab_stats['embeddings'].to(device), verbose=True)
     stats['nearest_vocab_cosine'] = {
         'min': float(nearest_cos.min()),
         'max': float(nearest_cos.max()),
@@ -327,17 +346,21 @@ def main():
         # Get embeddings for entire batch
         batch_embeddings = model.get_input_embeddings()(input_ids)  # [batch_size, max_seq_len, d_model]
 
-        # Extract only non-padding tokens
+        # Extract only non-padding tokens and move to CPU to save GPU memory
         for i in range(batch_embeddings.shape[0]):
             mask = attention_mask[i].bool()  # [max_seq_len]
-            valid_embeddings = batch_embeddings[i][mask]  # [actual_seq_len, d_model]
+            valid_embeddings = batch_embeddings[i][mask].cpu()  # [actual_seq_len, d_model]
             text_embeddings_list.append(valid_embeddings)
             total_tokens += valid_embeddings.shape[0]
 
-    # Concatenate along sequence dimension
-    text_embeddings = torch.cat(text_embeddings_list, dim=0)  # [total_tokens, d_model]
+        # Free GPU memory after each batch
+        if device.type == 'cuda':
+            torch.cuda.empty_cache()
+
+    # Concatenate along sequence dimension (on CPU first, then move to device)
+    text_embeddings = torch.cat(text_embeddings_list, dim=0)  # [total_tokens, d_model] on CPU
     # Add batch dimension back for analysis functions
-    text_embeddings = text_embeddings.unsqueeze(0)  # [1, total_tokens, d_model]
+    text_embeddings = text_embeddings.unsqueeze(0)  # [1, total_tokens, d_model] on CPU
 
     text_collect_time = time.time() - t0
     print(f"\nCollected text embeddings: {text_embeddings.shape}")
@@ -349,6 +372,10 @@ def main():
     experiment_log['total_tokens'] = total_tokens
     experiment_log['avg_tokens_per_example'] = total_tokens / len(examples)
     experiment_log['examples_per_sec'] = len(examples) / text_collect_time
+
+    # Move to device for analysis
+    print(f"  Moving embeddings to {device}...")
+    text_embeddings = text_embeddings.to(device)
 
     # Analyze text embeddings
     t0 = time.time()
