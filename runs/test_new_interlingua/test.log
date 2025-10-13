@@ -9,11 +9,11 @@ Device: cuda
 [1/7] Loading frozen models...
   - SentenceTransformer...
   - Llama-3.1-8B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3524.63it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.42s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.53s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.35s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.03s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.17s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2260.17it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.04s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.25s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.30it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.10it/s]
   - Qwen2.5-7B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3792.32it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.08it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.09s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.01it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.12it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.07it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3886.31it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.28it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.29it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.08it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.23it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.21it/s]
   ✓ All models loaded
 
 [2/7] Instantiating new architecture components...
@@ -27,23 +27,88 @@ Device: cuda
   Example: Context: Tesla was the fourth of five children. He had an older brother named Dane and three sisters...
 
 [4/7] Testing forward pass (single example)...
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/scripts/test_new_interlingua.py", line 796, in <module>
-    test_architecture(args)
-  File "/projects/m000066/sujinesh/LatentWire/scripts/test_new_interlingua.py", line 475, in test_architecture
-    z_llama = alignment_tf(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/scripts/test_new_interlingua.py", line 156, in forward
-    z = self.final_norm(z)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/normalization.py", line 202, in forward
-    return F.layer_norm(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/functional.py", line 2576, in layer_norm
-    return torch.layer_norm(input, normalized_shape, weight, bias, eps, torch.backends.cudnn.enabled)
-RuntimeError: expected scalar type Float but found BFloat16
+  ✓ z_sem shape: torch.Size([1, 384])
+  ✓ llama_embeds shape: torch.Size([1, 137, 4096])
+  ✓ z_llama shape: torch.Size([1, 512])
+  ✓ prefix_embeds_llama shape: torch.Size([1, 32, 4096])
+  ✓ Expected: [1, 32, 4096]
+
+  Testing generation (before training)...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  Gold answer: Dane
+  Pred (untrained): Question  Levelling by,  . Levelling by
+  ✓ z_qwen shape: torch.Size([1, 512])
+  ✓ prefix_embeds_qwen shape: torch.Size([1, 32, 3584])
+  Alignment distance (untrained): 0.4550
+
+[5/7] Testing loss computation...
+  ✓ Generation loss (K=4): 10.8914
+  ✓ Alignment loss: 0.4550
+  ✓ Semantic anchor loss: 1.9986
+  ✓ Total loss: 11.3187
+
+[6/7] Running 500 training steps on 1000 examples...
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+  Step 1/500: loss=20.7199 gen=20.2536 align=0.5320 sem=2.0027
+  Step 51/500: loss=13.0824 gen=12.8664 align=0.0310 sem=2.0053
+  Step 101/500: loss=10.0033 gen=9.7991 align=0.0101 sem=1.9916
+  Step 151/500: loss=6.7501 gen=6.5464 align=0.0065 sem=2.0049
+  Step 201/500: loss=5.3606 gen=5.1595 align=0.0048 sem=1.9869
+  Step 251/500: loss=11.5366 gen=11.3375 align=0.0037 sem=1.9720
+  Step 301/500: loss=12.4986 gen=12.2995 align=0.0026 sem=1.9776
+  Step 351/500: loss=8.0371 gen=7.8386 align=0.0024 sem=1.9720
+  Step 401/500: loss=10.3186 gen=10.1212 align=0.0016 sem=1.9661
+  Step 451/500: loss=5.9488 gen=5.7520 align=0.0021 sem=1.9578
+  Step 500/500: loss=8.7961 gen=8.6014 align=0.0024 sem=1.9351
+  ✓ Training complete
+
+[7/7] Testing generation after training...
+
+  Results:
+  ============================================================================
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/transformer.py:409: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. (Triggered internally at ../aten/src/ATen/NestedTensorImpl.cpp:178.)
+  output = torch._nested_tensor_from_mask(output, src_key_padding_mask.logical_not(), mask_check=False)
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+  [1] Gold: Dane
+      Pred: The first edition of the book was published in 199
+
+  [2] Gold: Muslims
+      Pred: The first edition of the book was published in 199
+
+  [3] Gold: orientalism and tropicality
+      Pred: The first edition of the book was published in 197
+
+  [4] Gold: numeracy
+      Pred: The first edition of the book was published in 197
+
+  [5] Gold: Mental Health (Care and Treatment) (Scotland) Act 2003
+      Pred: The first edition of the book was published in 199
+
+  ============================================================================
+
+  Diversity check: 2/5 unique predictions
+  ⚠️  WARNING: Low diversity (2/5)
+
+================================================================================
+TEST COMPLETE
+================================================================================
+
+Key findings:
+  ✓ All components instantiate correctly
+  ✓ Forward pass works (z_llama: torch.Size([1, 512]))
+  ✓ Loss computation succeeds
+  ✓ Training loop runs (500 steps)
+  ✓ Post-training predictions: 2/5 unique
+
+Total trainable parameters: 35,506,178 (35.5M)
+Architecture: d_inter=512, num_slots=32
+
+Next steps:
+  1. Run longer training: --samples 1000 --steps 500
+  2. Enable Qwen testing: --test_qwen
+  3. Full experiment: --samples 10000 --steps 5000 --test_qwen
+
