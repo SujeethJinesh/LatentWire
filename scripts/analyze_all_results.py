@@ -23,13 +23,33 @@ from datetime import datetime
 
 
 def load_eval_results(results_dir):
-    """Load results.json from evaluation directory."""
+    """Load results.json or metrics.json from evaluation directory."""
+    # Try results.json first (baseline scripts)
     results_path = results_dir / 'results.json'
-    if not results_path.exists():
-        return None
+    if results_path.exists():
+        with open(results_path) as f:
+            return json.load(f)
 
-    with open(results_path) as f:
-        return json.load(f)
+    # Try metrics.json (eval.py outputs)
+    metrics_path = results_dir / 'metrics.json'
+    if metrics_path.exists():
+        with open(metrics_path) as f:
+            data = json.load(f)
+            # Extract latent metrics from eval.py structure
+            if 'latent' in data:
+                # Convert eval.py format to expected format
+                results = {}
+                # Try to find model-specific results
+                for model in ['llama', 'qwen']:
+                    if model in data['latent']:
+                        results['em'] = data['latent'][model].get('em', 0)
+                        results['f1'] = data['latent'][model].get('f1', 0)
+                        results['num_examples'] = data.get('samples', 0)
+                        break
+                return results if results else None
+            return data
+
+    return None
 
 
 def extract_metrics(results):
