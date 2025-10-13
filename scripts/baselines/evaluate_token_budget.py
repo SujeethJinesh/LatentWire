@@ -24,7 +24,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from latentwire.data import load_examples
-from latentwire.metrics import compute_em_f1
+from latentwire.core_utils import batch_metrics
 
 
 @torch.no_grad()
@@ -101,7 +101,7 @@ def main():
 
     # Compute metrics
     print("\nComputing metrics...")
-    metrics = compute_em_f1(predictions, references)
+    em_score, f1_score = batch_metrics(predictions, references)
 
     print("\n" + "="*80)
     print("RESULTS")
@@ -109,18 +109,18 @@ def main():
     print(f"  Model: {args.model_id}")
     print(f"  Token Budget: {args.token_budget}")
     print(f"  Samples: {len(examples)}")
-    print(f"  EM: {metrics['em']:.2%}")
-    print(f"  F1: {metrics['f1']:.2%}")
+    print(f"  EM: {em_score:.2%}")
+    print(f"  F1: {f1_score:.2%}")
     print("="*80)
 
     # Save results
     results_dict = {
         'config': vars(args),
         'token_budget': args.token_budget,
-        'em': float(metrics['em']),
-        'f1': float(metrics['f1']),
-        'exact_match': float(metrics['em']),  # Alias
-        'f1_score': float(metrics['f1']),      # Alias
+        'em': float(em_score),
+        'f1': float(f1_score),
+        'exact_match': float(em_score),  # Alias
+        'f1_score': float(f1_score),      # Alias
         'num_examples': len(examples),
         'n_examples': len(examples),           # Alias
         'timestamp': datetime.now().isoformat(),
