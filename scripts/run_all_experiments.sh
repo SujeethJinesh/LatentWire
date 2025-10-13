@@ -262,7 +262,7 @@ python latentwire/eval.py \
     --latent_anchor_mode text \
     --latent_anchor_text "Answer: " \
     --append_bos_after_prefix yes \
-    --save_dir "$BASE_OUTPUT_DIR/latentwire/eval_llama" \
+    --out_dir "$BASE_OUTPUT_DIR/latentwire/eval_llama" \
     --models llama
 
 echo ""
@@ -279,7 +279,7 @@ python latentwire/eval.py \
     --latent_anchor_mode text \
     --latent_anchor_text "Answer: " \
     --append_bos_after_prefix yes \
-    --save_dir "$BASE_OUTPUT_DIR/latentwire/eval_qwen" \
+    --out_dir "$BASE_OUTPUT_DIR/latentwire/eval_qwen" \
     --models qwen
 
 PHASE_END=$(date +%s)
