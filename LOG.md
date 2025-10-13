@@ -35,23 +35,30 @@ Teach frozen LLM to handle arbitrary embeddings via LoRA/adapters (note: shallow
 ### Quick Diagnostic Sweep (No Training Required)
 
 **Script**: `scripts/run_embed_sweep_simple.sh`
-**Runtime**: ~5-10 minutes
-**Purpose**: Test transformations on real text embeddings (isolates transformation effect)
+**Runtime**: ~30-60 minutes on GPU, ~2-4 hours on CPU (HONEST estimate)
+**Purpose**: Test LIGHTWEIGHT transformations on real text embeddings
 
-**Key Insight**: Uses real text embeddings as input, applies transformations, tests generation. No encoder training needed - gives immediate feedback on what helps.
+**Key Insight**: Uses real text embeddings as input, applies transformations, tests generation. No encoder training needed.
 
-**Hyperparameter Sweeps Included**:
+**IMPORTANT Performance Notes**:
+- Sequential generation (no batching): 100 samples × 10 configs = 1000 decode calls
+- Vocab stats cached once at start (not recomputed per-sample)
+- Heavy transforms REMOVED (K-nearest, anchor+offset require full vocab search - too expensive)
 
-| Category | Experiment | Parameters Swept | Expected Outcome |
-|----------|------------|------------------|------------------|
-| **Baseline** | `text_baseline` | None | Upper bound (should work well) |
-| **RMS Matching** | `rms_matching` | target_scale: 1.0, 0.8, 1.2 | Fixes known magnitude issue (HIGH confidence) |
-| **K-Nearest** | `nearest_k` | k: [3,5,7,10], α: [0.1,0.3,0.5,0.7,0.9] | Projects onto token manifold (HIGH confidence) |
-| **Anchor+Offset** | `anchor_offset` | ε: [0.01,0.02,0.05,0.1,0.15,0.2,0.3] | Stays near real tokens (HIGH confidence) |
-| **Batch Distribution** | `batch_dist` | None | Normalizes statistics (MEDIUM confidence) |
-| **Soft Codebook** | `soft_codebook` | size: [128,256,512,1024], τ: [0.5,0.7,1.0] | VQ-VAE style (MEDIUM confidence) |
+**Lightweight Experiments Only**:
 
-**Total Experiments**: ~40-50 configurations (with sweeps)
+| Category | Experiment | Parameters Swept | Notes |
+|----------|------------|------------------|-------|
+| **Baseline** | `text_baseline` | None | Upper bound |
+| **RMS Matching** | `rms_matching` | scale: [0.5,0.7,0.8,0.9,1.0,1.1,1.2,1.5] | Fixes known 115-120× magnitude issue |
+| **Batch Distribution** | `batch_dist` | None | Normalizes mean+std |
+
+**Total Experiments**: 10 configurations
+
+**Removed (too expensive)**:
+- K-Nearest: Requires full vocab cosine search per token → hours of compute
+- Anchor+Offset: Same issue, full vocab search
+- Soft Codebook: Random init produces garbage, needs training
 
 **Metrics Tracked**:
 - **F1 score**: Task quality
@@ -124,7 +131,7 @@ scripts/
 # 1. Pull latest code
 git pull
 
-# 2. Run quick diagnostic sweep (~15-30 min, runs 35 experiments with hyperparameter sweeps)
+# 2. Run quick diagnostic sweep (~30-60 min on GPU, runs 10 lightweight experiments)
 rm -rf runs/embed_sweep_simple
 PYTHONPATH=. bash scripts/run_embed_sweep_simple.sh
 
@@ -142,20 +149,20 @@ python latentwire/train.py \
 
 ## Expected Outcomes by Likelihood
 
-### TIER 1 - Very High (70%+)
+### TIER 1 - High (60-70%)
 1. **rms_matching** - Directly fixes known 115-120× magnitude issue
-2. **anchor_offset** (ε≈0.05-0.15) - Stays near real tokens with small freedom
-3. **nearest_k** (k=5, α≈0.5-0.7) - Projects onto token manifold gently
+   - Test multiple scales to find optimal target RMS
+   - Most promising: scale ∈ {0.8, 1.0, 1.2}
 
-### TIER 2 - High (50-70%)
-4. **batch_distribution** - Normalizes first/second moments
-5. **nearest_k_strict** (k=3, α≈0.2-0.3) - Strong projection
-6. **anchor_offset_tiny** (ε≈0.01-0.02) - Very conservative
+### TIER 2 - Medium (30-50%)
+2. **batch_distribution** - Normalizes first/second moments
+   - May help if batch-level statistics are the issue
+   - Simpler than per-example calibration
 
-### TIER 3 - Medium (30-50%)
-7. **soft_codebook** - Discrete bottleneck, requires training
-8. **lora_half** - Adapts 50% of layers (shallow LoRA failed before)
-9. **lora_full** - All layers, expensive
+### Removed from sweep (too expensive, can revisit later if basics work):
+- **anchor_offset**: Requires full vocab search per token
+- **nearest_k**: Same issue, O(vocab_size) per token
+- **soft_codebook**: Needs training, random init produces garbage
 
 ## Next Actions
 
