@@ -93,24 +93,18 @@ echo ""
 
 PHASE_START=$(date +%s)
 
-# Llama text baseline
+# Llama text baseline (QWEN SKIPPED FOR SPEED)
 echo "[1a] Running Llama text baseline..."
 python scripts/baselines/evaluate_text_baseline.py \
     --model_id "$LLAMA_ID" \
     --dataset "$DATASET" \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
+    --batch_size 16 \
     --save_dir "$BASE_OUTPUT_DIR/baselines/text_llama"
 
-# Qwen text baseline
 echo ""
-echo "[1b] Running Qwen text baseline..."
-python scripts/baselines/evaluate_text_baseline.py \
-    --model_id "$QWEN_ID" \
-    --dataset "$DATASET" \
-    --samples "$EVAL_SAMPLES" \
-    --max_new_tokens "$MAX_NEW_TOKENS" \
-    --save_dir "$BASE_OUTPUT_DIR/baselines/text_qwen"
+echo "[1b] Skipping Qwen text baseline for speed..."
 
 PHASE_END=$(date +%s)
 PHASE_TIME=$((PHASE_END - PHASE_START))
@@ -131,7 +125,7 @@ echo ""
 
 PHASE_START=$(date +%s)
 
-# Llama token budget
+# Llama token budget (QWEN SKIPPED FOR SPEED)
 echo "[2a] Running Llama token budget (M=$LATENT_LEN)..."
 python scripts/baselines/evaluate_token_budget.py \
     --model_id "$LLAMA_ID" \
@@ -139,18 +133,11 @@ python scripts/baselines/evaluate_token_budget.py \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
     --token_budget "$LATENT_LEN" \
+    --batch_size 16 \
     --save_dir "$BASE_OUTPUT_DIR/baselines/token_budget_llama_m${LATENT_LEN}"
 
-# Qwen token budget
 echo ""
-echo "[2b] Running Qwen token budget (M=$LATENT_LEN)..."
-python scripts/baselines/evaluate_token_budget.py \
-    --model_id "$QWEN_ID" \
-    --dataset "$DATASET" \
-    --samples "$EVAL_SAMPLES" \
-    --max_new_tokens "$MAX_NEW_TOKENS" \
-    --token_budget "$LATENT_LEN" \
-    --save_dir "$BASE_OUTPUT_DIR/baselines/token_budget_qwen_m${LATENT_LEN}"
+echo "[2b] Skipping Qwen token budget for speed..."
 
 PHASE_END=$(date +%s)
 PHASE_TIME=$((PHASE_END - PHASE_START))
@@ -266,21 +253,7 @@ python latentwire/eval.py \
     --models llama
 
 echo ""
-echo "[5b] Evaluating LatentWire on Qwen..."
-python latentwire/eval.py \
-    --ckpt "$BEST_CKPT" \
-    --qwen_id "$QWEN_ID" \
-    --dataset "$DATASET" \
-    --samples "$EVAL_SAMPLES" \
-    --max_new_tokens "$MAX_NEW_TOKENS" \
-    --sequential_eval \
-    --fresh_eval \
-    --calibration embed_rms \
-    --latent_anchor_mode text \
-    --latent_anchor_text "Answer: " \
-    --append_bos_after_prefix yes \
-    --out_dir "$BASE_OUTPUT_DIR/latentwire/eval_qwen" \
-    --models qwen
+echo "[5b] Skipping Qwen evaluation for speed..."
 
 PHASE_END=$(date +%s)
 PHASE_TIME=$((PHASE_END - PHASE_START))

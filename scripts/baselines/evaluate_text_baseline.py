@@ -33,6 +33,7 @@ def main():
     parser.add_argument('--dataset', type=str, default='squad')
     parser.add_argument('--samples', type=int, default=10000)
     parser.add_argument('--max_new_tokens', type=int, default=12)
+    parser.add_argument('--batch_size', type=int, default=16, help='Batch size for faster evaluation')
     parser.add_argument('--save_dir', type=str, required=True)
     args = parser.parse_args()
 
@@ -68,33 +69,41 @@ def main():
     examples = load_examples(dataset=args.dataset, split='validation', samples=args.samples, seed=42)
     print(f"Loaded {len(examples)} examples\n")
 
-    # Evaluate
-    print("Generating answers with full text prompts...")
+    # Evaluate with batching for speed
+    print(f"Generating answers with full text prompts (batch_size={args.batch_size})...")
     predictions = []
     references = []
 
-    for i, ex in enumerate(examples):
-        if i % 100 == 0:
-            print(f"  {i}/{len(examples)}...")
+    for batch_start in range(0, len(examples), args.batch_size):
+        batch_end = min(batch_start + args.batch_size, len(examples))
+        batch = examples[batch_start:batch_end]
 
-        # Tokenize full source text
-        encoded = tokenizer(ex['source'], return_tensors='pt', truncation=True, max_length=512)
+        if batch_start % 100 == 0:
+            print(f"  {batch_start}/{len(examples)}...")
+
+        # Tokenize batch
+        sources = [ex['source'] for ex in batch]
+        encoded = tokenizer(sources, return_tensors='pt', truncation=True, max_length=512, padding=True)
         input_ids = encoded['input_ids'].to(device)
+        attention_mask = encoded['attention_mask'].to(device)
 
         # Generate
         outputs = model.generate(
             input_ids,
+            attention_mask=attention_mask,
             max_new_tokens=args.max_new_tokens,
             do_sample=False,
             pad_token_id=tokenizer.pad_token_id,
         )
 
-        # Decode (skip input tokens)
-        pred_tokens = outputs[0][input_ids.shape[1]:]
-        pred_text = tokenizer.decode(pred_tokens, skip_special_tokens=True)
-
-        predictions.append(pred_text)
-        references.append(ex['answer'])
+        # Decode each output in batch
+        for i, output in enumerate(outputs):
+            # Find where input ends
+            input_len = input_ids[i].shape[0]
+            pred_tokens = output[input_len:]
+            pred_text = tokenizer.decode(pred_tokens, skip_special_tokens=True)
+            predictions.append(pred_text)
+            references.append(batch[i]['answer'])
 
     # Compute metrics
     print("\nComputing metrics...")
