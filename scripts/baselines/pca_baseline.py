@@ -100,7 +100,7 @@ def main():
         batch = examples[batch_start:batch_end]
 
         if batch_start % 500 == 0:
-            print(f"  Processing examples {batch_start}/{len(examples)}...")
+            print(f"  Processing examples {batch_start}/{len(examples)}...", flush=True)
 
         # Batch tokenize for GPU efficiency
         sources = [ex['source'] for ex in batch]
@@ -111,9 +111,11 @@ def main():
             max_length=256,
             padding=True
         )
+
+        # Move to GPU and extract embeddings
         input_ids = encoded['input_ids'].to(embed_device)  # Use embedding layer's device
 
-        # Extract embeddings in a single batched forward pass
+        # Extract embeddings in a single batched forward pass (GPU work here!)
         with torch.no_grad():
             embeddings = model.get_input_embeddings()(input_ids)  # [batch_size, seq_len, d_model]
 
@@ -135,7 +137,9 @@ def main():
             total_tokens += batch_embeddings_np.shape[0]
 
             # Partial fit on this chunk
+            print(f"    Fitting PCA on {batch_embeddings_np.shape[0]} tokens (batch {batch_start}-{batch_end})...", flush=True)
             pca.partial_fit(batch_embeddings_np)
+            print(f"    PCA fit complete", flush=True)
 
             # Clear accumulated embeddings
             accumulated_embeddings = []
