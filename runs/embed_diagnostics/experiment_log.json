@@ -1,0 +1,29 @@
+{
+  "start_time": "2025-10-12T18:33:03.932964",
+  "config": {
+    "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "checkpoint": null,
+    "no_checkpoint": true,
+    "samples": 1000,
+    "batch_size": 64,
+    "dataset": "squad",
+    "output_dir": "runs/embed_diagnostics"
+  },
+  "device": "cuda",
+  "num_gpus": 4,
+  "model_load_time_sec": 16.617278814315796,
+  "vocab_cache_time_sec": 0.03597092628479004,
+  "data_load_time_sec": 1.9776346683502197,
+  "num_examples": 1000,
+  "text_collect_time_sec": 1.7616469860076904,
+  "total_tokens": 172209,
+  "avg_tokens_per_example": 172.209,
+  "examples_per_sec": 567.6506178268082,
+  "text_analysis_time_sec": 0.9882488250732422,
+  "text_transform_time_sec": 0.6558990478515625,
+  "learned_gen_time_sec": 0.0012145042419433594,
+  "learned_analysis_time_sec": 0.34154677391052246,
+  "learned_transform_time_sec": 0.6560311317443848,
+  "end_time": "2025-10-12T18:33:28.828265",
+  "total_time_sec": 24.89529299736023
+}

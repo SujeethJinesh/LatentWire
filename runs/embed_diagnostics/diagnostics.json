@@ -1,0 +1,158 @@
+{
+  "experiment_log": {
+    "start_time": "2025-10-12T18:33:03.932964",
+    "config": {
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "checkpoint": null,
+      "no_checkpoint": true,
+      "samples": 1000,
+      "batch_size": 64,
+      "dataset": "squad",
+      "output_dir": "runs/embed_diagnostics"
+    },
+    "device": "cuda",
+    "num_gpus": 4,
+    "model_load_time_sec": 16.617278814315796,
+    "vocab_cache_time_sec": 0.03597092628479004,
+    "data_load_time_sec": 1.9776346683502197,
+    "num_examples": 1000,
+    "text_collect_time_sec": 1.7616469860076904,
+    "total_tokens": 172209,
+    "avg_tokens_per_example": 172.209,
+    "examples_per_sec": 567.6506178268082,
+    "text_analysis_time_sec": 0.9882488250732422,
+    "text_transform_time_sec": 0.6558990478515625,
+    "learned_gen_time_sec": 0.0012145042419433594,
+    "learned_analysis_time_sec": 0.34154677391052246,
+    "learned_transform_time_sec": 0.6560311317443848,
+    "end_time": "2025-10-12T18:33:28.828265",
+    "total_time_sec": 24.89529299736023
+  },
+  "vocab_stats": {
+    "rms": 0.01049041748046875,
+    "mean": 2.2649765014648438e-05,
+    "std": 0.0105743408203125
+  },
+  "text_embeddings": {
+    "name": "text_embeddings",
+    "shape": [
+      1,
+      172209,
+      4096
+    ],
+    "per_token_rms": {
+      "min": 0.005313873291015625,
+      "max": 0.01454925537109375,
+      "mean": 0.0083770751953125,
+      "std": 0.0019130706787109375,
+      "median": 0.00836944580078125,
+      "q25": 0.0064544677734375,
+      "q75": 0.0098876953125
+    },
+    "overall_rms": 0.0085906982421875,
+    "per_dim": {
+      "mean_of_means": 4.315376281738281e-05,
+      "std_of_means": 0.002201080322265625,
+      "mean_of_stds": 0.00806427001953125,
+      "std_of_stds": 0.0019683837890625
+    },
+    "nearest_vocab_cosine": {
+      "min": NaN,
+      "max": NaN,
+      "mean": NaN,
+      "std": NaN,
+      "median": NaN
+    },
+    "global_mean": 4.315376281738281e-05,
+    "global_std": 0.0085906982421875
+  },
+  "text_transforms": {
+    "rms_scaled": {
+      "target_rms": 0.01049041748046875,
+      "per_token_rms_after": {
+        "min": 0.01047515869140625,
+        "max": 0.01050567626953125,
+        "mean": 0.01049041748046875,
+        "std": 4.0531158447265625e-06
+      },
+      "overall_rms_after": 0.01049041748046875,
+      "nearest_vocab_cosine_after": {
+        "mean": NaN
+      }
+    },
+    "batch_dist": {
+      "target_mean": 2.2649765014648438e-05,
+      "target_std": 0.0105743408203125,
+      "mean_after": 2.1338462829589844e-05,
+      "std_after": 0.0105743408203125,
+      "per_token_rms_after": {
+        "mean": 0.01030731201171875,
+        "std": 0.0023555755615234375
+      },
+      "nearest_vocab_cosine_after": {
+        "mean": NaN
+      }
+    }
+  },
+  "learned_embeddings": {
+    "name": "synthetic_100x",
+    "shape": [
+      1,
+      172209,
+      4096
+    ],
+    "per_token_rms": {
+      "min": 9.5546875,
+      "max": 10.5546875,
+      "mean": 10.0390625,
+      "std": 0.112060546875,
+      "median": 10.0390625,
+      "q25": 9.9609375,
+      "q75": 10.109375
+    },
+    "overall_rms": 10.0390625,
+    "per_dim": {
+      "mean_of_means": 0.004314422607421875,
+      "std_of_means": 0.2215576171875,
+      "mean_of_stds": 10.03125,
+      "std_of_stds": 0.040557861328125
+    },
+    "nearest_vocab_cosine": {
+      "min": NaN,
+      "max": NaN,
+      "mean": NaN,
+      "std": NaN,
+      "median": NaN
+    },
+    "global_mean": 0.0043182373046875,
+    "global_std": 10.0390625
+  },
+  "learned_transforms": {
+    "rms_scaled": {
+      "target_rms": 0.01049041748046875,
+      "per_token_rms_after": {
+        "min": 0.01047515869140625,
+        "max": 0.010498046875,
+        "mean": 0.01049041748046875,
+        "std": 4.410743713378906e-06
+      },
+      "overall_rms_after": 0.01049041748046875,
+      "nearest_vocab_cosine_after": {
+        "mean": NaN
+      }
+    },
+    "batch_dist": {
+      "target_mean": 2.2649765014648438e-05,
+      "target_std": 0.0105743408203125,
+      "mean_after": 2.1398067474365234e-05,
+      "std_after": 0.0105743408203125,
+      "per_token_rms_after": {
+        "mean": 0.0105743408203125,
+        "std": 0.00011801719665527344
+      },
+      "nearest_vocab_cosine_after": {
+        "mean": NaN
+      }
+    }
+  }
+}

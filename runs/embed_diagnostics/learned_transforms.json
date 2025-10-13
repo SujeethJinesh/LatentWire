@@ -1,0 +1,28 @@
+{
+  "rms_scaled": {
+    "target_rms": 0.01049041748046875,
+    "per_token_rms_after": {
+      "min": 0.01047515869140625,
+      "max": 0.010498046875,
+      "mean": 0.01049041748046875,
+      "std": 4.410743713378906e-06
+    },
+    "overall_rms_after": 0.01049041748046875,
+    "nearest_vocab_cosine_after": {
+      "mean": NaN
+    }
+  },
+  "batch_dist": {
+    "target_mean": 2.2649765014648438e-05,
+    "target_std": 0.0105743408203125,
+    "mean_after": 2.1398067474365234e-05,
+    "std_after": 0.0105743408203125,
+    "per_token_rms_after": {
+      "mean": 0.0105743408203125,
+      "std": 0.00011801719665527344
+    },
+    "nearest_vocab_cosine_after": {
+      "mean": NaN
+    }
+  }
+}
