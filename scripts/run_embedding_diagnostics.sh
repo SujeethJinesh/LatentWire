@@ -103,7 +103,7 @@ python latentwire/train.py \
     --sequential_models \
     --warm_anchor_text "Answer: " \
     --first_token_ce_weight 0.5 \
-    --output_dir "$CHECKPOINT_DIR"
+    --save_dir "$CHECKPOINT_DIR"
 
 echo ""
 echo "Training complete!"
