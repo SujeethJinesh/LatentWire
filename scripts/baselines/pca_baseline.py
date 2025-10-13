@@ -67,6 +67,8 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.llama_id)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    # Use left padding for batched embedding extraction
+    tokenizer.padding_side = 'left'
 
     print(f"Model loaded!\n")
 
@@ -76,44 +78,67 @@ def main():
     print(f"Loaded {len(examples)} examples\n")
 
     # Fit IncrementalPCA in batches to avoid OOM
-    print("Fitting IncrementalPCA (batch processing to avoid OOM)...")
+    print("Fitting IncrementalPCA (batched GPU extraction)...")
 
     # Initialize IncrementalPCA
     pca = IncrementalPCA(n_components=args.latent_len, batch_size=1000)
 
-    # Process in batches of examples (not to be confused with PCA's internal batch_size)
-    batch_size = 500  # Process 500 examples at a time
+    # GPU batch size for embedding extraction
+    gpu_batch_size = 64  # Process 64 examples per GPU forward pass
+    pca_fit_every = 500  # Fit PCA every 500 examples worth of embeddings
+
     total_tokens = 0
     embedding_dim = None
+    accumulated_embeddings = []
 
-    for batch_start in range(0, len(examples), batch_size):
-        batch_end = min(batch_start + batch_size, len(examples))
+    for batch_start in range(0, len(examples), gpu_batch_size):
+        batch_end = min(batch_start + gpu_batch_size, len(examples))
         batch = examples[batch_start:batch_end]
 
-        print(f"  Processing examples {batch_start}-{batch_end}/{len(examples)}...")
+        if batch_start % 500 == 0:
+            print(f"  Processing examples {batch_start}/{len(examples)}...")
 
-        # Extract embeddings for this batch
-        batch_embeddings = []
-        for ex in batch:
-            encoded = tokenizer(ex['source'], return_tensors='pt', truncation=True, max_length=256)
-            input_ids = encoded['input_ids'].to(device)
+        # Batch tokenize for GPU efficiency
+        sources = [ex['source'] for ex in batch]
+        encoded = tokenizer(
+            sources,
+            return_tensors='pt',
+            truncation=True,
+            max_length=256,
+            padding=True
+        )
+        input_ids = encoded['input_ids'].to(device)
 
-            with torch.no_grad():
-                embeddings = model.get_input_embeddings()(input_ids)  # [1, seq_len, d_model]
-                batch_embeddings.append(embeddings[0].cpu().float().numpy())
+        # Extract embeddings in a single batched forward pass
+        with torch.no_grad():
+            embeddings = model.get_input_embeddings()(input_ids)  # [batch_size, seq_len, d_model]
 
-        # Concatenate batch
-        batch_embeddings_np = np.concatenate(batch_embeddings, axis=0)  # [batch_tokens, d_model]
-        total_tokens += batch_embeddings_np.shape[0]
-        embedding_dim = batch_embeddings_np.shape[1]
+            # Move to CPU and flatten
+            embeddings_np = embeddings.cpu().float().numpy()  # [batch_size, seq_len, d_model]
 
-        # Partial fit on this batch
-        pca.partial_fit(batch_embeddings_np)
+            # Flatten batch and sequence dimensions
+            for i in range(embeddings_np.shape[0]):
+                # Only keep non-padding tokens
+                seq_len = (input_ids[i] != tokenizer.pad_token_id).sum().item()
+                accumulated_embeddings.append(embeddings_np[i, :seq_len, :])
 
-        # Clear memory
-        del batch_embeddings, batch_embeddings_np
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+            embedding_dim = embeddings_np.shape[2]
+
+        # Periodically fit PCA to avoid accumulating too much in memory
+        if len(accumulated_embeddings) >= pca_fit_every or batch_end == len(examples):
+            # Concatenate accumulated embeddings
+            batch_embeddings_np = np.concatenate(accumulated_embeddings, axis=0)  # [tokens, d_model]
+            total_tokens += batch_embeddings_np.shape[0]
+
+            # Partial fit on this chunk
+            pca.partial_fit(batch_embeddings_np)
+
+            # Clear accumulated embeddings
+            accumulated_embeddings = []
+            del batch_embeddings_np
+
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
     print(f"  Collected {total_tokens} token embeddings")
     print(f"  Embedding dim: {embedding_dim}\n")
