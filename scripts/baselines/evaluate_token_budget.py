@@ -97,7 +97,7 @@ def main():
         pred_text = tokenizer.decode(pred_tokens, skip_special_tokens=True)
 
         predictions.append(pred_text)
-        references.append(ex['target'])
+        references.append(ex['answer'])
 
     # Compute metrics
     print("\nComputing metrics...")
