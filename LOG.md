@@ -1,5 +1,150 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-12 — Embedding Sweep Results: RMS Hypothesis REJECTED (Claude Code)
+
+**STATUS**: ❌ **RMS scaling completely fails.** Magnitude hypothesis was wrong.
+
+## Results Summary (10 experiments on text embeddings)
+
+| Rank | Experiment | F1 | EM | Empty Rate | Verdict |
+|------|------------|-----|-----|------------|---------|
+| 1 | batch_dist | 0.351 | 0.01 | 1% | ✅ Slight improvement |
+| 2 | baseline | 0.345 | 0.01 | 1% | ✅ Works (upper bound) |
+| 3-10 | rms_scale (all) | 0.0 | 0.0 | **100%** | ❌ Catastrophic failure |
+
+**Runtime**: ~30 minutes on HPC GPU (100 samples × 10 configs)
+
+## Experiment-by-Experiment Analysis
+
+### 1. Baseline (Text Embeddings) - ✅ WORKS
+
+**Result**: F1=0.345, EM=0.01, Empty=1%, Time=29.8s
+
+**Interpretation**:
+- Text embeddings work via `inputs_embeds` ✅
+- Generation mechanism is functional
+- F1=0.345 on SQuAD is reasonable
+- Problem is definitely with learned encoder embeddings, NOT the generation setup
+
+### 2. RMS Matching (ALL 8 scales) - ❌ CATASTROPHIC FAILURE
+
+**Result**: F1=0.0, EM=0.0, Empty=**100%** for ALL scales (0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5)
+
+**Time**: 0.2-0.3 seconds (vs 29.8s for baseline) → model generates empty string immediately
+
+**What this means**:
+- Simply scaling embedding magnitude **breaks everything**
+- RMS matching is too naive - destroys some critical property
+- The "115-120× magnitude mismatch" observation was either:
+  - **Measured wrong** (after LayerNorm? wrong tensors?)
+  - **Right but irrelevant** (magnitude not the core issue)
+  - **Right but unfixable** (per-token variation matters, not uniform scaling)
+
+**Why it failed**:
+- RMS scaling forces all tokens to same magnitude
+- LLM likely needs **per-token magnitude variation** (important tokens larger?)
+- Or: direction/structure matters more than magnitude
+- Or: vocab RMS target we computed is wrong
+
+### 3. Batch Distribution Matching - ✅ SLIGHT IMPROVEMENT
+
+**Result**: F1=0.351, EM=0.01, Empty=1%, Time=28.3s
+
+**Interpretation**:
+- F1=0.351 vs baseline F1=0.345 = **~2% improvement**
+- Normalizes to zero mean, unit variance, then rescales to vocab mean/std
+- More sophisticated than RMS (handles both location and spread)
+- Same empty rate as baseline (1%)
+
+**Why it worked (slightly)**:
+- Batch normalization is what LayerNorm does in LLM
+- Pre-normalizing inputs helps first layer process them
+- But doesn't fundamentally fix distribution mismatch
+
+## Key Findings
+
+### 1. **Magnitude hypothesis is WRONG** ❌
+
+The "115-120× too large" observation doesn't translate to a fix. Either:
+- We measured the wrong thing (post-LayerNorm? wrong tensors?)
+- Magnitude matters but can't be fixed via uniform scaling
+- Other properties (direction, per-token variation, higher-order stats) matter more
+
+### 2. **Text embeddings work fine** ✅
+
+Baseline F1=0.345 proves `inputs_embeds` works. Problem is with learned encoder outputs.
+
+### 3. **Batch normalization helps marginally** ✅
+
+2% improvement suggests statistical calibration has value, but not transformative.
+
+### 4. **Per-token properties likely matter** 🔍
+
+RMS uniformly scaling all tokens to same magnitude → 100% failure suggests:
+- Token-level magnitude variation is critical
+- Or: Relative magnitudes between tokens matter
+- Or: We're destroying some structural property
+
+## Critical Questions We MUST Answer
+
+### Q1: Where did "115-120× magnitude mismatch" come from?
+- Was it measured on raw embeddings or post-LayerNorm?
+- What tensors were compared?
+- Is vocab RMS even the right target?
+
+### Q2: What's actually different between text and learned embeddings?
+- Per-token RMS distribution (min, max, mean, std)
+- Direction (cosine to nearest vocab token)
+- Higher-order statistics (covariance structure)
+- Per-dimension statistics
+
+### Q3: Why does RMS scaling destroy everything?
+- What property did we destroy?
+- What do embeddings look like before/after RMS scaling?
+- What does the LLM actually need?
+
+### Q4: Why does batch_dist help (slightly)?
+- What statistical property does it fix?
+- Can we do better than batch-level normalization?
+
+## Next Steps (Codex Recommendations)
+
+### 1. **INSTRUMENT THE REAL LATENTS** (HIGHEST PRIORITY)
+
+Create diagnostic script that logs for both text embeddings AND learned latents:
+- Per-token RMS (min, max, mean, std, histogram)
+- Per-dimension mean/std
+- Overall RMS at each stage (raw, post-LayerNorm, post-tanh)
+- Nearest vocab token (cosine similarity distribution)
+- Covariance spectra
+- Effect of RMS scaling on actual tensors
+
+**Goal**: Understand what's actually different and where the 115× came from.
+
+### 2. **Test batch_dist on real pipeline** (QUICK WIN)
+
+Add `--embed_normalize=batch` flag to eval.py, test on best checkpoint. Since it helped text embeddings, might help learned latents.
+
+### 3. **Update LOG with corrected measurements**
+
+Once we have diagnostics, document what we actually measured vs what we should have measured.
+
+### 4. **Design fix based on data**
+
+Once we understand the problem:
+- If per-token magnitude variation matters → learn per-token scaling
+- If direction matters → PCA/projection onto vocab subspace
+- If higher-order stats matter → whitening transform
+- If adapter is broken → redesign adapter architecture
+
+## Conclusion
+
+**We were chasing the wrong hypothesis.** Simple magnitude scaling doesn't work. The problem is more complex.
+
+**We need data before making more hypotheses.** Next step: comprehensive instrumentation to understand what's actually different between text and learned embeddings.
+
+---
+
 ### 2025-10-12 — Embedding Distribution Experiments: Systematic Sweep Framework (Claude Code)
 
 **STATUS**: Built comprehensive experimental framework to address the **arbitrary embedding distribution problem**
