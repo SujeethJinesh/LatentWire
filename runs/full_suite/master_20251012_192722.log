@@ -1,0 +1,16 @@
+Starting experiment suite at Sun Oct 12 19:27:22 PDT 2025
+
+========================================================================
+PHASE 1/5: TEXT BASELINE - Upper Bound
+========================================================================
+
+Evaluating both LLMs with full text prompts...
+This establishes the best possible performance.
+
+[1a] Running Llama text baseline...
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/scripts/baselines/evaluate_text_baseline.py", line 26, in <module>
+    from latentwire.metrics import compute_em_f1
+ModuleNotFoundError: No module named 'latentwire.metrics'
