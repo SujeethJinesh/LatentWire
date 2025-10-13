@@ -538,6 +538,147 @@ ChatGPT proposed 7 "injection method" experiments (deep prefix, LoRA, IA³, proj
 
 ---
 
+### 2025-10-13 — Architecture Sweep to Fix Mode Collapse (Claude Code)
+
+**STATUS**: 🔬 **Systematic architecture diagnosis in progress**
+
+## Problem Definition
+
+Loss weight sweep revealed that mode collapse (10-20% diversity) is NOT a hyperparameter issue but an **architecture design flaw**:
+
+**Root cause identified**: Mean pooling bottleneck
+```
+~100 tokens → mean pool → single z ∈ R^512 → expand → 32 tokens
+```
+
+This pipeline loses input-specific information regardless of loss weights (tested 0.0 to 0.5), K-token supervision (tested 4, 8, 12), or semantic guidance.
+
+## Proposed Solution: Direct Sequence Compression
+
+**New architecture**: Remove mean pooling, compress sequences directly via cross-attention:
+```
+~100 tokens → cross-attention(M learned queries) → 32 tokens
+```
+
+**Key differences**:
+- ❌ OLD: Mean pool to single vector, then expand
+- ✅ NEW: Direct attention-based compression preserving sequence structure
+
+## Architecture Sweep Design
+
+Created `scripts/sweep_architectures.py` to test 3 architectural variants:
+
+### 1. Direct Sequence Compression (PROPOSED FIX)
+```python
+class DirectSequenceCompressor(nn.Module):
+    """~100 tokens → M tokens via cross-attention. NO mean pooling."""
+
+    def __init__(self, d_model=4096, M=32, n_layers=4):
+        # Learned queries for M output slots
+        self.queries = nn.Parameter(torch.randn(M, d_model) * 0.02)
+
+        # Cross-attention layers
+        self.cross_attn = nn.ModuleList([
+            nn.MultiheadAttention(d_model, n_heads, dropout, batch_first=True)
+            for _ in range(n_layers)
+        ])
+
+    def forward(self, token_embeds, attention_mask):
+        Q = self.queries.unsqueeze(0).expand(B, -1, -1)  # [B, M, d_model]
+
+        # Cross-attend to compress WITHOUT mean pooling
+        for attn, norm in zip(self.cross_attn, self.norms):
+            Q_new, _ = attn(query=Q, key=token_embeds, value=token_embeds)
+            Q = norm(Q + Q_new)
+
+        return Q  # [B, M, d_model] - directly ready for LLM
+```
+
+**Expected**: Diversity >60%, each input gets distinct M-token representation
+
+### 2. Mean Pool Bottleneck (BROKEN BASELINE)
+```python
+class MeanPoolBottleneck(nn.Module):
+    """Mean pool ~100 tokens → single z ∈ R^d_bottleneck."""
+
+    def forward(self, token_embeds, attention_mask):
+        # Mean pool (respecting mask) - THIS CAUSES COLLAPSE
+        masked = token_embeds * attention_mask.unsqueeze(-1)
+        z = masked.sum(dim=1) / attention_mask.sum(dim=1, keepdim=True)
+        return self.proj_down(z)  # [B, d_bottleneck]
+```
+
+**Expected**: Diversity 10-20% (reproducing the collapse)
+
+### 3. Mean Pool + Expand (CURRENT PIPELINE)
+```python
+nn.Sequential(
+    MeanPoolBottleneck(d_model=4096, d_bottleneck=512),
+    BottleneckExpander(d_bottleneck=512, d_model=4096, M=32),
+)
+```
+
+**Expected**: Diversity 10-20% (reproducing original Anchor-Guided collapse)
+
+## Information Preservation Diagnostics
+
+For each architecture, compute metrics to detect collapse:
+
+```python
+def compute_representation_diagnostics(representations):
+    # 1. Pairwise cosine similarity (GOOD if < 0.5)
+    cos_sim = cosine_similarity(representations)
+    avg_cosine = np.nanmean(cos_sim)
+
+    # 2. PCA variance explained (GOOD if > 0.7)
+    pca = PCA(n_components=32)
+    pca_variance = pca.explained_variance_ratio_.sum()
+
+    # 3. NN diversity score (GOOD if > 0.7)
+    nn_diversity = (max_similarities < 0.7).mean()
+
+    return {
+        'avg_cosine_similarity': avg_cosine,
+        'pca_variance_explained': pca_variance,
+        'nn_diversity_score': nn_diversity,
+    }
+```
+
+## Usage
+
+```bash
+# Full sweep (recommended)
+git pull && rm -rf runs && PYTHONPATH=. bash scripts/sweep_architectures.sh
+
+# Quick test (5 min)
+SAMPLES=100 STEPS=100 bash scripts/sweep_architectures.sh
+
+# Extended training (30 min)
+SAMPLES=1000 STEPS=500 bash scripts/sweep_architectures.sh
+```
+
+## Success Criteria
+
+**If Direct Sequence Compression works:**
+- Diversity: >60% (vs 10-20% for mean pooling)
+- Avg cosine similarity: <0.5 (representations are distinct)
+- PCA variance explained: >0.7 (information is preserved)
+- NN diversity score: >0.7 (examples don't collapse to same point)
+
+**If this succeeds**: Move to Phase 2 - add semantic grounding, cross-model alignment, and compression.
+
+**If this fails**: Problem is deeper than architecture - may be K-token CE supervision, dataset, or fundamental LLM limitation with soft prefix conditioning.
+
+## Removed Old Scripts
+
+Following project cleanup conventions:
+- ❌ `scripts/test_new_interlingua.py/sh` - one-off test, replaced by systematic sweep
+- ❌ `scripts/sweep_loss_weights.py/sh` - confirmed loss weights don't matter, architecture is the issue
+
+All functionality consolidated into `scripts/sweep_architectures.py/sh`.
+
+---
+
 ### 2025-10-12 — Baseline Infrastructure & PCA Analysis (Claude Code)
 
 **STATUS**: ✅ **Baseline pipeline complete.** Scientific evaluation framework ready.
