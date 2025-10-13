@@ -393,6 +393,9 @@ def test_architecture(args):
 
     print("\n[2/7] Instantiating new architecture components...")
 
+    # Determine dtype from frozen models (bfloat16 on CUDA, float32 on CPU)
+    model_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+
     alignment_tf = AlignmentTransformer(
         d_model_llama=d_model_llama,
         d_model_qwen=d_model_qwen,
@@ -401,14 +404,14 @@ def test_architecture(args):
         n_heads=8,
         n_layers=4,
         dropout=0.1,
-    ).to(device)
+    ).to(device=device, dtype=model_dtype)
 
     adapter_llama = InterlinguaAdapter(
         d_inter=args.d_inter,
         d_model=d_model_llama,
         num_slots=args.num_slots,
         dropout=0.1,
-    ).to(device)
+    ).to(device=device, dtype=model_dtype)
 
     if qwen_model is not None:
         adapter_qwen = InterlinguaAdapter(
@@ -416,7 +419,7 @@ def test_architecture(args):
             d_model=d_model_qwen,
             num_slots=args.num_slots,
             dropout=0.1,
-        ).to(device)
+        ).to(device=device, dtype=model_dtype)
     else:
         adapter_qwen = None
 
@@ -456,7 +459,7 @@ def test_architecture(args):
     with torch.no_grad():
         z_sem = torch.tensor(
             sem_encoder.encode([text], convert_to_tensor=False, show_progress_bar=False),
-            dtype=torch.float32,
+            dtype=model_dtype,
             device=device,
         )
 
@@ -596,7 +599,7 @@ def test_architecture(args):
                 with torch.no_grad():
                     z_sem = torch.tensor(
                         sem_encoder.encode([text], convert_to_tensor=False, show_progress_bar=False),
-                        dtype=torch.float32,
+                        dtype=model_dtype,
                         device=device,
                     )
 
