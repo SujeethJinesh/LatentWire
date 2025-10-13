@@ -713,7 +713,7 @@ def test_architecture(args):
             with torch.no_grad():
                 z_sem = torch.tensor(
                     sem_encoder.encode([text], convert_to_tensor=False, show_progress_bar=False),
-                    dtype=torch.float32,
+                    dtype=learned_dtype,
                     device=device,
                 )
 
@@ -721,9 +721,11 @@ def test_architecture(args):
                 llama_input_ids = llama_tokens.input_ids.to(device)
                 llama_attn_mask = llama_tokens.attention_mask.to(device)
                 llama_embeds = llama_model.get_input_embeddings()(llama_input_ids)
+                llama_embeds = llama_embeds.to(learned_dtype)
 
                 z_llama = alignment_tf(llama_embeds, z_sem, 'llama', llama_attn_mask)
                 prefix_llama = adapter_llama(z_llama)
+                prefix_llama = prefix_llama.to(llama_model.dtype)
 
             # Generate
             pred = generate_from_prefix(
@@ -747,15 +749,17 @@ def test_architecture(args):
             with torch.no_grad():
                 z_sem = torch.tensor(
                     sem_encoder.encode([text], convert_to_tensor=False, show_progress_bar=False),
-                    dtype=torch.float32,
+                    dtype=learned_dtype,
                     device=device,
                 )
                 llama_tokens = llama_tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
                 llama_input_ids = llama_tokens.input_ids.to(device)
                 llama_attn_mask = llama_tokens.attention_mask.to(device)
                 llama_embeds = llama_model.get_input_embeddings()(llama_input_ids)
+                llama_embeds = llama_embeds.to(learned_dtype)
                 z_llama = alignment_tf(llama_embeds, z_sem, 'llama', llama_attn_mask)
                 prefix_llama = adapter_llama(z_llama)
+                prefix_llama = prefix_llama.to(llama_model.dtype)
             pred = generate_from_prefix(llama_model, llama_tokenizer, prefix_llama, anchor_text="Answer: ", max_new_tokens=12)
             preds.append(pred)
 
