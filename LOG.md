@@ -299,6 +299,94 @@ if dual_model:
 
 ---
 
+### 2025-10-13 — Unexpected: Semantic Anchor Loss Made It WORSE (Claude Code)
+
+**STATUS**: 🤔 **Surprising negative result - need systematic sweep**
+
+## Re-run Results (SAMPLES=1000, STEPS=500, semantic weight=0.5)
+
+After adding semantic anchor loss, diversity got **worse**:
+
+**Predictions:**
+```
+[1] Gold: Dane                    → Pred: "The following is a list of the 2010–"
+[2] Gold: Muslims                 → Pred: "the 19th century, the British Empire was the"
+[3] Gold: orientalism...          → Pred: "the 19th century, the British Empire was the"
+[4] Gold: numeracy                → Pred: "the 19th century, the British Empire was the"
+[5] Gold: Mental Health Act       → Pred: "the 19th century, the British Empire was the"
+```
+
+**Diversity: 2/5 (40%)** - same as dual-model, worse than buggy version!
+
+## Training Dynamics Analysis
+
+```
+Step   1: loss=11.96  gen=11.47  sem=0.998
+Step 201: loss=3.08   gen=2.60   sem=0.959  ← Loss minimum
+Step 500: loss=6.97   gen=6.53   sem=0.877  ← Then increases!
+```
+
+**Training instability detected:**
+- Loss decreases to 3.08, then **increases back to 6.97**
+- Generation loss: 2.60 → 6.53 (gets worse by 2.5×!)
+- Semantic loss steadily improves: 0.998 → 0.877
+- Model collapses toward semantic anchor at expense of generation quality
+
+## Comprehensive Comparison
+
+| Configuration | Semantic Weight | Diversity | Final Loss | Pattern |
+|--------------|----------------|-----------|------------|---------|
+| Dual-model (Qwen) | 0.1 | 2/5 (40%) | 8.80 | "The first edition..." |
+| **Buggy (no semantic)** | **0.0** | **3/5 (60%)** | **4.33** | "2000s, company..." |
+| Fixed (with semantic) | 0.5 | 2/5 (40%) | 6.97 ↑ | "19th century, British Empire..." |
+
+**Paradox:** The broken version had the BEST diversity and LOWEST loss!
+
+## Root Cause Hypothesis
+
+**Hypothesis 1: Semantic anchor space is not diverse enough**
+- SentenceTransformer produces similar embeddings for different contexts
+- Forcing z_llama → z_sem_proj collapses diverse inputs into similar representations
+- Historical/scientific contexts all map to similar semantic embeddings
+
+**Hypothesis 2: Weight 0.5 is too strong**
+- Semantic loss dominates generation loss
+- Training instability confirms this (loss increases after step 201)
+- Model prioritizes matching anchor over generating correct answers
+
+**Key insight:** ANY strong regularization (alignment OR semantic) causes collapse. The only diverse version had no auxiliary loss.
+
+## Solution: Systematic Loss Weight Sweep
+
+Created comprehensive sweep script (scripts/sweep_loss_weights.py) to test 7 configurations in one run:
+
+1. **No semantic loss (0.0, K=4)** - the "buggy" version (baseline: 60% diversity)
+2. **Very weak semantic (0.01, K=4)** - minimal semantic guidance
+3. **Weak semantic (0.05, K=4)** - light semantic guidance
+4. **Medium semantic (0.1, K=4)** - moderate semantic guidance
+5. **Strong semantic (0.5, K=4)** - current (40% diversity)
+6. **Increased K-token (0.05, K=8)** - stronger generation supervision
+7. **Increased K-token (0.05, K=12)** - even stronger generation supervision
+
+**Each configuration:**
+- Trains for 300 steps (quick but informative)
+- Evaluates on 10 examples (better diversity metric)
+- Logs losses and predictions
+
+**Output:**
+- `runs/loss_weight_sweep/results.json` - structured data
+- `runs/loss_weight_sweep/summary.txt` - readable summary
+- `runs/loss_weight_sweep/sweep.log` - full training logs
+
+**Usage:**
+```bash
+git pull && rm -rf runs && PYTHONPATH=. bash scripts/sweep_loss_weights.sh
+```
+
+**Expected outcome:** Find the optimal balance between generation loss and semantic guidance that maximizes diversity while maintaining learning.
+
+---
+
 ### 2025-10-12 — Baseline Infrastructure & PCA Analysis (Claude Code)
 
 **STATUS**: ✅ **Baseline pipeline complete.** Scientific evaluation framework ready.
