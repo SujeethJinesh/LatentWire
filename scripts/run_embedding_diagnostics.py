@@ -136,14 +136,16 @@ def analyze_embeddings(embeddings, name, vocab_stats, device):
 
     # 1. Per-token RMS distribution
     per_token_rms = compute_per_token_rms(embeddings)  # [B, S]
+    # Convert to float32 for quantile operations (doesn't support float16)
+    per_token_rms_f32 = per_token_rms.float()
     stats['per_token_rms'] = {
         'min': float(per_token_rms.min()),
         'max': float(per_token_rms.max()),
         'mean': float(per_token_rms.mean()),
         'std': float(per_token_rms.std()),
-        'median': float(per_token_rms.median()),
-        'q25': float(per_token_rms.quantile(0.25)),
-        'q75': float(per_token_rms.quantile(0.75)),
+        'median': float(per_token_rms_f32.median()),
+        'q25': float(per_token_rms_f32.quantile(0.25)),
+        'q75': float(per_token_rms_f32.quantile(0.75)),
     }
 
     # 2. Overall RMS
@@ -160,12 +162,14 @@ def analyze_embeddings(embeddings, name, vocab_stats, device):
 
     # 4. Nearest vocab token cosine similarity (chunked to avoid OOM)
     nearest_cos = compute_nearest_vocab_cosine(embeddings, vocab_stats['embeddings'].to(device), verbose=True)
+    # Convert to float32 for median operation (doesn't support float16)
+    nearest_cos_f32 = nearest_cos.float()
     stats['nearest_vocab_cosine'] = {
         'min': float(nearest_cos.min()),
         'max': float(nearest_cos.max()),
         'mean': float(nearest_cos.mean()),
         'std': float(nearest_cos.std()),
-        'median': float(nearest_cos.median()),
+        'median': float(nearest_cos_f32.median()),
     }
 
     # 5. Covariance spectrum (top 10 eigenvalues)
