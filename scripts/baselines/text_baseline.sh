@@ -55,25 +55,21 @@ echo ""
 # Run evaluation with both models on full text
 {
 echo "Evaluating Llama with full text prompts..."
-python latentwire/eval.py \
-    --llama_id "$LLAMA_ID" \
+python scripts/baselines/evaluate_text_baseline.py \
+    --model_id "$LLAMA_ID" \
     --dataset "$DATASET" \
     --samples "$SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode text \
-    --save_dir "$OUTPUT_DIR/llama" \
-    --models llama
+    --save_dir "$OUTPUT_DIR/llama"
 
 echo ""
 echo "Evaluating Qwen with full text prompts..."
-python latentwire/eval.py \
-    --qwen_id "$QWEN_ID" \
+python scripts/baselines/evaluate_text_baseline.py \
+    --model_id "$QWEN_ID" \
     --dataset "$DATASET" \
     --samples "$SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode text \
-    --save_dir "$OUTPUT_DIR/qwen" \
-    --models qwen
+    --save_dir "$OUTPUT_DIR/qwen"
 
 echo ""
 echo "========================================================================"

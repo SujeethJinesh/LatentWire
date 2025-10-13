@@ -95,26 +95,22 @@ PHASE_START=$(date +%s)
 
 # Llama text baseline
 echo "[1a] Running Llama text baseline..."
-python latentwire/eval.py \
-    --llama_id "$LLAMA_ID" \
+python scripts/baselines/evaluate_text_baseline.py \
+    --model_id "$LLAMA_ID" \
     --dataset "$DATASET" \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode text \
-    --save_dir "$BASE_OUTPUT_DIR/baselines/text_llama" \
-    --models llama
+    --save_dir "$BASE_OUTPUT_DIR/baselines/text_llama"
 
 # Qwen text baseline
 echo ""
 echo "[1b] Running Qwen text baseline..."
-python latentwire/eval.py \
-    --qwen_id "$QWEN_ID" \
+python scripts/baselines/evaluate_text_baseline.py \
+    --model_id "$QWEN_ID" \
     --dataset "$DATASET" \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode text \
-    --save_dir "$BASE_OUTPUT_DIR/baselines/text_qwen" \
-    --models qwen
+    --save_dir "$BASE_OUTPUT_DIR/baselines/text_qwen"
 
 PHASE_END=$(date +%s)
 PHASE_TIME=$((PHASE_END - PHASE_START))
@@ -137,28 +133,24 @@ PHASE_START=$(date +%s)
 
 # Llama token budget
 echo "[2a] Running Llama token budget (M=$LATENT_LEN)..."
-python latentwire/eval.py \
-    --llama_id "$LLAMA_ID" \
+python scripts/baselines/evaluate_token_budget.py \
+    --model_id "$LLAMA_ID" \
     --dataset "$DATASET" \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode token_budget \
     --token_budget "$LATENT_LEN" \
-    --save_dir "$BASE_OUTPUT_DIR/baselines/token_budget_llama_m${LATENT_LEN}" \
-    --models llama
+    --save_dir "$BASE_OUTPUT_DIR/baselines/token_budget_llama_m${LATENT_LEN}"
 
 # Qwen token budget
 echo ""
 echo "[2b] Running Qwen token budget (M=$LATENT_LEN)..."
-python latentwire/eval.py \
-    --qwen_id "$QWEN_ID" \
+python scripts/baselines/evaluate_token_budget.py \
+    --model_id "$QWEN_ID" \
     --dataset "$DATASET" \
     --samples "$EVAL_SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode token_budget \
     --token_budget "$LATENT_LEN" \
-    --save_dir "$BASE_OUTPUT_DIR/baselines/token_budget_qwen_m${LATENT_LEN}" \
-    --models qwen
+    --save_dir "$BASE_OUTPUT_DIR/baselines/token_budget_qwen_m${LATENT_LEN}"
 
 PHASE_END=$(date +%s)
 PHASE_TIME=$((PHASE_END - PHASE_START))

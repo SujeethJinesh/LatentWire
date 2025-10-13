@@ -1,0 +1,134 @@
+"""
+Text Baseline Evaluation - No Checkpoint Required
+
+Evaluates LLM with full text prompts to establish upper bound performance.
+
+Usage:
+  python scripts/baselines/evaluate_text_baseline.py \
+    --model_id meta-llama/Meta-Llama-3.1-8B-Instruct \
+    --samples 10000 \
+    --dataset squad
+"""
+
+import argparse
+import json
+import sys
+import time
+from pathlib import Path
+from datetime import datetime
+
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from latentwire.data import load_examples
+from latentwire.metrics import compute_em_f1
+
+
+@torch.no_grad()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_id', type=str, required=True)
+    parser.add_argument('--dataset', type=str, default='squad')
+    parser.add_argument('--samples', type=int, default=10000)
+    parser.add_argument('--max_new_tokens', type=int, default=12)
+    parser.add_argument('--save_dir', type=str, required=True)
+    args = parser.parse_args()
+
+    start_time = time.time()
+    save_dir = Path(args.save_dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Text Baseline Evaluation")
+    print(f"Model: {args.model_id}")
+    print(f"Device: {device}")
+    print(f"GPUs: {torch.cuda.device_count()}\n")
+
+    # Load model
+    print(f"Loading model...")
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model_id,
+        torch_dtype=torch.float16 if device.type == 'cuda' else torch.float32,
+        device_map='auto' if torch.cuda.device_count() > 1 else None,
+    )
+    if torch.cuda.device_count() <= 1:
+        model = model.to(device)
+    model.eval()
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    print(f"Model loaded!\n")
+
+    # Load data
+    print(f"Loading {args.samples} examples from {args.dataset}...")
+    examples = load_examples(dataset=args.dataset, split='validation', samples=args.samples, seed=42)
+    print(f"Loaded {len(examples)} examples\n")
+
+    # Evaluate
+    print("Generating answers with full text prompts...")
+    predictions = []
+    references = []
+
+    for i, ex in enumerate(examples):
+        if i % 100 == 0:
+            print(f"  {i}/{len(examples)}...")
+
+        # Tokenize full source text
+        encoded = tokenizer(ex['source'], return_tensors='pt', truncation=True, max_length=512)
+        input_ids = encoded['input_ids'].to(device)
+
+        # Generate
+        outputs = model.generate(
+            input_ids,
+            max_new_tokens=args.max_new_tokens,
+            do_sample=False,
+            pad_token_id=tokenizer.pad_token_id,
+        )
+
+        # Decode (skip input tokens)
+        pred_tokens = outputs[0][input_ids.shape[1]:]
+        pred_text = tokenizer.decode(pred_tokens, skip_special_tokens=True)
+
+        predictions.append(pred_text)
+        references.append(ex['target'])
+
+    # Compute metrics
+    print("\nComputing metrics...")
+    metrics = compute_em_f1(predictions, references)
+
+    print("\n" + "="*80)
+    print("RESULTS")
+    print("="*80)
+    print(f"  Model: {args.model_id}")
+    print(f"  Samples: {len(examples)}")
+    print(f"  EM: {metrics['em']:.2%}")
+    print(f"  F1: {metrics['f1']:.2%}")
+    print("="*80)
+
+    # Save results
+    results_dict = {
+        'config': vars(args),
+        'em': float(metrics['em']),
+        'f1': float(metrics['f1']),
+        'exact_match': float(metrics['em']),  # Alias
+        'f1_score': float(metrics['f1']),      # Alias
+        'num_examples': len(examples),
+        'n_examples': len(examples),           # Alias
+        'timestamp': datetime.now().isoformat(),
+        'total_time_sec': time.time() - start_time,
+    }
+
+    results_path = save_dir / 'results.json'
+    with open(results_path, 'w') as f:
+        json.dump(results_dict, f, indent=2)
+
+    print(f"\nResults saved to {results_path}")
+    print(f"Total time: {time.time() - start_time:.1f}s\n")
+
+
+if __name__ == '__main__':
+    main()

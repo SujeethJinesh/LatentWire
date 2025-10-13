@@ -60,27 +60,23 @@ echo ""
 # Run evaluation with truncated text
 {
 echo "Evaluating Llama with $LATENT_LEN-token truncated prompts..."
-python latentwire/eval.py \
-    --llama_id "$LLAMA_ID" \
+python scripts/baselines/evaluate_token_budget.py \
+    --model_id "$LLAMA_ID" \
     --dataset "$DATASET" \
     --samples "$SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode token_budget \
     --token_budget "$LATENT_LEN" \
-    --save_dir "$OUTPUT_DIR/llama_m${LATENT_LEN}" \
-    --models llama
+    --save_dir "$OUTPUT_DIR/llama_m${LATENT_LEN}"
 
 echo ""
 echo "Evaluating Qwen with $LATENT_LEN-token truncated prompts..."
-python latentwire/eval.py \
-    --qwen_id "$QWEN_ID" \
+python scripts/baselines/evaluate_token_budget.py \
+    --model_id "$QWEN_ID" \
     --dataset "$DATASET" \
     --samples "$SAMPLES" \
     --max_new_tokens "$MAX_NEW_TOKENS" \
-    --mode token_budget \
     --token_budget "$LATENT_LEN" \
-    --save_dir "$OUTPUT_DIR/qwen_m${LATENT_LEN}" \
-    --models qwen
+    --save_dir "$OUTPUT_DIR/qwen_m${LATENT_LEN}"
 
 echo ""
 echo "========================================================================"
