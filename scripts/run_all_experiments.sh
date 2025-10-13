@@ -41,7 +41,7 @@ EVAL_SAMPLES="${EVAL_SAMPLES:-10000}"     # Full validation set for baselines
 TRAIN_SAMPLES="${TRAIN_SAMPLES:-87599}"   # Full training set for LatentWire
 TRAIN_EPOCHS="${TRAIN_EPOCHS:-3}"
 BATCH_SIZE="${BATCH_SIZE:-32}"            # Training batch size
-EVAL_BATCH_SIZE="${EVAL_BATCH_SIZE:-512}" # Eval batch size (512 = ~60-70GB per GPU)
+EVAL_BATCH_SIZE="${EVAL_BATCH_SIZE:-256}" # Eval batch size (256=safe ~50-60GB, 384=aggressive ~65-70GB, 512+=OOM risk)
 LATENT_LEN="${LATENT_LEN:-32}"
 D_Z="${D_Z:-256}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-12}"

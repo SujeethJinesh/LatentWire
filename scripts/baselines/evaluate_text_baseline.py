@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--dataset', type=str, default='squad')
     parser.add_argument('--samples', type=int, default=10000)
     parser.add_argument('--max_new_tokens', type=int, default=12)
-    parser.add_argument('--batch_size', type=int, default=512, help='Batch size for faster evaluation (512 uses ~60-70GB)')
+    parser.add_argument('--batch_size', type=int, default=256, help='Batch size for evaluation (256=safe, 384=aggressive, 512+=OOM risk)')
     parser.add_argument('--save_dir', type=str, required=True)
     args = parser.parse_args()
 
@@ -106,6 +106,10 @@ def main():
             pred_text = tokenizer.decode(pred_tokens, skip_special_tokens=True)
             predictions.append(pred_text)
             references.append(batch[i]['answer'])
+
+        # Clear cache to prevent memory fragmentation
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     # Compute metrics
     print("\nComputing metrics...")
