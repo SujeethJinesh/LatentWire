@@ -1,4 +1,4 @@
-Starting experiment suite at Sun Oct 12 20:44:18 PDT 2025
+Starting experiment suite at Sun Oct 12 21:16:10 PDT 2025
 
 ========================================================================
 PHASE 1/5: TEXT BASELINE - Upper Bound
@@ -16,8 +16,8 @@ Device: cuda
 GPUs: 4
 
 Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3587.94it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.83s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.88s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.63s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.32s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.85s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2043.76it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:35, 11.95s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:23<00:23, 11.66s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.22s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.77s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.14s/it]
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
   warnings.warn(
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
@@ -44,12 +44,12 @@ RESULTS
 ================================================================================
 
 Results saved to runs/full_suite/baselines/text_llama/results.json
-Total time: 258.0s
+Total time: 281.4s
 
 
 [1b] Skipping Qwen text baseline for speed...
 
-✓ Phase 1 complete in 262s (4m)
+✓ Phase 1 complete in 288s (4m)
 
 ========================================================================
 PHASE 2/5: TOKEN BUDGET BASELINE - Fair Comparison
@@ -68,8 +68,8 @@ Device: cuda
 GPUs: 4
 
 Loading model...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3913.51it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.81s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.86s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.69s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.39s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.90s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3512.82it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:15,  5.01s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:10<00:10,  5.03s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:14<00:04,  4.90s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.35s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.94s/it]
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:601: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
   warnings.warn(
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
@@ -97,7 +97,7 @@ RESULTS
 ================================================================================
 
 Results saved to runs/full_suite/baselines/token_budget_llama_m32/results.json
-Total time: 53.6s
+Total time: 54.1s
 
 
 [2b] Skipping Qwen token budget for speed...
@@ -110,13 +110,12 @@ PHASE 3/5: PCA BASELINE - Linear Compression
 
 Testing if PCA (linear projection) is sufficient...
 
-[3] Running PCA baseline (M=32)...
+[3] Running PCA baseline (M=32, samples=10000)...
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 Using device: cuda
 GPUs: 4
 
 Loading meta-llama/Meta-Llama-3.1-8B-Instruct...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7898.88it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.81s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.57s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.32s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.83s/it]
-scripts/run_all_experiments.sh: line 304: 3997832 Killed                  python scripts/baselines/pca_baseline.py --llama_id "$LLAMA_ID" --dataset "$DATASET" --samples "$EVAL_SAMPLES" --latent_len "$LATENT_LEN" --max_new_tokens "$MAX_NEW_TOKENS" --save_dir "$BASE_OUTPUT_DIR/baselines/pca_m${LATENT_LEN}"
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3712.59it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.75s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:09<00:09,  4.68s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.27s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.78s/it]
