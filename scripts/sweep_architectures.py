@@ -347,11 +347,9 @@ def train_and_evaluate(
 
             compressed = architecture(embeds, attn_mask)
 
-            # Save representation for diagnostics
-            if compressed.ndim == 2:
-                representations.append(compressed.cpu().numpy())
-            else:
-                representations.append(compressed.cpu().numpy())
+            # Save representation for diagnostics (squeeze batch dim)
+            rep = compressed.squeeze(0).cpu().numpy()  # [M, d] or [d]
+            representations.append(rep)
 
             # Generate
             if compressed.ndim == 2:
@@ -366,10 +364,7 @@ def train_and_evaluate(
     diversity_pct = unique_preds / len(predictions) * 100
 
     # Representation diagnostics
-    representations = np.array(representations)
-    if representations.ndim == 3 and representations.shape[0] == len(test_examples):
-        representations = representations.squeeze(1) if representations.shape[1] == 1 else representations
-
+    representations = np.array(representations)  # [N, M, d] or [N, d]
     diagnostics = compute_representation_diagnostics(representations)
 
     print(f"\n  Results:")
