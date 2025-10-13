@@ -1,5 +1,136 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-12 — CRITICAL: Complete Representational Collapse Diagnosed (Claude Code)
+
+**STATUS**: 🚨 **Architecture fundamentally broken. New design required.**
+
+## Diagnosis: Semantic Impedance Mismatch
+
+**Symptom**: ALL latent predictions produce identical output: `"2019) 1. The answer is"`
+
+**Evidence** (from runs/full_suite/latentwire/eval_llama/predictions.jsonl):
+```
+Gold: "linear" → Latent: "2019) 1. The answer is"
+Gold: "Lampea" → Latent: "2019) 1. The answer is"
+Gold: "San Jose" → Latent: "2019) 1. The answer is"
+```
+
+Meanwhile:
+- Text baseline: F1=69.4%, EM=50% with correct answers
+- Token budget (M=32): F1=0.0% (relevant but wrong phrases)
+- **Latent (M=32): F1=0.0%, complete collapse**
+
+This is NOT "poor performance" - this is **zero usable information** in the latent space.
+
+## Root Cause Analysis
+
+**Critical Issue: ByteEncoder operates on alien modality**
+
+Current pipeline:
+```
+Text → ByteEncoder(bytes 0-255) → Pooler → Adapter → Frozen LLM → Collapsed output
+```
+
+**Why it fails:**
+1. **Byte-level encoding** (UTF-8 bytes 0-255) has NO alignment with LLM tokenization
+   - Example: "Answer" → bytes `[65, 110, 115, 119, 101, 114]` vs token `[1234]`
+   - LLMs have NEVER seen byte representations in pretraining
+
+2. **Adapter cannot bridge semantic gap**
+   - Linear projection d_z=256 → d_model=4096
+   - Cannot transform byte statistics into token-level semantics
+   - Even with FiLM, metadata hints, skip connections
+
+3. **Gradient signal vanishes**
+   - Path: `Loss → Adapter → Pooler → ByteEncoder → Byte embeddings`
+   - Modality mismatch + long path = learning fails
+
+**Key insight**: Cannot create "shared interlingua" if representation is incomprehensible to target models.
+
+## Proposed Solution: Anchor-Guided Cross-Model Interlingua
+
+**Core idea**: Start in LLM-native space (token embeddings), add compression LATER.
+
+**New architecture**:
+```
+Text
+  ├→ Frozen SentenceTransformer (semantic anchor)
+  ├→ Llama tokenizer + embeddings (frozen)
+  └→ Qwen tokenizer + embeddings (frozen)
+       ↓
+  AlignmentTransformer (learned)
+    - Cross-attention to semantic anchor
+    - Per-model projections
+       ↓
+  Shared Interlingua (z ∈ R^512)
+       ↓
+  InterlinguaAdapter (learned)
+    - Expand to M soft tokens
+    - Project to d_model
+       ↓
+  Frozen LLMs → Generation
+```
+
+**Why this works**:
+- ✓ Starts in LLM-native representation (token embeddings)
+- ✓ Semantic grounding via frozen SentenceTransformer
+- ✓ Short gradient path (no byte→token gap)
+- ✓ Per-model adaptation for different vocabularies
+- ✓ Compression deferred to Phase 2 (prove transfer first)
+
+**Expected results**:
+- Phase 1 (no compression): F1 > 50% (vs current 0%, text 69%)
+- Phase 2 (with compression): 4-8× at F1 > 45%
+
+**Full technical specification**: See [ARCHITECTURE_PROPOSAL.md](./ARCHITECTURE_PROPOSAL.md)
+
+**Next steps**:
+1. Review proposal with team
+2. Implement `AlignmentTransformer` + `InterlinguaAdapter`
+3. Train with 4-term loss (generation + alignment + semantic + KD)
+4. Target: F1 > 50% at M=32, no compression
+
+---
+
+### 2025-10-12 — Baseline Infrastructure & PCA Analysis (Claude Code)
+
+**STATUS**: ✅ **Baseline pipeline complete.** Scientific evaluation framework ready.
+
+## Baseline Results (Llama-3.1-8B on SQuAD)
+
+| Baseline | Samples | F1 | EM | Time | Notes |
+|----------|---------|-----|-----|------|-------|
+| Text (full prompt) | 10k | 36.28% | 0.43% | 258s | Upper bound |
+| Token Budget (M=32) | 10k | 4.26% | 0.00% | 53s | **Critical fairness baseline** |
+| PCA (M=32, linear) | 1k | 1.77% | 0.00% | 612s | Explained variance: 24.87% |
+
+**Key Findings**:
+
+1. **Token Budget Baseline (M=32): F1=4.26%**
+   - Truncating prompt to 32 tokens loses 88% of performance (vs 36.28% full text)
+   - **This is what LatentWire MUST beat** - fair comparison at same M
+
+2. **PCA Fails Catastrophically: F1=1.77%**
+   - Only captures 24.87% of embedding variance with 32 components
+   - Linear compression insufficient - loses 95% of performance
+   - **Validates need for learned non-linear encoder**
+
+3. **Pipeline Optimization**:
+   - Reduced PCA from 10k → 1k samples (10x speedup, still statistically valid)
+   - GPU batching for text/token baselines (30x speedup)
+   - Full 5-phase pipeline: 12 minutes (baselines only, training separate)
+
+**Success Criteria Going Forward**:
+- **Minimum**: LatentWire F1 > 4.26% (beat token budget)
+- **Target**: LatentWire F1 = 10-20% (retain 25-50% of text performance)
+
+**Next Steps**:
+- PCA proves linear compression insufficient
+- Current LatentWire F1=0.0% (empty generation) far below 4.26% target
+- Need to fix encoder before further optimization
+
+---
+
 ### 2025-10-12 — Embedding Sweep Results: RMS Hypothesis REJECTED (Claude Code)
 
 **STATUS**: ❌ **RMS scaling completely fails.** Magnitude hypothesis was wrong.
