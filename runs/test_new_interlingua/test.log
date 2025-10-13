@@ -9,8 +9,8 @@ Device: cuda
 [1/7] Loading frozen models...
   - SentenceTransformer...
   - Llama-3.1-8B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2577.15it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.04s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.29s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.08it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 224.74it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.49s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.22s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.29s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.10it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.05s/it]
   ✓ All models loaded
 
 [2/7] Instantiating new architecture components...
@@ -35,24 +35,25 @@ Device: cuda
 The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
 Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
   Gold answer: Dane
-  Pred (untrained): a new and a new anakhmemories of the memory
+  Pred (untrained): 1. 'Fracusmúdúveras
 
 [5/7] Testing loss computation...
-  ✓ Generation loss (K=4): 9.1895
-  ✓ Total loss: 9.1895
+  ✓ Generation loss (K=4): 12.1747
+  ✓ Semantic anchor loss: 1.0016
+  ✓ Total loss: 12.6755
 
 [6/7] Running 500 training steps on 1000 examples...
-  Step 1/500: loss=10.7594 gen=10.7594
-  Step 51/500: loss=2.9357 gen=2.9357
-  Step 101/500: loss=5.7505 gen=5.7505
-  Step 151/500: loss=4.4807 gen=4.4807
-  Step 201/500: loss=2.3193 gen=2.3193
-  Step 251/500: loss=3.4183 gen=3.4183
-  Step 301/500: loss=4.5284 gen=4.5284
-  Step 351/500: loss=3.2289 gen=3.2289
-  Step 401/500: loss=2.7308 gen=2.7308
-  Step 451/500: loss=2.5622 gen=2.5622
-  Step 500/500: loss=4.3274 gen=4.3274
+  Step 1/500: loss=11.9648 gen=11.4657 sem=0.9980
+  Step 51/500: loss=4.7529 gen=4.2530 sem=0.9998
+  Step 101/500: loss=4.4330 gen=3.9387 sem=0.9885
+  Step 151/500: loss=6.3160 gen=5.8308 sem=0.9705
+  Step 201/500: loss=3.0778 gen=2.5984 sem=0.9587
+  Step 251/500: loss=4.3956 gen=3.9235 sem=0.9442
+  Step 301/500: loss=4.7520 gen=4.2881 sem=0.9278
+  Step 351/500: loss=3.2308 gen=2.7745 sem=0.9125
+  Step 401/500: loss=7.1250 gen=6.6763 sem=0.8975
+  Step 451/500: loss=6.8735 gen=6.4294 sem=0.8882
+  Step 500/500: loss=6.9734 gen=6.5348 sem=0.8773
   ✓ Training complete
 
 [7/7] Testing generation after training...
@@ -64,24 +65,24 @@ Starting from v4.46, the `logits` model output will have the same type as the mo
 /projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:606: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
   warnings.warn(
   [1] Gold: Dane
-      Pred: 2000s, the company has been a major player
+      Pred: The following is a list of the 2010–
 
   [2] Gold: Muslims
-      Pred: 2000s, the company's sales and profits have
+      Pred: the 19th century, the British Empire was the
 
   [3] Gold: orientalism and tropicality
-      Pred: 2000s, the company has been a major player
+      Pred: the 19th century, the British Empire was the
 
   [4] Gold: numeracy
-      Pred: 2000s, the company has been a major player
+      Pred: the 19th century, the British Empire was the
 
   [5] Gold: Mental Health (Care and Treatment) (Scotland) Act 2003
-      Pred: 2000s, the company's market share in the
+      Pred: the 19th century, the British Empire was the
 
   ============================================================================
 
-  Diversity check: 3/5 unique predictions
-  ✓ Good diversity!
+  Diversity check: 2/5 unique predictions
+  ⚠️  WARNING: Low diversity (2/5)
 
 ================================================================================
 TEST COMPLETE
@@ -92,7 +93,7 @@ Key findings:
   ✓ Forward pass works (z_llama: torch.Size([1, 512]))
   ✓ Loss computation succeeds
   ✓ Training loop runs (500 steps)
-  ✓ Post-training predictions: 3/5 unique
+  ✓ Post-training predictions: 2/5 unique
 
 Total trainable parameters: 24,419,841 (24.4M)
 Architecture: d_inter=512, num_slots=32
