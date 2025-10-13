@@ -35,8 +35,10 @@ def train_and_evaluate(
     config_name: str,
     sem_weight: float,
     K: int,
-    alignment_tf,
-    adapter_llama,
+    d_model_llama: int,
+    d_sem: int,
+    d_inter: int,
+    num_slots: int,
     llama_model,
     llama_tokenizer,
     sem_encoder,
@@ -53,13 +55,23 @@ def train_and_evaluate(
     print(f"  sem_weight={sem_weight}, K={K}")
     print(f"{'='*80}\n")
 
-    # Reset model parameters
-    def reset_params(module):
-        if hasattr(module, 'reset_parameters'):
-            module.reset_parameters()
+    # Create fresh model instances (proper reset)
+    alignment_tf = AlignmentTransformer(
+        d_model_llama=d_model_llama,
+        d_model_qwen=2048,
+        d_sem=d_sem,
+        d_inter=d_inter,
+        n_heads=8,
+        n_layers=4,
+        dropout=0.1,
+    ).to(device=device, dtype=learned_dtype)
 
-    alignment_tf.apply(reset_params)
-    adapter_llama.apply(reset_params)
+    adapter_llama = InterlinguaAdapter(
+        d_inter=d_inter,
+        d_model=d_model_llama,
+        num_slots=num_slots,
+        dropout=0.1,
+    ).to(device=device, dtype=learned_dtype)
 
     # Create optimizer
     params = list(alignment_tf.parameters()) + list(adapter_llama.parameters())
@@ -204,7 +216,7 @@ def main():
     print(f"Samples: {args.samples}, Steps per config: {args.steps}")
 
     # Load models
-    print("\n[1/3] Loading frozen models...")
+    print("\n[1/2] Loading frozen models...")
 
     sem_encoder = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     sem_encoder.eval()
@@ -230,30 +242,8 @@ def main():
 
     print("  ✓ Models loaded")
 
-    # Instantiate architecture
-    print("\n[2/3] Instantiating architecture...")
-
-    alignment_tf = AlignmentTransformer(
-        d_model_llama=d_model_llama,
-        d_model_qwen=2048,
-        d_sem=d_sem,
-        d_inter=args.d_inter,
-        n_heads=8,
-        n_layers=4,
-        dropout=0.1,
-    ).to(device=device, dtype=learned_dtype)
-
-    adapter_llama = InterlinguaAdapter(
-        d_inter=args.d_inter,
-        d_model=d_model_llama,
-        num_slots=args.num_slots,
-        dropout=0.1,
-    ).to(device=device, dtype=learned_dtype)
-
-    print("  ✓ Architecture ready")
-
     # Load data
-    print(f"\n[3/3] Loading test data (SQuAD, n={args.samples})...")
+    print(f"\n[2/3] Loading test data (SQuAD, n={args.samples})...")
     examples = load_squad_subset(split='validation', samples=args.samples)
     print(f"  ✓ Loaded {len(examples)} examples")
 
@@ -275,8 +265,10 @@ def main():
             config_name=config_name,
             sem_weight=sem_weight,
             K=K,
-            alignment_tf=alignment_tf,
-            adapter_llama=adapter_llama,
+            d_model_llama=d_model_llama,
+            d_sem=d_sem,
+            d_inter=args.d_inter,
+            num_slots=args.num_slots,
             llama_model=llama_model,
             llama_tokenizer=llama_tokenizer,
             sem_encoder=sem_encoder,
