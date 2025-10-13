@@ -1,5 +1,171 @@
 # LatentWire — 8B_clean_answer_ftce — Experiment Log
 
+### 2025-10-12 — Embedding Distribution Experiments: Systematic Sweep Framework (Claude Code)
+
+**STATUS**: Built comprehensive experimental framework to address the **arbitrary embedding distribution problem**
+
+## The Core Problem
+
+**Discovery**: Frozen LLMs expect embeddings from their discrete token vocabulary (learned during pretraining), but our encoder produces arbitrary continuous embeddings from a completely different distribution.
+
+**Analogy**: Training someone to read English, then showing them Chinese characters - even if the meaning is encoded correctly, the distribution is foreign to the model.
+
+**Evidence from Previous Runs**:
+- exp1-exp7: Mostly F1≈0 despite various encoder architectures
+- LOG.md: Perfect token reconstruction but 0% generation (empty strings)
+- Embedding magnitude mismatch: 115-120× too large
+- High cosine similarity (0.89) but wrong magnitude
+
+## Solution Categories
+
+### 1. Statistical Matching
+Match statistical properties (mean, variance, RMS) of learned embeddings to real token embeddings.
+
+### 2. Manifold Projection
+Force embeddings onto or near the manifold of real token embeddings.
+
+### 3. Discrete Bottlenecks
+Add discrete/quantized representations that stay close to real tokens.
+
+### 4. LLM Adaptation
+Teach frozen LLM to handle arbitrary embeddings via LoRA/adapters (note: shallow LoRA failed in previous runs per user).
+
+## Implemented Experiments
+
+### Quick Diagnostic Sweep (No Training Required)
+
+**Script**: `scripts/run_embed_sweep_simple.sh`
+**Runtime**: ~5-10 minutes
+**Purpose**: Test transformations on real text embeddings (isolates transformation effect)
+
+**Key Insight**: Uses real text embeddings as input, applies transformations, tests generation. No encoder training needed - gives immediate feedback on what helps.
+
+**Hyperparameter Sweeps Included**:
+
+| Category | Experiment | Parameters Swept | Expected Outcome |
+|----------|------------|------------------|------------------|
+| **Baseline** | `text_baseline` | None | Upper bound (should work well) |
+| **RMS Matching** | `rms_matching` | target_scale: 1.0, 0.8, 1.2 | Fixes known magnitude issue (HIGH confidence) |
+| **K-Nearest** | `nearest_k` | k: [3,5,7,10], α: [0.1,0.3,0.5,0.7,0.9] | Projects onto token manifold (HIGH confidence) |
+| **Anchor+Offset** | `anchor_offset` | ε: [0.01,0.02,0.05,0.1,0.15,0.2,0.3] | Stays near real tokens (HIGH confidence) |
+| **Batch Distribution** | `batch_dist` | None | Normalizes statistics (MEDIUM confidence) |
+| **Soft Codebook** | `soft_codebook` | size: [128,256,512,1024], τ: [0.5,0.7,1.0] | VQ-VAE style (MEDIUM confidence) |
+
+**Total Experiments**: ~40-50 configurations (with sweeps)
+
+**Metrics Tracked**:
+- **F1 score**: Task quality
+- **EM score**: Exact match rate
+- **Empty rate**: % of empty generations (diagnostic for catastrophic failure)
+- **Time**: Wall-clock time per experiment
+
+**Interpretation Guide**:
+1. **If text_baseline works** → LLM can use embeddings, problem is encoder distribution
+2. **If rms_matching improves** → Root cause is magnitude mismatch → integrate RMS calibration
+3. **If anchor_offset works** → Embeddings must stay near token manifold → add regularization
+4. **If nearest_k works** → Arbitrary embeddings not supported → force convex combinations
+5. **If nothing works** → Problem is with inputs_embeds mechanism or generation setup
+
+### Full Training Sweep (With Encoder Training)
+
+**Script**: `scripts/run_embed_sweep.sh`
+**Runtime**: ~30-60 minutes
+**Purpose**: Train encoder end-to-end with transformations
+
+**Additional Experiments**:
+- `soft_codebook_*`: Learnable codebook (requires training)
+- `lora_half`: LoRA on first 50% of layers (user noted shallow LoRA failed before)
+- `lora_full`: LoRA on all layers (maximum adaptation capacity)
+
+**Note**: Only run this after simple sweep identifies promising techniques.
+
+## Multi-Epoch Question
+
+**Do we need multiple epochs?**
+
+**Short answer**: No, 1 epoch is sufficient for initial screening.
+
+**Reasoning**:
+1. **Transformations without learnable params** (RMS matching, K-nearest, anchor+offset):
+   - Work immediately if they help
+   - No learning needed - pure mathematical transformation
+   - If they don't help in 1 forward pass, more epochs won't fix fundamental mismatch
+
+2. **Transformations with learnable params** (soft codebook, LoRA):
+   - 1 epoch shows if approach is promising
+   - If F1 goes from 0% → 10-20% in 1 epoch, it's worth pursuing
+   - If still 0% after 1 epoch, likely fundamentally incompatible
+
+3. **Full training** (after identifying winner):
+   - Then train for 10+ epochs with best transformation
+   - Monitor convergence, tune hyperparameters
+
+**Strategy**: Fast screening (1 epoch) → Focused training (10+ epochs on winners)
+
+## Files Created
+
+```
+latentwire/
+  embed_experiments.py          # Transformation implementations
+
+scripts/
+  run_embed_sweep_simple.py     # Quick diagnostic (no training) - ~35 experiments
+  run_embed_sweep_simple.sh     # Bash wrapper (auto-runs analysis)
+  analyze_sweep_results.py      # Analysis script (insights, recommendations)
+  run_embed_sweep_train.py      # Full training sweep
+  run_embed_sweep.sh            # Bash wrapper for training
+```
+
+## Usage
+
+### Recommended Workflow
+
+```bash
+# 1. Pull latest code
+git pull
+
+# 2. Run quick diagnostic sweep (~15-30 min, runs 35 experiments with hyperparameter sweeps)
+rm -rf runs/embed_sweep_simple
+PYTHONPATH=. bash scripts/run_embed_sweep_simple.sh
+
+# 3. Analysis runs automatically, or re-run manually:
+python scripts/analyze_sweep_results.py --summary runs/embed_sweep_simple/summary.json
+
+# 4. Identify winner(s) from sweep
+
+# 5. If promising results found, run full training on winner
+python latentwire/train.py \
+    --embed_transform rms_matching \
+    --samples 10000 \
+    --epochs 10
+```
+
+## Expected Outcomes by Likelihood
+
+### TIER 1 - Very High (70%+)
+1. **rms_matching** - Directly fixes known 115-120× magnitude issue
+2. **anchor_offset** (ε≈0.05-0.15) - Stays near real tokens with small freedom
+3. **nearest_k** (k=5, α≈0.5-0.7) - Projects onto token manifold gently
+
+### TIER 2 - High (50-70%)
+4. **batch_distribution** - Normalizes first/second moments
+5. **nearest_k_strict** (k=3, α≈0.2-0.3) - Strong projection
+6. **anchor_offset_tiny** (ε≈0.01-0.02) - Very conservative
+
+### TIER 3 - Medium (30-50%)
+7. **soft_codebook** - Discrete bottleneck, requires training
+8. **lora_half** - Adapts 50% of layers (shallow LoRA failed before)
+9. **lora_full** - All layers, expensive
+
+## Next Actions
+
+1. **RUN SWEEP**: `PYTHONPATH=. bash scripts/run_embed_sweep_simple.sh`
+2. **ANALYZE**: Check which experiments improve F1 > 0.1
+3. **INTEGRATE WINNER**: Add to train.py/eval.py
+4. **FULL TRAINING**: 10k samples, 10 epochs with best transformation
+
+---
+
 ### 2025-10-11 — Stage 1 Phase 1: 🔥 ROOT CAUSE IDENTIFIED - Embedding Magnitude Catastrophe (Claude Code)
 
 **STATUS**: **SMOKING GUN FOUND!** Token reconstruction is PERFECT ✅, but embedding magnitudes are **115-120× too large** ❌
