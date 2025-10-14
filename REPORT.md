@@ -746,74 +746,92 @@ From LOG.md line 2377-2405:
 
 Based on 50+ experiments and systematic root cause analysis:
 
-### Phase 1: Match Token-Budget Baseline (Weeks 1-2)
-**Target**: F1 ≥ 6% (currently 0-3%)
+### Phase 0: Immediate Quick Win (Week 1)
+**Target**: F1 24% → 40-50% (no new training required)
 
-**Action 1: Implement VQ-VAE Discrete Bottleneck**
-- **Motivation**: "Learning Global Controller" paper shows discrete codes prevent mode collapse
-- **Architecture**: Encoder → Quantize to K=512 codebook → Decoder
-- **Why it works**: Forces distinct representations (cannot collapse to continuous mode)
-- **Expected impact**: Eliminate mode collapse entirely (diversity → 80-90%)
+**Action 1: Post-Processing for Phase 1a**
+- **Motivation**: Phase 1a generates correct answers in wrong format (LOG.md line 3798)
+- **Methods**:
+  1. Extract first N tokens (N=1-5)
+  2. Regex: Extract before first punctuation/newline
+  3. Pattern matching: Remove leading colons/spaces
+  4. Small extraction head (if needed)
+- **Example**: `": Dane. Dane was killed..."` → `"Dane"`
+- **Expected impact**: Phase 1a 24% → **40-50% F1** (immediate deliverable)
+- **Risk**: Low - no training, just text processing
 
-**Action 2: Full-Sequence Reconstruction**
-- **Motivation**: "Compressed PDFs" paper emphasizes reconstruction prevents information loss
-- **Loss**: `L = L_gen + λ_recon * MSE(decoder(z), original_text_embeds)` with λ=1.0
-- **Why it works**: Forces encoder to preserve all information, not just first K tokens
-- **Expected impact**: F1 3% → 6-8%
-
-**Action 3: Diversity Regularization**
-- **Entropy regularization**: Maximize H(P(token)) for first-token distribution
-- **Contrastive loss**: `L_contrast = max(0, margin - ||z_i - z_j||²)` for i≠j
-- **Prediction diversity metric**: Stop training if <5/24 unique tokens
-- **Expected impact**: Break "the" dominance
-
-**Success Criteria**: F1 ≥ 6%, diversity ≥ 50%
+**Success Criteria**: F1 ≥ 40%
 
 ---
 
-### Phase 2: Approach Phase 1a Quality (Weeks 3-5)
-**Target**: F1 ≥ 24% (match pure reconstruction baseline)
+### Phase 1: Match Token-Budget Baseline (Weeks 2-3)
+**Target**: F1 ≥ 6% with learned compression (currently 0-3%)
+
+**Action 2: Implement VQ-VAE Discrete Bottleneck (UNTESTED - Engineering Heavy)**
+- **Motivation**: "Learning Global Controller" paper shows discrete codes can prevent mode collapse in VAEs
+- **Architecture**: Encoder → Quantize to K=512 codebook → Decoder
+- **Hypothesis**: Forces distinct representations (cannot collapse to continuous mode like learned queries did)
+- **Engineering requirements**:
+  - Codebook training with commitment loss
+  - Straight-through estimator for gradients
+  - Codebook utilization monitoring (avoid dead codes)
+  - Stability tuning (learning rates, EMA updates)
+- **Expected impact**: Diversity 10-20% → **50-70%** (hypothesis, not proven)
+- **Risk**: **Medium-High** - Untested approach, significant engineering, may not fix root cause
+- **Validation criteria**:
+  - Codebook utilization >50% (not collapsed to few codes)
+  - Diversity >50% after 2 weeks training
+  - If fails, pivot to multi-depth adapters
+
+**Action 3: Diversity Regularization**
+- **Entropy regularization**: Maximize H(P(token)) for first-token distribution (weight=0.5)
+- **Contrastive loss**: `L_contrast = max(0, margin - ||z_i - z_j||²)` for i≠j (margin=1.0)
+- **Prediction diversity metric**: Stop training if <5/24 unique tokens in validation
+- **Expected impact**: Break "the" dominance (tested in LOG.md, helped but insufficient alone)
+
+**Success Criteria**: F1 ≥ 6%, diversity ≥ 50%, codebook utilization >50%
+
+---
+
+### Phase 2: Improve Learned Compression (Weeks 4-6)
+**Target**: F1 ≥ 15-20% with learned compression
 
 **Action 4: Multi-Depth Latent Adapters (IAA-style)**
-- **Motivation**: "TALL" and "Inner Adapter Architecture" show 2-3× improvement
+- **Motivation**: "TALL" and "Inner Adapter Architecture" show 2-3× improvement via multi-layer injection
 - **Architecture**: Insert adapters at layers {5, 10, 15, 20}
   - Layer 5: Low-level token patterns
   - Layer 10: Semantic grouping
   - Layer 15: Task planning
   - Layer 20: Answer formulation
 - **Each adapter**: LayerNorm → CrossAttn(hidden, latent) → MLP → gated residual
-- **Expected impact**: 2-3× F1 improvement
+- **Expected impact**: 2-3× F1 improvement (6% → 15-18%)
 
 **Action 5: Scheduled Sampling (Exposure Bias Fix)**
-- **Motivation**: "Quiet Star" paper fixes train-eval gap
-- **Implementation**: Mix gold tokens with model predictions
+- **Motivation**: Address 85% train-eval performance gap (LOG.md line 2487-2555)
+- **Implementation**: Gradually replace teacher-forced tokens with model's predictions
   - Epoch 1-3: 0% sampling (full teacher forcing)
   - Epoch 4-6: 15% sampling
   - Epoch 7-10: 30% sampling
-- **Expected impact**: Reduce 85% train-eval gap
+- **Rationale**: Model sees own predictions during training, reducing train-eval distribution shift
+- **Expected impact**: Reduce train-eval gap from 85% to 40-50%
 
-**Action 6: Post-Processing for Phase 1a**
-- **Quick win**: Extract answer from Phase 1a's verbose outputs
-- **Methods**: Regex, first N tokens, punctuation-based extraction
-- **Expected impact**: Phase 1a 24% → 40-50% F1
-
-**Success Criteria**: F1 ≥ 24-40%
+**Success Criteria**: F1 ≥ 15%, diversity ≥ 60%, train-eval gap <50%
 
 ---
 
-### Phase 3: Optimize Compression (Weeks 6-8)
+### Phase 3: Optimize Compression (Weeks 7-9)
 **Target**: 4-8× compression at F1 ≥ 50%
 
-**Action 7: Aggressive Quantization**
+**Action 6: Aggressive Quantization**
 - fp16 → int6/int4 with group-wise quantization
 - Expected savings: 16 bits → 4-6 bits = 2.6-4× reduction
 
-**Action 8: Latent Dimension Tuning**
+**Action 7: Latent Dimension Tuning**
 - Current: M=32, d=256
 - Target: M=24, d=192 (1.78× reduction)
 - Tune M vs d tradeoff
 
-**Action 9: Hybrid Text+Latent**
+**Action 8: Hybrid Text+Latent**
 - First 8 tokens: Text (critical context)
 - Remaining: Latent (bulk information)
 
@@ -821,13 +839,13 @@ Based on 50+ experiments and systematic root cause analysis:
 
 ---
 
-### Phase 4: Cross-Model Validation (Weeks 9-10)
+### Phase 4: Cross-Model Validation (Weeks 10-11)
 
-**Action 10: Enable Qwen2.5-7B**
+**Action 9: Enable Qwen2.5-7B**
 - Shared encoder → dual adapters
 - Validate cross-model compression
 
-**Action 11: Heterogeneous Ensemble**
+**Action 10: Heterogeneous Ensemble**
 - Joint rescoring: Best answer from Llama/Qwen
 - Expected: +5-10% over single model
 
@@ -837,14 +855,28 @@ Based on 50+ experiments and systematic root cause analysis:
 
 | Risk | Probability | Mitigation |
 |------|-------------|------------|
-| VQ-VAE doesn't fix collapse | Low | Already proven in VAE literature; if fails, use multi-depth adapters |
-| Multi-depth OOM | Medium | Gradient checkpointing, reduce batch size, limit to 2-3 depths |
+| Post-processing insufficient | Low | Already proven feasible in Phase 1a; worst case: 24% F1 baseline |
+| VQ-VAE doesn't fix collapse | **Medium-High** | Untested approach; fallback: multi-depth adapters + diversity reg |
+| Multi-depth adapters OOM | Medium | Gradient checkpointing, reduce batch size, limit to 2-3 depths |
 | Quantization degrades quality | Medium | Incremental: fp16→int8→int6→int4, stop at acceptable point |
-| Cannot beat token-budget | Low | If true after Phase 1-2, pivot to different problem (e.g., caching) |
+| Cannot beat token-budget (6%) | Medium | If Phase 1-2 fails, pivot to different problem (e.g., KV cache) |
 
-**Timeline**: 8-10 weeks conservative, 6-8 weeks aggressive
+**Timeline**:
+- Conservative: 11 weeks (Phase 0: 1 week, Phase 1: 3 weeks, Phase 2: 3 weeks, Phase 3: 3 weeks, Phase 4: 2 weeks)
+- Aggressive: 8 weeks (if VQ-VAE succeeds quickly in Phase 1)
 
-**Contingency**: If Phase 1 fails after 3 weeks (F1 <6%), immediately implement VQ-VAE.
+**Contingency Plans**:
+- If Phase 0 post-processing < 35% F1 → Investigate why extraction fails
+- If VQ-VAE (Phase 1) < 6% F1 after 3 weeks → Skip to multi-depth adapters (Phase 2)
+- If Phase 2 < 15% F1 → Consider pivot to different compression approach or problem space
+
+**Why NOT Retrying Reconstruction + Generation Loss:**
+Phase 1b (LOG.md:3550-3648) showed combining reconstruction and generation objectives causes catastrophic mode collapse (0% F1). Before retrying, would need:
+1. **Curriculum**: Train pure reconstruction first (5 epochs), then gradually anneal in generation loss (weight 0.001 → 0.01 over 5 epochs)
+2. **Architecture change**: Separate encoder paths for reconstruction vs generation (prevent gradient conflict)
+3. **Loss weighting**: Ensure generation contributes <20% of total loss (not 85% like Phase 1b)
+
+Not pursuing this in near-term due to high risk of repeating Phase 1b failure. Post-processing + VQ-VAE + multi-depth are safer bets.
 
 ---
 
@@ -864,11 +896,13 @@ Based on 50+ experiments and systematic root cause analysis:
 - Clear understanding of what failed and why
 
 **Path Forward**:
-- **Phase 1** (2 weeks): VQ-VAE + diversity → 6% F1
-- **Phase 2** (3 weeks): Multi-depth + scheduled sampling → 24-40% F1
-- **Phase 3** (2 weeks): Quantization + dimension tuning → 4-8× compression
+- **Phase 0** (1 week): Post-processing Phase 1a → **40-50% F1** (immediate deliverable)
+- **Phase 1** (3 weeks): VQ-VAE + diversity → 6% F1 with learned compression
+- **Phase 2** (3 weeks): Multi-depth + scheduled sampling → 15-20% F1
+- **Phase 3** (3 weeks): Quantization + dimension tuning → 4-8× compression at 50% F1
+- **Phase 4** (2 weeks): Cross-model validation
 
-**Recommendation**: Proceed with Phase 1 immediately. Clear action items grounded in systematic experimentation and literature. Not blocked - have concrete path forward.
+**Recommendation**: Start Phase 0 post-processing immediately (1 week, low risk, high reward: 24% → 40-50% F1). This provides near-term deliverable while pursuing longer-term learned compression improvements.
 
 ---
 
