@@ -12,688 +12,879 @@
 
 **Research Goal**: Develop a learned continuous representation (interlingua) that compresses text prompts 4-8× while enabling frozen LLMs to generate high-quality responses, validated on question-answering tasks (SQuAD dataset).
 
-**Key Achievement**: Successfully validated that LLMs can accept continuous embeddings via the `inputs_embeds` interface, achieving **82% F1 score** - exceeding the text baseline (80%) by 2 percentage points. This proves the fundamental mechanism works.
+**Baseline Validation**: Verified that LLMs can accept continuous embeddings via the `inputs_embeds` interface, achieving 82% F1 (vs 80% text baseline). This confirms the mechanism is sound.
 
-**Critical Challenge**: Learned compression currently achieves only **0-2% F1** (vs 80% text baseline), indicating severe mode collapse where models output repetitive tokens like "the" or "a" regardless of input. Compression underperforms even naive truncation (token-budget baseline: 4-6% F1).
-
-**Core Finding**: Through systematic experimentation, we've identified that the challenge is not with the LLM's ability to process continuous inputs, but with learning effective compression mappings. Multiple architectural approaches (byte-level encoding, anchor-guided cross-model interlingua, direct sequence compression) all exhibit similar collapse patterns, suggesting fundamental limitations in our training objectives rather than specific architectural flaws.
-
-**Path Forward**: Clear next steps identified through paper review and experimental learnings, focusing on reconstruction objectives, stronger supervision signals, and discrete bottlenecks.
-
----
-
-## 1. Background & Motivation
-
-### 1.1 Problem Statement
-
-Large Language Models (LLMs) process text by first converting words into **discrete tokens** (numeric IDs from a vocabulary, e.g., "Answer" → token ID 1234). These tokens are mapped to **continuous embeddings** (vectors of numbers, e.g., a 4096-dimensional vector). The LLM's transformer layers then process these embeddings to generate responses.
-
-**Challenge**: Text prompts can be very long (hundreds or thousands of tokens), consuming significant bandwidth when transmitting between systems and memory when processing. For example, a 500-token prompt requires ~2000 KB to transmit (in token ID format) and occupies valuable context window space.
-
-**Our Approach**: Instead of sending raw text or token IDs, we aim to learn a **compressed continuous representation** (called "latent vectors" or "soft tokens"):
-- **Compression**: ~200-300 tokens → 32-64 latent vectors (4-8× reduction)
-- **Quality**: Maintain generation quality (F1 score ≥ 50-70% of full-text baseline)
-- **Frozen LLMs**: Base models remain unchanged; only small encoder/adapter components are trained
-
-**Why Continuous Representations?**
-Modern LLMs support an `inputs_embeds` interface that accepts continuous vector inputs instead of discrete token IDs. This enables us to bypass tokenization and inject compressed representations directly. If successful, this approach could:
-1. Reduce prompt transmission costs (fewer bytes over wire)
-2. Enable cross-model communication without retokenization
-3. Compress prompts while preserving semantic information
-
-**Key Terminology**:
-- **Soft tokens/embeddings**: Continuous vectors (as opposed to discrete token IDs)
-- **Latent space**: The compressed representation learned by our encoder (e.g., 32 vectors of dimension 256)
-- **inputs_embeds**: PyTorch/HuggingFace interface for passing continuous embeddings directly to LLM
-- **Frozen LLM**: Base model weights are not updated during training (only encoder/adapter are trained)
-
----
-
-## 2. Experiment Categories & Results
-
-We conducted systematic experiments across five major hypotheses, each motivated by prior research and diagnostic findings.
-
-### 2.1 Hypothesis 1: Embedding Interface Validation
-
-**Motivation**: Before attempting compression, verify that LLMs can process continuous embeddings effectively.
-
-**Experiment Design**:
-- **Setup**: Feed real text embeddings (from LLM's own embedding layer) directly via `inputs_embeds`
-- **Control**: Compare against standard text input (tokenized then embedded internally)
-- **Modes tested**:
-  - **Raw**: Direct embedding passthrough
-  - **Anchor**: Add "Answer: " text before embeddings (inspired by "anchor-based LLMs" paper suggesting explicit cues improve grounding)
-  - **Adapter**: Pass embeddings through learned linear projection
-
-**Results**:
-| Mode | F1 Score | EM Score | vs Text Baseline |
-|------|----------|----------|------------------|
-| Text (baseline) | 79.6% | 59.0% | - |
-| **Raw embeddings** | **80.6%** | 59.5% | **+1.0%** |
-| **Anchor embeddings** | **82.0%** | 64.5% | **+2.4%** |
-| Adapter (minimal training) | 1.0% | 0.0% | -98.6% (expected) |
+**Core Challenge**: Despite testing 10+ architectural variants across 5 major hypothesis categories, learned compression achieves only 0-24% F1 (vs 80% text baseline). Current best result (24% F1 via pure reconstruction) generates correct answers but in wrong format. Attempts to fix format via generation objectives caused catastrophic mode collapse to repetitive tokens (0% F1).
 
 **Key Findings**:
-- ✅ **Foundation validated**: LLMs process continuous embeddings as well as or better than discrete tokens
-- ✅ **Anchor text effective**: Adding explicit "Answer:" cue improves F1 by 2.4% (supports findings from "Exploring System 1 and 2 communication" paper about explicit semantic anchoring)
-- ❌ **Adapter needs training**: Minimal training (640 samples, 2 epochs) insufficient for learned projection
+1. **Positional information loss**: Mean pooling and sequence compression destroy sequential structure needed for QA
+2. **Training objective conflicts**: Token-level supervision (discrete) fights with embedding reconstruction (continuous)
+3. **Mode collapse is systemic**: ALL architectural variants collapse to 1-2 repetitive outputs regardless of loss weights
+4. **Worse than naive truncation**: Learned compression (3% F1) < simple truncation (4-6% F1) at similar compression ratios
 
-**Lesson Learned**: The `inputs_embeds` interface is not a bottleneck. Our challenge is learning effective compression, not getting LLMs to accept continuous inputs.
+**Path Forward**: Clear next steps identified through systematic experimentation - discrete bottlenecks (VQ-VAE), multi-depth injection, and full-sequence supervision to address root causes.
 
 ---
 
-### 2.2 Hypothesis 2: Compression Architecture Search
+## 1. Background & Problem Statement
 
-**Motivation**: If embeddings work, can we learn a mapping that compresses ~200 tokens → 32 latent vectors while preserving semantics?
+### 1.1 Technical Context
 
-We tested four architectural approaches, each addressing different hypothesized failure modes:
+Large Language Models (LLMs) process text through a multi-stage pipeline:
 
-#### 2.2.1 ByteEncoder (Byte-Level Encoding)
-
-**Motivation**: Operate on raw UTF-8 bytes (0-255) to avoid tokenization altogether, inspired by byte-level models.
-
-**Architecture**:
+```mermaid
+graph LR
+    A["Text: 'Answer the question'"] --> B["Tokenization<br/>(Discrete IDs: [1234, 5678, ...]"]
+    B --> C["Embedding Layer<br/>(Continuous vectors: ℝ^4096)"]
+    C --> D["Transformer Layers<br/>(Self-attention + FFN)"]
+    D --> E["Output Logits → Generated Text"]
 ```
-Text → UTF-8 bytes → ByteEncoder → Pooler → Adapter(256→4096) → inputs_embeds
+
+**Key Concept - Soft Tokens**: Modern LLMs support an `inputs_embeds` interface that bypasses tokenization, accepting continuous vectors directly at step C. This enables us to inject compressed representations without discrete token IDs.
+
+**Key Concept - Frozen LLMs**: We keep the base LLM weights unchanged during training. Only small additional components (encoders, adapters) are trained. This reduces training cost and ensures we can use pre-trained models.
+
+**Key Concept - KV Cache**: Transformers store key/value matrices from previous tokens to avoid recomputation. Manipulating this cache is one potential way to inject compressed information.
+
+### 1.2 Problem Statement
+
+**Challenge**: Text prompts consume significant bandwidth and memory:
+- 300-token prompt ≈ 1,200 bytes (UTF-8) + processing overhead
+- Occupies valuable context window space
+- Slow transmission over network
+
+**Our Approach**: Learn a compressed continuous representation:
+- **Compression**: 200-300 tokens → 32-64 latent vectors (4-8× reduction)
+- **Quality**: Maintain generation quality (target: F1 ≥ 50-70% of text baseline)
+- **Frozen LLMs**: Only train encoder/adapter components (~20-50M params)
+
+### 1.3 Baselines
+
+| Method | Description | F1 Score | Purpose |
+|--------|-------------|----------|---------|
+| **Text (full)** | Standard tokenization + embedding | 79-80% | Upper bound |
+| **Token-budget** | Truncate prompt to M=32 tokens | 4-6% | **Fairness baseline** - same compression |
+| **Embedding replay** | Real text embeddings via inputs_embeds | 80-82% | **Interface validation** |
+
+---
+
+## 2. Experiments by Hypothesis
+
+We conducted 50+ experiments across 5 major hypotheses. Each subsection includes:
+- Architecture diagram (baseline vs experiment)
+- Root cause analysis from diagnostics (not speculation)
+- Specific quantitative results
+
+### 2.1 Hypothesis 1: Baseline Validation - Can LLMs Accept Continuous Embeddings?
+
+**Motivation**: Before attempting compression, verify the `inputs_embeds` interface works.
+
+#### Baseline Text Pipeline
+
+```mermaid
+graph LR
+    A["Text Prompt<br/>300 tokens"] --> B["Tokenizer<br/>(Discrete IDs)"]
+    B --> C["Embedding Layer<br/>[300, 4096]"]
+    C --> D["Frozen LLM<br/>(32 layers)"]
+    D --> E["Generated Answer"]
+
+    style D fill:#e1f5fe
+```
+
+#### Experiment: Embedding Replay
+
+```mermaid
+graph LR
+    A["Text Prompt<br/>300 tokens"] --> B["Tokenizer"]
+    B --> C["Embedding Layer<br/>[300, 4096]"]
+    C -->|"Save embeddings"| F["inputs_embeds"]
+    F --> D["Frozen LLM<br/>(32 layers)"]
+    D --> E["Generated Answer"]
+
+    style F fill:#fff9c4
+    style D fill:#e1f5fe
+```
+
+**Modes Tested**:
+- **Raw**: Direct embedding passthrough
+- **Anchor**: Add explicit "Answer: " text before embeddings (inspired by "Anchor-based LLMs" paper suggesting semantic cues improve grounding)
+- **Adapter**: Pass through learned linear projection (minimal training: 640 samples, 2 epochs)
+
+**Results**:
+| Mode | F1 | EM | vs Text |
+|------|-----|-----|---------|
+| Text baseline | 79.6% | 59.0% | - |
+| Raw embeddings | 80.6% | 59.5% | +1.0% |
+| **Anchor ("Answer: ")** | **82.0%** | **64.5%** | **+2.4%** |
+| Adapter (minimal training) | 1.0% | 0.0% | -98.6% (expected) |
+
+**Key Finding**: ✅ Embedding interface is **not the bottleneck**. LLMs process continuous inputs as well as discrete tokens. Anchor text provides slight improvement.
+
+**Lesson Learned**: Our challenge is learning effective compression, not getting LLMs to accept continuous inputs.
+
+---
+
+### 2.2 Hypothesis 2: Can Pure Reconstruction Preserve QA Quality?
+
+**Motivation**: If we compress embeddings but reconstruct them accurately, can generation work?
+
+#### Baseline (No Compression)
+
+```mermaid
+graph LR
+    A["Text: 300 tokens"] --> B["Tokenize + Embed<br/>[300, 4096]"]
+    B --> C["Frozen LLM"]
+    C --> D["Answer"]
+
+    style C fill:#e1f5fe
+```
+
+#### Experiment: Phase 1a - PCA + Adapter Reconstruction
+
+```mermaid
+graph LR
+    A["Text: 300 tokens"] --> B["Tokenize + Embed<br/>[300, 4096]"]
+    B --> C["PCA Compression<br/>[300, 4096] → [300, 1024]<br/>4× dimension reduction"]
+    C --> D["Learned Adapter<br/>[300, 1024] → [300, 4096]<br/>50M params, residual MLP"]
+    D --> E["Frozen LLM"]
+    E --> F["Generated Answer"]
+
+    style C fill:#ffccbc
+    style D fill:#c8e6c9
+    style E fill:#e1f5fe
+```
+
+**Training Objective**: Pure reconstruction loss
+```python
+loss = cosine_loss(reconstructed, original) + 0.1 * MSE(reconstructed, original)
+      + RMS_magnitude_matching(reconstructed, original)
+```
+
+**Results**:
+- F1: **24.0%**
+- EM: 0%
+- Cosine similarity: 89.5%
+- Token reconstruction: **PERFECT** (all tokens decode correctly)
+- Magnitude mismatch: Fixed (initially 115-120×, now 1.0×)
+
+**Example Output**:
+```
+Expected: "Dane"
+Generated: ": Dane. Dane was killed in a horse-riding accident when Nikola was five..."
+```
+
+**Root Cause Analysis** (from LOG.md line 3563):
+> "Pure reconstruction preserves semantic content (facts about Tesla, Dane, dates) and linguistic structure (grammar, coherence), but LOSES task framing ('this is QA, not text continuation') and output format expectations ('short answer, then stop')."
+
+**Critical Issue Discovered**: **Embedding magnitude catastrophe**
+- Initial reconstructed embeddings: 115-120× too large
+- Caused LLM to generate empty strings (100% failure)
+- RMS scaling attempts: ALL 8 scales (0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5) produced 100% empty strings
+- Solution: Per-example RMS matching fixed magnitude issue
+
+**Lesson Learned**:
+1. ✅ Reconstruction preserves semantics (answer present in output)
+2. ❌ Reconstruction loses pragmatic cues (format, stopping behavior)
+3. ⚠️ **Magnitude matching is critical** - direction alone insufficient
+
+---
+
+### 2.3 Hypothesis 3: Can Generation Objectives Fix Format Issues?
+
+**Motivation**: Phase 1a generates correct answer but wrong format. Add explicit supervision on generation behavior.
+
+#### Experiment: Phase 1b - Reconstruction + Generation Objectives
+
+```mermaid
+graph LR
+    A["Text: 300 tokens"] --> B["Embed [300, 4096]"]
+    B --> C["PCA [300, 1024]"]
+    C --> D["Adapter [300, 4096]"]
+    D --> E["Frozen LLM"]
+    E --> F["Answer"]
+
+    B -.->|"Reconstruction Loss"| D
+    E -.->|"K-token CE Loss<br/>(first K=2 tokens)"| G["Loss"]
+    E -.->|"KD Loss<br/>(vs text teacher)"| G
+
+    style C fill:#ffccbc
+    style D fill:#c8e6c9
+    style E fill:#e1f5fe
+    style G fill:#ef5350
+```
+
+**Training Objective**:
+```python
+loss = loss_recon + 0.5 * loss_kce + 0.5 * loss_kd
+# Reconstruction: Embedding similarity
+# K-token CE: Supervise first K=2 tokens after "Answer: "
+# KD: Distill from text-prompted teacher
+```
+
+**Results**: **CATASTROPHIC MODE COLLAPSE** ❌
+- F1: **0.0%** (vs Phase 1a: 24%)
+- FirstTok@1: 0%
+- Training loss: KCE 3.25-5.15, KD 5.09-5.54 (not converging)
+
+**Example Output**:
+```
+Expected: "Dane"
+Generated: "the the was a, the is a, the"
+```
+
+**Root Cause Analysis** (from LOG.md line 3625):
+> "Mode collapse: When optimization objectives conflict, model converges to statistically safe predictions (most common tokens) rather than correct predictions. Token-level supervision (discrete) fights with embedding-level reconstruction (continuous). Generation objectives contributed 85% of total loss despite '0.5×' weight (because CE values ~5.0 vs reconstruction ~0.9)."
+
+**Conflicting Gradients**:
+- Reconstruction: "Make embeddings close in vector space" (continuous, smooth)
+- K-token CE: "Predict exact token ID" (discrete, sparse - only gold token gets gradient)
+- Model learns: "I can't satisfy both → predict common tokens ('the', 'a') to minimize expected CE loss"
+
+**Lesson Learned**: ❌ Cannot force generation format through strong token-level supervision on reconstruction-based training. Need alternative approach (post-processing, task embeddings, or two-stage generation).
+
+---
+
+### 2.4 Hypothesis 4: Can Sequence Compression Preserve Information?
+
+**Motivation**: Phase 1a compresses dimensions (4096→1024) but keeps sequence length (300 tokens). Can we compress sequence length too?
+
+#### Baseline (Dimension Compression Only)
+
+```mermaid
+graph LR
+    A["Text: 300 tokens"] --> B["Embed [300, 4096]"]
+    B --> C["PCA [300, 1024]"]
+    C --> D["Adapter [300, 4096]"]
+    D --> E["LLM"]
+
+    style C fill:#ffccbc
+    style D fill:#c8e6c9
+```
+
+#### Experiment: Sequence Pooling (Multiple Variants)
+
+```mermaid
+graph LR
+    A["Text: 300 tokens"] --> B["Embed [300, 4096]"]
+    B --> C["PCA [300, 1024]"]
+    C --> D["SequencePooler<br/>[300, 1024] → [75, 1024]<br/>4× sequence compression"]
+    D --> E["Adapter [75, 4096]"]
+    E --> F["LLM"]
+
+    style C fill:#ffccbc
+    style D fill:#ef5350
+    style E fill:#c8e6c9
+```
+
+**Pooling Methods Tested**:
+1. **Cross-attention pooling (4×)**: Learned queries attend to full sequence
+2. **Cross-attention pooling (2×)**: Less aggressive (300→150 tokens)
+3. **Hierarchical pooling**: Gradual 300→225→150→75
+4. **Convolutional downsampling**: Stride-4 conv (preserves local context)
+5. **Hybrid pool-expand**: Train with reconstruction at [300], test with [75]
+6. **With LoRA**: Add LoRA (r=4, first 4 layers) to help LLM adapt to compressed inputs
+
+**Results**: **UNIVERSAL FAILURE** ❌
+
+| Method | F1 | EM | Training Loss | Status |
+|--------|-----|-----|---------------|--------|
+| Baseline (no seq compression) | 23.6% | 0% | 0.092 | ⚠️ Marginal |
+| Pooling 4× + gen loss | **0.0%** | 0% | 2.739 (30× higher!) | ❌ FAILURE |
+| Pooling 2× + gen loss | **0.0%** | 0% | 1.998 (22× higher!) | ❌ FAILURE |
+| Hierarchical 4× | **0.0%** | 0% | N/A | ❌ FAILURE |
+| Convolutional 4× | **0.5%** | 0% | 3.010 (33× higher!) | ❌ FAILURE |
+| Hybrid pool-expand | **0.0%** | 0% | N/A | ❌ FAILURE |
+| **With LoRA (r=4)** | **0.7%** | 0% | N/A | ❌ NO HELP |
+
+**Root Cause Analysis** (from LOG.md line 5772):
+> "The training objective was fundamentally flawed:
+> ```python
+> target_pooled = orig_embeds.mean(dim=1)  # Average 300 tokens → 1 embedding
+> target_pooled = target_pooled.expand(75, -1)  # Repeat 75 times
+> # Problem:
+> # 1. Averaging destroys all sequential/positional information
+> # 2. Repeating the same embedding 75 times has no structure
+> # 3. Model learns to reconstruct averaged embedding (93% cosine!)
+> # 4. But averaged embedding can't condition generation → F1 0.7%
+> ```"
+
+**LoRA Did Not Help**:
+- Added LoRA (rank=4, first 4 layers) to help LLM adapt to compressed sequences
+- Result: F1 0.7% (same as without LoRA)
+- Conclusion: Problem is information loss in compression, not LLM's ability to process compressed inputs
+
+**Lesson Learned**:
+1. ❌ **Averaging destroys sequential/positional information** needed for QA
+2. ❌ Even 2× compression (300→150) completely fails - not just aggressive 4×
+3. ❌ LoRA adaptation doesn't fix fundamental information bottleneck
+4. ⚠️ High reconstruction cosine (93%) ≠ task performance (0.7% F1)
+
+---
+
+### 2.5 Hypothesis 5: Can Starting in LLM-Native Space Prevent Collapse?
+
+**Motivation**: ByteEncoder failed due to "semantic impedance mismatch" (byte space vs token space). Start with token embeddings instead.
+
+#### Failed Baseline: ByteEncoder
+
+```mermaid
+graph LR
+    A["Text: 'Answer'"] --> B["UTF-8 Bytes<br/>[65,110,115,119,101,114]<br/>(0-255 range)"]
+    B --> C["ByteEncoder<br/>Embed bytes"]
+    C --> D["Pooler<br/>Mean pool"]
+    D --> E["Adapter<br/>256 → 4096"]
+    E --> F["Frozen LLM"]
+    F --> G["Output"]
+
+    style C fill:#ef5350
+    style D fill:#ef5350
+    style E fill:#ef5350
 ```
 
 **Result**: **Complete collapse** - ALL predictions identical: `"2019) 1. The answer is"`
-- F1: 0%
-- EM: 0%
-- Diversity: 0% (same output for all inputs)
+- F1: 0%, EM: 0%, Diversity: 0%
 
-**Root Cause**: **Semantic impedance mismatch** - LLMs are pretrained on token-level statistics (vocab size ~32K-128K). Byte-level representations (0-255) have no alignment with the embedding space LLMs expect. The adapter cannot bridge this semantic gap via linear projection alone.
+**Root Cause** (from LOG.md line 81):
+> "Byte-level encoding (0-255) has NO alignment with LLM tokenization. LLMs have NEVER seen byte representations in pretraining. Adapter cannot bridge semantic gap via linear projection."
 
-**Lesson Learned**: Input representation must be in a space the LLM can interpret. Byte-level encoding is too far from token-level semantics.
+#### Experiment: Anchor-Guided Cross-Model Interlingua
 
----
+**Architecture** (inspired by "TALL" paper's adapter patterns):
 
-#### 2.2.2 Anchor-Guided Cross-Model Interlingua
+```mermaid
+graph LR
+    A["Text: 300 tokens"] --> B["Tokenizer"]
+    B --> C["Frozen Token Embeddings<br/>[~100, 4096]"]
+    C --> D["AlignmentTransformer<br/>Cross-attn to semantic anchor"]
+    D --> E["Mean Pool<br/>[~100, 4096] → [1, 512]"]
+    E --> F["InterlinguaAdapter<br/>Expand [1, 512] → [32, 4096]"]
+    F --> G["Frozen LLM"]
 
-**Motivation**: Start in LLM-native space (token embeddings) to avoid modality mismatch. Use frozen SentenceTransformer to provide semantic grounding.
+    H["SentenceTransformer<br/>(frozen semantic anchor)"] -.->|"Cross-attention"| D
 
-**Architecture** (inspired by "TALL - Trainable Architecture for Low-Resource Languages" adapter patterns):
+    style C fill:#e1f5fe
+    style D fill:#c8e6c9
+    style E fill:#ef5350
+    style F fill:#c8e6c9
+    style G fill:#e1f5fe
+    style H fill:#fff9c4
 ```
-Text → Tokenizer → Token embeddings (frozen)
-                ↓
-        AlignmentTransformer (learned):
-          - Cross-attention to SentenceTransformer anchor
-          - Mean pool → single vector z ∈ R^512
-                ↓
-        InterlinguaAdapter (learned):
-          - Expand z → M=32 tokens
-          - Project to d_model=4096
-                ↓
-        inputs_embeds → Frozen LLM
+
+**Training Loss**:
+```python
+L = L_gen (K-token CE) + 0.5*L_align (MSE between Llama/Qwen representations)
+  + 0.1*L_sem (MSE to semantic anchor)
 ```
 
-**Training Loss**: `L = L_gen (K-token CE) + 0.5*L_align (MSE between Llama/Qwen) + 0.1*L_sem (MSE to semantic anchor)`
-
-**Result**: **Mode collapse** - predictions converge to repetitive patterns
+**Results**: **Mode collapse despite LLM-native space** ❌
 - Diversity: 10-20% (1-2 unique tokens per 10 examples)
 - All outputs: `"the 19th century..."` or `"The first edition of the book was published in 199..."`
-- Training loss decreases (20.25 → 8.60), but predictions identical
+- Training loss: Decreases (20.25 → 8.60), but predictions identical
 
-**Diagnostic Analysis**:
-- Cosine similarity between latent vectors: **0.999** (nearly identical representations for different inputs)
-- PCA: Single principal component explains >99% of variance
-- Alignment loss decreased 222× (0.532 → 0.0024), possibly **too strong** - forcing representations to be identical
+**Diagnostic Metrics**:
+- Cosine similarity between latent vectors: **0.999** (nearly identical for different inputs!)
+- PCA: Single component explains >99% variance
+- Alignment loss: 0.532 → 0.0024 (222× decrease - **too strong?**)
 
-**Root Cause Hypothesis**: **Mean pooling bottleneck** destroys input-specific information:
-```
-~100 tokens → mean pool → 1 vector → expand → 32 tokens
-```
-This lossy compression creates a representational funnel that different inputs cannot escape.
-
-**Lesson Learned**: Starting in token-embedding space helps, but mean-pooling to a single vector creates an information bottleneck. Need to preserve sequence structure.
+**Root Cause** (from LOG.md line 517):
+> "Mean pooling bottleneck destroys input-specific information: ~100 tokens → mean pool → single z ∈ ℝ^512 → expand → 32 tokens. This lossy compression creates a representational funnel that different inputs cannot escape."
 
 ---
 
-#### 2.2.3 Direct Sequence Compression
+### 2.6 Hypothesis 6: Is Mean Pooling the Root Cause?
 
-**Motivation**: Remove mean pooling - use cross-attention with learned queries to compress directly from sequence to sequence.
+**Motivation**: If mean pooling destroys information, remove it. Use direct cross-attention compression.
 
-**Architecture** (inspired by "Gist Tokens" paper's cross-attention compression):
+#### Experiment: Direct Sequence Compression (No Mean Pooling)
+
+```mermaid
+graph LR
+    A["Text: 300 tokens"] --> B["Token Embeddings<br/>[~100, 4096]"]
+    B --> C["Cross-Attention Compressor<br/>M=32 learned queries<br/>Attend to full sequence<br/>NO mean pooling"]
+    C --> D["Frozen LLM<br/>[32, 4096] inputs_embeds"]
+    D --> E["Output"]
+
+    style B fill:#e1f5fe
+    style C fill:#c8e6c9
+    style D fill:#e1f5fe
 ```
-~100 tokens → CrossAttention(M=32 learned queries) → 32 tokens
-           (NO mean pooling - preserves structure)
+
+**Architecture** (inspired by "Gist Tokens" cross-attention):
+```python
+class DirectSequenceCompressor(nn.Module):
+    def __init__(self, d_model=4096, M=32, n_layers=4):
+        # Learned queries for M output slots
+        self.queries = nn.Parameter(torch.randn(M, d_model))
+        # Cross-attention layers
+        self.cross_attn = nn.ModuleList([
+            nn.MultiheadAttention(d_model, n_heads=8)
+            for _ in range(n_layers)
+        ])
+
+    def forward(self, token_embeds):
+        Q = self.queries.expand(batch, -1, -1)  # [B, M, d_model]
+        # Cross-attend WITHOUT mean pooling
+        for attn in self.cross_attn:
+            Q_new = attn(query=Q, key=token_embeds, value=token_embeds)
+            Q = Q + Q_new  # Residual
+        return Q  # [B, M=32, d_model] ready for LLM
 ```
 
-**Hypothesis**: Bottleneck is mean pooling step. Direct attention-based compression should preserve input-specific information.
+**Hypothesis**: Mean pooling bottleneck is the root cause. Direct compression should preserve input-specific information.
 
-**Result**: **IDENTICAL collapse pattern**
-- Diversity: 10% (same as mean-pooling version)
-- Cosine similarity: 0.999 (all learned queries converged to same vector)
+**Results**: **IDENTICAL COLLAPSE PATTERN** ❌
+- Diversity: **10%** (same as mean-pooling version!)
+- Cosine similarity: **0.999** (all M=32 queries converged to same vector)
 - All outputs: `"the 19th century, and the 20th"`
 
-**Critical Finding**: This **disproves the mean-pooling hypothesis**. Even preserving sequence structure, the model collapses to a single mode during training. The learned queries (initially random) become nearly identical by step 300.
+**Critical Finding** (from LOG.md line 760):
+> "Direct Sequence Compression collapsed identically to Mean Pool + Expand. This means:
+> 1. ❌ Mean pooling is NOT the root cause
+> 2. ❌ Preserving sequence structure did NOT help
+> 3. ❌ The problem is deeper than architecture
+> 4. ✓ Learned queries collapse during training - all M=32 queries become nearly identical (cosine=0.999)"
 
-**Lesson Learned**: Architecture changes alone are insufficient. The problem is deeper - likely related to weak supervision (K-token CE) or missing auxiliary losses.
+**What This Disproves**: Mean pooling hypothesis rejected. Even without pooling bottleneck, models collapse to single mode.
 
----
-
-#### 2.2.4 PCA Baseline (Linear Compression)
-
-**Motivation**: Establish upper bound for linear compression before trying learned approaches.
-
-**Setup**: Fit PCA on 80K training examples, compress embeddings 8× (4096 → 512 dimensions), pass through learned adapter to reconstruct 4096-dim embeddings.
-
-**Result**: **Severe quality degradation**
-- F1: 1.77%
-- Explained variance: 24.87% (75% of information lost)
-- Performance: Worse than token-budget baseline (4-6% F1)
-
-**Key Observation**: Token-level reconstruction was **perfect** (decoded embeddings → correct tokens), but generation produced empty strings. This revealed:
-- **Embedding magnitude mismatch**: Reconstructed embeddings were 115-120× larger than originals
-- **Direction preserved**: Cosine similarity 89%, but magnitude wrong
-- **LLM sensitivity**: Even with correct semantic direction, wrong magnitude causes generation failure
-
-**Follow-up Experiment** (RMS Scaling):
-Tested 8 different magnitude scaling factors (0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5):
-- **Result**: ALL produced 100% empty strings (F1=0%)
-- **Runtime**: 0.2s vs 29.8s for working baseline (immediate EOS token)
-
-**Lesson Learned**:
-1. Linear compression (PCA) loses too much information (75% variance unexplained)
-2. Magnitude scaling alone doesn't fix the problem - suggests per-token magnitude variation or higher-order statistics matter
-3. Need learned non-linear compression with proper embedding space alignment
+**Lesson Learned**: Architecture changes alone are insufficient. The problem is likely:
+- K-token CE supervision too weak (only supervises first K tokens)
+- Missing auxiliary losses (no diversity regularization, no reconstruction)
+- Frozen LLM limitation (soft prefix embeddings fundamentally difficult to condition on)
 
 ---
 
-### 2.3 Hypothesis 3: Training Objective Refinement
+### 2.7 Hypothesis 7: Can Loss Weight Tuning Fix Collapse?
 
-**Motivation**: Even with correct architecture, weak or misaligned training objectives could prevent learning effective compression.
+**Motivation**: Maybe collapse is due to wrong hyperparameters. Test systematic sweep.
 
-We conducted systematic sweeps of loss weights and supervision strategies:
+**Experiment Design**: 7 configurations varying semantic loss weight (0.0, 0.01, 0.05, 0.1, 0.5) and K-token supervision (K=4, 8, 12).
 
-#### 2.3.1 Loss Weight Sweep
+| Config # | Semantic Weight | K | Loss Formula |
+|----------|-----------------|---|--------------|
+| 1 | 0.0 | 4 | `L_gen` only |
+| 2 | 0.01 | 4 | `L_gen + 0.01*L_sem` |
+| 3 | 0.05 | 4 | `L_gen + 0.05*L_sem` |
+| 4 | 0.1 | 4 | `L_gen + 0.1*L_sem` |
+| 5 | 0.5 | 4 | `L_gen + 0.5*L_sem` |
+| 6 | 0.05 | 8 | `L_gen + 0.05*L_sem` (more supervision) |
+| 7 | 0.05 | 12 | `L_gen + 0.05*L_sem` (even more supervision) |
 
-**Experiment Design**: Test 7 configurations varying semantic loss weight (0.0, 0.01, 0.05, 0.1, 0.5) and K-token supervision (K=4, 8, 12).
+**Results**: **UNIVERSAL COLLAPSE ACROSS ALL CONFIGURATIONS** ❌
 
-**Configurations**:
-1. No semantic (weight=0.0, K=4)
-2. Very weak semantic (weight=0.01, K=4)
-3. Weak semantic (weight=0.05, K=4)
-4. Medium semantic (weight=0.1, K=4)
-5. Strong semantic (weight=0.5, K=4)
-6. K=8 supervision (weight=0.05, K=8)
-7. K=12 supervision (weight=0.05, K=12)
-
-**Result**: **Universal collapse across ALL configurations**
-
-| Config | Sem Weight | K | Diversity | Collapsed Output |
-|--------|-----------|---|-----------|------------------|
-| No semantic | 0.0 | 4 | 20% | "the first time in 2003/2004..." |
-| Very weak | 0.01 | 4 | 10% | "The first time I saw..." |
-| Weak | 0.05 | 4 | 20% | "The first of the three volumes..." |
+| Config | Sem Weight | K | Diversity | Collapsed Output Pattern |
+|--------|------------|---|-----------|--------------------------|
+| No semantic | 0.0 | 4 | **20%** | "the first time in 2003/2004..." |
+| Very weak | 0.01 | 4 | 10% | "The first time I saw the movie..." |
+| Weak | 0.05 | 4 | 20% | "The first of the three volumes of the 1960/1967" |
 | Medium | 0.1 | 4 | 10% | "2005, 2006, 2007," |
 | Strong | 0.5 | 4 | 10% | "the 1960s and 1970s saw..." |
-| K=8 | 0.05 | 8 | 10% | "Question 1: What is the name..." |
-| K=12 | 0.05 | 12 | 20% | "2013) and the 2014 FIFA..." |
+| K=8 | 0.05 | 8 | 10% | "Question 1: What is the name of the first..." |
+| K=12 | 0.05 | 12 | 20% | "2013) and the 2014 FIFA World Cup" |
+
+**Best Diversity**: 20% (2/10 unique predictions) - far below acceptable threshold (>60%)
 
 **Key Observations**:
-- Best diversity: 20% (2/10 unique predictions)
-- Each config collapses to DIFFERENT mode (proves parameter reset working)
-- Loss weights (0.0 to 0.5) make no meaningful difference
-- Increasing K (4→12) doesn't prevent collapse
+- Each config collapses to DIFFERENT mode (proves parameter reset working correctly)
+- Loss weights 0.0 → 0.5: No meaningful effect
+- K-token supervision K=4 → K=12: No meaningful effect
+- Training loss decreases, but diversity remains 10-20%
 
-**Critical Conclusion**: This is **NOT a hyperparameter tuning problem**. It's an architectural or training methodology limitation.
+**Conclusion** (from LOG.md line 479):
+> "This is NOT a hyperparameter tuning problem. It's an architecture design flaw or training methodology limitation. Loss weight tuning alone cannot fix mode collapse."
 
-**Lesson Learned**: Loss weight tuning alone cannot fix mode collapse. Need fundamentally different training approach.
-
----
-
-#### 2.3.2 K-Token Teacher Forcing vs Knowledge Distillation
-
-**Background**: "Compressed Chain of Thought" paper suggests teacher forcing (supervising only first K tokens) can be insufficient for generation quality.
-
-**Experiment**: Compare K-token cross-entropy (CE) loss with and without knowledge distillation (KD).
-
-**Setup**:
-- **K-token CE**: Supervise first K=4-12 tokens with gold labels
-- **KD**: Distill full text-prompted teacher distribution into latent student
-- **Combined**: K-token CE + KD with temperature τ=2.0
-
-**Preliminary Results** (from earlier training runs):
-- **K-token CE alone**: First-token accuracy ~5-7%, high entropy (7-11), severe mode collapse
-- **K-token CE + KD**: Accuracy dropped to ~2-4% initially due to distribution mismatch
-- **With teacher forcing + KD**: Training became unstable (OOM issues from storing full logits)
-
-**Issue Identified**: K-token CE only supervises first K tokens (e.g., K=8 out of 50+ answer tokens). Remaining tokens receive **no direct supervision**, allowing model to drift toward mode collapse.
-
-**Lesson Learned**: Need either:
-1. Full-sequence supervision (not just first K tokens)
-2. Reconstruction objective to force information preservation
-3. Stronger auxiliary losses (entropy regularization, diversity penalties)
+**Lesson Learned**: ❌ Mode collapse is not caused by loss weights or K-token hyperparameters. Need fundamentally different approach.
 
 ---
 
-### 2.4 Hypothesis 4: Model Capacity Threshold
+### 2.8 Hypothesis 8: LoRA Adaptation Experiments
 
-**Motivation**: "Gist Tokens" paper found soft prefix tuning requires models ≥3B parameters. Do 1B models fundamentally fail?
+**Motivation**: Maybe frozen LLMs can't process soft prefix embeddings effectively. Add small trainable adapters (LoRA) to help LLM "learn to listen."
 
-**Experiment**: Compare Llama-3.1-8B vs TinyLlama-1.1B and Qwen2.5-7B vs Qwen2-0.5B.
+**LoRA** (Low-Rank Adaptation): Adds small trainable matrices to attention layers:
+```
+Q = Q_frozen + LoRA_A @ LoRA_B  (where LoRA has rank r << d_model)
+```
+This allows ~1-5% of model parameters to adapt while keeping 95-99% frozen.
 
-**Results**:
+#### Experiment: Stage A/B Training with LoRA
 
-**8B Models**:
-- Text baseline: F1=79.9% (Llama), 85.3% (Qwen)
-- Latent (M=16, 16 epochs): F1=3.0% (Llama), 2.6% (Qwen)
-- Token-budget: F1=3.8% (Llama), 4.3% (Qwen)
+**Configuration**:
+- **Stage A** (Encoder training): 6 epochs, LoRA r=8, first 12 attention layers
+- **Stage B** (Fine-tuning): 10 epochs, LoRA r=16, first 16 layers
+- Trainable params: 20.97M (Stage A) → 272.72M (Stage B with LoRA+Prefix)
 
-**1B Models**:
-- Text baseline: F1=13.1% (TinyLlama), 59.8% (Qwen-0.5B)
-- Latent: F1=0.07% (TinyLlama), 0.14% (Qwen-0.5B)
-- Degradation: **<1% of baseline** (vs 3-4% for 8B models)
+**Results**: **LoRA learning but mode collapse persists** ⚠️
 
-**Key Observations**:
-- Both 1B and 8B models show similar **NLL improvement** (latent better than text), indicating they CAN read the compressed representations
-- But generation quality (F1) catastrophically collapses for 1B models
-- 8B models retain 3-4% of performance, 1B models <0.2%
+From LOG.md line 2377-2405:
+- ✅ LoRA weights growing: 0.817 → 0.865 (not stuck at initialization)
+- ✅ Losses decreasing: first_loss 14.67 → 7.65 (-48%), kce_loss 14.54 → 9.77 (-33%)
+- ✅ **Breakthrough spike**: 25% accuracy at step 267 (exceeds target!)
+- ❌ **Diversity collapsed**: 5 unique tokens → 1 ("the" only) by step 110, never recovered
+- ❌ High variance: Accuracy jumping 0% → 4.2% → 25% → 8.3% → 12.5% → 4.2%
+- ❌ Entropy still too high: 7.93 (healthy should be ~2-4)
+- ❌ **Final result**: 4.2% vs target 15%
 
-**Conclusion**: **Confirmed capacity threshold** - Models <3B parameters cannot effectively decode soft prompts into coherent generation. This aligns with "P-tuning v2" findings that soft prompt effectiveness scales with model size.
+**Root Cause Analysis** (from LOG.md line 2394):
+> "Model is learning but trapped in local minimum where 'the' is a safe bet. The 25% spike at step 267 PROVES architecture CAN work when it escapes the attractor. But 'the' attractor too strong: Even with entropy regularization weight=0.3, distribution stays flat (entropy ~8). Margin tiny (0.03-0.06): 'the' barely beats alternatives, but always wins argmax."
 
-**Lesson Learned**: Need to use models ≥3B for this research. 1B models are not viable for soft prefix conditioning.
+**Why LoRA Didn't Fix Collapse**:
+- LoRA helps LLM adapt to soft prefix inputs (weights growing, losses decreasing)
+- But doesn't fix fundamental issue: K-token CE only supervises first K=4-8 tokens
+- Remaining 80%+ of answer receives no gradient signal
+- Model learns P("the")≈0.08, P(others)≈0.07 → "the" always wins argmax
 
----
-
-### 2.5 Hypothesis 5: Information Preservation via Reconstruction
-
-**Motivation**: "Compressed PDFs" paper emphasizes reconstruction objectives to prevent information loss during compression.
-
-**Experiment Design** (Stage 1 - Adapter-Only Training):
-1. Fit PCA on 80K training samples (4096 → 512 compression)
-2. Train adapter (19.9M params) with **pure MSE reconstruction loss**: `L = ||reconstructed - original||²`
-3. No generation loss (CE) - test hypothesis: "Good reconstruction → Good generation"
-
-**Success Criteria**:
-- F1 ≥ 70%: Reconstruction sufficient
-- F1 50-70%: Partial success
-- F1 < 50%: Need generation-aware training
-
-**Results**:
-- Token reconstruction: **PERFECT** (all tokens matched exactly when decoded)
-- Cosine similarity: 89.4% (direction preserved)
-- Relative error: **115-120×** (magnitude catastrophically wrong)
-- Generation: **100% empty strings** (F1=0%, EM=0%)
-
-**Root Cause**: Embedding magnitude mismatch - reconstructed embeddings 115-120× larger than originals, causing LLM to immediately generate EOS token.
-
-**Follow-up Fix Attempts**:
-1. **RMS scaling** (8 different scales): 100% failure, all empty strings
-2. **Batch distribution matching**: Slight improvement (F1: 34.5% → 35.1%), but still far from target
-
-**Lesson Learned**:
-1. Reconstruction alone is **necessary but not sufficient**
-2. Must match **statistical properties** of embedding space (magnitude, variance, higher-order moments)
-3. PCA-based compression loses critical information that linear adapters cannot recover
+**Lesson Learned**: LoRA is necessary (enables LLM to process soft inputs) but not sufficient. Need stronger supervision or diversity constraints.
 
 ---
 
 ## 3. Cross-Cutting Findings
 
-### 3.1 Mode Collapse Patterns
+### 3.1 Mode Collapse is Systemic
 
-**Observation**: Across ALL experiments (ByteEncoder, Anchor-Guided, Direct Compression, Loss Sweeps), models consistently collapse to outputting 1-2 tokens repeatedly:
-- ByteEncoder: `"2019) 1. The answer is"`
-- Anchor-Guided: `"the 19th century..."` or `"The first edition..."`
-- Direct Compression: `"the 19th century, and the 20th"`
-- K-token CE: `"the"`, `"a"`, `"$"` (87-100% of predictions)
+**Pattern Observed Across ALL Experiments**:
+- ByteEncoder: `"2019) 1. The answer is"` (100% identical)
+- Anchor-Guided: `"the 19th century..."` (10-20% diversity)
+- Direct Compression: `"the 19th century, and the 20th"` (10% diversity)
+- Loss sweeps: 10-20% diversity across all weights
+- LoRA experiments: `"the"` (87-100% of predictions)
 
-**Diagnostic Metrics**:
-- Cosine similarity between latents: 0.999 (should be <0.5)
-- Learned query convergence: All M=32 queries become identical
-- Prediction diversity: 10-20% (should be >60%)
-- First-token entropy: 7-11 (flat distribution, but argmax always picks mode token)
+**Diagnostic Signatures of Collapse**:
+| Metric | Healthy Value | Collapsed Value | Observed |
+|--------|---------------|-----------------|----------|
+| Cosine similarity (latents) | <0.5 | >0.95 | **0.999** ❌ |
+| Prediction diversity | >60% | <20% | **10-20%** ❌ |
+| PCA explained variance | <70% | >95% | **>99%** ❌ |
+| First-token entropy | 2-4 | >7 | **7-11** ❌ |
 
-**Why This Happens**:
-1. **Weak supervision**: K-token CE supervises only first K tokens (e.g., K=8), leaving 80% of answer unsupervised
-2. **Safe bet learning**: Model learns P("the")≈0.08, P(others)≈0.07 - "the" always wins argmax
-3. **Gradient signal collapse**: Frozen LLM provides weak feedback; learned components cannot differentiate inputs
-4. **Local minimum**: Models find lowest-loss solution is to output common tokens for all inputs
+**Root Causes Identified** (from LOG.md analysis):
 
-**Not Caused By**:
+1. **Weak K-token supervision** (from LOG.md line 511):
+   - Only supervises first K=4-12 tokens
+   - Remaining 80%+ of answer unsupervised
+   - Model finds lowest-loss solution: output common tokens for all inputs
+
+2. **Learned queries converge** (from LOG.md line 734):
+   - CrossAttention with M=32 learned queries
+   - All queries become nearly identical by step 300 (cosine=0.999)
+   - Lose input-specific information
+
+3. **Gradient signal collapse** (from LOG.md line 2394):
+   - Frozen LLM provides weak feedback
+   - Model learns P("the")≈0.08, P(others)≈0.07
+   - "the" always wins argmax despite flat distribution
+
+**What Collapse is NOT Caused By**:
 - ❌ Mean pooling bottleneck (direct compression collapsed identically)
 - ❌ Loss weights (tested 0.0 to 0.5, all collapsed)
-- ❌ K-token supervision strength (tested K=4,8,12, all collapsed)
-- ❌ Semantic grounding (tested 0.0 to 0.5, all collapsed)
-
-**Likely Caused By**:
-- ✅ Insufficient training signal (only K tokens supervised)
-- ✅ Frozen LLM limitation (soft prefix embeddings fundamentally difficult)
-- ✅ Missing auxiliary losses (no diversity penalty, no reconstruction objective)
-- ✅ Dataset structure (SQuAD common answer patterns dominate)
+- ❌ K-token supervision strength (tested K=4, 8, 12)
+- ❌ Semantic grounding (tested 0.0 to 0.5)
+- ❌ LoRA capacity (weights growing, but still collapsed)
 
 ---
 
-### 3.2 Training-Evaluation Gap
+### 3.2 Training-Evaluation Gap (Exposure Bias)
 
-**Phenomenon**: Training metrics suggest learning (losses decrease, accuracy improves), but evaluation shows catastrophic failure.
+**Phenomenon**: Training metrics suggest learning, but evaluation catastrophically fails.
 
-**Evidence** (Stage A training example):
-- Training peak: 16.67% raw batch accuracy at step 210
-- Evaluation: 2.5% first-token accuracy
-- Gap: **85% performance loss** from train to eval
-
-**Metrics Discrepancy**:
-- Training loss: 14.67 → 7.65 (-48% improvement)
-- Training accuracy: 0% → 16.67% (peak)
-- Evaluation F1: 1.6%
-- Token diversity: 1/24 (100% predictions are "the")
+**Evidence** (from Stage A training, LOG.md line 2487):
+- Training peak: **16.67% raw batch accuracy** at step 210
+- Evaluation: **2.5% first-token accuracy**
+- **Gap: 85% performance loss** from train to eval
 
 **Why Metrics Are Misleading**:
-- Raw batch accuracy can spike when gold answer happens to be "the" (common in dataset)
-- Training sees teacher-forced context (gold tokens available), evaluation uses autoregressive generation
-- Loss decreases as model learns to predict common tokens, not diverse answers
+- Raw batch accuracy spikes when gold answer happens to be "the" (common in SQuAD dataset)
+- Training uses **teacher forcing** (gold tokens available), evaluation uses **autoregressive generation**
+- Model learns to predict common tokens, not diverse answers
 - Top-5 accuracy (12.5%) shows gold IS in top-5, but argmax always picks "the"
 
-**Lesson Learned**: **Exposure bias** - training with teacher forcing doesn't prepare model for autoregressive generation. Need scheduled sampling or generation-aware training.
+**Lesson Learned**: Teacher forcing ≠ generation. Need scheduled sampling or generation-aware training.
 
 ---
 
 ### 3.3 Compression vs Quality Tradeoff
 
-**Baseline Comparisons**:
+**Comprehensive Baseline Comparison**:
 
-| Method | Compression | F1 Score | EM Score | Interpretation |
-|--------|-------------|----------|----------|----------------|
-| **Text (full)** | 1× | 79.6% | 59.0% | Upper bound |
-| **Token-budget (M=32)** | ~6-8× | 4.3-6.3% | 0% | **Fairness baseline** |
-| **PCA (M=32, linear)** | 8× | 1.77% | 0% | Linear compression fails |
-| **Latent (M=16, learned)** | 15× | 3.0% | 0% | **Worse than truncation** |
-| **Latent (M=32, learned)** | 7-8× | 0-2% | 0% | Severe collapse |
+| Method | Compression | Sequence | Dimension | F1 | EM | Interpretation |
+|--------|-------------|----------|-----------|-----|-----|----------------|
+| **Text (full)** | 1× | 300 | 4096 | 79.6% | 59% | Upper bound |
+| **Token-budget (M=32)** | ~6-8× | 32 | 4096 | 4.3-6.3% | 0% | **Fairness baseline** |
+| **Phase 1a (dim only)** | 4× | 300 | 1024 | **24.0%** | 0% | **Best result** |
+| **Sequence compress 2×** | 8× | 150 | 1024 | 0.0% | 0% | Failed |
+| **Sequence compress 4×** | 16× | 75 | 1024 | 0.0-0.7% | 0% | Failed |
+| **PCA baseline** | 8× | 300 | 512 | 1.77% | 0% | Linear insufficient |
+| **Latent (full system)** | 7-15× | 16-32 | 256 | 0-3% | 0% | Severe collapse |
 
-**Critical Observation**: Learned compression **underperforms naive truncation** at similar compression rates. This is a fundamental failure - we're worse than doing nothing sophisticated.
+**Critical Observation**: Learned compression **underperforms naive truncation**:
+- Token-budget (truncate to 32 tokens): 4.3-6.3% F1
+- Best learned compression (Phase 1a): 24% F1 (but no sequence compression!)
+- Learned with sequence compression: 0-3% F1 (worse than truncation)
 
-**Honest Compression Accounting**:
-- Text bytes: UTF-8 encoding (~1-4 bytes per character)
-- Latent bytes: Quantized fp16 (2 bytes per dimension, plus group-wise quantization overhead)
-- M=32, d=256, fp16: 32 × 256 × 2 = 16,384 bytes
-- Typical prompt: ~200-300 tokens ≈ 800-1200 bytes (UTF-8)
-- **Actual compression**: 1200 / 16384 = 0.073× = **13.7× EXPANSION** (worse than no compression!)
+**Honest Compression Accounting** (from LOG.md):
+- Text bytes: ~1,200 bytes (UTF-8 for 300 tokens)
+- Latent bytes (M=32, d=256, fp16): 32 × 256 × 2 = 16,384 bytes
+- **Actual compression**: 1200 / 16384 = **0.073× = 13.7× EXPANSION!**
+- To achieve 4× compression: Need aggressive quantization (fp16 → int4) or smaller latent
 
-**To Achieve 4× Compression Target**:
-- Need aggressive quantization (fp16 → int4/int6)
-- Or reduce latent dimensions (M=32, d=256 → M=16, d=128)
-- But quality already catastrophic at current settings
-
-**Lesson Learned**: Cannot focus on compression until quality is fixed. Current priority: match token-budget baseline (4-6% F1) before optimizing compression ratio.
+**Lesson Learned**: Cannot focus on compression until quality is fixed. Current priority: match token-budget baseline (4-6% F1).
 
 ---
 
 ## 4. Lessons Learned
 
-### 4.1 What Worked
+### 4.1 What Worked ✅
 
-1. ✅ **Embedding interface validation** (82% F1 with anchor mode)
-   - Proves LLMs can process continuous inputs effectively
-   - Anchor text ("Answer:") improves grounding (+2.4% F1)
+1. **Embedding interface validation** (82% F1)
+   - Proves LLMs process continuous inputs effectively
+   - Anchor text improves grounding (+2.4% F1)
 
-2. ✅ **Systematic experimental methodology**
-   - Comprehensive baselines (text, token-budget, PCA, embedding replay)
-   - Controlled ablations (loss weights, K-token supervision, architectures)
+2. **Phase 1a: Pure reconstruction** (24% F1)
+   - Answer present in output (correct semantics)
+   - Infrastructure robust (PCA fitting, adapter training, magnitude matching)
+   - Baseline for future work
+
+3. **Systematic experimental methodology**
+   - Comprehensive baselines (text, token-budget, embedding replay)
+   - Controlled ablations (50+ experiments across 5 hypotheses)
    - Diagnostic metrics (diversity, cosine similarity, PCA variance)
+   - Mermaid diagrams document each architecture
 
-3. ✅ **Infrastructure robustness**
-   - End-to-end pipeline (training, evaluation, diagnostics)
-   - H100 cluster utilization (4×85GB GPUs, proper device mapping)
-   - Comprehensive logging (diagnostics.jsonl, prediction logs)
+4. **Negative result documentation**
+   - Disproved mean-pooling hypothesis
+   - Rejected RMS scaling hypothesis
+   - Established that loss weight tuning doesn't fix collapse
 
-4. ✅ **Negative result documentation**
-   - Disproved mean-pooling hypothesis (direct compression failed identically)
-   - Rejected RMS scaling hypothesis (100% empty string generation)
-   - Established capacity threshold (1B models < 3B models)
+### 4.2 What Didn't Work ❌
 
-### 4.2 What Didn't Work
+1. **All sequence compression methods failed** (0-0.7% F1)
+   - Averaging destroys sequential/positional information
+   - Even modest 2× compression (300→150) completely fails
+   - Hierarchical, convolutional, hybrid variants all failed
+   - LoRA adaptation didn't help
 
-1. ❌ **All compression architectures collapsed**
-   - ByteEncoder: Modality mismatch (byte vs token space)
-   - Anchor-Guided: Mean pooling bottleneck (hypothesized)
-   - Direct Compression: Same collapse despite no mean pooling
-   - PCA: Linear compression insufficient
+2. **Generation objectives caused mode collapse** (Phase 1b: 0% F1)
+   - Token-level supervision fights with embedding reconstruction
+   - Model collapses to "the the the" repetition
+   - Loss weighting dominated by CE despite "0.5×" coefficient
 
-2. ❌ **Loss engineering alone insufficient**
-   - Semantic grounding (0.0-0.5): No effect on diversity
-   - K-token supervision (K=4-12): No effect on diversity
-   - Alignment loss: Possibly too strong (forces uniformity)
+3. **All architectural variants collapsed** (10-20% diversity)
+   - ByteEncoder, Anchor-Guided, Direct Compression all failed
+   - Loss weight tuning (0.0-0.5) didn't help
+   - K-token supervision (K=4-12) didn't help
+   - LoRA helped learning but didn't prevent collapse
 
-3. ❌ **Calibration heuristics failed**
-   - RMS scaling (8 variants): 100% failure
-   - Batch distribution matching: Marginal improvement (2%)
-   - Magnitude normalization: Cannot fix semantic mismatch
+4. **Worse than naive baseline** (critical failure)
+   - Learned compression (0-3% F1) < Token truncation (4-6% F1)
+   - Current system performs worse than doing nothing sophisticated
 
-4. ❌ **Worse than naive baseline**
-   - Learned compression (3.0% F1) < Token truncation (4.3-6.3% F1)
-   - Compression ratio poor (13× expansion at current quantization)
+### 4.3 Key Insights 🔍
 
-### 4.3 Key Insights
+1. **Positional information is critical**
+   - Mean pooling: "Averaging destroys all sequential/positional information"
+   - Sequence compression: Cannot compress 300→75 without catastrophic loss
+   - Need to preserve fine-grained sequential structure
 
-1. **Foundation is sound, compression is the bottleneck**
-   - LLMs accept continuous embeddings (82% F1 proof)
-   - Challenge is learning mapping that preserves information
-   - Not a model capacity issue (8B models sufficient)
+2. **Training objectives must align**
+   - "Token-level supervision (discrete) fights with embedding-level reconstruction (continuous)"
+   - Generation objectives (85% of loss) dominated reconstruction (15%)
+   - Need unified objective in same space (either all embedding-level or all token-level)
 
-2. **Mode collapse is systemic, not architectural**
-   - All architectures collapse to 1-2 tokens
-   - Hypothesis: K-token CE provides insufficient supervision
-   - 80%+ of answer tokens receive no direct gradient signal
+3. **Mode collapse has deep roots**
+   - NOT caused by: architecture, loss weights, K-token strength, LoRA capacity
+   - Likely caused by: weak supervision (only K tokens), frozen LLM limitation, missing diversity losses
+   - "The 25% spike proves architecture CAN work when it escapes the attractor"
 
-3. **Training-evaluation mismatch critical**
-   - Teacher forcing ≠ autoregressive generation
-   - Exposure bias causes 85% performance drop
-   - Need generation-aware training or scheduled sampling
-
-4. **Information preservation requires explicit objective**
-   - Reconstruction alone insufficient (magnitude mismatches)
-   - Need to match embedding space statistics (mean, variance, higher-order moments)
-   - PCA loses 75% of variance; non-linear compression needed
+4. **Foundation is sound, compression is the challenge**
+   - Embedding interface works (82% F1 proof)
+   - LoRA enables adaptation (weights growing, losses decreasing)
+   - Challenge: learning compression that preserves task-relevant information
 
 ---
 
 ## 5. Literature Connections
 
-Our experiments validate and extend findings from several key papers:
+### 5.1 Validated Findings ✅
 
-### 5.1 Validated Findings
+1. **"Gist Tokens"** (Mu et al.): Soft prefix requires ≥3B models
+   - ✅ Confirmed: 1B models <0.2% of baseline vs 3B+ models 3-4%
 
-1. **"Gist Tokens" (Mu et al., 2024)**: Soft prefix tuning requires models ≥3B parameters
-   - ✅ Our result: 1B models achieve <0.2% of baseline vs 3-4% for 8B models
-   - ✅ Confirms capacity threshold at ~3B parameters
+2. **"P-tuning v2"** (Liu et al.): Effectiveness scales with model size
+   - ✅ Validated: TinyLlama-1.1B (0.07%) vs Llama-3.1-8B (3%)
 
-2. **"P-tuning v2" (Liu et al., 2022)**: Soft prompt effectiveness scales with model size
-   - ✅ Our result: TinyLlama-1.1B (F1=0.07%) vs Llama-3.1-8B (F1=3.0%)
-   - ✅ Supports deep prompt tuning over shallow prefix-only
+3. **"Compressed Chain of Thought"**: K-token teacher forcing insufficient
+   - ✅ Confirmed: K=4-12 all collapsed, need full-sequence or reconstruction
 
-3. **"Compressed Chain of Thought" (Anonymous, 2024)**: K-token teacher forcing insufficient
-   - ✅ Our result: K=4-12 all collapsed, need full-sequence supervision or reconstruction
-   - ✅ Highlights exposure bias problem (teacher forcing ≠ generation)
+4. **"Anchor-based LLMs"**: Semantic anchors improve grounding
+   - ✅ Validated: "Answer:" anchor → +2.4% F1
+   - ⚠️ But insufficient to prevent collapse in compressed setting
 
-4. **"Anchor-based LLMs" (Chen et al., 2024)**: Explicit semantic anchors improve grounding
-   - ✅ Our result: "Answer:" anchor text → +2.4% F1 improvement
-   - ✅ But insufficient to prevent mode collapse in compressed setting
-
-### 5.2 Novel Findings
+### 5.2 Novel Findings 🆕
 
 1. **Mean pooling NOT the root cause of collapse**
-   - Previous work (TALL, Inner Adapter Architecture) suggests bottlenecks cause information loss
-   - ❌ Our finding: Direct compression (cross-attention, no pooling) collapses identically
+   - Prior work (TALL, IAA) suggests bottlenecks cause information loss
+   - ❌ Our finding: Direct compression (no pooling) collapses identically
    - 🔍 Suggests issue is training objective, not architecture
 
 2. **Learned queries converge during training**
-   - CrossAttention with M=32 learned queries → cosine similarity 0.999 by step 300
+   - CrossAttention with M=32 learned queries → cosine 0.999 by step 300
    - All queries become nearly identical, losing input specificity
-   - Not reported in "Gist Tokens" paper (which uses randomly initialized fixed queries)
+   - Not reported in "Gist Tokens" (uses fixed random queries)
 
 3. **Magnitude mismatch catastrophic for generation**
    - Perfect token reconstruction (semantic direction correct)
-   - But 115-120× magnitude error → 100% empty string generation
-   - Suggests LLM sensitivity to embedding statistics beyond just direction
+   - But 115-120× magnitude error → 100% empty strings
+   - Suggests LLM sensitivity to embedding statistics beyond direction
+
+4. **Sequence compression hits fundamental limit**
+   - Even 2× compression (300→150 tokens) fails completely
+   - All methods failed: pooling, hierarchical, convolutional
+   - Suggests fine-grained sequential information is critical for QA
 
 ---
 
 ## 6. Concrete Next Steps
 
-Based on experimental findings and paper review, we propose a phased approach:
+Based on 50+ experiments and systematic root cause analysis:
 
-### Phase 1: Match Token-Budget Baseline (Target: F1 ≥ 6%)
+### Phase 1: Match Token-Budget Baseline (Weeks 1-2)
+**Target**: F1 ≥ 6% (currently 0-3%)
 
-**Immediate Actions** (Week 1-2):
+**Action 1: Implement VQ-VAE Discrete Bottleneck**
+- **Motivation**: "Learning Global Controller" paper shows discrete codes prevent mode collapse
+- **Architecture**: Encoder → Quantize to K=512 codebook → Decoder
+- **Why it works**: Forces distinct representations (cannot collapse to continuous mode)
+- **Expected impact**: Eliminate mode collapse entirely (diversity → 80-90%)
 
-1. **Implement Full-Sequence Reconstruction Objective**
-   - Motivation: "Compressed PDFs" paper shows reconstruction prevents information loss
-   - Architecture: Encoder → Z → Decoder → Reconstruct original text embeddings
-   - Loss: `L = L_gen + λ_recon * MSE(decoded, original)` with λ_recon = 0.5-1.0
-   - Expected impact: Force encoder to preserve information instead of collapsing
+**Action 2: Full-Sequence Reconstruction**
+- **Motivation**: "Compressed PDFs" paper emphasizes reconstruction prevents information loss
+- **Loss**: `L = L_gen + λ_recon * MSE(decoder(z), original_text_embeds)` with λ=1.0
+- **Why it works**: Forces encoder to preserve all information, not just first K tokens
+- **Expected impact**: F1 3% → 6-8%
 
-2. **Add Diversity Regularization**
-   - Motivation: Mode collapse affects all architectures; need explicit penalty
-   - Implementation:
-     - **Entropy regularization**: Maximize H(P(token)) for first-token distribution
-     - **Contrastive loss**: Push different inputs apart in latent space: `L_contrast = max(0, margin - ||z_i - z_j||²)` for i≠j
-     - **Prediction diversity metric**: Track unique tokens per batch, stop training if <5/24
-   - Expected impact: Break "the" dominance by penalizing repetitive outputs
+**Action 3: Diversity Regularization**
+- **Entropy regularization**: Maximize H(P(token)) for first-token distribution
+- **Contrastive loss**: `L_contrast = max(0, margin - ||z_i - z_j||²)` for i≠j
+- **Prediction diversity metric**: Stop training if <5/24 unique tokens
+- **Expected impact**: Break "the" dominance
 
-3. **Scheduled Sampling for Exposure Bias**
-   - Motivation: "Quiet Star" paper shows scheduled sampling fixes train-eval gap
-   - Implementation: Gradually replace teacher-forced tokens with model's own predictions
-     - Epoch 1-3: 0% sampling (full teacher forcing)
-     - Epoch 4-6: 15% sampling
-     - Epoch 7-10: 30% sampling
-   - Expected impact: Reduce 85% train-eval performance gap
-
-**Success Criteria**: F1 ≥ 6%, diversity ≥ 50% (5/10 unique predictions)
+**Success Criteria**: F1 ≥ 6%, diversity ≥ 50%
 
 ---
 
-### Phase 2: Approach Text Baseline (Target: F1 ≥ 40%)
+### Phase 2: Approach Phase 1a Quality (Weeks 3-5)
+**Target**: F1 ≥ 24% (match pure reconstruction baseline)
 
-**Architectural Enhancements** (Week 3-5):
+**Action 4: Multi-Depth Latent Adapters (IAA-style)**
+- **Motivation**: "TALL" and "Inner Adapter Architecture" show 2-3× improvement
+- **Architecture**: Insert adapters at layers {5, 10, 15, 20}
+  - Layer 5: Low-level token patterns
+  - Layer 10: Semantic grouping
+  - Layer 15: Task planning
+  - Layer 20: Answer formulation
+- **Each adapter**: LayerNorm → CrossAttn(hidden, latent) → MLP → gated residual
+- **Expected impact**: 2-3× F1 improvement
 
-1. **Multi-Depth Latent Adapters (IAA-style)**
-   - Motivation: "TALL" and "Inner Adapter Architecture" papers show multi-layer injection improves quality 2-3×
-   - Architecture: Insert adapter blocks at layers {5, 10, 15, 20}
-     ```
-     Layer 5:  CrossAttn(hidden_state, latent) → low-level token patterns
-     Layer 10: CrossAttn(hidden_state, latent) → semantic grouping
-     Layer 15: CrossAttn(hidden_state, latent) → task planning
-     Layer 20: CrossAttn(hidden_state, latent) → answer formulation
-     ```
-   - Each adapter: LayerNorm → CrossAttn → MLP → gated residual (learned α)
-   - Expected impact: Latent guides reasoning at multiple abstraction levels
+**Action 5: Scheduled Sampling (Exposure Bias Fix)**
+- **Motivation**: "Quiet Star" paper fixes train-eval gap
+- **Implementation**: Mix gold tokens with model predictions
+  - Epoch 1-3: 0% sampling (full teacher forcing)
+  - Epoch 4-6: 15% sampling
+  - Epoch 7-10: 30% sampling
+- **Expected impact**: Reduce 85% train-eval gap
 
-2. **Discrete Bottleneck (VQ-VAE style)**
-   - Motivation: "Learning Global Controller in Latent Space" shows discrete codes prevent collapse
-   - Architecture: Encoder → Quantize to K=512 codebook vectors → Decoder
-   - Advantages:
-     - Forces distinct representations (cannot collapse to continuous mode)
-     - Enables efficient transmission (log₂(K) bits per code)
-     - Proven in VAE literature to prevent posterior collapse
-   - Expected impact: Eliminate mode collapse issue entirely
+**Action 6: Post-Processing for Phase 1a**
+- **Quick win**: Extract answer from Phase 1a's verbose outputs
+- **Methods**: Regex, first N tokens, punctuation-based extraction
+- **Expected impact**: Phase 1a 24% → 40-50% F1
 
-3. **Knowledge Distillation Refinement**
-   - Motivation: "Prefix-Tuning+" paper shows KD from stronger teacher improves quality
-   - Implementation:
-     - Teacher: Full text-prompted LLM (frozen)
-     - Student: Latent-prompted LLM (encoder+adapter trained)
-     - Loss: `L_KD = KL(P_student || P_teacher)` with temperature τ=2.0
-     - Apply to full sequence, not just first K tokens
-   - Expected impact: Student learns to mimic teacher's full distribution
-
-**Success Criteria**: F1 ≥ 40%, compression ≥ 4×, FirstTok@1 ≥ 20%
+**Success Criteria**: F1 ≥ 24-40%
 
 ---
 
-### Phase 3: Optimize Compression (Target: 4-8× at F1 ≥ 50%)
+### Phase 3: Optimize Compression (Weeks 6-8)
+**Target**: 4-8× compression at F1 ≥ 50%
 
-**Compression Techniques** (Week 6-8):
+**Action 7: Aggressive Quantization**
+- fp16 → int6/int4 with group-wise quantization
+- Expected savings: 16 bits → 4-6 bits = 2.6-4× reduction
 
-1. **Aggressive Quantization**
-   - fp16 → int6/int4 with group-wise quantization
-   - Separate scale factors per group of 8-16 dimensions
-   - Expected savings: 16 bits → 4-6 bits = 2.6-4× reduction
+**Action 8: Latent Dimension Tuning**
+- Current: M=32, d=256
+- Target: M=24, d=192 (1.78× reduction)
+- Tune M vs d tradeoff
 
-2. **Latent Dimension Reduction**
-   - Current: M=32, d=256 (8,192 numbers)
-   - Target: M=24, d=192 (4,608 numbers) = 1.78× reduction
-   - Tune M vs d tradeoff: fewer slots (M↓) or thinner slots (d↓)
+**Action 9: Hybrid Text+Latent**
+- First 8 tokens: Text (critical context)
+- Remaining: Latent (bulk information)
 
-3. **Hybrid Text+Latent**
-   - First 8 tokens: Text (critical context, low compression)
-   - Remaining: Latent (bulk information, high compression)
-   - Expected impact: Balance quality vs compression
-
-**Success Criteria**: 4-8× compression at F1 ≥ 50% of text baseline
+**Success Criteria**: 4-8× compression at F1 ≥ 50%
 
 ---
 
 ### Phase 4: Cross-Model Validation (Weeks 9-10)
 
-1. **Enable Qwen2.5-7B as second target**
-   - Train shared encoder → dual adapters (Llama + Qwen)
-   - Validate cross-model compression without retokenization
+**Action 10: Enable Qwen2.5-7B**
+- Shared encoder → dual adapters
+- Validate cross-model compression
 
-2. **Heterogeneous ensemble**
-   - Joint rescoring: Pick best answer from Llama/Qwen predictions
-   - Expected improvement: 5-10% over single model
-
-3. **Alternative datasets**
-   - SQuAD → HotpotQA (multi-hop reasoning)
-   - Validate approach generalizes beyond single-hop QA
+**Action 11: Heterogeneous Ensemble**
+- Joint rescoring: Best answer from Llama/Qwen
+- Expected: +5-10% over single model
 
 ---
 
 ## 7. Risk Mitigation
 
-### 7.1 Technical Risks
-
 | Risk | Probability | Mitigation |
 |------|-------------|------------|
-| **Reconstruction doesn't fix collapse** | Medium | Fall back to VQ-VAE discrete bottleneck (proven to prevent collapse) |
-| **Multi-depth adapters OOM** | Low | Use gradient checkpointing, reduce batch size, or limit to 2-3 depths |
-| **Quantization degrades quality** | Medium | Incremental: fp16→int8→int6→int4, stop at first acceptable point |
-| **Cannot beat token-budget baseline** | Low | If true, pivot to different problem (e.g., compression for caching, not transmission) |
+| VQ-VAE doesn't fix collapse | Low | Already proven in VAE literature; if fails, use multi-depth adapters |
+| Multi-depth OOM | Medium | Gradient checkpointing, reduce batch size, limit to 2-3 depths |
+| Quantization degrades quality | Medium | Incremental: fp16→int8→int6→int4, stop at acceptable point |
+| Cannot beat token-budget | Low | If true after Phase 1-2, pivot to different problem (e.g., caching) |
 
-### 7.2 Timeline Risks
+**Timeline**: 8-10 weeks conservative, 6-8 weeks aggressive
 
-**Conservative Estimate**: 8-10 weeks to Phase 3 completion
-**Aggressive Estimate**: 6-8 weeks if Phase 1 succeeds quickly
-
-**Contingency**: If Phase 1 fails after 3 weeks (F1 still <6%), implement VQ-VAE discrete bottleneck immediately instead of continuing with continuous latents.
+**Contingency**: If Phase 1 fails after 3 weeks (F1 <6%), immediately implement VQ-VAE.
 
 ---
 
 ## 8. Conclusion
 
-Over the past 2 months, we've conducted systematic experimentation across 5 major hypotheses, testing 15+ architectural variants and 10+ training configurations. Key achievements:
+**Summary**: Over 2 months, conducted 50+ experiments across 5 hypotheses, testing 10+ architectural variants and multiple training configurations.
 
-1. ✅ **Validated foundation**: Continuous embedding interface works (82% F1 exceeds text baseline)
-2. ✅ **Established baselines**: Text (80%), token-budget (4-6%), PCA (1.77%)
-3. ✅ **Diagnosed failure modes**: Mode collapse (cosine 0.999), exposure bias (85% train-eval gap), magnitude mismatch (115×)
-4. ✅ **Disproved hypotheses**: Mean pooling bottleneck, RMS scaling, loss weight tuning
+**Achievements**:
+1. ✅ Validated embedding interface (82% F1)
+2. ✅ Established baselines (text 80%, token-budget 4-6%, Phase 1a 24%)
+3. ✅ Diagnosed failure modes (positional information loss, objective conflicts, mode collapse)
+4. ✅ Disproved hypotheses (mean pooling, RMS scaling, loss weights)
 
-Current state: Learned compression at 0-3% F1 (worse than truncation). But we have a **clear path forward**:
+**Current State**:
+- Best result: 24% F1 (answer present, wrong format)
+- Learned compression: 0-3% F1 (worse than truncation)
+- Clear understanding of what failed and why
 
-**Phase 1** (2 weeks): Reconstruction + diversity regularization → match 6% baseline
-**Phase 2** (3 weeks): Multi-depth adapters + VQ-VAE → achieve 40% F1
-**Phase 3** (2 weeks): Quantization + dimension reduction → 4-8× compression
+**Path Forward**:
+- **Phase 1** (2 weeks): VQ-VAE + diversity → 6% F1
+- **Phase 2** (3 weeks): Multi-depth + scheduled sampling → 24-40% F1
+- **Phase 3** (2 weeks): Quantization + dimension tuning → 4-8× compression
 
-The research is **not blocked** - we have concrete next steps grounded in both our experimental findings and established literature. The challenge has shifted from "Does this work fundamentally?" (yes, 82% F1 proves it) to "How do we learn effective compression?" (reconstruction, diversity, multi-depth injection).
-
-**Recommendation**: Proceed with Phase 1 immediately. If successful (F1 ≥ 6% in 2 weeks), continue to Phase 2. If unsuccessful, pivot to VQ-VAE discrete bottleneck as fallback.
+**Recommendation**: Proceed with Phase 1 immediately. Clear action items grounded in systematic experimentation and literature. Not blocked - have concrete path forward.
 
 ---
 
 ## Appendix: Metrics Glossary
 
-**F1 Score**: Harmonic mean of precision and recall for answer text overlap (0-100%, higher is better)
-**EM (Exact Match)**: Percentage of predictions that exactly match gold answer (0-100%)
-**NLL (Negative Log-Likelihood)**: Average cross-entropy loss per token (lower is better, ~2-5 is good, >10 is poor)
-**FirstTok@1**: Percentage of examples where first generated token matches gold (0-100%)
-**Diversity**: Percentage of unique predictions in a batch (0-100%, should be >60%)
-**Compression**: Input size / Output size (higher is better, target: 4-8×)
+**F1 Score**: Harmonic mean of precision/recall for answer overlap (0-100%)
+**EM (Exact Match)**: % predictions exactly matching gold answer (0-100%)
+**NLL**: Negative log-likelihood per token (lower better, ~2-5 good, >10 poor)
+**FirstTok@1**: % first generated token matches gold (0-100%)
+**Diversity**: % unique predictions in batch (0-100%, should be >60%)
+**Compression**: Input size / output size (higher better, target: 4-8×)
 
-**Cosine Similarity**: Dot product of unit vectors (-1 to 1, where 1 = identical direction, 0 = orthogonal)
-**PCA Explained Variance**: Fraction of variance captured by principal components (0-100%, higher is better)
+**Cosine Similarity**: Dot product of unit vectors (-1 to 1, where 1=identical)
+**PCA Explained Variance**: Fraction of variance captured (0-100%, higher better)
+**LoRA**: Low-Rank Adaptation - small trainable adapters for frozen models
+**KV Cache**: Key/value matrices stored in transformer for efficiency
 
 ---
 
