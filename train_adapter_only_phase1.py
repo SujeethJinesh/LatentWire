@@ -469,8 +469,12 @@ def main():
     parser.add_argument('--compress_dim', type=int, default=1024, help='PCA output dimension')
     parser.add_argument('--compress_method', type=str, default='pca', choices=['pca'])
     parser.add_argument('--pca_samples', type=int, default=5000, help='Samples for PCA fitting')
-    parser.add_argument('--pca_batch_size', type=int, default=128, help='Batch size (in examples) when extracting embeddings for PCA')
+    parser.add_argument('--pca_batch_size', type=int, default=256, help='Batch size (in examples) when extracting embeddings for PCA')
     parser.add_argument('--pca_token_cap', type=int, default=None, help='Optional cap on total tokens used for PCA (useful to bound memory/cost)')
+    parser.add_argument('--pca_tokens_per_example', type=int, default=64,
+                        help='Maximum tokens sampled per example when fitting PCA (None to use all).')
+    parser.add_argument('--pca_flush_tokens', type=int, default=8192,
+                        help='Number of tokens per partial PCA update (IncrementalPCA).')
 
     # Adapter
     parser.add_argument('--adapter_hidden_mult', type=int, default=4)
@@ -593,7 +597,11 @@ def main():
     print(f"Loaded {len(train_examples)} train, {len(eval_examples)} eval\n")
 
     # Fit PCA
-    print(f"Fitting PCA on {args.pca_samples} examples...")
+    print("Fitting PCA on {} examples (batch={}, tokens/example={})...".format(
+        args.pca_samples,
+        args.pca_batch_size,
+        tokens_per_example if tokens_per_example is not None else "all"
+    ))
     d_model = model.config.hidden_size
 
     compressor = EmbeddingCompressor(
@@ -613,9 +621,14 @@ def main():
     partial_fit_calls = 0
     token_cap = args.pca_token_cap
 
+    tokens_per_example = args.pca_tokens_per_example
+    if tokens_per_example is not None and tokens_per_example <= 0:
+        tokens_per_example = None
+    flush_threshold = max(args.pca_flush_tokens, args.compress_dim)
+
     def flush_residual(force: bool = False):
         nonlocal residual_chunks, residual_token_count, partial_fit_calls
-        if residual_token_count >= args.compress_dim or (force and residual_token_count > 0):
+        if residual_token_count >= flush_threshold or (force and residual_token_count > 0):
             stacked = torch.cat(residual_chunks, dim=0)  # [num_tokens, d_model]
             if stacked.shape[0] >= args.compress_dim:
                 ipca.partial_fit(stacked.cpu().numpy())
@@ -651,7 +664,12 @@ def main():
                 seq_len = token_cap - total_tokens
             if seq_len <= 0:
                 break
-            chunk_list.append(embeddings[j, :seq_len].cpu().float())
+            token_slice = embeddings[j, :seq_len]
+            if tokens_per_example is not None and seq_len > tokens_per_example:
+                idx = torch.randperm(seq_len, device=token_slice.device)[:tokens_per_example]
+                token_slice = token_slice[idx]
+                seq_len = token_slice.shape[0]
+            chunk_list.append(token_slice.cpu().float())
             total_tokens += seq_len
         if chunk_list:
             chunk_tensor = torch.cat(chunk_list, dim=0)  # [tokens_in_batch, d_model]
