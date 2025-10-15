@@ -33,6 +33,7 @@ import time
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any, List
+import warnings
 
 import torch
 import torch.nn as nn
@@ -58,9 +59,21 @@ class EmbeddingCompressor:
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.method = method
-        self.projection = None
-        self.mean = None
-        self.explained_variance_ratio = None
+        self.projection: Optional[torch.Tensor] = None
+        self.mean: Optional[torch.Tensor] = None
+        self.explained_variance_ratio: Optional[float] = None
+
+    def initialize_from_pca(
+        self,
+        *,
+        components: np.ndarray,
+        mean: np.ndarray,
+        explained_variance_ratio: np.ndarray,
+    ) -> None:
+        """Populate internal state from fitted PCA/IncrementalPCA outputs."""
+        self.projection = torch.from_numpy(components.T).float()
+        self.mean = torch.from_numpy(mean).float()
+        self.explained_variance_ratio = float(explained_variance_ratio.sum())
 
     def fit(self, embeddings: torch.Tensor):
         """Fit PCA on embeddings.
@@ -79,10 +92,11 @@ class EmbeddingCompressor:
         pca = PCA(n_components=self.output_dim)
         pca.fit(embeddings_np)
 
-        # Store projection matrix and mean
-        self.projection = torch.from_numpy(pca.components_.T).float()  # [input_dim, output_dim]
-        self.mean = torch.from_numpy(pca.mean_).float()  # [input_dim]
-        self.explained_variance_ratio = float(np.sum(pca.explained_variance_ratio_))
+        self.initialize_from_pca(
+            components=pca.components_,
+            mean=pca.mean_,
+            explained_variance_ratio=pca.explained_variance_ratio_,
+        )
 
     def compress(self, embeddings: torch.Tensor) -> torch.Tensor:
         """Compress embeddings using fitted PCA.
@@ -263,6 +277,11 @@ def train_epoch(
     epoch: int,
     global_step: int,
     diagnostic_log: str,
+    *,
+    model: Optional[nn.Module],
+    model_device: Optional[torch.device],
+    model_dtype: Optional[torch.dtype],
+    gen_loss_weight: float,
     cosine_weight: float = 1.0,
     mse_weight: float = 0.1,
 ) -> int:
@@ -304,6 +323,25 @@ def train_epoch(
         # Combined loss
         loss = cosine_weight * cosine_loss + mse_weight * mse
 
+        gen_loss_val = 0.0
+        if gen_loss_weight > 0.0:
+            assert model is not None and model_device is not None and model_dtype is not None, \
+                "Model context required when gen_loss_weight > 0"
+
+            labels = batch['input_ids'].to(model_device).clone()
+            mask_model = batch['mask'].to(model_device)
+            labels[mask_model == 0] = -100
+
+            reconstructed_for_model = reconstructed.to(model_device, dtype=model_dtype)
+            model_outputs = model(
+                inputs_embeds=reconstructed_for_model,
+                labels=labels,
+            )
+            gen_loss = model_outputs.loss
+            gen_loss_val = gen_loss.item()
+
+            loss = loss + gen_loss_weight * gen_loss
+
         # Backward pass
         optimizer.zero_grad()
         loss.backward()
@@ -322,6 +360,7 @@ def train_epoch(
             'loss': f'{loss.item():.4f}',
             'cos': f'{cos_sim_mean.item():.3f}',
             'mse': f'{mse.item():.4f}',
+            'gen': f'{gen_loss_val:.4f}' if gen_loss_weight > 0 else 'n/a',
         })
 
         # Log every 50 steps
@@ -332,6 +371,7 @@ def train_epoch(
                 'cosine_loss': cosine_loss.item(),
                 'mse': mse.item(),
                 'cosine_sim': cos_sim_mean.item(),
+                'gen_loss': gen_loss_val if gen_loss_weight > 0 else None,
             })
 
     # Log epoch summary
@@ -341,6 +381,7 @@ def train_epoch(
         'avg_loss': total_loss / num_batches,
         'avg_cosine_sim': total_cosine_sim / num_batches,
         'avg_mse': total_mse / num_batches,
+        'gen_loss_weight': gen_loss_weight,
     })
 
     return global_step
@@ -353,7 +394,6 @@ def evaluate(
     model: nn.Module,
     tokenizer,
     dataset: List[Dict],
-    device: torch.device,
     max_new_tokens: int = 12,
     batch_size: int = 8,
 ) -> Dict[str, float]:
@@ -365,6 +405,8 @@ def evaluate(
     references = []
 
     embed_device = model.get_input_embeddings().weight.device
+    adapter_device = next(adapter.parameters()).device
+    model_dtype = model.get_input_embeddings().weight.dtype
 
     print(f"\nEvaluating on {len(dataset)} examples...")
 
@@ -388,9 +430,9 @@ def evaluate(
 
         # Compress and reconstruct
         compressed = compressor.compress(text_embeds)  # [batch, seq, compress_dim]
-        compressed = compressed.to(device)
+        compressed = compressed.to(adapter_device)
         reconstructed = adapter(compressed)  # [batch, seq, d_model]
-        reconstructed = reconstructed.to(embed_device)
+        reconstructed = reconstructed.to(embed_device, dtype=model_dtype)
 
         # Generate
         outputs = model.generate(
@@ -427,6 +469,8 @@ def main():
     parser.add_argument('--compress_dim', type=int, default=1024, help='PCA output dimension')
     parser.add_argument('--compress_method', type=str, default='pca', choices=['pca'])
     parser.add_argument('--pca_samples', type=int, default=5000, help='Samples for PCA fitting')
+    parser.add_argument('--pca_batch_size', type=int, default=128, help='Batch size (in examples) when extracting embeddings for PCA')
+    parser.add_argument('--pca_token_cap', type=int, default=None, help='Optional cap on total tokens used for PCA (useful to bound memory/cost)')
 
     # Adapter
     parser.add_argument('--adapter_hidden_mult', type=int, default=4)
@@ -449,12 +493,14 @@ def main():
     parser.add_argument('--eval_samples', type=int, default=100)
     parser.add_argument('--max_new_tokens', type=int, default=12)
 
-    # LoRA support (for future Phase 1a + LoRA experiments)
-    parser.add_argument('--use_lora', action='store_true', help='Apply LoRA to LLM')
+    # Optional generation/LoRA enhancement
+    parser.add_argument('--gen_loss_weight', type=float, default=0.0,
+                        help='Weight for teacher-forced generation loss (enables gradients through LLM).')
+    parser.add_argument('--use_lora', action='store_true', help='Apply LoRA adapters to the LLM (requires gen_loss_weight > 0).')
     parser.add_argument('--lora_r', type=int, default=8)
     parser.add_argument('--lora_alpha', type=int, default=16)
     parser.add_argument('--lora_dropout', type=float, default=0.05)
-    parser.add_argument('--lora_layers', type=int, default=None, help='Apply LoRA to first N layers')
+    parser.add_argument('--lora_layers', type=int, default=None, help='Apply LoRA to first N layers (default all).')
 
     # I/O
     parser.add_argument('--save_dir', type=str, default='./runs/phase1')
@@ -474,10 +520,7 @@ def main():
     if args.diagnostic_log:
         Path(args.diagnostic_log).parent.mkdir(parents=True, exist_ok=True)
 
-    # Device
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Device: {device}")
-    print(f"GPUs: {torch.cuda.device_count()}\n")
+    print(f"GPUs available: {torch.cuda.device_count()}\n")
 
     # Load model
     print(f"Loading {args.model_id}...")
@@ -487,23 +530,22 @@ def main():
         device_map='auto' if torch.cuda.device_count() > 1 else None,
     )
     if torch.cuda.device_count() <= 1:
-        model = model.to(device)
-    model.eval()  # Frozen
+        model = model.to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    embed_device = model.get_input_embeddings().weight.device
+    model_dtype = model.get_input_embeddings().weight.dtype
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.padding_side = 'left'
+    if args.gen_loss_weight > 0 and not args.use_lora:
+        warnings.warn(
+            "Generation loss enabled without LoRA: only the adapter will be updated via generation gradients.",
+            RuntimeWarning,
+        )
+    if args.use_lora and args.gen_loss_weight <= 0:
+        raise ValueError("LoRA requires --gen_loss_weight > 0 to supply gradients through the LLM.")
 
-    print(f"Model loaded!\n")
-
-    # Apply LoRA if requested
     if args.use_lora:
         from peft import LoraConfig, get_peft_model
         print(f"Applying LoRA: r={args.lora_r}, alpha={args.lora_alpha}")
-
         target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
-
         lora_config = LoraConfig(
             r=args.lora_r,
             lora_alpha=args.lora_alpha,
@@ -513,10 +555,24 @@ def main():
             task_type="CAUSAL_LM",
             layers_to_transform=list(range(args.lora_layers)) if args.lora_layers else None,
         )
-
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
         print()
+        # Refresh embedding device/dtype in case PEFT wrapping moved tensors
+        embed_device = model.get_input_embeddings().weight.device
+        model_dtype = model.get_input_embeddings().weight.dtype
+
+    if args.gen_loss_weight > 0 or args.use_lora:
+        model.train()
+    else:
+        model.eval()
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = 'left'
+
+    print(f"Model loaded!\n")
 
     # Load data
     print(f"Loading {args.samples} training examples from {args.dataset}...")
@@ -550,11 +606,27 @@ def main():
     pca_examples = train_examples[:args.pca_samples]
     embed_device = model.get_input_embeddings().weight.device
 
-    all_embeddings = []
-    pca_batch_size = 128
+    ipca = IncrementalPCA(n_components=args.compress_dim)
+    residual_chunks: List[torch.Tensor] = []
+    residual_token_count = 0
+    total_tokens = 0
+    partial_fit_calls = 0
+    token_cap = args.pca_token_cap
 
-    for i in tqdm(range(0, len(pca_examples), pca_batch_size), desc="Extracting embeddings for PCA"):
-        batch = pca_examples[i:i+pca_batch_size]
+    def flush_residual(force: bool = False):
+        nonlocal residual_chunks, residual_token_count, partial_fit_calls
+        if residual_token_count >= args.compress_dim or (force and residual_token_count > 0):
+            stacked = torch.cat(residual_chunks, dim=0)  # [num_tokens, d_model]
+            if stacked.shape[0] >= args.compress_dim:
+                ipca.partial_fit(stacked.cpu().numpy())
+                partial_fit_calls += 1
+            residual_chunks = []
+            residual_token_count = 0
+
+    for i in tqdm(range(0, len(pca_examples), args.pca_batch_size), desc="Extracting embeddings for PCA"):
+        batch = pca_examples[i:i+args.pca_batch_size]
+        if not batch:
+            break
         sources = [ex['source'] for ex in batch]
 
         encoded = tokenizer(
@@ -570,15 +642,39 @@ def main():
         with torch.no_grad():
             embeddings = model.get_input_embeddings()(input_ids)  # [batch, seq, d_model]
 
-            # Flatten and exclude padding
-            for j in range(embeddings.shape[0]):
-                seq_len = (input_ids[j] != tokenizer.pad_token_id).sum().item()
-                all_embeddings.append(embeddings[j, :seq_len].cpu())
+        chunk_list: List[torch.Tensor] = []
+        for j in range(embeddings.shape[0]):
+            seq_len = (input_ids[j] != tokenizer.pad_token_id).sum().item()
+            if token_cap is not None and total_tokens >= token_cap:
+                break
+            if token_cap is not None and total_tokens + seq_len > token_cap:
+                seq_len = token_cap - total_tokens
+            if seq_len <= 0:
+                break
+            chunk_list.append(embeddings[j, :seq_len].cpu().float())
+            total_tokens += seq_len
+        if chunk_list:
+            chunk_tensor = torch.cat(chunk_list, dim=0)  # [tokens_in_batch, d_model]
+            residual_chunks.append(chunk_tensor)
+            residual_token_count += chunk_tensor.shape[0]
+            flush_residual()
+        if token_cap is not None and total_tokens >= token_cap:
+            break
 
-    # Concatenate and fit PCA
-    all_embeddings_tensor = torch.cat(all_embeddings, dim=0)  # [total_tokens, d_model]
-    print(f"Fitting PCA on {all_embeddings_tensor.shape[0]} token embeddings...")
-    compressor.fit(all_embeddings_tensor)
+    flush_residual(force=True)
+
+    if partial_fit_calls == 0:
+        raise RuntimeError(
+            "Incremental PCA did not receive enough tokens. "
+            "Increase --pca_token_cap, --pca_samples, or --pca_batch_size."
+        )
+
+    compressor.initialize_from_pca(
+        components=ipca.components_,
+        mean=ipca.mean_,
+        explained_variance_ratio=ipca.explained_variance_ratio_,
+    )
+    print(f"Fitted IncrementalPCA with {total_tokens} tokens across {partial_fit_calls} partial fits.")
     print(f"PCA fitted: {d_model}D → {args.compress_dim}D")
     print(f"Explained variance: {compressor.explained_variance_ratio:.2%}\n")
 
@@ -592,7 +688,7 @@ def main():
         dropout=args.adapter_dropout,
         enable_metadata=False,
         colorize=False,
-    ).to(device)
+    ).to(embed_device)
 
     num_params = sum(p.numel() for p in adapter.parameters() if p.requires_grad)
     print(f"Adapter parameters: {num_params:,}\n")
@@ -601,7 +697,6 @@ def main():
     trainable_params = list(adapter.parameters())
     if args.use_lora:
         trainable_params += [p for p in model.parameters() if p.requires_grad]
-
     optimizer = torch.optim.AdamW(trainable_params, lr=args.adapter_lr)
 
     # Create dataset and dataloader
@@ -631,15 +726,20 @@ def main():
         print(f"{'='*80}\n")
 
         # Train
+        use_model_grad = args.gen_loss_weight > 0.0
         global_step = train_epoch(
             adapter=adapter,
             compressor=compressor,
             dataloader=train_dataloader,
             optimizer=optimizer,
-            device=device,
+            device=embed_device,
             epoch=epoch,
             global_step=global_step,
             diagnostic_log=args.diagnostic_log,
+            model=model if use_model_grad else None,
+            model_device=embed_device if use_model_grad else None,
+            model_dtype=model_dtype if use_model_grad else None,
+            gen_loss_weight=args.gen_loss_weight,
             cosine_weight=args.cosine_weight,
             mse_weight=args.mse_weight,
         )
@@ -653,7 +753,6 @@ def main():
                 model=model,
                 tokenizer=tokenizer,
                 dataset=eval_examples,
-                device=device,
                 max_new_tokens=args.max_new_tokens,
                 batch_size=8,
             )
@@ -700,6 +799,9 @@ def main():
                 ckpt_path = save_dir / 'adapter_phase1_best.pt'
                 torch.save(checkpoint, ckpt_path)
                 print(f"  → Saved best checkpoint: {ckpt_path}")
+
+            if args.gen_loss_weight > 0 or args.use_lora:
+                model.train()
 
     print("\n" + "="*80)
     print("TRAINING COMPLETE")
