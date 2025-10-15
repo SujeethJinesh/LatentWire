@@ -28,6 +28,7 @@ ADAPTER_LR="${ADAPTER_LR:-5e-4}"
 COSINE_WEIGHT="${COSINE_WEIGHT:-1.0}"
 MSE_WEIGHT="${MSE_WEIGHT:-0.1}"
 GEN_WEIGHT="${GEN_WEIGHT:-0.0}"          # 0.0 = strict Phase 1a; bump (e.g. 0.05) if LoRA needs gradients
+PCA_CACHE_PATH="${PCA_CACHE_PATH:-cache/phase1a_pca.pt}"
 
 echo "=================================================="
 echo "Phase 1a Cluster Run"
@@ -43,6 +44,7 @@ echo "=================================================="
 echo ""
 
 mkdir -p "$BASELINE_DIR" "$SWEEP_DIR"
+mkdir -p "$(dirname "$PCA_CACHE_PATH")"
 rm -f "$SUMMARY_FILE"
 
 ###############################################
@@ -68,6 +70,7 @@ BASE_CMD=(python train_adapter_only_phase1.py
     --mse_weight "$MSE_WEIGHT"
     --save_dir "$BASELINE_DIR"
     --diagnostic_log "$BASE_DIAG"
+    --pca_cache_path "$PCA_CACHE_PATH"
     --gen_loss_weight 0.0
 )
 
@@ -118,6 +121,7 @@ OUTPUT_ENV="OUTPUT_BASE=$SWEEP_DIR"
 
 (
   export GEN_WEIGHT_DEFAULT="$GEN_WEIGHT"
+  export PCA_CACHE_PATH="$PCA_CACHE_PATH"
   export OUTPUT_BASE="$SWEEP_DIR"
   export MODEL DATASET SAMPLES PCA_SAMPLES EPOCHS BATCH_SIZE MAX_LENGTH COMPRESS_DIM ADAPTER_LR COSINE_WEIGHT MSE_WEIGHT
   bash scripts/sweep_phase1a_lora.sh

@@ -16,6 +16,7 @@ BATCH_SIZE="${BATCH_SIZE:-32}"
 MAX_LENGTH="${MAX_LENGTH:-256}"
 MODEL="${MODEL:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 OUTPUT_DIR="${OUTPUT_DIR:-runs/phase1a_baseline}"
+PCA_CACHE_PATH="${PCA_CACHE_PATH:-cache/phase1a_pca.pt}"
 
 echo "==============================================="
 echo "Phase 1a Baseline (Pure Reconstruction)"
@@ -29,6 +30,7 @@ echo "Output dir:   $OUTPUT_DIR"
 echo ""
 
 mkdir -p "$OUTPUT_DIR"
+mkdir -p "$(dirname "$PCA_CACHE_PATH")"
 
 LOG_FILE="$OUTPUT_DIR/train_$(date +%Y%m%d_%H%M%S).log"
 DIAG_FILE="$OUTPUT_DIR/diagnostics.jsonl"
@@ -41,7 +43,8 @@ CMD="python train_adapter_only_phase1.py \
     --batch_size $BATCH_SIZE \
     --max_length $MAX_LENGTH \
     --save_dir \"$OUTPUT_DIR\" \
-    --diagnostic_log \"$DIAG_FILE\""
+    --diagnostic_log \"$DIAG_FILE\" \
+    --pca_cache_path \"$PCA_CACHE_PATH\""
 
 echo "Running:"
 echo "  $CMD"

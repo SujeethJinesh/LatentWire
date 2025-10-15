@@ -475,6 +475,8 @@ def main():
                         help='Maximum tokens sampled per example when fitting PCA (None to use all).')
     parser.add_argument('--pca_flush_tokens', type=int, default=8192,
                         help='Number of tokens per partial PCA update (IncrementalPCA).')
+    parser.add_argument('--pca_cache_path', type=str, default=None,
+                        help='Optional path to load/save PCA components (speeds up reruns).')
 
     # Adapter
     parser.add_argument('--adapter_hidden_mult', type=int, default=4)
@@ -614,88 +616,117 @@ def main():
         method=args.compress_method
     )
 
-    # Collect embeddings for PCA fitting (batched for GPU efficiency)
-    pca_examples = train_examples[:args.pca_samples]
+    pca_cache_path = Path(args.pca_cache_path) if args.pca_cache_path else None
+
     embed_device = model.get_input_embeddings().weight.device
 
-    ipca = IncrementalPCA(n_components=args.compress_dim)
-    residual_chunks: List[torch.Tensor] = []
-    residual_token_count = 0
-    total_tokens = 0
-    partial_fit_calls = 0
-    token_cap = args.pca_token_cap
-
-    flush_threshold = max(args.pca_flush_tokens, args.compress_dim)
-
-    def flush_residual(force: bool = False):
-        nonlocal residual_chunks, residual_token_count, partial_fit_calls
-        if residual_token_count >= flush_threshold or (force and residual_token_count > 0):
-            stacked = torch.cat(residual_chunks, dim=0)  # [num_tokens, d_model]
-            if stacked.shape[0] >= args.compress_dim:
-                ipca.partial_fit(stacked.cpu().numpy())
-                partial_fit_calls += 1
-            residual_chunks = []
-            residual_token_count = 0
-
-    for i in tqdm(range(0, len(pca_examples), args.pca_batch_size), desc="Extracting embeddings for PCA"):
-        batch = pca_examples[i:i+args.pca_batch_size]
-        if not batch:
-            break
-        sources = [ex['source'] for ex in batch]
-
-        encoded = tokenizer(
-            sources,
-            return_tensors='pt',
-            truncation=True,
-            max_length=args.max_length,
-            padding=True
+    if pca_cache_path and pca_cache_path.exists():
+        state = torch.load(pca_cache_path, map_location="cpu")
+        compressor.initialize_from_pca(
+            components=state["components"],
+            mean=state["mean"],
+            explained_variance_ratio=state["explained_variance_ratio"],
         )
+        print(f"Loaded PCA cache from {pca_cache_path}. Explained variance: {compressor.explained_variance_ratio:.2%}\n")
+    else:
+        # Collect embeddings for PCA fitting (batched for GPU efficiency)
+        pca_examples = train_examples[:args.pca_samples]
 
-        input_ids = encoded['input_ids'].to(embed_device)
+        ipca = IncrementalPCA(n_components=args.compress_dim)
+        residual_chunks: List[torch.Tensor] = []
+        residual_token_count = 0
+        total_tokens = 0
+        partial_fit_calls = 0
+        token_cap = args.pca_token_cap
+        flush_threshold = max(args.pca_flush_tokens, args.compress_dim)
 
-        with torch.no_grad():
-            embeddings = model.get_input_embeddings()(input_ids)  # [batch, seq, d_model]
+        def flush_residual(force: bool = False):
+            nonlocal residual_chunks, residual_token_count, partial_fit_calls
+            if residual_token_count >= flush_threshold or (force and residual_token_count > 0):
+                stacked = torch.cat(residual_chunks, dim=0)  # [num_tokens, d_model]
+                if stacked.shape[0] >= args.compress_dim:
+                    ipca.partial_fit(stacked.cpu().numpy())
+                    partial_fit_calls += 1
+                residual_chunks = []
+                residual_token_count = 0
 
-        chunk_list: List[torch.Tensor] = []
-        for j in range(embeddings.shape[0]):
-            seq_len = (input_ids[j] != tokenizer.pad_token_id).sum().item()
+        for i in tqdm(range(0, len(pca_examples), args.pca_batch_size), desc="Extracting embeddings for PCA"):
+            batch = pca_examples[i:i+args.pca_batch_size]
+            if not batch:
+                break
+            sources = [ex['source'] for ex in batch]
+
+            encoded = tokenizer(
+                sources,
+                return_tensors='pt',
+                truncation=True,
+                max_length=args.max_length,
+                padding=True
+            )
+
+            input_ids = encoded['input_ids'].to(embed_device)
+
+            with torch.no_grad():
+                embeddings = model.get_input_embeddings()(input_ids)  # [batch, seq, d_model]
+
+            chunk_list: List[torch.Tensor] = []
+            for j in range(embeddings.shape[0]):
+                seq_len = (input_ids[j] != tokenizer.pad_token_id).sum().item()
+                if token_cap is not None and total_tokens >= token_cap:
+                    break
+                if token_cap is not None and total_tokens + seq_len > token_cap:
+                    seq_len = token_cap - total_tokens
+                if seq_len <= 0:
+                    break
+                token_slice = embeddings[j, :seq_len]
+                if tokens_per_example is not None and seq_len > tokens_per_example:
+                    idx = torch.randperm(seq_len, device=token_slice.device)[:tokens_per_example]
+                    token_slice = token_slice[idx]
+                    seq_len = token_slice.shape[0]
+                chunk_list.append(token_slice.cpu().float())
+                total_tokens += seq_len
+            if chunk_list:
+                chunk_tensor = torch.cat(chunk_list, dim=0)  # [tokens_in_batch, d_model]
+                residual_chunks.append(chunk_tensor)
+                residual_token_count += chunk_tensor.shape[0]
+                flush_residual()
             if token_cap is not None and total_tokens >= token_cap:
                 break
-            if token_cap is not None and total_tokens + seq_len > token_cap:
-                seq_len = token_cap - total_tokens
-            if seq_len <= 0:
-                break
-            token_slice = embeddings[j, :seq_len]
-            if tokens_per_example is not None and seq_len > tokens_per_example:
-                idx = torch.randperm(seq_len, device=token_slice.device)[:tokens_per_example]
-                token_slice = token_slice[idx]
-                seq_len = token_slice.shape[0]
-            chunk_list.append(token_slice.cpu().float())
-            total_tokens += seq_len
-        if chunk_list:
-            chunk_tensor = torch.cat(chunk_list, dim=0)  # [tokens_in_batch, d_model]
-            residual_chunks.append(chunk_tensor)
-            residual_token_count += chunk_tensor.shape[0]
-            flush_residual()
-        if token_cap is not None and total_tokens >= token_cap:
-            break
 
-    flush_residual(force=True)
+        flush_residual(force=True)
 
-    if partial_fit_calls == 0:
-        raise RuntimeError(
-            "Incremental PCA did not receive enough tokens. "
-            "Increase --pca_token_cap, --pca_samples, or --pca_batch_size."
+        if partial_fit_calls == 0:
+            raise RuntimeError(
+                "Incremental PCA did not receive enough tokens. "
+                "Increase --pca_token_cap, --pca_samples, or --pca_batch_size."
+            )
+
+        compressor.initialize_from_pca(
+            components=ipca.components_,
+            mean=ipca.mean_,
+            explained_variance_ratio=ipca.explained_variance_ratio_,
         )
+        print(f"Fitted IncrementalPCA with {total_tokens} tokens across {partial_fit_calls} partial fits.")
+        print(f"PCA fitted: {d_model}D → {args.compress_dim}D")
+        print(f"Explained variance: {compressor.explained_variance_ratio:.2%}\n")
 
-    compressor.initialize_from_pca(
-        components=ipca.components_,
-        mean=ipca.mean_,
-        explained_variance_ratio=ipca.explained_variance_ratio_,
-    )
-    print(f"Fitted IncrementalPCA with {total_tokens} tokens across {partial_fit_calls} partial fits.")
-    print(f"PCA fitted: {d_model}D → {args.compress_dim}D")
-    print(f"Explained variance: {compressor.explained_variance_ratio:.2%}\n")
+        if pca_cache_path:
+            pca_cache_path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(
+                {
+                    "components": ipca.components_,
+                    "mean": ipca.mean_,
+                    "explained_variance_ratio": ipca.explained_variance_ratio_,
+                    "meta": {
+                        "tokens_per_example": tokens_per_example,
+                        "flush_tokens": args.pca_flush_tokens,
+                        "total_tokens": total_tokens,
+                        "partial_fit_calls": partial_fit_calls,
+                    },
+                },
+                pca_cache_path,
+            )
+            print(f"Saved PCA cache to {pca_cache_path}\n")
 
     # Create adapter
     print(f"Creating adapter: {args.compress_dim}D → {d_model}D")

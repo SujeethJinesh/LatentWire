@@ -18,9 +18,11 @@ MSE_WEIGHT="${MSE_WEIGHT:-0.1}"
 ADAPTER_LR="${ADAPTER_LR:-5e-4}"
 COMPRESS_DIM="${COMPRESS_DIM:-1024}"
 GEN_WEIGHT_DEFAULT="${GEN_WEIGHT_DEFAULT:-0.05}"
+PCA_CACHE_PATH="${PCA_CACHE_PATH:-cache/phase1a_pca.pt}"
 
 OUTPUT_BASE="${OUTPUT_BASE:-runs/phase1a_lora_sweep}"
 mkdir -p "$OUTPUT_BASE"
+mkdir -p "$(dirname "$PCA_CACHE_PATH")"
 SUMMARY_FILE="$OUTPUT_BASE/sweep_summary.txt"
 
 # name:rank:alpha:layers:gen_loss_weight
@@ -94,6 +96,7 @@ for cfg in "${CONFIGS[@]}"; do
         --mse_weight "$MSE_WEIGHT"
         --save_dir "$RUN_DIR"
         --diagnostic_log "$DIAG_FILE"
+        --pca_cache_path "$PCA_CACHE_PATH"
         --gen_loss_weight "$GEN_WEIGHT"
   )
 
