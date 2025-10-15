@@ -597,6 +597,10 @@ def main():
     print(f"Loaded {len(train_examples)} train, {len(eval_examples)} eval\n")
 
     # Fit PCA
+    tokens_per_example = args.pca_tokens_per_example
+    if tokens_per_example is not None and tokens_per_example <= 0:
+        tokens_per_example = None
+
     print("Fitting PCA on {} examples (batch={}, tokens/example={})...".format(
         args.pca_samples,
         args.pca_batch_size,
@@ -621,9 +625,6 @@ def main():
     partial_fit_calls = 0
     token_cap = args.pca_token_cap
 
-    tokens_per_example = args.pca_tokens_per_example
-    if tokens_per_example is not None and tokens_per_example <= 0:
-        tokens_per_example = None
     flush_threshold = max(args.pca_flush_tokens, args.compress_dim)
 
     def flush_residual(force: bool = False):
