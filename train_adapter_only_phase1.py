@@ -621,14 +621,22 @@ def main():
     embed_device = model.get_input_embeddings().weight.device
 
     if pca_cache_path and pca_cache_path.exists():
-        state = torch.load(pca_cache_path, map_location="cpu")
-        compressor.initialize_from_pca(
-            components=state["components"],
-            mean=state["mean"],
-            explained_variance_ratio=state["explained_variance_ratio"],
-        )
-        print(f"Loaded PCA cache from {pca_cache_path}. Explained variance: {compressor.explained_variance_ratio:.2%}\n")
+        try:
+            state = torch.load(pca_cache_path, map_location="cpu")
+            compressor.initialize_from_pca(
+                components=state["components"],
+                mean=state["mean"],
+                explained_variance_ratio=state["explained_variance_ratio"],
+            )
+            print(f"Loaded PCA cache from {pca_cache_path}. Explained variance: {compressor.explained_variance_ratio:.2%}\n")
+            cache_loaded = True
+        except Exception as exc:
+            print(f"[WARN] Failed to load PCA cache {pca_cache_path}: {exc}. Recomputing.")
+            pca_cache_path.unlink(missing_ok=True)
+            cache_loaded = False
     else:
+        cache_loaded = False
+    if not cache_loaded:
         # Collect embeddings for PCA fitting (batched for GPU efficiency)
         pca_examples = train_examples[:args.pca_samples]
 
