@@ -750,7 +750,7 @@ def main():
         dropout=args.adapter_dropout,
         enable_metadata=False,
         colorize=False,
-    ).to(device=embed_device, dtype=model_dtype)
+    ).to(embed_device)
 
     num_params = sum(p.numel() for p in adapter.parameters() if p.requires_grad)
     print(f"Adapter parameters: {num_params:,}\n")
