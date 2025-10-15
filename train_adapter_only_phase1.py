@@ -469,7 +469,7 @@ def main():
     parser.add_argument('--compress_dim', type=int, default=1024, help='PCA output dimension')
     parser.add_argument('--compress_method', type=str, default='pca', choices=['pca'])
     parser.add_argument('--pca_samples', type=int, default=5000, help='Samples for PCA fitting')
-    parser.add_argument('--pca_batch_size', type=int, default=256, help='Batch size (in examples) when extracting embeddings for PCA')
+    parser.add_argument('--pca_batch_size', type=int, default=512, help='Batch size (in examples) when extracting embeddings for PCA')
     parser.add_argument('--pca_token_cap', type=int, default=None, help='Optional cap on total tokens used for PCA (useful to bound memory/cost)')
     parser.add_argument('--pca_tokens_per_example', type=int, default=64,
                         help='Maximum tokens sampled per example when fitting PCA (None to use all).')

@@ -21,7 +21,9 @@ DATASET="${DATASET:-squad}"
 SAMPLES="${SAMPLES:-10000}"
 PCA_SAMPLES="${PCA_SAMPLES:-5000}"
 EPOCHS="${EPOCHS:-3}"
-BATCH_SIZE="${BATCH_SIZE:-32}"
+BASE_BATCH_SIZE="${BASE_BATCH_SIZE:-48}"
+LORA_BATCH_SIZE="${LORA_BATCH_SIZE:-36}"
+BATCH_SIZE="$BASE_BATCH_SIZE"
 MAX_LENGTH="${MAX_LENGTH:-256}"
 COMPRESS_DIM="${COMPRESS_DIM:-1024}"
 ADAPTER_LR="${ADAPTER_LR:-5e-4}"
@@ -29,6 +31,7 @@ COSINE_WEIGHT="${COSINE_WEIGHT:-1.0}"
 MSE_WEIGHT="${MSE_WEIGHT:-0.1}"
 GEN_WEIGHT="${GEN_WEIGHT:-0.0}"          # 0.0 = strict Phase 1a; bump (e.g. 0.05) if LoRA needs gradients
 PCA_CACHE_PATH="${PCA_CACHE_PATH:-cache/phase1a_pca.pt}"
+PCA_BATCH_SIZE="${PCA_BATCH_SIZE:-512}"
 
 echo "=================================================="
 echo "Phase 1a Cluster Run"
@@ -36,7 +39,8 @@ echo "Model:        $MODEL"
 echo "Dataset:      $DATASET"
 echo "Samples:      $SAMPLES  (PCA: $PCA_SAMPLES)"
 echo "Epochs:       $EPOCHS"
-echo "Batch size:   $BATCH_SIZE"
+echo "Batch size (baseline): $BASE_BATCH_SIZE"
+echo "Batch size (LoRA):     $LORA_BATCH_SIZE"
 echo "Compression:  4096 -> $COMPRESS_DIM"
 echo "Gen loss wt:  $GEN_WEIGHT"
 echo "Root dir:     $ROOT_DIR"
@@ -71,6 +75,7 @@ BASE_CMD=(python train_adapter_only_phase1.py
     --save_dir "$BASELINE_DIR"
     --diagnostic_log "$BASE_DIAG"
     --pca_cache_path "$PCA_CACHE_PATH"
+    --pca_batch_size "$PCA_BATCH_SIZE"
     --gen_loss_weight 0.0
 )
 
@@ -122,8 +127,10 @@ OUTPUT_ENV="OUTPUT_BASE=$SWEEP_DIR"
 (
   export GEN_WEIGHT_DEFAULT="$GEN_WEIGHT"
   export PCA_CACHE_PATH="$PCA_CACHE_PATH"
+  export PCA_BATCH_SIZE="$PCA_BATCH_SIZE"
+  export BATCH_SIZE="$LORA_BATCH_SIZE"
   export OUTPUT_BASE="$SWEEP_DIR"
-  export MODEL DATASET SAMPLES PCA_SAMPLES EPOCHS BATCH_SIZE MAX_LENGTH COMPRESS_DIM ADAPTER_LR COSINE_WEIGHT MSE_WEIGHT
+  export MODEL DATASET SAMPLES PCA_SAMPLES EPOCHS MAX_LENGTH COMPRESS_DIM ADAPTER_LR COSINE_WEIGHT MSE_WEIGHT
   bash scripts/sweep_phase1a_lora.sh
 ) | tee "$SWEEP_DIR/sweep_$(date +%Y%m%d_%H%M%S).log"
 

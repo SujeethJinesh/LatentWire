@@ -12,11 +12,12 @@ export PYTHONUNBUFFERED=1
 SAMPLES="${SAMPLES:-10000}"
 PCA_SAMPLES="${PCA_SAMPLES:-5000}"
 EPOCHS="${EPOCHS:-3}"
-BATCH_SIZE="${BATCH_SIZE:-32}"
+BATCH_SIZE="${BATCH_SIZE:-48}"
 MAX_LENGTH="${MAX_LENGTH:-256}"
 MODEL="${MODEL:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 OUTPUT_DIR="${OUTPUT_DIR:-runs/phase1a_baseline}"
 PCA_CACHE_PATH="${PCA_CACHE_PATH:-cache/phase1a_pca.pt}"
+PCA_BATCH_SIZE="${PCA_BATCH_SIZE:-512}"
 
 echo "==============================================="
 echo "Phase 1a Baseline (Pure Reconstruction)"
@@ -42,6 +43,7 @@ CMD="python train_adapter_only_phase1.py \
     --epochs $EPOCHS \
     --batch_size $BATCH_SIZE \
     --max_length $MAX_LENGTH \
+    --pca_batch_size $PCA_BATCH_SIZE \
     --save_dir \"$OUTPUT_DIR\" \
     --diagnostic_log \"$DIAG_FILE\" \
     --pca_cache_path \"$PCA_CACHE_PATH\""
