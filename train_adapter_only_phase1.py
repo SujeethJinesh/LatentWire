@@ -274,6 +274,7 @@ def train_epoch(
     dataloader: DataLoader,
     optimizer: torch.optim.Optimizer,
     device: torch.device,
+    adapter_dtype: torch.dtype,
     epoch: int,
     global_step: int,
     diagnostic_log: str,
@@ -295,11 +296,12 @@ def train_epoch(
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}")
 
     for batch_idx, batch in enumerate(pbar):
-        embeddings = batch['embeddings'].to(device)  # [batch, seq, d_model]
+        embeddings = batch['embeddings'].to(device, dtype=adapter_dtype)  # [batch, seq, d_model]
         mask = batch['mask'].to(device)  # [batch, seq]
 
         # Compress embeddings
         compressed = compressor.compress(embeddings)  # [batch, seq, compress_dim]
+        compressed = compressed.to(device, dtype=adapter_dtype)
 
         # Reconstruct through adapter
         reconstructed = adapter(compressed)  # [batch, seq, d_model]
@@ -394,6 +396,8 @@ def evaluate(
     model: nn.Module,
     tokenizer,
     dataset: List[Dict],
+    *,
+    adapter_dtype: torch.dtype,
     max_new_tokens: int = 12,
     batch_size: int = 8,
 ) -> Dict[str, float]:
@@ -430,7 +434,7 @@ def evaluate(
 
         # Compress and reconstruct
         compressed = compressor.compress(text_embeds)  # [batch, seq, compress_dim]
-        compressed = compressed.to(adapter_device)
+        compressed = compressed.to(adapter_device, dtype=adapter_dtype)
         reconstructed = adapter(compressed)  # [batch, seq, d_model]
         reconstructed = reconstructed.to(embed_device, dtype=model_dtype)
 
@@ -746,7 +750,7 @@ def main():
         dropout=args.adapter_dropout,
         enable_metadata=False,
         colorize=False,
-    ).to(embed_device)
+    ).to(device=embed_device, dtype=model_dtype)
 
     num_params = sum(p.numel() for p in adapter.parameters() if p.requires_grad)
     print(f"Adapter parameters: {num_params:,}\n")
@@ -777,6 +781,7 @@ def main():
 
     best_f1 = 0.0
     global_step = 0
+    adapter_dtype = next(adapter.parameters()).dtype
 
     for epoch in range(args.epochs):
         print(f"\n{'='*80}")
@@ -791,6 +796,7 @@ def main():
             dataloader=train_dataloader,
             optimizer=optimizer,
             device=embed_device,
+            adapter_dtype=adapter_dtype,
             epoch=epoch,
             global_step=global_step,
             diagnostic_log=args.diagnostic_log,
@@ -811,6 +817,7 @@ def main():
                 model=model,
                 tokenizer=tokenizer,
                 dataset=eval_examples,
+                adapter_dtype=adapter_dtype,
                 max_new_tokens=args.max_new_tokens,
                 batch_size=8,
             )
