@@ -20,6 +20,7 @@ COMPRESS_DIM="${COMPRESS_DIM:-1024}"
 GEN_WEIGHT_DEFAULT="${GEN_WEIGHT_DEFAULT:-0.05}"
 PCA_CACHE_PATH="${PCA_CACHE_PATH:-cache/phase1a_pca.pt}"
 PCA_BATCH_SIZE="${PCA_BATCH_SIZE:-512}"
+MIN_GEN_WEIGHT="${MIN_GEN_WEIGHT:-0.02}"
 
 OUTPUT_BASE="${OUTPUT_BASE:-runs/phase1a_lora_sweep}"
 mkdir -p "$OUTPUT_BASE"
@@ -76,6 +77,20 @@ for cfg in "${CONFIGS[@]}"; do
   echo "  Layers:      $LAYERS"
   echo "  Gen weight:  $GEN_WEIGHT"
   echo ""
+
+  if [[ "$R" != "0" && $(python - <<'PY' "$GEN_WEIGHT"
+import sys
+try:
+    val = float(sys.argv[1])
+except ValueError:
+    val = 0.0
+import math
+print(val <= 0.0 or math.isclose(val, 0.0))
+PY
+) == "True" ]]; then
+    GEN_WEIGHT="$MIN_GEN_WEIGHT"
+    echo "  ⚠️  Raising gen_weight to $GEN_WEIGHT for LoRA training."
+  fi
 
   RUN_DIR="$OUTPUT_BASE/$NAME"
   mkdir -p "$RUN_DIR"
