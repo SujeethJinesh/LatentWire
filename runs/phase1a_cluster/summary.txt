@@ -1,6 +1,6 @@
 Baseline results:
-  Log:  runs/phase1a_cluster/baseline/train_20251014_212443.log
+  Log:  runs/phase1a_cluster/baseline/train_20251014_213420.log
   Diag: runs/phase1a_cluster/baseline/diagnostics.jsonl
-Best F1: 0.20%
+Best F1: 1.05%
 Best EM: 0.00%
 
