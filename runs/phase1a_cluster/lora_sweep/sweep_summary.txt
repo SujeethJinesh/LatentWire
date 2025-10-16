@@ -1,5 +1,5 @@
 Phase 1a + LoRA Sweep
-Started: Tue Oct 14 22:38:44 PDT 2025
+Started: Wed Oct 15 20:16:16 PDT 2025
 ================================================
 Model: meta-llama/Meta-Llama-3.1-8B-Instruct
 Dataset: squad
@@ -13,31 +13,6 @@ Loss: Cosine (1.0) + MSE (0.1)
 Configuration: baseline
   LoRA: r=0, alpha=0, layers=none
   gen_weight: 0.0
-  F1: 0.010540403874249364
+  F1: 0.01116666649855556
   EM: 0.0
-  Log: runs/phase1a_cluster/lora_sweep/baseline/train_20251014_223844.log
-
-Configuration: r4_a8_l8
-  LoRA: r=4, alpha=8, layers=8
-  gen_weight: 0.02
-  F1: 0.001999999952000001
-  EM: 0.0
-  Log: runs/phase1a_cluster/lora_sweep/r4_a8_l8/train_20251014_224157.log
-
-Configuration: r8_a16_l12
-  LoRA: r=8, alpha=16, layers=12
-  gen_weight: 0.02
-  F1: 0.002857142808163266
-  EM: 0.0
-  Log: runs/phase1a_cluster/lora_sweep/r8_a16_l12/train_20251014_225608.log
-
-Configuration: r16_a32_full
-  LoRA: r=16, alpha=32, layers=all
-  gen_weight: 0.02
-  F1: 0.0
-  EM: 0.0
-  Log: runs/phase1a_cluster/lora_sweep/r16_a32_full/train_20251014_231202.log
-baseline 0.010540403874249364 0.0
-r4_a8_l8 0.001999999952000001 0.0
-r8_a16_l12 0.002857142808163266 0.0
-r16_a32_full 0.0 0.0
+  Log: runs/phase1a_cluster/lora_sweep/baseline/train_20251015_201616.log
