@@ -2,6 +2,33 @@
 set -euo pipefail
 export PYTHONUNBUFFERED=1
 
+# Fix CUDA/MPS initialization issues on clusters
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}
+
+# Kill MPS daemon if it's causing issues
+echo quit | nvidia-cuda-mps-control 2>/dev/null || true
+
+# Verify CUDA is accessible
+if ! python3 -c "import torch; assert torch.cuda.is_available(), 'CUDA not available'; print(f'CUDA OK: {torch.cuda.device_count()} GPUs')" 2>/dev/null; then
+    echo "ERROR: CUDA not accessible despite GPUs being visible"
+    echo "Attempting to fix..."
+
+    # Try to reset CUDA state
+    nvidia-smi --gpu-reset 2>/dev/null || true
+
+    # Test again
+    if ! python3 -c "import torch; assert torch.cuda.is_available()" 2>/dev/null; then
+        echo "FATAL: Cannot initialize CUDA. Please run manually:"
+        echo "  export CUDA_VISIBLE_DEVICES=0,1,2,3"
+        echo "  echo quit | nvidia-cuda-mps-control"
+        echo "  python3 -c 'import torch; print(torch.cuda.is_available())'"
+        exit 1
+    fi
+fi
+
+echo "CUDA initialized successfully"
+echo ""
+
 # Experiment 1: Comprehensive Sequence Compression + LoRA Sweep
 #
 # Tests moderate sequence compression (2-5×) with LoRA adaptation

@@ -514,9 +514,39 @@ def main():
     if args.diagnostic_log:
         Path(args.diagnostic_log).parent.mkdir(parents=True, exist_ok=True)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")
-    print(f"GPUs available: {torch.cuda.device_count()}\n")
+    # Force CUDA device and handle MPS issues on clusters
+    import os
+    if 'CUDA_VISIBLE_DEVICES' not in os.environ:
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+
+    # Disable MPS if causing issues
+    os.environ.setdefault('CUDA_MPS_PIPE_DIRECTORY', '/tmp/nvidia-mps')
+
+    # Try to initialize CUDA
+    try:
+        if torch.cuda.is_available():
+            device = torch.device('cuda:0')
+            print(f"Using device: {device}")
+            print(f"GPUs available: {torch.cuda.device_count()}")
+            for i in range(torch.cuda.device_count()):
+                print(f"  GPU {i}: {torch.cuda.get_device_name(i)}")
+        else:
+            raise RuntimeError("CUDA not available")
+    except Exception as e:
+        print(f"CUDA initialization failed: {e}")
+        print("Trying to reset CUDA...")
+        # Clear CUDA cache and retry
+        if hasattr(torch.cuda, 'empty_cache'):
+            torch.cuda.empty_cache()
+        # Kill MPS if it exists
+        os.system('echo quit | nvidia-cuda-mps-control 2>/dev/null')
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        if device.type == 'cpu':
+            raise RuntimeError("Cannot initialize CUDA. GPUs visible but not accessible. "
+                             "Try: export CUDA_VISIBLE_DEVICES=0,1,2,3 && "
+                             "echo quit | nvidia-cuda-mps-control")
+
+    print()
 
     # Load model
     print(f"Loading {args.model_id}...")
