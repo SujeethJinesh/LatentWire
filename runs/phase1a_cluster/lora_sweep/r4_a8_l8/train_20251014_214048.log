@@ -1,14 +1,0 @@
-Running: python train_adapter_only_phase1.py --model_id meta-llama/Meta-Llama-3.1-8B-Instruct --dataset squad --samples 10000 --pca_samples 5000 --epochs 3 --batch_size 36 --max_length 256 --compress_dim 1024 --compress_method pca --pca_batch_size 512 --adapter_lr 5e-4 --cosine_weight 1.0 --mse_weight 0.1 --save_dir runs/phase1a_cluster/lora_sweep/r4_a8_l8 --diagnostic_log runs/phase1a_cluster/lora_sweep/r4_a8_l8/diagnostics.jsonl --pca_cache_path cache/phase1a_pca.pt --gen_loss_weight 0.0 --use_lora --lora_r 4 --lora_alpha 8 --lora_layers 8
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-GPUs available: 4
-
-Loading meta-llama/Meta-Llama-3.1-8B-Instruct...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3860.38it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.47s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.17s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.11it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.01s/it]
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 880, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/train_adapter_only_phase1.py", line 553, in main
-    raise ValueError("LoRA requires --gen_loss_weight > 0 to supply gradients through the LLM.")
-ValueError: LoRA requires --gen_loss_weight > 0 to supply gradients through the LLM.
