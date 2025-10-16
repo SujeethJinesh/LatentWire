@@ -1,0 +1,16 @@
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+GPUs available: 4
+
+Loading meta-llama/Meta-Llama-3.1-8B-Instruct...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2977.85it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.44s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.23s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.27s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.14it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.03s/it]
+Model loaded!
+
+Loading 10000 training examples from squad...
+Loading 100 eval examples...
+Loaded 10000 train, 100 eval
+
+Fitting PCA on 5000 examples (batch=512, tokens/example=all)...
+Extracting embeddings for PCA:   0%|          | 0/10 [00:00<?, ?it/s]Extracting embeddings for PCA:  10%|█         | 1/10 [00:01<00:09,  1.01s/it]Extracting embeddings for PCA:  20%|██        | 2/10 [00:02<00:08,  1.00s/it]Extracting embeddings for PCA:  30%|███       | 3/10 [00:02<00:06,  1.11it/s]Extracting embeddings for PCA:  40%|████      | 4/10 [00:03<00:05,  1.18it/s]Extracting embeddings for PCA:  50%|█████     | 5/10 [00:04<00:04,  1.07it/s]Extracting embeddings for PCA:  60%|██████    | 6/10 [00:05<00:03,  1.13it/s]Extracting embeddings for PCA:  70%|███████   | 7/10 [00:06<00:02,  1.20it/s]Extracting embeddings for PCA:  80%|████████  | 8/10 [00:07<00:01,  1.09it/s]Extracting embeddings for PCA:  90%|█████████ | 9/10 [00:08<00:00,  1.12it/s]Extracting embeddings for PCA: 100%|██████████| 10/10 [00:08<00:00,  1.26it/s]Extracting embeddings for PCA: 100%|██████████| 10/10 [00:08<00:00,  1.15it/s]
+Fitting standard PCA on 850610 token embeddings...
