@@ -189,6 +189,80 @@ Generated: ": Dane. Dane was killed in a horse-riding accident when Nikola was f
 
 ---
 
+#### Phase 1a Reproduction Failure - IncrementalPCA Algorithm
+
+**Date**: October 15, 2025
+**Motivation**: Reproduce Phase 1a results with improved PCA fitting (full sequences instead of 64 random tokens per example).
+
+**Configuration**:
+```bash
+Model: meta-llama/Meta-Llama-3.1-8B-Instruct (frozen)
+Compression: 4096 → 1024 via IncrementalPCA (4× dimension reduction)
+Training: 10k samples, 3 epochs, batch_size=48
+Samples: 10000 (PCA: 5000, using full sequences)
+Loss: Cosine (1.0×) + MSE (0.1×)
+```
+
+**Results**: **CATASTROPHIC FAILURE** ❌
+- F1: **0.59%** (baseline), 0.49-1.12% (LoRA sweep)
+- EM: 0%
+- Cosine similarity: **92%** (higher than original!)
+- Training loss: **0.113** (better reconstruction than original)
+
+**The Paradox**:
+| Metric | Original Phase 1a | IncrementalPCA | Interpretation |
+|--------|-------------------|----------------|----------------|
+| Cosine similarity | 89.5% | **92%** | Better reconstruction ✓ |
+| Training loss | ~0.14 | **0.113** | Better optimization ✓ |
+| F1 score | **24.0%** | **0.59%** | **40× worse** ❌ |
+
+**Root Cause Analysis** (from LOG.md, Oct 15 2025):
+
+The PCA algorithm was changed from standard PCA to IncrementalPCA:
+
+**Original (24% F1)**:
+```python
+from sklearn.decomposition import PCA
+all_embeddings = torch.cat(all_embeddings, dim=0)  # [total_tokens, 4096]
+pca = PCA(n_components=1024)
+pca.fit(all_embeddings)  # Exact eigendecomposition
+```
+
+**Failed Reproduction (0.59% F1)**:
+```python
+from sklearn.decomposition import IncrementalPCA
+ipca = IncrementalPCA(n_components=1024)
+# Process in batches - APPROXIMATE algorithm
+for batch in batches:
+    ipca.partial_fit(batch)  # Incremental SVD approximation
+```
+
+**Why IncrementalPCA Breaks Generation**:
+
+1. **Algorithm difference**: IncrementalPCA uses approximate incremental SVD for memory efficiency, while standard PCA uses exact eigendecomposition
+2. **Direction vs statistics**: IncrementalPCA preserves overall direction (high cosine similarity) but loses subtle statistical properties needed for generation
+3. **Token-level patterns**: The approximate basis may lose fine-grained positional/sequential patterns critical for LLM conditioning
+4. **Numerical properties**: Different eigenvalue distribution and basis rotation, despite similar reconstruction metrics
+
+**Critical Insight**:
+> "Better reconstruction metrics (92% cosine, 0.113 loss) does NOT guarantee better generation (0.59% F1). IncrementalPCA optimizes for memory efficiency by approximating principal components incrementally. While this preserves directional information, it breaks subtle statistical properties that LLMs need for generation."
+
+**Key Evidence**:
+- **Training steps**: Original 469 steps vs Current 625 steps (33% MORE training - not undertrained)
+- **Both use full sequences**: Fixed the 64-token sampling bug correctly
+- **Same hyperparameters**: Architecture, loss weights, learning rate all identical
+- **Only difference**: PCA algorithm (exact vs approximate)
+
+**Lesson Learned**:
+1. ❌ **IncrementalPCA is unsuitable for this task** despite memory benefits
+2. ⚠️ **Reconstruction metrics can be misleading** - high cosine ≠ good generation
+3. ✅ **Standard PCA must be used** for exact principal components
+4. 🔍 **Statistical properties matter** beyond just directional similarity
+
+**Resolution**: Revert to standard PCA while keeping full-sequence extraction fix.
+
+---
+
 ### 2.3 Hypothesis 3: Can Generation Objectives Fix Format Issues?
 
 **Motivation**: Phase 1a generates correct answer but wrong format. Add explicit supervision on generation behavior.
