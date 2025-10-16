@@ -8,6 +8,7 @@ export PYTHONUNBUFFERED=1
 
 SAMPLES="${SAMPLES:-5000}"
 PCA_SAMPLES="${PCA_SAMPLES:-4000}"
+PCA_TOKEN_CAP="${PCA_TOKEN_CAP:-400000}"  # Cap at 400k tokens to avoid OOM (~6.5GB)
 EPOCHS="${EPOCHS:-2}"
 BATCH_SIZE="${BATCH_SIZE:-36}"
 MAX_LENGTH="${MAX_LENGTH:-256}"
@@ -102,6 +103,7 @@ PY
         --dataset "$DATASET"
         --samples "$SAMPLES"
         --pca_samples "$PCA_SAMPLES"
+        --pca_token_cap "$PCA_TOKEN_CAP"
         --epochs "$EPOCHS"
         --batch_size "$BATCH_SIZE"
         --max_length "$MAX_LENGTH"
