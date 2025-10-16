@@ -519,8 +519,11 @@ def main():
     if 'CUDA_VISIBLE_DEVICES' not in os.environ:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
 
-    # Disable MPS if causing issues
-    os.environ.setdefault('CUDA_MPS_PIPE_DIRECTORY', '/tmp/nvidia-mps')
+    # Bypass broken MPS daemon entirely (cluster issue)
+    # MPS Error 805 means the daemon is in a bad state
+    # Solution: disable MPS by setting pipes to /dev/null
+    os.environ['CUDA_MPS_PIPE_DIRECTORY'] = '/dev/null'
+    os.environ['CUDA_MPS_LOG_DIRECTORY'] = '/dev/null'
 
     # Try to initialize CUDA
     try:

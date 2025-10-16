@@ -3,10 +3,13 @@ set -euo pipefail
 export PYTHONUNBUFFERED=1
 
 # Fix CUDA/MPS initialization issues on clusters
+# Bypass broken MPS daemon by setting pipes to /dev/null
+export CUDA_MPS_PIPE_DIRECTORY=/dev/null
+export CUDA_MPS_LOG_DIRECTORY=/dev/null
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}
 
-# Kill MPS daemon if it's causing issues
-echo quit | nvidia-cuda-mps-control 2>/dev/null || true
+echo "Bypassing MPS (set to /dev/null)"
+echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
 # Verify CUDA is accessible
 if ! python3 -c "import torch; assert torch.cuda.is_available(), 'CUDA not available'; print(f'CUDA OK: {torch.cuda.device_count()} GPUs')" 2>/dev/null; then
