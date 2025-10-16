@@ -475,8 +475,8 @@ def main():
     parser.add_argument('--pca_samples', type=int, default=5000, help='Samples for PCA fitting')
     parser.add_argument('--pca_batch_size', type=int, default=512, help='Batch size (in examples) when extracting embeddings for PCA')
     parser.add_argument('--pca_token_cap', type=int, default=None, help='Optional cap on total tokens used for PCA (useful to bound memory/cost)')
-    parser.add_argument('--pca_tokens_per_example', type=int, default=64,
-                        help='Maximum tokens sampled per example when fitting PCA (None to use all).')
+    parser.add_argument('--pca_tokens_per_example', type=int, default=0,
+                        help='Maximum tokens sampled per example when fitting PCA (0 or negative = use all tokens).')
     parser.add_argument('--pca_flush_tokens', type=int, default=8192,
                         help='Number of tokens per partial PCA update (IncrementalPCA).')
     parser.add_argument('--pca_cache_path', type=str, default=None,
@@ -627,6 +627,14 @@ def main():
     if pca_cache_path and pca_cache_path.exists():
         try:
             state = torch.load(pca_cache_path, map_location="cpu")
+            cache_meta = state.get("meta", {}) if isinstance(state, dict) else {}
+            cached_tokens = cache_meta.get("tokens_per_example")
+            if (tokens_per_example is None and cached_tokens not in (None, 0)) or (
+                tokens_per_example is not None and cached_tokens != tokens_per_example
+            ):
+                raise ValueError(
+                    f"Cached PCA uses tokens_per_example={cached_tokens}, but current run requests {tokens_per_example}."
+                )
             compressor.initialize_from_pca(
                 components=state["components"],
                 mean=state["mean"],
@@ -692,8 +700,7 @@ def main():
                     break
                 token_slice = embeddings[j, :seq_len]
                 if tokens_per_example is not None and seq_len > tokens_per_example:
-                    idx = torch.randperm(seq_len, device=token_slice.device)[:tokens_per_example]
-                    token_slice = token_slice[idx]
+                    token_slice = token_slice[:tokens_per_example]
                     seq_len = token_slice.shape[0]
                 chunk_list.append(token_slice.cpu().float())
                 total_tokens += seq_len
