@@ -6402,3 +6402,103 @@ compressor.initialize_from_pca(
 
 ---
 
+### Running the Fixed Phase 1a + LoRA Sweep
+
+The PCA fix has been implemented. Here's how to run the full sweep:
+
+**Quick Start:**
+```bash
+# Full clean run (recommended)
+git pull && rm -rf runs cache && PYTHONPATH=. bash scripts/sweep_phase1a_lora.sh
+```
+
+**What the script does:**
+
+1. **Baseline (r=0, no LoRA)**: Validates PCA fix
+   - Expected: F1 ~24% (restoration of original performance)
+   - If F1 < 20%: PCA fix didn't work, investigate
+   - If F1 ~24%: ✅ Fix successful, proceed with LoRA
+
+2. **LoRA sweeps** (r=4, 8, 16 with generation loss):
+   - Tests if LoRA can improve beyond 24% baseline
+   - Each config adds trainable LoRA adapters to LLM
+   - Generation loss (gen_weight=0.02) provides stopping behavior signal
+
+**Environment variables (optional):**
+```bash
+# Customize configuration
+export SAMPLES=10000           # Training samples (default: 5000)
+export PCA_SAMPLES=5000        # PCA fitting samples (default: 4000)
+export EPOCHS=3                # Training epochs (default: 2)
+export BATCH_SIZE=48           # Batch size (default: 36)
+export COMPRESS_DIM=1024       # PCA dimension (default: 1024)
+export ADAPTER_LR=5e-4         # Adapter learning rate
+export GEN_WEIGHT_DEFAULT=0.02 # Generation loss weight for LoRA
+
+# Then run
+PYTHONPATH=. bash scripts/sweep_phase1a_lora.sh
+```
+
+**Output files:**
+```
+runs/phase1a_lora_sweep/
+├── sweep_summary.txt           # Results summary
+├── baseline/
+│   ├── train_YYYYMMDD_HHMMSS.log
+│   ├── diagnostics.jsonl
+│   └── adapter_phase1_best.pt
+├── r4_a8_l8/
+│   ├── train_YYYYMMDD_HHMMSS.log
+│   └── diagnostics.jsonl
+├── r8_a16_l12/
+│   └── ...
+└── r16_a32_full/
+    └── ...
+
+cache/
+└── phase1a_pca.pt  # Cached PCA (reused across runs)
+```
+
+**Success criteria:**
+
+1. **Baseline must work**: F1 ≥ 20% (ideally ~24%)
+   - If fails: PCA issue, check logs
+   - If succeeds: Proceed to analyze LoRA results
+
+2. **LoRA should not collapse**: F1 ≥ 10% for all configs
+   - If all LoRA configs get F1 < 5%: Mode collapse, gen_weight too high
+   - If configs vary widely: Some promising, analyze best
+
+3. **Best case**: LoRA improves beyond baseline
+   - Baseline: 24% F1
+   - Best LoRA: >25% F1 → LoRA helps with stopping/format
+   - Best LoRA: <24% F1 → LoRA doesn't help, stick with baseline
+
+**Reading results:**
+```bash
+# View summary
+cat runs/phase1a_lora_sweep/sweep_summary.txt
+
+# Check baseline F1
+grep '"f1"' runs/phase1a_lora_sweep/baseline/diagnostics.jsonl | tail -1
+
+# Compare all configs
+for cfg in baseline r4_a8_l8 r8_a16_l12 r16_a32_full; do
+  echo "$cfg:"
+  grep '"f1"' runs/phase1a_lora_sweep/$cfg/diagnostics.jsonl | tail -1
+done
+```
+
+**Timeline:**
+- Baseline (r=0): ~3-5 minutes
+- Each LoRA config: ~5-8 minutes (more parameters to train)
+- Total sweep: ~20-30 minutes for 4 configurations
+
+**Next steps after sweep:**
+1. If baseline achieves ~24% F1: ✅ PCA fix successful
+2. Analyze LoRA results: Does any config beat baseline?
+3. If LoRA helps: Use best config for future experiments
+4. If LoRA doesn't help: Stick with baseline, focus on post-processing
+
+---
+
