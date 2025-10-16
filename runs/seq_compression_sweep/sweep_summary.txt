@@ -1,0 +1,12 @@
+Sequence Compression + LoRA Sweep
+Started: Thu Oct 16 13:49:24 PDT 2025
+================================================
+Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+Dataset: squad
+Training samples: 10000
+Eval samples: 100
+Epochs: 3
+Batch size: 16
+Learning rate: 5e-4
+================================================
+
