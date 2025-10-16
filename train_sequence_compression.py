@@ -603,7 +603,7 @@ def main():
         target_length=args.target_sequence_length,
         pooling_method=args.pooling_method,
         source_length=args.source_length,
-    ).to(embed_device)
+    ).to(embed_device).to(model_dtype)  # Match model's dtype (bfloat16)
 
     num_params = sum(p.numel() for p in compressor.parameters())
     print(f"Compressor parameters: {num_params:,}\n")
