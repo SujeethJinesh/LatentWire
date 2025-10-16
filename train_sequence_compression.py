@@ -132,33 +132,52 @@ class LearnedAttentionPooling(nn.Module):
 
 
 class ConvolutionalPooling(nn.Module):
-    """Strided convolution pooling with positional preservation."""
+    """Adaptive pooling with learnable projections for positional preservation.
 
-    def __init__(self, input_dim: int, target_length: int, source_length: int):
+    Uses adaptive pooling to handle variable-length inputs, followed by
+    learnable depthwise convolution for feature transformation.
+    """
+
+    def __init__(self, input_dim: int, target_length: int, source_length: int = None):
         super().__init__()
         self.target_length = target_length
-        self.stride = source_length // target_length
+        self.input_dim = input_dim
 
-        # 1D conv with learned kernels
-        self.conv = nn.Conv1d(
+        # Adaptive pooling (handles variable sequence lengths automatically)
+        self.pool = nn.AdaptiveAvgPool1d(target_length)
+
+        # Learnable projection (depthwise conv for efficiency)
+        # kernel_size=3 provides local context mixing
+        self.proj = nn.Conv1d(
             input_dim,
             input_dim,
-            kernel_size=self.stride,
-            stride=self.stride,
+            kernel_size=3,
+            padding=1,
             groups=input_dim  # Depthwise
         )
+
         self.norm = nn.LayerNorm(input_dim)
         self.pos_encoding = PositionalEncoding(input_dim)
 
     def forward(self, x: torch.Tensor, src_positions: torch.Tensor) -> torch.Tensor:
-        """x: [batch, seq, dim]"""
+        """
+        Args:
+            x: [batch, seq, dim] - variable sequence length
+            src_positions: [batch, seq] - original token positions
+        Returns:
+            [batch, target_length, dim]
+        """
         batch_size, seq_len, dim = x.shape
 
         # Transpose for conv1d: [batch, dim, seq]
         x_t = x.transpose(1, 2)
 
-        # Convolve
-        pooled = self.conv(x_t)  # [batch, dim, target_len]
+        # Adaptive pool to target length (works with any input length)
+        pooled = self.pool(x_t)  # [batch, dim, target_len]
+
+        # Learnable projection for feature transformation
+        pooled = self.proj(pooled)  # [batch, dim, target_len]
+
         pooled = pooled.transpose(1, 2)  # [batch, target_len, dim]
 
         # Add positional encoding at output positions
@@ -180,7 +199,7 @@ class SequenceCompressor(nn.Module):
         input_dim: int,
         target_length: int,
         pooling_method: str = "learned_attention",
-        source_length: int = 300,
+        source_length: int = None,  # Optional, not used by adaptive pooling
     ):
         super().__init__()
         self.input_dim = input_dim
@@ -190,6 +209,7 @@ class SequenceCompressor(nn.Module):
         if pooling_method == "learned_attention":
             self.pooler = LearnedAttentionPooling(input_dim, target_length)
         elif pooling_method == "convolutional":
+            # ConvolutionalPooling now uses adaptive pooling (source_length not needed)
             self.pooler = ConvolutionalPooling(input_dim, target_length, source_length)
         else:
             raise ValueError(f"Unknown pooling method: {pooling_method}")
@@ -471,7 +491,7 @@ def main():
     parser.add_argument('--target_sequence_length', type=int, default=128,
                        help='Target compressed sequence length')
     parser.add_argument('--source_length', type=int, default=300,
-                       help='Expected source sequence length')
+                       help='Expected average source sequence length (for reporting compression ratio only)')
     parser.add_argument('--pooling_method', type=str, default='learned_attention',
                        choices=['learned_attention', 'convolutional'])
 
