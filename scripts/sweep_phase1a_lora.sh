@@ -8,7 +8,7 @@ export PYTHONUNBUFFERED=1
 
 SAMPLES="${SAMPLES:-5000}"
 PCA_SAMPLES="${PCA_SAMPLES:-4000}"
-PCA_TOKEN_CAP="${PCA_TOKEN_CAP:-200000}"  # Cap at 200k tokens to avoid OOM (~3GB with randomized SVD)
+PCA_TOKEN_CAP="${PCA_TOKEN_CAP:-850000}"  # Use all tokens with randomized SVD (~13GB input, efficient workspace)
 EPOCHS="${EPOCHS:-2}"
 BATCH_SIZE="${BATCH_SIZE:-36}"
 MAX_LENGTH="${MAX_LENGTH:-256}"
