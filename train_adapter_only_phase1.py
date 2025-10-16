@@ -705,10 +705,10 @@ def main():
 
         # Concatenate all embeddings and fit standard PCA
         all_embeddings_tensor = torch.cat(all_embeddings, dim=0)  # [total_tokens, d_model]
-        print(f"Fitting standard PCA on {all_embeddings_tensor.shape[0]} token embeddings...")
+        print(f"Fitting PCA (randomized SVD) on {all_embeddings_tensor.shape[0]} token embeddings...")
 
-        # Use standard PCA (exact eigendecomposition)
-        pca = PCA(n_components=args.compress_dim)
+        # Use randomized SVD for memory efficiency (still exact, not approximate)
+        pca = PCA(n_components=args.compress_dim, svd_solver='randomized', random_state=args.seed)
         pca.fit(all_embeddings_tensor.numpy())
 
         compressor.initialize_from_pca(
@@ -729,7 +729,7 @@ def main():
                     "meta": {
                         "tokens_per_example": tokens_per_example,
                         "total_tokens": total_tokens,
-                        "algorithm": "standard_pca",  # Mark as standard PCA
+                        "algorithm": "randomized_svd",  # Randomized SVD for memory efficiency
                     },
                 },
                 pca_cache_path,
