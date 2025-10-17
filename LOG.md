@@ -139,6 +139,66 @@ The sweeps definitively rule out hyperparameter tuning as a solution. The issue 
 
 ---
 
+### Supervision Analysis: What's Missing from Current LoRA Model (2025-10-16)
+
+**User Question**: "Have we tried ways of improving weak supervision before with this LoRA model? Is our architecture also well set up and proper, or can we improve that as well?"
+
+**Answer**: No, we have NOT tried stronger supervision mechanisms with the current LoRA diagnostic script (`train_sequence_compression.py`). The script uses **only standard cross-entropy loss** - the weakest possible supervision.
+
+#### Current Supervision (train_sequence_compression.py)
+
+**What it uses** (lines 380-381):
+```python
+outputs = model(inputs_embeds=inputs_embeds, labels=labels)
+loss = outputs.loss  # ONLY standard CE - predicts entire answer sequence
+```
+
+**What it's missing**:
+- ✗ K-token cross-entropy (supervise first K tokens, not all)
+- ✗ Knowledge distillation from text teacher
+- ✗ Hidden state matching
+- ✗ Contrastive diversity loss
+- ✗ Reconstruction loss
+- ✗ Auxiliary prediction tasks
+
+#### Available Stronger Supervision (latentwire/losses.py)
+
+The main LatentWire codebase has these mechanisms **already implemented but NOT used in diagnostic script**:
+
+1. **`k_token_ce_from_prefix`** (losses.py:35-84): Supervises first K=4 tokens instead of full sequence
+2. **`kd_first_k_prefix_vs_text`** (losses.py:87-282): Distills text teacher's output distributions
+3. **`kd_hidden_states_first_k`** (losses.py:285-416): Matches text teacher's hidden states
+
+**Historical Context**: These mechanisms WERE tried in the main LatentWire system (latentwire/train.py) but caused mode collapse when combined with reconstruction objectives (see LOG.md:4430). However, they have NEVER been tried with this specific single-model LoRA compression setup.
+
+#### Architecture Assessment
+
+**What's correct**:
+- ✅ LearnedAttentionPooling design (multi-head cross-attention, learnable queries)
+- ✅ LoRA configuration (r=16, first 8 layers, attention modules)
+- ✅ Gradient flow (loss decreases, parameters update correctly)
+- ✅ Training objective (next-token prediction on answers)
+
+**Critical gaps**:
+- ❌ No diversity/contrastive loss → nothing prevents mode collapse
+- ❌ No reconstruction loss → no pressure to preserve information
+- ❌ No auxiliary tasks → model can ignore compressed representations
+- ❌ Only frozen LLM supervision → weak signal through soft prefix
+
+**Verdict**: Architecture is reasonable, but supervision is fundamentally broken. The script relies entirely on weak cross-entropy signal with no diversity constraints.
+
+#### Why This Matters
+
+The sweep showed **universal collapse across 16 configurations** (F1 < 3%, EM = 0%). This proves it's NOT a hyperparameter issue. The root cause is architectural:
+
+1. **Weak supervision**: Standard CE on full sequence allows model to ignore prefix and emit generic answers
+2. **No diversity constraint**: Nothing forces different inputs → different compressions
+3. **Frozen LLM barrier**: Signal must flow through soft prefix, which is inherently weak
+
+**The model can minimize loss by learning one "average" compression that works for all inputs, then emitting generic answers like "the of of the" that have low perplexity.**
+
+---
+
 ### Recommended Solutions (Prioritized by Impact)
 
 **CRITICAL: These require architectural changes, not hyperparameter tuning**
