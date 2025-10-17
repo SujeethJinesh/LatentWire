@@ -1,0 +1,18 @@
+{"step": 50, "epoch": 0, "timestamp": "2025-10-16T14:29:20.350802", "type": "train_step", "loss": 8.724564552307129}
+{"step": 100, "epoch": 0, "timestamp": "2025-10-16T14:29:58.480699", "type": "train_step", "loss": 8.304390907287598}
+{"step": 150, "epoch": 0, "timestamp": "2025-10-16T14:30:36.906810", "type": "train_step", "loss": 8.42689323425293}
+{"step": 200, "epoch": 0, "timestamp": "2025-10-16T14:31:15.325501", "type": "train_step", "loss": 8.190666198730469}
+{"step": 209, "epoch": 0, "timestamp": "2025-10-16T14:31:21.674894", "type": "train_epoch", "avg_loss": 8.675721597443356}
+{"step": 209, "epoch": 0, "timestamp": "2025-10-16T14:31:26.899774", "type": "full_eval", "em": 0.0, "f1": 0.0}
+{"step": 250, "epoch": 1, "timestamp": "2025-10-16T14:31:58.044588", "type": "train_step", "loss": 8.333477973937988}
+{"step": 300, "epoch": 1, "timestamp": "2025-10-16T14:32:36.090063", "type": "train_step", "loss": 8.224987983703613}
+{"step": 350, "epoch": 1, "timestamp": "2025-10-16T14:33:14.246221", "type": "train_step", "loss": 8.409436225891113}
+{"step": 400, "epoch": 1, "timestamp": "2025-10-16T14:33:52.097589", "type": "train_step", "loss": 8.135211944580078}
+{"step": 418, "epoch": 1, "timestamp": "2025-10-16T14:34:05.145257", "type": "train_epoch", "avg_loss": 8.321958179108835}
+{"step": 418, "epoch": 1, "timestamp": "2025-10-16T14:34:10.109812", "type": "full_eval", "em": 0.0, "f1": 0.0}
+{"step": 450, "epoch": 2, "timestamp": "2025-10-16T14:34:34.686921", "type": "train_step", "loss": 8.37016487121582}
+{"step": 500, "epoch": 2, "timestamp": "2025-10-16T14:35:12.895416", "type": "train_step", "loss": 8.369315147399902}
+{"step": 550, "epoch": 2, "timestamp": "2025-10-16T14:35:51.238068", "type": "train_step", "loss": 8.542119026184082}
+{"step": 600, "epoch": 2, "timestamp": "2025-10-16T14:36:29.735710", "type": "train_step", "loss": 7.862709999084473}
+{"step": 627, "epoch": 2, "timestamp": "2025-10-16T14:36:49.718489", "type": "train_epoch", "avg_loss": 8.259569311826423}
+{"step": 627, "epoch": 2, "timestamp": "2025-10-16T14:36:54.819170", "type": "full_eval", "em": 0.0, "f1": 0.0}

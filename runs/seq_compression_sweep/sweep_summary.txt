@@ -1,12 +1,132 @@
 Sequence Compression + LoRA Sweep
-Started: Thu Oct 16 13:49:24 PDT 2025
+Started: Thu Oct 16 14:02:07 PDT 2025
 ================================================
 Model: meta-llama/Meta-Llama-3.1-8B-Instruct
 Dataset: squad
 Training samples: 10000
 Eval samples: 100
 Epochs: 3
-Batch size: 16
+Batch size: 48
 Learning rate: 5e-4
 ================================================
 
+
+Configuration: seq256_noLoRA
+  Sequence: 256 (compression: 1.17x)
+  Pooling: learned_attention
+  LoRA: disabled
+  F1: 0.0
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq256_noLoRA/train_20251016_140207.log
+
+Configuration: seq192_noLoRA
+  Sequence: 192 (compression: 1.56x)
+  Pooling: learned_attention
+  LoRA: disabled
+  F1: 0.015295814873794207
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq192_noLoRA/train_20251016_141645.log
+
+Configuration: seq128_noLoRA
+  Sequence: 128 (compression: 2.34x)
+  Pooling: learned_attention
+  LoRA: disabled
+  F1: 0.0
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq128_noLoRA/train_20251016_142823.log
+
+Configuration: seq96_noLoRA
+  Sequence: 96 (compression: 3.12x)
+  Pooling: learned_attention
+  LoRA: disabled
+  F1: 0.01951516935206499
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq96_noLoRA/train_20251016_143656.log
+
+Configuration: seq64_noLoRA
+  Sequence: 64 (compression: 4.69x)
+  Pooling: learned_attention
+  LoRA: disabled
+  F1: 0.012660172875308287
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq64_noLoRA/train_20251016_144357.log
+
+Configuration: seq128_r8_l8
+  Sequence: 128 (compression: 2.34x)
+  Pooling: learned_attention
+  LoRA: r=8, alpha=16, layers=8
+  F1: 0.0024999999531250005
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq128_r8_l8/train_20251016_144934.log
+
+Configuration: seq128_r16_l8
+  Sequence: 128 (compression: 2.34x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=8
+  F1: 0.01317921743676516
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq128_r16_l8/train_20251016_145809.log
+
+Configuration: seq128_r32_l8
+  Sequence: 128 (compression: 2.34x)
+  Pooling: learned_attention
+  LoRA: r=32, alpha=64, layers=8
+  F1: 0.01941474836043379
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq128_r32_l8/train_20251016_150802.log
+
+Configuration: seq128_r16_l16
+  Sequence: 128 (compression: 2.34x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=16
+  F1: 0.01899999984716667
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq128_r16_l16/train_20251016_151640.log
+
+Configuration: seq128_r16_l32
+  Sequence: 128 (compression: 2.34x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=32
+  F1: 0.010590939068130925
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq128_r16_l32/train_20251016_152708.log
+
+Configuration: seq128_r16_all
+  Sequence: 128 (compression: 2.34x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=0
+  F1: 0.010590939068130925
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq128_r16_all/train_20251016_153816.log
+
+Configuration: seq256_r16_l8
+  Sequence: 256 (compression: 1.17x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=8
+  F1: 0.028820991240435755
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq256_r16_l8/train_20251016_154847.log
+
+Configuration: seq192_r16_l8
+  Sequence: 192 (compression: 1.56x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=8
+  F1: 0.021057422579315532
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq192_r16_l8/train_20251016_160302.log
+
+Configuration: seq96_r16_l8
+  Sequence: 96 (compression: 3.12x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=8
+  F1: 0.028726474760016267
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq96_r16_l8/train_20251016_161507.log
+
+Configuration: seq64_r16_l8
+  Sequence: 64 (compression: 4.69x)
+  Pooling: learned_attention
+  LoRA: r=16, alpha=32, layers=8
+  F1: 0.01665839934516976
+  EM: 0.0
+  Log: runs/seq_compression_sweep/seq64_r16_l8/train_20251016_162249.log

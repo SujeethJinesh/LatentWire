@@ -1,0 +1,18 @@
+{"step": 50, "epoch": 0, "timestamp": "2025-10-16T14:37:44.416580", "type": "train_step", "loss": 8.092049598693848}
+{"step": 100, "epoch": 0, "timestamp": "2025-10-16T14:38:15.707045", "type": "train_step", "loss": 7.566074848175049}
+{"step": 150, "epoch": 0, "timestamp": "2025-10-16T14:38:46.513227", "type": "train_step", "loss": 7.3964080810546875}
+{"step": 200, "epoch": 0, "timestamp": "2025-10-16T14:39:17.405695", "type": "train_step", "loss": 7.5093231201171875}
+{"step": 209, "epoch": 0, "timestamp": "2025-10-16T14:39:22.472687", "type": "train_epoch", "avg_loss": 7.700908127013576}
+{"step": 209, "epoch": 0, "timestamp": "2025-10-16T14:39:27.747924", "type": "full_eval", "em": 0.0, "f1": 0.01951516935206499}
+{"step": 250, "epoch": 1, "timestamp": "2025-10-16T14:39:54.234037", "type": "train_step", "loss": 7.466200351715088}
+{"step": 300, "epoch": 1, "timestamp": "2025-10-16T14:40:25.261829", "type": "train_step", "loss": 7.096897125244141}
+{"step": 350, "epoch": 1, "timestamp": "2025-10-16T14:40:55.857305", "type": "train_step", "loss": 7.187303066253662}
+{"step": 400, "epoch": 1, "timestamp": "2025-10-16T14:41:26.955792", "type": "train_step", "loss": 7.370300769805908}
+{"step": 418, "epoch": 1, "timestamp": "2025-10-16T14:41:37.550491", "type": "train_epoch", "avg_loss": 7.116234663000517}
+{"step": 418, "epoch": 1, "timestamp": "2025-10-16T14:41:42.235294", "type": "full_eval", "em": 0.0, "f1": 0.005249999925031252}
+{"step": 450, "epoch": 2, "timestamp": "2025-10-16T14:42:01.748328", "type": "train_step", "loss": 7.421083927154541}
+{"step": 500, "epoch": 2, "timestamp": "2025-10-16T14:42:32.771429", "type": "train_step", "loss": 7.383657932281494}
+{"step": 550, "epoch": 2, "timestamp": "2025-10-16T14:43:03.494971", "type": "train_step", "loss": 6.767457485198975}
+{"step": 600, "epoch": 2, "timestamp": "2025-10-16T14:43:34.149535", "type": "train_step", "loss": 6.728869438171387}
+{"step": 627, "epoch": 2, "timestamp": "2025-10-16T14:43:50.611833", "type": "train_epoch", "avg_loss": 7.00984691090561}
+{"step": 627, "epoch": 2, "timestamp": "2025-10-16T14:43:55.624338", "type": "full_eval", "em": 0.0, "f1": 0.0}
