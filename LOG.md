@@ -199,6 +199,126 @@ The sweep showed **universal collapse across 16 configurations** (F1 < 3%, EM = 
 
 ---
 
+### Feature Sweep Results: Testing 4 Supervision Mechanisms (2025-10-16)
+
+**Experiments Run**: 24 configurations tested individually (baseline + 23 feature tests)
+**Status**: Contrastive diversity WORKS but shows bugs in K-token CE, Reconstruction, and KD implementations
+
+#### Sweep Configuration
+
+All experiments used:
+- Model: Llama-3.1-8B-Instruct
+- Dataset: SQuAD (10K train, 100 eval)
+- Epochs: 5
+- Batch size: 48
+- LoRA: r=16, alpha=32, first 8 layers
+- Sequence: 300→256 (1.17× compression)
+
+#### Results by Feature
+
+**1. Baseline** (standard CE loss only)
+- F1: 0.27%, EM: 0.00%, Diversity: 10%
+- Confirms severe mode collapse with weak supervision
+
+**2. Contrastive Diversity Loss** ✅ ALL COMPLETED
+- 6 configurations tested (3 weights × 2 temperatures)
+- **Best config**: w=0.3, t=0.1 → F1=0.99%, Diversity=52%
+- **Highest diversity**: w=0.3, t=0.07 → F1=0.47%, Diversity=78%
+- **Worst config**: w=0.1, t=0.07 → F1=0.47%, Diversity=1%
+
+**Key finding**: Contrastive loss SIGNIFICANTLY improves diversity (10% → 52-78%) but F1 gains are modest (0.27% → 0.99% best). This suggests diversity constraint alone is insufficient - still need better task supervision.
+
+**3. K-token Cross-Entropy** ❌ ALL 3 CONFIGS CRASHED
+- Configs: K=2, K=4, K=8
+- **Error**: CUDA out of memory during backward pass
+- **Memory usage**: 75.14 GiB / 79.19 GiB (tried to allocate 5.94 GiB, only 4.04 GiB free)
+- **Root cause**: K autoregressive forward passes per training step → K× activation memory
+- **Example** (k_token_k2, step 8/209):
+  ```
+  torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 5.94 GiB.
+  GPU 0 has a total capacity of 79.19 GiB of which 4.04 GiB is free.
+  ```
+
+**4. Reconstruction Loss** ❌ ALL 8 CONFIGS CRASHED
+- Configs: 4 weights (0.01, 0.05, 0.1, 0.2) × 2 layer counts (2, 4)
+- **Error**: dtype mismatch (float vs bfloat16)
+- **Parameters**: 537M params for 2-layer decoder (enormous!)
+- **Root cause**: ReconstructionDecoder uses float32 by default, LLM uses bfloat16
+- **Example** (reconstruction_w0.01_l2):
+  ```
+  RuntimeError: expected mat1 and mat2 to have the same dtype, but got: float != c10::BFloat16
+  ```
+- **Easy fix**: Add `.to(dtype=model.dtype, device=device)` after decoder init
+
+**5. Knowledge Distillation** ❌ ALL 6 CONFIGS CRASHED
+- Configs: 3 weights (0.1, 0.3, 0.5) × 2 temperatures (1.0, 2.0), K=4
+- **Error**: CUDA out of memory during teacher forward pass
+- **Memory usage**: 79.01 GiB / 79.19 GiB (tried to allocate 196 MiB, only 171 MiB free)
+- **Root cause**: Student model + teacher model = 2× model memory (both in GPU memory simultaneously)
+- **Example** (kd_w0.1_tau1.0, first batch):
+  ```
+  torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 196.00 MiB.
+  Including non-PyTorch memory, this process has 79.01 GiB memory in use.
+  ```
+
+#### Critical Bugs Identified
+
+**BUG #1: Reconstruction decoder dtype mismatch**
+- Location: `train_sequence_compression_enhanced.py:165-210`
+- Issue: `nn.TransformerDecoder` defaults to float32, LLM uses bfloat16
+- Impact: BLOCKS all reconstruction experiments
+- Fix: Add dtype conversion in `ReconstructionDecoder.__init__`:
+  ```python
+  self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=num_layers)
+  # ADD THIS LINE:
+  self.to(dtype=torch.bfloat16)  # Match LLM dtype
+  ```
+
+**BUG #2: K-token CE excessive memory usage**
+- Location: `train_sequence_compression_enhanced.py:253-313`
+- Issue: Autoregressive loop keeps K full computation graphs for backward
+- Impact: OOM with batch_size=48 on 80GB H100
+- Fix options:
+  1. Gradient checkpointing: `torch.utils.checkpoint.checkpoint()`
+  2. Reduce batch size for K-token configs (48 → 24 or 16)
+  3. Accumulate gradients instead of K simultaneous forward passes
+
+**BUG #3: KD loads teacher model without memory optimization**
+- Location: `train_sequence_compression_enhanced.py:320-398`
+- Issue: Teacher and student both fully loaded in GPU memory
+- Impact: OOM even on first batch with 80GB GPU
+- Fix options:
+  1. Use `torch.no_grad()` context for teacher (already done, but not enough)
+  2. CPU offload teacher model (slower but works)
+  3. Share model weights between student and teacher (tricky with LoRA)
+  4. Use smaller teacher model or quantized teacher
+
+#### Actionable Next Steps
+
+**IMMEDIATE (Fix bugs, re-run failed features)**:
+1. Fix reconstruction dtype bug (5 min fix)
+2. Add gradient checkpointing or reduce batch size for K-token CE
+3. Add CPU offload for KD teacher model
+4. Re-run all 17 failed configs after fixes
+
+**ANALYSIS (Understand contrastive results)**:
+1. Why does diversity improve (10% → 78%) but F1 stays low (0.27% → 0.99%)?
+2. Check sample predictions from best contrastive config (w=0.3, t=0.1)
+3. Determine if contrastive helps representation quality or just output diversity
+
+**COMBINATION (If individual features work)**:
+1. Test contrastive + K-token CE (diversity constraint + focused supervision)
+2. Test contrastive + reconstruction (diversity + information preservation)
+3. Test all 3 together if individual results are promising
+
+**Files created for this sweep**:
+- `train_sequence_compression_enhanced.py`: Modular training with 4 feature flags
+- `scripts/run_feature_sweep.sh`: Automated sweep runner (24 configs)
+- `scripts/analyze_feature_sweep.py`: Results analysis tool
+- `runs/feature_sweep/sweep_summary_20251016_232139.txt`: Summary of all results
+
+---
+
 ### Recommended Solutions (Prioritized by Impact)
 
 **CRITICAL: These require architectural changes, not hyperparameter tuning**

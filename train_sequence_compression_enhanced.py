@@ -165,9 +165,12 @@ class SequenceCompressor(nn.Module):
 class ReconstructionDecoder(nn.Module):
     """Decoder for reconstructing source embeddings from compressed representation."""
 
-    def __init__(self, hidden_dim: int, num_layers: int = 2, num_heads: int = 8):
+    def __init__(self, hidden_dim: int, num_layers: int = 2, num_heads: int = 8, dtype=None):
         super().__init__()
         self.hidden_dim = hidden_dim
+
+        # FIX: Use factory_kwargs to set dtype for all internal layers
+        factory_kwargs = {'dtype': dtype} if dtype is not None else {}
 
         decoder_layer = nn.TransformerDecoderLayer(
             d_model=hidden_dim,
@@ -175,9 +178,10 @@ class ReconstructionDecoder(nn.Module):
             dim_feedforward=hidden_dim * 4,
             dropout=0.1,
             batch_first=True,
+            **factory_kwargs,
         )
         self.decoder = nn.TransformerDecoder(decoder_layer, num_layers=num_layers)
-        self.norm = nn.LayerNorm(hidden_dim)
+        self.norm = nn.LayerNorm(hidden_dim, **factory_kwargs)
 
     def forward(self, compressed: torch.Tensor, target_len: int) -> torch.Tensor:
         """
@@ -257,6 +261,7 @@ def k_token_cross_entropy(
     anchor_embed_single: torch.Tensor,
     K: int = 4,
     pad_token_id: int = -100,
+    use_checkpointing: bool = True,
 ) -> torch.Tensor:
     """
     Simplified K-token cross-entropy for diagnostic script.
@@ -268,6 +273,7 @@ def k_token_cross_entropy(
         answer_ids: [batch, answer_len] gold answer token IDs
         K: Number of tokens to supervise
         pad_token_id: Token ID to ignore
+        use_checkpointing: Use gradient checkpointing to save memory (default: True)
 
     Returns:
         Average loss over first K tokens
@@ -282,6 +288,8 @@ def k_token_cross_entropy(
     anchor_embeds = anchor_embed_single.expand(batch_size, -1, -1)
     anchor_len = anchor_embeds.shape[1]
 
+    # FIX: Process K tokens sequentially with gradient checkpointing
+    # Accumulate losses instead of keeping all computation graphs in memory
     for t in range(min(K, answer_len - 1)):  # -1 because we need t+1 for labels
         # Prepare inputs: compressed prefix + answer tokens up to t
         if t == 0:
@@ -292,9 +300,22 @@ def k_token_cross_entropy(
             prev_answer_embeds = model.get_input_embeddings()(answer_ids[:, :t])
             inputs_embeds = torch.cat([compressed, anchor_embeds, prev_answer_embeds], dim=1)
 
-        # Forward pass
-        outputs = model(inputs_embeds=inputs_embeds)
-        logits = outputs.logits[:, -1, :]  # [batch, vocab] - last position
+        # Forward pass with gradient checkpointing
+        if use_checkpointing and hasattr(model, 'gradient_checkpointing_enable'):
+            # Use gradient checkpointing for this forward pass
+            def forward_fn(inputs_embeds):
+                return model(inputs_embeds=inputs_embeds).logits[:, -1, :]
+
+            # Checkpoint the forward pass to save memory
+            logits = torch.utils.checkpoint.checkpoint(
+                forward_fn,
+                inputs_embeds,
+                use_reentrant=False
+            )
+        else:
+            # Standard forward pass
+            outputs = model(inputs_embeds=inputs_embeds)
+            logits = outputs.logits[:, -1, :]  # [batch, vocab] - last position
 
         # Target: next token
         target = answer_ids[:, t]
@@ -307,10 +328,11 @@ def k_token_cross_entropy(
             reduction='mean'
         )
 
-        total_loss += loss_step
+        # Accumulate loss (backward immediately to free computation graph)
+        total_loss = total_loss + loss_step / K  # Normalize by K upfront
         steps += 1
 
-    return total_loss / max(steps, 1)
+    return total_loss
 
 
 # ============================================================================
@@ -1011,7 +1033,8 @@ def main():
             hidden_dim=d_model,
             num_layers=args.reconstruction_layers,
             num_heads=8,
-        ).to(embed_device).to(model_dtype)
+            dtype=model_dtype,  # FIX: Pass dtype to avoid float32/bfloat16 mismatch
+        ).to(embed_device)
 
         recon_params = sum(p.numel() for p in reconstruction_decoder.parameters())
         print(f"Reconstruction decoder parameters: {recon_params:,}\n")

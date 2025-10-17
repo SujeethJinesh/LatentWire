@@ -218,11 +218,15 @@ echo "# FEATURE 2: K-token Cross-Entropy (3 configs)"
 echo "###################################################################"
 echo ""
 
+# FIX: Use smaller batch size for K-token CE to avoid OOM (48 → 24)
+REDUCED_BATCH_SIZE=24
+
 for K in 2 4 8; do
     config_name="k_token_k${K}"
     run_experiment "$config_name" \
         "--use_k_token_ce" \
-        "--k_token_k $K"
+        "--k_token_k $K" \
+        "--batch_size $REDUCED_BATCH_SIZE"
 done
 
 # ============================================================================
@@ -257,6 +261,10 @@ echo "# FEATURE 4: Knowledge Distillation (6 configs)"
 echo "###################################################################"
 echo ""
 
+# FIX: Use even smaller batch size for KD to avoid OOM (48 → 16)
+# KD loads both student and teacher forward passes
+KD_BATCH_SIZE=16
+
 for weight in 0.1 0.3 0.5; do
     for tau in 1.0 2.0; do
         config_name="kd_w${weight}_tau${tau}"
@@ -264,7 +272,8 @@ for weight in 0.1 0.3 0.5; do
             "--use_kd" \
             "--kd_weight $weight" \
             "--kd_tau $tau" \
-            "--kd_k 4"
+            "--kd_k 4" \
+            "--batch_size $KD_BATCH_SIZE"
     done
 done
 
