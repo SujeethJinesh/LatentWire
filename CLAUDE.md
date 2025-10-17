@@ -2,6 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Development Environment
+
+**IMPORTANT**: This project uses a **split development and execution environment**:
+
+- **Local development (this machine)**: MacBook
+  - Used for: Code editing, analysis, reviewing logs, documentation
+  - You (Claude Code) are running here
+  - Pull logs and results from HPC via git to analyze locally
+
+- **Training execution (remote)**: HPC cluster with 4× H100 GPUs
+  - Used for: All training runs, evaluation, experiments
+  - Jobs submitted remotely, logs pushed back to git
+  - Checkpoint files remain on HPC (not synced locally)
+
+**Workflow**:
+1. User develops/modifies code locally on MacBook
+2. User pushes code to git
+3. User runs training on HPC: `git pull && rm -rf runs && PYTHONPATH=. bash <script.sh>`
+4. HPC saves logs and pushes back to git
+5. User pulls logs locally: `git pull`
+6. Analysis happens locally on MacBook
+
+**Documentation Preferences**:
+- **DO NOT create new .md files** - update LOG.md instead
+- RESEARCH_PROPOSAL.md is somewhat out of date (read for context only)
+- LOG.md is the primary source of truth for current status
+- CLAUDE.md (this file) defines workflow and conventions
+
+---
+
 ## Core Development Principles
 
 ### 0. FIX ROOT CAUSES - DON'T SKIP OR WORKAROUND

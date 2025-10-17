@@ -1,5 +1,487 @@
 # LatentWire — Experiment Log
 
+---
+## ═══════════════════════════════════════════════════════════════════════════
+## 🎯 RESEARCH QUARTER MIDPOINT MARKER - 2025-10-16
+## ═══════════════════════════════════════════════════════════════════════════
+
+**Status**: Past midpoint of research quarter. From this point forward, focus on:
+- Summarizing existing findings (no new major experiments)
+- Consolidating results for presentation
+- Writing up conclusions and lessons learned
+
+---
+
+## Code Audit: Sequence Compression Script Analysis (2025-10-16)
+
+**Script Analyzed**: `scripts/run_seq256_20epoch.sh` → `train_sequence_compression.py`
+**Auditor**: Claude Code (comprehensive trace-through analysis)
+
+### Executive Summary
+
+**CRITICAL FINDING**: The script currently running on HPC (`train_sequence_compression.py`) is **NOT** the main LatentWire cross-model interlingua system described in the research proposal. It's a diagnostic experiment testing single-model sequence compression with LoRA.
+
+**Script Purpose**:
+- Single-model compression (Llama OR Qwen, not both)
+- Minimal compression: 300 tokens → 256 tokens (1.17×, vs stated 4× goal)
+- Tests if LoRA can help model accept compressed embeddings from its own embedding layer
+
+**Technical Correctness**: ✅ The script implementation is sound:
+- LoRA correctly applied via PEFT library
+- Training objective correct (next-token prediction on answers)
+- Loss computation correct (teacher-forced, padding masked)
+- Gradient flow correct (through LoRA + compressor parameters)
+
+**Research Alignment**: ❌ Major mismatch with stated goals:
+- No cross-model interlingua (single model only)
+- No heterogeneous LLM communication (Llama-to-Qwen)
+- Minimal compression (1.17× vs 4× target)
+- Missing core LatentWire components (see below)
+
+---
+
+### Complete Training Flow Trace
+
+**Architecture** (train_sequence_compression.py:8-9):
+```
+Text → Embeddings [seq, 4096] → Learned Pooling [target_seq, 4096] → LoRA-LLM → Answer
+```
+
+**Detailed Execution Flow**:
+
+1. **Data Loading** (train_sequence_compression.py:643-659)
+   - Load SQuAD examples: question + context → source, gold answer
+   - Tokenize source and answer separately
+
+2. **Forward Pass per Batch** (train_sequence_compression.py:342-381):
+   ```python
+   # Line 349-350: Get source embeddings from model's own embedding layer
+   with torch.no_grad():
+       source_embeds = model.get_input_embeddings()(source_ids)  # [B, src_seq, 4096]
+
+   # Line 354: Create position encodings
+   positions = torch.arange(src_seq).unsqueeze(0).expand(batch_size, -1)
+
+   # Line 357: Compress sequence via learned attention pooling
+   compressed = compressor(source_embeds, positions)  # [B, 256, 4096]
+
+   # Line 360: Get answer embeddings (teacher-forced)
+   answer_embeds = model.get_input_embeddings()(answer_ids[:, :-1])  # [B, ans_len-1, 4096]
+
+   # Line 363: Concatenate compressed prefix with answer embeddings
+   inputs_embeds = torch.cat([compressed, answer_embeds], dim=1)  # [B, 256+ans_len-1, 4096]
+
+   # Line 367-377: Create labels (mask compressed prefix, predict answer)
+   labels = torch.full((batch_size, 256 + ans_len - 1), -100)
+   labels[:, 256:] = answer_ids[:, 1:]  # Shift for next-token prediction
+   labels[:, 256:][ans_mask_shifted == 0] = -100  # Mask padding
+
+   # Line 380: Forward pass through model
+   outputs = model(inputs_embeds=inputs_embeds, labels=labels)
+   loss = outputs.loss  # Standard causal LM cross-entropy
+   ```
+
+3. **Backward Pass** (train_sequence_compression.py:384-392):
+   ```python
+   optimizer.zero_grad()
+   loss.backward()  # Gradients flow through:
+                    # - Compressor (learned queries, attention, projections)
+                    # - LoRA adapters (q/k/v/o_proj in first 8 layers)
+   torch.nn.utils.clip_grad_norm_(compressor.parameters(), max_norm=1.0)
+   if hasattr(model, 'enable_adapter_layers'):  # LoRA enabled
+       torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], max_norm=1.0)
+   optimizer.step()
+   ```
+
+**What is Actually Being Learned**:
+- **Compressor**: Learned queries that attend over source embeddings to compress 300 → 256 tokens
+- **LoRA**: Low-rank adaptations to attention layers helping model accept compressed representations
+- **NOT learned**: Cross-model alignment, shared interlingua, heterogeneous tokenizer bridging
+
+---
+
+### LoRA Implementation Analysis
+
+**LoRA Configuration** (train_sequence_compression.py:601-616):
+```python
+from peft import LoraConfig, get_peft_model
+lora_config = LoraConfig(
+    r=16,                    # Rank (dimensionality of low-rank matrices)
+    lora_alpha=32,           # Scaling factor (alpha/r = 2.0 scaling)
+    lora_dropout=0.05,       # Dropout in LoRA layers
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # Attention projections
+    bias="none",             # Don't adapt bias terms
+    task_type="CAUSAL_LM",
+    layers_to_transform=list(range(8)),  # First 8 layers only (from --lora_layers 8)
+)
+model = get_peft_model(model, lora_config)
+```
+
+**What LoRA Does**:
+1. Injects trainable low-rank matrices into attention projections: `W' = W_frozen + ΔW` where `ΔW = BA`, `B ∈ R^{d×r}`, `A ∈ R^{r×d}`
+2. Only trains B and A matrices (~16 × 2 × 4096 × 4 modules × 8 layers ≈ 16M parameters vs 8B frozen)
+3. Helps frozen LLM adapt to compressed embeddings without full fine-tuning
+
+**Training Mode** (train_sequence_compression.py:333-336, 617):
+```python
+if hasattr(model, 'enable_adapter_layers'):
+    model.train()  # LoRA layers trainable
+else:
+    model.eval()   # Base model frozen
+```
+
+**Optimizer Includes** (train_sequence_compression.py:671-673):
+```python
+trainable_params = list(compressor.parameters())  # Learned pooling
+if args.use_lora:
+    trainable_params += [p for p in model.parameters() if p.requires_grad]  # LoRA params
+```
+
+**Is This Correct?** ✅ YES
+- LoRA applied correctly via PEFT library
+- Appropriate modules targeted (attention projections)
+- Gradient flow correct (LoRA params in optimizer, model.train())
+- Limited to early layers (first 8) which is a good practice
+
+**Is This Answering Our Questions?** ⚠️ PARTIALLY
+- Training IS "predict next token" ✅
+- Loss IS against dataset answers ✅
+- BUT: This is NOT the LatentWire interlingua - it's a single-model compression diagnostic
+
+---
+
+### Critical Issues Identified
+
+#### 1. **Experiment Mismatch** (CRITICAL)
+**Issue**: Running diagnostic script instead of main LatentWire system
+
+**Evidence**:
+- Script: Single-model compression (train_sequence_compression.py)
+- Research proposal: Cross-model interlingua (latentwire/train.py)
+- CLAUDE.md describes: "Llama and Qwen consuming same learned continuous prefix"
+- Current script: One model compressing its own embeddings
+
+**Impact**: Zero progress toward stated research goal of cross-model communication
+
+**Recommendation**: Switch to `latentwire/train.py` with proper configuration for Llama + Qwen
+
+---
+
+#### 2. **Compression Ratio Mismatch**
+**Issue**: 1.17× compression vs 4× stated goal
+
+**Evidence**:
+- Script config: `--target_sequence_length 256 --source_length 300` (line 36-37)
+- Compression: 300/256 = 1.17×
+- Research proposal: "≥4× compression" (H1, H2, H5)
+- Real SQuAD prompts: ~200-300 tokens → should compress to M=32-64 for 4-8× compression
+
+**Impact**: Not testing true compression capabilities
+
+**Recommendation**: Set target_sequence_length to 32-64 to match research goals
+
+---
+
+#### 3. **Architecture Misalignment**
+**What's Missing from Current Script**:
+- ✗ Cross-model components (Llama + Qwen together)
+- ✗ Shared interlingua encoder
+- ✗ Model-specific adapters (Adapter_L, Adapter_Q)
+- ✗ Joint rescoring / two-model synergy
+- ✗ Heterogeneous tokenizer handling
+- ✗ Knowledge distillation from text teacher
+- ✗ K-token CE objectives (only standard next-token)
+
+**What IS Present**:
+- ✓ Learned pooling (compression mechanism)
+- ✓ LoRA adaptation (helps acceptance)
+- ✓ Positional encoding preservation
+- ✓ Teacher-forced training on answers
+
+---
+
+#### 4. **Context from LOG.md - Mode Collapse History**
+**Background**: Project has experienced systemic mode collapse:
+- ByteEncoder: Complete collapse (all outputs identical)
+- Anchor-guided: Mode collapse despite improvements
+- Direct sequence compression: Also collapsed
+- Loss weight sweeps: No improvement
+
+**Current Script Context**:
+- Appears to be yet another diagnostic attempt
+- Tests if simpler single-model compression avoids collapse
+- Still using SQuAD which may contribute to collapse
+
+**Concern**: Continuing variations without addressing root cause identified in LOG.md:
+- "K-token CE supervision fundamentally too weak"
+- "Frozen LLM limitation - soft prefix embeddings may be fundamentally ineffective"
+- "Missing auxiliary losses"
+
+---
+
+#### 5. **Process Issues**
+
+**No End-to-End Script Workflow Adherence**:
+- CLAUDE.md specifies: "Scripts must work completely from scratch with NO pre-existing checkpoints"
+- Standard workflow: `git pull && rm -rf runs && PYTHONPATH=. bash <script.sh>`
+- Current script: ✅ Follows this pattern
+
+**Missing Diagnostic/Analysis Infrastructure**:
+- Script saves diagnostics.jsonl ✅
+- Script uses tee for logging ✅
+- But: No clear success criteria defined
+- No automated analysis of results
+- No comparison to baselines
+
+---
+
+### Design Correctness Assessment
+
+**Question**: "When we're doing LoRA training, what exactly are we doing?"
+
+**Answer**:
+```
+Standard causal language model training with two differences:
+1. Prefix: Instead of text tokens, feed compressed embeddings
+2. Adaptation: Use LoRA to help model accept non-standard prefix
+
+Training objective: p(answer | compressed_prefix)
+Gradients: Flow through compressor + LoRA parameters
+Base model: Frozen (8B parameters untouched)
+```
+
+**Is This Correct?** ✅ YES, for what it's trying to do
+
+**Question**: "Is our training like 'predict the next token in the sequence' type?"
+
+**Answer**: ✅ YES, exactly correct. Line 380:
+```python
+outputs = model(inputs_embeds=inputs_embeds, labels=labels)
+loss = outputs.loss  # This is standard causal LM cross-entropy
+```
+It's teacher-forced next-token prediction on the answer portion.
+
+**Question**: "Are we making the loss against the answers in the training dataset?"
+
+**Answer**: ✅ YES. Lines 367-377:
+```python
+labels[:, 256:] = answer_ids[:, 1:]  # Gold answer tokens
+```
+Loss is computed against gold answers, prefix is masked (-100).
+
+**Question**: "Are we injecting enough LoRA and doing that training correctly?"
+
+**Answer**:
+- Injection: ✅ Correct (PEFT library, appropriate modules)
+- Training: ✅ Correct (params in optimizer, model.train())
+- "Enough": ⚠️ DEPENDS
+  - r=16, first 8 layers is reasonable for this task
+  - But may need more if accepting heavily compressed prefixes
+  - Main issue: Should test with/without LoRA to measure impact
+
+---
+
+### Fundamental Design Questions
+
+**Question**: "Are there any fundamental problems with our design?"
+
+**Answer**: ⚠️ YES - Multiple Levels
+
+**Level 1: Script-Level** (train_sequence_compression.py)
+- ✅ Implementation is technically sound
+- ✅ LoRA, training, loss all correct
+- ✅ Handles positional encodings, padding, dtype conversions
+- ⚠️ BUT: Wrong experiment - not testing interlingua
+
+**Level 2: Research-Level** (LatentWire system)
+- ❌ Core approach has failed repeatedly (per LOG.md)
+- ❌ Mode collapse across multiple architectures
+- ❌ ByteEncoder, Anchor-guided, Direct compression all collapsed
+- ❌ Suggests fundamental issue with soft-prefix + frozen LLM approach
+
+**Level 3: Process-Level**
+- ❌ Running diagnostic script instead of main system
+- ❌ Not addressing root causes from LOG.md findings
+- ❌ Continuing variations without fundamental rethink
+- ❌ Past research quarter midpoint - should be summarizing, not new experiments
+
+**Root Cause Hypothesis** (from LOG.md):
+1. K-token CE supervision (K=4) too weak - only supervises first 4 tokens
+2. Frozen LLM may not accept soft prefixes effectively
+3. Missing diversity regularization, reconstruction losses
+4. SQuAD answer patterns may dominate weak supervision
+5. Gradient flow issues through frozen model
+
+---
+
+### Bugs and Inefficiencies Found
+
+**1. Compression Ratio Configuration** (Line 36-37, 505-506)
+```bash
+# Current
+--target_sequence_length 256
+--source_length 300  # Only for reporting, not enforced
+# Compression: 1.17x
+
+# Should be (for 4x target)
+--target_sequence_length 64  # or 32 for 8x
+```
+
+**2. Dataset Hardcoded to SQuAD** (Line 519, 644)
+```python
+parser.add_argument('--dataset', type=str, default='squad', choices=['squad', 'hotpot'])
+```
+- LOG.md suggests SQuAD may contribute to mode collapse
+- Should test with more diverse datasets
+
+**3. Missing Baseline Comparisons**
+- No text baseline evaluation
+- No token-budget baseline (truncate to M tokens)
+- Can't assess if compression is better than naive truncation
+
+**4. No Diversity Metrics**
+```python
+# Missing in evaluate() function
+# Should add:
+- unique_predictions = len(set(predictions))
+- diversity_ratio = unique_predictions / len(predictions)
+- cosine similarity between compressed embeddings
+```
+
+**5. CUDA MPS Workaround** (Lines 554-582)
+```python
+# Bypasses broken MPS daemon on cluster
+os.environ['CUDA_MPS_PIPE_DIRECTORY'] = '/dev/null'
+os.environ['CUDA_MPS_LOG_DIRECTORY'] = '/dev/null'
+```
+- Works but masks underlying cluster config issue
+- Should be fixed at cluster level, not in training script
+
+**6. Pooling Method Not Compared**
+```python
+parser.add_argument('--pooling_method', type=str, default='learned_attention',
+                   choices=['learned_attention', 'convolutional'])
+```
+- Defaults to learned_attention
+- No ablation testing both methods
+- LOG.md showed direct cross-attention ALSO collapses - this should be documented
+
+**7. No Mode Collapse Detection**
+```python
+# Should add to diagnostic logging:
+- Mean cosine similarity between compressed representations
+- Entropy of prediction distribution
+- Unique prediction count per batch
+- Early stopping if diversity < threshold
+```
+
+---
+
+### Recommendations
+
+#### Immediate Actions (HPC Run)
+
+**1. Stop Current Run if Mode Collapse Detected**
+```bash
+# Check diversity in latest diagnostics
+tail -n 20 runs/seq256_r16_l8_20epoch/diagnostics.jsonl
+# If predictions are repetitive across epochs, stop and pivot
+```
+
+**2. If Continuing This Experiment**:
+- Add diversity metrics to diagnostics
+- Compare with/without LoRA (ablation)
+- Test at true 4× compression (target_length=64)
+- Add text baseline comparison
+
+#### Strategic Recommendations
+
+**1. Acknowledge Fundamental Issue** (Past Midpoint)
+- Main LatentWire approach has failed repeatedly
+- Soft-prefix + frozen LLM may be fundamentally limited
+- Mode collapse across all architectures suggests systemic issue
+
+**2. Focus Remaining Time On**:
+- ✅ Documenting what was learned
+- ✅ Analyzing why approaches failed
+- ✅ Consolidating LOG.md findings
+- ✅ Preparing presentation of negative results
+- ❌ NOT: More architectural variations
+
+**3. For Future Work** (if continuing):
+- Consider fine-tuning approach (not just LoRA)
+- Test full-sequence supervision (not K=4 tokens)
+- Alternative conditioning mechanisms (not soft prefix)
+- Different datasets (not just SQuAD)
+
+#### Codebase Improvements
+
+**1. Update CLAUDE.md**:
+```markdown
+## Development Environment Notes
+- **Local development**: MacBook (you are developing here)
+- **Training runs**: HPC cluster with 4× H100 GPUs (remote)
+- **DO NOT create new .md files**: Update LOG.md instead
+- **Workflow**: Experiments run on HPC, logs synced back, analysis local
+```
+
+**2. Document Script Purpose**:
+```python
+# train_sequence_compression.py
+"""
+DIAGNOSTIC EXPERIMENT: Single-model sequence compression with LoRA
+
+NOTE: This is NOT the main LatentWire cross-model interlingua system.
+This script tests whether LoRA can help a single model accept compressed
+embeddings from its own embedding layer.
+
+Main LatentWire training: Use latentwire/train.py instead
+"""
+```
+
+**3. Add Diversity Monitoring**:
+```python
+def evaluate(...):
+    # ... existing code ...
+
+    # Add diversity metrics
+    unique_preds = len(set(predictions))
+    diversity = unique_preds / len(predictions)
+
+    # Detect mode collapse
+    if diversity < 0.2:  # Less than 20% unique
+        print(f"⚠️  WARNING: Mode collapse detected! Diversity: {diversity:.1%}")
+        print(f"   Unique predictions: {unique_preds}/{len(predictions)}")
+
+    return {
+        'em': em,
+        'f1': f1,
+        'diversity': diversity,
+        'unique_predictions': unique_preds,
+        ...
+    }
+```
+
+---
+
+### Summary for User
+
+**What the script does**: ✅ Technically correct single-model compression with LoRA
+**What you think it does**: ❌ Cross-model interlingua (Llama ↔ Qwen communication)
+**Training objective**: ✅ Correct (predict next token on answers)
+**LoRA usage**: ✅ Correct (properly injected, trained, gradient flow good)
+**Main issue**: ⚠️ **WRONG EXPERIMENT** - not testing the research hypothesis
+
+**Critical realization**: You're past the midpoint of the research quarter, the main approach has failed repeatedly (mode collapse), and you're running yet another diagnostic variation instead of consolidating findings and pivoting strategy.
+
+**Recommendation**:
+1. Let current HPC run complete
+2. Analyze results for diversity/mode collapse
+3. Update LOG.md with consolidated findings
+4. Shift to writing up lessons learned rather than new experiments
+
+---
+
 ## Summary: Mode Collapse Diagnosis (2025-10-12 to 2025-10-13)
 
 **Current Status**: 🚨 **Multiple architectural approaches have failed - fundamental rethink needed**
