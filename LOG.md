@@ -12,6 +12,400 @@
 
 ---
 
+## Comprehensive Sweep Analysis: Mode Collapse Persists Across All Configurations (2025-10-16)
+
+**Experiments Run**: 16 configurations tested (Oct 15-16, 2025)
+**Conclusion**: 🚨 **Mode collapse occurs across ALL hyperparameter variations**
+
+### Sweep Results Summary
+
+**Sequence Compression Sweep** (3 epochs, 10K train, 100 eval from SQuAD):
+
+| Configuration | Sequence Length | LoRA | Best F1 | Status |
+|---------------|----------------|------|---------|---------|
+| seq256_noLoRA | 256 | None | 0.00% | ❌ Complete collapse |
+| **seq256_r16_l8** | **256** | **r=16, l=8** | **2.88%** | ⚠️ Severe collapse (BEST) |
+| seq192_noLoRA | 192 | None | 1.53% | ❌ Severe collapse |
+| seq192_r16_l8 | 192 | r=16, l=8 | 1.68% | ❌ Severe collapse |
+| seq128_noLoRA | 128 | None | 0.00% | ❌ Complete collapse |
+| seq128_r8_l8 | 128 | r=8, l=8 | 0.00% | ❌ Complete collapse |
+| seq128_r16_l8 | 128 | r=16, l=8 | 1.32% | ❌ Severe collapse |
+| seq128_r32_l8 | 128 | r=32, l=8 | 1.40% | ❌ Severe collapse |
+| seq128_r16_l16 | 128 | r=16, l=16 | 1.90% | ❌ Severe collapse |
+| seq128_r16_l32 | 128 | r=16, l=32 | 1.06% | ❌ Severe collapse |
+| seq128_r16_all | 128 | r=16, all layers | 1.06% | ❌ Severe collapse |
+| seq96_noLoRA | 96 | None | 0.00% | ❌ Complete collapse |
+| seq96_r16_l8 | 96 | r=16, l=8 | 2.87% | ⚠️ Severe collapse |
+| seq64_noLoRA | 64 | None | 1.27% | ❌ Severe collapse |
+| seq64_r16_l8 | 64 | r=16, l=8 | 1.67% | ❌ Severe collapse |
+
+**Phase1a LoRA Sweep** (earlier experiments):
+
+| Configuration | F1 | Status |
+|---------------|-----|---------|
+| baseline (no LoRA) | 0.96% | ❌ Severe collapse |
+| r4_a8_l8 | 0.61% | ❌ Severe collapse |
+| r8_a16_l12 | 0.00% | ❌ Complete collapse |
+| r16_a32_full (all layers) | 0.00% | ❌ Complete collapse |
+
+**Extended Training Run** (20 epochs, Oct 16-17):
+
+| Configuration | Epochs | Best F1 | Final Diversity | Status |
+|---------------|--------|---------|-----------------|---------|
+| seq256_r16_l8_20epoch | 20 | 2.60% @ epoch 8 | 40% | ⚠️ Mode collapse confirmed |
+
+---
+
+### Critical Findings
+
+**1. Mode Collapse is Universal**
+- **ALL 16 configurations collapsed** (F1 < 3% vs 69% text baseline)
+- No exact matches (EM=0%) in any configuration
+- Occurs with and without LoRA
+- Persists across all sequence lengths (64-256)
+- Not improved by training longer (20 epochs)
+
+**2. LoRA Provides Marginal Help**
+- Without LoRA: F1 = 0-1.5%
+- With LoRA: F1 = 1.3-2.9%
+- Improvement: +1-2% absolute (still catastrophic)
+- **Does not solve fundamental issue**
+
+**3. Hyperparameters Don't Matter**
+- LoRA rank (r=8, 16, 32): No clear winner
+- LoRA layers (8, 12, 16, 32, all): Minimal difference
+- Sequence length (64-256): No clear pattern
+- More training (3 → 20 epochs): F1 declines after epoch 8
+
+**4. Prediction Patterns (from 20-epoch run)**
+
+Early training (epoch 0-2):
+```
+ALL predictions: "the of of of the of of of of of of of"
+Diversity: ~10%
+```
+
+Mid training (epoch 3):
+```
+ALL predictions: "the 010100000000"
+Diversity: 0% (complete collapse)
+```
+
+Final training (epoch 19):
+```
+Common patterns:
+- [50%] "the  and of in Islamicabab empire the and of"
+- [20%] "the,, and of nature human achievements in, arts human"
+- [20%] "the 0 century or  century marker event significant in European"
+Diversity: 40%
+```
+
+**All predictions ignore input content** regardless of question type (numbers, names, categories, concepts).
+
+---
+
+### What the Sweeps Tell Us
+
+**NOT hyperparameter problems:**
+- ✅ Tested 8 LoRA configs - all collapsed
+- ✅ Tested 5 sequence lengths - all collapsed
+- ✅ Tested with/without LoRA - all collapsed
+- ✅ Tested short/long training - all collapsed
+
+**IS a fundamental architectural problem:**
+
+The sweeps definitively rule out hyperparameter tuning as a solution. The issue is one or more of:
+
+1. **Supervision signal too weak**
+   - Standard CE loss on answers provides no explicit diversity constraint
+   - Model can minimize loss by learning single "average" compression
+   - No penalty for identical compressions across different inputs
+
+2. **Frozen LLM limitation**
+   - Soft prefix conditioning may be fundamentally ineffective
+   - Even with LoRA (up to all layers), signal is too weak
+   - Gradient path: Loss → LLM output → LoRA → compressed → compressor
+   - Compressor receives only indirect, diluted signal
+
+3. **Information bottleneck without preservation constraint**
+   - Compression destroys information with no reconstruction penalty
+   - Model learns to compress to minimal "safe" representation
+   - No auxiliary loss forcing preservation of input-specific details
+
+4. **Task structure enables collapse**
+   - SQuAD answers are short (1-5 words), often generic
+   - Model learns that generic phrases achieve low loss
+   - No explicit requirement for input-dependent outputs
+
+---
+
+### Recommended Solutions (Prioritized by Impact)
+
+**CRITICAL: These require architectural changes, not hyperparameter tuning**
+
+#### **1. Add Contrastive Diversity Loss** (Highest Priority)
+
+Force different inputs to produce different compressions:
+
+```python
+def contrastive_diversity_loss(compressed_embeds, temperature=0.07):
+    """
+    InfoNCE-style loss: Push different examples apart in latent space.
+    compressed_embeds: [B, M, D] compressed representations
+    """
+    B, M, D = compressed_embeds.shape
+
+    # Flatten to [B, M*D]
+    compressed_flat = compressed_embeds.view(B, M * D)
+
+    # Normalize
+    compressed_norm = F.normalize(compressed_flat, dim=1)
+
+    # Compute similarity matrix [B, B]
+    sim_matrix = torch.matmul(compressed_norm, compressed_norm.t()) / temperature
+
+    # Labels: each example should be most similar to itself
+    labels = torch.arange(B, device=sim_matrix.device)
+
+    # InfoNCE loss
+    loss = F.cross_entropy(sim_matrix, labels)
+
+    return loss
+```
+
+**Add to training loss:**
+```python
+total_loss = ce_loss + 0.5 * contrastive_diversity_loss(compressed)
+```
+
+**Why this works:**
+- Explicitly penalizes identical compressions
+- Same principle as CLIP, SimCLR, contrastive learning
+- Proven to prevent representation collapse
+
+#### **2. Add Reconstruction Loss**
+
+Force compressor to preserve information:
+
+```python
+class CompressorWithDecoder(nn.Module):
+    def __init__(self, ...):
+        super().__init__()
+        self.encoder = LearnedAttentionPooling(...)  # existing
+
+        # NEW: Decoder to reconstruct source
+        self.decoder = nn.TransformerDecoder(
+            nn.TransformerDecoderLayer(d_model=4096, nhead=16),
+            num_layers=4
+        )
+        self.position_decoder = nn.Parameter(torch.randn(300, 4096) * 0.01)
+
+    def forward(self, source_embeds, positions):
+        # Compress
+        compressed = self.encoder(source_embeds, positions)  # [B, M, D]
+
+        # Reconstruct (for training only)
+        if self.training:
+            pos_embeds = self.position_decoder.unsqueeze(0).expand(B, -1, -1)
+            reconstructed = self.decoder(
+                tgt=pos_embeds,
+                memory=compressed
+            )  # [B, src_len, D]
+        else:
+            reconstructed = None
+
+        return compressed, reconstructed
+
+def reconstruction_loss(source_embeds, reconstructed):
+    """MSE between original and reconstructed embeddings."""
+    return F.mse_loss(reconstructed, source_embeds.detach())
+```
+
+**Add to training loss:**
+```python
+compressed, reconstructed = compressor(source_embeds, positions)
+total_loss = ce_loss + 0.1 * reconstruction_loss(source_embeds, reconstructed)
+```
+
+**Why this works:**
+- Forces compressor to preserve information
+- Cannot collapse to single representation if must reconstruct diverse inputs
+- Autoencoder principle - bottleneck preserves information when reconstruction required
+
+#### **3. Add Auxiliary Prediction Tasks**
+
+Give compressor additional objectives:
+
+```python
+class CompressorWithAuxHeads(nn.Module):
+    def __init__(self, ...):
+        super().__init__()
+        self.encoder = LearnedAttentionPooling(...)
+
+        # Auxiliary heads predict properties from compression
+        self.length_head = nn.Linear(M * D, 1)  # Predict answer length
+        self.type_head = nn.Linear(M * D, 10)   # Predict answer type (number/name/date/...)
+        self.first_token_head = nn.Linear(M * D, vocab_size)  # Predict first answer token
+
+    def forward(self, source_embeds, positions, answer_ids=None):
+        compressed = self.encoder(source_embeds, positions)  # [B, M, D]
+        compressed_flat = compressed.view(B, -1)
+
+        # Auxiliary predictions (training only)
+        if self.training and answer_ids is not None:
+            pred_length = self.length_head(compressed_flat)
+            pred_type = self.type_head(compressed_flat)
+            pred_first_token = self.first_token_head(compressed_flat)
+
+            # Compute auxiliary losses
+            aux_losses = {
+                'length': F.mse_loss(pred_length, answer_lengths),
+                'type': F.cross_entropy(pred_type, answer_types),
+                'first_token': F.cross_entropy(pred_first_token, answer_ids[:, 0])
+            }
+        else:
+            aux_losses = {}
+
+        return compressed, aux_losses
+```
+
+**Add to training loss:**
+```python
+compressed, aux_losses = compressor(source_embeds, positions, answer_ids)
+total_loss = ce_loss + 0.1 * sum(aux_losses.values())
+```
+
+**Why this works:**
+- Forces compression to capture answer-relevant features
+- Multiple objectives prevent collapse (can't achieve all with single representation)
+- Auxiliary tasks require input-dependent compressions
+
+#### **4. Unfreeze More of LLM**
+
+Current: LoRA on 8-16 layers (attention only)
+
+**Option A: Increase LoRA scope**
+```python
+# Current
+layers_to_transform=list(range(8))
+target_modules=["q_proj", "k_proj", "v_proj", "o_proj"]
+
+# Try: More layers + MLP
+layers_to_transform=list(range(24))  # Most of model
+target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+lora_rank = 64  # Higher rank
+```
+
+**Option B: Full fine-tuning (last N layers)**
+```python
+# Unfreeze last 4 layers entirely (not just LoRA)
+for name, param in model.named_parameters():
+    if any(f"layers.{i}." in name for i in range(28, 32)):  # Llama has 32 layers
+        param.requires_grad = True
+```
+
+**Why this might work:**
+- Stronger gradient signal to compressor
+- Model can adapt more freely to compressed inputs
+- Risk: More expensive, may overfit
+
+#### **5. Different Training Objective**
+
+**Option A: Teacher-forced sequence matching**
+
+Instead of just predicting answer, match entire hidden states:
+
+```python
+def hidden_state_matching_loss(compressed_prefix, text_prefix, model):
+    """
+    Force compressed prefix to produce same hidden states as text prefix.
+    """
+    # Get hidden states from text
+    with torch.no_grad():
+        text_outputs = model(input_ids=text_prefix_ids, output_hidden_states=True)
+        text_hidden = text_outputs.hidden_states[-1]  # [B, text_len, D]
+
+    # Get hidden states from compressed
+    compressed_outputs = model(inputs_embeds=compressed_prefix, output_hidden_states=True)
+    compressed_hidden = compressed_outputs.hidden_states[-1]  # [B, M, D]
+
+    # Match last few tokens
+    loss = F.mse_loss(
+        compressed_hidden[:, -4:, :],  # Last 4 compressed tokens
+        text_hidden[:, -4:, :]         # Last 4 text tokens
+    )
+
+    return loss
+```
+
+**Option B: Prefix language modeling**
+
+Make compressor predict continuations directly:
+
+```python
+# Instead of: compressed → answer
+# Do: source → compressed → source[mask]
+
+def prefix_lm_loss(source_embeds, compressed, compressor_decoder):
+    """
+    Mask part of source, predict from compression.
+    """
+    # Mask last 30% of source
+    mask_len = int(source_len * 0.3)
+    masked_source = source_embeds[:, :-mask_len, :]
+    target_source = source_embeds[:, -mask_len:, :]
+
+    # Compress masked
+    compressed = compressor(masked_source)
+
+    # Predict masked part
+    predicted = compressor_decoder(compressed)  # [B, mask_len, D]
+
+    # MSE loss
+    loss = F.mse_loss(predicted, target_source.detach())
+
+    return loss
+```
+
+**Why these might work:**
+- Stronger supervision signal (more tokens, denser gradient)
+- Forces compression to preserve semantic content
+- Prefix LM ensures compression captures input information
+
+---
+
+### Recommended Immediate Next Steps
+
+**DO NOT run more hyperparameter sweeps** - the sweeps prove this won't help.
+
+**DO implement one or more architectural fixes:**
+
+1. **Quickest win**: Add contrastive diversity loss
+   - 50 lines of code
+   - Should see diversity improve from 40% → 70%+
+   - Run for 3 epochs to validate
+
+2. **If (1) insufficient**: Add reconstruction loss
+   - Requires decoder module (~200 lines)
+   - Should force information preservation
+   - Combine with contrastive loss
+
+3. **If (1)+(2) insufficient**: Add auxiliary heads
+   - Moderate code change (~300 lines)
+   - Provides multiple learning signals
+   - Helps if problem is weak supervision
+
+4. **Last resort**: Unfreeze more of LLM or change objective
+   - Expensive (compute, risk of overfit)
+   - Only if architectural fixes fail
+
+**Success criteria** (after fixes):
+- Diversity: ≥70% (currently 40%)
+- F1: ≥15-20% (currently 2.6%)
+- Predictions vary with input (currently identical)
+
+---
+
 ## Code Audit: Sequence Compression Script Analysis (2025-10-16)
 
 **Script Analyzed**: `scripts/run_seq256_20epoch.sh` → `train_sequence_compression.py`
