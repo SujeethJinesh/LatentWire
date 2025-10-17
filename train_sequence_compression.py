@@ -475,9 +475,21 @@ def evaluate(
     # Compute metrics
     em, f1 = batch_metrics(predictions, references)
 
+    # Print sample predictions
+    print(f"\n{'='*80}")
+    print("SAMPLE PREDICTIONS (first 10)")
+    print('='*80)
+    for i in range(min(10, len(predictions))):
+        print(f"\n[{i+1}]")
+        print(f"  Gold:       {references[i]}")
+        print(f"  Prediction: {predictions[i]}")
+    print('='*80)
+
     return {
         'em': em,
         'f1': f1,
+        'predictions': predictions,
+        'references': references,
     }
 
 
