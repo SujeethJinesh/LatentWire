@@ -1,0 +1,31 @@
+{"step": 0, "epoch": 0, "timestamp": "2025-10-16T23:21:58.557558", "type": "train_step", "total_loss": 12.968664169311523, "ce": 12.968664169311523}
+{"step": 50, "epoch": 0, "timestamp": "2025-10-16T23:22:55.397597", "type": "train_step", "total_loss": 8.519659042358398, "ce": 8.519659042358398}
+{"step": 100, "epoch": 0, "timestamp": "2025-10-16T23:23:52.950588", "type": "train_step", "total_loss": 8.043519020080566, "ce": 8.043519020080566}
+{"step": 150, "epoch": 0, "timestamp": "2025-10-16T23:24:49.331154", "type": "train_step", "total_loss": 8.391372680664062, "ce": 8.391372680664062}
+{"step": 200, "epoch": 0, "timestamp": "2025-10-16T23:25:46.797891", "type": "train_step", "total_loss": 7.849791049957275, "ce": 7.849791049957275}
+{"step": 209, "epoch": 0, "timestamp": "2025-10-16T23:25:54.985240", "type": "train_epoch", "avg_loss": 8.526258525665867, "avg_ce_loss": 8.526258525665867}
+{"step": 209, "epoch": 0, "timestamp": "2025-10-16T23:26:19.977750", "type": "full_eval", "em": 0.0, "f1": 0.0, "diversity": 0.01}
+{"step": 250, "epoch": 1, "timestamp": "2025-10-16T23:27:07.536436", "type": "train_step", "total_loss": 7.75800085067749, "ce": 7.75800085067749}
+{"step": 300, "epoch": 1, "timestamp": "2025-10-16T23:28:04.164780", "type": "train_step", "total_loss": 8.079039573669434, "ce": 8.079039573669434}
+{"step": 350, "epoch": 1, "timestamp": "2025-10-16T23:29:00.716239", "type": "train_step", "total_loss": 7.608928680419922, "ce": 7.608928680419922}
+{"step": 400, "epoch": 1, "timestamp": "2025-10-16T23:29:57.698979", "type": "train_step", "total_loss": 8.062870979309082, "ce": 8.062870979309082}
+{"step": 418, "epoch": 1, "timestamp": "2025-10-16T23:30:15.876424", "type": "train_epoch", "avg_loss": 7.970500156639866, "avg_ce_loss": 7.970500156639866}
+{"step": 418, "epoch": 1, "timestamp": "2025-10-16T23:30:42.359030", "type": "full_eval", "em": 0.0, "f1": 0.0, "diversity": 0.97}
+{"step": 450, "epoch": 2, "timestamp": "2025-10-16T23:31:19.750570", "type": "train_step", "total_loss": 7.830707550048828, "ce": 7.830707550048828}
+{"step": 500, "epoch": 2, "timestamp": "2025-10-16T23:32:16.633838", "type": "train_step", "total_loss": 7.999798774719238, "ce": 7.999798774719238}
+{"step": 550, "epoch": 2, "timestamp": "2025-10-16T23:33:13.431328", "type": "train_step", "total_loss": 7.647363185882568, "ce": 7.647363185882568}
+{"step": 600, "epoch": 2, "timestamp": "2025-10-16T23:34:09.950940", "type": "train_step", "total_loss": 7.6586384773254395, "ce": 7.6586384773254395}
+{"step": 627, "epoch": 2, "timestamp": "2025-10-16T23:34:38.805037", "type": "train_epoch", "avg_loss": 7.831772512226014, "avg_ce_loss": 7.831772512226014}
+{"step": 627, "epoch": 2, "timestamp": "2025-10-16T23:35:03.677048", "type": "full_eval", "em": 0.0, "f1": 0.010212793104778581, "diversity": 0.88}
+{"step": 650, "epoch": 3, "timestamp": "2025-10-16T23:36:31.986093", "type": "train_step", "total_loss": 7.8320722579956055, "ce": 7.8320722579956055}
+{"step": 700, "epoch": 3, "timestamp": "2025-10-16T23:37:28.532949", "type": "train_step", "total_loss": 7.952462196350098, "ce": 7.952462196350098}
+{"step": 750, "epoch": 3, "timestamp": "2025-10-16T23:38:25.185650", "type": "train_step", "total_loss": 7.346937656402588, "ce": 7.346937656402588}
+{"step": 800, "epoch": 3, "timestamp": "2025-10-16T23:39:21.708260", "type": "train_step", "total_loss": 8.189658164978027, "ce": 8.189658164978027}
+{"step": 836, "epoch": 3, "timestamp": "2025-10-16T23:40:00.624871", "type": "train_epoch", "avg_loss": 7.755118075740395, "avg_ce_loss": 7.755118075740395}
+{"step": 836, "epoch": 3, "timestamp": "2025-10-16T23:40:23.776027", "type": "full_eval", "em": 0.0, "f1": 0.0045706028661997335, "diversity": 0.01}
+{"step": 850, "epoch": 4, "timestamp": "2025-10-16T23:40:40.703677", "type": "train_step", "total_loss": 7.561682224273682, "ce": 7.561682224273682}
+{"step": 900, "epoch": 4, "timestamp": "2025-10-16T23:41:37.801547", "type": "train_step", "total_loss": 7.692244052886963, "ce": 7.692244052886963}
+{"step": 950, "epoch": 4, "timestamp": "2025-10-16T23:42:34.606864", "type": "train_step", "total_loss": 7.484643936157227, "ce": 7.484643936157227}
+{"step": 1000, "epoch": 4, "timestamp": "2025-10-16T23:43:31.470697", "type": "train_step", "total_loss": 7.356993675231934, "ce": 7.356993675231934}
+{"step": 1045, "epoch": 4, "timestamp": "2025-10-16T23:44:20.303971", "type": "train_epoch", "avg_loss": 7.696248465177545, "avg_ce_loss": 7.696248465177545}
+{"step": 1045, "epoch": 4, "timestamp": "2025-10-16T23:44:45.856726", "type": "full_eval", "em": 0.0, "f1": 0.0027250403448967745, "diversity": 0.1}

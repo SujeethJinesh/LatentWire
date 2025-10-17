@@ -1,0 +1,132 @@
+Feature Sweep Summary
+Started: Thu Oct 16 23:21:39 PDT 2025
+================================================
+Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+Dataset: squad
+Training samples: 10000
+Eval samples: 100
+Epochs: 5
+Batch size: 48
+Learning rate: 5e-4
+================================================
+
+
+Configuration: baseline
+  Args: (baseline - no extra features)
+  F1=0.27%, EM=0.00%, Diversity=10%
+  Log: runs/feature_sweep/baseline/train_20251016_232139.log
+
+Configuration: contrastive_w0.1_t0.07
+  Args: --use_contrastive --contrastive_weight 0.1 --contrastive_temp 0.07
+  F1=0.47%, EM=0.00%, Diversity=1%
+  Log: runs/feature_sweep/contrastive_w0.1_t0.07/train_20251016_232139.log
+
+Configuration: contrastive_w0.1_t0.1
+  Args: --use_contrastive --contrastive_weight 0.1 --contrastive_temp 0.1
+  F1=0.35%, EM=0.00%, Diversity=39%
+  Log: runs/feature_sweep/contrastive_w0.1_t0.1/train_20251016_232139.log
+
+Configuration: contrastive_w0.3_t0.07
+  Args: --use_contrastive --contrastive_weight 0.3 --contrastive_temp 0.07
+  F1=0.47%, EM=0.00%, Diversity=78%
+  Log: runs/feature_sweep/contrastive_w0.3_t0.07/train_20251016_232139.log
+
+Configuration: contrastive_w0.3_t0.1
+  Args: --use_contrastive --contrastive_weight 0.3 --contrastive_temp 0.1
+  F1=0.99%, EM=0.00%, Diversity=52%
+  Log: runs/feature_sweep/contrastive_w0.3_t0.1/train_20251016_232139.log
+
+Configuration: contrastive_w0.5_t0.07
+  Args: --use_contrastive --contrastive_weight 0.5 --contrastive_temp 0.07
+  F1=0.31%, EM=0.00%, Diversity=16%
+  Log: runs/feature_sweep/contrastive_w0.5_t0.07/train_20251016_232139.log
+
+Configuration: contrastive_w0.5_t0.1
+  Args: --use_contrastive --contrastive_weight 0.5 --contrastive_temp 0.1
+  F1=0.86%, EM=0.00%, Diversity=31%
+  Log: runs/feature_sweep/contrastive_w0.5_t0.1/train_20251016_232139.log
+
+Configuration: k_token_k2
+  Args: --use_k_token_ce --k_token_k 2
+  No eval metrics found
+  Log: runs/feature_sweep/k_token_k2/train_20251016_232139.log
+
+Configuration: k_token_k4
+  Args: --use_k_token_ce --k_token_k 4
+  No diagnostics file
+  Log: runs/feature_sweep/k_token_k4/train_20251016_232139.log
+
+Configuration: k_token_k8
+  Args: --use_k_token_ce --k_token_k 8
+  No diagnostics file
+  Log: runs/feature_sweep/k_token_k8/train_20251016_232139.log
+
+Configuration: reconstruction_w0.01_l2
+  Args: --use_reconstruction --reconstruction_weight 0.01 --reconstruction_layers 2
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.01_l2/train_20251016_232139.log
+
+Configuration: reconstruction_w0.01_l4
+  Args: --use_reconstruction --reconstruction_weight 0.01 --reconstruction_layers 4
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.01_l4/train_20251016_232139.log
+
+Configuration: reconstruction_w0.05_l2
+  Args: --use_reconstruction --reconstruction_weight 0.05 --reconstruction_layers 2
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.05_l2/train_20251016_232139.log
+
+Configuration: reconstruction_w0.05_l4
+  Args: --use_reconstruction --reconstruction_weight 0.05 --reconstruction_layers 4
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.05_l4/train_20251016_232139.log
+
+Configuration: reconstruction_w0.1_l2
+  Args: --use_reconstruction --reconstruction_weight 0.1 --reconstruction_layers 2
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.1_l2/train_20251016_232139.log
+
+Configuration: reconstruction_w0.1_l4
+  Args: --use_reconstruction --reconstruction_weight 0.1 --reconstruction_layers 4
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.1_l4/train_20251016_232139.log
+
+Configuration: reconstruction_w0.2_l2
+  Args: --use_reconstruction --reconstruction_weight 0.2 --reconstruction_layers 2
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.2_l2/train_20251016_232139.log
+
+Configuration: reconstruction_w0.2_l4
+  Args: --use_reconstruction --reconstruction_weight 0.2 --reconstruction_layers 4
+  No diagnostics file
+  Log: runs/feature_sweep/reconstruction_w0.2_l4/train_20251016_232139.log
+
+Configuration: kd_w0.1_tau1.0
+  Args: --use_kd --kd_weight 0.1 --kd_tau 1.0 --kd_k 4
+  No diagnostics file
+  Log: runs/feature_sweep/kd_w0.1_tau1.0/train_20251016_232139.log
+
+Configuration: kd_w0.1_tau2.0
+  Args: --use_kd --kd_weight 0.1 --kd_tau 2.0 --kd_k 4
+  No diagnostics file
+  Log: runs/feature_sweep/kd_w0.1_tau2.0/train_20251016_232139.log
+
+Configuration: kd_w0.3_tau1.0
+  Args: --use_kd --kd_weight 0.3 --kd_tau 1.0 --kd_k 4
+  No diagnostics file
+  Log: runs/feature_sweep/kd_w0.3_tau1.0/train_20251016_232139.log
+
+Configuration: kd_w0.3_tau2.0
+  Args: --use_kd --kd_weight 0.3 --kd_tau 2.0 --kd_k 4
+  No diagnostics file
+  Log: runs/feature_sweep/kd_w0.3_tau2.0/train_20251016_232139.log
+
+Configuration: kd_w0.5_tau1.0
+  Args: --use_kd --kd_weight 0.5 --kd_tau 1.0 --kd_k 4
+  No diagnostics file
+  Log: runs/feature_sweep/kd_w0.5_tau1.0/train_20251016_232139.log
+
+Configuration: kd_w0.5_tau2.0
+  Args: --use_kd --kd_weight 0.5 --kd_tau 2.0 --kd_k 4
+  No diagnostics file
+  Log: runs/feature_sweep/kd_w0.5_tau2.0/train_20251016_232139.log

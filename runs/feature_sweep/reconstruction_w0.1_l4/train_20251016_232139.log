@@ -1,0 +1,93 @@
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Using device: cuda:0
+GPUs available: 4
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+
+================================================================================
+FEATURE CONFIGURATION
+================================================================================
+Baseline CE loss: Yes
+Contrastive diversity: False (weight=0.1, temp=0.07)
+K-token CE: False (K=4)
+Reconstruction: True (weight=0.1, layers=4)
+Knowledge distillation: False (weight=0.3, tau=1.0, K=4)
+================================================================================
+
+Loading meta-llama/Meta-Llama-3.1-8B-Instruct...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4185.93it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.48s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.27s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.36s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.06it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:04<00:00,  1.09s/it]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+
+Applying LoRA: r=16, alpha=32, layers=8
+trainable params: 3,407,872 || all params: 8,033,669,120 || trainable%: 0.0424
+
+Model loaded!
+
+Creating sequence compressor: 300 → 256
+Pooling method: learned_attention
+Compression ratio: 1.17×
+
+Compressor parameters: 68,182,016
+
+Creating reconstruction decoder (4 layers)...
+Reconstruction decoder parameters: 1,074,061,312
+
+Loading 10000 training examples from squad...
+Loading 100 eval examples...
+Loaded 10000 train, 100 eval
+
+================================================================================
+TRAINING
+================================================================================
+
+
+================================================================================
+Epoch 1/5
+================================================================================
+
+Epoch 0:   0%|          | 0/209 [00:00<?, ?it/s]Epoch 0:   0%|          | 0/209 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/train_sequence_compression_enhanced.py", line 1146, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/train_sequence_compression_enhanced.py", line 1070, in main
+    global_step = train_epoch(
+  File "/projects/m000066/sujinesh/LatentWire/train_sequence_compression_enhanced.py", line 627, in train_epoch
+    reconstructed = reconstruction_decoder(compressed, src_seq)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/train_sequence_compression_enhanced.py", line 207, in forward
+    reconstructed = self.decoder(queries, compressed)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/transformer.py", line 495, in forward
+    output = mod(output, memory, tgt_mask=tgt_mask,
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/transformer.py", line 890, in forward
+    x = self.norm1(x + self._sa_block(x, tgt_mask, tgt_key_padding_mask, tgt_is_causal))
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/transformer.py", line 899, in _sa_block
+    x = self.self_attn(x, x, x,
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/modules/activation.py", line 1275, in forward
+    attn_output, attn_output_weights = F.multi_head_attention_forward(
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/functional.py", line 5420, in multi_head_attention_forward
+    q, k, v = _in_projection_packed(query, key, value, in_proj_weight, in_proj_bias)
+  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/nn/functional.py", line 4920, in _in_projection_packed
+    proj = linear(q, w, b)
+RuntimeError: expected mat1 and mat2 to have the same dtype, but got: float != c10::BFloat16
