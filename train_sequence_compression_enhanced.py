@@ -254,6 +254,7 @@ def k_token_cross_entropy(
     model: nn.Module,
     compressed: torch.Tensor,
     answer_ids: torch.Tensor,
+    anchor_embed_single: torch.Tensor,
     K: int = 4,
     pad_token_id: int = -100,
 ) -> torch.Tensor:
@@ -278,15 +279,18 @@ def k_token_cross_entropy(
     total_loss = 0.0
     steps = 0
 
+    anchor_embeds = anchor_embed_single.expand(batch_size, -1, -1)
+    anchor_len = anchor_embeds.shape[1]
+
     for t in range(min(K, answer_len - 1)):  # -1 because we need t+1 for labels
         # Prepare inputs: compressed prefix + answer tokens up to t
         if t == 0:
-            # First token: just compressed prefix
-            inputs_embeds = compressed
+            # First token: compressed prefix + anchor
+            inputs_embeds = torch.cat([compressed, anchor_embeds], dim=1)
         else:
             # Get embeddings for answer tokens [0:t]
             prev_answer_embeds = model.get_input_embeddings()(answer_ids[:, :t])
-            inputs_embeds = torch.cat([compressed, prev_answer_embeds], dim=1)
+            inputs_embeds = torch.cat([compressed, anchor_embeds, prev_answer_embeds], dim=1)
 
         # Forward pass
         outputs = model(inputs_embeds=inputs_embeds)
@@ -515,6 +519,7 @@ def train_epoch(
     diagnostic_log: str,
     tokenizer,
     args,  # Contains feature flags
+    anchor_embed_single: torch.Tensor,
     reconstruction_decoder: Optional[nn.Module] = None,
 ) -> int:
     """Train for one epoch with configurable losses."""
@@ -555,6 +560,10 @@ def train_epoch(
         # Compress sequence
         compressed = compressor(source_embeds, positions)  # [batch, target_len, dim]
 
+        # Expand anchor embeddings for this batch
+        anchor_embeds = anchor_embed_single.expand(batch_size, -1, -1)
+        anchor_len = anchor_embeds.shape[1]
+
         # ====================================================================
         # LOSS COMPUTATION
         # ====================================================================
@@ -564,21 +573,22 @@ def train_epoch(
 
         # BASELINE: Standard cross-entropy (always compute for logging)
         answer_embeds = model.get_input_embeddings()(answer_ids[:, :-1])  # [batch, ans_seq-1, dim]
-        inputs_embeds = torch.cat([compressed, answer_embeds], dim=1)  # [batch, target_len + ans_seq-1, dim]
+        inputs_embeds = torch.cat([compressed, anchor_embeds, answer_embeds], dim=1)
 
-        # Create labels: mask compressed prefix, predict answer
-        target_len = compressed.shape[1]
+        # Create labels: mask compressed prefix + anchor, predict answer
+        compressed_len = compressed.shape[1]
+        total_prefix_len = compressed_len + anchor_len
         labels = torch.full(
-            (batch_size, target_len + answer_ids.shape[1] - 1),
+            (batch_size, total_prefix_len + answer_ids.shape[1] - 1),
             -100,
             dtype=torch.long,
             device=device
         )
-        labels[:, target_len:] = answer_ids[:, 1:]  # Shift for next-token prediction
+        labels[:, total_prefix_len:] = answer_ids[:, 1:]  # Shift for next-token prediction
 
         # Mask padding in labels
         ans_mask_shifted = ans_mask[:, 1:]
-        labels[:, target_len:][ans_mask_shifted == 0] = -100
+        labels[:, total_prefix_len:][ans_mask_shifted == 0] = -100
 
         # Forward pass
         outputs = model(inputs_embeds=inputs_embeds, labels=labels)
@@ -604,6 +614,7 @@ def train_epoch(
                 model,
                 compressed,
                 answer_ids,
+                anchor_embed_single,
                 K=args.k_token_k,
                 pad_token_id=tokenizer.pad_token_id,
             )
@@ -636,10 +647,10 @@ def train_epoch(
             student_logits_list = []
             for t in range(min(args.kd_k, answer_ids.shape[1] - 1)):
                 if t == 0:
-                    inputs_embeds_t = compressed
+                    inputs_embeds_t = torch.cat([compressed, anchor_embeds], dim=1)
                 else:
                     prev_answer_embeds = model.get_input_embeddings()(answer_ids[:, :t])
-                    inputs_embeds_t = torch.cat([compressed, prev_answer_embeds], dim=1)
+                    inputs_embeds_t = torch.cat([compressed, anchor_embeds, prev_answer_embeds], dim=1)
 
                 outputs_t = model(inputs_embeds=inputs_embeds_t)
                 student_logits_list.append(outputs_t.logits[:, -1, :])
@@ -719,10 +730,11 @@ def evaluate(
     tokenizer,
     dataset: List[Dict],
     device: torch.device,
-    max_new_tokens: int = 12,
+    max_new_tokens: int = 64,
     batch_size: int = 8,
     max_length: int = 512,
     show_samples: int = 10,
+    anchor_embed_single: Optional[torch.Tensor] = None,
 ) -> Dict[str, float]:
     """Evaluate compressed sequence generation with diversity metrics."""
     compressor.eval()
@@ -758,9 +770,15 @@ def evaluate(
         # Compress
         compressed = compressor(source_embeds, positions)
 
+        if anchor_embed_single is not None:
+            anchor_embeds = anchor_embed_single.expand(batch_size_actual, -1, -1)
+            generation_prefix = torch.cat([compressed, anchor_embeds], dim=1)
+        else:
+            generation_prefix = compressed
+
         # Generate
         outputs = model.generate(
-            inputs_embeds=compressed,
+            inputs_embeds=generation_prefix,
             max_new_tokens=max_new_tokens,
             do_sample=False,
             pad_token_id=tokenizer.pad_token_id,
@@ -823,14 +841,14 @@ def main():
     # Training
     parser.add_argument('--dataset', type=str, default='squad', choices=['squad', 'hotpot'])
     parser.add_argument('--samples', type=int, default=10000)
-    parser.add_argument('--epochs', type=int, default=3)
-    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--epochs', type=int, default=5)
+    parser.add_argument('--batch_size', type=int, default=48)
     parser.add_argument('--max_length', type=int, default=512)
     parser.add_argument('--lr', type=float, default=5e-4)
 
     # Evaluation
     parser.add_argument('--eval_samples', type=int, default=100)
-    parser.add_argument('--max_new_tokens', type=int, default=12)
+    parser.add_argument('--max_new_tokens', type=int, default=64)
     parser.add_argument('--eval_every', type=int, default=1)
     parser.add_argument('--show_samples', type=int, default=10,
                        help='Number of sample predictions to show during eval')
@@ -966,6 +984,11 @@ def main():
 
     print(f"Model loaded!\n")
 
+    # Prepare anchor embeddings (e.g., "Answer: ")
+    anchor_text = "Answer:"
+    anchor_ids = tokenizer(anchor_text, return_tensors='pt', add_special_tokens=False)['input_ids'][0].to(embed_device)
+    anchor_embed_single = model.get_input_embeddings()(anchor_ids).unsqueeze(0)  # [1, anchor_len, dim]
+
     # Create compressor
     print(f"Creating sequence compressor: {args.source_length} → {args.target_sequence_length}")
     print(f"Pooling method: {args.pooling_method}")
@@ -1055,6 +1078,7 @@ def main():
             diagnostic_log=args.diagnostic_log,
             tokenizer=tokenizer,
             args=args,
+            anchor_embed_single=anchor_embed_single,
             reconstruction_decoder=reconstruction_decoder,
         )
 
@@ -1071,6 +1095,7 @@ def main():
                 batch_size=8,
                 max_length=args.max_length,
                 show_samples=args.show_samples,
+                anchor_embed_single=anchor_embed_single,
             )
 
             print(f"\nEval Results:")

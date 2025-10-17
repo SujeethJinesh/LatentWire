@@ -27,7 +27,7 @@ MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 DATASET="squad"
 SAMPLES=10000
 EVAL_SAMPLES=100
-EPOCHS=3
+EPOCHS=5
 BATCH_SIZE=48
 LR=5e-4
 MAX_LENGTH=512
@@ -59,7 +59,15 @@ echo "Eval samples: $EVAL_SAMPLES"
 echo "Epochs: $EPOCHS"
 echo "Batch size: $BATCH_SIZE"
 echo "Learning rate: $LR"
-echo "Sequence: $TARGET_SEQ (compression: $(python3 -c "print(f'{$SOURCE_LENGTH/$TARGET_SEQ:.2f}')") x)"
+# Compute compression ratio for logging
+COMPRESSION_RATIO=$(python3 - <<'PY'
+import os
+source_len = float(os.environ.get("SOURCE_LENGTH", 300))
+target_len = float(os.environ.get("TARGET_SEQ", 256))
+print(f"{source_len/target_len:.2f}")
+PY
+)
+echo "Sequence: $TARGET_SEQ (compression: ${COMPRESSION_RATIO}x)"
 echo "LoRA: r=$LORA_R, alpha=$LORA_ALPHA, layers=$LORA_LAYERS"
 echo "================================================"
 echo ""
