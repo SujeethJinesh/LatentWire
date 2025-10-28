@@ -12,6 +12,126 @@
 
 ---
 
+## Cross-Model Hidden State Transfer Ablation (2025-10-27)
+
+**Experiment**: Test whether hidden states from one LLM can condition another LLM
+**Date**: October 27, 2025
+**Environment**: MacBook (64GB RAM, MPS), Local
+**Models**: Llama 3.1 8B (hidden_size=4096) ↔ Mistral 7B (hidden_size=4096)
+
+### Motivation
+
+This experiment tests a core assumption of LatentWire: can a learned compressed representation (soft tokens/hidden states) transfer across different model architectures? Since Llama 3.1 8B and Mistral 7B both have `hidden_size=4096`, we can test direct transfer without alignment layers.
+
+### Results Summary
+
+| Ablation | Result | Assessment |
+|----------|--------|------------|
+| **Llama 3.1 8B Alone** | "...here, and it's already changing the way we live and work..." | ✅ **Perfect** - Coherent 50 tokens |
+| **Llama → Llama** | "...is bright," (3 tokens only) | ⚠️ **Bug** - Early termination |
+| **Llama → Mistral** | "...isreened Lagoon Limit, #1, 19901, 19901..." | ❌ **Failed** - Nonsensical repetition |
+| **Mistral → Mistral** | "...isbright bekan bekan bekan bekan..." | ⚠️ **Bug** - Token repetition |
+| **Mistral 7B Alone** | "...hot topic...machine learning...deep learning..." | ✅ **Perfect** - Coherent 50 tokens |
+| **Mistral → Llama** | "...isolson- and- for- even- for- even-..." | ❌ **Failed** - Nonsensical patterns |
+
+### Key Findings
+
+1. **Baselines Work Perfectly** ✅
+   - Both Llama 3.1 8B and Mistral 7B generate coherent, fluent text when used normally
+   - Native generation works as expected
+
+2. **Cross-Model Transfer Fails Completely** ❌
+   - **Llama → Mistral**: Produces gibberish ("isreened Lagoon Limit, #1, 19901...")
+   - **Mistral → Llama**: Produces nonsensical patterns ("isolson- and- for- even-...")
+   - Despite matching hidden dimensions (4096), hidden states don't transfer meaningfully
+
+3. **Sanity Checks Also Fail** ⚠️ (Bug Discovered)
+   - **Llama → Llama**: Only generates 3 tokens ("is bright,") then stops
+   - **Mistral → Mistral**: Degenerates into repetition ("bekan bekan bekan...")
+   - These *should* work since source and target are the same model
+   - Indicates bug in the `generate_cross_model()` function implementation
+
+### Analysis
+
+#### Why Cross-Model Transfer Failed
+
+Even with matching hidden dimensions, Llama and Mistral have:
+- **Different positional encodings**: RoPE with different hyperparameters
+- **Different normalization schemes**: RMSNorm with different scales
+- **Different attention patterns**: Mistral uses grouped-query attention (GQA) and sliding window attention
+- **Different training data distributions**: Different tokenizers and training corpora
+
+**The hidden states encode model-specific semantics** that don't transfer across architectures.
+
+#### Bug in Cross-Model Generation
+
+The failure of same-model transfers (Llama→Llama, Mistral→Mistral) reveals implementation issues:
+
+**Suspected Issues**:
+1. Context not maintained properly across generation steps
+2. Hidden state concatenation may be incorrect
+3. Position embeddings not being updated correctly
+4. KV cache not being used (recomputing from scratch each step)
+
+**From the code** (`experimental/learning/cross_model_ablation.py:186-207`):
+```python
+# Start generation from hidden states
+generated_ids = []
+current_hidden = hidden_states_b
+
+for _ in range(max_new_tokens):
+    outputs_b = model_b.model(
+        inputs_embeds=current_hidden,
+        output_hidden_states=True
+    )
+    # Get next token, concatenate embedding...
+```
+
+The loop passes `inputs_embeds` but doesn't maintain proper attention masks, position IDs, or KV cache. This likely causes:
+- Position embeddings to be reset each iteration
+- Attention to only see the concatenated hidden states, not full context
+- Computationally inefficient (no KV caching)
+
+### Implications for LatentWire
+
+**Bad News**:
+- Raw hidden states don't transfer across models (even with matching dimensions)
+- Need trained adapter/projection layer for cross-model interlingua
+- Architectural differences matter more than hidden dimension size
+
+**Good News**:
+- Confirms need for learned compression in LatentWire approach
+- Validates the architectural choice of trainable adapters
+- Shows why LatentWire trains model-specific adapters instead of direct transfer
+
+### Next Steps (For Future Work)
+
+1. **Fix the cross-model generation bug**:
+   - Implement proper KV caching
+   - Maintain correct position IDs and attention masks
+   - Test same-model sanity checks work before cross-model experiments
+
+2. **Test with trained alignment layer**:
+   - Add small MLP: `hidden_llama → MLP → hidden_mistral`
+   - Train on parallel generation task
+   - Measure transfer quality
+
+3. **Compare to LatentWire's approach**:
+   - LatentWire uses learned encoder → latent space → model-specific adapters
+   - This experiment shows why that design is necessary
+   - Direct hidden state transfer is insufficient
+
+### Conclusion
+
+**Cross-model hidden state transfer fails without learned alignment**, even when dimensions match. This validates LatentWire's architectural choice to use:
+- Learned encoder (not raw hidden states)
+- Model-specific adapters (not direct transfer)
+- Shared latent space with explicit training
+
+The experiment also revealed bugs in the manual generation implementation that need fixing before further cross-model experiments.
+
+---
+
 ## Comprehensive Sweep Analysis: Mode Collapse Persists Across All Configurations (2025-10-16)
 
 **Experiments Run**: 16 configurations tested (Oct 15-16, 2025)

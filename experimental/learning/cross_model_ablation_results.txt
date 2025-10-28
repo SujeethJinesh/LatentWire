@@ -1,0 +1,39 @@
+Loading models...
+Using device: mps
+Loading meta-llama/Llama-3.1-8B...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:08,  2.88s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:05<00:05,  2.79s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:08<00:02,  2.92s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:09<00:00,  1.99s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:09<00:00,  2.31s/it]
+Loading mistralai/Mistral-7B-v0.1...
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:08<00:08,  8.68s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:17<00:00,  8.53s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:17<00:00,  8.55s/it]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+✓ Models loaded successfully!
+Llama device: mps:0
+Mistral device: mps:0
+
+=== Llama 3.1 8B Alone ===
+The future of artificial intelligence is here, and it’s already changing the way we live and work. From self-driving cars to virtual assistants, AI is becoming more and more integrated into our daily lives. But what does this mean for the future of work? Will AI replace humans in
+
+=== Llama 3.1 8B → Llama 3.1 8B ===
+Model A hidden states shape: torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence is bright,
+
+=== Llama 3.1 8B → Mistral 7B ===
+Model A hidden states shape: torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence isreened Lagoon Limit, #1, 19901, 19901, 19901, 19901, 19901, 199
+
+=== Mistral 7B → Mistral 7B ===
+Model A hidden states shape: torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence isbright bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan
+
+=== Mistral 7B Alone ===
+The future of artificial intelligence is a hot topic in the tech world. With the rise of machine learning and deep learning, AI is becoming more and more advanced. But what does the future hold for AI?
+
+There are a few different ways to look at the future of AI
+
+=== Mistral 7B → Llama 3.1 8B ===
+Model A hidden states shape: torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence isolson- and- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for-
