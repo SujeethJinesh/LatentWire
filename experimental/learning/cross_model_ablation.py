@@ -128,18 +128,44 @@ def cross_model_experiment():
 
 
 def generate_baseline(model, tokenizer, prompt, max_new_tokens):
-    """Standard generation"""
+    """Standard generation with MPS compatibility"""
+    # Set pad_token if not set
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            do_sample=False,  # Greedy for reproducibility
-            pad_token_id=tokenizer.eos_token_id
-        )
-    
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    # MPS has issues with model.generate(), so we use manual generation
+    device = model.device
+    if str(device).startswith("mps"):
+        # Manual generation for MPS
+        input_ids = inputs.input_ids
+        generated_ids = input_ids[0].tolist()
+
+        with torch.no_grad():
+            for _ in range(max_new_tokens):
+                curr_input = torch.tensor([generated_ids]).to(device)
+                outputs = model(curr_input)
+                next_token_logits = outputs.logits[0, -1, :]
+                next_token_id = torch.argmax(next_token_logits).item()
+
+                if next_token_id == tokenizer.eos_token_id:
+                    break
+
+                generated_ids.append(next_token_id)
+
+        return tokenizer.decode(generated_ids, skip_special_tokens=True)
+    else:
+        # Use built-in generate for CUDA/CPU
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=False,  # Greedy for reproducibility
+                pad_token_id=tokenizer.pad_token_id
+            )
+
+        return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
 def generate_cross_model(
