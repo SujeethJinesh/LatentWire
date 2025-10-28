@@ -13,8 +13,8 @@ model = AutoModelForCausalLM.from_pretrained(
     low_cpu_mem_usage=True
 ).to(device)
 
-# Sample text
-text = "the cat sat on a mat"
+# Sample text with better context
+text = "Once upon a time, there was a curious cat who loved to explore. One day,"
 
 # Tokenize the text
 token_ids = tokenizer.encode(text, add_special_tokens=True)
@@ -53,12 +53,15 @@ with torch.no_grad():
     print(f"\nPredicted next token ID: {next_token_id}")
     print(f"Predicted next token: '{next_token}'")
 
-# Autoregressive generation - keep predicting until EOS or max length
+# Autoregressive generation with sampling (more interesting than greedy!)
 print("\n" + "="*50)
-print("Autoregressive text generation...")
+print("Autoregressive text generation with sampling...")
 print("="*50)
 
-max_new_tokens = 20
+max_new_tokens = 50
+temperature = 0.8  # Lower = more conservative, Higher = more creative
+top_p = 0.9  # Nucleus sampling - only sample from top 90% probability mass
+
 generated_ids = token_ids.copy()
 
 with torch.no_grad():
@@ -68,10 +71,32 @@ with torch.no_grad():
 
         # Get model predictions
         outputs = model(input_tensor)
-        logits = outputs.logits
+        logits = outputs.logits[0, -1]  # Get logits for last token
 
-        # Get next token (greedy decoding - take highest probability)
-        next_token_id = torch.argmax(logits[0, -1]).item()
+        # Apply temperature scaling
+        logits = logits / temperature
+
+        # Convert to probabilities
+        probs = torch.nn.functional.softmax(logits, dim=-1)
+
+        # Apply top-p (nucleus) sampling
+        sorted_probs, sorted_indices = torch.sort(probs, descending=True)
+        cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
+
+        # Remove tokens with cumulative probability above the threshold
+        sorted_indices_to_remove = cumulative_probs > top_p
+        # Keep at least one token
+        sorted_indices_to_remove[0] = False
+
+        # Zero out probabilities for removed tokens
+        sorted_probs[sorted_indices_to_remove] = 0.0
+
+        # Renormalize
+        sorted_probs = sorted_probs / sorted_probs.sum()
+
+        # Sample from the filtered distribution
+        next_token_idx = torch.multinomial(sorted_probs, num_samples=1)
+        next_token_id = sorted_indices[next_token_idx].item()
 
         # Stop if we hit end-of-sequence token
         if next_token_id == tokenizer.eos_token_id:
