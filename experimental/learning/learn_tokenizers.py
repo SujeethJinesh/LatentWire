@@ -52,3 +52,45 @@ with torch.no_grad():
     next_token = tokenizer.decode([next_token_id])
     print(f"\nPredicted next token ID: {next_token_id}")
     print(f"Predicted next token: '{next_token}'")
+
+# Autoregressive generation - keep predicting until EOS or max length
+print("\n" + "="*50)
+print("Autoregressive text generation...")
+print("="*50)
+
+max_new_tokens = 20
+generated_ids = token_ids.copy()
+
+with torch.no_grad():
+    for i in range(max_new_tokens):
+        # Convert current sequence to tensor
+        input_tensor = torch.tensor([generated_ids]).to(device)
+
+        # Get model predictions
+        outputs = model(input_tensor)
+        logits = outputs.logits
+
+        # Get next token (greedy decoding - take highest probability)
+        next_token_id = torch.argmax(logits[0, -1]).item()
+
+        # Stop if we hit end-of-sequence token
+        if next_token_id == tokenizer.eos_token_id:
+            print(f"\n[Hit EOS token at step {i}]")
+            break
+
+        # Append to sequence
+        generated_ids.append(next_token_id)
+
+        # Print the token
+        token_text = tokenizer.decode([next_token_id])
+        print(f"Step {i+1}: Token {next_token_id} = '{token_text}'")
+
+# Decode the full generated sequence
+generated_text = tokenizer.decode(generated_ids)
+print("\n" + "="*50)
+print("Full generated text:")
+print("="*50)
+print(generated_text)
+
+# Note: The manual autoregressive loop above is the standard way to generate text.
+# You can also use model.generate() but it has MPS compatibility issues on MacBooks.
