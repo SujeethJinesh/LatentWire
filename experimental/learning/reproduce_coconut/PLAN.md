@@ -1,66 +1,235 @@
 # COCONUT Reproduction Plan
 
+**⚠️ IMPORTANT**: This plan has been updated after analyzing the official COCONUT implementation. See `COCONUT_ANALYSIS.md` for detailed comparison.
+
 ## Paper Overview
 
 **Title**: "Training Large Language Models to Reason in a Continuous Latent Space" (Dec 2024, Meta AI)
 **ArXiv**: https://arxiv.org/html/2412.06769v1
+**Official Repo**: https://github.com/facebookresearch/coconut
 **Key Idea**: Replace discrete chain-of-thought (CoT) reasoning steps with continuous hidden states that are fed back as input embeddings, enabling breadth-first search reasoning patterns.
 
-## Design Choices & Justifications
+## Critical Updates After Analyzing Official Implementation
 
-### Why 2 stages instead of 3-4?
+### Key Findings:
 
-- Paper uses 3-4 stages to **gradually** introduce continuous thoughts (curriculum learning)
-- For minimal reproduction: **Stage 0 (CoT baseline) + Stage 1 (first continuous thought)** is sufficient to prove the concept works
-- We can add more stages later if Stage 1 shows promise
-- Testing hypothesis: "Can continuous thoughts help at all?" doesn't require full curriculum
+1. **Data**: Uses **385K synthetic examples** from "Internalize CoT Step by Step" paper, NOT original GSM8k (7.5K)
+2. **Format**: Steps are **calculator-style** (`<<600*30/100=180>>`), NOT natural language reasoning
+3. **Structure**: `{"question": str, "steps": List[str], "answer": str}` where each step is one calculation
+4. **Training format**: `question\nstep1\nstep2\n### answer` (answer prefixed with `###`)
+5. **Special tokens**: `<|start-latent|>`, `<|latent|>`, `<|end-latent|>` (not `<bot>`, `<eot>`)
+6. **Base model**: GPT-2 (124M params), though Llama3 also tested
+7. **Stages**: 4 total (Stage 0: CoT baseline, Stages 1-3: progressive latent replacement)
+8. **c_thought**: 2 for math tasks (2 latent tokens per reasoning step)
 
-### Why c=1 instead of c=2?
+### Milestone 1 Status:
 
-- Paper says c=3 showed **instability**
-- c=2 might be close to instability boundary
-- **Start conservative** with c=1 to ensure training stability
-- Paper showed "performance steadily improved" from c=0 to c=2, so c=1 should show improvement over c=0
-- Can increase to c=2 after c=1 works
+❌ **Milestone 1 needs major revision**:
+- Used wrong data source (original GSM8k vs Internalize CoT)
+- Wrong format (natural language vs calculator-style)
+- Wrong structure (single paragraph vs list of steps)
+- 50x less data (7.5K vs 385K examples)
 
-### Why GSM8k?
-
-- Standard benchmark for mathematical reasoning (8.5K problems)
-- Paper used this dataset extensively
-- Simple format: question → reasoning → answer
-- Well-supported by HuggingFace
+See `COCONUT_ANALYSIS.md` for full comparison.
 
 ---
 
-## Technical Background from Paper
+## Implementation Options
 
-### Architecture
+### Option A: Exact Official Reproduction (RECOMMENDED for minimal reproduction)
 
-1. **Special Tokens**: Add `<bot>` (beginning of thought) and `<eot>` (end of thought) to tokenizer
-2. **Latent Reasoning Mode**: During generation, feed `hidden_state[t-1]` as `input_embedding[t]` directly (skip language model head)
-3. **No transformer changes**: Standard Llama 3.1 8B architecture unchanged
+**Approach**: Follow official COCONUT implementation exactly
+- ✅ Base model: GPT-2 (124M params) OR Llama 3.1 8B
+- ✅ Data: Internalize CoT dataset (385K synthetic examples with calculator steps)
+- ✅ Format: `question\n<<calc1>>\n<<calc2>>\n### answer`
+- ✅ Special tokens: `<|start-latent|>`, `<|latent|>`, `<|end-latent|>`
+- ✅ Stages: 0 (CoT baseline) + 1 (first step → latent)
+- ✅ c_thought: 2 (as in paper)
 
-### Training Approach from Paper
+**Pros**:
+- Directly comparable with paper results
+- Uses proven data and format
+- Lower risk - we know it works
 
-1. **Stage 0 (Baseline)**: Fine-tune on GSM8k with standard CoT format
-   - Format: `Question: {q}\nAnswer: Let's think step by step. {reasoning} The answer is {answer}`
+**Cons**:
+- Calculator-style less interesting than natural language
+- Need to download 385K examples (~100MB)
 
-2. **Stage 1**: Replace first reasoning step with continuous thoughts
-   - Format: `Question: {q}\nAnswer: <bot>{c continuous thoughts}<eot> {remaining reasoning} The answer is {answer}`
-   - Use `c=2` continuous thoughts (paper's setting for math)
+**Time**: ~5 hours (same as original estimate)
 
-3. **Stage 2+**: Replace first 2+ reasoning steps with 2×c continuous thoughts
+### Option B: Adapted for Natural Language Reasoning
 
-### Training Details from Paper
+**Approach**: Adapt COCONUT to natural language CoT reasoning
+- ⚠️ Base model: Llama 3.1 8B
+- ⚠️ Data: Original GSM8k (7.5K) with natural language reasoning
+- ⚠️ Format: Parse reasoning into sentences/steps
+- ⚠️ Challenge: How to split "Let's think step by step..." into discrete steps?
 
-- **Dataset**: GSM8k (7,473 training examples)
-- **Hyperparameters**:
-  - Learning rate: 1e-4
-  - Batch size: 128 (effective)
-  - Epochs: 6 (stage 0), 3 (stage 1+)
-  - c=2 (continuous thoughts per reasoning step)
-- **Loss**: Cross-entropy on answer tokens only (mask question + continuous thoughts)
-- **<eot> strategy**: Fixed-length padding (simpler than training classifier)
+**Pros**:
+- More interesting: natural language reasoning
+- Smaller dataset (easier to iterate)
+- Could be novel contribution
+
+**Cons**:
+- Won't match paper results
+- Risky - may not work as well
+- Need to figure out step splitting
+
+**Time**: ~8 hours (extra time for figuring out step splitting)
+
+### Option C: Hybrid (Staged Approach)
+
+**Approach**: Start with Option A, then explore Option B
+1. Phase 1: Reproduce with calculator-style (validate approach)
+2. Phase 2: Adapt to natural language (explore)
+
+**Pros**:
+- Best of both worlds
+- Validates implementation before exploring
+
+**Cons**:
+- Most work (double implementation)
+
+**Time**: ~12 hours total
+
+---
+
+## Recommended Path: Option A with Llama 3.1 8B
+
+**Rationale**:
+1. User wants to use Llama 3.1 8B (stated in initial request)
+2. But use official data/format for validity
+3. Minimal changes from official implementation
+4. Can verify approach works before exploring alternatives
+
+**Modifications from official**:
+- ✅ Base model: Llama 3.1 8B (instead of GPT-2)
+- ✅ Data: Internalize CoT (same as official)
+- ✅ Format: Calculator-style (same as official)
+- ✅ Stages: 0 + 1 (simplified from 0 + 1 + 2 + 3)
+- ✅ c_thought: Start with 1, increase to 2 if stable
+
+---
+
+## Design Choices & Justifications (Updated)
+
+### Why 2 stages instead of 4?
+
+- **Official**: Trains 4 stages (0: CoT, 1-3: progressive latent replacement)
+- **Our plan**: Train 2 stages (0: CoT, 1: first step replaced)
+- **Rationale**: Testing hypothesis "Can continuous thoughts help?" doesn't require full curriculum
+- **Official takes**: 25 (Stage 0) + 3 + 3 + 3 (Stages 1-3) = 34 epochs
+- **We'll do**: Stage 0 + Stage 1 for minimal reproduction
+- Can add Stages 2-3 later if Stage 1 works
+
+### Why start with c=1 instead of c=2?
+
+- **Official uses**: c=2 for math tasks (GSM8k)
+- **Our plan**: Start with c=1, increase to c=2 if stable
+- **Rationale**: Paper showed c=3 was unstable; c=1 is safest starting point
+- **Trade-off**: May get slightly worse results than paper, but lower risk
+- Paper showed "performance steadily improved" from c=0 to c=2
+
+### Why Llama 3.1 8B instead of GPT-2?
+
+- **Official uses**: GPT-2 (124M params), though paper mentions Llama3 tested too
+- **Our plan**: Llama 3.1 8B (8B params) - 64x larger!
+- **Rationale**: User explicitly requested Llama 3.1 8B in initial request
+- **Risk**: Larger model may behave differently (better or worse)
+- **Mitigation**: If issues arise, can fall back to GPT-2
+
+### Data: Internalize CoT vs Original GSM8k
+
+- **Official uses**: "Internalize CoT Step by Step" dataset (385K synthetic examples)
+- **Why**: Augmented data with cleaner calculator-style steps
+- **Format**: `{"question": str, "steps": ["<<calc>>", ...], "answer": str}`
+- **Our plan**: Use same data source for validity
+
+---
+
+## Technical Background (From Official Implementation)
+
+### Data Format (Internalize CoT)
+
+**Structure**:
+```json
+{
+  "question": "Out of 600 employees in a company, 30% got promoted...",
+  "steps": ["<<600*30/100=180>>", "<<600*10/100=60>>", "<<180+60=240>>", "<<600-240=360>>"],
+  "answer": "360"
+}
+```
+
+**Training Format**:
+```
+Out of 600 employees in a company, 30% got promoted...
+<<600*30/100=180>>
+<<600*10/100=60>>
+<<180+60=240>>
+<<600-240=360>>
+### 360
+```
+
+- Question on first line
+- Each step on separate line (calculator-style)
+- Answer prefixed with `###`
+- 385,620 training examples
+
+### Architecture (From coconut.py)
+
+1. **Special Tokens**: Add 3 tokens to tokenizer:
+   - `<|start-latent|>`: Beginning of latent thought region
+   - `<|latent|>`: Placeholder for continuous thought
+   - `<|end-latent|>`: End of latent thought region
+
+2. **Continuous Thought Mechanism**:
+   ```python
+   # For each <|latent|> token:
+   #   1. Forward pass up to position BEFORE <|latent|>
+   #   2. Extract hidden state at that position
+   #   3. Replace <|latent|> token embedding with the hidden state
+   #   4. Continue forward pass with replaced embedding
+   # Key: Each latent uses hidden state from PREVIOUS position
+   ```
+
+3. **No transformer changes**: Base LLM (GPT-2 or Llama) unchanged
+
+### Training Process (From Official Configs)
+
+**Stage 0 - CoT Baseline** (`args/gsm_cot.yaml`):
+- Format: Full calculator-style reasoning (no latent tokens)
+- Model: GPT-2 or Llama 3.1 8B
+- Epochs: 25
+- Batch size: 32 × 4 GPUs = 128 effective
+- LR: 1e-4
+- Target: ~40% validation accuracy
+- c_thought: 0
+
+**Stage 1 - First Latent** (`args/gsm_coconut.yaml`):
+- Format: Replace first 1 step with c×1 = 2 latent tokens
+```
+question
+<|start-latent|><|latent|><|latent|><|end-latent|>
+<<step2>>
+<<step3>>
+### answer
+```
+- Load Stage 0 checkpoint as initialization
+- Epochs: 3
+- c_thought: 2
+- Reset optimizer: True
+
+**Stage 2-3** (Official uses, we'll skip for minimal reproduction):
+- Stage 2: Replace first 2 steps with c×2 = 4 latent tokens (3 epochs)
+- Stage 3: Replace first 3 steps with c×3 = 6 latent tokens (3 epochs)
+
+### Training Details
+
+- **Learning rate**: 1e-4
+- **Batch size**: 32 per GPU × 4 GPUs = 128 effective
+- **Optimizer**: AdamW with weight_decay=0.01
+- **Loss masking**: Mask question + latent tokens + special tokens (compute loss only on remaining steps + answer)
+- **Precision**: Float32 (bf16=False in official configs)
 
 ---
 
