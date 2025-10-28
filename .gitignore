@@ -12,3 +12,8 @@ __pycache__/
 code-server-*
 *.pt*
 *adapter_model.safetensors
+# COCONUT data files (download via preprocessing script)
+experimental/learning/reproduce_coconut/coconut/data/*.json
+experimental/learning/reproduce_coconut/coconut/data/*.txt
+experimental/learning/reproduce_coconut/runs/
+venv_arm64/

@@ -2,7 +2,40 @@
 
 Using official COCONUT code to reproduce their results.
 
-## Immediate Next Steps
+**Based on**: [facebookresearch/coconut](https://github.com/facebookresearch/coconut) (commit: latest as of Oct 2024)
+
+**Modifications**:
+- Modified `coconut/run.py` to support gloo backend for Mac/MPS compatibility
+- Created `coconut/args/gsm_cot_test.yaml` for 3-epoch test runs
+- Created `run_stage0_test.sh` wrapper script with logging
+
+---
+
+## Running on HPC (Recommended)
+
+**Setup is complete!** Ready to train on HPC with CUDA GPUs.
+
+```bash
+# On HPC with CUDA GPUs
+cd experimental/learning/reproduce_coconut/coconut
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run 3-epoch test (single GPU)
+torchrun --nproc_per_node=1 run.py args/gsm_cot_test.yaml
+
+# Or run full 25-epoch training (4 GPUs)
+torchrun --nproc_per_node=4 run.py args/gsm_cot.yaml
+```
+
+**Expected time**: ~1-2 hours for 3 epochs on H100.
+
+---
+
+## Running Locally (Mac - Not Recommended)
+
+⚠️ **FSDP requires CUDA** - training on Mac MPS/CPU will be extremely slow or fail.
 
 ### 1. Install Dependencies
 
