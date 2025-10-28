@@ -1,0 +1,109 @@
+Loading models...
+Using device: mps
+Loading meta-llama/Llama-3.1-8B...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:08,  2.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:05<00:05,  2.81s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:08<00:02,  2.73s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  1.90s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  2.22s/it]
+Loading mistralai/Mistral-7B-v0.1...
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:07<00:07,  7.70s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:15<00:00,  8.03s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:15<00:00,  7.98s/it]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+
+Intel MKL ERROR: Parameter 4 was incorrect on entry to SLASCL.
+
+Intel MKL ERROR: Parameter 4 was incorrect on entry to SLASCL.
+/Users/sujeethjinesh/Desktop/LatentWire/experimental/learning/cross_model_ablation.py:56: UserWarning: The operator 'aten::linalg_svd' is not currently supported on the MPS backend and will fall back to run on the CPU. This may have performance implications. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/aten/src/ATen/mps/MPSFallback.mm:13.)
+  U, S, Vt = torch.linalg.svd(H_reg)
+✓ Models loaded successfully!
+Llama device: mps:0
+Mistral device: mps:0
+
+=== Llama 3.1 8B Alone ===
+The future of artificial intelligence is here, and it’s already changing the way we live and work. From self-driving cars to virtual assistants, AI is becoming more and more integrated into our daily lives. But what does this mean for the future of work? Will AI replace humans in
+
+=== Llama 3.1 8B → Llama 3.1 8B ===
+Model A hidden states (final): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence is bright,
+
+=== Llama 3.1 8B → Mistral 7B ===
+Model A hidden states (final): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence isreened Lagoon Limit, #1, 19901, 19901, 19901, 19901, 19901, 199
+
+=== Mistral 7B → Mistral 7B ===
+Model A hidden states (final): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence isbright bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan
+
+=== Mistral 7B Alone ===
+The future of artificial intelligence is a hot topic in the tech world. With the rise of machine learning and deep learning, AI is becoming more and more advanced. But what does the future hold for AI?
+
+There are a few different ways to look at the future of AI
+
+=== Mistral 7B → Llama 3.1 8B ===
+Model A hidden states (final): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence isolson- and- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for- even- for-
+
+============================================================
+Computing Procrustes alignment matrix...
+============================================================
+  Warning: SVD failed, using identity matrix
+✓ Procrustes matrix: torch.Size([4096, 4096])
+
+=== Llama 3.1 8B → Mistral 7B (Procrustes) ===
+Model A hidden states (final): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+  Applying Procrustes alignment...
+The future of artificial intelligence isreened Lagoon Limit, #1, 19901, 19901, 19901, 19901, 19901, 199
+
+=== Llama Layer 8 → Mistral (early layers) ===
+Model A hidden states (layer 8): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence is?djk?nk?djnk?nk?djnk?nk?nk?nk?nk?nk?nk?nk?nk?nk?nk
+
+=== Llama Layer 16 → Mistral (middle layers) ===
+Model A hidden states (layer 16): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence is
+ 1 2  2  # 2   #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # 
+
+=== Llama Layer 24 → Mistral (late layers) ===
+Model A hidden states (layer 24): torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+The future of artificial intelligence isMunilegeaking*
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+*
+
+
+============================================================
+All experiments complete!
+============================================================

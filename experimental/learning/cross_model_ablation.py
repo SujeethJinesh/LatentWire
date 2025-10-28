@@ -353,14 +353,16 @@ def generate_cross_model(
                 outputs_b = model_b.model(
                     inputs_embeds=current_hidden,
                     past_key_values=None,
-                    use_cache=True
+                    use_cache=True,
+                    output_hidden_states=True
                 )
             else:
                 # Subsequent steps: only process new token embedding
                 outputs_b = model_b.model(
                     inputs_embeds=current_hidden[:, -1:, :],
                     past_key_values=past_key_values,
-                    use_cache=True
+                    use_cache=True,
+                    output_hidden_states=True
                 )
 
             # Get logits and select next token (greedy)
