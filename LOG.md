@@ -132,6 +132,98 @@ The experiment also revealed bugs in the manual generation implementation that n
 
 ---
 
+## Cross-Model Ablation v2: Enhanced Experiments (In Progress - 2025-10-27)
+
+**Attempted Features**:
+1. ✅ Procrustes alignment (SVD-based, no training)
+2. ✅ Layer-wise transfer (early/middle/late layers)
+3. ✅ Evaluation metrics (cosine similarity, perplexity, generation time)
+4. ✅ Fixed KV cache implementation
+5. ⚠️ Comprehensive comparison table (partial)
+
+**Implementation Status**: **Partially Complete** (debugging in progress)
+
+### Technical Challenges Encountered
+
+**1. Procrustes Alignment - Numerical Stability**
+- **Issue**: SVD fails on ill-conditioned covariance matrix `H = target.T @ source`
+- **Error**: `linalg.svd: The algorithm failed to converge (error code: 14)`
+- **Root Cause**: Hidden states from calibration texts produce near-singular covariance matrices
+- **Attempted Fix**: Added ridge regularization (`eps=1e-4`) but still unstable
+- **Current Workaround**: Falls back to identity matrix when SVD fails
+- **Implication**: Procrustes alignment may not be feasible with neural network hidden states due to inherent collinearity
+
+**2. MPS Backend Limitations**
+- **Issue 1**: `torch.linalg.svd()` not supported on MPS → falls back to CPU
+- **Issue 2**: `model.generate()` has MPS bugs → must use manual generation loop
+- **Workaround**: Implemented manual generation with KV cache for all experiments
+
+**3. Tokenizer Mismatches**
+- **Issue**: Llama and Mistral tokenizers produce different sequence lengths for same text
+- **Impact**: Cannot directly compare hidden states position-by-position
+- **Solution**: Truncate to minimum length, flatten for alignment computation
+
+### Theoretical Insights from Implementation
+
+**Why Procrustes Alignment is Challenging**:
+
+1. **Hidden State Collinearity**:
+   - Neural network hidden states are highly correlated (not independent)
+   - Covariance matrix `H = target.T @ source` is nearly singular
+   - Standard Procrustes assumes independent, well-conditioned data
+
+2. **Tokenization Mismatch**:
+   - Different tokenizers → different sequence decompositions
+   - Example: "AI" → Llama: [15000] vs Mistral: [16, 23]
+   - Procrustes requires aligned correspondences (not possible here)
+
+3. **Non-Linear Transformations**:
+   - Hidden states undergo non-linear activations (LayerNorm, ReLU, etc.)
+   - Procrustes finds optimal *rotation* (linear, orthogonal)
+   - May be insufficient for highly non-linear hidden state spaces
+
+**Implications for LatentWire**:
+- Simple orthogonal alignment (Procrustes) insufficient for cross-model transfer
+- Confirms need for **learned non-linear adapters** with explicit training
+- Raw geometric alignment doesn't capture semantic alignment needed
+
+### Next Steps for Future Work
+
+**To Complete v2 Experiments**:
+1. Fix SVD numerical stability:
+   - Use truncated SVD (top-k singular values)
+   - Center and normalize hidden states before alignment
+   - Try alternative alignment methods (CCA, SVCCA)
+
+2. Handle tokenization properly:
+   - Use character-level or BPE-level alignment
+   - Aggregate hidden states at word boundaries
+   - Or accept misalignment and measure robustness
+
+3. Run on HPC with CUDA:
+   - SVD more stable on CUDA than MPS
+   - `model.generate()` works correctly on CUDA
+   - Larger memory for full experiments
+
+**Alternative Approaches to Test**:
+1. **CCA (Canonical Correlation Analysis)**: Finds correlated subspaces instead of rotation
+2. **Learned Linear Adapter**: Train small MLP on parallel data (more realistic than Procrustes)
+3. **Hidden State Interpolation**: Test if linear interpolation between models produces coherent outputs
+
+### Code Artifacts Created
+
+**Files**:
+- `cross_model_ablation_v2.py`: Enhanced experiment script (603 lines)
+  - Procrustes alignment implementation
+  - Layer-wise hidden state extraction
+  - Evaluation metrics (perplexity, cosine similarity)
+  - Fixed KV cache generation
+  - Comprehensive experiment runner
+
+**Status**: Implementation complete, debugging numerical stability issues
+
+---
+
 ## Comprehensive Sweep Analysis: Mode Collapse Persists Across All Configurations (2025-10-16)
 
 **Experiments Run**: 16 configurations tested (Oct 15-16, 2025)

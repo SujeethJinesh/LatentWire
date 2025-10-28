@@ -1,0 +1,32 @@
+================================================================================
+Cross-Model Hidden State Transfer Ablation v2
+================================================================================
+Using device: mps
+
+Loading models...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.63s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:05<00:05,  2.64s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:07<00:02,  2.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  1.80s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  2.10s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:07<00:07,  7.55s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:15<00:00,  7.75s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:15<00:00,  7.72s/it]
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+
+Intel MKL ERROR: Parameter 4 was incorrect on entry to SLASCL.
+
+Intel MKL ERROR: Parameter 4 was incorrect on entry to SLASCL.
+/Users/sujeethjinesh/Desktop/LatentWire/experimental/learning/cross_model_ablation_v2.py:50: UserWarning: The operator 'aten::linalg_svd' is not currently supported on the MPS backend and will fall back to run on the CPU. This may have performance implications. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/aten/src/ATen/mps/MPSFallback.mm:13.)
+  U, S, Vt = torch.linalg.svd(H)
+✓ Models loaded
+
+Computing Procrustes alignment matrix...
+Traceback (most recent call last):
+  File "/Users/sujeethjinesh/Desktop/LatentWire/experimental/learning/cross_model_ablation_v2.py", line 593, in <module>
+    main()
+  File "/Users/sujeethjinesh/Desktop/LatentWire/experimental/learning/cross_model_ablation_v2.py", line 364, in main
+    procrustes_matrix = compute_procrustes_matrix(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/experimental/learning/cross_model_ablation_v2.py", line 309, in compute_procrustes_matrix
+    W = procrustes_alignment(source_states, target_states)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/experimental/learning/cross_model_ablation_v2.py", line 50, in procrustes_alignment
+    U, S, Vt = torch.linalg.svd(H)
+               ^^^^^^^^^^^^^^^^^^^
+torch._C._LinAlgError: linalg.svd: The algorithm failed to converge because the input matrix is ill-conditioned or has too many repeated singular values (error code: 14).
