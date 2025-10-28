@@ -35,23 +35,46 @@ def cross_model_experiment():
     llama_model_id = "meta-llama/Llama-3.1-8B"
     mistral_model_id = "mistralai/Mistral-7B-v0.1"
 
-    # Detect device - use MPS on Mac, CUDA on Linux/Windows
-    device = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    # Detect device and choose loading strategy
+    if torch.cuda.is_available():
+        # HPC/CUDA: Load directly to GPU with device_map (most efficient)
+        print("Using device: cuda")
+        device = "cuda"
+        load_kwargs = {
+            "torch_dtype": torch.float16,
+            "device_map": "auto"  # Automatically loads to GPU
+        }
+    elif torch.backends.mps.is_available():
+        # MacBook: Load to CPU then move to MPS
+        print("Using device: mps")
+        device = "mps"
+        load_kwargs = {
+            "torch_dtype": torch.float16,
+            "low_cpu_mem_usage": True
+        }
+    else:
+        print("⚠️ Using device: cpu (will be very slow!)")
+        device = "cpu"
+        load_kwargs = {
+            "torch_dtype": torch.float16,
+            "low_cpu_mem_usage": True
+        }
 
     llama_tokenizer = AutoTokenizer.from_pretrained(llama_model_id)
-    llama_model = AutoModelForCausalLM.from_pretrained(
-        llama_model_id,
-        torch_dtype=torch.float16,  # MPS compatible (not bfloat16)
-        low_cpu_mem_usage=True
-    ).to(device)
+    print(f"Loading {llama_model_id}...")
+    llama_model = AutoModelForCausalLM.from_pretrained(llama_model_id, **load_kwargs)
+    if device != "cuda":  # device_map="auto" already places on GPU
+        llama_model = llama_model.to(device)
 
     mistral_tokenizer = AutoTokenizer.from_pretrained(mistral_model_id)
-    mistral_model = AutoModelForCausalLM.from_pretrained(
-        mistral_model_id,
-        torch_dtype=torch.float16,  # MPS compatible (not bfloat16)
-        low_cpu_mem_usage=True
-    ).to(device)
+    print(f"Loading {mistral_model_id}...")
+    mistral_model = AutoModelForCausalLM.from_pretrained(mistral_model_id, **load_kwargs)
+    if device != "cuda":
+        mistral_model = mistral_model.to(device)
+
+    print("✓ Models loaded successfully!")
+    print(f"Llama device: {next(llama_model.parameters()).device}")
+    print(f"Mistral device: {next(mistral_model.parameters()).device}")
     
     # Test prompt
     prompt = "The future of artificial intelligence is"
