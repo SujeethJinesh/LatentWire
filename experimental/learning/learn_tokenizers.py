@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+import time
 
 # Downloading a model from huggingface
 model_id = "meta-llama/Llama-3.1-8B"
@@ -63,15 +64,26 @@ temperature = 0.8  # Lower = more conservative, Higher = more creative
 top_p = 0.9  # Nucleus sampling - only sample from top 90% probability mass
 
 generated_ids = token_ids.copy()
+past_key_values = None  # KV cache - starts empty
+
+start_time = time.time()
+step_times = []
 
 with torch.no_grad():
     for i in range(max_new_tokens):
-        # Convert current sequence to tensor
-        input_tensor = torch.tensor([generated_ids]).to(device)
+        step_start = time.time()
+        # With KV caching, we only pass the last token (not the whole sequence!)
+        if past_key_values is None:
+            # First iteration: pass the entire prompt
+            input_tensor = torch.tensor([generated_ids]).to(device)
+        else:
+            # Subsequent iterations: only pass the new token
+            input_tensor = torch.tensor([[generated_ids[-1]]]).to(device)
 
-        # Get model predictions
-        outputs = model(input_tensor)
+        # Get model predictions with KV cache
+        outputs = model(input_tensor, past_key_values=past_key_values, use_cache=True)
         logits = outputs.logits[0, -1]  # Get logits for last token
+        past_key_values = outputs.past_key_values  # Store KV cache for next iteration
 
         # Apply temperature scaling
         logits = logits / temperature
@@ -108,14 +120,31 @@ with torch.no_grad():
 
         # Print the token
         token_text = tokenizer.decode([next_token_id])
-        print(f"Step {i+1}: Token {next_token_id} = '{token_text}'")
+        step_time = time.time() - step_start
+        step_times.append(step_time)
+        print(f"Step {i+1}: Token {next_token_id} = '{token_text}' ({step_time*1000:.1f}ms)")
 
 # Decode the full generated sequence
+total_time = time.time() - start_time
 generated_text = tokenizer.decode(generated_ids)
+
 print("\n" + "="*50)
 print("Full generated text:")
 print("="*50)
 print(generated_text)
 
-# Note: The manual autoregressive loop above is the standard way to generate text.
-# You can also use model.generate() but it has MPS compatibility issues on MacBooks.
+print("\n" + "="*50)
+print("Performance with KV caching:")
+print("="*50)
+print(f"Total time: {total_time:.2f}s")
+print(f"Tokens generated: {len(step_times)}")
+print(f"Average time per token: {sum(step_times)/len(step_times)*1000:.1f}ms")
+print(f"First token (prefill): {step_times[0]*1000:.1f}ms")
+if len(step_times) > 1:
+    print(f"Avg decode token (with KV cache): {sum(step_times[1:])/len(step_times[1:])*1000:.1f}ms")
+    print(f"Speedup: {step_times[0]/sum(step_times[1:])*len(step_times[1:]):.1f}x faster per token")
+print(f"Tokens/second: {len(step_times)/total_time:.1f}")
+
+# Note: KV caching stores key/value tensors from previous tokens so we don't
+# recompute attention for the entire sequence each time. Without it, generation
+# would get slower and slower as the sequence grows!
