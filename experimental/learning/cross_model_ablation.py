@@ -1,28 +1,25 @@
 """
 Cross-Model Hidden State Transfer Experiment
 
-This script tests whether hidden states from one LLM can be used to condition
-another LLM for text generation. This is relevant for LatentWire's goal of
-creating a universal interlingua that works across models.
+Tests whether hidden states from one LLM can condition another LLM.
+Relevant for LatentWire's cross-model interlingua goal.
 
-Models tested:
-- Llama 3.1 8B (hidden_size=4096)
-- Mistral 7B (hidden_size=4096)
-
-Both models have matching hidden dimensions, allowing direct transfer without
-an alignment layer. This lets us test pure architectural compatibility.
+Models: Llama 3.1 8B (hidden_size=4096) ↔ Mistral 7B (hidden_size=4096)
 
 Ablations:
 1. Llama alone (baseline)
-2. Llama → Llama (sanity check, should match baseline)
-3. Llama → Mistral (cross-model transfer)
-4. Mistral → Mistral (sanity check)
+2. Llama → Llama (sanity: same model, should work)
+3. Llama → Mistral (cross-model)
+4. Mistral → Mistral (sanity)
 5. Mistral alone (baseline)
-6. Mistral → Llama (reverse cross-model transfer)
+6. Mistral → Llama (reverse)
+7. Llama → Mistral with Procrustes alignment (geometric)
 """
 
 import torch
+import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import time
 
 def cross_model_experiment():
     """
@@ -183,7 +180,7 @@ def generate_cross_model(
     # Get hidden states from Model A (no generation)
     with torch.no_grad():
         outputs_a = model_a.model(**inputs_a, output_hidden_states=True)
-        hidden_states_a = outputs_a.last_hidden_state  # (1, seq_len, 4096)
+        hidden_states_a = outputs_a.hidden_states[-1]  # Last layer (1, seq_len, 4096)
 
     print(f"Model A hidden states shape: {hidden_states_a.shape}")
 
@@ -198,36 +195,46 @@ def generate_cross_model(
     # Transfer hidden states directly (same device already)
     hidden_states_b = hidden_states_a
     
-    # Generate with Model B starting from Model A's hidden states
+    # Generate with Model B from Model A's hidden states (with KV cache)
+    generated_ids = []
+    past_key_values = None
+    current_hidden = hidden_states_b
+
     with torch.no_grad():
-        # Start generation from hidden states
-        generated_ids = []
-        current_hidden = hidden_states_b
-        
-        for _ in range(max_new_tokens):
-            # Forward through Model B's layers (skip embeddings)
-            outputs_b = model_b.model(
-                inputs_embeds=current_hidden,
-                output_hidden_states=True
-            )
-            
-            # Get logits
-            logits = model_b.lm_head(outputs_b.last_hidden_state)
-            
-            # Get next token (greedy)
-            next_token = torch.argmax(logits[:, -1, :], dim=-1)
-            generated_ids.append(next_token.item())
-            
+        for step in range(max_new_tokens):
+            # Forward pass with KV cache
+            if past_key_values is None:
+                # First step: process all initial hidden states
+                outputs_b = model_b.model(
+                    inputs_embeds=current_hidden,
+                    past_key_values=None,
+                    use_cache=True
+                )
+            else:
+                # Subsequent steps: only process new token embedding
+                outputs_b = model_b.model(
+                    inputs_embeds=current_hidden[:, -1:, :],
+                    past_key_values=past_key_values,
+                    use_cache=True
+                )
+
+            # Get logits and select next token (greedy)
+            logits = model_b.lm_head(outputs_b.hidden_states[-1])
+            next_token_id = torch.argmax(logits[0, -1, :]).item()
+
+            # Store KV cache
+            past_key_values = outputs_b.past_key_values
+
             # Check for EOS
-            if next_token.item() == tokenizer_b.eos_token_id:
+            if next_token_id == tokenizer_b.eos_token_id:
                 break
-            
-            # Get embedding for next token
-            next_embedding = model_b.model.embed_tokens(next_token.unsqueeze(0))
-            
-            # Concatenate for next iteration
+
+            generated_ids.append(next_token_id)
+
+            # Get embedding for next token and concatenate
+            next_embedding = model_b.model.embed_tokens(torch.tensor([[next_token_id]]).to(model_b.device))
             current_hidden = torch.cat([current_hidden, next_embedding], dim=1)
-    
+
     # Decode
     generated_text = tokenizer_b.decode(generated_ids, skip_special_tokens=True)
     return prompt + generated_text
