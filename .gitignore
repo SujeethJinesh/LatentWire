@@ -15,7 +15,4 @@ code-server-*
 # COCONUT data files (download via preprocessing script)
 experimental/learning/reproduce_coconut/coconut/data/*.json
 experimental/learning/reproduce_coconut/coconut/data/*.txt
-experimental/learning/reproduce_coconut/runs/
-# Cross-model ablation runs
-experimental/learning/runs/
 venv_arm64/
