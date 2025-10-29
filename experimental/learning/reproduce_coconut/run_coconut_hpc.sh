@@ -26,14 +26,15 @@ module unload cudatoolkit 2>/dev/null || true
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=1,2,3  # Use GPUs 1,2,3 for COCONUT (GPU 0 for cross-model)
 
-# Create output directory and log file (in parent experimental/learning/runs/)
-OUTPUT_DIR="../runs/coconut/$RUN_NAME"
+# Navigate to coconut directory first
+cd coconut
+
+# Create output directory and log file (in experimental/learning/runs/)
+# From coconut/ directory, ../../runs goes to experimental/learning/runs/
+OUTPUT_DIR="../../runs/coconut/$RUN_NAME"
 mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="$OUTPUT_DIR/coconut_${RUN_NAME}_${TIMESTAMP}.log"
-
-# Navigate to coconut directory
-cd coconut
 
 echo "=========================================="
 echo "COCONUT Stage 0 Training - HPC Run"
