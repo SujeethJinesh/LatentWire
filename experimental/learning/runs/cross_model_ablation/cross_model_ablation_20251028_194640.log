@@ -1,0 +1,53 @@
+Loading models...
+Using device: mps
+Loading meta-llama/Llama-3.1-8B...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.85s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.80s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.78s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.26s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.46s/it]
+Loading mistralai/Mistral-7B-v0.1...
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:05<00:05,  5.43s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:09<00:00,  4.36s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:09<00:00,  4.52s/it]
+✓ Models loaded successfully!
+Llama device: mps:0
+Mistral device: mps:0
+Loading WikiText-2 calibration data (10000 samples)...
+✓ Loaded 10000 calibration texts
+
+============================================================
+BASELINE EXPERIMENTS
+============================================================
+
+=== Llama 3.1 8B Alone ===
+The future of artificial intelligence is here, and it’s already changing the way we live and work. From self-driving cars to virtual assistants, AI is becoming more and more integrated into our daily lives. But what does this mean for the future of work? Will AI replace humans in
+
+=== Mistral 7B Alone ===
+The future of artificial intelligence is a hot topic in the tech world. With the rise of machine learning and deep learning, AI is becoming more and more advanced. But what does the future hold for AI?
+
+There are a few different ways to look at the future of AI
+
+============================================================
+SANITY CHECKS (Same Model Transfer)
+============================================================
+
+=== Llama 3.1 8B → Llama 3.1 8B ===
+Model A hidden states: torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+The future of artificial intelligence is bright,
+
+=== Mistral 7B → Mistral 7B ===
+Model A hidden states: torch.Size([1, 7, 4096])
+Model A dim: 4096, Model B dim: 4096
+We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
+The future of artificial intelligence isbright bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan
+
+============================================================
+CROSS-MODEL TRANSFER EXPERIMENTS
+============================================================
+
+============================================================
+CALIBRATING ALIGNMENT METHODS
+============================================================
+
+No Alignment:
+
+Procrustes:
+  Computing Procrustes alignment (SVD-based rotation)...
+    Processing 0/10000...
