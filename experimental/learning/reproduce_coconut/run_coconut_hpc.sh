@@ -26,14 +26,14 @@ module unload cudatoolkit 2>/dev/null || true
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=1,2,3  # Use GPUs 1,2,3 for COCONUT (GPU 0 for cross-model)
 
-# Navigate to coconut directory
-cd coconut
-
-# Create output directory and log file
-OUTPUT_DIR="../runs/$RUN_NAME"
+# Create output directory and log file (in parent experimental/learning/runs/)
+OUTPUT_DIR="../runs/coconut/$RUN_NAME"
 mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="$OUTPUT_DIR/coconut_${RUN_NAME}_${TIMESTAMP}.log"
+
+# Navigate to coconut directory
+cd coconut
 
 echo "=========================================="
 echo "COCONUT Stage 0 Training - HPC Run"
@@ -58,9 +58,10 @@ echo ""
     torchrun --nproc_per_node=$NPROC run.py $CONFIG
 } 2>&1 | tee "$LOG_FILE"
 
+cd ..  # Return to reproduce_coconut directory
+
 echo ""
 echo "=========================================="
 echo "Complete! Results saved to:"
-echo "  - Checkpoints: $OUTPUT_DIR/checkpoint_*/"
 echo "  - Log: $LOG_FILE"
 echo "=========================================="
