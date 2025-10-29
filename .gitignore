@@ -18,3 +18,4 @@ code-server-*
 experimental/learning/reproduce_coconut/coconut/data/*.json
 experimental/learning/reproduce_coconut/coconut/data/*.txt
 venv_arm64/
+experimental/learning/reproduce_coconut/coconut/YOUR_PATH_TO_SAVE_THE_MODEL/*
