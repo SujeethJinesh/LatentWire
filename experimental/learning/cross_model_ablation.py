@@ -13,7 +13,7 @@ Alignment Methods (Training-Free):
 4. Scaled Procrustes (rotation + scale)
 5. L-Cross OLS (ordinary least squares)
 
-Calibration Data: WikiText-2 (500 diverse sentences)
+Calibration Data: WikiText-2 (10,000 diverse sentences)
 """
 
 import torch
@@ -27,7 +27,7 @@ import time
 # Calibration Data Loading
 # ============================================================================
 
-def load_calibration_texts(num_samples=500, min_length=50):
+def load_calibration_texts(num_samples=10000, min_length=50):
     """Load diverse calibration texts from WikiText-2"""
     print(f"Loading WikiText-2 calibration data ({num_samples} samples)...")
 
@@ -529,7 +529,7 @@ def cross_model_experiment():
     print(f"Mistral device: {next(mistral_model.parameters()).device}")
 
     # Load calibration data
-    calibration_texts = load_calibration_texts(num_samples=500)
+    calibration_texts = load_calibration_texts(num_samples=10000)
 
     # Test prompt
     prompt = "The future of artificial intelligence is"
