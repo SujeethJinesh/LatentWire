@@ -1,9 +1,0 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Loading models...
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/cuda/__init__.py:129: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 803: system has unsupported display driver / cuda driver combination (Triggered internally at ../c10/cuda/CUDAFunctions.cpp:108.)
-  return torch._C._cuda_getDeviceCount() > 0
-⚠️ Using device: cpu (will be very slow!)
-Loading meta-llama/Llama-3.1-8B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3478.59it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
