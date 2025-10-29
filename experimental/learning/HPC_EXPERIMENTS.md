@@ -40,32 +40,35 @@ git pull
 
 ### Location
 ```bash
-cd experimental/learning/reproduce_coconut/coconut
+cd experimental/learning/reproduce_coconut
 ```
 
 ### Quick Test (3 epochs, ~1-2 hours on 3 nodes)
 ```bash
-# Single GPU test first
 conda activate 3_11
-torchrun --nproc_per_node=1 run.py args/gsm_cot_test.yaml
+bash run_coconut_hpc.sh test
 
-# Then scale to 12 GPUs (3 nodes × 4 GPUs)
-torchrun --nproc_per_node=12 run.py args/gsm_cot_test.yaml
+# Logs saved to: runs/stage0_test/coconut_stage0_test_TIMESTAMP.log
 ```
 
 ### Full Training (25 epochs, ~8-10 hours on 3 nodes)
 ```bash
 conda activate 3_11
-torchrun --nproc_per_node=12 run.py args/gsm_cot.yaml
+bash run_coconut_hpc.sh full
+
+# Logs saved to: runs/stage0_full/coconut_stage0_full_TIMESTAMP.log
 ```
+
+**Note**: The wrapper script automatically detects available GPUs and uses all of them (defaults to 12 if you have 3 nodes × 4 GPUs).
 
 ### Monitor Training
 ```bash
 # Watch GPU usage
 watch -n 1 nvidia-smi
 
-# Tail logs (if using tee)
-tail -f ../runs/stage0/training_*.log
+# Tail logs
+tail -f runs/stage0_test/coconut_*.log   # For test run
+tail -f runs/stage0_full/coconut_*.log   # For full run
 ```
 
 ---
@@ -205,8 +208,8 @@ module load conda/24.3.0-0
 conda activate 3_11
 
 # COCONUT (3 nodes)
-cd experimental/learning/reproduce_coconut/coconut
-torchrun --nproc_per_node=12 run.py args/gsm_cot.yaml
+cd experimental/learning/reproduce_coconut
+bash run_coconut_hpc.sh full  # or 'test' for quick 3-epoch run
 
 # Cross-model ablation (1 node)
 cd experimental/learning
@@ -214,7 +217,8 @@ bash run_cross_model_ablation_hpc.sh
 
 # Monitor
 nvidia-smi
-tail -f <log_file>
+tail -f reproduce_coconut/runs/stage0_full/coconut_*.log
+tail -f runs/cross_model_ablation/cross_model_ablation_hpc_*.log
 ```
 
 ---
