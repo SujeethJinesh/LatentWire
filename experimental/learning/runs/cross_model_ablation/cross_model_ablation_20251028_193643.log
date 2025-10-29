@@ -1,15 +1,0 @@
-Loading models...
-Using device: mps
-Loading meta-llama/Llama-3.1-8B...
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.63s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:09,  4.66s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:04,  4.87s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.56s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:15<00:00,  3.85s/it]
-Loading mistralai/Mistral-7B-v0.1...
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:11<00:11, 11.83s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:17<00:00,  8.33s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:17<00:00,  8.86s/it]
-✓ Models loaded successfully!
-Llama device: mps:0
-Mistral device: mps:0
-Loading WikiText-2 calibration data (10000 samples)...
-Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 299122.49 examples/s]
-Generating train split:   0%|          | 0/36718 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 2546824.12 examples/s]
-Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 3760/3760 [00:00<00:00, 1245111.56 examples/s]
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
-We detected that you are passing `past_key_values` as a tuple of tuples. This is deprecated and will be removed in v4.47. Please convert your cache or use an appropriate `Cache` class (https://huggingface.co/docs/transformers/kv_cache#legacy-cache-format)
