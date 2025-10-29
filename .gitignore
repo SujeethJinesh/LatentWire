@@ -11,10 +11,10 @@ __pycache__/
 .nfs*
 code-server-*
 *.pt*
+# Exception: Allow cross-model ablation checkpoints in git (small matrices ~32MB each)
+!experimental/learning/checkpoints/**
 *adapter_model.safetensors
 # COCONUT data files (download via preprocessing script)
 experimental/learning/reproduce_coconut/coconut/data/*.json
 experimental/learning/reproduce_coconut/coconut/data/*.txt
 venv_arm64/
-# Cross-model ablation checkpoints (persist across runs)
-experimental/learning/checkpoints/
