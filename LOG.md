@@ -7793,3 +7793,578 @@ done
 
 ---
 
+
+---
+
+## Research Survey: Model Specialization and Dynamic Routing for LLM Inference
+
+**Date:** 2025-10-28  
+**Objective:** Survey literature on model routing, adaptive model selection, cascade inference, and dynamic switching strategies to inform when/how to hand off between models in LatentWire.
+
+### Executive Summary
+
+This survey covers 15+ recent papers (2023-2025) on dynamic model selection and routing for LLM inference. Key findings:
+
+1. **Granularity levels**: Research spans problem-level (query routing), step-level (reasoning verification), token-level (MoE, early exit), and layer-level (Mixture-of-Depths)
+2. **Routing mechanisms**: Mix of learned (RL-based, preference-trained) and heuristic (confidence thresholds, perplexity)
+3. **Performance gains**: 2-98% cost reduction, 1.25-1.5× speedup, with quality maintained or improved
+4. **Confidence detection**: LLMs are overconfident when verbalizing; better to use consistency across samples or learned estimators
+
+**Relevance to LatentWire:** Most relevant are CITER (token-level routing between SLM/LLM), Process Reward Models (step-level verification), and cascade routing with quality estimators.
+
+---
+
+### 1. Problem-Level Routing (Query-Level Selection)
+
+#### 1.1 FrugalGPT: Cascade with Cost Reduction
+**Paper:** Chen et al., "FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance" (2023)  
+**arXiv:** 2305.05176
+
+**Approach:**
+- Cascade strategy: Query LLMs sequentially (small → large)
+- Stop when response deemed "reliable" by learned estimator
+- Three strategies: prompt adaptation, LLM approximation, LLM cascade
+
+**Routing Mechanism:**
+- Problem-level (per-query)
+- Learned reliability estimator determines when to stop cascade
+
+**Performance:**
+- 98% cost reduction while matching GPT-4 performance
+- 4% accuracy improvement over GPT-4 at same cost
+- Exploits 2 orders of magnitude price differences between models
+
+**Key Insight:** Cascade works when quality estimators can reliably predict response reliability. Sequential querying increases latency but dramatically reduces cost.
+
+---
+
+#### 1.2 RouteLLM: Learning to Route from Preference Data
+**Paper:** "RouteLLM: Learning to Route LLMs with Preference Data" (2024)  
+**arXiv:** 2406.18665
+
+**Approach:**
+- Routes each query to single model (strong vs. weak)
+- Trained on human preference data from Chatbot Arena
+- Data augmentation to enhance router performance
+
+**Routing Mechanism:**
+- Problem-level (per-query)
+- Learned routing via neural models
+- Strong transfer learning: routers generalize when models changed at test time
+
+**Performance:**
+- 2× cost savings without quality loss
+- Maintains performance when swapping underlying models
+
+**Key Insight:** Single-query routing (vs. FrugalGPT's multi-query) reduces latency. Preference data enables learning which queries need stronger models. Transfer capability suggests routers learn task characteristics, not model-specific features.
+
+---
+
+#### 1.3 Unified Routing and Cascading
+**Paper:** "A Unified Approach to Routing and Cascading for LLMs" (2024)  
+**arXiv:** 2410.10347
+
+**Approach:**
+- Combines routing (single model per query) and cascading (sequential models)
+- "Cascade routing" unifies both paradigms
+- Provides formal proofs of optimality
+
+**Routing Mechanism:**
+- Problem-level
+- Quality estimators are critical factor for success
+- Theoretical framework identifies when each approach excels
+
+**Performance:**
+- Cascade routing "consistently outperforms individual approaches by large margin"
+- Formal optimal strategies for both routing and cascading
+
+**Key Insight:** Quality estimation is bottleneck. Hybrid approach (cascade routing) combines benefits: adaptability of routing + cost-efficiency of cascading.
+
+---
+
+### 2. Token-Level Routing
+
+#### 2.1 CITER: Collaborative Inference with Token-Level Routing
+**Paper:** "CITER: Collaborative Inference for Efficient Large Language Model Decoding with Token-Level Routing"  
+**OpenReview:** Forum ID J2FyEVg8HR
+
+**Approach:**
+- Routes individual tokens to SLM (small) or LLM (large)
+- Non-critical tokens → SLM (cheap)
+- Critical tokens → LLM (high quality)
+
+**Routing Mechanism:**
+- Token-level (finest granularity)
+- Learned via reinforcement learning
+- Reward function considers both quality and cost
+- Router considers "current token and future impact"
+
+**Training Innovation:**
+- Shortcut for reward estimation (reduces RL training cost)
+- RL formulation jointly optimizes quality and efficiency
+
+**Performance:**
+- Reduces inference cost while preserving generation quality
+- Works across 4 benchmark datasets
+- "Promising for real-time and resource-constrained applications"
+
+**Key Insight:** Token-level routing is most fine-grained approach. RL enables learning which tokens need expensive computation. Future-aware routing (considering downstream impact) is critical.
+
+**Relevance to LatentWire:** Most directly applicable. Could route tokens through different adapters or models based on difficulty. LatentWire's soft tokens could feed router.
+
+---
+
+#### 2.2 Mixture-of-Experts (MoE): Sparse Token Routing
+**Multiple sources:** Mixtral 8x7B, Expert Choice routing, etc.
+
+**Approach:**
+- Each token routed to subset of experts (typically 2 out of 8)
+- Sparse activation: only selected experts compute
+- Router is learned softmax gating function
+
+**Routing Mechanism:**
+- Token-level
+- Learned routing via softmax over expert scores
+- Classic: Token chooses experts (imbalanced load)
+- Expert Choice: Experts choose tokens (balanced load)
+
+**Architecture:**
+- Replace MLP layers with MoE blocks
+- Each expert is independent feed-forward network
+- Mixtral: 8 experts, activate 2 per token
+
+**Challenges:**
+- Load balancing: tokens concentrate on few experts
+- "Model collapse" if routing imbalanced
+- Auxiliary losses needed to encourage diversity
+
+**Performance:**
+- Mixtral 8x7B matches larger dense models
+- Sparse activation saves compute vs. dense equivalent
+
+**Key Insight:** Token-level routing works within single forward pass. Load balancing is critical. Expert Choice routing solves imbalance but adds complexity.
+
+---
+
+#### 2.3 Mixture-of-Depths (MoD): Dynamic Layer Selection
+**Paper:** "Mixture-of-Depths: Dynamically allocating compute in transformer-based language models" (2024)  
+**arXiv:** 2404.02258
+
+**Approach:**
+- Tokens dynamically choose whether to process through layer or skip via residual
+- Budget constraint: max k tokens can be processed per layer
+- Top-k routing selects which tokens get full computation
+
+**Routing Mechanism:**
+- Token-level, but per-layer decision (not expert selection)
+- Learned routing via top-k mechanism
+- Static computation graph (predictable tensor sizes)
+
+**Performance:**
+- 1.5% improvement on log probability objective at equivalent FLOPs
+- 50% faster per forward pass at training loss parity
+- Up to 50% FLOPs reduction during sampling
+
+**vs. Early Exit:**
+- Early exit: tokens exit permanently after some layer
+- MoD: tokens skip middle layers, can rejoin later
+- MoD maintains interaction with other tokens via self-attention
+
+**Key Insight:** Budget-constrained routing is more efficient than early exit. Tokens can skip expensive layers while maintaining global context. "Entirely predictable in sum total, but dynamic and context-sensitive at token-level."
+
+**Relevance to LatentWire:** Could apply budget-constrained routing to latent tokens. Some soft tokens might need full adapter computation, others could skip.
+
+---
+
+### 3. Layer-Level Routing (Early Exit)
+
+#### 3.1 Early-Exit LLMs: Iteration-Level Confidence
+**Paper:** "An Efficient Inference Framework for Early-exit Large Language Models" (2024)  
+**arXiv:** 2407.20272
+
+**Approach:**
+- Augment standard architectures with early-exit layers
+- Model exits when "confident enough" (skips remaining layers)
+- Batch inference at iteration-level granularity
+
+**Routing Mechanism:**
+- Layer-level (depth-wise)
+- Confidence threshold determines exit point
+- Heuristic: exit when confidence exceeds threshold
+
+**Technical Challenges Solved:**
+1. Batch inference: process until all sequences exceed confidence
+2. KV cache management: fill cache for skipped layers before exit
+
+**Performance:**
+- 1.25× speedup vs. vLLM running full depth
+- Maintains output quality (no accuracy loss)
+
+**Key Insight:** Early exit trades depth for speed. Confidence estimation is critical. Batch processing complexity requires careful KV cache handling.
+
+---
+
+#### 3.2 HELIOS: Adaptive Model and Early-Exit Selection
+**Paper:** "HELIOS: Adaptive Model And Early-Exit Selection for Efficient LLM Inference Serving" (2024)  
+**arXiv:** 2504.10724
+
+**Approach:**
+- Combines model selection with early-exit
+- Evaluates candidate models on prompt subset
+- Loads selected model only up to needed layers (greedy layer selection)
+- Periodically reassesses and switches models
+
+**Routing Mechanism:**
+- Problem-level (model selection)
+- Layer-level (early exit within model)
+- Heuristic: telemetry-based evaluation and greedy loading
+
+**Performance:**
+- 1.48× throughput improvement
+- 1.10× energy efficiency
+- 1.39× lower response time
+- 3.7× larger batch sizes (memory savings)
+
+**Key Insight:** Combining model selection + early exit yields compound benefits. Real-time telemetry enables adaptive switching. Layer-level loading saves memory, enabling larger batches.
+
+---
+
+### 4. Step-Level Routing (Reasoning Verification)
+
+#### 4.1 Process Reward Models (PRMs) vs. Outcome Reward Models (ORMs)
+**Key Papers:** Math-Shepherd (2312.08935), Qwen2.5-Math-PRM, ProcessBench
+
+**Approach:**
+- ORM: Score entire solution
+- PRM: Score each reasoning step
+- PRMs enable step-by-step verification and reranking
+
+**Routing Mechanism:**
+- Step-level (reasoning chain granularity)
+- Learned reward models score each step
+- Selection: choose reasoning path with highest total reward
+
+**Training:**
+- Traditional: Requires expensive human-annotated steps
+- Math-Shepherd: Automatic process supervision (no human labels)
+
+**Performance:**
+- PRMs outperform ORMs on MATH dataset
+- GSM8K: similar performance
+- Math-Shepherd + PPO: Mistral-7B 28.6% → 33.0% on MATH
+- Math-Shepherd + verification: 43.5% on MATH
+
+**Use Cases:**
+1. Verification: Rerank multiple outputs using step scores
+2. RL: Use as reward signal for PPO training
+3. Guidance: Identify where reasoning breaks down
+
+**Key Insight:** Step-level feedback more informative than outcome-only. Automatic supervision enables scaling without human annotation. PRMs can guide model selection at reasoning step boundaries.
+
+**Relevance to LatentWire:** Could use PRM-style verification to decide when to switch models during multi-step reasoning. Latent → Model A → verify → switch to Model B if confidence low.
+
+---
+
+#### 4.2 Chain-of-Thought Verification
+**Sources:** General Purpose Verification for CoT, Chain of Preference Optimization (CPO)
+
+**Approach:**
+- Sample multiple reasoning chains (e.g., 40 chains at high temperature)
+- Verify each step according to principles: Relevance, Mathematical Accuracy, Logical Consistency
+- Select chain with highest verification scores
+
+**Routing Mechanism:**
+- Step-level verification
+- Learned verifiers or rule-based constraints
+- Selection via ORM (outcome) or PRM (process) scores
+
+**Chain of Preference Optimization (CPO):**
+- Constructs paired preference data at each reasoning step
+- Uses Tree-of-Thought search to categorize thoughts as preferred/dispreferred
+- Optimizes model to follow preferred reasoning paths
+
+**Key Insight:** Multi-sample + verify outperforms single-shot. Step-level verification enables early detection of errors. Self-verification (LLM verifies own outputs) works but models are overconfident.
+
+---
+
+### 5. Collaborative and Speculative Inference
+
+#### 5.1 Speculative Decoding: Draft + Verify
+**Key Papers:** Apple's Speculative Streaming, ReDrafter, CTC-based drafting, Cascade Speculative Drafting
+
+**Approach:**
+- Small draft model generates K tokens speculatively
+- Large target model verifies in parallel
+- Accept correct tokens, reject and regenerate wrong ones
+
+**Performance:**
+- 2-3× speedup without accuracy loss
+- Apple Speculative Streaming: 1.8-3.1× speedup
+
+**Innovations:**
+1. **Speculative Streaming (Apple):** Single model predicts future n-grams
+2. **ReDrafter (Apple):** RNN draft model conditioned on LLM hidden states
+3. **CTC-based:** Strengthens correlations between draft tokens
+4. **Cascade Drafting:** Vertical (eliminate autoregressive in draft) + Horizontal (optimize time allocation)
+
+**Key Insight:** Draft model quality determines acceptance rate. Fine-tuning on target distribution helps. Single-model approaches (self-speculation) eliminate separate draft model overhead.
+
+**Relevance to LatentWire:** Latent could serve as "draft" representation verified by full model. Or use fast model to draft continuation, slow model to verify.
+
+---
+
+#### 5.2 CoSine: Collaborative Speculative Inference
+**Paper:** "Collaborative Speculative Inference for Efficient LLM Inference Serving" (2024)  
+**arXiv:** 2503.10325
+
+**Approach:**
+- Decouples speculative decoding from verification
+- Routes requests to specialized drafters
+- Confidence-based token fusion: synthesizes outputs from multiple drafters
+- Pipelined execution of drafting and verification
+
+**Routing Mechanism:**
+- Problem-level (route to drafter)
+- Token-level (fusion across drafters)
+- Learned: confidence-based fusion
+- Heuristic: route to specialized drafter
+
+**Performance:**
+- 23.2% latency reduction
+- 32.5% throughput increase
+- Optimizes parallel workflows via heterogeneous collaboration
+
+**Key Insight:** Multiple specialized drafters better than single generalist. Confidence-based fusion combines strengths. Pipelining decouples drafting and verification for efficiency.
+
+---
+
+### 6. Confidence and Uncertainty Estimation
+
+#### 6.1 LLM Confidence Detection Methods
+**Paper:** "Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs" (2024)  
+**arXiv:** 2306.13063
+
+**Framework Components:**
+1. Prompting strategies (elicit verbalized confidence)
+2. Sampling methods (generate multiple responses)
+3. Aggregation techniques (compute consistency)
+
+**Key Findings:**
+- **Verbalized confidence is unreliable:** LLMs are overconfident, imitating human confidence patterns
+- **White-box vs. black-box:** White-box (internal access) outperforms black-box (API-only), but gap is narrow (0.522 vs. 0.605 AUROC)
+- **No consistent winner:** All methods struggle on tasks requiring professional knowledge
+
+**Better Approaches:**
+- Consistency among multiple responses (sample diversity)
+- Human-inspired prompts
+- Better aggregation strategies
+
+**Metrics:**
+- Verbalized confidence (P(True))
+- Perplexity / entropy
+- Margin sampling
+- Multi-sample consistency
+
+**Key Insight:** Cannot trust LLM self-reported confidence. Better to sample multiple outputs and measure consistency or use learned uncertainty estimators.
+
+---
+
+#### 6.2 Perplexity, Entropy, and Confidence
+**Multiple sources**
+
+**Relationship:**
+- Perplexity = exp(entropy)
+- Lower perplexity = higher confidence (fewer plausible options)
+- Higher perplexity = more uncertainty
+
+**Applications:**
+- Model selection: lower perplexity indicates better fit
+- Early stopping: monitor validation perplexity
+- Confidence estimation: token-level perplexity as uncertainty signal
+
+**Limitations:**
+- Calibration: perplexity doesn't directly map to correctness
+- Task-dependent: perplexity thresholds vary by domain
+- Overconfidence: models can be low-perplexity but wrong
+
+**Key Insight:** Perplexity is necessary but not sufficient for confidence. Combine with other signals (consistency, learned estimators).
+
+---
+
+### 7. Conditional Computation and Adaptive Depth
+
+#### 7.1 Adaptive Computation Time (ACT)
+**Paper:** Graves, "Adaptive Computation Time for Recurrent Neural Networks" (2016)  
+**arXiv:** 1603.08983
+
+**Approach:**
+- RNNs learn how many steps between input and output
+- Minimal architecture changes
+- Deterministic and differentiable
+
+**Relevance:** Historical foundation for adaptive computation. Modern incarnations: Mixture-of-Depths, early exit.
+
+---
+
+#### 7.2 Conditional Computation Principles
+**Paper:** "Conditional computation in neural networks: principles and research trends" (2024)  
+**arXiv:** 2403.07965
+
+**Definition:**
+- Dynamically activate/deactivate parts of computation graph
+- Examples: token selection, layer selection, sub-module selection
+
+**Benefits:**
+- Efficiency: fewer FLOPs per input
+- Specialization: different paths for different inputs
+- Generalization: capacity without over-parameterization
+- Explainability: see which paths activated
+
+**Approaches:**
+- Token-level: select which tokens to process (MoD, early exit)
+- Layer-level: skip layers dynamically
+- Expert-level: MoE routing
+
+---
+
+### 8. Key Takeaways for LatentWire
+
+#### 8.1 Applicable Routing Strategies
+
+**Token-Level Routing (Most Relevant):**
+- CITER: Route latent tokens to different adapters/models based on difficulty
+- Implementation: Train RL-based router on latent representations
+- Reward: balance task quality (F1) and compression efficiency
+
+**Step-Level Verification:**
+- Use PRM-style scoring to verify intermediate outputs
+- Switch models if confidence drops mid-generation
+- Applicable for multi-hop reasoning tasks
+
+**Problem-Level Cascade:**
+- For LatentWire: try fast/compressed first, cascade to full text if quality insufficient
+- Learn quality estimator on latent outputs (F1, NLL predictor)
+
+#### 8.2 Confidence Detection Strategies
+
+**Do NOT use:**
+- Verbalized confidence (models are overconfident)
+
+**DO use:**
+- Multi-sample consistency: generate multiple outputs, measure agreement
+- Perplexity/entropy at token level
+- Learned uncertainty estimators trained on validation data
+- Per-example calibration (already in LatentWire)
+
+#### 8.3 Routing Mechanism Design
+
+**Learned vs. Heuristic:**
+- Learned (RL or supervised): Better performance, higher implementation cost
+- Heuristic (perplexity, threshold): Faster to deploy, less optimal
+
+**Recommendation for LatentWire:**
+1. Start heuristic: Use latent NLL or first-token perplexity as routing signal
+2. Upgrade to learned: Train router on latent embeddings → quality predictor
+3. RL refinement: Jointly optimize routing for quality + efficiency
+
+#### 8.4 Granularity Tradeoffs
+
+| Granularity | Pros | Cons | Use Case |
+|-------------|------|------|----------|
+| Problem-level | Simple, low overhead | Coarse, all-or-nothing | Query routing, cascade |
+| Step-level | Good for reasoning | Requires step boundaries | Multi-hop QA, CoT |
+| Token-level | Fine-grained, optimal | High overhead, complex | Within-sequence routing |
+| Layer-level | Depth efficiency | Less flexible | Early exit, MoD |
+
+**For LatentWire:** Token-level most promising. Each soft token could route to different adapters. Start with simpler step-level (route after full latent generation).
+
+#### 8.5 Performance Expectations
+
+Based on literature:
+- **Cost reduction:** 50-98% (cascade, routing)
+- **Speedup:** 1.25-3× (early exit, speculative, MoD)
+- **Quality:** Maintained or +1-4% improvement
+
+**For LatentWire:**
+- Baseline: F1 ~0.01-0.02 (current)
+- With routing: Target F1 ~0.10-0.20 (Phase A goal)
+- Compression: 4× target (32 latent tokens vs. 128+ text tokens)
+
+#### 8.6 Implementation Roadmap
+
+**Phase 1: Quality Estimator**
+1. Train predictor: latent embedding → F1 score
+2. Use on validation set to calibrate thresholds
+3. Implement cascade: latent → verify → text fallback
+
+**Phase 2: Token-Level Routing (Simple)**
+1. Compute per-token perplexity during generation
+2. Route high-perplexity tokens through enhanced adapter
+3. Measure efficiency gain vs. quality tradeoff
+
+**Phase 3: Learned Router (Advanced)**
+1. Collect dataset: (latent_features, token_difficulty, quality)
+2. Train RL router: CITER-style, reward = quality - cost
+3. Deploy: latent encoder → router → model selection
+
+**Phase 4: Multi-Model Collaboration**
+1. Generate from both Llama and Qwen simultaneously
+2. Use PRM-style verification to select best continuation
+3. Implement token fusion (CoSine-style) for high uncertainty
+
+---
+
+### 9. References
+
+**Problem-Level Routing:**
+- FrugalGPT (2305.05176)
+- RouteLLM (2406.18665)
+- Unified Routing and Cascading (2410.10347)
+
+**Token-Level Routing:**
+- CITER (OpenReview J2FyEVg8HR)
+- Mixtral 8x7B and MoE architectures
+- Mixture-of-Depths (2404.02258)
+
+**Layer-Level Routing:**
+- Early-Exit LLMs (2407.20272)
+- HELIOS (2504.10724)
+- EE-LLM (2312.04916)
+
+**Step-Level Verification:**
+- Math-Shepherd (2312.08935)
+- Qwen2.5-Math-PRM
+- General Purpose Verification for CoT (2405.00204)
+
+**Collaborative Inference:**
+- CoSine (2503.10325)
+- Speculative Streaming (Apple ML Research)
+- ReDrafter (Apple ML Research)
+
+**Confidence/Uncertainty:**
+- LLM Uncertainty (2306.13063)
+- Uncertainty Quantification (2404.15993)
+
+**Conditional Computation:**
+- Conditional Computation in Neural Networks (2403.07965)
+- Adaptive Computation Time (1603.08983)
+
+---
+
+### 10. Conclusion
+
+The research landscape shows strong evidence that dynamic routing and model specialization can achieve substantial efficiency gains (1.5-3× speedup, 50-98% cost reduction) without sacrificing quality. Key patterns:
+
+1. **Token-level routing is most fine-grained and powerful** but requires careful implementation (CITER, MoD)
+2. **Learned routers outperform heuristics** but require training data and RL infrastructure
+3. **Confidence estimation is hard**: LLMs are overconfident; use consistency or learned estimators
+4. **Step-level verification** (PRMs) enables intelligent switching during multi-step reasoning
+5. **Collaborative approaches** (multiple models, speculative decoding) show promise for quality+efficiency
+
+**For LatentWire specifically:**
+- Most applicable: CITER (token routing), PRMs (step verification), cascade routing with quality estimators
+- Start simple: heuristic routing based on perplexity or learned quality predictor
+- Scale to advanced: RL-based token router, multi-model collaboration with verification
+
+The literature strongly supports that intelligent routing can help LatentWire achieve its Phase A goals (F1 0.10-0.20 with 4× compression) by selectively applying computation where needed and cascading to stronger methods when quality signals are weak.
+
