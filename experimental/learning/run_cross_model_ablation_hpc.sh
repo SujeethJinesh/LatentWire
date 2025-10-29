@@ -7,9 +7,14 @@ set -e
 # Configuration
 OUTPUT_DIR="${OUTPUT_DIR:-runs/cross_model_ablation}"
 
+# Activate conda environment (Python 3.11)
+module load conda/24.3.0-0
+conda activate 3_11
+
 # Set up environment
 export PYTHONPATH=.
 export PYTHONUNBUFFERED=1
+export CUDA_VISIBLE_DEVICES=0  # Use GPU 0 for cross-model (COCONUT uses GPUs 1-3)
 
 # Create output directory and log file
 mkdir -p "$OUTPUT_DIR"

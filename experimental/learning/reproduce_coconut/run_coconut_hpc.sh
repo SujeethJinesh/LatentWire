@@ -25,6 +25,7 @@ conda activate 3_11
 
 # Set up environment
 export PYTHONUNBUFFERED=1
+export CUDA_VISIBLE_DEVICES=1,2,3  # Use GPUs 1,2,3 for COCONUT (GPU 0 for cross-model)
 
 # Navigate to coconut directory
 cd coconut
@@ -42,14 +43,14 @@ echo "Mode: $MODE ($EPOCHS epochs)"
 echo "Config: $CONFIG"
 echo "Output directory: $OUTPUT_DIR"
 echo "Log file: $LOG_FILE"
-echo "GPUs available: $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)"
+echo "GPUs assigned: $CUDA_VISIBLE_DEVICES (3 GPUs for COCONUT)"
 echo "GPU type: $(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)"
 echo "=========================================="
 echo ""
 
-# Detect number of GPUs to use
-# Default to all available, but can be overridden with NPROC env var
-NPROC="${NPROC:-$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)}"
+# Number of GPUs to use (defaults to 3 for shared node with cross-model ablation)
+# Can be overridden with NPROC env var
+NPROC="${NPROC:-3}"
 echo "Using $NPROC GPUs for training"
 echo ""
 

@@ -4,9 +4,11 @@ This guide shows how to run both COCONUT and cross-model ablation experiments on
 
 ## Resource Allocation Strategy
 
-**Total: 4 nodes available**
-- **3 nodes (12 GPUs)**: COCONUT Stage 0 training
-- **1 node (4 GPUs)**: Cross-model ablation experiment
+**Single Compute Node with 4 GPUs:**
+- **GPU 0**: Cross-model ablation experiment
+- **GPUs 1, 2, 3**: COCONUT Stage 0 training (3 GPUs)
+
+Both experiments run **simultaneously on the same node** with isolated GPU assignments via `CUDA_VISIBLE_DEVICES`.
 
 ## Prerequisites
 
@@ -36,30 +38,32 @@ git pull
 
 ---
 
-## Experiment 1: COCONUT Stage 0 Training (3 nodes)
+## Experiment 1: COCONUT Stage 0 Training (3 GPUs)
 
 ### Location
 ```bash
 cd experimental/learning/reproduce_coconut
 ```
 
-### Quick Test (3 epochs, ~1-2 hours on 3 nodes)
+### Quick Test (3 epochs, ~2-3 hours on 3 H100s)
 ```bash
 conda activate 3_11
 bash run_coconut_hpc.sh test
 
+# Uses GPUs 1,2,3 (GPU 0 reserved for cross-model ablation)
 # Logs saved to: runs/stage0_test/coconut_stage0_test_TIMESTAMP.log
 ```
 
-### Full Training (25 epochs, ~8-10 hours on 3 nodes)
+### Full Training (25 epochs, ~15-20 hours on 3 H100s)
 ```bash
 conda activate 3_11
 bash run_coconut_hpc.sh full
 
+# Uses GPUs 1,2,3 (GPU 0 reserved for cross-model ablation)
 # Logs saved to: runs/stage0_full/coconut_stage0_full_TIMESTAMP.log
 ```
 
-**Note**: The wrapper script automatically detects available GPUs and uses all of them (defaults to 12 if you have 3 nodes × 4 GPUs).
+**Note**: The wrapper script sets `CUDA_VISIBLE_DEVICES=1,2,3` and defaults to `NPROC=3` for shared node execution.
 
 ### Monitor Training
 ```bash
@@ -73,7 +77,7 @@ tail -f runs/stage0_full/coconut_*.log   # For full run
 
 ---
 
-## Experiment 2: Cross-Model Ablation (1 node)
+## Experiment 2: Cross-Model Ablation (1 GPU)
 
 ### Location
 ```bash
@@ -85,7 +89,7 @@ cd experimental/learning
 # Activate environment
 conda activate 3_11
 
-# Run on single node (will use 1 GPU automatically)
+# Run on GPU 0 (COC uses GPUs 1-3)
 bash run_cross_model_ablation_hpc.sh
 ```
 
@@ -115,21 +119,21 @@ nvidia-smi
 
 ---
 
-## Running Both Experiments Simultaneously
+## Running Both Experiments Simultaneously on Same Node
 
-### Option 1: Separate Sessions (Recommended)
+Both scripts automatically isolate GPU usage via `CUDA_VISIBLE_DEVICES`, so they can run simultaneously on the same compute node without conflicts.
 
-**Terminal 1** (3 nodes for COCONUT):
+### Option 1: Separate Terminal Sessions (Recommended)
+
+**Terminal 1** - COCONUT (GPUs 1,2,3):
 ```bash
-ssh node1  # or appropriate HPC login
-cd /path/to/LatentWire/experimental/learning/reproduce_coconut/coconut
+cd /path/to/LatentWire/experimental/learning/reproduce_coconut
 conda activate 3_11
-torchrun --nproc_per_node=12 run.py args/gsm_cot.yaml
+bash run_coconut_hpc.sh full  # or 'test' for quick 3-epoch run
 ```
 
-**Terminal 2** (1 node for cross-model):
+**Terminal 2** - Cross-Model (GPU 0):
 ```bash
-ssh node4  # different node
 cd /path/to/LatentWire/experimental/learning
 conda activate 3_11
 bash run_cross_model_ablation_hpc.sh
@@ -138,23 +142,34 @@ bash run_cross_model_ablation_hpc.sh
 ### Option 2: Background Jobs
 
 ```bash
-# Start COCONUT in background on 3 nodes
-cd experimental/learning/reproduce_coconut/coconut
-nohup torchrun --nproc_per_node=12 run.py args/gsm_cot.yaml > coconut.log 2>&1 &
+# Navigate to base directory
+cd /path/to/LatentWire/experimental/learning
+
+# Start COCONUT in background (GPUs 1,2,3)
+cd reproduce_coconut
+nohup bash run_coconut_hpc.sh full &
 COCONUT_PID=$!
 
-# Start cross-model in background on 1 node
-cd ../../
+# Start cross-model in background (GPU 0)
+cd ..
 nohup bash run_cross_model_ablation_hpc.sh &
 ABLATION_PID=$!
 
-# Monitor both
-tail -f experimental/learning/reproduce_coconut/coconut/coconut.log
-tail -f experimental/learning/runs/cross_model_ablation/cross_model_ablation_hpc_*.log
+# Monitor both experiments
+tail -f reproduce_coconut/runs/stage0_full/coconut_*.log
+tail -f runs/cross_model_ablation/cross_model_ablation_hpc_*.log
 
-# Check status
+# Check both processes are running
 ps -p $COCONUT_PID $ABLATION_PID
+
+# Monitor GPU usage (should show all 4 GPUs in use)
+watch -n 1 nvidia-smi
 ```
+
+**GPU Isolation:**
+- COCONUT: `CUDA_VISIBLE_DEVICES=1,2,3` (set by run_coconut_hpc.sh)
+- Cross-model: `CUDA_VISIBLE_DEVICES=0` (set by run_cross_model_ablation_hpc.sh)
+- No manual GPU assignment needed - handled automatically by scripts
 
 ---
 
@@ -207,13 +222,15 @@ git pull
 module load conda/24.3.0-0
 conda activate 3_11
 
-# COCONUT (3 nodes)
+# COCONUT (3 GPUs: 1,2,3)
 cd experimental/learning/reproduce_coconut
 bash run_coconut_hpc.sh full  # or 'test' for quick 3-epoch run
 
-# Cross-model ablation (1 node)
+# Cross-model ablation (1 GPU: 0)
 cd experimental/learning
 bash run_cross_model_ablation_hpc.sh
+
+# Both run on same node - GPU isolation handled automatically
 
 # Monitor
 nvidia-smi
