@@ -23,8 +23,8 @@ from datasets import load_dataset
 import time
 from pathlib import Path
 
-# Checkpoint directory for saving calibration matrices
-CHECKPOINT_DIR = Path("runs/cross_model_ablation/checkpoints")
+# Checkpoint directory for saving calibration matrices (outside runs/ to persist across experiments)
+CHECKPOINT_DIR = Path("checkpoints/cross_model_ablation")
 
 # ============================================================================
 # Calibration Data Loading

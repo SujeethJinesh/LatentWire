@@ -16,3 +16,5 @@ code-server-*
 experimental/learning/reproduce_coconut/coconut/data/*.json
 experimental/learning/reproduce_coconut/coconut/data/*.txt
 venv_arm64/
+# Cross-model ablation checkpoints (persist across runs)
+experimental/learning/checkpoints/
