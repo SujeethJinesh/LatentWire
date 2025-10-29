@@ -4,6 +4,9 @@ set -e
 # HPC script for cross-model ablation experiment
 # Requires: Python 3.11 with PyTorch 2.5.1 + CUDA
 
+# Unload system CUDA module (PyTorch uses bundled CUDA 12.1 libraries)
+module unload cudatoolkit 2>/dev/null || true
+
 # Configuration
 OUTPUT_DIR="${OUTPUT_DIR:-runs/cross_model_ablation}"
 

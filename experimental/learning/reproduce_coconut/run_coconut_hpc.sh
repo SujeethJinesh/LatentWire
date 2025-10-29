@@ -19,6 +19,9 @@ else
     EPOCHS=3
 fi
 
+# Unload system CUDA module (PyTorch uses bundled CUDA 12.1 libraries)
+module unload cudatoolkit 2>/dev/null || true
+
 # Set up environment
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=1,2,3  # Use GPUs 1,2,3 for COCONUT (GPU 0 for cross-model)
