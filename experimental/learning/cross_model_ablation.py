@@ -120,7 +120,7 @@ class ProcrustesAlignment(AlignmentMethod):
         all_target = []
 
         # Process in batches for speed
-        batch_size = 64
+        batch_size = 32  # Reduced from 64 to avoid OOM on H100 with both models loaded
         num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
         for batch_idx in range(num_batches):
@@ -212,7 +212,7 @@ class CenteredProcrustesAlignment(AlignmentMethod):
         all_target = []
 
         # Process in batches for speed
-        batch_size = 64
+        batch_size = 32  # Reduced from 64 to avoid OOM on H100 with both models loaded
         num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
         for batch_idx in range(num_batches):
@@ -302,7 +302,7 @@ class ScaledProcrustesAlignment(AlignmentMethod):
         all_target = []
 
         # Process in batches for speed
-        batch_size = 64
+        batch_size = 32  # Reduced from 64 to avoid OOM on H100 with both models loaded
         num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
         for batch_idx in range(num_batches):
@@ -387,7 +387,7 @@ class LCrossOLS(AlignmentMethod):
         all_target = []
 
         # Process in batches for speed
-        batch_size = 64
+        batch_size = 32  # Reduced from 64 to avoid OOM on H100 with both models loaded
         num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
         for batch_idx in range(num_batches):
