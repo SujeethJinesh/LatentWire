@@ -26,6 +26,9 @@ from pathlib import Path
 # Checkpoint directory for saving calibration matrices (outside runs/ to persist across experiments)
 CHECKPOINT_DIR = Path("checkpoints/cross_model_ablation")
 
+# Skip L-Cross OLS due to CPU memory constraints on HPC (gets killed when offloading large matrices)
+SKIP_LCROSS_OLS = True
+
 # ============================================================================
 # Calibration Data Loading
 # ============================================================================
@@ -692,8 +695,10 @@ def cross_model_experiment():
         ("Procrustes", ProcrustesAlignment()),
         ("Centered Procrustes", CenteredProcrustesAlignment()),
         ("Scaled Procrustes", ScaledProcrustesAlignment()),
-        ("L-Cross OLS", LCrossOLS()),
     ]
+
+    if not SKIP_LCROSS_OLS:
+        alignment_methods.append(("L-Cross OLS", LCrossOLS()))
 
     # Calibrate all methods
     print("\n" + "="*60)
@@ -731,8 +736,10 @@ def cross_model_experiment():
         ("Procrustes", ProcrustesAlignment()),
         ("Centered Procrustes", CenteredProcrustesAlignment()),
         ("Scaled Procrustes", ScaledProcrustesAlignment()),
-        ("L-Cross OLS", LCrossOLS()),
     ]
+
+    if not SKIP_LCROSS_OLS:
+        reverse_methods.append(("L-Cross OLS", LCrossOLS()))
 
     for name, method in reverse_methods:
         print(f"\n{name}:")
