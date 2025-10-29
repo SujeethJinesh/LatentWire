@@ -348,17 +348,19 @@ class LCrossOLS(AlignmentMethod):
         # Solve: T = argmin ||target - T @ source||² using least squares
         # T = target @ source.pinv() OR use torch.linalg.lstsq
         # Convert to float32 for linear algebra operations (don't support half precision)
-        source_f32 = source_states.float()
-        target_f32 = target_states.float()
+        # Move to CPU to avoid OOM (lstsq needs ~11GB extra memory)
+        print("  Moving data to CPU for OLS computation (avoiding OOM)...")
+        source_f32 = source_states.float().cpu()
+        target_f32 = target_states.float().cpu()
 
         try:
             # Using lstsq: solve X @ T.T = Y for T.T, where X=source, Y=target
             solution = torch.linalg.lstsq(source_f32, target_f32)
-            self.T = solution.solution.T.to(source_states.dtype)
+            self.T = solution.solution.T.to(device).to(source_states.dtype)
             print(f"  ✓ L-Cross OLS matrix: {self.T.shape}")
         except Exception as e:
             print(f"  Warning: lstsq failed ({e}), using pseudo-inverse")
-            self.T = (target_f32.T @ torch.pinverse(source_f32.T)).to(source_states.dtype)
+            self.T = (target_f32.T @ torch.pinverse(source_f32.T)).to(device).to(source_states.dtype)
 
         self.is_calibrated = True
 

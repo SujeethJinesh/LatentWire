@@ -25,6 +25,7 @@ module unload cudatoolkit 2>/dev/null || true
 # Set up environment
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=1,2,3  # Use GPUs 1,2,3 for COCONUT (GPU 0 for cross-model)
+export WANDB_MODE=disabled  # Disable Weights & Biases logging (no API key on HPC)
 
 # Navigate to coconut directory first
 cd coconut
