@@ -21,13 +21,16 @@ import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 import time
+from pathlib import Path
 
+# Checkpoint directory for saving calibration matrices
+CHECKPOINT_DIR = Path("runs/cross_model_ablation/checkpoints")
 
 # ============================================================================
 # Calibration Data Loading
 # ============================================================================
 
-def load_calibration_texts(num_samples=10000, min_length=50):
+def load_calibration_texts(num_samples=5000, min_length=50):
     """Load diverse calibration texts from WikiText-2"""
     print(f"Loading WikiText-2 calibration data ({num_samples} samples)...")
 
@@ -98,6 +101,19 @@ class ProcrustesAlignment(AlignmentMethod):
         self.W = None
 
     def calibrate(self, model_a, tokenizer_a, model_b, tokenizer_b, calibration_texts, device):
+        # Create checkpoint filename based on method and direction
+        direction = f"{model_a.config._name_or_path.split('/')[-1]}_to_{model_b.config._name_or_path.split('/')[-1]}"
+        checkpoint_path = CHECKPOINT_DIR / f"procrustes_{direction}_{len(calibration_texts)}.pt"
+
+        # Try to load from checkpoint
+        if checkpoint_path.exists():
+            print(f"  Loading Procrustes alignment from checkpoint: {checkpoint_path.name}")
+            checkpoint = torch.load(checkpoint_path)
+            self.W = checkpoint['W'].to(device)
+            self.is_calibrated = True
+            print(f"  ✓ Procrustes matrix loaded: {self.W.shape}")
+            return
+
         print("  Computing Procrustes alignment (SVD-based rotation)...")
 
         all_source = []
@@ -140,6 +156,11 @@ class ProcrustesAlignment(AlignmentMethod):
             self.W = torch.eye(H.shape[0], device=device, dtype=source_states.dtype)
 
         self.is_calibrated = True
+
+        # Save checkpoint
+        CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
+        torch.save({'W': self.W.cpu()}, checkpoint_path)
+        print(f"  ✓ Checkpoint saved: {checkpoint_path.name}")
 
     def align(self, source_hidden):
         """Apply W @ source"""
@@ -529,7 +550,7 @@ def cross_model_experiment():
     print(f"Mistral device: {next(mistral_model.parameters()).device}")
 
     # Load calibration data
-    calibration_texts = load_calibration_texts(num_samples=10000)
+    calibration_texts = load_calibration_texts(num_samples=5000)
 
     # Test prompt
     prompt = "The future of artificial intelligence is"
