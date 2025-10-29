@@ -7,10 +7,6 @@ set -e
 # Configuration
 OUTPUT_DIR="${OUTPUT_DIR:-runs/cross_model_ablation}"
 
-# Activate conda environment (Python 3.11)
-module load conda/24.3.0-0
-conda activate 3_11
-
 # Set up environment
 export PYTHONPATH=.
 export PYTHONUNBUFFERED=1

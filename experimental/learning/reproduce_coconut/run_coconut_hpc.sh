@@ -19,10 +19,6 @@ else
     EPOCHS=3
 fi
 
-# Activate conda environment (Python 3.11)
-module load conda/24.3.0-0
-conda activate 3_11
-
 # Set up environment
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=1,2,3  # Use GPUs 1,2,3 for COCONUT (GPU 0 for cross-model)
