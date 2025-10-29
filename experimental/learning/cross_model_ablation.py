@@ -119,24 +119,47 @@ class ProcrustesAlignment(AlignmentMethod):
         all_source = []
         all_target = []
 
-        for i, text in enumerate(calibration_texts):
-            if i % 100 == 0:
-                print(f"    Processing {i}/{len(calibration_texts)}...")
+        # Process in batches for speed
+        batch_size = 64
+        num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
-            inputs_a = tokenizer_a(text, return_tensors="pt", truncation=True, max_length=512).to(device)
-            inputs_b = tokenizer_b(text, return_tensors="pt", truncation=True, max_length=512).to(device)
+        for batch_idx in range(num_batches):
+            start_idx = batch_idx * batch_size
+            end_idx = min(start_idx + batch_size, len(calibration_texts))
+            batch_texts = calibration_texts[start_idx:end_idx]
+
+            if batch_idx % 10 == 0:
+                print(f"    Processing batch {batch_idx}/{num_batches} ({start_idx}/{len(calibration_texts)} texts)...")
+
+            # Tokenize with padding
+            inputs_a = tokenizer_a(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
+            inputs_b = tokenizer_b(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
 
             with torch.no_grad():
                 outputs_a = model_a(**inputs_a, output_hidden_states=True)
                 outputs_b = model_b(**inputs_b, output_hidden_states=True)
 
-                hidden_a = outputs_a.hidden_states[-1]
+                hidden_a = outputs_a.hidden_states[-1]  # [batch_size, seq_len, hidden_dim]
                 hidden_b = outputs_b.hidden_states[-1]
 
-                # Handle different sequence lengths
-                min_len = min(hidden_a.shape[1], hidden_b.shape[1])
-                all_source.append(hidden_a[:, :min_len, :])
-                all_target.append(hidden_b[:, :min_len, :])
+                # Extract only non-padded positions using attention masks
+                mask_a = inputs_a['attention_mask']  # [batch_size, seq_len]
+                mask_b = inputs_b['attention_mask']
+
+                # For each example in batch, extract real tokens
+                for i in range(len(batch_texts)):
+                    # Get valid positions for each model
+                    valid_a = mask_a[i].bool()
+                    valid_b = mask_b[i].bool()
+
+                    # Extract hidden states for valid positions only
+                    h_a = hidden_a[i, valid_a, :]  # [num_valid_tokens_a, hidden_dim]
+                    h_b = hidden_b[i, valid_b, :]  # [num_valid_tokens_b, hidden_dim]
+
+                    # Handle different sequence lengths
+                    min_len = min(h_a.shape[0], h_b.shape[0])
+                    all_source.append(h_a[:min_len, :].unsqueeze(0))  # [1, min_len, hidden_dim]
+                    all_target.append(h_b[:min_len, :].unsqueeze(0))
 
         # Concatenate and flatten
         source_states = torch.cat([s.reshape(-1, s.shape[-1]) for s in all_source], dim=0)
@@ -188,12 +211,21 @@ class CenteredProcrustesAlignment(AlignmentMethod):
         all_source = []
         all_target = []
 
-        for i, text in enumerate(calibration_texts):
-            if i % 100 == 0:
-                print(f"    Processing {i}/{len(calibration_texts)}...")
+        # Process in batches for speed
+        batch_size = 64
+        num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
-            inputs_a = tokenizer_a(text, return_tensors="pt", truncation=True, max_length=512).to(device)
-            inputs_b = tokenizer_b(text, return_tensors="pt", truncation=True, max_length=512).to(device)
+        for batch_idx in range(num_batches):
+            start_idx = batch_idx * batch_size
+            end_idx = min(start_idx + batch_size, len(calibration_texts))
+            batch_texts = calibration_texts[start_idx:end_idx]
+
+            if batch_idx % 10 == 0:
+                print(f"    Processing batch {batch_idx}/{num_batches} ({start_idx}/{len(calibration_texts)} texts)...")
+
+            # Tokenize with padding
+            inputs_a = tokenizer_a(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
+            inputs_b = tokenizer_b(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
 
             with torch.no_grad():
                 outputs_a = model_a(**inputs_a, output_hidden_states=True)
@@ -202,9 +234,20 @@ class CenteredProcrustesAlignment(AlignmentMethod):
                 hidden_a = outputs_a.hidden_states[-1]
                 hidden_b = outputs_b.hidden_states[-1]
 
-                min_len = min(hidden_a.shape[1], hidden_b.shape[1])
-                all_source.append(hidden_a[:, :min_len, :])
-                all_target.append(hidden_b[:, :min_len, :])
+                # Extract only non-padded positions
+                mask_a = inputs_a['attention_mask']
+                mask_b = inputs_b['attention_mask']
+
+                for i in range(len(batch_texts)):
+                    valid_a = mask_a[i].bool()
+                    valid_b = mask_b[i].bool()
+
+                    h_a = hidden_a[i, valid_a, :]
+                    h_b = hidden_b[i, valid_b, :]
+
+                    min_len = min(h_a.shape[0], h_b.shape[0])
+                    all_source.append(h_a[:min_len, :].unsqueeze(0))
+                    all_target.append(h_b[:min_len, :].unsqueeze(0))
 
         # Concatenate and flatten
         source_states = torch.cat([s.reshape(-1, s.shape[-1]) for s in all_source], dim=0)
@@ -258,12 +301,21 @@ class ScaledProcrustesAlignment(AlignmentMethod):
         all_source = []
         all_target = []
 
-        for i, text in enumerate(calibration_texts):
-            if i % 100 == 0:
-                print(f"    Processing {i}/{len(calibration_texts)}...")
+        # Process in batches for speed
+        batch_size = 64
+        num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
-            inputs_a = tokenizer_a(text, return_tensors="pt", truncation=True, max_length=512).to(device)
-            inputs_b = tokenizer_b(text, return_tensors="pt", truncation=True, max_length=512).to(device)
+        for batch_idx in range(num_batches):
+            start_idx = batch_idx * batch_size
+            end_idx = min(start_idx + batch_size, len(calibration_texts))
+            batch_texts = calibration_texts[start_idx:end_idx]
+
+            if batch_idx % 10 == 0:
+                print(f"    Processing batch {batch_idx}/{num_batches} ({start_idx}/{len(calibration_texts)} texts)...")
+
+            # Tokenize with padding
+            inputs_a = tokenizer_a(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
+            inputs_b = tokenizer_b(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
 
             with torch.no_grad():
                 outputs_a = model_a(**inputs_a, output_hidden_states=True)
@@ -272,9 +324,20 @@ class ScaledProcrustesAlignment(AlignmentMethod):
                 hidden_a = outputs_a.hidden_states[-1]
                 hidden_b = outputs_b.hidden_states[-1]
 
-                min_len = min(hidden_a.shape[1], hidden_b.shape[1])
-                all_source.append(hidden_a[:, :min_len, :])
-                all_target.append(hidden_b[:, :min_len, :])
+                # Extract only non-padded positions
+                mask_a = inputs_a['attention_mask']
+                mask_b = inputs_b['attention_mask']
+
+                for i in range(len(batch_texts)):
+                    valid_a = mask_a[i].bool()
+                    valid_b = mask_b[i].bool()
+
+                    h_a = hidden_a[i, valid_a, :]
+                    h_b = hidden_b[i, valid_b, :]
+
+                    min_len = min(h_a.shape[0], h_b.shape[0])
+                    all_source.append(h_a[:min_len, :].unsqueeze(0))
+                    all_target.append(h_b[:min_len, :].unsqueeze(0))
 
         # Concatenate and flatten
         source_states = torch.cat([s.reshape(-1, s.shape[-1]) for s in all_source], dim=0)
@@ -323,12 +386,21 @@ class LCrossOLS(AlignmentMethod):
         all_source = []
         all_target = []
 
-        for i, text in enumerate(calibration_texts):
-            if i % 100 == 0:
-                print(f"    Processing {i}/{len(calibration_texts)}...")
+        # Process in batches for speed
+        batch_size = 64
+        num_batches = (len(calibration_texts) + batch_size - 1) // batch_size
 
-            inputs_a = tokenizer_a(text, return_tensors="pt", truncation=True, max_length=512).to(device)
-            inputs_b = tokenizer_b(text, return_tensors="pt", truncation=True, max_length=512).to(device)
+        for batch_idx in range(num_batches):
+            start_idx = batch_idx * batch_size
+            end_idx = min(start_idx + batch_size, len(calibration_texts))
+            batch_texts = calibration_texts[start_idx:end_idx]
+
+            if batch_idx % 10 == 0:
+                print(f"    Processing batch {batch_idx}/{num_batches} ({start_idx}/{len(calibration_texts)} texts)...")
+
+            # Tokenize with padding
+            inputs_a = tokenizer_a(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
+            inputs_b = tokenizer_b(batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True).to(device)
 
             with torch.no_grad():
                 outputs_a = model_a(**inputs_a, output_hidden_states=True)
@@ -337,9 +409,20 @@ class LCrossOLS(AlignmentMethod):
                 hidden_a = outputs_a.hidden_states[-1]
                 hidden_b = outputs_b.hidden_states[-1]
 
-                min_len = min(hidden_a.shape[1], hidden_b.shape[1])
-                all_source.append(hidden_a[:, :min_len, :])
-                all_target.append(hidden_b[:, :min_len, :])
+                # Extract only non-padded positions
+                mask_a = inputs_a['attention_mask']
+                mask_b = inputs_b['attention_mask']
+
+                for i in range(len(batch_texts)):
+                    valid_a = mask_a[i].bool()
+                    valid_b = mask_b[i].bool()
+
+                    h_a = hidden_a[i, valid_a, :]
+                    h_b = hidden_b[i, valid_b, :]
+
+                    min_len = min(h_a.shape[0], h_b.shape[0])
+                    all_source.append(h_a[:min_len, :].unsqueeze(0))
+                    all_target.append(h_b[:min_len, :].unsqueeze(0))
 
         # Concatenate and flatten
         source_states = torch.cat([s.reshape(-1, s.shape[-1]) for s in all_source], dim=0)
