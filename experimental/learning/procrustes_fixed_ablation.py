@@ -297,11 +297,17 @@ def load_calibration_texts(num_samples=100):
 
     # Delete corrupted cache to force fresh download
     # Use try-except for robustness (handles edge cases gracefully)
-    cache_dir = Path.home() / '.cache/huggingface/datasets/rajpurkar___squad'
+    cache_dir = Path.home() / '.cache' / 'huggingface' / 'datasets' / 'rajpurkar___squad'
+    print(f"  Checking cache at: {cache_dir}")
+    print(f"  Cache exists: {cache_dir.exists()}")
+
     try:
         if cache_dir.exists():
             print(f"  Removing corrupted cache at {cache_dir}")
             shutil.rmtree(cache_dir)
+            print(f"  ✓ Cache removed successfully")
+        else:
+            print(f"  Cache directory does not exist - proceeding with fresh download")
     except (FileNotFoundError, OSError) as e:
         # Cache already gone or permission issue - continue anyway
         print(f"  Note: {e}")

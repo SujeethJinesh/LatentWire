@@ -526,11 +526,17 @@ def run_single_adapter_experiment(adapter_type):
 
         # Delete corrupted cache to force fresh download
         # Use try-except to handle race condition when multiple processes run in parallel
-        cache_dir = Path.home() / '.cache/huggingface/datasets/rajpurkar___squad'
+        cache_dir = Path.home() / '.cache' / 'huggingface' / 'datasets' / 'rajpurkar___squad'
+        print(f"  Checking cache at: {cache_dir}", file=log_file)
+        print(f"  Cache exists: {cache_dir.exists()}", file=log_file)
+
         try:
             if cache_dir.exists():
                 print(f"  Removing corrupted cache at {cache_dir}", file=log_file)
                 shutil.rmtree(cache_dir)
+                print(f"  ✓ Cache removed successfully", file=log_file)
+            else:
+                print(f"  Cache directory does not exist - proceeding with fresh download", file=log_file)
         except (FileNotFoundError, OSError) as e:
             # Another process may have already deleted it - that's fine
             print(f"  Cache already removed (likely by parallel process): {e}", file=log_file)
