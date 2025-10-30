@@ -183,7 +183,6 @@ BATCH_SIZE = PLATFORM_CONFIG['batch_size']
 EPOCHS = PLATFORM_CONFIG['epochs']
 LEARNING_RATE = 5e-5  # Slightly reduced for stability
 NUM_SAMPLES = PLATFORM_CONFIG['num_samples']
-MAX_LENGTH = None  # Use full sequences - no artificial truncation!
 GRAD_ACCUM_STEPS = PLATFORM_CONFIG['grad_accum_steps']
 USE_BF16 = PLATFORM_CONFIG['use_bf16']
 USE_FLASH_ATTENTION = PLATFORM_CONFIG['use_flash_attention']
@@ -453,18 +452,18 @@ def run_procrustes_experiment():
         print("Using float16")
 
     # Model loading arguments for Procrustes (inference only)
-    # For HPC with multiple GPUs, distribute models across GPUs
+    # For HPC with multiple GPUs, properly distribute models
     if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
-        # Load models on different GPUs to avoid OOM
+        print("Loading models on separate GPUs to avoid OOM...")
+        # Don't use device_map - load to CPU first then move to specific GPU
         llama_kwargs = {
             'torch_dtype': dtype,
-            'device_map': {"": 0},  # Force Llama on GPU 0
+            'low_cpu_mem_usage': True,
         }
         mistral_kwargs = {
             'torch_dtype': dtype,
-            'device_map': {"": 1},  # Force Mistral on GPU 1
+            'low_cpu_mem_usage': True,
         }
-        print("Distributing models: Llama on GPU 0, Mistral on GPU 1")
     else:
         # For Mac or single GPU, use auto device map
         llama_kwargs = mistral_kwargs = {
@@ -490,6 +489,13 @@ def run_procrustes_experiment():
         MISTRAL_MODEL,
         **mistral_kwargs
     ).eval()
+
+    # Explicitly move models to their designated GPUs for HPC
+    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+        llama_model = llama_model.to('cuda:0')
+        mistral_model = mistral_model.to('cuda:1')
+        print(f"Llama model moved to cuda:0")
+        print(f"Mistral model moved to cuda:1")
 
     # Load tokenizers
     llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
@@ -533,12 +539,13 @@ def run_procrustes_experiment():
             else:
                 llama_device = mistral_device = device
 
-            for text in calibration_texts[:10]:  # Reduced to 10 samples to save memory
-                # Tokenize and move to appropriate device for each model
-                llama_inputs = llama_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
-                                              padding="max_length", return_tensors="pt").to(llama_device)
-                mistral_inputs = mistral_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
-                                                  padding="max_length", return_tensors="pt").to(mistral_device)
+            for text in calibration_texts[:5]:  # Further reduced to 5 samples for memory
+                # Tokenize without truncation - handle natural sequence lengths
+                # Only truncate if absolutely necessary (>2048 tokens)
+                llama_inputs = llama_tokenizer(text, truncation=True, max_length=2048,
+                                              padding=False, return_tensors="pt").to(llama_device)
+                mistral_inputs = mistral_tokenizer(text, truncation=True, max_length=2048,
+                                                  padding=False, return_tensors="pt").to(mistral_device)
 
                 # Get hidden states without computing logits (saves memory)
                 # Access the model.model directly to avoid lm_head computation
@@ -549,12 +556,10 @@ def run_procrustes_experiment():
                 llama_hidden = llama_hidden_states[layer_idx][0]  # [seq_len, hidden]
                 mistral_hidden = mistral_hidden_states[layer_idx][0]
 
-                # Only use non-padding positions
-                llama_mask = llama_inputs["attention_mask"][0].bool()
-                mistral_mask = mistral_inputs["attention_mask"][0].bool()
-
-                llama_hidden_all.append(llama_hidden[llama_mask])
-                mistral_hidden_all.append(mistral_hidden[mistral_mask])
+                # Since we're not padding, use all positions
+                # The sequences have their natural lengths
+                llama_hidden_all.append(llama_hidden)
+                mistral_hidden_all.append(mistral_hidden)
 
         # Concatenate all hidden states
         llama_hidden_all = torch.cat(llama_hidden_all, dim=0)
