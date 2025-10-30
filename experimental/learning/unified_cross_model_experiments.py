@@ -29,6 +29,71 @@ import shutil
 import datasets
 
 # ============================================================================
+# Platform Detection and Device Configuration
+# ============================================================================
+
+def get_device_and_config():
+    """Auto-detect platform and return appropriate device and config."""
+    config = {}
+
+    # Check environment variables
+    use_mps = os.environ.get('USE_MPS', '0') == '1'
+    use_cuda = os.environ.get('USE_CUDA', '0') == '1'
+    disable_flash = os.environ.get('DISABLE_FLASH_ATTENTION', '0') == '1'
+
+    # Detect device
+    if use_mps and torch.backends.mps.is_available():
+        device = torch.device('mps')
+        platform = 'mac'
+        print("==> Using MPS (Metal Performance Shaders) on Mac")
+    elif use_cuda and torch.cuda.is_available():
+        device = torch.device('cuda')
+        platform = 'hpc'
+        print(f"==> Using CUDA on HPC ({torch.cuda.device_count()} GPUs available)")
+    elif torch.backends.mps.is_available():
+        device = torch.device('mps')
+        platform = 'mac'
+        print("==> Auto-detected MPS on Mac")
+    elif torch.cuda.is_available():
+        device = torch.device('cuda')
+        platform = 'hpc'
+        print("==> Auto-detected CUDA")
+    else:
+        device = torch.device('cpu')
+        platform = 'cpu'
+        print("==> Using CPU (no GPU available)")
+
+    # Platform-specific config
+    if platform == 'mac':
+        config['batch_size'] = int(os.environ.get('MAC_BATCH_SIZE', '4'))
+        config['num_samples'] = int(os.environ.get('MAC_SAMPLES', '1000'))
+        config['epochs'] = int(os.environ.get('MAC_EPOCHS', '2'))
+        config['use_bf16'] = False  # BF16 not well supported on MPS
+        config['use_flash_attention'] = False
+        config['grad_accum_steps'] = 8  # More accumulation for smaller batches
+        print(f"  - Batch size: {config['batch_size']} (Mac memory constraints)")
+        print(f"  - Samples: {config['num_samples']} (reduced for testing)")
+        print(f"  - Epochs: {config['epochs']} (reduced for testing)")
+    else:
+        config['batch_size'] = 16
+        config['num_samples'] = 10000
+        config['epochs'] = 10
+        config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
+        config['use_flash_attention'] = not disable_flash and platform == 'hpc'
+        config['grad_accum_steps'] = 4
+        if platform == 'hpc':
+            print(f"  - Batch size: {config['batch_size']}")
+            print(f"  - Samples: {config['num_samples']}")
+            print(f"  - Epochs: {config['epochs']}")
+            print(f"  - BF16: {config['use_bf16']}")
+            print(f"  - Flash Attention: {config['use_flash_attention']}")
+
+    return device, platform, config
+
+# Get device and config at module level
+DEVICE, PLATFORM, PLATFORM_CONFIG = get_device_and_config()
+
+# ============================================================================
 # InfoNCE Contrastive Loss (Critical from 2025 research)
 # ============================================================================
 
@@ -113,13 +178,15 @@ class CKA:
 LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
 MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
 
-# Training - ENHANCED based on 2025 literature
-BATCH_SIZE = 16  # Increased 4x - critical for contrastive learning
-EPOCHS = 10  # Increased from 3 - contrastive needs more epochs
+# Training - Use platform-specific values
+BATCH_SIZE = PLATFORM_CONFIG['batch_size']
+EPOCHS = PLATFORM_CONFIG['epochs']
 LEARNING_RATE = 5e-5  # Slightly reduced for stability
-NUM_SAMPLES = 10000  # Increased 10x - essential for good results
+NUM_SAMPLES = PLATFORM_CONFIG['num_samples']
 MAX_LENGTH = None  # Use full sequences - no artificial truncation!
-GRAD_ACCUM_STEPS = 4  # Reduced due to larger batch size
+GRAD_ACCUM_STEPS = PLATFORM_CONFIG['grad_accum_steps']
+USE_BF16 = PLATFORM_CONFIG['use_bf16']
+USE_FLASH_ATTENTION = PLATFORM_CONFIG['use_flash_attention']
 
 # Contrastive Learning Parameters (NEW from 2025 research)
 TEMPERATURE = 0.07  # Optimal for InfoNCE loss
@@ -367,27 +434,45 @@ def run_procrustes_experiment():
     print("PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)")
     print("=" * 80)
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f"Device: {device} (Procrustes SVD will run on GPU for ~10x speedup)")
+    # Use global device
+    device = DEVICE
+    print(f"Device: {device} (Procrustes on {PLATFORM})")
 
-    # Load models - H100 optimizations even for inference
-    print("\nLoading models...")
+    # Platform-specific model loading
+    print(f"\nLoading models on {PLATFORM}...")
 
-    # Use BF16 on H100 for consistency
-    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    # Select dtype based on platform
+    if PLATFORM == 'mac':
+        dtype = torch.float32  # MPS works best with float32
+        print("Using float32 for MPS")
+    elif USE_BF16:
+        dtype = torch.bfloat16
+        print("Using bfloat16 for H100")
+    else:
+        dtype = torch.float16
+        print("Using float16")
+
+    # Model loading arguments for Procrustes (inference only)
+    model_kwargs = {
+        'torch_dtype': dtype,
+        'device_map': "auto",  # OK for inference-only Procrustes experiment
+    }
+
+    # Add Flash Attention for HPC only
+    if USE_FLASH_ATTENTION:
+        model_kwargs['attn_implementation'] = "flash_attention_2"
+        print("Using Flash Attention 2")
+    else:
+        model_kwargs['attn_implementation'] = "eager"
 
     llama_model = AutoModelForCausalLM.from_pretrained(
         LLAMA_MODEL,
-        torch_dtype=dtype,
-        device_map="auto",  # OK for inference-only Procrustes experiment
-        attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager"
+        **model_kwargs
     ).eval()
 
     mistral_model = AutoModelForCausalLM.from_pretrained(
         MISTRAL_MODEL,
-        torch_dtype=dtype,
-        device_map="auto",  # OK for inference-only Procrustes experiment
-        attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager"
+        **model_kwargs
     ).eval()
 
     # Load tokenizers
@@ -749,34 +834,53 @@ def run_adapter_experiment(adapter_type, gpu_id):
             print("=" * 80)
             print(f"LEARNED ADAPTER EXPERIMENT - {adapter_type.upper()}")
             print("=" * 80)
-            print(f"GPU assigned: {gpu_id}")
+            print(f"Platform: {PLATFORM}")
             print(f"Log file: {log_path}")
 
-            # Set device
-            device = torch.device(f"cuda:{gpu_id}")
+            # Use global device (supports MPS/CUDA/CPU)
+            if PLATFORM == 'hpc' and gpu_id is not None:
+                device = torch.device(f"cuda:{gpu_id}")
+                print(f"GPU assigned: {gpu_id}")
+            else:
+                device = DEVICE
+                print(f"Device: {device}")
 
-            # Load models - H100 optimizations (BF16 + Flash Attention 2)
-            print("\nLoading models with H100 optimizations...")
+            # Platform-specific model loading
+            print(f"\nLoading models on {PLATFORM}...")
 
-            # Use BF16 on H100 for better training stability
-            dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-            print(f"Using dtype: {dtype}")
+            # Select dtype based on platform
+            if PLATFORM == 'mac':
+                dtype = torch.float32  # MPS works best with float32
+                print("Using float32 for MPS")
+            elif USE_BF16:
+                dtype = torch.bfloat16
+                print("Using bfloat16 for H100")
+            else:
+                dtype = torch.float16
+                print("Using float16")
+
+            # Model loading arguments
+            model_kwargs = {
+                'torch_dtype': dtype,
+                'low_cpu_mem_usage': True,
+            }
+
+            # Add Flash Attention for HPC only
+            if USE_FLASH_ATTENTION:
+                model_kwargs['attn_implementation'] = "flash_attention_2"
+                print("Using Flash Attention 2")
 
             model_a = AutoModelForCausalLM.from_pretrained(
                 LLAMA_MODEL,
-                torch_dtype=dtype,
-                low_cpu_mem_usage=True,
-                attn_implementation="flash_attention_2"  # H100 supports Flash Attention 2
+                **model_kwargs
             ).to(device).eval()
 
-            # Enable gradient checkpointing to save memory during training
+            # Enable gradient checkpointing to save memory during training (works on all platforms)
             model_a.gradient_checkpointing_enable()
 
             model_b = AutoModelForCausalLM.from_pretrained(
                 MISTRAL_MODEL,
-                torch_dtype=dtype,
-                low_cpu_mem_usage=True,
-                attn_implementation="flash_attention_2"  # H100 supports Flash Attention 2
+                **model_kwargs
             ).to(device).eval()
 
             # Enable gradient checkpointing to save memory during training
@@ -852,7 +956,10 @@ def main():
     print("=" * 80)
     print("UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS")
     print(f"Timestamp: {datetime.now().isoformat()}")
-    print(f"Available GPUs: {torch.cuda.device_count()}")
+    print(f"Platform: {PLATFORM}")
+    print(f"Device: {DEVICE}")
+    if PLATFORM == 'hpc':
+        print(f"Available CUDA GPUs: {torch.cuda.device_count()}")
     print("=" * 80)
 
     # Create output directory relative to script location
@@ -862,8 +969,8 @@ def main():
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Run Procrustes experiment on GPU
-    print("\n1. Starting Procrustes experiment (GPU 0)...")
+    # Run Procrustes experiment
+    print(f"\n1. Starting Procrustes experiment on {DEVICE}...")
     procrustes_results = run_procrustes_experiment()
 
     # Save Procrustes results
@@ -872,11 +979,12 @@ def main():
         json.dump(procrustes_results, f, indent=2)
     print(f"Procrustes results saved to: {procrustes_path}")
 
-    # Run learned adapter experiments on GPUs
-    print("\n2. Starting learned adapter experiments (2 GPUs)...")
+    # Run learned adapter experiments
+    print("\n2. Starting learned adapter experiments...")
 
-    if torch.cuda.device_count() >= 2:
-        # Run Linear and Affine in parallel on 2 GPUs
+    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+        # HPC with multiple GPUs: Run in parallel
+        print("Running Linear and Affine adapters in parallel on 2 GPUs...")
         processes = []
 
         p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
@@ -891,17 +999,23 @@ def main():
         for p in processes:
             p.join()
 
-        # Run LoRA sequentially after others complete (on GPU 0)
+        # Run LoRA sequentially after others complete
         print("\n3. Starting LoRA experiment (sequential on GPU 0)...")
         run_adapter_experiment("lora", 0)
 
     else:
-        print(f"WARNING: Only {torch.cuda.device_count()} GPU(s) available.")
-        print("Running experiments sequentially...")
+        # Mac/CPU/Single GPU: Run sequentially
+        if PLATFORM == 'mac':
+            print("Running adapters sequentially on MPS device...")
+        elif PLATFORM == 'cpu':
+            print("Running adapters sequentially on CPU...")
+        else:
+            print(f"Only {torch.cuda.device_count()} GPU available, running sequentially...")
 
-        # Run all experiments sequentially on available GPU
+        # Run all experiments sequentially (None means use default device)
         for adapter_type in ["linear", "affine", "lora"]:
-            run_adapter_experiment(adapter_type, 0)
+            print(f"\nRunning {adapter_type} adapter...")
+            run_adapter_experiment(adapter_type, None)
 
     print("\n" + "=" * 80)
     print("ALL EXPERIMENTS COMPLETE")
@@ -909,14 +1023,21 @@ def main():
     print("=" * 80)
 
 if __name__ == "__main__":
-    # Set multiprocessing start method
+    # Set multiprocessing start method (needed for CUDA/MPS)
     mp.set_start_method('spawn', force=True)
 
     # Print system info
     print(f"Python: {sys.version}")
     print(f"PyTorch: {torch.__version__}")
-    print(f"CUDA available: {torch.cuda.is_available()}")
+
+    # Platform-specific GPU info
     if torch.cuda.is_available():
+        print(f"CUDA available: True")
         print(f"CUDA devices: {torch.cuda.device_count()}")
+    elif torch.backends.mps.is_available():
+        print(f"MPS available: True")
+        print("Running on Apple Silicon GPU")
+    else:
+        print("No GPU available, will use CPU")
 
     main()
