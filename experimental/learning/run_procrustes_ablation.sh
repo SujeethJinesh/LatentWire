@@ -10,6 +10,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-runs/procrustes_fixed_ablation}"
 # Set up environment
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
+export CUDA_VISIBLE_DEVICES=0  # Use only GPU 0
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"

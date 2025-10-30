@@ -26,7 +26,7 @@ from datasets import load_dataset
 # Configuration
 LLAMA_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 MISTRAL_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"  # Use only GPU 0
 OUTPUT_DIR = Path("runs/procrustes_fixed_ablation")
 CALIBRATION_SIZE = 100
 LAYERS_TO_TEST = [0, 8, 16, 24, 32]  # 0 = embedding, 32 = final
