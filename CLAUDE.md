@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Last Updated**: October 2025
+
 ## Development Environment
 
 **IMPORTANT**: This project uses a **split development and execution environment**:
