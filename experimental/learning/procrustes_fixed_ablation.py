@@ -518,4 +518,41 @@ def run_layer_ablation():
 
 
 if __name__ == "__main__":
-    run_layer_ablation()
+    import sys
+    import traceback
+
+    print("=" * 80)
+    print("PROCRUSTES FIXED ABLATION - STARTING")
+    print("=" * 80)
+    print(f"Python version: {sys.version}")
+    print(f"PyTorch version: {torch.__version__}")
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"CUDA device count: {torch.cuda.device_count()}")
+        print(f"CUDA current device: {torch.cuda.current_device()}")
+    print(f"Script: {__file__}")
+    print("=" * 80)
+    print()
+
+    try:
+        results = run_layer_ablation()
+        print()
+        print("=" * 80)
+        print("EXPERIMENT COMPLETED SUCCESSFULLY")
+        print("=" * 80)
+        sys.exit(0)
+    except Exception as e:
+        print()
+        print("=" * 80)
+        print("EXPERIMENT FAILED WITH ERROR")
+        print("=" * 80)
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print()
+        print("Full traceback:")
+        print("-" * 80)
+        traceback.print_exc()
+        print("-" * 80)
+        print()
+        print("=" * 80)
+        sys.exit(1)

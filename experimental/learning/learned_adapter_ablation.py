@@ -623,6 +623,8 @@ def run_single_adapter_experiment(adapter_type):
 
 
 if __name__ == "__main__":
+    import traceback
+
     # Get adapter type from command line argument
     if len(sys.argv) != 2 or sys.argv[1] not in ["linear", "affine", "lora"]:
         print("Usage: python learned_adapter_ablation.py [linear|affine|lora]")
@@ -632,4 +634,41 @@ if __name__ == "__main__":
         sys.exit(1)
 
     adapter_type = sys.argv[1]
-    run_single_adapter_experiment(adapter_type)
+
+    print("=" * 80)
+    print(f"LEARNED ADAPTER ABLATION - {adapter_type.upper()} - STARTING")
+    print("=" * 80)
+    print(f"Python version: {sys.version}")
+    print(f"PyTorch version: {torch.__version__}")
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"CUDA device count: {torch.cuda.device_count()}")
+        print(f"CUDA current device: {torch.cuda.current_device()}")
+    print(f"Script: {__file__}")
+    print(f"Adapter type: {adapter_type}")
+    print(f"GPU assigned: {GPU_MAPPING[adapter_type]}")
+    print("=" * 80)
+    print()
+
+    try:
+        results = run_single_adapter_experiment(adapter_type)
+        print()
+        print("=" * 80)
+        print(f"{adapter_type.upper()} ADAPTER EXPERIMENT COMPLETED SUCCESSFULLY")
+        print("=" * 80)
+        sys.exit(0)
+    except Exception as e:
+        print()
+        print("=" * 80)
+        print(f"{adapter_type.upper()} ADAPTER EXPERIMENT FAILED WITH ERROR")
+        print("=" * 80)
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print()
+        print("Full traceback:")
+        print("-" * 80)
+        traceback.print_exc()
+        print("-" * 80)
+        print()
+        print("=" * 80)
+        sys.exit(1)
