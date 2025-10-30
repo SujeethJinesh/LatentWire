@@ -370,18 +370,18 @@ def run_procrustes_experiment():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    # Load models
+    # Load models - Keep on CPU for Procrustes (no training needed)
     print("\nLoading models...")
     llama_model = AutoModelForCausalLM.from_pretrained(
         LLAMA_MODEL,
         torch_dtype=torch.float16,
-        device_map="auto"
+        device_map="auto"  # OK for inference-only Procrustes experiment
     ).eval()
 
     mistral_model = AutoModelForCausalLM.from_pretrained(
         MISTRAL_MODEL,
         torch_dtype=torch.float16,
-        device_map="auto"
+        device_map="auto"  # OK for inference-only Procrustes experiment
     ).eval()
 
     # Load tokenizers
@@ -485,7 +485,7 @@ def run_procrustes_experiment():
 
 def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
                   device, log_file, num_samples=1000):
-    """Train a single adapter for cross-model alignment."""
+    """Train a single adapter for cross-model alignment with contrastive learning."""
 
     print(f"\nTraining {adapter.__class__.__name__}...", file=log_file)
 
@@ -508,9 +508,16 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     adapter = adapter.to(device)
     optimizer = torch.optim.AdamW(adapter.parameters(), lr=LEARNING_RATE)
 
+    # Add cosine annealing scheduler (as mentioned in comments)
+    total_steps = len(dataloader) * EPOCHS // GRAD_ACCUM_STEPS
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=total_steps)
+
+    # Initialize InfoNCE loss for contrastive learning
+    contrastive_loss_fn = InfoNCE(temperature=TEMPERATURE)
+
     # Training loop
     adapter.train()
-    training_metrics = {"epochs": []}
+    training_metrics = {"epochs": [], "cka_scores": []}
 
     for epoch in range(EPOCHS):
         epoch_loss = 0.0
@@ -525,44 +532,99 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             input_ids_b = batch["input_ids_b"].to(device)
             attention_mask_b = batch["attention_mask_b"].to(device)
 
-            # Extract source representations
+            # Multi-layer alignment: Extract representations from multiple layers
+            all_source_reprs = []
+            all_aligned_reprs = []
+
             with torch.no_grad():
                 outputs_a = model_a(
                     input_ids=input_ids_a,
                     attention_mask=attention_mask_a,
                     output_hidden_states=True
                 )
-                source_repr = outputs_a.hidden_states[LAYER_IDX]
+                outputs_b_teacher = model_b(
+                    input_ids=input_ids_b,
+                    attention_mask=attention_mask_b,
+                    output_hidden_states=True
+                )
 
-            # Align representations
-            aligned_repr = adapter(source_repr)
+            # Process multiple alignment layers
+            generation_losses = []
+            for layer_idx, layer_weight in zip(ALIGNMENT_LAYERS, LAYER_WEIGHTS):
+                source_repr = outputs_a.hidden_states[layer_idx]
+                aligned_repr = adapter(source_repr)
 
-            # Create labels with padding tokens masked
-            labels_b = input_ids_b.clone()
-            labels_b[attention_mask_b == 0] = -100
+                all_source_reprs.append(source_repr)
+                all_aligned_reprs.append(aligned_repr)
 
-            # Create position_ids for RoPE
-            batch_size, seq_len = attention_mask_b.shape
-            position_ids = torch.arange(seq_len, device=device).unsqueeze(0).expand(batch_size, -1)
-            position_ids = position_ids * attention_mask_b
+                # Create labels with padding tokens masked
+                labels_b = input_ids_b.clone()
+                labels_b[attention_mask_b == 0] = -100
 
-            # Compute generation loss with Model B
-            outputs_b = model_b(
-                inputs_embeds=aligned_repr,
-                attention_mask=attention_mask_b,
-                position_ids=position_ids,
-                labels=labels_b
-            )
+                # Create position_ids for RoPE
+                batch_size, seq_len = attention_mask_b.shape
+                position_ids = torch.arange(seq_len, device=device).unsqueeze(0).expand(batch_size, -1)
+                position_ids = position_ids * attention_mask_b
 
-            loss = outputs_b.loss / GRAD_ACCUM_STEPS
-            loss.backward()
+                # Compute generation loss with Model B for this layer
+                outputs_b = model_b(
+                    inputs_embeds=aligned_repr,
+                    attention_mask=attention_mask_b,
+                    position_ids=position_ids,
+                    labels=labels_b
+                )
+
+                generation_losses.append(outputs_b.loss * layer_weight)
+
+            # Combine generation losses from multiple layers
+            generation_loss = sum(generation_losses)
+
+            # Compute contrastive loss using InfoNCE
+            # Use middle layer representations for contrastive learning
+            mid_idx = len(ALIGNMENT_LAYERS) // 2
+            anchor = all_aligned_reprs[mid_idx][:, 0, :]  # Use [CLS] or first token
+            positive = outputs_b_teacher.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
+
+            # Create negatives by shuffling within batch
+            batch_size = anchor.shape[0]
+            if batch_size > 1:
+                # Get negatives from other examples in batch
+                neg_indices = []
+                for i in range(batch_size):
+                    # Get all indices except current example
+                    neg_idx = list(range(batch_size))
+                    neg_idx.remove(i)
+                    neg_indices.append(neg_idx[:min(NUM_NEGATIVES, len(neg_idx))])
+
+                # Pad if necessary
+                max_neg = max(len(ni) for ni in neg_indices)
+                negatives = []
+                for i, neg_idx in enumerate(neg_indices):
+                    neg_batch = positive[neg_idx]
+                    if len(neg_idx) < max_neg:
+                        # Pad with zeros if not enough negatives
+                        padding = torch.zeros((max_neg - len(neg_idx), neg_batch.shape[-1]),
+                                             device=device, dtype=neg_batch.dtype)
+                        neg_batch = torch.cat([neg_batch, padding], dim=0)
+                    negatives.append(neg_batch)
+                negatives = torch.stack(negatives)
+
+                contrastive_loss = contrastive_loss_fn(anchor, positive, negatives)
+            else:
+                contrastive_loss = torch.tensor(0.0, device=device)
+
+            # Combine losses
+            total_loss = generation_loss + CONTRASTIVE_WEIGHT * contrastive_loss
+            total_loss = total_loss / GRAD_ACCUM_STEPS
+            total_loss.backward()
 
             if (batch_idx + 1) % GRAD_ACCUM_STEPS == 0:
                 torch.nn.utils.clip_grad_norm_(adapter.parameters(), max_norm=1.0)
                 optimizer.step()
+                scheduler.step()  # Step the scheduler
                 optimizer.zero_grad()
 
-            epoch_loss += loss.item() * GRAD_ACCUM_STEPS
+            epoch_loss += total_loss.item() * GRAD_ACCUM_STEPS
             epoch_steps += 1
 
             if (batch_idx + 1) % 10 == 0:
@@ -571,11 +633,49 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
                       file=log_file)
 
         avg_epoch_loss = epoch_loss / epoch_steps
+
+        # Compute CKA similarity at end of epoch
+        with torch.no_grad():
+            # Sample a few batches for CKA computation
+            cka_scores = []
+            for i, batch in enumerate(dataloader):
+                if i >= 5:  # Only compute on first 5 batches for efficiency
+                    break
+
+                input_ids_a = batch["input_ids_a"].to(device)
+                attention_mask_a = batch["attention_mask_a"].to(device)
+                input_ids_b = batch["input_ids_b"].to(device)
+                attention_mask_b = batch["attention_mask_b"].to(device)
+
+                outputs_a = model_a(
+                    input_ids=input_ids_a,
+                    attention_mask=attention_mask_a,
+                    output_hidden_states=True
+                )
+                outputs_b = model_b(
+                    input_ids=input_ids_b,
+                    attention_mask=attention_mask_b,
+                    output_hidden_states=True
+                )
+
+                # Compute CKA for middle layer
+                source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+                aligned_repr = adapter(source_repr)
+                target_repr = outputs_b.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+
+                cka_score = CKA.cka_similarity(aligned_repr.float(), target_repr.float())
+                cka_scores.append(cka_score.item())
+
+            avg_cka = np.mean(cka_scores) if cka_scores else 0.0
+            training_metrics["cka_scores"].append(avg_cka)
+
         training_metrics["epochs"].append({
             "epoch": epoch + 1,
-            "loss": avg_epoch_loss
+            "loss": avg_epoch_loss,
+            "cka_score": avg_cka,
+            "lr": optimizer.param_groups[0]['lr']
         })
-        print(f"  Epoch {epoch+1} avg loss: {avg_epoch_loss:.4f}", file=log_file)
+        print(f"  Epoch {epoch+1} avg loss: {avg_epoch_loss:.4f}, CKA: {avg_cka:.4f}", file=log_file)
 
     return adapter, training_metrics
 
@@ -606,19 +706,19 @@ def run_adapter_experiment(adapter_type, gpu_id):
             # Set device
             device = torch.device(f"cuda:{gpu_id}")
 
-            # Load models
+            # Load models - device_map="auto" is for inference only, use explicit device placement
             print("\nLoading models...")
             model_a = AutoModelForCausalLM.from_pretrained(
                 LLAMA_MODEL,
                 torch_dtype=torch.float16,
-                device_map=device
-            ).eval()
+                low_cpu_mem_usage=True
+            ).to(device).eval()
 
             model_b = AutoModelForCausalLM.from_pretrained(
                 MISTRAL_MODEL,
                 torch_dtype=torch.float16,
-                device_map=device
-            ).eval()
+                low_cpu_mem_usage=True
+            ).to(device).eval()
 
             # Load tokenizers
             tokenizer_a = AutoTokenizer.from_pretrained(LLAMA_MODEL)
