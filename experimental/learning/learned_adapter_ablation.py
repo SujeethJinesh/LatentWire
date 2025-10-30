@@ -177,7 +177,7 @@ def collate_fn(batch):
         pad_len_a = max_len_a - item["input_ids_a"].shape[0]
         input_ids_a.append(torch.cat([
             item["input_ids_a"],
-            torch.zeros(pad_len_a, dtype=torch.long)
+            torch.full((pad_len_a,), -100, dtype=torch.long)  # Use -100 to ignore in loss
         ]))
         attention_mask_a.append(torch.cat([
             item["attention_mask_a"],
@@ -188,7 +188,7 @@ def collate_fn(batch):
         pad_len_b = max_len_b - item["input_ids_b"].shape[0]
         input_ids_b.append(torch.cat([
             item["input_ids_b"],
-            torch.zeros(pad_len_b, dtype=torch.long)
+            torch.full((pad_len_b,), -100, dtype=torch.long)  # Use -100 to ignore in loss
         ]))
         attention_mask_b.append(torch.cat([
             item["attention_mask_b"],
