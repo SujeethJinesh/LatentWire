@@ -1,63 +1,0 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-==> Using CUDA on HPC (4 GPUs available)
-  - Batch size: 16
-  - Samples: 10000
-  - Epochs: 10
-  - BF16: True
-  - Flash Attention: True
-Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
-PyTorch: 2.5.1+cu121
-CUDA available: True
-CUDA devices: 4
-================================================================================
-UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-10-30T16:18:21.828549
-Platform: hpc
-Device: cuda
-Available CUDA GPUs: 4
-================================================================================
-
-1. Starting Procrustes experiment on cuda...
-
-================================================================================
-PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
-================================================================================
-Device: cuda (Procrustes on hpc)
-
-Loading models on hpc...
-Using bfloat16 for H100
-Distributing models: Llama on GPU 0, Mistral on GPU 1
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3670.36it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.98s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:02,  1.50s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.54s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.26s/it]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3698.68it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:03,  1.70s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:02<00:01,  1.35s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:04<00:00,  1.55s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:04<00:00,  1.53s/it]
-Asking to pad to max_length but no maximum length is provided and the model has no predefined maximum length. Default to no padding.
-Asking to truncate to max_length but no maximum length is provided and the model has no predefined maximum length. Default to no truncation.
-
-Loading calibration dataset (100 samples)...
-
-============================================================
-Testing Layer 0
-============================================================
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1091, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1000, in main
-    procrustes_results = run_procrustes_experiment()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 537, in run_procrustes_experiment
-    llama_outputs = llama_model(**llama_inputs, output_hidden_states=True)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 1210, in forward
-    logits = self.lm_head(hidden_states[:, -num_logits_to_keep:, :])
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
-    return F.linear(input, self.weight, self.bias)
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 31.31 GiB. GPU 0 has a total capacity of 79.19 GiB of which 14.45 GiB is free. Including non-PyTorch memory, this process has 64.73 GiB memory in use. Of the allocated memory 63.99 GiB is allocated by PyTorch, and 77.47 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
