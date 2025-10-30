@@ -42,8 +42,8 @@ GPU_MAPPING = {
 }
 
 # Configuration
-LLAMA_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
-MISTRAL_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
+LLAMA_MODEL = "meta-llama/Llama-3.1-8B"  # Base model (not instruct)
+MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"  # Base model (not instruct)
 LAYER_IDX = 16  # Middle layer (best per literature arXiv:2502.02013)
 OUTPUT_DIR = Path("runs/learned_adapters")
 

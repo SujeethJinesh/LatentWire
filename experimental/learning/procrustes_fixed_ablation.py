@@ -24,8 +24,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 
 # Configuration
-LLAMA_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
-MISTRAL_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
+LLAMA_MODEL = "meta-llama/Llama-3.1-8B"  # Base model (not instruct)
+MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"  # Base model (not instruct)
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"  # Use only GPU 0
 OUTPUT_DIR = Path("runs/procrustes_fixed_ablation")
 CALIBRATION_SIZE = 100
