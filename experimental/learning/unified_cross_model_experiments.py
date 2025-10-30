@@ -201,8 +201,8 @@ LAYER_IDX = 16  # Default for backward compatibility
 # Layers to test for Procrustes
 LAYERS_TO_TEST = [0, 8, 16, 24, 32]
 
-# Calibration data size
-CALIBRATION_SIZE = 100
+# Calibration data size (reduced for memory constraints)
+CALIBRATION_SIZE = 50
 
 # Test prompts
 TEST_PROMPTS = [
@@ -526,20 +526,28 @@ def run_procrustes_experiment():
         mistral_hidden_all = []
 
         with torch.no_grad():
-            for text in calibration_texts[:20]:  # Use subset for memory
-                # Tokenize with padding
-                llama_inputs = llama_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
-                                              padding="max_length", return_tensors="pt").to(device)
-                mistral_inputs = mistral_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
-                                                  padding="max_length", return_tensors="pt").to(device)
+            # Determine device for each model (they may be on different GPUs)
+            if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+                llama_device = torch.device('cuda:0')
+                mistral_device = torch.device('cuda:1')
+            else:
+                llama_device = mistral_device = device
 
-                # Get hidden states
-                llama_outputs = llama_model(**llama_inputs, output_hidden_states=True)
-                mistral_outputs = mistral_model(**mistral_inputs, output_hidden_states=True)
+            for text in calibration_texts[:10]:  # Reduced to 10 samples to save memory
+                # Tokenize and move to appropriate device for each model
+                llama_inputs = llama_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
+                                              padding="max_length", return_tensors="pt").to(llama_device)
+                mistral_inputs = mistral_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
+                                                  padding="max_length", return_tensors="pt").to(mistral_device)
+
+                # Get hidden states without computing logits (saves memory)
+                # Access the model.model directly to avoid lm_head computation
+                llama_hidden_states = llama_model.model(**llama_inputs, output_hidden_states=True).hidden_states
+                mistral_hidden_states = mistral_model.model(**mistral_inputs, output_hidden_states=True).hidden_states
 
                 # Extract layer hidden states and flatten
-                llama_hidden = llama_outputs.hidden_states[layer_idx][0]  # [seq_len, hidden]
-                mistral_hidden = mistral_outputs.hidden_states[layer_idx][0]
+                llama_hidden = llama_hidden_states[layer_idx][0]  # [seq_len, hidden]
+                mistral_hidden = mistral_hidden_states[layer_idx][0]
 
                 # Only use non-padding positions
                 llama_mask = llama_inputs["attention_mask"][0].bool()
