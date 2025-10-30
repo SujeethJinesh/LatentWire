@@ -296,10 +296,15 @@ def load_calibration_texts(num_samples=100):
     print(f"Loading {num_samples} calibration texts from SQuAD...")
 
     # Delete corrupted cache to force fresh download
+    # Use try-except for robustness (handles edge cases gracefully)
     cache_dir = Path.home() / '.cache/huggingface/datasets/rajpurkar___squad'
-    if cache_dir.exists():
-        print(f"  Removing corrupted cache at {cache_dir}")
-        shutil.rmtree(cache_dir)
+    try:
+        if cache_dir.exists():
+            print(f"  Removing corrupted cache at {cache_dir}")
+            shutil.rmtree(cache_dir)
+    except (FileNotFoundError, OSError) as e:
+        # Cache already gone or permission issue - continue anyway
+        print(f"  Note: {e}")
 
     dataset = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
 

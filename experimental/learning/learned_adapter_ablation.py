@@ -523,10 +523,15 @@ def run_single_adapter_experiment(adapter_type):
         print("\nLoading datasets...", file=log_file)
 
         # Delete corrupted cache to force fresh download
+        # Use try-except to handle race condition when multiple processes run in parallel
         cache_dir = Path.home() / '.cache/huggingface/datasets/rajpurkar___squad'
-        if cache_dir.exists():
-            print(f"  Removing corrupted cache at {cache_dir}", file=log_file)
-            shutil.rmtree(cache_dir)
+        try:
+            if cache_dir.exists():
+                print(f"  Removing corrupted cache at {cache_dir}", file=log_file)
+                shutil.rmtree(cache_dir)
+        except (FileNotFoundError, OSError) as e:
+            # Another process may have already deleted it - that's fine
+            print(f"  Cache already removed (likely by parallel process): {e}", file=log_file)
 
         squad = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
         squad_val = load_dataset("rajpurkar/squad", split="validation", trust_remote_code=True)
