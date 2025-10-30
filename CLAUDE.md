@@ -3,6 +3,58 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 **Last Updated**: October 2025
+**Current Date**: 2025 (When working with external APIs and literature, remember the current year is 2025)
+
+## CRITICAL FILE MANAGEMENT DISCIPLINE (READ FIRST)
+
+### STOP CREATING NEW FILES
+
+**This is NON-NEGOTIABLE and violation will result in termination:**
+
+1. **NEVER create new files unless EXPLICITLY requested by the user**
+   - Edit existing files in-place
+   - Enhance existing scripts rather than creating new ones
+   - If you think you need a new file, you probably don't
+
+2. **All documentation goes in LOG.md ONLY**
+   - NO new .md files (no INTERLINGUA_SUMMARY.md, no README.md, nothing)
+   - Update LOG.md with findings, plans, and results
+   - Keep LOG.md organized and current
+
+3. **No temporary diagnostic scripts**
+   - No verify_fixes.py, diagnose_issues.py, or similar throwaway files
+   - Use existing infrastructure for testing and validation
+   - If debugging is needed, add it to existing scripts with proper flags
+
+4. **Think like a TOP RESEARCHER before any action**
+   - Would a top researcher create 10 files or edit 1 intelligently?
+   - Would they scatter code everywhere or maintain logical organization?
+   - Use judgment befitting expertise, not junior-level habits
+
+5. **Keep directories logically organized**
+   - experimental/learning/ should be clean and minimal
+   - Archive old experiments if needed (with user permission)
+   - Each file should have a clear purpose
+
+6. **File creation checklist (when EXPLICITLY requested)**
+   - [ ] User explicitly asked for this new file?
+   - [ ] Cannot be done by editing existing file?
+   - [ ] Will be used long-term, not just once?
+   - [ ] Follows project structure conventions?
+
+**Examples of violations:**
+- ❌ Creating enhanced_unified_experiments.py instead of editing unified_cross_model_experiments.py
+- ❌ Creating verify_fixes.py for one-time debugging
+- ❌ Creating INTERLINGUA_SUMMARY.md instead of updating LOG.md
+- ❌ Creating multiple run_*.sh scripts when one would suffice
+
+**Correct approach:**
+- ✅ Edit unified_cross_model_experiments.py to add enhancements
+- ✅ Add debugging flags to existing scripts
+- ✅ Update LOG.md with summaries and findings
+- ✅ Consolidate related functionality into single scripts
+
+**Remember**: Every file you create adds cognitive overhead. A clean codebase with fewer, well-maintained files is the mark of expertise.
 
 ## Development Environment
 
