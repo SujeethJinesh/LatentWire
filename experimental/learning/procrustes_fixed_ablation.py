@@ -129,14 +129,26 @@ class FixedProcrustesAlignment:
         print(f"  Target mean norm: {self.target_mean.norm().item():.4f}")
 
         # Step 2: Normalize to unit Frobenius norm (tr(AA^T) = 1)
-        self.source_norm = torch.sqrt((source_centered ** 2).sum())
-        self.target_norm = torch.sqrt((target_centered ** 2).sum())
+        # Use torch.norm for numerical stability (avoids overflow)
+        self.source_norm = torch.norm(source_centered, 'fro')
+        self.target_norm = torch.norm(target_centered, 'fro')
 
-        source_normalized = source_centered / self.source_norm
-        target_normalized = target_centered / self.target_norm
+        # Add small epsilon to prevent division by zero
+        eps = 1e-8
+        source_normalized = source_centered / (self.source_norm + eps)
+        target_normalized = target_centered / (self.target_norm + eps)
 
         print(f"  Source Frobenius norm: {self.source_norm.item():.4f}")
         print(f"  Target Frobenius norm: {self.target_norm.item():.4f}")
+
+        # Sanity check for numerical issues
+        if torch.isinf(self.source_norm) or torch.isinf(self.target_norm):
+            print(f"  WARNING: Infinite norm detected, using layer normalization fallback")
+            # Fallback: use layer normalization per token
+            source_normalized = torch.nn.functional.normalize(source_centered, dim=-1)
+            target_normalized = torch.nn.functional.normalize(target_centered, dim=-1)
+            self.source_norm = torch.tensor(1.0)
+            self.target_norm = torch.tensor(1.0)
 
         # Step 3: Compute optimal orthogonal rotation
         # Minimize ||W @ source - target||_F

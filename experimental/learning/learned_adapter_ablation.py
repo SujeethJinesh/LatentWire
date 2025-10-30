@@ -147,11 +147,18 @@ class AlignmentDataset(Dataset):
     def __getitem__(self, idx):
         text = self.texts[idx]
 
-        # Tokenize for both models
+        # Tokenize for both models WITH PADDING to ensure same length
+        # This is critical to avoid CUDA assertions from mismatched dimensions
         inputs_a = self.tokenizer_a(text, truncation=True, max_length=self.max_length,
-                                    return_tensors="pt")
+                                    padding="max_length", return_tensors="pt")
         inputs_b = self.tokenizer_b(text, truncation=True, max_length=self.max_length,
-                                    return_tensors="pt")
+                                    padding="max_length", return_tensors="pt")
+
+        # Both will now have exactly max_length tokens
+        assert inputs_a["input_ids"].shape[1] == self.max_length, \
+            f"Model A sequence length {inputs_a['input_ids'].shape[1]} != {self.max_length}"
+        assert inputs_b["input_ids"].shape[1] == self.max_length, \
+            f"Model B sequence length {inputs_b['input_ids'].shape[1]} != {self.max_length}"
 
         return {
             "input_ids_a": inputs_a["input_ids"][0],
@@ -271,11 +278,22 @@ def train_adapter(adapter_type, model_a, tokenizer_a, model_b, tokenizer_b,
             # Align representations
             aligned_repr = adapter(source_repr)
 
+            # Create labels with padding tokens masked (-100 to ignore in loss)
+            labels_b = input_ids_b.clone()
+            labels_b[attention_mask_b == 0] = -100  # Ignore padding tokens in loss
+
+            # Create position_ids for RoPE (important for Mistral)
+            batch_size, seq_len = attention_mask_b.shape
+            position_ids = torch.arange(seq_len, device=device).unsqueeze(0).expand(batch_size, -1)
+            # Mask positions where there's padding
+            position_ids = position_ids * attention_mask_b
+
             # Compute generation loss with Model B
             outputs_b = model_b(
                 inputs_embeds=aligned_repr,
                 attention_mask=attention_mask_b,
-                labels=input_ids_b
+                position_ids=position_ids,  # Explicit position IDs for RoPE
+                labels=labels_b  # Use masked labels instead of raw input_ids
             )
 
             loss = outputs_b.loss / GRAD_ACCUM_STEPS
