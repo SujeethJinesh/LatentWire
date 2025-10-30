@@ -540,12 +540,25 @@ def run_procrustes_experiment():
                 llama_device = mistral_device = device
 
             for text in calibration_texts[:5]:  # Further reduced to 5 samples for memory
-                # Tokenize without truncation - handle natural sequence lengths
-                # Only truncate if absolutely necessary (>2048 tokens)
-                llama_inputs = llama_tokenizer(text, truncation=True, max_length=2048,
-                                              padding=False, return_tensors="pt").to(llama_device)
-                mistral_inputs = mistral_tokenizer(text, truncation=True, max_length=2048,
-                                                  padding=False, return_tensors="pt").to(mistral_device)
+                # First tokenize to get sequence lengths
+                llama_tokens = llama_tokenizer(text, truncation=True, max_length=512,
+                                              padding=False, return_tensors="pt")
+                mistral_tokens = mistral_tokenizer(text, truncation=True, max_length=512,
+                                                  padding=False, return_tensors="pt")
+
+                # Use the minimum length to ensure alignment
+                min_len = min(llama_tokens['input_ids'].shape[1],
+                             mistral_tokens['input_ids'].shape[1])
+
+                # Truncate both to the same length
+                llama_inputs = {
+                    'input_ids': llama_tokens['input_ids'][:, :min_len].to(llama_device),
+                    'attention_mask': llama_tokens['attention_mask'][:, :min_len].to(llama_device)
+                }
+                mistral_inputs = {
+                    'input_ids': mistral_tokens['input_ids'][:, :min_len].to(mistral_device),
+                    'attention_mask': mistral_tokens['attention_mask'][:, :min_len].to(mistral_device)
+                }
 
                 # Get hidden states without computing logits (saves memory)
                 # Access the model.model directly to avoid lm_head computation
@@ -556,8 +569,9 @@ def run_procrustes_experiment():
                 llama_hidden = llama_hidden_states[layer_idx][0]  # [seq_len, hidden]
                 mistral_hidden = mistral_hidden_states[layer_idx][0]
 
-                # Since we're not padding, use all positions
-                # The sequences have their natural lengths
+                # Both should now have the same sequence length
+                assert llama_hidden.shape[0] == mistral_hidden.shape[0], f"Shape mismatch: {llama_hidden.shape} vs {mistral_hidden.shape}"
+
                 llama_hidden_all.append(llama_hidden)
                 mistral_hidden_all.append(mistral_hidden)
 
