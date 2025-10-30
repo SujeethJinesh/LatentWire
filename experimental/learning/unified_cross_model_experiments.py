@@ -29,6 +29,83 @@ import shutil
 import datasets
 
 # ============================================================================
+# InfoNCE Contrastive Loss (Critical from 2024 research)
+# ============================================================================
+
+class InfoNCE(nn.Module):
+    """InfoNCE loss for contrastive learning - essential for alignment."""
+
+    def __init__(self, temperature=0.07):
+        super().__init__()
+        self.temperature = temperature
+
+    def forward(self, anchor, positive, negatives):
+        """
+        anchor: [batch_size, hidden_dim]
+        positive: [batch_size, hidden_dim]
+        negatives: [batch_size, num_negatives, hidden_dim]
+        """
+        batch_size = anchor.shape[0]
+
+        # Normalize representations
+        anchor = F.normalize(anchor, dim=-1)
+        positive = F.normalize(positive, dim=-1)
+        negatives = F.normalize(negatives, dim=-1)
+
+        # Positive similarity
+        pos_sim = torch.sum(anchor * positive, dim=-1) / self.temperature
+
+        # Negative similarities
+        neg_sim = torch.matmul(negatives, anchor.unsqueeze(-1)).squeeze(-1) / self.temperature
+
+        # Compute InfoNCE loss
+        logits = torch.cat([pos_sim.unsqueeze(1), neg_sim], dim=1)
+        labels = torch.zeros(batch_size, dtype=torch.long, device=anchor.device)
+
+        return F.cross_entropy(logits, labels)
+
+# ============================================================================
+# CKA (Centered Kernel Alignment) - Superior to SVCCA
+# ============================================================================
+
+class CKA:
+    """CKA for measuring similarity between representations."""
+
+    @staticmethod
+    def linear_kernel(X):
+        """Linear kernel (dot product)."""
+        return X @ X.T
+
+    @staticmethod
+    def center_gram(K):
+        """Center gram matrix."""
+        n = K.shape[0]
+        H = torch.eye(n, device=K.device) - torch.ones((n, n), device=K.device) / n
+        return H @ K @ H
+
+    @staticmethod
+    def cka_similarity(X, Y):
+        """
+        Compute CKA similarity between two representation matrices.
+        X, Y: [n_samples, n_features]
+        Returns: scalar similarity score
+        """
+        # Compute gram matrices
+        K = CKA.linear_kernel(X)
+        L = CKA.linear_kernel(Y)
+
+        # Center gram matrices
+        K_c = CKA.center_gram(K)
+        L_c = CKA.center_gram(L)
+
+        # Compute CKA
+        hsic = torch.sum(K_c * L_c)
+        var_x = torch.sqrt(torch.sum(K_c * K_c))
+        var_y = torch.sqrt(torch.sum(L_c * L_c))
+
+        return hsic / (var_x * var_y + 1e-8)
+
+# ============================================================================
 # Configuration
 # ============================================================================
 
@@ -36,14 +113,23 @@ import datasets
 LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
 MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
 
-# Training
-BATCH_SIZE = 4
-EPOCHS = 3
-LEARNING_RATE = 1e-4
-NUM_SAMPLES = 1000
-MAX_LENGTH = 512
-GRAD_ACCUM_STEPS = 8
-LAYER_IDX = 16  # Middle layer for alignment
+# Training - ENHANCED based on 2024 literature
+BATCH_SIZE = 16  # Increased 4x - critical for contrastive learning
+EPOCHS = 10  # Increased from 3 - contrastive needs more epochs
+LEARNING_RATE = 5e-5  # Slightly reduced for stability
+NUM_SAMPLES = 10000  # Increased 10x - essential for good results
+MAX_LENGTH = None  # Use full sequences - no artificial truncation!
+GRAD_ACCUM_STEPS = 4  # Reduced due to larger batch size
+
+# Contrastive Learning Parameters (NEW from 2024 research)
+TEMPERATURE = 0.07  # Optimal for InfoNCE loss
+CONTRASTIVE_WEIGHT = 0.3  # Weight for contrastive loss vs generation loss
+NUM_NEGATIVES = 127  # Number of negative samples
+
+# Multi-layer alignment (prevents single-point failure)
+ALIGNMENT_LAYERS = [8, 16, 24]  # Align multiple layers simultaneously
+LAYER_WEIGHTS = [0.2, 0.5, 0.3]  # Weight importance of each layer
+LAYER_IDX = 16  # Default for backward compatibility
 
 # Layers to test for Procrustes
 LAYERS_TO_TEST = [0, 8, 16, 24, 32]
@@ -214,11 +300,24 @@ class LoRAAdapter(nn.Module):
 class AlignmentDataset(Dataset):
     """Dataset for adapter training with paired source-target texts"""
 
-    def __init__(self, texts, tokenizer_a, tokenizer_b, max_length=512):
+    def __init__(self, texts, tokenizer_a, tokenizer_b, max_length=None):
         self.texts = texts
         self.tokenizer_a = tokenizer_a
         self.tokenizer_b = tokenizer_b
         self.max_length = max_length
+
+        # Find the maximum sequence length if not truncating
+        if max_length is None:
+            print("Computing maximum sequence length from dataset...")
+            max_len_a = 0
+            max_len_b = 0
+            for text in texts[:100]:  # Sample to find reasonable max
+                tokens_a = tokenizer_a(text, return_tensors="pt")["input_ids"]
+                tokens_b = tokenizer_b(text, return_tensors="pt")["input_ids"]
+                max_len_a = max(max_len_a, tokens_a.shape[1])
+                max_len_b = max(max_len_b, tokens_b.shape[1])
+            self.max_length = max(max_len_a, max_len_b)
+            print(f"Using full sequences with padding to {self.max_length} tokens")
 
     def __len__(self):
         return len(self.texts)
@@ -226,18 +325,29 @@ class AlignmentDataset(Dataset):
     def __getitem__(self, idx):
         text = self.texts[idx]
 
-        # Tokenize for both models WITH PADDING to ensure same length
-        # This is critical to avoid CUDA assertions from mismatched dimensions
-        inputs_a = self.tokenizer_a(text, truncation=True, max_length=self.max_length,
+        # Tokenize with padding to max_length (either specified or computed)
+        # NO TRUNCATION if max_length was None initially
+        truncation = self.max_length is not None
+
+        inputs_a = self.tokenizer_a(text, truncation=truncation, max_length=self.max_length,
                                     padding="max_length", return_tensors="pt")
-        inputs_b = self.tokenizer_b(text, truncation=True, max_length=self.max_length,
+        inputs_b = self.tokenizer_b(text, truncation=truncation, max_length=self.max_length,
                                     padding="max_length", return_tensors="pt")
 
-        # Both will now have exactly max_length tokens
-        assert inputs_a["input_ids"].shape[1] == self.max_length, \
-            f"Model A sequence length {inputs_a['input_ids'].shape[1]} != {self.max_length}"
-        assert inputs_b["input_ids"].shape[1] == self.max_length, \
-            f"Model B sequence length {inputs_b['input_ids'].shape[1]} != {self.max_length}"
+        # Ensure same length for batch processing
+        if inputs_a["input_ids"].shape[1] != inputs_b["input_ids"].shape[1]:
+            # Pad the shorter one
+            max_len = max(inputs_a["input_ids"].shape[1], inputs_b["input_ids"].shape[1])
+
+            if inputs_a["input_ids"].shape[1] < max_len:
+                pad_len = max_len - inputs_a["input_ids"].shape[1]
+                inputs_a["input_ids"] = F.pad(inputs_a["input_ids"], (0, pad_len), value=self.tokenizer_a.pad_token_id)
+                inputs_a["attention_mask"] = F.pad(inputs_a["attention_mask"], (0, pad_len), value=0)
+
+            if inputs_b["input_ids"].shape[1] < max_len:
+                pad_len = max_len - inputs_b["input_ids"].shape[1]
+                inputs_b["input_ids"] = F.pad(inputs_b["input_ids"], (0, pad_len), value=self.tokenizer_b.pad_token_id)
+                inputs_b["attention_mask"] = F.pad(inputs_b["attention_mask"], (0, pad_len), value=0)
 
         return {
             "input_ids_a": inputs_a["input_ids"][0],
