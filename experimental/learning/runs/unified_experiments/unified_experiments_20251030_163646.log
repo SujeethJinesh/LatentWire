@@ -1,0 +1,271 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-30T16:36:51.588935
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3837.42it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 16.54it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.05it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 16.95it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3703.03it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 16.58it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 16.76it/s]
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Llama model moved to cuda:0
+Mistral model moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.089725
+
+Testing generation...
+
+============================================================
+Testing Layer 8
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033226
+  WARNING: Orthogonality error = 0.033129
+
+Testing generation...
+
+============================================================
+Testing Layer 16
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033363
+  WARNING: Orthogonality error = 0.033375
+
+Testing generation...
+
+============================================================
+Testing Layer 24
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.034813
+  WARNING: Orthogonality error = 0.035054
+
+Testing generation...
+
+============================================================
+Testing Layer 32
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.102234
+  WARNING: Orthogonality error = 0.102734
+
+Testing generation...
+Procrustes results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_20251030_163651.json
+
+2. Starting learned adapter experiments...
+Running all 3 adapters in parallel on 4 GPUs...
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LINEAR
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_gpu0_20251030_163759.log
+GPU assigned: 0
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251030_163759.log
+GPU assigned: 2
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - AFFINE
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251030_163759.log
+GPU assigned: 1
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1918.93it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2323.71it/s]You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Downloading shards: 100%|##########| 4/4 [00:00<00:00, 618.72it/s]You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+
+
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.80it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.70it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.60it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.84it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.77it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.76it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.91it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.82it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.81it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  4.01it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.98it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.93it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.88it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.87it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.86it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3842.11it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2293.64it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1482.61it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  3.09it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  3.03it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.94it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.47it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.48it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.60it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.52it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.55it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.47it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.78it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.62it/s]
+README.md: 0.00B [00:00, ?B/s]README.md: 10.5kB [00:00, 8.75MB/s]
+wikitext-103-v1/test-00000-of-00001.parq(…):   0%|          | 0.00/722k [00:00<?, ?B/s]wikitext-103-v1/test-00000-of-00001.parq(…): 100%|##########| 722k/722k [00:00<00:00, 859kB/s]wikitext-103-v1/test-00000-of-00001.parq(…): 100%|##########| 722k/722k [00:00<00:00, 858kB/s]
+wikitext-103-v1/train-00000-of-00002.par(…):   0%|          | 0.00/156M [00:00<?, ?B/s]wikitext-103-v1/train-00000-of-00002.par(…):  14%|#3        | 21.7M/156M [00:00<00:04, 28.1MB/s]wikitext-103-v1/train-00000-of-00002.par(…):  57%|#####6    | 88.7M/156M [00:00<00:00, 111MB/s] wikitext-103-v1/train-00000-of-00002.par(…): 100%|##########| 156M/156M [00:01<00:00, 155MB/s] 
+wikitext-103-v1/train-00001-of-00002.par(…):   0%|          | 0.00/156M [00:00<?, ?B/s]wikitext-103-v1/train-00001-of-00002.par(…):   0%|          | 162k/156M [00:00<11:30, 225kB/s]wikitext-103-v1/train-00001-of-00002.par(…):  14%|#3        | 21.8M/156M [00:00<00:03, 33.8MB/s]wikitext-103-v1/train-00001-of-00002.par(…):  57%|#####6    | 88.8M/156M [00:01<00:00, 117MB/s] wikitext-103-v1/train-00001-of-00002.par(…): 100%|##########| 156M/156M [00:01<00:00, 140MB/s] 
+wikitext-103-v1/validation-00000-of-0000(…):   0%|          | 0.00/655k [00:00<?, ?B/s]wikitext-103-v1/validation-00000-of-0000(…):   5%|4         | 32.3k/655k [00:00<00:08, 71.8kB/s]wikitext-103-v1/validation-00000-of-0000(…): 100%|##########| 655k/655k [00:00<00:00, 1.46MB/s] 
+Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split: 100%|##########| 4358/4358 [00:00<00:00, 286034.94 examples/s]
+Generating train split:   0%|          | 0/1801350 [00:00<?, ? examples/s]Generating train split:   6%|6         | 113000/1801350 [00:00<00:01, 1121922.95 examples/s]Generating train split:  15%|#5        | 271000/1801350 [00:00<00:01, 1018112.08 examples/s]Generating train split:  22%|##1       | 389000/1801350 [00:00<00:01, 1077749.86 examples/s]Generating train split:  28%|##8       | 509000/1801350 [00:00<00:01, 1115512.17 examples/s]Generating train split:  35%|###5      | 638000/1801350 [00:00<00:01, 927406.61 examples/s] Generating train split:  41%|####1     | 739000/1801350 [00:00<00:01, 597451.88 examples/s]Generating train split:  48%|####7     | 857000/1801350 [00:01<00:01, 615521.65 examples/s]Generating train split:  54%|#####4    | 978675/1801350 [00:01<00:01, 731473.55 examples/s]Generating train split:  61%|######1   | 1102675/1801350 [00:01<00:00, 841391.76 examples/s]Generating train split:  68%|######7   | 1222675/1801350 [00:01<00:00, 924034.41 examples/s]Generating train split:  75%|#######4  | 1342675/1801350 [00:01<00:00, 993066.07 examples/s]Generating train split:  81%|########1 | 1459675/1801350 [00:01<00:00, 1039004.87 examples/s]Generating train split:  88%|########7 | 1583675/1801350 [00:01<00:00, 1092860.77 examples/s]Generating train split:  95%|#########5| 1711675/1801350 [00:02<00:00, 704486.00 examples/s] Generating train split: 100%|##########| 1801350/1801350 [00:02<00:00, 831818.09 examples/s]
+Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|##########| 3760/3760 [00:00<00:00, 668528.32 examples/s]
+
+================================================================================
+LORA ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: name 'MAX_LENGTH' is not defined
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 973, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 677, in train_adapter
+    train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
+NameError: name 'MAX_LENGTH' is not defined
+
+
+================================================================================
+AFFINE ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: name 'MAX_LENGTH' is not defined
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 973, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 677, in train_adapter
+    train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
+NameError: name 'MAX_LENGTH' is not defined
+
+
+================================================================================
+LINEAR ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: name 'MAX_LENGTH' is not defined
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 973, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 677, in train_adapter
+    train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
+NameError: name 'MAX_LENGTH' is not defined
+Waiting for all adapter experiments to complete...
+
+3. All adapter experiments completed in parallel!
+
+================================================================================
+ALL EXPERIMENTS COMPLETE
+Results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments
+================================================================================
