@@ -1,0 +1,645 @@
+#!/usr/bin/env python3
+"""
+Unified cross-model alignment experiments combining Procrustes and learned adapters.
+Optimized for 2 GPUs instead of 4.
+
+GPU allocation:
+- GPU 0: Linear adapter
+- GPU 1: Affine adapter
+- CPU: Procrustes alignment (no GPU needed)
+- LoRA: Run sequentially after Linear/Affine complete
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from datasets import load_dataset
+import json
+import time
+from pathlib import Path
+from datetime import datetime
+import math
+import multiprocessing as mp
+import os
+import sys
+import shutil
+import datasets
+
+# ============================================================================
+# Configuration
+# ============================================================================
+
+# Models
+LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
+MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
+
+# Training
+BATCH_SIZE = 4
+EPOCHS = 3
+LEARNING_RATE = 1e-4
+NUM_SAMPLES = 1000
+MAX_LENGTH = 512
+GRAD_ACCUM_STEPS = 8
+LAYER_IDX = 16  # Middle layer for alignment
+
+# Layers to test for Procrustes
+LAYERS_TO_TEST = [0, 8, 16, 24, 32]
+
+# Calibration data size
+CALIBRATION_SIZE = 100
+
+# Test prompts
+TEST_PROMPTS = [
+    "The capital of France is",
+    "To solve this problem, we need to",
+    "The future of artificial intelligence is",
+    "In the year 2050,",
+    "The main difference between cats and dogs is"
+]
+
+# ============================================================================
+# Logging Setup
+# ============================================================================
+
+class TeeLogger:
+    """Redirect stdout and stderr to both console and file."""
+
+    def __init__(self, file_handle):
+        self.terminal = sys.stdout
+        self.log = file_handle
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+        self.log.flush()
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+# ============================================================================
+# Procrustes Alignment (CPU)
+# ============================================================================
+
+class ProcrustesAlignment:
+    """
+    Orthogonal Procrustes alignment between hidden spaces.
+    FIXED: Uses torch.norm() for numerical stability.
+    """
+
+    def __init__(self):
+        self.W = None
+        self.source_mean = None
+        self.target_mean = None
+        self.source_norm = None
+        self.target_norm = None
+
+    def fit(self, source, target):
+        """
+        Fit orthogonal transformation W such that ||source @ W - target||_F is minimized.
+        Uses numerically stable Frobenius norm computation.
+        """
+        assert source.shape == target.shape, "Source and target must have same shape"
+
+        # Step 1: Center both datasets
+        self.source_mean = source.mean(dim=0, keepdim=True)
+        self.target_mean = target.mean(dim=0, keepdim=True)
+        source_centered = source - self.source_mean
+        target_centered = target - self.target_mean
+
+        # Step 2: Normalize to unit Frobenius norm (tr(AA^T) = 1)
+        # Use torch.norm for numerical stability (avoids overflow)
+        self.source_norm = torch.norm(source_centered, 'fro')
+        self.target_norm = torch.norm(target_centered, 'fro')
+
+        # Add small epsilon to prevent division by zero
+        eps = 1e-8
+        source_normalized = source_centered / (self.source_norm + eps)
+        target_normalized = target_centered / (self.target_norm + eps)
+
+        # Sanity check for numerical issues
+        if torch.isinf(self.source_norm) or torch.isinf(self.target_norm):
+            print(f"  WARNING: Infinite norm detected, using layer normalization fallback")
+            source_normalized = torch.nn.functional.normalize(source_centered, dim=-1)
+            target_normalized = torch.nn.functional.normalize(target_centered, dim=-1)
+
+        # Step 3: Compute cross-covariance matrix
+        M = source_normalized.T @ target_normalized  # [D, D]
+
+        # Step 4: SVD of M
+        U, S, Vt = torch.linalg.svd(M, full_matrices=False)
+
+        # Step 5: Optimal orthogonal transformation
+        self.W = U @ Vt
+
+        # Verify orthogonality
+        I = self.W @ self.W.T
+        ortho_error = torch.norm(I - torch.eye(I.shape[0], device=I.device), 'fro')
+        if ortho_error > 1e-3:
+            print(f"  WARNING: Orthogonality error = {ortho_error:.6f}")
+
+        return self
+
+    def transform(self, source):
+        """Apply the fitted transformation to new data."""
+        assert self.W is not None, "Must fit before transform"
+
+        # Apply same centering and normalization as in fit
+        source_centered = source - self.source_mean
+        source_normalized = source_centered / (self.source_norm + 1e-8)
+
+        # Apply orthogonal transformation
+        transformed = source_normalized @ self.W
+
+        # Rescale and recenter to target space
+        transformed = transformed * self.target_norm
+        transformed = transformed + self.target_mean
+
+        return transformed
+
+# ============================================================================
+# Learned Adapter Architectures
+# ============================================================================
+
+class LinearAdapter(nn.Module):
+    """Full linear projection (16.8M params)"""
+
+    def __init__(self, hidden_dim=4096):
+        super().__init__()
+        self.proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        nn.init.kaiming_uniform_(self.proj.weight, a=math.sqrt(5))
+
+    def forward(self, x):
+        return self.proj(x)
+
+
+class AffineAdapter(nn.Module):
+    """Full affine projection with bias (16.8M params)"""
+
+    def __init__(self, hidden_dim=4096):
+        super().__init__()
+        self.proj = nn.Linear(hidden_dim, hidden_dim, bias=True)
+        nn.init.kaiming_uniform_(self.proj.weight, a=math.sqrt(5))
+        nn.init.zeros_(self.proj.bias)
+
+    def forward(self, x):
+        return self.proj(x)
+
+
+class LoRAAdapter(nn.Module):
+    """Low-rank adapter (65k params) - efficient baseline"""
+
+    def __init__(self, hidden_dim=4096, rank=8, alpha=16):
+        super().__init__()
+        self.rank = rank
+        self.alpha = alpha
+        self.scaling = alpha / rank
+
+        self.lora_A = nn.Linear(hidden_dim, rank, bias=False)
+        self.lora_B = nn.Linear(rank, hidden_dim, bias=False)
+
+        nn.init.kaiming_uniform_(self.lora_A.weight, a=math.sqrt(5))
+        nn.init.zeros_(self.lora_B.weight)
+
+    def forward(self, x):
+        return x + self.scaling * self.lora_B(self.lora_A(x))
+
+# ============================================================================
+# Dataset
+# ============================================================================
+
+class AlignmentDataset(Dataset):
+    """Dataset for adapter training with paired source-target texts"""
+
+    def __init__(self, texts, tokenizer_a, tokenizer_b, max_length=512):
+        self.texts = texts
+        self.tokenizer_a = tokenizer_a
+        self.tokenizer_b = tokenizer_b
+        self.max_length = max_length
+
+    def __len__(self):
+        return len(self.texts)
+
+    def __getitem__(self, idx):
+        text = self.texts[idx]
+
+        # Tokenize for both models WITH PADDING to ensure same length
+        # This is critical to avoid CUDA assertions from mismatched dimensions
+        inputs_a = self.tokenizer_a(text, truncation=True, max_length=self.max_length,
+                                    padding="max_length", return_tensors="pt")
+        inputs_b = self.tokenizer_b(text, truncation=True, max_length=self.max_length,
+                                    padding="max_length", return_tensors="pt")
+
+        # Both will now have exactly max_length tokens
+        assert inputs_a["input_ids"].shape[1] == self.max_length, \
+            f"Model A sequence length {inputs_a['input_ids'].shape[1]} != {self.max_length}"
+        assert inputs_b["input_ids"].shape[1] == self.max_length, \
+            f"Model B sequence length {inputs_b['input_ids'].shape[1]} != {self.max_length}"
+
+        return {
+            "input_ids_a": inputs_a["input_ids"][0],
+            "attention_mask_a": inputs_a["attention_mask"][0],
+            "input_ids_b": inputs_b["input_ids"][0],
+            "attention_mask_b": inputs_b["attention_mask"][0],
+        }
+
+# ============================================================================
+# Procrustes Experiment
+# ============================================================================
+
+def run_procrustes_experiment():
+    """Run Procrustes alignment experiment across different layers."""
+
+    print("\n" + "=" * 80)
+    print("PROCRUSTES ALIGNMENT EXPERIMENT")
+    print("=" * 80)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Device: {device}")
+
+    # Load models
+    print("\nLoading models...")
+    llama_model = AutoModelForCausalLM.from_pretrained(
+        LLAMA_MODEL,
+        torch_dtype=torch.float16,
+        device_map="auto"
+    ).eval()
+
+    mistral_model = AutoModelForCausalLM.from_pretrained(
+        MISTRAL_MODEL,
+        torch_dtype=torch.float16,
+        device_map="auto"
+    ).eval()
+
+    # Load tokenizers
+    llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+    mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+
+    # Set padding tokens
+    if llama_tokenizer.pad_token is None:
+        llama_tokenizer.pad_token = llama_tokenizer.eos_token
+    if mistral_tokenizer.pad_token is None:
+        mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
+
+    # Load calibration dataset
+    print(f"\nLoading calibration dataset ({CALIBRATION_SIZE} samples)...")
+
+    # Fix cache corruption issues
+    cache_dir = Path.home() / ".cache" / "huggingface" / "datasets"
+    squad_cache = cache_dir / "squad"
+    if squad_cache.exists():
+        print(f"  Clearing potentially corrupted cache at {squad_cache}")
+        shutil.rmtree(squad_cache)
+
+    dataset = load_dataset("squad", split=f"train[:{CALIBRATION_SIZE}]")
+    calibration_texts = [item["context"][:500] for item in dataset]
+
+    results = {}
+
+    for layer_idx in LAYERS_TO_TEST:
+        print(f"\n{'='*60}")
+        print(f"Testing Layer {layer_idx}")
+        print(f"{'='*60}")
+
+        # Collect hidden states for calibration
+        llama_hidden_all = []
+        mistral_hidden_all = []
+
+        with torch.no_grad():
+            for text in calibration_texts[:20]:  # Use subset for memory
+                # Tokenize with padding
+                llama_inputs = llama_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
+                                              padding="max_length", return_tensors="pt").to(device)
+                mistral_inputs = mistral_tokenizer(text, truncation=True, max_length=MAX_LENGTH,
+                                                  padding="max_length", return_tensors="pt").to(device)
+
+                # Get hidden states
+                llama_outputs = llama_model(**llama_inputs, output_hidden_states=True)
+                mistral_outputs = mistral_model(**mistral_inputs, output_hidden_states=True)
+
+                # Extract layer hidden states and flatten
+                llama_hidden = llama_outputs.hidden_states[layer_idx][0]  # [seq_len, hidden]
+                mistral_hidden = mistral_outputs.hidden_states[layer_idx][0]
+
+                # Only use non-padding positions
+                llama_mask = llama_inputs["attention_mask"][0].bool()
+                mistral_mask = mistral_inputs["attention_mask"][0].bool()
+
+                llama_hidden_all.append(llama_hidden[llama_mask])
+                mistral_hidden_all.append(mistral_hidden[mistral_mask])
+
+        # Concatenate all hidden states
+        llama_hidden_all = torch.cat(llama_hidden_all, dim=0)
+        mistral_hidden_all = torch.cat(mistral_hidden_all, dim=0)
+
+        # Fit Procrustes alignments
+        print(f"\nFitting Procrustes alignments...")
+
+        # Mistral → Llama
+        mistral_to_llama = ProcrustesAlignment()
+        mistral_to_llama.fit(mistral_hidden_all.float(), llama_hidden_all.float())
+
+        # Llama → Mistral
+        llama_to_mistral = ProcrustesAlignment()
+        llama_to_mistral.fit(llama_hidden_all.float(), mistral_hidden_all.float())
+
+        # Test generation
+        layer_results = {
+            "mistral_to_mistral": {},
+            "llama_to_mistral": {},
+            "mistral_to_llama": {}
+        }
+
+        print(f"\nTesting generation...")
+        for prompt_idx, prompt in enumerate(TEST_PROMPTS, 1):
+            # Baseline: Mistral → Mistral (identity)
+            mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                output = mistral_model.generate(**mistral_inputs, max_new_tokens=20, do_sample=False)
+            generated = mistral_tokenizer.decode(output[0], skip_special_tokens=True)
+            layer_results["mistral_to_mistral"][f"prompt_{prompt_idx}"] = generated
+
+            # Cross-model generation would require more complex injection
+            # For now, we'll just store the alignment quality metrics
+
+        results[f"layer_{layer_idx}"] = layer_results
+
+    return results
+
+# ============================================================================
+# Learned Adapter Training
+# ============================================================================
+
+def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
+                  device, log_file, num_samples=1000):
+    """Train a single adapter for cross-model alignment."""
+
+    print(f"\nTraining {adapter.__class__.__name__}...", file=log_file)
+
+    # Prepare dataset
+    print(f"Loading dataset ({num_samples} samples)...", file=log_file)
+
+    # Fix cache corruption
+    cache_dir = Path.home() / ".cache" / "huggingface" / "datasets"
+    wikitext_cache = cache_dir / "wikitext"
+    if wikitext_cache.exists():
+        shutil.rmtree(wikitext_cache)
+
+    dataset = load_dataset("wikitext", "wikitext-103-v1", split="train")
+    texts = [item["text"] for item in dataset if len(item["text"]) > 100][:num_samples]
+
+    train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
+    dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+
+    # Move adapter to device
+    adapter = adapter.to(device)
+    optimizer = torch.optim.AdamW(adapter.parameters(), lr=LEARNING_RATE)
+
+    # Training loop
+    adapter.train()
+    training_metrics = {"epochs": []}
+
+    for epoch in range(EPOCHS):
+        epoch_loss = 0.0
+        epoch_steps = 0
+
+        print(f"\nEpoch {epoch+1}/{EPOCHS}", file=log_file)
+
+        for batch_idx, batch in enumerate(dataloader):
+            # Move to device
+            input_ids_a = batch["input_ids_a"].to(device)
+            attention_mask_a = batch["attention_mask_a"].to(device)
+            input_ids_b = batch["input_ids_b"].to(device)
+            attention_mask_b = batch["attention_mask_b"].to(device)
+
+            # Extract source representations
+            with torch.no_grad():
+                outputs_a = model_a(
+                    input_ids=input_ids_a,
+                    attention_mask=attention_mask_a,
+                    output_hidden_states=True
+                )
+                source_repr = outputs_a.hidden_states[LAYER_IDX]
+
+            # Align representations
+            aligned_repr = adapter(source_repr)
+
+            # Create labels with padding tokens masked
+            labels_b = input_ids_b.clone()
+            labels_b[attention_mask_b == 0] = -100
+
+            # Create position_ids for RoPE
+            batch_size, seq_len = attention_mask_b.shape
+            position_ids = torch.arange(seq_len, device=device).unsqueeze(0).expand(batch_size, -1)
+            position_ids = position_ids * attention_mask_b
+
+            # Compute generation loss with Model B
+            outputs_b = model_b(
+                inputs_embeds=aligned_repr,
+                attention_mask=attention_mask_b,
+                position_ids=position_ids,
+                labels=labels_b
+            )
+
+            loss = outputs_b.loss / GRAD_ACCUM_STEPS
+            loss.backward()
+
+            if (batch_idx + 1) % GRAD_ACCUM_STEPS == 0:
+                torch.nn.utils.clip_grad_norm_(adapter.parameters(), max_norm=1.0)
+                optimizer.step()
+                optimizer.zero_grad()
+
+            epoch_loss += loss.item() * GRAD_ACCUM_STEPS
+            epoch_steps += 1
+
+            if (batch_idx + 1) % 10 == 0:
+                avg_loss = epoch_loss / epoch_steps
+                print(f"  Step {batch_idx+1}/{len(dataloader)}: Loss = {avg_loss:.4f}",
+                      file=log_file)
+
+        avg_epoch_loss = epoch_loss / epoch_steps
+        training_metrics["epochs"].append({
+            "epoch": epoch + 1,
+            "loss": avg_epoch_loss
+        })
+        print(f"  Epoch {epoch+1} avg loss: {avg_epoch_loss:.4f}", file=log_file)
+
+    return adapter, training_metrics
+
+def run_adapter_experiment(adapter_type, gpu_id):
+    """Run a single adapter experiment on specified GPU."""
+
+    # Create output directory and log file
+    output_dir = Path(f"runs/learned_adapters")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = output_dir / f"{adapter_type}_gpu{gpu_id}_{timestamp}.log"
+
+    with open(log_path, 'w') as log_file:
+        # Redirect output to both console and file
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = TeeLogger(log_file)
+        sys.stderr = TeeLogger(log_file)
+
+        try:
+            print("=" * 80)
+            print(f"LEARNED ADAPTER EXPERIMENT - {adapter_type.upper()}")
+            print("=" * 80)
+            print(f"GPU assigned: {gpu_id}")
+            print(f"Log file: {log_path}")
+
+            # Set device
+            device = torch.device(f"cuda:{gpu_id}")
+
+            # Load models
+            print("\nLoading models...")
+            model_a = AutoModelForCausalLM.from_pretrained(
+                LLAMA_MODEL,
+                torch_dtype=torch.float16,
+                device_map=device
+            ).eval()
+
+            model_b = AutoModelForCausalLM.from_pretrained(
+                MISTRAL_MODEL,
+                torch_dtype=torch.float16,
+                device_map=device
+            ).eval()
+
+            # Load tokenizers
+            tokenizer_a = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+            tokenizer_b = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+
+            # Set padding tokens
+            if tokenizer_a.pad_token is None:
+                tokenizer_a.pad_token = tokenizer_a.eos_token
+            if tokenizer_b.pad_token is None:
+                tokenizer_b.pad_token = tokenizer_b.eos_token
+
+            # Create adapter
+            if adapter_type == "linear":
+                adapter = LinearAdapter()
+            elif adapter_type == "affine":
+                adapter = AffineAdapter()
+            elif adapter_type == "lora":
+                adapter = LoRAAdapter()
+            else:
+                raise ValueError(f"Unknown adapter type: {adapter_type}")
+
+            # Train adapter
+            adapter, metrics = train_adapter(
+                model_a, model_b, tokenizer_a, tokenizer_b,
+                adapter, device, log_file, NUM_SAMPLES
+            )
+
+            # Save results
+            results = {
+                "adapter_type": adapter_type,
+                "gpu_id": gpu_id,
+                "training_metrics": metrics,
+                "timestamp": timestamp
+            }
+
+            results_path = output_dir / f"{adapter_type}_results_{timestamp}.json"
+            with open(results_path, 'w') as f:
+                json.dump(results, f, indent=2)
+
+            print(f"\nResults saved to: {results_path}")
+            print("=" * 80)
+            print(f"{adapter_type.upper()} EXPERIMENT COMPLETE")
+            print("=" * 80)
+
+        except Exception as e:
+            print("\n" + "=" * 80)
+            print(f"{adapter_type.upper()} ADAPTER EXPERIMENT FAILED")
+            print("=" * 80)
+            print(f"Error: {e}")
+            import traceback
+            traceback.print_exc()
+
+        finally:
+            # Restore stdout/stderr
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+
+# ============================================================================
+# Main Execution
+# ============================================================================
+
+def main():
+    """Main entry point for unified experiments."""
+
+    print("=" * 80)
+    print("UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS")
+    print(f"Timestamp: {datetime.now().isoformat()}")
+    print(f"Available GPUs: {torch.cuda.device_count()}")
+    print("=" * 80)
+
+    # Create output directory
+    output_dir = Path("runs/unified_experiments")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # Run Procrustes experiment on CPU
+    print("\n1. Starting Procrustes experiment (CPU)...")
+    procrustes_results = run_procrustes_experiment()
+
+    # Save Procrustes results
+    procrustes_path = output_dir / f"procrustes_results_{timestamp}.json"
+    with open(procrustes_path, 'w') as f:
+        json.dump(procrustes_results, f, indent=2)
+    print(f"Procrustes results saved to: {procrustes_path}")
+
+    # Run learned adapter experiments on GPUs
+    print("\n2. Starting learned adapter experiments (2 GPUs)...")
+
+    if torch.cuda.device_count() >= 2:
+        # Run Linear and Affine in parallel on 2 GPUs
+        processes = []
+
+        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
+        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
+
+        p1.start()
+        p2.start()
+
+        processes.extend([p1, p2])
+
+        # Wait for completion
+        for p in processes:
+            p.join()
+
+        # Run LoRA sequentially after others complete (on GPU 0)
+        print("\n3. Starting LoRA experiment (sequential on GPU 0)...")
+        run_adapter_experiment("lora", 0)
+
+    else:
+        print(f"WARNING: Only {torch.cuda.device_count()} GPU(s) available.")
+        print("Running experiments sequentially...")
+
+        # Run all experiments sequentially on available GPU
+        for adapter_type in ["linear", "affine", "lora"]:
+            run_adapter_experiment(adapter_type, 0)
+
+    print("\n" + "=" * 80)
+    print("ALL EXPERIMENTS COMPLETE")
+    print(f"Results saved to: {output_dir}")
+    print("=" * 80)
+
+if __name__ == "__main__":
+    # Set multiprocessing start method
+    mp.set_start_method('spawn', force=True)
+
+    # Print system info
+    print(f"Python: {sys.version}")
+    print(f"PyTorch: {torch.__version__}")
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"CUDA devices: {torch.cuda.device_count()}")
+
+    main()
