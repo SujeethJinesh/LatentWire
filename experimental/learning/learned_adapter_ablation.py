@@ -282,6 +282,8 @@ def train_adapter(adapter_type, model_a, tokenizer_a, model_b, tokenizer_b,
 
             # Gradient accumulation
             if (batch_idx + 1) % GRAD_ACCUM_STEPS == 0:
+                # Gradient clipping for training stability
+                torch.nn.utils.clip_grad_norm_(adapter.parameters(), max_norm=1.0)
                 optimizer.step()
                 optimizer.zero_grad()
                 global_step += 1
@@ -359,6 +361,11 @@ def generate_with_adapter(adapter, model_a, tokenizer_a, model_b, tokenizer_b,
 
     adapter.eval()
 
+    # Ensure eos_token_id is set (fallback for base models)
+    eos_token_id = tokenizer_b.eos_token_id
+    if eos_token_id is None:
+        eos_token_id = tokenizer_b.convert_tokens_to_ids(tokenizer_b.eos_token)
+
     # Tokenize prompt with Model A
     inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
 
@@ -406,7 +413,7 @@ def generate_with_adapter(adapter, model_a, tokenizer_a, model_b, tokenizer_b,
             # Update state
             past_key_values = outputs_b.past_key_values
 
-            if next_token_id == tokenizer_b.eos_token_id:
+            if next_token_id == eos_token_id:
                 break
 
             generated_ids.append(next_token_id)
@@ -460,6 +467,11 @@ def evaluate_generation(adapter, model_a, tokenizer_a, model_b, tokenizer_b,
 def run_single_adapter_experiment(adapter_type):
     """Run experiment for single adapter type on assigned GPU"""
 
+    # Set random seeds for reproducibility
+    torch.manual_seed(42)
+    torch.cuda.manual_seed_all(42)
+    np.random.seed(42)
+
     # Get GPU assignment
     gpu_id = GPU_MAPPING[adapter_type]
     device = f"cuda:{gpu_id}"
@@ -490,6 +502,9 @@ def run_single_adapter_experiment(adapter_type):
             device_map=device
         ).eval()
         llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+        # Set pad_token for base models (use eos_token as pad_token)
+        if llama_tokenizer.pad_token is None:
+            llama_tokenizer.pad_token = llama_tokenizer.eos_token
         print("  ✓ Llama 3.1 8B loaded", file=log_file)
 
         mistral_model = AutoModelForCausalLM.from_pretrained(
@@ -498,6 +513,9 @@ def run_single_adapter_experiment(adapter_type):
             device_map=device
         ).eval()
         mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+        # Set pad_token for base models (use eos_token as pad_token)
+        if mistral_tokenizer.pad_token is None:
+            mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
         print("  ✓ Mistral 7B loaded", file=log_file)
 
         # Load datasets

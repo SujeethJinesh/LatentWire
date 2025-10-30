@@ -208,6 +208,11 @@ def generate_cross_model_fixed(model_a, tokenizer_a, model_b, tokenizer_b,
     Returns:
         Generated text (prompt + continuation)
     """
+    # Ensure eos_token_id is set (fallback for base models)
+    eos_token_id = tokenizer_b.eos_token_id
+    if eos_token_id is None:
+        eos_token_id = tokenizer_b.convert_tokens_to_ids(tokenizer_b.eos_token)
+
     # Tokenize with Model A
     inputs_a = tokenizer_a(prompt, return_tensors="pt").to(model_a.device)
 
@@ -264,7 +269,7 @@ def generate_cross_model_fixed(model_a, tokenizer_a, model_b, tokenizer_b,
             past_key_values = outputs_b.past_key_values
 
             # Check for EOS
-            if next_token_id == tokenizer_b.eos_token_id:
+            if next_token_id == eos_token_id:
                 break
 
             generated_ids.append(next_token_id)
@@ -313,6 +318,11 @@ def run_layer_ablation():
             - Mistral→Llama (cross-model)
         3. Generate outputs for 5 test prompts
     """
+    # Set random seeds for reproducibility
+    torch.manual_seed(42)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(42)
+
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -329,19 +339,25 @@ def run_layer_ablation():
     print(f"  Llama: {LLAMA_MODEL}")
     llama_model = AutoModelForCausalLM.from_pretrained(
         LLAMA_MODEL,
-        torch_dtype=torch.float16 if DEVICE == "cuda" else torch.float32,
+        torch_dtype=torch.float16 if DEVICE == "cuda:0" else torch.float32,
         device_map=DEVICE
-    )
+    ).eval()
     llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+    # Set pad_token for base models (use eos_token as pad_token)
+    if llama_tokenizer.pad_token is None:
+        llama_tokenizer.pad_token = llama_tokenizer.eos_token
     print(f"  ✓ Llama loaded")
 
     print(f"  Mistral: {MISTRAL_MODEL}")
     mistral_model = AutoModelForCausalLM.from_pretrained(
         MISTRAL_MODEL,
-        torch_dtype=torch.float16 if DEVICE == "cuda" else torch.float32,
+        torch_dtype=torch.float16 if DEVICE == "cuda:0" else torch.float32,
         device_map=DEVICE
-    )
+    ).eval()
     mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+    # Set pad_token for base models (use eos_token as pad_token)
+    if mistral_tokenizer.pad_token is None:
+        mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
     print(f"  ✓ Mistral loaded")
     print()
 
