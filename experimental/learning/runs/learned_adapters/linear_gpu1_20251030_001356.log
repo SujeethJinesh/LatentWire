@@ -1,18 +1,18 @@
 ================================================================================
-LEARNED ADAPTER EXPERIMENT: LORA
+LEARNED ADAPTER EXPERIMENT: LINEAR
 ================================================================================
-GPU: 3 (cuda:0)
+GPU: 1 (cuda:0)
 Layer: 16 (middle layer)
-Timestamp: 20251030_000643
-Log file: runs/learned_adapters/lora_gpu3_20251030_000643.log
-Results file: runs/learned_adapters/lora_results_20251030_000643.json
+Timestamp: 20251030_001356
+Log file: runs/learned_adapters/linear_gpu1_20251030_001356.log
+Results file: runs/learned_adapters/linear_results_20251030_001356.json
 ================================================================================
 
-Loading models on GPU 3...
+Loading models on GPU 1...
   ✓ Llama 3.1 8B loaded
   ✓ Mistral 7B loaded
 
 Loading datasets...
-  Checking cache at: /users/sujinesh/.cache/huggingface/datasets/rajpurkar___squad
+  Checking cache at: /projects/m000066/sujinesh/.cache/huggingface/rajpurkar___squad
   Cache exists: False
   Cache directory does not exist - proceeding with fresh download

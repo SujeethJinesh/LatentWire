@@ -20,31 +20,31 @@ Device: cuda:0
 
 Loading models...
   Llama: meta-llama/Llama-3.1-8B
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1382.43it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:18<00:56, 18.97s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:37<00:37, 18.54s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:55<00:18, 18.36s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:59<00:00, 12.91s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:59<00:00, 14.98s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2063.36it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:19<00:57, 19.10s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:37<00:37, 18.58s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:55<00:18, 18.39s/it]Loading checkpoint shards: 100%|██████████| 4/4 [01:00<00:00, 13.02s/it]Loading checkpoint shards: 100%|██████████| 4/4 [01:00<00:00, 15.06s/it]
   ✓ Llama loaded
   Mistral: mistralai/Mistral-7B-v0.3
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3261.51it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:17<00:35, 17.75s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:35<00:17, 17.90s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:51<00:00, 17.08s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:51<00:00, 17.29s/it]
-Using the latest cached version of the dataset since rajpurkar/squad couldn't be found on the Hugging Face Hub
-Found the latest cached dataset configuration 'plain_text' at /projects/m000066/sujinesh/.cache/huggingface/datasets/rajpurkar___squad/plain_text/0.0.0/7b6d24c440a36b6815f21b70d25016731768db1f (last modified on Fri Sep 12 00:19:50 2025).
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2461.93it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:18<00:36, 18.02s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:35<00:17, 17.75s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:52<00:00, 17.29s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:52<00:00, 17.45s/it]
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 538, in <module>
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 549, in <module>
     results = run_layer_ablation()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 384, in run_layer_ablation
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 395, in run_layer_ablation
     calibration_texts = load_calibration_texts(CALIBRATION_SIZE)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 315, in load_calibration_texts
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 326, in load_calibration_texts
     dataset = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
   File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
     builder_instance = load_dataset_builder(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1890, in load_dataset_builder
-    builder_instance: DatasetBuilder = builder_cls(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/packaged_modules/cache/cache.py", line 133, in __init__
-    super().__init__(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/builder.py", line 394, in __init__
-    self.info = DatasetInfo.from_directory(self._cache_dir)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/info.py", line 279, in from_directory
-    return cls.from_dict(dataset_info_dict)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1694, in dataset_module_factory
+    ).get_module()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1045, in get_module
+    {
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1046, in <dictcomp>
+    config_name: DatasetInfo.from_dict(exported_dataset_infos[config_name])
   File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/info.py", line 284, in from_dict
     return cls(**{k: v for k, v in dataset_info_dict.items() if k in field_names})
   File "<string>", line 20, in __init__
@@ -68,7 +68,7 @@ TypeError: must be called with a dataclass type or instance
   ✓ Mistral loaded
 
 Loading 100 calibration texts from SQuAD...
-  Checking cache at: /users/sujinesh/.cache/huggingface/datasets/rajpurkar___squad
+  Checking cache at: /projects/m000066/sujinesh/.cache/huggingface/rajpurkar___squad
   Cache exists: False
   Cache directory does not exist - proceeding with fresh download
 
