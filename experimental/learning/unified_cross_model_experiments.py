@@ -616,11 +616,18 @@ def run_procrustes_experiment():
         print(f"\nTesting generation...")
         for prompt_idx, prompt in enumerate(TEST_PROMPTS, 1):
             # Baseline: Mistral → Mistral (identity)
-            mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(device)
+            mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(mistral_device)
             with torch.no_grad():
                 output = mistral_model.generate(**mistral_inputs, max_new_tokens=20, do_sample=False)
             generated = mistral_tokenizer.decode(output[0], skip_special_tokens=True)
             layer_results["mistral_to_mistral"][f"prompt_{prompt_idx}"] = generated
+
+            # Baseline: Llama → Llama (identity)
+            llama_inputs = llama_tokenizer(prompt, return_tensors="pt").to(llama_device)
+            with torch.no_grad():
+                output = llama_model.generate(**llama_inputs, max_new_tokens=20, do_sample=False)
+            generated = llama_tokenizer.decode(output[0], skip_special_tokens=True)
+            layer_results["llama_to_llama"] = {f"prompt_{prompt_idx}": generated}
 
             # Cross-model generation would require more complex injection
             # For now, we'll just store the alignment quality metrics
