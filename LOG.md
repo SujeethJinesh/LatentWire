@@ -2,6 +2,37 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🔧 DEVICE PLACEMENT FIX FOR MULTI-GPU (2025-10-30 16:35)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Critical Device Mismatch Fixed
+
+**Issue**: RuntimeError during generation - tensors on different devices (cuda:1 and cuda:0)
+
+**Root Cause**:
+- Models correctly placed on separate GPUs (Llama on cuda:0, Mistral on cuda:1)
+- But generation inputs were sent to wrong device using generic `device` variable
+- Mistral model on cuda:1 received inputs on cuda:0
+
+**Fix Applied**:
+```python
+# Before (WRONG):
+mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(device)
+
+# After (CORRECT):
+mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(mistral_device)
+llama_inputs = llama_tokenizer(prompt, return_tensors="pt").to(llama_device)
+```
+
+**Additional Changes**:
+- Removed GitHub workflow files (.github/workflows/) - no longer needed
+- Added Llama generation test to verify both models work correctly
+- Ensured consistent device tracking throughout the script
+
+**Status**: Fix pushed to GitHub, ready for HPC pull and re-run
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🚨 CRITICAL FIXES TO UNIFIED EXPERIMENTS (2025-10-30)
 ## ═══════════════════════════════════════════════════════════════════════════
 
