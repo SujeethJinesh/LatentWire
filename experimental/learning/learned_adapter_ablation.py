@@ -525,8 +525,20 @@ def run_single_adapter_experiment(adapter_type):
         print("\nLoading datasets...", file=log_file)
 
         # Delete corrupted cache to force fresh download
-        # Use try-except to handle race condition when multiple processes run in parallel
-        cache_dir = Path.home() / '.cache' / 'huggingface' / 'datasets' / 'rajpurkar___squad'
+        # Use datasets library's actual cache path (not Path.home() which may be different)
+        # Also handle race condition when multiple processes run in parallel
+        import datasets.config
+        import os
+
+        # Get the actual HF datasets cache directory
+        hf_cache_root = os.environ.get('HF_DATASETS_CACHE') or os.environ.get('HF_HOME')
+        if hf_cache_root:
+            cache_dir = Path(hf_cache_root) / 'rajpurkar___squad'
+        else:
+            # Fallback: use the datasets library default cache location
+            # This is typically ~/.cache/huggingface/datasets on Linux
+            cache_dir = Path(datasets.config.HF_DATASETS_CACHE) / 'rajpurkar___squad'
+
         print(f"  Checking cache at: {cache_dir}", file=log_file)
         print(f"  Cache exists: {cache_dir.exists()}", file=log_file)
 
