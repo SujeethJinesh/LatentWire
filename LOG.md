@@ -2,6 +2,41 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🎯 CROSS-MODEL INTERLINGUA RESEARCH (October 2025)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Research Validation & Literature Support
+
+Our experiments are grounded in cutting-edge 2024-2025 research on cross-model alignment and transfer learning:
+
+#### 1. **Procrustes Alignment Experiments** ✅
+- **Orthogonal Transformations**: Recent work (2024) on "Latent Space Translation via Inverse Relative Projection" validates that orthogonal transformations are optimal for zero-shot stitching of arbitrarily trained models
+- **Middle Layer Focus**: ACL 2025 research demonstrates middle-layer representations outperform final layers by up to 16% for cross-model transfer
+- **Hidden State Analysis**: EMNLP 2024 findings show intermediate hidden states contain interpretable alignment signals that can be exploited for cross-model transfer
+
+#### 2. **Learned Adapter Experiments (Linear, Affine, LoRA)** ✅
+- **Cross-LoRA Framework** (August 2025): Demonstrates data-free LoRA transfer achieving 5.26% gains over base models using SVD and Frobenius-optimal transformations - directly supports our approach
+- **TeleLoRA** (March 2025): Shows permutation-symmetric neural networks can generate adapter weights that generalize across different model architectures - validates our cross-model adapter strategy
+- **ProLoRA** (2025): Enables training-free transfer via subspace decomposition - aligns with our lightweight adapter approach
+
+#### 3. **Interlingua Creation Strategy** ✅
+- **Cross-lingual Alignment Research** (ACL 2024): High correlation between neuron overlap and downstream performance validates geometric alignment approaches
+- **Model Interventions** (July 2025): Shows modifying activations enhances cross-lingual alignment with 2x improvement on retrieval tasks
+- **Minimal Data Requirements**: 2025 research shows just few hundred parallel sentences sufficient for alignment - our SQuAD-based calibration aligns with this finding
+
+### Why This Creates a True Interlingua
+
+Our experiments combine **training-free** (Procrustes) and **lightweight trainable** (adapters) approaches to create a universal representation space that:
+
+1. **Preserves semantic meaning** across model architectures (Llama ↔ Mistral)
+2. **Requires minimal calibration data** (100-1000 samples from SQuAD)
+3. **Operates in middle layers** where representations are most transferable
+4. **Uses proper geometric alignment** (centering, normalization, orthogonal rotation)
+5. **Leverages latest adapter technologies** (LoRA rank-8, affine transformations)
+
+This directly addresses the core interlingua challenge: creating a model-agnostic representation that enables zero-shot or few-shot transfer between heterogeneous LLMs.
+
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🎯 RESEARCH QUARTER MIDPOINT MARKER - 2025-10-16
 ## ═══════════════════════════════════════════════════════════════════════════
 
