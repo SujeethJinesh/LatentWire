@@ -29,7 +29,7 @@ import shutil
 import datasets
 
 # ============================================================================
-# InfoNCE Contrastive Loss (Critical from 2024 research)
+# InfoNCE Contrastive Loss (Critical from 2025 research)
 # ============================================================================
 
 class InfoNCE(nn.Module):
@@ -113,7 +113,7 @@ class CKA:
 LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
 MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
 
-# Training - ENHANCED based on 2024 literature
+# Training - ENHANCED based on 2025 literature
 BATCH_SIZE = 16  # Increased 4x - critical for contrastive learning
 EPOCHS = 10  # Increased from 3 - contrastive needs more epochs
 LEARNING_RATE = 5e-5  # Slightly reduced for stability
@@ -121,7 +121,7 @@ NUM_SAMPLES = 10000  # Increased 10x - essential for good results
 MAX_LENGTH = None  # Use full sequences - no artificial truncation!
 GRAD_ACCUM_STEPS = 4  # Reduced due to larger batch size
 
-# Contrastive Learning Parameters (NEW from 2024 research)
+# Contrastive Learning Parameters (NEW from 2025 research)
 TEMPERATURE = 0.07  # Optimal for InfoNCE loss
 CONTRASTIVE_WEIGHT = 0.3  # Weight for contrastive loss vs generation loss
 NUM_NEGATIVES = 127  # Number of negative samples
@@ -370,18 +370,24 @@ def run_procrustes_experiment():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    # Load models - Keep on CPU for Procrustes (no training needed)
+    # Load models - H100 optimizations even for inference
     print("\nLoading models...")
+
+    # Use BF16 on H100 for consistency
+    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+
     llama_model = AutoModelForCausalLM.from_pretrained(
         LLAMA_MODEL,
-        torch_dtype=torch.float16,
-        device_map="auto"  # OK for inference-only Procrustes experiment
+        torch_dtype=dtype,
+        device_map="auto",  # OK for inference-only Procrustes experiment
+        attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager"
     ).eval()
 
     mistral_model = AutoModelForCausalLM.from_pretrained(
         MISTRAL_MODEL,
-        torch_dtype=torch.float16,
-        device_map="auto"  # OK for inference-only Procrustes experiment
+        torch_dtype=dtype,
+        device_map="auto",  # OK for inference-only Procrustes experiment
+        attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager"
     ).eval()
 
     # Load tokenizers
@@ -706,19 +712,32 @@ def run_adapter_experiment(adapter_type, gpu_id):
             # Set device
             device = torch.device(f"cuda:{gpu_id}")
 
-            # Load models - device_map="auto" is for inference only, use explicit device placement
-            print("\nLoading models...")
+            # Load models - H100 optimizations (BF16 + Flash Attention 2)
+            print("\nLoading models with H100 optimizations...")
+
+            # Use BF16 on H100 for better training stability
+            dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            print(f"Using dtype: {dtype}")
+
             model_a = AutoModelForCausalLM.from_pretrained(
                 LLAMA_MODEL,
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True
+                torch_dtype=dtype,
+                low_cpu_mem_usage=True,
+                attn_implementation="flash_attention_2"  # H100 supports Flash Attention 2
             ).to(device).eval()
+
+            # Enable gradient checkpointing to save memory during training
+            model_a.gradient_checkpointing_enable()
 
             model_b = AutoModelForCausalLM.from_pretrained(
                 MISTRAL_MODEL,
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True
+                torch_dtype=dtype,
+                low_cpu_mem_usage=True,
+                attn_implementation="flash_attention_2"  # H100 supports Flash Attention 2
             ).to(device).eval()
+
+            # Enable gradient checkpointing to save memory during training
+            model_b.gradient_checkpointing_enable()
 
             # Load tokenizers
             tokenizer_a = AutoTokenizer.from_pretrained(LLAMA_MODEL)
