@@ -364,11 +364,11 @@ def run_procrustes_experiment():
     """Run Procrustes alignment experiment across different layers."""
 
     print("\n" + "=" * 80)
-    print("PROCRUSTES ALIGNMENT EXPERIMENT")
+    print("PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)")
     print("=" * 80)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device: {device}")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(f"Device: {device} (Procrustes SVD will run on GPU for ~10x speedup)")
 
     # Load models - H100 optimizations even for inference
     print("\nLoading models...")
@@ -451,8 +451,14 @@ def run_procrustes_experiment():
         llama_hidden_all = torch.cat(llama_hidden_all, dim=0)
         mistral_hidden_all = torch.cat(mistral_hidden_all, dim=0)
 
-        # Fit Procrustes alignments
-        print(f"\nFitting Procrustes alignments...")
+        # Move to GPU for faster Procrustes computation (SVD is ~10x faster on GPU)
+        if device.type == 'cuda':
+            llama_hidden_all = llama_hidden_all.to(device)
+            mistral_hidden_all = mistral_hidden_all.to(device)
+            print(f"  Moving {llama_hidden_all.shape[0]} samples to GPU for fast SVD")
+
+        # Fit Procrustes alignments (SVD runs on GPU)
+        print(f"\nFitting Procrustes alignments on {device}...")
 
         # Mistral → Llama
         mistral_to_llama = ProcrustesAlignment()
@@ -814,8 +820,8 @@ def main():
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Run Procrustes experiment on CPU
-    print("\n1. Starting Procrustes experiment (CPU)...")
+    # Run Procrustes experiment on GPU
+    print("\n1. Starting Procrustes experiment (GPU 0)...")
     procrustes_results = run_procrustes_experiment()
 
     # Save Procrustes results
