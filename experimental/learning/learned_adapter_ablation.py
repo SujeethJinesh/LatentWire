@@ -59,8 +59,8 @@ GENERATION_SPLIT = {"start": 500, "end": 550}  # 50 diverse prompts
 # Training hyperparameters (validated against literature)
 LEARNING_RATE = 1e-4  # Standard for adapter training
 EPOCHS = 3  # Avoid overfitting (literature: multi-epoch can harm static datasets)
-BATCH_SIZE = 4  # Per GPU
-GRAD_ACCUM_STEPS = 8  # Effective batch size = 32
+BATCH_SIZE = 32  # Per GPU - optimized for H100 80GB VRAM (~30GB models + 384MB batch)
+GRAD_ACCUM_STEPS = 1  # No accumulation needed with larger batch
 MAX_SEQ_LEN = 512
 LORA_RANK = 8  # Standard efficient rank
 LORA_ALPHA = 16  # 2*rank (best practice from literature)
