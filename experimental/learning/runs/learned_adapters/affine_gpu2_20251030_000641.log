@@ -1,0 +1,65 @@
+================================================================================
+LEARNED ADAPTER ABLATION - AFFINE - STARTING
+================================================================================
+Python version: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+CUDA device count: 1
+CUDA current device: 0
+Script: /projects/m000066/sujinesh/LatentWire/experimental/learning/learned_adapter_ablation.py
+Adapter type: affine
+GPU assigned: 2
+Log file: runs/learned_adapters/affine_gpu2_20251030_000641.log
+================================================================================
+
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 6179.45it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:18<00:55, 18.43s/it]Loading checkpoint shards:  50%|#####     | 2/4 [00:36<00:36, 18.36s/it]Loading checkpoint shards:  75%|#######5  | 3/4 [00:54<00:18, 18.26s/it]Loading checkpoint shards: 100%|##########| 4/4 [00:59<00:00, 12.81s/it]Loading checkpoint shards: 100%|##########| 4/4 [00:59<00:00, 14.84s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 8107.55it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:17<00:35, 17.82s/it]Loading checkpoint shards:  67%|######6   | 2/3 [00:35<00:17, 17.75s/it]Loading checkpoint shards: 100%|##########| 3/3 [00:51<00:00, 16.78s/it]Loading checkpoint shards: 100%|##########| 3/3 [00:51<00:00, 17.05s/it]
+
+================================================================================
+AFFINE ADAPTER EXPERIMENT FAILED WITH ERROR
+================================================================================
+Error type: TypeError
+Error message: must be called with a dataclass type or instance
+
+Full traceback:
+--------------------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/learned_adapter_ablation.py", line 677, in <module>
+    results = run_single_adapter_experiment(adapter_type)
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/learned_adapter_ablation.py", line 544, in run_single_adapter_experiment
+    squad = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1890, in load_dataset_builder
+    builder_instance: DatasetBuilder = builder_cls(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/packaged_modules/cache/cache.py", line 133, in __init__
+    super().__init__(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/builder.py", line 394, in __init__
+    self.info = DatasetInfo.from_directory(self._cache_dir)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/info.py", line 279, in from_directory
+    return cls.from_dict(dataset_info_dict)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/info.py", line 284, in from_dict
+    return cls(**{k: v for k, v in dataset_info_dict.items() if k in field_names})
+  File "<string>", line 20, in __init__
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/info.py", line 170, in __post_init__
+    self.features = Features.from_dict(self.features)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/features/features.py", line 1832, in from_dict
+    obj = generate_from_dict(dic)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/features/features.py", line 1458, in generate_from_dict
+    return {key: generate_from_dict(value) for key, value in obj.items()}
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/features/features.py", line 1458, in <dictcomp>
+    return {key: generate_from_dict(value) for key, value in obj.items()}
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/features/features.py", line 1458, in generate_from_dict
+    return {key: generate_from_dict(value) for key, value in obj.items()}
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/features/features.py", line 1458, in <dictcomp>
+    return {key: generate_from_dict(value) for key, value in obj.items()}
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/features/features.py", line 1473, in generate_from_dict
+    field_names = {f.name for f in fields(class_type)}
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/dataclasses.py", line 1198, in fields
+    raise TypeError('must be called with a dataclass type or instance') from None
+TypeError: must be called with a dataclass type or instance
+--------------------------------------------------------------------------------
+
+================================================================================

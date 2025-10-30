@@ -1,0 +1,18 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT: AFFINE
+================================================================================
+GPU: 2 (cuda:0)
+Layer: 16 (middle layer)
+Timestamp: 20251030_000644
+Log file: runs/learned_adapters/affine_gpu2_20251030_000644.log
+Results file: runs/learned_adapters/affine_results_20251030_000644.json
+================================================================================
+
+Loading models on GPU 2...
+  ✓ Llama 3.1 8B loaded
+  ✓ Mistral 7B loaded
+
+Loading datasets...
+  Checking cache at: /users/sujinesh/.cache/huggingface/datasets/rajpurkar___squad
+  Cache exists: False
+  Cache directory does not exist - proceeding with fresh download
