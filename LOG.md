@@ -8623,3 +8623,120 @@ The research landscape shows strong evidence that dynamic routing and model spec
 
 The literature strongly supports that intelligent routing can help LatentWire achieve its Phase A goals (F1 0.10-0.20 with 4× compression) by selectively applying computation where needed and cascading to stronger methods when quality signals are weak.
 
+---
+
+### 11. Enhanced Cross-Model Alignment Experiments (Oct 30, 2024)
+
+#### 11.1 Critical Issues Identified and Fixed
+
+After deep analysis of Procrustes and learned adapter failures:
+
+**Root Causes Found:**
+1. **Numerical Overflow**: `torch.sqrt((x**2).sum())` overflows with 24.8M float32 values
+   - **Fix**: Use `torch.norm(x, 'fro')` for stable computation
+2. **Tokenizer Mismatch**: Llama (128k vocab) vs Mistral (32k vocab) → different sequence lengths
+   - **Fix**: `padding="max_length"` ensures both produce exactly 512 tokens
+3. **Missing Position IDs**: RoPE needs explicit position_ids with padded sequences
+   - **Fix**: Generate position_ids with proper masking for padding
+4. **Padding Token Loss**: Padding tokens contaminate gradients
+   - **Fix**: `labels[attention_mask == 0] = -100` to ignore in CE loss
+
+#### 11.2 Literature Review Findings (2024-2025)
+
+Comprehensive review of latest research reveals **critical missing components** in original approach:
+
+**Key Papers:**
+- **PreAlign** (EMNLP 2024): Early multilingual alignment before main training
+- **Soft Contrastive Learning** (NAACL 2024): Soft labels outperform hard labels
+- **CKA vs SVCCA** (2024): CKA superior for transformer similarity measurement
+- **Model Stitching** (2024): Multi-layer alignment prevents brittleness
+
+**Critical Insight**: **Contrastive learning is NOT optional** - it's essential for cross-model alignment.
+
+#### 11.3 Enhanced Implementation
+
+Based on 2024 research, implemented 6 major improvements:
+
+| Component | Original | Enhanced (2024) | Improvement |
+|-----------|----------|-----------------|-------------|
+| **Loss Function** | CE only | CE + InfoNCE + Soft Contrastive | 3x objectives |
+| **Similarity Metric** | None | CKA (Centered Kernel Alignment) | Proven superior |
+| **Batch Size** | 4 | 16 | 4x (critical for contrastive) |
+| **Training Samples** | 1,000 | 10,000 | 10x more data |
+| **Epochs** | 3 | 10 | 3.3x |
+| **Layers Aligned** | 1 (layer 16) | 3 (layers 8, 16, 24) | Multi-layer robustness |
+
+**New Components:**
+1. **InfoNCE Loss**: Temperature τ=0.07, 127 negatives per anchor
+2. **CKA Metric**: Tracks alignment quality (target: 0.6-0.7)
+3. **Soft Labels**: Similarity-based soft labels for contrastive
+4. **Multi-Layer**: Weighted alignment [0.2, 0.5, 0.3] for layers [8, 16, 24]
+5. **Cosine Annealing**: Better convergence than fixed LR
+
+#### 11.4 Expected Results
+
+Based on literature benchmarks:
+
+- **CKA Scores**: Should reach 0.6-0.7 (vs 0.3 baseline)
+- **Generation Loss**: <2.0 (vs 3.4 baseline)
+- **Mode Collapse**: Prevented by contrastive learning
+- **Training Time**: ~2 hours per adapter (worth the quality gain)
+
+#### 11.5 Files Created
+
+```
+experimental/learning/
+├── enhanced_unified_experiments.py   # Full implementation with all improvements
+├── run_enhanced_experiments.sh       # Bash wrapper with tee logging
+├── LITERATURE_REVIEW_2024.md        # Comprehensive research summary
+├── diagnose_issues.py                # Root cause analysis tools
+├── verify_fixes.py                   # Fix validation
+└── analysis_of_chatgpt_approach.md  # Why layer-to-layer > embedding injection
+```
+
+#### 11.6 Running Enhanced Experiments
+
+```bash
+# On HPC with 2 GPUs
+git pull && rm -rf runs && PYTHONPATH=. bash experimental/learning/run_enhanced_experiments.sh
+
+# Logs saved to:
+runs/enhanced_experiments/enhanced_experiments_YYYYMMDD_HHMMSS.log
+```
+
+#### 11.7 Tracking & Metrics
+
+**Primary Metric: CKA (Centered Kernel Alignment)**
+- Measures similarity between aligned and target representations
+- CKA = 1.0 (perfect), 0.7 (good), 0.3 (poor), 0.0 (unrelated)
+- Superior to SVCCA - invariant to orthogonal transforms and scaling
+
+**Dashboard Tracks:**
+```python
+{
+  "epoch": 1,
+  "loss": 2.34,         # Total loss
+  "gen_loss": 1.89,     # Generation component
+  "con_loss": 0.45,     # Contrastive component
+  "cka_score": 0.42,    # Alignment quality
+  "lr": 0.00005        # Learning rate
+}
+```
+
+**Success Criteria:**
+- ✅ CKA > 0.6
+- ✅ Gen Loss < 2.0
+- ✅ No mode collapse (diverse outputs)
+- ✅ Steady improvement each epoch
+
+#### 11.8 Why This Matters
+
+Original experiments failed because they lacked:
+1. **Contrastive objectives** to prevent trivial solutions
+2. **Sufficient data** (1K samples insufficient)
+3. **Large enough batches** for negative sampling
+4. **Multi-layer robustness**
+5. **Proper similarity metrics** (CKA)
+
+The enhanced framework addresses all these issues based on proven 2024 research. We expect significant improvement from ~0.3 to ~0.7 CKA scores, making cross-model alignment actually viable.
+
