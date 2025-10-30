@@ -18,6 +18,7 @@ training-free Procrustes cannot match learned approaches like LatentWire.
 
 import torch
 import json
+import shutil
 from pathlib import Path
 from datetime import datetime
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -293,7 +294,14 @@ def generate_cross_model_fixed(model_a, tokenizer_a, model_b, tokenizer_b,
 def load_calibration_texts(num_samples=100):
     """Load calibration texts from SQuAD dataset."""
     print(f"Loading {num_samples} calibration texts from SQuAD...")
-    dataset = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True, download_mode="force_redownload")
+
+    # Delete corrupted cache to force fresh download
+    cache_dir = Path.home() / '.cache/huggingface/datasets/rajpurkar___squad'
+    if cache_dir.exists():
+        print(f"  Removing corrupted cache at {cache_dir}")
+        shutil.rmtree(cache_dir)
+
+    dataset = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
 
     # Extract diverse questions
     texts = []

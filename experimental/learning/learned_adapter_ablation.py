@@ -26,6 +26,7 @@ import torch.nn as nn
 import math
 import json
 import time
+import shutil
 from pathlib import Path
 from datetime import datetime
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -520,8 +521,15 @@ def run_single_adapter_experiment(adapter_type):
 
         # Load datasets
         print("\nLoading datasets...", file=log_file)
-        squad = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True, download_mode="force_redownload")
-        squad_val = load_dataset("rajpurkar/squad", split="validation", trust_remote_code=True, download_mode="force_redownload")
+
+        # Delete corrupted cache to force fresh download
+        cache_dir = Path.home() / '.cache/huggingface/datasets/rajpurkar___squad'
+        if cache_dir.exists():
+            print(f"  Removing corrupted cache at {cache_dir}", file=log_file)
+            shutil.rmtree(cache_dir)
+
+        squad = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
+        squad_val = load_dataset("rajpurkar/squad", split="validation", trust_remote_code=True)
 
         # Extract training texts for this adapter
         split = DATASET_SPLITS[adapter_type]
