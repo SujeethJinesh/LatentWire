@@ -1,57 +1,0 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-==> Using CUDA on HPC (4 GPUs available)
-  - Batch size: 16
-  - Samples: 10000
-  - Epochs: 10
-  - BF16: True
-  - Flash Attention: True
-Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
-PyTorch: 2.5.1+cu121
-CUDA available: True
-CUDA devices: 4
-================================================================================
-UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-10-30T16:27:00.436989
-Platform: hpc
-Device: cuda
-Available CUDA GPUs: 4
-================================================================================
-
-1. Starting Procrustes experiment on cuda...
-
-================================================================================
-PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
-================================================================================
-Device: cuda (Procrustes on hpc)
-
-Loading models on hpc...
-Using bfloat16 for H100
-Loading models on separate GPUs to avoid OOM...
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3669.56it/s]
-You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 16.58it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.39it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.25it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 4082.71it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 16.99it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 16.87it/s]
-Llama model moved to cuda:0
-Mistral model moved to cuda:1
-
-Loading calibration dataset (50 samples)...
-
-============================================================
-Testing Layer 0
-============================================================
-  Moving 570 samples to GPU 0 for fast SVD
-
-Fitting Procrustes alignments on cuda...
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1104, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1013, in main
-    procrustes_results = run_procrustes_experiment()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 589, in run_procrustes_experiment
-    mistral_to_llama.fit(mistral_hidden_all.float(), llama_hidden_all.float())
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 257, in fit
-    assert source.shape == target.shape, "Source and target must have same shape"
-AssertionError: Source and target must have same shape

@@ -1,0 +1,86 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-30T16:29:05.438436
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3814.74it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 16.75it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.42it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.31it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3711.77it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 16.27it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 16.50it/s]
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Llama model moved to cuda:0
+Mistral model moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.089725
+
+Testing generation...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1118, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1027, in main
+    procrustes_results = run_procrustes_experiment()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 621, in run_procrustes_experiment
+    output = mistral_model.generate(**mistral_inputs, max_new_tokens=20, do_sample=False)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/utils.py", line 2215, in generate
+    result = self._sample(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/utils.py", line 3206, in _sample
+    outputs = self(**model_inputs, return_dict=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+    outputs = self.model(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 739, in forward
+    inputs_embeds = self.embed_tokens(input_ids)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 190, in forward
+    return F.embedding(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/functional.py", line 2551, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0! (when checking argument for argument index in method wrapper_CUDA__index_select)
