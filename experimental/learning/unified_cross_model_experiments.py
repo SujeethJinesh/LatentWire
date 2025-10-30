@@ -361,6 +361,88 @@ class LoRAAdapter(nn.Module):
         return x + self.scaling * self.lora_B(self.lora_A(x))
 
 # ============================================================================
+# Token-Initialized Compression
+# ============================================================================
+
+class TokenInitializedCompressor(nn.Module):
+    """
+    Compress sequences by initializing with actual token embeddings from the input.
+    Key insight: Start from the semantic content we're compressing, not random noise.
+    """
+
+    def __init__(self, model, tokenizer, compressed_length=64, hidden_dim=4096):
+        super().__init__()
+        self.model = model
+        self.tokenizer = tokenizer
+        self.compressed_length = compressed_length
+        self.hidden_dim = hidden_dim
+
+        # Get the embedding layer
+        self.embed_layer = model.get_input_embeddings()
+
+        # Learned projection to mix/compress token embeddings
+        self.compress_proj = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim * 2),
+            nn.GELU(),
+            nn.Linear(hidden_dim * 2, hidden_dim),
+            nn.LayerNorm(hidden_dim)
+        )
+
+        # Learned attention pooling to select which tokens to keep/mix
+        self.pooling_attention = nn.MultiheadAttention(
+            embed_dim=hidden_dim,
+            num_heads=8,
+            batch_first=True,
+            dropout=0.1
+        )
+
+        # Learnable query vectors for compression
+        self.compression_queries = nn.Parameter(
+            torch.randn(compressed_length, hidden_dim) * 0.02
+        )
+
+    def forward(self, input_ids):
+        """
+        Compress input_ids to compressed_length soft tokens.
+
+        Args:
+            input_ids: [batch_size, seq_len] token ids
+
+        Returns:
+            compressed: [batch_size, compressed_length, hidden_dim] compressed embeddings
+        """
+        batch_size, seq_len = input_ids.shape
+
+        # Get token embeddings for the actual input
+        with torch.no_grad():
+            token_embeds = self.embed_layer(input_ids)  # [B, seq_len, hidden_dim]
+
+        # Use the first compressed_length tokens as initialization
+        if seq_len >= self.compressed_length:
+            # Sample evenly across the sequence for better coverage
+            indices = torch.linspace(0, seq_len-1, self.compressed_length, dtype=torch.long, device=input_ids.device)
+            init_embeds = token_embeds[:, indices, :]  # [B, compressed_length, hidden_dim]
+        else:
+            # Pad with learnable queries if sequence is shorter
+            init_embeds = torch.cat([
+                token_embeds,
+                self.compression_queries[:self.compressed_length - seq_len].unsqueeze(0).expand(batch_size, -1, -1)
+            ], dim=1)
+
+        # Apply learned transformation
+        compressed = self.compress_proj(init_embeds)
+
+        # Use attention to refine the compression
+        queries = compressed + self.compression_queries.unsqueeze(0)
+        compressed, _ = self.pooling_attention(
+            query=queries,
+            key=token_embeds,
+            value=token_embeds
+        )
+
+        return compressed
+
+# ============================================================================
 # Dataset
 # ============================================================================
 
@@ -1008,6 +1090,214 @@ def run_adapter_experiment(adapter_type, gpu_id):
             sys.stderr = old_stderr
 
 # ============================================================================
+# Token-Initialized Compression Experiment
+# ============================================================================
+
+def run_token_compression_experiment(
+    model=None,
+    tokenizer=None,
+    device=None,
+    num_samples=100,
+    compressed_length=64,
+    epochs=5,
+    use_lora_all_layers=True
+):
+    """
+    Run token-initialized compression experiment.
+
+    Key idea: Initialize compressed representation with actual token embeddings
+    from the input, not random noise. Apply LoRA to all layers for adaptation.
+    """
+    if device is None:
+        device = DEVICE
+
+    print("\n" + "=" * 80)
+    print("TOKEN-INITIALIZED COMPRESSION EXPERIMENT")
+    print("=" * 80)
+
+    # Load Llama model if not provided
+    if model is None or tokenizer is None:
+        print(f"Loading {LLAMA_MODEL}...")
+
+        # Model loading arguments
+        model_kwargs = {
+            'torch_dtype': torch.bfloat16 if USE_BF16 else torch.float16,
+            'device_map': 'auto' if PLATFORM == 'mac' else None,
+            'low_cpu_mem_usage': True,
+        }
+
+        if USE_FLASH_ATTENTION and PLATFORM == 'hpc':
+            model_kwargs['attn_implementation'] = "flash_attention_2"
+
+        model = AutoModelForCausalLM.from_pretrained(
+            LLAMA_MODEL,
+            **model_kwargs
+        ).eval()
+
+        if PLATFORM == 'hpc':
+            model = model.to(device)
+
+        tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+        tokenizer.pad_token = tokenizer.eos_token
+
+    # Apply LoRA to all layers if requested
+    if use_lora_all_layers:
+        print("Applying LoRA to all transformer layers...")
+        try:
+            from peft import LoraConfig, get_peft_model, TaskType
+
+            lora_config = LoraConfig(
+                r=16,  # Higher rank for compression task
+                lora_alpha=32,
+                target_modules=[
+                    "q_proj", "k_proj", "v_proj", "o_proj",
+                    "gate_proj", "up_proj", "down_proj"
+                ],
+                lora_dropout=0.05,
+                bias="none",
+                task_type=TaskType.CAUSAL_LM,
+            )
+            model = get_peft_model(model, lora_config)
+            model.print_trainable_parameters()  # This prints directly, doesn't return a value
+        except Exception as e:
+            print(f"Warning: Could not apply LoRA: {e}")
+
+    # Create compressor
+    print(f"Creating token-initialized compressor (compressed_length={compressed_length})...")
+    compressor = TokenInitializedCompressor(
+        model=model,
+        tokenizer=tokenizer,
+        compressed_length=compressed_length,
+        hidden_dim=model.config.hidden_size
+    ).to(device)
+
+    # Load dataset
+    print(f"Loading SQuAD dataset ({num_samples} samples)...")
+    dataset = load_dataset("squad", split=f"train[:{num_samples}]")
+
+    # Prepare training data
+    train_texts = []
+    for item in dataset:
+        # Combine context and question
+        text = f"Context: {item['context'][:500]}\nQuestion: {item['question']}\nAnswer:"
+        train_texts.append(text)
+
+    # Training setup
+    all_params = list(compressor.parameters())
+    if use_lora_all_layers:
+        all_params += [p for p in model.parameters() if p.requires_grad]
+
+    optimizer = torch.optim.AdamW(all_params, lr=LEARNING_RATE)
+
+    # Training metrics
+    metrics = {
+        "compression_ratio": [],
+        "reconstruction_loss": [],
+        "generation_loss": [],
+        "perplexity": []
+    }
+
+    print(f"\nTraining for {epochs} epochs...")
+    print(f"Batch size: {BATCH_SIZE}, Learning rate: {LEARNING_RATE}")
+
+    model.train() if use_lora_all_layers else model.eval()
+    compressor.train()
+
+    for epoch in range(epochs):
+        epoch_losses = []
+
+        for batch_idx in range(0, len(train_texts), BATCH_SIZE):
+            batch_texts = train_texts[batch_idx:batch_idx + BATCH_SIZE]
+
+            # Tokenize batch
+            inputs = tokenizer(
+                batch_texts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=512
+            ).to(device)
+
+            # Compress the inputs
+            compressed = compressor(inputs.input_ids)
+
+            # For training, we want to predict the original sequence from compressed representation
+            # Shift labels for autoregressive training
+            labels = inputs.input_ids.clone()
+            labels[labels == tokenizer.pad_token_id] = -100  # Ignore padding in loss
+
+            # Generate with compressed embeddings
+            with torch.cuda.amp.autocast(enabled=USE_BF16 and PLATFORM == 'hpc'):
+                outputs = model(
+                    inputs_embeds=compressed,
+                    labels=labels[:, :compressed_length],  # Predict first N tokens from compressed
+                    return_dict=True
+                )
+
+            loss = outputs.loss
+            epoch_losses.append(loss.item())
+
+            # Backward pass
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            if batch_idx % 10 == 0:
+                print(f"Epoch {epoch+1}/{epochs}, Batch {batch_idx//BATCH_SIZE}, Loss: {loss.item():.4f}")
+
+        avg_loss = sum(epoch_losses) / len(epoch_losses)
+        metrics["generation_loss"].append(avg_loss)
+        metrics["perplexity"].append(math.exp(min(avg_loss, 10)))  # Cap to prevent overflow
+        metrics["compression_ratio"].append(512 / compressed_length)
+
+        print(f"Epoch {epoch+1} - Avg Loss: {avg_loss:.4f}, Perplexity: {metrics['perplexity'][-1]:.2f}")
+
+    # Evaluation
+    print("\n" + "=" * 40)
+    print("EVALUATION")
+    print("=" * 40)
+
+    model.eval()
+    compressor.eval()
+
+    # Test on a few examples
+    test_prompts = [
+        "The capital of France is",
+        "The main difference between supervised and unsupervised learning is",
+        "To solve climate change, we need to",
+    ]
+
+    results = {"metrics": metrics, "examples": []}
+
+    with torch.no_grad():
+        for prompt in test_prompts:
+            # Original generation
+            orig_inputs = tokenizer(prompt, return_tensors="pt").to(device)
+            orig_output = model.generate(**orig_inputs, max_new_tokens=20, do_sample=False)
+            orig_text = tokenizer.decode(orig_output[0], skip_special_tokens=True)
+
+            # Compressed generation
+            compressed = compressor(orig_inputs.input_ids)
+            comp_output = model.generate(
+                inputs_embeds=compressed[:, :10],  # Use first 10 compressed tokens as prompt
+                max_new_tokens=20,
+                do_sample=False
+            )
+            comp_text = tokenizer.decode(comp_output[0], skip_special_tokens=True)
+
+            results["examples"].append({
+                "prompt": prompt,
+                "original": orig_text,
+                "compressed": comp_text
+            })
+
+            print(f"\nPrompt: {prompt}")
+            print(f"Original: {orig_text}")
+            print(f"Compressed: {comp_text}")
+
+    return results
+
+# ============================================================================
 # Main Execution
 # ============================================================================
 
@@ -1099,6 +1389,21 @@ def main():
         for adapter_type in ["linear", "affine", "lora"]:
             print(f"\nRunning {adapter_type} adapter...")
             run_adapter_experiment(adapter_type, None)
+
+    # Run token-initialized compression experiment
+    print("\n3. Starting token-initialized compression experiment...")
+    token_results = run_token_compression_experiment(
+        num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
+        compressed_length=64,
+        epochs=EPOCHS,
+        use_lora_all_layers=True
+    )
+
+    # Save token compression results
+    token_path = output_dir / f"token_compression_results_{timestamp}.json"
+    with open(token_path, 'w') as f:
+        json.dump(token_results, f, indent=2)
+    print(f"Token compression results saved to: {token_path}")
 
     print("\n" + "=" * 80)
     print("ALL EXPERIMENTS COMPLETE")
