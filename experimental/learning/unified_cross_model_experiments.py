@@ -496,10 +496,26 @@ def run_procrustes_experiment():
 # ============================================================================
 
 def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
-                  device, log_file, num_samples=1000):
+                  device, log_file, num_samples=1000, checkpoint_dir=None):
     """Train a single adapter for cross-model alignment with contrastive learning."""
 
     print(f"\nTraining {adapter.__class__.__name__}...", file=log_file)
+
+    # Setup checkpointing
+    start_epoch = 0
+    checkpoint_path = None
+    if checkpoint_dir:
+        checkpoint_dir = Path(checkpoint_dir)
+        checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        checkpoint_path = checkpoint_dir / "checkpoint.pt"
+
+        # Check for existing checkpoint
+        if checkpoint_path.exists():
+            print(f"Found checkpoint at {checkpoint_path}, resuming training...", file=log_file)
+            checkpoint = torch.load(checkpoint_path, map_location=device)
+            adapter.load_state_dict(checkpoint['adapter_state_dict'])
+            start_epoch = checkpoint['epoch'] + 1
+            print(f"Resuming from epoch {start_epoch}", file=log_file)
 
     # Prepare dataset
     print(f"Loading dataset ({num_samples} samples)...", file=log_file)
@@ -531,7 +547,13 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     adapter.train()
     training_metrics = {"epochs": [], "cka_scores": []}
 
-    for epoch in range(EPOCHS):
+    # Resume optimizer and scheduler state if checkpoint exists
+    if checkpoint_dir and checkpoint_path.exists():
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        training_metrics = checkpoint.get('training_metrics', {"epochs": [], "cka_scores": []})
+
+    for epoch in range(start_epoch, EPOCHS):
         epoch_loss = 0.0
         epoch_steps = 0
 
@@ -689,13 +711,28 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         })
         print(f"  Epoch {epoch+1} avg loss: {avg_epoch_loss:.4f}, CKA: {avg_cka:.4f}", file=log_file)
 
+        # Save checkpoint after each epoch
+        if checkpoint_dir:
+            checkpoint = {
+                'epoch': epoch,
+                'adapter_state_dict': adapter.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'scheduler_state_dict': scheduler.state_dict(),
+                'training_metrics': training_metrics,
+                'loss': avg_epoch_loss,
+            }
+            checkpoint_path = checkpoint_dir / "checkpoint.pt"
+            torch.save(checkpoint, checkpoint_path)
+            print(f"  Checkpoint saved to {checkpoint_path}", file=log_file)
+
     return adapter, training_metrics
 
 def run_adapter_experiment(adapter_type, gpu_id):
     """Run a single adapter experiment on specified GPU."""
 
-    # Create output directory and log file
-    output_dir = Path(f"runs/learned_adapters")
+    # Create output directory relative to script location
+    script_dir = Path(__file__).parent.absolute()
+    output_dir = script_dir / "runs" / "learned_adapters"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -765,10 +802,14 @@ def run_adapter_experiment(adapter_type, gpu_id):
             else:
                 raise ValueError(f"Unknown adapter type: {adapter_type}")
 
-            # Train adapter
+            # Create checkpoint directory for this adapter
+            checkpoint_dir = output_dir / f"{adapter_type}_checkpoint"
+
+            # Train adapter with checkpointing
             adapter, metrics = train_adapter(
                 model_a, model_b, tokenizer_a, tokenizer_b,
-                adapter, device, log_file, NUM_SAMPLES
+                adapter, device, log_file, NUM_SAMPLES,
+                checkpoint_dir=checkpoint_dir
             )
 
             # Save results
@@ -814,8 +855,9 @@ def main():
     print(f"Available GPUs: {torch.cuda.device_count()}")
     print("=" * 80)
 
-    # Create output directory
-    output_dir = Path("runs/unified_experiments")
+    # Create output directory relative to script location
+    script_dir = Path(__file__).parent.absolute()
+    output_dir = script_dir / "runs" / "unified_experiments"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

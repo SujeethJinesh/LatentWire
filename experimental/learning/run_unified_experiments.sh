@@ -6,9 +6,13 @@ Combines Procrustes and learned adapter experiments optimized for 2 GPUs.
 
 set -e  # Exit on error
 
-# Configuration
-OUTPUT_DIR="${OUTPUT_DIR:-runs/unified_experiments}"
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Configuration - always use absolute paths
+OUTPUT_DIR="${OUTPUT_DIR:-$SCRIPT_DIR/runs/unified_experiments}"
 SCRIPT_NAME="unified_cross_model_experiments.py"
+SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_NAME"
 
 # Set up environment
 export PYTHONPATH=.
@@ -64,7 +68,7 @@ echo ""
 
 # Run the unified experiment script with comprehensive logging
 {
-    python experimental/learning/$SCRIPT_NAME
+    python "$SCRIPT_PATH"
 } 2>&1 | tee "$LOG_FILE"
 
 echo ""
@@ -73,8 +77,8 @@ echo "EXPERIMENTS COMPLETE"
 echo "=================================================================================="
 echo "Results saved to:"
 echo "  - Procrustes: $OUTPUT_DIR/procrustes_results_*.json"
-echo "  - Linear adapter: runs/learned_adapters/linear_*.json"
-echo "  - Affine adapter: runs/learned_adapters/affine_*.json"
-echo "  - LoRA adapter: runs/learned_adapters/lora_*.json"
+echo "  - Linear adapter: $SCRIPT_DIR/runs/learned_adapters/linear_*.json"
+echo "  - Affine adapter: $SCRIPT_DIR/runs/learned_adapters/affine_*.json"
+echo "  - LoRA adapter: $SCRIPT_DIR/runs/learned_adapters/lora_*.json"
 echo "  - Full log: $LOG_FILE"
 echo "=================================================================================="
