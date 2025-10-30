@@ -501,7 +501,7 @@ def run_single_adapter_experiment(adapter_type):
             torch_dtype=torch.float16,
             device_map=device
         ).eval()
-        llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+        llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL, use_fast=False)
         # Set pad_token for base models (use eos_token as pad_token)
         if llama_tokenizer.pad_token is None:
             llama_tokenizer.pad_token = llama_tokenizer.eos_token
@@ -512,7 +512,7 @@ def run_single_adapter_experiment(adapter_type):
             torch_dtype=torch.float16,
             device_map=device
         ).eval()
-        mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+        mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL, use_fast=False)
         # Set pad_token for base models (use eos_token as pad_token)
         if mistral_tokenizer.pad_token is None:
             mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
