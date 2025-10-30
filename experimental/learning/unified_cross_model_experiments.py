@@ -453,26 +453,42 @@ def run_procrustes_experiment():
         print("Using float16")
 
     # Model loading arguments for Procrustes (inference only)
-    model_kwargs = {
-        'torch_dtype': dtype,
-        'device_map': "auto",  # OK for inference-only Procrustes experiment
-    }
+    # For HPC with multiple GPUs, distribute models across GPUs
+    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+        # Load models on different GPUs to avoid OOM
+        llama_kwargs = {
+            'torch_dtype': dtype,
+            'device_map': {"": 0},  # Force Llama on GPU 0
+        }
+        mistral_kwargs = {
+            'torch_dtype': dtype,
+            'device_map': {"": 1},  # Force Mistral on GPU 1
+        }
+        print("Distributing models: Llama on GPU 0, Mistral on GPU 1")
+    else:
+        # For Mac or single GPU, use auto device map
+        llama_kwargs = mistral_kwargs = {
+            'torch_dtype': dtype,
+            'device_map': "auto",
+        }
 
     # Add Flash Attention for HPC only
     if USE_FLASH_ATTENTION:
-        model_kwargs['attn_implementation'] = "flash_attention_2"
+        llama_kwargs['attn_implementation'] = "flash_attention_2"
+        mistral_kwargs['attn_implementation'] = "flash_attention_2"
         print("Using Flash Attention 2")
     else:
-        model_kwargs['attn_implementation'] = "eager"
+        llama_kwargs['attn_implementation'] = "eager"
+        mistral_kwargs['attn_implementation'] = "eager"
 
     llama_model = AutoModelForCausalLM.from_pretrained(
         LLAMA_MODEL,
-        **model_kwargs
+        **llama_kwargs
     ).eval()
 
     mistral_model = AutoModelForCausalLM.from_pretrained(
         MISTRAL_MODEL,
-        **model_kwargs
+        **mistral_kwargs
     ).eval()
 
     # Load tokenizers
@@ -536,11 +552,21 @@ def run_procrustes_experiment():
         llama_hidden_all = torch.cat(llama_hidden_all, dim=0)
         mistral_hidden_all = torch.cat(mistral_hidden_all, dim=0)
 
-        # Move to GPU for faster Procrustes computation (SVD is ~10x faster on GPU)
-        if device.type == 'cuda':
+        # Move to same device for Procrustes computation
+        # When models are on different GPUs, we need to ensure both hidden states are on the same device
+        if PLATFORM == 'hpc':
+            # Use GPU 0 for Procrustes computation
+            compute_device = torch.device('cuda:0')
+            llama_hidden_all = llama_hidden_all.to(compute_device)
+            mistral_hidden_all = mistral_hidden_all.to(compute_device)
+            print(f"  Moving {llama_hidden_all.shape[0]} samples to GPU 0 for fast SVD")
+        elif device.type == 'cuda':
             llama_hidden_all = llama_hidden_all.to(device)
             mistral_hidden_all = mistral_hidden_all.to(device)
-            print(f"  Moving {llama_hidden_all.shape[0]} samples to GPU for fast SVD")
+            print(f"  Moving {llama_hidden_all.shape[0]} samples to {device} for fast SVD")
+        else:
+            # Keep on current device (CPU/MPS)
+            compute_device = device
 
         # Fit Procrustes alignments (SVD runs on GPU)
         print(f"\nFitting Procrustes alignments on {device}...")
@@ -982,8 +1008,30 @@ def main():
     # Run learned adapter experiments
     print("\n2. Starting learned adapter experiments...")
 
-    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
-        # HPC with multiple GPUs: Run in parallel
+    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 3:
+        # HPC with 3+ GPUs: Run all adapters in parallel
+        print(f"Running all 3 adapters in parallel on {torch.cuda.device_count()} GPUs...")
+        processes = []
+
+        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
+        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
+        p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
+
+        p1.start()
+        p2.start()
+        p3.start()
+
+        processes.extend([p1, p2, p3])
+
+        # Wait for all to complete
+        print("Waiting for all adapter experiments to complete...")
+        for p in processes:
+            p.join()
+
+        print("\n3. All adapter experiments completed in parallel!")
+
+    elif PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+        # HPC with 2 GPUs: Run 2 in parallel, then LoRA
         print("Running Linear and Affine adapters in parallel on 2 GPUs...")
         processes = []
 

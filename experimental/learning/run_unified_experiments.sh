@@ -90,11 +90,12 @@ else
     echo "  ✓ NO MAX_LENGTH truncation - using full sequences"
     echo "  ✓ 10 epochs with cosine annealing"
     echo ""
-    echo "GPU Allocation:"
-    echo "  - GPU 0: Procrustes alignment (GPU-accelerated SVD ~10x faster)"
-    echo "  - GPU 0: Linear adapter (after Procrustes)"
-    echo "  - GPU 1: Affine adapter (parallel with Linear)"
-    echo "  - GPU 0: LoRA adapter (after Linear)"
+    echo "GPU Allocation (4 GPUs available):"
+    echo "  - GPU 0 & 1: Procrustes alignment (models distributed)"
+    echo "  - GPU 0: Linear adapter (parallel)"
+    echo "  - GPU 1: Affine adapter (parallel)"
+    echo "  - GPU 2: LoRA adapter (parallel)"
+    echo "  - GPU 3: Available for overflow/additional experiments"
 fi
 
 echo ""
