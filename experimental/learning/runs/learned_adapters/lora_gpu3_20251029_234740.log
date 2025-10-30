@@ -1,0 +1,11 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT: LORA
+================================================================================
+GPU: 3 (cuda:3)
+Layer: 16 (middle layer)
+Timestamp: 20251029_234740
+Log file: runs/learned_adapters/lora_gpu3_20251029_234740.log
+Results file: runs/learned_adapters/lora_results_20251029_234740.json
+================================================================================
+
+Loading models on GPU 3...

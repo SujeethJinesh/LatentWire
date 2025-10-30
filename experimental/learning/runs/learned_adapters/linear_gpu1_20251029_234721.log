@@ -1,11 +1,11 @@
 ================================================================================
-LEARNED ADAPTER EXPERIMENT: AFFINE
+LEARNED ADAPTER EXPERIMENT: LINEAR
 ================================================================================
-GPU: 2 (cuda:2)
+GPU: 1 (cuda:1)
 Layer: 16 (middle layer)
-Timestamp: 20251029_233928
-Log file: runs/learned_adapters/affine_gpu2_20251029_233928.log
-Results file: runs/learned_adapters/affine_results_20251029_233928.json
+Timestamp: 20251029_234721
+Log file: runs/learned_adapters/linear_gpu1_20251029_234721.log
+Results file: runs/learned_adapters/linear_results_20251029_234721.json
 ================================================================================
 
-Loading models on GPU 2...
+Loading models on GPU 1...
