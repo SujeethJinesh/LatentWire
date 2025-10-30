@@ -3,9 +3,9 @@ LEARNED ADAPTER EXPERIMENT: LINEAR
 ================================================================================
 GPU: 1 (cuda:0)
 Layer: 16 (middle layer)
-Timestamp: 20251030_002455
-Log file: runs/learned_adapters/linear_gpu1_20251030_002455.log
-Results file: runs/learned_adapters/linear_results_20251030_002455.json
+Timestamp: 20251030_111511
+Log file: runs/learned_adapters/linear_gpu1_20251030_111511.log
+Results file: runs/learned_adapters/linear_results_20251030_111511.json
 ================================================================================
 
 Loading models on GPU 1...

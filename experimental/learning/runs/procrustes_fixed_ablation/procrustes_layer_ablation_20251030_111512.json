@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "20251030_002448",
+    "timestamp": "20251030_111512",
     "llama_model": "meta-llama/Llama-3.1-8B",
     "mistral_model": "mistralai/Mistral-7B-v0.3",
     "calibration_size": 100,
