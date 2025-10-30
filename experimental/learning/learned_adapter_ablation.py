@@ -520,8 +520,8 @@ def run_single_adapter_experiment(adapter_type):
 
         # Load datasets
         print("\nLoading datasets...", file=log_file)
-        squad = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
-        squad_val = load_dataset("rajpurkar/squad", split="validation", trust_remote_code=True)
+        squad = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True, download_mode="force_redownload")
+        squad_val = load_dataset("rajpurkar/squad", split="validation", trust_remote_code=True, download_mode="force_redownload")
 
         # Extract training texts for this adapter
         split = DATASET_SPLITS[adapter_type]

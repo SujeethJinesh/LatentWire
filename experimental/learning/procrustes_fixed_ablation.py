@@ -293,7 +293,7 @@ def generate_cross_model_fixed(model_a, tokenizer_a, model_b, tokenizer_b,
 def load_calibration_texts(num_samples=100):
     """Load calibration texts from SQuAD dataset."""
     print(f"Loading {num_samples} calibration texts from SQuAD...")
-    dataset = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
+    dataset = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True, download_mode="force_redownload")
 
     # Extract diverse questions
     texts = []
