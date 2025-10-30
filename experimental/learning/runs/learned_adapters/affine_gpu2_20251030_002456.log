@@ -1,0 +1,28 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT: AFFINE
+================================================================================
+GPU: 2 (cuda:0)
+Layer: 16 (middle layer)
+Timestamp: 20251030_002456
+Log file: runs/learned_adapters/affine_gpu2_20251030_002456.log
+Results file: runs/learned_adapters/affine_results_20251030_002456.json
+================================================================================
+
+Loading models on GPU 2...
+  ✓ Llama 3.1 8B loaded
+  ✓ Mistral 7B loaded
+
+Loading datasets...
+  Checking cache at: /projects/m000066/sujinesh/.cache/huggingface/datasets/rajpurkar___squad
+  Cache exists: False
+  Cache directory does not exist - proceeding with fresh download
+  Training: 1000 texts (indices 1000-2000)
+  Evaluation: 500 texts
+
+================================================================================
+Training AFFINE Adapter on GPU cuda:0
+================================================================================
+Adapter parameters: 16,781,312
+
+Epoch 1/3
+----------------------------------------

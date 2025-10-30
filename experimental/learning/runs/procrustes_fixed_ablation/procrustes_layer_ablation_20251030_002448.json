@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "timestamp": "20251030_002448",
+    "llama_model": "meta-llama/Llama-3.1-8B",
+    "mistral_model": "mistralai/Mistral-7B-v0.3",
+    "calibration_size": 100,
+    "layers_tested": [
+      0,
+      8,
+      16,
+      24,
+      32
+    ]
+  },
+  "results": {
+    "layer_0": {
+      "mistral_to_mistral": {
+        "prompt_1": "The capital of France isa city of many faces. It is a city of history, culture, art, fashion, and gastronomy. It is a city of romance, of love, of passion. It is a city of light, of life, of joy.",
+        "prompt_2": "To solve this problem, we need tounderstand the problem.\n\nThe problem is that the `<input>` element is not a `<button>` element.\n\nThe `<input>` element is a `<button>` element.\n\nThe `<",
+        "prompt_3": "The future of artificial intelligence ishere.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is",
+        "prompt_4": "In the year 2050,the world is in a state of chaos. The United States has been divided into three separate countries, and the rest of the world is in a state of war. The only hope for humanity is a group of young people who have been chosen to save",
+        "prompt_5": "The main difference between cats and dogs isthat cats are carnivores and dogs are omnivores. Cats are obligate carnivores, which means that they need meat to survive. Dogs are omnivores, which means that they can survive on a"
+      },
+      "llama_to_mistral": {
+        "prompt_1": "The capital of France is.\n\nThe first thing you need to do is to find a good online casino that offers the game you want to play. There are many different online casinos out there, so it can be difficult to find the right one. However, there",
+        "prompt_2": "To solve this problem, we need to.\n\n## 10.1.1.\n\nThe _Fractional State_ of the art is a very important concept in the field of mathematics. The _Fractional State_ of the art is a very important",
+        "prompt_3": "The future of artificial intelligence is\n\nThe 2018-19 season was a season of firsts for the UConn women\u2019s basketball team.\n\nThe Huskies won their first national championship since 2016, their first under head",
+        "prompt_4": "In the year 2050,.\n\nThe first thing you notice about the house is the beautiful garden. It is a large garden with a variety of plants and flowers. The house itself is also very beautiful. It is a large house with a lot of rooms. The house",
+        "prompt_5": "The main difference between cats and dogs is.\n\nThe first step in the process is to identify the type of education you want to pursue. There are many different types of education available, so it is important to choose one that is right for you. Once you have identified the type of"
+      },
+      "mistral_to_llama": {
+        "prompt_1": "The capital of France is the. The of the and the. The of the and the. The of the and the. The of the and the. The of the and the. The of the and the. The of the and the. The of the and the.",
+        "prompt_2": "To solve this problem, we need to inquisit inquisitio inquisitio inquisitio inquisitio inquisitio inquisitio inquisitio inquisitio inquisitio inquisitio inquisitio inquisit",
+        "prompt_3": "The future of artificial intelligence is the. The 2019-2020 school year, the school is a public school located in the 2019-2020 school year, the school is a public school located in the 2019-2020 school year, the school",
+        "prompt_4": "In the year 2050,\nThe 2018-19 season is the 50th season of the National Hockey League. The regular season began on October 3, 2018, and ended on April 6, 2019. The 2019 Stanley Cup",
+        "prompt_5": "The main difference between cats and dogs is. The 2018-2019 school year is the 2nd year of the 5-year plan. The 2018-2019 school year is the 2nd year of the 5-year plan. The 2018-"
+      }
+    },
+    "layer_8": {
+      "mistral_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "llama_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "mistral_to_llama": {
+        "prompt_1": "The capital of France is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_2": "To solve this problem, we need to!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_3": "The future of artificial intelligence is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_4": "In the year 2050,!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_5": "The main difference between cats and dogs is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      }
+    },
+    "layer_16": {
+      "mistral_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "llama_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "mistral_to_llama": {
+        "prompt_1": "The capital of France is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_2": "To solve this problem, we need to!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_3": "The future of artificial intelligence is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_4": "In the year 2050,!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_5": "The main difference between cats and dogs is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      }
+    },
+    "layer_24": {
+      "mistral_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "llama_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "mistral_to_llama": {
+        "prompt_1": "The capital of France is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_2": "To solve this problem, we need to!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_3": "The future of artificial intelligence is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_4": "In the year 2050,!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_5": "The main difference between cats and dogs is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      }
+    },
+    "layer_32": {
+      "mistral_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "llama_to_mistral": {
+        "prompt_1": "The capital of France is",
+        "prompt_2": "To solve this problem, we need to",
+        "prompt_3": "The future of artificial intelligence is",
+        "prompt_4": "In the year 2050,",
+        "prompt_5": "The main difference between cats and dogs is"
+      },
+      "mistral_to_llama": {
+        "prompt_1": "The capital of France is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_2": "To solve this problem, we need to!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_3": "The future of artificial intelligence is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_4": "In the year 2050,!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "prompt_5": "The main difference between cats and dogs is!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      }
+    }
+  }
+}
