@@ -1,33 +1,0 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-================================================================================
-PROCRUSTES FIXED ABLATION - Layer Selection Study
-================================================================================
-Layers to test: [0, 8, 16, 24, 32]
-Test prompts: 5
-Device: cuda:0
-
-Loading models...
-  Llama: meta-llama/Llama-3.1-8B
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2417.47it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:16<00:49, 16.34s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:26<00:24, 12.42s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:30<00:09,  9.02s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:32<00:00,  5.87s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:32<00:00,  8.01s/it]
-  ✓ Llama loaded
-  Mistral: mistralai/Mistral-7B-v0.3
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3015.32it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:05<00:10,  5.35s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:10<00:05,  5.06s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:14<00:00,  4.67s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:14<00:00,  4.81s/it]
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 502, in <module>
-    run_layer_ablation()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/procrustes_fixed_ablation.py", line 357, in run_layer_ablation
-    mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/auto/tokenization_auto.py", line 920, in from_pretrained
-    return tokenizer_class.from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/tokenization_utils_base.py", line 2213, in from_pretrained
-    return cls._from_pretrained(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/tokenization_utils_base.py", line 2447, in _from_pretrained
-    tokenizer = cls(*init_inputs, **init_kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/llama/tokenization_llama_fast.py", line 157, in __init__
-    super().__init__(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/tokenization_utils_fast.py", line 107, in __init__
-    raise ValueError(
-ValueError: Cannot instantiate this tokenizer from a slow version. If it's based on sentencepiece, make sure you have sentencepiece installed.
