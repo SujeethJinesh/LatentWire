@@ -1,25 +1,0 @@
-==> Using MPS (Metal Performance Shaders) on Mac
-  - Batch size: 4 (Mac memory constraints)
-  - Samples: 1000 (reduced for testing)
-  - Epochs: 2 (reduced for testing)
-Python: 3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]
-PyTorch: 2.2.2
-MPS available: True
-Running on Apple Silicon GPU
-================================================================================
-UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-10-30T16:08:42.658194
-Platform: mac
-Device: mps
-================================================================================
-
-1. Starting Procrustes experiment on mps...
-
-================================================================================
-PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
-================================================================================
-Device: mps (Procrustes on mac)
-
-Loading models on mac...
-Using float32 for MPS
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:16,  5.58s/it]
