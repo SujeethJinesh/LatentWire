@@ -634,6 +634,28 @@ if __name__ == "__main__":
         sys.exit(1)
 
     adapter_type = sys.argv[1]
+    gpu_id = GPU_MAPPING[adapter_type]
+
+    # Set up log file FIRST, before any output
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = OUTPUT_DIR / f"{adapter_type}_gpu{gpu_id}_{timestamp}.log"
+
+    # Redirect stdout and stderr to log file (also keep console output)
+    class TeeLogger:
+        def __init__(self, *files):
+            self.files = files
+        def write(self, data):
+            for f in self.files:
+                f.write(data)
+                f.flush()
+        def flush(self):
+            for f in self.files:
+                f.flush()
+
+    log_file_handle = open(log_path, 'w', buffering=1)
+    sys.stdout = TeeLogger(sys.stdout, log_file_handle)
+    sys.stderr = TeeLogger(sys.stderr, log_file_handle)
 
     print("=" * 80)
     print(f"LEARNED ADAPTER ABLATION - {adapter_type.upper()} - STARTING")
@@ -646,7 +668,8 @@ if __name__ == "__main__":
         print(f"CUDA current device: {torch.cuda.current_device()}")
     print(f"Script: {__file__}")
     print(f"Adapter type: {adapter_type}")
-    print(f"GPU assigned: {GPU_MAPPING[adapter_type]}")
+    print(f"GPU assigned: {gpu_id}")
+    print(f"Log file: {log_path}")
     print("=" * 80)
     print()
 
@@ -656,6 +679,7 @@ if __name__ == "__main__":
         print("=" * 80)
         print(f"{adapter_type.upper()} ADAPTER EXPERIMENT COMPLETED SUCCESSFULLY")
         print("=" * 80)
+        log_file_handle.close()
         sys.exit(0)
     except Exception as e:
         print()
@@ -671,4 +695,5 @@ if __name__ == "__main__":
         print("-" * 80)
         print()
         print("=" * 80)
+        log_file_handle.close()
         sys.exit(1)
