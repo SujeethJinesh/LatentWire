@@ -273,7 +273,8 @@ def generate_cross_model_fixed(model_a, tokenizer_a, model_b, tokenizer_b,
             next_embed = model_b.model.embed_tokens(
                 torch.tensor([[next_token_id]], device=model_b.device))
 
-            # Update position_ids tracking (for next iteration if needed)
+            # Update position_ids tracking (calculate next position)
+            next_pos = position_ids[0, -1] + 1
             position_ids = torch.cat([
                 position_ids,
                 torch.tensor([[next_pos]], device=model_b.device)
