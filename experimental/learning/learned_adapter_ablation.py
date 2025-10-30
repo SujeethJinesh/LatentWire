@@ -475,7 +475,9 @@ def run_single_adapter_experiment(adapter_type):
 
     # Get GPU assignment
     gpu_id = GPU_MAPPING[adapter_type]
-    device = f"cuda:{gpu_id}"
+    # IMPORTANT: CUDA_VISIBLE_DEVICES is set by bash script, so always use cuda:0
+    # The bash script restricts each process to see only 1 GPU, indexed as cuda:0
+    device = "cuda:0"
 
     # Setup output
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
