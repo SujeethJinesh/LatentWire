@@ -296,18 +296,17 @@ def load_calibration_texts(num_samples=100):
     print(f"Loading {num_samples} calibration texts from SQuAD...")
 
     # Delete corrupted cache to force fresh download
-    # Use datasets library's actual cache path (not Path.home() which may be different)
-    import datasets.config
+    # The cache structure is: {HF_HOME}/datasets/rajpurkar___squad/...
     import os
 
-    # Get the actual HF datasets cache directory
-    hf_cache_root = os.environ.get('HF_DATASETS_CACHE') or os.environ.get('HF_HOME')
-    if hf_cache_root:
-        cache_dir = Path(hf_cache_root) / 'rajpurkar___squad'
-    else:
-        # Fallback: use the datasets library default cache location
-        # This is typically ~/.cache/huggingface/datasets on Linux
-        cache_dir = Path(datasets.config.HF_DATASETS_CACHE) / 'rajpurkar___squad'
+    # Get the actual HF cache root directory
+    hf_cache_root = os.environ.get('HF_HOME') or os.environ.get('HF_DATASETS_CACHE')
+    if not hf_cache_root:
+        # Default location on Linux systems
+        hf_cache_root = os.path.expanduser('~/.cache/huggingface')
+
+    # The actual cache directory includes the 'datasets' subdirectory
+    cache_dir = Path(hf_cache_root) / 'datasets' / 'rajpurkar___squad'
 
     print(f"  Checking cache at: {cache_dir}")
     print(f"  Cache exists: {cache_dir.exists()}")
@@ -323,7 +322,8 @@ def load_calibration_texts(num_samples=100):
         # Cache already gone or permission issue - continue anyway
         print(f"  Note: {e}")
 
-    dataset = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
+    # Load dataset without trust_remote_code to avoid metadata issues
+    dataset = load_dataset("squad", split="train")
 
     # Extract diverse questions
     texts = []

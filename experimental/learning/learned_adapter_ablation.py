@@ -525,19 +525,18 @@ def run_single_adapter_experiment(adapter_type):
         print("\nLoading datasets...", file=log_file)
 
         # Delete corrupted cache to force fresh download
-        # Use datasets library's actual cache path (not Path.home() which may be different)
+        # The cache structure is: {HF_HOME}/datasets/rajpurkar___squad/...
         # Also handle race condition when multiple processes run in parallel
-        import datasets.config
         import os
 
-        # Get the actual HF datasets cache directory
-        hf_cache_root = os.environ.get('HF_DATASETS_CACHE') or os.environ.get('HF_HOME')
-        if hf_cache_root:
-            cache_dir = Path(hf_cache_root) / 'rajpurkar___squad'
-        else:
-            # Fallback: use the datasets library default cache location
-            # This is typically ~/.cache/huggingface/datasets on Linux
-            cache_dir = Path(datasets.config.HF_DATASETS_CACHE) / 'rajpurkar___squad'
+        # Get the actual HF cache root directory
+        hf_cache_root = os.environ.get('HF_HOME') or os.environ.get('HF_DATASETS_CACHE')
+        if not hf_cache_root:
+            # Default location on Linux systems
+            hf_cache_root = os.path.expanduser('~/.cache/huggingface')
+
+        # The actual cache directory includes the 'datasets' subdirectory
+        cache_dir = Path(hf_cache_root) / 'datasets' / 'rajpurkar___squad'
 
         print(f"  Checking cache at: {cache_dir}", file=log_file)
         print(f"  Cache exists: {cache_dir.exists()}", file=log_file)
@@ -553,8 +552,9 @@ def run_single_adapter_experiment(adapter_type):
             # Another process may have already deleted it - that's fine
             print(f"  Cache already removed (likely by parallel process): {e}", file=log_file)
 
-        squad = load_dataset("rajpurkar/squad", split="train", trust_remote_code=True)
-        squad_val = load_dataset("rajpurkar/squad", split="validation", trust_remote_code=True)
+        # Load dataset without trust_remote_code to avoid metadata issues
+        squad = load_dataset("squad", split="train")
+        squad_val = load_dataset("squad", split="validation")
 
         # Extract training texts for this adapter
         split = DATASET_SPLITS[adapter_type]
