@@ -186,6 +186,7 @@ NUM_SAMPLES = PLATFORM_CONFIG['num_samples']
 GRAD_ACCUM_STEPS = PLATFORM_CONFIG['grad_accum_steps']
 USE_BF16 = PLATFORM_CONFIG['use_bf16']
 USE_FLASH_ATTENTION = PLATFORM_CONFIG['use_flash_attention']
+MAX_LENGTH = 512  # Maximum sequence length for tokenization
 
 # Contrastive Learning Parameters (NEW from 2025 research)
 TEMPERATURE = 0.07  # Optimal for InfoNCE loss
