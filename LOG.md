@@ -2,6 +2,54 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## ⚡ PARALLEL EXECUTION RESTORED: 3× Speedup (2025-10-31 11:45)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Decision: Switch Back to Parallel Execution
+
+**Rationale**: With aggressive memory optimizations applied, we now have sufficient headroom to restore parallel execution for 3× speedup.
+
+**Memory Budget Analysis**:
+- Model weights: ~30 GB (Llama 8B + Mistral 7B)
+- Activations (batch=8, seq=256, 1 layer): ~4 GB
+- Optimizer states: ~10 GB
+- **Total per GPU**: ~44 GB
+- **Available**: 79 GB H100
+- **Safety margin**: 35 GB (44% free capacity)
+
+**Why Parallel is Now Safe**:
+
+The triple-pronged memory reduction freed up ~30-35 GB per GPU:
+1. GPU cleanup after Procrustes: Eliminates residual memory contamination
+2. MAX_LENGTH 512→256: ~4× reduction in activation memory
+3. Single-layer alignment: 3× fewer forward passes
+
+This massive reduction provides comfortable margin for parallel execution.
+
+**Performance Comparison**:
+
+| Approach | Runtime | GPU Utilization | Memory Safety |
+|----------|---------|-----------------|---------------|
+| Sequential (V2) | 3× slower | 33% (1 GPU at a time) | Very safe |
+| **Parallel (V3)** | **1× (baseline)** | **100% (all 3 GPUs)** | **Safe (35GB margin)** |
+
+**Changes Applied** (lines 1381-1429):
+```python
+# Restored parallel execution with memory optimizations
+if PLATFORM == 'hpc' and torch.cuda.device_count() >= 3:
+    # All 3 adapters run simultaneously on GPUs 0, 1, 2
+    p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
+    p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
+    p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
+    p1.start(); p2.start(); p3.start()
+```
+
+**Key Insight**: Aggressive memory optimization enables both safety AND speed. The memory fixes were strong enough to make parallel execution viable again.
+
+**Status**: Parallel execution restored, ready for HPC re-run with 3× speedup.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🔧 OOM FIX V2: Memory Cleanup + Reduced Activations (2025-10-31 11:30)
 ## ═══════════════════════════════════════════════════════════════════════════
 

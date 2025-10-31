@@ -1378,19 +1378,53 @@ def main():
     # Run learned adapter experiments
     print("\n2. Starting learned adapter experiments...")
 
-    # CHANGED: Run sequentially to avoid OOM from loading 2 models per GPU
-    # Each experiment loads both Llama 8B + Mistral 7B (~30GB per GPU)
-    # Sequential execution ensures sufficient memory and is more reliable
-    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
-        print(f"Running adapters sequentially to avoid OOM (each loads 2 models)...")
-        print("  - Linear adapter on GPU 0...")
-        run_adapter_experiment("linear", 0)
+    # Run in PARALLEL with memory fixes applied:
+    # - GPU cleanup after Procrustes (clears residual memory)
+    # - MAX_LENGTH=256 (halves activations)
+    # - Single-layer alignment (1 forward pass instead of 3)
+    # Expected: ~44GB per GPU (35GB margin on 79GB H100s)
+    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 3:
+        print(f"Running all 3 adapters in parallel on {torch.cuda.device_count()} GPUs...")
+        print("Memory optimizations: GPU cleanup + seq=256 + single-layer alignment")
+        processes = []
 
-        print("\n  - Affine adapter on GPU 1...")
-        run_adapter_experiment("affine", 1)
+        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
+        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
+        p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
 
-        print("\n  - LoRA adapter on GPU 2...")
-        run_adapter_experiment("lora", 2 if torch.cuda.device_count() >= 3 else 0)
+        p1.start()
+        p2.start()
+        p3.start()
+
+        processes.extend([p1, p2, p3])
+
+        # Wait for all to complete
+        print("Waiting for all adapter experiments to complete...")
+        for p in processes:
+            p.join()
+
+        print("\n3. All adapter experiments completed in parallel!")
+
+    elif PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+        # HPC with 2 GPUs: Run 2 in parallel, then LoRA
+        print("Running Linear and Affine adapters in parallel on 2 GPUs...")
+        processes = []
+
+        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
+        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
+
+        p1.start()
+        p2.start()
+
+        processes.extend([p1, p2])
+
+        # Wait for completion
+        for p in processes:
+            p.join()
+
+        # Run LoRA sequentially after others complete
+        print("\n3. Starting LoRA experiment (sequential on GPU 0)...")
+        run_adapter_experiment("lora", 0)
 
         print("\n3. All adapter experiments completed!")
 
