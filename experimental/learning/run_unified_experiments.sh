@@ -37,7 +37,7 @@ else
     PLATFORM="hpc"
 
     # H100 GPU optimizations
-    export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1}  # Use both H100 GPUs
+    export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}  # Use all 4 H100 GPUs
     export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True  # Better memory management on H100
     export NCCL_P2P_DISABLE=1  # Avoid P2P issues on some HPC systems
 
