@@ -2,6 +2,56 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🐛 FIX: IndexError from Single-Layer Change (2025-10-31 12:15)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Analysis from Latest Run
+
+**Log**: `unified_experiments_20251031_120042.log`
+
+**What Worked** ✅:
+1. Procrustes completed successfully
+2. GPU cleanup worked ("GPU cache cleared" line 153)
+3. Parallel execution launched all 3 adapters simultaneously
+4. No OOM during model loading (memory optimizations effective!)
+
+**What Failed** ❌:
+1. All 3 adapters crashed with `IndexError: list index out of range`
+   - Linear (line 258): `outputs_a.hidden_states[ALIGNMENT_LAYERS[1]]`
+   - Affine (line 246): Same error
+   - LoRA (line 234): Same error
+2. Token compression still OOM'd on GPU 0 (line 303)
+
+### Root Cause: Incomplete Code Update
+
+When changing `ALIGNMENT_LAYERS = [8, 16, 24]` → `[16]`, CKA evaluation code (lines 944-946) still tried to access hardcoded index [1]:
+
+```python
+# WRONG: Assumes 3-element list
+source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+target_repr = outputs_b.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+```
+
+With single-element list `[16]`, index [1] doesn't exist → IndexError.
+
+**Fix Applied** (line 944):
+```python
+# CORRECT: Use mid_idx like rest of code
+mid_idx = len(ALIGNMENT_LAYERS) // 2  # = 0 for single-element list
+source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
+target_repr = outputs_b.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
+```
+
+### Outstanding Issue: Token Compression OOM
+
+Token compression still OOM'd despite memory optimizations. This is separate experiment after adapters complete. Likely needs:
+- Batch size reduction for compression
+- Or run on different GPU than adapters used
+
+**Status**: IndexError fixed, ready for re-run. Token compression needs separate investigation.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## ⚡ PARALLEL EXECUTION RESTORED: 3× Speedup (2025-10-31 11:45)
 ## ═══════════════════════════════════════════════════════════════════════════
 

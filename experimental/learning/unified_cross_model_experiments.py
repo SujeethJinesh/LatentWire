@@ -941,9 +941,10 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
                 )
 
                 # Compute CKA for middle layer
-                source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+                mid_idx = len(ALIGNMENT_LAYERS) // 2
+                source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
                 aligned_repr = adapter(source_repr)
-                target_repr = outputs_b.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+                target_repr = outputs_b.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
 
                 cka_score = CKA.cka_similarity(aligned_repr.float(), target_repr.float())
                 cka_scores.append(cka_score.item())
