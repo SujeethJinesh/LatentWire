@@ -19,7 +19,13 @@ from transformers import get_cosine_schedule_with_warmup
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
-from peft import LoraConfig, TaskType, get_peft_model
+try:
+    from peft import LoraConfig, TaskType, get_peft_model
+    PEFT_AVAILABLE = True
+except ImportError:
+    PEFT_AVAILABLE = False
+    print("WARNING: PEFT library not available. LoRA training will be disabled.")
+    print("Install with: pip install peft")
 import json
 import time
 import os
@@ -416,39 +422,48 @@ class CompressionTrainer:
             **model_kwargs
         ).to(self.device).eval()
 
-        # Apply LoRA
-        peft_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM,
-            r=16,
-            lora_alpha=32,
-            lora_dropout=0.1,
-            target_modules=[
-                "q_proj", "k_proj", "v_proj", "o_proj",
-                "gate_proj", "up_proj", "down_proj"
-            ]
-        )
+        # Apply LoRA if available
+        if PEFT_AVAILABLE:
+            peft_config = LoraConfig(
+                task_type=TaskType.CAUSAL_LM,
+                r=16,
+                lora_alpha=32,
+                lora_dropout=0.1,
+                target_modules=[
+                    "q_proj", "k_proj", "v_proj", "o_proj",
+                    "gate_proj", "up_proj", "down_proj"
+                ]
+            )
 
-        self.model = get_peft_model(self.base_model, peft_config)
-        self.model.print_trainable_parameters()
+            self.model = get_peft_model(self.base_model, peft_config)
+            self.model.print_trainable_parameters()
+            print("LoRA applied successfully")
+        else:
+            print("WARNING: PEFT not available - training full model (not recommended)")
+            self.model = self.base_model
+            # Enable gradient for base model
+            for param in self.model.parameters():
+                param.requires_grad = True
 
         # Initialize compressor
         hidden_dim = self.base_model.config.hidden_size
+        dtype = torch.bfloat16 if self.config.use_bf16 else torch.float32
 
         if self.config.architecture == "cross_attention":
             self.compressor = CrossAttentionCompressor(
                 target_length=self.config.target_length,
                 hidden_dim=hidden_dim
-            ).to(self.device)
+            ).to(self.device, dtype=dtype)
         elif self.config.architecture == "conv":
             self.compressor = ConvolutionalCompressor(
                 target_length=self.config.target_length,
                 hidden_dim=hidden_dim
-            ).to(self.device)
+            ).to(self.device, dtype=dtype)
         elif self.config.architecture == "pooling":
             self.compressor = WeightedPoolingCompressor(
                 target_length=self.config.target_length,
                 hidden_dim=hidden_dim
-            ).to(self.device)
+            ).to(self.device, dtype=dtype)
         else:
             raise ValueError(f"Unknown architecture: {self.config.architecture}")
 
