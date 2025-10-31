@@ -368,48 +368,60 @@ class TokenInitializedCompressor(nn.Module):
     """
     Compress sequences by initializing with actual token embeddings from the input.
     Key insight: Start from the semantic content we're compressing, not random noise.
+    Creates a compressed z vector in lower dimensional space.
     """
 
-    def __init__(self, model, tokenizer, compressed_length=64, hidden_dim=4096):
+    def __init__(self, model, tokenizer, compressed_length=64, hidden_dim=4096, d_z=256):
         super().__init__()
         self.model = model
         self.tokenizer = tokenizer
         self.compressed_length = compressed_length
         self.hidden_dim = hidden_dim
+        self.d_z = d_z  # Latent dimension (much smaller than hidden_dim)
 
         # Get the embedding layer
         self.embed_layer = model.get_input_embeddings()
 
-        # Learned projection to mix/compress token embeddings
-        self.compress_proj = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim * 2),
+        # Project from model space to latent z space
+        self.to_latent = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim // 2),
             nn.GELU(),
-            nn.Linear(hidden_dim * 2, hidden_dim),
+            nn.Linear(hidden_dim // 2, d_z),
+            nn.LayerNorm(d_z)
+        )
+
+        # Project from latent z space back to model space
+        self.from_latent = nn.Sequential(
+            nn.Linear(d_z, hidden_dim // 2),
+            nn.GELU(),
+            nn.Linear(hidden_dim // 2, hidden_dim),
             nn.LayerNorm(hidden_dim)
         )
 
-        # Learned attention pooling to select which tokens to keep/mix
+        # Learned attention pooling in latent space
         self.pooling_attention = nn.MultiheadAttention(
-            embed_dim=hidden_dim,
+            embed_dim=d_z,
             num_heads=8,
             batch_first=True,
             dropout=0.1
         )
 
-        # Learnable query vectors for compression
+        # Learnable query vectors in latent space
         self.compression_queries = nn.Parameter(
-            torch.randn(compressed_length, hidden_dim) * 0.02
+            torch.randn(compressed_length, d_z) * 0.02
         )
 
-    def forward(self, input_ids):
+    def forward(self, input_ids, return_z=False):
         """
-        Compress input_ids to compressed_length soft tokens.
+        Compress input_ids to compressed_length soft tokens via latent z space.
 
         Args:
             input_ids: [batch_size, seq_len] token ids
+            return_z: If True, return the z latent representation
 
         Returns:
-            compressed: [batch_size, compressed_length, hidden_dim] compressed embeddings
+            If return_z=False: [batch_size, compressed_length, hidden_dim] model space embeddings
+            If return_z=True: ([B, M, hidden_dim], [B, M, d_z]) both model and latent representations
         """
         batch_size, seq_len = input_ids.shape
 
@@ -417,30 +429,35 @@ class TokenInitializedCompressor(nn.Module):
         with torch.no_grad():
             token_embeds = self.embed_layer(input_ids)  # [B, seq_len, hidden_dim]
 
-        # Use the first compressed_length tokens as initialization
+        # Sample tokens evenly across the sequence for initialization
         if seq_len >= self.compressed_length:
             # Sample evenly across the sequence for better coverage
             indices = torch.linspace(0, seq_len-1, self.compressed_length, dtype=torch.long, device=input_ids.device)
             init_embeds = token_embeds[:, indices, :]  # [B, compressed_length, hidden_dim]
         else:
-            # Pad with learnable queries if sequence is shorter
-            init_embeds = torch.cat([
-                token_embeds,
-                self.compression_queries[:self.compressed_length - seq_len].unsqueeze(0).expand(batch_size, -1, -1)
-            ], dim=1)
+            # If sequence is shorter, use all tokens and pad
+            padding_needed = self.compressed_length - seq_len
+            padding = self.from_latent(self.compression_queries[:padding_needed].unsqueeze(0).expand(batch_size, -1, -1))
+            init_embeds = torch.cat([token_embeds, padding], dim=1)
 
-        # Apply learned transformation
-        compressed = self.compress_proj(init_embeds)
+        # Project to latent z space (compression happens here!)
+        z = self.to_latent(init_embeds)  # [B, compressed_length, d_z]
 
-        # Use attention to refine the compression
-        queries = compressed + self.compression_queries.unsqueeze(0)
-        compressed, _ = self.pooling_attention(
-            query=queries,
-            key=token_embeds,
-            value=token_embeds
+        # Refine z representation with attention in latent space
+        z_queries = z + self.compression_queries.unsqueeze(0)
+        z_refined, _ = self.pooling_attention(
+            query=z_queries,
+            key=z,  # Self-attention in latent space
+            value=z
         )
 
-        return compressed
+        # Project back to model embedding space
+        model_embeds = self.from_latent(z_refined)  # [B, compressed_length, hidden_dim]
+
+        if return_z:
+            return model_embeds, z_refined
+        else:
+            return model_embeds
 
 # ============================================================================
 # Dataset
@@ -1163,12 +1180,14 @@ def run_token_compression_experiment(
             print(f"Warning: Could not apply LoRA: {e}")
 
     # Create compressor
-    print(f"Creating token-initialized compressor (compressed_length={compressed_length})...")
+    d_z = 256  # Latent dimension (16x compression from 4096)
+    print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
     compressor = TokenInitializedCompressor(
         model=model,
         tokenizer=tokenizer,
         compressed_length=compressed_length,
-        hidden_dim=model.config.hidden_size
+        hidden_dim=model.config.hidden_size,
+        d_z=d_z
     ).to(device)
 
     # Load dataset
@@ -1248,14 +1267,25 @@ def run_token_compression_experiment(
         avg_loss = sum(epoch_losses) / len(epoch_losses)
         metrics["generation_loss"].append(avg_loss)
         metrics["perplexity"].append(math.exp(min(avg_loss, 10)))  # Cap to prevent overflow
-        metrics["compression_ratio"].append(512 / compressed_length)
 
-        print(f"Epoch {epoch+1} - Avg Loss: {avg_loss:.4f}, Perplexity: {metrics['perplexity'][-1]:.2f}")
+        # Calculate true compression ratio
+        # Original: ~200 tokens × 4096 dims = 819,200 parameters
+        # Compressed: 64 tokens × 256 dims = 16,384 parameters
+        # Compression ratio: 819,200 / 16,384 = 50x
+        seq_compression = 200 / compressed_length  # Sequence length compression
+        dim_compression = model.config.hidden_size / d_z  # Dimension compression
+        total_compression = seq_compression * dim_compression
+        metrics["compression_ratio"].append(total_compression)
+
+        print(f"Epoch {epoch+1} - Avg Loss: {avg_loss:.4f}, Perplexity: {metrics['perplexity'][-1]:.2f}, Compression: {total_compression:.1f}x")
 
     # Evaluation
     print("\n" + "=" * 40)
     print("EVALUATION")
     print("=" * 40)
+    print(f"Z Vector Shape: [{compressed_length}, {d_z}] = {compressed_length * d_z:,} parameters")
+    print(f"Original Shape: [~200, {model.config.hidden_size}] = ~{200 * model.config.hidden_size:,} parameters")
+    print(f"Total Compression: {total_compression:.1f}x")
 
     model.eval()
     compressor.eval()
@@ -1276,8 +1306,8 @@ def run_token_compression_experiment(
             orig_output = model.generate(**orig_inputs, max_new_tokens=20, do_sample=False)
             orig_text = tokenizer.decode(orig_output[0], skip_special_tokens=True)
 
-            # Compressed generation
-            compressed = compressor(orig_inputs.input_ids)
+            # Compressed generation with z vector
+            compressed, z_vector = compressor(orig_inputs.input_ids, return_z=True)
             comp_output = model.generate(
                 inputs_embeds=compressed[:, :10],  # Use first 10 compressed tokens as prompt
                 max_new_tokens=20,
@@ -1288,12 +1318,16 @@ def run_token_compression_experiment(
             results["examples"].append({
                 "prompt": prompt,
                 "original": orig_text,
-                "compressed": comp_text
+                "compressed": comp_text,
+                "z_shape": list(z_vector.shape),
+                "z_mean": float(z_vector.mean().item()),
+                "z_std": float(z_vector.std().item())
             })
 
             print(f"\nPrompt: {prompt}")
             print(f"Original: {orig_text}")
             print(f"Compressed: {comp_text}")
+            print(f"Z Vector: shape={list(z_vector.shape)}, mean={z_vector.mean().item():.3f}, std={z_vector.std().item():.3f}")
 
     return results
 
