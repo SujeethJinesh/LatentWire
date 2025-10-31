@@ -2,6 +2,59 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 📊 CODEBASE ANALYSIS & 4-GPU CONFIGURATION (2025-10-31)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Experimental/Learning Folder Structure
+
+Analyzed the `experimental/learning/` folder structure and unified experiments setup for HPC cluster with 4 H100 GPUs.
+
+**Key Components**:
+- **Main experiments**: `unified_cross_model_experiments.py` (1464 lines) with bash wrapper
+- **Compression studies**: `compression_ablations.py` for SQuAD compression testing
+- **Results**: `runs/` directory with timestamped outputs
+- **Archive**: Old experimental versions (procrustes, learned_adapters, cross_model)
+- **Subprojects**: `reproduce_coconut/` for COCONUT baseline experiments
+
+**Unified Experiments Overview**:
+The unified script combines three complementary approaches:
+1. **Procrustes Alignment**: Fits orthogonal transformations between Llama and Mistral hidden spaces across layers [0, 8, 16, 24, 32]
+2. **Learned Adapters**: Three types trained with InfoNCE contrastive loss
+   - Linear adapter (simple projection)
+   - Affine adapter (scale + shift)
+   - LoRA adapter (low-rank adaptation on all layers, r=16)
+3. **Token-Initialized Compression**: Compresses sequences from 200+ tokens to 64 tokens using actual token embeddings
+
+**Key Techniques**:
+- InfoNCE contrastive loss (τ=0.07) for alignment
+- CKA (Centered Kernel Alignment) metrics for evaluation
+- Multi-GPU parallelization for efficiency
+- Platform-aware configuration (Mac vs HPC)
+
+### GPU Configuration Update: 2 → 4 GPUs
+
+**Issue Found**: Scripts were configured for only 2 GPUs despite having 4 H100s available.
+
+**Changes Made**:
+1. `run_unified_experiments.sh` line 40: Updated `CUDA_VISIBLE_DEVICES` from `0,1` to `0,1,2,3`
+2. `unified_cross_model_experiments.py` header: Updated documentation to reflect 4-GPU optimization
+
+**New GPU Allocation** (with 4 H100s):
+- **GPU 0**: Linear adapter (parallel)
+- **GPU 1**: Affine adapter (parallel)
+- **GPU 2**: LoRA adapter (parallel)
+- **GPU 3**: Available for overflow/future experiments
+- **Procrustes**: CPU-based (no GPU needed)
+
+**Performance Impact**:
+- **Before**: Linear + Affine run in parallel, then LoRA sequentially → ~1.5x total time
+- **After**: All three adapters run in parallel → ~1.0x optimal throughput
+- **Expected speedup**: ~33% reduction in total runtime
+
+**Status**: Configuration updated and ready for HPC deployment. Scripts will now automatically use all 4 H100 GPUs when run on HPC cluster.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🚀 TOKEN-INITIALIZED COMPRESSION WITH LoRA (2025-10-30 17:15)
 ## ═══════════════════════════════════════════════════════════════════════════
 
@@ -8970,3 +9023,291 @@ bash run_compression_ablations.sh full
 4. **Anti-collapse measures**: Contrastive loss prevents all inputs → same compression
 
 This addresses the fundamental issue: We need to SELECT information, not just compress it. The model learns which parts of the context contain answer-relevant information.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
+## EXPERIMENTAL/LEARNING FOLDER STRUCTURE & GPU CONFIGURATION ANALYSIS (2025-10-31)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Folder Organization
+
+The `experimental/learning/` directory contains research-grade experiments with the following structure:
+
+```
+experimental/learning/
+├── unified_cross_model_experiments.py    (Main unified experiment script - 1464 lines)
+├── run_unified_experiments.sh            (Bash wrapper with platform detection)
+├── compression_ablations.py              (SQuAD compression ablation framework)
+├── run_compression_ablations.sh          (Compression ablation runner)
+├── runs/                                 (Results directory)
+│   ├── unified_experiments/             (Procrustes & adapter results)
+│   ├── learned_adapters/                (Individual adapter logs)
+│   ├── procrustes_fixed_ablation/       (Previous ablation results)
+│   └── cross_model_ablation/            (Cross-model alignment results)
+├── archive/                             (Previous experimental versions)
+│   ├── procrustes_fixed_ablation.py
+│   ├── learned_adapter_ablation.py
+│   ├── cross_model_ablation.py
+│   └── run_*.sh scripts                 (Deprecated experiment runners)
+├── reproduce_coconut/                   (COCONUT baseline reproduction)
+│   ├── coconut/                         (COCONUT implementation)
+│   ├── run_coconut_hpc.sh              (HPC runner for COCONUT)
+│   ├── PLAN.md, HPC_SETUP.md, README.md
+│   └── args/                           (YAML configs for different datasets)
+└── checkpoints/                         (Model checkpoints directory)
+```
+
+### GPU Configuration Status (CRITICAL FINDING)
+
+**Current State: Configured for 2 GPUs (NEEDS UPDATE TO 4)**
+
+#### In run_unified_experiments.sh (Lines 40, 93-98):
+```bash
+# Line 40 - HPC GPU allocation:
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1}  # ← ONLY 2 GPUs
+
+# Lines 93-98 - Documentation claims 4 but only allocates 2:
+echo "GPU Allocation (4 GPUs available):"
+echo "  - GPU 0 & 1: Procrustes alignment (models distributed)"
+echo "  - GPU 0: Linear adapter (parallel)"
+echo "  - GPU 1: Affine adapter (parallel)"
+echo "  - GPU 2: LoRA adapter (parallel)"
+echo "  - GPU 3: Available for overflow/additional experiments"
+```
+
+#### In unified_cross_model_experiments.py:
+**Lines 6-10 (Header comment - OUTDATED)**:
+```python
+GPU allocation:
+- GPU 0: Linear adapter
+- GPU 1: Affine adapter
+- CPU: Procrustes alignment (no GPU needed)
+- LoRA: Run sequentially after Linear/Affine complete
+```
+
+**Main execution logic (Lines 1370-1425)**:
+```python
+# Line 1370: Check for 3+ GPUs for parallel execution
+if PLATFORM == 'hpc' and torch.cuda.device_count() >= 3:
+    # Runs Linear (GPU 0), Affine (GPU 1), LoRA (GPU 2) in parallel
+    
+# Line 1392: Falls back to 2-GPU mode if only 2 available
+elif PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+    # Runs Linear (GPU 0) and Affine (GPU 1) in parallel
+    # Then LoRA (GPU 0) sequentially
+    
+# Lines 1413-1425: Falls back to sequential on single GPU/CPU
+else:
+    for adapter_type in ["linear", "affine", "lora"]:
+        run_adapter_experiment(adapter_type, None)
+```
+
+**GPU allocation in run_adapter_experiment() (Lines 975-1003)**:
+```python
+def run_adapter_experiment(adapter_type, gpu_id):
+    """Run a single adapter experiment on specified GPU."""
+    if PLATFORM == 'hpc' and gpu_id is not None:
+        device = torch.device(f"cuda:{gpu_id}")  # Uses assigned GPU
+```
+
+### Key Unified Experiments Components
+
+#### 1. **InfoNCE Contrastive Loss** (Lines 100-130)
+- Temperature: 0.07 (optimal for alignment per 2025 research)
+- Normalizes representations and computes contrastive loss
+- Prevents mode collapse in cross-model alignment
+
+#### 2. **CKA (Centered Kernel Alignment)** (Lines 136-171)
+- Superior to SVCCA for measuring representation similarity
+- Computes linear kernel alignment between model hidden states
+- Metric used to evaluate cross-model layer alignment
+
+#### 3. **ProcrustesAlignment** (Lines 240-310)
+- Orthogonal transformation fitting (CPU or GPU)
+- Aligns hidden spaces between Llama and Mistral models
+- Tests on layers: 0, 8, 16, 24, 32 (ALIGNMENT_LAYERS = [8, 16, 24])
+
+#### 4. **Learned Adapters** (3 types):
+- **Linear Adapter**: Simple projection (model_a → model_b)
+- **Affine Adapter**: Learned scale + shift
+- **LoRA Adapter**: Low-rank adaptation on all transformer layers (r=16)
+
+#### 5. **Token-Initialized Compression** (Lines 1300-1332)
+- Uses actual token embeddings instead of random initialization
+- Compresses 200+ tokens → 64 tokens
+- Includes z vector analysis (shape, mean, std)
+
+### Platform Detection & Config
+
+The scripts implement intelligent platform detection:
+
+**get_device_and_config() function (Lines 35-94)**:
+```python
+if use_mps and torch.backends.mps.is_available():
+    # Mac (MPS) config:
+    - batch_size: 4
+    - num_samples: 1000
+    - epochs: 2
+    - use_bf16: False
+    - use_flash_attention: False
+    - grad_accum_steps: 8
+    
+else:  # HPC (CUDA) config:
+    - batch_size: 16
+    - num_samples: 10000
+    - epochs: 10
+    - use_bf16: torch.cuda.is_bf16_supported() (H100 supports)
+    - use_flash_attention: True (H100 optimized)
+    - grad_accum_steps: 4
+```
+
+### Procrustes Experiment Flow (Lines 529-737)
+
+1. **Model Loading** (Lines 554-598)
+   - Llama 3.1 8B → GPU 0
+   - Mistral 7B v0.3 → GPU 1
+   - Cross-GPU inference with proper device placement
+
+2. **Calibration** (Lines 610-622)
+   - Uses SQuAD dataset (50 samples default)
+   - Extracts hidden states for layer alignment
+
+3. **Multi-layer Testing** (Lines 625-735)
+   - Tests layers: [0, 8, 16, 24, 32]
+   - Fits Procrustes transformations (Mistral→Llama, Llama→Mistral)
+   - Tests generation with 5 test prompts
+   - Outputs CKA scores and generation quality metrics
+
+### Compression Ablations Script
+
+**compression_ablations.py** (100+ lines):
+- Tests compression ratios: 32, 64, 128 tokens
+- Tests architectures: CrossAttention, Convolution, Pooling
+- Tests loss weightings: KD, CE, contrastive
+- Supports parallel execution on 4 GPUs (one per config)
+- Outputs: metrics.json, training logs, evaluation results
+
+**run_compression_ablations.sh** modes:
+- `single`: Run one config on specified GPU
+- `parallel`: Run 4 configs simultaneously (GPUs 0-3)
+- `full`: Run all 27 ablations (27 configs × multiple runs)
+- `test`: Quick test with 100 samples
+
+### Results Organization
+
+**runs/unified_experiments/**:
+- `procrustes_results_*.json`: Cross-model alignment metrics by layer
+- `unified_experiments_*.log`: Full execution logs with timestamps
+
+**runs/learned_adapters/**:
+- `linear_gpu0_*.log`: Linear adapter training on GPU 0
+- `affine_gpu1_*.log`: Affine adapter training on GPU 1
+- `lora_gpu2_*.log` or `lora_gpu3_*.log`: LoRA adapter training
+- All logs timestamped with YYYYMMDD_HHMMSS format
+
+### Archive Structure (Old Experiments)
+
+The `archive/` folder contains superseded experiments:
+- `procrustes_fixed_ablation.py`: Previous Procrustes implementation
+- `learned_adapter_ablation.py`: Previous adapter training
+- `cross_model_ablation.py`: Previous cross-model alignment
+- Multiple `run_*.sh` scripts for each
+
+### COCONUT Reproduction
+
+The `reproduce_coconut/` folder contains independent work:
+- **Purpose**: Reproduce COCONUT (Contrastive Model Distillation) baseline
+- **Datasets**: SQuAD, HotpotQA, GSM8K, ProntoQA
+- **Args**: YAML configs for different dataset/model combinations
+- **Status**: Separate from main LatentWire experiments
+
+### Current Model Defaults
+
+**Procrustes & Adapters**:
+- Source model A: Llama 3.1 8B
+- Source model B: Mistral 7B v0.3
+- Dataset: SQuAD (50-10,000 samples depending on mode)
+- Max sequence length: 512 tokens
+- Batch size: 4 (Mac) or 16 (HPC)
+
+**Compression Ablations**:
+- Model: Llama 3.1 8B Instruct
+- Dataset: SQuAD
+- Compression targets: 32, 64, 128 tokens
+- Training samples: 10,000
+- Eval samples: 1,000
+- Epochs: 10
+
+### Key Configuration Variables
+
+**unified_cross_model_experiments.py**:
+```python
+LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
+MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
+BATCH_SIZE = PLATFORM_CONFIG['batch_size']  # 4 (Mac) or 16 (HPC)
+EPOCHS = PLATFORM_CONFIG['epochs']          # 2 (Mac) or 10 (HPC)
+NUM_SAMPLES = PLATFORM_CONFIG['num_samples']  # 1000 (Mac) or 10000 (HPC)
+TEMPERATURE = 0.07                          # InfoNCE contrastive loss
+CONTRASTIVE_WEIGHT = 0.3                    # Relative to generation loss
+ALIGNMENT_LAYERS = [8, 16, 24]              # Multi-layer alignment
+LAYERS_TO_TEST = [0, 8, 16, 24, 32]         # For Procrustes ablation
+CALIBRATION_SIZE = 50                       # Samples for alignment
+```
+
+### Critical Issues to Fix
+
+1. **GPU Configuration Mismatch** (PRIORITY 1)
+   - run_unified_experiments.sh only uses GPUs 0,1
+   - Should use CUDA_VISIBLE_DEVICES=0,1,2,3
+   - Header comment in unified_cross_model_experiments.py is outdated
+   - Python code correctly detects 3+ GPUs but never gets the chance
+
+2. **Documentation Drift**
+   - Bash script claims 4 GPUs but allocates 2
+   - Python header comment (lines 6-10) doesn't match actual behavior
+   - Bash output (lines 93-98) shows idealized GPU allocation
+
+3. **LoRA Placement**
+   - Current: Sequential after Linear/Affine on GPU 0
+   - Could be improved: Use GPU 2 in parallel instead
+
+### Next Steps
+
+1. Update `run_unified_experiments.sh` line 40:
+   ```bash
+   export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}
+   ```
+
+2. Update header comment in `unified_cross_model_experiments.py` to reflect actual 4-GPU allocation
+
+3. Optionally modify main() to use GPU 2 for LoRA in parallel:
+   ```python
+   p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
+   p3.start()
+   processes.extend([p3])
+   ```
+
+4. Document GPU memory requirements for each adapter type
+
+### Experiment Execution Workflow
+
+**On Mac**:
+```bash
+cd experimental/learning
+bash run_unified_experiments.sh  # Uses MPS or CPU
+```
+
+**On HPC** (with update):
+```bash
+cd experimental/learning
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+bash run_unified_experiments.sh  # Uses all 4 GPUs
+```
+
+**Expected Timeline** (with 4 GPUs post-fix):
+- Procrustes (CPU): ~5-10 minutes
+- Linear + Affine (parallel): ~30-60 minutes each
+- LoRA (parallel): ~30-60 minutes
+- Token compression: ~20-30 minutes
+- **Total**: ~2-3 hours (vs 4+ hours with sequential)
+

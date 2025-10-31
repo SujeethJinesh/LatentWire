@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Unified cross-model alignment experiments combining Procrustes and learned adapters.
-Optimized for 2 GPUs instead of 4.
+Optimized for 4 H100 GPUs.
 
-GPU allocation:
-- GPU 0: Linear adapter
-- GPU 1: Affine adapter
-- CPU: Procrustes alignment (no GPU needed)
-- LoRA: Run sequentially after Linear/Affine complete
+GPU allocation (with 4 GPUs):
+- GPU 0: Linear adapter (parallel)
+- GPU 1: Affine adapter (parallel)
+- GPU 2: LoRA adapter (parallel)
+- GPU 3: Available for overflow/future experiments
+- Procrustes: CPU (no GPU needed)
 """
 
 import torch
