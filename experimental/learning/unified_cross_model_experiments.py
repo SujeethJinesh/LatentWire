@@ -778,8 +778,9 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
     dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-    # Move adapter to device
-    adapter = adapter.to(device)
+    # Move adapter to device with correct dtype (must match model dtype)
+    dtype = torch.bfloat16 if USE_BF16 else torch.float32
+    adapter = adapter.to(device, dtype=dtype)
     optimizer = torch.optim.AdamW(adapter.parameters(), lr=LEARNING_RATE)
 
     # Add cosine annealing scheduler (as mentioned in comments)
@@ -1183,13 +1184,14 @@ def run_token_compression_experiment(
     # Create compressor
     d_z = 256  # Latent dimension (16x compression from 4096)
     print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
+    dtype = torch.bfloat16 if USE_BF16 else torch.float32
     compressor = TokenInitializedCompressor(
         model=model,
         tokenizer=tokenizer,
         compressed_length=compressed_length,
         hidden_dim=model.config.hidden_size,
         d_z=d_z
-    ).to(device)
+    ).to(device, dtype=dtype)
 
     # Load dataset
     print(f"Loading SQuAD dataset ({num_samples} samples)...")

@@ -2,6 +2,65 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🔧 DTYPE MISMATCH FIX (2025-10-31 10:30)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Critical Bug: BFloat16/Float32 Dtype Mismatch
+
+**Issue**: All adapter experiments (Linear, Affine, LoRA) and token compression failed with:
+```
+RuntimeError: mat1 and mat2 must have the same dtype, but got BFloat16 and Float
+```
+
+**Root Cause**:
+- Models loaded in bfloat16 on H100 for efficiency (line 1142: `torch_dtype=torch.bfloat16`)
+- Adapter modules created in float32 by default (PyTorch nn.Module default)
+- When bfloat16 tensors passed through float32 adapters → dtype mismatch
+
+**Analysis from Logs** (`unified_experiments_20251031_095634.log`):
+- Line 203: Affine adapter failed with BFloat16/Float mismatch
+- Line 227: Linear adapter failed with same error
+- Line 266: LoRA adapter failed with same error
+- Line 328: Token compression failed with same error
+- All failures occurred at first forward pass when model outputs hit adapter layers
+
+**Fix Applied**:
+Two locations in `unified_cross_model_experiments.py`:
+
+1. **Adapter training (line 782)**: Changed from
+   ```python
+   adapter = adapter.to(device)
+   ```
+   to:
+   ```python
+   dtype = torch.bfloat16 if USE_BF16 else torch.float32
+   adapter = adapter.to(device, dtype=dtype)
+   ```
+
+2. **Token compression (line 1192)**: Changed from
+   ```python
+   compressor = TokenInitializedCompressor(...).to(device)
+   ```
+   to:
+   ```python
+   dtype = torch.bfloat16 if USE_BF16 else torch.float32
+   compressor = TokenInitializedCompressor(...).to(device, dtype=dtype)
+   ```
+
+**Why This Works**:
+- `USE_BF16 = PLATFORM_CONFIG['use_bf16']` is True on HPC with H100s
+- `.to(device, dtype=dtype)` converts all module parameters to bfloat16
+- Now adapters and models use same dtype → no mismatch
+
+**Expected Results**:
+- All adapter experiments should now train successfully
+- Token compression should work with proper dtype alignment
+- No performance degradation (bfloat16 is native H100 precision)
+
+**Status**: Fix committed and ready for HPC re-run.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 📊 CODEBASE ANALYSIS & 4-GPU CONFIGURATION (2025-10-31)
 ## ═══════════════════════════════════════════════════════════════════════════
 
