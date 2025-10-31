@@ -187,7 +187,7 @@ NUM_SAMPLES = PLATFORM_CONFIG['num_samples']
 GRAD_ACCUM_STEPS = PLATFORM_CONFIG['grad_accum_steps']
 USE_BF16 = PLATFORM_CONFIG['use_bf16']
 USE_FLASH_ATTENTION = PLATFORM_CONFIG['use_flash_attention']
-MAX_LENGTH = 512  # Maximum sequence length for tokenization
+MAX_LENGTH = 256  # Reduced from 512 to halve activation memory
 
 # Contrastive Learning Parameters (NEW from 2025 research)
 TEMPERATURE = 0.07  # Optimal for InfoNCE loss
@@ -195,8 +195,9 @@ CONTRASTIVE_WEIGHT = 0.3  # Weight for contrastive loss vs generation loss
 NUM_NEGATIVES = 127  # Number of negative samples
 
 # Multi-layer alignment (prevents single-point failure)
-ALIGNMENT_LAYERS = [8, 16, 24]  # Align multiple layers simultaneously
-LAYER_WEIGHTS = [0.2, 0.5, 0.3]  # Weight importance of each layer
+# REDUCED to single layer to save memory (was [8, 16, 24])
+ALIGNMENT_LAYERS = [16]  # Middle layer for balance between early/late representations
+LAYER_WEIGHTS = [1.0]  # Single layer gets full weight
 LAYER_IDX = 16  # Default for backward compatibility
 
 # Layers to test for Procrustes
@@ -1366,6 +1367,13 @@ def main():
     with open(procrustes_path, 'w') as f:
         json.dump(procrustes_results, f, indent=2)
     print(f"Procrustes results saved to: {procrustes_path}")
+
+    # CRITICAL: Clean up GPU memory after Procrustes before adapter experiments
+    print("\nCleaning up GPU memory...")
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        print("  GPU cache cleared")
 
     # Run learned adapter experiments
     print("\n2. Starting learned adapter experiments...")
