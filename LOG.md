@@ -8878,3 +8878,95 @@ Original experiments failed because they lacked:
 
 The enhanced framework addresses all these issues based on proven 2024 research. We expect significant improvement from ~0.3 to ~0.7 CKA scores, making cross-model alignment actually viable.
 
+
+## 12. SQuAD Compression with Learned Pooling (2025-10-30)
+
+### 12.1 Architecture Decision: Pure Sequence Compression
+
+After alignment discussion, implementing **pure sequence compression** with NO dimension changes:
+- Input: Full SQuAD prompt embeddings `[200+, 4096]`
+- Output: Compressed representation `[M, 4096]` where M ∈ {32, 64, 128}
+- Key constraint: Dimensions stay at 4096 throughout for `inputs_embeds` compatibility
+
+### 12.2 Three Compression Architectures
+
+#### Cross-Attention Pooling (Primary)
+```python
+class CrossAttentionCompressor(nn.Module):
+    def __init__(self, target_length=64, hidden_dim=4096):
+        # M learnable queries attend to full sequence
+        self.queries = nn.Parameter(torch.randn(target_length, hidden_dim) * 0.02)
+        self.cross_attn = nn.MultiheadAttention(
+            embed_dim=hidden_dim, num_heads=32, batch_first=True
+        )
+```
+- Most flexible - can select information from anywhere
+- Similar to Perceiver, Set Transformer approaches
+- Interpretable via attention weights
+
+#### Convolutional Compression
+- Strided 1D convolution for downsampling
+- Better for maintaining local structure
+- Depthwise + pointwise for efficiency
+
+#### Weighted Pooling
+- Learn importance weights for windowed averaging
+- Simplest and most interpretable
+- Position-specific projections
+
+### 12.3 Training Strategy
+
+**Loss Functions (Combined):**
+1. **Teacher-Forcing Loss** (50%): Direct supervision on answer generation
+2. **KL Distillation** (30%): Match teacher's output distribution
+3. **Contrastive Loss** (20%): Prevent mode collapse
+
+**Key Innovations:**
+- Different learning rates: Compressor (1e-4), LoRA (5e-5)
+- Cosine annealing with 5% warmup
+- Gradient accumulation for effective batch size 32
+
+### 12.4 Ablation Grid (27 configurations)
+
+| Dimension | Values |
+|-----------|--------|
+| Compression Ratio | 32, 64, 128 tokens |
+| Architecture | cross_attention, conv, pooling |
+| Loss Weights | task-focused, balanced, distillation-focused |
+
+### 12.5 Expected Results
+
+| Compression | Target F1 | Acceptable F1 | Compression Ratio |
+|------------|-----------|---------------|-------------------|
+| 128 tokens | >95% | >90% | 1.56× |
+| 64 tokens | >85% | >75% | 3.1× |
+| 32 tokens | >70% | >60% | 6.25× |
+
+### 12.6 Implementation Files
+- `compression_ablations.py`: Main training script with all architectures
+- `run_compression_ablations.sh`: Bash wrapper for parallel GPU execution
+
+**Usage:**
+```bash
+# Quick test with minimal samples
+bash run_compression_ablations.sh test
+
+# Single configuration
+bash run_compression_ablations.sh single 64 cross_attention 0
+
+# Run 4 configs in parallel on 4 GPUs
+bash run_compression_ablations.sh parallel
+
+# Full 27-config ablation suite
+bash run_compression_ablations.sh full
+```
+
+### 12.7 Why This Approach?
+
+**Critical Insights:**
+1. **No dimension bottleneck**: Keeping 4096 dims preserves information capacity
+2. **Learned selection**: Cross-attention learns what to keep vs discard
+3. **Task-specific training**: Direct SQuAD supervision ensures answer preservation
+4. **Anti-collapse measures**: Contrastive loss prevents all inputs → same compression
+
+This addresses the fundamental issue: We need to SELECT information, not just compress it. The model learns which parts of the context contain answer-relevant information.
