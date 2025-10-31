@@ -717,24 +717,131 @@ def run_procrustes_experiment():
 
         print(f"\nTesting generation...")
         for prompt_idx, prompt in enumerate(TEST_PROMPTS, 1):
+            print(f"  Prompt {prompt_idx}/5: {prompt[:50]}...")
+
             # Baseline: Mistral → Mistral (identity)
+            print(f"    Testing Mistral→Mistral (baseline)...")
             mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(mistral_device)
             with torch.no_grad():
                 output = mistral_model.generate(**mistral_inputs, max_new_tokens=20, do_sample=False)
             generated = mistral_tokenizer.decode(output[0], skip_special_tokens=True)
             layer_results["mistral_to_mistral"][f"prompt_{prompt_idx}"] = generated
+            print(f"      Generated: {generated[:80]}")
 
             # Baseline: Llama → Llama (identity)
+            print(f"    Testing Llama→Llama (baseline)...")
             llama_inputs = llama_tokenizer(prompt, return_tensors="pt").to(llama_device)
             with torch.no_grad():
                 output = llama_model.generate(**llama_inputs, max_new_tokens=20, do_sample=False)
             generated = llama_tokenizer.decode(output[0], skip_special_tokens=True)
-            layer_results["llama_to_llama"] = {f"prompt_{prompt_idx}": generated}
+            layer_results["llama_to_llama"][f"prompt_{prompt_idx}"] = generated
+            print(f"      Generated: {generated[:80]}")
 
-            # Cross-model generation would require more complex injection
-            # For now, we'll just store the alignment quality metrics
+            # Cross-model: Llama → Mistral
+            print(f"    Testing Llama→Mistral (cross-model via Procrustes)...")
+            try:
+                # Get Llama hidden states at this layer
+                with torch.no_grad():
+                    llama_outputs = llama_model(
+                        **llama_inputs,
+                        output_hidden_states=True
+                    )
+                    llama_hidden = llama_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
+
+                    # Apply Procrustes transformation
+                    original_shape = llama_hidden.shape
+                    llama_hidden_flat = llama_hidden.reshape(-1, llama_hidden.shape[-1])
+                    transformed = llama_to_mistral.transform(llama_hidden_flat.float())
+                    transformed = transformed.reshape(original_shape).to(llama_hidden.dtype)
+
+                    # Measure transformation quality
+                    transform_norm = torch.norm(transformed - llama_hidden).item()
+                    print(f"      Transformation norm: {transform_norm:.4f}")
+
+                    # Try to continue generation with transformed hidden states
+                    # Note: This is a simplified approach - proper injection would require
+                    # modifying the model's forward pass to start from intermediate layer
+                    # For now, we use the transformation as inputs_embeds
+                    mistral_output = mistral_model.generate(
+                        inputs_embeds=transformed.to(mistral_device),
+                        max_new_tokens=20,
+                        do_sample=False
+                    )
+                    generated = mistral_tokenizer.decode(mistral_output[0], skip_special_tokens=True)
+                    layer_results["llama_to_mistral"][f"prompt_{prompt_idx}"] = generated
+                    print(f"      Generated: {generated[:80]}")
+
+            except Exception as e:
+                error_msg = f"Failed: {str(e)}"
+                layer_results["llama_to_mistral"][f"prompt_{prompt_idx}"] = error_msg
+                print(f"      {error_msg}")
+
+            # Cross-model: Mistral → Llama
+            print(f"    Testing Mistral→Llama (cross-model via Procrustes)...")
+            try:
+                # Get Mistral hidden states at this layer
+                with torch.no_grad():
+                    mistral_outputs = mistral_model(
+                        **mistral_inputs,
+                        output_hidden_states=True
+                    )
+                    mistral_hidden = mistral_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
+
+                    # Apply Procrustes transformation
+                    original_shape = mistral_hidden.shape
+                    mistral_hidden_flat = mistral_hidden.reshape(-1, mistral_hidden.shape[-1])
+                    transformed = mistral_to_llama.transform(mistral_hidden_flat.float())
+                    transformed = transformed.reshape(original_shape).to(mistral_hidden.dtype)
+
+                    # Measure transformation quality
+                    transform_norm = torch.norm(transformed - mistral_hidden).item()
+                    print(f"      Transformation norm: {transform_norm:.4f}")
+
+                    # Try to continue generation with transformed hidden states
+                    llama_output = llama_model.generate(
+                        inputs_embeds=transformed.to(llama_device),
+                        max_new_tokens=20,
+                        do_sample=False
+                    )
+                    generated = llama_tokenizer.decode(llama_output[0], skip_special_tokens=True)
+                    layer_results["mistral_to_llama"][f"prompt_{prompt_idx}"] = generated
+                    print(f"      Generated: {generated[:80]}")
+
+            except Exception as e:
+                error_msg = f"Failed: {str(e)}"
+                layer_results["mistral_to_llama"][f"prompt_{prompt_idx}"] = error_msg
+                print(f"      {error_msg}")
 
         results[f"layer_{layer_idx}"] = layer_results
+
+    # Print summary statistics
+    print("\n" + "=" * 80)
+    print("PROCRUSTES EXPERIMENT SUMMARY")
+    print("=" * 80)
+
+    for layer_idx in LAYERS_TO_TEST:
+        layer_key = f"layer_{layer_idx}"
+        if layer_key in results:
+            layer_data = results[layer_key]
+
+            # Count successes/failures
+            mistral_mistral_count = len([v for v in layer_data.get("mistral_to_mistral", {}).values() if not v.startswith("Failed")])
+            llama_llama_count = len([v for v in layer_data.get("llama_to_llama", {}).values() if not v.startswith("Failed")])
+            llama_mistral_count = len([v for v in layer_data.get("llama_to_mistral", {}).values() if not v.startswith("Failed")])
+            mistral_llama_count = len([v for v in layer_data.get("mistral_to_llama", {}).values() if not v.startswith("Failed")])
+
+            llama_mistral_failed = len([v for v in layer_data.get("llama_to_mistral", {}).values() if v.startswith("Failed")])
+            mistral_llama_failed = len([v for v in layer_data.get("mistral_to_llama", {}).values() if v.startswith("Failed")])
+
+            print(f"\nLayer {layer_idx}:")
+            print(f"  Baselines:")
+            print(f"    Mistral→Mistral: {mistral_mistral_count}/5 succeeded")
+            print(f"    Llama→Llama: {llama_llama_count}/5 succeeded")
+            print(f"  Cross-model:")
+            print(f"    Llama→Mistral: {llama_mistral_count}/5 succeeded, {llama_mistral_failed}/5 failed")
+            print(f"    Mistral→Llama: {mistral_llama_count}/5 succeeded, {mistral_llama_failed}/5 failed")
+
+    print("=" * 80)
 
     return results
 

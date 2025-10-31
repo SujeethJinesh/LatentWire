@@ -2,6 +2,101 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🔬 PROCRUSTES CROSS-MODEL GENERATION IMPLEMENTED (2025-10-31 13:00)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Issue: Cross-Model Generation Was Not Implemented
+
+**User observation**: Procrustes results JSON showed empty cross-model generation fields:
+- `llama_to_mistral`: {} (completely empty)
+- `mistral_to_llama`: {} (completely empty)
+
+**Root cause discovered** (line 734-735):
+```python
+# Cross-model generation would require more complex injection
+# For now, we'll just store the alignment quality metrics
+```
+
+**The cross-model generation was never implemented.** It was just a TODO comment. The Procrustes experiment:
+- ✅ Computed alignment transformations (orthogonal matrices)
+- ✅ Measured orthogonality errors
+- ❌ **Never tested if transformations actually work for generation**
+
+This is a critical gap - we're computing alignments but not validating them.
+
+### Implementation: Cross-Model Generation with Procrustes
+
+**What I implemented** (lines 740-813):
+
+For each test prompt and each layer, now performs:
+
+1. **Llama → Mistral**:
+   - Get Llama hidden states at layer_idx
+   - Apply Procrustes transformation (llama_to_mistral)
+   - Measure transformation norm (quality metric)
+   - Use transformed states as inputs_embeds for Mistral generation
+   - Capture generated text or error message
+
+2. **Mistral → Llama**:
+   - Same process in reverse direction
+   - Apply mistral_to_llama transformation
+   - Generate with Llama using transformed states
+
+**Comprehensive logging added**:
+- Per-prompt progress: "Prompt 1/5: The capital of France..."
+- Per-test status: "Testing Llama→Mistral (cross-model via Procrustes)..."
+- Transformation quality: "Transformation norm: 0.1234"
+- Generation results: "Generated: The capital of France is..."
+- Error handling: "Failed: dimension mismatch..." (if errors occur)
+
+**Summary statistics** (lines 817-844):
+- Counts successes/failures per layer
+- Clear breakdown: "Llama→Mistral: 3/5 succeeded, 2/5 failed"
+- Easy to see which layers work well for cross-model generation
+
+### Why This Matters
+
+**Scientific validation**: Orthogonality error is a mathematical metric, but we need to verify the transformations actually enable cross-model generation in practice.
+
+**Diagnostic value**:
+- If cross-model generation fails, we'll see why (error messages)
+- Transformation norms show how much the representations change
+- Can compare quality across layers to find best alignment points
+
+**Complete picture**: Now we test:
+1. Procrustes mathematical quality (orthogonality error)
+2. Learned adapter training quality (CKA similarity)
+3. **NEW**: Procrustes generation quality (actual cross-model text)
+
+### Technical Note
+
+The implementation uses transformed hidden states as `inputs_embeds`. This is a simplified approach - proper mid-layer injection would require modifying the forward pass to start from an intermediate layer. However, this gives us:
+- A working baseline to validate transformations
+- Clear error messages if something fails
+- Easy comparison with learned adapters
+
+### Expected Output
+
+Next run will show:
+```
+Testing Layer 16:
+  Prompt 1/5: The capital of France...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The capital of France is Paris...
+    Testing Llama→Llama (baseline)...
+      Generated: The capital of France is Paris...
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 0.1234
+      Generated: The capital of France is...
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 0.0987
+      Generated: The capital of France is...
+```
+
+**Status**: Cross-model generation implemented with comprehensive logging. Ready for HPC re-run.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## ⏸️ PREEMPTED RUN: Partial Results Analysis (2025-10-31 12:50)
 ## ═══════════════════════════════════════════════════════════════════════════
 
