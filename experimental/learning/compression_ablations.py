@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from torch.nn.parallel import DataParallel
 from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
+from transformers import get_cosine_schedule_with_warmup
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
@@ -70,9 +70,10 @@ class CompressionConfig:
 
     def __post_init__(self):
         if self.loss_weights is None:
+            # Default: Balanced between teacher-forcing and generation
             self.loss_weights = {
                 'teacher_forcing': 0.5,
-                'kl_distill': 0.3,
+                'generation': 0.3,
                 'contrastive': 0.2
             }
 
@@ -308,31 +309,62 @@ class SQuADCompressionDataset(Dataset):
     def __getitem__(self, idx):
         item = self.data[idx]
 
-        # Tokenize prompt
+        # Tokenize prompt (NO padding - done in collate_fn)
         prompt_tokens = self.tokenizer(
             item['prompt'],
             max_length=self.max_length,
             truncation=True,
-            padding='max_length',
-            return_tensors='pt'
+            padding=False,  # Dynamic padding in batch
+            return_tensors=None
         )
 
         # Tokenize answer
         answer_tokens = self.tokenizer(
             item['answer'],
-            max_length=32,  # Answers are typically short
+            max_length=32,
             truncation=True,
-            padding='max_length',
-            return_tensors='pt'
+            padding=False,
+            return_tensors=None
         )
 
         return {
-            'input_ids': prompt_tokens['input_ids'].squeeze(0),
-            'attention_mask': prompt_tokens['attention_mask'].squeeze(0),
-            'answer_ids': answer_tokens['input_ids'].squeeze(0),
-            'answer_mask': answer_tokens['attention_mask'].squeeze(0),
+            'input_ids': prompt_tokens['input_ids'],
+            'attention_mask': prompt_tokens['attention_mask'],
+            'answer_ids': answer_tokens['input_ids'],
+            'answer_mask': answer_tokens['attention_mask'],
             'answer_text': item['answer']
         }
+
+    @staticmethod
+    def collate_fn(tokenizer):
+        """Create collate function with dynamic padding."""
+        def collate(batch):
+            # Extract fields
+            input_ids = [torch.tensor(item['input_ids']) for item in batch]
+            attention_masks = [torch.tensor(item['attention_mask']) for item in batch]
+            answer_ids = [torch.tensor(item['answer_ids']) for item in batch]
+            answer_masks = [torch.tensor(item['answer_mask']) for item in batch]
+            answer_texts = [item['answer_text'] for item in batch]
+
+            # Pad to max length in batch (not global max)
+            from torch.nn.utils.rnn import pad_sequence
+            input_ids_padded = pad_sequence(input_ids, batch_first=True,
+                                           padding_value=tokenizer.pad_token_id)
+            attention_masks_padded = pad_sequence(attention_masks, batch_first=True,
+                                                 padding_value=0)
+            answer_ids_padded = pad_sequence(answer_ids, batch_first=True,
+                                            padding_value=tokenizer.pad_token_id)
+            answer_masks_padded = pad_sequence(answer_masks, batch_first=True,
+                                              padding_value=0)
+
+            return {
+                'input_ids': input_ids_padded,
+                'attention_mask': attention_masks_padded,
+                'answer_ids': answer_ids_padded,
+                'answer_mask': answer_masks_padded,
+                'answer_text': answer_texts
+            }
+        return collate
 
 
 # ============================================================================
@@ -353,9 +385,15 @@ class CompressionTrainer:
         # Initialize metrics
         self.metrics = {
             'train_loss': [],
+            'teacher_forcing_loss': [],
+            'generation_loss': [],
+            'contrastive_loss': [],
             'eval_f1': [],
             'eval_em': [],
-            'compression_ratio': config.max_input_length / config.target_length
+            'baseline_f1': None,
+            'baseline_em': None,
+            'compression_ratio': config.max_input_length / config.target_length,
+            'sample_predictions': []
         }
 
     def setup_model(self):
@@ -437,13 +475,14 @@ class CompressionTrainer:
             max_length=self.config.max_input_length
         )
 
-        # Create dataloaders
+        # Create dataloaders with dynamic padding
         self.train_loader = DataLoader(
             self.train_dataset,
             batch_size=self.config.batch_size,
             shuffle=True,
             num_workers=4,
-            pin_memory=True
+            pin_memory=True,
+            collate_fn=SQuADCompressionDataset.collate_fn(self.tokenizer)
         )
 
         self.eval_loader = DataLoader(
@@ -451,44 +490,49 @@ class CompressionTrainer:
             batch_size=self.config.batch_size * 2,  # Can use larger batch for eval
             shuffle=False,
             num_workers=4,
-            pin_memory=True
+            pin_memory=True,
+            collate_fn=SQuADCompressionDataset.collate_fn(self.tokenizer)
         )
 
     def compute_loss(self, batch):
-        """Compute training loss with multiple components."""
+        """Compute training loss with multiple components.
+
+        CRITICAL FIXES:
+        1. Teacher-forcing uses correct indexing (answer_start, not answer_start-1)
+        2. KL distillation REMOVED (misaligned positions made it meaningless)
+        3. Added generation loss to match eval objective
+        4. Contrastive uses first token (CLS-like) instead of mean pooling
+        """
         # Move batch to device
         input_ids = batch['input_ids'].to(self.device)
         attention_mask = batch['attention_mask'].to(self.device)
         answer_ids = batch['answer_ids'].to(self.device)
         answer_mask = batch['answer_mask'].to(self.device)
 
-        # Get full embeddings
+        # Get full embeddings (frozen - no gradients)
         with torch.no_grad():
             full_embeds = self.embed_layer(input_ids)
 
         # Compress
         compressed, attn_weights = self.compressor(full_embeds)
 
-        # Forward pass through model with compressed inputs
-        outputs = self.model(inputs_embeds=compressed)
-        student_logits = outputs.logits
-
         losses = {}
 
         # 1. Teacher-forcing loss on answer generation
-        if self.config.loss_weights['teacher_forcing'] > 0:
-            # Generate answer autoregressively with teacher forcing
+        if self.config.loss_weights.get('teacher_forcing', 0) > 0:
             # Append answer tokens to compressed sequence
-            answer_embeds = self.embed_layer(answer_ids)
+            with torch.no_grad():
+                answer_embeds = self.embed_layer(answer_ids)
+
             combined = torch.cat([compressed, answer_embeds], dim=1)
 
             # Forward pass with combined sequence
             combined_outputs = self.model(inputs_embeds=combined)
             combined_logits = combined_outputs.logits
 
-            # Compute loss on answer portion
+            # Compute loss on answer portion (FIXED: was answer_start-1, now answer_start)
             answer_start = compressed.size(1)
-            answer_logits = combined_logits[:, answer_start-1:-1, :]
+            answer_logits = combined_logits[:, answer_start:-1, :]  # Predict answer tokens
 
             # Flatten for cross-entropy
             loss_fct = nn.CrossEntropyLoss(ignore_index=self.tokenizer.pad_token_id)
@@ -498,26 +542,35 @@ class CompressionTrainer:
             )
             losses['teacher_forcing'] = teacher_forcing_loss
 
-        # 2. KL distillation from full model
-        if self.config.loss_weights['kl_distill'] > 0:
+        # 2. Generation loss (ADDED: matches eval objective)
+        # Generate from compressed representation and compare to answers
+        if self.config.loss_weights.get('generation', 0) > 0:
+            # Generate greedily
             with torch.no_grad():
-                # Get teacher outputs with full input
-                teacher_outputs = self.base_model(input_ids=input_ids, attention_mask=attention_mask)
-                teacher_logits = teacher_outputs.logits
+                generated_ids = self.model.generate(
+                    inputs_embeds=compressed,
+                    max_new_tokens=answer_ids.size(1),
+                    do_sample=False,
+                    pad_token_id=self.tokenizer.pad_token_id
+                )
 
-            # KL divergence on overlapping positions
-            min_len = min(student_logits.size(1), teacher_logits.size(1))
-            kl_loss = F.kl_div(
-                F.log_softmax(student_logits[:, :min_len, :] / 3.0, dim=-1),
-                F.softmax(teacher_logits[:, :min_len, :] / 3.0, dim=-1).detach(),
-                reduction='batchmean'
+            # Compute token-level accuracy loss
+            # Get logits for generated sequence
+            gen_embeds = self.embed_layer(generated_ids)
+            gen_outputs = self.model(inputs_embeds=gen_embeds)
+            gen_logits = gen_outputs.logits[:, -answer_ids.size(1):, :]
+
+            generation_loss = loss_fct(
+                gen_logits.reshape(-1, gen_logits.size(-1)),
+                answer_ids.reshape(-1)
             )
-            losses['kl_distill'] = kl_loss
+            losses['generation'] = generation_loss
 
-        # 3. Contrastive loss to prevent collapse
-        if self.config.loss_weights['contrastive'] > 0 and compressed.size(0) > 1:
-            # Normalize compressed representations
-            compressed_norm = F.normalize(compressed.mean(dim=1), p=2, dim=-1)
+        # 3. Contrastive loss to prevent collapse (FIXED: use first token, not mean)
+        if self.config.loss_weights.get('contrastive', 0) > 0 and compressed.size(0) > 1:
+            # Use first token as representation (CLS-like)
+            compressed_repr = compressed[:, 0, :]  # [batch, hidden_dim]
+            compressed_norm = F.normalize(compressed_repr, p=2, dim=-1)
 
             # Compute pairwise similarities
             sim_matrix = torch.matmul(compressed_norm, compressed_norm.t())
@@ -533,9 +586,9 @@ class CompressionTrainer:
             contrastive_loss = torch.relu(off_diagonal - 0.3)  # Target max similarity of 0.3
             losses['contrastive'] = contrastive_loss
 
-        # Combine losses
+        # Combine losses (KL_DISTILL REMOVED - was broken)
         total_loss = sum(
-            self.config.loss_weights[k] * v
+            self.config.loss_weights.get(k, 0) * v
             for k, v in losses.items()
             if k in self.config.loss_weights
         )
@@ -543,11 +596,17 @@ class CompressionTrainer:
         return total_loss, losses
 
     def train_epoch(self, epoch):
-        """Train for one epoch."""
+        """Train for one epoch with gradient clipping and detailed loss tracking."""
         self.model.train()
         self.compressor.train()
 
         epoch_losses = []
+        epoch_component_losses = {
+            'teacher_forcing': [],
+            'generation': [],
+            'contrastive': []
+        }
+
         progress_bar = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{self.config.epochs}")
 
         for batch_idx, batch in enumerate(progress_bar):
@@ -558,30 +617,53 @@ class CompressionTrainer:
             loss = loss / self.config.gradient_accumulation
             loss.backward()
 
-            # Update weights
+            # Update weights (ADDED: gradient clipping)
             if (batch_idx + 1) % self.config.gradient_accumulation == 0:
+                # Gradient clipping to prevent explosion
+                torch.nn.utils.clip_grad_norm_(
+                    list(self.model.parameters()) + list(self.compressor.parameters()),
+                    max_norm=1.0
+                )
+
                 self.optimizer.step()
                 self.scheduler.step()
                 self.optimizer.zero_grad()
 
-            # Track metrics
+            # Track metrics (unscaled loss)
             epoch_losses.append(loss.item() * self.config.gradient_accumulation)
 
-            # Update progress bar
-            progress_bar.set_postfix({
+            # Track per-component losses
+            for key in epoch_component_losses:
+                if key in loss_dict:
+                    epoch_component_losses[key].append(loss_dict[key].item())
+
+            # Update progress bar with component losses
+            postfix = {
                 'loss': f"{epoch_losses[-1]:.4f}",
                 'lr': f"{self.scheduler.get_last_lr()[0]:.2e}"
-            })
+            }
+            if epoch_component_losses['teacher_forcing']:
+                postfix['tf'] = f"{epoch_component_losses['teacher_forcing'][-1]:.3f}"
+            if epoch_component_losses['contrastive']:
+                postfix['con'] = f"{epoch_component_losses['contrastive'][-1]:.3f}"
+
+            progress_bar.set_postfix(postfix)
+
+        # Save component losses to metrics
+        for key, values in epoch_component_losses.items():
+            if values:
+                self.metrics[f'{key}_loss'].append(np.mean(values))
 
         return np.mean(epoch_losses)
 
-    def evaluate(self):
-        """Evaluate on validation set."""
+    def evaluate(self, save_samples=True, num_samples=10):
+        """Evaluate on validation set with sample logging."""
         self.model.eval()
         self.compressor.eval()
 
         all_predictions = []
         all_references = []
+        sample_predictions = []
 
         with torch.no_grad():
             for batch in tqdm(self.eval_loader, desc="Evaluating"):
@@ -605,6 +687,15 @@ class CompressionTrainer:
 
                 all_predictions.extend(predictions)
                 all_references.extend(references)
+
+                # Save first few samples
+                if save_samples and len(sample_predictions) < num_samples:
+                    for pred, ref in zip(predictions, references):
+                        if len(sample_predictions) < num_samples:
+                            sample_predictions.append({
+                                'predicted': pred,
+                                'reference': ref
+                            })
 
         # Compute F1 and EM scores
         f1_scores = []
@@ -630,13 +721,92 @@ class CompressionTrainer:
             em = 1.0 if pred.strip().lower() == ref.strip().lower() else 0.0
             em_scores.append(em)
 
+        if save_samples:
+            self.metrics['sample_predictions'] = sample_predictions
+
         return np.mean(f1_scores), np.mean(em_scores)
 
+    def evaluate_baseline(self):
+        """Evaluate uncompressed teacher model to get baseline performance."""
+        print("Evaluating baseline (uncompressed teacher model)...")
+        self.base_model.eval()
+
+        all_predictions = []
+        all_references = []
+
+        with torch.no_grad():
+            for batch in tqdm(self.eval_loader, desc="Baseline eval"):
+                input_ids = batch['input_ids'].to(self.device)
+                attention_mask = batch['attention_mask'].to(self.device)
+
+                # Generate from FULL input (no compression)
+                outputs = self.base_model.generate(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    max_new_tokens=20,
+                    do_sample=False,
+                    pad_token_id=self.tokenizer.pad_token_id
+                )
+
+                # Decode predictions
+                predictions = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                references = batch['answer_text']
+
+                all_predictions.extend(predictions)
+                all_references.extend(references)
+
+        # Compute F1 and EM scores
+        f1_scores = []
+        em_scores = []
+
+        for pred, ref in zip(all_predictions, all_references):
+            pred_tokens = pred.lower().split()
+            ref_tokens = ref.lower().split()
+
+            common = set(pred_tokens) & set(ref_tokens)
+
+            if len(common) == 0:
+                f1 = 0.0
+            else:
+                precision = len(common) / len(pred_tokens) if pred_tokens else 0
+                recall = len(common) / len(ref_tokens) if ref_tokens else 0
+                f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+
+            f1_scores.append(f1)
+
+            em = 1.0 if pred.strip().lower() == ref.strip().lower() else 0.0
+            em_scores.append(em)
+
+        baseline_f1 = np.mean(f1_scores)
+        baseline_em = np.mean(em_scores)
+
+        # Save to metrics
+        self.metrics['baseline_f1'] = baseline_f1
+        self.metrics['baseline_em'] = baseline_em
+
+        print(f"Baseline F1: {baseline_f1:.4f}, EM: {baseline_em:.4f}")
+
+        return baseline_f1, baseline_em
+
     def train(self):
-        """Main training loop."""
-        # Setup
+        """Main training loop with baseline evaluation and proper warmup."""
+        # Setup reproducibility (ADDED)
+        torch.manual_seed(self.config.seed)
+        np.random.seed(self.config.seed)
+        torch.cuda.manual_seed_all(self.config.seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+        # Setup model and data
         self.setup_model()
         self.setup_data()
+
+        # Evaluate baseline FIRST (ADDED)
+        print("\n" + "="*80)
+        print("BASELINE EVALUATION (Uncompressed Teacher)")
+        print("="*80)
+        self.evaluate_baseline()
+        print("="*80 + "\n")
 
         # Initialize optimizer
         optimizer_groups = [
@@ -645,15 +815,18 @@ class CompressionTrainer:
         ]
         self.optimizer = AdamW(optimizer_groups, weight_decay=0.01)
 
-        # Learning rate scheduler with warmup
+        # Learning rate scheduler with PROPER warmup (FIXED)
         num_training_steps = len(self.train_loader) * self.config.epochs // self.config.gradient_accumulation
         num_warmup_steps = int(num_training_steps * self.config.warmup_ratio)
 
-        self.scheduler = CosineAnnealingWarmRestarts(
+        self.scheduler = get_cosine_schedule_with_warmup(
             self.optimizer,
-            T_0=num_training_steps - num_warmup_steps,
-            T_mult=1
+            num_warmup_steps=num_warmup_steps,
+            num_training_steps=num_training_steps
         )
+
+        print(f"Training steps: {num_training_steps}, Warmup steps: {num_warmup_steps}")
+        print(f"Batches per epoch: {len(self.train_loader)}, Grad accum: {self.config.gradient_accumulation}\n")
 
         # Training loop
         best_f1 = 0.0
@@ -668,9 +841,15 @@ class CompressionTrainer:
             self.metrics['eval_f1'].append(f1_score)
             self.metrics['eval_em'].append(em_score)
 
+            # Compute % of baseline
+            if self.metrics['baseline_f1'] is not None:
+                pct_baseline = f1_score / self.metrics['baseline_f1'] * 100
+            else:
+                pct_baseline = 0
+
             print(f"\nEpoch {epoch+1} Results:")
             print(f"  Train Loss: {avg_loss:.4f}")
-            print(f"  Eval F1: {f1_score:.4f}")
+            print(f"  Eval F1: {f1_score:.4f} ({pct_baseline:.1f}% of baseline)")
             print(f"  Eval EM: {em_score:.4f}")
 
             # Save best model
@@ -678,7 +857,7 @@ class CompressionTrainer:
                 best_f1 = f1_score
                 self.save_checkpoint(epoch, is_best=True)
 
-            # Save metrics
+            # Save metrics after each epoch
             self.save_metrics()
 
     def save_checkpoint(self, epoch, is_best=False):
@@ -708,13 +887,17 @@ class CompressionTrainer:
 # Parallel Ablation Runner
 # ============================================================================
 
-def run_single_ablation(config: CompressionConfig, gpu_id: int):
-    """Run a single ablation on specified GPU."""
+def run_single_ablation(config: CompressionConfig, gpu_id: int, result_queue=None):
+    """Run a single ablation on specified GPU.
+
+    FIXED: Results now properly returned via queue instead of lost in subprocess.
+    """
     config.gpu_id = gpu_id
 
-    # Set random seed
+    # Set random seed (full reproducibility)
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
+    torch.cuda.manual_seed_all(config.seed)
 
     print(f"\n{'='*80}")
     print(f"Starting ablation: M={config.target_length}, {config.architecture}")
@@ -725,21 +908,47 @@ def run_single_ablation(config: CompressionConfig, gpu_id: int):
         trainer = CompressionTrainer(config)
         trainer.train()
 
-        # Return final metrics
-        return {
-            'config': config,
+        # Collect final metrics
+        result = {
+            'target_length': config.target_length,
+            'architecture': config.architecture,
+            'loss_weights': config.loss_weights,
             'final_f1': trainer.metrics['eval_f1'][-1],
             'final_em': trainer.metrics['eval_em'][-1],
             'best_f1': max(trainer.metrics['eval_f1']),
+            'baseline_f1': trainer.metrics['baseline_f1'],
             'compression_ratio': trainer.metrics['compression_ratio']
         }
+
+        # Put result in queue if provided
+        if result_queue is not None:
+            result_queue.put(result)
+
+        return result
+
     except Exception as e:
+        import traceback
         print(f"Error in ablation: {e}")
-        return None
+        print(traceback.format_exc())
+
+        error_result = {
+            'error': str(e),
+            'target_length': config.target_length,
+            'architecture': config.architecture
+        }
+
+        if result_queue is not None:
+            result_queue.put(error_result)
+
+        return error_result
 
 
 def run_all_ablations():
-    """Run all ablations across 4 GPUs."""
+    """Run all ablations across 4 GPUs.
+
+    FIXED: Uses multiprocessing Queue to properly collect results.
+    """
+    from multiprocessing import Queue
 
     # Define ablation grid
     ablations = []
@@ -750,11 +959,11 @@ def run_all_ablations():
     # Architectures
     architectures = ["cross_attention", "conv", "pooling"]
 
-    # Loss weight configurations
+    # Loss weight configurations (KL REMOVED - it was broken)
     loss_configs = [
-        {'teacher_forcing': 0.7, 'kl_distill': 0.2, 'contrastive': 0.1},  # Task-focused
-        {'teacher_forcing': 0.4, 'kl_distill': 0.4, 'contrastive': 0.2},  # Balanced
-        {'teacher_forcing': 0.2, 'kl_distill': 0.6, 'contrastive': 0.2},  # Distillation-focused
+        {'teacher_forcing': 0.8, 'generation': 0.0, 'contrastive': 0.2},  # Task-focused (TF only)
+        {'teacher_forcing': 0.5, 'generation': 0.3, 'contrastive': 0.2},  # Balanced (TF + Gen)
+        {'teacher_forcing': 0.0, 'generation': 0.8, 'contrastive': 0.2},  # Generation-focused
     ]
 
     # Create all combinations
@@ -772,17 +981,22 @@ def run_all_ablations():
     print(f"Estimated time: {len(ablations) * 2} hours (assuming 2 hours per ablation)")
 
     # Run ablations in batches of 4 (one per GPU)
-    results = []
+    all_results = []
 
     for i in range(0, len(ablations), 4):
         batch = ablations[i:i+4]
         processes = []
+        result_queue = Queue()
+
+        print(f"\n{'='*80}")
+        print(f"Starting batch {i//4 + 1}/{(len(ablations) + 3)//4}")
+        print(f"{'='*80}\n")
 
         # Start processes for this batch
         for j, config in enumerate(batch):
             p = mp.Process(
-                target=lambda c, g: results.append(run_single_ablation(c, g)),
-                args=(config, j % 4)
+                target=run_single_ablation,
+                args=(config, j % 4, result_queue)
             )
             p.start()
             processes.append(p)
@@ -791,25 +1005,32 @@ def run_all_ablations():
         for p in processes:
             p.join()
 
+        # Collect results from queue
+        while not result_queue.empty():
+            result = result_queue.get()
+            all_results.append(result)
+
     # Save all results
     results_file = Path("runs/compression_ablations/all_results.json")
     results_file.parent.mkdir(parents=True, exist_ok=True)
 
     with open(results_file, 'w') as f:
-        json.dump(results, f, indent=2, default=str)
+        json.dump(all_results, f, indent=2, default=str)
 
     print(f"\nAll ablations complete! Results saved to {results_file}")
 
     # Print summary
     print("\n" + "="*80)
-    print("ABLATION SUMMARY")
+    print("ABLATION SUMMARY (Top 10)")
     print("="*80)
 
-    for result in sorted(results, key=lambda x: x['best_f1'] if x else 0, reverse=True)[:10]:
-        if result:
-            print(f"M={result['config'].target_length}, {result['config'].architecture}: "
-                  f"F1={result['best_f1']:.3f}, EM={result['final_em']:.3f}, "
-                  f"Compression={result['compression_ratio']:.1f}x")
+    valid_results = [r for r in all_results if 'best_f1' in r]
+    for result in sorted(valid_results, key=lambda x: x['best_f1'], reverse=True)[:10]:
+        pct_baseline = result['best_f1'] / result['baseline_f1'] * 100 if result.get('baseline_f1') else 0
+        print(f"M={result['target_length']}, {result['architecture']}: "
+              f"F1={result['best_f1']:.3f} ({pct_baseline:.1f}% of baseline), "
+              f"EM={result['final_em']:.3f}, "
+              f"Compression={result['compression_ratio']:.1f}x")
 
 
 # ============================================================================
