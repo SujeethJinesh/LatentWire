@@ -76,12 +76,12 @@ def get_device_and_config():
         print(f"  - Samples: {config['num_samples']} (reduced for testing)")
         print(f"  - Epochs: {config['epochs']} (reduced for testing)")
     else:
-        config['batch_size'] = 16
+        config['batch_size'] = 8  # Reduced from 16 to avoid OOM with dual-model loading
         config['num_samples'] = 10000
         config['epochs'] = 10
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
-        config['grad_accum_steps'] = 4
+        config['grad_accum_steps'] = 8  # Doubled to maintain effective batch size of 64
         if platform == 'hpc':
             print(f"  - Batch size: {config['batch_size']}")
             print(f"  - Samples: {config['num_samples']}")
@@ -1370,48 +1370,21 @@ def main():
     # Run learned adapter experiments
     print("\n2. Starting learned adapter experiments...")
 
-    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 3:
-        # HPC with 3+ GPUs: Run all adapters in parallel
-        print(f"Running all 3 adapters in parallel on {torch.cuda.device_count()} GPUs...")
-        processes = []
+    # CHANGED: Run sequentially to avoid OOM from loading 2 models per GPU
+    # Each experiment loads both Llama 8B + Mistral 7B (~30GB per GPU)
+    # Sequential execution ensures sufficient memory and is more reliable
+    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
+        print(f"Running adapters sequentially to avoid OOM (each loads 2 models)...")
+        print("  - Linear adapter on GPU 0...")
+        run_adapter_experiment("linear", 0)
 
-        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
-        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
-        p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
+        print("\n  - Affine adapter on GPU 1...")
+        run_adapter_experiment("affine", 1)
 
-        p1.start()
-        p2.start()
-        p3.start()
+        print("\n  - LoRA adapter on GPU 2...")
+        run_adapter_experiment("lora", 2 if torch.cuda.device_count() >= 3 else 0)
 
-        processes.extend([p1, p2, p3])
-
-        # Wait for all to complete
-        print("Waiting for all adapter experiments to complete...")
-        for p in processes:
-            p.join()
-
-        print("\n3. All adapter experiments completed in parallel!")
-
-    elif PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
-        # HPC with 2 GPUs: Run 2 in parallel, then LoRA
-        print("Running Linear and Affine adapters in parallel on 2 GPUs...")
-        processes = []
-
-        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
-        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
-
-        p1.start()
-        p2.start()
-
-        processes.extend([p1, p2])
-
-        # Wait for completion
-        for p in processes:
-            p.join()
-
-        # Run LoRA sequentially after others complete
-        print("\n3. Starting LoRA experiment (sequential on GPU 0)...")
-        run_adapter_experiment("lora", 0)
+        print("\n3. All adapter experiments completed!")
 
     else:
         # Mac/CPU/Single GPU: Run sequentially
