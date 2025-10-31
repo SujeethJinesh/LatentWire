@@ -1,0 +1,64 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu0_20251031_095956.log
+GPU assigned: 0
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3585.64it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3585.64it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.88it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.88it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.48it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.48it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.76it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.76it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3177.50it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3177.50it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  9.92it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  9.92it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 10.39it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 10.39it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  9.58it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  9.58it/s]
+
+
+Training LoRAAdapter...
+Loading dataset (10000 samples)...
+
+Epoch 1/10
+
+================================================================================
+LORA ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: expected mat1 and mat2 to have the same dtype, but got: c10::BFloat16 != float
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1073, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1073, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 834, in train_adapter
+    aligned_repr = adapter(source_repr)
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 834, in train_adapter
+    aligned_repr = adapter(source_repr)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 361, in forward
+    return x + self.scaling * self.lora_B(self.lora_A(x))
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 361, in forward
+    return x + self.scaling * self.lora_B(self.lora_A(x))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: expected mat1 and mat2 to have the same dtype, but got: c10::BFloat16 != float
+RuntimeError: expected mat1 and mat2 to have the same dtype, but got: c10::BFloat16 != float
