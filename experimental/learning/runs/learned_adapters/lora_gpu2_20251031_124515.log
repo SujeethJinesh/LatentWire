@@ -1,0 +1,18 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251031_124515.log
+GPU assigned: 2
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1951.29it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1951.29it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.58it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.58it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.74it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.74it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.79it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.79it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.92it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.92it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.85it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.85it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 9045.95it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 9045.95it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.95it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.95it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.36it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.36it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.53it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.53it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.43it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.43it/s]
+
