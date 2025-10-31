@@ -12,7 +12,7 @@ CUDA available: True
 CUDA devices: 4
 ================================================================================
 UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-10-31T11:29:25.864706
+Timestamp: 2025-10-31T12:00:47.233524
 Platform: hpc
 Device: cuda
 Available CUDA GPUs: 4
@@ -29,11 +29,11 @@ Loading models on hpc...
 Using bfloat16 for H100
 Loading models on separate GPUs to avoid OOM...
 Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2283.24it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4469.16it/s]
 You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  6.22it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  7.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 10.18it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  9.25it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2471.11it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  6.34it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  3.09it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  4.34it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 15.10it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 16.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 16.02it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3655.70it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 15.18it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 15.00it/s]
 Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
   warnings.warn(
@@ -147,82 +147,81 @@ Fitting Procrustes alignments on cuda...
   WARNING: Orthogonality error = 0.102734
 
 Testing generation...
-Procrustes results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_20251031_112925.json
+Procrustes results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_20251031_120047.json
 
 Cleaning up GPU memory...
   GPU cache cleared
 
 2. Starting learned adapter experiments...
-Running adapters sequentially to avoid OOM (each loads 2 models)...
-  - Linear adapter on GPU 0...
+Running all 3 adapters in parallel on 4 GPUs...
+Memory optimizations: GPU cleanup + seq=256 + single-layer alignment
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 8
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
 ================================================================================
 LEARNED ADAPTER EXPERIMENT - LINEAR
 ================================================================================
 Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_gpu0_20251031_113105.log
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_gpu0_20251031_120156.log
 GPU assigned: 0
 
 Loading models on hpc...
 Using bfloat16 for H100
 Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3425.32it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.65it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 12.52it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 12.79it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 940.64it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.55it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 14.41it/s]
-
-================================================================================
-LINEAR ADAPTER EXPERIMENT FAILED
-================================================================================
-Error: list index out of range
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1076, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 944, in train_adapter
-    source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
-IndexError: list index out of range
-
-  - Affine adapter on GPU 1...
-================================================================================
-LEARNED ADAPTER EXPERIMENT - AFFINE
-================================================================================
-Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251031_114041.log
-GPU assigned: 1
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 435.11it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 14.51it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 15.37it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 15.22it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3505.97it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.04it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 13.99it/s]
-
-================================================================================
-AFFINE ADAPTER EXPERIMENT FAILED
-================================================================================
-Error: list index out of range
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1076, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 944, in train_adapter
-    source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
-IndexError: list index out of range
-
-  - LoRA adapter on GPU 2...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 8
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
 ================================================================================
 LEARNED ADAPTER EXPERIMENT - LORA
 ================================================================================
 Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251031_115017.log
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251031_120156.log
 GPU assigned: 2
 
 Loading models on hpc...
 Using bfloat16 for H100
 Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3656.76it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 14.93it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 15.62it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 15.49it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3630.38it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 12.49it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 13.37it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1380.84it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1688.02it/s]You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 8
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - AFFINE
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251031_120156.log
+GPU assigned: 1
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8401.21it/s]You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.74it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.61it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.54it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.74it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.65it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.89it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.87it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.94it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.73it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00,  4.11it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.96it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.83it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.82it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.84it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.77it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2147.62it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2803.05it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 666.71it/s]
+
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.99it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.92it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.91it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.45it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.39it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.37it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.57it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.56it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.45it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.42it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.41it/s]
 
 ================================================================================
 LORA ADAPTER EXPERIMENT FAILED
@@ -235,7 +234,32 @@ Traceback (most recent call last):
     source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
 IndexError: list index out of range
 
-3. All adapter experiments completed!
+
+================================================================================
+AFFINE ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: list index out of range
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1076, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 944, in train_adapter
+    source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+IndexError: list index out of range
+
+
+================================================================================
+LINEAR ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: list index out of range
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1076, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 944, in train_adapter
+    source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
+IndexError: list index out of range
+Waiting for all adapter experiments to complete...
+
+3. All adapter experiments completed in parallel!
 
 3. Starting token-initialized compression experiment...
 
@@ -243,8 +267,8 @@ IndexError: list index out of range
 TOKEN-INITIALIZED COMPRESSION EXPERIMENT
 ================================================================================
 Loading meta-llama/Llama-3.1-8B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3144.75it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 11.69it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  9.00it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  9.31it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3582.58it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  9.09it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00, 13.76it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 14.07it/s]
 /users/sujinesh/.local/lib/python3.10/site-packages/torch/_compile.py:32: UserWarning: optimizer contains a parameter group with duplicate parameters; in future, this will cause an error; see github.com/pytorch/pytorch/issues/40967 for more information
   return disable_fn(*args, **kwargs)
 /projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:1253: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
@@ -258,9 +282,9 @@ Loading SQuAD dataset (1000 samples)...
 Training for 10 epochs...
 Batch size: 8, Learning rate: 5e-05
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1449, in <module>
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1483, in <module>
     main()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1413, in main
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1447, in main
     token_results = run_token_compression_experiment(
   File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1266, in run_token_compression_experiment
     optimizer.step()
@@ -276,4 +300,4 @@ Traceback (most recent call last):
     func(
   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 606, in _multi_tensor_adamw
     exp_avg_sq_sqrt = torch._foreach_sqrt(device_exp_avg_sqs)
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 32.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 3.00 MiB is free. Including non-PyTorch memory, this process has 79.18 GiB memory in use. Of the allocated memory 77.47 GiB is allocated by PyTorch, and 747.10 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 32.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 5.00 MiB is free. Including non-PyTorch memory, this process has 79.18 GiB memory in use. Of the allocated memory 77.42 GiB is allocated by PyTorch, and 795.10 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
