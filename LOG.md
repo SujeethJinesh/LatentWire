@@ -57,7 +57,33 @@ Two locations in `unified_cross_model_experiments.py`:
 - Token compression should work with proper dtype alignment
 - No performance degradation (bfloat16 is native H100 precision)
 
-**Status**: Fix committed and ready for HPC re-run.
+### Additional Fixes in compression_ablations.py
+
+Found and fixed **same dtype mismatch bug** in `compression_ablations.py`:
+
+**Location**: Lines 437-453 (compressor initialization)
+```python
+# Before (WRONG):
+self.compressor = CrossAttentionCompressor(...).to(self.device)
+
+# After (CORRECT):
+dtype = torch.bfloat16 if self.config.use_bf16 else torch.float32
+self.compressor = CrossAttentionCompressor(...).to(self.device, dtype=dtype)
+```
+
+Applied fix to all three compressor architectures:
+- CrossAttentionCompressor (line 442)
+- ConvolutionalCompressor (line 447)
+- WeightedPoolingCompressor (line 452)
+
+**PEFT Import Issue Fixed**:
+- Log showed: `Warning: Could not apply LoRA: No module named 'peft'`
+- PEFT not installed on HPC system
+- Made PEFT import optional with try-except (lines 22-28)
+- Added fallback to train full model if PEFT unavailable (lines 425-446)
+- Script will now run even without PEFT (though not recommended for large models)
+
+**Status**: All fixes committed and ready for HPC re-run.
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
