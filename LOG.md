@@ -2,6 +2,54 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🐛 FIX: KeyError in Procrustes Generation (2025-10-31 16:30)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Issue: Missing Dictionary Key
+
+**Log**: `unified_experiments_20251031_162640.log`
+
+Run crashed at line 737 with:
+```python
+KeyError: 'llama_to_llama'
+```
+
+**Root cause**: When implementing cross-model generation, I forgot to add `"llama_to_llama"` to the `layer_results` dictionary initialization.
+
+**Lines 712-716** (before fix):
+```python
+layer_results = {
+    "mistral_to_mistral": {},
+    "llama_to_mistral": {},    # cross-model
+    "mistral_to_llama": {}     # cross-model
+    # Missing: "llama_to_llama": {}  ← baseline!
+}
+```
+
+Then at line 737, we try to write to `layer_results["llama_to_llama"]` which doesn't exist.
+
+**Fix**: Added missing key to initialization:
+```python
+layer_results = {
+    "mistral_to_mistral": {},
+    "llama_to_llama": {},      # ← ADDED
+    "llama_to_mistral": {},
+    "mistral_to_llama": {}
+}
+```
+
+**Good news from this run**:
+- ✅ Procrustes SVD completed (Layer 0)
+- ✅ Mistral→Mistral baseline generated successfully
+- ✅ New logging working: "Prompt 1/5: The capital of France is..."
+- ✅ Generation output captured: "The capital of France is a city that is full of history and culture..."
+
+The infrastructure is working correctly - just a simple missing dict key.
+
+**Status**: Fixed and ready for re-run.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🔬 PROCRUSTES CROSS-MODEL GENERATION IMPLEMENTED (2025-10-31 13:00)
 ## ═══════════════════════════════════════════════════════════════════════════
 

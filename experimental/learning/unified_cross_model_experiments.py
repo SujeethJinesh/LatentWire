@@ -711,6 +711,7 @@ def run_procrustes_experiment():
         # Test generation
         layer_results = {
             "mistral_to_mistral": {},
+            "llama_to_llama": {},
             "llama_to_mistral": {},
             "mistral_to_llama": {}
         }
