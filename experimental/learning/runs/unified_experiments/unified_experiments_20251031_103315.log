@@ -1,0 +1,387 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-31T10:33:19.538827
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2930.01it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 13.26it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 10.46it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 10.80it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3523.64it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 15.59it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 12.65it/s]
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Llama model moved to cuda:0
+Mistral model moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.089725
+
+Testing generation...
+
+============================================================
+Testing Layer 8
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033226
+  WARNING: Orthogonality error = 0.033129
+
+Testing generation...
+
+============================================================
+Testing Layer 16
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033363
+  WARNING: Orthogonality error = 0.033375
+
+Testing generation...
+
+============================================================
+Testing Layer 24
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.034813
+  WARNING: Orthogonality error = 0.035054
+
+Testing generation...
+
+============================================================
+Testing Layer 32
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.102234
+  WARNING: Orthogonality error = 0.102734
+
+Testing generation...
+Procrustes results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_20251031_103319.json
+
+2. Starting learned adapter experiments...
+Running all 3 adapters in parallel on 4 GPUs...
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - AFFINE
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251031_103431.log
+GPU assigned: 1
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LINEAR
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_gpu0_20251031_103431.log
+GPU assigned: 0
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 16
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251031_103431.log
+GPU assigned: 2
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 973.10it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2967.84it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1848.93it/s]You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+
+
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  2.31it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  2.18it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  2.21it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  2.22it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  2.23it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  2.19it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.55it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.52it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.52it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.74it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.58it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.71it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.57it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.73it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.56it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1079.89it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1258.92it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1410.17it/s]
+
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.91it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.85it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.80it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.29it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.37it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.27it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.59it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.37it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.52it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.46it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.35it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.34it/s]
+
+================================================================================
+LINEAR ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: CUDA out of memory. Tried to allocate 224.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 67.44 MiB is free. Process 2125957 has 16.56 GiB memory in use. Including non-PyTorch memory, this process has 62.55 GiB memory in use. Of the allocated memory 61.72 GiB is allocated by PyTorch, and 167.53 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1075, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 851, in train_adapter
+    outputs_b = model_b(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+    outputs = self.model(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
+    layer_outputs = decoder_layer(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
+    hidden_states = self.mlp(hidden_states)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
+    return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 224.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 67.44 MiB is free. Process 2125957 has 16.56 GiB memory in use. Including non-PyTorch memory, this process has 62.55 GiB memory in use. Of the allocated memory 61.72 GiB is allocated by PyTorch, and 167.53 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+
+================================================================================
+AFFINE ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: CUDA out of memory. Tried to allocate 32.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 5.44 MiB is free. Process 2125957 has 14.30 GiB memory in use. Including non-PyTorch memory, this process has 64.87 GiB memory in use. Of the allocated memory 64.09 GiB is allocated by PyTorch, and 125.78 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1075, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 851, in train_adapter
+    outputs_b = model_b(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+    outputs = self.model(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
+    layer_outputs = decoder_layer(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 528, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 322, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 144, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 118, in rotate_half
+    return torch.cat((-x2, x1), dim=-1)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 32.00 MiB. GPU 1 has a total capacity of 79.19 GiB of which 5.44 MiB is free. Process 2125957 has 14.30 GiB memory in use. Including non-PyTorch memory, this process has 64.87 GiB memory in use. Of the allocated memory 64.09 GiB is allocated by PyTorch, and 125.78 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+
+================================================================================
+LORA ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: CUDA out of memory. Tried to allocate 64.00 MiB. GPU 2 has a total capacity of 79.19 GiB of which 49.00 MiB is free. Including non-PyTorch memory, this process has 79.13 GiB memory in use. Of the allocated memory 78.24 GiB is allocated by PyTorch, and 236.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1075, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 851, in train_adapter
+    outputs_b = model_b(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+    outputs = self.model(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
+    layer_outputs = decoder_layer(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 528, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 375, in forward
+    attn_output = self.o_proj(attn_output)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 64.00 MiB. GPU 2 has a total capacity of 79.19 GiB of which 49.00 MiB is free. Including non-PyTorch memory, this process has 79.13 GiB memory in use. Of the allocated memory 78.24 GiB is allocated by PyTorch, and 236.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Waiting for all adapter experiments to complete...
+
+3. All adapter experiments completed in parallel!
+
+3. Starting token-initialized compression experiment...
+
+================================================================================
+TOKEN-INITIALIZED COMPRESSION EXPERIMENT
+================================================================================
+Loading meta-llama/Llama-3.1-8B...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1237.90it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  9.03it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00, 13.44it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 13.75it/s]
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/_compile.py:32: UserWarning: optimizer contains a parameter group with duplicate parameters; in future, this will cause an error; see github.com/pytorch/pytorch/issues/40967 for more information
+  return disable_fn(*args, **kwargs)
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:1252: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=USE_BF16 and PLATFORM == 'hpc'):
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Applying LoRA to all transformer layers...
+Warning: Could not apply LoRA: No module named 'peft'
+Creating token-initialized compressor (compressed_length=64, d_z=256)...
+Loading SQuAD dataset (1000 samples)...
+
+Training for 10 epochs...
+Batch size: 16, Learning rate: 5e-05
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1468, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1432, in main
+    token_results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1265, in run_token_compression_experiment
+    optimizer.step()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 487, in wrapper
+    out = func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 91, in _use_grad
+    ret = func(self, *args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 220, in step
+    adamw(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 154, in maybe_fallback
+    return func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 782, in adamw
+    func(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 606, in _multi_tensor_adamw
+    exp_avg_sq_sqrt = torch._foreach_sqrt(device_exp_avg_sqs)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 41.00 MiB is free. Including non-PyTorch memory, this process has 79.14 GiB memory in use. Of the allocated memory 77.83 GiB is allocated by PyTorch, and 341.83 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
