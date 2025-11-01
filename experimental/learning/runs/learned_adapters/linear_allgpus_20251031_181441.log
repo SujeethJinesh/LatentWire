@@ -1,0 +1,89 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LINEAR
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_allgpus_20251031_181441.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+Effective batch (with grad accum): 320
+================================================================================
+
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4209.04it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4209.04it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.82it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.82it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.26it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.26it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.37it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.37it/s]
+
+Wrapped Llama model with DataParallel
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3582.83it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3582.83it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 12.85it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 12.85it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 13.86it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 13.86it/s]
+
+Wrapped Mistral model with DataParallel
+
+Training LinearAdapter...
+Loading dataset (10000 samples)...
+
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+Total epochs: 10
+Steps per epoch: 250
+Total training steps: 2500
+Batch size: 40
+Gradient accumulation: 8 (effective batch: 320)
+Learning rate: 5e-05
+Alignment layers: [16]
+================================================================================
+
+
+================================================================================
+Epoch 1/10
+================================================================================
+
+================================================================================
+Epoch 1/10
+================================================================================
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/_functions.py:71: UserWarning: Was asked to gather along dimension 0, but all input tensors were scalars; will instead unsqueeze and return a vector.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/_functions.py:71: UserWarning: Was asked to gather along dimension 0, but all input tensors were scalars; will instead unsqueeze and return a vector.
+  warnings.warn(
+
+================================================================================
+LINEAR ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: grad can be implicitly created only for scalar outputs
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1689, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1689, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1397, in train_adapter
+    total_loss.backward()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1397, in train_adapter
+    total_loss.backward()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 340, in backward
+    grad_tensors_ = _make_grads(tensors, grad_tensors_, is_grads_batched=False)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 340, in backward
+    grad_tensors_ = _make_grads(tensors, grad_tensors_, is_grads_batched=False)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 198, in _make_grads
+    raise RuntimeError(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 198, in _make_grads
+    raise RuntimeError(
+RuntimeError: grad can be implicitly created only for scalar outputs
+RuntimeError: grad can be implicitly created only for scalar outputs

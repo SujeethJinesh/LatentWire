@@ -1,0 +1,55 @@
+================================================================================
+TOKEN COMPRESSION EXPERIMENT
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/token_compression/token_compression_allgpus_20251031_181638.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+================================================================================
+
+
+================================================================================
+TOKEN-INITIALIZED COMPRESSION EXPERIMENT
+================================================================================
+Loading meta-llama/Llama-3.1-8B...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9927.35it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9927.35it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.89it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.89it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.44it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.44it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.72it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.72it/s]
+
+Wrapped Llama model with DataParallel
+Applying LoRA to all transformer layers...
+Warning: Could not apply LoRA: 'DataParallel' object has no attribute 'prepare_inputs_for_generation'
+Creating token-initialized compressor (compressed_length=64, d_z=256)...
+
+================================================================================
+TOKEN COMPRESSION EXPERIMENT FAILED
+================================================================================
+Error: 'DataParallel' object has no attribute 'get_input_embeddings'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1760, in run_token_compression_wrapper
+    results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1760, in run_token_compression_wrapper
+    results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1892, in run_token_compression_experiment
+    compressor = TokenInitializedCompressor(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1892, in run_token_compression_experiment
+    compressor = TokenInitializedCompressor(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 708, in __init__
+    self.embed_layer = model.get_input_embeddings()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 708, in __init__
+    self.embed_layer = model.get_input_embeddings()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1931, in __getattr__
+    raise AttributeError(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1931, in __getattr__
+    raise AttributeError(
+AttributeError: 'DataParallel' object has no attribute 'get_input_embeddings'
+AttributeError: 'DataParallel' object has no attribute 'get_input_embeddings'
