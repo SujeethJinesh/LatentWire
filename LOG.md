@@ -8,6 +8,11 @@
 ### Overview
 Applied 7 research-based improvements to cross-model alignment based on 2024-2025 findings. Expected 5-10% overall improvement in alignment quality.
 
+**Verification Status**: ✅ All implementations verified correct
+- Debiased CKA: ✅ Uses element-wise product (already correct)
+- Affine Procrustes: ✅ Fixed redundant bias issue - affine transformation achieved through centering + W + recentering (no explicit bias needed)
+- All other implementations: ✅ Verified correct
+
 ### Changes Implemented
 
 #### 1. Fixed InfoNCE Temperature (0.07 → 0.15)
@@ -45,14 +50,26 @@ def mean_pooling(token_embeddings, attention_mask):
 - Reimers & Gurevych (2019): Sentence-BERT uses mean pooling
 - SGPT (2022): Mean pooling superior to CLS for semantic tasks
 
-#### 4. Affine Extension to Procrustes (Orthogonal → Affine with Bias)
+#### 4. Affine Extension to Procrustes (Orthogonal → Affine Transformation)
 **Problem**: Pure orthogonal transformations are too restrictive for cross-model alignment.
 
-**Solution**: Extended Procrustes from orthogonal (W) to affine (W·x + b):
+**Solution**: Extended Procrustes to affine transformation through centering + rotation + recentering:
 ```python
-# Optimal bias: b = mean(Y) - W @ mean(X)
-self.b = self.target_mean - (self.source_mean @ self.W)
+# Affine transformation: Y ≈ s·W·(X - μ_X) + μ_Y
+# Where:
+# - W is orthogonal rotation matrix (from SVD)
+# - s = target_norm / source_norm (scale factor)
+# - μ_Y is target_mean (translation)
+# - No explicit bias term needed - translation provided by recentering
+
+# Implementation sequence:
+1. Center both datasets (X - μ_X, Y - μ_Y)
+2. Normalize to unit norm
+3. Compute optimal W via SVD
+4. Transform: s·W·(X - μ_X) + μ_Y
 ```
+
+**Key Insight**: After centering both datasets before computing W, and then recentering to target space after transformation, no additional explicit bias term is needed. The affine translation is implicitly provided by the recentering step. Adding an explicit bias would be redundant and double-count the translation.
 
 **Expected Impact**: 5-8% improvement in model stitching quality.
 

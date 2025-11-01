@@ -519,13 +519,21 @@ class ProcrustesAlignment:
 
     def fit(self, source, target):
         """
-        Fit affine transformation (W, b) such that ||source @ W + b - target||_F is minimized.
+        Fit affine transformation such that ||source transformed - target||_F is minimized.
 
-        Uses numerically stable computation:
-        1. Center data → compute optimal orthogonal W via SVD
-        2. Compute optimal bias b = mean(target) - W @ mean(source)
+        The affine transformation is achieved through the sequence:
+        1. Center both datasets (removes means)
+        2. Normalize (scales to unit norm)
+        3. Find optimal orthogonal W via SVD
+        4. Rescale and recenter to target space (provides translation)
 
-        This decouples the rotation (W) and translation (b) for stability.
+        This is equivalent to affine transformation Y ≈ sWX + b where:
+        - W is the rotation matrix
+        - s is the scale ratio (target_norm/source_norm)
+        - b is the translation (target_mean after accounting for sW@source_mean)
+
+        No explicit bias term is needed since the recentering step provides
+        the optimal translation for centered, normalized data.
 
         Args:
             source, target: [n_samples, n_features] representation matrices
@@ -566,11 +574,17 @@ class ProcrustesAlignment:
         # Step 5: Optimal orthogonal transformation
         self.W = U @ Vt
 
-        # Step 6: Compute bias term for affine transformation (2024 research extension)
+        # Step 6: Bias term (2024 research extension for affine transformation)
+        # After centering and recentering, no explicit bias is needed
+        # The affine translation is implicitly provided by recentering to target_mean
+        # in the transform() method. Any explicit bias would be redundant since:
+        # - We center both datasets before computing W (source_mean and target_mean → 0)
+        # - After transformation, source_mean maps to 0 @ W = 0
+        # - Recentering adds target_mean, completing the affine transformation
+        # - Additional bias would double-count the translation
         if self.use_affine:
-            # Optimal bias: b = mean(Y) - W @ mean(X)
-            # This minimizes ||X @ W + b - Y||_F after accounting for W
-            self.b = self.target_mean - (self.source_mean @ self.W)
+            # Affine transformation achieved through centering + W + recentering (no explicit bias)
+            self.b = torch.zeros_like(self.target_mean)
         else:
             # Orthogonal only (no bias)
             self.b = torch.zeros_like(self.target_mean)
@@ -587,6 +601,16 @@ class ProcrustesAlignment:
         """
         Apply the fitted affine transformation to new data.
 
+        Transformation sequence:
+        1. Center by source_mean (learned from fit)
+        2. Normalize by source_norm (learned from fit)
+        3. Apply orthogonal rotation W (learned from fit)
+        4. Rescale by target_norm (learned from fit)
+        5. Recenter by target_mean (provides affine translation)
+
+        This sequence implements the affine transformation Y ≈ sW(X - μ_X) + μ_Y
+        where s = target_norm/source_norm, and no explicit bias is needed.
+
         Args:
             source: [n_samples, n_features]
 
@@ -595,20 +619,22 @@ class ProcrustesAlignment:
         """
         assert self.W is not None, "Must fit before transform"
 
-        # Apply same centering and normalization as in fit
+        # Step 1-2: Center and normalize (same as fit)
         source_centered = source - self.source_mean
         source_normalized = source_centered / (self.source_norm + 1e-8)
 
-        # Apply orthogonal transformation
+        # Step 3: Apply orthogonal transformation
         transformed = source_normalized @ self.W
 
-        # Rescale and recenter to target space
+        # Step 4-5: Rescale and recenter to target space (completes affine transformation)
         transformed = transformed * self.target_norm
         transformed = transformed + self.target_mean
 
-        # Add bias for affine transformation (2024 research extension)
-        if self.use_affine:
-            transformed = transformed + self.b
+        # Note: No explicit bias addition needed - the recentering step above
+        # provides the optimal translation for the affine transformation.
+        # The use_affine flag controls whether we want this affine behavior
+        # vs pure orthogonal (though mathematically both paths are equivalent
+        # after centering, as bias would be zero anyway).
 
         return transformed
 
