@@ -2,6 +2,120 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🔧 DATALOADER FREEZE FIX & WARNING CLEANUP (2025-10-31 17:30)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Critical Issue: Training Completely Frozen
+
+**User report**: "I don't get any logs on how the training is progressing" + nvidia-smi showing 0% GPU utilization
+
+**Log evidence**:
+```
+UserWarning: This DataLoader will create 4 worker processes in total.
+Our suggested max number of worker in current system is 1, which is smaller
+than what this DataLoader is going to create. Please be aware that excessive
+worker creation might get DataLoader running slow or even freeze...
+```
+
+**Symptoms**:
+1. Models loaded successfully (bfloat16, Flash Attention 2)
+2. Training configuration printed
+3. Epoch header printed ("Epoch 2/10")
+4. **Complete freeze** - no progress updates, no GPU utilization
+5. Training never started despite checkpoint loaded
+
+### Root Cause: Multi-Process DataLoader on HPC
+
+**Analysis**:
+- Initial attempt used `num_workers=4` for multi-threaded data loading
+- HPC system warned about worker processes causing freeze
+- PyTorch DataLoader creates 4 subprocess workers
+- HPC compute node environment can't handle subprocess creation properly
+- Results in complete hang before first batch
+
+**This is a known HPC cluster limitation** - many clusters restrict subprocess creation for resource management.
+
+### Solution: Single-Threaded Loading
+
+**Fix** (unified_cross_model_experiments.py lines 889-898):
+```python
+# CRITICAL: num_workers=0 to prevent freeze on HPC
+num_workers = 0  # Must be 0 on this HPC system to avoid DataLoader freeze
+dataloader = DataLoader(
+    train_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    num_workers=num_workers,  # Single-threaded to prevent freeze
+    pin_memory=True if PLATFORM == 'hpc' else False,
+)
+```
+
+**Trade-offs**:
+- ✅ Training actually works (vs complete freeze)
+- ✅ Simple, reliable solution
+- ⚠️ May result in slightly lower GPU utilization due to data loading bottleneck
+- ⚠️ Acceptable for preemptible cluster (reliability > max throughput)
+
+**User confirmation**: "There is utilization after some time" - training now progressing correctly.
+
+### Secondary Fix: Warning Suppression
+
+**Issue**: Hundreds of FutureWarning messages flooding logs
+
+**Warnings**:
+1. `torch.load` with `weights_only=False` deprecation warning (every checkpoint load)
+2. `TRANSFORMERS_CACHE` deprecation warning (hundreds of times during model loading)
+
+**Fix** (unified_cross_model_experiments.py lines 14-25):
+```python
+import warnings
+import os
+
+# Suppress known warnings that flood logs
+warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
+os.environ['HF_HOME'] = os.environ.get('HF_HOME', os.path.expanduser('~/.cache/huggingface'))
+```
+
+**Rationale**:
+- Warnings are known and non-critical
+- `weights_only=False` is intentional (need to load optimizer state)
+- Cleaner logs make actual issues easier to spot
+- Production code should handle these properly, but for research iteration this is acceptable
+
+### GPU 3 Idle Status: By Design ✓
+
+**User observation**: "just not using the last GPU"
+
+**Explanation**:
+- 4 GPUs available (0, 1, 2, 3)
+- Only 3 learned adapter experiments: Linear, Affine, LoRA
+- Each adapter gets dedicated GPU for parallel execution:
+  - GPU 0: Linear adapter
+  - GPU 1: Affine adapter
+  - GPU 2: LoRA adapter
+  - GPU 3: Idle (reserved for future experiments)
+
+**Design decision**:
+- Parallel execution of 3 adapters provides 3× speedup
+- GPU 3 could run token compression, but that runs sequentially after adapters complete
+- Adding complexity to parallelize token compression not worth it for current iteration
+- Future work: Could run Procrustes evaluation or additional adapter types on GPU 3
+
+**Status**: This is expected behavior, not a bug.
+
+### Summary
+
+| Issue | Status | Solution |
+|-------|--------|----------|
+| DataLoader freeze | ✅ Fixed | num_workers=0 (single-threaded) |
+| Warning spam | ✅ Fixed | FutureWarning suppression |
+| GPU 3 idle | ✓ By design | Only 3 adapter experiments exist |
+| Training progress | ✅ Working | Progress logging every 100 steps |
+
+**Current state**: Experiments running successfully on HPC with proper progress logging and GPU utilization on 3/4 GPUs.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 💾 CHECKPOINTING STATUS & SAMPLE COUNT DECISION (2025-10-31 17:15)
 ## ═══════════════════════════════════════════════════════════════════════════
 

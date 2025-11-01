@@ -16,6 +16,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
+import warnings
+import os
+import sys
+
+# Suppress known warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
+os.environ['HF_HOME'] = os.environ.get('HF_HOME', os.path.expanduser('~/.cache/huggingface'))
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 import json
@@ -24,8 +32,6 @@ from pathlib import Path
 from datetime import datetime
 import math
 import multiprocessing as mp
-import os
-import sys
 import shutil
 import datasets
 
@@ -867,7 +873,7 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         # Check for existing checkpoint
         if checkpoint_path.exists():
             print(f"Found checkpoint at {checkpoint_path}, resuming training...", file=log_file)
-            checkpoint = torch.load(checkpoint_path, map_location=device)
+            checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)  # weights_only=False for optimizer state
             adapter.load_state_dict(checkpoint['adapter_state_dict'])
             start_epoch = checkpoint['epoch'] + 1
             print(f"Resuming from epoch {start_epoch}", file=log_file)
@@ -886,16 +892,15 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
     train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
 
-    # Multi-threaded data loading for better GPU utilization
-    # Use 4 workers per GPU to keep GPUs fed with data
-    num_workers = 4 if PLATFORM == 'hpc' else 0
+    # Data loading configuration
+    # NOTE: HPC system can't handle multiple workers (causes freeze), use single-threaded
+    num_workers = 0  # Must be 0 on this HPC system to avoid DataLoader freeze
     dataloader = DataLoader(
         train_dataset,
         batch_size=BATCH_SIZE,
         shuffle=True,
         num_workers=num_workers,
         pin_memory=True if PLATFORM == 'hpc' else False,  # Faster GPU transfer
-        persistent_workers=True if num_workers > 0 else False  # Keep workers alive between epochs
     )
 
     # Move adapter to device with correct dtype (must match model dtype)
