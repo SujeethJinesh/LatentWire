@@ -554,8 +554,9 @@ class ContrastiveWeightScheduler:
 # ============================================================================
 
 # Models
-LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
-MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
+# IMPORTANT: Using -Instruct models for fair comparison with ablation
+LLAMA_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+MISTRAL_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
 
 # Same-vocabulary ablation models (Llama 3.1 8B ↔ Llama 3.2 3B)
 # Both use identical 128,256 token vocabulary
@@ -3341,10 +3342,11 @@ def main():
     # EXPERIMENT 3: Activation Communication (VALIDATES CORE HYPOTHESIS)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 3/6: ACTIVATION COMMUNICATION (PRIORITY 2)")
+        print(f"EXPERIMENT 3/9: ACTIVATION COMMUNICATION (PRIORITY 2)")
         print(f"{'='*80}")
         print("Why Second: Tests if Model A's hidden states can be injected into Model B")
         print("Critical: If this fails, LatentWire needs redesign")
+        print("Note: Only runs for Llama-Mistral (main comparison)")
         print("")
 
     # Run activation communication (rank 0 only)
@@ -3362,9 +3364,10 @@ def main():
     # EXPERIMENT 4: Token Compression (THE INTERLINGUA)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 4/6: TOKEN COMPRESSION (PRIORITY 3)")
+        print(f"EXPERIMENT 4/9: TOKEN COMPRESSION (PRIORITY 3)")
         print(f"{'='*80}")
         print("Why Third: This IS the wire format for LatentWire (512 → 64 tokens)")
+        print("Note: Only runs for Llama-Mistral (main comparison)")
         print("")
 
     run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs with DDP
