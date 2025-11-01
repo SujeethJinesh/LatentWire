@@ -3285,22 +3285,50 @@ def main():
     # 2. Activation Communication - Validates core LatentWire hypothesis
     # 3. Token Compression - The interlingua mechanism
     # 4. Linear/Affine - Optional, for comparison with LoRA
+    #
+    # ABLATION STRATEGY:
+    # - All adapter experiments run TWICE: once for Llama-Mistral (main), once for Llama 3.1-3.2 (ablation)
+    # - Ablation controls for vocabulary mismatch (both use identical 128,256 token vocab)
     if is_main_process():
         print("\n2. Starting all experiments sequentially (PRIORITY ORDER)...")
         print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
         print("Priority: LoRA → Activation → Token Compression → Linear → Affine")
-        print("Benefits: Critical experiments first + full GPU utilization")
+        print("Ablation: Each adapter experiment runs for BOTH model pairs")
+        print("  - Main: Llama 3.1 8B ↔ Mistral 7B (4× vocab mismatch)")
+        print("  - Ablation: Llama 3.1 8B ↔ Llama 3.2 3B (same vocab)")
+        print("Benefits: Critical experiments first + full GPU utilization + controlled comparison")
         print("")
 
-    # EXPERIMENT 2: LoRA Adapter (HIGHEST PRIORITY - parameter efficient)
+    # EXPERIMENT 2a: LoRA Adapter - Main (Llama-Mistral)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 2/6: LORA ADAPTER (PRIORITY 1)")
+        print(f"EXPERIMENT 2a/9: LORA ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
+        print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
         print("Why First: 260K params vs 16M (98% reduction), transferable across models")
         print("")
 
     run_adapter_experiment("lora", gpu_id=None)  # None = use all GPUs with DDP
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    if is_main_process():
+        print(f"✓ LoRA (Llama-Mistral) complete, GPU memory cleared")
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 2b: LoRA Adapter - Ablation (Llama 3.1-3.2)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 2b/9: LORA ADAPTER - ABLATION (LLAMA 3.1-3.2)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
+        print("Purpose: Control for vocabulary mismatch hypothesis")
+        print("Expected: Better alignment (CKA 0.6-0.7) and lower generation loss (2.5-3.5)")
+        print("")
+
+    run_adapter_experiment("lora", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
 
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -3349,12 +3377,13 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 5: Linear Adapter (OPTIONAL - for comparison with LoRA)
+    # EXPERIMENT 5a: Linear Adapter - Main (Llama-Mistral)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 5/6: LINEAR ADAPTER (OPTIONAL - FOR COMPARISON)")
+        print(f"EXPERIMENT 5a/9: LINEAR ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
-        print("Why Fifth: 16M params (50× more than LoRA), useful for ablation studies")
+        print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
+        print("Why: 16M params (50× more than LoRA), useful for comparison")
         print("")
 
     run_adapter_experiment("linear", gpu_id=None)
@@ -3363,16 +3392,36 @@ def main():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
     if is_main_process():
-        print(f"✓ Linear adapter complete, GPU memory cleared")
+        print(f"✓ Linear (Llama-Mistral) complete, GPU memory cleared")
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 6: Affine Adapter (OPTIONAL - for completeness)
+    # EXPERIMENT 5b: Linear Adapter - Ablation (Llama 3.1-3.2)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 6/6: AFFINE ADAPTER (OPTIONAL - FOR COMPLETENESS)")
+        print(f"EXPERIMENT 5b/9: LINEAR ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
-        print("Why Last: Similar to linear but with bias term (+4K params)")
+        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
+        print("Purpose: Control comparison for Linear adapter")
+        print("")
+
+    run_adapter_experiment("linear", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    if is_main_process():
+        print(f"✓ Linear (Llama 3.1-3.2) complete, GPU memory cleared")
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 6a: Affine Adapter - Main (Llama-Mistral)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 6a/9: AFFINE ADAPTER - MAIN (LLAMA-MISTRAL)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
+        print("Why: Similar to linear but with bias term (+4K params)")
         print("")
 
     run_adapter_experiment("affine", gpu_id=None)
@@ -3381,45 +3430,48 @@ def main():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
     if is_main_process():
-        print(f"✓ Affine adapter complete, GPU memory cleared")
+        print(f"✓ Affine (Llama-Mistral) complete, GPU memory cleared")
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 7: Same-Vocabulary Ablation (Llama 3.1 8B ↔ Llama 3.2 3B)
-    # This controls for vocabulary mismatch by testing two models with identical tokenizers
+    # EXPERIMENT 6b: Affine Adapter - Ablation (Llama 3.1-3.2)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 7/7: SAME-VOCABULARY ABLATION (CONTROL EXPERIMENT)")
+        print(f"EXPERIMENT 6b/9: AFFINE ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocabulary)")
-        print("Purpose: Control for vocabulary mismatch hypothesis")
-        print("Research: 'Transferring Features Across Language Models' (arXiv 2506.06609)")
-        print("Expected: Better alignment (CKA 0.6-0.7) and lower generation loss (2.5-3.5)")
+        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
+        print("Purpose: Control comparison for Affine adapter")
         print("")
 
-    run_adapter_experiment("lora", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+    run_adapter_experiment("affine", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
 
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
     if is_main_process():
-        print(f"✓ Same-vocabulary ablation complete, GPU memory cleared")
+        print(f"✓ Affine (Llama 3.1-3.2) complete, GPU memory cleared")
     if dist.is_initialized():
         dist.barrier()
 
     # Final summary
     if is_main_process():
         print("\n" + "=" * 80)
-        print("ALL 7 EXPERIMENTS COMPLETE (PRIORITY ORDER)")
+        print("ALL 9 EXPERIMENTS COMPLETE")
         print("=" * 80)
-        print("Experiments run:")
-        print("  1. Procrustes alignment (baseline, CKA metrics added)")
-        print("  2. LoRA adapter (PRIORITY 1 - parameter efficient)")
-        print("  3. Activation communication (PRIORITY 2 - validates hypothesis)")
-        print("  4. Token compression (PRIORITY 3 - interlingua)")
-        print("  5. Linear adapter (comparison)")
-        print("  6. Affine adapter (completeness)")
-        print("  7. Same-vocabulary ablation (control for vocab mismatch)")
+        print("\nExperiments run:")
+        print("  1. Procrustes alignment (baseline, Llama-Mistral only)")
+        print("  2a. LoRA adapter - Main (Llama 3.1 8B ↔ Mistral 7B)")
+        print("  2b. LoRA adapter - Ablation (Llama 3.1 8B ↔ Llama 3.2 3B)")
+        print("  3. Activation communication (Llama-Mistral only)")
+        print("  4. Token compression (Llama-Mistral only)")
+        print("  5a. Linear adapter - Main (Llama 3.1 8B ↔ Mistral 7B)")
+        print("  5b. Linear adapter - Ablation (Llama 3.1 8B ↔ Llama 3.2 3B)")
+        print("  6a. Affine adapter - Main (Llama 3.1 8B ↔ Mistral 7B)")
+        print("  6b. Affine adapter - Ablation (Llama 3.1 8B ↔ Llama 3.2 3B)")
+        print("\nComparison strategy:")
+        print("  - All adapter experiments compare Llama-Mistral vs Llama 3.1-3.2")
+        print("  - Tests hypothesis: vocabulary mismatch causes alignment failure")
+        print("  - Expected: Llama 3.1-3.2 shows better CKA and lower generation loss")
 
         print("\n" + "=" * 80)
         print("ALL EXPERIMENTS COMPLETE")
