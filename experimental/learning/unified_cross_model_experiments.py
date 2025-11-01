@@ -3521,8 +3521,11 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         print(f"Loaded {len(squad_samples)} SQuAD validation examples")
         print(f"Will print first 3 examples for inspection\n")
 
-        baseline_preds = []
-        injected_preds = []
+        baseline_b_preds = []  # Model B with full context (upper bound for B)
+        baseline_a_preds = []  # Model A with full context (upper bound for A)
+        injected_preds = []    # Model B with Model A's activation
+        random_preds = []      # Model B with random activation (control)
+        no_context_preds = []  # Model B with no context (lower bound)
         gold_answers = []
 
         for idx, example in enumerate(squad_samples):
@@ -3533,7 +3536,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             if idx % 10 == 0:
                 print(f"  Processing {idx+1}/{len(squad_samples)}...")
 
-            # Baseline generation
+            # Baseline 1: Model B with full context (upper bound for B)
             inputs_b = tokenizer_b(prompt, return_tensors="pt").to(device)
             with torch.no_grad():
                 baseline_output = model_b.generate(
@@ -3542,15 +3545,44 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                     do_sample=False
                 )
                 baseline_text = tokenizer_b.decode(baseline_output[0], skip_special_tokens=True)
-                # Extract only the answer part (after "Answer:")
                 if "Answer:" in baseline_text:
                     baseline_answer = baseline_text.split("Answer:")[-1].strip()
                 else:
                     baseline_answer = baseline_text.strip()
-                baseline_preds.append(baseline_answer)
+                baseline_b_preds.append(baseline_answer)
 
-            # Injected generation
+            # Baseline 2: Model A with full context (upper bound for A)
             inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                model_a_output = model_a.generate(
+                    **inputs_a,
+                    max_new_tokens=15,
+                    do_sample=False
+                )
+                model_a_text = tokenizer_a.decode(model_a_output[0], skip_special_tokens=True)
+                if "Answer:" in model_a_text:
+                    model_a_answer = model_a_text.split("Answer:")[-1].strip()
+                else:
+                    model_a_answer = model_a_text.strip()
+                baseline_a_preds.append(model_a_answer)
+
+            # Baseline 3: Model B with no context (lower bound)
+            no_context_prompt = "Answer:"
+            inputs_no_context = tokenizer_b(no_context_prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                no_context_output = model_b.generate(
+                    **inputs_no_context,
+                    max_new_tokens=15,
+                    do_sample=False
+                )
+                no_context_text = tokenizer_b.decode(no_context_output[0], skip_special_tokens=True)
+                if "Answer:" in no_context_text:
+                    no_context_answer = no_context_text.split("Answer:")[-1].strip()
+                else:
+                    no_context_answer = no_context_text.strip()
+                no_context_preds.append(no_context_answer)
+
+            # Get Model A's activation for injection
             with torch.no_grad():
                 outputs_a = model_a(**inputs_a, output_hidden_states=True)
                 h_a_last_token = outputs_a.hidden_states[eval_layer][0, -1, :]
@@ -3561,6 +3593,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             else:
                 h_projected = h_a_last_token
 
+            # Baseline 4: Model B with Model A's activation injected (our method)
             injected_activation = h_projected.clone()
             injection_done = [False]
 
@@ -3597,45 +3630,95 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             finally:
                 hook_handle.remove()
 
+            # Baseline 5: Model B with random activation injected (control)
+            # This proves that Model A's activation contains meaningful information
+            random_activation = torch.randn_like(h_projected) * h_projected.std()  # Match std dev
+            injection_done = [False]
+
+            def random_injection_hook(module, input, output):
+                if injection_done[0]:
+                    return output
+                injection_done[0] = True
+                if isinstance(output, tuple):
+                    hidden_states = output[0].clone()
+                else:
+                    hidden_states = output.clone()
+                hidden_states[:, -1, :] = random_activation
+                if isinstance(output, tuple):
+                    return (hidden_states,) + output[1:]
+                else:
+                    return hidden_states
+
+            try:
+                target_layer = model_b.model.layers[eval_layer]
+                hook_handle = target_layer.register_forward_hook(random_injection_hook)
+
+                with torch.no_grad():
+                    random_output = model_b.generate(
+                        inputs_b.input_ids,
+                        max_new_tokens=15,
+                        do_sample=False
+                    )
+                    random_text = tokenizer_b.decode(random_output[0], skip_special_tokens=True)
+                    if "Answer:" in random_text:
+                        random_answer = random_text.split("Answer:")[-1].strip()
+                    else:
+                        random_answer = random_text.strip()
+                    random_preds.append(random_answer)
+            finally:
+                hook_handle.remove()
+
             # Print first 3 examples for inspection
             if idx < 3:
                 print(f"\n  Example {idx+1}:")
                 # Truncate long contexts for readability
                 display_prompt = prompt if len(prompt) < 200 else prompt[:200] + "..."
                 print(f"    Prompt: {display_prompt}")
-                print(f"    Gold:     '{gold}'")
-                print(f"    Baseline: '{baseline_answer}'")
-                print(f"    Injected: '{injected_answer}'")
-                print(f"    Baseline EM: {em(baseline_answer, gold):.2f}, F1: {f1(baseline_answer, gold):.2f}")
+                print(f"    Gold:        '{gold}'")
+                print(f"    Model B:     '{baseline_answer}' (full context)")
+                print(f"    Model A:     '{model_a_answer}' (full context)")
+                print(f"    Injected:    '{injected_answer}' (A's activation → B)")
+                print(f"    Random:      '{random_answer}' (random activation → B)")
+                print(f"    No Context:  '{no_context_answer}' (B alone)")
+                print(f"    Model B EM: {em(baseline_answer, gold):.2f}, F1: {f1(baseline_answer, gold):.2f}")
+                print(f"    Model A EM: {em(model_a_answer, gold):.2f}, F1: {f1(model_a_answer, gold):.2f}")
                 print(f"    Injected EM: {em(injected_answer, gold):.2f}, F1: {f1(injected_answer, gold):.2f}")
+                print(f"    Random EM: {em(random_answer, gold):.2f}, F1: {f1(random_answer, gold):.2f}")
+                print(f"    No Context EM: {em(no_context_answer, gold):.2f}, F1: {f1(no_context_answer, gold):.2f}")
 
-        # Compute SQuAD metrics
-        baseline_em_scores = [em(pred, gold) for pred, gold in zip(baseline_preds, gold_answers)]
-        injected_em_scores = [em(pred, gold) for pred, gold in zip(injected_preds, gold_answers)]
-        baseline_f1_scores = [f1(pred, gold) for pred, gold in zip(baseline_preds, gold_answers)]
-        injected_f1_scores = [f1(pred, gold) for pred, gold in zip(injected_preds, gold_answers)]
+        # Compute SQuAD metrics for all baselines
+        def compute_metrics(preds, golds):
+            em_scores = [em(pred, gold) for pred, gold in zip(preds, golds)]
+            f1_scores = [f1(pred, gold) for pred, gold in zip(preds, golds)]
+            return sum(em_scores) / len(em_scores), sum(f1_scores) / len(f1_scores)
 
-        baseline_em_avg = sum(baseline_em_scores) / len(baseline_em_scores)
-        injected_em_avg = sum(injected_em_scores) / len(injected_em_scores)
-        baseline_f1_avg = sum(baseline_f1_scores) / len(baseline_f1_scores)
-        injected_f1_avg = sum(injected_f1_scores) / len(injected_f1_scores)
+        b_em, b_f1 = compute_metrics(baseline_b_preds, gold_answers)
+        a_em, a_f1 = compute_metrics(baseline_a_preds, gold_answers)
+        inj_em, inj_f1 = compute_metrics(injected_preds, gold_answers)
+        rand_em, rand_f1 = compute_metrics(random_preds, gold_answers)
+        nc_em, nc_f1 = compute_metrics(no_context_preds, gold_answers)
 
-        print(f"\n{'='*60}")
+        print(f"\n{'='*70}")
         print(f"SQuAD Results Summary ({len(squad_samples)} samples):")
-        print(f"{'='*60}")
-        print(f"  Baseline - EM: {baseline_em_avg*100:.1f}%  F1: {baseline_f1_avg*100:.1f}%")
-        print(f"  Injected - EM: {injected_em_avg*100:.1f}%  F1: {injected_f1_avg*100:.1f}%")
-        print(f"  Performance Retention:")
-        print(f"    EM: {(injected_em_avg/max(baseline_em_avg, 0.01))*100:.1f}% of baseline")
-        print(f"    F1: {(injected_f1_avg/max(baseline_f1_avg, 0.01))*100:.1f}% of baseline")
-        print(f"  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
-        print(f"{'='*60}")
+        print(f"{'='*70}")
+        print(f"  Model B (full context):        EM: {b_em*100:5.1f}%  F1: {b_f1*100:5.1f}%  ← Upper bound for B")
+        print(f"  Model A (full context):        EM: {a_em*100:5.1f}%  F1: {a_f1*100:5.1f}%  ← Upper bound for A")
+        print(f"  Injected (A's activation → B): EM: {inj_em*100:5.1f}%  F1: {inj_f1*100:5.1f}%  ← Our method")
+        print(f"  Random (noise → B):            EM: {rand_em*100:5.1f}%  F1: {rand_f1*100:5.1f}%  ← Control")
+        print(f"  No Context (B alone):          EM: {nc_em*100:5.1f}%  F1: {nc_f1*100:5.1f}%  ← Lower bound")
+        print(f"\n  Performance Retention (vs Model B):")
+        print(f"    Injected: {(inj_f1/max(b_f1, 0.01))*100:.1f}% F1 retention")
+        print(f"    Random:   {(rand_f1/max(b_f1, 0.01))*100:.1f}% F1 retention")
+        print(f"\n  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
+        print(f"  CRITICAL: Injected should beat Random to prove meaningful transfer!")
+        print(f"{'='*70}")
 
         task_results["squad"] = {
-            "baseline_em": baseline_em_avg,
-            "injected_em": injected_em_avg,
-            "baseline_f1": baseline_f1_avg,
-            "injected_f1": injected_f1_avg,
+            "model_b_em": b_em, "model_b_f1": b_f1,
+            "model_a_em": a_em, "model_a_f1": a_f1,
+            "injected_em": inj_em, "injected_f1": inj_f1,
+            "random_em": rand_em, "random_f1": rand_f1,
+            "no_context_em": nc_em, "no_context_f1": nc_f1,
             "n_samples": len(squad_samples)
         }
 
@@ -3656,8 +3739,11 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         print(f"Loaded {len(gsm8k_samples)} GSM8K test examples")
         print(f"Will print first 3 examples for inspection\n")
 
-        baseline_preds_gsm = []
+        baseline_b_preds_gsm = []
+        baseline_a_preds_gsm = []
         injected_preds_gsm = []
+        random_preds_gsm = []
+        no_context_preds_gsm = []
         gold_answers_gsm = []
 
         for idx, example in enumerate(gsm8k_samples):
@@ -3668,7 +3754,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             if idx % 10 == 0:
                 print(f"  Processing {idx+1}/{len(gsm8k_samples)}...")
 
-            # Baseline generation
+            # Baseline 1: Model B with full context
             inputs_b = tokenizer_b(prompt, return_tensors="pt").to(device)
             with torch.no_grad():
                 baseline_output = model_b.generate(
@@ -3681,10 +3767,40 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                     baseline_answer = baseline_text.split("Answer:")[-1].strip()
                 else:
                     baseline_answer = baseline_text.strip()
-                baseline_preds_gsm.append(baseline_answer)
+                baseline_b_preds_gsm.append(baseline_answer)
 
-            # Injected generation
+            # Baseline 2: Model A with full context
             inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                model_a_output = model_a.generate(
+                    **inputs_a,
+                    max_new_tokens=50,
+                    do_sample=False
+                )
+                model_a_text = tokenizer_a.decode(model_a_output[0], skip_special_tokens=True)
+                if "Answer:" in model_a_text:
+                    model_a_answer = model_a_text.split("Answer:")[-1].strip()
+                else:
+                    model_a_answer = model_a_text.strip()
+                baseline_a_preds_gsm.append(model_a_answer)
+
+            # Baseline 3: Model B with no context
+            no_context_prompt = "Answer:"
+            inputs_no_context = tokenizer_b(no_context_prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                no_context_output = model_b.generate(
+                    **inputs_no_context,
+                    max_new_tokens=50,
+                    do_sample=False
+                )
+                no_context_text = tokenizer_b.decode(no_context_output[0], skip_special_tokens=True)
+                if "Answer:" in no_context_text:
+                    no_context_answer = no_context_text.split("Answer:")[-1].strip()
+                else:
+                    no_context_answer = no_context_text.strip()
+                no_context_preds_gsm.append(no_context_answer)
+
+            # Get Model A's activation for injection
             with torch.no_grad():
                 outputs_a = model_a(**inputs_a, output_hidden_states=True)
                 h_a_last_token = outputs_a.hidden_states[eval_layer][0, -1, :]
@@ -3695,6 +3811,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             else:
                 h_projected = h_a_last_token
 
+            # Baseline 4: Model B with Model A's activation injected
             injected_activation = h_projected.clone()
             injection_done = [False]
 
@@ -3731,39 +3848,89 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             finally:
                 hook_handle.remove()
 
+            # Baseline 5: Model B with random activation injected
+            random_activation = torch.randn_like(h_projected) * h_projected.std()
+            injection_done = [False]
+
+            def random_injection_hook(module, input, output):
+                if injection_done[0]:
+                    return output
+                injection_done[0] = True
+                if isinstance(output, tuple):
+                    hidden_states = output[0].clone()
+                else:
+                    hidden_states = output.clone()
+                hidden_states[:, -1, :] = random_activation
+                if isinstance(output, tuple):
+                    return (hidden_states,) + output[1:]
+                else:
+                    return hidden_states
+
+            try:
+                target_layer = model_b.model.layers[eval_layer]
+                hook_handle = target_layer.register_forward_hook(random_injection_hook)
+
+                with torch.no_grad():
+                    random_output = model_b.generate(
+                        inputs_b.input_ids,
+                        max_new_tokens=50,
+                        do_sample=False
+                    )
+                    random_text = tokenizer_b.decode(random_output[0], skip_special_tokens=True)
+                    if "Answer:" in random_text:
+                        random_answer = random_text.split("Answer:")[-1].strip()
+                    else:
+                        random_answer = random_text.strip()
+                    random_preds_gsm.append(random_answer)
+            finally:
+                hook_handle.remove()
+
             # Print first 3 examples for inspection
             if idx < 3:
                 print(f"\n  Example {idx+1}:")
-                # Truncate long prompts for readability
                 display_prompt = prompt if len(prompt) < 150 else prompt[:150] + "..."
                 print(f"    Question: {display_prompt}")
-                gold_preview = gold[:80] if len(gold) > 80 else gold
-                baseline_preview = baseline_answer[:80] if len(baseline_answer) > 80 else baseline_answer
-                injected_preview = injected_answer[:80] if len(injected_answer) > 80 else injected_answer
-                print(f"    Gold:     '{extract_gsm8k_answer(gold)}' (from: {gold_preview}...)")
-                print(f"    Baseline: '{extract_gsm8k_answer(baseline_answer)}' (from: {baseline_preview}...)")
-                print(f"    Injected: '{extract_gsm8k_answer(injected_answer)}' (from: {injected_preview}...)")
-                baseline_correct = extract_gsm8k_answer(baseline_answer) == extract_gsm8k_answer(gold)
-                injected_correct = extract_gsm8k_answer(injected_answer) == extract_gsm8k_answer(gold)
-                print(f"    Baseline Correct: {baseline_correct}")
-                print(f"    Injected Correct: {injected_correct}")
+                print(f"    Gold:        '{extract_gsm8k_answer(gold)}'")
+                print(f"    Model B:     '{extract_gsm8k_answer(baseline_answer)}' (full context)")
+                print(f"    Model A:     '{extract_gsm8k_answer(model_a_answer)}' (full context)")
+                print(f"    Injected:    '{extract_gsm8k_answer(injected_answer)}' (A's activation → B)")
+                print(f"    Random:      '{extract_gsm8k_answer(random_answer)}' (noise → B)")
+                print(f"    No Context:  '{extract_gsm8k_answer(no_context_answer)}' (B alone)")
+                b_correct = extract_gsm8k_answer(baseline_answer) == extract_gsm8k_answer(gold)
+                a_correct = extract_gsm8k_answer(model_a_answer) == extract_gsm8k_answer(gold)
+                inj_correct = extract_gsm8k_answer(injected_answer) == extract_gsm8k_answer(gold)
+                rand_correct = extract_gsm8k_answer(random_answer) == extract_gsm8k_answer(gold)
+                nc_correct = extract_gsm8k_answer(no_context_answer) == extract_gsm8k_answer(gold)
+                print(f"    Correct: B={b_correct}, A={a_correct}, Inj={inj_correct}, Rand={rand_correct}, NC={nc_correct}")
 
-        # Compute GSM8K accuracy
-        baseline_acc = gsm8k_accuracy(baseline_preds_gsm, gold_answers_gsm)
-        injected_acc = gsm8k_accuracy(injected_preds_gsm, gold_answers_gsm)
+        # Compute GSM8K accuracy for all baselines
+        b_acc = gsm8k_accuracy(baseline_b_preds_gsm, gold_answers_gsm)
+        a_acc = gsm8k_accuracy(baseline_a_preds_gsm, gold_answers_gsm)
+        inj_acc = gsm8k_accuracy(injected_preds_gsm, gold_answers_gsm)
+        rand_acc = gsm8k_accuracy(random_preds_gsm, gold_answers_gsm)
+        nc_acc = gsm8k_accuracy(no_context_preds_gsm, gold_answers_gsm)
 
-        print(f"\n{'='*60}")
+        print(f"\n{'='*70}")
         print(f"GSM8K Results Summary ({len(gsm8k_samples)} samples):")
-        print(f"{'='*60}")
-        print(f"  Baseline Accuracy: {baseline_acc*100:.1f}%")
-        print(f"  Injected Accuracy: {injected_acc*100:.1f}%")
-        print(f"  Performance Retention: {(injected_acc/max(baseline_acc, 0.01))*100:.1f}% of baseline")
-        print(f"  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
-        print(f"{'='*60}")
+        print(f"{'='*70}")
+        print(f"  Model B (full context):        Accuracy: {b_acc*100:5.1f}%  ← Upper bound for B")
+        print(f"  Model A (full context):        Accuracy: {a_acc*100:5.1f}%  ← Upper bound for A")
+        print(f"  Injected (A's activation → B): Accuracy: {inj_acc*100:5.1f}%  ← Our method")
+        print(f"  Random (noise → B):            Accuracy: {rand_acc*100:5.1f}%  ← Control")
+        print(f"  No Context (B alone):          Accuracy: {nc_acc*100:5.1f}%  ← Lower bound")
+        print(f"\n  Performance Retention (vs Model B):")
+        print(f"    Injected: {(inj_acc/max(b_acc, 0.01))*100:.1f}% retention")
+        print(f"    Random:   {(rand_acc/max(b_acc, 0.01))*100:.1f}% retention")
+        print(f"\n  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
+        print(f"  CRITICAL: Injected should beat Random to prove meaningful transfer!")
+        print(f"{'='*70}")
 
         task_results["gsm8k"] = {
-            "baseline_accuracy": baseline_acc,
-            "injected_accuracy": injected_acc,
+            "model_b_accuracy": b_acc,
+            "model_a_accuracy": a_acc,
+            "injected_accuracy": inj_acc,
+            "random_accuracy": rand_acc,
+            "no_context_accuracy": nc_acc,
             "n_samples": len(gsm8k_samples)
         }
 
@@ -3781,27 +3948,34 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     if "squad" in task_results and "error" not in task_results["squad"]:
         squad = task_results["squad"]
         print(f"\nSQuAD Q&A ({squad['n_samples']} samples):")
-        print(f"  Baseline: EM={squad['baseline_em']*100:.1f}%, F1={squad['baseline_f1']*100:.1f}%")
-        print(f"  Injected: EM={squad['injected_em']*100:.1f}%, F1={squad['injected_f1']*100:.1f}%")
-        retention = (squad['injected_f1']/max(squad['baseline_f1'], 0.01))*100
-        print(f"  Retention: {retention:.1f}% of baseline F1")
+        print(f"  Model B:     F1={squad['model_b_f1']*100:.1f}%")
+        print(f"  Model A:     F1={squad['model_a_f1']*100:.1f}%")
+        print(f"  Injected:    F1={squad['injected_f1']*100:.1f}% ({(squad['injected_f1']/max(squad['model_b_f1'], 0.01))*100:.1f}% retention)")
+        print(f"  Random:      F1={squad['random_f1']*100:.1f}% ({(squad['random_f1']/max(squad['model_b_f1'], 0.01))*100:.1f}% retention)")
+        print(f"  No Context:  F1={squad['no_context_f1']*100:.1f}%")
+        injected_beats_random = squad['injected_f1'] > squad['random_f1']
+        print(f"  ✓ Injected beats random: {injected_beats_random}" if injected_beats_random else f"  ✗ Injected does NOT beat random!")
     else:
         print(f"\nSQuAD Q&A: FAILED")
 
     if "gsm8k" in task_results and "error" not in task_results["gsm8k"]:
         gsm = task_results["gsm8k"]
         print(f"\nGSM8K Math ({gsm['n_samples']} samples):")
-        print(f"  Baseline: {gsm['baseline_accuracy']*100:.1f}% accuracy")
-        print(f"  Injected: {gsm['injected_accuracy']*100:.1f}% accuracy")
-        retention = (gsm['injected_accuracy']/max(gsm['baseline_accuracy'], 0.01))*100
-        print(f"  Retention: {retention:.1f}% of baseline")
+        print(f"  Model B:     {gsm['model_b_accuracy']*100:.1f}%")
+        print(f"  Model A:     {gsm['model_a_accuracy']*100:.1f}%")
+        print(f"  Injected:    {gsm['injected_accuracy']*100:.1f}% ({(gsm['injected_accuracy']/max(gsm['model_b_accuracy'], 0.01))*100:.1f}% retention)")
+        print(f"  Random:      {gsm['random_accuracy']*100:.1f}% ({(gsm['random_accuracy']/max(gsm['model_b_accuracy'], 0.01))*100:.1f}% retention)")
+        print(f"  No Context:  {gsm['no_context_accuracy']*100:.1f}%")
+        injected_beats_random = gsm['injected_accuracy'] > gsm['random_accuracy']
+        print(f"  ✓ Injected beats random: {injected_beats_random}" if injected_beats_random else f"  ✗ Injected does NOT beat random!")
     else:
         print(f"\nGSM8K Math: FAILED")
 
     print(f"\nInterpretation:")
-    print(f"  - Random/untrained projection expected: ~0-5% retention")
+    print(f"  - Injected MUST beat Random to prove meaningful activation transfer")
+    print(f"  - Random/untrained projection: ~0-5% retention expected")
     print(f"  - Trained projection target (Ramesh & Li): 10-27% retention")
-    print(f"  - Perfect projection would achieve: ~100% retention")
+    print(f"  - Perfect projection: ~100% retention")
 
     print(f"\nNext steps:")
     if learned_projection is None or not hasattr(learned_projection, 'trained'):
