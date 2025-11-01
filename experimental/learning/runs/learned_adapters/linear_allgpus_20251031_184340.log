@@ -180,3 +180,37 @@ Epoch 2/10
   Step 390/500: Loss = 7.5609 (Gen: 7.0622, Contr: 2.9432, Align: 72.7938, Uniform: -0.7495)
   [ 80.0%] Step  400/500 | Loss: 7.5600 (Gen: 7.0600, Contr: 2.9427, Align: 72.9366, Uniform: -0.7493) | ContrW: 0.190 | LR: 4.61e-05 | GradNorm: 0.498 | 0.36 steps/s | ETA: 4.7m
   [ 80.0%] Step  400/500 | Loss: 7.5600 (Gen: 7.0600, Contr: 2.9427, Align: 72.9366, Uniform: -0.7493) | ContrW: 0.190 | LR: 4.61e-05 | GradNorm: 0.498 | 0.36 steps/s | ETA: 4.7m
+  Step 410/500: Loss = 7.5606 (Gen: 7.0592, Contr: 2.9423, Align: 73.0219, Uniform: -0.7489)
+  Step 420/500: Loss = 7.5608 (Gen: 7.0580, Contr: 2.9419, Align: 73.1307, Uniform: -0.7485)
+  Step 430/500: Loss = 7.5594 (Gen: 7.0553, Contr: 2.9416, Align: 73.1667, Uniform: -0.7480)
+  Step 440/500: Loss = 7.5596 (Gen: 7.0541, Contr: 2.9410, Align: 73.3187, Uniform: -0.7483)
+  Step 450/500: Loss = 7.5598 (Gen: 7.0529, Contr: 2.9406, Align: 73.4210, Uniform: -0.7481)
+  Step 460/500: Loss = 7.5593 (Gen: 7.0510, Contr: 2.9401, Align: 73.3013, Uniform: -0.7472)
+  Step 470/500: Loss = 7.5588 (Gen: 7.0491, Contr: 2.9396, Align: 73.2902, Uniform: -0.7472)
+  Step 480/500: Loss = 7.5595 (Gen: 7.0484, Contr: 2.9394, Align: 73.2579, Uniform: -0.7464)
+  Step 490/500: Loss = 7.5612 (Gen: 7.0486, Contr: 2.9390, Align: 73.2953, Uniform: -0.7460)
+  [100.0%] Step  500/500 | Loss: 7.5605 (Gen: 7.0466, Contr: 2.9384, Align: 73.1849, Uniform: -0.7453) | ContrW: 0.200 | LR: 4.53e-05 | GradNorm: 0.000 | 0.36 steps/s | ETA: 0.0m
+  [100.0%] Step  500/500 | Loss: 7.5605 (Gen: 7.0466, Contr: 2.9384, Align: 73.1849, Uniform: -0.7453) | ContrW: 0.200 | LR: 4.53e-05 | GradNorm: 0.000 | 0.36 steps/s | ETA: 0.0m
+
+================================================================================
+Epoch 2/10 Complete | Time: 23.5m | Total: 47.2m
+  Total Loss: 7.5605 (Gen: 7.0466, Contr: 2.9384)
+  CKA Score: 0.3418 | LR: 0.000045
+  ETA for remaining 8 epochs: 189.0m
+================================================================================
+
+================================================================================
+Epoch 2/10 Complete | Time: 23.5m | Total: 47.2m
+  Total Loss: 7.5605 (Gen: 7.0466, Contr: 2.9384)
+  CKA Score: 0.3418 | LR: 0.000045
+  ETA for remaining 8 epochs: 189.0m
+================================================================================
+  Checkpoint saved to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_checkpoint/checkpoint.pt
+
+================================================================================
+Epoch 3/10
+================================================================================
+
+================================================================================
+Epoch 3/10
+================================================================================
