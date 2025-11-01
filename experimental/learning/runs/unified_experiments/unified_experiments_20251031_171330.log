@@ -1,0 +1,681 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 10
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-31T17:13:34.278447
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4042.70it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 16.44it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.12it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.00it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3960.63it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 16.48it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 16.65it/s]
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Llama model moved to cuda:0
+Mistral model moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.089725
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.2734
+      Generated: esign
+
+# Re-designing the world’s most popular online dating app
+
+
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.5781
+      Generated: 
+
+The first thing you need to do is to make sure that you have a good understand
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.4609
+      Generated: 
+
+**A**
+
+**S**
+
+**S**
+
+**S**
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.4219
+      Generated: 
+
+The
+
+Michael J. B. Allen
+
+and
+
+James R
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.7031
+      Generated: 
+
+The
+
+The
+
+The
+
+The
+
+The
+
+The
+
+
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+
+============================================================
+Testing Layer 8
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033226
+  WARNING: Orthogonality error = 0.033129
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+      Generated: als, the first thing that comes to mind is the word “architecture”. The word “
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+      Generated: the the the the architectural style of the building.
+
+The architectural style of
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+      Generated: , the 2014 winner of the Pritzker Prize, the architecture world’s
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+      Generated: , 1969, 1969, 1969, 
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+      Generated: 
+
+The architectural style of the school is a modern interpretation of the tradit
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+
+============================================================
+Testing Layer 16
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033363
+  WARNING: Orthogonality error = 0.033375
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+      Generated: s of the Church of the Holy Sepulchre, Jerusalem, 1850.
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+      Generated: the the the is the most important.
+
+The most important thing is to have a good t
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+      Generated: , the building is a 19th century former church, which has been converted into a 
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+      Generated: the
+ Question:
+
+What is the difference between a "sandwich" and a "
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+      Generated: 
+
+The architectural style of the building is a combination of the traditional an
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+
+============================================================
+Testing Layer 24
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.034813
+  WARNING: Orthogonality error = 0.035054
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+      Generated: the building is a 19th century church, which was converted into a house in the 
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+      Generated: building is a 19th century brick building that was once the home of the local po
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+      Generated: , the, Question 1���� Questionnaire
+
+The questionnaire is a tool
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+      Generated: the Question is, and Question 2.2.
+
+## What is the best way to
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+      Generated: the church of St. St. John the Baptist, the church of St. John the Bapt
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+
+============================================================
+Testing Layer 32
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.102234
+  WARNING: Orthogonality error = 0.102734
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 948.0000
+      Generated: the bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan beka
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1192.0000
+      Generated: the bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan beka
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1040.0000
+      Generated: the bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan beka
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1072.0000
+      Generated: the bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan beka
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1168.0000
+      Generated: and bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan beka
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!
+
+================================================================================
+PROCRUSTES EXPERIMENT SUMMARY
+================================================================================
+
+Layer 0:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 0/5 succeeded, 5/5 failed
+
+Layer 8:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 0/5 succeeded, 5/5 failed
+
+Layer 16:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 0/5 succeeded, 5/5 failed
+
+Layer 24:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 0/5 succeeded, 5/5 failed
+
+Layer 32:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 0/5 succeeded, 5/5 failed
+================================================================================
+Procrustes results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_20251031_171334.json
+
+Cleaning up GPU memory...
+  GPU cache cleared
+
+2. Starting learned adapter experiments...
+Running all 3 adapters in parallel on 4 GPUs...
+Memory optimizations: GPU cleanup + seq=256 + single-layer alignment
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 10
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251031_171458.log
+GPU assigned: 2
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 10
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - AFFINE
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251031_171458.log
+GPU assigned: 1
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
+  - Batch size: 10
+  - Samples: 10000
+  - Epochs: 10
+  - BF16: True
+  - Flash Attention: True
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LINEAR
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_gpu0_20251031_171458.log
+GPU assigned: 0
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2766.69it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1511.60it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2630.89it/s]You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+
+
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.81it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.58it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.57it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.86it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.71it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.73it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.86it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.81it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.79it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.99it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.95it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.93it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.87it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.85it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.84it/s]
+
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2648.48it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2534.32it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1699.93it/s]
+
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.91it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.88it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.87it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.37it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.34it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.33it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.58it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.54it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.43it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.40it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.39it/s]
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:870: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(checkpoint_path, map_location=device)
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:617: UserWarning: This DataLoader will create 4 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(
+
+================================================================================
+Epoch 2/10
+================================================================================
+
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:870: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(checkpoint_path, map_location=device)
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:617: UserWarning: This DataLoader will create 4 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(
+
+================================================================================
+Epoch 2/10
+================================================================================
+
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:870: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(checkpoint_path, map_location=device)
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:617: UserWarning: This DataLoader will create 4 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(
+
+================================================================================
+Epoch 2/10
+================================================================================
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(

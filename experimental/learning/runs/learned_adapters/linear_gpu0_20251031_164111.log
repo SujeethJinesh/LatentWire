@@ -1,0 +1,220 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LINEAR
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_gpu0_20251031_164111.log
+GPU assigned: 0
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3823.43it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3823.43it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.71it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.71it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.70it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.70it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.89it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.89it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.94it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.94it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.88it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.88it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 613.89it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 613.89it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.92it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.92it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.27it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.27it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.52it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.52it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.38it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.38it/s]
+
+
+Training LinearAdapter...
+Loading dataset (10000 samples)...
+
+Epoch 1/10
+  Step 10/1250: Loss = 10.9121
+  Step 20/1250: Loss = 10.4157
+  Step 30/1250: Loss = 10.0353
+  Step 40/1250: Loss = 9.8312
+  Step 50/1250: Loss = 9.6594
+  Step 60/1250: Loss = 9.5201
+  Step 70/1250: Loss = 9.3986
+  Step 80/1250: Loss = 9.2953
+  Step 90/1250: Loss = 9.1976
+  Step 100/1250: Loss = 9.1175
+  Step 110/1250: Loss = 9.0431
+  Step 120/1250: Loss = 8.9817
+  Step 130/1250: Loss = 8.9226
+  Step 140/1250: Loss = 8.8709
+  Step 150/1250: Loss = 8.8251
+  Step 160/1250: Loss = 8.7735
+  Step 170/1250: Loss = 8.7342
+  Step 180/1250: Loss = 8.6939
+  Step 190/1250: Loss = 8.6597
+  Step 200/1250: Loss = 8.6257
+  Step 210/1250: Loss = 8.5934
+  Step 220/1250: Loss = 8.5653
+  Step 230/1250: Loss = 8.5369
+  Step 240/1250: Loss = 8.5135
+  Step 250/1250: Loss = 8.4842
+  Step 260/1250: Loss = 8.4609
+  Step 270/1250: Loss = 8.4414
+  Step 280/1250: Loss = 8.4216
+  Step 290/1250: Loss = 8.4013
+  Step 300/1250: Loss = 8.3846
+  Step 310/1250: Loss = 8.3687
+  Step 320/1250: Loss = 8.3523
+  Step 330/1250: Loss = 8.3359
+  Step 340/1250: Loss = 8.3242
+  Step 350/1250: Loss = 8.3094
+  Step 360/1250: Loss = 8.2950
+  Step 370/1250: Loss = 8.2818
+  Step 380/1250: Loss = 8.2685
+  Step 390/1250: Loss = 8.2547
+  Step 400/1250: Loss = 8.2434
+  Step 410/1250: Loss = 8.2315
+  Step 420/1250: Loss = 8.2198
+  Step 430/1250: Loss = 8.2095
+  Step 440/1250: Loss = 8.1976
+  Step 450/1250: Loss = 8.1865
+  Step 460/1250: Loss = 8.1777
+  Step 470/1250: Loss = 8.1700
+  Step 480/1250: Loss = 8.1599
+  Step 490/1250: Loss = 8.1538
+  Step 500/1250: Loss = 8.1425
+  Step 510/1250: Loss = 8.1341
+  Step 520/1250: Loss = 8.1236
+  Step 530/1250: Loss = 8.1171
+  Step 540/1250: Loss = 8.1091
+  Step 550/1250: Loss = 8.1009
+  Step 560/1250: Loss = 8.0932
+  Step 570/1250: Loss = 8.0848
+  Step 580/1250: Loss = 8.0773
+  Step 590/1250: Loss = 8.0702
+  Step 600/1250: Loss = 8.0629
+  Step 610/1250: Loss = 8.0546
+  Step 620/1250: Loss = 8.0470
+  Step 630/1250: Loss = 8.0411
+  Step 640/1250: Loss = 8.0334
+  Step 650/1250: Loss = 8.0268
+  Step 660/1250: Loss = 8.0207
+  Step 670/1250: Loss = 8.0151
+  Step 680/1250: Loss = 8.0086
+  Step 690/1250: Loss = 8.0025
+  Step 700/1250: Loss = 7.9973
+  Step 710/1250: Loss = 7.9927
+  Step 720/1250: Loss = 7.9881
+  Step 730/1250: Loss = 7.9825
+  Step 740/1250: Loss = 7.9776
+  Step 750/1250: Loss = 7.9724
+  Step 760/1250: Loss = 7.9655
+  Step 770/1250: Loss = 7.9605
+  Step 780/1250: Loss = 7.9550
+  Step 790/1250: Loss = 7.9493
+  Step 800/1250: Loss = 7.9454
+  Step 810/1250: Loss = 7.9414
+  Step 820/1250: Loss = 7.9368
+  Step 830/1250: Loss = 7.9326
+  Step 840/1250: Loss = 7.9288
+  Step 850/1250: Loss = 7.9244
+  Step 860/1250: Loss = 7.9211
+  Step 870/1250: Loss = 7.9175
+  Step 880/1250: Loss = 7.9140
+  Step 890/1250: Loss = 7.9099
+  Step 900/1250: Loss = 7.9061
+  Step 910/1250: Loss = 7.9005
+  Step 920/1250: Loss = 7.8960
+  Step 930/1250: Loss = 7.8929
+  Step 940/1250: Loss = 7.8887
+  Step 950/1250: Loss = 7.8846
+  Step 960/1250: Loss = 7.8808
+  Step 970/1250: Loss = 7.8774
+  Step 980/1250: Loss = 7.8747
+  Step 990/1250: Loss = 7.8712
+  Step 1000/1250: Loss = 7.8682
+  Step 1010/1250: Loss = 7.8643
+  Step 1020/1250: Loss = 7.8615
+  Step 1030/1250: Loss = 7.8582
+  Step 1040/1250: Loss = 7.8542
+  Step 1050/1250: Loss = 7.8499
+  Step 1060/1250: Loss = 7.8465
+  Step 1070/1250: Loss = 7.8424
+  Step 1080/1250: Loss = 7.8390
+  Step 1090/1250: Loss = 7.8349
+  Step 1100/1250: Loss = 7.8323
+  Step 1110/1250: Loss = 7.8287
+  Step 1120/1250: Loss = 7.8261
+  Step 1130/1250: Loss = 7.8236
+  Step 1140/1250: Loss = 7.8206
+  Step 1150/1250: Loss = 7.8176
+  Step 1160/1250: Loss = 7.8149
+  Step 1170/1250: Loss = 7.8128
+  Step 1180/1250: Loss = 7.8096
+  Step 1190/1250: Loss = 7.8069
+  Step 1200/1250: Loss = 7.8037
+  Step 1210/1250: Loss = 7.8004
+  Step 1220/1250: Loss = 7.7983
+  Step 1230/1250: Loss = 7.7957
+  Step 1240/1250: Loss = 7.7927
+  Step 1250/1250: Loss = 7.7908
+  Epoch 1 avg loss: 7.7908, CKA: 0.0000
+  Checkpoint saved to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_checkpoint/checkpoint.pt
+
+Epoch 2/10
+  Step 10/1250: Loss = 7.4141
+  Step 20/1250: Loss = 7.3990
+  Step 30/1250: Loss = 7.4006
+  Step 40/1250: Loss = 7.3768
+  Step 50/1250: Loss = 7.3785
+  Step 60/1250: Loss = 7.3885
+  Step 70/1250: Loss = 7.3830
+  Step 80/1250: Loss = 7.3868
+  Step 90/1250: Loss = 7.3989
+  Step 100/1250: Loss = 7.3962
+  Step 110/1250: Loss = 7.4124
+  Step 120/1250: Loss = 7.4050
+  Step 130/1250: Loss = 7.4013
+  Step 140/1250: Loss = 7.4014
+  Step 150/1250: Loss = 7.4009
+  Step 160/1250: Loss = 7.3940
+  Step 170/1250: Loss = 7.3931
+  Step 180/1250: Loss = 7.3945
+  Step 190/1250: Loss = 7.3907
+  Step 200/1250: Loss = 7.3886
+  Step 210/1250: Loss = 7.3890
+  Step 220/1250: Loss = 7.3835
+  Step 230/1250: Loss = 7.3854
+  Step 240/1250: Loss = 7.3844
+  Step 250/1250: Loss = 7.3829
+  Step 260/1250: Loss = 7.3807
+  Step 270/1250: Loss = 7.3805
+  Step 280/1250: Loss = 7.3818
+  Step 290/1250: Loss = 7.3823
+  Step 300/1250: Loss = 7.3832
+  Step 310/1250: Loss = 7.3805
+  Step 320/1250: Loss = 7.3801
+  Step 330/1250: Loss = 7.3775
+  Step 340/1250: Loss = 7.3750
+  Step 350/1250: Loss = 7.3741
+  Step 360/1250: Loss = 7.3784
+  Step 370/1250: Loss = 7.3809
+  Step 380/1250: Loss = 7.3833
+  Step 390/1250: Loss = 7.3839
+  Step 400/1250: Loss = 7.3819
+  Step 410/1250: Loss = 7.3793
+  Step 420/1250: Loss = 7.3792
+  Step 430/1250: Loss = 7.3781
+  Step 440/1250: Loss = 7.3768
+  Step 450/1250: Loss = 7.3760
+  Step 460/1250: Loss = 7.3748
+  Step 470/1250: Loss = 7.3741
+  Step 480/1250: Loss = 7.3725
+  Step 490/1250: Loss = 7.3739
+  Step 500/1250: Loss = 7.3741
+  Step 510/1250: Loss = 7.3725
+  Step 520/1250: Loss = 7.3721
+  Step 530/1250: Loss = 7.3729
+  Step 540/1250: Loss = 7.3705
+  Step 550/1250: Loss = 7.3714
+  Step 560/1250: Loss = 7.3708
+  Step 570/1250: Loss = 7.3710
+  Step 580/1250: Loss = 7.3718
+  Step 590/1250: Loss = 7.3707
+  Step 600/1250: Loss = 7.3698
+  Step 610/1250: Loss = 7.3673
+  Step 620/1250: Loss = 7.3659
+  Step 630/1250: Loss = 7.3638
+  Step 640/1250: Loss = 7.3628
+  Step 650/1250: Loss = 7.3624
+  Step 660/1250: Loss = 7.3627
+  Step 670/1250: Loss = 7.3638
+  Step 680/1250: Loss = 7.3630
