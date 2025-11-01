@@ -82,14 +82,17 @@ def get_device_and_config():
         print(f"  - Samples: {config['num_samples']} (reduced for testing)")
         print(f"  - Epochs: {config['epochs']} (reduced for testing)")
     else:
-        config['batch_size'] = 10  # Increased from 8 to 10 to utilize available GPU memory (~79GB/80GB)
-        config['num_samples'] = 10000  # Conservative for preemptible cluster (1,000 steps/epoch, ~1.5-2h/adapter)
+        # HPC configuration - batch size optimized for multi-GPU
+        num_gpus = torch.cuda.device_count() if platform == 'hpc' else 1
+        config['batch_size'] = 10 * num_gpus  # Scale batch size with GPU count (DataParallel splits batches)
+        config['num_samples'] = 10000  # Conservative for preemptible cluster
         config['epochs'] = 10
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
-        config['grad_accum_steps'] = 8  # Effective batch size: 80
+        config['grad_accum_steps'] = 8  # Gradient accumulation
         if platform == 'hpc':
-            print(f"  - Batch size: {config['batch_size']}")
+            print(f"  - Batch size: {config['batch_size']} ({num_gpus} GPUs × 10 per GPU)")
+            print(f"  - Effective batch (with grad accum): {config['batch_size'] * config['grad_accum_steps']}")
             print(f"  - Samples: {config['num_samples']}")
             print(f"  - Epochs: {config['epochs']}")
             print(f"  - BF16: {config['use_bf16']}")
@@ -1195,11 +1198,20 @@ def run_adapter_experiment(adapter_type, gpu_id):
             print(f"Platform: {PLATFORM}")
             print(f"Log file: {log_path}")
 
-            # Use global device (supports MPS/CUDA/CPU)
-            if PLATFORM == 'hpc' and gpu_id is not None:
+            # Device configuration
+            use_data_parallel = False
+            if PLATFORM == 'hpc' and gpu_id is None and torch.cuda.device_count() > 1:
+                # Use all GPUs with DataParallel
+                device = torch.device("cuda:0")  # Primary device
+                use_data_parallel = True
+                print(f"Using DataParallel across {torch.cuda.device_count()} GPUs")
+                print(f"Primary device: cuda:0")
+            elif PLATFORM == 'hpc' and gpu_id is not None:
+                # Use specific GPU
                 device = torch.device(f"cuda:{gpu_id}")
                 print(f"GPU assigned: {gpu_id}")
             else:
+                # Use default device (MPS/CPU/single GPU)
                 device = DEVICE
                 print(f"Device: {device}")
 
@@ -1236,6 +1248,11 @@ def run_adapter_experiment(adapter_type, gpu_id):
             # Enable gradient checkpointing to save memory during training (works on all platforms)
             model_a.gradient_checkpointing_enable()
 
+            # Wrap with DataParallel if using multiple GPUs
+            if use_data_parallel:
+                model_a = torch.nn.DataParallel(model_a)
+                print(f"Wrapped Llama model with DataParallel")
+
             model_b = AutoModelForCausalLM.from_pretrained(
                 MISTRAL_MODEL,
                 **model_kwargs
@@ -1243,6 +1260,11 @@ def run_adapter_experiment(adapter_type, gpu_id):
 
             # Enable gradient checkpointing to save memory during training
             model_b.gradient_checkpointing_enable()
+
+            # Wrap with DataParallel if using multiple GPUs
+            if use_data_parallel:
+                model_b = torch.nn.DataParallel(model_b)
+                print(f"Wrapped Mistral model with DataParallel")
 
             # Load tokenizers
             tokenizer_a = AutoTokenizer.from_pretrained(LLAMA_MODEL)
@@ -1391,8 +1413,18 @@ def run_token_compression_experiment(
     Key idea: Initialize compressed representation with actual token embeddings
     from the input, not random noise. Apply LoRA to all layers for adaptation.
     """
+    # Device configuration for multi-GPU support
+    use_data_parallel = False
     if device is None:
-        device = DEVICE
+        if PLATFORM == 'hpc' and torch.cuda.device_count() > 1:
+            # Use all GPUs with DataParallel
+            device = torch.device("cuda:0")  # Primary device
+            use_data_parallel = True
+            print(f"Using DataParallel across {torch.cuda.device_count()} GPUs")
+            print(f"Primary device: cuda:0")
+        else:
+            device = DEVICE
+            print(f"Device: {device}")
 
     print("\n" + "=" * 80)
     print("TOKEN-INITIALIZED COMPRESSION EXPERIMENT")
@@ -1422,6 +1454,11 @@ def run_token_compression_experiment(
 
         tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
         tokenizer.pad_token = tokenizer.eos_token
+
+        # Wrap with DataParallel if using multiple GPUs
+        if use_data_parallel:
+            model = torch.nn.DataParallel(model)
+            print(f"Wrapped Llama model with DataParallel")
 
     # Apply LoRA to all layers if requested
     if use_lora_all_layers:
@@ -1638,124 +1675,39 @@ def main():
         torch.cuda.synchronize()
         print("  GPU cache cleared")
 
-    # Run learned adapter experiments + token compression in parallel
-    print("\n2. Starting all experiments in parallel...")
+    # Run all experiments SEQUENTIALLY, each using all available GPUs
+    print("\n2. Starting all experiments sequentially...")
+    print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
+    print("Benefits: Progressive results + full GPU utilization per experiment")
+    print("")
 
-    # Run in PARALLEL with memory fixes applied:
-    # - GPU cleanup after Procrustes (clears residual memory)
-    # - MAX_LENGTH=256 (halves activations)
-    # - Single-layer alignment (1 forward pass instead of 3)
-    # Expected: ~44GB per GPU (35GB margin on 79GB H100s)
-    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 4:
-        print(f"Running ALL 4 experiments in parallel on {torch.cuda.device_count()} GPUs...")
-        print("  GPU 0: Linear adapter")
-        print("  GPU 1: Affine adapter")
-        print("  GPU 2: LoRA adapter")
-        print("  GPU 3: Token compression")
-        print("Memory optimizations: GPU cleanup + seq=256 + single-layer alignment")
-        processes = []
+    # Run learned adapter experiments (each uses all GPUs via DataParallel)
+    for adapter_type in ["linear", "affine", "lora"]:
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT {['linear', 'affine', 'lora'].index(adapter_type) + 1}/4: {adapter_type.upper()} ADAPTER")
+        print(f"{'='*80}")
+        run_adapter_experiment(adapter_type, gpu_id=None)  # None = use all GPUs
 
-        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
-        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
-        p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
-        p4 = mp.Process(target=run_token_compression_wrapper, args=(3,))
+        # Clean GPU memory between experiments
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            print(f"✓ {adapter_type.upper()} complete, GPU memory cleared")
 
-        p1.start()
-        p2.start()
-        p3.start()
-        p4.start()
+    # Run token compression experiment (uses all GPUs via DataParallel)
+    print(f"\n{'='*80}")
+    print(f"EXPERIMENT 4/4: TOKEN COMPRESSION")
+    print(f"{'='*80}")
+    run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs
 
-        processes.extend([p1, p2, p3, p4])
-
-        # Wait for all to complete
-        print("Waiting for all 4 experiments to complete...")
-        for p in processes:
-            p.join()
-
-        print("\n3. All 4 experiments completed in parallel!")
-        print("  - 3 learned adapters (Linear, Affine, LoRA)")
-        print("  - Token compression")
-
-    elif PLATFORM == 'hpc' and torch.cuda.device_count() == 3:
-        # HPC with exactly 3 GPUs: Run all 3 adapters in parallel, then token compression sequentially
-        print("Running all 3 adapters in parallel on 3 GPUs...")
-        processes = []
-
-        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
-        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
-        p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
-
-        p1.start()
-        p2.start()
-        p3.start()
-
-        processes.extend([p1, p2, p3])
-
-        # Wait for completion
-        for p in processes:
-            p.join()
-
-        print("\n3. All adapter experiments completed!")
-
-        # Run token compression sequentially
-        print("\n4. Starting token compression experiment (sequential on GPU 0)...")
-        run_token_compression_wrapper(0)
-
-    elif PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
-        # HPC with 2 GPUs: Run 2 in parallel, then LoRA, then token compression
-        print("Running Linear and Affine adapters in parallel on 2 GPUs...")
-        processes = []
-
-        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
-        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
-
-        p1.start()
-        p2.start()
-
-        processes.extend([p1, p2])
-
-        # Wait for completion
-        for p in processes:
-            p.join()
-
-        # Run LoRA sequentially after others complete
-        print("\n3. Starting LoRA experiment (sequential on GPU 0)...")
-        run_adapter_experiment("lora", 0)
-
-        print("\n3. All adapter experiments completed!")
-
-        # Run token compression sequentially
-        print("\n4. Starting token compression experiment (sequential on GPU 0)...")
-        run_token_compression_wrapper(0)
-
-    else:
-        # Mac/CPU/Single GPU: Run sequentially
-        if PLATFORM == 'mac':
-            print("Running adapters sequentially on MPS device...")
-        elif PLATFORM == 'cpu':
-            print("Running adapters sequentially on CPU...")
-        else:
-            print(f"Only {torch.cuda.device_count()} GPU available, running sequentially...")
-
-        # Run all experiments sequentially (None means use default device)
-        for adapter_type in ["linear", "affine", "lora"]:
-            print(f"\nRunning {adapter_type} adapter...")
-            run_adapter_experiment(adapter_type, None)
-
-        # Run token compression sequentially (only for non-parallel cases)
-        print("\n3. Starting token-initialized compression experiment...")
-        token_results = run_token_compression_experiment(
-            num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
-            compressed_length=64,
-            epochs=EPOCHS,
-            use_lora_all_layers=True
-        )
-
-        # Save token compression results
-        token_path = output_dir / f"token_compression_results_{timestamp}.json"
-        with open(token_path, 'w') as f:
-            json.dump(token_results, f, indent=2)
-        print(f"Token compression results saved to: {token_path}")
+    print("\n" + "=" * 80)
+    print("ALL 4 EXPERIMENTS COMPLETE")
+    print("=" * 80)
+    print("Experiments run:")
+    print("  1. Linear adapter")
+    print("  2. Affine adapter")
+    print("  3. LoRA adapter")
+    print("  4. Token compression")
 
     print("\n" + "=" * 80)
     print("ALL EXPERIMENTS COMPLETE")
