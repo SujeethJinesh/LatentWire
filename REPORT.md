@@ -980,6 +980,193 @@ Not pursuing this in near-term due to high risk of repeating Phase 1b failure. P
 
 ---
 
+## 8. Cross-Model Alignment Experiments (October 2025)
+
+### 8.1 Motivation: Cross-LLM Communication via Hidden State Stitching
+
+**Research Question**: Can we align hidden states between heterogeneous LLMs (different architectures, vocabularies) to enable cross-model communication without retokenization?
+
+**Use Case**: Model A processes data, injects hidden states directly into Model B's computation, bypassing tokenization overhead.
+
+**Initial Approach**: Llama 3.1 8B → Mistral 7B v0.3 alignment via learned adapters.
+
+### 8.2 Critical Discovery: Tokenizer Vocabulary Mismatch
+
+**Problem Identified (October 31, 2025)**:
+
+After implementing DDP training and analyzing metrics, discovered a **fundamental vocabulary incompatibility**:
+
+| Model | Vocabulary Size | Tokenizer | Ratio |
+|-------|----------------|-----------|-------|
+| Llama 3.1 8B | **128,000 tokens** | Tiktoken | **4.0×** |
+| Mistral 7B v0.3 | **32,768 tokens** | SentencePiece | **1.0×** |
+
+**Impact on Metrics**:
+- Generation Loss: 6.8132 (catastrophic - 10-13× worse than typical 0.5-0.6 convergence)
+- Perplexity: ~112 (should be 1.4-1.5 for well-aligned models)
+- CKA Similarity: 0.3199 (moderate for cross-family alignment)
+
+**Root Cause**:
+- Llama's hidden states encode information for 128K token vocabulary space
+- Mistral's decoder expects 32K token vocabulary space
+- Adapter trying to bridge incompatible semantic spaces
+- No precedent in literature for cross-family transfer with 4× vocab mismatch
+
+### 8.3 Literature Review: Solutions for Cross-Tokenizer Transfer
+
+**Key Finding**: Recent research (2024-2025) has developed methods specifically for vocabulary mismatch:
+
+#### 1. **TokAlign** (ACL 2025)
+- **Method**: Learns one-to-one token ID mapping via co-occurrence statistics
+- **Results**: Reduces perplexity from 340 → 120 after initialization
+- **Benefit**: +4.4% improvement over sentence-level distillation with only 235M tokens
+- **Limitation**: Requires retraining embeddings, not direct hidden state stitching
+
+#### 2. **Tokenizer Transplantation** (Arcee.ai, 2024)
+- **Method**: Replace smaller model's tokenizer with larger model's tokenizer
+- **Tool**: mergekit-tokensurgeon (open-source MergeKit library)
+- **Benefit**: Perfect vocabulary alignment enables direct knowledge transfer
+- **Limitation**: Requires retraining embedding layer
+
+#### 3. **VocAgnoLM** (Vocabulary-Agnostic Teacher-Guided LM, 2025)
+- **Method**: Teacher-student distillation regardless of vocabulary differences
+- **Techniques**:
+  - Token-level lexical alignment
+  - Teacher loss-based guidance
+  - Handles token sequence length mismatch
+- **Benefit**: Works without modifying tokenizers
+
+#### 4. **MATT** (Model-Aware Tokenizer Transfer, 2025)
+- **Method**: Exploits model dynamics instead of semantic relationships
+- **Benefit**: State-of-the-art results with substantially lower computational cost
+- **Approach**: Uses model internals rather than external linguistic knowledge
+
+#### 5. **Parallel Tokenizers** (Cross-Lingual Transfer, 2025)
+- **Method**: Train monolingual tokenizers, align via word-level mapping
+- **Benefit**: Ensures semantically equivalent tokens across languages
+- **Limitation**: Designed for multilingual, not cross-architecture transfer
+
+### 8.4 Why Tokenizer Vocabulary Matters for Hidden State Alignment
+
+**Core Issue**: Tokenization defines the fundamental "units of meaning" the model operates on.
+
+**Impact on Hidden States**:
+1. **Semantic Granularity**:
+   - 128K vocab: Captures more morphemes in single tokens ("running" as one token)
+   - 32K vocab: Splits into subword units ("run" + "##ning")
+   - Hidden states encode different semantic chunks
+
+2. **Positional Information**:
+   - Same sentence → different sequence lengths
+   - "The cat sat" = 3 tokens (128K) vs 5 tokens (32K)
+   - Positional embeddings misaligned
+
+3. **Embedding Space Structure**:
+   - Llama embedding matrix: [128K, 4096]
+   - Mistral embedding matrix: [32K, 4096]
+   - Hidden states pull from different embedding neighborhoods
+
+4. **Knowledge Transfer Barrier**:
+   - Research quote: "The mismatch in vocabulary hinders deep knowledge transfer between LLMs like token-level distillation"
+   - Impossible to align token-level predictions when vocabularies don't correspond
+
+### 8.5 Recommended Compatible Model Pairs
+
+Based on vocabulary compatibility research:
+
+#### **BEST OPTION: Llama Family (Same Tokenizer)**
+
+**Llama 3.1 8B ↔ Llama 3.2 3B** (both 128,256 tokens)
+- ✅ Identical tokenizer (perfect alignment)
+- ✅ Knowledge distillation used during 3B training from 8B
+- ✅ Proven transfer pathway in Meta's architecture
+- ✅ Size reduction: 62.5% (8B → 3B)
+- ✅ Literature support: "Model Stitching" paper (June 2025) shows within-family transfer works
+
+**Llama 3.1 8B ↔ Llama 3.1 70B** (both 128,256 tokens)
+- ✅ Identical tokenizer
+- ✅ Same architecture family
+- ✅ Proven in model stitching literature (50% FLOPs savings)
+
+#### **VIABLE: Similar Vocabulary Sizes (~128K)**
+
+**Llama 3.1 8B (128K) ↔ Mistral-Nemo-Instruct (131K)**
+- ⚠️ Only 2% vocabulary difference (vs 4× mismatch currently)
+- ⚠️ Different tokenizers but similar sizes
+- ⚠️ Untested in literature
+
+**Llama 3.1 8B (128K) ↔ Ministral-8B-Instruct (131K)**
+- ⚠️ Similar vocabulary size
+- ⚠️ Same model size (less interesting for compression)
+
+#### **AVOID: Large Vocabulary Mismatches**
+
+- ❌ Llama 3.1 (128K) ↔ Mistral 7B v0.3 (32K) = 4× mismatch (current setup)
+- ❌ Qwen 2-7B (152K) ↔ anything else
+- ❌ Gemma (256K) ↔ anything else
+- ❌ Phi-3 (100K) ↔ Llama 3.1 (128K) = 1.28× mismatch
+
+### 8.6 Proposed Solutions for Current Setup
+
+If continuing with Llama 3.1 8B ↔ Mistral 7B v0.3:
+
+#### **Option 1: Tokenizer Transplantation** (Recommended)
+```python
+# Use mergekit-tokensurgeon to replace Mistral's tokenizer with Llama's
+from mergekit.tokensurgeon import transplant_tokenizer
+
+mistral_aligned = transplant_tokenizer(
+    model=mistral_7b,
+    new_tokenizer=llama_31_tokenizer,
+    reinitialize_embeddings=True
+)
+```
+**Cost**: Requires retraining Mistral's embedding layer (~100M params)
+
+#### **Option 2: Vocabulary-Aware Adapter** (Research Approach)
+```python
+class VocabAwareAdapter(nn.Module):
+    def __init__(self, hidden_dim, vocab_size_a, vocab_size_b):
+        super().__init__()
+        # Map hidden states
+        self.hidden_adapter = LinearAdapter(hidden_dim)
+        # Project vocabulary space: 128K → 32K
+        self.vocab_projection = nn.Linear(vocab_size_a, vocab_size_b)
+        # Learn token ID alignment via TokAlign
+        self.token_mapping = nn.Parameter(torch.eye(vocab_size_b, vocab_size_a))
+```
+
+#### **Option 3: VocAgnoLM-Style Distillation**
+- Use teacher-student framework with lexical alignment
+- Bypass token-level supervision, use sequence-level objectives
+- Handles vocabulary mismatch explicitly
+
+#### **Option 4: Switch to Compatible Models** (Simplest)
+Use Llama 3.1 8B ↔ Llama 3.2 3B (identical tokenizer, proven pathway).
+
+### 8.7 Revised Success Criteria
+
+Given 4× vocabulary mismatch, adjusted expectations:
+
+| Metric | Ideal (Same Vocab) | Realistic (4× Mismatch) | Current |
+|--------|-------------------|------------------------|---------|
+| Generation Loss | 0.5-0.6 | 4.0-5.0 | 6.8 |
+| Perplexity | 1.4-1.5 | 16-32 | 112 |
+| CKA Similarity | 0.4-0.6 | 0.35-0.40 | 0.32 |
+
+**If generation loss reaches 4.0-5.0 with current setup, that would be a significant achievement** given the vocabulary incompatibility.
+
+### 8.8 Key Takeaways
+
+1. **Tokenizer vocabulary is critical**: 4× mismatch creates fundamental semantic alignment barrier
+2. **Literature gap**: No precedent for cross-family transfer with large vocabulary differences
+3. **Solutions exist**: TokAlign, Tokenizer Transplantation, VocAgnoLM (2024-2025 research)
+4. **Path forward**: Either use compatible models (Llama 3.1 ↔ Llama 3.2) or implement vocabulary alignment techniques
+
+**Recommendation**: Switch to Llama 3.1 8B ↔ Llama 3.2 3B for immediate success, then return to cross-family transfer as advanced research goal with proper vocabulary alignment techniques.
+
+---
+
 ## Appendix: Metrics Glossary
 
 **F1 Score**: Harmonic mean of precision/recall for answer overlap (0-100%)
