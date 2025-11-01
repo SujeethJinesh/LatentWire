@@ -3809,7 +3809,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             with torch.no_grad():
                 baseline_output = model_b.generate(
                     **inputs_b,
-                    max_new_tokens=15,
+                    max_new_tokens=5,  # SQuAD answers are short (1-3 words)
                     do_sample=False
                 )
                 baseline_text = tokenizer_b.decode(baseline_output[0], skip_special_tokens=True)
@@ -3824,7 +3824,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             with torch.no_grad():
                 model_a_output = model_a.generate(
                     **inputs_a,
-                    max_new_tokens=15,
+                    max_new_tokens=5,  # SQuAD answers are short (1-3 words)
                     do_sample=False
                 )
                 model_a_text = tokenizer_a.decode(model_a_output[0], skip_special_tokens=True)
@@ -3840,7 +3840,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             with torch.no_grad():
                 no_context_output = model_b.generate(
                     **inputs_no_context,
-                    max_new_tokens=15,
+                    max_new_tokens=5,  # SQuAD answers are short (1-3 words)
                     do_sample=False
                 )
                 no_context_text = tokenizer_b.decode(no_context_output[0], skip_special_tokens=True)
@@ -3886,7 +3886,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 with torch.no_grad():
                     injected_output = model_b.generate(
                         inputs_b.input_ids,
-                        max_new_tokens=15,
+                        max_new_tokens=5,  # SQuAD answers are short (1-3 words)
                         do_sample=False
                     )
                     injected_text = tokenizer_b.decode(injected_output[0], skip_special_tokens=True)
@@ -3924,7 +3924,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 with torch.no_grad():
                     random_output = model_b.generate(
                         inputs_b.input_ids,
-                        max_new_tokens=15,
+                        max_new_tokens=5,  # SQuAD answers are short (1-3 words)
                         do_sample=False
                     )
                     random_text = tokenizer_b.decode(random_output[0], skip_special_tokens=True)
@@ -4027,7 +4027,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             with torch.no_grad():
                 baseline_output = model_b.generate(
                     **inputs_b,
-                    max_new_tokens=50,  # More tokens for math reasoning
+                    max_new_tokens=10,  # Just need the numerical answer
                     do_sample=False
                 )
                 baseline_text = tokenizer_b.decode(baseline_output[0], skip_special_tokens=True)
@@ -4042,7 +4042,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             with torch.no_grad():
                 model_a_output = model_a.generate(
                     **inputs_a,
-                    max_new_tokens=50,
+                    max_new_tokens=10,  # Just need the numerical answer
                     do_sample=False
                 )
                 model_a_text = tokenizer_a.decode(model_a_output[0], skip_special_tokens=True)
@@ -4058,7 +4058,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             with torch.no_grad():
                 no_context_output = model_b.generate(
                     **inputs_no_context,
-                    max_new_tokens=50,
+                    max_new_tokens=10,  # Just need the numerical answer
                     do_sample=False
                 )
                 no_context_text = tokenizer_b.decode(no_context_output[0], skip_special_tokens=True)
@@ -4104,7 +4104,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 with torch.no_grad():
                     injected_output = model_b.generate(
                         inputs_b.input_ids,
-                        max_new_tokens=50,
+                        max_new_tokens=10,  # Just need the numerical answer
                         do_sample=False
                     )
                     injected_text = tokenizer_b.decode(injected_output[0], skip_special_tokens=True)
@@ -4141,7 +4141,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 with torch.no_grad():
                     random_output = model_b.generate(
                         inputs_b.input_ids,
-                        max_new_tokens=50,
+                        max_new_tokens=10,  # Just need the numerical answer
                         do_sample=False
                     )
                     random_text = tokenizer_b.decode(random_output[0], skip_special_tokens=True)
