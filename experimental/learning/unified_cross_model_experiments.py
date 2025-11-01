@@ -1305,6 +1305,74 @@ def run_adapter_experiment(adapter_type, gpu_id):
             sys.stderr = old_stderr
 
 # ============================================================================
+# Token Compression Experiment Wrapper (for parallel execution)
+# ============================================================================
+
+def run_token_compression_wrapper(gpu_id):
+    """Run token compression experiment on specified GPU."""
+
+    # Create output directory relative to script location
+    script_dir = Path(__file__).parent.absolute()
+    output_dir = script_dir / "runs" / "token_compression"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = output_dir / f"token_compression_gpu{gpu_id}_{timestamp}.log"
+
+    with open(log_path, 'w') as log_file:
+        # Redirect output to both console and file
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = TeeLogger(log_file)
+        sys.stderr = TeeLogger(log_file)
+
+        try:
+            print("=" * 80)
+            print("TOKEN COMPRESSION EXPERIMENT")
+            print("=" * 80)
+            print(f"Platform: {PLATFORM}")
+            print(f"Log file: {log_path}")
+
+            # Use specified GPU
+            if PLATFORM == 'hpc' and gpu_id is not None:
+                device = torch.device(f"cuda:{gpu_id}")
+                print(f"GPU assigned: {gpu_id}")
+            else:
+                device = DEVICE
+                print(f"Device: {device}")
+
+            # Run token compression experiment
+            results = run_token_compression_experiment(
+                device=device,
+                num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
+                compressed_length=64,
+                epochs=EPOCHS,
+                use_lora_all_layers=True
+            )
+
+            # Save results
+            results_path = output_dir / f"token_compression_results_{timestamp}.json"
+            with open(results_path, 'w') as f:
+                json.dump(results, f, indent=2)
+
+            print("\n" + "=" * 80)
+            print("TOKEN COMPRESSION EXPERIMENT COMPLETE")
+            print("=" * 80)
+
+        except Exception as e:
+            print("\n" + "=" * 80)
+            print("TOKEN COMPRESSION EXPERIMENT FAILED")
+            print("=" * 80)
+            print(f"Error: {e}")
+            import traceback
+            traceback.print_exc()
+
+        finally:
+            # Restore stdout/stderr
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+
+# ============================================================================
 # Token-Initialized Compression Experiment
 # ============================================================================
 
@@ -1570,17 +1638,47 @@ def main():
         torch.cuda.synchronize()
         print("  GPU cache cleared")
 
-    # Run learned adapter experiments
-    print("\n2. Starting learned adapter experiments...")
+    # Run learned adapter experiments + token compression in parallel
+    print("\n2. Starting all experiments in parallel...")
 
     # Run in PARALLEL with memory fixes applied:
     # - GPU cleanup after Procrustes (clears residual memory)
     # - MAX_LENGTH=256 (halves activations)
     # - Single-layer alignment (1 forward pass instead of 3)
     # Expected: ~44GB per GPU (35GB margin on 79GB H100s)
-    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 3:
-        print(f"Running all 3 adapters in parallel on {torch.cuda.device_count()} GPUs...")
+    if PLATFORM == 'hpc' and torch.cuda.device_count() >= 4:
+        print(f"Running ALL 4 experiments in parallel on {torch.cuda.device_count()} GPUs...")
+        print("  GPU 0: Linear adapter")
+        print("  GPU 1: Affine adapter")
+        print("  GPU 2: LoRA adapter")
+        print("  GPU 3: Token compression")
         print("Memory optimizations: GPU cleanup + seq=256 + single-layer alignment")
+        processes = []
+
+        p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
+        p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
+        p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
+        p4 = mp.Process(target=run_token_compression_wrapper, args=(3,))
+
+        p1.start()
+        p2.start()
+        p3.start()
+        p4.start()
+
+        processes.extend([p1, p2, p3, p4])
+
+        # Wait for all to complete
+        print("Waiting for all 4 experiments to complete...")
+        for p in processes:
+            p.join()
+
+        print("\n3. All 4 experiments completed in parallel!")
+        print("  - 3 learned adapters (Linear, Affine, LoRA)")
+        print("  - Token compression")
+
+    elif PLATFORM == 'hpc' and torch.cuda.device_count() == 3:
+        # HPC with exactly 3 GPUs: Run all 3 adapters in parallel, then token compression sequentially
+        print("Running all 3 adapters in parallel on 3 GPUs...")
         processes = []
 
         p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
@@ -1593,15 +1691,18 @@ def main():
 
         processes.extend([p1, p2, p3])
 
-        # Wait for all to complete
-        print("Waiting for all adapter experiments to complete...")
+        # Wait for completion
         for p in processes:
             p.join()
 
-        print("\n3. All adapter experiments completed in parallel!")
+        print("\n3. All adapter experiments completed!")
+
+        # Run token compression sequentially
+        print("\n4. Starting token compression experiment (sequential on GPU 0)...")
+        run_token_compression_wrapper(0)
 
     elif PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
-        # HPC with 2 GPUs: Run 2 in parallel, then LoRA
+        # HPC with 2 GPUs: Run 2 in parallel, then LoRA, then token compression
         print("Running Linear and Affine adapters in parallel on 2 GPUs...")
         processes = []
 
@@ -1623,6 +1724,10 @@ def main():
 
         print("\n3. All adapter experiments completed!")
 
+        # Run token compression sequentially
+        print("\n4. Starting token compression experiment (sequential on GPU 0)...")
+        run_token_compression_wrapper(0)
+
     else:
         # Mac/CPU/Single GPU: Run sequentially
         if PLATFORM == 'mac':
@@ -1637,20 +1742,20 @@ def main():
             print(f"\nRunning {adapter_type} adapter...")
             run_adapter_experiment(adapter_type, None)
 
-    # Run token-initialized compression experiment
-    print("\n3. Starting token-initialized compression experiment...")
-    token_results = run_token_compression_experiment(
-        num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
-        compressed_length=64,
-        epochs=EPOCHS,
-        use_lora_all_layers=True
-    )
+        # Run token compression sequentially (only for non-parallel cases)
+        print("\n3. Starting token-initialized compression experiment...")
+        token_results = run_token_compression_experiment(
+            num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
+            compressed_length=64,
+            epochs=EPOCHS,
+            use_lora_all_layers=True
+        )
 
-    # Save token compression results
-    token_path = output_dir / f"token_compression_results_{timestamp}.json"
-    with open(token_path, 'w') as f:
-        json.dump(token_results, f, indent=2)
-    print(f"Token compression results saved to: {token_path}")
+        # Save token compression results
+        token_path = output_dir / f"token_compression_results_{timestamp}.json"
+        with open(token_path, 'w') as f:
+            json.dump(token_results, f, indent=2)
+        print(f"Token compression results saved to: {token_path}")
 
     print("\n" + "=" * 80)
     print("ALL EXPERIMENTS COMPLETE")

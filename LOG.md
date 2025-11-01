@@ -2,6 +2,97 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🚀 4-GPU PARALLELIZATION: Maximize Hardware Utilization (2025-10-31 17:45)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Objective: Use All 4 GPUs to Minimize End-to-End Time
+
+**User feedback**: "I think the dataloader is actually fine. It's just that I want all 4 GPUs to be in use to minimize end to end time."
+
+**Previous behavior**:
+- Procrustes ran first (sequential on GPUs 0-1)
+- 3 learned adapters ran in parallel (GPUs 0, 1, 2)
+- **GPU 3 was idle** during adapter training
+- Token compression ran sequentially **after** adapters completed
+- Total time: Procrustes + Adapters + Token Compression
+
+**New behavior: True 4-GPU parallelization**
+```
+4 GPUs: Run ALL 4 experiments in parallel
+├── GPU 0: Linear adapter
+├── GPU 1: Affine adapter
+├── GPU 2: LoRA adapter
+└── GPU 3: Token compression (NEW!)
+
+Total time: Procrustes + max(Adapters, Token Compression)
+```
+
+### Implementation Details
+
+**Added `run_token_compression_wrapper()` function** (lines 1311-1373):
+- Similar structure to `run_adapter_experiment()` wrapper
+- Accepts GPU ID for parallel execution
+- Creates dedicated log file: `token_compression_gpu{id}_{timestamp}.log`
+- Saves results to `runs/token_compression/` directory
+- Handles all logging and error handling
+
+**Updated main execution logic** (lines 1641-1758):
+```python
+# 4+ GPUs: True parallelization
+if torch.cuda.device_count() >= 4:
+    p1 = mp.Process(target=run_adapter_experiment, args=("linear", 0))
+    p2 = mp.Process(target=run_adapter_experiment, args=("affine", 1))
+    p3 = mp.Process(target=run_adapter_experiment, args=("lora", 2))
+    p4 = mp.Process(target=run_token_compression_wrapper, args=(3,))  # NEW!
+    # Start all 4 in parallel...
+
+# 3 GPUs: Adapters parallel, then token compression
+elif torch.cuda.device_count() == 3:
+    # 3 adapters in parallel, then token compression on GPU 0
+
+# 2 GPUs: Mixed parallel/sequential
+elif torch.cuda.device_count() >= 2:
+    # 2 adapters parallel, then LoRA, then token compression
+
+# Else: All sequential
+```
+
+### Performance Impact
+
+**Time savings** (estimated):
+
+| Configuration | Old Time | New Time | Speedup |
+|--------------|----------|----------|---------|
+| **4 GPUs** | Procrustes (30m) + Adapters (2h) + Token (2h) = **4.5h** | Procrustes (30m) + max(Adapters, Token) = **2.5h** | **44% faster** |
+| 3 GPUs | Same | Adapters (2h) + Token (2h) = 4.5h | Same |
+| 2 GPUs | Same | Same | Same |
+
+**Key wins**:
+- ✅ **100% GPU utilization** - All 4 H100s working simultaneously
+- ✅ **44% faster end-to-end time** on 4-GPU cluster
+- ✅ **Better resource efficiency** - No idle GPUs during critical training phase
+- ✅ **Maintains flexibility** - Gracefully handles 2/3/4 GPU configurations
+
+### Output Structure
+
+New directory structure:
+```
+runs/
+├── unified_experiments/
+│   └── procrustes_results_{timestamp}.json
+├── learned_adapters/
+│   ├── linear_gpu0_{timestamp}.log
+│   ├── affine_gpu1_{timestamp}.log
+│   └── lora_gpu2_{timestamp}.log
+└── token_compression/  # NEW!
+    ├── token_compression_gpu3_{timestamp}.log
+    └── token_compression_results_{timestamp}.json
+```
+
+**Status**: Ready for 4-GPU parallel execution. Expected total time: ~2.5 hours (vs 4.5h previously).
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🔧 DATALOADER FREEZE FIX & WARNING CLEANUP (2025-10-31 17:30)
 ## ═══════════════════════════════════════════════════════════════════════════
 
