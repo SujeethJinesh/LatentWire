@@ -84,14 +84,16 @@ def get_device_and_config():
     else:
         # HPC configuration - batch size optimized for multi-GPU
         num_gpus = torch.cuda.device_count() if platform == 'hpc' else 1
-        config['batch_size'] = 10 * num_gpus  # Scale batch size with GPU count (DataParallel splits batches)
+        # CRITICAL: Reduced from 10 to 5 per GPU to avoid OOM with two large models
+        # With Llama (38GB) + Mistral (37GB) replicated on each GPU, need headroom for activations
+        config['batch_size'] = 5 * num_gpus  # Scale batch size with GPU count (DataParallel splits batches)
         config['num_samples'] = 10000  # Conservative for preemptible cluster
         config['epochs'] = 10
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
-        config['grad_accum_steps'] = 8  # Gradient accumulation
+        config['grad_accum_steps'] = 16  # Increased from 8 to 16 to maintain effective batch size of 320
         if platform == 'hpc':
-            print(f"  - Batch size: {config['batch_size']} ({num_gpus} GPUs × 10 per GPU)")
+            print(f"  - Batch size: {config['batch_size']} ({num_gpus} GPUs × 5 per GPU)")
             print(f"  - Effective batch (with grad accum): {config['batch_size'] * config['grad_accum_steps']}")
             print(f"  - Samples: {config['num_samples']}")
             print(f"  - Epochs: {config['epochs']}")
@@ -573,8 +575,10 @@ class ProcrustesAlignment:
         # Step 4: SVD of M in float32 (SVD is numerically sensitive, needs high precision)
         U, S, Vt = torch.linalg.svd(M, full_matrices=False)
 
-        # Step 5: Optimal orthogonal transformation (convert back to original dtype)
-        self.W = (U @ Vt).to(source.dtype)
+        # Step 5: Optimal orthogonal transformation
+        # CRITICAL: Keep W in float32! Converting to bfloat16 destroys orthogonality
+        # Orthogonal matrices require high precision to maintain W @ W.T = I property
+        self.W = U @ Vt  # Stay in float32 from SVD
 
         # Step 6: Bias term (2024 research extension for affine transformation)
         # After centering and recentering, no explicit bias is needed
@@ -591,9 +595,8 @@ class ProcrustesAlignment:
             # Orthogonal only (no bias)
             self.b = torch.zeros_like(self.target_mean)
 
-        # Verify orthogonality of W (in float32 for numerical accuracy)
-        W_float = self.W.float()
-        I = W_float @ W_float.T
+        # Verify orthogonality of W (W is already in float32)
+        I = self.W @ self.W.T
         ortho_error = torch.norm(I - torch.eye(I.shape[0], device=I.device), 'fro')
         if ortho_error > 1e-3:
             print(f"  WARNING: Orthogonality error = {ortho_error:.6f}")
@@ -2010,7 +2013,8 @@ def run_token_compression_experiment(
                     return_dict=True
                 )
 
-            loss = outputs.loss
+            # CRITICAL: With DataParallel, loss is a tensor [num_gpus], must reduce to scalar
+            loss = outputs.loss.mean() if outputs.loss.numel() > 1 else outputs.loss
             epoch_losses.append(loss.item())
 
             # Backward pass
