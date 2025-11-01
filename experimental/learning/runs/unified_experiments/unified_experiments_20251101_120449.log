@@ -1,347 +1,0 @@
-Using DDP (DistributedDataParallel) with torchrun for 4 GPUs
-
-W1101 12:04:50.906000 952264 torch/distributed/run.py:793] 
-W1101 12:04:50.906000 952264 torch/distributed/run.py:793] *****************************************
-W1101 12:04:50.906000 952264 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1101 12:04:50.906000 952264 torch/distributed/run.py:793] *****************************************
-==> Using CUDA on HPC (4 GPUs available)
-==> Using CUDA on HPC (4 GPUs available)
-==> Using CUDA on HPC (4 GPUs available)
-  - Batch size per GPU: 10  - Batch size per GPU: 10
-  - Global batch size: 40
-  - Effective batch (with grad accum): 320
-  - Samples: 10000
-  - Epochs: 5
-  - BF16: True
-  - Global batch size: 40
-
-  - Flash Attention: True  - Effective batch (with grad accum): 320
-
-  - Samples: 10000
-  - Epochs: 5
-  - BF16: True
-  - Flash Attention: True
-Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
-PyTorch: 2.5.1+cu121
-CUDA available: True
-CUDA devices: 4
-================================================================================
-UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-11-01T12:05:00.769212
-Platform: hpc
-Device: cuda
-Available CUDA GPUs: 4
-================================================================================
-
-PyTorch: 2.5.1+cu121
-CUDA available: True
-CUDA devices: 4
-================================================================================
-UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-
-2. Starting all experiments sequentially (FAST-FIRST ORDER)...Timestamp: 2025-11-01T12:05:00.769551
-Platform: hpc
-Device: cuda
-Available CUDA GPUs: 4
-================================================================================
-
-Strategy: Each experiment uses all 4 GPUs for faster completion
-NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
-  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
-  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
-  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
-Benefits: Quick insights + early validation + fail fast on model access
-
-
-================================================================================
-EXPERIMENT 1/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)
-================================================================================
-Models: Llama 3.1 8B (4096 dim) → Llama 3.2 3B (3072 dim)
-Reproducing Ramesh & Li (ICML 2025) - activation injection with learned projection
-WHY FIRST: Core feasibility test for cross-model communication
-Fixes: Replacement (not addition), last token only, forward hooks, dimension handling
-
-
-================================================================================
-ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025 Reproduction)
-================================================================================
-Model A (source): meta-llama/Llama-3.1-8B
-Model B (target): meta-llama/Llama-3.2-3B
-Method: Replace target's last-token activation with source's projected activation
-
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-
-2. Starting all experiments sequentially (FAST-FIRST ORDER)...
-Strategy: Each experiment uses all 4 GPUs for faster completion
-NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
-  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
-  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
-  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
-Benefits: Quick insights + early validation + fail fast on model access
-
-
-================================================================================
-EXPERIMENT 1/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)
-================================================================================
-Models: Llama 3.1 8B (4096 dim) → Llama 3.2 3B (3072 dim)
-Reproducing Ramesh & Li (ICML 2025) - activation injection with learned projection
-WHY FIRST: Core feasibility test for cross-model communication
-Fixes: Replacement (not addition), last token only, forward hooks, dimension handling
-
-
-================================================================================
-ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025 Reproduction)
-================================================================================
-Model A (source): meta-llama/Llama-3.1-8B
-Model B (target): meta-llama/Llama-3.2-3B
-Method: Replace target's last-token activation with source's projected activation
-
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-==> Using CUDA on HPC (4 GPUs available)
-  - Batch size per GPU: 10
-  - Global batch size: 40
-  - Effective batch (with grad accum): 320
-  - Samples: 10000
-  - Epochs: 5
-  - BF16: True
-  - Flash Attention: True
-Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
-PyTorch: 2.5.1+cu121
-CUDA available: True
-CUDA devices: 4
-================================================================================
-UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-11-01T12:05:00.781331
-Platform: hpc
-Device: cuda
-Available CUDA GPUs: 4
-================================================================================
-
-2. Starting all experiments sequentially (FAST-FIRST ORDER)...
-Strategy: Each experiment uses all 4 GPUs for faster completion
-NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
-  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
-  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
-  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
-Benefits: Quick insights + early validation + fail fast on model access
-
-
-================================================================================
-EXPERIMENT 1/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)
-================================================================================
-Models: Llama 3.1 8B (4096 dim) → Llama 3.2 3B (3072 dim)
-Reproducing Ramesh & Li (ICML 2025) - activation injection with learned projection
-WHY FIRST: Core feasibility test for cross-model communication
-Fixes: Replacement (not addition), last token only, forward hooks, dimension handling
-
-
-================================================================================
-ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025 Reproduction)
-================================================================================
-Model A (source): meta-llama/Llama-3.1-8B
-Model B (target): meta-llama/Llama-3.2-3B
-Method: Replace target's last-token activation with source's projected activation
-
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-  - Batch size per GPU: 10
-  - Global batch size: 40
-  - Effective batch (with grad accum): 320
-  - Samples: 10000
-  - Epochs: 5
-  - BF16: True
-  - Flash Attention: True
-Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
-PyTorch: 2.5.1+cu121
-CUDA available: True
-CUDA devices: 4
-================================================================================
-UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-11-01T12:05:00.812378
-Platform: hpc
-Device: cuda
-Available CUDA GPUs: 4
-================================================================================
-
-2. Starting all experiments sequentially (FAST-FIRST ORDER)...
-Strategy: Each experiment uses all 4 GPUs for faster completion
-NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
-  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
-  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
-  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
-Benefits: Quick insights + early validation + fail fast on model access
-
-
-================================================================================
-EXPERIMENT 1/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)
-================================================================================
-Models: Llama 3.1 8B (4096 dim) → Llama 3.2 3B (3072 dim)
-Reproducing Ramesh & Li (ICML 2025) - activation injection with learned projection
-WHY FIRST: Core feasibility test for cross-model communication
-Fixes: Replacement (not addition), last token only, forward hooks, dimension handling
-
-
-================================================================================
-ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025 Reproduction)
-================================================================================
-Model A (source): meta-llama/Llama-3.1-8B
-Model B (target): meta-llama/Llama-3.2-3B
-Method: Replace target's last-token activation with source's projected activation
-
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3293.52it/s]
-You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 9441.31it/s]
-You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8108.85it/s]
-You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8688.36it/s]
-You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  1.93it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  1.89it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  1.75it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  1.73it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.94it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  2.00it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.94it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.91it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.84it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.86it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.82it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.77it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.98it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.97it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.91it/s]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.94it/s]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.95it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.90it/s]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.91it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.89it/s]
-Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 2/2 [00:00<00:00, 3284.50it/s]
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 2/2 [00:00<00:00, 5108.77it/s]
-Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 2/2 [00:00<00:00, 1627.59it/s]
-Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 2/2 [00:00<00:00, 8621.39it/s]
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  2.75it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  3.15it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  3.00it/s]
-Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  2.23it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  2.14it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  2.29it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.39it/s]
-Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.51it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.39it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.44it/s]
-Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.31it/s]
-Traceback (most recent call last):
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3875, in <module>
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3875, in <module>
-Traceback (most recent call last):
-        main()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3567, in main
-main()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3567, in main
-Traceback (most recent call last):
-        activation_results_ablation = run_activation_communication_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3249, in run_activation_communication_experiment
-activation_results_ablation = run_activation_communication_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3249, in run_activation_communication_experiment
-        model_b = model_b.to(device)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/modeling_utils.py", line 3157, in to
-model_b = model_b.to(device)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/modeling_utils.py", line 3157, in to
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3875, in <module>
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3875, in <module>
-        main()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3567, in main
-main()        return super().to(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1340, in to
-return super().to(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1340, in to
-
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3567, in main
-                return self._apply(convert)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-return self._apply(convert)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-activation_results_ablation = run_activation_communication_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3249, in run_activation_communication_experiment
-        module._apply(fn)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-module._apply(fn)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-activation_results_ablation = run_activation_communication_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)        module._apply(fn)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-module._apply(fn)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3249, in run_activation_communication_experiment
-        module._apply(fn)
-module._apply(fn)
-  [Previous line repeated 2 more times]
-  [Previous line repeated 2 more times]
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 927, in _apply
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 927, in _apply
-            param_applied = fn(param)param_applied = fn(param)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1326, in convert
-
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1326, in convert
-            return t.to(return t.to(
-
-torchtorch..OutOfMemoryError: OutOfMemoryError: CUDA out of memory. Tried to allocate 18.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 4.31 MiB is free. Process 952277 has 19.80 GiB memory in use. Process 952278 has 19.79 GiB memory in use. Process 952276 has 19.80 GiB memory in use. Including non-PyTorch memory, this process has 19.77 GiB memory in use. Of the allocated memory 19.25 GiB is allocated by PyTorch, and 5.74 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 4.31 MiB is free. Process 952277 has 19.80 GiB memory in use. Including non-PyTorch memory, this process has 19.79 GiB memory in use. Process 952276 has 19.80 GiB memory in use. Process 952275 has 19.77 GiB memory in use. Of the allocated memory 19.28 GiB is allocated by PyTorch, and 1.74 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-model_b = model_b.to(device)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/modeling_utils.py", line 3157, in to
-model_b = model_b.to(device)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/modeling_utils.py", line 3157, in to
-        return super().to(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1340, in to
-return super().to(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1340, in to
-        return self._apply(convert)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-return self._apply(convert)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-        module._apply(fn)
-module._apply(fn)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-        module._apply(fn)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-module._apply(fn)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 900, in _apply
-    module._apply(fn)
-    module._apply(fn)
-  [Previous line repeated 2 more times]
-  [Previous line repeated 2 more times]
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 927, in _apply
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 927, in _apply
-        param_applied = fn(param)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1326, in convert
-param_applied = fn(param)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1326, in convert
-        return t.to(return t.to(
-torch
-torch..OutOfMemoryErrorOutOfMemoryError: CUDA out of memory. Tried to allocate 18.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 4.31 MiB is free. Including non-PyTorch memory, this process has 19.80 GiB memory in use. Process 952278 has 19.79 GiB memory in use. Process 952276 has 19.80 GiB memory in use. Process 952275 has 19.77 GiB memory in use. Of the allocated memory 19.28 GiB is allocated by PyTorch, and 15.74 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables): CUDA out of memory. Tried to allocate 18.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 4.31 MiB is free. Process 952277 has 19.80 GiB memory in use. Process 952278 has 19.79 GiB memory in use. Including non-PyTorch memory, this process has 19.80 GiB memory in use. Process 952275 has 19.77 GiB memory in use. Of the allocated memory 19.28 GiB is allocated by PyTorch, and 15.74 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-
-W1101 12:05:29.459000 952264 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 952275 closing signal SIGTERM
-W1101 12:05:29.459000 952264 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 952276 closing signal SIGTERM
-W1101 12:05:29.459000 952264 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 952277 closing signal SIGTERM
-E1101 12:05:29.898000 952264 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 3 (pid: 952278) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
-Traceback (most recent call last):
-  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
-    sys.exit(main())
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
-    return f(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
-    run(args)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
-    elastic_launch(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
-============================================================
-/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py FAILED
-------------------------------------------------------------
-Failures:
-  <NO_OTHER_FAILURES>
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-11-01_12:05:29
-  host      : n29.cm.cluster
-  rank      : 3 (local_rank: 3)
-  exitcode  : 1 (pid: 952278)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-============================================================
