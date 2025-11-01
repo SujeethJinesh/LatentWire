@@ -1,97 +1,20 @@
 #!/usr/bin/env python3
 """
 Unified cross-model alignment experiments combining Procrustes and learned adapters.
-Optimized for 4 H100 GPUs with DistributedDataParallel (DDP).
+Optimized for 4 H100 GPUs.
 
-OVERVIEW:
-This file implements 4 core experiments for heterogeneous LLM communication research,
-testing whether different LLM architectures (Llama-3.1-8B and Mistral-7B) can exchange
-information via internal representations instead of text tokens.
-
-EXPERIMENTS RANKED BY RELEVANCE TO CROSS-LLM COMMUNICATION:
-
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║ TIER 1: CRITICAL - Core feasibility validation (RUN THESE FIRST)             ║
-╠═══════════════════════════════════════════════════════════════════════════════╣
-║ 1. ACTIVATION COMMUNICATION (run_activation_communication_experiment)        ║
-║    Purpose: Validate core hypothesis - can Model A's hidden states be        ║
-║             directly consumed by Model B?                                     ║
-║    Why Critical: If this fails, LatentWire needs fundamental redesign        ║
-║    Literature: Tandem Transformers (NeurIPS 2024), Cross-Modal Safety (ICLR) ║
-║    Expected: Cosine similarity 0.3-0.5 zero-shot, >0.7 with alignment        ║
-║    Status: KEEP - Most important experiment                                   ║
-║                                                                               ║
-║ 2. TOKEN COMPRESSION (run_token_compression_experiment)                      ║
-║    Purpose: Learn to compress 512 tokens → 64 soft prompts (8× compression)  ║
-║    Why Critical: This IS the interlingua - soft tokens are the wire format   ║
-║    Literature: LLMLingua (20× compression), CompactPrompt (60% reduction)    ║
-║    Expected: Perplexity <30, 60-70% token accuracy                           ║
-║    Status: KEEP - Essential for bandwidth efficiency                         ║
-║    **BUG FOUND**: DataParallel used instead of DDP (needs fix)               ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║ TIER 2: IMPORTANT - Quality and performance optimization                     ║
-╠═══════════════════════════════════════════════════════════════════════════════╣
-║ 3. LORA ADAPTERS (run_adapter_experiment with adapter_type="lora")           ║
-║    Purpose: Learn parameter-efficient alignment (260K params vs 16M linear)  ║
-║    Why Important: Transferable across models (Cross-LoRA arXiv:2508.05232)   ║
-║    Literature: Cross-LoRA, MoA, CAST (85-95% performance retention)          ║
-║    Expected: CKA +0.1-0.2 over Procrustes, 90-95% of linear performance      ║
-║    Status: KEEP - Best parameter efficiency, transferable                    ║
-║                                                                               ║
-║ 4. PROCRUSTES ALIGNMENT (run_procrustes_experiment)                          ║
-║    Purpose: Zero-training baseline via SVD-based geometric alignment         ║
-║    Why Important: Fast baseline for comparison, validates feasibility        ║
-║    Literature: Model Stitching (arXiv:2506.06609), ConTrans (2024)           ║
-║    Expected: CKA 0.3-0.5 middle layers, affine +5-8% over orthogonal         ║
-║    Status: KEEP - Good baseline, useful for ablations                        ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║ TIER 3: LOWER PRIORITY - Superseded by LoRA                                  ║
-╠═══════════════════════════════════════════════════════════════════════════════╣
-║ 5. LINEAR/AFFINE ADAPTERS (run_adapter_experiment with linear/affine)        ║
-║    Purpose: Full-rank learned transformations                                ║
-║    Why Lower Priority: 50× more params than LoRA, same/worse performance     ║
-║    Status: RECOMMEND SKIPPING - LoRA dominates on all metrics                ║
-║           Keep code for completeness, but don't prioritize runs              ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-
-RECOMMENDED EXECUTION ORDER FOR CROSS-LLM COMMUNICATION PROJECT:
-1. Run Procrustes (baseline, 10 min) → establishes feasibility
-2. Run Activation Communication (30 min) → validates core hypothesis
-3. Fix Token Compression DDP bug → critical for interlingua
-4. Run Token Compression (2-3 hours) → learns compression
-5. Run LoRA Adapters (3-4 hours) → optimizes alignment
-6. Skip Linear/Affine unless doing ablation study
-
-MERGING STRATEGY FOR LATENTWIRE:
-- Core architecture: Token Compression (interlingua) + LoRA Adapters (alignment)
-- Encoder: Use token compression's learned compressor
-- Adapters: Use LoRA for model-specific projections
-- Baseline: Procrustes for quick feasibility testing
-- Validation: Activation communication for end-to-end testing
-
-CRITICAL BUG IDENTIFIED:
-- Token compression uses DataParallel instead of DDP (line 2030+)
-- Causes "tensor with 4 elements cannot be converted to Scalar" error
-- Fix required before HPC runs (see issue log 20251031_183643)
-
-NEXT STEPS:
-1. Fix token compression DDP bug (PRIORITY 1)
-2. Run activation communication to validate approach
-3. Integrate successful experiments into main LatentWire codebase
-4. Design end-to-end pipeline: Compress → Align → Inject → Generate
+GPU allocation (with 4 GPUs):
+- GPU 0: Linear adapter (parallel)
+- GPU 1: Affine adapter (parallel)
+- GPU 2: LoRA adapter (parallel)
+- GPU 3: Available for overflow/future experiments
+- Procrustes: CPU (no GPU needed)
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
-from torch.utils.data.distributed import DistributedSampler
-from torch.nn.parallel import DistributedDataParallel as DDP
-import torch.distributed as dist
 import numpy as np
 import warnings
 import os
@@ -159,20 +82,17 @@ def get_device_and_config():
         print(f"  - Samples: {config['num_samples']} (reduced for testing)")
         print(f"  - Epochs: {config['epochs']} (reduced for testing)")
     else:
-        # HPC configuration - batch size optimized for multi-GPU with DDP
+        # HPC configuration - batch size optimized for multi-GPU
         num_gpus = torch.cuda.device_count() if platform == 'hpc' else 1
-        # DDP: Each process gets batch_size samples
-        # Start with 10 per GPU (previously caused OOM with DataParallel, but DDP is more efficient)
-        config['batch_size'] = 10  # Per-process batch size
+        config['batch_size'] = 10 * num_gpus  # Scale batch size with GPU count (DataParallel splits batches)
         config['num_samples'] = 10000  # Conservative for preemptible cluster
-        config['epochs'] = 5  # Reduced from 10 based on convergence analysis (saves 40-50% compute)
+        config['epochs'] = 10
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
-        config['grad_accum_steps'] = 8  # DDP is more efficient, can reduce grad accum
+        config['grad_accum_steps'] = 8  # Gradient accumulation
         if platform == 'hpc':
-            print(f"  - Batch size per GPU: {config['batch_size']}")
-            print(f"  - Global batch size: {config['batch_size'] * num_gpus}")
-            print(f"  - Effective batch (with grad accum): {config['batch_size'] * num_gpus * config['grad_accum_steps']}")
+            print(f"  - Batch size: {config['batch_size']} ({num_gpus} GPUs × 10 per GPU)")
+            print(f"  - Effective batch (with grad accum): {config['batch_size'] * config['grad_accum_steps']}")
             print(f"  - Samples: {config['num_samples']}")
             print(f"  - Epochs: {config['epochs']}")
             print(f"  - BF16: {config['use_bf16']}")
@@ -182,60 +102,6 @@ def get_device_and_config():
 
 # Get device and config at module level
 DEVICE, PLATFORM, PLATFORM_CONFIG = get_device_and_config()
-
-# ============================================================================
-# Distributed Data Parallel (DDP) Setup
-# ============================================================================
-
-def setup_ddp():
-    """
-    Initialize DDP for multi-GPU training.
-
-    Returns:
-        tuple: (rank, world_size, device)
-            - rank: Process rank (0 to world_size-1)
-            - world_size: Total number of processes
-            - device: torch.device for this process
-    """
-    if not dist.is_available():
-        return 0, 1, DEVICE
-
-    if not dist.is_initialized():
-        # Initialize process group
-        dist.init_process_group(backend="nccl" if torch.cuda.is_available() else "gloo")
-
-    rank = dist.get_rank()
-    world_size = dist.get_world_size()
-
-    # Set device for this process
-    if torch.cuda.is_available():
-        torch.cuda.set_device(rank)
-        device = torch.device(f"cuda:{rank}")
-    else:
-        device = DEVICE
-
-    return rank, world_size, device
-
-def cleanup_ddp():
-    """Clean up DDP process group."""
-    if dist.is_initialized():
-        dist.destroy_process_group()
-
-def is_main_process():
-    """Return True if this is the main process (rank 0)."""
-    return not dist.is_initialized() or dist.get_rank() == 0
-
-def get_rank():
-    """Get current process rank, returns 0 if not using DDP."""
-    if dist.is_initialized():
-        return dist.get_rank()
-    return 0
-
-def get_world_size():
-    """Get world size, returns 1 if not using DDP."""
-    if dist.is_initialized():
-        return dist.get_world_size()
-    return 1
 
 # ============================================================================
 # InfoNCE Contrastive Loss (Critical from 2025 research)
@@ -581,9 +447,9 @@ LOG_ALIGN_UNIFORM = True  # Log alignment/uniformity metrics (Wang & Isola, ICML
 USE_CONTRASTIVE_CURRICULUM = True  # Gradually warm up contrastive weight (prevents overwhelming primary task)
 
 # Multi-layer alignment (prevents single-point failure)
-# Restored to multi-layer after model freezing freed 10-15 GB/GPU
-ALIGNMENT_LAYERS = [8, 16, 24]  # Early, middle, late representations
-LAYER_WEIGHTS = [0.3, 0.4, 0.3]  # Emphasize middle layer slightly
+# REDUCED to single layer to save memory (was [8, 16, 24])
+ALIGNMENT_LAYERS = [16]  # Middle layer for balance between early/late representations
+LAYER_WEIGHTS = [1.0]  # Single layer gets full weight
 LAYER_IDX = 16  # Default for backward compatibility
 
 # Layers to test for Procrustes
@@ -707,10 +573,8 @@ class ProcrustesAlignment:
         # Step 4: SVD of M in float32 (SVD is numerically sensitive, needs high precision)
         U, S, Vt = torch.linalg.svd(M, full_matrices=False)
 
-        # Step 5: Optimal orthogonal transformation
-        # CRITICAL: Keep W in float32! Converting to bfloat16 destroys orthogonality
-        # Orthogonal matrices require high precision to maintain W @ W.T = I property
-        self.W = U @ Vt  # Stay in float32 from SVD
+        # Step 5: Optimal orthogonal transformation (convert back to original dtype)
+        self.W = (U @ Vt).to(source.dtype)
 
         # Step 6: Bias term (2024 research extension for affine transformation)
         # After centering and recentering, no explicit bias is needed
@@ -727,8 +591,9 @@ class ProcrustesAlignment:
             # Orthogonal only (no bias)
             self.b = torch.zeros_like(self.target_mean)
 
-        # Verify orthogonality of W (W is already in float32)
-        I = self.W @ self.W.T
+        # Verify orthogonality of W (in float32 for numerical accuracy)
+        W_float = self.W.float()
+        I = W_float @ W_float.T
         ortho_error = torch.norm(I - torch.eye(I.shape[0], device=I.device), 'fro')
         if ortho_error > 1e-3:
             print(f"  WARNING: Orthogonality error = {ortho_error:.6f}")
@@ -851,10 +716,10 @@ class TokenInitializedCompressor(nn.Module):
         self.hidden_dim = hidden_dim
         self.d_z = d_z  # Latent dimension (much smaller than hidden_dim)
 
-        # Get the embedding layer (handle DDP/DataParallel wrapped models)
-        # CRITICAL: DDP and DataParallel wrap models, so attributes like get_input_embeddings()
+        # Get the embedding layer (handle DataParallel wrapped models)
+        # CRITICAL: DataParallel wraps models, so attributes like get_input_embeddings()
         # are accessed via .module for wrapped models
-        base_model = model.module if isinstance(model, (nn.DataParallel, DDP)) else model
+        base_model = model.module if isinstance(model, nn.DataParallel) else model
         self.embed_layer = base_model.get_input_embeddings()
 
         # Project from model space to latent z space
@@ -998,41 +863,11 @@ class AlignmentDataset(Dataset):
         }
 
 # ============================================================================
-# Procrustes Experiment - Model Stitching via Affine Alignment
+# Procrustes Experiment
 # ============================================================================
 
 def run_procrustes_experiment():
-    """
-    Run Procrustes alignment experiment across different layers.
-
-    PURPOSE:
-    Tests whether orthogonal/affine transformations can align hidden states between
-    heterogeneous LLMs (Llama-3.1-8B and Mistral-7B). This is a baseline alignment
-    method that requires no training - just SVD-based geometric alignment.
-
-    RELEVANCE TO CROSS-LLM COMMUNICATION:
-    - Establishes feasibility of representation alignment between different architectures
-    - Provides baseline CKA similarity scores for comparison with learned methods
-    - Tests model stitching hypothesis: can we "plug" one model's activations into another?
-
-    LITERATURE:
-    - "Transferring Features Across Language Models With Model Stitching" (arXiv:2506.06609, June 2025)
-      Shows affine mappings between residual streams effectively transfer features across LLMs
-    - "ConTrans: Weak-to-Strong Alignment via Concept Transplantation" (arXiv:2405.13578, 2024)
-      Uses affine transformations to reformulate concept vectors for cross-model transfer
-    - "Do LLMs Have Consistent Values?" (ICLR 2025)
-      Applies Procrustes analysis to compare embedding spaces between models
-
-    METHOD:
-    1. Extract hidden states from both models at layers [8, 16, 24]
-    2. Fit affine transformation: Y ≈ sW(X - μ_X) + μ_Y via SVD
-    3. Measure alignment quality with CKA (Centered Kernel Alignment)
-    4. Test both Llama→Mistral and Mistral→Llama directions
-
-    EXPECTED RESULTS (from literature):
-    - CKA similarity: 0.3-0.5 for middle layers without training
-    - Affine outperforms pure orthogonal by 5-8% (model stitching papers)
-    """
+    """Run Procrustes alignment experiment across different layers."""
 
     print("\n" + "=" * 80)
     print("PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)")
@@ -1090,18 +925,10 @@ def run_procrustes_experiment():
         **llama_kwargs
     ).eval()
 
-    # Freeze Llama parameters (no training needed for Procrustes)
-    for param in llama_model.parameters():
-        param.requires_grad = False
-
     mistral_model = AutoModelForCausalLM.from_pretrained(
         MISTRAL_MODEL,
         **mistral_kwargs
     ).eval()
-
-    # Freeze Mistral parameters (no training needed for Procrustes)
-    for param in mistral_model.parameters():
-        param.requires_grad = False
 
     # Explicitly move models to their designated GPUs for HPC
     if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
@@ -1219,62 +1046,8 @@ def run_procrustes_experiment():
         llama_to_mistral = ProcrustesAlignment()
         llama_to_mistral.fit(llama_hidden_all.float(), mistral_hidden_all.float())
 
-        # Compute CKA scores before and after Procrustes alignment (2025 best practice)
-        print(f"  Computing CKA similarity scores...")
-
-        # CKA before alignment (baseline - how similar are representations naturally?)
-        cka_before_mistral_llama = CKA.similarity(
-            mistral_hidden_all.float(),
-            llama_hidden_all.float(),
-            debiased=True
-        )
-
-        # CKA after Procrustes alignment (how much does alignment help?)
-        mistral_aligned = mistral_to_llama.transform(mistral_hidden_all)
-        cka_after_mistral_llama = CKA.similarity(
-            mistral_aligned.float(),
-            llama_hidden_all.float(),
-            debiased=True
-        )
-
-        llama_aligned = llama_to_mistral.transform(llama_hidden_all)
-        cka_after_llama_mistral = CKA.similarity(
-            llama_aligned.float(),
-            mistral_hidden_all.float(),
-            debiased=True
-        )
-
-        # Calculate improvement
-        cka_improvement_mistral_llama = float(cka_after_mistral_llama.item() - cka_before_mistral_llama.item())
-
-        print(f"  CKA Mistral→Llama:")
-        print(f"    Before alignment: {cka_before_mistral_llama.item():.4f}")
-        print(f"    After alignment:  {cka_after_mistral_llama.item():.4f}")
-        print(f"    Improvement:      {cka_improvement_mistral_llama:+.4f}")
-        print(f"  CKA Llama→Mistral after alignment: {cka_after_llama_mistral.item():.4f}")
-
-        # Save alignments for later use by activation communication experiment
-        script_dir = Path(__file__).parent.absolute()
-        alignment_dir = script_dir / "runs" / "procrustes_alignments"
-        alignment_dir.mkdir(parents=True, exist_ok=True)
-        torch.save({
-            'W': llama_to_mistral.W,
-            'source_mean': llama_to_mistral.source_mean,
-            'target_mean': llama_to_mistral.target_mean,
-            'source_norm': llama_to_mistral.source_norm,
-            'target_norm': llama_to_mistral.target_norm,
-            'b': llama_to_mistral.b
-        }, alignment_dir / f"layer_{layer_idx}.pt")
-        print(f"  Saved Procrustes alignment to {alignment_dir / f'layer_{layer_idx}.pt'}")
-
         # Test generation
         layer_results = {
-            "cka_metrics": {
-                "cka_before_alignment": float(cka_before_mistral_llama.item()),
-                "cka_after_mistral_to_llama": float(cka_after_mistral_llama.item()),
-                "cka_after_llama_to_mistral": float(cka_after_llama_mistral.item()),
-                "cka_improvement": float(cka_improvement_mistral_llama)
-            },
             "mistral_to_mistral": {},
             "llama_to_llama": {},
             "llama_to_mistral": {},
@@ -1422,248 +1195,12 @@ def run_procrustes_experiment():
     return results
 
 # ============================================================================
-# Per-Epoch Evaluation for Learned Adapters
-# ============================================================================
-
-def evaluate_adapter_epoch(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
-                           device, epoch, alignment_layer=16, use_ddp=False):
-    """
-    Comprehensive per-epoch evaluation of adapter quality.
-
-    Measures:
-    1. CKA similarity (alignment quality)
-    2. Generation quality (cross-model injection samples)
-    3. Cosine similarity (hidden state alignment)
-
-    Args:
-        model_a, model_b: The two models
-        tokenizer_a, tokenizer_b: Their tokenizers
-        adapter: The adapter being trained
-        device: Device to run on
-        epoch: Current epoch number
-        alignment_layer: Which layer is being aligned
-        use_ddp: Whether using DDP (unwrap .module)
-
-    Returns:
-        dict with evaluation metrics
-    """
-    # Set models to eval mode
-    was_training_adapter = adapter.training
-    was_training_a = model_a.training
-    was_training_b = model_b.training
-
-    adapter.eval()
-    model_a.eval()
-    model_b.eval()
-
-    # Unwrap DDP if needed
-    adapter_module = adapter.module if use_ddp and hasattr(adapter, 'module') else adapter
-
-    results = {
-        "epoch": epoch,
-        "alignment_layer": alignment_layer,
-        "cka_scores": {},
-        "cosine_similarities": {},
-        "generations": {}
-    }
-
-    # Test prompts for generation quality
-    test_prompts = [
-        "The capital of France is",
-        "To solve this problem, we need to",
-        "The future of artificial intelligence",
-        "In the year 2050, humanity will",
-        "The main difference between cats and dogs"
-    ]
-
-    with torch.no_grad():
-        # 1. Compute CKA similarity between adapted and target hidden states
-        print(f"\n  Computing CKA similarity...")
-        cka_samples = []
-        cosine_sims = []
-
-        for prompt in test_prompts[:3]:  # Use 3 prompts for CKA
-            # Tokenize for both models
-            inputs_a = tokenizer_a(prompt, return_tensors="pt", padding=False).to(device)
-            inputs_b = tokenizer_b(prompt, return_tensors="pt", padding=False).to(device)
-
-            # Get hidden states from model A
-            outputs_a = model_a.model(**inputs_a, output_hidden_states=True)
-            hidden_a = outputs_a.hidden_states[alignment_layer]  # [1, seq, hidden]
-
-            # Get hidden states from model B (target)
-            outputs_b = model_b.model(**inputs_b, output_hidden_states=True)
-            hidden_b = outputs_b.hidden_states[alignment_layer]
-
-            # Apply adapter to model A's hidden states
-            adapted_a = adapter_module(hidden_a)  # [1, seq, hidden]
-
-            # Compute CKA between adapted A and target B
-            # Flatten to [n_samples, features] for CKA
-            adapted_flat = adapted_a.view(-1, adapted_a.shape[-1]).float()
-            target_flat = hidden_b.view(-1, hidden_b.shape[-1]).float()
-
-            # Only compute if we have enough samples
-            if adapted_flat.shape[0] >= 2:
-                cka_score = CKA.similarity(adapted_flat, target_flat, debiased=True)
-                cka_samples.append(float(cka_score.item()))
-
-                # Compute cosine similarity
-                cos_sim = F.cosine_similarity(
-                    adapted_flat.mean(dim=0, keepdim=True),
-                    target_flat.mean(dim=0, keepdim=True)
-                )
-                cosine_sims.append(float(cos_sim.item()))
-
-        # Average CKA and cosine similarity
-        if cka_samples:
-            results["cka_scores"]["mean"] = sum(cka_samples) / len(cka_samples)
-            results["cka_scores"]["samples"] = cka_samples
-        else:
-            results["cka_scores"]["mean"] = 0.0
-
-        if cosine_sims:
-            results["cosine_similarities"]["mean"] = sum(cosine_sims) / len(cosine_sims)
-            results["cosine_similarities"]["samples"] = cosine_sims
-        else:
-            results["cosine_similarities"]["mean"] = 0.0
-
-        # 2. Generate samples for qualitative assessment
-        print(f"  Generating quality samples...")
-        for i, prompt in enumerate(test_prompts, 1):
-            gen_results = {}
-
-            # Baseline: Model A → Model A (should be fluent)
-            try:
-                inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
-                outputs_a = model_a.generate(
-                    **inputs_a,
-                    max_new_tokens=20,
-                    do_sample=False,
-                    pad_token_id=tokenizer_a.eos_token_id
-                )
-                gen_a = tokenizer_a.decode(outputs_a[0], skip_special_tokens=True)
-                gen_results["model_a_baseline"] = gen_a
-            except Exception as e:
-                gen_results["model_a_baseline"] = f"Error: {e}"
-
-            # Baseline: Model B → Model B (should be fluent)
-            try:
-                inputs_b = tokenizer_b(prompt, return_tensors="pt").to(device)
-                outputs_b = model_b.generate(
-                    **inputs_b,
-                    max_new_tokens=20,
-                    do_sample=False,
-                    pad_token_id=tokenizer_b.eos_token_id
-                )
-                gen_b = tokenizer_b.decode(outputs_b[0], skip_special_tokens=True)
-                gen_results["model_b_baseline"] = gen_b
-            except Exception as e:
-                gen_results["model_b_baseline"] = f"Error: {e}"
-
-            # Note: Full cross-model generation with injection requires model surgery
-            # For now, we track the hidden state alignment quality via CKA
-            gen_results["note"] = "Cross-model injection requires additional implementation"
-
-            results["generations"][f"prompt_{i}"] = {
-                "text": prompt,
-                **gen_results
-            }
-
-    # Restore training state
-    if was_training_adapter:
-        adapter.train()
-    if was_training_a:
-        model_a.train()
-    if was_training_b:
-        model_b.train()
-
-    # Print summary
-    print(f"\n  Epoch {epoch} Evaluation:")
-    print(f"    CKA Similarity: {results['cka_scores']['mean']:.4f}")
-    print(f"    Cosine Similarity: {results['cosine_similarities']['mean']:.4f}")
-
-    return results
-
-
-# ============================================================================
-# Early Stopping Helper
-# ============================================================================
-
-class EarlyStopping:
-    """Early stopping to avoid overtraining."""
-
-    def __init__(self, patience=2, min_delta=0.001):
-        self.patience = patience
-        self.min_delta = min_delta
-        self.best_loss = float('inf')
-        self.epochs_no_improve = 0
-        self.should_stop = False
-
-    def __call__(self, val_loss):
-        """Returns True if training should stop."""
-        if val_loss < self.best_loss - self.min_delta:
-            self.best_loss = val_loss
-            self.epochs_no_improve = 0
-            self.should_stop = False
-        else:
-            self.epochs_no_improve += 1
-            if self.epochs_no_improve >= self.patience:
-                self.should_stop = True
-
-        return self.should_stop
-
-    def reset(self):
-        """Reset early stopping state."""
-        self.best_loss = float('inf')
-        self.epochs_no_improve = 0
-        self.should_stop = False
-
-
-# ============================================================================
-# Learned Adapter Training - Trainable Cross-Model Alignment
+# Learned Adapter Training
 # ============================================================================
 
 def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
-                  device, log_file, num_samples=1000, checkpoint_dir=None,
-                  use_ddp=False, rank=0, world_size=1):
-    """
-    Train a single adapter for cross-model alignment with contrastive learning.
-
-    PURPOSE:
-    Learn trainable mappings (linear, affine, or LoRA) to align hidden states between
-    Llama and Mistral using contrastive objectives. Unlike Procrustes (closed-form),
-    these adapters can learn non-geometric alignments through gradient descent.
-
-    RELEVANCE TO CROSS-LLM COMMUNICATION:
-    - Tests whether learned adapters outperform geometric (Procrustes) alignment
-    - LoRA adapters are parameter-efficient and can be transferred across models
-    - Contrastive learning (InfoNCE) prevents mode collapse and improves alignment quality
-
-    LITERATURE:
-    - "Cross-LoRA: A Data-Free LoRA Transfer Framework" (arXiv:2508.05232, August 2025)
-      Transfers LoRA adapters across heterogeneous LLMs via SVD and subspace alignment
-    - "MoA: Heterogeneous Mixture of Adapters" (arXiv:2506.05928, June 2025)
-      Dynamically integrates PEFT adapters with diverse structures for multi-task transfer
-    - "Activation Manifold Projection (CAST)" (arXiv:2510.17902, October 2025)
-      Learns direct mappings between activation manifolds, retaining 85-95% performance
-
-    METHOD:
-    1. Extract hidden states from both models on Wikitext-103
-    2. Train adapter with InfoNCE contrastive loss (τ=0.07)
-    3. Use AdamW optimizer with cosine annealing (10 epochs, lr=5e-5)
-    4. Measure CKA similarity before/after adapter application
-
-    ADAPTER TYPES:
-    - Linear: W @ x (single matrix, ~16M params for d=4096)
-    - Affine: W @ x + b (adds bias, ~16M + 4K params)
-    - LoRA: Low-rank adaptation (rank 8, ~260K params, 98% fewer than linear)
-
-    EXPECTED RESULTS (from literature):
-    - CKA improvement: +0.1-0.2 over Procrustes baseline
-    - LoRA achieves 90-95% of linear performance with 2% parameters
-    - Contrastive loss prevents mode collapse (all representations → same vector)
-    """
+                  device, log_file, num_samples=1000, checkpoint_dir=None):
+    """Train a single adapter for cross-model alignment with contrastive learning."""
 
     print(f"\nTraining {adapter.__class__.__name__}...", file=log_file)
 
@@ -1684,19 +1221,13 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             print(f"Resuming from epoch {start_epoch}", file=log_file)
 
     # Prepare dataset
-    if rank == 0:
-        print(f"Loading dataset ({num_samples} samples)...", file=log_file)
+    print(f"Loading dataset ({num_samples} samples)...", file=log_file)
 
-    # Fix cache corruption (only rank 0 should clear cache)
-    if rank == 0:
-        cache_dir = Path.home() / ".cache" / "huggingface" / "datasets"
-        wikitext_cache = cache_dir / "wikitext"
-        if wikitext_cache.exists():
-            shutil.rmtree(wikitext_cache)
-
-    # Synchronize all processes before loading dataset
-    if use_ddp:
-        dist.barrier()
+    # Fix cache corruption
+    cache_dir = Path.home() / ".cache" / "huggingface" / "datasets"
+    wikitext_cache = cache_dir / "wikitext"
+    if wikitext_cache.exists():
+        shutil.rmtree(wikitext_cache)
 
     dataset = load_dataset("wikitext", "wikitext-103-v1", split="train")
     texts = [item["text"] for item in dataset if len(item["text"]) > 100][:num_samples]
@@ -1706,39 +1237,17 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     # Data loading configuration
     # NOTE: HPC system can't handle multiple workers (causes freeze), use single-threaded
     num_workers = 0  # Must be 0 on this HPC system to avoid DataLoader freeze
-
-    # Use DistributedSampler for DDP to split data across processes
-    if use_ddp:
-        sampler = DistributedSampler(
-            train_dataset,
-            num_replicas=world_size,
-            rank=rank,
-            shuffle=True
-        )
-        dataloader = DataLoader(
-            train_dataset,
-            batch_size=BATCH_SIZE,
-            sampler=sampler,  # Use sampler instead of shuffle
-            num_workers=num_workers,
-            pin_memory=True if PLATFORM == 'hpc' else False,
-        )
-    else:
-        dataloader = DataLoader(
-            train_dataset,
-            batch_size=BATCH_SIZE,
-            shuffle=True,
-            num_workers=num_workers,
-            pin_memory=True if PLATFORM == 'hpc' else False,
-        )
+    dataloader = DataLoader(
+        train_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True if PLATFORM == 'hpc' else False,  # Faster GPU transfer
+    )
 
     # Move adapter to device with correct dtype (must match model dtype)
     dtype = torch.bfloat16 if USE_BF16 else torch.float32
     adapter = adapter.to(device, dtype=dtype)
-
-    # Wrap adapter with DDP if using distributed training
-    if use_ddp:
-        adapter = DDP(adapter, device_ids=[rank], output_device=rank)
-
     optimizer = torch.optim.AdamW(adapter.parameters(), lr=LEARNING_RATE)
 
     # Add cosine annealing scheduler (as mentioned in comments)
@@ -1782,17 +1291,10 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     print(f"{'='*80}\n", file=log_file)
     log_file.flush()
 
-    # Initialize early stopping
-    early_stopping = EarlyStopping(patience=2, min_delta=0.001)
-
     import time
     training_start_time = time.time()
 
     for epoch in range(start_epoch, EPOCHS):
-        # Set epoch for DistributedSampler to ensure different shuffling each epoch
-        if use_ddp:
-            sampler.set_epoch(epoch)
-
         epoch_loss = 0.0
         epoch_gen_loss = 0.0
         epoch_contrast_loss = 0.0
@@ -1801,11 +1303,10 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         epoch_steps = 0
         epoch_start_time = time.time()
 
-        if rank == 0:  # Only print on main process
-            msg = f"\n{'='*80}\nEpoch {epoch+1}/{EPOCHS}\n{'='*80}"
-            print(msg, file=log_file)
-            print(msg)  # Also print to stdout for tee capture
-            log_file.flush()
+        msg = f"\n{'='*80}\nEpoch {epoch+1}/{EPOCHS}\n{'='*80}"
+        print(msg, file=log_file)
+        print(msg)  # Also print to stdout for tee capture
+        log_file.flush()
 
         for batch_idx, batch in enumerate(dataloader):
             # Move to device
@@ -1856,8 +1357,9 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
                     labels=labels_b
                 )
 
-                # DDP automatically averages gradients across processes, loss is already scalar
-                layer_loss = outputs_b.loss
+                # CRITICAL: With DataParallel, loss is a tensor [num_gpus], must reduce to scalar
+                # Even with single GPU, .mean() is safe and ensures scalar
+                layer_loss = outputs_b.loss.mean() if outputs_b.loss.numel() > 1 else outputs_b.loss
                 generation_losses.append(layer_loss * layer_weight)
 
             # Combine generation losses from multiple layers
@@ -1980,29 +1482,41 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         avg_epoch_gen_loss = epoch_gen_loss / epoch_steps
         avg_epoch_contrast_loss = epoch_contrast_loss / epoch_steps
 
-        # Run comprehensive per-epoch evaluation (only on rank 0)
-        if rank == 0:
-            mid_layer_idx = ALIGNMENT_LAYERS[len(ALIGNMENT_LAYERS) // 2]
-            eval_results = evaluate_adapter_epoch(
-                model_a, model_b, tokenizer_a, tokenizer_b, adapter,
-                device=device,
-                epoch=epoch + 1,
-                alignment_layer=mid_layer_idx,
-                use_ddp=use_ddp
-            )
+        # Compute CKA similarity at end of epoch
+        with torch.no_grad():
+            # Sample a few batches for CKA computation
+            cka_scores = []
+            for i, batch in enumerate(dataloader):
+                if i >= 5:  # Only compute on first 5 batches for efficiency
+                    break
 
-            # Save evaluation results
-            if checkpoint_dir:
-                eval_path = checkpoint_dir / f"eval_epoch_{epoch+1}.json"
-                with open(eval_path, 'w') as f:
-                    json.dump(eval_results, f, indent=2)
+                input_ids_a = batch["input_ids_a"].to(device)
+                attention_mask_a = batch["attention_mask_a"].to(device)
+                input_ids_b = batch["input_ids_b"].to(device)
+                attention_mask_b = batch["attention_mask_b"].to(device)
 
-            # Extract CKA for tracking
-            avg_cka = eval_results["cka_scores"]["mean"]
+                outputs_a = model_a(
+                    input_ids=input_ids_a,
+                    attention_mask=attention_mask_a,
+                    output_hidden_states=True
+                )
+                outputs_b = model_b(
+                    input_ids=input_ids_b,
+                    attention_mask=attention_mask_b,
+                    output_hidden_states=True
+                )
+
+                # Compute CKA for middle layer
+                mid_idx = len(ALIGNMENT_LAYERS) // 2
+                source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
+                aligned_repr = adapter(source_repr)
+                target_repr = outputs_b.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
+
+                cka_score = CKA.cka_similarity(aligned_repr.float(), target_repr.float())
+                cka_scores.append(cka_score.item())
+
+            avg_cka = np.mean(cka_scores) if cka_scores else 0.0
             training_metrics["cka_scores"].append(avg_cka)
-        else:
-            # Non-main processes just set a placeholder
-            avg_cka = 0.0
 
         training_metrics["epochs"].append({
             "epoch": epoch + 1,
@@ -2028,135 +1542,87 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             msg += f"  ETA for remaining {remaining_epochs} epochs: {eta_total:.1f}m\n"
         msg += f"{'='*80}"
 
-        if rank == 0:  # Only print on main process
-            print(msg, file=log_file)
-            print(msg)  # Also to stdout
-            log_file.flush()
+        print(msg, file=log_file)
+        print(msg)  # Also to stdout
+        log_file.flush()
 
-        # Check early stopping (rank 0 decides, broadcast to all ranks to avoid deadlock)
-        should_stop = False
-        if use_ddp:
-            # Rank 0 checks early stopping
-            if rank == 0:
-                should_stop = early_stopping(avg_epoch_loss)
-                if should_stop:
-                    print(f"\n  Early stopping triggered at epoch {epoch+1}", file=log_file)
-                    print(f"  Best loss: {early_stopping.best_loss:.4f}", file=log_file)
-                    print(f"  No improvement for {early_stopping.patience} epochs", file=log_file)
-                    log_file.flush()
-
-            # Broadcast decision to all ranks (critical for DDP synchronization)
-            stop_tensor = torch.tensor([1.0 if should_stop else 0.0], device=device)
-            dist.broadcast(stop_tensor, src=0)
-            should_stop = stop_tensor.item() > 0.5
-
-            # All ranks break together (prevents deadlock at barriers)
-            if should_stop:
-                break
-        else:
-            # Non-DDP: only rank 0 exists, simple check
-            if rank == 0 and early_stopping(avg_epoch_loss):
-                print(f"\n  Early stopping triggered at epoch {epoch+1}", file=log_file)
-                print(f"  Best loss: {early_stopping.best_loss:.4f}", file=log_file)
-                print(f"  No improvement for {early_stopping.patience} epochs", file=log_file)
-                log_file.flush()
-                break
-
-        # Save checkpoint after each epoch (only on rank 0)
-        if checkpoint_dir and rank == 0:
+        # Save checkpoint after each epoch
+        if checkpoint_dir:
             checkpoint = {
                 'epoch': epoch,
-                'adapter_state_dict': adapter.module.state_dict() if use_ddp else adapter.state_dict(),
+                'adapter_state_dict': adapter.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict': scheduler.state_dict(),
                 'training_metrics': training_metrics,
                 'loss': avg_epoch_loss,
-                'eval_results': eval_results if rank == 0 else None,
             }
             checkpoint_path = checkpoint_dir / "checkpoint.pt"
             torch.save(checkpoint, checkpoint_path)
             print(f"  Checkpoint saved to {checkpoint_path}", file=log_file)
 
-        # Synchronize all processes after checkpoint
-        if use_ddp:
-            dist.barrier()
-
-    # Final training summary (only on rank 0)
-    if rank == 0:
-        total_training_time = time.time() - training_start_time
-        msg = f"\n\n{'='*80}\n"
-        msg += f"TRAINING COMPLETE\n"
-        msg += f"{'='*80}\n"
-        msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
-        msg += f"Total epochs: {EPOCHS}\n"
-        msg += f"Final loss: {training_metrics['epochs'][-1]['loss']:.4f}\n"
-        msg += f"Final CKA score: {training_metrics['epochs'][-1]['cka_score']:.4f}\n"
-        msg += f"\nLoss progression:\n"
-        for i, epoch_data in enumerate(training_metrics['epochs']):
-            msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, CKA {epoch_data['cka_score']:.4f}\n"
-        msg += f"{'='*80}\n"
-        print(msg, file=log_file)
-        print(msg)  # Also to stdout
-        log_file.flush()
+    # Final training summary
+    total_training_time = time.time() - training_start_time
+    msg = f"\n\n{'='*80}\n"
+    msg += f"TRAINING COMPLETE\n"
+    msg += f"{'='*80}\n"
+    msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
+    msg += f"Total epochs: {EPOCHS}\n"
+    msg += f"Final loss: {training_metrics['epochs'][-1]['loss']:.4f}\n"
+    msg += f"Final CKA score: {training_metrics['epochs'][-1]['cka_score']:.4f}\n"
+    msg += f"\nLoss progression:\n"
+    for i, epoch_data in enumerate(training_metrics['epochs']):
+        msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, CKA {epoch_data['cka_score']:.4f}\n"
+    msg += f"{'='*80}\n"
+    print(msg, file=log_file)
+    print(msg)  # Also to stdout
+    log_file.flush()
 
     return adapter, training_metrics
 
 def run_adapter_experiment(adapter_type, gpu_id):
     """Run a single adapter experiment on specified GPU."""
 
-    # Create output directory relative to script location (only rank 0)
+    # Create output directory relative to script location
     script_dir = Path(__file__).parent.absolute()
     output_dir = script_dir / "runs" / "learned_adapters"
-
-    # Only rank 0 creates directories and log files
-    if is_main_process():
-        output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # Fix log filename for multi-GPU case
     gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
     log_path = output_dir / f"{adapter_type}_{gpu_label}_{timestamp}.log"
 
-    # Only rank 0 opens log file
-    if is_main_process():
-        log_file = open(log_path, 'w')
+    with open(log_path, 'w') as log_file:
         # Redirect output to both console and file
         old_stdout = sys.stdout
         old_stderr = sys.stderr
         sys.stdout = TeeLogger(log_file)
         sys.stderr = TeeLogger(log_file)
-    else:
-        log_file = None
 
-    try:
-        if is_main_process():
+        try:
             print("=" * 80)
             print(f"LEARNED ADAPTER EXPERIMENT - {adapter_type.upper()}")
             print("=" * 80)
             print(f"Platform: {PLATFORM}")
             print(f"Log file: {log_path}")
 
-            # Device configuration - use DDP for multi-GPU
-            use_ddp = False
-            rank = 0
-            world_size = 1
-
+            # Device configuration
+            use_data_parallel = False
             if PLATFORM == 'hpc' and gpu_id is None and torch.cuda.device_count() > 1:
-                # Use DDP for multi-GPU training
-                rank, world_size, device = setup_ddp()
-                use_ddp = True
-                if is_main_process():
-                    print(f"\n{'='*80}")
-                    print(f"GPU CONFIGURATION")
-                    print(f"{'='*80}")
-                    print(f"Mode: DistributedDataParallel (DDP)")
-                    print(f"Number of GPUs: {world_size}")
-                    print(f"GPU IDs: {list(range(world_size))}")
-                    print(f"Rank: {rank}, Device: {device}")
-                    print(f"Batch size per GPU: {BATCH_SIZE}")
-                    print(f"Global batch size: {BATCH_SIZE * world_size}")
-                    print(f"Effective batch (with grad accum): {BATCH_SIZE * world_size * GRAD_ACCUM_STEPS}")
-                    print(f"{'='*80}\n")
+                # Use all GPUs with DataParallel
+                device = torch.device("cuda:0")  # Primary device
+                use_data_parallel = True
+                print(f"\n{'='*80}")
+                print(f"GPU CONFIGURATION")
+                print(f"{'='*80}")
+                print(f"Mode: DataParallel (multi-GPU)")
+                print(f"Number of GPUs: {torch.cuda.device_count()}")
+                print(f"GPU IDs: {list(range(torch.cuda.device_count()))}")
+                print(f"Primary device: cuda:0")
+                print(f"Batch size per GPU: {BATCH_SIZE // torch.cuda.device_count()}")
+                print(f"Total batch size: {BATCH_SIZE}")
+                print(f"Effective batch (with grad accum): {BATCH_SIZE * GRAD_ACCUM_STEPS}")
+                print(f"{'='*80}\n")
             elif PLATFORM == 'hpc' and gpu_id is not None:
                 # Use specific GPU
                 device = torch.device(f"cuda:{gpu_id}")
@@ -2203,29 +1669,26 @@ def run_adapter_experiment(adapter_type, gpu_id):
                 **model_kwargs
             ).to(device).eval()
 
-            # Freeze model A parameters to save memory and compute
-            for param in model_a.parameters():
-                param.requires_grad = False
-
-            # Enable gradient checkpointing to save activation memory during backprop
-            # (still needed even with frozen params, reduces activation memory 2-3×)
+            # Enable gradient checkpointing to save memory during training (works on all platforms)
             model_a.gradient_checkpointing_enable()
+
+            # Wrap with DataParallel if using multiple GPUs
+            if use_data_parallel:
+                model_a = torch.nn.DataParallel(model_a)
+                print(f"Wrapped Llama model with DataParallel")
 
             model_b = AutoModelForCausalLM.from_pretrained(
                 MISTRAL_MODEL,
                 **model_kwargs
             ).to(device).eval()
 
-            # Freeze model B parameters to save memory and compute
-            for param in model_b.parameters():
-                param.requires_grad = False
-
-            # Enable gradient checkpointing to save activation memory during backprop
+            # Enable gradient checkpointing to save memory during training
             model_b.gradient_checkpointing_enable()
 
-            # Note: Models are frozen (requires_grad=False), so no need to wrap with DDP
-            # Gradient checkpointing still helps reduce activation memory during backprop
-            # Only the adapter will be wrapped with DDP in train_adapter()
+            # Wrap with DataParallel if using multiple GPUs
+            if use_data_parallel:
+                model_b = torch.nn.DataParallel(model_b)
+                print(f"Wrapped Mistral model with DataParallel")
 
             # Load tokenizers
             tokenizer_a = AutoTokenizer.from_pretrained(LLAMA_MODEL)
@@ -2254,47 +1717,38 @@ def run_adapter_experiment(adapter_type, gpu_id):
             adapter, metrics = train_adapter(
                 model_a, model_b, tokenizer_a, tokenizer_b,
                 adapter, device, log_file, NUM_SAMPLES,
-                checkpoint_dir=checkpoint_dir,
-                use_ddp=use_ddp,
-                rank=rank,
-                world_size=world_size
+                checkpoint_dir=checkpoint_dir
             )
 
-            # Save results (only on main process)
-            if is_main_process():
-                results = {
-                    "adapter_type": adapter_type,
-                    "gpu_id": gpu_id,
-                    "training_metrics": metrics,
-                    "timestamp": timestamp
-                }
+            # Save results
+            results = {
+                "adapter_type": adapter_type,
+                "gpu_id": gpu_id,
+                "training_metrics": metrics,
+                "timestamp": timestamp
+            }
 
-                results_path = output_dir / f"{adapter_type}_results_{timestamp}.json"
-                with open(results_path, 'w') as f:
-                    json.dump(results, f, indent=2)
+            results_path = output_dir / f"{adapter_type}_results_{timestamp}.json"
+            with open(results_path, 'w') as f:
+                json.dump(results, f, indent=2)
 
-                print(f"\nResults saved to: {results_path}")
+            print(f"\nResults saved to: {results_path}")
             print("=" * 80)
             print(f"{adapter_type.upper()} EXPERIMENT COMPLETE")
             print("=" * 80)
 
-    except Exception as e:
-        if is_main_process():
+        except Exception as e:
             print("\n" + "=" * 80)
             print(f"{adapter_type.upper()} ADAPTER EXPERIMENT FAILED")
             print("=" * 80)
             print(f"Error: {e}")
             import traceback
             traceback.print_exc()
-        raise  # Re-raise to propagate error
 
-    finally:
-        # Restore stdout/stderr and close log file (only rank 0)
-        if is_main_process():
+        finally:
+            # Restore stdout/stderr
             sys.stdout = old_stdout
             sys.stderr = old_stderr
-            if log_file is not None:
-                log_file.close()
 
 # ============================================================================
 # Token Compression Experiment Wrapper (for parallel execution)
@@ -2303,51 +1757,43 @@ def run_adapter_experiment(adapter_type, gpu_id):
 def run_token_compression_wrapper(gpu_id):
     """Run token compression experiment on specified GPU."""
 
-    # Create output directory relative to script location (only rank 0)
+    # Create output directory relative to script location
     script_dir = Path(__file__).parent.absolute()
     output_dir = script_dir / "runs" / "token_compression"
-
-    if is_main_process():
-        output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # Fix log filename for multi-GPU case
     gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
     log_path = output_dir / f"token_compression_{gpu_label}_{timestamp}.log"
 
-    # Only rank 0 opens log file
-    if is_main_process():
-        log_file = open(log_path, 'w')
+    with open(log_path, 'w') as log_file:
         # Redirect output to both console and file
         old_stdout = sys.stdout
         old_stderr = sys.stderr
         sys.stdout = TeeLogger(log_file)
         sys.stderr = TeeLogger(log_file)
-    else:
-        log_file = None
 
-    try:
-        if is_main_process():
+        try:
             print("=" * 80)
             print("TOKEN COMPRESSION EXPERIMENT")
             print("=" * 80)
             print(f"Platform: {PLATFORM}")
             print(f"Log file: {log_path}")
 
-        # GPU configuration will be printed by run_token_compression_experiment
-        # Pass None as device to let it auto-configure for multi-GPU or single-GPU
+            # GPU configuration will be printed by run_token_compression_experiment
+            # Pass None as device to let it auto-configure for multi-GPU or single-GPU
 
-        # Run token compression experiment (all ranks participate in DDP)
-        results = run_token_compression_experiment(
-            device=None,  # Auto-configure based on gpu_id
-            num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
-            compressed_length=64,
-            epochs=EPOCHS,
-            use_lora_all_layers=True
-        )
+            # Run token compression experiment
+            results = run_token_compression_experiment(
+                device=None,  # Auto-configure based on gpu_id
+                num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
+                compressed_length=64,
+                epochs=EPOCHS,
+                use_lora_all_layers=True
+            )
 
-        # Save results (only rank 0)
-        if is_main_process():
+            # Save results
             results_path = output_dir / f"token_compression_results_{timestamp}.json"
             with open(results_path, 'w') as f:
                 json.dump(results, f, indent=2)
@@ -2356,26 +1802,21 @@ def run_token_compression_wrapper(gpu_id):
             print("TOKEN COMPRESSION EXPERIMENT COMPLETE")
             print("=" * 80)
 
-    except Exception as e:
-        if is_main_process():
+        except Exception as e:
             print("\n" + "=" * 80)
             print("TOKEN COMPRESSION EXPERIMENT FAILED")
             print("=" * 80)
             print(f"Error: {e}")
             import traceback
             traceback.print_exc()
-        raise  # Re-raise to propagate error
 
-    finally:
-        # Restore stdout/stderr and close log file (only rank 0)
-        if is_main_process():
+        finally:
+            # Restore stdout/stderr
             sys.stdout = old_stdout
             sys.stderr = old_stderr
-            if log_file is not None:
-                log_file.close()
 
 # ============================================================================
-# Token-Initialized Compression Experiment - Soft Prompt Compression for Efficient Communication
+# Token-Initialized Compression Experiment
 # ============================================================================
 
 def run_token_compression_experiment(
@@ -2388,78 +1829,39 @@ def run_token_compression_experiment(
     use_lora_all_layers=True
 ):
     """
-    Run token-initialized compression experiment for cross-LLM communication.
+    Run token-initialized compression experiment.
 
-    PURPOSE:
-    Learn to compress long input sequences (512 tokens) into shorter soft prompts (64 tokens)
-    that preserve semantic content while reducing communication bandwidth. This is critical
-    for efficient cross-model communication where wire bandwidth is limited.
-
-    RELEVANCE TO CROSS-LLM COMMUNICATION:
-    - Reduces token transmission from 512 → 64 (8× compression ratio)
-    - Soft prompts (continuous embeddings) carry more information per token than discrete text
-    - Learned compression preserves task-relevant information better than truncation
-    - Directly applicable to LatentWire's interlingua design
-
-    LITERATURE:
-    - "LLMLingua: Prompt Compression" (Microsoft Research, EMNLP 2023 / ACL 2024)
-      Achieves up to 20× compression with minimal performance loss via selective token removal
-    - "CompactPrompt: Unified Prompt and Data Compression" (arXiv:2510.18043, October 2025)
-      Reduces token usage by 60% with <5% accuracy drop using soft prompt compression
-    - "Token Communications: Cross-Modal Semantic Communications" (arXiv:2502.12096, February 2025)
-      Unified framework for cross-modal communication using tokens as compressed representations
-    - "AutoCompressor / ICAE / 500xCompressor" (survey arXiv:2410.12388)
-      Soft prompt architectures for learning continuous prompt compressions
-
-    METHOD:
-    1. Initialize compressed z ∈ R^(64×d) with pooled token embeddings (not random noise)
-    2. Train compressor to reconstruct input via autoencoding objective
-    3. Apply LoRA to all transformer layers for parameter-efficient adaptation
-    4. Measure reconstruction quality (perplexity, token accuracy)
-
-    KEY INNOVATION:
-    Token-initialization (vs random) provides better starting point for compression learning,
-    similar to how warm-start reduces training time in optimization.
-
-    EXPECTED RESULTS (from literature):
-    - Reconstruction perplexity: <30 with 8× compression (vs 10-15 for no compression)
-    - Token accuracy: 60-70% exact match at first position
-    - Training: Converges in 5-10 epochs with LoRA (vs 50+ without)
+    Key idea: Initialize compressed representation with actual token embeddings
+    from the input, not random noise. Apply LoRA to all layers for adaptation.
     """
-    # Device configuration for multi-GPU support with DDP
-    use_ddp = False
-    rank = 0
-    world_size = 1
-
+    # Device configuration for multi-GPU support
+    use_data_parallel = False
     if device is None:
         if PLATFORM == 'hpc' and torch.cuda.device_count() > 1:
-            # Use DDP for multi-GPU training
-            rank, world_size, device = setup_ddp()
-            use_ddp = True
-            if is_main_process():
-                print(f"\n{'='*80}")
-                print(f"GPU CONFIGURATION")
-                print(f"{'='*80}")
-                print(f"Mode: DistributedDataParallel (DDP)")
-                print(f"Number of GPUs: {world_size}")
-                print(f"GPU IDs: {list(range(world_size))}")
-                print(f"Rank: {rank}, Device: {device}")
-                print(f"Batch size per GPU: {BATCH_SIZE}")
-                print(f"Global batch size: {BATCH_SIZE * world_size}")
-                print(f"{'='*80}\n")
+            # Use all GPUs with DataParallel
+            device = torch.device("cuda:0")  # Primary device
+            use_data_parallel = True
+            print(f"\n{'='*80}")
+            print(f"GPU CONFIGURATION")
+            print(f"{'='*80}")
+            print(f"Mode: DataParallel (multi-GPU)")
+            print(f"Number of GPUs: {torch.cuda.device_count()}")
+            print(f"GPU IDs: {list(range(torch.cuda.device_count()))}")
+            print(f"Primary device: cuda:0")
+            print(f"Batch size per GPU: {BATCH_SIZE // torch.cuda.device_count()}")
+            print(f"Total batch size: {BATCH_SIZE}")
+            print(f"{'='*80}\n")
         else:
             device = DEVICE
             print(f"\nDevice: {device}\n")
 
-    if rank == 0:
-        print("\n" + "=" * 80)
-        print("TOKEN-INITIALIZED COMPRESSION EXPERIMENT")
-        print("=" * 80)
+    print("\n" + "=" * 80)
+    print("TOKEN-INITIALIZED COMPRESSION EXPERIMENT")
+    print("=" * 80)
 
-    # Load Llama model if not provided (all ranks load the model)
+    # Load Llama model if not provided
     if model is None or tokenizer is None:
-        if rank == 0:
-            print(f"Loading {LLAMA_MODEL}...")
+        print(f"Loading {LLAMA_MODEL}...")
 
         # Model loading arguments
         model_kwargs = {
@@ -2482,11 +1884,14 @@ def run_token_compression_experiment(
         tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
         tokenizer.pad_token = tokenizer.eos_token
 
+        # Wrap with DataParallel if using multiple GPUs
+        if use_data_parallel:
+            model = torch.nn.DataParallel(model)
+            print(f"Wrapped Llama model with DataParallel")
+
     # Apply LoRA to all layers if requested
-    # Note: get_peft_model() automatically freezes base model parameters
     if use_lora_all_layers:
-        if rank == 0:
-            print("Applying LoRA to all transformer layers...")
+        print("Applying LoRA to all transformer layers...")
         try:
             from peft import LoraConfig, get_peft_model, TaskType
 
@@ -2502,19 +1907,16 @@ def run_token_compression_experiment(
                 task_type=TaskType.CAUSAL_LM,
             )
             model = get_peft_model(model, lora_config)
-            if rank == 0:
-                model.print_trainable_parameters()  # This prints directly, doesn't return a value
+            model.print_trainable_parameters()  # This prints directly, doesn't return a value
         except Exception as e:
-            if rank == 0:
-                print(f"Warning: Could not apply LoRA: {e}")
+            print(f"Warning: Could not apply LoRA: {e}")
 
     # Create compressor
     d_z = 256  # Latent dimension (16x compression from 4096)
-    if rank == 0:
-        print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
+    print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
     dtype = torch.bfloat16 if USE_BF16 else torch.float32
-    # Access config correctly for DDP/DataParallel wrapped models
-    base_model = model.module if isinstance(model, (torch.nn.DataParallel, DDP)) else model
+    # Access config correctly for DataParallel wrapped models
+    base_model = model.module if isinstance(model, torch.nn.DataParallel) else model
     compressor = TokenInitializedCompressor(
         model=model,
         tokenizer=tokenizer,
@@ -2523,15 +1925,8 @@ def run_token_compression_experiment(
         d_z=d_z
     ).to(device, dtype=dtype)
 
-    # Wrap compressor with DDP if using distributed training
-    if use_ddp:
-        compressor = DDP(compressor, device_ids=[rank], output_device=rank)
-        if rank == 0:
-            print(f"Wrapped compressor with DDP")
-
-    # Load dataset (all ranks load it)
-    if rank == 0:
-        print(f"Loading SQuAD dataset ({num_samples} samples)...")
+    # Load dataset
+    print(f"Loading SQuAD dataset ({num_samples} samples)...")
     dataset = load_dataset("squad", split=f"train[:{num_samples}]")
 
     # Prepare training data
@@ -2540,42 +1935,6 @@ def run_token_compression_experiment(
         # Combine context and question
         text = f"Context: {item['context'][:500]}\nQuestion: {item['question']}\nAnswer:"
         train_texts.append(text)
-
-    # Create Dataset and DataLoader with DistributedSampler for DDP
-    class TextDataset(Dataset):
-        def __init__(self, texts):
-            self.texts = texts
-
-        def __len__(self):
-            return len(self.texts)
-
-        def __getitem__(self, idx):
-            return self.texts[idx]
-
-    text_dataset = TextDataset(train_texts)
-
-    if use_ddp:
-        sampler = DistributedSampler(
-            text_dataset,
-            num_replicas=world_size,
-            rank=rank,
-            shuffle=True
-        )
-        dataloader = DataLoader(
-            text_dataset,
-            batch_size=BATCH_SIZE,
-            sampler=sampler,
-            num_workers=0,  # Set to 0 to avoid multiprocessing issues with DDP
-            pin_memory=True if PLATFORM == 'hpc' else False,
-        )
-    else:
-        dataloader = DataLoader(
-            text_dataset,
-            batch_size=BATCH_SIZE,
-            shuffle=True,
-            num_workers=0,
-            pin_memory=False,
-        )
 
     # Training setup
     all_params = list(compressor.parameters())
@@ -2594,26 +1953,20 @@ def run_token_compression_experiment(
     }
 
     # Training configuration header
-    num_batches = len(dataloader)
-    if rank == 0:
-        print(f"\n{'='*80}")
-        print(f"TRAINING CONFIGURATION")
-        print(f"{'='*80}")
-        print(f"Total epochs: {epochs}")
-        print(f"Total samples: {len(train_texts)}")
-        if use_ddp:
-            print(f"Samples per rank: {len(train_texts) // world_size}")
-        print(f"Batch size per GPU: {BATCH_SIZE}")
-        if use_ddp:
-            print(f"Global batch size: {BATCH_SIZE * world_size}")
-        print(f"Batches per epoch: {num_batches}")
-        print(f"Total training batches: {epochs * num_batches}")
-        print(f"Learning rate: {LEARNING_RATE}")
-        print(f"Compressed length: {compressed_length} tokens")
-        print(f"Latent dimension: {d_z}")
-        print(f"Using LoRA: {use_lora_all_layers}")
-        print(f"Using DDP: {use_ddp}")
-        print(f"{'='*80}\n")
+    num_batches = len(train_texts) // BATCH_SIZE
+    print(f"\n{'='*80}")
+    print(f"TRAINING CONFIGURATION")
+    print(f"{'='*80}")
+    print(f"Total epochs: {epochs}")
+    print(f"Total samples: {len(train_texts)}")
+    print(f"Batch size: {BATCH_SIZE}")
+    print(f"Batches per epoch: {num_batches}")
+    print(f"Total training batches: {epochs * num_batches}")
+    print(f"Learning rate: {LEARNING_RATE}")
+    print(f"Compressed length: {compressed_length} tokens")
+    print(f"Latent dimension: {d_z}")
+    print(f"Using LoRA: {use_lora_all_layers}")
+    print(f"{'='*80}\n")
 
     model.train() if use_lora_all_layers else model.eval()
     compressor.train()
@@ -2624,16 +1977,14 @@ def run_token_compression_experiment(
     for epoch in range(epochs):
         epoch_losses = []
         epoch_start_time = time.time()
+        batch_num = 0
 
-        # Set epoch for DistributedSampler to ensure different shuffling each epoch
-        if use_ddp:
-            sampler.set_epoch(epoch)
+        msg = f"\n{'='*80}\nEpoch {epoch+1}/{epochs}\n{'='*80}"
+        print(msg)
 
-        if rank == 0:
-            msg = f"\n{'='*80}\nEpoch {epoch+1}/{epochs}\n{'='*80}"
-            print(msg)
+        for batch_idx in range(0, len(train_texts), BATCH_SIZE):
+            batch_texts = train_texts[batch_idx:batch_idx + BATCH_SIZE]
 
-        for batch_num, batch_texts in enumerate(dataloader, 1):
             # Tokenize batch
             inputs = tokenizer(
                 batch_texts,
@@ -2659,7 +2010,6 @@ def run_token_compression_experiment(
                     return_dict=True
                 )
 
-            # DDP automatically averages gradients across processes, loss is already scalar
             loss = outputs.loss
             epoch_losses.append(loss.item())
 
@@ -2740,413 +2090,51 @@ def run_token_compression_experiment(
 
     results = {"metrics": metrics, "examples": []}
 
-    # Only rank 0 runs evaluation examples
-    if rank == 0:
-        with torch.no_grad():
-            for prompt in test_prompts:
-                # Original generation
-                orig_inputs = tokenizer(prompt, return_tensors="pt").to(device)
-                orig_output = model.generate(**orig_inputs, max_new_tokens=20, do_sample=False)
-                orig_text = tokenizer.decode(orig_output[0], skip_special_tokens=True)
+    with torch.no_grad():
+        for prompt in test_prompts:
+            # Original generation
+            orig_inputs = tokenizer(prompt, return_tensors="pt").to(device)
+            orig_output = model.generate(**orig_inputs, max_new_tokens=20, do_sample=False)
+            orig_text = tokenizer.decode(orig_output[0], skip_special_tokens=True)
 
-                # Compressed generation with z vector
-                compressed, z_vector = compressor(orig_inputs.input_ids, return_z=True)
-                comp_output = model.generate(
-                    inputs_embeds=compressed[:, :10],  # Use first 10 compressed tokens as prompt
-                    max_new_tokens=20,
-                    do_sample=False
-                )
-                comp_text = tokenizer.decode(comp_output[0], skip_special_tokens=True)
+            # Compressed generation with z vector
+            compressed, z_vector = compressor(orig_inputs.input_ids, return_z=True)
+            comp_output = model.generate(
+                inputs_embeds=compressed[:, :10],  # Use first 10 compressed tokens as prompt
+                max_new_tokens=20,
+                do_sample=False
+            )
+            comp_text = tokenizer.decode(comp_output[0], skip_special_tokens=True)
 
-                results["examples"].append({
-                    "prompt": prompt,
-                    "original": orig_text,
-                    "compressed": comp_text,
-                    "z_shape": list(z_vector.shape),
-                    "z_mean": float(z_vector.mean().item()),
-                    "z_std": float(z_vector.std().item())
-                })
+            results["examples"].append({
+                "prompt": prompt,
+                "original": orig_text,
+                "compressed": comp_text,
+                "z_shape": list(z_vector.shape),
+                "z_mean": float(z_vector.mean().item()),
+                "z_std": float(z_vector.std().item())
+            })
 
-                print(f"\nPrompt: {prompt}")
-                print(f"Original: {orig_text}")
-                print(f"Compressed: {comp_text}")
-                print(f"Z Vector: shape={list(z_vector.shape)}, mean={z_vector.mean().item():.3f}, std={z_vector.std().item():.3f}")
+            print(f"\nPrompt: {prompt}")
+            print(f"Original: {orig_text}")
+            print(f"Compressed: {comp_text}")
+            print(f"Z Vector: shape={list(z_vector.shape)}, mean={z_vector.mean().item():.3f}, std={z_vector.std().item():.3f}")
 
-    # Final training summary (only rank 0)
-    if rank == 0:
-        total_training_time = time.time() - training_start_time
-        msg = f"\n\n{'='*80}\n"
-        msg += f"TRAINING COMPLETE\n"
-        msg += f"{'='*80}\n"
-        msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
-        msg += f"Total epochs: {epochs}\n"
-        msg += f"Final loss: {metrics['epochs'][-1]['loss']:.4f}\n"
-        msg += f"Final perplexity: {metrics['epochs'][-1]['perplexity']:.2f}\n"
-        msg += f"Compression ratio: {metrics['epochs'][-1]['compression_ratio']:.1f}x\n"
-        msg += f"\nLoss progression:\n"
-        for epoch_data in metrics['epochs']:
-            msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, Perplexity {epoch_data['perplexity']:.2f}\n"
-        msg += f"{'='*80}\n"
-        print(msg)
-
-    return results
-
-# ============================================================================
-# Activation Communication Experiment - Direct Hidden State Injection Across Models
-# ============================================================================
-
-def run_activation_communication_experiment():
-    """
-    Test activation-based communication between Llama and Mistral via hidden state injection.
-
-    PURPOSE:
-    Directly inject hidden states from one model into another model's computation graph,
-    testing whether cross-model activation sharing is viable for heterogeneous LLM communication.
-    This is the MOST DIRECT test of cross-LLM communication via internal representations.
-
-    RELEVANCE TO CROSS-LLM COMMUNICATION:
-    - Core hypothesis: Can Model A's "thoughts" (hidden states) be directly consumed by Model B?
-    - Tests feasibility of bypass-tokenization communication (LatentWire's core goal)
-    - Evaluates whether alignment (Procrustes/adapters) is necessary or if zero-shot works
-    - Measures information transfer quality via generation coherence and similarity metrics
-
-    LITERATURE:
-    - "Tandem Transformers" (NeurIPS 2024)
-      Small model attends to down-projected hidden states of large model for efficient inference
-    - "Cross-Modal Safety Mechanism Transfer in LVLMs" (ICLR 2025)
-      Transfers safety mechanisms via hidden state alignment between vision-language models
-    - "Latent Paraphrasing: Perturbation on Layers Improves Knowledge Injection" (NeurIPS 2024)
-      Layer-level interventions for knowledge transfer via activation editing
-    - "Text-Guided Vision-Language Alignment (TGA)" for LVLMs
-      Projects vision into LLM hidden states space using text guidance
-
-    METHOD:
-    1. Extract hidden states h_A from Llama at layer L on prompt P
-    2. Optionally align: h_aligned = Procrustes(h_A) or Adapter(h_A)
-    3. Inject h_aligned into Mistral at layer L, replacing Mistral's natural hidden states
-    4. Continue Mistral's forward pass with injected activations
-    5. Measure generation quality and semantic similarity to Llama's outputs
-
-    EVALUATION METRICS:
-    - Cosine similarity: How similar are injected and natural hidden states?
-    - Generation coherence: Does Mistral produce fluent text after injection?
-    - Semantic preservation: Does Mistral's output match Llama's intent?
-    - Alignment benefit: Does Procrustes/adapter improve over zero-shot injection?
-
-    EXPECTED RESULTS (from literature):
-    - Zero-shot injection: Low coherence, cosine similarity ~0.3-0.5
-    - With Procrustes: Moderate improvement, cosine similarity ~0.5-0.7
-    - With trained adapter: Best performance, cosine similarity >0.7
-    - Layer sensitivity: Middle layers (12-18) transfer better than early/late layers
-
-    NOTE: This experiment validates whether LatentWire's design (soft token injection) is feasible.
-    If activation injection fails even with alignment, the project needs fundamental redesign.
-    """
-
-    print("\n" + "=" * 80)
-    print("ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025)")
-    print("=" * 80)
-    print("Testing cross-model activation injection with/without alignment")
-    print("")
-
-    device = DEVICE
-
-    # Load models
-    print(f"\nLoading models on {PLATFORM}...")
-    if PLATFORM == 'mac':
-        dtype = torch.float32
-        print("Using float32 for MPS")
-    elif USE_BF16:
-        dtype = torch.bfloat16
-        print("Using bfloat16 for H100")
-    else:
-        dtype = torch.float16
-        print("Using float16")
-
-    # Model loading kwargs
-    llama_kwargs = mistral_kwargs = {
-        'torch_dtype': dtype,
-        'device_map': "auto" if PLATFORM == 'mac' else None,
-    }
-
-    if USE_FLASH_ATTENTION and PLATFORM == 'hpc':
-        llama_kwargs['attn_implementation'] = "flash_attention_2"
-        mistral_kwargs['attn_implementation'] = "flash_attention_2"
-        print("Using Flash Attention 2")
-
-    llama_model = AutoModelForCausalLM.from_pretrained(LLAMA_MODEL, **llama_kwargs).eval()
-    mistral_model = AutoModelForCausalLM.from_pretrained(MISTRAL_MODEL, **mistral_kwargs).eval()
-
-    # Freeze model parameters (inference only, no training)
-    for param in llama_model.parameters():
-        param.requires_grad = False
-    for param in mistral_model.parameters():
-        param.requires_grad = False
-
-    # Move to device if needed
-    if PLATFORM == 'hpc':
-        llama_model = llama_model.to(device)
-        mistral_model = mistral_model.to(device)
-
-    llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
-    mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
-
-    if llama_tokenizer.pad_token is None:
-        llama_tokenizer.pad_token = llama_tokenizer.eos_token
-    if mistral_tokenizer.pad_token is None:
-        mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
-
-    # Load pre-trained alignments
-    print("\nLoading pre-trained alignments...")
-    script_dir = Path(__file__).parent.absolute()
-
-    # Load Procrustes alignments (if available)
-    procrustes_alignments = {}
-    for layer_idx in LAYERS_TO_TEST:
-        procrustes_path = script_dir / "runs" / "procrustes_alignments" / f"layer_{layer_idx}.pt"
-        if procrustes_path.exists():
-            try:
-                alignment = ProcrustesAlignment()
-                state = torch.load(procrustes_path, map_location=device, weights_only=False)
-                alignment.W = state['W'].to(device)
-                alignment.source_mean = state['source_mean'].to(device)
-                alignment.target_mean = state['target_mean'].to(device)
-                alignment.source_norm = state['source_norm'].to(device)
-                alignment.target_norm = state['target_norm'].to(device)
-                alignment.b = state.get('b', torch.zeros_like(alignment.target_mean)).to(device)
-                procrustes_alignments[layer_idx] = alignment
-                print(f"  Loaded Procrustes for layer {layer_idx}")
-            except Exception as e:
-                print(f"  Warning: Could not load Procrustes for layer {layer_idx}: {e}")
-
-    # Load Linear adapter (if available)
-    linear_adapter = None
-    linear_checkpoint = script_dir / "runs" / "learned_adapters" / "linear_checkpoint" / "checkpoint.pt"
-    if linear_checkpoint.exists():
-        try:
-            linear_adapter = LinearAdapter(hidden_dim=4096).to(device).eval()
-            checkpoint = torch.load(linear_checkpoint, map_location=device, weights_only=False)
-            linear_adapter.load_state_dict(checkpoint['adapter_state_dict'])
-            print(f"  Loaded Linear adapter")
-        except Exception as e:
-            print(f"  Warning: Could not load Linear adapter: {e}")
-
-    # Evaluation metrics storage
-    results = {
-        "layers": {},
-        "summary": {}
-    }
-
-    # Helper function to compute cosine similarity
-    def cosine_similarity(a, b):
-        """Compute cosine similarity between two tensors."""
-        a_norm = F.normalize(a.view(-1), dim=0)
-        b_norm = F.normalize(b.view(-1), dim=0)
-        return (a_norm * b_norm).sum().item()
-
-    # Helper function to compute diversity
-    def compute_diversity(token_ids):
-        """Compute unique tokens / total tokens ratio."""
-        if len(token_ids) == 0:
-            return 0.0
-        unique = len(set(token_ids.tolist()))
-        total = len(token_ids)
-        return unique / total
-
-    # Test each layer
-    for layer_idx in LAYERS_TO_TEST:
-        print(f"\n{'='*60}")
-        print(f"Testing Layer {layer_idx}")
-        print(f"{'='*60}")
-
-        layer_results = {
-            "zero_shot_add": [],
-            "zero_shot_weighted": [],
-            "procrustes_aligned": [],
-            "adapter_aligned": []
-        }
-
-        # Test each prompt
-        for prompt_idx, prompt in enumerate(TEST_PROMPTS, 1):
-            print(f"  Prompt {prompt_idx}/{len(TEST_PROMPTS)}: {prompt[:50]}...")
-
-            # Get baseline Mistral→Mistral output for comparison
-            mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(device)
-            with torch.no_grad():
-                baseline_output = mistral_model.generate(
-                    **mistral_inputs,
-                    max_new_tokens=20,
-                    do_sample=False,
-                    output_hidden_states=True,
-                    return_dict_in_generate=True
-                )
-                baseline_text = mistral_tokenizer.decode(baseline_output.sequences[0], skip_special_tokens=True)
-                # Get final hidden state for similarity comparison
-                baseline_hidden = baseline_output.hidden_states[-1][-1][:, -1, :]  # Last token of last layer
-
-            # Get hidden states from both models at target layer
-            llama_inputs = llama_tokenizer(prompt, return_tensors="pt").to(device)
-
-            with torch.no_grad():
-                # Llama forward to layer L
-                llama_outputs = llama_model(
-                    **llama_inputs,
-                    output_hidden_states=True
-                )
-                llama_hidden = llama_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
-
-                # Mistral forward to layer L
-                mistral_outputs = mistral_model(
-                    **mistral_inputs,
-                    output_hidden_states=True
-                )
-                mistral_hidden = mistral_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
-
-            # Test 4 combination methods
-            methods = {}
-
-            # Method 1: Zero-shot addition
-            methods['zero_shot_add'] = llama_hidden + mistral_hidden
-
-            # Method 2: Zero-shot weighted (favor Mistral since it's the target model)
-            methods['zero_shot_weighted'] = 0.3 * llama_hidden + 0.7 * mistral_hidden
-
-            # Method 3: Procrustes-aligned addition
-            if layer_idx in procrustes_alignments:
-                alignment = procrustes_alignments[layer_idx]
-                llama_flat = llama_hidden.reshape(-1, llama_hidden.shape[-1])
-                llama_aligned = alignment.transform(llama_flat)
-                llama_aligned = llama_aligned.reshape(llama_hidden.shape).to(llama_hidden.dtype)
-                methods['procrustes_aligned'] = llama_aligned + mistral_hidden
-            else:
-                methods['procrustes_aligned'] = None
-
-            # Method 4: Adapter-aligned addition
-            if linear_adapter is not None:
-                llama_adapted = linear_adapter(llama_hidden)
-                methods['adapter_aligned'] = llama_adapted + mistral_hidden
-            else:
-                methods['adapter_aligned'] = None
-
-            # Generate from each combined activation
-            for method_name, combined_hidden in methods.items():
-                if combined_hidden is None:
-                    print(f"    Method: {method_name} - SKIPPED (alignment not available)")
-                    continue
-
-                try:
-                    with torch.no_grad():
-                        # Continue generation from combined hidden state
-                        # Note: inputs_embeds doesn't support intermediate injection directly
-                        # We use it as if starting from this hidden state
-                        output = mistral_model.generate(
-                            inputs_embeds=combined_hidden,
-                            max_new_tokens=20,
-                            do_sample=False,
-                            output_hidden_states=True,
-                            return_dict_in_generate=True
-                        )
-
-                        generated_text = mistral_tokenizer.decode(output.sequences[0], skip_special_tokens=True)
-                        generated_ids = output.sequences[0]
-
-                        # Get final hidden state
-                        final_hidden = output.hidden_states[-1][-1][:, -1, :]
-
-                        # Compute metrics
-                        length = len(generated_ids)
-                        diversity = compute_diversity(generated_ids)
-                        similarity = cosine_similarity(final_hidden, baseline_hidden)
-
-                        result = {
-                            "prompt": prompt,
-                            "generated": generated_text,
-                            "length": length,
-                            "diversity": diversity,
-                            "similarity": similarity
-                        }
-
-                        layer_results[method_name].append(result)
-
-                        print(f"    Method: {method_name}")
-                        print(f"      Generated: {generated_text[:80]}")
-                        print(f"      Length: {length} tokens | Diversity: {diversity:.2f} | Similarity: {similarity:.2f}")
-
-                except Exception as e:
-                    print(f"    Method: {method_name} - FAILED: {str(e)}")
-                    layer_results[method_name].append({
-                        "prompt": prompt,
-                        "generated": f"ERROR: {str(e)}",
-                        "length": 0,
-                        "diversity": 0.0,
-                        "similarity": 0.0
-                    })
-
-        results["layers"][layer_idx] = layer_results
-
-    # Compute summary statistics
-    print(f"\n{'='*80}")
-    print("ACTIVATION COMMUNICATION RESULTS SUMMARY")
-    print(f"{'='*80}")
-
-    method_avg_scores = {}
-    for method in ["zero_shot_add", "zero_shot_weighted", "procrustes_aligned", "adapter_aligned"]:
-        all_similarities = []
-        for layer_idx in LAYERS_TO_TEST:
-            if layer_idx in results["layers"]:
-                for result in results["layers"][layer_idx][method]:
-                    if isinstance(result.get("similarity"), (int, float)):
-                        all_similarities.append(result["similarity"])
-
-        if all_similarities:
-            avg_sim = sum(all_similarities) / len(all_similarities)
-            method_avg_scores[method] = avg_sim
-        else:
-            method_avg_scores[method] = 0.0
-
-    # Find best method
-    best_method = max(method_avg_scores.items(), key=lambda x: x[1])
-    print(f"Best performing method: {best_method[0]} (avg similarity: {best_method[1]:.3f})")
-
-    # Layer-wise breakdown
-    print(f"\nLayer-wise results (average similarity to baseline):")
-    for layer_idx in LAYERS_TO_TEST:
-        if layer_idx in results["layers"]:
-            layer_data = results["layers"][layer_idx]
-            scores = []
-            for method in ["zero_shot_add", "zero_shot_weighted", "procrustes_aligned", "adapter_aligned"]:
-                if layer_data[method]:
-                    sims = [r["similarity"] for r in layer_data[method] if isinstance(r.get("similarity"), (int, float))]
-                    avg = sum(sims) / len(sims) if sims else 0.0
-                    scores.append(f"{method[:7]}={avg:.2f}")
-            print(f"  Layer {layer_idx:2d}: {', '.join(scores)}")
-
-    # Calculate improvement
-    zero_shot_avg = method_avg_scores.get("zero_shot_add", 0.0)
-    best_aligned = max(
-        method_avg_scores.get("procrustes_aligned", 0.0),
-        method_avg_scores.get("adapter_aligned", 0.0)
-    )
-    if zero_shot_avg > 0:
-        improvement = ((best_aligned - zero_shot_avg) / zero_shot_avg) * 100
-        print(f"\nKey Finding: Learned alignments improve activation communication by {improvement:.1f}% over zero-shot")
-
-    results["summary"] = {
-        "method_avg_scores": method_avg_scores,
-        "best_method": best_method[0],
-        "best_score": best_method[1]
-    }
-
-    print("=" * 80)
-
-    # Clean up
-    print("\nCleaning up activation communication experiment...")
-    del llama_model
-    del mistral_model
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    print("  Models deleted and GPU memory cleared")
+    # Final training summary
+    total_training_time = time.time() - training_start_time
+    msg = f"\n\n{'='*80}\n"
+    msg += f"TRAINING COMPLETE\n"
+    msg += f"{'='*80}\n"
+    msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
+    msg += f"Total epochs: {epochs}\n"
+    msg += f"Final loss: {metrics['epochs'][-1]['loss']:.4f}\n"
+    msg += f"Final perplexity: {metrics['epochs'][-1]['perplexity']:.2f}\n"
+    msg += f"Compression ratio: {metrics['epochs'][-1]['compression_ratio']:.1f}x\n"
+    msg += f"\nLoss progression:\n"
+    for epoch_data in metrics['epochs']:
+        msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, Perplexity {epoch_data['perplexity']:.2f}\n"
+    msg += f"{'='*80}\n"
+    print(msg)
 
     return results
 
@@ -3157,179 +2145,77 @@ def run_activation_communication_experiment():
 def main():
     """Main entry point for unified experiments."""
 
-    # Only print header on main process
-    if is_main_process():
-        print("=" * 80)
-        print("UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS")
-        print(f"Timestamp: {datetime.now().isoformat()}")
-        print(f"Platform: {PLATFORM}")
-        print(f"Device: {DEVICE}")
-        if PLATFORM == 'hpc':
-            print(f"Available CUDA GPUs: {torch.cuda.device_count()}")
-            if dist.is_initialized():
-                print(f"DDP: Running with {dist.get_world_size()} processes")
-        print("=" * 80)
+    print("=" * 80)
+    print("UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS")
+    print(f"Timestamp: {datetime.now().isoformat()}")
+    print(f"Platform: {PLATFORM}")
+    print(f"Device: {DEVICE}")
+    if PLATFORM == 'hpc':
+        print(f"Available CUDA GPUs: {torch.cuda.device_count()}")
+    print("=" * 80)
 
-    # Create output directory (only rank 0)
+    # Create output directory relative to script location
     script_dir = Path(__file__).parent.absolute()
     output_dir = script_dir / "runs" / "unified_experiments"
-    if is_main_process():
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Synchronize all processes before continuing
-    if dist.is_initialized():
-        dist.barrier()
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Run Procrustes experiment (ONLY on rank 0 - it's inference only)
-    if is_main_process():
-        print(f"\n1. Starting Procrustes experiment on {DEVICE}...")
-        procrustes_results = run_procrustes_experiment()
+    # Run Procrustes experiment
+    print(f"\n1. Starting Procrustes experiment on {DEVICE}...")
+    procrustes_results = run_procrustes_experiment()
 
-        # Save Procrustes results
-        procrustes_path = output_dir / f"procrustes_results_{timestamp}.json"
-        with open(procrustes_path, 'w') as f:
-            json.dump(procrustes_results, f, indent=2)
-        print(f"Procrustes results saved to: {procrustes_path}")
+    # Save Procrustes results
+    procrustes_path = output_dir / f"procrustes_results_{timestamp}.json"
+    with open(procrustes_path, 'w') as f:
+        json.dump(procrustes_results, f, indent=2)
+    print(f"Procrustes results saved to: {procrustes_path}")
 
-        # CRITICAL: Clean up GPU memory after Procrustes before adapter experiments
-        print("\nCleaning up GPU memory...")
+    # CRITICAL: Clean up GPU memory after Procrustes before adapter experiments
+    print("\nCleaning up GPU memory...")
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        print("  GPU cache cleared")
+
+    # Run all experiments SEQUENTIALLY, each using all available GPUs
+    print("\n2. Starting all experiments sequentially...")
+    print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
+    print("Benefits: Progressive results + full GPU utilization per experiment")
+    print("")
+
+    # Run learned adapter experiments (each uses all GPUs via DataParallel)
+    for adapter_type in ["linear", "affine", "lora"]:
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT {['linear', 'affine', 'lora'].index(adapter_type) + 1}/4: {adapter_type.upper()} ADAPTER")
+        print(f"{'='*80}")
+        run_adapter_experiment(adapter_type, gpu_id=None)  # None = use all GPUs
+
+        # Clean GPU memory between experiments
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
-            print("  GPU cache cleared")
+            print(f"✓ {adapter_type.upper()} complete, GPU memory cleared")
 
-    # Synchronize all processes after Procrustes
-    if dist.is_initialized():
-        dist.barrier()
+    # Run token compression experiment (uses all GPUs via DataParallel)
+    print(f"\n{'='*80}")
+    print(f"EXPERIMENT 4/4: TOKEN COMPRESSION")
+    print(f"{'='*80}")
+    run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs
 
-    # Run all experiments SEQUENTIALLY, each using all available GPUs with DDP
-    # PRIORITY ORDER (based on analysis in EXPERIMENT_ANALYSIS.md):
-    # 1. LoRA - Most important (parameter efficient, transferable)
-    # 2. Activation Communication - Validates core LatentWire hypothesis
-    # 3. Token Compression - The interlingua mechanism
-    # 4. Linear/Affine - Optional, for comparison with LoRA
-    if is_main_process():
-        print("\n2. Starting all experiments sequentially (PRIORITY ORDER)...")
-        print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
-        print("Priority: LoRA → Activation → Token Compression → Linear → Affine")
-        print("Benefits: Critical experiments first + full GPU utilization")
-        print("")
+    print("\n" + "=" * 80)
+    print("ALL 4 EXPERIMENTS COMPLETE")
+    print("=" * 80)
+    print("Experiments run:")
+    print("  1. Linear adapter")
+    print("  2. Affine adapter")
+    print("  3. LoRA adapter")
+    print("  4. Token compression")
 
-    # EXPERIMENT 2: LoRA Adapter (HIGHEST PRIORITY - parameter efficient)
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 2/6: LORA ADAPTER (PRIORITY 1)")
-        print(f"{'='*80}")
-        print("Why First: 260K params vs 16M (98% reduction), transferable across models")
-        print("")
-
-    run_adapter_experiment("lora", gpu_id=None)  # None = use all GPUs with DDP
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    if is_main_process():
-        print(f"✓ LoRA complete, GPU memory cleared")
-    if dist.is_initialized():
-        dist.barrier()
-
-    # EXPERIMENT 3: Activation Communication (VALIDATES CORE HYPOTHESIS)
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 3/6: ACTIVATION COMMUNICATION (PRIORITY 2)")
-        print(f"{'='*80}")
-        print("Why Second: Tests if Model A's hidden states can be injected into Model B")
-        print("Critical: If this fails, LatentWire needs redesign")
-        print("")
-
-    # Run activation communication (rank 0 only)
-    if is_main_process():
-        run_activation_communication_experiment()
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    if is_main_process():
-        print(f"✓ Activation Communication complete, GPU memory cleared")
-    if dist.is_initialized():
-        dist.barrier()
-
-    # EXPERIMENT 4: Token Compression (THE INTERLINGUA)
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 4/6: TOKEN COMPRESSION (PRIORITY 3)")
-        print(f"{'='*80}")
-        print("Why Third: This IS the wire format for LatentWire (512 → 64 tokens)")
-        print("")
-
-    run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs with DDP
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    if is_main_process():
-        print("✓ Token compression complete, GPU memory cleared")
-    if dist.is_initialized():
-        dist.barrier()
-
-    # EXPERIMENT 5: Linear Adapter (OPTIONAL - for comparison with LoRA)
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 5/6: LINEAR ADAPTER (OPTIONAL - FOR COMPARISON)")
-        print(f"{'='*80}")
-        print("Why Fifth: 16M params (50× more than LoRA), useful for ablation studies")
-        print("")
-
-    run_adapter_experiment("linear", gpu_id=None)
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    if is_main_process():
-        print(f"✓ Linear adapter complete, GPU memory cleared")
-    if dist.is_initialized():
-        dist.barrier()
-
-    # EXPERIMENT 6: Affine Adapter (OPTIONAL - for completeness)
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 6/6: AFFINE ADAPTER (OPTIONAL - FOR COMPLETENESS)")
-        print(f"{'='*80}")
-        print("Why Last: Similar to linear but with bias term (+4K params)")
-        print("")
-
-    run_adapter_experiment("affine", gpu_id=None)
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    if is_main_process():
-        print(f"✓ Affine adapter complete, GPU memory cleared")
-    if dist.is_initialized():
-        dist.barrier()
-
-    # Final summary
-    if is_main_process():
-        print("\n" + "=" * 80)
-        print("ALL 6 EXPERIMENTS COMPLETE (PRIORITY ORDER)")
-        print("=" * 80)
-        print("Experiments run:")
-        print("  1. Procrustes alignment (baseline, CKA metrics added)")
-        print("  2. LoRA adapter (PRIORITY 1 - parameter efficient)")
-        print("  3. Activation communication (PRIORITY 2 - validates hypothesis)")
-        print("  4. Token compression (PRIORITY 3 - interlingua)")
-        print("  5. Linear adapter (comparison)")
-        print("  6. Affine adapter (completeness)")
-
-        print("\n" + "=" * 80)
-        print("ALL EXPERIMENTS COMPLETE")
-        print(f"Results saved to: {output_dir}")
-        print("=" * 80)
-
-    # Clean up DDP if it was used
-    cleanup_ddp()
+    print("\n" + "=" * 80)
+    print("ALL EXPERIMENTS COMPLETE")
+    print(f"Results saved to: {output_dir}")
+    print("=" * 80)
 
 if __name__ == "__main__":
     # Set multiprocessing start method (needed for CUDA/MPS)
@@ -3349,8 +2235,4 @@ if __name__ == "__main__":
     else:
         print("No GPU available, will use CPU")
 
-    try:
-        main()
-    finally:
-        # Ensure DDP cleanup even if experiment fails
-        cleanup_ddp()
+    main()
