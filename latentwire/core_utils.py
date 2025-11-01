@@ -570,6 +570,47 @@ def batch_metrics(preds: Sequence[str], golds: Sequence[Union[Sequence[str], str
     return total_em / count, total_f1 / count
 
 
+def extract_gsm8k_answer(text: str) -> str:
+    """Extract numerical answer from GSM8K response.
+
+    GSM8K answers are in format: 'explanation #### numerical_answer'
+    This extracts the numerical part after ####, or tries to find numbers in the text.
+    """
+    # First try to find #### marker
+    if "####" in text:
+        parts = text.split("####")
+        answer_part = parts[-1].strip()
+        # Extract just the number
+        import re
+        numbers = re.findall(r'-?\d+\.?\d*', answer_part)
+        if numbers:
+            return numbers[0]
+
+    # Fallback: look for numbers in the text
+    import re
+    numbers = re.findall(r'-?\d+\.?\d*', text)
+    if numbers:
+        return numbers[-1]  # Return last number found
+
+    return text.strip()
+
+
+def gsm8k_accuracy(preds: List[str], truths: List[str]) -> float:
+    """Compute accuracy for GSM8K by comparing numerical answers."""
+    correct = 0
+    total = len(preds)
+
+    for pred, truth in zip(preds, truths):
+        pred_num = extract_gsm8k_answer(pred)
+        truth_num = extract_gsm8k_answer(truth)
+
+        # Compare as strings after normalization
+        if pred_num == truth_num:
+            correct += 1
+
+    return correct / max(total, 1)
+
+
 def dump_metrics(path: str, metrics: Dict) -> None:
     _save_json(path, metrics)
 

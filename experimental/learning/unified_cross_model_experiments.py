@@ -258,6 +258,7 @@ import numpy as np
 import warnings
 import os
 import sys
+import re
 
 # Suppress known warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
@@ -273,6 +274,11 @@ import math
 import multiprocessing as mp
 import shutil
 import datasets
+
+# Add path to import from latentwire package
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from latentwire.data import load_squad_subset, load_gsm8k_subset
+from latentwire.core_utils import f1, em, gsm8k_accuracy, extract_gsm8k_answer
 
 # ============================================================================
 # Platform Detection and Device Configuration
@@ -3485,8 +3491,253 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
 
     print("=" * 80)
 
+    # ========================================================================
+    # Task-Based Evaluation (SQuAD and GSM8K)
+    # ========================================================================
+    print(f"\n{'='*80}")
+    print("TASK-BASED EVALUATION")
+    print(f"{'='*80}")
+    print("Evaluating on real tasks (SQuAD Q&A and GSM8K math) to measure task performance")
+    print("vs exact text matching. This aligns with Ramesh & Li paper methodology.\n")
+
+    task_results = {}
+
+    # Use the best performing layer (paper's layer 26, or first in test list if not available)
+    eval_layer = RAMESH_LI_LAYER if RAMESH_LI_LAYER in test_layers else test_layers[0]
+    print(f"Using layer {eval_layer} for task evaluation\n")
+
+    # ========================================================================
+    # SQuAD Evaluation
+    # ========================================================================
+    print(f"\n{'='*60}")
+    print(f"SQuAD Q&A Evaluation (layer {eval_layer})")
+    print(f"{'='*60}")
+
+    try:
+        # Load small sample of SQuAD
+        squad_samples = load_squad_subset(split="validation", samples=20, seed=42)
+        print(f"Loaded {len(squad_samples)} SQuAD validation examples")
+
+        baseline_preds = []
+        injected_preds = []
+        gold_answers = []
+
+        for idx, example in enumerate(squad_samples):
+            prompt = example["source"] + "Answer:"
+            gold = example["answer"]
+            gold_answers.append(gold)
+
+            if idx % 5 == 0:
+                print(f"  Processing {idx+1}/{len(squad_samples)}...")
+
+            # Baseline generation
+            inputs_b = tokenizer_b(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                baseline_output = model_b.generate(
+                    **inputs_b,
+                    max_new_tokens=15,
+                    do_sample=False
+                )
+                baseline_text = tokenizer_b.decode(baseline_output[0], skip_special_tokens=True)
+                # Extract only the answer part (after "Answer:")
+                if "Answer:" in baseline_text:
+                    baseline_answer = baseline_text.split("Answer:")[-1].strip()
+                else:
+                    baseline_answer = baseline_text.strip()
+                baseline_preds.append(baseline_answer)
+
+            # Injected generation
+            inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                outputs_a = model_a(**inputs_a, output_hidden_states=True)
+                h_a_last_token = outputs_a.hidden_states[eval_layer][0, -1, :]
+
+            if learned_projection is not None:
+                with torch.no_grad():
+                    h_projected = learned_projection(h_a_last_token)
+            else:
+                h_projected = h_a_last_token
+
+            injected_activation = h_projected.clone()
+            injection_done = [False]
+
+            def injection_hook(module, input, output):
+                if injection_done[0]:
+                    return output
+                injection_done[0] = True
+                if isinstance(output, tuple):
+                    hidden_states = output[0].clone()
+                else:
+                    hidden_states = output.clone()
+                hidden_states[:, -1, :] = injected_activation
+                if isinstance(output, tuple):
+                    return (hidden_states,) + output[1:]
+                else:
+                    return hidden_states
+
+            try:
+                target_layer = model_b.model.layers[eval_layer]
+                hook_handle = target_layer.register_forward_hook(injection_hook)
+
+                with torch.no_grad():
+                    injected_output = model_b.generate(
+                        inputs_b.input_ids,
+                        max_new_tokens=15,
+                        do_sample=False
+                    )
+                    injected_text = tokenizer_b.decode(injected_output[0], skip_special_tokens=True)
+                    if "Answer:" in injected_text:
+                        injected_answer = injected_text.split("Answer:")[-1].strip()
+                    else:
+                        injected_answer = injected_text.strip()
+                    injected_preds.append(injected_answer)
+            finally:
+                hook_handle.remove()
+
+        # Compute SQuAD metrics
+        baseline_em_scores = [em(pred, gold) for pred, gold in zip(baseline_preds, gold_answers)]
+        injected_em_scores = [em(pred, gold) for pred, gold in zip(injected_preds, gold_answers)]
+        baseline_f1_scores = [f1(pred, gold) for pred, gold in zip(baseline_preds, gold_answers)]
+        injected_f1_scores = [f1(pred, gold) for pred, gold in zip(injected_preds, gold_answers)]
+
+        baseline_em_avg = sum(baseline_em_scores) / len(baseline_em_scores)
+        injected_em_avg = sum(injected_em_scores) / len(injected_em_scores)
+        baseline_f1_avg = sum(baseline_f1_scores) / len(baseline_f1_scores)
+        injected_f1_avg = sum(injected_f1_scores) / len(injected_f1_scores)
+
+        print(f"\nSQuAD Results:")
+        print(f"  Baseline EM:  {baseline_em_avg*100:.1f}%")
+        print(f"  Injected EM:  {injected_em_avg*100:.1f}%")
+        print(f"  Baseline F1:  {baseline_f1_avg*100:.1f}%")
+        print(f"  Injected F1:  {injected_f1_avg*100:.1f}%")
+        print(f"  Performance Ratio (EM): {(injected_em_avg/max(baseline_em_avg, 0.01))*100:.1f}%")
+        print(f"  Performance Ratio (F1): {(injected_f1_avg/max(baseline_f1_avg, 0.01))*100:.1f}%")
+
+        task_results["squad"] = {
+            "baseline_em": baseline_em_avg,
+            "injected_em": injected_em_avg,
+            "baseline_f1": baseline_f1_avg,
+            "injected_f1": injected_f1_avg,
+            "n_samples": len(squad_samples)
+        }
+
+    except Exception as e:
+        print(f"  SQuAD evaluation failed: {str(e)}")
+        task_results["squad"] = {"error": str(e)}
+
+    # ========================================================================
+    # GSM8K Evaluation
+    # ========================================================================
+    print(f"\n{'='*60}")
+    print(f"GSM8K Math Evaluation (layer {eval_layer})")
+    print(f"{'='*60}")
+
+    try:
+        # Load small sample of GSM8K
+        gsm8k_samples = load_gsm8k_subset(split="test", samples=20, seed=42)
+        print(f"Loaded {len(gsm8k_samples)} GSM8K test examples")
+
+        baseline_preds_gsm = []
+        injected_preds_gsm = []
+        gold_answers_gsm = []
+
+        for idx, example in enumerate(gsm8k_samples):
+            prompt = example["source"] + "Answer:"
+            gold = example["answer"]
+            gold_answers_gsm.append(gold)
+
+            if idx % 5 == 0:
+                print(f"  Processing {idx+1}/{len(gsm8k_samples)}...")
+
+            # Baseline generation
+            inputs_b = tokenizer_b(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                baseline_output = model_b.generate(
+                    **inputs_b,
+                    max_new_tokens=50,  # More tokens for math reasoning
+                    do_sample=False
+                )
+                baseline_text = tokenizer_b.decode(baseline_output[0], skip_special_tokens=True)
+                if "Answer:" in baseline_text:
+                    baseline_answer = baseline_text.split("Answer:")[-1].strip()
+                else:
+                    baseline_answer = baseline_text.strip()
+                baseline_preds_gsm.append(baseline_answer)
+
+            # Injected generation
+            inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                outputs_a = model_a(**inputs_a, output_hidden_states=True)
+                h_a_last_token = outputs_a.hidden_states[eval_layer][0, -1, :]
+
+            if learned_projection is not None:
+                with torch.no_grad():
+                    h_projected = learned_projection(h_a_last_token)
+            else:
+                h_projected = h_a_last_token
+
+            injected_activation = h_projected.clone()
+            injection_done = [False]
+
+            def injection_hook(module, input, output):
+                if injection_done[0]:
+                    return output
+                injection_done[0] = True
+                if isinstance(output, tuple):
+                    hidden_states = output[0].clone()
+                else:
+                    hidden_states = output.clone()
+                hidden_states[:, -1, :] = injected_activation
+                if isinstance(output, tuple):
+                    return (hidden_states,) + output[1:]
+                else:
+                    return hidden_states
+
+            try:
+                target_layer = model_b.model.layers[eval_layer]
+                hook_handle = target_layer.register_forward_hook(injection_hook)
+
+                with torch.no_grad():
+                    injected_output = model_b.generate(
+                        inputs_b.input_ids,
+                        max_new_tokens=50,
+                        do_sample=False
+                    )
+                    injected_text = tokenizer_b.decode(injected_output[0], skip_special_tokens=True)
+                    if "Answer:" in injected_text:
+                        injected_answer = injected_text.split("Answer:")[-1].strip()
+                    else:
+                        injected_answer = injected_text.strip()
+                    injected_preds_gsm.append(injected_answer)
+            finally:
+                hook_handle.remove()
+
+        # Compute GSM8K accuracy
+        baseline_acc = gsm8k_accuracy(baseline_preds_gsm, gold_answers_gsm)
+        injected_acc = gsm8k_accuracy(injected_preds_gsm, gold_answers_gsm)
+
+        print(f"\nGSM8K Results:")
+        print(f"  Baseline Accuracy: {baseline_acc*100:.1f}%")
+        print(f"  Injected Accuracy: {injected_acc*100:.1f}%")
+        print(f"  Performance Ratio: {(injected_acc/max(baseline_acc, 0.01))*100:.1f}%")
+
+        task_results["gsm8k"] = {
+            "baseline_accuracy": baseline_acc,
+            "injected_accuracy": injected_acc,
+            "n_samples": len(gsm8k_samples)
+        }
+
+    except Exception as e:
+        print(f"  GSM8K evaluation failed: {str(e)}")
+        task_results["gsm8k"] = {"error": str(e)}
+
+    results["task_evaluation"] = task_results
+    print(f"\n{'='*80}")
+    print("TASK EVALUATION COMPLETE")
+    print(f"{'='*80}\n")
+
     # Cleanup
-    print("\nCleaning up...")
+    print("Cleaning up...")
     del model_a, model_b
     if torch.cuda.is_available():
         torch.cuda.empty_cache()

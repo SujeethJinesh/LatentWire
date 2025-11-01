@@ -190,9 +190,27 @@ def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v
         out.append({"source": source, "answer": answer})
     return out
 
+def load_gsm8k_subset(split: str = "train", samples: int = 512, seed: int = 0) -> List[Dict[str, Any]]:
+    """Load GSM8K math reasoning dataset."""
+    ds = load_dataset("openai/gsm8k", "main", split=split)
+    rng = random.Random(seed)
+    idxs = list(range(len(ds)))
+    rng.shuffle(idxs)
+    idxs = idxs[:samples]
+    out = []
+    for i in idxs:
+        ex = ds[i]
+        question = ex.get("question", "")
+        answer = ex.get("answer", "")
+        # GSM8K answers are in format: "explanation #### numerical_answer"
+        # We'll keep full answer for now, extraction happens in metrics
+        source = f"Question: {question}\n"
+        out.append({"source": source, "answer": answer})
+    return out
+
 def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
     """
-    Unified front: dataset ∈ {"hotpot","squad","squad_v2"}
+    Unified front: dataset ∈ {"hotpot","squad","squad_v2","gsm8k"}
     kwargs forwarded to the underlying loader (split, samples, seed, config, ...)
     """
     ds = dataset.lower()
@@ -202,5 +220,7 @@ def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
         return load_squad_subset(v2=False, **{k:v for k,v in kwargs.items() if k!="config"})
     elif ds in ("squad_v2", "squad2"):
         return load_squad_subset(v2=True, **{k:v for k,v in kwargs.items() if k!="config"})
+    elif ds == "gsm8k":
+        return load_gsm8k_subset(**{k:v for k,v in kwargs.items() if k!="config"})
     else:
-        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2")
+        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k")
