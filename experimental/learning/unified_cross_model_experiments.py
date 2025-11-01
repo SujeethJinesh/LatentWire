@@ -3293,14 +3293,31 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
 
     # Determine which layers to test
     # Paper uses layer 26, but need to handle models with fewer layers
-    test_layers = [RAMESH_LI_LAYER]  # Start with paper's layer 26
+    test_layers = []
+
+    # Add paper's layer 26 if within bounds for both models
+    if RAMESH_LI_LAYER < num_layers_a and RAMESH_LI_LAYER < num_layers_b:
+        test_layers.append(RAMESH_LI_LAYER)
+        print(f"\n✓ Layer {RAMESH_LI_LAYER} (paper's choice) is valid for both models")
+    else:
+        print(f"\n⚠ Layer {RAMESH_LI_LAYER} (paper's choice) is OUT OF BOUNDS")
+        print(f"  Model A has {num_layers_a} layers (0-{num_layers_a-1})")
+        print(f"  Model B has {num_layers_b} layers (0-{num_layers_b-1})")
+        print(f"  Will use other layers instead")
+
     # Add other layers for comparison
     for layer in LAYERS_TO_TEST:
         if layer < num_layers_a and layer < num_layers_b and layer not in test_layers:
             test_layers.append(layer)
 
-    print(f"\nTesting layers: {test_layers}")
-    print(f"Primary layer (from paper): {RAMESH_LI_LAYER}")
+    if not test_layers:
+        raise ValueError(f"No valid layers to test! Model A has {num_layers_a} layers, Model B has {num_layers_b} layers")
+
+    print(f"Testing layers: {test_layers}")
+    if RAMESH_LI_LAYER in test_layers:
+        print(f"Primary layer (from paper): {RAMESH_LI_LAYER}")
+    else:
+        print(f"Primary layer {RAMESH_LI_LAYER} unavailable, using {test_layers[0]} instead")
 
     # Results storage
     results = {
@@ -3355,23 +3372,37 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 h_projected = h_a_last_token  # Already same dimension
 
             # Injection via forward hook: REPLACE last token's activation in Model B
+            # CRITICAL: Inject ONLY on first forward pass (prompt encoding), not during autoregressive generation
             injected_activation = h_projected.clone()
+            injection_done = [False]  # Use list to avoid nonlocal in Python < 3.x
 
             def injection_hook(module, input, output):
                 """
-                Replace last token's activation during Model B's forward pass.
+                Replace last token's activation during Model B's FIRST forward pass only.
+
+                This hook fires during:
+                1. Initial prompt encoding (seq_len = prompt_length) - INJECT HERE
+                2. Each autoregressive step (seq_len = 1 with KV cache) - SKIP
+
+                We only want to inject during (1), not (2), otherwise we overwrite generated tokens.
 
                 Args:
                     output: Tuple of (hidden_states,) with shape [batch, seq, hidden_dim]
 
                 Returns:
-                    Modified output with last token replaced
+                    Modified output with last token replaced (first pass only)
                 """
-                # output[0] shape: [batch, seq_len, hidden_dim]
+                # Only inject on first forward pass
+                if injection_done[0]:
+                    return output
+
+                injection_done[0] = True
+
+                # Clone output to avoid modifying in-place
                 if isinstance(output, tuple):
-                    hidden_states = output[0]
+                    hidden_states = output[0].clone()
                 else:
-                    hidden_states = output
+                    hidden_states = output.clone()
 
                 # CRITICAL: REPLACE (not add) last token
                 hidden_states[:, -1, :] = injected_activation
