@@ -1,108 +1,0 @@
-================================================================================
-LEARNED ADAPTER EXPERIMENT - LORA
-================================================================================
-Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_allgpus_20251031_233036.log
-
-================================================================================
-GPU CONFIGURATION
-================================================================================
-Mode: DistributedDataParallel (DDP)
-Number of GPUs: 4
-GPU IDs: [0, 1, 2, 3]
-Rank: 0, Device: cuda:0
-Batch size per GPU: 10
-Global batch size: 40
-Effective batch (with grad accum): 320
-================================================================================
-
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4069.18it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4069.18it/s]
-
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  2.11it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  2.11it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  2.95it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  2.95it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.38it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.38it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.38it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.38it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.16it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.16it/s]
-
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3833.92it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3833.92it/s]
-
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.57it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.57it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  2.70it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  2.70it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  3.14it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  3.14it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.95it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.95it/s]
-
-
-Training LoRAAdapter...
-Loading dataset (10000 samples)...
-
-================================================================================
-TRAINING CONFIGURATION
-================================================================================
-Total epochs: 5
-Steps per epoch: 250
-Total training steps: 1250
-Batch size: 10
-Gradient accumulation: 8 (effective batch: 80)
-Learning rate: 5e-05
-Alignment layers: [8, 16, 24]
-================================================================================
-
-
-================================================================================
-Epoch 1/5
-================================================================================
-
-================================================================================
-Epoch 1/5
-================================================================================
-  Step 10/250: Loss = 11.4603 (Gen: 11.2277, Contr: 2.3055, Align: 117.2588, Uniform: -0.9349)
-  Step 20/250: Loss = 11.3861 (Gen: 11.1512, Contr: 2.3050, Align: 109.9201, Uniform: -0.9511)
-  Step 30/250: Loss = 11.3318 (Gen: 11.0946, Contr: 2.3057, Align: 112.6304, Uniform: -0.9514)
-  Step 40/250: Loss = 11.3123 (Gen: 11.0729, Contr: 2.3046, Align: 107.5034, Uniform: -0.9463)
-  Step 50/250: Loss = 11.3043 (Gen: 11.0626, Contr: 2.3039, Align: 109.0084, Uniform: -0.9424)
-  Step 60/250: Loss = 11.2847 (Gen: 11.0407, Contr: 2.3036, Align: 104.3327, Uniform: -0.9398)
-  Step 70/250: Loss = 11.2745 (Gen: 11.0282, Contr: 2.3039, Align: 103.4674, Uniform: -0.9363)
-  Step 80/250: Loss = 11.2615 (Gen: 11.0129, Contr: 2.3038, Align: 103.7538, Uniform: -0.9357)
-  Step 90/250: Loss = 11.2430 (Gen: 10.9921, Contr: 2.3039, Align: 104.7077, Uniform: -0.9376)
-  [ 40.0%] Step  100/250 | Loss: 11.2219 (Gen: 10.9688, Contr: 2.3037, Align: 105.2686, Uniform: -0.9367) | ContrW: 0.120 | LR: 4.93e-05 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
-  [ 40.0%] Step  100/250 | Loss: 11.2219 (Gen: 10.9688, Contr: 2.3037, Align: 105.2686, Uniform: -0.9367) | ContrW: 0.120 | LR: 4.93e-05 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
-  Step 110/250: Loss = 11.1978 (Gen: 10.9424, Contr: 2.3036, Align: 104.5628, Uniform: -0.9373)
-  Step 120/250: Loss = 11.1733 (Gen: 10.9155, Contr: 2.3038, Align: 104.4945, Uniform: -0.9419)
-  Step 130/250: Loss = 11.1501 (Gen: 10.8900, Contr: 2.3036, Align: 104.9402, Uniform: -0.9394)
-  Step 140/250: Loss = 11.1280 (Gen: 10.8656, Contr: 2.3036, Align: 104.9679, Uniform: -0.9372)
-  Step 150/250: Loss = 11.1006 (Gen: 10.8359, Contr: 2.3034, Align: 105.0248, Uniform: -0.9353)
-  Step 160/250: Loss = 11.0707 (Gen: 10.8037, Contr: 2.3034, Align: 104.4829, Uniform: -0.9368)
-  Step 170/250: Loss = 11.0446 (Gen: 10.7754, Contr: 2.3032, Align: 103.2405, Uniform: -0.9392)
-  Step 180/250: Loss = 11.0212 (Gen: 10.7497, Contr: 2.3032, Align: 103.1501, Uniform: -0.9395)
-  Step 190/250: Loss = 10.9929 (Gen: 10.7190, Contr: 2.3032, Align: 103.5026, Uniform: -0.9383)
-  [ 80.0%] Step  200/250 | Loss: 10.9657 (Gen: 10.6895, Contr: 2.3031, Align: 103.9945, Uniform: -0.9383) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 4.875 | 0.39 steps/s | ETA: 2.2m
-  [ 80.0%] Step  200/250 | Loss: 10.9657 (Gen: 10.6895, Contr: 2.3031, Align: 103.9945, Uniform: -0.9383) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 4.875 | 0.39 steps/s | ETA: 2.2m
-  Step 210/250: Loss = 10.9414 (Gen: 10.6629, Contr: 2.3033, Align: 104.0066, Uniform: -0.9377)
-  Step 220/250: Loss = 10.9184 (Gen: 10.6376, Contr: 2.3034, Align: 104.1876, Uniform: -0.9370)
-  Step 230/250: Loss = 10.8931 (Gen: 10.6101, Contr: 2.3033, Align: 105.0487, Uniform: -0.9377)
-  Step 240/250: Loss = 10.8660 (Gen: 10.5806, Contr: 2.3033, Align: 105.0953, Uniform: -0.9368)
-  Step 250/250: Loss = 10.8437 (Gen: 10.5560, Contr: 2.3034, Align: 104.8728, Uniform: -0.9379)
-
-  Computing multi-layer CKA similarity...
-
-================================================================================
-LORA ADAPTER EXPERIMENT FAILED
-================================================================================
-Error: The size of tensor a (10) must match the size of tensor b (12) at non-singleton dimension 1
-Traceback (most recent call last):
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 2291, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 2291, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 2023, in train_adapter
-    eval_results = evaluate_adapter_epoch(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 2023, in train_adapter
-    eval_results = evaluate_adapter_epoch(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1518, in evaluate_adapter_epoch
-    cka_score = CKA.cka_similarity(adapted_flat, target_flat, debiased=False)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1518, in evaluate_adapter_epoch
-    cka_score = CKA.cka_similarity(adapted_flat, target_flat, debiased=False)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 380, in cka_similarity
-    hsic = torch.sum(K_c * L_c)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 380, in cka_similarity
-    hsic = torch.sum(K_c * L_c)
-RuntimeError: The size of tensor a (10) must match the size of tensor b (12) at non-singleton dimension 1
-RuntimeError: The size of tensor a (10) must match the size of tensor b (12) at non-singleton dimension 1

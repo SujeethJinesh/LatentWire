@@ -1,0 +1,75 @@
+{
+  "epoch": 1,
+  "alignment_layer": 16,
+  "cka_scores": {
+    "mean": 0.9998523211479187,
+    "per_layer": {
+      "8": 0.9999770998954773,
+      "16": 0.9999516844749451,
+      "24": 0.9995950579643249
+    },
+    "samples_per_layer": {
+      "8": [
+        0.9999720454216003,
+        0.999980092048645,
+        0.9999824166297913,
+        0.9999779462814331,
+        0.9999729990959167
+      ],
+      "16": [
+        0.9999604821205139,
+        0.9999825954437256,
+        0.9999606609344482,
+        0.9999611377716064,
+        0.9998935461044312
+      ],
+      "24": [
+        0.9996111989021301,
+        0.9995678663253784,
+        0.9997305870056152,
+        0.9996223449707031,
+        0.9994432926177979
+      ]
+    }
+  },
+  "cosine_similarities": {
+    "mean": 0.0005577035492751747,
+    "per_layer": {
+      "8": -0.00031187569256871937,
+      "16": 0.000323146756272763,
+      "24": 0.0017400251817889512
+    }
+  },
+  "generations": {
+    "prompt_1": {
+      "text": "The capital of France is",
+      "model_a_baseline": "The capital of France is a city of many faces. It is a city of history, a city of culture, a city",
+      "model_b_baseline": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_2": {
+      "text": "To solve this problem, we need to",
+      "model_a_baseline": "To solve this problem, we need to find the value of the expression. We can do this by substituting the given values for the variables",
+      "model_b_baseline": "To solve this problem, we need to understand the difference between the two types of errors.\n\nThe first type of error is the one",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_3": {
+      "text": "The future of artificial intelligence",
+      "model_a_baseline": "The future of artificial intelligence is here, and it\u2019s already changing the way we live and work. From self-driving cars to",
+      "model_b_baseline": "The future of artificial intelligence (AI) is bright, and it\u2019s already here. AI is being used in a variety",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_4": {
+      "text": "In the year 2050, humanity will",
+      "model_a_baseline": "In the year 2050, humanity will be extinct. The only survivors will be the robots that we have created. They will be the ones",
+      "model_b_baseline": "In the year 2050, humanity will have to face the consequences of its own actions. The Earth is dying, and the only way to",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_5": {
+      "text": "The main difference between cats and dogs",
+      "model_a_baseline": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are independent and prefer to be",
+      "model_b_baseline": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats are oblig",
+      "note": "Cross-model injection requires additional implementation"
+    }
+  }
+}
