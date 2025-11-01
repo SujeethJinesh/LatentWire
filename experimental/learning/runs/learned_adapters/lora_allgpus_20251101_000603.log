@@ -52,3 +52,19 @@ Alignment layers: [8, 16, 24]
   Step 190/250: Loss = 11.0008 (Gen: 10.7270, Contr: 2.3027, Align: 103.3445, Uniform: -0.9457)
   [ 80.0%] Step  200/250 | Loss: 10.9693 (Gen: 10.6932, Contr: 2.3026, Align: 103.6888, Uniform: -0.9460) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 5.062 | 0.39 steps/s | ETA: 2.2m
   [ 80.0%] Step  200/250 | Loss: 10.9693 (Gen: 10.6932, Contr: 2.3026, Align: 103.6888, Uniform: -0.9460) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 5.062 | 0.39 steps/s | ETA: 2.2m
+  Step 210/250: Loss = 10.9384 (Gen: 10.6600, Contr: 2.3026, Align: 103.3069, Uniform: -0.9442)
+  Step 220/250: Loss = 10.9136 (Gen: 10.6329, Contr: 2.3026, Align: 104.0149, Uniform: -0.9466)
+  Step 230/250: Loss = 10.8890 (Gen: 10.6060, Contr: 2.3027, Align: 104.4125, Uniform: -0.9461)
+  Step 240/250: Loss = 10.8632 (Gen: 10.5779, Contr: 2.3027, Align: 103.8365, Uniform: -0.9468)
+  Step 250/250: Loss = 10.8426 (Gen: 10.5550, Contr: 2.3027, Align: 102.9651, Uniform: -0.9465)
+  Step 10/250: Loss = 10.2421 (Gen: 9.8948, Contr: 2.3020, Align: 103.1113, Uniform: -0.9851)
+  Step 20/250: Loss = 10.2180 (Gen: 9.8682, Contr: 2.3025, Align: 98.2159, Uniform: -0.9751)
+  Step 30/250: Loss = 10.2021 (Gen: 9.8499, Contr: 2.3034, Align: 106.7300, Uniform: -0.9685)
+  Step 40/250: Loss = 10.1771 (Gen: 9.8226, Contr: 2.3034, Align: 105.8312, Uniform: -0.9721)
+  Step 50/250: Loss = 10.1595 (Gen: 9.8028, Contr: 2.3030, Align: 107.2814, Uniform: -0.9650)
+  Step 60/250: Loss = 10.1521 (Gen: 9.7931, Contr: 2.3031, Align: 105.7662, Uniform: -0.9585)
+  Step 70/250: Loss = 10.1324 (Gen: 9.7711, Contr: 2.3027, Align: 106.2489, Uniform: -0.9546)
+  Step 80/250: Loss = 10.1130 (Gen: 9.7493, Contr: 2.3029, Align: 105.3448, Uniform: -0.9555)
+  Step 90/250: Loss = 10.1084 (Gen: 9.7424, Contr: 2.3035, Align: 102.9608, Uniform: -0.9552)
+  [ 40.0%] Step  100/250 | Loss: 10.1020 (Gen: 9.7337, Contr: 2.3033, Align: 101.6429, Uniform: -0.9546) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 40.0%] Step  100/250 | Loss: 10.1020 (Gen: 9.7337, Contr: 2.3033, Align: 101.6429, Uniform: -0.9546) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m

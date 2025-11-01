@@ -3119,3 +3119,7 @@ Epoch 1/5 Complete | Time: 11.0m | Total: 11.0m
 ================================================================================
 Epoch 2/5
 ================================================================================
+  [ 40.0%] Step  100/250 | Loss: 10.1153 (Gen: 9.7468, Contr: 2.3042, Align: 105.0040, Uniform: -0.9453) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 40.0%] Step  100/250 | Loss: 10.1077 (Gen: 9.7397, Contr: 2.3015, Align: 106.2545, Uniform: -0.9469) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 40.0%] Step  100/250 | Loss: 10.1020 (Gen: 9.7337, Contr: 2.3033, Align: 101.6429, Uniform: -0.9546) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 40.0%] Step  100/250 | Loss: 10.0656 (Gen: 9.6972, Contr: 2.3041, Align: 107.0722, Uniform: -0.9479) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
