@@ -371,11 +371,11 @@ def setup_ddp():
     if not dist.is_initialized():
         # Initialize process group with extended timeout
         # Inference experiments on rank 0 can take >10 min, so increase timeout to 60 min
-        import datetime
+        from datetime import timedelta
         timeout_seconds = 3600  # 60 minutes
         dist.init_process_group(
             backend="nccl" if torch.cuda.is_available() else "gloo",
-            timeout=datetime.timedelta(seconds=timeout_seconds)
+            timeout=timedelta(seconds=timeout_seconds)
         )
 
     rank = dist.get_rank()
@@ -4289,11 +4289,11 @@ def main():
 
         # Initialize process group for DDP with extended timeout
         # Inference experiments on rank 0 can take >10 min, so increase timeout to 60 min
-        import datetime
+        from datetime import timedelta
         timeout_seconds = 3600  # 60 minutes
         dist.init_process_group(
             backend='nccl' if torch.cuda.is_available() else 'gloo',
-            timeout=datetime.timedelta(seconds=timeout_seconds)
+            timeout=timedelta(seconds=timeout_seconds)
         )
 
         # Set device for this process
