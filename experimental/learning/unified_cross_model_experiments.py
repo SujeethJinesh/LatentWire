@@ -1501,17 +1501,27 @@ def evaluate_adapter_epoch(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
             # Compute CKA for each training layer
             for layer_idx in ALIGNMENT_LAYERS:
-                hidden_a = outputs_a.hidden_states[layer_idx]
-                hidden_b = outputs_b.hidden_states[layer_idx]
+                hidden_a = outputs_a.hidden_states[layer_idx]  # [1, seq_a, hidden]
+                hidden_b = outputs_b.hidden_states[layer_idx]  # [1, seq_b, hidden]
 
                 # Apply adapter to model A's hidden states
-                adapted_a = adapter_module(hidden_a)
+                adapted_a = adapter_module(hidden_a)  # [1, seq_a, hidden]
+
+                # CRITICAL: Handle different sequence lengths (Llama vs Mistral tokenization)
+                # Truncate both to the shorter sequence length for CKA comparison
+                seq_len_a = adapted_a.shape[1]
+                seq_len_b = hidden_b.shape[1]
+                min_seq_len = min(seq_len_a, seq_len_b)
+
+                # Truncate to same length
+                adapted_truncated = adapted_a[:, :min_seq_len, :]  # [1, min_len, hidden]
+                target_truncated = hidden_b[:, :min_seq_len, :]    # [1, min_len, hidden]
 
                 # Flatten to [n_samples, features] for CKA
-                adapted_flat = adapted_a.view(-1, adapted_a.shape[-1]).float()
-                target_flat = hidden_b.view(-1, hidden_b.shape[-1]).float()
+                adapted_flat = adapted_truncated.view(-1, adapted_truncated.shape[-1]).float()
+                target_flat = target_truncated.view(-1, target_truncated.shape[-1]).float()
 
-                # Only compute if we have enough samples
+                # Only compute if we have enough samples (at least 2 tokens)
                 if adapted_flat.shape[0] >= 2:
                     # Use biased CKA for high-dimensional data (4096-D)
                     # Debiased estimator is unstable with dim >> n_samples
