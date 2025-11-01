@@ -1223,7 +1223,7 @@ def run_procrustes_experiment():
         print(f"  Computing CKA similarity scores...")
 
         # CKA before alignment (baseline - how similar are representations naturally?)
-        cka_before_mistral_llama = CKA.similarity(
+        cka_before_mistral_llama = CKA.cka_similarity(
             mistral_hidden_all.float(),
             llama_hidden_all.float(),
             debiased=True
@@ -1231,14 +1231,14 @@ def run_procrustes_experiment():
 
         # CKA after Procrustes alignment (how much does alignment help?)
         mistral_aligned = mistral_to_llama.transform(mistral_hidden_all)
-        cka_after_mistral_llama = CKA.similarity(
+        cka_after_mistral_llama = CKA.cka_similarity(
             mistral_aligned.float(),
             llama_hidden_all.float(),
             debiased=True
         )
 
         llama_aligned = llama_to_mistral.transform(llama_hidden_all)
-        cka_after_llama_mistral = CKA.similarity(
+        cka_after_llama_mistral = CKA.cka_similarity(
             llama_aligned.float(),
             mistral_hidden_all.float(),
             debiased=True
@@ -1505,7 +1505,7 @@ def evaluate_adapter_epoch(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
             # Only compute if we have enough samples
             if adapted_flat.shape[0] >= 2:
-                cka_score = CKA.similarity(adapted_flat, target_flat, debiased=True)
+                cka_score = CKA.cka_similarity(adapted_flat, target_flat, debiased=True)
                 cka_samples.append(float(cka_score.item()))
 
                 # Compute cosine similarity
