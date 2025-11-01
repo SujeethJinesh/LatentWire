@@ -3501,6 +3501,26 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
 def main():
     """Main entry point for unified experiments."""
 
+    # CRITICAL: Initialize DDP if running under torchrun
+    # torchrun sets RANK and WORLD_SIZE env vars, but doesn't call init_process_group()
+    # Without this, all 4 processes think they're rank 0 and run inference experiments simultaneously → OOM
+    if 'RANK' in os.environ and not dist.is_initialized():
+        rank = int(os.environ['RANK'])
+        world_size = int(os.environ['WORLD_SIZE'])
+        local_rank = int(os.environ.get('LOCAL_RANK', 0))
+
+        # Initialize process group for DDP
+        dist.init_process_group(backend='nccl' if torch.cuda.is_available() else 'gloo')
+
+        # Set device for this process
+        if torch.cuda.is_available():
+            torch.cuda.set_device(local_rank)
+
+        if rank == 0:
+            print(f"\n✓ Initialized DDP: {world_size} processes (rank {rank})")
+            print(f"  Backend: {'nccl' if torch.cuda.is_available() else 'gloo'}")
+            print(f"  Device for rank {rank}: cuda:{local_rank}")
+
     # Only print header on main process
     if is_main_process():
         print("=" * 80)
