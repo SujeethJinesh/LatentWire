@@ -1,0 +1,71 @@
+================================================================================
+TOKEN COMPRESSION EXPERIMENT
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/token_compression/token_compression_gpu3_20251031_172836.log
+GPU assigned: 3
+
+================================================================================
+TOKEN-INITIALIZED COMPRESSION EXPERIMENT
+================================================================================
+Loading meta-llama/Llama-3.1-8B...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9024.86it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9024.86it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  1.77it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  1.77it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.80it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.80it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  1.98it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  1.98it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.26it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.26it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.08it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.08it/s]
+
+Applying LoRA to all transformer layers...
+Warning: Could not apply LoRA: No module named 'peft'
+Creating token-initialized compressor (compressed_length=64, d_z=256)...
+Loading SQuAD dataset (1000 samples)...
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/_compile.py:32: UserWarning: optimizer contains a parameter group with duplicate parameters; in future, this will cause an error; see github.com/pytorch/pytorch/issues/40967 for more information
+  return disable_fn(*args, **kwargs)
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/_compile.py:32: UserWarning: optimizer contains a parameter group with duplicate parameters; in future, this will cause an error; see github.com/pytorch/pytorch/issues/40967 for more information
+  return disable_fn(*args, **kwargs)
+
+Training for 10 epochs...
+Batch size: 10, Learning rate: 5e-05
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:1516: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=USE_BF16 and PLATFORM == 'hpc'):
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:1516: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=USE_BF16 and PLATFORM == 'hpc'):
+
+================================================================================
+TOKEN COMPRESSION EXPERIMENT FAILED
+================================================================================
+Error: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 3 has a total capacity of 79.19 GiB of which 41.00 MiB is free. Including non-PyTorch memory, this process has 79.14 GiB memory in use. Of the allocated memory 77.77 GiB is allocated by PyTorch, and 658.79 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1345, in run_token_compression_wrapper
+    results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1345, in run_token_compression_wrapper
+    results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1529, in run_token_compression_experiment
+    optimizer.step()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1529, in run_token_compression_experiment
+    optimizer.step()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 487, in wrapper
+    out = func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 487, in wrapper
+    out = func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 91, in _use_grad
+    ret = func(self, *args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 91, in _use_grad
+    ret = func(self, *args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 220, in step
+    adamw(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 220, in step
+    adamw(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 154, in maybe_fallback
+    return func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/optimizer.py", line 154, in maybe_fallback
+    return func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 782, in adamw
+    func(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 782, in adamw
+    func(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 606, in _multi_tensor_adamw
+    exp_avg_sq_sqrt = torch._foreach_sqrt(device_exp_avg_sqs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/optim/adamw.py", line 606, in _multi_tensor_adamw
+    exp_avg_sq_sqrt = torch._foreach_sqrt(device_exp_avg_sqs)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 3 has a total capacity of 79.19 GiB of which 41.00 MiB is free. Including non-PyTorch memory, this process has 79.14 GiB memory in use. Of the allocated memory 77.77 GiB is allocated by PyTorch, and 658.79 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 3 has a total capacity of 79.19 GiB of which 41.00 MiB is free. Including non-PyTorch memory, this process has 79.14 GiB memory in use. Of the allocated memory 77.77 GiB is allocated by PyTorch, and 658.79 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

@@ -1,7 +1,6 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
 ==> Using CUDA on HPC (4 GPUs available)
-  - Batch size: 10
+  - Batch size: 40 (4 GPUs × 10 per GPU)
+  - Effective batch (with grad accum): 320
   - Samples: 10000
   - Epochs: 10
   - BF16: True
@@ -12,7 +11,7 @@ CUDA available: True
 CUDA devices: 4
 ================================================================================
 UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
-Timestamp: 2025-10-31T17:13:34.278447
+Timestamp: 2025-10-31T18:05:17.957780
 Platform: hpc
 Device: cuda
 Available CUDA GPUs: 4
@@ -29,11 +28,11 @@ Loading models on hpc...
 Using bfloat16 for H100
 Loading models on separate GPUs to avoid OOM...
 Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4042.70it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3880.92it/s]
 You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 16.44it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.12it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 17.00it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3960.63it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 16.48it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 16.65it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00, 11.26it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  8.72it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  9.02it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2553.87it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00, 16.37it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 16.57it/s]
 Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
   warnings.warn(
@@ -554,128 +553,237 @@ Layer 32:
     Llama→Mistral: 5/5 succeeded, 0/5 failed
     Mistral→Llama: 0/5 succeeded, 5/5 failed
 ================================================================================
-Procrustes results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_20251031_171334.json
+Procrustes results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_20251031_180517.json
 
 Cleaning up GPU memory...
   GPU cache cleared
 
-2. Starting learned adapter experiments...
-Running all 3 adapters in parallel on 4 GPUs...
-Memory optimizations: GPU cleanup + seq=256 + single-layer alignment
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-==> Using CUDA on HPC (4 GPUs available)
-  - Batch size: 10
-  - Samples: 10000
-  - Epochs: 10
-  - BF16: True
-  - Flash Attention: True
-================================================================================
-LEARNED ADAPTER EXPERIMENT - LORA
-================================================================================
-Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251031_171458.log
-GPU assigned: 2
+2. Starting all experiments sequentially...
+Strategy: Each experiment uses all 4 GPUs for faster completion
+Benefits: Progressive results + full GPU utilization per experiment
 
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
-  - Batch size: 10
-  - Samples: 10000
-  - Epochs: 10
-  - BF16: True
-  - Flash Attention: True
-================================================================================
-LEARNED ADAPTER EXPERIMENT - AFFINE
-================================================================================
-Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251031_171458.log
-GPU assigned: 1
 
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]==> Using CUDA on HPC (4 GPUs available)
-  - Batch size: 10
-  - Samples: 10000
-  - Epochs: 10
-  - BF16: True
-  - Flash Attention: True
+================================================================================
+EXPERIMENT 1/4: LINEAR ADAPTER
+================================================================================
 ================================================================================
 LEARNED ADAPTER EXPERIMENT - LINEAR
 ================================================================================
 Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_gpu0_20251031_171458.log
-GPU assigned: 0
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_allgpus_20251031_180635.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+Effective batch (with grad accum): 320
+================================================================================
+
 
 Loading models on hpc...
 Using bfloat16 for H100
 Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2766.69it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1511.60it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2630.89it/s]You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
-You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4077.09it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.78it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.34it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.66it/s]
+Wrapped Llama model with DataParallel
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3945.72it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.46it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 14.38it/s]
+Wrapped Mistral model with DataParallel
 
-
-
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.81it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.58it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.57it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.86it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.71it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.73it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.86it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.81it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.79it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.99it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.95it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.93it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.87it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.85it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.84it/s]
-
-
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2648.48it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2534.32it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1699.93it/s]
-
-
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.91it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.88it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.87it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.37it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.34it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.33it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.58it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.54it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.43it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.40it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.39it/s]
-/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:870: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  checkpoint = torch.load(checkpoint_path, map_location=device)
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:617: UserWarning: This DataLoader will create 4 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+================================================================================
+Epoch 3/10
+================================================================================
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/_functions.py:71: UserWarning: Was asked to gather along dimension 0, but all input tensors were scalars; will instead unsqueeze and return a vector.
   warnings.warn(
 
 ================================================================================
-Epoch 2/10
+LINEAR ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: grad can be implicitly created only for scalar outputs
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1689, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1397, in train_adapter
+    total_loss.backward()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 340, in backward
+    grad_tensors_ = _make_grads(tensors, grad_tensors_, is_grads_batched=False)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 198, in _make_grads
+    raise RuntimeError(
+RuntimeError: grad can be implicitly created only for scalar outputs
+✓ LINEAR complete, GPU memory cleared
+
+================================================================================
+EXPERIMENT 2/4: AFFINE ADAPTER
+================================================================================
+================================================================================
+LEARNED ADAPTER EXPERIMENT - AFFINE
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_allgpus_20251031_180721.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+Effective batch (with grad accum): 320
 ================================================================================
 
-/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:870: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  checkpoint = torch.load(checkpoint_path, map_location=device)
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:617: UserWarning: This DataLoader will create 4 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
-  warnings.warn(
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9631.01it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.92it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.83it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00,  7.23it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00,  6.15it/s]
+Wrapped Llama model with DataParallel
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 8553.99it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.42it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 14.16it/s]
+Wrapped Mistral model with DataParallel
 
 ================================================================================
-Epoch 2/10
+Epoch 3/10
 ================================================================================
 
-/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:870: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-  checkpoint = torch.load(checkpoint_path, map_location=device)
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:617: UserWarning: This DataLoader will create 4 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
-  warnings.warn(
+================================================================================
+AFFINE ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: grad can be implicitly created only for scalar outputs
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1689, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1397, in train_adapter
+    total_loss.backward()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 340, in backward
+    grad_tensors_ = _make_grads(tensors, grad_tensors_, is_grads_batched=False)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 198, in _make_grads
+    raise RuntimeError(
+RuntimeError: grad can be implicitly created only for scalar outputs
+✓ AFFINE complete, GPU memory cleared
 
 ================================================================================
-Epoch 2/10
+EXPERIMENT 3/4: LORA ADAPTER
 ================================================================================
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_allgpus_20251031_180758.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+Effective batch (with grad accum): 320
+================================================================================
+
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 5057.95it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 13.52it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 15.42it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 15.09it/s]
+Wrapped Llama model with DataParallel
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 4806.31it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  9.55it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 13.69it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 13.11it/s]
+Wrapped Mistral model with DataParallel
+
+================================================================================
+Epoch 3/10
+================================================================================
+
+================================================================================
+LORA ADAPTER EXPERIMENT FAILED
+================================================================================
+Error: grad can be implicitly created only for scalar outputs
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1689, in run_adapter_experiment
+    adapter, metrics = train_adapter(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1397, in train_adapter
+    total_loss.backward()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 340, in backward
+    grad_tensors_ = _make_grads(tensors, grad_tensors_, is_grads_batched=False)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 198, in _make_grads
+    raise RuntimeError(
+RuntimeError: grad can be implicitly created only for scalar outputs
+✓ LORA complete, GPU memory cleared
+
+================================================================================
+EXPERIMENT 4/4: TOKEN COMPRESSION
+================================================================================
+================================================================================
+TOKEN COMPRESSION EXPERIMENT
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/token_compression/token_compression_allgpus_20251031_180835.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+================================================================================
+
+
+================================================================================
+TOKEN-INITIALIZED COMPRESSION EXPERIMENT
+================================================================================
+Loading meta-llama/Llama-3.1-8B...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8648.05it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 12.53it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 14.78it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 14.38it/s]
+Wrapped Llama model with DataParallel
+Applying LoRA to all transformer layers...
+Warning: Could not apply LoRA: 'DataParallel' object has no attribute 'prepare_inputs_for_generation'
+Creating token-initialized compressor (compressed_length=64, d_z=256)...
+
+================================================================================
+TOKEN COMPRESSION EXPERIMENT FAILED
+================================================================================
+Error: 'DataParallel' object has no attribute 'get_input_embeddings'
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1760, in run_token_compression_wrapper
+    results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1892, in run_token_compression_experiment
+    compressor = TokenInitializedCompressor(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 708, in __init__
+    self.embed_layer = model.get_input_embeddings()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1931, in __getattr__
+    raise AttributeError(
+AttributeError: 'DataParallel' object has no attribute 'get_input_embeddings'
+
+================================================================================
+ALL 4 EXPERIMENTS COMPLETE
+================================================================================
+Experiments run:
+  1. Linear adapter
+  2. Affine adapter
+  3. LoRA adapter
+  4. Token compression
+
+================================================================================
+ALL EXPERIMENTS COMPLETE
+Results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments
+================================================================================

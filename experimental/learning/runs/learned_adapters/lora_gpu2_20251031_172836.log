@@ -1,0 +1,206 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_gpu2_20251031_172836.log
+GPU assigned: 2
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1746.17it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 1746.17it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  1.67it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  1.67it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.72it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.72it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  1.98it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  1.98it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.23it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.23it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.04it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.04it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1503.33it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 1503.33it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.10it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.10it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  2.38it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  2.38it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.54it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.54it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.41it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.41it/s]
+
+
+Training LoRAAdapter...
+Found checkpoint at /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_checkpoint/checkpoint.pt, resuming training...
+Resuming from epoch 1
+Loading dataset (10000 samples)...
+
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+Total epochs: 10
+Steps per epoch: 1000
+Total training steps: 10000
+Batch size: 10
+Gradient accumulation: 8 (effective batch: 80)
+Learning rate: 5e-05
+Alignment layers: [16]
+================================================================================
+
+
+================================================================================
+Epoch 2/10
+================================================================================
+
+================================================================================
+Epoch 2/10
+================================================================================
+  Step 10/1000: Loss = 8.3189
+  Step 20/1000: Loss = 8.2692
+  Step 30/1000: Loss = 8.2613
+  Step 40/1000: Loss = 8.2800
+  Step 50/1000: Loss = 8.2755
+  Step 60/1000: Loss = 8.2632
+  Step 70/1000: Loss = 8.2634
+  Step 80/1000: Loss = 8.2652
+  Step 90/1000: Loss = 8.2708
+  [ 10.0%] Step  100/1000 | Loss: 8.2741 | 0.83 steps/s | ETA: 18.0m
+  [ 10.0%] Step  100/1000 | Loss: 8.2741 | 0.83 steps/s | ETA: 18.0m
+  Step 110/1000: Loss = 8.2706
+  Step 120/1000: Loss = 8.2720
+  Step 130/1000: Loss = 8.2634
+  Step 140/1000: Loss = 8.2612
+  Step 150/1000: Loss = 8.2560
+  Step 160/1000: Loss = 8.2513
+  Step 170/1000: Loss = 8.2496
+  Step 180/1000: Loss = 8.2494
+  Step 190/1000: Loss = 8.2460
+  [ 20.0%] Step  200/1000 | Loss: 8.2438 | 0.84 steps/s | ETA: 15.8m
+  [ 20.0%] Step  200/1000 | Loss: 8.2438 | 0.84 steps/s | ETA: 15.8m
+  Step 210/1000: Loss = 8.2454
+  Step 220/1000: Loss = 8.2384
+  Step 230/1000: Loss = 8.2366
+  Step 240/1000: Loss = 8.2339
+  Step 250/1000: Loss = 8.2323
+  Step 260/1000: Loss = 8.2334
+  Step 270/1000: Loss = 8.2315
+  Step 280/1000: Loss = 8.2279
+  Step 290/1000: Loss = 8.2237
+  [ 30.0%] Step  300/1000 | Loss: 8.2209 | 0.85 steps/s | ETA: 13.7m
+  [ 30.0%] Step  300/1000 | Loss: 8.2209 | 0.85 steps/s | ETA: 13.7m
+  Step 310/1000: Loss = 8.2180
+  Step 320/1000: Loss = 8.2179
+  Step 330/1000: Loss = 8.2174
+  Step 340/1000: Loss = 8.2166
+  Step 350/1000: Loss = 8.2153
+  Step 360/1000: Loss = 8.2153
+  Step 370/1000: Loss = 8.2140
+  Step 380/1000: Loss = 8.2110
+  Step 390/1000: Loss = 8.2097
+  [ 40.0%] Step  400/1000 | Loss: 8.2098 | 0.85 steps/s | ETA: 11.7m
+  [ 40.0%] Step  400/1000 | Loss: 8.2098 | 0.85 steps/s | ETA: 11.7m
+  Step 410/1000: Loss = 8.2092
+  Step 420/1000: Loss = 8.2096
+  Step 430/1000: Loss = 8.2080
+  Step 440/1000: Loss = 8.2062
+  Step 450/1000: Loss = 8.2061
+  Step 460/1000: Loss = 8.2051
+  Step 470/1000: Loss = 8.2033
+  Step 480/1000: Loss = 8.2004
+  Step 490/1000: Loss = 8.1981
+  [ 50.0%] Step  500/1000 | Loss: 8.1961 | 0.85 steps/s | ETA: 9.8m
+  [ 50.0%] Step  500/1000 | Loss: 8.1961 | 0.85 steps/s | ETA: 9.8m
+  Step 510/1000: Loss = 8.1957
+  Step 520/1000: Loss = 8.1942
+  Step 530/1000: Loss = 8.1923
+  Step 540/1000: Loss = 8.1927
+  Step 550/1000: Loss = 8.1907
+  Step 560/1000: Loss = 8.1895
+  Step 570/1000: Loss = 8.1876
+  Step 580/1000: Loss = 8.1873
+  Step 590/1000: Loss = 8.1857
+  [ 60.0%] Step  600/1000 | Loss: 8.1835 | 0.85 steps/s | ETA: 7.8m
+  [ 60.0%] Step  600/1000 | Loss: 8.1835 | 0.85 steps/s | ETA: 7.8m
+  Step 610/1000: Loss = 8.1834
+  Step 620/1000: Loss = 8.1829
+  Step 630/1000: Loss = 8.1821
+  Step 640/1000: Loss = 8.1804
+  Step 650/1000: Loss = 8.1792
+  Step 660/1000: Loss = 8.1784
+  Step 670/1000: Loss = 8.1767
+  Step 680/1000: Loss = 8.1756
+  Step 690/1000: Loss = 8.1746
+  [ 70.0%] Step  700/1000 | Loss: 8.1727 | 0.85 steps/s | ETA: 5.9m
+  [ 70.0%] Step  700/1000 | Loss: 8.1727 | 0.85 steps/s | ETA: 5.9m
+  Step 710/1000: Loss = 8.1714
+  Step 720/1000: Loss = 8.1707
+  Step 730/1000: Loss = 8.1697
+  Step 740/1000: Loss = 8.1679
+  Step 750/1000: Loss = 8.1668
+  Step 760/1000: Loss = 8.1653
+  Step 770/1000: Loss = 8.1647
+  Step 780/1000: Loss = 8.1635
+  Step 790/1000: Loss = 8.1627
+  [ 80.0%] Step  800/1000 | Loss: 8.1601 | 0.85 steps/s | ETA: 3.9m
+  [ 80.0%] Step  800/1000 | Loss: 8.1601 | 0.85 steps/s | ETA: 3.9m
+  Step 810/1000: Loss = 8.1590
+  Step 820/1000: Loss = 8.1566
+  Step 830/1000: Loss = 8.1556
+  Step 840/1000: Loss = 8.1550
+  Step 850/1000: Loss = 8.1547
+  Step 860/1000: Loss = 8.1544
+  Step 870/1000: Loss = 8.1528
+  Step 880/1000: Loss = 8.1529
+  Step 890/1000: Loss = 8.1517
+  [ 90.0%] Step  900/1000 | Loss: 8.1512 | 0.85 steps/s | ETA: 2.0m
+  [ 90.0%] Step  900/1000 | Loss: 8.1512 | 0.85 steps/s | ETA: 2.0m
+  Step 910/1000: Loss = 8.1502
+  Step 920/1000: Loss = 8.1500
+  Step 930/1000: Loss = 8.1488
+  Step 940/1000: Loss = 8.1480
+  Step 950/1000: Loss = 8.1475
+  Step 960/1000: Loss = 8.1466
+  Step 970/1000: Loss = 8.1453
+  Step 980/1000: Loss = 8.1446
+  Step 990/1000: Loss = 8.1433
+  [100.0%] Step 1000/1000 | Loss: 8.1424 | 0.85 steps/s | ETA: 0.0m
+  [100.0%] Step 1000/1000 | Loss: 8.1424 | 0.85 steps/s | ETA: 0.0m
+
+================================================================================
+Epoch 2/10 Complete | Time: 19.6m | Total: 19.6m
+  Avg Loss: 8.1424 | CKA Score: 0.3688 | LR: 0.000046
+  ETA for remaining 8 epochs: 157.1m
+================================================================================
+
+================================================================================
+Epoch 2/10 Complete | Time: 19.6m | Total: 19.6m
+  Avg Loss: 8.1424 | CKA Score: 0.3688 | LR: 0.000046
+  ETA for remaining 8 epochs: 157.1m
+================================================================================
+  Checkpoint saved to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_checkpoint/checkpoint.pt
+
+================================================================================
+Epoch 3/10
+================================================================================
+
+================================================================================
+Epoch 3/10
+================================================================================
+  Step 10/1000: Loss = 8.1127
+  Step 20/1000: Loss = 8.1117
+  Step 30/1000: Loss = 8.1080
+  Step 40/1000: Loss = 8.1107
+  Step 50/1000: Loss = 8.0928
+  Step 60/1000: Loss = 8.0775
+  Step 70/1000: Loss = 8.0692
+  Step 80/1000: Loss = 8.0665
+  Step 90/1000: Loss = 8.0682
+  [ 10.0%] Step  100/1000 | Loss: 8.0686 | 0.85 steps/s | ETA: 17.6m
+  [ 10.0%] Step  100/1000 | Loss: 8.0686 | 0.85 steps/s | ETA: 17.6m
+  Step 110/1000: Loss = 8.0653
+  Step 120/1000: Loss = 8.0647
+  Step 130/1000: Loss = 8.0634
+  Step 140/1000: Loss = 8.0680
+  Step 150/1000: Loss = 8.0632
+  Step 160/1000: Loss = 8.0634
+  Step 170/1000: Loss = 8.0661
+  Step 180/1000: Loss = 8.0701
+  Step 190/1000: Loss = 8.0679
+  [ 20.0%] Step  200/1000 | Loss: 8.0687 | 0.85 steps/s | ETA: 15.7m
+  [ 20.0%] Step  200/1000 | Loss: 8.0687 | 0.85 steps/s | ETA: 15.7m
+  Step 210/1000: Loss = 8.0682
+  Step 220/1000: Loss = 8.0674
+  Step 230/1000: Loss = 8.0658
+  Step 240/1000: Loss = 8.0651
+  Step 250/1000: Loss = 8.0623
+  Step 260/1000: Loss = 8.0610
+  Step 270/1000: Loss = 8.0570
+  Step 280/1000: Loss = 8.0565
+  Step 290/1000: Loss = 8.0554
