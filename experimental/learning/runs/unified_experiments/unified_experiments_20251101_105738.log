@@ -1,0 +1,346 @@
+Using DDP (DistributedDataParallel) with torchrun for 4 GPUs
+
+W1101 10:57:39.458000 860905 torch/distributed/run.py:793] 
+W1101 10:57:39.458000 860905 torch/distributed/run.py:793] *****************************************
+W1101 10:57:39.458000 860905 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1101 10:57:39.458000 860905 torch/distributed/run.py:793] *****************************************
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-11-01T10:57:49.370444
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+2. Starting all experiments sequentially (FAST-FIRST ORDER)...
+Strategy: Each experiment uses all 4 GPUs for faster completion
+NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
+  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
+  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
+  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
+Benefits: Quick insights + early validation + fail fast on model access
+
+
+================================================================================
+EXPERIMENT 1/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)
+================================================================================
+Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)
+SVD-based geometric alignment (no training required)
+WHY FIRST: Fast baseline (~5 min) for same-vocab case
+
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Model A: meta-llama/Llama-3.1-8B
+Model B: meta-llama/Llama-3.2-3B
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+==> Using CUDA on HPC (4 GPUs available)
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-11-01T10:57:49.394923
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+  - Batch size per GPU: 10
+2. Starting all experiments sequentially (FAST-FIRST ORDER)...
+Strategy: Each experiment uses all 4 GPUs for faster completion
+NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
+  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
+  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
+  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
+Benefits: Quick insights + early validation + fail fast on model access
+
+
+================================================================================
+EXPERIMENT 1/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)
+================================================================================
+Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)
+SVD-based geometric alignment (no training required)
+WHY FIRST: Fast baseline (~5 min) for same-vocab case
+
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Model A: meta-llama/Llama-3.1-8B
+Model B: meta-llama/Llama-3.2-3B
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-11-01T10:57:49.399019
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+2. Starting all experiments sequentially (FAST-FIRST ORDER)...
+Strategy: Each experiment uses all 4 GPUs for faster completion
+NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
+  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
+  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
+  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
+Benefits: Quick insights + early validation + fail fast on model access
+
+
+================================================================================
+EXPERIMENT 1/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)
+================================================================================
+==> Using CUDA on HPC (4 GPUs available)
+Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)
+SVD-based geometric alignment (no training required)
+WHY FIRST: Fast baseline (~5 min) for same-vocab case
+
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Model A: meta-llama/Llama-3.1-8B
+Model B: meta-llama/Llama-3.2-3B
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-11-01T10:57:49.428075
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+2. Starting all experiments sequentially (FAST-FIRST ORDER)...
+Strategy: Each experiment uses all 4 GPUs for faster completion
+NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
+  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
+  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
+  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
+Benefits: Quick insights + early validation + fail fast on model access
+
+
+================================================================================
+EXPERIMENT 1/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)
+================================================================================
+Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)
+SVD-based geometric alignment (no training required)
+WHY FIRST: Fast baseline (~5 min) for same-vocab case
+
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Model A: meta-llama/Llama-3.1-8B
+Model B: meta-llama/Llama-3.2-3B
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2351.73it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8688.36it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7093.96it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6618.23it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.47it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.16it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.46it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.15it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.65it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.47it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.43it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.30it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.48it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.35it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.30it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.00it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.41it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.35it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.18it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.24it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.17it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.22it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.19it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.19it/s]
+Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:  50%|█████     | 1/2 [00:18<00:18, 18.85s/it]Downloading shards:  50%|█████     | 1/2 [00:18<00:18, 18.85s/it]Downloading shards:  50%|█████     | 1/2 [00:18<00:18, 18.87s/it]Downloading shards:  50%|█████     | 1/2 [00:18<00:18, 18.87s/it]Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 11.06s/it]Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 12.23s/it]
+Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 11.05s/it]Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 12.22s/it]
+Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 11.06s/it]Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 12.23s/it]
+Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 11.07s/it]Downloading shards: 100%|██████████| 2/2 [00:24<00:00, 12.24s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.17it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.12it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.15it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.08it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.57it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.44it/s]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.51it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.53it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.41it/s]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.43it/s]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.49it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.43it/s]
+Model A moved to cuda:0Model A moved to cuda:0Model A moved to cuda:0
+Model B moved to cuda:1
+Model A moved to cuda:0
+Model B moved to cuda:1
+
+Model B moved to cuda:1
+
+Model B moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+Loading calibration dataset (50 samples)...
+
+
+Loading calibration dataset (50 samples)...
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+
+============================================================
+Testing Layer 0
+============================================================
+
+============================================================
+Testing Layer 0
+============================================================
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3619, in <module>
+
+Fitting Procrustes alignments on cuda...
+Traceback (most recent call last):
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3348, in main
+    procrustes_results_ablation = run_procrustes_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1262, in run_procrustes_experiment
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3619, in <module>
+    mistral_to_llama.fit(mistral_hidden_all.float(), llama_hidden_all.float())
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 712, in fit
+        assert source.shape == target.shape, "Source and target must have same shape"
+AssertionError: Source and target must have same shape
+main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3348, in main
+    procrustes_results_ablation = run_procrustes_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1262, in run_procrustes_experiment
+    mistral_to_llama.fit(mistral_hidden_all.float(), llama_hidden_all.float())
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 712, in fit
+    assert source.shape == target.shape, "Source and target must have same shape"
+AssertionError: Source and target must have same shape
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3619, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3348, in main
+    procrustes_results_ablation = run_procrustes_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1262, in run_procrustes_experiment
+    mistral_to_llama.fit(mistral_hidden_all.float(), llama_hidden_all.float())
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 712, in fit
+  Moving 570 samples to GPU 0 for fast SVD    assert source.shape == target.shape, "Source and target must have same shape"
+AssertionError: Source and target must have same shape
+
+
+Fitting Procrustes alignments on cuda...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3619, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3348, in main
+    procrustes_results_ablation = run_procrustes_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1262, in run_procrustes_experiment
+    mistral_to_llama.fit(mistral_hidden_all.float(), llama_hidden_all.float())
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 712, in fit
+    assert source.shape == target.shape, "Source and target must have same shape"
+AssertionError: Source and target must have same shape
+W1101 10:59:04.836000 860905 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 860914 closing signal SIGTERM
+E1101 10:59:05.237000 860905 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 860911) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+Traceback (most recent call last):
+  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2025-11-01_10:59:04
+  host      : n29.cm.cluster
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 860912)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2025-11-01_10:59:04
+  host      : n29.cm.cluster
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 860913)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-11-01_10:59:04
+  host      : n29.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 860911)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
