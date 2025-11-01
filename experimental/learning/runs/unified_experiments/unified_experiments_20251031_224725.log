@@ -3101,3 +3101,21 @@ Epoch 1/5
   [ 80.0%] Step  200/250 | Loss: 11.0235 (Gen: 10.7473, Contr: 2.3038, Align: 105.1331, Uniform: -0.9485) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 4.906 | 0.39 steps/s | ETA: 2.2m
   [ 80.0%] Step  200/250 | Loss: 11.0186 (Gen: 10.7425, Contr: 2.3031, Align: 103.9983, Uniform: -0.9383) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 4.906 | 0.39 steps/s | ETA: 2.2m
   [ 80.0%] Step  200/250 | Loss: 11.0090 (Gen: 10.7329, Contr: 2.3026, Align: 103.6886, Uniform: -0.9460) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 4.906 | 0.39 steps/s | ETA: 2.2m
+
+  Computing CKA similarity...
+  Generating quality samples...
+
+  Epoch 1 Evaluation:
+    CKA Similarity: 0.8479
+    Cosine Similarity: 0.0001
+
+================================================================================
+Epoch 1/5 Complete | Time: 11.1m | Total: 11.1m
+  Total Loss: 10.9026 (Gen: 10.6149, Contr: 2.3034)
+  CKA Score: 0.8479 | LR: 0.000045
+  ETA for remaining 4 epochs: 44.2m
+================================================================================
+
+================================================================================
+Epoch 2/5
+================================================================================
