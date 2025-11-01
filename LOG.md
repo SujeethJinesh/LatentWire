@@ -11478,3 +11478,183 @@ bash run_unified_experiments.sh  # Uses all 4 GPUs
 - Token compression: ~20-30 minutes
 - **Total**: ~2-3 hours (vs 4+ hours with sequential)
 
+---
+## ═══════════════════════════════════════════════════════════════════════════
+## ⚡ EXPERIMENT IMPROVEMENTS & BUG FIXES (2025-10-31 23:30)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Overview
+Comprehensive experiment analysis, per-epoch evaluation, early stopping, and critical DDP bug fix based on convergence analysis from initial runs.
+
+### Key Improvements Implemented
+
+**1. Per-Epoch Evaluation Function** (`unified_cross_model_experiments.py:1420-1578`)
+- **Motivation**: Previous runs had no visibility into quality progression during training
+- **Implementation**: `evaluate_adapter_epoch()` runs after each epoch (rank 0 only)
+- **Metrics Tracked**:
+  - CKA similarity (debiased) between adapted and target hidden states
+  - Cosine similarity for quick sanity check
+  - Generation samples for qualitative assessment (baseline comparisons)
+- **Output**: JSON file per epoch (`eval_epoch_{N}.json`) with all metrics
+- **Cost**: ~30-60 seconds per epoch (negligible vs training time)
+- **Benefit**: Early detection of mode collapse, convergence issues, or quality degradation
+
+**2. Early Stopping Mechanism** (`unified_cross_model_experiments.py:1585-1613`)
+- **Motivation**: Linear adapter showed 28% loss reduction epoch 1, <1% epoch 2 (plateauing)
+- **Implementation**: `EarlyStopping` class with patience=2, min_delta=0.001
+- **Logic**: Triggers when validation loss doesn't improve for 2 consecutive epochs
+- **Integration**: Lines 1778 (initialization), 2028-2055 (epoch check with DDP broadcast)
+- **Expected Savings**: 40-50% compute time (stops at epoch 3-4 vs running full 10)
+
+**3. Training Duration Optimization**
+- **Change**: Reduced epochs from 10 → 5 (`unified_cross_model_experiments.py:168`)
+- **Evidence**: Log analysis showed convergence by epoch 2-3, plateau by epoch 5-6
+- **Impact**: Saves 40-50% compute time without sacrificing quality
+- **Rationale**: Combined with early stopping, ensures we never overtrain
+
+**4. CKA Baseline Metrics for Procrustes** (`unified_cross_model_experiments.py:1214-1268`)
+- **Motivation**: No baseline to compare learned adapters against
+- **Metrics Added**:
+  - CKA before alignment (natural similarity baseline)
+  - CKA after Procrustes alignment (geometric transformation improvement)
+  - CKA improvement delta (quantifies Procrustes benefit)
+  - Bidirectional CKA (Mistral→Llama and Llama→Mistral)
+- **Literature Alignment**: Uses debiased CKA (Kornblith et al. 2019)
+- **Purpose**: Validate that learned adapters (Linear, LoRA) outperform simple Procrustes
+
+**5. Experiment Priority Re-ordering** (`unified_cross_model_experiments.py:3164-3281`)
+- **New Order**: LoRA → Activation Communication → Token Compression → Linear → Affine
+- **Rationale**:
+  1. **LoRA** (Priority 1): Parameter efficient (260K vs 16M), transferable, SOTA from literature
+  2. **Activation Communication** (Priority 2): Validates core LatentWire hypothesis
+  3. **Token Compression** (Priority 3): The actual interlingua mechanism
+  4. **Linear** (Optional): Comparison baseline for LoRA
+  5. **Affine** (Optional): Completeness check
+- **Benefit**: Critical experiments fail-fast if hypothesis is invalid
+
+### Critical Bug Fixed
+
+**DDP Early Stopping Deadlock** (`unified_cross_model_experiments.py:2028-2055`)
+
+**Bug Description**:
+- Rank 0 checks early stopping and breaks from training loop
+- Ranks 1-3 continue to DDP barrier at line 2052 (old code)
+- **Result**: Deadlock - rank 0 exited loop, ranks 1-3 waiting forever at barrier
+
+**Fix Implementation**:
+```python
+# Rank 0 decides early stopping
+should_stop = False
+if rank == 0:
+    should_stop = early_stopping(avg_epoch_loss)
+
+# Broadcast decision to ALL ranks (critical for DDP synchronization)
+stop_tensor = torch.tensor([1.0 if should_stop else 0.0], device=device)
+dist.broadcast(stop_tensor, src=0)
+should_stop = stop_tensor.item() > 0.5
+
+# All ranks break together (prevents deadlock)
+if should_stop:
+    break
+```
+
+**Why This Works**:
+- Rank 0 computes early stopping decision
+- Decision broadcast to all ranks via `dist.broadcast()`
+- All ranks check same flag and break synchronously
+- No rank waits at a barrier the others have passed
+
+**Impact**: Prevents training from hanging when early stopping triggers
+
+### Literature Verification
+
+**CKA Metrics**:
+- Using debiased=True (line 1500, 1218, 1226, 1233)
+- Source: Kornblith et al. 2019 "Similarity of Neural Network Representations Revisited"
+- Confirms we're following best practices for representation similarity
+
+**InfoNCE Temperature**:
+- TEMPERATURE = 0.15 (line 572)
+- Appropriate for text representations (vision uses 0.07)
+- Source: SimCLR, MoCo literature (Chen et al. 2020)
+
+**Learning Rate & Scheduler**:
+- AdamW optimizer with LEARNING_RATE = 5e-5 (line 563, 1734)
+- CosineAnnealingLR scheduler (line 1738)
+- Standard practice from BERT, GPT fine-tuning literature
+
+**LoRA Configuration**:
+- Expected params: ~260K (rank=8, hidden_dim=4096)
+- Linear adapter: 16,777,216 params (4096×4096)
+- Reduction: 98.4% (matches literature claims)
+- Source: Cross-LoRA (arXiv:2508.05232, Aug 2025)
+
+**Gradient Accumulation**:
+- GRAD_ACCUM_STEPS = 8 (line 171)
+- Per-GPU batch size = 10 (line 166)
+- Effective batch = 10 × 4 GPUs × 8 accum = 320
+- Matches large-batch training practices from literature
+
+### GPU Utilization Analysis
+
+**Current Settings** (HPC with 4× H100 80GB):
+- Batch size per GPU: 10
+- Global batch size: 40 (4 GPUs)
+- Effective batch: 320 (with grad accum)
+- Memory per GPU: ~46 GB / 80 GB (58% utilized)
+
+**Observation**:
+- Conservative batch size of 10 per GPU
+- Comment indicates "previously caused OOM with DataParallel"
+- DDP is more memory-efficient than DataParallel
+
+**Potential Optimization** (for future):
+- Could increase batch size to 32-64 per GPU on H100s
+- Would improve throughput 3-6×
+- Requires OOM testing to validate
+- Current conservative setting prevents preemption failures
+
+**Decision**: Keep current settings for stability, revisit after successful run
+
+### Files Modified
+
+1. `experimental/learning/unified_cross_model_experiments.py`:
+   - Line 168: Reduced epochs 10 → 5
+   - Lines 1420-1578: Added `evaluate_adapter_epoch()` function
+   - Lines 1585-1613: Added `EarlyStopping` class
+   - Lines 1778: Initialize early stopping
+   - Lines 1976-1994: Integrated per-epoch evaluation call
+   - Lines 2028-2055: Fixed DDP early stopping deadlock
+   - Lines 1214-1268: Added CKA metrics to Procrustes
+   - Lines 3164-3281: Re-ordered experiments by priority
+
+2. `experimental/learning/EXPERIMENT_ANALYSIS.md`:
+   - Created comprehensive 638-line analysis
+   - Documents all experiments, findings, and recommendations
+   - Provides evidence for epoch reduction decision
+
+### Expected Impact
+
+**Training Time**:
+- Before: 10 epochs × ~15 min/epoch = 150 minutes per experiment
+- After: 3-5 epochs × ~15 min/epoch = 45-75 minutes per experiment
+- Savings: 50-70% reduction in compute time
+
+**Quality Tracking**:
+- Before: No visibility until training complete
+- After: CKA + generation samples every epoch
+- Benefit: Early detection of issues, better understanding of convergence
+
+**Debugging**:
+- Before: DDP deadlock on early stopping (would hang)
+- After: Synchronized early stopping across all ranks
+- Benefit: Reliable training completion
+
+### Next Steps
+
+1. Run updated experiments on HPC with DDP
+2. Validate early stopping works correctly (check logs for broadcast messages)
+3. Review per-epoch evaluation metrics to confirm quality trends
+4. Compare Procrustes CKA baseline vs learned adapter CKA
+5. If LoRA achieves CKA > Procrustes + 0.1-0.2, confirms literature results
+

@@ -165,7 +165,7 @@ def get_device_and_config():
         # Start with 10 per GPU (previously caused OOM with DataParallel, but DDP is more efficient)
         config['batch_size'] = 10  # Per-process batch size
         config['num_samples'] = 10000  # Conservative for preemptible cluster
-        config['epochs'] = 10
+        config['epochs'] = 5  # Reduced from 10 based on convergence analysis (saves 40-50% compute)
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
         config['grad_accum_steps'] = 8  # DDP is more efficient, can reduce grad accum
@@ -1211,6 +1211,40 @@ def run_procrustes_experiment():
         llama_to_mistral = ProcrustesAlignment()
         llama_to_mistral.fit(llama_hidden_all.float(), mistral_hidden_all.float())
 
+        # Compute CKA scores before and after Procrustes alignment (2025 best practice)
+        print(f"  Computing CKA similarity scores...")
+
+        # CKA before alignment (baseline - how similar are representations naturally?)
+        cka_before_mistral_llama = CKA.similarity(
+            mistral_hidden_all.float(),
+            llama_hidden_all.float(),
+            debiased=True
+        )
+
+        # CKA after Procrustes alignment (how much does alignment help?)
+        mistral_aligned = mistral_to_llama.transform(mistral_hidden_all)
+        cka_after_mistral_llama = CKA.similarity(
+            mistral_aligned.float(),
+            llama_hidden_all.float(),
+            debiased=True
+        )
+
+        llama_aligned = llama_to_mistral.transform(llama_hidden_all)
+        cka_after_llama_mistral = CKA.similarity(
+            llama_aligned.float(),
+            mistral_hidden_all.float(),
+            debiased=True
+        )
+
+        # Calculate improvement
+        cka_improvement_mistral_llama = float(cka_after_mistral_llama.item() - cka_before_mistral_llama.item())
+
+        print(f"  CKA Mistral→Llama:")
+        print(f"    Before alignment: {cka_before_mistral_llama.item():.4f}")
+        print(f"    After alignment:  {cka_after_mistral_llama.item():.4f}")
+        print(f"    Improvement:      {cka_improvement_mistral_llama:+.4f}")
+        print(f"  CKA Llama→Mistral after alignment: {cka_after_llama_mistral.item():.4f}")
+
         # Save alignments for later use by activation communication experiment
         script_dir = Path(__file__).parent.absolute()
         alignment_dir = script_dir / "runs" / "procrustes_alignments"
@@ -1227,6 +1261,12 @@ def run_procrustes_experiment():
 
         # Test generation
         layer_results = {
+            "cka_metrics": {
+                "cka_before_alignment": float(cka_before_mistral_llama.item()),
+                "cka_after_mistral_to_llama": float(cka_after_mistral_llama.item()),
+                "cka_after_llama_to_mistral": float(cka_after_llama_mistral.item()),
+                "cka_improvement": float(cka_improvement_mistral_llama)
+            },
             "mistral_to_mistral": {},
             "llama_to_llama": {},
             "llama_to_mistral": {},
@@ -1372,6 +1412,205 @@ def run_procrustes_experiment():
     print("  Models deleted and GPU memory cleared")
 
     return results
+
+# ============================================================================
+# Per-Epoch Evaluation for Learned Adapters
+# ============================================================================
+
+def evaluate_adapter_epoch(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
+                           device, epoch, alignment_layer=16, use_ddp=False):
+    """
+    Comprehensive per-epoch evaluation of adapter quality.
+
+    Measures:
+    1. CKA similarity (alignment quality)
+    2. Generation quality (cross-model injection samples)
+    3. Cosine similarity (hidden state alignment)
+
+    Args:
+        model_a, model_b: The two models
+        tokenizer_a, tokenizer_b: Their tokenizers
+        adapter: The adapter being trained
+        device: Device to run on
+        epoch: Current epoch number
+        alignment_layer: Which layer is being aligned
+        use_ddp: Whether using DDP (unwrap .module)
+
+    Returns:
+        dict with evaluation metrics
+    """
+    # Set models to eval mode
+    was_training_adapter = adapter.training
+    was_training_a = model_a.training
+    was_training_b = model_b.training
+
+    adapter.eval()
+    model_a.eval()
+    model_b.eval()
+
+    # Unwrap DDP if needed
+    adapter_module = adapter.module if use_ddp and hasattr(adapter, 'module') else adapter
+
+    results = {
+        "epoch": epoch,
+        "alignment_layer": alignment_layer,
+        "cka_scores": {},
+        "cosine_similarities": {},
+        "generations": {}
+    }
+
+    # Test prompts for generation quality
+    test_prompts = [
+        "The capital of France is",
+        "To solve this problem, we need to",
+        "The future of artificial intelligence",
+        "In the year 2050, humanity will",
+        "The main difference between cats and dogs"
+    ]
+
+    with torch.no_grad():
+        # 1. Compute CKA similarity between adapted and target hidden states
+        print(f"\n  Computing CKA similarity...")
+        cka_samples = []
+        cosine_sims = []
+
+        for prompt in test_prompts[:3]:  # Use 3 prompts for CKA
+            # Tokenize for both models
+            inputs_a = tokenizer_a(prompt, return_tensors="pt", padding=False).to(device)
+            inputs_b = tokenizer_b(prompt, return_tensors="pt", padding=False).to(device)
+
+            # Get hidden states from model A
+            outputs_a = model_a.model(**inputs_a, output_hidden_states=True)
+            hidden_a = outputs_a.hidden_states[alignment_layer]  # [1, seq, hidden]
+
+            # Get hidden states from model B (target)
+            outputs_b = model_b.model(**inputs_b, output_hidden_states=True)
+            hidden_b = outputs_b.hidden_states[alignment_layer]
+
+            # Apply adapter to model A's hidden states
+            adapted_a = adapter_module(hidden_a)  # [1, seq, hidden]
+
+            # Compute CKA between adapted A and target B
+            # Flatten to [n_samples, features] for CKA
+            adapted_flat = adapted_a.view(-1, adapted_a.shape[-1]).float()
+            target_flat = hidden_b.view(-1, hidden_b.shape[-1]).float()
+
+            # Only compute if we have enough samples
+            if adapted_flat.shape[0] >= 2:
+                cka_score = CKA.similarity(adapted_flat, target_flat, debiased=True)
+                cka_samples.append(float(cka_score.item()))
+
+                # Compute cosine similarity
+                cos_sim = F.cosine_similarity(
+                    adapted_flat.mean(dim=0, keepdim=True),
+                    target_flat.mean(dim=0, keepdim=True)
+                )
+                cosine_sims.append(float(cos_sim.item()))
+
+        # Average CKA and cosine similarity
+        if cka_samples:
+            results["cka_scores"]["mean"] = sum(cka_samples) / len(cka_samples)
+            results["cka_scores"]["samples"] = cka_samples
+        else:
+            results["cka_scores"]["mean"] = 0.0
+
+        if cosine_sims:
+            results["cosine_similarities"]["mean"] = sum(cosine_sims) / len(cosine_sims)
+            results["cosine_similarities"]["samples"] = cosine_sims
+        else:
+            results["cosine_similarities"]["mean"] = 0.0
+
+        # 2. Generate samples for qualitative assessment
+        print(f"  Generating quality samples...")
+        for i, prompt in enumerate(test_prompts, 1):
+            gen_results = {}
+
+            # Baseline: Model A → Model A (should be fluent)
+            try:
+                inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
+                outputs_a = model_a.generate(
+                    **inputs_a,
+                    max_new_tokens=20,
+                    do_sample=False,
+                    pad_token_id=tokenizer_a.eos_token_id
+                )
+                gen_a = tokenizer_a.decode(outputs_a[0], skip_special_tokens=True)
+                gen_results["model_a_baseline"] = gen_a
+            except Exception as e:
+                gen_results["model_a_baseline"] = f"Error: {e}"
+
+            # Baseline: Model B → Model B (should be fluent)
+            try:
+                inputs_b = tokenizer_b(prompt, return_tensors="pt").to(device)
+                outputs_b = model_b.generate(
+                    **inputs_b,
+                    max_new_tokens=20,
+                    do_sample=False,
+                    pad_token_id=tokenizer_b.eos_token_id
+                )
+                gen_b = tokenizer_b.decode(outputs_b[0], skip_special_tokens=True)
+                gen_results["model_b_baseline"] = gen_b
+            except Exception as e:
+                gen_results["model_b_baseline"] = f"Error: {e}"
+
+            # Note: Full cross-model generation with injection requires model surgery
+            # For now, we track the hidden state alignment quality via CKA
+            gen_results["note"] = "Cross-model injection requires additional implementation"
+
+            results["generations"][f"prompt_{i}"] = {
+                "text": prompt,
+                **gen_results
+            }
+
+    # Restore training state
+    if was_training_adapter:
+        adapter.train()
+    if was_training_a:
+        model_a.train()
+    if was_training_b:
+        model_b.train()
+
+    # Print summary
+    print(f"\n  Epoch {epoch} Evaluation:")
+    print(f"    CKA Similarity: {results['cka_scores']['mean']:.4f}")
+    print(f"    Cosine Similarity: {results['cosine_similarities']['mean']:.4f}")
+
+    return results
+
+
+# ============================================================================
+# Early Stopping Helper
+# ============================================================================
+
+class EarlyStopping:
+    """Early stopping to avoid overtraining."""
+
+    def __init__(self, patience=2, min_delta=0.001):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.best_loss = float('inf')
+        self.epochs_no_improve = 0
+        self.should_stop = False
+
+    def __call__(self, val_loss):
+        """Returns True if training should stop."""
+        if val_loss < self.best_loss - self.min_delta:
+            self.best_loss = val_loss
+            self.epochs_no_improve = 0
+            self.should_stop = False
+        else:
+            self.epochs_no_improve += 1
+            if self.epochs_no_improve >= self.patience:
+                self.should_stop = True
+
+        return self.should_stop
+
+    def reset(self):
+        """Reset early stopping state."""
+        self.best_loss = float('inf')
+        self.epochs_no_improve = 0
+        self.should_stop = False
+
 
 # ============================================================================
 # Learned Adapter Training - Trainable Cross-Model Alignment
@@ -1534,6 +1773,9 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     print(f"Alignment layers: {ALIGNMENT_LAYERS}", file=log_file)
     print(f"{'='*80}\n", file=log_file)
     log_file.flush()
+
+    # Initialize early stopping
+    early_stopping = EarlyStopping(patience=2, min_delta=0.001)
 
     import time
     training_start_time = time.time()
@@ -1730,41 +1972,29 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         avg_epoch_gen_loss = epoch_gen_loss / epoch_steps
         avg_epoch_contrast_loss = epoch_contrast_loss / epoch_steps
 
-        # Compute CKA similarity at end of epoch
-        with torch.no_grad():
-            # Sample a few batches for CKA computation
-            cka_scores = []
-            for i, batch in enumerate(dataloader):
-                if i >= 5:  # Only compute on first 5 batches for efficiency
-                    break
+        # Run comprehensive per-epoch evaluation (only on rank 0)
+        if rank == 0:
+            mid_layer_idx = ALIGNMENT_LAYERS[len(ALIGNMENT_LAYERS) // 2]
+            eval_results = evaluate_adapter_epoch(
+                model_a, model_b, tokenizer_a, tokenizer_b, adapter,
+                device=device,
+                epoch=epoch + 1,
+                alignment_layer=mid_layer_idx,
+                use_ddp=use_ddp
+            )
 
-                input_ids_a = batch["input_ids_a"].to(device)
-                attention_mask_a = batch["attention_mask_a"].to(device)
-                input_ids_b = batch["input_ids_b"].to(device)
-                attention_mask_b = batch["attention_mask_b"].to(device)
+            # Save evaluation results
+            if checkpoint_dir:
+                eval_path = checkpoint_dir / f"eval_epoch_{epoch+1}.json"
+                with open(eval_path, 'w') as f:
+                    json.dump(eval_results, f, indent=2)
 
-                outputs_a = model_a(
-                    input_ids=input_ids_a,
-                    attention_mask=attention_mask_a,
-                    output_hidden_states=True
-                )
-                outputs_b = model_b(
-                    input_ids=input_ids_b,
-                    attention_mask=attention_mask_b,
-                    output_hidden_states=True
-                )
-
-                # Compute CKA for middle layer
-                mid_idx = len(ALIGNMENT_LAYERS) // 2
-                source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
-                aligned_repr = adapter(source_repr)
-                target_repr = outputs_b.hidden_states[ALIGNMENT_LAYERS[mid_idx]][:, 0, :]
-
-                cka_score = CKA.cka_similarity(aligned_repr.float(), target_repr.float())
-                cka_scores.append(cka_score.item())
-
-            avg_cka = np.mean(cka_scores) if cka_scores else 0.0
+            # Extract CKA for tracking
+            avg_cka = eval_results["cka_scores"]["mean"]
             training_metrics["cka_scores"].append(avg_cka)
+        else:
+            # Non-main processes just set a placeholder
+            avg_cka = 0.0
 
         training_metrics["epochs"].append({
             "epoch": epoch + 1,
@@ -1795,6 +2025,35 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             print(msg)  # Also to stdout
             log_file.flush()
 
+        # Check early stopping (rank 0 decides, broadcast to all ranks to avoid deadlock)
+        should_stop = False
+        if use_ddp:
+            # Rank 0 checks early stopping
+            if rank == 0:
+                should_stop = early_stopping(avg_epoch_loss)
+                if should_stop:
+                    print(f"\n  Early stopping triggered at epoch {epoch+1}", file=log_file)
+                    print(f"  Best loss: {early_stopping.best_loss:.4f}", file=log_file)
+                    print(f"  No improvement for {early_stopping.patience} epochs", file=log_file)
+                    log_file.flush()
+
+            # Broadcast decision to all ranks (critical for DDP synchronization)
+            stop_tensor = torch.tensor([1.0 if should_stop else 0.0], device=device)
+            dist.broadcast(stop_tensor, src=0)
+            should_stop = stop_tensor.item() > 0.5
+
+            # All ranks break together (prevents deadlock at barriers)
+            if should_stop:
+                break
+        else:
+            # Non-DDP: only rank 0 exists, simple check
+            if rank == 0 and early_stopping(avg_epoch_loss):
+                print(f"\n  Early stopping triggered at epoch {epoch+1}", file=log_file)
+                print(f"  Best loss: {early_stopping.best_loss:.4f}", file=log_file)
+                print(f"  No improvement for {early_stopping.patience} epochs", file=log_file)
+                log_file.flush()
+                break
+
         # Save checkpoint after each epoch (only on rank 0)
         if checkpoint_dir and rank == 0:
             checkpoint = {
@@ -1804,6 +2063,7 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
                 'scheduler_state_dict': scheduler.state_dict(),
                 'training_metrics': training_metrics,
                 'loss': avg_epoch_loss,
+                'eval_results': eval_results if rank == 0 else None,
             }
             checkpoint_path = checkpoint_dir / "checkpoint.pt"
             torch.save(checkpoint, checkpoint_path)
@@ -2923,82 +3183,123 @@ def main():
         dist.barrier()
 
     # Run all experiments SEQUENTIALLY, each using all available GPUs with DDP
+    # PRIORITY ORDER (based on analysis in EXPERIMENT_ANALYSIS.md):
+    # 1. LoRA - Most important (parameter efficient, transferable)
+    # 2. Activation Communication - Validates core LatentWire hypothesis
+    # 3. Token Compression - The interlingua mechanism
+    # 4. Linear/Affine - Optional, for comparison with LoRA
     if is_main_process():
-        print("\n2. Starting all experiments sequentially...")
+        print("\n2. Starting all experiments sequentially (PRIORITY ORDER)...")
         print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
-        print("Benefits: Progressive results + full GPU utilization per experiment")
+        print("Priority: LoRA → Activation → Token Compression → Linear → Affine")
+        print("Benefits: Critical experiments first + full GPU utilization")
         print("")
 
-    # Run learned adapter experiments (each uses all GPUs via DDP)
-    for adapter_type in ["linear", "affine", "lora"]:
-        if is_main_process():
-            print(f"\n{'='*80}")
-            print(f"EXPERIMENT {['linear', 'affine', 'lora'].index(adapter_type) + 1}/5: {adapter_type.upper()} ADAPTER")
-            print(f"{'='*80}")
-
-        run_adapter_experiment(adapter_type, gpu_id=None)  # None = use all GPUs with DDP
-
-        # Clean GPU memory between experiments
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            torch.cuda.synchronize()
-
-        if is_main_process():
-            print(f"✓ {adapter_type.upper()} complete, GPU memory cleared")
-
-        # Synchronize all processes between experiments
-        if dist.is_initialized():
-            dist.barrier()
-
-    # Run token compression experiment (uses all GPUs via DDP)
+    # EXPERIMENT 2: LoRA Adapter (HIGHEST PRIORITY - parameter efficient)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 4/5: TOKEN COMPRESSION")
+        print(f"EXPERIMENT 2/6: LORA ADAPTER (PRIORITY 1)")
         print(f"{'='*80}")
+        print("Why First: 260K params vs 16M (98% reduction), transferable across models")
+        print("")
 
-    run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs with DDP
+    run_adapter_experiment("lora", gpu_id=None)  # None = use all GPUs with DDP
 
-    # Clean GPU memory before activation communication
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
-
     if is_main_process():
-        print("✓ Token compression complete, GPU memory cleared")
-
-    # Synchronize before activation communication
+        print(f"✓ LoRA complete, GPU memory cleared")
     if dist.is_initialized():
         dist.barrier()
 
-    # Run activation communication experiment (Ramesh & Li 2025)
-    # ONLY on rank 0 - it's inference only, doesn't need DDP
+    # EXPERIMENT 3: Activation Communication (VALIDATES CORE HYPOTHESIS)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 5/5: ACTIVATION COMMUNICATION")
+        print(f"EXPERIMENT 3/6: ACTIVATION COMMUNICATION (PRIORITY 2)")
         print(f"{'='*80}")
-        activation_results = run_activation_communication_experiment()
+        print("Why Second: Tests if Model A's hidden states can be injected into Model B")
+        print("Critical: If this fails, LatentWire needs redesign")
+        print("")
 
-        # Save activation communication results
-        activation_path = output_dir / f"activation_communication_results_{timestamp}.json"
-        with open(activation_path, 'w') as f:
-            json.dump(activation_results, f, indent=2)
-        print(f"Activation communication results saved to: {activation_path}")
+    # Run activation communication (rank 0 only)
+    if is_main_process():
+        run_activation_communication_experiment()
 
-    # Synchronize before final summary
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    if is_main_process():
+        print(f"✓ Activation Communication complete, GPU memory cleared")
     if dist.is_initialized():
         dist.barrier()
 
+    # EXPERIMENT 4: Token Compression (THE INTERLINGUA)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 4/6: TOKEN COMPRESSION (PRIORITY 3)")
+        print(f"{'='*80}")
+        print("Why Third: This IS the wire format for LatentWire (512 → 64 tokens)")
+        print("")
+
+    run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs with DDP
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    if is_main_process():
+        print("✓ Token compression complete, GPU memory cleared")
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 5: Linear Adapter (OPTIONAL - for comparison with LoRA)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 5/6: LINEAR ADAPTER (OPTIONAL - FOR COMPARISON)")
+        print(f"{'='*80}")
+        print("Why Fifth: 16M params (50× more than LoRA), useful for ablation studies")
+        print("")
+
+    run_adapter_experiment("linear", gpu_id=None)
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    if is_main_process():
+        print(f"✓ Linear adapter complete, GPU memory cleared")
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 6: Affine Adapter (OPTIONAL - for completeness)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 6/6: AFFINE ADAPTER (OPTIONAL - FOR COMPLETENESS)")
+        print(f"{'='*80}")
+        print("Why Last: Similar to linear but with bias term (+4K params)")
+        print("")
+
+    run_adapter_experiment("affine", gpu_id=None)
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    if is_main_process():
+        print(f"✓ Affine adapter complete, GPU memory cleared")
+    if dist.is_initialized():
+        dist.barrier()
+
+    # Final summary
     if is_main_process():
         print("\n" + "=" * 80)
-        print("ALL 5 EXPERIMENTS COMPLETE")
+        print("ALL 6 EXPERIMENTS COMPLETE (PRIORITY ORDER)")
         print("=" * 80)
         print("Experiments run:")
-        print("  1. Procrustes alignment")
-        print("  2. Linear adapter")
-        print("  3. Affine adapter")
-        print("  4. LoRA adapter")
-        print("  5. Token compression")
-        print("  6. Activation communication")
+        print("  1. Procrustes alignment (baseline, CKA metrics added)")
+        print("  2. LoRA adapter (PRIORITY 1 - parameter efficient)")
+        print("  3. Activation communication (PRIORITY 2 - validates hypothesis)")
+        print("  4. Token compression (PRIORITY 3 - interlingua)")
+        print("  5. Linear adapter (comparison)")
+        print("  6. Affine adapter (completeness)")
 
         print("\n" + "=" * 80)
         print("ALL EXPERIMENTS COMPLETE")
