@@ -3504,7 +3504,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                     num_samples=3072,  # Per paper
                     learning_rate=1e-3,
                     num_epochs=10,
-                    batch_size=128,  # Increased for H100 GPU utilization
+                    batch_size=96,  # Optimized for H100 memory constraints
                     device=device,
                     seed=42
                 )
@@ -3529,7 +3529,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 num_samples=3072,  # Per paper
                 learning_rate=1e-3,
                 num_epochs=10,
-                batch_size=128,  # Increased for H100 GPU utilization
+                batch_size=96,  # Optimized for H100 memory constraints
                 device=device,
                 seed=42
             )
@@ -3554,7 +3554,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 num_samples=3072,
                 learning_rate=1e-3,
                 num_epochs=10,
-                batch_size=128,  # Increased for H100 GPU utilization
+                batch_size=96,  # Optimized for H100 memory constraints
                 device=device,
                 seed=42
             )
