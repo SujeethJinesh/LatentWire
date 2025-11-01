@@ -1,0 +1,63 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_allgpus_20251031_225248.log
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9010.32it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9010.32it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:02,  1.32it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:02,  1.32it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.85it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.85it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.24it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.24it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.63it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.63it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.27it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.27it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 7767.23it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 7767.23it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  3.29it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  3.29it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.55it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.55it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.55it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.55it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.45it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.45it/s]
+
+
+Training LoRAAdapter...
+
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+Total epochs: 5
+Steps per epoch: 250
+Total training steps: 1250
+Batch size: 10
+Gradient accumulation: 8 (effective batch: 80)
+Learning rate: 5e-05
+Alignment layers: [8, 16, 24]
+================================================================================
+
+  Step 10/250: Loss = 11.2709 (Gen: 11.0384, Contr: 2.3040, Align: 114.0773, Uniform: -0.9567)
+  Step 20/250: Loss = 11.2144 (Gen: 10.9798, Contr: 2.3028, Align: 109.3770, Uniform: -0.9679)
+  Step 30/250: Loss = 11.1820 (Gen: 10.9450, Contr: 2.3034, Align: 109.4748, Uniform: -0.9808)
+  Step 40/250: Loss = 11.1889 (Gen: 10.9495, Contr: 2.3042, Align: 110.0083, Uniform: -0.9792)
+  Step 50/250: Loss = 11.2210 (Gen: 10.9793, Contr: 2.3040, Align: 110.1391, Uniform: -0.9733)
+  Step 60/250: Loss = 11.2383 (Gen: 10.9944, Contr: 2.3034, Align: 112.2147, Uniform: -0.9605)
+  Step 70/250: Loss = 11.2234 (Gen: 10.9771, Contr: 2.3039, Align: 111.4004, Uniform: -0.9627)
+  Step 80/250: Loss = 11.2196 (Gen: 10.9710, Contr: 2.3041, Align: 110.5443, Uniform: -0.9631)
+  Step 90/250: Loss = 11.2069 (Gen: 10.9560, Contr: 2.3039, Align: 1  Step 10/250: Loss = 11.4597 (Gen: 11.2271, Contr: 2.3055, Align: 117.2588, Uniform: -0.9349)
+  Step 20/250: Loss = 11.3843 (Gen: 11.1494, Contr: 2.3050, Align: 109.9202, Uniform: -0.9511)
+  Step 30/250: Loss = 11.3335 (Gen: 11.0963, Contr: 2.3057, Align: 112.6307, Uniform: -0.9514)
+  Step 40/250: Loss = 11.3165 (Gen: 11.0771, Contr: 2.3046, Align: 107.5038, Uniform: -0.9463)
+  Step 50/2  Step 110/250: Loss = 11.1715 (Gen: 10.9160, Contr: 2.3038, Align: 108.4228, Uniform: -0.9621)
+  Step 120/250: Loss = 11.1551 (Gen: 10.8973, Contr: 2.3042, Align: 111.3228, Uniform: -0.9619)
+  Step 130/250: Loss = 11.1435 (Gen: 10.8833, Contr: 2.3041, Align: 109.5633, Uniform: -0.9590)
+  Step 140/250: Loss = 11.1139 (Gen: 10.8514, Contr: 2.3041, Align: 108.5302, Uniform: -0.9597)
+  Step 150/250: Loss = 11.0966 (Gen: 10.8319, Contr: 2.3041, Align: 110.0248, Uniform: -0.9602)
+  Step 160/250: Loss = 11.0656 (Gen: 10.7986, Contr: 2.3041, Align: 108.9004, Uniform: -0.9614)
+  Step 170/250: Loss = 11.0382 (Gen: 10.7688, Contr: 2.3042, Align: 109.2615, Uniform: -0.9600)
+  Step 180/250: Loss = 11.0175 (Gen: 10.7458, Contr: 2.3040, Align: 108.0661, Uniform: -0.9594)
+  Step 190/250: Loss = 10.9940 (Gen: 10.7201, Contr: 2.3040,  Step 110/250: Loss = 11.2263 (Gen: 10.9709, Contr: 2.3036, Align: 104.5654, Uniform: -0.9373)
+  Step 120/250: Loss = 11.2052 (Gen: 10.9474, Contr: 2.3038, Align: 104.4971, Uniform: -0.9419)
+  Step 130/250: Loss = 11.1854 (Gen: 10.9254, Contr: 2.3036, Align: 104.9428, Uniform: -0.9394)
+  Step 140/250: Loss = 11.1667 (Gen: 10.9044, Contr: 2.3036, Align: 104.9707, Uniform: -0.9372)
+  Step 150/250: Loss = 11.1421 (Gen: 10.8774, Contr: 2.3035, Align: 105.0277, Uniform: -0.9353)
+  Step 160/250: Loss = 11.1150 (Gen: 10.8480, Contr: 2.3035, Align: 104.4859, Uniform: -0.9368)
+  Step 170/250: Loss = 11.0913 (Gen: 10.8221, Contr: 2.3032, Align: 103.2436, Uniform: -0.9392)
+  Step 180/250: Loss = 11.0699 (Gen: 10.7983, Contr: 2.3033, Align: 103.1534, Uniform: -0.9395)
+  Step 190/250: Loss = 11.0441 (Gen: 10.7702, Contr: 2.3033, Align: 103.5060, Uniform: -0.9384)
+  [ 80.0%] Step  200/250 | Loss: 11.0186 (Gen: 10.7425, Contr: 2.3031, Align: 103.9983, Uniform: -0.9383) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 4.906 | 0.39 steps/s | ETA: 2.2m
+  [ 80.0%] Step  200/250 | Loss: 11.0186 (Gen: 10.7425, Contr: 2.3031, Align: 103.9983, Uniform: -0.9383) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: 4.906 | 0.39 steps/s | ETA: 2.2m
