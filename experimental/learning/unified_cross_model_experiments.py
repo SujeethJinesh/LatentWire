@@ -2,19 +2,15 @@
 """
 Unified cross-model alignment experiments combining Procrustes and learned adapters.
 Optimized for 4 H100 GPUs.
-
-GPU allocation (with 4 GPUs):
-- GPU 0: Linear adapter (parallel)
-- GPU 1: Affine adapter (parallel)
-- GPU 2: LoRA adapter (parallel)
-- GPU 3: Available for overflow/future experiments
-- Procrustes: CPU (no GPU needed)
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
+from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.distributed as dist
 import numpy as np
 import warnings
 import os
@@ -82,19 +78,20 @@ def get_device_and_config():
         print(f"  - Samples: {config['num_samples']} (reduced for testing)")
         print(f"  - Epochs: {config['epochs']} (reduced for testing)")
     else:
-        # HPC configuration - batch size optimized for multi-GPU
+        # HPC configuration - batch size optimized for multi-GPU with DDP
         num_gpus = torch.cuda.device_count() if platform == 'hpc' else 1
-        # CRITICAL: Reduced from 10 to 5 per GPU to avoid OOM with two large models
-        # With Llama (38GB) + Mistral (37GB) replicated on each GPU, need headroom for activations
-        config['batch_size'] = 5 * num_gpus  # Scale batch size with GPU count (DataParallel splits batches)
+        # DDP: Each process gets batch_size samples
+        # Start with 10 per GPU (previously caused OOM with DataParallel, but DDP is more efficient)
+        config['batch_size'] = 10  # Per-process batch size
         config['num_samples'] = 10000  # Conservative for preemptible cluster
         config['epochs'] = 10
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
-        config['grad_accum_steps'] = 16  # Increased from 8 to 16 to maintain effective batch size of 320
+        config['grad_accum_steps'] = 8  # DDP is more efficient, can reduce grad accum
         if platform == 'hpc':
-            print(f"  - Batch size: {config['batch_size']} ({num_gpus} GPUs × 5 per GPU)")
-            print(f"  - Effective batch (with grad accum): {config['batch_size'] * config['grad_accum_steps']}")
+            print(f"  - Batch size per GPU: {config['batch_size']}")
+            print(f"  - Global batch size: {config['batch_size'] * num_gpus}")
+            print(f"  - Effective batch (with grad accum): {config['batch_size'] * num_gpus * config['grad_accum_steps']}")
             print(f"  - Samples: {config['num_samples']}")
             print(f"  - Epochs: {config['epochs']}")
             print(f"  - BF16: {config['use_bf16']}")
@@ -104,6 +101,60 @@ def get_device_and_config():
 
 # Get device and config at module level
 DEVICE, PLATFORM, PLATFORM_CONFIG = get_device_and_config()
+
+# ============================================================================
+# Distributed Data Parallel (DDP) Setup
+# ============================================================================
+
+def setup_ddp():
+    """
+    Initialize DDP for multi-GPU training.
+
+    Returns:
+        tuple: (rank, world_size, device)
+            - rank: Process rank (0 to world_size-1)
+            - world_size: Total number of processes
+            - device: torch.device for this process
+    """
+    if not dist.is_available():
+        return 0, 1, DEVICE
+
+    if not dist.is_initialized():
+        # Initialize process group
+        dist.init_process_group(backend="nccl" if torch.cuda.is_available() else "gloo")
+
+    rank = dist.get_rank()
+    world_size = dist.get_world_size()
+
+    # Set device for this process
+    if torch.cuda.is_available():
+        torch.cuda.set_device(rank)
+        device = torch.device(f"cuda:{rank}")
+    else:
+        device = DEVICE
+
+    return rank, world_size, device
+
+def cleanup_ddp():
+    """Clean up DDP process group."""
+    if dist.is_initialized():
+        dist.destroy_process_group()
+
+def is_main_process():
+    """Return True if this is the main process (rank 0)."""
+    return not dist.is_initialized() or dist.get_rank() == 0
+
+def get_rank():
+    """Get current process rank, returns 0 if not using DDP."""
+    if dist.is_initialized():
+        return dist.get_rank()
+    return 0
+
+def get_world_size():
+    """Get world size, returns 1 if not using DDP."""
+    if dist.is_initialized():
+        return dist.get_world_size()
+    return 1
 
 # ============================================================================
 # InfoNCE Contrastive Loss (Critical from 2025 research)
@@ -719,10 +770,10 @@ class TokenInitializedCompressor(nn.Module):
         self.hidden_dim = hidden_dim
         self.d_z = d_z  # Latent dimension (much smaller than hidden_dim)
 
-        # Get the embedding layer (handle DataParallel wrapped models)
-        # CRITICAL: DataParallel wraps models, so attributes like get_input_embeddings()
+        # Get the embedding layer (handle DDP/DataParallel wrapped models)
+        # CRITICAL: DDP and DataParallel wrap models, so attributes like get_input_embeddings()
         # are accessed via .module for wrapped models
-        base_model = model.module if isinstance(model, nn.DataParallel) else model
+        base_model = model.module if isinstance(model, (nn.DataParallel, DDP)) else model
         self.embed_layer = base_model.get_input_embeddings()
 
         # Project from model space to latent z space
@@ -1216,7 +1267,8 @@ def run_procrustes_experiment():
 # ============================================================================
 
 def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
-                  device, log_file, num_samples=1000, checkpoint_dir=None):
+                  device, log_file, num_samples=1000, checkpoint_dir=None,
+                  use_ddp=False, rank=0, world_size=1):
     """Train a single adapter for cross-model alignment with contrastive learning."""
 
     print(f"\nTraining {adapter.__class__.__name__}...", file=log_file)
@@ -1254,17 +1306,39 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     # Data loading configuration
     # NOTE: HPC system can't handle multiple workers (causes freeze), use single-threaded
     num_workers = 0  # Must be 0 on this HPC system to avoid DataLoader freeze
-    dataloader = DataLoader(
-        train_dataset,
-        batch_size=BATCH_SIZE,
-        shuffle=True,
-        num_workers=num_workers,
-        pin_memory=True if PLATFORM == 'hpc' else False,  # Faster GPU transfer
-    )
+
+    # Use DistributedSampler for DDP to split data across processes
+    if use_ddp:
+        sampler = DistributedSampler(
+            train_dataset,
+            num_replicas=world_size,
+            rank=rank,
+            shuffle=True
+        )
+        dataloader = DataLoader(
+            train_dataset,
+            batch_size=BATCH_SIZE,
+            sampler=sampler,  # Use sampler instead of shuffle
+            num_workers=num_workers,
+            pin_memory=True if PLATFORM == 'hpc' else False,
+        )
+    else:
+        dataloader = DataLoader(
+            train_dataset,
+            batch_size=BATCH_SIZE,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=True if PLATFORM == 'hpc' else False,
+        )
 
     # Move adapter to device with correct dtype (must match model dtype)
     dtype = torch.bfloat16 if USE_BF16 else torch.float32
     adapter = adapter.to(device, dtype=dtype)
+
+    # Wrap adapter with DDP if using distributed training
+    if use_ddp:
+        adapter = DDP(adapter, device_ids=[rank], output_device=rank)
+
     optimizer = torch.optim.AdamW(adapter.parameters(), lr=LEARNING_RATE)
 
     # Add cosine annealing scheduler (as mentioned in comments)
@@ -1312,6 +1386,10 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     training_start_time = time.time()
 
     for epoch in range(start_epoch, EPOCHS):
+        # Set epoch for DistributedSampler to ensure different shuffling each epoch
+        if use_ddp:
+            sampler.set_epoch(epoch)
+
         epoch_loss = 0.0
         epoch_gen_loss = 0.0
         epoch_contrast_loss = 0.0
@@ -1320,10 +1398,11 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         epoch_steps = 0
         epoch_start_time = time.time()
 
-        msg = f"\n{'='*80}\nEpoch {epoch+1}/{EPOCHS}\n{'='*80}"
-        print(msg, file=log_file)
-        print(msg)  # Also print to stdout for tee capture
-        log_file.flush()
+        if rank == 0:  # Only print on main process
+            msg = f"\n{'='*80}\nEpoch {epoch+1}/{EPOCHS}\n{'='*80}"
+            print(msg, file=log_file)
+            print(msg)  # Also print to stdout for tee capture
+            log_file.flush()
 
         for batch_idx, batch in enumerate(dataloader):
             # Move to device
@@ -1374,9 +1453,8 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
                     labels=labels_b
                 )
 
-                # CRITICAL: With DataParallel, loss is a tensor [num_gpus], must reduce to scalar
-                # Even with single GPU, .mean() is safe and ensures scalar
-                layer_loss = outputs_b.loss.mean() if outputs_b.loss.numel() > 1 else outputs_b.loss
+                # DDP automatically averages gradients across processes, loss is already scalar
+                layer_loss = outputs_b.loss
                 generation_losses.append(layer_loss * layer_weight)
 
             # Combine generation losses from multiple layers
@@ -1559,15 +1637,16 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             msg += f"  ETA for remaining {remaining_epochs} epochs: {eta_total:.1f}m\n"
         msg += f"{'='*80}"
 
-        print(msg, file=log_file)
-        print(msg)  # Also to stdout
-        log_file.flush()
+        if rank == 0:  # Only print on main process
+            print(msg, file=log_file)
+            print(msg)  # Also to stdout
+            log_file.flush()
 
-        # Save checkpoint after each epoch
-        if checkpoint_dir:
+        # Save checkpoint after each epoch (only on rank 0)
+        if checkpoint_dir and rank == 0:
             checkpoint = {
                 'epoch': epoch,
-                'adapter_state_dict': adapter.state_dict(),
+                'adapter_state_dict': adapter.module.state_dict() if use_ddp else adapter.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict': scheduler.state_dict(),
                 'training_metrics': training_metrics,
@@ -1577,22 +1656,27 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             torch.save(checkpoint, checkpoint_path)
             print(f"  Checkpoint saved to {checkpoint_path}", file=log_file)
 
-    # Final training summary
-    total_training_time = time.time() - training_start_time
-    msg = f"\n\n{'='*80}\n"
-    msg += f"TRAINING COMPLETE\n"
-    msg += f"{'='*80}\n"
-    msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
-    msg += f"Total epochs: {EPOCHS}\n"
-    msg += f"Final loss: {training_metrics['epochs'][-1]['loss']:.4f}\n"
-    msg += f"Final CKA score: {training_metrics['epochs'][-1]['cka_score']:.4f}\n"
-    msg += f"\nLoss progression:\n"
-    for i, epoch_data in enumerate(training_metrics['epochs']):
-        msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, CKA {epoch_data['cka_score']:.4f}\n"
-    msg += f"{'='*80}\n"
-    print(msg, file=log_file)
-    print(msg)  # Also to stdout
-    log_file.flush()
+        # Synchronize all processes after checkpoint
+        if use_ddp:
+            dist.barrier()
+
+    # Final training summary (only on rank 0)
+    if rank == 0:
+        total_training_time = time.time() - training_start_time
+        msg = f"\n\n{'='*80}\n"
+        msg += f"TRAINING COMPLETE\n"
+        msg += f"{'='*80}\n"
+        msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
+        msg += f"Total epochs: {EPOCHS}\n"
+        msg += f"Final loss: {training_metrics['epochs'][-1]['loss']:.4f}\n"
+        msg += f"Final CKA score: {training_metrics['epochs'][-1]['cka_score']:.4f}\n"
+        msg += f"\nLoss progression:\n"
+        for i, epoch_data in enumerate(training_metrics['epochs']):
+            msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, CKA {epoch_data['cka_score']:.4f}\n"
+        msg += f"{'='*80}\n"
+        print(msg, file=log_file)
+        print(msg)  # Also to stdout
+        log_file.flush()
 
     return adapter, training_metrics
 
@@ -1623,23 +1707,27 @@ def run_adapter_experiment(adapter_type, gpu_id):
             print(f"Platform: {PLATFORM}")
             print(f"Log file: {log_path}")
 
-            # Device configuration
-            use_data_parallel = False
+            # Device configuration - use DDP for multi-GPU
+            use_ddp = False
+            rank = 0
+            world_size = 1
+
             if PLATFORM == 'hpc' and gpu_id is None and torch.cuda.device_count() > 1:
-                # Use all GPUs with DataParallel
-                device = torch.device("cuda:0")  # Primary device
-                use_data_parallel = True
-                print(f"\n{'='*80}")
-                print(f"GPU CONFIGURATION")
-                print(f"{'='*80}")
-                print(f"Mode: DataParallel (multi-GPU)")
-                print(f"Number of GPUs: {torch.cuda.device_count()}")
-                print(f"GPU IDs: {list(range(torch.cuda.device_count()))}")
-                print(f"Primary device: cuda:0")
-                print(f"Batch size per GPU: {BATCH_SIZE // torch.cuda.device_count()}")
-                print(f"Total batch size: {BATCH_SIZE}")
-                print(f"Effective batch (with grad accum): {BATCH_SIZE * GRAD_ACCUM_STEPS}")
-                print(f"{'='*80}\n")
+                # Use DDP for multi-GPU training
+                rank, world_size, device = setup_ddp()
+                use_ddp = True
+                if is_main_process():
+                    print(f"\n{'='*80}")
+                    print(f"GPU CONFIGURATION")
+                    print(f"{'='*80}")
+                    print(f"Mode: DistributedDataParallel (DDP)")
+                    print(f"Number of GPUs: {world_size}")
+                    print(f"GPU IDs: {list(range(world_size))}")
+                    print(f"Rank: {rank}, Device: {device}")
+                    print(f"Batch size per GPU: {BATCH_SIZE}")
+                    print(f"Global batch size: {BATCH_SIZE * world_size}")
+                    print(f"Effective batch (with grad accum): {BATCH_SIZE * world_size * GRAD_ACCUM_STEPS}")
+                    print(f"{'='*80}\n")
             elif PLATFORM == 'hpc' and gpu_id is not None:
                 # Use specific GPU
                 device = torch.device(f"cuda:{gpu_id}")
@@ -1689,11 +1777,6 @@ def run_adapter_experiment(adapter_type, gpu_id):
             # Enable gradient checkpointing to save memory during training (works on all platforms)
             model_a.gradient_checkpointing_enable()
 
-            # Wrap with DataParallel if using multiple GPUs
-            if use_data_parallel:
-                model_a = torch.nn.DataParallel(model_a)
-                print(f"Wrapped Llama model with DataParallel")
-
             model_b = AutoModelForCausalLM.from_pretrained(
                 MISTRAL_MODEL,
                 **model_kwargs
@@ -1702,10 +1785,8 @@ def run_adapter_experiment(adapter_type, gpu_id):
             # Enable gradient checkpointing to save memory during training
             model_b.gradient_checkpointing_enable()
 
-            # Wrap with DataParallel if using multiple GPUs
-            if use_data_parallel:
-                model_b = torch.nn.DataParallel(model_b)
-                print(f"Wrapped Mistral model with DataParallel")
+            # Note: Models are frozen (eval mode), so no need to wrap with DDP
+            # Only the adapter will be wrapped with DDP in train_adapter()
 
             # Load tokenizers
             tokenizer_a = AutoTokenizer.from_pretrained(LLAMA_MODEL)
@@ -1734,22 +1815,26 @@ def run_adapter_experiment(adapter_type, gpu_id):
             adapter, metrics = train_adapter(
                 model_a, model_b, tokenizer_a, tokenizer_b,
                 adapter, device, log_file, NUM_SAMPLES,
-                checkpoint_dir=checkpoint_dir
+                checkpoint_dir=checkpoint_dir,
+                use_ddp=use_ddp,
+                rank=rank,
+                world_size=world_size
             )
 
-            # Save results
-            results = {
-                "adapter_type": adapter_type,
-                "gpu_id": gpu_id,
-                "training_metrics": metrics,
-                "timestamp": timestamp
-            }
+            # Save results (only on main process)
+            if is_main_process():
+                results = {
+                    "adapter_type": adapter_type,
+                    "gpu_id": gpu_id,
+                    "training_metrics": metrics,
+                    "timestamp": timestamp
+                }
 
-            results_path = output_dir / f"{adapter_type}_results_{timestamp}.json"
-            with open(results_path, 'w') as f:
-                json.dump(results, f, indent=2)
+                results_path = output_dir / f"{adapter_type}_results_{timestamp}.json"
+                with open(results_path, 'w') as f:
+                    json.dump(results, f, indent=2)
 
-            print(f"\nResults saved to: {results_path}")
+                print(f"\nResults saved to: {results_path}")
             print("=" * 80)
             print(f"{adapter_type.upper()} EXPERIMENT COMPLETE")
             print("=" * 80)
@@ -1851,23 +1936,27 @@ def run_token_compression_experiment(
     Key idea: Initialize compressed representation with actual token embeddings
     from the input, not random noise. Apply LoRA to all layers for adaptation.
     """
-    # Device configuration for multi-GPU support
-    use_data_parallel = False
+    # Device configuration for multi-GPU support with DDP
+    use_ddp = False
+    rank = 0
+    world_size = 1
+
     if device is None:
         if PLATFORM == 'hpc' and torch.cuda.device_count() > 1:
-            # Use all GPUs with DataParallel
-            device = torch.device("cuda:0")  # Primary device
-            use_data_parallel = True
-            print(f"\n{'='*80}")
-            print(f"GPU CONFIGURATION")
-            print(f"{'='*80}")
-            print(f"Mode: DataParallel (multi-GPU)")
-            print(f"Number of GPUs: {torch.cuda.device_count()}")
-            print(f"GPU IDs: {list(range(torch.cuda.device_count()))}")
-            print(f"Primary device: cuda:0")
-            print(f"Batch size per GPU: {BATCH_SIZE // torch.cuda.device_count()}")
-            print(f"Total batch size: {BATCH_SIZE}")
-            print(f"{'='*80}\n")
+            # Use DDP for multi-GPU training
+            rank, world_size, device = setup_ddp()
+            use_ddp = True
+            if is_main_process():
+                print(f"\n{'='*80}")
+                print(f"GPU CONFIGURATION")
+                print(f"{'='*80}")
+                print(f"Mode: DistributedDataParallel (DDP)")
+                print(f"Number of GPUs: {world_size}")
+                print(f"GPU IDs: {list(range(world_size))}")
+                print(f"Rank: {rank}, Device: {device}")
+                print(f"Batch size per GPU: {BATCH_SIZE}")
+                print(f"Global batch size: {BATCH_SIZE * world_size}")
+                print(f"{'='*80}\n")
         else:
             device = DEVICE
             print(f"\nDevice: {device}\n")
@@ -1901,10 +1990,8 @@ def run_token_compression_experiment(
         tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
         tokenizer.pad_token = tokenizer.eos_token
 
-        # Wrap with DataParallel if using multiple GPUs
-        if use_data_parallel:
-            model = torch.nn.DataParallel(model)
-            print(f"Wrapped Llama model with DataParallel")
+        # Note: Model will be frozen (eval mode), no DDP wrapping needed
+        # Only compressor will be wrapped with DDP
 
     # Apply LoRA to all layers if requested
     if use_lora_all_layers:
@@ -1932,8 +2019,8 @@ def run_token_compression_experiment(
     d_z = 256  # Latent dimension (16x compression from 4096)
     print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
     dtype = torch.bfloat16 if USE_BF16 else torch.float32
-    # Access config correctly for DataParallel wrapped models
-    base_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+    # Access config correctly for DDP/DataParallel wrapped models
+    base_model = model.module if isinstance(model, (torch.nn.DataParallel, DDP)) else model
     compressor = TokenInitializedCompressor(
         model=model,
         tokenizer=tokenizer,
@@ -1941,6 +2028,12 @@ def run_token_compression_experiment(
         hidden_dim=base_model.config.hidden_size,
         d_z=d_z
     ).to(device, dtype=dtype)
+
+    # Wrap compressor with DDP if using distributed training
+    if use_ddp:
+        compressor = DDP(compressor, device_ids=[rank], output_device=rank)
+        if is_main_process():
+            print(f"Wrapped compressor with DDP")
 
     # Load dataset
     print(f"Loading SQuAD dataset ({num_samples} samples)...")
@@ -2027,8 +2120,8 @@ def run_token_compression_experiment(
                     return_dict=True
                 )
 
-            # CRITICAL: With DataParallel, loss is a tensor [num_gpus], must reduce to scalar
-            loss = outputs.loss.mean() if outputs.loss.numel() > 1 else outputs.loss
+            # DDP automatically averages gradients across processes, loss is already scalar
+            loss = outputs.loss
             epoch_losses.append(loss.item())
 
             # Backward pass
@@ -2568,6 +2661,9 @@ def main():
     print(f"Results saved to: {output_dir}")
     print("=" * 80)
 
+    # Clean up DDP if it was used
+    cleanup_ddp()
+
 if __name__ == "__main__":
     # Set multiprocessing start method (needed for CUDA/MPS)
     mp.set_start_method('spawn', force=True)
@@ -2586,4 +2682,8 @@ if __name__ == "__main__":
     else:
         print("No GPU available, will use CPU")
 
-    main()
+    try:
+        main()
+    finally:
+        # Ensure DDP cleanup even if experiment fails
+        cleanup_ddp()

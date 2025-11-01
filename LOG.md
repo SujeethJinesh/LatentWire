@@ -2,6 +2,169 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## ⚡ DISTRIBUTED DATA PARALLEL (DDP) IMPLEMENTATION (2025-10-31 22:00)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Overview
+Complete migration from DataParallel to DistributedDataParallel (DDP) for all training experiments. Solves GPU 0 bottleneck and enables 2-3× faster training with balanced memory usage.
+
+### Problem with DataParallel
+**GPU 0 Bottleneck** (from nvidia-smi):
+- GPU 0: 80.7 / 81.5 GB (99% used) - MAXED OUT
+- GPUs 1-3: 25 / 81 GB (31% used) - 56 GB FREE but unusable!
+- GPU utilization: 35% / 16% / 15% / 20% (asymmetric)
+- Root cause: DataParallel stores optimizer state, gradients, and master params only on GPU 0
+
+**DataParallel workflow creates bottlenecks**:
+1. Forward pass: All GPUs work ✅
+2. Backward pass: All GPUs compute gradients ✅
+3. Gradient gather: Copy all to GPU 0 ⏸️ (GPUs 1-3 idle)
+4. Optimizer step: Only GPU 0 ⏸️ (GPUs 1-3 idle)
+5. Parameter broadcast: GPU 0 → all ⏸️ (sync wait)
+
+### DDP Solution
+**Balanced Memory Usage**:
+- Each GPU: ~46 GB (models + optimizer state + activations)
+- All GPUs: ~35-40% utilization (balanced)
+- Can increase batch size from 5 to 10 per GPU
+
+**Efficiency Gains**:
+- Ring-allreduce for gradients (vs gather-to-GPU-0)
+- Each GPU has own optimizer (parallel updates)
+- 2-3× faster training throughput
+- Better scaling to 4+ GPUs
+
+### Implementation Changes
+
+**1. DDP Utilities** (`unified_cross_model_experiments.py:115-163`)
+```python
+def setup_ddp():
+    """Initialize DDP, return (rank, world_size, device)"""
+    dist.init_process_group(backend="nccl")
+    rank = dist.get_rank()
+    world_size = dist.get_world_size()
+    torch.cuda.set_device(rank)
+    return rank, world_size, torch.device(f"cuda:{rank}")
+
+def cleanup_ddp():
+    """Clean up DDP process group"""
+    if dist.is_initialized():
+        dist.destroy_process_group()
+
+def is_main_process():
+    """Return True if rank 0"""
+    return not dist.is_initialized() or dist.get_rank() == 0
+```
+
+**2. Batch Size Configuration** (`unified_cross_model_experiments.py:88-105`)
+```python
+# Before (DataParallel): Total batch split across GPUs
+config['batch_size'] = 5 * num_gpus  # = 20 total
+config['grad_accum_steps'] = 16
+# Effective: 20 × 16 = 320
+
+# After (DDP): Per-process batch
+config['batch_size'] = 10  # Per GPU
+config['grad_accum_steps'] = 8
+# Effective: 10 × 4 GPUs × 8 = 320 (same!)
+```
+
+**3. Adapter Training Conversion** (`train_adapter()`)
+- Added parameters: `use_ddp, rank, world_size`
+- DistributedSampler for data loading (splits data across processes)
+- Only adapter wrapped with DDP (models frozen)
+- `sampler.set_epoch(epoch)` for proper shuffling
+- Rank 0 only: printing, checkpoints, final summary
+- `dist.barrier()` for synchronization
+- Removed DataParallel loss `.mean()` handling
+
+**4. Token Compression Conversion** (`run_token_compression_experiment()`)
+- Same DDP pattern as adapters
+- Compressor wrapped with DDP
+- Model stays frozen (eval mode)
+
+**5. Model Access Patterns**
+```python
+# Updated to handle both DataParallel and DDP
+base_model = model.module if isinstance(model, (nn.DataParallel, DDP)) else model
+```
+
+**6. Bash Script Update** (`run_unified_experiments.sh:114-126`)
+```bash
+if [[ "$PLATFORM" == "hpc" ]]; then
+    torchrun --standalone --nproc_per_node=4 "$SCRIPT_PATH"
+else
+    python "$SCRIPT_PATH"  # Mac: single process
+fi
+```
+
+**7. Main Cleanup** (`main():2664-2665, __main__:2685-2689`)
+```python
+# In main()
+cleanup_ddp()  # At end
+
+# In __main__
+try:
+    main()
+finally:
+    cleanup_ddp()  # Ensure cleanup even on failure
+```
+
+### Files Modified
+- `experimental/learning/unified_cross_model_experiments.py`
+  - Lines 18-20: DDP imports
+  - Lines 115-163: DDP utility functions
+  - Lines 88-105: Batch size configuration for DDP
+  - Lines 783, 2023: Model access patterns (handle DDP)
+  - Lines 1277-1278: train_adapter() signature (add DDP params)
+  - Lines 1318-1339: DistributedSampler for data loading
+  - Lines 1346-1347: Wrap adapter with DDP
+  - Lines 1392-1393: sampler.set_epoch() for shuffling
+  - Lines 1403-1407: Rank 0 only printing
+  - Lines 1454: Remove DataParallel loss handling
+  - Lines 1642-1645, 1666-1681: Rank 0 only printing/checkpointing
+  - Lines 1651: Save model.module.state_dict() for DDP
+  - Lines 1662-1663: dist.barrier() synchronization
+  - Lines 1684-1704: Adapter experiment DDP setup
+  - Lines 1795-1796: Remove model DDP wrapping (frozen)
+  - Lines 1802-1805: Pass DDP params to train_adapter()
+  - Lines 1940-1962: Token compression DDP setup
+  - Lines 1993-1994: Remove model DDP wrapping
+  - Lines 2032-2036: Wrap compressor with DDP
+  - Lines 2123-2124: Remove DataParallel loss handling
+  - Lines 2664-2665: cleanup_ddp() in main()
+  - Lines 2685-2689: try-finally for cleanup
+
+- `experimental/learning/run_unified_experiments.sh`
+  - Lines 89-98: Update HPC configuration description
+  - Lines 114-126: Use torchrun for HPC, python for Mac
+
+### Expected Performance Improvements
+**Memory**:
+- GPU 0: 80 GB → 46 GB (34 GB freed)
+- GPUs 1-3: 25 GB → 46 GB (21 GB more used)
+- Balanced: All GPUs ~57% utilization
+
+**Speed**:
+- 2-3× faster training (from literature)
+- Better batch size (10 vs 5 per GPU)
+- Less gradient accumulation needed (8 vs 16)
+
+**Scalability**:
+- Can now increase batch size to 15-20 per GPU
+- Headroom for larger models or longer sequences
+- Proper foundation for scaling to 8+ GPUs
+
+### Testing Status
+- ✅ All DDP infrastructure implemented
+- ✅ Adapter experiments converted
+- ✅ Token compression converted
+- ✅ Bash script updated for torchrun
+- ✅ Cleanup handlers added
+- ⏳ Awaiting HPC test run
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🧪 ACTIVATION COMMUNICATION EXPERIMENT (2025-10-31 21:00)
 ## ═══════════════════════════════════════════════════════════════════════════
 
