@@ -1012,14 +1012,18 @@ class AlignmentDataset(Dataset):
 # Procrustes Experiment - Model Stitching via Affine Alignment
 # ============================================================================
 
-def run_procrustes_experiment():
+def run_procrustes_experiment(model_a_id=None, model_b_id=None):
     """
     Run Procrustes alignment experiment across different layers.
 
+    Args:
+        model_a_id: Model A identifier (defaults to LLAMA_MODEL)
+        model_b_id: Model B identifier (defaults to MISTRAL_MODEL)
+
     PURPOSE:
     Tests whether orthogonal/affine transformations can align hidden states between
-    heterogeneous LLMs (Llama-3.1-8B and Mistral-7B). This is a baseline alignment
-    method that requires no training - just SVD-based geometric alignment.
+    heterogeneous LLMs. This is a baseline alignment method that requires no training
+    - just SVD-based geometric alignment.
 
     RELEVANCE TO CROSS-LLM COMMUNICATION:
     - Establishes feasibility of representation alignment between different architectures
@@ -1045,9 +1049,17 @@ def run_procrustes_experiment():
     - Affine outperforms pure orthogonal by 5-8% (model stitching papers)
     """
 
+    # Default to main experiment models if not specified
+    if model_a_id is None:
+        model_a_id = LLAMA_MODEL
+    if model_b_id is None:
+        model_b_id = MISTRAL_MODEL
+
     print("\n" + "=" * 80)
     print("PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)")
     print("=" * 80)
+    print(f"Model A: {model_a_id}")
+    print(f"Model B: {model_b_id}")
 
     # Use global device
     device = DEVICE
@@ -1097,7 +1109,7 @@ def run_procrustes_experiment():
         mistral_kwargs['attn_implementation'] = "eager"
 
     llama_model = AutoModelForCausalLM.from_pretrained(
-        LLAMA_MODEL,
+        model_a_id,
         **llama_kwargs
     ).eval()
 
@@ -1106,7 +1118,7 @@ def run_procrustes_experiment():
         param.requires_grad = False
 
     mistral_model = AutoModelForCausalLM.from_pretrained(
-        MISTRAL_MODEL,
+        model_b_id,
         **mistral_kwargs
     ).eval()
 
@@ -1118,12 +1130,12 @@ def run_procrustes_experiment():
     if PLATFORM == 'hpc' and torch.cuda.device_count() >= 2:
         llama_model = llama_model.to('cuda:0')
         mistral_model = mistral_model.to('cuda:1')
-        print(f"Llama model moved to cuda:0")
-        print(f"Mistral model moved to cuda:1")
+        print(f"Model A moved to cuda:0")
+        print(f"Model B moved to cuda:1")
 
     # Load tokenizers
-    llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
-    mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+    llama_tokenizer = AutoTokenizer.from_pretrained(model_a_id)
+    mistral_tokenizer = AutoTokenizer.from_pretrained(model_b_id)
 
     # Set padding tokens
     if llama_tokenizer.pad_token is None:
@@ -2874,9 +2886,13 @@ def run_token_compression_experiment(
 # Activation Communication Experiment - Direct Hidden State Injection Across Models
 # ============================================================================
 
-def run_activation_communication_experiment():
+def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     """
-    Test activation-based communication between Llama and Mistral via hidden state injection.
+    Test activation-based communication between models via hidden state injection.
+
+    Args:
+        model_a_id: Model A identifier (defaults to LLAMA_MODEL)
+        model_b_id: Model B identifier (defaults to MISTRAL_MODEL)
 
     PURPOSE:
     Directly inject hidden states from one model into another model's computation graph,
@@ -2922,9 +2938,17 @@ def run_activation_communication_experiment():
     If activation injection fails even with alignment, the project needs fundamental redesign.
     """
 
+    # Default to main experiment models if not specified
+    if model_a_id is None:
+        model_a_id = LLAMA_MODEL
+    if model_b_id is None:
+        model_b_id = MISTRAL_MODEL
+
     print("\n" + "=" * 80)
     print("ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025)")
     print("=" * 80)
+    print(f"Model A: {model_a_id}")
+    print(f"Model B: {model_b_id}")
     print("Testing cross-model activation injection with/without alignment")
     print("")
 
@@ -2953,8 +2977,8 @@ def run_activation_communication_experiment():
         mistral_kwargs['attn_implementation'] = "flash_attention_2"
         print("Using Flash Attention 2")
 
-    llama_model = AutoModelForCausalLM.from_pretrained(LLAMA_MODEL, **llama_kwargs).eval()
-    mistral_model = AutoModelForCausalLM.from_pretrained(MISTRAL_MODEL, **mistral_kwargs).eval()
+    llama_model = AutoModelForCausalLM.from_pretrained(model_a_id, **llama_kwargs).eval()
+    mistral_model = AutoModelForCausalLM.from_pretrained(model_b_id, **mistral_kwargs).eval()
 
     # Freeze model parameters (inference only, no training)
     for param in llama_model.parameters():
@@ -2967,8 +2991,8 @@ def run_activation_communication_experiment():
         llama_model = llama_model.to(device)
         mistral_model = mistral_model.to(device)
 
-    llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
-    mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+    llama_tokenizer = AutoTokenizer.from_pretrained(model_a_id)
+    mistral_tokenizer = AutoTokenizer.from_pretrained(model_b_id)
 
     if llama_tokenizer.pad_token is None:
         llama_tokenizer.pad_token = llama_tokenizer.eos_token
@@ -3263,36 +3287,133 @@ def main():
 
     # Run all experiments SEQUENTIALLY, each using all available GPUs with DDP
     # PRIORITY ORDER:
-    # 1. ALL Llama 3.1-3.2 ablations FIRST (same vocab - validate approach works)
-    # 2. Then Llama-Mistral experiments (cross vocab - harder test)
+    # 1. FAST EXPERIMENTS FIRST (Procrustes + Activation) - both model pairs (~30 min total)
+    # 2. Then SLOW EXPERIMENTS (LoRA, Linear, Affine) - Llama 3.1-3.2 first (~2-3 hours)
+    # 3. Finally cross-vocab Llama-Mistral experiments (~2-3 hours)
     #
-    # ABLATION STRATEGY:
-    # - Test same-vocabulary case FIRST (Llama 3.1 8B ↔ Llama 3.2 3B)
-    # - This validates that alignment CAN work when vocab is identical
-    # - Then test cross-vocabulary case (Llama 3.1 8B ↔ Mistral 7B)
-    # - Isolates vocabulary mismatch as the key variable
+    # STRATEGY:
+    # - Run fast experiments first to get quick insights (Procrustes ~5 min, Activation ~10 min each)
+    # - Test both same-vocab and cross-vocab in fast experiments
+    # - Then run slow trained adapters, prioritizing same-vocab ablations
+    # - Isolates vocabulary mismatch as key variable
     if is_main_process():
-        print("\n2. Starting all experiments sequentially (ABLATION-FIRST ORDER)...")
+        print("\n2. Starting all experiments sequentially (FAST-FIRST ORDER)...")
         print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
-        print("NEW PRIORITY: Test same-vocab (Llama 3.1-3.2) FIRST to validate approach")
-        print("  Phase 1: LoRA, Linear, Affine on Llama 3.1 8B ↔ Llama 3.2 3B (identical vocab)")
-        print("  Phase 2: Procrustes, LoRA, Activation, Token, Linear, Affine on Llama ↔ Mistral")
-        print("Benefits: Early validation + fail fast if model access issues")
+        print("NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)")
+        print("  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)")
+        print("  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)")
+        print("  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)")
+        print("Benefits: Quick insights + early validation + fail fast on model access")
         print("")
 
     # ========================================================================
-    # PHASE 1: LLAMA 3.1-3.2 ABLATIONS (SAME VOCAB) - RUN FIRST
+    # PHASE 1: FAST EXPERIMENTS (PROCRUSTES + ACTIVATION) - ~30 MIN TOTAL
     # ========================================================================
 
-    # EXPERIMENT 1: LoRA Adapter - Ablation (Llama 3.1-3.2)
+    # EXPERIMENT 1: Procrustes (Llama 3.1-3.2) - 5 min
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 1/9: LORA ADAPTER - ABLATION (LLAMA 3.1-3.2)")
+        print(f"EXPERIMENT 1/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
+        print("SVD-based geometric alignment (no training required)")
+        print("WHY FIRST: Fast baseline (~5 min) for same-vocab case")
+        print("")
+
+        procrustes_results_ablation = run_procrustes_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+
+        # Save Procrustes results
+        procrustes_path_ablation = output_dir / f"procrustes_results_llama31_llama32_{timestamp}.json"
+        with open(procrustes_path_ablation, 'w') as f:
+            json.dump(procrustes_results_ablation, f, indent=2)
+        print(f"Procrustes (Llama 3.1-3.2) results saved to: {procrustes_path_ablation}")
+
+        # Clean up GPU memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 2: Procrustes (Llama-Mistral) - 5 min
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 2/11: PROCRUSTES ALIGNMENT (LLAMA-MISTRAL)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B ↔ Mistral 7B (4× vocab mismatch)")
+        print("SVD-based geometric alignment (no training required)")
+        print("Provides cross-vocab baseline for comparison")
+        print("")
+
+        procrustes_results_main = run_procrustes_experiment()
+
+        # Save Procrustes results
+        procrustes_path_main = output_dir / f"procrustes_results_llama_mistral_{timestamp}.json"
+        with open(procrustes_path_main, 'w') as f:
+            json.dump(procrustes_results_main, f, indent=2)
+        print(f"Procrustes (Llama-Mistral) results saved to: {procrustes_path_main}")
+
+        # Clean up GPU memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 3: Activation Communication (Llama 3.1-3.2) - 10 min
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 3/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical vocab)")
+        print("Tests direct hidden state injection between models")
+        print("Expected: Should work well with same vocabulary")
+        print("")
+
+        run_activation_communication_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+
+        # Clean up GPU memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 4: Activation Communication (Llama-Mistral) - 10 min
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 4/11: ACTIVATION COMMUNICATION (LLAMA-MISTRAL)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B ↔ Mistral 7B")
+        print("Tests direct hidden state injection across different vocabularies")
+        print("Critical: If this fails, LatentWire needs redesign")
+        print("")
+
+        run_activation_communication_experiment()
+
+        # Clean up GPU memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+
+    if dist.is_initialized():
+        dist.barrier()
+
+    # ========================================================================
+    # PHASE 2: LLAMA 3.1-3.2 TRAINED ADAPTERS (SAME VOCAB) - ~2-3 HOURS
+    # ========================================================================
+
+    # EXPERIMENT 5: LoRA Adapter - Ablation (Llama 3.1-3.2)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 5/11: LORA ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
         print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
         print("Purpose: Control for vocabulary mismatch hypothesis")
         print("Expected: Better alignment (CKA 0.6-0.7) and lower generation loss (2.5-3.5)")
-        print("WHY FIRST: Validates approach works when vocab is identical")
         print("")
 
     run_adapter_experiment("lora", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
@@ -3305,10 +3426,10 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 2: Linear Adapter - Ablation (Llama 3.1-3.2)
+    # EXPERIMENT 6: Linear Adapter - Ablation (Llama 3.1-3.2)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 2/9: LINEAR ADAPTER - ABLATION (LLAMA 3.1-3.2)")
+        print(f"EXPERIMENT 6/11: LINEAR ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
         print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
         print("Purpose: Control comparison for Linear adapter")
@@ -3324,10 +3445,10 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 3: Affine Adapter - Ablation (Llama 3.1-3.2)
+    # EXPERIMENT 7: Affine Adapter - Ablation (Llama 3.1-3.2)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 3/9: AFFINE ADAPTER - ABLATION (LLAMA 3.1-3.2)")
+        print(f"EXPERIMENT 7/11: AFFINE ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
         print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
         print("Purpose: Control comparison for Affine adapter")
@@ -3344,42 +3465,13 @@ def main():
         dist.barrier()
 
     # ========================================================================
-    # PHASE 2: LLAMA-MISTRAL EXPERIMENTS (CROSS VOCAB)
+    # PHASE 3: LLAMA-MISTRAL EXPERIMENTS (CROSS VOCAB) - ~2-3 HOURS
     # ========================================================================
 
-    # EXPERIMENT 4: Procrustes (Llama-Mistral)
+    # EXPERIMENT 8: LoRA Adapter - Main (Llama-Mistral)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 4/9: PROCRUSTES ALIGNMENT (LLAMA-MISTRAL)")
-        print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Mistral 7B")
-        print("SVD-based geometric alignment (no training required)")
-        print("Provides baseline CKA scores for comparison")
-        print("")
-
-        procrustes_results = run_procrustes_experiment()
-
-        # Save Procrustes results
-        procrustes_path = output_dir / f"procrustes_results_{timestamp}.json"
-        with open(procrustes_path, 'w') as f:
-            json.dump(procrustes_results, f, indent=2)
-        print(f"Procrustes results saved to: {procrustes_path}")
-
-        # CRITICAL: Clean up GPU memory after Procrustes
-        print("\nCleaning up GPU memory...")
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            torch.cuda.synchronize()
-            print("  GPU cache cleared")
-
-    # Synchronize all processes after Procrustes
-    if dist.is_initialized():
-        dist.barrier()
-
-    # EXPERIMENT 5: LoRA Adapter - Main (Llama-Mistral)
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 5/9: LORA ADAPTER - MAIN (LLAMA-MISTRAL)")
+        print(f"EXPERIMENT 8/11: LORA ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
         print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
         print("260K params vs 16M (98% reduction), transferable across models")
@@ -3395,32 +3487,10 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 6: Activation Communication (VALIDATES CORE HYPOTHESIS)
+    # EXPERIMENT 9: Token Compression (THE INTERLINGUA)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 6/9: ACTIVATION COMMUNICATION")
-        print(f"{'='*80}")
-        print("Tests if Model A's hidden states can be injected into Model B")
-        print("Critical: If this fails, LatentWire needs redesign")
-        print("Note: Only runs for Llama-Mistral (main comparison)")
-        print("")
-
-    # Run activation communication (rank 0 only)
-    if is_main_process():
-        run_activation_communication_experiment()
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-    if is_main_process():
-        print(f"✓ Activation Communication complete, GPU memory cleared")
-    if dist.is_initialized():
-        dist.barrier()
-
-    # EXPERIMENT 7: Token Compression (THE INTERLINGUA)
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 7/9: TOKEN COMPRESSION")
+        print(f"EXPERIMENT 9/11: TOKEN COMPRESSION (LLAMA-MISTRAL)")
         print(f"{'='*80}")
         print("This IS the wire format for LatentWire (512 → 64 tokens)")
         print("Note: Only runs for Llama-Mistral (main comparison)")
@@ -3436,10 +3506,10 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 8: Linear Adapter - Main (Llama-Mistral)
+    # EXPERIMENT 10: Linear Adapter - Main (Llama-Mistral)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 8/9: LINEAR ADAPTER - MAIN (LLAMA-MISTRAL)")
+        print(f"EXPERIMENT 10/11: LINEAR ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
         print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
         print("16M params (50× more than LoRA), useful for comparison")
@@ -3455,10 +3525,10 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 9: Affine Adapter - Main (Llama-Mistral)
+    # EXPERIMENT 11: Affine Adapter - Main (Llama-Mistral)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 9/9: AFFINE ADAPTER - MAIN (LLAMA-MISTRAL)")
+        print(f"EXPERIMENT 11/11: AFFINE ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
         print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
         print("Similar to linear but with bias term (+4K params)")
