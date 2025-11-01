@@ -1290,13 +1290,19 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             print(f"Resuming from epoch {start_epoch}", file=log_file)
 
     # Prepare dataset
-    print(f"Loading dataset ({num_samples} samples)...", file=log_file)
+    if rank == 0:
+        print(f"Loading dataset ({num_samples} samples)...", file=log_file)
 
-    # Fix cache corruption
-    cache_dir = Path.home() / ".cache" / "huggingface" / "datasets"
-    wikitext_cache = cache_dir / "wikitext"
-    if wikitext_cache.exists():
-        shutil.rmtree(wikitext_cache)
+    # Fix cache corruption (only rank 0 should clear cache)
+    if rank == 0:
+        cache_dir = Path.home() / ".cache" / "huggingface" / "datasets"
+        wikitext_cache = cache_dir / "wikitext"
+        if wikitext_cache.exists():
+            shutil.rmtree(wikitext_cache)
+
+    # Synchronize all processes before loading dataset
+    if use_ddp:
+        dist.barrier()
 
     dataset = load_dataset("wikitext", "wikitext-103-v1", split="train")
     texts = [item["text"] for item in dataset if len(item["text"]) > 100][:num_samples]
@@ -1683,24 +1689,32 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 def run_adapter_experiment(adapter_type, gpu_id):
     """Run a single adapter experiment on specified GPU."""
 
-    # Create output directory relative to script location
+    # Create output directory relative to script location (only rank 0)
     script_dir = Path(__file__).parent.absolute()
     output_dir = script_dir / "runs" / "learned_adapters"
-    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Only rank 0 creates directories and log files
+    if is_main_process():
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # Fix log filename for multi-GPU case
     gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
     log_path = output_dir / f"{adapter_type}_{gpu_label}_{timestamp}.log"
 
-    with open(log_path, 'w') as log_file:
+    # Only rank 0 opens log file
+    if is_main_process():
+        log_file = open(log_path, 'w')
         # Redirect output to both console and file
         old_stdout = sys.stdout
         old_stderr = sys.stderr
         sys.stdout = TeeLogger(log_file)
         sys.stderr = TeeLogger(log_file)
+    else:
+        log_file = None
 
-        try:
+    try:
+        if is_main_process():
             print("=" * 80)
             print(f"LEARNED ADAPTER EXPERIMENT - {adapter_type.upper()}")
             print("=" * 80)
@@ -1839,18 +1853,23 @@ def run_adapter_experiment(adapter_type, gpu_id):
             print(f"{adapter_type.upper()} EXPERIMENT COMPLETE")
             print("=" * 80)
 
-        except Exception as e:
+    except Exception as e:
+        if is_main_process():
             print("\n" + "=" * 80)
             print(f"{adapter_type.upper()} ADAPTER EXPERIMENT FAILED")
             print("=" * 80)
             print(f"Error: {e}")
             import traceback
             traceback.print_exc()
+        raise  # Re-raise to propagate error
 
-        finally:
-            # Restore stdout/stderr
+    finally:
+        # Restore stdout/stderr and close log file (only rank 0)
+        if is_main_process():
             sys.stdout = old_stdout
             sys.stderr = old_stderr
+            if log_file is not None:
+                log_file.close()
 
 # ============================================================================
 # Token Compression Experiment Wrapper (for parallel execution)
@@ -1859,43 +1878,51 @@ def run_adapter_experiment(adapter_type, gpu_id):
 def run_token_compression_wrapper(gpu_id):
     """Run token compression experiment on specified GPU."""
 
-    # Create output directory relative to script location
+    # Create output directory relative to script location (only rank 0)
     script_dir = Path(__file__).parent.absolute()
     output_dir = script_dir / "runs" / "token_compression"
-    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if is_main_process():
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # Fix log filename for multi-GPU case
     gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
     log_path = output_dir / f"token_compression_{gpu_label}_{timestamp}.log"
 
-    with open(log_path, 'w') as log_file:
+    # Only rank 0 opens log file
+    if is_main_process():
+        log_file = open(log_path, 'w')
         # Redirect output to both console and file
         old_stdout = sys.stdout
         old_stderr = sys.stderr
         sys.stdout = TeeLogger(log_file)
         sys.stderr = TeeLogger(log_file)
+    else:
+        log_file = None
 
-        try:
+    try:
+        if is_main_process():
             print("=" * 80)
             print("TOKEN COMPRESSION EXPERIMENT")
             print("=" * 80)
             print(f"Platform: {PLATFORM}")
             print(f"Log file: {log_path}")
 
-            # GPU configuration will be printed by run_token_compression_experiment
-            # Pass None as device to let it auto-configure for multi-GPU or single-GPU
+        # GPU configuration will be printed by run_token_compression_experiment
+        # Pass None as device to let it auto-configure for multi-GPU or single-GPU
 
-            # Run token compression experiment
-            results = run_token_compression_experiment(
-                device=None,  # Auto-configure based on gpu_id
-                num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
-                compressed_length=64,
-                epochs=EPOCHS,
-                use_lora_all_layers=True
-            )
+        # Run token compression experiment (all ranks participate in DDP)
+        results = run_token_compression_experiment(
+            device=None,  # Auto-configure based on gpu_id
+            num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
+            compressed_length=64,
+            epochs=EPOCHS,
+            use_lora_all_layers=True
+        )
 
-            # Save results
+        # Save results (only rank 0)
+        if is_main_process():
             results_path = output_dir / f"token_compression_results_{timestamp}.json"
             with open(results_path, 'w') as f:
                 json.dump(results, f, indent=2)
@@ -1904,18 +1931,23 @@ def run_token_compression_wrapper(gpu_id):
             print("TOKEN COMPRESSION EXPERIMENT COMPLETE")
             print("=" * 80)
 
-        except Exception as e:
+    except Exception as e:
+        if is_main_process():
             print("\n" + "=" * 80)
             print("TOKEN COMPRESSION EXPERIMENT FAILED")
             print("=" * 80)
             print(f"Error: {e}")
             import traceback
             traceback.print_exc()
+        raise  # Re-raise to propagate error
 
-        finally:
-            # Restore stdout/stderr
+    finally:
+        # Restore stdout/stderr and close log file (only rank 0)
+        if is_main_process():
             sys.stdout = old_stdout
             sys.stderr = old_stderr
+            if log_file is not None:
+                log_file.close()
 
 # ============================================================================
 # Token-Initialized Compression Experiment
@@ -1961,13 +1993,15 @@ def run_token_compression_experiment(
             device = DEVICE
             print(f"\nDevice: {device}\n")
 
-    print("\n" + "=" * 80)
-    print("TOKEN-INITIALIZED COMPRESSION EXPERIMENT")
-    print("=" * 80)
+    if rank == 0:
+        print("\n" + "=" * 80)
+        print("TOKEN-INITIALIZED COMPRESSION EXPERIMENT")
+        print("=" * 80)
 
-    # Load Llama model if not provided
+    # Load Llama model if not provided (all ranks load the model)
     if model is None or tokenizer is None:
-        print(f"Loading {LLAMA_MODEL}...")
+        if rank == 0:
+            print(f"Loading {LLAMA_MODEL}...")
 
         # Model loading arguments
         model_kwargs = {
@@ -1995,7 +2029,8 @@ def run_token_compression_experiment(
 
     # Apply LoRA to all layers if requested
     if use_lora_all_layers:
-        print("Applying LoRA to all transformer layers...")
+        if rank == 0:
+            print("Applying LoRA to all transformer layers...")
         try:
             from peft import LoraConfig, get_peft_model, TaskType
 
@@ -2011,13 +2046,16 @@ def run_token_compression_experiment(
                 task_type=TaskType.CAUSAL_LM,
             )
             model = get_peft_model(model, lora_config)
-            model.print_trainable_parameters()  # This prints directly, doesn't return a value
+            if rank == 0:
+                model.print_trainable_parameters()  # This prints directly, doesn't return a value
         except Exception as e:
-            print(f"Warning: Could not apply LoRA: {e}")
+            if rank == 0:
+                print(f"Warning: Could not apply LoRA: {e}")
 
     # Create compressor
     d_z = 256  # Latent dimension (16x compression from 4096)
-    print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
+    if rank == 0:
+        print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
     dtype = torch.bfloat16 if USE_BF16 else torch.float32
     # Access config correctly for DDP/DataParallel wrapped models
     base_model = model.module if isinstance(model, (torch.nn.DataParallel, DDP)) else model
@@ -2032,11 +2070,12 @@ def run_token_compression_experiment(
     # Wrap compressor with DDP if using distributed training
     if use_ddp:
         compressor = DDP(compressor, device_ids=[rank], output_device=rank)
-        if is_main_process():
+        if rank == 0:
             print(f"Wrapped compressor with DDP")
 
-    # Load dataset
-    print(f"Loading SQuAD dataset ({num_samples} samples)...")
+    # Load dataset (all ranks load it)
+    if rank == 0:
+        print(f"Loading SQuAD dataset ({num_samples} samples)...")
     dataset = load_dataset("squad", split=f"train[:{num_samples}]")
 
     # Prepare training data
@@ -2064,19 +2103,20 @@ def run_token_compression_experiment(
 
     # Training configuration header
     num_batches = len(train_texts) // BATCH_SIZE
-    print(f"\n{'='*80}")
-    print(f"TRAINING CONFIGURATION")
-    print(f"{'='*80}")
-    print(f"Total epochs: {epochs}")
-    print(f"Total samples: {len(train_texts)}")
-    print(f"Batch size: {BATCH_SIZE}")
-    print(f"Batches per epoch: {num_batches}")
-    print(f"Total training batches: {epochs * num_batches}")
-    print(f"Learning rate: {LEARNING_RATE}")
-    print(f"Compressed length: {compressed_length} tokens")
-    print(f"Latent dimension: {d_z}")
-    print(f"Using LoRA: {use_lora_all_layers}")
-    print(f"{'='*80}\n")
+    if rank == 0:
+        print(f"\n{'='*80}")
+        print(f"TRAINING CONFIGURATION")
+        print(f"{'='*80}")
+        print(f"Total epochs: {epochs}")
+        print(f"Total samples: {len(train_texts)}")
+        print(f"Batch size: {BATCH_SIZE}")
+        print(f"Batches per epoch: {num_batches}")
+        print(f"Total training batches: {epochs * num_batches}")
+        print(f"Learning rate: {LEARNING_RATE}")
+        print(f"Compressed length: {compressed_length} tokens")
+        print(f"Latent dimension: {d_z}")
+        print(f"Using LoRA: {use_lora_all_layers}")
+        print(f"{'='*80}\n")
 
     model.train() if use_lora_all_layers else model.eval()
     compressor.train()
@@ -2089,8 +2129,9 @@ def run_token_compression_experiment(
         epoch_start_time = time.time()
         batch_num = 0
 
-        msg = f"\n{'='*80}\nEpoch {epoch+1}/{epochs}\n{'='*80}"
-        print(msg)
+        if rank == 0:
+            msg = f"\n{'='*80}\nEpoch {epoch+1}/{epochs}\n{'='*80}"
+            print(msg)
 
         for batch_idx in range(0, len(train_texts), BATCH_SIZE):
             batch_texts = train_texts[batch_idx:batch_idx + BATCH_SIZE]
@@ -2201,51 +2242,54 @@ def run_token_compression_experiment(
 
     results = {"metrics": metrics, "examples": []}
 
-    with torch.no_grad():
-        for prompt in test_prompts:
-            # Original generation
-            orig_inputs = tokenizer(prompt, return_tensors="pt").to(device)
-            orig_output = model.generate(**orig_inputs, max_new_tokens=20, do_sample=False)
-            orig_text = tokenizer.decode(orig_output[0], skip_special_tokens=True)
+    # Only rank 0 runs evaluation examples
+    if rank == 0:
+        with torch.no_grad():
+            for prompt in test_prompts:
+                # Original generation
+                orig_inputs = tokenizer(prompt, return_tensors="pt").to(device)
+                orig_output = model.generate(**orig_inputs, max_new_tokens=20, do_sample=False)
+                orig_text = tokenizer.decode(orig_output[0], skip_special_tokens=True)
 
-            # Compressed generation with z vector
-            compressed, z_vector = compressor(orig_inputs.input_ids, return_z=True)
-            comp_output = model.generate(
-                inputs_embeds=compressed[:, :10],  # Use first 10 compressed tokens as prompt
-                max_new_tokens=20,
-                do_sample=False
-            )
-            comp_text = tokenizer.decode(comp_output[0], skip_special_tokens=True)
+                # Compressed generation with z vector
+                compressed, z_vector = compressor(orig_inputs.input_ids, return_z=True)
+                comp_output = model.generate(
+                    inputs_embeds=compressed[:, :10],  # Use first 10 compressed tokens as prompt
+                    max_new_tokens=20,
+                    do_sample=False
+                )
+                comp_text = tokenizer.decode(comp_output[0], skip_special_tokens=True)
 
-            results["examples"].append({
-                "prompt": prompt,
-                "original": orig_text,
-                "compressed": comp_text,
-                "z_shape": list(z_vector.shape),
-                "z_mean": float(z_vector.mean().item()),
-                "z_std": float(z_vector.std().item())
-            })
+                results["examples"].append({
+                    "prompt": prompt,
+                    "original": orig_text,
+                    "compressed": comp_text,
+                    "z_shape": list(z_vector.shape),
+                    "z_mean": float(z_vector.mean().item()),
+                    "z_std": float(z_vector.std().item())
+                })
 
-            print(f"\nPrompt: {prompt}")
-            print(f"Original: {orig_text}")
-            print(f"Compressed: {comp_text}")
-            print(f"Z Vector: shape={list(z_vector.shape)}, mean={z_vector.mean().item():.3f}, std={z_vector.std().item():.3f}")
+                print(f"\nPrompt: {prompt}")
+                print(f"Original: {orig_text}")
+                print(f"Compressed: {comp_text}")
+                print(f"Z Vector: shape={list(z_vector.shape)}, mean={z_vector.mean().item():.3f}, std={z_vector.std().item():.3f}")
 
-    # Final training summary
-    total_training_time = time.time() - training_start_time
-    msg = f"\n\n{'='*80}\n"
-    msg += f"TRAINING COMPLETE\n"
-    msg += f"{'='*80}\n"
-    msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
-    msg += f"Total epochs: {epochs}\n"
-    msg += f"Final loss: {metrics['epochs'][-1]['loss']:.4f}\n"
-    msg += f"Final perplexity: {metrics['epochs'][-1]['perplexity']:.2f}\n"
-    msg += f"Compression ratio: {metrics['epochs'][-1]['compression_ratio']:.1f}x\n"
-    msg += f"\nLoss progression:\n"
-    for epoch_data in metrics['epochs']:
-        msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, Perplexity {epoch_data['perplexity']:.2f}\n"
-    msg += f"{'='*80}\n"
-    print(msg)
+    # Final training summary (only rank 0)
+    if rank == 0:
+        total_training_time = time.time() - training_start_time
+        msg = f"\n\n{'='*80}\n"
+        msg += f"TRAINING COMPLETE\n"
+        msg += f"{'='*80}\n"
+        msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
+        msg += f"Total epochs: {epochs}\n"
+        msg += f"Final loss: {metrics['epochs'][-1]['loss']:.4f}\n"
+        msg += f"Final perplexity: {metrics['epochs'][-1]['perplexity']:.2f}\n"
+        msg += f"Compression ratio: {metrics['epochs'][-1]['compression_ratio']:.1f}x\n"
+        msg += f"\nLoss progression:\n"
+        for epoch_data in metrics['epochs']:
+            msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, Perplexity {epoch_data['perplexity']:.2f}\n"
+        msg += f"{'='*80}\n"
+        print(msg)
 
     return results
 
@@ -2570,96 +2614,135 @@ def run_activation_communication_experiment():
 def main():
     """Main entry point for unified experiments."""
 
-    print("=" * 80)
-    print("UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS")
-    print(f"Timestamp: {datetime.now().isoformat()}")
-    print(f"Platform: {PLATFORM}")
-    print(f"Device: {DEVICE}")
-    if PLATFORM == 'hpc':
-        print(f"Available CUDA GPUs: {torch.cuda.device_count()}")
-    print("=" * 80)
+    # Only print header on main process
+    if is_main_process():
+        print("=" * 80)
+        print("UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS")
+        print(f"Timestamp: {datetime.now().isoformat()}")
+        print(f"Platform: {PLATFORM}")
+        print(f"Device: {DEVICE}")
+        if PLATFORM == 'hpc':
+            print(f"Available CUDA GPUs: {torch.cuda.device_count()}")
+            if dist.is_initialized():
+                print(f"DDP: Running with {dist.get_world_size()} processes")
+        print("=" * 80)
 
-    # Create output directory relative to script location
+    # Create output directory (only rank 0)
     script_dir = Path(__file__).parent.absolute()
     output_dir = script_dir / "runs" / "unified_experiments"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if is_main_process():
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Synchronize all processes before continuing
+    if dist.is_initialized():
+        dist.barrier()
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Run Procrustes experiment
-    print(f"\n1. Starting Procrustes experiment on {DEVICE}...")
-    procrustes_results = run_procrustes_experiment()
+    # Run Procrustes experiment (ONLY on rank 0 - it's inference only)
+    if is_main_process():
+        print(f"\n1. Starting Procrustes experiment on {DEVICE}...")
+        procrustes_results = run_procrustes_experiment()
 
-    # Save Procrustes results
-    procrustes_path = output_dir / f"procrustes_results_{timestamp}.json"
-    with open(procrustes_path, 'w') as f:
-        json.dump(procrustes_results, f, indent=2)
-    print(f"Procrustes results saved to: {procrustes_path}")
+        # Save Procrustes results
+        procrustes_path = output_dir / f"procrustes_results_{timestamp}.json"
+        with open(procrustes_path, 'w') as f:
+            json.dump(procrustes_results, f, indent=2)
+        print(f"Procrustes results saved to: {procrustes_path}")
 
-    # CRITICAL: Clean up GPU memory after Procrustes before adapter experiments
-    print("\nCleaning up GPU memory...")
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-        print("  GPU cache cleared")
+        # CRITICAL: Clean up GPU memory after Procrustes before adapter experiments
+        print("\nCleaning up GPU memory...")
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            print("  GPU cache cleared")
 
-    # Run all experiments SEQUENTIALLY, each using all available GPUs
-    print("\n2. Starting all experiments sequentially...")
-    print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
-    print("Benefits: Progressive results + full GPU utilization per experiment")
-    print("")
+    # Synchronize all processes after Procrustes
+    if dist.is_initialized():
+        dist.barrier()
 
-    # Run learned adapter experiments (each uses all GPUs via DataParallel)
+    # Run all experiments SEQUENTIALLY, each using all available GPUs with DDP
+    if is_main_process():
+        print("\n2. Starting all experiments sequentially...")
+        print(f"Strategy: Each experiment uses all {torch.cuda.device_count() if PLATFORM == 'hpc' else 1} GPUs for faster completion")
+        print("Benefits: Progressive results + full GPU utilization per experiment")
+        print("")
+
+    # Run learned adapter experiments (each uses all GPUs via DDP)
     for adapter_type in ["linear", "affine", "lora"]:
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT {['linear', 'affine', 'lora'].index(adapter_type) + 1}/5: {adapter_type.upper()} ADAPTER")
-        print(f"{'='*80}")
-        run_adapter_experiment(adapter_type, gpu_id=None)  # None = use all GPUs
+        if is_main_process():
+            print(f"\n{'='*80}")
+            print(f"EXPERIMENT {['linear', 'affine', 'lora'].index(adapter_type) + 1}/5: {adapter_type.upper()} ADAPTER")
+            print(f"{'='*80}")
+
+        run_adapter_experiment(adapter_type, gpu_id=None)  # None = use all GPUs with DDP
 
         # Clean GPU memory between experiments
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
+
+        if is_main_process():
             print(f"✓ {adapter_type.upper()} complete, GPU memory cleared")
 
-    # Run token compression experiment (uses all GPUs via DataParallel)
-    print(f"\n{'='*80}")
-    print(f"EXPERIMENT 4/5: TOKEN COMPRESSION")
-    print(f"{'='*80}")
-    run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs
+        # Synchronize all processes between experiments
+        if dist.is_initialized():
+            dist.barrier()
+
+    # Run token compression experiment (uses all GPUs via DDP)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 4/5: TOKEN COMPRESSION")
+        print(f"{'='*80}")
+
+    run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs with DDP
 
     # Clean GPU memory before activation communication
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
+
+    if is_main_process():
         print("✓ Token compression complete, GPU memory cleared")
 
+    # Synchronize before activation communication
+    if dist.is_initialized():
+        dist.barrier()
+
     # Run activation communication experiment (Ramesh & Li 2025)
-    print(f"\n{'='*80}")
-    print(f"EXPERIMENT 5/5: ACTIVATION COMMUNICATION")
-    print(f"{'='*80}")
-    activation_results = run_activation_communication_experiment()
+    # ONLY on rank 0 - it's inference only, doesn't need DDP
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 5/5: ACTIVATION COMMUNICATION")
+        print(f"{'='*80}")
+        activation_results = run_activation_communication_experiment()
 
-    # Save activation communication results
-    activation_path = output_dir / f"activation_communication_results_{timestamp}.json"
-    with open(activation_path, 'w') as f:
-        json.dump(activation_results, f, indent=2)
-    print(f"Activation communication results saved to: {activation_path}")
+        # Save activation communication results
+        activation_path = output_dir / f"activation_communication_results_{timestamp}.json"
+        with open(activation_path, 'w') as f:
+            json.dump(activation_results, f, indent=2)
+        print(f"Activation communication results saved to: {activation_path}")
 
-    print("\n" + "=" * 80)
-    print("ALL 5 EXPERIMENTS COMPLETE")
-    print("=" * 80)
-    print("Experiments run:")
-    print("  1. Linear adapter")
-    print("  2. Affine adapter")
-    print("  3. LoRA adapter")
-    print("  4. Token compression")
-    print("  5. Activation communication")
+    # Synchronize before final summary
+    if dist.is_initialized():
+        dist.barrier()
 
-    print("\n" + "=" * 80)
-    print("ALL EXPERIMENTS COMPLETE")
-    print(f"Results saved to: {output_dir}")
-    print("=" * 80)
+    if is_main_process():
+        print("\n" + "=" * 80)
+        print("ALL 5 EXPERIMENTS COMPLETE")
+        print("=" * 80)
+        print("Experiments run:")
+        print("  1. Procrustes alignment")
+        print("  2. Linear adapter")
+        print("  3. Affine adapter")
+        print("  4. LoRA adapter")
+        print("  5. Token compression")
+        print("  6. Activation communication")
+
+        print("\n" + "=" * 80)
+        print("ALL EXPERIMENTS COMPLETE")
+        print(f"Results saved to: {output_dir}")
+        print("=" * 80)
 
     # Clean up DDP if it was used
     cleanup_ddp()
