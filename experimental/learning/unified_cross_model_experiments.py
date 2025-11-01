@@ -122,7 +122,7 @@ Decision Point: If same-vocab experiments succeed (CKA > 0.8), proceed to Phase 
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-PHASE 3: TRAINED ADAPTERS - CROSS VOCAB (~2-3 hours) - The Hard Test
+PHASE 4: TRAINED ADAPTERS - CROSS VOCAB (~2-3 hours) - The Hard Test
 ───────────────────────────────────────────────────────────────────────────────
 
 EXPERIMENT 8: LoRA Adapter (Llama 3.1 8B ↔ Mistral 7B) - 45 min
@@ -781,7 +781,14 @@ LAYER_WEIGHTS = [0.3, 0.4, 0.3]  # Emphasize middle layer slightly
 LAYER_IDX = 16  # Default for backward compatibility
 
 # Layers to test for Procrustes
-LAYERS_TO_TEST = [0, 8, 16, 24, 32]
+# CRITICAL: Layer indices must be valid for BOTH models
+# - Llama 3.1 8B: 32 layers (indices 0-31)
+# - Llama 3.2 3B: 28 layers (indices 0-27)
+# - Mistral 7B: 32 layers (indices 0-31)
+# Safe layers for all: [0, 8, 16, 24] (removed 32 which is out of bounds for 3.1 8B)
+# For paper reproduction: Use layer 26 specifically (within bounds for all models)
+LAYERS_TO_TEST = [0, 8, 16, 24]
+RAMESH_LI_LAYER = 26  # Layer 26 from "Communicating Activations Between LLM Agents" (Ramesh & Li, ICML 2025)
 
 # Calibration data size (reduced for memory constraints)
 CALIBRATION_SIZE = 50
@@ -1027,6 +1034,45 @@ class LoRAAdapter(nn.Module):
 
     def forward(self, x):
         return x + self.scaling * self.lora_B(self.lora_A(x))
+
+
+class LearnedProjection(nn.Module):
+    """
+    Learned linear projection to handle dimension mismatches between models.
+
+    Used for cross-model communication when models have different hidden dimensions.
+    For example, Llama 3.2 3B (3072) → Llama 3.1 8B (4096).
+
+    References:
+        - Ramesh & Li, "Communicating Activations Between Language Model Agents"
+          arXiv:2501.14082 (ICML 2025)
+          Uses learned projection W trained on C4 dataset to handle dimension mismatch
+    """
+
+    def __init__(self, source_dim, target_dim):
+        """
+        Args:
+            source_dim: Source model's hidden dimension (e.g., 3072 for Llama 3.2 3B)
+            target_dim: Target model's hidden dimension (e.g., 4096 for Llama 3.1 8B)
+        """
+        super().__init__()
+        self.source_dim = source_dim
+        self.target_dim = target_dim
+        self.proj = nn.Linear(source_dim, target_dim, bias=False)
+        # Kaiming initialization for better gradient flow
+        nn.init.kaiming_uniform_(self.proj.weight, a=math.sqrt(5))
+
+    def forward(self, x):
+        """
+        Project from source dimension to target dimension.
+
+        Args:
+            x: Tensor of shape [..., source_dim]
+
+        Returns:
+            Tensor of shape [..., target_dim]
+        """
+        return self.proj(x)
 
 # ============================================================================
 # Token-Initialized Compression
@@ -3075,54 +3121,35 @@ def run_token_compression_experiment(
 
 def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     """
-    Test activation-based communication between models via hidden state injection.
+    Reproduce "Communicating Activations Between Language Model Agents" (Ramesh & Li, ICML 2025).
 
     Args:
-        model_a_id: Model A identifier (defaults to LLAMA_MODEL)
-        model_b_id: Model B identifier (defaults to MISTRAL_MODEL)
+        model_a_id: Source model identifier (defaults to LLAMA_MODEL)
+        model_b_id: Target model identifier (defaults to MISTRAL_MODEL)
 
-    PURPOSE:
-    Directly inject hidden states from one model into another model's computation graph,
-    testing whether cross-model activation sharing is viable for heterogeneous LLM communication.
-    This is the MOST DIRECT test of cross-LLM communication via internal representations.
+    METHOD (from paper):
+    1. Run source model A on prompt P, extract hidden state h_A at layer j (last token only)
+    2. If dimensions mismatch, project: h_proj = W @ h_A  (W is learned on C4 data)
+    3. Pause target model B at layer j during generation
+    4. REPLACE (not add) B's last token activation with h_proj
+    5. Continue B's forward pass to generate output
+    6. Measure generation quality vs text baseline
 
-    RELEVANCE TO CROSS-LLM COMMUNICATION:
-    - Core hypothesis: Can Model A's "thoughts" (hidden states) be directly consumed by Model B?
-    - Tests feasibility of bypass-tokenization communication (LatentWire's core goal)
-    - Evaluates whether alignment (Procrustes/adapters) is necessary or if zero-shot works
-    - Measures information transfer quality via generation coherence and similarity metrics
+    CRITICAL FIXES from previous implementation:
+    - REPLACEMENT instead of ADDITION of activations
+    - Last token only, not full sequence
+    - Forward hooks for proper mid-layer injection
+    - LearnedProjection for dimension mismatch (3072 ↔ 4096)
+    - Use layer 26 (paper's choice) instead of hardcoded layers
 
-    LITERATURE:
-    - "Tandem Transformers" (NeurIPS 2024)
-      Small model attends to down-projected hidden states of large model for efficient inference
-    - "Cross-Modal Safety Mechanism Transfer in LVLMs" (ICLR 2025)
-      Transfers safety mechanisms via hidden state alignment between vision-language models
-    - "Latent Paraphrasing: Perturbation on Layers Improves Knowledge Injection" (NeurIPS 2024)
-      Layer-level interventions for knowledge transfer via activation editing
-    - "Text-Guided Vision-Language Alignment (TGA)" for LVLMs
-      Projects vision into LLM hidden states space using text guidance
+    EXPECTED RESULTS (from paper):
+    - 10-27% improvement over natural language communication
+    - <1/4 compute cost vs text
+    - Works across models with different vocabularies and architectures
 
-    METHOD:
-    1. Extract hidden states h_A from Llama at layer L on prompt P
-    2. Optionally align: h_aligned = Procrustes(h_A) or Adapter(h_A)
-    3. Inject h_aligned into Mistral at layer L, replacing Mistral's natural hidden states
-    4. Continue Mistral's forward pass with injected activations
-    5. Measure generation quality and semantic similarity to Llama's outputs
-
-    EVALUATION METRICS:
-    - Cosine similarity: How similar are injected and natural hidden states?
-    - Generation coherence: Does Mistral produce fluent text after injection?
-    - Semantic preservation: Does Mistral's output match Llama's intent?
-    - Alignment benefit: Does Procrustes/adapter improve over zero-shot injection?
-
-    EXPECTED RESULTS (from literature):
-    - Zero-shot injection: Low coherence, cosine similarity ~0.3-0.5
-    - With Procrustes: Moderate improvement, cosine similarity ~0.5-0.7
-    - With trained adapter: Best performance, cosine similarity >0.7
-    - Layer sensitivity: Middle layers (12-18) transfer better than early/late layers
-
-    NOTE: This experiment validates whether LatentWire's design (soft token injection) is feasible.
-    If activation injection fails even with alignment, the project needs fundamental redesign.
+    References:
+        - Ramesh & Li, "Communicating Activations Between Language Model Agents"
+          arXiv:2501.14082 (ICML 2025)
     """
 
     # Default to main experiment models if not specified
@@ -3132,11 +3159,11 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         model_b_id = MISTRAL_MODEL
 
     print("\n" + "=" * 80)
-    print("ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025)")
+    print("ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025 Reproduction)")
     print("=" * 80)
-    print(f"Model A: {model_a_id}")
-    print(f"Model B: {model_b_id}")
-    print("Testing cross-model activation injection with/without alignment")
+    print(f"Model A (source): {model_a_id}")
+    print(f"Model B (target): {model_b_id}")
+    print("Method: Replace target's last-token activation with source's projected activation")
     print("")
 
     device = DEVICE
@@ -3154,289 +3181,241 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         print("Using float16")
 
     # Model loading kwargs
-    llama_kwargs = mistral_kwargs = {
+    model_kwargs = {
         'torch_dtype': dtype,
         'device_map': "auto" if PLATFORM == 'mac' else None,
     }
 
     if USE_FLASH_ATTENTION and PLATFORM == 'hpc':
-        llama_kwargs['attn_implementation'] = "flash_attention_2"
-        mistral_kwargs['attn_implementation'] = "flash_attention_2"
+        model_kwargs['attn_implementation'] = "flash_attention_2"
         print("Using Flash Attention 2")
 
-    llama_model = AutoModelForCausalLM.from_pretrained(model_a_id, **llama_kwargs).eval()
-    mistral_model = AutoModelForCausalLM.from_pretrained(model_b_id, **mistral_kwargs).eval()
+    model_a = AutoModelForCausalLM.from_pretrained(model_a_id, **model_kwargs).eval()
+    model_b = AutoModelForCausalLM.from_pretrained(model_b_id, **model_kwargs).eval()
 
-    # Freeze model parameters (inference only, no training)
-    for param in llama_model.parameters():
+    # Freeze model parameters (inference only)
+    for param in model_a.parameters():
         param.requires_grad = False
-    for param in mistral_model.parameters():
+    for param in model_b.parameters():
         param.requires_grad = False
 
     # Move to device if needed
     if PLATFORM == 'hpc':
-        llama_model = llama_model.to(device)
-        mistral_model = mistral_model.to(device)
+        model_a = model_a.to(device)
+        model_b = model_b.to(device)
 
-    llama_tokenizer = AutoTokenizer.from_pretrained(model_a_id)
-    mistral_tokenizer = AutoTokenizer.from_pretrained(model_b_id)
+    tokenizer_a = AutoTokenizer.from_pretrained(model_a_id)
+    tokenizer_b = AutoTokenizer.from_pretrained(model_b_id)
 
-    if llama_tokenizer.pad_token is None:
-        llama_tokenizer.pad_token = llama_tokenizer.eos_token
-    if mistral_tokenizer.pad_token is None:
-        mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
+    if tokenizer_a.pad_token is None:
+        tokenizer_a.pad_token = tokenizer_a.eos_token
+    if tokenizer_b.pad_token is None:
+        tokenizer_b.pad_token = tokenizer_b.eos_token
 
-    # Load pre-trained alignments
-    print("\nLoading pre-trained alignments...")
+    # Get model dimensions
+    dim_a = model_a.config.hidden_size
+    dim_b = model_b.config.hidden_size
+    num_layers_a = model_a.config.num_hidden_layers
+    num_layers_b = model_b.config.num_hidden_layers
+
+    print(f"\nModel A: {dim_a} hidden_dim, {num_layers_a} layers")
+    print(f"Model B: {dim_b} hidden_dim, {num_layers_b} layers")
+
+    # Handle dimension mismatch with learned projection
+    learned_projection = None
     script_dir = Path(__file__).parent.absolute()
+    projection_path = script_dir / "runs" / "learned_projection" / f"projection_{dim_a}_to_{dim_b}.pt"
 
-    # Load Procrustes alignments (if available)
-    procrustes_alignments = {}
-    for layer_idx in LAYERS_TO_TEST:
-        procrustes_path = script_dir / "runs" / "procrustes_alignments" / f"layer_{layer_idx}.pt"
-        if procrustes_path.exists():
+    if dim_a != dim_b:
+        print(f"\nDimension mismatch detected ({dim_a} → {dim_b})")
+        print(f"Looking for learned projection at: {projection_path}")
+
+        if projection_path.exists():
             try:
-                alignment = ProcrustesAlignment()
-                state = torch.load(procrustes_path, map_location=device, weights_only=False)
-                alignment.W = state['W'].to(device)
-                alignment.source_mean = state['source_mean'].to(device)
-                alignment.target_mean = state['target_mean'].to(device)
-                alignment.source_norm = state['source_norm'].to(device)
-                alignment.target_norm = state['target_norm'].to(device)
-                alignment.b = state.get('b', torch.zeros_like(alignment.target_mean)).to(device)
-                procrustes_alignments[layer_idx] = alignment
-                print(f"  Loaded Procrustes for layer {layer_idx}")
+                learned_projection = LearnedProjection(dim_a, dim_b).to(device).eval()
+                state = torch.load(projection_path, map_location=device, weights_only=False)
+                learned_projection.load_state_dict(state)
+                print("  ✓ Loaded pre-trained projection")
             except Exception as e:
-                print(f"  Warning: Could not load Procrustes for layer {layer_idx}: {e}")
+                print(f"  ✗ Could not load projection: {e}")
+                print("  Creating new untrained projection (will use random initialization)")
+                learned_projection = LearnedProjection(dim_a, dim_b).to(device).eval()
+        else:
+            print("  ✗ No pre-trained projection found")
+            print("  Creating new untrained projection (will use random initialization)")
+            learned_projection = LearnedProjection(dim_a, dim_b).to(device).eval()
+    else:
+        print(f"\n✓ Dimensions match ({dim_a} = {dim_b}), no projection needed")
 
-    # Load Linear adapter (if available)
-    linear_adapter = None
-    linear_checkpoint = script_dir / "runs" / "learned_adapters" / "linear_checkpoint" / "checkpoint.pt"
-    if linear_checkpoint.exists():
-        try:
-            linear_adapter = LinearAdapter(hidden_dim=4096).to(device).eval()
-            checkpoint = torch.load(linear_checkpoint, map_location=device, weights_only=False)
-            linear_adapter.load_state_dict(checkpoint['adapter_state_dict'])
-            print(f"  Loaded Linear adapter")
-        except Exception as e:
-            print(f"  Warning: Could not load Linear adapter: {e}")
+    # Determine which layers to test
+    # Paper uses layer 26, but need to handle models with fewer layers
+    test_layers = [RAMESH_LI_LAYER]  # Start with paper's layer 26
+    # Add other layers for comparison
+    for layer in LAYERS_TO_TEST:
+        if layer < num_layers_a and layer < num_layers_b and layer not in test_layers:
+            test_layers.append(layer)
 
-    # Evaluation metrics storage
+    print(f"\nTesting layers: {test_layers}")
+    print(f"Primary layer (from paper): {RAMESH_LI_LAYER}")
+
+    # Results storage
     results = {
         "layers": {},
-        "summary": {}
+        "summary": {},
+        "config": {
+            "model_a": model_a_id,
+            "model_b": model_b_id,
+            "dim_a": dim_a,
+            "dim_b": dim_b,
+            "projection_used": dim_a != dim_b
+        }
     }
 
-    # Helper function to compute cosine similarity
-    def cosine_similarity(a, b):
-        """Compute cosine similarity between two tensors."""
-        a_norm = F.normalize(a.view(-1), dim=0)
-        b_norm = F.normalize(b.view(-1), dim=0)
-        return (a_norm * b_norm).sum().item()
-
-    # Helper function to compute diversity
-    def compute_diversity(token_ids):
-        """Compute unique tokens / total tokens ratio."""
-        if len(token_ids) == 0:
-            return 0.0
-        unique = len(set(token_ids.tolist()))
-        total = len(token_ids)
-        return unique / total
+    # Helper: Cosine similarity
+    def cosine_sim(a, b):
+        return F.cosine_similarity(a.flatten(), b.flatten(), dim=0).item()
 
     # Test each layer
-    for layer_idx in LAYERS_TO_TEST:
+    for layer_idx in test_layers:
         print(f"\n{'='*60}")
         print(f"Testing Layer {layer_idx}")
         print(f"{'='*60}")
 
-        layer_results = {
-            "zero_shot_add": [],
-            "zero_shot_weighted": [],
-            "procrustes_aligned": [],
-            "adapter_aligned": []
-        }
+        layer_results = []
 
         # Test each prompt
         for prompt_idx, prompt in enumerate(TEST_PROMPTS, 1):
             print(f"  Prompt {prompt_idx}/{len(TEST_PROMPTS)}: {prompt[:50]}...")
 
-            # Get baseline Mistral→Mistral output for comparison
-            mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(device)
+            # Baseline: Model B with text input (no injection)
+            inputs_b = tokenizer_b(prompt, return_tensors="pt").to(device)
             with torch.no_grad():
-                baseline_output = mistral_model.generate(
-                    **mistral_inputs,
+                baseline_output = model_b.generate(
+                    **inputs_b,
                     max_new_tokens=20,
-                    do_sample=False,
-                    output_hidden_states=True,
-                    return_dict_in_generate=True
+                    do_sample=False
                 )
-                baseline_text = mistral_tokenizer.decode(baseline_output.sequences[0], skip_special_tokens=True)
-                # Get final hidden state for similarity comparison
-                baseline_hidden = baseline_output.hidden_states[-1][-1][:, -1, :]  # Last token of last layer
+                baseline_text = tokenizer_b.decode(baseline_output[0], skip_special_tokens=True)
 
-            # Get hidden states from both models at target layer
-            llama_inputs = llama_tokenizer(prompt, return_tensors="pt").to(device)
-
+            # Get Model A's activation at layer_idx (last token only)
+            inputs_a = tokenizer_a(prompt, return_tensors="pt").to(device)
             with torch.no_grad():
-                # Llama forward to layer L
-                llama_outputs = llama_model(
-                    **llama_inputs,
-                    output_hidden_states=True
-                )
-                llama_hidden = llama_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
+                outputs_a = model_a(**inputs_a, output_hidden_states=True)
+                h_a_last_token = outputs_a.hidden_states[layer_idx][0, -1, :]  # [hidden_dim_a]
 
-                # Mistral forward to layer L
-                mistral_outputs = mistral_model(
-                    **mistral_inputs,
-                    output_hidden_states=True
-                )
-                mistral_hidden = mistral_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
-
-            # Test 4 combination methods
-            methods = {}
-
-            # Method 1: Zero-shot addition
-            methods['zero_shot_add'] = llama_hidden + mistral_hidden
-
-            # Method 2: Zero-shot weighted (favor Mistral since it's the target model)
-            methods['zero_shot_weighted'] = 0.3 * llama_hidden + 0.7 * mistral_hidden
-
-            # Method 3: Procrustes-aligned addition
-            if layer_idx in procrustes_alignments:
-                alignment = procrustes_alignments[layer_idx]
-                llama_flat = llama_hidden.reshape(-1, llama_hidden.shape[-1])
-                llama_aligned = alignment.transform(llama_flat)
-                llama_aligned = llama_aligned.reshape(llama_hidden.shape).to(llama_hidden.dtype)
-                methods['procrustes_aligned'] = llama_aligned + mistral_hidden
+            # Project if dimensions mismatch
+            if learned_projection is not None:
+                with torch.no_grad():
+                    h_projected = learned_projection(h_a_last_token)  # [hidden_dim_b]
             else:
-                methods['procrustes_aligned'] = None
+                h_projected = h_a_last_token  # Already same dimension
 
-            # Method 4: Adapter-aligned addition
-            if linear_adapter is not None:
-                llama_adapted = linear_adapter(llama_hidden)
-                methods['adapter_aligned'] = llama_adapted + mistral_hidden
+            # Injection via forward hook: REPLACE last token's activation in Model B
+            injected_activation = h_projected.clone()
+
+            def injection_hook(module, input, output):
+                """
+                Replace last token's activation during Model B's forward pass.
+
+                Args:
+                    output: Tuple of (hidden_states,) with shape [batch, seq, hidden_dim]
+
+                Returns:
+                    Modified output with last token replaced
+                """
+                # output[0] shape: [batch, seq_len, hidden_dim]
+                if isinstance(output, tuple):
+                    hidden_states = output[0]
+                else:
+                    hidden_states = output
+
+                # CRITICAL: REPLACE (not add) last token
+                hidden_states[:, -1, :] = injected_activation
+
+                if isinstance(output, tuple):
+                    return (hidden_states,) + output[1:]
+                else:
+                    return hidden_states
+
+            # Register hook on target layer
+            if hasattr(model_b, 'model') and hasattr(model_b.model, 'layers'):
+                # LlamaForCausalLM, MistralForCausalLM structure
+                target_layer = model_b.model.layers[layer_idx]
+            elif hasattr(model_b, 'transformer') and hasattr(model_b.transformer, 'h'):
+                # GPT-2 structure
+                target_layer = model_b.transformer.h[layer_idx]
             else:
-                methods['adapter_aligned'] = None
+                raise ValueError(f"Unknown model structure for {model_b_id}")
 
-            # Generate from each combined activation
-            for method_name, combined_hidden in methods.items():
-                if combined_hidden is None:
-                    print(f"    Method: {method_name} - SKIPPED (alignment not available)")
-                    continue
+            hook_handle = target_layer.register_forward_hook(injection_hook)
 
-                try:
-                    with torch.no_grad():
-                        # Continue generation from combined hidden state
-                        # Note: inputs_embeds doesn't support intermediate injection directly
-                        # We use it as if starting from this hidden state
-                        output = mistral_model.generate(
-                            inputs_embeds=combined_hidden,
-                            max_new_tokens=20,
-                            do_sample=False,
-                            output_hidden_states=True,
-                            return_dict_in_generate=True
-                        )
+            # Generate with injection
+            try:
+                with torch.no_grad():
+                    injected_output = model_b.generate(
+                        **inputs_b,
+                        max_new_tokens=20,
+                        do_sample=False
+                    )
+                    injected_text = tokenizer_b.decode(injected_output[0], skip_special_tokens=True)
 
-                        generated_text = mistral_tokenizer.decode(output.sequences[0], skip_special_tokens=True)
-                        generated_ids = output.sequences[0]
+                # Compute metrics
+                result = {
+                    "prompt": prompt,
+                    "baseline_text": baseline_text,
+                    "injected_text": injected_text,
+                    "match": baseline_text == injected_text,
+                    "baseline_len": len(baseline_output[0]),
+                    "injected_len": len(injected_output[0])
+                }
 
-                        # Get final hidden state
-                        final_hidden = output.hidden_states[-1][-1][:, -1, :]
+                layer_results.append(result)
 
-                        # Compute metrics
-                        length = len(generated_ids)
-                        diversity = compute_diversity(generated_ids)
-                        similarity = cosine_similarity(final_hidden, baseline_hidden)
+                print(f"    Baseline:  {baseline_text[:80]}")
+                print(f"    Injected:  {injected_text[:80]}")
+                print(f"    Match: {result['match']}")
 
-                        result = {
-                            "prompt": prompt,
-                            "generated": generated_text,
-                            "length": length,
-                            "diversity": diversity,
-                            "similarity": similarity
-                        }
+            except Exception as e:
+                print(f"    FAILED: {str(e)}")
+                layer_results.append({
+                    "prompt": prompt,
+                    "baseline_text": baseline_text,
+                    "injected_text": f"ERROR: {str(e)}",
+                    "match": False,
+                    "baseline_len": len(baseline_output[0]),
+                    "injected_len": 0
+                })
 
-                        layer_results[method_name].append(result)
-
-                        print(f"    Method: {method_name}")
-                        print(f"      Generated: {generated_text[:80]}")
-                        print(f"      Length: {length} tokens | Diversity: {diversity:.2f} | Similarity: {similarity:.2f}")
-
-                except Exception as e:
-                    print(f"    Method: {method_name} - FAILED: {str(e)}")
-                    layer_results[method_name].append({
-                        "prompt": prompt,
-                        "generated": f"ERROR: {str(e)}",
-                        "length": 0,
-                        "diversity": 0.0,
-                        "similarity": 0.0
-                    })
+            finally:
+                # Always remove hook
+                hook_handle.remove()
 
         results["layers"][layer_idx] = layer_results
 
-    # Compute summary statistics
+    # Summary
     print(f"\n{'='*80}")
-    print("ACTIVATION COMMUNICATION RESULTS SUMMARY")
+    print("RESULTS SUMMARY")
     print(f"{'='*80}")
 
-    method_avg_scores = {}
-    for method in ["zero_shot_add", "zero_shot_weighted", "procrustes_aligned", "adapter_aligned"]:
-        all_similarities = []
-        for layer_idx in LAYERS_TO_TEST:
-            if layer_idx in results["layers"]:
-                for result in results["layers"][layer_idx][method]:
-                    if isinstance(result.get("similarity"), (int, float)):
-                        all_similarities.append(result["similarity"])
-
-        if all_similarities:
-            avg_sim = sum(all_similarities) / len(all_similarities)
-            method_avg_scores[method] = avg_sim
-        else:
-            method_avg_scores[method] = 0.0
-
-    # Find best method
-    best_method = max(method_avg_scores.items(), key=lambda x: x[1])
-    print(f"Best performing method: {best_method[0]} (avg similarity: {best_method[1]:.3f})")
-
-    # Layer-wise breakdown
-    print(f"\nLayer-wise results (average similarity to baseline):")
-    for layer_idx in LAYERS_TO_TEST:
-        if layer_idx in results["layers"]:
-            layer_data = results["layers"][layer_idx]
-            scores = []
-            for method in ["zero_shot_add", "zero_shot_weighted", "procrustes_aligned", "adapter_aligned"]:
-                if layer_data[method]:
-                    sims = [r["similarity"] for r in layer_data[method] if isinstance(r.get("similarity"), (int, float))]
-                    avg = sum(sims) / len(sims) if sims else 0.0
-                    scores.append(f"{method[:7]}={avg:.2f}")
-            print(f"  Layer {layer_idx:2d}: {', '.join(scores)}")
-
-    # Calculate improvement
-    zero_shot_avg = method_avg_scores.get("zero_shot_add", 0.0)
-    best_aligned = max(
-        method_avg_scores.get("procrustes_aligned", 0.0),
-        method_avg_scores.get("adapter_aligned", 0.0)
-    )
-    if zero_shot_avg > 0:
-        improvement = ((best_aligned - zero_shot_avg) / zero_shot_avg) * 100
-        print(f"\nKey Finding: Learned alignments improve activation communication by {improvement:.1f}% over zero-shot")
+    for layer_idx, layer_data in results["layers"].items():
+        total = len(layer_data)
+        matches = sum(1 for r in layer_data if r.get("match", False))
+        match_rate = matches / total if total > 0 else 0.0
+        print(f"Layer {layer_idx:2d}: {matches}/{total} exact matches ({match_rate*100:.1f}%)")
 
     results["summary"] = {
-        "method_avg_scores": method_avg_scores,
-        "best_method": best_method[0],
-        "best_score": best_method[1]
+        "tested_layers": test_layers,
+        "projection_used": learned_projection is not None
     }
 
     print("=" * 80)
 
-    # Clean up
-    print("\nCleaning up activation communication experiment...")
-    del llama_model
-    del mistral_model
+    # Cleanup
+    print("\nCleaning up...")
+    del model_a, model_b
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
-    print("  Models deleted and GPU memory cleared")
 
     return results
 
@@ -3494,26 +3473,29 @@ def main():
         print("")
 
     # ========================================================================
-    # PHASE 1: FAST EXPERIMENTS (PROCRUSTES + ACTIVATION) - ~30 MIN TOTAL
+    # PHASE 1: ACTIVATION COMMUNICATION (Ramesh & Li 2025 Reproduction) - ~20 MIN
     # ========================================================================
+    # PRIORITY: Reproduce "Communicating Activations Between LLM Agents" (Ramesh & Li, ICML 2025)
+    # This validates the core feasibility of cross-model communication via activation injection
 
-    # EXPERIMENT 1: Procrustes (Llama 3.1-3.2) - 5 min
+    # EXPERIMENT 1: Activation Communication (Llama 3.1-3.2) - 10 min
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 1/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)")
+        print(f"EXPERIMENT 1/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
-        print("SVD-based geometric alignment (no training required)")
-        print("WHY FIRST: Fast baseline (~5 min) for same-vocab case")
+        print("Models: Llama 3.1 8B (4096 dim) → Llama 3.2 3B (3072 dim)")
+        print("Reproducing Ramesh & Li (ICML 2025) - activation injection with learned projection")
+        print("WHY FIRST: Core feasibility test for cross-model communication")
+        print("Fixes: Replacement (not addition), last token only, forward hooks, dimension handling")
         print("")
 
-        procrustes_results_ablation = run_procrustes_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+        activation_results_ablation = run_activation_communication_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
 
-        # Save Procrustes results
-        procrustes_path_ablation = output_dir / f"procrustes_results_llama31_llama32_{timestamp}.json"
-        with open(procrustes_path_ablation, 'w') as f:
-            json.dump(procrustes_results_ablation, f, indent=2)
-        print(f"Procrustes (Llama 3.1-3.2) results saved to: {procrustes_path_ablation}")
+        # Save results
+        activation_path_ablation = output_dir / f"activation_communication_llama31_llama32_{timestamp}.json"
+        with open(activation_path_ablation, 'w') as f:
+            json.dump(activation_results_ablation, f, indent=2)
+        print(f"Activation Communication (Llama 3.1-3.2) results saved to: {activation_path_ablation}")
 
         # Clean up GPU memory
         if torch.cuda.is_available():
@@ -3523,14 +3505,75 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 2: Procrustes (Llama-Mistral) - 5 min
+    # EXPERIMENT 2: Activation Communication (Llama-Mistral) - 10 min
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 2/11: PROCRUSTES ALIGNMENT (LLAMA-MISTRAL)")
+        print(f"EXPERIMENT 2/11: ACTIVATION COMMUNICATION (LLAMA-MISTRAL)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B (4096 dim) → Mistral 7B (4096 dim)")
+        print("Tests activation injection across different vocabularies (128K vs 32K tokens)")
+        print("Expected: Should work since dimensions match (no projection needed)")
+        print("")
+
+        activation_results_main = run_activation_communication_experiment()
+
+        # Save results
+        activation_path_main = output_dir / f"activation_communication_llama_mistral_{timestamp}.json"
+        with open(activation_path_main, 'w') as f:
+            json.dump(activation_results_main, f, indent=2)
+        print(f"Activation Communication (Llama-Mistral) results saved to: {activation_path_main}")
+
+        # Clean up GPU memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+
+    if dist.is_initialized():
+        dist.barrier()
+
+    # ========================================================================
+    # PHASE 2: PROCRUSTES ALIGNMENT (Fast geometric baseline) - ~10 MIN
+    # ========================================================================
+
+    # EXPERIMENT 3: Procrustes (Llama 3.1-3.2) - 5 min
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 3/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
+        print("SVD-based geometric alignment (no training required)")
+        print("WARNING: Will fail due to dimension mismatch (4096 vs 3072)")
+        print("Keeping to document the limitation of zero-shot geometric methods")
+        print("")
+
+        try:
+            procrustes_results_ablation = run_procrustes_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+
+            # Save Procrustes results
+            procrustes_path_ablation = output_dir / f"procrustes_results_llama31_llama32_{timestamp}.json"
+            with open(procrustes_path_ablation, 'w') as f:
+                json.dump(procrustes_results_ablation, f, indent=2)
+            print(f"Procrustes (Llama 3.1-3.2) results saved to: {procrustes_path_ablation}")
+        except AssertionError as e:
+            print(f"✗ Procrustes (Llama 3.1-3.2) FAILED as expected: {e}")
+            print("  This confirms need for learned projection (not just geometric alignment)")
+
+        # Clean up GPU memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+
+    if dist.is_initialized():
+        dist.barrier()
+
+    # EXPERIMENT 4: Procrustes (Llama-Mistral) - 5 min
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 4/11: PROCRUSTES ALIGNMENT (LLAMA-MISTRAL)")
         print(f"{'='*80}")
         print("Models: Llama 3.1 8B ↔ Mistral 7B (4× vocab mismatch)")
         print("SVD-based geometric alignment (no training required)")
-        print("Provides cross-vocab baseline for comparison")
+        print("Should succeed since dimensions match (4096 = 4096)")
         print("")
 
         procrustes_results_main = run_procrustes_experiment()
@@ -3549,48 +3592,8 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
-    # EXPERIMENT 3: Activation Communication (Llama 3.1-3.2) - 10 min
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 3/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)")
-        print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical vocab)")
-        print("Tests direct hidden state injection between models")
-        print("Expected: Should work well with same vocabulary")
-        print("")
-
-        run_activation_communication_experiment(model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
-
-        # Clean up GPU memory
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            torch.cuda.synchronize()
-
-    if dist.is_initialized():
-        dist.barrier()
-
-    # EXPERIMENT 4: Activation Communication (Llama-Mistral) - 10 min
-    if is_main_process():
-        print(f"\n{'='*80}")
-        print(f"EXPERIMENT 4/11: ACTIVATION COMMUNICATION (LLAMA-MISTRAL)")
-        print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Mistral 7B")
-        print("Tests direct hidden state injection across different vocabularies")
-        print("Critical: If this fails, LatentWire needs redesign")
-        print("")
-
-        run_activation_communication_experiment()
-
-        # Clean up GPU memory
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            torch.cuda.synchronize()
-
-    if dist.is_initialized():
-        dist.barrier()
-
     # ========================================================================
-    # PHASE 2: LLAMA 3.1-3.2 TRAINED ADAPTERS (SAME VOCAB) - ~2-3 HOURS
+    # PHASE 3: LLAMA 3.1-3.2 TRAINED ADAPTERS (SAME VOCAB) - ~2-3 HOURS
     # ========================================================================
 
     # EXPERIMENT 5: LoRA Adapter - Ablation (Llama 3.1-3.2)
@@ -3652,7 +3655,7 @@ def main():
         dist.barrier()
 
     # ========================================================================
-    # PHASE 3: LLAMA-MISTRAL EXPERIMENTS (CROSS VOCAB) - ~2-3 HOURS
+    # PHASE 4: LLAMA-MISTRAL EXPERIMENTS (CROSS VOCAB) - ~2-3 HOURS
     # ========================================================================
 
     # EXPERIMENT 8: LoRA Adapter - Main (Llama-Mistral)
