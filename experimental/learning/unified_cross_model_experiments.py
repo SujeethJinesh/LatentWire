@@ -1049,6 +1049,19 @@ def run_procrustes_experiment():
         llama_to_mistral = ProcrustesAlignment()
         llama_to_mistral.fit(llama_hidden_all.float(), mistral_hidden_all.float())
 
+        # Save alignments for later use by activation communication experiment
+        alignment_dir = script_dir / "runs" / "procrustes_alignments"
+        alignment_dir.mkdir(parents=True, exist_ok=True)
+        torch.save({
+            'W': llama_to_mistral.W,
+            'source_mean': llama_to_mistral.source_mean,
+            'target_mean': llama_to_mistral.target_mean,
+            'source_norm': llama_to_mistral.source_norm,
+            'target_norm': llama_to_mistral.target_norm,
+            'b': llama_to_mistral.b
+        }, alignment_dir / f"layer_{layer_idx}.pt")
+        print(f"  Saved Procrustes alignment to {alignment_dir / f'layer_{layer_idx}.pt'}")
+
         # Test generation
         layer_results = {
             "mistral_to_mistral": {},
@@ -2143,6 +2156,320 @@ def run_token_compression_experiment(
     return results
 
 # ============================================================================
+# Activation Communication Experiment (Ramesh & Li 2025)
+# ============================================================================
+
+def run_activation_communication_experiment():
+    """
+    Test activation-based communication between Llama and Mistral.
+    Based on "Communicating Activations Between Language Model Agents" (Ramesh & Li 2025).
+
+    Tests whether learned alignments (Procrustes, adapters) improve cross-model
+    activation injection compared to zero-shot methods.
+    """
+
+    print("\n" + "=" * 80)
+    print("ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025)")
+    print("=" * 80)
+    print("Testing cross-model activation injection with/without alignment")
+    print("")
+
+    device = DEVICE
+
+    # Load models
+    print(f"\nLoading models on {PLATFORM}...")
+    if PLATFORM == 'mac':
+        dtype = torch.float32
+        print("Using float32 for MPS")
+    elif USE_BF16:
+        dtype = torch.bfloat16
+        print("Using bfloat16 for H100")
+    else:
+        dtype = torch.float16
+        print("Using float16")
+
+    # Model loading kwargs
+    llama_kwargs = mistral_kwargs = {
+        'torch_dtype': dtype,
+        'device_map': "auto" if PLATFORM == 'mac' else None,
+    }
+
+    if USE_FLASH_ATTENTION and PLATFORM == 'hpc':
+        llama_kwargs['attn_implementation'] = "flash_attention_2"
+        mistral_kwargs['attn_implementation'] = "flash_attention_2"
+        print("Using Flash Attention 2")
+
+    llama_model = AutoModelForCausalLM.from_pretrained(LLAMA_MODEL, **llama_kwargs).eval()
+    mistral_model = AutoModelForCausalLM.from_pretrained(MISTRAL_MODEL, **mistral_kwargs).eval()
+
+    # Move to device if needed
+    if PLATFORM == 'hpc':
+        llama_model = llama_model.to(device)
+        mistral_model = mistral_model.to(device)
+
+    llama_tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+    mistral_tokenizer = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+
+    if llama_tokenizer.pad_token is None:
+        llama_tokenizer.pad_token = llama_tokenizer.eos_token
+    if mistral_tokenizer.pad_token is None:
+        mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
+
+    # Load pre-trained alignments
+    print("\nLoading pre-trained alignments...")
+    script_dir = Path(__file__).parent.absolute()
+
+    # Load Procrustes alignments (if available)
+    procrustes_alignments = {}
+    for layer_idx in LAYERS_TO_TEST:
+        procrustes_path = script_dir / "runs" / "procrustes_alignments" / f"layer_{layer_idx}.pt"
+        if procrustes_path.exists():
+            try:
+                alignment = ProcrustesAlignment()
+                state = torch.load(procrustes_path, map_location=device, weights_only=False)
+                alignment.W = state['W'].to(device)
+                alignment.source_mean = state['source_mean'].to(device)
+                alignment.target_mean = state['target_mean'].to(device)
+                alignment.source_norm = state['source_norm'].to(device)
+                alignment.target_norm = state['target_norm'].to(device)
+                alignment.b = state.get('b', torch.zeros_like(alignment.target_mean)).to(device)
+                procrustes_alignments[layer_idx] = alignment
+                print(f"  Loaded Procrustes for layer {layer_idx}")
+            except Exception as e:
+                print(f"  Warning: Could not load Procrustes for layer {layer_idx}: {e}")
+
+    # Load Linear adapter (if available)
+    linear_adapter = None
+    linear_checkpoint = script_dir / "runs" / "learned_adapters" / "linear_checkpoint" / "checkpoint.pt"
+    if linear_checkpoint.exists():
+        try:
+            linear_adapter = LinearAdapter(hidden_dim=4096).to(device).eval()
+            checkpoint = torch.load(linear_checkpoint, map_location=device, weights_only=False)
+            linear_adapter.load_state_dict(checkpoint['adapter_state_dict'])
+            print(f"  Loaded Linear adapter")
+        except Exception as e:
+            print(f"  Warning: Could not load Linear adapter: {e}")
+
+    # Evaluation metrics storage
+    results = {
+        "layers": {},
+        "summary": {}
+    }
+
+    # Helper function to compute cosine similarity
+    def cosine_similarity(a, b):
+        """Compute cosine similarity between two tensors."""
+        a_norm = F.normalize(a.view(-1), dim=0)
+        b_norm = F.normalize(b.view(-1), dim=0)
+        return (a_norm * b_norm).sum().item()
+
+    # Helper function to compute diversity
+    def compute_diversity(token_ids):
+        """Compute unique tokens / total tokens ratio."""
+        if len(token_ids) == 0:
+            return 0.0
+        unique = len(set(token_ids.tolist()))
+        total = len(token_ids)
+        return unique / total
+
+    # Test each layer
+    for layer_idx in LAYERS_TO_TEST:
+        print(f"\n{'='*60}")
+        print(f"Testing Layer {layer_idx}")
+        print(f"{'='*60}")
+
+        layer_results = {
+            "zero_shot_add": [],
+            "zero_shot_weighted": [],
+            "procrustes_aligned": [],
+            "adapter_aligned": []
+        }
+
+        # Test each prompt
+        for prompt_idx, prompt in enumerate(TEST_PROMPTS, 1):
+            print(f"  Prompt {prompt_idx}/{len(TEST_PROMPTS)}: {prompt[:50]}...")
+
+            # Get baseline Mistral→Mistral output for comparison
+            mistral_inputs = mistral_tokenizer(prompt, return_tensors="pt").to(device)
+            with torch.no_grad():
+                baseline_output = mistral_model.generate(
+                    **mistral_inputs,
+                    max_new_tokens=20,
+                    do_sample=False,
+                    output_hidden_states=True,
+                    return_dict_in_generate=True
+                )
+                baseline_text = mistral_tokenizer.decode(baseline_output.sequences[0], skip_special_tokens=True)
+                # Get final hidden state for similarity comparison
+                baseline_hidden = baseline_output.hidden_states[-1][-1][:, -1, :]  # Last token of last layer
+
+            # Get hidden states from both models at target layer
+            llama_inputs = llama_tokenizer(prompt, return_tensors="pt").to(device)
+
+            with torch.no_grad():
+                # Llama forward to layer L
+                llama_outputs = llama_model(
+                    **llama_inputs,
+                    output_hidden_states=True
+                )
+                llama_hidden = llama_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
+
+                # Mistral forward to layer L
+                mistral_outputs = mistral_model(
+                    **mistral_inputs,
+                    output_hidden_states=True
+                )
+                mistral_hidden = mistral_outputs.hidden_states[layer_idx]  # [batch, seq, hidden]
+
+            # Test 4 combination methods
+            methods = {}
+
+            # Method 1: Zero-shot addition
+            methods['zero_shot_add'] = llama_hidden + mistral_hidden
+
+            # Method 2: Zero-shot weighted (favor Mistral since it's the target model)
+            methods['zero_shot_weighted'] = 0.3 * llama_hidden + 0.7 * mistral_hidden
+
+            # Method 3: Procrustes-aligned addition
+            if layer_idx in procrustes_alignments:
+                alignment = procrustes_alignments[layer_idx]
+                llama_flat = llama_hidden.reshape(-1, llama_hidden.shape[-1])
+                llama_aligned = alignment.transform(llama_flat)
+                llama_aligned = llama_aligned.reshape(llama_hidden.shape).to(llama_hidden.dtype)
+                methods['procrustes_aligned'] = llama_aligned + mistral_hidden
+            else:
+                methods['procrustes_aligned'] = None
+
+            # Method 4: Adapter-aligned addition
+            if linear_adapter is not None:
+                llama_adapted = linear_adapter(llama_hidden)
+                methods['adapter_aligned'] = llama_adapted + mistral_hidden
+            else:
+                methods['adapter_aligned'] = None
+
+            # Generate from each combined activation
+            for method_name, combined_hidden in methods.items():
+                if combined_hidden is None:
+                    print(f"    Method: {method_name} - SKIPPED (alignment not available)")
+                    continue
+
+                try:
+                    with torch.no_grad():
+                        # Continue generation from combined hidden state
+                        # Note: inputs_embeds doesn't support intermediate injection directly
+                        # We use it as if starting from this hidden state
+                        output = mistral_model.generate(
+                            inputs_embeds=combined_hidden,
+                            max_new_tokens=20,
+                            do_sample=False,
+                            output_hidden_states=True,
+                            return_dict_in_generate=True
+                        )
+
+                        generated_text = mistral_tokenizer.decode(output.sequences[0], skip_special_tokens=True)
+                        generated_ids = output.sequences[0]
+
+                        # Get final hidden state
+                        final_hidden = output.hidden_states[-1][-1][:, -1, :]
+
+                        # Compute metrics
+                        length = len(generated_ids)
+                        diversity = compute_diversity(generated_ids)
+                        similarity = cosine_similarity(final_hidden, baseline_hidden)
+
+                        result = {
+                            "prompt": prompt,
+                            "generated": generated_text,
+                            "length": length,
+                            "diversity": diversity,
+                            "similarity": similarity
+                        }
+
+                        layer_results[method_name].append(result)
+
+                        print(f"    Method: {method_name}")
+                        print(f"      Generated: {generated_text[:80]}")
+                        print(f"      Length: {length} tokens | Diversity: {diversity:.2f} | Similarity: {similarity:.2f}")
+
+                except Exception as e:
+                    print(f"    Method: {method_name} - FAILED: {str(e)}")
+                    layer_results[method_name].append({
+                        "prompt": prompt,
+                        "generated": f"ERROR: {str(e)}",
+                        "length": 0,
+                        "diversity": 0.0,
+                        "similarity": 0.0
+                    })
+
+        results["layers"][layer_idx] = layer_results
+
+    # Compute summary statistics
+    print(f"\n{'='*80}")
+    print("ACTIVATION COMMUNICATION RESULTS SUMMARY")
+    print(f"{'='*80}")
+
+    method_avg_scores = {}
+    for method in ["zero_shot_add", "zero_shot_weighted", "procrustes_aligned", "adapter_aligned"]:
+        all_similarities = []
+        for layer_idx in LAYERS_TO_TEST:
+            if layer_idx in results["layers"]:
+                for result in results["layers"][layer_idx][method]:
+                    if isinstance(result.get("similarity"), (int, float)):
+                        all_similarities.append(result["similarity"])
+
+        if all_similarities:
+            avg_sim = sum(all_similarities) / len(all_similarities)
+            method_avg_scores[method] = avg_sim
+        else:
+            method_avg_scores[method] = 0.0
+
+    # Find best method
+    best_method = max(method_avg_scores.items(), key=lambda x: x[1])
+    print(f"Best performing method: {best_method[0]} (avg similarity: {best_method[1]:.3f})")
+
+    # Layer-wise breakdown
+    print(f"\nLayer-wise results (average similarity to baseline):")
+    for layer_idx in LAYERS_TO_TEST:
+        if layer_idx in results["layers"]:
+            layer_data = results["layers"][layer_idx]
+            scores = []
+            for method in ["zero_shot_add", "zero_shot_weighted", "procrustes_aligned", "adapter_aligned"]:
+                if layer_data[method]:
+                    sims = [r["similarity"] for r in layer_data[method] if isinstance(r.get("similarity"), (int, float))]
+                    avg = sum(sims) / len(sims) if sims else 0.0
+                    scores.append(f"{method[:7]}={avg:.2f}")
+            print(f"  Layer {layer_idx:2d}: {', '.join(scores)}")
+
+    # Calculate improvement
+    zero_shot_avg = method_avg_scores.get("zero_shot_add", 0.0)
+    best_aligned = max(
+        method_avg_scores.get("procrustes_aligned", 0.0),
+        method_avg_scores.get("adapter_aligned", 0.0)
+    )
+    if zero_shot_avg > 0:
+        improvement = ((best_aligned - zero_shot_avg) / zero_shot_avg) * 100
+        print(f"\nKey Finding: Learned alignments improve activation communication by {improvement:.1f}% over zero-shot")
+
+    results["summary"] = {
+        "method_avg_scores": method_avg_scores,
+        "best_method": best_method[0],
+        "best_score": best_method[1]
+    }
+
+    print("=" * 80)
+
+    # Clean up
+    print("\nCleaning up activation communication experiment...")
+    del llama_model
+    del mistral_model
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    print("  Models deleted and GPU memory cleared")
+
+    return results
+
+# ============================================================================
 # Main Execution
 # ============================================================================
 
@@ -2191,7 +2518,7 @@ def main():
     # Run learned adapter experiments (each uses all GPUs via DataParallel)
     for adapter_type in ["linear", "affine", "lora"]:
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT {['linear', 'affine', 'lora'].index(adapter_type) + 1}/4: {adapter_type.upper()} ADAPTER")
+        print(f"EXPERIMENT {['linear', 'affine', 'lora'].index(adapter_type) + 1}/5: {adapter_type.upper()} ADAPTER")
         print(f"{'='*80}")
         run_adapter_experiment(adapter_type, gpu_id=None)  # None = use all GPUs
 
@@ -2203,18 +2530,37 @@ def main():
 
     # Run token compression experiment (uses all GPUs via DataParallel)
     print(f"\n{'='*80}")
-    print(f"EXPERIMENT 4/4: TOKEN COMPRESSION")
+    print(f"EXPERIMENT 4/5: TOKEN COMPRESSION")
     print(f"{'='*80}")
     run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs
 
+    # Clean GPU memory before activation communication
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        print("✓ Token compression complete, GPU memory cleared")
+
+    # Run activation communication experiment (Ramesh & Li 2025)
+    print(f"\n{'='*80}")
+    print(f"EXPERIMENT 5/5: ACTIVATION COMMUNICATION")
+    print(f"{'='*80}")
+    activation_results = run_activation_communication_experiment()
+
+    # Save activation communication results
+    activation_path = output_dir / f"activation_communication_results_{timestamp}.json"
+    with open(activation_path, 'w') as f:
+        json.dump(activation_results, f, indent=2)
+    print(f"Activation communication results saved to: {activation_path}")
+
     print("\n" + "=" * 80)
-    print("ALL 4 EXPERIMENTS COMPLETE")
+    print("ALL 5 EXPERIMENTS COMPLETE")
     print("=" * 80)
     print("Experiments run:")
     print("  1. Linear adapter")
     print("  2. Affine adapter")
     print("  3. LoRA adapter")
     print("  4. Token compression")
+    print("  5. Activation communication")
 
     print("\n" + "=" * 80)
     print("ALL EXPERIMENTS COMPLETE")

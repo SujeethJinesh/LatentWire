@@ -2,6 +2,60 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🧪 ACTIVATION COMMUNICATION EXPERIMENT (2025-10-31 21:00)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Overview
+Implemented activation communication experiment based on "Communicating Activations Between Language Model Agents" (Ramesh & Li 2025). This tests whether learned cross-model alignments improve activation injection compared to zero-shot methods.
+
+### Implementation Details
+
+**New Experiment Function**: `run_activation_communication_experiment()`
+- Location: `unified_cross_model_experiments.py:2149-2457`
+- Runs as experiment 5/5 after all other experiments complete
+
+**Test Methods**:
+1. **Zero-shot addition**: `h_combined = h_llama + h_mistral`
+2. **Zero-shot weighted**: `h_combined = 0.3*h_llama + 0.7*h_mistral`
+3. **Procrustes-aligned**: `h_combined = Procrustes(h_llama) + h_mistral`
+4. **Adapter-aligned**: `h_combined = LinearAdapter(h_llama) + h_mistral`
+
+**Evaluation Metrics**:
+- Generation length (tokens)
+- Token diversity (unique/total ratio)
+- Cosine similarity to baseline hidden states
+- Layer-wise and method-wise averages
+
+**Integration Points**:
+1. Procrustes alignments now saved during `run_procrustes_experiment()`
+   - Saved to: `runs/procrustes_alignments/layer_{idx}.pt`
+   - Lines: `unified_cross_model_experiments.py:1052-1063`
+2. Activation communication called in `main()` after token compression
+   - Lines: `unified_cross_model_experiments.py:2543-2553`
+3. Results saved to JSON: `activation_communication_results_{timestamp}.json`
+
+**Graceful Degradation**:
+- Skips Procrustes method if alignments not available
+- Skips adapter method if checkpoint not available
+- Always runs zero-shot baselines for comparison
+
+### Files Modified
+- `experimental/learning/unified_cross_model_experiments.py`
+  - Lines 1052-1063: Save Procrustes alignments after fitting
+  - Lines 2149-2457: New `run_activation_communication_experiment()` function
+  - Lines 2543-2553: Integration into main() as experiment 5/5
+  - Lines 2521, 2533: Updated experiment numbering to X/5
+  - Lines 2556, 2563: Updated completion messages for 5 experiments
+- `experimental/learning/activation_communication_temp.py`: Removed (temporary file, now integrated)
+
+### Testing Status
+- ✅ Function implemented and integrated into main()
+- ✅ Procrustes alignments now saved during training
+- ✅ Experiment numbering updated throughout
+- ⏳ Awaiting next HPC run to test execution
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## ⚡ FINAL CRITICAL FIXES (2025-10-31 20:30)
 ## ═══════════════════════════════════════════════════════════════════════════
 
