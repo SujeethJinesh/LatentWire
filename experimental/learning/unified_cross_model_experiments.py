@@ -557,6 +557,13 @@ class ContrastiveWeightScheduler:
 LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
 MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
 
+# Same-vocabulary ablation models (Llama 3.1 8B ↔ Llama 3.2 3B)
+# Both use identical 128,256 token vocabulary
+# Research: "Transferring Features Across Language Models With Model Stitching" (arXiv 2506.06609)
+# Llama 3.2 3B was trained using Llama 3.1 8B logits as targets (Meta documentation)
+LLAMA_31_8B = "meta-llama/Llama-3.1-8B-Instruct"
+LLAMA_32_3B = "meta-llama/Llama-3.2-3B-Instruct"
+
 # Training - Use platform-specific values
 BATCH_SIZE = PLATFORM_CONFIG['batch_size']
 EPOCHS = PLATFORM_CONFIG['epochs']
@@ -1222,15 +1229,15 @@ def run_procrustes_experiment():
         # Compute CKA scores before and after Procrustes alignment (2025 best practice)
         print(f"  Computing CKA similarity scores...")
 
-        # Use biased CKA for high-dimensional data (4096-D)
-        # Debiased estimator is unstable when dimension >> n_samples
-        # and gives unrealistically high scores (0.9998) for 4096-D representations
+        # Use debiased CKA (unbiased HSIC estimator) per Murphy et al. ICLR 2024
+        # Biased CKA gives inflated scores (0.9998+) in low-sample, high-D regime
+        # Debiased estimator provides more realistic similarity scores
 
         # CKA before alignment (baseline - how similar are representations naturally?)
         cka_before_mistral_llama = CKA.cka_similarity(
             mistral_hidden_all.float(),
             llama_hidden_all.float(),
-            debiased=False
+            debiased=True  # Use unbiased HSIC for low-sample, high-D regime (Murphy et al. ICLR 2024)
         )
 
         # CKA after Procrustes alignment (how much does alignment help?)
@@ -1238,14 +1245,14 @@ def run_procrustes_experiment():
         cka_after_mistral_llama = CKA.cka_similarity(
             mistral_aligned.float(),
             llama_hidden_all.float(),
-            debiased=False
+            debiased=True  # Use unbiased HSIC for low-sample, high-D regime (Murphy et al. ICLR 2024)
         )
 
         llama_aligned = llama_to_mistral.transform(llama_hidden_all)
         cka_after_llama_mistral = CKA.cka_similarity(
             llama_aligned.float(),
             mistral_hidden_all.float(),
-            debiased=False
+            debiased=True  # Use unbiased HSIC for low-sample, high-D regime (Murphy et al. ICLR 2024)
         )
 
         # Calculate improvement
@@ -1523,9 +1530,9 @@ def evaluate_adapter_epoch(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
                 # Only compute if we have enough samples (at least 2 tokens)
                 if adapted_flat.shape[0] >= 2:
-                    # Use biased CKA for high-dimensional data (4096-D)
-                    # Debiased estimator is unstable with dim >> n_samples
-                    cka_score = CKA.cka_similarity(adapted_flat, target_flat, debiased=False)
+                    # Use unbiased HSIC for low-sample, high-D regime (Murphy et al. ICLR 2024)
+                    # Biased CKA inflates scores in this regime
+                    cka_score = CKA.cka_similarity(adapted_flat, target_flat, debiased=True)
                     cka_per_layer[layer_idx].append(float(cka_score.item()))
 
                     # Compute cosine similarity
@@ -2148,8 +2155,21 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
     return adapter, training_metrics
 
-def run_adapter_experiment(adapter_type, gpu_id):
-    """Run a single adapter experiment on specified GPU."""
+def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=None):
+    """Run a single adapter experiment on specified GPU.
+
+    Args:
+        adapter_type: Type of adapter (linear, affine, lora)
+        gpu_id: GPU ID to use (None for all GPUs with DDP)
+        model_a_id: Model A identifier (defaults to LLAMA_MODEL)
+        model_b_id: Model B identifier (defaults to MISTRAL_MODEL)
+    """
+
+    # Default to main experiment models if not specified
+    if model_a_id is None:
+        model_a_id = LLAMA_MODEL
+    if model_b_id is None:
+        model_b_id = MISTRAL_MODEL
 
     # Create output directory relative to script location (only rank 0)
     script_dir = Path(__file__).parent.absolute()
@@ -2162,7 +2182,13 @@ def run_adapter_experiment(adapter_type, gpu_id):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # Fix log filename for multi-GPU case
     gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
-    log_path = output_dir / f"{adapter_type}_{gpu_label}_{timestamp}.log"
+
+    # Add model-specific suffix for ablation experiments
+    model_suffix = ""
+    if model_a_id == LLAMA_31_8B and model_b_id == LLAMA_32_3B:
+        model_suffix = "_samevocab"
+
+    log_path = output_dir / f"{adapter_type}_{gpu_label}{model_suffix}_{timestamp}.log"
 
     # Only rank 0 opens log file
     if is_main_process():
@@ -2181,6 +2207,8 @@ def run_adapter_experiment(adapter_type, gpu_id):
             print(f"LEARNED ADAPTER EXPERIMENT - {adapter_type.upper()}")
             print("=" * 80)
             print(f"Platform: {PLATFORM}")
+            print(f"Model A: {model_a_id}")
+            print(f"Model B: {model_b_id}")
             print(f"Log file: {log_path}")
 
             # Device configuration - use DDP for multi-GPU
@@ -2246,7 +2274,7 @@ def run_adapter_experiment(adapter_type, gpu_id):
                 print("Using Flash Attention 2")
 
             model_a = AutoModelForCausalLM.from_pretrained(
-                LLAMA_MODEL,
+                model_a_id,
                 **model_kwargs
             ).to(device).eval()
 
@@ -2259,7 +2287,7 @@ def run_adapter_experiment(adapter_type, gpu_id):
             model_a.gradient_checkpointing_enable()
 
             model_b = AutoModelForCausalLM.from_pretrained(
-                MISTRAL_MODEL,
+                model_b_id,
                 **model_kwargs
             ).to(device).eval()
 
@@ -2275,8 +2303,8 @@ def run_adapter_experiment(adapter_type, gpu_id):
             # Only the adapter will be wrapped with DDP in train_adapter()
 
             # Load tokenizers
-            tokenizer_a = AutoTokenizer.from_pretrained(LLAMA_MODEL)
-            tokenizer_b = AutoTokenizer.from_pretrained(MISTRAL_MODEL)
+            tokenizer_a = AutoTokenizer.from_pretrained(model_a_id)
+            tokenizer_b = AutoTokenizer.from_pretrained(model_b_id)
 
             # Set padding tokens
             if tokenizer_a.pad_token is None:
@@ -2295,7 +2323,7 @@ def run_adapter_experiment(adapter_type, gpu_id):
                 raise ValueError(f"Unknown adapter type: {adapter_type}")
 
             # Create checkpoint directory for this adapter
-            checkpoint_dir = output_dir / f"{adapter_type}_checkpoint"
+            checkpoint_dir = output_dir / f"{adapter_type}{model_suffix}_checkpoint"
 
             # Train adapter with checkpointing
             adapter, metrics = train_adapter(
@@ -3357,10 +3385,32 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
+    # EXPERIMENT 7: Same-Vocabulary Ablation (Llama 3.1 8B ↔ Llama 3.2 3B)
+    # This controls for vocabulary mismatch by testing two models with identical tokenizers
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"EXPERIMENT 7/7: SAME-VOCABULARY ABLATION (CONTROL EXPERIMENT)")
+        print(f"{'='*80}")
+        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocabulary)")
+        print("Purpose: Control for vocabulary mismatch hypothesis")
+        print("Research: 'Transferring Features Across Language Models' (arXiv 2506.06609)")
+        print("Expected: Better alignment (CKA 0.6-0.7) and lower generation loss (2.5-3.5)")
+        print("")
+
+    run_adapter_experiment("lora", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    if is_main_process():
+        print(f"✓ Same-vocabulary ablation complete, GPU memory cleared")
+    if dist.is_initialized():
+        dist.barrier()
+
     # Final summary
     if is_main_process():
         print("\n" + "=" * 80)
-        print("ALL 6 EXPERIMENTS COMPLETE (PRIORITY ORDER)")
+        print("ALL 7 EXPERIMENTS COMPLETE (PRIORITY ORDER)")
         print("=" * 80)
         print("Experiments run:")
         print("  1. Procrustes alignment (baseline, CKA metrics added)")
@@ -3369,6 +3419,7 @@ def main():
         print("  4. Token compression (PRIORITY 3 - interlingua)")
         print("  5. Linear adapter (comparison)")
         print("  6. Affine adapter (completeness)")
+        print("  7. Same-vocabulary ablation (control for vocab mismatch)")
 
         print("\n" + "=" * 80)
         print("ALL EXPERIMENTS COMPLETE")
