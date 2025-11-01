@@ -1111,6 +1111,193 @@ class LearnedProjection(nn.Module):
         """
         return self.proj(x)
 
+
+def train_learned_projection(
+    model_a,
+    model_b,
+    tokenizer_a,
+    tokenizer_b,
+    dim_a: int,
+    dim_b: int,
+    layer_idx: int = 26,
+    num_samples: int = 3072,
+    learning_rate: float = 1e-3,
+    num_epochs: int = 10,
+    batch_size: int = 32,
+    device: str = "cuda",
+    seed: int = 42
+):
+    """
+    Train projection matrix W to minimize MSE between model activations.
+
+    Following Ramesh & Li (ICML 2025):
+    - Uses 3072 sentences from C4 dataset
+    - Minimizes MSE: ℒ = (1/N) Σ ||z^(i) - W y^(i)||²₂
+    - y^(i): Model A's layer-26 final-token activation
+    - z^(i): Model B's layer-26 final-token activation
+
+    Args:
+        model_a: Source model (provides y activations)
+        model_b: Target model (provides z activations)
+        tokenizer_a: Tokenizer for model A
+        tokenizer_b: Tokenizer for model B
+        dim_a: Hidden dimension of model A
+        dim_b: Hidden dimension of model B
+        layer_idx: Layer to extract activations from (default: 26)
+        num_samples: Number of C4 sentences (default: 3072, per paper)
+        learning_rate: Learning rate for Adam optimizer
+        num_epochs: Number of training epochs
+        batch_size: Batch size for training
+        device: Device to train on
+        seed: Random seed
+
+    Returns:
+        Trained LearnedProjection module
+    """
+    import torch.optim as optim
+    from datasets import load_dataset
+    from tqdm import tqdm
+
+    print("\n" + "="*80)
+    print("TRAINING LEARNED PROJECTION (Ramesh & Li 2025)")
+    print("="*80)
+    print(f"Loading {num_samples} sentences from C4 dataset...")
+
+    # Load C4 dataset
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
+    # Load C4 validation split (smaller, faster)
+    c4_dataset = load_dataset("allenai/c4", "en", split="validation", streaming=True)
+
+    # Sample sentences
+    sentences = []
+    for i, example in enumerate(c4_dataset):
+        if i >= num_samples:
+            break
+        text = example["text"].strip()
+        if len(text) > 50:  # Filter very short texts
+            sentences.append(text[:512])  # Truncate long texts
+
+    print(f"Loaded {len(sentences)} sentences from C4")
+
+    # Set models to eval mode
+    model_a.eval()
+    model_b.eval()
+
+    # Handle DDP/DataParallel wrapping
+    base_model_a = model_a.module if isinstance(model_a, (nn.DataParallel, DDP)) else model_a
+    base_model_b = model_b.module if isinstance(model_b, (nn.DataParallel, DDP)) else model_b
+
+    # Extract activations for all sentences
+    print(f"\nExtracting layer-{layer_idx} final-token activations...")
+    activations_a = []
+    activations_b = []
+
+    with torch.no_grad():
+        for i, sentence in enumerate(tqdm(sentences, desc="Extracting activations")):
+            # Tokenize for model A
+            inputs_a = tokenizer_a(
+                sentence,
+                return_tensors="pt",
+                truncation=True,
+                max_length=512
+            ).to(device)
+
+            # Get model A activations
+            outputs_a = base_model_a(
+                **inputs_a,
+                output_hidden_states=True,
+                use_cache=False
+            )
+            # Final token of layer layer_idx
+            h_a = outputs_a.hidden_states[layer_idx][:, -1, :]  # [1, dim_a]
+            activations_a.append(h_a.cpu())
+
+            # Tokenize for model B
+            inputs_b = tokenizer_b(
+                sentence,
+                return_tensors="pt",
+                truncation=True,
+                max_length=512
+            ).to(device)
+
+            # Get model B activations
+            outputs_b = base_model_b(
+                **inputs_b,
+                output_hidden_states=True,
+                use_cache=False
+            )
+            # Final token of layer layer_idx
+            h_b = outputs_b.hidden_states[layer_idx][:, -1, :]  # [1, dim_b]
+            activations_b.append(h_b.cpu())
+
+    # Stack activations into tensors
+    activations_a = torch.cat(activations_a, dim=0)  # [N, dim_a]
+    activations_b = torch.cat(activations_b, dim=0)  # [N, dim_b]
+
+    print(f"Activations A shape: {activations_a.shape}")
+    print(f"Activations B shape: {activations_b.shape}")
+
+    # Initialize projection matrix
+    projection = LearnedProjection(dim_a, dim_b).to(device)
+    optimizer = optim.Adam(projection.parameters(), lr=learning_rate)
+
+    # Create dataset and dataloader
+    dataset = torch.utils.data.TensorDataset(activations_a, activations_b)
+    dataloader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=True
+    )
+
+    # Training loop
+    print(f"\nTraining projection matrix for {num_epochs} epochs...")
+    projection.train()
+
+    for epoch in range(num_epochs):
+        total_loss = 0.0
+        num_batches = 0
+
+        for y_batch, z_batch in dataloader:
+            y_batch = y_batch.to(device)  # [B, dim_a]
+            z_batch = z_batch.to(device)  # [B, dim_b]
+
+            # Forward pass: project y to z's space
+            z_pred = projection(y_batch)  # [B, dim_b]
+
+            # MSE loss
+            loss = torch.nn.functional.mse_loss(z_pred, z_batch)
+
+            # Backward pass
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+            num_batches += 1
+
+        avg_loss = total_loss / num_batches
+        print(f"Epoch {epoch+1}/{num_epochs}: MSE Loss = {avg_loss:.6f}")
+
+    projection.eval()
+
+    # Compute final MSE
+    with torch.no_grad():
+        all_y = activations_a.to(device)
+        all_z = activations_b.to(device)
+        z_pred = projection(all_y)
+        final_mse = torch.nn.functional.mse_loss(z_pred, all_z).item()
+        print(f"\nFinal MSE on all {len(sentences)} samples: {final_mse:.6f}")
+
+    print("="*80)
+    print("PROJECTION TRAINING COMPLETE")
+    print("="*80 + "\n")
+
+    return projection
+
+
 # ============================================================================
 # Token-Initialized Compression
 # ============================================================================
@@ -3288,12 +3475,54 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
                 print("  ✓ Loaded pre-trained projection")
             except Exception as e:
                 print(f"  ✗ Could not load projection: {e}")
-                print("  Creating new untrained projection (will use random initialization)")
-                learned_projection = LearnedProjection(dim_a, dim_b).to(device=device, dtype=dtype).eval()
+                print("  Will train new projection on C4 dataset (per Ramesh & Li 2025)")
+
+                # Train projection on C4 (Ramesh & Li methodology)
+                learned_projection = train_learned_projection(
+                    model_a=model_a,
+                    model_b=model_b,
+                    tokenizer_a=tokenizer_a,
+                    tokenizer_b=tokenizer_b,
+                    dim_a=dim_a,
+                    dim_b=dim_b,
+                    layer_idx=RAMESH_LI_LAYER,  # Use paper's layer 26
+                    num_samples=3072,  # Per paper
+                    learning_rate=1e-3,
+                    num_epochs=10,
+                    batch_size=32,
+                    device=device,
+                    seed=42
+                )
+
+                # Save trained projection
+                projection_path.parent.mkdir(parents=True, exist_ok=True)
+                torch.save(learned_projection.state_dict(), projection_path)
+                print(f"  ✓ Saved trained projection to {projection_path}")
         else:
             print("  ✗ No pre-trained projection found")
-            print("  Creating new untrained projection (will use random initialization)")
-            learned_projection = LearnedProjection(dim_a, dim_b).to(device=device, dtype=dtype).eval()
+            print("  Training new projection on C4 dataset (per Ramesh & Li 2025)")
+
+            # Train projection on C4 (Ramesh & Li methodology)
+            learned_projection = train_learned_projection(
+                model_a=model_a,
+                model_b=model_b,
+                tokenizer_a=tokenizer_a,
+                tokenizer_b=tokenizer_b,
+                dim_a=dim_a,
+                dim_b=dim_b,
+                layer_idx=RAMESH_LI_LAYER,  # Use paper's layer 26
+                num_samples=3072,  # Per paper
+                learning_rate=1e-3,
+                num_epochs=10,
+                batch_size=32,
+                device=device,
+                seed=42
+            )
+
+            # Save trained projection
+            projection_path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(learned_projection.state_dict(), projection_path)
+            print(f"  ✓ Saved trained projection to {projection_path}")
     else:
         print(f"\n✓ Dimensions match ({dim_a} = {dim_b}), no projection needed")
 
@@ -3500,7 +3729,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print("Evaluating on real tasks (SQuAD Q&A and GSM8K math) to measure task performance")
     print("vs exact text matching. This aligns with Ramesh & Li paper methodology.")
     print("NOTE: With random/untrained projection, expect low performance on injected model.")
-    print("      Trained projection should achieve 10-27% of baseline (per Ramesh & Li).\n")
+    print("      Trained projection achieves up to 27% improvement over natural language (per Ramesh & Li).\n")
 
     task_results = {}
 
@@ -3709,7 +3938,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         print(f"\n  Performance Retention (vs Model B):")
         print(f"    Injected: {(inj_f1/max(b_f1, 0.01))*100:.1f}% F1 retention")
         print(f"    Random:   {(rand_f1/max(b_f1, 0.01))*100:.1f}% F1 retention")
-        print(f"\n  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
+        print(f"\n  Ramesh & Li (2025): Trained projection outperforms natural language communication")
         print(f"  CRITICAL: Injected should beat Random to prove meaningful transfer!")
         print(f"{'='*70}")
 
@@ -3921,7 +4150,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         print(f"\n  Performance Retention (vs Model B):")
         print(f"    Injected: {(inj_acc/max(b_acc, 0.01))*100:.1f}% retention")
         print(f"    Random:   {(rand_acc/max(b_acc, 0.01))*100:.1f}% retention")
-        print(f"\n  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
+        print(f"\n  Ramesh & Li (2025): Trained projection outperforms natural language communication")
         print(f"  CRITICAL: Injected should beat Random to prove meaningful transfer!")
         print(f"{'='*70}")
 
@@ -3973,13 +4202,17 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
 
     print(f"\nInterpretation:")
     print(f"  - Injected MUST beat Random to prove meaningful activation transfer")
-    print(f"  - Random/untrained projection: ~0-5% retention expected")
-    print(f"  - Trained projection target (Ramesh & Li): 10-27% retention")
-    print(f"  - Perfect projection: ~100% retention")
+    print(f"  - Random/untrained projection: Poor performance expected")
+    print(f"  - Trained projection (Ramesh & Li): Outperforms natural language communication")
+    print(f"  - Goal: Activation communication with less than 1/4 the compute")
 
     print(f"\nNext steps:")
-    if learned_projection is None or not hasattr(learned_projection, 'trained'):
-        print(f"  ✓ Train projection on C4 dataset to improve performance")
+    if learned_projection is None:
+        print(f"  ✓ Models have same dimension - no projection needed")
+    elif projection_path.exists():
+        print(f"  ✓ Using trained projection from {projection_path}")
+    else:
+        print(f"  ⚠ Projection was just trained - results should improve")
     print(f"  ✓ Test multiple layers to find optimal injection point")
     print(f"  ✓ Increase sample size for final evaluation (200+ samples)")
 
