@@ -1050,6 +1050,7 @@ def run_procrustes_experiment():
         llama_to_mistral.fit(llama_hidden_all.float(), mistral_hidden_all.float())
 
         # Save alignments for later use by activation communication experiment
+        script_dir = Path(__file__).parent.absolute()
         alignment_dir = script_dir / "runs" / "procrustes_alignments"
         alignment_dir.mkdir(parents=True, exist_ok=True)
         torch.save({
