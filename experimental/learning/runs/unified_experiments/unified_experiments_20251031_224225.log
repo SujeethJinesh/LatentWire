@@ -1,0 +1,271 @@
+Using DDP (DistributedDataParallel) with torchrun for 4 GPUs
+
+W1031 22:42:26.662000 1435314 torch/distributed/run.py:793] 
+W1031 22:42:26.662000 1435314 torch/distributed/run.py:793] *****************************************
+W1031 22:42:26.662000 1435314 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1031 22:42:26.662000 1435314 torch/distributed/run.py:793] *****************************************
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-31T22:42:38.287750
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+==> Using CUDA on HPC (4 GPUs available)
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-31T22:42:38.408431
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-31T22:42:38.535865
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-10-31T22:42:38.551145
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+================================================================================
+
+1. Starting Procrustes experiment on cuda...
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3712.59it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6342.99it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8015.87it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.21it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.29it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.84it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.05it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.76it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.45it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.25it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.95it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.83it/s]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.56it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3498.17it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.82it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.64it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.83it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.62it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8405.42it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8530.79it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  2.00it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.41it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.90it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.73it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.54it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.45it/s]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.09it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8000.58it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.97it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.16it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.10it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.28it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.15it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  5.50it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  7.23it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00,  5.91it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  6.38it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  6.31it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8311.04it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.33it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.12it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.37it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.27it/s]
+Llama model moved to cuda:0Llama model moved to cuda:0
+Mistral model moved to cuda:1
+
+Mistral model moved to cuda:1
+Llama model moved to cuda:0
+Mistral model moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+Loading calibration dataset (50 samples)...
+
+Loading calibration dataset (50 samples)...
+Llama model moved to cuda:0
+Mistral model moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+
+============================================================
+Testing Layer 0
+============================================================
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.089725
+  Computing CKA similarity scores...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3353, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3188, in main
+    procrustes_results = run_procrustes_experiment()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1226, in run_procrustes_experiment
+    cka_before_mistral_llama = CKA.similarity(
+AttributeError: type object 'CKA' has no attribute 'similarity'. Did you mean: 'cka_similarity'?
+  WARNING: Orthogonality error = 0.089725
+  Computing CKA similarity scores...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3353, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3188, in main
+    procrustes_results = run_procrustes_experiment()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1226, in run_procrustes_experiment
+    cka_before_mistral_llama = CKA.similarity(
+AttributeError: type object 'CKA' has no attribute 'similarity'. Did you mean: 'cka_similarity'?
+  WARNING: Orthogonality error = 0.089725
+  Computing CKA similarity scores...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3353, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3188, in main
+    procrustes_results = run_procrustes_experiment()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1226, in run_procrustes_experiment
+    cka_before_mistral_llama = CKA.similarity(
+AttributeError: type object 'CKA' has no attribute 'similarity'. Did you mean: 'cka_similarity'?
+  WARNING: Orthogonality error = 0.089725
+  Computing CKA similarity scores...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3353, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 3188, in main
+    procrustes_results = run_procrustes_experiment()
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1226, in run_procrustes_experiment
+    cka_before_mistral_llama = CKA.similarity(
+AttributeError: type object 'CKA' has no attribute 'similarity'. Did you mean: 'cka_similarity'?
+W1031 22:43:52.321000 1435314 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1435341 closing signal SIGTERM
+W1031 22:43:52.322000 1435314 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1435342 closing signal SIGTERM
+W1031 22:43:52.322000 1435314 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1435343 closing signal SIGTERM
+E1031 22:43:54.226000 1435314 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 1435340) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+Traceback (most recent call last):
+  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-10-31_22:43:52
+  host      : n12.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1435340)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
