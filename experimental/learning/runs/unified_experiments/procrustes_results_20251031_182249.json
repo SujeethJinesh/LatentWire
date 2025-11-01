@@ -22,11 +22,11 @@
       "prompt_5": "\n\nThe\n\nThe\n\nThe\n\nThe\n\nThe\n\nThe\n\n"
     },
     "mistral_to_llama": {
-      "prompt_1": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_2": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_3": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_4": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_5": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!"
+      "prompt_1": "\nThe 2019-2020 school year is off to a great start! We are excited",
+      "prompt_2": "\nThe word \u201cbasil\u201d is derived from the Greek word \u201cbasileus\u201d which means",
+      "prompt_3": "\nA. The first letter of the Greek alphabet, \u03b1, used as a mathematical symbol to indicate",
+      "prompt_4": "\nThe 2018-2019 school year is off to a great start! We are excited",
+      "prompt_5": "\nThe 2018-2019 school year is off to a great start! We are excited"
     }
   },
   "layer_8": {
@@ -52,11 +52,11 @@
       "prompt_5": "\n\nThe architectural style of the school is a modern interpretation of the traditional school building. The"
     },
     "mistral_to_llama": {
-      "prompt_1": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_2": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_3": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_4": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_5": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!"
+      "prompt_1": " the Clergy the Clergy the Clergy the Cler the Clergy the Cler the Cler the Cler",
+      "prompt_2": "\nThe\nThe\nThe\nThe\nThe\nThe\n\n\n\n\nThe\nThe",
+      "prompt_3": "ly\nArch\nArch\nArch\nArch\nArch\nArch\nArch\n\n\n\nArch",
+      "prompt_4": "\nThe Architectural\nTheArchitectural'\nTheArchitectural'\nTheArchitectural",
+      "prompt_5": "\nThe Church of the Church of the Church of the Churchof the Churchof the Churchof the"
     }
   },
   "layer_16": {
@@ -82,11 +82,11 @@
       "prompt_5": "\n\nThe architectural style of the building is a combination of the traditional and the modern. The"
     },
     "mistral_to_llama": {
-      "prompt_1": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_2": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_3": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_4": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_5": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!"
+      "prompt_1": " Church\nThe Arch\nThe Architectural\nThe Architect\nThe Architect\n\n\n\n\n\n",
+      "prompt_2": " of the Church of the Church of the Church of the Church of the Church of the Church of the",
+      "prompt_3": "\nArchitectural\nArchitect\nArchitect\nArchitect\n\n\n\n\n\nArch",
+      "prompt_4": "\nArchitectural\nArchitectural\nArchitect\nArchitect\nArchitect\nArchitect",
+      "prompt_5": "a\nArchitectural\nArchitectural\nArchitect\n\n\n\n\nArchitect\n"
     }
   },
   "layer_24": {
@@ -112,11 +112,11 @@
       "prompt_5": "the church of St. St. John the Baptist, the church of St. John the Bapt"
     },
     "mistral_to_llama": {
-      "prompt_1": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_2": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_3": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_4": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_5": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!"
+      "prompt_1": ", the house was built in the 1970s, the house was built in the 197",
+      "prompt_2": " building is a structure that hasastructurethat hasapstructurethatwasathatwas\u73fehasa",
+      "prompt_3": " for the 19th century, and the 19th century, and the  19th",
+      "prompt_4": " the 19th-century, the 19th century, the  19th century, the",
+      "prompt_5": " to the point of view, the point of view, the point of view, the point of view"
     }
   },
   "layer_32": {
@@ -142,11 +142,11 @@
       "prompt_5": "and bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan"
     },
     "mistral_to_llama": {
-      "prompt_1": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_2": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_3": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_4": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!",
-      "prompt_5": "Failed: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!"
+      "prompt_1": " sculpt,",
+      "prompt_2": " Bau,AAAAAAAA, said, said, said, said, said, said, said, said,",
+      "prompt_3": " often the the theoo, the first, the second, the third, the fourth, the fifth",
+      "prompt_4": " monuments,://AAAAAAAAA, 2, 2, 2, 2, 2",
+      "prompt_5": "racl,"
     }
   }
 }

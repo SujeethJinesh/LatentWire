@@ -2,7 +2,7 @@
 TOKEN COMPRESSION EXPERIMENT
 ================================================================================
 Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/token_compression/token_compression_allgpus_20251031_181638.log
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/token_compression/token_compression_allgpus_20251031_182630.log
 
 ================================================================================
 GPU CONFIGURATION
@@ -20,9 +20,9 @@ Total batch size: 40
 TOKEN-INITIALIZED COMPRESSION EXPERIMENT
 ================================================================================
 Loading meta-llama/Llama-3.1-8B...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9927.35it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 9927.35it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8793.09it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8793.09it/s]
 
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.89it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.89it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.44it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.44it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.72it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.72it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 16.40it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 16.40it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.77it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.77it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.70it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.70it/s]
 
 Wrapped Llama model with DataParallel
 Applying LoRA to all transformer layers...
@@ -35,17 +35,17 @@ TOKEN COMPRESSION EXPERIMENT FAILED
 Error: 'DataParallel' object has no attribute 'get_input_embeddings'
 Traceback (most recent call last):
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1760, in run_token_compression_wrapper
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1774, in run_token_compression_wrapper
     results = run_token_compression_experiment(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1760, in run_token_compression_wrapper
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1774, in run_token_compression_wrapper
     results = run_token_compression_experiment(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1892, in run_token_compression_experiment
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1906, in run_token_compression_experiment
     compressor = TokenInitializedCompressor(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1892, in run_token_compression_experiment
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1906, in run_token_compression_experiment
     compressor = TokenInitializedCompressor(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 708, in __init__
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 719, in __init__
     self.embed_layer = model.get_input_embeddings()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 708, in __init__
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 719, in __init__
     self.embed_layer = model.get_input_embeddings()
   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1931, in __getattr__
     raise AttributeError(
