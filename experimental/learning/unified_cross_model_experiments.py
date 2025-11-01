@@ -1154,6 +1154,7 @@ def train_learned_projection(
     Returns:
         Trained LearnedProjection module
     """
+    import random
     import torch.optim as optim
     from datasets import load_dataset
     from tqdm import tqdm
