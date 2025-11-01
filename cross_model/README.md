@@ -9,11 +9,16 @@ cross_model/
 ├── __init__.py                 # Package initialization
 ├── README.md                   # This file
 ├── models.py                   # LearnedProjection model architecture
+├── adapter_models.py           # ProcrustesAlignment, LoRA, Linear, Affine adapters
+├── metrics.py                  # InfoNCE, CKA, AlignmentUniformity metrics
 ├── training.py                 # Projection training on C4 dataset
 ├── checkpointing.py            # Save/load utilities for projections
 ├── utils.py                    # DDP setup, device detection, helpers
 ├── experiments/                # Individual experiment modules
-│   └── __init__.py
+│   ├── __init__.py
+│   ├── procrustes.py           # SVD-based alignment (zero-training baseline)
+│   ├── activation_communication.py  # Ramesh & Li (2025) reproduction
+│   └── adapters.py             # LoRA/Linear/Affine adapter training
 └── run_experiments.py          # Main entry point
 ```
 
@@ -21,21 +26,45 @@ cross_model/
 
 ### Core Modules
 
-- **models.py**: Contains `LearnedProjection` class - a learned linear projection to handle dimension mismatches between models (e.g., Llama 3.2 3B's 3072 dims → Llama 3.1 8B's 4096 dims)
+- **models.py**: `LearnedProjection` class - learned linear projection for dimension mismatches (e.g., 3072 → 4096 dims)
 
-- **training.py**: Contains `train_learned_projection()` - trains projection matrices on C4 dataset following Ramesh & Li (2025) methodology
+- **adapter_models.py**: Alignment architectures:
+  - `ProcrustesAlignment`: SVD-based orthogonal/affine alignment (zero-training baseline)
+  - `LinearAdapter`: Full-rank linear projection (16M params)
+  - `AffineAdapter`: Linear + bias (16M + 3K params)
+  - `LoRAAdapter`: Low-rank adaptation (260K params, rank=32)
 
-- **checkpointing.py**: Utilities for saving/loading trained projections and experimental results
+- **metrics.py**: Evaluation metrics and loss functions:
+  - `InfoNCE`: Contrastive loss for alignment training
+  - `CKA`: Centered Kernel Alignment (debiased HSIC estimator)
+  - `AlignmentUniformity`: Contrastive learning quality metrics
+  - `mean_pooling`: Attention-masked mean pooling
 
-- **utils.py**: Platform detection, DDP initialization, distributed training helpers
+- **training.py**: `train_learned_projection()` - trains projections on C4 dataset (Ramesh & Li 2025 methodology)
+
+- **checkpointing.py**: Save/load utilities for trained projections and experimental results
+
+- **utils.py**: Platform detection, DDP initialization (60-min timeout for long experiments), distributed helpers
 
 ### Experiments
 
-The experiments directory will contain individual experiment modules:
+Individual experiment modules in `experiments/`:
 
-- **text_generation.py** (planned): Text similarity comparison across layers
-- **task_evaluation_squad.py** (planned): SQuAD Q&A evaluation
-- **task_evaluation_gsm8k.py** (planned): GSM8K math reasoning evaluation
+- **procrustes.py**: SVD-based alignment across layers [0,8,16,24]
+  - Zero-training baseline
+  - Expected: CKA 0.7-0.8 (same-vocab), 0.3-0.5 (cross-vocab)
+
+- **activation_communication.py**: Reproduces Ramesh & Li (ICML 2025)
+  - Text similarity via activation injection
+  - SQuAD Q&A evaluation (20 samples)
+  - GSM8K math reasoning (20 samples)
+  - Expected: Up to 27% improvement over natural language
+
+- **adapters.py**: Learned adapter training with InfoNCE loss
+  - `run_lora_adapter_experiment()`: 260K params, rank=32
+  - `run_linear_adapter_experiment()`: 16M params, no bias
+  - `run_affine_adapter_experiment()`: 16M + 3K params, with bias
+  - Expected: CKA 0.8-0.9, better than Procrustes baseline
 
 ## Usage
 
