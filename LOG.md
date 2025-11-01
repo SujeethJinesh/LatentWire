@@ -2,6 +2,144 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 📊 ENHANCED PROGRESS LOGGING FOR ADAPTER TRAINING (2025-10-31 16:45)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Issue: Minimal Visibility into Long-Running Training
+
+**User feedback**: Hard to see progress during long experiments like LoRA adapter training (10 epochs × 1250 steps = 12,500 iterations). Need to know:
+- How far along the training is
+- Current loss/metrics
+- Time estimates
+
+**Previous logging**: Minimal output, only logged to file (not stdout), no time estimates.
+
+### Enhanced Logging Implementation
+
+**1. Training Configuration Header** (lines 912-924):
+```
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+Total epochs: 10
+Steps per epoch: 1250
+Total training steps: 12500
+Batch size: 8
+Gradient accumulation: 8 (effective batch: 64)
+Learning rate: 5e-05
+Alignment layers: [16]
+================================================================================
+```
+
+**2. Epoch Headers** (lines 934-937):
+```
+================================================================================
+Epoch 1/10
+================================================================================
+```
+- Printed to both log file AND stdout (captured by tee)
+- Clear visual separation
+
+**3. Progress Updates Every 100 Steps** (lines 1041-1053):
+```
+  [  8.0%] Step  100/1250 | Loss: 2.3456 | 2.15 steps/s | ETA: 8.9m
+  [ 16.0%] Step  200/1250 | Loss: 2.1234 | 2.18 steps/s | ETA: 8.0m
+  [ 24.0%] Step  300/1250 | Loss: 1.9876 | 2.20 steps/s | ETA: 7.2m
+  ...
+```
+
+Features:
+- **Progress %**: Easy to see how far along
+- **Step count**: Current/total steps
+- **Loss**: Running average (see if training is working)
+- **Throughput**: Steps/second (performance indicator)
+- **ETA**: Estimated time remaining in minutes
+- **Both outputs**: Logged to file AND stdout
+
+**4. Detailed Epoch Summary** (lines 1106-1122):
+```
+================================================================================
+Epoch 1/10 Complete | Time: 9.2m | Total: 9.2m
+  Avg Loss: 1.8765 | CKA Score: 0.3456 | LR: 0.000050
+  ETA for remaining 9 epochs: 82.8m
+================================================================================
+```
+
+Shows:
+- Epoch timing (this epoch + cumulative)
+- Key metrics (loss, CKA alignment score, learning rate)
+- ETA for all remaining epochs
+- Both to file and stdout
+
+**5. Final Training Summary** (lines 1138-1153):
+```
+================================================================================
+TRAINING COMPLETE
+================================================================================
+Total time: 92.3 minutes (1.54 hours)
+Total epochs: 10
+Final loss: 0.8765
+Final CKA score: 0.7654
+
+Loss progression:
+  Epoch  1: Loss 1.8765, CKA 0.3456
+  Epoch  2: Loss 1.5432, CKA 0.4567
+  ...
+  Epoch 10: Loss 0.8765, CKA 0.7654
+================================================================================
+```
+
+Complete training summary showing:
+- Total time
+- Final metrics
+- Full progression across all epochs
+
+### Key Features
+
+**Dual output**: All major updates go to both log file AND stdout
+- Log file: Complete detail (every 10 steps)
+- Stdout: Key updates (every 100 steps, epoch summaries)
+- Ensures visibility in `tee`-captured logs
+
+**Time awareness**:
+- Real-time throughput calculation
+- Per-epoch ETAs
+- Total experiment ETA
+- Final timing summary
+
+**Progress visibility**:
+- Percentage completion
+- Step counts
+- Loss trends
+- Performance metrics (steps/sec)
+
+**Easy to parse**: Consistent formatting, clear separators, structured output
+
+### Expected Output
+
+During training, you'll see:
+```
+================================================================================
+Epoch 1/10
+================================================================================
+  [  8.0%] Step  100/1250 | Loss: 2.3456 | 2.15 steps/s | ETA: 8.9m
+  [ 16.0%] Step  200/1250 | Loss: 2.1234 | 2.18 steps/s | ETA: 8.0m
+  ...
+  [100.0%] Step 1250/1250 | Loss: 1.8765 | 2.20 steps/s | ETA: 0.0m
+
+================================================================================
+Epoch 1/10 Complete | Time: 9.2m | Total: 9.2m
+  Avg Loss: 1.8765 | CKA Score: 0.3456 | LR: 0.000050
+  ETA for remaining 9 epochs: 82.8m
+================================================================================
+```
+
+**Benefit**: No more blind waiting - you can see exactly what's happening, how fast it's going, and when it will finish.
+
+**Status**: Enhanced logging implemented, ready for next HPC run.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🐛 FIX: KeyError in Procrustes Generation (2025-10-31 16:30)
 ## ═══════════════════════════════════════════════════════════════════════════
 

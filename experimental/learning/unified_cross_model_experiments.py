@@ -909,11 +909,32 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
         training_metrics = checkpoint.get('training_metrics', {"epochs": [], "cka_scores": []})
 
+    # Log training configuration
+    print(f"\n{'='*80}", file=log_file)
+    print(f"TRAINING CONFIGURATION", file=log_file)
+    print(f"{'='*80}", file=log_file)
+    print(f"Total epochs: {EPOCHS}", file=log_file)
+    print(f"Steps per epoch: {len(dataloader)}", file=log_file)
+    print(f"Total training steps: {EPOCHS * len(dataloader)}", file=log_file)
+    print(f"Batch size: {BATCH_SIZE}", file=log_file)
+    print(f"Gradient accumulation: {GRAD_ACCUM_STEPS} (effective batch: {BATCH_SIZE * GRAD_ACCUM_STEPS})", file=log_file)
+    print(f"Learning rate: {LEARNING_RATE}", file=log_file)
+    print(f"Alignment layers: {ALIGNMENT_LAYERS}", file=log_file)
+    print(f"{'='*80}\n", file=log_file)
+    log_file.flush()
+
+    import time
+    training_start_time = time.time()
+
     for epoch in range(start_epoch, EPOCHS):
         epoch_loss = 0.0
         epoch_steps = 0
+        epoch_start_time = time.time()
 
-        print(f"\nEpoch {epoch+1}/{EPOCHS}", file=log_file)
+        msg = f"\n{'='*80}\nEpoch {epoch+1}/{EPOCHS}\n{'='*80}"
+        print(msg, file=log_file)
+        print(msg)  # Also print to stdout for tee capture
+        log_file.flush()
 
         for batch_idx, batch in enumerate(dataloader):
             # Move to device
@@ -1017,7 +1038,22 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             epoch_loss += total_loss.item() * GRAD_ACCUM_STEPS
             epoch_steps += 1
 
-            if (batch_idx + 1) % 10 == 0:
+            # Progress logging every 100 steps (more informative but not spammy)
+            if (batch_idx + 1) % 100 == 0:
+                avg_loss = epoch_loss / epoch_steps
+                progress_pct = 100 * (batch_idx + 1) / len(dataloader)
+                elapsed = time.time() - epoch_start_time
+                steps_per_sec = (batch_idx + 1) / elapsed
+                eta_seconds = (len(dataloader) - batch_idx - 1) / steps_per_sec if steps_per_sec > 0 else 0
+                eta_minutes = eta_seconds / 60
+
+                msg = f"  [{progress_pct:5.1f}%] Step {batch_idx+1:4d}/{len(dataloader)} | Loss: {avg_loss:.4f} | {steps_per_sec:.2f} steps/s | ETA: {eta_minutes:.1f}m"
+                print(msg, file=log_file)
+                print(msg)  # Also to stdout
+                log_file.flush()
+
+            # Quick check-in every 10 steps (just to log file, not stdout)
+            elif (batch_idx + 1) % 10 == 0:
                 avg_loss = epoch_loss / epoch_steps
                 print(f"  Step {batch_idx+1}/{len(dataloader)}: Loss = {avg_loss:.4f}",
                       file=log_file)
@@ -1066,7 +1102,24 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             "cka_score": avg_cka,
             "lr": optimizer.param_groups[0]['lr']
         })
-        print(f"  Epoch {epoch+1} avg loss: {avg_epoch_loss:.4f}, CKA: {avg_cka:.4f}", file=log_file)
+
+        # Epoch summary with timing and metrics
+        epoch_time = time.time() - epoch_start_time
+        total_elapsed = time.time() - training_start_time
+        remaining_epochs = EPOCHS - (epoch + 1)
+        avg_epoch_time = total_elapsed / (epoch + 1 - start_epoch)
+        eta_total = avg_epoch_time * remaining_epochs / 60  # in minutes
+
+        msg = f"\n{'='*80}\n"
+        msg += f"Epoch {epoch+1}/{EPOCHS} Complete | Time: {epoch_time/60:.1f}m | Total: {total_elapsed/60:.1f}m\n"
+        msg += f"  Avg Loss: {avg_epoch_loss:.4f} | CKA Score: {avg_cka:.4f} | LR: {optimizer.param_groups[0]['lr']:.6f}\n"
+        if remaining_epochs > 0:
+            msg += f"  ETA for remaining {remaining_epochs} epochs: {eta_total:.1f}m\n"
+        msg += f"{'='*80}"
+
+        print(msg, file=log_file)
+        print(msg)  # Also to stdout
+        log_file.flush()
 
         # Save checkpoint after each epoch
         if checkpoint_dir:
@@ -1081,6 +1134,23 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             checkpoint_path = checkpoint_dir / "checkpoint.pt"
             torch.save(checkpoint, checkpoint_path)
             print(f"  Checkpoint saved to {checkpoint_path}", file=log_file)
+
+    # Final training summary
+    total_training_time = time.time() - training_start_time
+    msg = f"\n\n{'='*80}\n"
+    msg += f"TRAINING COMPLETE\n"
+    msg += f"{'='*80}\n"
+    msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
+    msg += f"Total epochs: {EPOCHS}\n"
+    msg += f"Final loss: {training_metrics['epochs'][-1]['loss']:.4f}\n"
+    msg += f"Final CKA score: {training_metrics['epochs'][-1]['cka_score']:.4f}\n"
+    msg += f"\nLoss progression:\n"
+    for i, epoch_data in enumerate(training_metrics['epochs']):
+        msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, CKA {epoch_data['cka_score']:.4f}\n"
+    msg += f"{'='*80}\n"
+    print(msg, file=log_file)
+    print(msg)  # Also to stdout
+    log_file.flush()
 
     return adapter, training_metrics
 
