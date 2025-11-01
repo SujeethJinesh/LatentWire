@@ -993,11 +993,19 @@ class ProcrustesAlignment:
 # ============================================================================
 
 class LinearAdapter(nn.Module):
-    """Full linear projection (16.8M params)"""
+    """
+    Full linear projection for cross-model alignment.
 
-    def __init__(self, hidden_dim=4096):
+    Handles dimension mismatches by projecting from source_dim to target_dim.
+    For same-dimension models, source_dim == target_dim (e.g., 4096→4096).
+    For different-dimension models, projects across dimensions (e.g., 4096→3072).
+    """
+
+    def __init__(self, source_dim=4096, target_dim=4096):
         super().__init__()
-        self.proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.source_dim = source_dim
+        self.target_dim = target_dim
+        self.proj = nn.Linear(source_dim, target_dim, bias=False)
         nn.init.kaiming_uniform_(self.proj.weight, a=math.sqrt(5))
 
     def forward(self, x):
@@ -1005,11 +1013,18 @@ class LinearAdapter(nn.Module):
 
 
 class AffineAdapter(nn.Module):
-    """Full affine projection with bias (16.8M params)"""
+    """
+    Full affine projection with bias for cross-model alignment.
 
-    def __init__(self, hidden_dim=4096):
+    Handles dimension mismatches by projecting from source_dim to target_dim.
+    Adds bias term for better alignment (Lester et al., arXiv:2506.06609).
+    """
+
+    def __init__(self, source_dim=4096, target_dim=4096):
         super().__init__()
-        self.proj = nn.Linear(hidden_dim, hidden_dim, bias=True)
+        self.source_dim = source_dim
+        self.target_dim = target_dim
+        self.proj = nn.Linear(source_dim, target_dim, bias=True)
         nn.init.kaiming_uniform_(self.proj.weight, a=math.sqrt(5))
         nn.init.zeros_(self.proj.bias)
 
@@ -1018,22 +1033,38 @@ class AffineAdapter(nn.Module):
 
 
 class LoRAAdapter(nn.Module):
-    """Low-rank adapter (65k params) - efficient baseline"""
+    """
+    Low-rank adapter for parameter-efficient cross-model alignment.
 
-    def __init__(self, hidden_dim=4096, rank=8, alpha=16):
+    Handles dimension mismatches via low-rank factorization: x → A → B
+    where A: source_dim → rank, B: rank → target_dim
+
+    References:
+        - Hu et al., "LoRA: Low-Rank Adaptation of Large Language Models"
+          arXiv:2106.09685 (ICLR 2022)
+    """
+
+    def __init__(self, source_dim=4096, target_dim=4096, rank=8, alpha=16):
         super().__init__()
+        self.source_dim = source_dim
+        self.target_dim = target_dim
         self.rank = rank
         self.alpha = alpha
         self.scaling = alpha / rank
 
-        self.lora_A = nn.Linear(hidden_dim, rank, bias=False)
-        self.lora_B = nn.Linear(rank, hidden_dim, bias=False)
+        self.lora_A = nn.Linear(source_dim, rank, bias=False)
+        self.lora_B = nn.Linear(rank, target_dim, bias=False)
 
         nn.init.kaiming_uniform_(self.lora_A.weight, a=math.sqrt(5))
         nn.init.zeros_(self.lora_B.weight)
 
     def forward(self, x):
-        return x + self.scaling * self.lora_B(self.lora_A(x))
+        # If dimensions match, add residual connection
+        # If dimensions mismatch, just return projection (no residual)
+        if self.source_dim == self.target_dim:
+            return x + self.scaling * self.lora_B(self.lora_A(x))
+        else:
+            return self.scaling * self.lora_B(self.lora_A(x))
 
 
 class LearnedProjection(nn.Module):
@@ -2561,13 +2592,26 @@ def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=Non
             if tokenizer_b.pad_token is None:
                 tokenizer_b.pad_token = tokenizer_b.eos_token
 
-            # Create adapter
+            # Get model dimensions from config
+            source_dim = model_a.config.hidden_size
+            target_dim = model_b.config.hidden_size
+
+            print(f"\nModel dimensions:")
+            print(f"  Model A ({model_a_id}): {source_dim}")
+            print(f"  Model B ({model_b_id}): {target_dim}")
+
+            if source_dim != target_dim:
+                print(f"  Dimension mismatch detected - adapter will project {source_dim}→{target_dim}")
+            else:
+                print(f"  Dimensions match - adapter will preserve dimension")
+
+            # Create adapter with correct dimensions
             if adapter_type == "linear":
-                adapter = LinearAdapter()
+                adapter = LinearAdapter(source_dim=source_dim, target_dim=target_dim)
             elif adapter_type == "affine":
-                adapter = AffineAdapter()
+                adapter = AffineAdapter(source_dim=source_dim, target_dim=target_dim)
             elif adapter_type == "lora":
-                adapter = LoRAAdapter()
+                adapter = LoRAAdapter(source_dim=source_dim, target_dim=target_dim)
             else:
                 raise ValueError(f"Unknown adapter type: {adapter_type}")
 
@@ -3601,9 +3645,10 @@ def main():
         print(f"\n{'='*80}")
         print(f"EXPERIMENT 5/11: LORA ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
-        print("Purpose: Control for vocabulary mismatch hypothesis")
-        print("Expected: Better alignment (CKA 0.6-0.7) and lower generation loss (2.5-3.5)")
+        print("Models: Llama 3.1 8B (4096 dim) ↔ Llama 3.2 3B (3072 dim)")
+        print("Purpose: Test low-rank adaptation for dimension-mismatched models")
+        print("Reference: Hu et al., 'LoRA: Low-Rank Adaptation' (arXiv:2106.09685, ICLR 2022)")
+        print("Expected: Parameter-efficient alignment with 260K params (vs 16M for full linear)")
         print("")
 
     run_adapter_experiment("lora", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
@@ -3621,8 +3666,10 @@ def main():
         print(f"\n{'='*80}")
         print(f"EXPERIMENT 6/11: LINEAR ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
-        print("Purpose: Control comparison for Linear adapter")
+        print("Models: Llama 3.1 8B (4096 dim) ↔ Llama 3.2 3B (3072 dim)")
+        print("Purpose: Full linear projection for dimension mismatch (4096→3072)")
+        print("Reference: Lester et al., 'Model Stitching' (arXiv:2506.06609, 2025)")
+        print("Expected: ~12M params (4096×3072), better alignment than LoRA")
         print("")
 
     run_adapter_experiment("linear", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
@@ -3640,8 +3687,10 @@ def main():
         print(f"\n{'='*80}")
         print(f"EXPERIMENT 7/11: AFFINE ADAPTER - ABLATION (LLAMA 3.1-3.2)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)")
-        print("Purpose: Control comparison for Affine adapter")
+        print("Models: Llama 3.1 8B (4096 dim) ↔ Llama 3.2 3B (3072 dim)")
+        print("Purpose: Linear + bias for dimension mismatch (tests if bias improves alignment)")
+        print("Reference: Lester et al., 'Model Stitching' (arXiv:2506.06609, 2025)")
+        print("Expected: ~12M params + 3K bias, marginal improvement over linear")
         print("")
 
     run_adapter_experiment("affine", gpu_id=None, model_a_id=LLAMA_31_8B, model_b_id=LLAMA_32_3B)
@@ -3663,8 +3712,10 @@ def main():
         print(f"\n{'='*80}")
         print(f"EXPERIMENT 8/11: LORA ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
-        print("260K params vs 16M (98% reduction), transferable across models")
+        print("Models: Llama 3.1 8B (4096 dim, 128K vocab) ↔ Mistral 7B (4096 dim, 32K vocab)")
+        print("Purpose: Test LoRA across different vocabularies (same dimension)")
+        print("Reference: Hu et al., 'LoRA: Low-Rank Adaptation' (arXiv:2106.09685, ICLR 2022)")
+        print("Expected: 260K params, tests if vocab mismatch matters with matching dimensions")
         print("")
 
     run_adapter_experiment("lora", gpu_id=None)  # None = use all GPUs with DDP
@@ -3680,10 +3731,15 @@ def main():
     # EXPERIMENT 9: Token Compression (THE INTERLINGUA)
     if is_main_process():
         print(f"\n{'='*80}")
-        print(f"EXPERIMENT 9/11: TOKEN COMPRESSION (LLAMA-MISTRAL)")
+        print(f"EXPERIMENT 9/11: TOKEN COMPRESSION - THE INTERLINGUA (LLAMA-MISTRAL)")
         print(f"{'='*80}")
-        print("This IS the wire format for LatentWire (512 → 64 tokens)")
-        print("Note: Only runs for Llama-Mistral (main comparison)")
+        print("Models: Llama 3.1 8B (source)")
+        print("Purpose: Learn compressed soft prompts (512→64 tokens, 8× compression)")
+        print("References:")
+        print("  - LLMLingua (Microsoft, EMNLP 2023/ACL 2024) - prompt compression")
+        print("  - CompactPrompt (arXiv:2510.18043, 2025) - 60% reduction, <5% accuracy loss")
+        print("  - Token Communications (arXiv:2502.12096, 2025) - cross-modal via tokens")
+        print("Expected: This IS the wire format for LatentWire - direct test of compression feasibility")
         print("")
 
     run_token_compression_wrapper(gpu_id=None)  # None = use all GPUs with DDP
@@ -3701,8 +3757,10 @@ def main():
         print(f"\n{'='*80}")
         print(f"EXPERIMENT 10/11: LINEAR ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
-        print("16M params (50× more than LoRA), useful for comparison")
+        print("Models: Llama 3.1 8B (4096 dim, 128K vocab) ↔ Mistral 7B (4096 dim, 32K vocab)")
+        print("Purpose: Full linear projection (4096→4096) across different vocabularies")
+        print("Reference: Lester et al., 'Model Stitching' (arXiv:2506.06609, 2025)")
+        print("Expected: 16M params (4096²), baseline for comparison with LoRA")
         print("")
 
     run_adapter_experiment("linear", gpu_id=None)
@@ -3720,8 +3778,10 @@ def main():
         print(f"\n{'='*80}")
         print(f"EXPERIMENT 11/11: AFFINE ADAPTER - MAIN (LLAMA-MISTRAL)")
         print(f"{'='*80}")
-        print("Models: Llama 3.1 8B (128K vocab) ↔ Mistral 7B (32K vocab)")
-        print("Similar to linear but with bias term (+4K params)")
+        print("Models: Llama 3.1 8B (4096 dim, 128K vocab) ↔ Mistral 7B (4096 dim, 32K vocab)")
+        print("Purpose: Linear + bias (4096→4096) - tests if bias helps with vocab mismatch")
+        print("Reference: Lester et al., 'Model Stitching' (arXiv:2506.06609, 2025)")
+        print("Expected: 16M params + 4K bias, marginal improvement over linear")
         print("")
 
     run_adapter_experiment("affine", gpu_id=None)
