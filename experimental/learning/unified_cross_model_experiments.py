@@ -1182,7 +1182,9 @@ def run_adapter_experiment(adapter_type, gpu_id):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_path = output_dir / f"{adapter_type}_gpu{gpu_id}_{timestamp}.log"
+    # Fix log filename for multi-GPU case
+    gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
+    log_path = output_dir / f"{adapter_type}_{gpu_label}_{timestamp}.log"
 
     with open(log_path, 'w') as log_file:
         # Redirect output to both console and file
@@ -1204,16 +1206,32 @@ def run_adapter_experiment(adapter_type, gpu_id):
                 # Use all GPUs with DataParallel
                 device = torch.device("cuda:0")  # Primary device
                 use_data_parallel = True
-                print(f"Using DataParallel across {torch.cuda.device_count()} GPUs")
+                print(f"\n{'='*80}")
+                print(f"GPU CONFIGURATION")
+                print(f"{'='*80}")
+                print(f"Mode: DataParallel (multi-GPU)")
+                print(f"Number of GPUs: {torch.cuda.device_count()}")
+                print(f"GPU IDs: {list(range(torch.cuda.device_count()))}")
                 print(f"Primary device: cuda:0")
+                print(f"Batch size per GPU: {BATCH_SIZE // torch.cuda.device_count()}")
+                print(f"Total batch size: {BATCH_SIZE}")
+                print(f"Effective batch (with grad accum): {BATCH_SIZE * GRAD_ACCUM_STEPS}")
+                print(f"{'='*80}\n")
             elif PLATFORM == 'hpc' and gpu_id is not None:
                 # Use specific GPU
                 device = torch.device(f"cuda:{gpu_id}")
+                print(f"\n{'='*80}")
+                print(f"GPU CONFIGURATION")
+                print(f"{'='*80}")
+                print(f"Mode: Single GPU")
                 print(f"GPU assigned: {gpu_id}")
+                print(f"Batch size: {BATCH_SIZE}")
+                print(f"Effective batch (with grad accum): {BATCH_SIZE * GRAD_ACCUM_STEPS}")
+                print(f"{'='*80}\n")
             else:
                 # Use default device (MPS/CPU/single GPU)
                 device = DEVICE
-                print(f"Device: {device}")
+                print(f"\nDevice: {device}\n")
 
             # Platform-specific model loading
             print(f"\nLoading models on {PLATFORM}...")
@@ -1339,7 +1357,9 @@ def run_token_compression_wrapper(gpu_id):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_path = output_dir / f"token_compression_gpu{gpu_id}_{timestamp}.log"
+    # Fix log filename for multi-GPU case
+    gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
+    log_path = output_dir / f"token_compression_{gpu_label}_{timestamp}.log"
 
     with open(log_path, 'w') as log_file:
         # Redirect output to both console and file
@@ -1355,17 +1375,12 @@ def run_token_compression_wrapper(gpu_id):
             print(f"Platform: {PLATFORM}")
             print(f"Log file: {log_path}")
 
-            # Use specified GPU
-            if PLATFORM == 'hpc' and gpu_id is not None:
-                device = torch.device(f"cuda:{gpu_id}")
-                print(f"GPU assigned: {gpu_id}")
-            else:
-                device = DEVICE
-                print(f"Device: {device}")
+            # GPU configuration will be printed by run_token_compression_experiment
+            # Pass None as device to let it auto-configure for multi-GPU or single-GPU
 
             # Run token compression experiment
             results = run_token_compression_experiment(
-                device=device,
+                device=None,  # Auto-configure based on gpu_id
                 num_samples=NUM_SAMPLES if NUM_SAMPLES <= 1000 else 1000,  # Cap at 1000 for compression
                 compressed_length=64,
                 epochs=EPOCHS,
@@ -1420,11 +1435,19 @@ def run_token_compression_experiment(
             # Use all GPUs with DataParallel
             device = torch.device("cuda:0")  # Primary device
             use_data_parallel = True
-            print(f"Using DataParallel across {torch.cuda.device_count()} GPUs")
+            print(f"\n{'='*80}")
+            print(f"GPU CONFIGURATION")
+            print(f"{'='*80}")
+            print(f"Mode: DataParallel (multi-GPU)")
+            print(f"Number of GPUs: {torch.cuda.device_count()}")
+            print(f"GPU IDs: {list(range(torch.cuda.device_count()))}")
             print(f"Primary device: cuda:0")
+            print(f"Batch size per GPU: {BATCH_SIZE // torch.cuda.device_count()}")
+            print(f"Total batch size: {BATCH_SIZE}")
+            print(f"{'='*80}\n")
         else:
             device = DEVICE
-            print(f"Device: {device}")
+            print(f"\nDevice: {device}\n")
 
     print("\n" + "=" * 80)
     print("TOKEN-INITIALIZED COMPRESSION EXPERIMENT")
@@ -1486,11 +1509,13 @@ def run_token_compression_experiment(
     d_z = 256  # Latent dimension (16x compression from 4096)
     print(f"Creating token-initialized compressor (compressed_length={compressed_length}, d_z={d_z})...")
     dtype = torch.bfloat16 if USE_BF16 else torch.float32
+    # Access config correctly for DataParallel wrapped models
+    base_model = model.module if isinstance(model, torch.nn.DataParallel) else model
     compressor = TokenInitializedCompressor(
         model=model,
         tokenizer=tokenizer,
         compressed_length=compressed_length,
-        hidden_dim=model.config.hidden_size,
+        hidden_dim=base_model.config.hidden_size,
         d_z=d_z
     ).to(device, dtype=dtype)
 
@@ -1517,17 +1542,39 @@ def run_token_compression_experiment(
         "compression_ratio": [],
         "reconstruction_loss": [],
         "generation_loss": [],
-        "perplexity": []
+        "perplexity": [],
+        "epochs": []
     }
 
-    print(f"\nTraining for {epochs} epochs...")
-    print(f"Batch size: {BATCH_SIZE}, Learning rate: {LEARNING_RATE}")
+    # Training configuration header
+    num_batches = len(train_texts) // BATCH_SIZE
+    print(f"\n{'='*80}")
+    print(f"TRAINING CONFIGURATION")
+    print(f"{'='*80}")
+    print(f"Total epochs: {epochs}")
+    print(f"Total samples: {len(train_texts)}")
+    print(f"Batch size: {BATCH_SIZE}")
+    print(f"Batches per epoch: {num_batches}")
+    print(f"Total training batches: {epochs * num_batches}")
+    print(f"Learning rate: {LEARNING_RATE}")
+    print(f"Compressed length: {compressed_length} tokens")
+    print(f"Latent dimension: {d_z}")
+    print(f"Using LoRA: {use_lora_all_layers}")
+    print(f"{'='*80}\n")
 
     model.train() if use_lora_all_layers else model.eval()
     compressor.train()
 
+    import time
+    training_start_time = time.time()
+
     for epoch in range(epochs):
         epoch_losses = []
+        epoch_start_time = time.time()
+        batch_num = 0
+
+        msg = f"\n{'='*80}\nEpoch {epoch+1}/{epochs}\n{'='*80}"
+        print(msg)
 
         for batch_idx in range(0, len(train_texts), BATCH_SIZE):
             batch_texts = train_texts[batch_idx:batch_idx + BATCH_SIZE]
@@ -1565,30 +1612,58 @@ def run_token_compression_experiment(
             loss.backward()
             optimizer.step()
 
-            if batch_idx % 10 == 0:
-                print(f"Epoch {epoch+1}/{epochs}, Batch {batch_idx//BATCH_SIZE}, Loss: {loss.item():.4f}")
+            batch_num += 1
+
+            # Progress logging every 10 batches with detailed info
+            if batch_num % 10 == 0:
+                avg_loss = sum(epoch_losses) / len(epoch_losses)
+                progress_pct = 100 * batch_num / num_batches
+                elapsed = time.time() - epoch_start_time
+                batches_per_sec = batch_num / elapsed if elapsed > 0 else 0
+                eta_seconds = (num_batches - batch_num) / batches_per_sec if batches_per_sec > 0 else 0
+                eta_minutes = eta_seconds / 60
+
+                msg = f"  [{progress_pct:5.1f}%] Batch {batch_num:4d}/{num_batches} | Loss: {avg_loss:.4f} | {batches_per_sec:.2f} batches/s | ETA: {eta_minutes:.1f}m"
+                print(msg)
 
         avg_loss = sum(epoch_losses) / len(epoch_losses)
         metrics["generation_loss"].append(avg_loss)
         metrics["perplexity"].append(math.exp(min(avg_loss, 10)))  # Cap to prevent overflow
 
         # Calculate true compression ratio
-        # Original: ~200 tokens × 4096 dims = 819,200 parameters
-        # Compressed: 64 tokens × 256 dims = 16,384 parameters
-        # Compression ratio: 819,200 / 16,384 = 50x
         seq_compression = 200 / compressed_length  # Sequence length compression
-        dim_compression = model.config.hidden_size / d_z  # Dimension compression
+        dim_compression = base_model.config.hidden_size / d_z  # Dimension compression
         total_compression = seq_compression * dim_compression
         metrics["compression_ratio"].append(total_compression)
 
-        print(f"Epoch {epoch+1} - Avg Loss: {avg_loss:.4f}, Perplexity: {metrics['perplexity'][-1]:.2f}, Compression: {total_compression:.1f}x")
+        # Epoch summary with timing
+        epoch_time = time.time() - epoch_start_time
+        total_elapsed = time.time() - training_start_time
+        remaining_epochs = epochs - (epoch + 1)
+        avg_epoch_time = total_elapsed / (epoch + 1)
+        eta_total = avg_epoch_time * remaining_epochs / 60  # in minutes
+
+        metrics["epochs"].append({
+            "epoch": epoch + 1,
+            "loss": avg_loss,
+            "perplexity": metrics['perplexity'][-1],
+            "compression_ratio": total_compression
+        })
+
+        msg = f"\n{'='*80}\n"
+        msg += f"Epoch {epoch+1}/{epochs} Complete | Time: {epoch_time/60:.1f}m | Total: {total_elapsed/60:.1f}m\n"
+        msg += f"  Avg Loss: {avg_loss:.4f} | Perplexity: {metrics['perplexity'][-1]:.2f} | Compression: {total_compression:.1f}x\n"
+        if remaining_epochs > 0:
+            msg += f"  ETA for remaining {remaining_epochs} epochs: {eta_total:.1f}m\n"
+        msg += f"{'='*80}"
+        print(msg)
 
     # Evaluation
     print("\n" + "=" * 40)
     print("EVALUATION")
     print("=" * 40)
     print(f"Z Vector Shape: [{compressed_length}, {d_z}] = {compressed_length * d_z:,} parameters")
-    print(f"Original Shape: [~200, {model.config.hidden_size}] = ~{200 * model.config.hidden_size:,} parameters")
+    print(f"Original Shape: [~200, {base_model.config.hidden_size}] = ~{200 * base_model.config.hidden_size:,} parameters")
     print(f"Total Compression: {total_compression:.1f}x")
 
     model.eval()
@@ -1632,6 +1707,22 @@ def run_token_compression_experiment(
             print(f"Original: {orig_text}")
             print(f"Compressed: {comp_text}")
             print(f"Z Vector: shape={list(z_vector.shape)}, mean={z_vector.mean().item():.3f}, std={z_vector.std().item():.3f}")
+
+    # Final training summary
+    total_training_time = time.time() - training_start_time
+    msg = f"\n\n{'='*80}\n"
+    msg += f"TRAINING COMPLETE\n"
+    msg += f"{'='*80}\n"
+    msg += f"Total time: {total_training_time/60:.1f} minutes ({total_training_time/3600:.2f} hours)\n"
+    msg += f"Total epochs: {epochs}\n"
+    msg += f"Final loss: {metrics['epochs'][-1]['loss']:.4f}\n"
+    msg += f"Final perplexity: {metrics['epochs'][-1]['perplexity']:.2f}\n"
+    msg += f"Compression ratio: {metrics['epochs'][-1]['compression_ratio']:.1f}x\n"
+    msg += f"\nLoss progression:\n"
+    for epoch_data in metrics['epochs']:
+        msg += f"  Epoch {epoch_data['epoch']:2d}: Loss {epoch_data['loss']:.4f}, Perplexity {epoch_data['perplexity']:.2f}\n"
+    msg += f"{'='*80}\n"
+    print(msg)
 
     return results
 

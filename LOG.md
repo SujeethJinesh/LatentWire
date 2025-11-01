@@ -2,6 +2,162 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🐛 BUG FIXES & COMPREHENSIVE LOGGING (2025-10-31 18:15)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### User Feedback: "Ensure there aren't bugs, and that we get plenty of information"
+
+**Request**: Line-by-line review for bugs + comprehensive progress logging during training
+
+### Bugs Fixed
+
+#### 1. **Log Filename Bug** ✅
+**Issue**: When `gpu_id=None` (multi-GPU mode), log files named `{experiment}_gpuNone_{timestamp}.log`
+
+**Fix**:
+```python
+# Before
+log_path = output_dir / f"{adapter_type}_gpu{gpu_id}_{timestamp}.log"
+
+# After
+gpu_label = "allgpus" if gpu_id is None else f"gpu{gpu_id}"
+log_path = output_dir / f"{adapter_type}_{gpu_label}_{timestamp}.log"
+```
+
+**Result**: Clean filenames like `linear_allgpus_20251031_180000.log`
+
+#### 2. **DataParallel `model.config` Access Bug** ✅
+**Issue**: When model wrapped with DataParallel, `model.config.hidden_size` fails (DataParallel doesn't expose `config`)
+
+**Locations**: Token compression lines 1516, 1635, 1666
+
+**Fix**:
+```python
+# Access base model for config
+base_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+
+# Use base_model.config instead of model.config
+hidden_dim=base_model.config.hidden_size
+```
+
+**Impact**: Prevents AttributeError crashes in multi-GPU token compression
+
+#### 3. **Token Compression Minimal Logging** ✅
+**Issue**: Only basic prints every 10 batches, no progress bars, ETA, or timing
+
+**Before**:
+```
+Epoch 1/10, Batch 0, Loss: 2.5432
+Epoch 1/10, Batch 10, Loss: 2.3456
+...
+Epoch 1 - Avg Loss: 2.1234, Perplexity: 8.36, Compression: 50.0x
+```
+
+**After**:
+```
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+Total epochs: 10
+Total samples: 1000
+Batch size: 40
+Batches per epoch: 25
+...
+
+================================================================================
+Epoch 1/10
+================================================================================
+  [ 40.0%] Batch   10/25 | Loss: 2.3456 | 1.25 batches/s | ETA: 12.0m
+  [ 80.0%] Batch   20/25 | Loss: 2.2123 | 1.30 batches/s | ETA: 3.8m
+
+================================================================================
+Epoch 1/10 Complete | Time: 19.5m | Total: 19.5m
+  Avg Loss: 2.1234 | Perplexity: 8.36 | Compression: 50.0x
+  ETA for remaining 9 epochs: 175.5m
+================================================================================
+```
+
+#### 4. **Missing GPU Configuration Info** ✅
+**Issue**: Experiments didn't clearly show which GPUs were being used
+
+**Added to all experiments**:
+```
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+Effective batch (with grad accum): 320
+================================================================================
+```
+
+**Benefits**:
+- Clear visibility into GPU allocation
+- Easy debugging of batch size scaling
+- Confirms DataParallel is working
+
+#### 5. **Token Compression Batch Numbering Confusion** ✅
+**Issue**: Loop used `for batch_idx in range(0, len(texts), BATCH_SIZE)` then printed `batch_idx//BATCH_SIZE` - confusing index vs batch number
+
+**Fix**:
+```python
+batch_num = 0
+for batch_idx in range(0, len(train_texts), BATCH_SIZE):
+    # ... process batch ...
+    batch_num += 1
+    if batch_num % 10 == 0:
+        print(f"Batch {batch_num:4d}/{num_batches} ...")
+```
+
+### Logging Improvements
+
+#### Added to Adapter Experiments:
+- ✅ GPU configuration header (see above)
+- ✅ Already had comprehensive progress logging every 100 steps
+- ✅ Already had epoch summaries with ETA
+
+#### Added to Token Compression:
+- ✅ GPU configuration header
+- ✅ Training configuration header
+- ✅ Progress logging every 10 batches with ETA and batches/s
+- ✅ Epoch summaries with timing and ETA
+- ✅ Final training summary:
+```
+================================================================================
+TRAINING COMPLETE
+================================================================================
+Total time: 195.0 minutes (3.25 hours)
+Total epochs: 10
+Final loss: 1.8765
+Final perplexity: 6.53
+Compression ratio: 50.0x
+
+Loss progression:
+  Epoch  1: Loss 2.1234, Perplexity 8.36
+  Epoch  2: Loss 2.0123, Perplexity 7.48
+  ...
+  Epoch 10: Loss 1.8765, Perplexity 6.53
+================================================================================
+```
+
+### Summary
+
+| Component | Before | After |
+|-----------|--------|-------|
+| **Log filenames** | `linear_gpuNone_*.log` ❌ | `linear_allgpus_*.log` ✅ |
+| **DataParallel compat** | Crashes on model.config ❌ | Handles correctly ✅ |
+| **Token compression logs** | Minimal prints ❌ | Comprehensive progress ✅ |
+| **GPU visibility** | None ❌ | Full configuration header ✅ |
+| **Batch numbering** | Confusing index ❌ | Clear batch numbers ✅ |
+
+**Status**: All experiments now have comprehensive logging with progress bars, ETAs, GPU configuration, and training summaries. Ready for production runs on HPC.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🎯 SEQUENTIAL + MULTI-GPU: Progressive Results Strategy (2025-10-31 18:00)
 ## ═══════════════════════════════════════════════════════════════════════════
 
