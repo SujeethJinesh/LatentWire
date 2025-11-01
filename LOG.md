@@ -2,6 +2,54 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🎯 BATCH SIZE INCREASE: Better Memory Utilization (2025-10-31 17:10)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Observation: Underutilized GPU Memory
+
+**User feedback**: GPUs using ~63 GiB out of 80 GiB (79% utilization)
+- 17 GiB headroom available
+- Can increase batch size for better throughput
+
+### Memory Analysis
+
+**Current configuration**:
+- batch_size = 8
+- Memory usage: 63 GiB / 80 GiB (79%)
+- Effective batch: 64 (8 × 8 grad accum)
+
+**Memory scaling** (approximately linear with batch size):
+- batch_size=8 → 63 GiB ✓ current
+- batch_size=10 → ~79 GiB ✓ **optimal (98.5% utilization)**
+- batch_size=12 → ~95 GiB ✗ would OOM
+
+### Change Applied
+
+**Increased batch size from 8 → 10** (line 79):
+
+**Benefits**:
+1. **Better memory utilization**: 79% → ~98.5%
+2. **Faster training**: 25% fewer steps (6,250 → 5,000 steps/epoch)
+3. **Larger effective batch**: 64 → 80 (better gradient quality)
+4. **Training time**: ~50-75min/epoch → ~40-60min/epoch
+
+**Updated configuration**:
+```python
+batch_size = 10          # Was 8
+grad_accum_steps = 8     # Unchanged
+effective_batch = 80     # Was 64 (25% increase)
+```
+
+**Impact on steps**:
+- Steps per epoch: 6,250 → 5,000 (20% reduction)
+- Total iterations: 62,500 → 50,000
+- Expected speedup: ~20% faster per epoch
+- Same data coverage (50k samples)
+
+**Status**: Updated and ready for next run.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## ⚡ GPU UTILIZATION & DATA LOADING IMPROVEMENTS (2025-10-31 17:00)
 ## ═══════════════════════════════════════════════════════════════════════════
 

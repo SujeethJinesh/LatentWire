@@ -76,12 +76,12 @@ def get_device_and_config():
         print(f"  - Samples: {config['num_samples']} (reduced for testing)")
         print(f"  - Epochs: {config['epochs']} (reduced for testing)")
     else:
-        config['batch_size'] = 8  # Reduced from 16 to avoid OOM with dual-model loading
+        config['batch_size'] = 10  # Increased from 8 to 10 to utilize available GPU memory (~79GB/80GB)
         config['num_samples'] = 50000  # Increased from 10k to 50k for better coverage with 4 H100s
         config['epochs'] = 10
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
-        config['grad_accum_steps'] = 8  # Doubled to maintain effective batch size of 64
+        config['grad_accum_steps'] = 8  # Effective batch size: 80 (increased from 64)
         if platform == 'hpc':
             print(f"  - Batch size: {config['batch_size']}")
             print(f"  - Samples: {config['num_samples']}")
