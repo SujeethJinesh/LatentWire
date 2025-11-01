@@ -1,10 +1,10 @@
 {
   "layer_0": {
     "cka_metrics": {
-      "cka_before_alignment": 0.5533721446990967,
-      "cka_after_mistral_to_llama": 0.6504062414169312,
-      "cka_after_llama_to_mistral": 0.5165956020355225,
-      "cka_improvement": 0.09703409671783447
+      "cka_before_alignment": 0.40294086933135986,
+      "cka_after_mistral_to_llama": 0.4028567671775818,
+      "cka_after_llama_to_mistral": 0.402840793132782,
+      "cka_improvement": -8.410215377807617e-05
     },
     "mistral_to_mistral": {
       "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
@@ -37,10 +37,10 @@
   },
   "layer_8": {
     "cka_metrics": {
-      "cka_before_alignment": 0.9998032450675964,
-      "cka_after_mistral_to_llama": 0.9999275207519531,
-      "cka_after_llama_to_mistral": 0.9999278783798218,
-      "cka_improvement": 0.00012427568435668945
+      "cka_before_alignment": 0.9999417066574097,
+      "cka_after_mistral_to_llama": 0.9999416470527649,
+      "cka_after_llama_to_mistral": 0.9999417066574097,
+      "cka_improvement": -5.960464477539063e-08
     },
     "mistral_to_mistral": {
       "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
@@ -73,10 +73,10 @@
   },
   "layer_16": {
     "cka_metrics": {
-      "cka_before_alignment": 0.996310830116272,
-      "cka_after_mistral_to_llama": 0.9995718002319336,
-      "cka_after_llama_to_mistral": 0.9995742440223694,
-      "cka_improvement": 0.003260970115661621
+      "cka_before_alignment": 0.9996570944786072,
+      "cka_after_mistral_to_llama": 0.9996570348739624,
+      "cka_after_llama_to_mistral": 0.999657154083252,
+      "cka_improvement": -5.960464477539063e-08
     },
     "mistral_to_mistral": {
       "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
@@ -109,10 +109,10 @@
   },
   "layer_24": {
     "cka_metrics": {
-      "cka_before_alignment": 0.9633821249008179,
-      "cka_after_mistral_to_llama": 0.993379533290863,
-      "cka_after_llama_to_mistral": 0.9918723702430725,
-      "cka_improvement": 0.029997408390045166
+      "cka_before_alignment": 0.9948386549949646,
+      "cka_after_mistral_to_llama": 0.9948335289955139,
+      "cka_after_llama_to_mistral": 0.9948392510414124,
+      "cka_improvement": -5.125999450683594e-06
     },
     "mistral_to_mistral": {
       "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
@@ -145,10 +145,10 @@
   },
   "layer_32": {
     "cka_metrics": {
-      "cka_before_alignment": 0.7996804118156433,
-      "cka_after_mistral_to_llama": 0.7566707730293274,
-      "cka_after_llama_to_mistral": 0.9047213196754456,
-      "cka_improvement": -0.04300963878631592
+      "cka_before_alignment": 0.45962631702423096,
+      "cka_after_mistral_to_llama": 0.459618479013443,
+      "cka_after_llama_to_mistral": 0.45960530638694763,
+      "cka_improvement": -7.838010787963867e-06
     },
     "mistral_to_mistral": {
       "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
