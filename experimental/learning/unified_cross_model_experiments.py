@@ -4454,7 +4454,13 @@ def main():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
 
-    # Note: Barriers needed for training experiments (adapters) below
+    # Synchronize all ranks before starting training experiments
+    # Inference experiments (1-4) only run on rank 0 and can take >10 minutes
+    # Training experiments (5+) use DDP and require all ranks synchronized
+    if dist.is_initialized():
+        dist.barrier()
+        if is_main_process():
+            print("\n✓ All inference experiments complete, syncing ranks before training...")
 
     # ========================================================================
     # PHASE 3: LLAMA 3.1-3.2 TRAINED ADAPTERS (SAME VOCAB) - ~2-3 HOURS

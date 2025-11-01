@@ -175,7 +175,8 @@ def load_hotpot_subset(
 
 def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v2: bool = False) -> List[Dict[str, Any]]:
     name = "squad_v2" if v2 else "squad"
-    ds = load_dataset(f"rajpurkar/{name}", split=split)
+    # SQuAD requires "plain_text" config parameter
+    ds = load_dataset(f"rajpurkar/{name}", "plain_text", split=split)
     rng = random.Random(seed)
     idxs = list(range(len(ds)))
     rng.shuffle(idxs)
