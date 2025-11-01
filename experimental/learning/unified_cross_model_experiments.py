@@ -1251,8 +1251,12 @@ def train_learned_projection(
     print(f"Activations A shape: {activations_a.shape}")
     print(f"Activations B shape: {activations_b.shape}")
 
-    # Initialize projection matrix
-    projection = LearnedProjection(dim_a, dim_b).to(device)
+    # Detect dtype from activations (they may be bfloat16 from H100 models)
+    activation_dtype = activations_a.dtype
+    print(f"Activation dtype: {activation_dtype}")
+
+    # Initialize projection matrix with matching dtype
+    projection = LearnedProjection(dim_a, dim_b).to(device=device, dtype=activation_dtype)
     optimizer = optim.Adam(projection.parameters(), lr=learning_rate)
 
     # Create dataset and dataloader
