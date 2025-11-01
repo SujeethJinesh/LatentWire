@@ -369,8 +369,14 @@ def setup_ddp():
         return 0, 1, DEVICE
 
     if not dist.is_initialized():
-        # Initialize process group
-        dist.init_process_group(backend="nccl" if torch.cuda.is_available() else "gloo")
+        # Initialize process group with extended timeout
+        # Inference experiments on rank 0 can take >10 min, so increase timeout to 60 min
+        import datetime
+        timeout_seconds = 3600  # 60 minutes
+        dist.init_process_group(
+            backend="nccl" if torch.cuda.is_available() else "gloo",
+            timeout=datetime.timedelta(seconds=timeout_seconds)
+        )
 
     rank = dist.get_rank()
     world_size = dist.get_world_size()
@@ -4281,8 +4287,14 @@ def main():
         world_size = int(os.environ['WORLD_SIZE'])
         local_rank = int(os.environ.get('LOCAL_RANK', 0))
 
-        # Initialize process group for DDP
-        dist.init_process_group(backend='nccl' if torch.cuda.is_available() else 'gloo')
+        # Initialize process group for DDP with extended timeout
+        # Inference experiments on rank 0 can take >10 min, so increase timeout to 60 min
+        import datetime
+        timeout_seconds = 3600  # 60 minutes
+        dist.init_process_group(
+            backend='nccl' if torch.cuda.is_available() else 'gloo',
+            timeout=datetime.timedelta(seconds=timeout_seconds)
+        )
 
         # Set device for this process
         if torch.cuda.is_available():
