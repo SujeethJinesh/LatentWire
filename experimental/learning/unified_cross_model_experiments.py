@@ -1191,19 +1191,28 @@ def train_learned_projection(
     base_model_a = model_a.module if isinstance(model_a, (nn.DataParallel, DDP)) else model_a
     base_model_b = model_b.module if isinstance(model_b, (nn.DataParallel, DDP)) else model_b
 
-    # Extract activations for all sentences
+    # Extract activations for all sentences - BATCHED for GPU efficiency
     print(f"\nExtracting layer-{layer_idx} final-token activations...")
+    print(f"Using batch size {batch_size} for activation extraction")
     activations_a = []
     activations_b = []
 
+    # Process in batches for GPU efficiency
+    num_batches = (len(sentences) + batch_size - 1) // batch_size
+
     with torch.no_grad():
-        for i, sentence in enumerate(tqdm(sentences, desc="Extracting activations")):
-            # Tokenize for model A
+        for batch_idx in tqdm(range(num_batches), desc="Extracting activations"):
+            batch_start = batch_idx * batch_size
+            batch_end = min(batch_start + batch_size, len(sentences))
+            batch_sentences = sentences[batch_start:batch_end]
+
+            # Tokenize batch for model A
             inputs_a = tokenizer_a(
-                sentence,
+                batch_sentences,
                 return_tensors="pt",
                 truncation=True,
-                max_length=512
+                max_length=512,
+                padding=True
             ).to(device)
 
             # Get model A activations
@@ -1212,16 +1221,17 @@ def train_learned_projection(
                 output_hidden_states=True,
                 use_cache=False
             )
-            # Final token of layer layer_idx
-            h_a = outputs_a.hidden_states[layer_idx][:, -1, :]  # [1, dim_a]
+            # Final token of layer layer_idx for each sequence
+            h_a = outputs_a.hidden_states[layer_idx][:, -1, :]  # [B, dim_a]
             activations_a.append(h_a.cpu())
 
-            # Tokenize for model B
+            # Tokenize batch for model B
             inputs_b = tokenizer_b(
-                sentence,
+                batch_sentences,
                 return_tensors="pt",
                 truncation=True,
-                max_length=512
+                max_length=512,
+                padding=True
             ).to(device)
 
             # Get model B activations
@@ -1230,8 +1240,8 @@ def train_learned_projection(
                 output_hidden_states=True,
                 use_cache=False
             )
-            # Final token of layer layer_idx
-            h_b = outputs_b.hidden_states[layer_idx][:, -1, :]  # [1, dim_b]
+            # Final token of layer layer_idx for each sequence
+            h_b = outputs_b.hidden_states[layer_idx][:, -1, :]  # [B, dim_b]
             activations_b.append(h_b.cpu())
 
     # Stack activations into tensors
@@ -3524,6 +3534,30 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             projection_path.parent.mkdir(parents=True, exist_ok=True)
             torch.save(learned_projection.state_dict(), projection_path)
             print(f"  ✓ Saved trained projection to {projection_path}")
+
+        # Train reverse projection (B→A) for bidirectional communication
+        reverse_projection_path = script_dir / "runs" / "learned_projection" / f"projection_{dim_b}_to_{dim_a}.pt"
+        if not reverse_projection_path.exists():
+            print(f"\n  Training reverse projection ({dim_b} → {dim_a}) for bidirectional communication...")
+            reverse_projection = train_learned_projection(
+                model_a=model_b,  # Swap models
+                model_b=model_a,
+                tokenizer_a=tokenizer_b,  # Swap tokenizers
+                tokenizer_b=tokenizer_a,
+                dim_a=dim_b,  # Swap dimensions
+                dim_b=dim_a,
+                layer_idx=RAMESH_LI_LAYER,
+                num_samples=3072,
+                learning_rate=1e-3,
+                num_epochs=10,
+                batch_size=32,
+                device=device,
+                seed=42
+            )
+            torch.save(reverse_projection.state_dict(), reverse_projection_path)
+            print(f"  ✓ Saved reverse projection to {reverse_projection_path}")
+        else:
+            print(f"  ✓ Reverse projection already exists at {reverse_projection_path}")
     else:
         print(f"\n✓ Dimensions match ({dim_a} = {dim_b}), no projection needed")
 
