@@ -1,125 +1,0 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-WARNING: PEFT library not available. LoRA training will be disabled.
-Install with: pip install peft
-
-================================================================================
-Starting ablation: M=64, cross_attention
-GPU: 0, Loss weights: {'teacher_forcing': 0.5, 'generation': 0.3, 'contrastive': 0.2}
-================================================================================
-
-Loading model: meta-llama/Meta-Llama-3.1-8B-Instruct
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 914.99it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:00,  7.57it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  7.29it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:00<00:00,  7.19it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00,  8.44it/s]
-WARNING: PEFT not available - training full model (not recommended)
-Loading SQuAD dataset...
-Processing train data:   0%|          | 0/10000 [00:00<?, ?it/s]Processing train data:   0%|          | 23/10000 [00:00<00:46, 215.01it/s]Processing train data:   0%|          | 45/10000 [00:00<00:58, 168.88it/s]Processing train data:   1%|          | 79/10000 [00:00<00:42, 234.77it/s]Processing train data:   1%|          | 104/10000 [00:00<01:16, 129.02it/s]Processing train data:   1%|▏         | 136/10000 [00:00<00:58, 167.55it/s]Processing train data:   2%|▏         | 215/10000 [00:00<00:31, 311.95it/s]Processing train data:   3%|▎         | 306/10000 [00:01<00:21, 443.25it/s]Processing train data:   4%|▍         | 449/10000 [00:01<00:14, 679.44it/s]Processing train data:   7%|▋         | 651/10000 [00:01<00:09, 1008.38it/s]Processing train data:   8%|▊         | 788/10000 [00:01<00:08, 1105.33it/s]Processing train data:  13%|█▎        | 1264/10000 [00:01<00:04, 2034.73it/s]Processing train data:  20%|██        | 2049/10000 [00:01<00:02, 3540.58it/s]Processing train data:  38%|███▊      | 3841/10000 [00:01<00:00, 7522.84it/s]Processing train data:  59%|█████▊    | 5852/10000 [00:01<00:00, 11089.94it/s]Processing train data:  79%|███████▉  | 7885/10000 [00:01<00:00, 13752.56it/s]Processing train data:  98%|█████████▊| 9840/10000 [00:01<00:00, 15442.89it/s]Processing train data: 100%|██████████| 10000/10000 [00:01<00:00, 5065.78it/s]
-Processing validation data:   0%|          | 0/1000 [00:00<?, ?it/s]Processing validation data: 100%|██████████| 1000/1000 [00:00<00:00, 10323.14it/s]
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:617: UserWarning: This DataLoader will create 4 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
-  warnings.warn(
-
-================================================================================
-BASELINE EVALUATION (Uncompressed Teacher)
-================================================================================
-Evaluating baseline (uncompressed teacher model)...
-Baseline eval:   0%|          | 0/63 [00:00<?, ?it/s]/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:   2%|▏         | 1/63 [00:03<03:35,  3.48s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:   3%|▎         | 2/63 [00:04<01:50,  1.80s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:   5%|▍         | 3/63 [00:04<01:10,  1.18s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:   6%|▋         | 4/63 [00:05<01:01,  1.04s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:   8%|▊         | 5/63 [00:06<00:51,  1.12it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  10%|▉         | 6/63 [00:06<00:43,  1.32it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  11%|█         | 7/63 [00:07<00:38,  1.45it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  13%|█▎        | 8/63 [00:07<00:40,  1.36it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  14%|█▍        | 9/63 [00:08<00:40,  1.33it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  16%|█▌        | 10/63 [00:09<00:37,  1.41it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  17%|█▋        | 11/63 [00:10<00:37,  1.40it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  19%|█▉        | 12/63 [00:10<00:37,  1.37it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  21%|██        | 13/63 [00:11<00:37,  1.32it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  22%|██▏       | 14/63 [00:12<00:38,  1.26it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  24%|██▍       | 15/63 [00:13<00:36,  1.32it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  25%|██▌       | 16/63 [00:13<00:35,  1.32it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  27%|██▋       | 17/63 [00:14<00:34,  1.34it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  29%|██▊       | 18/63 [00:15<00:32,  1.37it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  30%|███       | 19/63 [00:16<00:32,  1.34it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  32%|███▏      | 20/63 [00:16<00:32,  1.31it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  33%|███▎      | 21/63 [00:17<00:30,  1.38it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  35%|███▍      | 22/63 [00:18<00:29,  1.38it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  37%|███▋      | 23/63 [00:18<00:28,  1.42it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  38%|███▊      | 24/63 [00:20<00:32,  1.20it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  40%|███▉      | 25/63 [00:21<00:33,  1.15it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  41%|████▏     | 26/63 [00:21<00:30,  1.20it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  43%|████▎     | 27/63 [00:22<00:33,  1.09it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  44%|████▍     | 28/63 [00:23<00:31,  1.12it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  46%|████▌     | 29/63 [00:24<00:28,  1.20it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  48%|████▊     | 30/63 [00:25<00:25,  1.28it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  49%|████▉     | 31/63 [00:26<00:27,  1.15it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  51%|█████     | 32/63 [00:27<00:29,  1.06it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  52%|█████▏    | 33/63 [00:27<00:25,  1.19it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  54%|█████▍    | 34/63 [00:28<00:25,  1.16it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  56%|█████▌    | 35/63 [00:29<00:24,  1.13it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  57%|█████▋    | 36/63 [00:30<00:26,  1.01it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  59%|█████▊    | 37/63 [00:31<00:25,  1.03it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  60%|██████    | 38/63 [00:32<00:25,  1.02s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  62%|██████▏   | 39/63 [00:33<00:22,  1.07it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  63%|██████▎   | 40/63 [00:35<00:24,  1.06s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  65%|██████▌   | 41/63 [00:36<00:23,  1.08s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  67%|██████▋   | 42/63 [00:37<00:21,  1.04s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  68%|██████▊   | 43/63 [00:37<00:18,  1.08it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  70%|██████▉   | 44/63 [00:38<00:18,  1.01it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  71%|███████▏  | 45/63 [00:40<00:18,  1.02s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  73%|███████▎  | 46/63 [00:41<00:17,  1.05s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  75%|███████▍  | 47/63 [00:41<00:15,  1.06it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  76%|███████▌  | 48/63 [00:42<00:14,  1.03it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  78%|███████▊  | 49/63 [00:43<00:13,  1.00it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  79%|███████▉  | 50/63 [00:44<00:11,  1.10it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  81%|████████  | 51/63 [00:45<00:10,  1.10it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  83%|████████▎ | 52/63 [00:46<00:09,  1.16it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  84%|████████▍ | 53/63 [00:47<00:08,  1.16it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  86%|████████▌ | 54/63 [00:48<00:07,  1.16it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  87%|████████▋ | 55/63 [00:48<00:06,  1.22it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  89%|████████▉ | 56/63 [00:49<00:05,  1.33it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  90%|█████████ | 57/63 [00:50<00:05,  1.20it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  92%|█████████▏| 58/63 [00:51<00:04,  1.12it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  94%|█████████▎| 59/63 [00:52<00:03,  1.12it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  95%|█████████▌| 60/63 [00:53<00:02,  1.15it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  97%|█████████▋| 61/63 [00:54<00:01,  1.10it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval:  98%|█████████▊| 62/63 [00:54<00:00,  1.12it/s]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
-Baseline eval: 100%|██████████| 63/63 [00:55<00:00,  1.27it/s]Baseline eval: 100%|██████████| 63/63 [00:55<00:00,  1.13it/s]
-Baseline F1: 0.0390, EM: 0.0000
-================================================================================
-
-Training steps: 3125, Warmup steps: 156
-Batches per epoch: 1250, Grad accum: 4
-
-Epoch 1/10:   0%|          | 0/1250 [00:00<?, ?it/s]Epoch 1/10:   0%|          | 0/1250 [00:00<?, ?it/s]
-Error in ablation: Expected input batch_size (24) to match target batch_size (32).
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/compression_ablations.py", line 924, in run_single_ablation
-    trainer.train()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/compression_ablations.py", line 851, in train
-    avg_loss = self.train_epoch(epoch)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/compression_ablations.py", line 629, in train_epoch
-    loss, loss_dict = self.compute_loss(batch)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/compression_ablations.py", line 554, in compute_loss
-    teacher_forcing_loss = loss_fct(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/loss.py", line 1293, in forward
-    return F.cross_entropy(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/functional.py", line 3479, in cross_entropy
-    return torch._C._nn.cross_entropy_loss(
-ValueError: Expected input batch_size (24) to match target batch_size (32).
-
-
-Final Results:
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/compression_ablations.py", line 1090, in <module>
-    print(f"  Best F1: {result['best_f1']:.4f}")
-KeyError: 'best_f1'

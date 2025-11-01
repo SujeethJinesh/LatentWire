@@ -1,38 +1,0 @@
-================================================================================
-LEARNED ADAPTER EXPERIMENT - AFFINE
-================================================================================
-Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251030_163759.log
-GPU assigned: 1
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 618.72it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 618.72it/s]
-
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.60it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.60it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.76it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.76it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.91it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.91it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.98it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.98it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.88it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.88it/s]
-
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3842.11it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3842.11it/s]
-
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  3.09it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  3.09it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.60it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.60it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.52it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.52it/s]
-
-
-Training AffineAdapter...
-Loading dataset (10000 samples)...
-
-================================================================================
-AFFINE ADAPTER EXPERIMENT FAILED
-================================================================================
-Error: name 'MAX_LENGTH' is not defined
-Traceback (most recent call last):
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 973, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 973, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 677, in train_adapter
-    train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 677, in train_adapter
-    train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
-NameError: name 'MAX_LENGTH' is not defined
-NameError: name 'MAX_LENGTH' is not defined

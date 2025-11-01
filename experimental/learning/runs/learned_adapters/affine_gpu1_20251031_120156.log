@@ -1,165 +1,0 @@
-================================================================================
-LEARNED ADAPTER EXPERIMENT - AFFINE
-================================================================================
-Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/affine_gpu1_20251031_120156.log
-GPU assigned: 1
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8401.21it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8401.21it/s]
-
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.54it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  3.54it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.89it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  3.89it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.94it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00,  3.94it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00,  4.11it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00,  4.11it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.96it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  3.96it/s]
-
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2803.05it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2803.05it/s]
-
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.99it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.99it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.39it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  3.39it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.50it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.41it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00,  3.41it/s]
-
-
-Training AffineAdapter...
-Loading dataset (10000 samples)...
-
-Epoch 1/10
-  Step 10/1250: Loss = 11.2957
-  Step 20/1250: Loss = 10.7121
-  Step 30/1250: Loss = 10.2326
-  Step 40/1250: Loss = 9.9185
-  Step 50/1250: Loss = 9.7023
-  Step 60/1250: Loss = 9.5192
-  Step 70/1250: Loss = 9.3781
-  Step 80/1250: Loss = 9.2581
-  Step 90/1250: Loss = 9.1523
-  Step 100/1250: Loss = 9.0716
-  Step 110/1250: Loss = 8.9936
-  Step 120/1250: Loss = 8.9307
-  Step 130/1250: Loss = 8.8740
-  Step 140/1250: Loss = 8.8137
-  Step 150/1250: Loss = 8.7655
-  Step 160/1250: Loss = 8.7173
-  Step 170/1250: Loss = 8.6831
-  Step 180/1250: Loss = 8.6501
-  Step 190/1250: Loss = 8.6188
-  Step 200/1250: Loss = 8.5878
-  Step 210/1250: Loss = 8.5620
-  Step 220/1250: Loss = 8.5348
-  Step 230/1250: Loss = 8.5066
-  Step 240/1250: Loss = 8.4824
-  Step 250/1250: Loss = 8.4586
-  Step 260/1250: Loss = 8.4384
-  Step 270/1250: Loss = 8.4212
-  Step 280/1250: Loss = 8.4024
-  Step 290/1250: Loss = 8.3838
-  Step 300/1250: Loss = 8.3699
-  Step 310/1250: Loss = 8.3545
-  Step 320/1250: Loss = 8.3377
-  Step 330/1250: Loss = 8.3239
-  Step 340/1250: Loss = 8.3090
-  Step 350/1250: Loss = 8.2971
-  Step 360/1250: Loss = 8.2846
-  Step 370/1250: Loss = 8.2719
-  Step 380/1250: Loss = 8.2591
-  Step 390/1250: Loss = 8.2469
-  Step 400/1250: Loss = 8.2365
-  Step 410/1250: Loss = 8.2242
-  Step 420/1250: Loss = 8.2137
-  Step 430/1250: Loss = 8.2064
-  Step 440/1250: Loss = 8.1976
-  Step 450/1250: Loss = 8.1894
-  Step 460/1250: Loss = 8.1823
-  Step 470/1250: Loss = 8.1744
-  Step 480/1250: Loss = 8.1656
-  Step 490/1250: Loss = 8.1567
-  Step 500/1250: Loss = 8.1489
-  Step 510/1250: Loss = 8.1416
-  Step 520/1250: Loss = 8.1328
-  Step 530/1250: Loss = 8.1250
-  Step 540/1250: Loss = 8.1173
-  Step 550/1250: Loss = 8.1099
-  Step 560/1250: Loss = 8.1020
-  Step 570/1250: Loss = 8.0960
-  Step 580/1250: Loss = 8.0890
-  Step 590/1250: Loss = 8.0825
-  Step 600/1250: Loss = 8.0757
-  Step 610/1250: Loss = 8.0697
-  Step 620/1250: Loss = 8.0650
-  Step 630/1250: Loss = 8.0590
-  Step 640/1250: Loss = 8.0532
-  Step 650/1250: Loss = 8.0478
-  Step 660/1250: Loss = 8.0418
-  Step 670/1250: Loss = 8.0347
-  Step 680/1250: Loss = 8.0315
-  Step 690/1250: Loss = 8.0251
-  Step 700/1250: Loss = 8.0197
-  Step 710/1250: Loss = 8.0147
-  Step 720/1250: Loss = 8.0088
-  Step 730/1250: Loss = 8.0042
-  Step 740/1250: Loss = 7.9992
-  Step 750/1250: Loss = 7.9939
-  Step 760/1250: Loss = 7.9894
-  Step 770/1250: Loss = 7.9843
-  Step 780/1250: Loss = 7.9801
-  Step 790/1250: Loss = 7.9760
-  Step 800/1250: Loss = 7.9718
-  Step 810/1250: Loss = 7.9673
-  Step 820/1250: Loss = 7.9633
-  Step 830/1250: Loss = 7.9591
-  Step 840/1250: Loss = 7.9544
-  Step 850/1250: Loss = 7.9493
-  Step 860/1250: Loss = 7.9450
-  Step 870/1250: Loss = 7.9418
-  Step 880/1250: Loss = 7.9375
-  Step 890/1250: Loss = 7.9340
-  Step 900/1250: Loss = 7.9295
-  Step 910/1250: Loss = 7.9244
-  Step 920/1250: Loss = 7.9203
-  Step 930/1250: Loss = 7.9170
-  Step 940/1250: Loss = 7.9137
-  Step 950/1250: Loss = 7.9115
-  Step 960/1250: Loss = 7.9082
-  Step 970/1250: Loss = 7.9045
-  Step 980/1250: Loss = 7.9016
-  Step 990/1250: Loss = 7.8984
-  Step 1000/1250: Loss = 7.8940
-  Step 1010/1250: Loss = 7.8916
-  Step 1020/1250: Loss = 7.8890
-  Step 1030/1250: Loss = 7.8853
-  Step 1040/1250: Loss = 7.8821
-  Step 1050/1250: Loss = 7.8792
-  Step 1060/1250: Loss = 7.8765
-  Step 1070/1250: Loss = 7.8736
-  Step 1080/1250: Loss = 7.8710
-  Step 1090/1250: Loss = 7.8680
-  Step 1100/1250: Loss = 7.8648
-  Step 1110/1250: Loss = 7.8620
-  Step 1120/1250: Loss = 7.8582
-  Step 1130/1250: Loss = 7.8556
-  Step 1140/1250: Loss = 7.8531
-  Step 1150/1250: Loss = 7.8496
-  Step 1160/1250: Loss = 7.8462
-  Step 1170/1250: Loss = 7.8429
-  Step 1180/1250: Loss = 7.8397
-  Step 1190/1250: Loss = 7.8363
-  Step 1200/1250: Loss = 7.8338
-  Step 1210/1250: Loss = 7.8310
-  Step 1220/1250: Loss = 7.8281
-  Step 1230/1250: Loss = 7.8251
-  Step 1240/1250: Loss = 7.8231
-  Step 1250/1250: Loss = 7.8199
-
-================================================================================
-AFFINE ADAPTER EXPERIMENT FAILED
-================================================================================
-Error: list index out of range
-Traceback (most recent call last):
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1076, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1076, in run_adapter_experiment
-    adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 944, in train_adapter
-    source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 944, in train_adapter
-    source_repr = outputs_a.hidden_states[ALIGNMENT_LAYERS[1]][:, 0, :]
-IndexError: list index out of range
-IndexError: list index out of range
