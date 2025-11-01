@@ -1,0 +1,309 @@
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Model A: meta-llama/Llama-3.1-8B-Instruct
+Model B: mistralai/Mistral-7B-Instruct-v0.3
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_allgpus_20251101_010723.log
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2804.62it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 2804.62it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  2.03it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:01,  2.03it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  2.65it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00,  2.65it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.64it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.64it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.81it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.81it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.68it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.68it/s]
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2640.14it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 2640.14it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.30it/s]Loading checkpoint shards:  33%|###3      | 1/3 [00:00<00:00,  2.30it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  2.63it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00,  2.63it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.79it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.79it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.69it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:01<00:00,  2.69it/s]
+
+
+Training LoRAAdapter...
+
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+Total epochs: 5
+Steps per epoch: 250
+Total training steps: 1250
+Batch size: 10
+Gradient accumulation: 8 (effective batch: 80)
+Learning rate: 5e-05
+Alignment layers: [8, 16, 24]
+================================================================================
+
+  Step 10/250: Loss = 10.4268 (Gen: 10.1943, Contr: 2.3040, Align: 76.5784, Uniform: -0.7549)
+  Step 20/250: Loss = 10.4599 (Gen: 10.2252, Contr: 2.3026, Align: 78.6699, Uniform: -0.7470)
+  Step 30/250: Loss = 10.4957 (Gen: 10.2587, Contr: 2.3040, Align: 77.6179, Uniform: -0.7502)
+  Step 40/250: Loss = 10.4913 (Gen: 10.2519, Contr: 2.3044, Align: 79.3766, Uniform: -0.7602)
+  Step 50/250: Loss = 10.4618 (Gen: 10.2201, Contr: 2.3038, Align: 79.4751, Uniform: -0.7713)
+  Step 60/250: Loss = 10.4539 (Gen: 10.2099, Contr: 2.3045, Align: 81.5688, Uniform: -0.7715)
+  Step 70/250: Loss = 10.4434 (Gen: 10.1970, Contr: 2.3050, Align: 82.1751, Uniform: -0.7728)
+  Step 80/250: Loss = 10.4363 (Gen: 10.1877, Contr: 2.3042, Align: 82.4070, Uniform: -0.7720)
+  Step 90/250: Loss = 10.4294 (Gen: 10.1785, Contr: 2.3039, Align: 82.5850  Step 10/250: Loss = 10.5126 (Gen: 10.2799, Contr: 2.3061, Align: 94.6170, Uniform: -0.7661)
+  Step 20/250: Loss = 10.5021 (Gen: 10.2670, Contr: 2.3068, Align: 88.4751, Uniform: -0.7745)
+  Step 30/250: Loss = 10.4685 (Gen: 10.2310, Contr: 2.3080, Align: 88.9838, Uniform: -0.7737)
+  Step 40/250: Loss = 10.4541 (Gen: 10.2145, Contr: 2.3063, Align: 86.1033, Uniform: -0.7693)
+  Step  Step 110/250: Loss = 10.4006 (Gen: 10.1451, Contr: 2.3036, Align: 84.3764, Uniform: -0.7715)
+  Step 120/250: Loss = 10.3861 (Gen: 10.1283, Contr: 2.3033, Align: 84.7204, Uniform: -0.7722)
+  Step 130/250: Loss = 10.3762 (Gen: 10.1161, Contr: 2.3036, Align: 84.3780, Uniform: -0.7722)
+  Step 140/250: Loss = 10.3666 (Gen: 10.1042, Contr: 2.3038, Align: 84.0435, Uniform: -0.7698)
+  Step 150/250: Loss = 10.3610 (Gen: 10.0963, Contr: 2.3038, Align: 83.8940, Uniform: -0.7690)
+  Step 160/250: Loss = 10.3503 (Gen: 10.0833, Contr: 2.3041, Align: 84.0575, Uniform: -0.7692)
+  Step 170/250: Loss = 10.3366 (Gen: 10.0672, Contr: 2.3043, Align: 85.1297, Uniform: -0.7711)
+  Step 180/250: Loss = 10.3254 (Gen: 10.0537, Contr: 2.3043, Align: 85.0031, Uniform: -0.7698)
+  Step 190/250: Loss = 10.3101 (Gen: 10.0361, Contr: 2.3041, Align  Step 110/250: Loss = 10.4163 (Gen: 10.1606, Contr: 2.3054, Align: 85.4737, Uniform: -0.7615)
+  Step 120/250: Loss = 10.4037 (Gen: 10.1457, Contr: 2.3055, Align: 85.3642, Uniform: -0.7655)
+  Step 130/250: Loss = 10.3888 (Gen: 10.1286, Contr: 2.3054, Align: 85.7182, Uniform: -0.7637)
+  Step 140/250: Loss = 10.3798 (Gen: 10.1172, Contr: 2.3053, Align: 85.8486, Uniform: -0.7616)
+  Step 150/  Step 210/250: Loss = 10.2815 (Gen: 10.0029, Contr: 2.3041, Align: 85.0842, Uniform: -0.7683)
+  Step 220/250: Loss = 10.2708 (Gen: 9.9899, Contr: 2.3041, Align: 85.5777, Uniform: -0.7709)
+  Step 230/250: Loss = 10.2582 (Gen: 9.9750, Contr: 2.3042, Align: 85.7181, Uniform: -0.7705)
+  Step 240/250: Loss = 10.2450 (Gen: 9.9595, Contr: 2.3042, Align: 85.3460, Uniform: -0.7710)
+  Step 250/250: Loss = 10.2340 (Gen: 9.9463, Contr: 2.3042, Align: 84.7700, Uniform: -0.7700)
+  Step 10/250: Loss = 9.9311 (Gen: 9.5835, Contr: 2.3039, Align: 85.8968, Uniform: -0.8061)
+  Step 20/250: Loss = 9.9080 (Gen: 9.5579, Contr: 2.3045, Align: 82.3849, Uniform: -0.7931)
+  Step 30/250: Loss = 9.8783 (Gen: 9.5259, Contr: 2.3051, Align: 87.8729, Uniform: -0.7910)
+  Step 40/250: Loss = 9.8592 (Gen: 9.5045, Contr: 2.3049, Align: 86.3242, Uniform: -0.7913)
+  Step 50/250: Loss = 9.8454 (Gen: 9.4884, Contr: 2.3047, Align: 85.7840, Uniform: -0.7846)
+  Step 60/250: Loss = 9.8360 (Gen: 9.4767, Contr: 2.3046, Align: 85.2318, Uniform: -0.7800)
+  Step 70/250: Loss = 9.8213 (Gen: 9.4597, Contr: 2.3044, Align: 85.8934, Uniform: -0.7772)
+  Step 80/250: Loss = 9.8050 (Gen: 9.4411, Contr: 2.3046, Align: 85.3998, Uniform: -0.7768)
+  Step 90/250: Loss = 9.7989 (Gen: 9.4326, Contr: 2.3053, Align: 83.8026, Uniform: -0.7755)
+  [ 40.0%] Step  100/250 | Loss: 9.7935 (Gen: 9.4249, Contr: 2.3050, Align: 82.9721, Uniform: -0.7747) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.5m
+  [ 40.0%] Step  100/250 | Loss: 9.7935 (Gen: 9.4249, Contr: 2.3050, Align: 82.9721, Uniform: -0.7747) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.5m
+  Step 110/250: Loss = 9.7836 (Gen: 9.4128, Contr: 2.3049, Align: 82.6741, Uniform: -0.7775)
+  Step 120/250: Loss = 9.7699 (Gen: 9.3967, Contr: 2.3051, Align: 83.3670, Uniform: -0.7777)
+  Step 130/250: Loss = 9.7536 (Gen: 9.3781, Contr: 2.3050, Align: 82.7694, Uniform: -0.7757)
+  Step 140/250: Loss = 9.7454 (Gen: 9.3677, Contr: 2.3050, Align: 82.5423, Uniform: -0.7744)
+  Step 150/250: Loss = 9.7363 (Gen: 9.3561, Contr: 2.3052, Align: 82.8623, Uniform: -0.7715)
+  Step 160/250: Loss = 9.7251 (Gen: 9.3427, Contr: 2.3051, Align: 83.3739, Uniform: -0.7703)
+  Step 170/250: Loss = 9.7145 (Gen: 9.3298, Contr: 2.3051, Align: 83.2740, Uniform: -0.7705)
+  Step 180/250: Loss = 9.7064 (Gen: 9.3194, Contr: 2.3049, Align: 83.3650, Uniform: -0.7721)
+  Step 190/250: Loss = 9.6974 (Gen: 9.3081, Contr: 2.3049, Align: 83.7295, Uniform: -0.7729)
+  [ 80.0%] Step  200/250 | Loss: 9.6872 (Gen: 9.2956, Contr: 2.3048, Align: 83.9864, Uniform: -0.7718) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: 2.906 | 0.39 steps/s | ETA: 2.2m
+  [ 80.0%] Step  200/250 | Loss: 9.6872 (Gen: 9.2956, Contr: 2.3048, Align: 83.9864, Uniform: -0.7718) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: 2.906 | 0.39 steps/s | ETA: 2.2m
+  Step 210/250: Loss = 9.6811 (Gen: 9.2872, Contr: 2.3046, Align: 84.5108, Uniform: -0.7715)
+  Step 220/250: Loss = 9.6740 (Gen: 9.2779, Contr: 2.3047, Align: 84.5990, Uniform: -0.7711)
+  Step 230/250: Loss = 9.6667 (Gen: 9.2682, Contr: 2.3045, Align: 84.4543, Uniform: -0.7719)
+  Step 240/250: Loss = 9.6598 (Gen: 9.2590, Contr: 2.3046, Align: 84.7046, Uniform: -0.7719)
+  Step 250/250: Loss = 9.6509 (Gen: 9.2478, Contr: 2.3045, Align: 84.6652, Uniform: -0.7716)
+  Step 10/250: Loss = 9.4592 (Gen: 8.9980, Contr: 2.3061, Align: 89.4248, Uniform: -0.7716)
+  Step 20/250: Loss = 9.4563 (Gen: 8.9951, Contr: 2.3063, Align: 87.8076, Uniform: -0.7703)
+  Step 30/250: Loss = 9.4553 (Gen: 8.9939, Contr: 2.3067, Align: 89.9030, Uniform: -0.7713)
+  Step 40/250: Loss = 9.4611 (Gen: 8.9998, Contr: 2.3065, Align: 88.2531, Uniform: -0.7692)
+  Step 50/250: Loss = 9.4591 (Gen: 8.9978, Contr: 2.3064, Align: 85.6162, Uniform: -0.7683)
+  Step 60/250: Loss = 9.4449 (Gen: 8.9837, Contr: 2.3063, Align: 87.1965, Uniform: -0.7651)
+  Step 70/250: Loss = 9.4344 (Gen: 8.9732, Contr: 2.3063, Align: 85.5526, Uniform: -0.7633)
+  Step 80/250: Loss = 9.4353 (Gen: 8.9740, Contr: 2.3063, Align: 85.1687, Uniform: -0.7666)
+  Step 90/250: Loss = 9.4220 (Gen: 8.9609, Contr: 2.3059, Align: 86.3587, Uniform: -0.7676)
+  [ 40.0%] Step  100/250 | Loss: 9.4168 (Gen: 8.9556, Contr: 2.3061, Align: 86.2355, Uniform: -0.7689) | ContrW: 0.200 | LR: 2.70e-05 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
+  [ 40.0%] Step  100/250 | Loss: 9.4168 (Gen: 8.9556, Contr: 2.3061, Align: 86.2355, Uniform: -0.7689) | ContrW: 0.200 | LR: 2.70e-05 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
+  Step 110/250: Loss = 9.4046 (Gen: 8.9435, Contr: 2.3056, Align: 85.4138, Uniform: -0.7688)
+  Step 120/250: Loss = 9.3899 (Gen: 8.9288, Contr: 2.3056, Align: 85.5027, Uniform: -0.7658)
+  Step 130/250: Loss = 9.3830 (Gen: 8.9219, Contr: 2.3057, Align: 86.0203, Uniform: -0.7643)
+  Step 140/250: Loss = 9.3770 (Gen: 8.9159, Contr: 2.3058, Align: 86.6770, Uniform: -0.7632)
+  Step 150/250: Loss = 9.3707 (Gen: 8.9095, Contr: 2.3058, Align: 87.0669, Uniform: -0.7653)
+  Step 160/250: Loss = 9.3683 (Gen: 8.9071, Contr: 2.3059, Align: 86.7750, Uniform: -0.7672)
+  Step 170/250: Loss = 9.3628 (Gen: 8.9015, Contr: 2.3061, Align: 86.8978, Uniform: -0.7654)
+  Step 180/250: Loss = 9.3594 (Gen: 8.8982, Contr: 2.3061, Align: 87.0455, Uniform: -0.7639)
+  Step 190/250: Loss = 9.3532 (Gen: 8.8919, Contr: 2.3061, Align: 86.4023, Uniform: -0.7637)
+  [ 80.0%] Step  200/250 | Loss: 9.3420 (Gen: 8.8808, Contr: 2.3060, Align: 86.9861, Uniform: -0.7624) | ContrW: 0.200 | LR: 2.05e-05 | GradNorm: 2.859 | 0.39 steps/s | ETA: 2.2m
+  [ 80.0%] Step  200/250 | Loss: 9.3420 (Gen: 8.8808, Contr: 2.3060, Align: 86.9861, Uniform: -0.7624) | ContrW: 0.200 | LR: 2.05e-05 | GradNorm: 2.859 | 0.39 steps/s | ETA: 2.2m
+  Step 210/250: Loss = 9.3360 (Gen: 8.8748, Contr: 2.3059, Align: 87.2135, Uniform: -0.7631)
+  Step 220/250: Loss = 9.3336 (Gen: 8.8724, Contr: 2.3059, Align: 86.7675, Uniform: -0.7628)
+  Step 230/250: Loss = 9.3297 (Gen: 8.8685, Contr: 2.3060, Align: 86.4581, Uniform: -0.7620)
+  Step 240/250: Loss = 9.3257 (Gen: 8.8645, Contr: 2.3059, Align: 86.4380, Uniform: -0.7630)
+  Step 250/250: Loss = 9.3218 (Gen: 8.8606, Contr: 2.3059, Align: 86.2821, Uniform: -0.7633)
+  Step 10/250: Loss = 9.1879 (Gen: 8.7270, Contr: 2.3045, Align: 81.8901, Uniform: -0.7683)
+  Step 20/250: Loss = 9.1951 (Gen: 8.7337, Contr: 2.3070, Align: 86.0028, Uniform: -0.7457)
+  Step 30/250: Loss = 9.1788 (Gen: 8.7176, Contr: 2.3060, Align: 84.8236, Uniform: -0.7501)
+  Step 40/250: Loss = 9.1817 (Gen: 8.7206, Contr: 2.3057, Align: 88.5653, Uniform: -0.7532)
+  Step 50/250: Loss = 9.2007 (Gen: 8.7396, Contr: 2.3054, Align: 88.1323, Uniform: -0.7511)
+  Step 60/250: Loss = 9.1914 (Gen: 8.7303, Contr: 2.3057, Align: 85.6277, Uniform: -0.7481)
+  Step 70/250: Loss = 9.1889 (Gen: 8.7278, Contr: 2.3055, Align: 84.9354, Uniform: -0.7502)
+  Step 80/250: Loss = 9.1913 (Gen: 8.7303, Contr: 2.3051, Align: 85.5409, Uniform: -0.7506)
+  Step 90/250: Loss = 9.1963 (Gen: 8.7353, Contr: 2.3053, Align: 85.5651, Uniform: -0.7560)
+  [ 40.0%] Step  100/250 | Loss: 9.1928 (Gen: 8.7318, Contr: 2.3049, Align: 84.2900, Uniform: -0.7585) | ContrW: 0.200 | LR: 1.21e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.5m
+  [ 40.0%] Step  100/250 | Loss: 9.1928 (Gen: 8.7318, Contr: 2.3049, Align: 84.2900, Uniform: -0.7585) | ContrW: 0.200 | LR: 1.21e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.5m
+  Step 110/250: Loss = 9.1889 (Gen: 8.7279, Contr: 2.3049, Align: 85.2311, Uniform: -0.7647)
+  Step 120/250: Loss = 9.1820 (Gen: 8.7210, Contr: 2.3048, Align: 84.9853, Uniform: -0.7639)
+  Step 130/250: Loss = 9.1813 (Gen: 8.7203, Contr: 2.3048, Align: 84.6079, Uniform: -0.7637)
+  Step 140/250: Loss = 9.1822 (Gen: 8.7213, Contr: 2.3046, Align: 84.3269, Uniform: -0.7624)
+  Step 150/250: Loss = 9.1826 (Gen: 8.7217, Contr: 2.3045, Align: 84.4801, Uniform: -0.7621)
+  Step 160/250: Loss = 9.1823 (Gen: 8.7213, Contr: 2.3046, Align: 84.4798, Uniform: -0.7610)
+  Step 170/250: Loss = 9.1759 (Gen: 8.7149, Contr: 2.3046, Align: 84.7288, Uniform: -0.7606)
+  Step 180/250: Loss = 9.1745 (Gen: 8.7136, Contr: 2.3045, Align: 84.8243, Uniform: -0.7601)
+  Step 190/250: Loss = 9.1697 (Gen: 8.7088, Contr: 2.3045, Align: 84.2431, Uniform: -0.7605)
+  [ 80.0%] Step  200/250 | Loss: 9.1666 (Gen: 8.7057, Contr: 2.3046, Align: 84.6974, Uniform: -0.7594) | ContrW: 0.200 | LR: 6.97e-06 | GradNorm: 2.859 | 0.39 steps/s | ETA: 2.2m
+  [ 80.0%] Step  200/250 | Loss: 9.1666 (Gen: 8.7057, Contr: 2.3046, Align: 84.6974, Uniform: -0.7594) | ContrW: 0.200 | LR: 6.97e-06 | GradNorm: 2.859 | 0.39 steps/s | ETA: 2.2m
+  Step 210/250: Loss = 9.1651 (Gen: 8.7041, Contr: 2.3047, Align: 84.1785, Uniform: -0.7597)
+  Step 220/250: Loss = 9.1614 (Gen: 8.7005, Contr: 2.3048, Align: 83.8790, Uniform: -0.7591)
+  Step 230/250: Loss = 9.1615 (Gen: 8.7005, Contr: 2.3049, Align: 84.4905, Uniform: -0.7585)
+  Step 240/250: Loss = 9.1569 (Gen: 8.6959, Contr: 2.3050, Align: 84.0444, Uniform: -0.7574)
+  Step 250/250: Loss = 9.1580 (Gen: 8.6971, Contr: 2.3048, Align: 83.5955, Uniform: -0.7575)
+  Step 10/250: Loss = 9.2035 (Gen: 8.7429, Contr: 2.3035, Align: 77.4739, Uniform: -0.8030)
+  Step 20/250: Loss = 9.1901 (Gen: 8.7293, Contr: 2.3040, Align: 75.3097, Uniform: -0.7931)
+  Step 30/250: Loss = 9.1742 (Gen: 8.7132, Contr: 2.3052, Align: 78.8292, Uniform: -0.7893)
+  Step 40/250: Loss = 9.1660 (Gen: 8.7051, Contr: 2.3046, Align: 77.9282, Uniform: -0.7802)
+  Step 50/250: Loss = 9.1479 (Gen: 8.6869, Contr: 2.3050, Align: 78.1080, Uniform: -0.7798)
+  Step 60/250: Loss = 9.1378 (Gen: 8.6769, Contr: 2.3045, Align: 82.0433, Uniform: -0.7782)
+  Step 70/250: Loss = 9.1341 (Gen: 8.6731, Contr: 2.3049, Align: 80.4018, Uniform: -0.7695)
+  Step 80/250: Loss = 9.1329 (Gen: 8.6719, Contr: 2.3049, Align: 80.9926, Uniform: -0.7697)
+  Step 90/250: Loss = 9.1245 (Gen: 8.6635, Contr: 2.3051, Align: 81.3504, Uniform: -0.7682)
+  [ 40.0%] Step  100/250 | Loss: 9.1271 (Gen: 8.6661, Contr: 2.3051, Align: 81.8876, Uniform: -0.7714) | ContrW: 0.200 | LR: 2.00e-06 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
+  [ 40.0%] Step  100/250 | Loss: 9.1271 (Gen: 8.6661, Contr: 2.3051, Align: 81.8876, Uniform: -0.7714) | ContrW: 0.200 | LR: 2.00e-06 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
+  Step 110/250: Loss = 9.1294 (Gen: 8.6683, Contr: 2.3052, Align: 84.0290, Uniform: -0.7710)
+  Step 120/250: Loss = 9.1309 (Gen: 8.6698, Contr: 2.3052, Align: 84.0366, Uniform: -0.7694)
+  Step 130/250: Loss = 9.1269 (Gen: 8.6658, Contr: 2.3053, Align: 84.4903, Uniform: -0.7685)
+  Step 140/250: Loss = 9.1270 (Gen: 8.6659, Contr: 2.3055, Align: 84.6383, Uniform: -0.7680)
+  Step 150/250: Loss = 9.1279 (Gen: 8.6669, Contr: 2.3052, Align: 84.8207, Uniform: -0.7683)
+  Step 160/250: Loss = 9.1274 (Gen: 8.6664, Contr: 2.3052, Align: 84.8278, Uniform: -0.7667)
+  Step 170/250: Loss = 9.1221 (Gen: 8.6611, Contr: 2.3053, Align: 84.7331, Uniform: -0.7652)
+  Step 180/250: Loss = 9.1247 (Gen: 8.6636, Contr: 2.3055, Align: 84.4815, Uniform: -0.7667)
+  Step 190/250: Loss = 9.1233 (Gen: 8.6622, Contr: 2.3055, Align: 85.6364, Uniform: -0.7649)
+  [ 80.0%] Step  200/250 | Loss: 9.1237 (Gen: 8.6626, Contr: 2.3054, Align: 85.5355, Uniform: -0.7640) | ContrW: 0.200 | LR: 2.48e-07 | GradNorm: 2.828 | 0.39 steps/s | ETA: 2.2m
+  [ 80.0%] Step  200/250 | Loss: 9.1237 (Gen: 8.6626, Contr: 2.3054, Align: 85.5355, Uniform: -0.7640) | ContrW: 0.200 | LR: 2.48e-07 | GradNorm: 2.828 | 0.39 steps/s | ETA: 2.2m
+  Step 210/250: Loss = 9.1238 (Gen: 8.6627, Contr: 2.3053, Align: 85.3520, Uniform: -0.7644)
+  Step 220/250: Loss = 9.1236 (Gen: 8.6625, Contr: 2.3053, Align: 86.0457, Uniform: -0.7648)
+  Step 230/250: Loss = 9.1243 (Gen: 8.6633, Contr: 2.3051, Align: 85.4097, Uniform: -0.7642)
+  Step 240/250: Loss = 9.1214 (Gen: 8.6603, Contr: 2.3051, Align: 85.5891, Uniform: -0.7644)
+  Step 250/250: Loss = 9.1174 (Gen: 8.6563, Contr: 2.3052, Align: 85.5821, Uniform: -0.7649)
+================================================================================
+LORA EXPERIMENT COMPLETE
+================================================================================
+.000 | 0.39 steps/s | ETA: 6.5m
+  Step 110/250: Loss = 9.1633 (Gen: 8.7024, Contr: 2.3048, Align: 90.1982, Uniform: -0.7760)
+  Step 120/250: Loss = 9.1614 (Gen: 8.7005, Contr: 2.3044, Align: 89.9375, Uniform: -0.7759)
+  Step 130/250: Loss = 9.1616 (Gen: 8.7007, Contr: 2.3045, Align: 89.2934, Uniform: -0.7758)
+  Step 140/250: Loss = 9.1711 (Gen: 8.7101, Contr: 2.3049, Align: 88.5250, Uniform: -0.7757)
+  Step 150/250: Loss = 9.1670 (Gen: 8.7061, Contr: 2.3049, Align: 88.1223, Uniform: -0.7738)
+  Step 160/250: Loss = 9.1609 (Gen: 8.6999, Contr: 2.3045, Align: 88.7538, Uniform: -0.7726)
+  Step 170/250: Loss = 9.1555 (Gen: 8.6946, Contr: 2.3043, Align: 88.7211, Uniform: -0.7722)
+  Step 180/250: Loss = 9.1529 (Gen: 8.6920, Contr: 2.3044, Align: 88.9489, Uniform: -0.7699)
+  Step 190/250: Loss = 9.1533 (Gen: 8.6924, Contr: 2.3045, Align: 88.5845, Uniform: -0.7712)
+  [ 80.0%] Step  200/250 | Loss: 9.1505 (Gen: 8.6896, Contr: 2.3045, Align: 87.8686, Uniform: -0.7699) | ContrW: 0.200 | LR: 6.97e-06 | GradNorm: 2.859 | 0.39 steps/s | ETA: 2.2m
+  [ 80.0%] Step  200/250 | Loss: 9.1505 (Gen: 8.6896, Contr: 2.3045, Align: 87.8686, Uniform: -0.7699) | ContrW: 0.200 | LR: 6.97e-06 | GradNorm: 2.859 | 0.39 steps/s | ETA: 2.2m
+  Step 210/250: Loss = 9.1487 (Gen: 8.6878, Contr: 2.3045, Align: 87.2976, Uniform: -0.7709)
+  Step 220/250: Loss = 9.1512 (Gen: 8.6903, Contr: 2.3045, Align: 88.1706, Uniform: -0.7731)
+  Step 230/250: Loss = 9.1505 (Gen: 8.6897, Contr: 2.3043, Align: 87.8505, Uniform: -0.7731)
+  Step 240/250: Loss = 9.1485 (Gen: 8.6877, Contr: 2.3044, Align: 87.5659, Uniform: -0.7725)
+  Step 250/250: Loss = 9.1450 (Gen: 8.6842, Contr: 2.3044, Align: 87.9429, Uniform: -0.7731)
+
+  Computing multi-layer CKA similarity...
+  Generating quality samples...
+
+  Epoch 4 Evaluation:
+    CKA Similarity: 0.4018
+    Cosine Similarity: 0.0010
+
+================================================================================
+Epoch 4/5 Complete | Time: 11.1m | Total: 44.5m
+  Total Loss: 9.1450 (Gen: 8.6842, Contr: 2.3044)
+  CKA Score: 0.4018 | LR: 0.000005
+  ETA for remaining 1 epochs: 11.1m
+================================================================================
+
+================================================================================
+Epoch 4/5 Complete | Time: 11.1m | Total: 44.5m
+  Total Loss: 9.1450 (Gen: 8.6842, Contr: 2.3044)
+  CKA Score: 0.4018 | LR: 0.000005
+  ETA for remaining 1 epochs: 11.1m
+================================================================================
+  Checkpoint saved to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_checkpoint/checkpoint.pt
+
+================================================================================
+Epoch 5/5
+================================================================================
+
+================================================================================
+Epoch 5/5
+================================================================================
+  Step 10/250: Loss = 9.1693 (Gen: 8.7083, Contr: 2.3050, Align: 85.4115, Uniform: -0.7804)
+  Step 20/250: Loss = 9.1264 (Gen: 8.6650, Contr: 2.3075, Align: 91.5872, Uniform: -0.7645)
+  Step 30/250: Loss = 9.1131 (Gen: 8.6517, Contr: 2.3071, Align: 91.2066, Uniform: -0.7462)
+  Step 40/250: Loss = 9.1356 (Gen: 8.6740, Contr: 2.3080, Align: 87.3734, Uniform: -0.7501)
+  Step 50/250: Loss = 9.1424 (Gen: 8.6808, Contr: 2.3077, Align: 86.1236, Uniform: -0.7499)
+  Step 60/250: Loss = 9.1285 (Gen: 8.6671, Contr: 2.3072, Align: 84.5624, Uniform: -0.7537)
+  Step 70/250: Loss = 9.1386 (Gen: 8.6772, Contr: 2.3071, Align: 84.6038, Uniform: -0.7557)
+  Step 80/250: Loss = 9.1346 (Gen: 8.6734, Contr: 2.3062, Align: 85.5070, Uniform: -0.7571)
+  Step 90/250: Loss = 9.1348 (Gen: 8.6736, Contr: 2.3062, Align: 86.4584, Uniform: -0.7588)
+  [ 40.0%] Step  100/250 | Loss: 9.1239 (Gen: 8.6627, Contr: 2.3059, Align: 88.0257, Uniform: -0.7593) | ContrW: 0.200 | LR: 2.00e-06 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
+  [ 40.0%] Step  100/250 | Loss: 9.1239 (Gen: 8.6627, Contr: 2.3059, Align: 88.0257, Uniform: -0.7593) | ContrW: 0.200 | LR: 2.00e-06 | GradNorm: 0.000 | 0.38 steps/s | ETA: 6.5m
+  Step 110/250: Loss = 9.1269 (Gen: 8.6657, Contr: 2.3057, Align: 88.2100, Uniform: -0.7603)
+  Step 120/250: Loss = 9.1236 (Gen: 8.6625, Contr: 2.3057, Align: 88.8519, Uniform: -0.7613)
+  Step 130/250: Loss = 9.1226 (Gen: 8.6616, Contr: 2.3053, Align: 89.0760, Uniform: -0.7609)
+  Step 140/250: Loss = 9.1198 (Gen: 8.6588, Contr: 2.3050, Align: 88.4741, Uniform: -0.7598)
+  Step 150/250: Loss = 9.1187 (Gen: 8.6578, Contr: 2.3049, Align: 89.1238, Uniform: -0.7604)
+  Step 160/250: Loss = 9.1169 (Gen: 8.6560, Contr: 2.3049, Align: 89.0159, Uniform: -0.7597)
+  Step 170/250: Loss = 9.1190 (Gen: 8.6580, Contr: 2.3049, Align: 89.2223, Uniform: -0.7601)
+  Step 180/250: Loss = 9.1157 (Gen: 8.6547, Contr: 2.3050, Align: 88.4117, Uniform: -0.7584)
+  Step 190/250: Loss = 9.1157 (Gen: 8.6546, Contr: 2.3051, Align: 89.1434, Uniform: -0.7606)
+  [ 80.0%] Step  200/250 | Loss: 9.1108 (Gen: 8.6499, Contr: 2.3049, Align: 88.9063, Uniform: -0.7602) | ContrW: 0.200 | LR: 2.48e-07 | GradNorm: 2.828 | 0.39 steps/s | ETA: 2.2m
+  [ 80.0%] Step  200/250 | Loss: 9.1108 (Gen: 8.6499, Contr: 2.3049, Align: 88.9063, Uniform: -0.7602) | ContrW: 0.200 | LR: 2.48e-07 | GradNorm: 2.828 | 0.39 steps/s | ETA: 2.2m
+  Step 210/250: Loss = 9.1113 (Gen: 8.6503, Contr: 2.3050, Align: 88.7613, Uniform: -0.7619)
+  Step 220/250: Loss = 9.1107 (Gen: 8.6498, Contr: 2.3048, Align: 89.1446, Uniform: -0.7628)
+  Step 230/250: Loss = 9.1122 (Gen: 8.6512, Contr: 2.3048, Align: 89.5061, Uniform: -0.7644)
+  Step 240/250: Loss = 9.1116 (Gen: 8.6507, Contr: 2.3048, Align: 89.6982, Uniform: -0.7646)
+  Step 250/250: Loss = 9.1149 (Gen: 8.6539, Contr: 2.3048, Align: 89.1401, Uniform: -0.7655)
+
+  Computing multi-layer CKA similarity...
+  Generating quality samples...
+
+  Epoch 5 Evaluation:
+    CKA Similarity: 0.4018
+    Cosine Similarity: 0.0010
+
+================================================================================
+Epoch 5/5 Complete | Time: 11.1m | Total: 55.6m
+  Total Loss: 9.1149 (Gen: 8.6539, Contr: 2.3048)
+  CKA Score: 0.4018 | LR: 0.000000
+================================================================================
+
+================================================================================
+Epoch 5/5 Complete | Time: 11.1m | Total: 55.6m
+  Total Loss: 9.1149 (Gen: 8.6539, Contr: 2.3048)
+  CKA Score: 0.4018 | LR: 0.000000
+================================================================================
+  Checkpoint saved to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_checkpoint/checkpoint.pt
+
+
+================================================================================
+TRAINING COMPLETE
+================================================================================
+Total time: 55.6 minutes (0.93 hours)
+Total epochs: 5
+Final loss: 9.1149
+Final CKA score: 0.4018
+
+Loss progression:
+  Epoch  1: Loss 10.2396, CKA 0.4019
+  Epoch  2: Loss 9.6717, CKA 0.4018
+  Epoch  3: Loss 9.3212, CKA 0.4018
+  Epoch  4: Loss 9.1450, CKA 0.4018
+  Epoch  5: Loss 9.1149, CKA 0.4018
+================================================================================
+
+
+
+================================================================================
+TRAINING COMPLETE
+================================================================================
+Total time: 55.6 minutes (0.93 hours)
+Total epochs: 5
+Final loss: 9.1149
+Final CKA score: 0.4018
+
+Loss progression:
+  Epoch  1: Loss 10.2396, CKA 0.4019
+  Epoch  2: Loss 9.6717, CKA 0.4018
+  Epoch  3: Loss 9.3212, CKA 0.4018
+  Epoch  4: Loss 9.1450, CKA 0.4018
+  Epoch  5: Loss 9.1149, CKA 0.4018
+================================================================================
+
+
+Results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_results_20251101_010723.json
+================================================================================
+LORA EXPERIMENT COMPLETE
+================================================================================

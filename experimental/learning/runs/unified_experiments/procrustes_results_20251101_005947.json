@@ -1,0 +1,182 @@
+{
+  "layer_0": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.5535532832145691,
+      "cka_after_mistral_to_llama": 0.6486889719963074,
+      "cka_after_llama_to_mistral": 0.517195463180542,
+      "cka_improvement": 0.09513568878173828
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is Paris, but the capital of the French language is Quebec City.\n\nThe French language is the",
+      "prompt_2": "To solve this problem, we need to understand the concept of a \"unique\" identifier. In a database, a unique identifier is a field",
+      "prompt_3": "The future of artificial intelligence is a topic that has been the subject of much debate and speculation. Some experts believe that AI will",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into three separate countries: the",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats have a higher"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of romance, art, fashion, and cuisine. Paris is a must-visit destination for",
+      "prompt_2": "To solve this problem, we need to find the value of the expression $\\frac{1}{1 \\cdot 2} + \\frac",
+      "prompt_3": "The future of artificial intelligence is bright, but it also raises concerns about bias, accountability, and the potential for AI to be used",
+      "prompt_4": "In the year 2050, the world is a vastly different place. Climate change has ravaged the planet, and the effects of",
+      "prompt_5": "The main difference between cats and dogs is their behavior, lifestyle, and needs. While both animals can make wonderful pets, they have different personalities"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "\n\n## Answer\n\nThe given expression is a quadratic equation in the form $ax^",
+      "prompt_2": "\n\n\\begin{verbatim}\n\\documentclass{article}\n\\usepackage",
+      "prompt_3": "\n\nComment: I'm not sure what you're asking. If you're asking",
+      "prompt_4": "{\n\n    public static void main(String[] args) {\n        int[] arr =",
+      "prompt_5": "\n\n\\begin{verbatim}\n\\begin{itemize}\n\\item \\textbf"
+    },
+    "mistral_to_llama": {
+      "prompt_1": "\nThe 2019\u201320 UEFA Champions League was the 65th season of Europe's premier",
+      "prompt_2": "\nThe Basilica of St. John the Baptist, also known as the Basilica of San Juan",
+      "prompt_3": "\nThe first thing that comes to mind when thinking of the word \"sacred\" is a",
+      "prompt_4": "\nThe following is a list of the most common types of meditation practices:\n1. Mindfulness meditation",
+      "prompt_5": "\nThe phrase \"I'd rather be a failure with dignity than a success without it\" is often"
+    }
+  },
+  "layer_8": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.9999011754989624,
+      "cka_after_mistral_to_llama": 0.9999164938926697,
+      "cka_after_llama_to_mistral": 0.9999164342880249,
+      "cka_improvement": 1.531839370727539e-05
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is Paris, but the capital of the French language is Quebec City.\n\nThe French language is the",
+      "prompt_2": "To solve this problem, we need to understand the concept of a \"unique\" identifier. In a database, a unique identifier is a field",
+      "prompt_3": "The future of artificial intelligence is a topic that has been the subject of much debate and speculation. Some experts believe that AI will",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into three separate countries: the",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats have a higher"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of romance, art, fashion, and cuisine. Paris is a must-visit destination for",
+      "prompt_2": "To solve this problem, we need to find the value of the expression $\\frac{1}{1 \\cdot 2} + \\frac",
+      "prompt_3": "The future of artificial intelligence is bright, but it also raises concerns about bias, accountability, and the potential for AI to be used",
+      "prompt_4": "In the year 2050, the world is a vastly different place. Climate change has ravaged the planet, and the effects of",
+      "prompt_5": "The main difference between cats and dogs is their behavior, lifestyle, and needs. While both animals can make wonderful pets, they have different personalities"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "'s work is a reflection of the world around us. His buildings are not just structures, but",
+      "prompt_2": ", Qub 1 The architectural style of the Church of the Holy Sepulchre in",
+      "prompt_3": "\nThe Architecture of the Church of St. John the Baptist in the village of Kras",
+      "prompt_4": ", the 19th-century neo-Gothic church in the village of H",
+      "prompt_5": "\nThe Architectural School of the University of Navarra is a private institution of higher education,"
+    },
+    "mistral_to_llama": {
+      "prompt_1": " Church\nThe Arch\nThe\nThe\nThe\nThe\nThe\nThe\nThe\n\n",
+      "prompt_2": "\nThe church of the Churchof theChurchassistantassistantassistant",
+      "prompt_3": "\nArch\nArch\nArch\nArch\nArch\nArch\nArch\nArch\nArch\nArch",
+      "prompt_4": " the Architectural\n##Arch\n##Arch\n##Arch\n##Arch\n##Arch\n",
+      "prompt_5": " of the Holy Trinity Church of the Holy Trinity Church of theHoly TrinityChurch of theHoly\n##"
+    }
+  },
+  "layer_16": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.9970362782478333,
+      "cka_after_mistral_to_llama": 0.999387800693512,
+      "cka_after_llama_to_mistral": 0.9993873834609985,
+      "cka_improvement": 0.002351522445678711
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is Paris, but the capital of the French language is Quebec City.\n\nThe French language is the",
+      "prompt_2": "To solve this problem, we need to understand the concept of a \"unique\" identifier. In a database, a unique identifier is a field",
+      "prompt_3": "The future of artificial intelligence is a topic that has been the subject of much debate and speculation. Some experts believe that AI will",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into three separate countries: the",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats have a higher"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of romance, art, fashion, and cuisine. Paris is a must-visit destination for",
+      "prompt_2": "To solve this problem, we need to find the value of the expression $\\frac{1}{1 \\cdot 2} + \\frac",
+      "prompt_3": "The future of artificial intelligence is bright, but it also raises concerns about bias, accountability, and the potential for AI to be used",
+      "prompt_4": "In the year 2050, the world is a vastly different place. Climate change has ravaged the planet, and the effects of",
+      "prompt_5": "The main difference between cats and dogs is their behavior, lifestyle, and needs. While both animals can make wonderful pets, they have different personalities"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "of the Church of St. Mary the Virgin, Oxford, England, is a masterpiece of the",
+      "prompt_2": "of the church are of the same style as the church of St. Mary Magdalene, at",
+      "prompt_3": "of the church is a masterpiece of the Gothic style. The interior is equally impressive,",
+      "prompt_4": "of the Church of St. Mary the Virgin, in the Parish of St. Mary-le",
+      "prompt_5": "is a very important part of the building. It is the first thing that people see when they approach"
+    },
+    "mistral_to_llama": {
+      "prompt_1": " School\nArchassistantassistantassistant\nArch",
+      "prompt_2": " are designed \u0111\u1ec3 \u0646\u0645\u0627\u06cc\nThe architectural The architectural\nThe architectural\nThe\nThe architectural\nThe architectural",
+      "prompt_3": "\nArch\nArch\nArch\nArch\nArch\nArch\nArch\nArch\nArch\nArch",
+      "prompt_4": " of the Cathedral of the Cathedral of the Cathedral of the Cathedral of the Cathedral of the Cathedral\nArch",
+      "prompt_5": "s\nArchitectural Assistantassistantassistantassistant"
+    }
+  },
+  "layer_24": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.9659901261329651,
+      "cka_after_mistral_to_llama": 0.9894290566444397,
+      "cka_after_llama_to_mistral": 0.9870871901512146,
+      "cka_improvement": 0.02343893051147461
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is Paris, but the capital of the French language is Quebec City.\n\nThe French language is the",
+      "prompt_2": "To solve this problem, we need to understand the concept of a \"unique\" identifier. In a database, a unique identifier is a field",
+      "prompt_3": "The future of artificial intelligence is a topic that has been the subject of much debate and speculation. Some experts believe that AI will",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into three separate countries: the",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats have a higher"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of romance, art, fashion, and cuisine. Paris is a must-visit destination for",
+      "prompt_2": "To solve this problem, we need to find the value of the expression $\\frac{1}{1 \\cdot 2} + \\frac",
+      "prompt_3": "The future of artificial intelligence is bright, but it also raises concerns about bias, accountability, and the potential for AI to be used",
+      "prompt_4": "In the year 2050, the world is a vastly different place. Climate change has ravaged the planet, and the effects of",
+      "prompt_5": "The main difference between cats and dogs is their behavior, lifestyle, and needs. While both animals can make wonderful pets, they have different personalities"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "St. Quiberon is a small church in the town of Quiberon, in",
+      "prompt_2": "the church of St. Francis of Assisi, the church of St. Mary Major, and the",
+      "prompt_3": "the Church of St. Mary of the Angels, which is the oldest church in the city.",
+      "prompt_4": "the church of St. Mary Magdalene, which is a Grade I listed building.\n\n",
+      "prompt_5": "the, Question  1: What is the name of the building in which the United States Congress"
+    },
+    "mistral_to_llama": {
+      "prompt_1": " is a small, unassuming, a small, a small, a small, a small, a",
+      "prompt_2": " building is a, and the building, and the building, and the building, and the building,",
+      "prompt_3": " in the 19th century in the 19th century in the 19th century in the",
+      "prompt_4": " the building is a building, the building, the building, the building, the building, the building",
+      "prompt_5": " building's the building's the building's the building's the building's the building's the building's"
+    }
+  },
+  "layer_32": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.8479827046394348,
+      "cka_after_mistral_to_llama": 0.9275035858154297,
+      "cka_after_llama_to_mistral": 0.886698842048645,
+      "cka_improvement": 0.07952088117599487
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is Paris, but the capital of the French language is Quebec City.\n\nThe French language is the",
+      "prompt_2": "To solve this problem, we need to understand the concept of a \"unique\" identifier. In a database, a unique identifier is a field",
+      "prompt_3": "The future of artificial intelligence is a topic that has been the subject of much debate and speculation. Some experts believe that AI will",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into three separate countries: the",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats have a higher"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of romance, art, fashion, and cuisine. Paris is a must-visit destination for",
+      "prompt_2": "To solve this problem, we need to find the value of the expression $\\frac{1}{1 \\cdot 2} + \\frac",
+      "prompt_3": "The future of artificial intelligence is bright, but it also raises concerns about bias, accountability, and the potential for AI to be used",
+      "prompt_4": "In the year 2050, the world is a vastly different place. Climate change has ravaged the planet, and the effects of",
+      "prompt_5": "The main difference between cats and dogs is their behavior, lifestyle, and needs. While both animals can make wonderful pets, they have different personalities"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "the bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan",
+      "prompt_2": "and bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan",
+      "prompt_3": "the bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan",
+      "prompt_4": "the bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan",
+      "prompt_5": "unique bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan bekan"
+    },
+    "mistral_to_llama": {
+      "prompt_1": " University cathedral cad neoutr, cadicipa, cadicipa, cadicipa, cadicip",
+      "prompt_2": " Broad [*], *a**[*. Asa, \"a**[s] _[*",
+      "prompt_3": " Greg, the first, the most, the most, the most, the most, the most,",
+      "prompt_4": " skys and business, the first, the three, the five, the six, the seven, the",
+      "prompt_5": " Statue, 30,000, a few, a few, a few, a few, a"
+    }
+  }
+}

@@ -1,67 +1,0 @@
-/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Using device: cuda:0
-GPUs available: 4
-  GPU 0: NVIDIA H100 80GB HBM3
-  GPU 1: NVIDIA H100 80GB HBM3
-  GPU 2: NVIDIA H100 80GB HBM3
-  GPU 3: NVIDIA H100 80GB HBM3
-
-================================================================================
-FEATURE CONFIGURATION
-================================================================================
-Baseline CE loss: No (using K-token)
-Contrastive diversity: False (weight=0.1, temp=0.07)
-K-token CE: True (K=2)
-Reconstruction: False (weight=0.1, layers=2)
-Knowledge distillation: False (weight=0.3, tau=1.0, K=4)
-================================================================================
-
-Loading meta-llama/Meta-Llama-3.1-8B-Instruct...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3661.55it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.00s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.17s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.28it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.10it/s]
-huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
-To disable this warning, you can either:
-	- Avoid using `tokenizers` before the fork if possible
-	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
-
-Applying LoRA: r=16, alpha=32, layers=8
-trainable params: 3,407,872 || all params: 8,033,669,120 || trainable%: 0.0424
-
-Model loaded!
-
-Creating sequence compressor: 300 → 256
-Pooling method: learned_attention
-Compression ratio: 1.17×
-
-Compressor parameters: 68,182,016
-
-Loading 10000 training examples from squad...
-Loading 100 eval examples...
-Loaded 10000 train, 100 eval
-
-================================================================================
-TRAINING
-================================================================================
-
-
-================================================================================
-Epoch 1/5
-================================================================================
-
-Epoch 0:   0%|          | 0/209 [00:00<?, ?it/s]Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
-Epoch 0:   0%|          | 0/209 [00:03<?, ?it/s, loss=12.6924, k_token=12.6924]Epoch 0:   0%|          | 1/209 [00:03<11:20,  3.27s/it, loss=12.6924, k_token=12.6924]Epoch 0:   0%|          | 1/209 [00:05<11:20,  3.27s/it, loss=7.3184, k_token=7.3184]  Epoch 0:   1%|          | 2/209 [00:05<09:36,  2.79s/it, loss=7.3184, k_token=7.3184]Epoch 0:   1%|          | 2/209 [00:08<09:36,  2.79s/it, loss=9.0576, k_token=9.0576]Epoch 0:   1%|▏         | 3/209 [00:08<09:44,  2.84s/it, loss=9.0576, k_token=9.0576]Epoch 0:   1%|▏         | 3/209 [00:11<09:44,  2.84s/it, loss=8.3096, k_token=8.3096]Epoch 0:   2%|▏         | 4/209 [00:11<09:08,  2.68s/it, loss=8.3096, k_token=8.3096]Epoch 0:   2%|▏         | 4/209 [00:13<09:08,  2.68s/it, loss=6.3337, k_token=6.3337]Epoch 0:   2%|▏         | 5/209 [00:13<08:29,  2.50s/it, loss=6.3337, k_token=6.3337]Epoch 0:   2%|▏         | 5/209 [00:15<08:29,  2.50s/it, loss=4.9340, k_token=4.9340]Epoch 0:   3%|▎         | 6/209 [00:15<08:00,  2.37s/it, loss=4.9340, k_token=4.9340]Epoch 0:   3%|▎         | 6/209 [00:17<08:00,  2.37s/it, loss=4.8577, k_token=4.8577]Epoch 0:   3%|▎         | 7/209 [00:17<07:42,  2.29s/it, loss=4.8577, k_token=4.8577]Epoch 0:   3%|▎         | 7/209 [00:19<07:42,  2.29s/it, loss=4.5973, k_token=4.5973]Epoch 0:   4%|▍         | 8/209 [00:19<07:51,  2.35s/it, loss=4.5973, k_token=4.5973]Epoch 0:   4%|▍         | 8/209 [00:21<09:05,  2.72s/it, loss=4.5973, k_token=4.5973]
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/train_sequence_compression_enhanced.py", line 1146, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/train_sequence_compression_enhanced.py", line 1070, in main
-    global_step = train_epoch(
-  File "/projects/m000066/sujinesh/LatentWire/train_sequence_compression_enhanced.py", line 674, in train_epoch
-    loss.backward()
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/_tensor.py", line 521, in backward
-    torch.autograd.backward(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/__init__.py", line 289, in backward
-    _engine_run_backward(
-  File "/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/torch/autograd/graph.py", line 768, in _engine_run_backward
-    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 5.94 GiB. GPU 0 has a total capacity of 79.19 GiB of which 4.04 GiB is free. Including non-PyTorch memory, this process has 75.14 GiB memory in use. Of the allocated memory 59.78 GiB is allocated by PyTorch, and 14.63 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
