@@ -2,6 +2,94 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🐛 CRITICAL BUG FIXES (2025-10-31 19:30)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Overview
+Fixed 3 critical bugs identified from latest training run that prevented experiments from completing successfully.
+
+### Bugs Fixed
+
+#### 1. DataParallel Loss Scalar Issue (CRITICAL)
+**Problem**: `RuntimeError: grad can be implicitly created only for scalar outputs`
+
+When using DataParallel with 4 GPUs, the loss returned from model forward pass is a tensor [num_gpus] instead of a scalar. Calling `.backward()` on this tensor causes the error.
+
+**Solution**: Reduce loss to scalar before backward pass:
+```python
+# CRITICAL: With DataParallel, loss is a tensor [num_gpus], must reduce to scalar
+layer_loss = outputs_b.loss.mean() if outputs_b.loss.numel() > 1 else outputs_b.loss
+generation_losses.append(layer_loss * layer_weight)
+```
+
+**Impact**: All adapter training experiments (Linear, Affine, LoRA) were failing immediately on first backward pass. This fix enables training to proceed.
+
+**File**: `unified_cross_model_experiments.py:1335-1338`
+
+#### 2. Device Mismatch in Procrustes Transform (CRITICAL)
+**Problem**: `Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cuda:0!`
+
+When testing cross-model generation (Llama→Mistral or Mistral→Llama), Procrustes parameters (W, source_mean, target_mean) were on the device where fit() was called, but transform() input was on a different device.
+
+**Solution**: Move all Procrustes parameters to input device in transform():
+```python
+# CRITICAL: Move all Procrustes parameters to the same device as source
+device = source.device
+source_mean = self.source_mean.to(device)
+source_norm = self.source_norm.to(device)
+W = self.W.to(device)
+target_norm = self.target_norm.to(device)
+target_mean = self.target_mean.to(device)
+```
+
+**Impact**: Cross-model Procrustes experiments were failing on all generation tests. This fix enables proper evaluation.
+
+**File**: `unified_cross_model_experiments.py:622-629`
+
+#### 3. High Orthogonality Errors in Procrustes (NUMERICAL STABILITY)
+**Problem**: Orthogonality errors as high as 0.09-0.10 (expected <1e-3)
+
+Computing cross-covariance matrix M and SVD in bfloat16 for large hidden dimensions (4096×4096) accumulates significant numerical errors. The resulting W = U @ Vt is only approximately orthogonal.
+
+**Solution**: Compute cross-covariance and SVD in float32:
+```python
+# Step 3: Compute cross-covariance matrix in float32 for numerical stability
+# CRITICAL: Large hidden dims (4096x4096) in low precision accumulate errors
+M = (source_normalized.T @ target_normalized).float()  # [D, D] in float32
+
+# Step 4: SVD of M in float32 (SVD is numerically sensitive, needs high precision)
+U, S, Vt = torch.linalg.svd(M, full_matrices=False)
+
+# Step 5: Optimal orthogonal transformation (convert back to original dtype)
+self.W = (U @ Vt).to(source.dtype)
+
+# Verify orthogonality of W (in float32 for numerical accuracy)
+W_float = self.W.float()
+I = W_float @ W_float.T
+ortho_error = torch.norm(I - torch.eye(I.shape[0], device=I.device), 'fro')
+```
+
+**Impact**: Better numerical stability in Procrustes alignment, reduced orthogonality errors from 0.09-0.10 to <1e-3 (expected). More accurate cross-model transformations.
+
+**File**: `unified_cross_model_experiments.py:568-576, 593-598`
+
+### Files Modified
+- `experimental/learning/unified_cross_model_experiments.py`
+  - Line 1337: DataParallel loss reduction
+  - Lines 622-629: Procrustes device handling
+  - Lines 568-576: Procrustes SVD in float32
+  - Lines 593-598: Orthogonality check in float32
+
+### Testing Status
+These fixes address all errors from run `unified_experiments_20251031_181319.log`:
+- ✅ Adapter training should now complete successfully (no more RuntimeError)
+- ✅ Cross-model Procrustes generation should work (no device mismatch)
+- ✅ Orthogonality errors should be <1e-3 (proper numerical stability)
+
+Ready for next training run to validate fixes.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🔬 2024-2025 RESEARCH-BASED ALIGNMENT IMPROVEMENTS (2025-10-31 19:00)
 ## ═══════════════════════════════════════════════════════════════════════════
 

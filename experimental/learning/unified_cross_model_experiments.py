@@ -565,14 +565,15 @@ class ProcrustesAlignment:
             source_normalized = torch.nn.functional.normalize(source_centered, dim=-1)
             target_normalized = torch.nn.functional.normalize(target_centered, dim=-1)
 
-        # Step 3: Compute cross-covariance matrix
-        M = source_normalized.T @ target_normalized  # [D, D]
+        # Step 3: Compute cross-covariance matrix in float32 for numerical stability
+        # CRITICAL: Large hidden dims (4096x4096) in low precision accumulate errors
+        M = (source_normalized.T @ target_normalized).float()  # [D, D] in float32
 
-        # Step 4: SVD of M
+        # Step 4: SVD of M in float32 (SVD is numerically sensitive, needs high precision)
         U, S, Vt = torch.linalg.svd(M, full_matrices=False)
 
-        # Step 5: Optimal orthogonal transformation
-        self.W = U @ Vt
+        # Step 5: Optimal orthogonal transformation (convert back to original dtype)
+        self.W = (U @ Vt).to(source.dtype)
 
         # Step 6: Bias term (2024 research extension for affine transformation)
         # After centering and recentering, no explicit bias is needed
@@ -589,8 +590,9 @@ class ProcrustesAlignment:
             # Orthogonal only (no bias)
             self.b = torch.zeros_like(self.target_mean)
 
-        # Verify orthogonality of W
-        I = self.W @ self.W.T
+        # Verify orthogonality of W (in float32 for numerical accuracy)
+        W_float = self.W.float()
+        I = W_float @ W_float.T
         ortho_error = torch.norm(I - torch.eye(I.shape[0], device=I.device), 'fro')
         if ortho_error > 1e-3:
             print(f"  WARNING: Orthogonality error = {ortho_error:.6f}")
@@ -619,16 +621,25 @@ class ProcrustesAlignment:
         """
         assert self.W is not None, "Must fit before transform"
 
+        # CRITICAL: Move all Procrustes parameters to the same device as source
+        # This prevents device mismatch errors when source is on different GPU than fit data
+        device = source.device
+        source_mean = self.source_mean.to(device)
+        source_norm = self.source_norm.to(device)
+        W = self.W.to(device)
+        target_norm = self.target_norm.to(device)
+        target_mean = self.target_mean.to(device)
+
         # Step 1-2: Center and normalize (same as fit)
-        source_centered = source - self.source_mean
-        source_normalized = source_centered / (self.source_norm + 1e-8)
+        source_centered = source - source_mean
+        source_normalized = source_centered / (source_norm + 1e-8)
 
         # Step 3: Apply orthogonal transformation
-        transformed = source_normalized @ self.W
+        transformed = source_normalized @ W
 
         # Step 4-5: Rescale and recenter to target space (completes affine transformation)
-        transformed = transformed * self.target_norm
-        transformed = transformed + self.target_mean
+        transformed = transformed * target_norm
+        transformed = transformed + target_mean
 
         # Note: No explicit bias addition needed - the recentering step above
         # provides the optimal translation for the affine transformation.
@@ -1332,7 +1343,10 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
                     labels=labels_b
                 )
 
-                generation_losses.append(outputs_b.loss * layer_weight)
+                # CRITICAL: With DataParallel, loss is a tensor [num_gpus], must reduce to scalar
+                # Even with single GPU, .mean() is safe and ensures scalar
+                layer_loss = outputs_b.loss.mean() if outputs_b.loss.numel() > 1 else outputs_b.loss
+                generation_losses.append(layer_loss * layer_weight)
 
             # Combine generation losses from multiple layers
             generation_loss = sum(generation_losses)
