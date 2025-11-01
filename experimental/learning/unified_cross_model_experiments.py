@@ -554,16 +554,19 @@ class ContrastiveWeightScheduler:
 # ============================================================================
 
 # Models
-# IMPORTANT: Using -Instruct models for fair comparison with ablation
-LLAMA_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
-MISTRAL_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
+# IMPORTANT: Using BASE models (not -Instruct) for pure representation alignment research
+# Rationale: Instruct models have undergone additional fine-tuning (RLHF, instruction-following)
+# which introduces representation drift and "forgetting". We want to study core learned
+# representations without confounding from instruction-tuning.
+LLAMA_MODEL = "meta-llama/Llama-3.1-8B"
+MISTRAL_MODEL = "mistralai/Mistral-7B-v0.3"
 
 # Same-vocabulary ablation models (Llama 3.1 8B ↔ Llama 3.2 3B)
 # Both use identical 128,256 token vocabulary
 # Research: "Transferring Features Across Language Models With Model Stitching" (arXiv 2506.06609)
 # Llama 3.2 3B was trained using Llama 3.1 8B logits as targets (Meta documentation)
-LLAMA_31_8B = "meta-llama/Llama-3.1-8B-Instruct"
-LLAMA_32_3B = "meta-llama/Llama-3.2-3B-Instruct"
+LLAMA_31_8B = "meta-llama/Llama-3.1-8B"
+LLAMA_32_3B = "meta-llama/Llama-3.2-3B"  # User has access to this base model
 
 # Training - Use platform-specific values
 BATCH_SIZE = PLATFORM_CONFIG['batch_size']
