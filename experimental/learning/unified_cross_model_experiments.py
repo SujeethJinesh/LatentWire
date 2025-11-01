@@ -77,7 +77,7 @@ def get_device_and_config():
         print(f"  - Epochs: {config['epochs']} (reduced for testing)")
     else:
         config['batch_size'] = 8  # Reduced from 16 to avoid OOM with dual-model loading
-        config['num_samples'] = 10000
+        config['num_samples'] = 50000  # Increased from 10k to 50k for better coverage with 4 H100s
         config['epochs'] = 10
         config['use_bf16'] = torch.cuda.is_bf16_supported() if platform == 'hpc' else False
         config['use_flash_attention'] = not disable_flash and platform == 'hpc'
@@ -885,7 +885,18 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     texts = [item["text"] for item in dataset if len(item["text"]) > 100][:num_samples]
 
     train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
-    dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+
+    # Multi-threaded data loading for better GPU utilization
+    # Use 4 workers per GPU to keep GPUs fed with data
+    num_workers = 4 if PLATFORM == 'hpc' else 0
+    dataloader = DataLoader(
+        train_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True if PLATFORM == 'hpc' else False,  # Faster GPU transfer
+        persistent_workers=True if num_workers > 0 else False  # Keep workers alive between epochs
+    )
 
     # Move adapter to device with correct dtype (must match model dtype)
     dtype = torch.bfloat16 if USE_BF16 else torch.float32

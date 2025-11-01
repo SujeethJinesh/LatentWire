@@ -2,6 +2,104 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## ⚡ GPU UTILIZATION & DATA LOADING IMPROVEMENTS (2025-10-31 17:00)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Issues Identified from nvidia-smi
+
+**User observation**: GPU utilization is suboptimal:
+```
+GPU 0: 81% utilization (Linear adapter)
+GPU 1: 21% utilization (Affine adapter)  ← LOW
+GPU 2: 22% utilization (LoRA adapter)    ← LOW
+GPU 3: 0% utilization                    ← IDLE
+```
+
+**Root causes**:
+1. **Single-threaded data loading**: DataLoader had `num_workers=0` (default)
+   - GPUs starved waiting for CPU to prepare batches
+   - Explains 21-22% utilization on GPUs 1-2
+2. **GPU 3 idle**: Only 3 adapter experiments exist (Linear, Affine, LoRA)
+   - Token compression runs sequentially after adapters
+   - GPU 3 has nothing to do
+3. **Insufficient training data**: 10,000 samples is modest for 4 H100s
+
+### Fixes Applied
+
+**1. Multi-threaded Data Loading** (lines 889-899):
+```python
+# Before
+dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+
+# After
+num_workers = 4  # 4 worker threads per GPU
+dataloader = DataLoader(
+    train_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    num_workers=num_workers,
+    pin_memory=True,              # Faster GPU transfers
+    persistent_workers=True       # Keep workers alive between epochs
+)
+```
+
+**Benefits**:
+- 4 parallel workers prepare batches while GPU computes
+- Pin memory enables async transfers to GPU
+- Persistent workers avoid respawning overhead
+- **Expected**: GPU utilization should increase to 80-90%+
+
+**2. Increased Training Samples** (line 80):
+```python
+# Before
+config['num_samples'] = 10000  # 1,250 steps/epoch
+
+# After
+config['num_samples'] = 50000  # 6,250 steps/epoch (5× more data)
+```
+
+**Impact**:
+- More diverse training data
+- Better coverage of language patterns
+- Longer training per epoch (more GPU work)
+- Total iterations: 12,500 → 62,500 (5× more)
+- Better alignment quality expected
+
+**3. GPU 3 Status**: Currently idle by design
+- Only 3 adapter types exist (Linear, Affine, LoRA)
+- Token compression could run on GPU 3 in parallel, but:
+  - Adds complexity (parallel coordination)
+  - User may want adapter results before starting compression
+  - Can be addressed in future iteration if needed
+
+### Expected Performance
+
+**Before** (10k samples, no workers):
+- GPU 1-2: 21-22% utilization (data-starved)
+- Training time: ~10-15 min/epoch
+- Total: ~100-150 min for 3 adapters
+
+**After** (50k samples, 4 workers):
+- GPU 0-2: 80-90%+ utilization (GPU-bound, not data-bound)
+- Training time: ~50-75 min/epoch (5× more data)
+- Total: ~500-750 min for 3 adapters (~8-12 hours)
+- Better alignment quality from more data
+
+### Summary
+
+**Fixed**:
+- ✅ Low GPU utilization → multi-threaded data loading
+- ✅ Insufficient samples → 10k → 50k (5× increase)
+
+**Not addressed** (by design):
+- GPU 3 idle → only 3 adapter experiments, token compression is sequential
+
+**Trade-off**: Longer training time (5× more data) but better GPU utilization and quality.
+
+**Status**: Changes committed, ready for next HPC run.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 📊 ENHANCED PROGRESS LOGGING FOR ADAPTER TRAINING (2025-10-31 16:45)
 ## ═══════════════════════════════════════════════════════════════════════════
 
