@@ -3498,7 +3498,9 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print("TASK-BASED EVALUATION")
     print(f"{'='*80}")
     print("Evaluating on real tasks (SQuAD Q&A and GSM8K math) to measure task performance")
-    print("vs exact text matching. This aligns with Ramesh & Li paper methodology.\n")
+    print("vs exact text matching. This aligns with Ramesh & Li paper methodology.")
+    print("NOTE: With random/untrained projection, expect low performance on injected model.")
+    print("      Trained projection should achieve 10-27% of baseline (per Ramesh & Li).\n")
 
     task_results = {}
 
@@ -3514,9 +3516,10 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print(f"{'='*60}")
 
     try:
-        # Load small sample of SQuAD
-        squad_samples = load_squad_subset(split="validation", samples=20, seed=42)
+        # Load SQuAD samples - 50 for better statistical significance
+        squad_samples = load_squad_subset(split="validation", samples=50, seed=42)
         print(f"Loaded {len(squad_samples)} SQuAD validation examples")
+        print(f"Will print first 3 examples for inspection\n")
 
         baseline_preds = []
         injected_preds = []
@@ -3527,7 +3530,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             gold = example["answer"]
             gold_answers.append(gold)
 
-            if idx % 5 == 0:
+            if idx % 10 == 0:
                 print(f"  Processing {idx+1}/{len(squad_samples)}...")
 
             # Baseline generation
@@ -3594,6 +3597,18 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             finally:
                 hook_handle.remove()
 
+            # Print first 3 examples for inspection
+            if idx < 3:
+                print(f"\n  Example {idx+1}:")
+                # Truncate long contexts for readability
+                display_prompt = prompt if len(prompt) < 200 else prompt[:200] + "..."
+                print(f"    Prompt: {display_prompt}")
+                print(f"    Gold:     '{gold}'")
+                print(f"    Baseline: '{baseline_answer}'")
+                print(f"    Injected: '{injected_answer}'")
+                print(f"    Baseline EM: {em(baseline_answer, gold):.2f}, F1: {f1(baseline_answer, gold):.2f}")
+                print(f"    Injected EM: {em(injected_answer, gold):.2f}, F1: {f1(injected_answer, gold):.2f}")
+
         # Compute SQuAD metrics
         baseline_em_scores = [em(pred, gold) for pred, gold in zip(baseline_preds, gold_answers)]
         injected_em_scores = [em(pred, gold) for pred, gold in zip(injected_preds, gold_answers)]
@@ -3605,13 +3620,16 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         baseline_f1_avg = sum(baseline_f1_scores) / len(baseline_f1_scores)
         injected_f1_avg = sum(injected_f1_scores) / len(injected_f1_scores)
 
-        print(f"\nSQuAD Results:")
-        print(f"  Baseline EM:  {baseline_em_avg*100:.1f}%")
-        print(f"  Injected EM:  {injected_em_avg*100:.1f}%")
-        print(f"  Baseline F1:  {baseline_f1_avg*100:.1f}%")
-        print(f"  Injected F1:  {injected_f1_avg*100:.1f}%")
-        print(f"  Performance Ratio (EM): {(injected_em_avg/max(baseline_em_avg, 0.01))*100:.1f}%")
-        print(f"  Performance Ratio (F1): {(injected_f1_avg/max(baseline_f1_avg, 0.01))*100:.1f}%")
+        print(f"\n{'='*60}")
+        print(f"SQuAD Results Summary ({len(squad_samples)} samples):")
+        print(f"{'='*60}")
+        print(f"  Baseline - EM: {baseline_em_avg*100:.1f}%  F1: {baseline_f1_avg*100:.1f}%")
+        print(f"  Injected - EM: {injected_em_avg*100:.1f}%  F1: {injected_f1_avg*100:.1f}%")
+        print(f"  Performance Retention:")
+        print(f"    EM: {(injected_em_avg/max(baseline_em_avg, 0.01))*100:.1f}% of baseline")
+        print(f"    F1: {(injected_f1_avg/max(baseline_f1_avg, 0.01))*100:.1f}% of baseline")
+        print(f"  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
+        print(f"{'='*60}")
 
         task_results["squad"] = {
             "baseline_em": baseline_em_avg,
@@ -3633,9 +3651,10 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print(f"{'='*60}")
 
     try:
-        # Load small sample of GSM8K
-        gsm8k_samples = load_gsm8k_subset(split="test", samples=20, seed=42)
+        # Load GSM8K samples - 50 for better statistical significance
+        gsm8k_samples = load_gsm8k_subset(split="test", samples=50, seed=42)
         print(f"Loaded {len(gsm8k_samples)} GSM8K test examples")
+        print(f"Will print first 3 examples for inspection\n")
 
         baseline_preds_gsm = []
         injected_preds_gsm = []
@@ -3646,7 +3665,7 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             gold = example["answer"]
             gold_answers_gsm.append(gold)
 
-            if idx % 5 == 0:
+            if idx % 10 == 0:
                 print(f"  Processing {idx+1}/{len(gsm8k_samples)}...")
 
             # Baseline generation
@@ -3712,14 +3731,35 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
             finally:
                 hook_handle.remove()
 
+            # Print first 3 examples for inspection
+            if idx < 3:
+                print(f"\n  Example {idx+1}:")
+                # Truncate long prompts for readability
+                display_prompt = prompt if len(prompt) < 150 else prompt[:150] + "..."
+                print(f"    Question: {display_prompt}")
+                gold_preview = gold[:80] if len(gold) > 80 else gold
+                baseline_preview = baseline_answer[:80] if len(baseline_answer) > 80 else baseline_answer
+                injected_preview = injected_answer[:80] if len(injected_answer) > 80 else injected_answer
+                print(f"    Gold:     '{extract_gsm8k_answer(gold)}' (from: {gold_preview}...)")
+                print(f"    Baseline: '{extract_gsm8k_answer(baseline_answer)}' (from: {baseline_preview}...)")
+                print(f"    Injected: '{extract_gsm8k_answer(injected_answer)}' (from: {injected_preview}...)")
+                baseline_correct = extract_gsm8k_answer(baseline_answer) == extract_gsm8k_answer(gold)
+                injected_correct = extract_gsm8k_answer(injected_answer) == extract_gsm8k_answer(gold)
+                print(f"    Baseline Correct: {baseline_correct}")
+                print(f"    Injected Correct: {injected_correct}")
+
         # Compute GSM8K accuracy
         baseline_acc = gsm8k_accuracy(baseline_preds_gsm, gold_answers_gsm)
         injected_acc = gsm8k_accuracy(injected_preds_gsm, gold_answers_gsm)
 
-        print(f"\nGSM8K Results:")
+        print(f"\n{'='*60}")
+        print(f"GSM8K Results Summary ({len(gsm8k_samples)} samples):")
+        print(f"{'='*60}")
         print(f"  Baseline Accuracy: {baseline_acc*100:.1f}%")
         print(f"  Injected Accuracy: {injected_acc*100:.1f}%")
-        print(f"  Performance Ratio: {(injected_acc/max(baseline_acc, 0.01))*100:.1f}%")
+        print(f"  Performance Retention: {(injected_acc/max(baseline_acc, 0.01))*100:.1f}% of baseline")
+        print(f"  Expected with trained projection: 10-27% retention (per Ramesh & Li)")
+        print(f"{'='*60}")
 
         task_results["gsm8k"] = {
             "baseline_accuracy": baseline_acc,
@@ -3732,9 +3772,44 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         task_results["gsm8k"] = {"error": str(e)}
 
     results["task_evaluation"] = task_results
+
+    # Print comprehensive summary
     print(f"\n{'='*80}")
-    print("TASK EVALUATION COMPLETE")
-    print(f"{'='*80}\n")
+    print("TASK EVALUATION COMPLETE - SUMMARY")
+    print(f"{'='*80}")
+
+    if "squad" in task_results and "error" not in task_results["squad"]:
+        squad = task_results["squad"]
+        print(f"\nSQuAD Q&A ({squad['n_samples']} samples):")
+        print(f"  Baseline: EM={squad['baseline_em']*100:.1f}%, F1={squad['baseline_f1']*100:.1f}%")
+        print(f"  Injected: EM={squad['injected_em']*100:.1f}%, F1={squad['injected_f1']*100:.1f}%")
+        retention = (squad['injected_f1']/max(squad['baseline_f1'], 0.01))*100
+        print(f"  Retention: {retention:.1f}% of baseline F1")
+    else:
+        print(f"\nSQuAD Q&A: FAILED")
+
+    if "gsm8k" in task_results and "error" not in task_results["gsm8k"]:
+        gsm = task_results["gsm8k"]
+        print(f"\nGSM8K Math ({gsm['n_samples']} samples):")
+        print(f"  Baseline: {gsm['baseline_accuracy']*100:.1f}% accuracy")
+        print(f"  Injected: {gsm['injected_accuracy']*100:.1f}% accuracy")
+        retention = (gsm['injected_accuracy']/max(gsm['baseline_accuracy'], 0.01))*100
+        print(f"  Retention: {retention:.1f}% of baseline")
+    else:
+        print(f"\nGSM8K Math: FAILED")
+
+    print(f"\nInterpretation:")
+    print(f"  - Random/untrained projection expected: ~0-5% retention")
+    print(f"  - Trained projection target (Ramesh & Li): 10-27% retention")
+    print(f"  - Perfect projection would achieve: ~100% retention")
+
+    print(f"\nNext steps:")
+    if learned_projection is None or not hasattr(learned_projection, 'trained'):
+        print(f"  ✓ Train projection on C4 dataset to improve performance")
+    print(f"  ✓ Test multiple layers to find optimal injection point")
+    print(f"  ✓ Increase sample size for final evaluation (200+ samples)")
+
+    print(f"\n{'='*80}\n")
 
     # Cleanup
     print("Cleaning up...")
