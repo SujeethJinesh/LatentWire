@@ -1,0 +1,1799 @@
+Using DDP (DistributedDataParallel) with torchrun for 4 GPUs
+
+W1101 15:40:30.176000 2727194 torch/distributed/run.py:793] 
+W1101 15:40:30.176000 2727194 torch/distributed/run.py:793] *****************************************
+W1101 15:40:30.176000 2727194 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1101 15:40:30.176000 2727194 torch/distributed/run.py:793] *****************************************
+==> Using CUDA on HPC (4 GPUs available)
+==> Using CUDA on HPC (4 GPUs available)
+==> Using CUDA on HPC (4 GPUs available)
+==> Using CUDA on HPC (4 GPUs available)
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+  - Batch size per GPU: 10[W1101 15:40:41.267065366 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[W1101 15:40:41.267329926 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+✓ Initialized DDP: 4 processes (rank 0)
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+
+  Backend: nccl
+  Device for rank 0: cuda:0
+================================================================================
+UNIFIED CROSS-MODEL ALIGNMENT EXPERIMENTS
+Timestamp: 2025-11-01T15:40:41.262764
+Platform: hpc
+Device: cuda
+Available CUDA GPUs: 4
+DDP: Running with 4 processes
+================================================================================
+[W1101 15:40:41.269679615 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  - Batch size per GPU: 10
+  - Global batch size: 40
+  - Effective batch (with grad accum): 320
+  - Samples: 10000
+  - Epochs: 5
+  - BF16: True
+  - Flash Attention: True
+Python: 3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]
+PyTorch: 2.5.1+cu121
+CUDA available: True
+CUDA devices: 4
+[W1101 15:40:41.288650886 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[rank0]:[W1101 15:40:42.286079874 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank1]:[W1101 15:40:42.290567852 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank3]:[W1101 15:40:42.375154108 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank2]:[W1101 15:40:42.375451417 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+
+2. Starting all experiments sequentially (FAST-FIRST ORDER)...
+Strategy: Each experiment uses all 4 GPUs for faster completion
+NEW PRIORITY: Run FAST experiments first (Procrustes + Activation), then SLOW (trained adapters)
+  Phase 1 (FAST): Procrustes + Activation for BOTH model pairs (~30 min)
+  Phase 2 (SLOW): LoRA, Linear, Affine on Llama 3.1-3.2 first (~2-3 hours)
+  Phase 3 (SLOW): LoRA, Token, Linear, Affine on Llama-Mistral (~2-3 hours)
+Benefits: Quick insights + early validation + fail fast on model access
+
+
+================================================================================
+EXPERIMENT 1/11: ACTIVATION COMMUNICATION (LLAMA 3.1-3.2)
+================================================================================
+Models: Llama 3.1 8B (4096 dim) → Llama 3.2 3B (3072 dim)
+Reproducing Ramesh & Li (ICML 2025) - activation injection with learned projection
+WHY FIRST: Core feasibility test for cross-model communication
+Fixes: Replacement (not addition), last token only, forward hooks, dimension handling
+
+
+================================================================================
+ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025 Reproduction)
+================================================================================
+Model A (source): meta-llama/Llama-3.1-8B
+Model B (target): meta-llama/Llama-3.2-3B
+Method: Replace target's last-token activation with source's projected activation
+
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2939.76it/s]
+You are attempting to use Flash Attention 2.0 with a model not initialized on GPU. Make sure to move the model to GPU after initializing it on CPU with `model.to('cuda')`.
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.33it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.17it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.36it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.30it/s]
+Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 2/2 [00:00<00:00, 3264.05it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.86it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.13it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.05it/s]
+
+Model A: 4096 hidden_dim, 32 layers
+Model B: 3072 hidden_dim, 28 layers
+
+Dimension mismatch detected (4096 → 3072)
+Looking for learned projection at: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_projection/projection_4096_to_3072.pt
+  ✗ No pre-trained projection found
+  Training new projection on C4 dataset (per Ramesh & Li 2025)
+
+================================================================================
+TRAINING LEARNED PROJECTION (Ramesh & Li 2025)
+================================================================================
+Loading 3072 sentences from C4 dataset...
+Loaded 3069 sentences from C4
+
+Extracting layer-26 final-token activations...
+Using batch size 96 for activation extraction
+Extracting activations:   0%|          | 0/32 [00:00<?, ?it/s]Extracting activations:   3%|▎         | 1/32 [00:05<02:57,  5.73s/it]Extracting activations:   6%|▋         | 2/32 [00:08<01:56,  3.90s/it]Extracting activations:   9%|▉         | 3/32 [00:09<01:22,  2.83s/it]Extracting activations:  12%|█▎        | 4/32 [00:12<01:14,  2.66s/it]Extracting activations:  16%|█▌        | 5/32 [00:13<01:01,  2.27s/it]Extracting activations:  19%|█▉        | 6/32 [00:16<00:59,  2.30s/it]Extracting activations:  22%|██▏       | 7/32 [00:17<00:51,  2.07s/it]Extracting activations:  25%|██▌       | 8/32 [00:19<00:47,  1.97s/it]Extracting activations:  28%|██▊       | 9/32 [00:21<00:44,  1.93s/it]Extracting activations:  31%|███▏      | 10/32 [00:22<00:39,  1.78s/it]Extracting activations:  34%|███▍      | 11/32 [00:24<00:38,  1.83s/it]Extracting activations:  38%|███▊      | 12/32 [00:26<00:34,  1.74s/it]Extracting activations:  41%|████      | 13/32 [00:28<00:33,  1.76s/it]Extracting activations:  44%|████▍     | 14/32 [00:30<00:32,  1.79s/it]Extracting activations:  47%|████▋     | 15/32 [00:31<00:28,  1.70s/it]Extracting activations:  50%|█████     | 16/32 [00:33<00:28,  1.76s/it]Extracting activations:  53%|█████▎    | 17/32 [00:39<00:45,  3.02s/it]Extracting activations:  56%|█████▋    | 18/32 [00:40<00:35,  2.57s/it]Extracting activations:  59%|█████▉    | 19/32 [00:42<00:30,  2.38s/it]Extracting activations:  62%|██████▎   | 20/32 [00:44<00:26,  2.17s/it]Extracting activations:  66%|██████▌   | 21/32 [00:45<00:21,  1.97s/it]Extracting activations:  69%|██████▉   | 22/32 [00:47<00:19,  1.95s/it]Extracting activations:  72%|███████▏  | 23/32 [00:49<00:16,  1.88s/it]Extracting activations:  75%|███████▌  | 24/32 [00:51<00:14,  1.84s/it]Extracting activations:  78%|███████▊  | 25/32 [00:53<00:12,  1.80s/it]Extracting activations:  81%|████████▏ | 26/32 [00:54<00:10,  1.70s/it]Extracting activations:  84%|████████▍ | 27/32 [00:56<00:08,  1.74s/it]Extracting activations:  88%|████████▊ | 28/32 [00:57<00:06,  1.69s/it]Extracting activations:  91%|█████████ | 29/32 [01:00<00:05,  1.85s/it]Extracting activations:  94%|█████████▍| 30/32 [01:02<00:03,  1.85s/it]Extracting activations:  97%|█████████▋| 31/32 [01:03<00:01,  1.75s/it]Extracting activations: 100%|██████████| 32/32 [01:05<00:00,  1.80s/it]Extracting activations: 100%|██████████| 32/32 [01:05<00:00,  2.05s/it]
+Activations A shape: torch.Size([3069, 4096])
+Activations B shape: torch.Size([3069, 3072])
+Activation dtype: torch.bfloat16
+
+Training projection matrix for 10 epochs...
+Epoch 1/10: MSE Loss = 0.083866
+Epoch 2/10: MSE Loss = 0.005405
+Epoch 3/10: MSE Loss = 0.001541
+Epoch 4/10: MSE Loss = 0.000845
+Epoch 5/10: MSE Loss = 0.000524
+Epoch 6/10: MSE Loss = 0.000344
+Epoch 7/10: MSE Loss = 0.000231
+Epoch 8/10: MSE Loss = 0.000162
+Epoch 9/10: MSE Loss = 0.000120
+Epoch 10/10: MSE Loss = 0.000093
+
+Final MSE on all 3069 samples: 0.000076
+================================================================================
+PROJECTION TRAINING COMPLETE
+================================================================================
+
+  ✓ Saved trained projection to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_projection/projection_4096_to_3072.pt
+
+  Training reverse projection (3072 → 4096) for bidirectional communication...
+
+================================================================================
+TRAINING LEARNED PROJECTION (Ramesh & Li 2025)
+================================================================================
+Loading 3072 sentences from C4 dataset...
+Loaded 3069 sentences from C4
+
+Extracting layer-26 final-token activations...
+Using batch size 96 for activation extraction
+Extracting activations:   0%|          | 0/32 [00:00<?, ?it/s]Extracting activations:   3%|▎         | 1/32 [00:01<00:53,  1.73s/it]Extracting activations:   6%|▋         | 2/32 [00:03<00:48,  1.62s/it]Extracting activations:   9%|▉         | 3/32 [00:04<00:47,  1.65s/it]Extracting activations:  12%|█▎        | 4/32 [00:06<00:43,  1.56s/it]Extracting activations:  16%|█▌        | 5/32 [00:08<00:44,  1.64s/it]Extracting activations:  19%|█▉        | 6/32 [00:10<00:45,  1.74s/it]Extracting activations:  22%|██▏       | 7/32 [00:11<00:41,  1.67s/it]Extracting activations:  25%|██▌       | 8/32 [00:13<00:42,  1.77s/it]Extracting activations:  28%|██▊       | 9/32 [00:15<00:38,  1.69s/it]Extracting activations:  31%|███▏      | 10/32 [00:16<00:36,  1.68s/it]Extracting activations:  34%|███▍      | 11/32 [00:18<00:37,  1.79s/it]Extracting activations:  38%|███▊      | 12/32 [00:20<00:35,  1.75s/it]Extracting activations:  41%|████      | 13/32 [00:22<00:33,  1.78s/it]Extracting activations:  44%|████▍     | 14/32 [00:23<00:30,  1.72s/it]Extracting activations:  47%|████▋     | 15/32 [00:25<00:29,  1.71s/it]Extracting activations:  50%|█████     | 16/32 [00:27<00:26,  1.68s/it]Extracting activations:  53%|█████▎    | 17/32 [00:30<00:32,  2.17s/it]Extracting activations:  56%|█████▋    | 18/32 [00:32<00:27,  1.99s/it]Extracting activations:  59%|█████▉    | 19/32 [00:33<00:23,  1.83s/it]Extracting activations:  62%|██████▎   | 20/32 [00:35<00:22,  1.84s/it]Extracting activations:  66%|██████▌   | 21/32 [00:36<00:19,  1.76s/it]Extracting activations:  69%|██████▉   | 22/32 [00:38<00:17,  1.73s/it]Extracting activations:  72%|███████▏  | 23/32 [00:40<00:15,  1.77s/it]Extracting activations:  75%|███████▌  | 24/32 [00:42<00:14,  1.78s/it]Extracting activations:  78%|███████▊  | 25/32 [00:44<00:12,  1.75s/it]Extracting activations:  81%|████████▏ | 26/32 [00:45<00:10,  1.68s/it]Extracting activations:  84%|████████▍ | 27/32 [00:47<00:08,  1.66s/it]Extracting activations:  88%|████████▊ | 28/32 [00:49<00:07,  1.77s/it]Extracting activations:  91%|█████████ | 29/32 [00:51<00:05,  1.83s/it]Extracting activations:  94%|█████████▍| 30/32 [00:52<00:03,  1.74s/it]Extracting activations:  97%|█████████▋| 31/32 [00:54<00:01,  1.68s/it]Extracting activations: 100%|██████████| 32/32 [00:55<00:00,  1.67s/it]Extracting activations: 100%|██████████| 32/32 [00:55<00:00,  1.75s/it]
+Activations A shape: torch.Size([3069, 3072])
+Activations B shape: torch.Size([3069, 4096])
+Activation dtype: torch.bfloat16
+
+Training projection matrix for 10 epochs...
+Epoch 1/10: MSE Loss = 0.102810
+Epoch 2/10: MSE Loss = 0.005005
+Epoch 3/10: MSE Loss = 0.000918
+Epoch 4/10: MSE Loss = 0.000460
+Epoch 5/10: MSE Loss = 0.000278
+Epoch 6/10: MSE Loss = 0.000182
+Epoch 7/10: MSE Loss = 0.000122
+Epoch 8/10: MSE Loss = 0.000085
+Epoch 9/10: MSE Loss = 0.000064
+Epoch 10/10: MSE Loss = 0.000051
+
+Final MSE on all 3069 samples: 0.000042
+================================================================================
+PROJECTION TRAINING COMPLETE
+================================================================================
+
+  ✓ Saved reverse projection to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_projection/projection_3072_to_4096.pt
+
+✓ Layer 26 (paper's choice) is valid for both models
+Testing layers: [26, 0, 8, 16, 24]
+Primary layer (from paper): 26
+
+============================================================
+Testing Layer 26
+============================================================
+  Prompt 1/5: The capital of France is...
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is Paris. It is the largest city in France and the capital
+    Injected:  The capital of France is Paris. It is the largest city in France and the capital
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to find the value of x. We can do this by using t
+    Injected:  To solve this problem, we need toerect a new tower, which is 10 feet tall. The n
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here. The future of artificial intellig
+    Injected:  The future of artificial intelligence is here
+The future of artificial intellige
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The world is now a global
+    Injected:  In the year 2050, AFK Arena is a popular mobile game that has taken the world by
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are solitary animals, whi
+    Injected:  The main difference between cats and dogs isalt; the cat is a carnivore and the 
+    Match: False
+
+============================================================
+Testing Layer 0
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is Paris. It is the largest city in France and the capital
+    Injected:  The capital of France is, Paris, is a city of romance and history. It is also a 
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to find the value of x. We can do this by using t
+    Injected:  To solve this problem, we need to to be able to solve the problem. The problem i
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here. The future of artificial intellig
+    Injected:  The future of artificial intelligence is
+The future of artificial intelligence
+T
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The world is now a global
+    Injected:  In the year 2050,, the world is a very different place. The world is a very diff
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are solitary animals, whi
+    Injected:  The main difference between cats and dogs is
+Cats and dogs are both domesticated
+    Match: False
+
+============================================================
+Testing Layer 8
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is Paris. It is the largest city in France and the capital
+    Injected:  The capital of France is, of course, Paris. It is the largest city in France and
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to find the value of x. We can do this by using t
+    Injected:  To solve this problem, we need to, so we can use the fact that the derivative of
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here. The future of artificial intellig
+    Injected:  The future of artificial intelligence is
+The future of artificial intelligence i
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The world is now a global
+    Injected:  In the year 2050,, the world is a very different place. The population is 7 bill
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are solitary animals, whi
+    Injected:  The main difference between cats and dogs is is that cats are carnivores and dog
+    Match: False
+
+============================================================
+Testing Layer 16
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is Paris. It is the largest city in France and the capital
+    Injected:  The capital of France is the city of Paris. It is the most visited city in the w
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to find the value of x. We can do this by using t
+    Injected:  To solve this problem, we need to3 solutions: 1) The first solution is to use th
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here. The future of artificial intellig
+    Injected:  The future of artificial intelligence is the future of humanity
+The future of ar
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The world is now a global
+    Injected:  In the year 2050,, the world is in a state of chaos. The world is divided into t
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are solitary animals, whi
+    Injected:  The main difference between cats and dogs is to their diet. Cats are obligate ca
+    Match: False
+
+============================================================
+Testing Layer 24
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is Paris. It is the largest city in France and the capital
+    Injected:  The capital of France is2. Paris
+A. true
+B. false
+Answer: A
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to find the value of x. We can do this by using t
+    Injected:  To solve this problem, we need to to find the value of x. We can do this by usin
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here. The future of artificial intellig
+    Injected:  The future of artificial intelligence is with us now. It is already being used i
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The world is now a global
+    Injected:  In the year 2050,....................
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are solitary animals, whi
+    Injected:  The main difference between cats and dogs isi that cats are solitary animals, wh
+    Match: False
+
+================================================================================
+RESULTS SUMMARY
+================================================================================
+Layer 26: 0/5 exact matches (0.0%)
+Layer  0: 0/5 exact matches (0.0%)
+Layer  8: 0/5 exact matches (0.0%)
+Layer 16: 0/5 exact matches (0.0%)
+Layer 24: 0/5 exact matches (0.0%)
+================================================================================
+
+================================================================================
+TASK-BASED EVALUATION
+================================================================================
+Evaluating on real tasks (SQuAD Q&A and GSM8K math) to measure task performance
+vs exact text matching. This aligns with Ramesh & Li paper methodology.
+NOTE: With random/untrained projection, expect low performance on injected model.
+      Trained projection achieves up to 27% improvement over natural language (per Ramesh & Li).
+
+Using layer 26 for task evaluation
+
+
+============================================================
+SQuAD Q&A Evaluation (layer 26)
+============================================================
+  SQuAD evaluation failed: must be called with a dataclass type or instance
+
+============================================================
+GSM8K Math Evaluation (layer 26)
+============================================================
+Loaded 20 GSM8K test examples
+Will print first 3 examples for inspection
+
+  Processing 1/20...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+  Example 1:
+    Question: Question: Jared is trying to increase his typing speed. He starts with 47 words per minute (WPM). After some lessons the next time he tests his typing...
+    Gold:        '52'
+    Model B:     '50' (full context)
+    Model A:     '50' (full context)
+    Injected:    '380' (A's activation → B)
+    Random:      'ations, and the average of the three measurements is' (noise → B)
+    No Context:  'The answer is C. The most common cause of' (B alone)
+    Correct: B=False, A=False, Inj=False, Rand=False, NC=False
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+  Example 2:
+    Question: Question: Jordan has 2 children who wear diapers.  Each child requires 5 diaper changes per day.  Jordan's wife changes half of the diapers.  How many...
+    Gold:        '5'
+    Model B:     '5' (full context)
+    Model A:     '5' (full context)
+    Injected:    '5' (A's activation → B)
+    Random:      '.swing' (noise → B)
+    No Context:  'The answer is C. The most common cause of' (B alone)
+    Correct: B=True, A=True, Inj=True, Rand=False, NC=False
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+  Example 3:
+    Question: Question: A wooden bridge can carry no more than 5000 pounds. A delivery truck filled with identical boxes, each weighing 15 pounds, will pass over th...
+    Gold:        '83'
+    Model B:     '15' (full context)
+    Model A:     '333' (full context)
+    Injected:    '380' (A's activation → B)
+    Random:      '.swing
+Explanation: The combined weight of the driver' (noise → B)
+    No Context:  'The answer is C. The most common cause of' (B alone)
+    Correct: B=False, A=False, Inj=False, Rand=False, NC=False
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+  Processing 11/20...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+======================================================================
+GSM8K Results Summary (20 samples):
+======================================================================
+  Model B (full context):        Accuracy:   5.0%  ← Upper bound for B
+  Model A (full context):        Accuracy:  20.0%  ← Upper bound for A
+  Injected (A's activation → B): Accuracy:   5.0%  ← Our method
+  Random (noise → B):            Accuracy:   0.0%  ← Control
+  No Context (B alone):          Accuracy:   0.0%  ← Lower bound
+
+  Performance Retention (vs Model B):
+    Injected: 100.0% retention
+    Random:   0.0% retention
+
+  Ramesh & Li (2025): Trained projection outperforms natural language communication
+  CRITICAL: Injected should beat Random to prove meaningful transfer!
+======================================================================
+
+================================================================================
+TASK EVALUATION COMPLETE - SUMMARY
+================================================================================
+
+SQuAD Q&A: FAILED
+
+GSM8K Math (20 samples):
+  Model B:     5.0%
+  Model A:     20.0%
+  Injected:    5.0% (100.0% retention)
+  Random:      0.0% (0.0% retention)
+  No Context:  0.0%
+  ✓ Injected beats random: True
+
+Interpretation:
+  - Injected MUST beat Random to prove meaningful activation transfer
+  - Random/untrained projection: Poor performance expected
+  - Trained projection (Ramesh & Li): Outperforms natural language communication
+  - Goal: Activation communication with less than 1/4 the compute
+
+Next steps:
+  ✓ Using trained projection from /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_projection/projection_4096_to_3072.pt
+  ✓ Test multiple layers to find optimal injection point
+  ✓ Increase sample size for final evaluation (200+ samples)
+
+================================================================================
+
+Cleaning up...
+Activation Communication (Llama 3.1-3.2) results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/activation_communication_llama31_llama32_20251101_154044.json
+
+================================================================================
+EXPERIMENT 2/11: ACTIVATION COMMUNICATION (LLAMA-MISTRAL)
+================================================================================
+Models: Llama 3.1 8B (4096 dim) → Mistral 7B (4096 dim)
+Tests activation injection across different vocabularies (128K vs 32K tokens)
+Expected: Should work since dimensions match (no projection needed)
+
+
+================================================================================
+ACTIVATION COMMUNICATION EXPERIMENT (Ramesh & Li 2025 Reproduction)
+================================================================================
+Model A (source): meta-llama/Llama-3.1-8B
+Model B (target): mistralai/Mistral-7B-v0.3
+Method: Replace target's last-token activation with source's projected activation
+
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3872.86it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:02,  1.27it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.43it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:02<00:00,  1.53it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.71it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.60it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3424.85it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.02it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.38it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.51it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.42it/s]
+
+Model A: 4096 hidden_dim, 32 layers
+Model B: 4096 hidden_dim, 32 layers
+
+✓ Dimensions match (4096 = 4096), no projection needed
+
+✓ Layer 26 (paper's choice) is valid for both models
+Testing layers: [26, 0, 8, 16, 24]
+Primary layer (from paper): 26
+
+============================================================
+Testing Layer 26
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is a city that is full of history and culture. It is a cit
+    Injected:  The capital of France isIBERIA, the capital of Spain is MADRID, the capital of P
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to understand the difference between the two type
+    Injected:  To solve this problem, we need to #1.
+
+## What is the best way to get rid of a b
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Injected:  The future of artificial intelligence is and will be a hot topic for years to co
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The United States has bee
+    Injected:  In the year 2050, Saitama is a 25-year-old superhero who is tired of all the
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are carnivores and dogs a
+    Injected:  The main difference between cats and dogs isessentially the fact that cats are c
+    Match: False
+
+============================================================
+Testing Layer 0
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is a city that is full of history and culture. It is a cit
+    Injected:  The capital of France issanté, the capital of France, is a city that is full of 
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to understand the difference between the two type
+    Injected:  To solve this problem, we need to the equation.
+
+\[\begin{align*} \frac{dy}{dx} 
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Injected:  The future of artificial intelligence is is in the hands of the people who are u
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The United States has bee
+    Injected:  In the year 2050, than 60% of the world’s population will be living in cities. T
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are carnivores and dogs a
+    Injected:  The main difference between cats and dogs is is that cats are more independent a
+    Match: False
+
+============================================================
+Testing Layer 8
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is a city that is full of history and culture. It is a cit
+    Injected:  The capital of France is Paris, and it is the most populous city in the country.
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to understand the difference between the two type
+    Injected:  To solve this problem, we need to is to find the value of the variable x.
+
+We ca
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Injected:  The future of artificial intelligence is
+
+# The future of artificial intelligenc
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The United States has bee
+    Injected:  In the year 2050,, the world will be a very different place. The population will
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are carnivores and dogs a
+    Injected:  The main difference between cats and dogs is the way they eat. Cats are carnivor
+    Match: False
+
+============================================================
+Testing Layer 16
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is a city that is full of history and culture. It is a cit
+    Injected:  The capital of France is which is also the largest city in the country. It is lo
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to understand the difference between the two type
+    Injected:  To solve this problem, we need toso that the user can easily find the informatio
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Injected:  The future of artificial intelligence is
+
+# The future of artificial intelligenc
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The United States has bee
+    Injected:  In the year 2050, Dai Sato and his team of scientists have created a new form of
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are carnivores and dogs a
+    Injected:  The main difference between cats and dogs is the way they communicate. Dogs are 
+    Match: False
+
+============================================================
+Testing Layer 24
+============================================================
+  Prompt 1/5: The capital of France is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The capital of France is a city that is full of history and culture. It is a cit
+    Injected:  The capital of France is 2,200 years old. It is a city of history, art, and cult
+    Match: False
+  Prompt 2/5: To solve this problem, we need to...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  To solve this problem, we need to understand the difference between the two type
+    Injected:  To solve this problem, we need to’ve a look at the way the internet works.
+
+The 
+    Match: False
+  Prompt 3/5: The future of artificial intelligence is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Injected:  The future of artificial intelligence is, in many ways, the future of humanity.
+
+    Match: False
+  Prompt 4/5: In the year 2050,...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  In the year 2050, the world is a very different place. The United States has bee
+    Injected:  In the year 2050,000,000,000,000,000,
+    Match: False
+  Prompt 5/5: The main difference between cats and dogs is...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+    Baseline:  The main difference between cats and dogs is that cats are carnivores and dogs a
+    Injected:  The main difference between cats and dogs is
+
+- Cats are carnivores and dogs are
+    Match: False
+
+================================================================================
+RESULTS SUMMARY
+================================================================================
+Layer 26: 0/5 exact matches (0.0%)
+Layer  0: 0/5 exact matches (0.0%)
+Layer  8: 0/5 exact matches (0.0%)
+Layer 16: 0/5 exact matches (0.0%)
+Layer 24: 0/5 exact matches (0.0%)
+================================================================================
+
+================================================================================
+TASK-BASED EVALUATION
+================================================================================
+Evaluating on real tasks (SQuAD Q&A and GSM8K math) to measure task performance
+vs exact text matching. This aligns with Ramesh & Li paper methodology.
+NOTE: With random/untrained projection, expect low performance on injected model.
+      Trained projection achieves up to 27% improvement over natural language (per Ramesh & Li).
+
+Using layer 26 for task evaluation
+
+
+============================================================
+SQuAD Q&A Evaluation (layer 26)
+============================================================
+  SQuAD evaluation failed: must be called with a dataclass type or instance
+
+============================================================
+GSM8K Math Evaluation (layer 26)
+============================================================
+Loaded 20 GSM8K test examples
+Will print first 3 examples for inspection
+
+  Processing 1/20...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+  Example 1:
+    Question: Question: Jared is trying to increase his typing speed. He starts with 47 words per minute (WPM). After some lessons the next time he tests his typing...
+    Gold:        '52'
+    Model B:     '50' (full context)
+    Model A:     '50' (full context)
+    Injected:    'Given:
+Jared is trying' (A's activation → B)
+    Random:      'APPLICATION OF MIDPOINT FORMULA' (noise → B)
+    No Context:  'RAY: Here's the answer.' (B alone)
+    Correct: B=False, A=False, Inj=False, Rand=False, NC=False
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+  Example 2:
+    Question: Question: Jordan has 2 children who wear diapers.  Each child requires 5 diaper changes per day.  Jordan's wife changes half of the diapers.  How many...
+    Gold:        '5'
+    Model B:     '10' (full context)
+    Model A:     '5' (full context)
+    Injected:    'Let x = the number of diapers' (A's activation → B)
+    Random:      '10' (noise → B)
+    No Context:  'RAY: Here's the answer.' (B alone)
+    Correct: B=False, A=True, Inj=False, Rand=False, NC=False
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+  Example 3:
+    Question: Question: A wooden bridge can carry no more than 5000 pounds. A delivery truck filled with identical boxes, each weighing 15 pounds, will pass over th...
+    Gold:        '83'
+    Model B:     '333' (full context)
+    Model A:     '333' (full context)
+    Injected:    '325' (A's activation → B)
+    Random:      '-
+
+Solution:
+
+Let the' (noise → B)
+    No Context:  'RAY: Here's the answer.' (B alone)
+    Correct: B=False, A=False, Inj=False, Rand=False, NC=False
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+  Processing 11/20...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+
+======================================================================
+GSM8K Results Summary (20 samples):
+======================================================================
+  Model B (full context):        Accuracy:  10.0%  ← Upper bound for B
+  Model A (full context):        Accuracy:  20.0%  ← Upper bound for A
+  Injected (A's activation → B): Accuracy:   0.0%  ← Our method
+  Random (noise → B):            Accuracy:   5.0%  ← Control
+  No Context (B alone):          Accuracy:   0.0%  ← Lower bound
+
+  Performance Retention (vs Model B):
+    Injected: 0.0% retention
+    Random:   50.0% retention
+
+  Ramesh & Li (2025): Trained projection outperforms natural language communication
+  CRITICAL: Injected should beat Random to prove meaningful transfer!
+======================================================================
+
+================================================================================
+TASK EVALUATION COMPLETE - SUMMARY
+================================================================================
+
+SQuAD Q&A: FAILED
+
+GSM8K Math (20 samples):
+  Model B:     10.0%
+  Model A:     20.0%
+  Injected:    0.0% (0.0% retention)
+  Random:      5.0% (50.0% retention)
+  No Context:  0.0%
+  ✗ Injected does NOT beat random!
+
+Interpretation:
+  - Injected MUST beat Random to prove meaningful activation transfer
+  - Random/untrained projection: Poor performance expected
+  - Trained projection (Ramesh & Li): Outperforms natural language communication
+  - Goal: Activation communication with less than 1/4 the compute
+
+Next steps:
+  ✓ Models have same dimension - no projection needed
+  ✓ Test multiple layers to find optimal injection point
+  ✓ Increase sample size for final evaluation (200+ samples)
+
+================================================================================
+
+Cleaning up...
+Activation Communication (Llama-Mistral) results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/activation_communication_llama_mistral_20251101_154044.json
+
+================================================================================
+EXPERIMENT 3/11: PROCRUSTES ALIGNMENT (LLAMA 3.1-3.2)
+================================================================================
+Models: Llama 3.1 8B ↔ Llama 3.2 3B (identical 128,256 token vocab)
+SVD-based geometric alignment (no training required)
+WARNING: Will fail due to dimension mismatch (4096 vs 3072)
+Keeping to document the limitation of zero-shot geometric methods
+
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Model A: meta-llama/Llama-3.1-8B
+Model B: meta-llama/Llama-3.2-3B
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1725.70it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  1.54it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:00,  2.07it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.26it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.25it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.15it/s]
+Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 2/2 [00:00<00:00, 29.15it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.85it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.30it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.18it/s]
+Model A moved to cuda:0
+Model B moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+✗ Procrustes (Llama 3.1-3.2) FAILED as expected: Source and target must have same shape
+  This confirms need for learned projection (not just geometric alignment)
+
+================================================================================
+EXPERIMENT 4/11: PROCRUSTES ALIGNMENT (LLAMA-MISTRAL)
+================================================================================
+Models: Llama 3.1 8B ↔ Mistral 7B (4× vocab mismatch)
+SVD-based geometric alignment (no training required)
+Should succeed since dimensions match (4096 = 4096)
+
+
+================================================================================
+PROCRUSTES ALIGNMENT EXPERIMENT (GPU-ACCELERATED)
+================================================================================
+Model A: meta-llama/Llama-3.1-8B
+Model B: mistralai/Mistral-7B-v0.3
+Device: cuda (Procrustes on hpc)
+
+Loading models on hpc...
+Using bfloat16 for H100
+Loading models on separate GPUs to avoid OOM...
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 9198.04it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  1.64it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.69it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.69it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.86it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.79it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3721.65it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.51it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.70it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.81it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.73it/s]
+Model A moved to cuda:0
+Model B moved to cuda:1
+
+Loading calibration dataset (50 samples)...
+
+============================================================
+Testing Layer 0
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.091226
+  WARNING: Orthogonality error = 0.089725
+  Computing CKA similarity scores...
+  CKA Mistral→Llama:
+    Before alignment: 0.5534
+    After alignment:  0.6504
+    Improvement:      +0.0970
+  CKA Llama→Mistral after alignment: 0.5166
+  Saved Procrustes alignment to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/procrustes_alignments/layer_0.pt
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.2734
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: esign
+
+# Re-designing the world’s most popular online dating app
+
+
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 1.4062
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+The 2019-2020 school year is off to a great start! We are excited
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.5781
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+
+The first thing you need to do is to make sure that you have a good understand
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 1.7188
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+The word “basil” is derived from the Greek word “basileus” which means
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.4609
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+
+**A**
+
+**S**
+
+**S**
+
+**S**
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 1.6094
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+A. The first letter of the Greek alphabet, α, used as a mathematical symbol to 
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.4219
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+
+The
+
+Michael J. B. Allen
+
+and
+
+James R
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 1.5234
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+The 2018-2019 school year is off to a great start! We are excited
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 1.7031
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+
+The
+
+The
+
+The
+
+The
+
+The
+
+The
+
+
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 1.8516
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+The 2018-2019 school year is off to a great start! We are excited
+
+============================================================
+Testing Layer 8
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033226
+  WARNING: Orthogonality error = 0.033129
+  Computing CKA similarity scores...
+  CKA Mistral→Llama:
+    Before alignment: 0.9998
+    After alignment:  0.9999
+    Improvement:      +0.0001
+  CKA Llama→Mistral after alignment: 0.9999
+  Saved Procrustes alignment to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/procrustes_alignments/layer_8.pt
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: als, the first thing that comes to mind is the word “architecture”. The word “
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated:  the Clergy the Clergy the Clergy the Cler the Clergy the Cler the Cler the Cler
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: the the the the architectural style of the building.
+
+The architectural style of
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+The
+The
+The
+The
+The
+The
+
+
+
+
+The
+The
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: , the 2014 winner of the Pritzker Prize, the architecture world’s
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: ly
+Arch
+Arch
+Arch
+Arch
+Arch
+Arch
+Arch
+
+
+
+Arch
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: , 1969, 1969, 1969, 
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+The Architectural
+TheArchitectural'
+TheArchitectural'
+TheArchitectural
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 552.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+
+The architectural style of the school is a modern interpretation of the tradit
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+The Church of the Church of the Church of the Churchof the Churchof the Churcho
+
+============================================================
+Testing Layer 16
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.033363
+  WARNING: Orthogonality error = 0.033375
+  Computing CKA similarity scores...
+  CKA Mistral→Llama:
+    Before alignment: 0.9963
+    After alignment:  0.9996
+    Improvement:      +0.0033
+  CKA Llama→Mistral after alignment: 0.9996
+  Saved Procrustes alignment to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/procrustes_alignments/layer_16.pt
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: s of the Church of the Holy Sepulchre, Jerusalem, 1850.
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated:  Church
+The Arch
+The Architectural
+The Architect
+The Architect
+
+
+
+
+
+
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: the the the is the most important.
+
+The most important thing is to have a good t
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated:  of the Church of the Church of the Church of the Church of the Church of the Ch
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: , the building is a 19th century former church, which has been converted into a 
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+Architectural
+Architect
+Architect
+Architect
+
+
+
+
+
+Arch
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: the
+ Question:
+
+What is the difference between a "sandwich" and a "
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+Architectural
+Architectural
+Architect
+Architect
+Architect
+Architect
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: 
+
+The architectural style of the building is a combination of the traditional an
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 556.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: a
+Architectural
+Architectural
+Architect
+
+
+
+
+Architect
+
+
+============================================================
+Testing Layer 24
+============================================================
+  Moving 570 samples to GPU 0 for fast SVD
+
+Fitting Procrustes alignments on cuda...
+  WARNING: Orthogonality error = 0.034813
+  WARNING: Orthogonality error = 0.035054
+  Computing CKA similarity scores...
+  CKA Mistral→Llama:
+    Before alignment: 0.9634
+    After alignment:  0.9934
+    Improvement:      +0.0300
+  CKA Llama→Mistral after alignment: 0.9919
+  Saved Procrustes alignment to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/procrustes_alignments/layer_24.pt
+
+Testing generation...
+  Prompt 1/5: The capital of France is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city that is full of history and culture. It is a cit
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The capital of France is a city of many faces. It is a city of history, a city o
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: the building is a 19th century church, which was converted into a house in the 
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 528.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: , the house was built in the 1970s, the house was built in the 197
+  Prompt 2/5: To solve this problem, we need to...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to understand the difference between the two type
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: To solve this problem, we need to find the value of the expression. We can do th
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: building is a 19th century brick building that was once the home of the local po
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 532.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated:  building is a structure that hasastructurethat hasapstructurethatwasathatwas現ha
+  Prompt 3/5: The future of artificial intelligence is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here.
+
+The future of artificial intelli
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The future of artificial intelligence is here, and it’s already changing the way
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: , the, Question 1���� Questionnaire
+
+The questionnaire is a tool
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 532.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated:  for the 19th century, and the 19th century, and the  19th
+  Prompt 4/5: In the year 2050,...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The United States has bee
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: In the year 2050, the world is a very different place. The population has grown 
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: the Question is, and Question 2.2.
+
+## What is the best way to
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 532.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated:  the 19th-century, the 19th century, the  19th century, the
+  Prompt 5/5: The main difference between cats and dogs is...
+    Testing Mistral→Mistral (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are carnivores and dogs a
+    Testing Llama→Llama (baseline)...
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: The main difference between cats and dogs is that cats are solitary animals, whi
+    Testing Llama→Mistral (cross-model via Procrustes)...
+      Transformation norm: 572.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated: the church of St. St. John the Baptist, the church of St. John the Bapt
+    Testing Mistral→Llama (cross-model via Procrustes)...
+      Transformation norm: 532.0000
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+      Generated:  to the point of view, the point of view, the point of view, the point of view
+
+================================================================================
+PROCRUSTES EXPERIMENT SUMMARY
+================================================================================
+
+Layer 0:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 5/5 succeeded, 0/5 failed
+
+Layer 8:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 5/5 succeeded, 0/5 failed
+
+Layer 16:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 5/5 succeeded, 0/5 failed
+
+Layer 24:
+  Baselines:
+    Mistral→Mistral: 5/5 succeeded
+    Llama→Llama: 5/5 succeeded
+  Cross-model:
+    Llama→Mistral: 5/5 succeeded, 0/5 failed
+    Mistral→Llama: 5/5 succeeded, 0/5 failed
+================================================================================
+
+Cleaning up Procrustes experiment...
+  Models deleted and GPU memory cleared
+Procrustes (Llama-Mistral) results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/unified_experiments/procrustes_results_llama_mistral_20251101_154044.json
+
+✓ All inference experiments complete, syncing ranks before training...
+
+================================================================================
+EXPERIMENT 5/11: LORA ADAPTER - ABLATION (LLAMA 3.1-3.2)
+================================================================================
+Models: Llama 3.1 8B (4096 dim) ↔ Llama 3.2 3B (3072 dim)
+Purpose: Test low-rank adaptation for dimension-mismatched models
+Reference: Hu et al., 'LoRA: Low-Rank Adaptation' (arXiv:2106.09685, ICLR 2022)
+Expected: Parameter-efficient alignment with 260K params (vs 16M for full linear)
+
+================================================================================
+LEARNED ADAPTER EXPERIMENT - LORA
+================================================================================
+Platform: hpc
+Model A: meta-llama/Llama-3.1-8B
+Model B: meta-llama/Llama-3.2-3B
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_allgpus_samevocab_20251101_155821.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DistributedDataParallel (DDP)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Rank: 0, Device: cuda:0
+Batch size per GPU: 10
+Global batch size: 40
+Effective batch (with grad accum): 320
+================================================================================
+
+
+Loading models on hpc...
+Using bfloat16 for H100
+Using Flash Attention 2
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4519.72it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:02,  1.48it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:00,  2.09it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.43it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.60it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.32it/s]
+Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|##########| 2/2 [00:00<00:00, 3445.01it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 1/2 [00:00<00:00,  2.10it/s]Loading checkpoint shards: 100%|##########| 2/2 [00:00<00:00,  2.27it/s]Loading checkpoint shards: 100%|##########| 2/2 [00:00<00:00,  2.20it/s]
+
+Model dimensions:
+  Model A (meta-llama/Llama-3.1-8B): 4096
+  Model B (meta-llama/Llama-3.2-3B): 3072
+  Dimension mismatch detected - adapter will project 4096→3072
