@@ -3119,3 +3119,29 @@ Epoch 1/5 Complete | Time: 11.1m | Total: 11.1m
 ================================================================================
 Epoch 2/5
 ================================================================================
+  [ 40.0%] Step  100/250 | Loss: 10.1593 (Gen: 9.7913, Contr: 2.3015, Align: 106.2518, Uniform: -0.9467) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 40.0%] Step  100/250 | Loss: 10.1231 (Gen: 9.7547, Contr: 2.3041, Align: 107.0697, Uniform: -0.9477) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 40.0%] Step  100/250 | Loss: 10.1698 (Gen: 9.8014, Contr: 2.3042, Align: 105.0011, Uniform: -0.9451) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 40.0%] Step  100/250 | Loss: 10.1535 (Gen: 9.7852, Contr: 2.3032, Align: 101.6404, Uniform: -0.9544) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.39 steps/s | ETA: 6.4m
+  [ 80.0%] Step  200/250 | Loss: 10.0205 (Gen: 9.6293, Contr: 2.3022, Align: 105.7817, Uniform: -0.9467) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: 3.891 | 0.39 steps/s | ETA: 2.1m
+  [ 80.0%] Step  200/250 | Loss: 10.0038 (Gen: 9.6123, Contr: 2.3044, Align: 110.2632, Uniform: -0.9435) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: 3.891 | 0.39 steps/s | ETA: 2.1m
+  [ 80.0%] Step  200/250 | Loss: 9.9911 (Gen: 9.5998, Contr: 2.3032, Align: 102.2577, Uniform: -0.9507) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: 3.891 | 0.39 steps/s | ETA: 2.1m
+  [ 80.0%] Step  200/250 | Loss: 10.0326 (Gen: 9.6411, Contr: 2.3046, Align: 102.2253, Uniform: -0.9523) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: 3.891 | 0.39 steps/s | ETA: 2.1m
+
+  Computing CKA similarity...
+  Generating quality samples...
+
+  Epoch 2 Evaluation:
+    CKA Similarity: 0.8476
+    Cosine Similarity: 0.0002
+
+================================================================================
+Epoch 2/5 Complete | Time: 11.0m | Total: 22.1m
+  Total Loss: 9.9628 (Gen: 9.5597, Contr: 2.3044)
+  CKA Score: 0.8476 | LR: 0.000033
+  ETA for remaining 3 epochs: 33.1m
+================================================================================
+
+================================================================================
+Epoch 3/5
+================================================================================

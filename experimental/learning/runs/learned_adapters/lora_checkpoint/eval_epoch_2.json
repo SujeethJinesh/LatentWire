@@ -1,0 +1,52 @@
+{
+  "epoch": 2,
+  "alignment_layer": 16,
+  "cka_scores": {
+    "mean": 0.847597340742747,
+    "samples": [
+      0.8080068230628967,
+      0.9014347791671753,
+      0.833350419998169
+    ]
+  },
+  "cosine_similarities": {
+    "mean": 0.00021504447795450687,
+    "samples": [
+      0.0008206986822187901,
+      -0.0018215496093034744,
+      0.001645984360948205
+    ]
+  },
+  "generations": {
+    "prompt_1": {
+      "text": "The capital of France is",
+      "model_a_baseline": "The capital of France is a city of many faces. It is a city of history, a city of culture, a city",
+      "model_b_baseline": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_2": {
+      "text": "To solve this problem, we need to",
+      "model_a_baseline": "To solve this problem, we need to find the value of the expression. We can do this by substituting the given values for the variables",
+      "model_b_baseline": "To solve this problem, we need to understand the difference between the two types of errors.\n\nThe first type of error is the one",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_3": {
+      "text": "The future of artificial intelligence",
+      "model_a_baseline": "The future of artificial intelligence is here, and it\u2019s already changing the way we live and work. From self-driving cars to",
+      "model_b_baseline": "The future of artificial intelligence (AI) is bright, and it\u2019s already here. AI is being used in a variety",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_4": {
+      "text": "In the year 2050, humanity will",
+      "model_a_baseline": "In the year 2050, humanity will be extinct. The only survivors will be the robots that we have created. They will be the ones",
+      "model_b_baseline": "In the year 2050, humanity will have to face the consequences of its own actions. The Earth is dying, and the only way to",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_5": {
+      "text": "The main difference between cats and dogs",
+      "model_a_baseline": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are independent and prefer to be",
+      "model_b_baseline": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats are oblig",
+      "note": "Cross-model injection requires additional implementation"
+    }
+  }
+}
