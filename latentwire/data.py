@@ -175,7 +175,7 @@ def load_hotpot_subset(
 
 def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v2: bool = False) -> List[Dict[str, Any]]:
     name = "squad_v2" if v2 else "squad"
-    ds = load_dataset("rajpurkar/" + name, split=split)
+    ds = load_dataset(name, split=split)  # Just "squad", not "rajpurkar/squad"
     rng = random.Random(seed)
     idxs = list(range(len(ds)))
     rng.shuffle(idxs)
@@ -183,10 +183,19 @@ def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v
     out = []
     for i in idxs:
         ex = ds[i]
-        # answers field differs in v1/v2; both provide lists
-        ans_list = ex.get("answers", {}).get("text", []) if "answers" in ex else []
-        answer = ans_list[0] if ans_list else ""
-        source = f"Context: {ex.get('context','')}\nQuestion: {ex.get('question','')}\n"
+        # answers field is a dict-like object with 'text' field containing list of answers
+        try:
+            if "answers" in ex and ex["answers"] is not None:
+                ans_list = ex["answers"]["text"] if isinstance(ex["answers"], dict) else ex["answers"].get("text", [])
+                answer = ans_list[0] if ans_list and len(ans_list) > 0 else ""
+            else:
+                answer = ""
+        except (KeyError, IndexError, TypeError):
+            answer = ""
+
+        context = ex.get("context", "") if isinstance(ex, dict) else ex["context"]
+        question = ex.get("question", "") if isinstance(ex, dict) else ex["question"]
+        source = f"Context: {context}\nQuestion: {question}\n"
         out.append({"source": source, "answer": answer})
     return out
 

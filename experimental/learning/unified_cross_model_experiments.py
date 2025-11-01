@@ -3516,8 +3516,8 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print(f"{'='*60}")
 
     try:
-        # Load SQuAD samples - 50 for better statistical significance
-        squad_samples = load_squad_subset(split="validation", samples=50, seed=42)
+        # Load SQuAD samples - 20 for faster iteration (can increase later)
+        squad_samples = load_squad_subset(split="validation", samples=20, seed=42)
         print(f"Loaded {len(squad_samples)} SQuAD validation examples")
         print(f"Will print first 3 examples for inspection\n")
 
@@ -3734,8 +3734,8 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print(f"{'='*60}")
 
     try:
-        # Load GSM8K samples - 50 for better statistical significance
-        gsm8k_samples = load_gsm8k_subset(split="test", samples=50, seed=42)
+        # Load GSM8K samples - 20 for faster iteration (can increase later)
+        gsm8k_samples = load_gsm8k_subset(split="test", samples=20, seed=42)
         print(f"Loaded {len(gsm8k_samples)} GSM8K test examples")
         print(f"Will print first 3 examples for inspection\n")
 
@@ -4097,8 +4097,8 @@ def main():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
 
-    if dist.is_initialized():
-        dist.barrier()
+    # Note: No dist.barrier() needed for inference-only experiments
+    # Barriers cause 10-minute timeouts when rank 0 takes long to evaluate
 
     # EXPERIMENT 2: Activation Communication (Llama-Mistral) - 10 min
     if is_main_process():
@@ -4123,8 +4123,7 @@ def main():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
 
-    if dist.is_initialized():
-        dist.barrier()
+    # Note: No dist.barrier() needed for inference-only experiments
 
     # ========================================================================
     # PHASE 2: PROCRUSTES ALIGNMENT (Fast geometric baseline) - ~10 MIN
@@ -4158,8 +4157,7 @@ def main():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
 
-    if dist.is_initialized():
-        dist.barrier()
+    # Note: No dist.barrier() needed for inference-only experiments
 
     # EXPERIMENT 4: Procrustes (Llama-Mistral) - 5 min
     if is_main_process():
@@ -4184,8 +4182,7 @@ def main():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
 
-    if dist.is_initialized():
-        dist.barrier()
+    # Note: Barriers needed for training experiments (adapters) below
 
     # ========================================================================
     # PHASE 3: LLAMA 3.1-3.2 TRAINED ADAPTERS (SAME VOCAB) - ~2-3 HOURS
