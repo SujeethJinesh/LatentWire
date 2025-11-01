@@ -1222,11 +1222,15 @@ def run_procrustes_experiment():
         # Compute CKA scores before and after Procrustes alignment (2025 best practice)
         print(f"  Computing CKA similarity scores...")
 
+        # Use biased CKA for high-dimensional data (4096-D)
+        # Debiased estimator is unstable when dimension >> n_samples
+        # and gives unrealistically high scores (0.9998) for 4096-D representations
+
         # CKA before alignment (baseline - how similar are representations naturally?)
         cka_before_mistral_llama = CKA.cka_similarity(
             mistral_hidden_all.float(),
             llama_hidden_all.float(),
-            debiased=True
+            debiased=False
         )
 
         # CKA after Procrustes alignment (how much does alignment help?)
@@ -1234,14 +1238,14 @@ def run_procrustes_experiment():
         cka_after_mistral_llama = CKA.cka_similarity(
             mistral_aligned.float(),
             llama_hidden_all.float(),
-            debiased=True
+            debiased=False
         )
 
         llama_aligned = llama_to_mistral.transform(llama_hidden_all)
         cka_after_llama_mistral = CKA.cka_similarity(
             llama_aligned.float(),
             mistral_hidden_all.float(),
-            debiased=True
+            debiased=False
         )
 
         # Calculate improvement
@@ -1478,55 +1482,88 @@ def evaluate_adapter_epoch(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
     with torch.no_grad():
         # 1. Compute CKA similarity between adapted and target hidden states
-        print(f"\n  Computing CKA similarity...")
-        cka_samples = []
-        cosine_sims = []
+        # IMPORTANT: Compute CKA across ALL training layers (not just alignment_layer)
+        # to match the multi-layer training objective
+        print(f"\n  Computing multi-layer CKA similarity...")
 
-        for prompt in test_prompts[:3]:  # Use 3 prompts for CKA
+        # Use all 5 test prompts for more stable CKA measurements (was 3, causing high variance)
+        cka_per_layer = {layer_idx: [] for layer_idx in ALIGNMENT_LAYERS}
+        cosine_per_layer = {layer_idx: [] for layer_idx in ALIGNMENT_LAYERS}
+
+        for prompt in test_prompts:  # Use ALL 5 prompts (not [:3])
             # Tokenize for both models
             inputs_a = tokenizer_a(prompt, return_tensors="pt", padding=False).to(device)
             inputs_b = tokenizer_b(prompt, return_tensors="pt", padding=False).to(device)
 
-            # Get hidden states from model A
+            # Get hidden states from both models
             outputs_a = model_a.model(**inputs_a, output_hidden_states=True)
-            hidden_a = outputs_a.hidden_states[alignment_layer]  # [1, seq, hidden]
-
-            # Get hidden states from model B (target)
             outputs_b = model_b.model(**inputs_b, output_hidden_states=True)
-            hidden_b = outputs_b.hidden_states[alignment_layer]
 
-            # Apply adapter to model A's hidden states
-            adapted_a = adapter_module(hidden_a)  # [1, seq, hidden]
+            # Compute CKA for each training layer
+            for layer_idx in ALIGNMENT_LAYERS:
+                hidden_a = outputs_a.hidden_states[layer_idx]
+                hidden_b = outputs_b.hidden_states[layer_idx]
 
-            # Compute CKA between adapted A and target B
-            # Flatten to [n_samples, features] for CKA
-            adapted_flat = adapted_a.view(-1, adapted_a.shape[-1]).float()
-            target_flat = hidden_b.view(-1, hidden_b.shape[-1]).float()
+                # Apply adapter to model A's hidden states
+                adapted_a = adapter_module(hidden_a)
 
-            # Only compute if we have enough samples
-            if adapted_flat.shape[0] >= 2:
-                cka_score = CKA.cka_similarity(adapted_flat, target_flat, debiased=True)
-                cka_samples.append(float(cka_score.item()))
+                # Flatten to [n_samples, features] for CKA
+                adapted_flat = adapted_a.view(-1, adapted_a.shape[-1]).float()
+                target_flat = hidden_b.view(-1, hidden_b.shape[-1]).float()
 
-                # Compute cosine similarity
-                cos_sim = F.cosine_similarity(
-                    adapted_flat.mean(dim=0, keepdim=True),
-                    target_flat.mean(dim=0, keepdim=True)
-                )
-                cosine_sims.append(float(cos_sim.item()))
+                # Only compute if we have enough samples
+                if adapted_flat.shape[0] >= 2:
+                    # Use biased CKA for high-dimensional data (4096-D)
+                    # Debiased estimator is unstable with dim >> n_samples
+                    cka_score = CKA.cka_similarity(adapted_flat, target_flat, debiased=False)
+                    cka_per_layer[layer_idx].append(float(cka_score.item()))
 
-        # Average CKA and cosine similarity
-        if cka_samples:
-            results["cka_scores"]["mean"] = sum(cka_samples) / len(cka_samples)
-            results["cka_scores"]["samples"] = cka_samples
+                    # Compute cosine similarity
+                    cos_sim = F.cosine_similarity(
+                        adapted_flat.mean(dim=0, keepdim=True),
+                        target_flat.mean(dim=0, keepdim=True)
+                    )
+                    cosine_per_layer[layer_idx].append(float(cos_sim.item()))
+
+        # Compute weighted average CKA across all layers (matching training objective)
+        layer_cka_means = {}
+        for layer_idx in ALIGNMENT_LAYERS:
+            if cka_per_layer[layer_idx]:
+                layer_cka_means[layer_idx] = sum(cka_per_layer[layer_idx]) / len(cka_per_layer[layer_idx])
+            else:
+                layer_cka_means[layer_idx] = 0.0
+
+        # Weighted average matching training (this is the key metric!)
+        if layer_cka_means:
+            weighted_cka = sum(
+                layer_cka_means[layer_idx] * weight
+                for layer_idx, weight in zip(ALIGNMENT_LAYERS, LAYER_WEIGHTS)
+            )
         else:
-            results["cka_scores"]["mean"] = 0.0
+            weighted_cka = 0.0
 
-        if cosine_sims:
-            results["cosine_similarities"]["mean"] = sum(cosine_sims) / len(cosine_sims)
-            results["cosine_similarities"]["samples"] = cosine_sims
+        results["cka_scores"]["mean"] = weighted_cka
+        results["cka_scores"]["per_layer"] = layer_cka_means
+        results["cka_scores"]["samples_per_layer"] = cka_per_layer
+
+        # Cosine similarity (same weighted average)
+        layer_cosine_means = {}
+        for layer_idx in ALIGNMENT_LAYERS:
+            if cosine_per_layer[layer_idx]:
+                layer_cosine_means[layer_idx] = sum(cosine_per_layer[layer_idx]) / len(cosine_per_layer[layer_idx])
+            else:
+                layer_cosine_means[layer_idx] = 0.0
+
+        if layer_cosine_means:
+            weighted_cosine = sum(
+                layer_cosine_means[layer_idx] * weight
+                for layer_idx, weight in zip(ALIGNMENT_LAYERS, LAYER_WEIGHTS)
+            )
         else:
-            results["cosine_similarities"]["mean"] = 0.0
+            weighted_cosine = 0.0
+
+        results["cosine_similarities"]["mean"] = weighted_cosine
+        results["cosine_similarities"]["per_layer"] = layer_cosine_means
 
         # 2. Generate samples for qualitative assessment
         print(f"  Generating quality samples...")
