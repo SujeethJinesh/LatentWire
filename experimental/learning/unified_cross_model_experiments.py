@@ -3,86 +3,248 @@
 Unified cross-model alignment experiments combining Procrustes and learned adapters.
 Optimized for 4 H100 GPUs with DistributedDataParallel (DDP).
 
-OVERVIEW:
-This file implements 4 core experiments for heterogeneous LLM communication research,
-testing whether different LLM architectures (Llama-3.1-8B and Mistral-7B) can exchange
-information via internal representations instead of text tokens.
+═══════════════════════════════════════════════════════════════════════════════
+RESEARCH QUESTION
+═══════════════════════════════════════════════════════════════════════════════
 
-EXPERIMENTS RANKED BY RELEVANCE TO CROSS-LLM COMMUNICATION:
+Can different LLM architectures (Llama 3.1 8B vs Mistral 7B, or Llama 3.1 8B vs
+Llama 3.2 3B) exchange information via learned alignment of internal
+representations, bypassing tokenization?
 
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║ TIER 1: CRITICAL - Core feasibility validation (RUN THESE FIRST)             ║
-╠═══════════════════════════════════════════════════════════════════════════════╣
-║ 1. ACTIVATION COMMUNICATION (run_activation_communication_experiment)        ║
-║    Purpose: Validate core hypothesis - can Model A's hidden states be        ║
-║             directly consumed by Model B?                                     ║
-║    Why Critical: If this fails, LatentWire needs fundamental redesign        ║
-║    Literature: Tandem Transformers (NeurIPS 2024), Cross-Modal Safety (ICLR) ║
-║    Expected: Cosine similarity 0.3-0.5 zero-shot, >0.7 with alignment        ║
-║    Status: KEEP - Most important experiment                                   ║
-║                                                                               ║
-║ 2. TOKEN COMPRESSION (run_token_compression_experiment)                      ║
-║    Purpose: Learn to compress 512 tokens → 64 soft prompts (8× compression)  ║
-║    Why Critical: This IS the interlingua - soft tokens are the wire format   ║
-║    Literature: LLMLingua (20× compression), CompactPrompt (60% reduction)    ║
-║    Expected: Perplexity <30, 60-70% token accuracy                           ║
-║    Status: KEEP - Essential for bandwidth efficiency                         ║
-║    **BUG FOUND**: DataParallel used instead of DDP (needs fix)               ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+HYPOTHESIS: Vocabulary mismatch (128K vs 32K tokens) is the primary barrier to
+cross-model alignment. Same-vocabulary models should align better.
 
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║ TIER 2: IMPORTANT - Quality and performance optimization                     ║
-╠═══════════════════════════════════════════════════════════════════════════════╣
-║ 3. LORA ADAPTERS (run_adapter_experiment with adapter_type="lora")           ║
-║    Purpose: Learn parameter-efficient alignment (260K params vs 16M linear)  ║
-║    Why Important: Transferable across models (Cross-LoRA arXiv:2508.05232)   ║
-║    Literature: Cross-LoRA, MoA, CAST (85-95% performance retention)          ║
-║    Expected: CKA +0.1-0.2 over Procrustes, 90-95% of linear performance      ║
-║    Status: KEEP - Best parameter efficiency, transferable                    ║
-║                                                                               ║
-║ 4. PROCRUSTES ALIGNMENT (run_procrustes_experiment)                          ║
-║    Purpose: Zero-training baseline via SVD-based geometric alignment         ║
-║    Why Important: Fast baseline for comparison, validates feasibility        ║
-║    Literature: Model Stitching (arXiv:2506.06609), ConTrans (2024)           ║
-║    Expected: CKA 0.3-0.5 middle layers, affine +5-8% over orthogonal         ║
-║    Status: KEEP - Good baseline, useful for ablations                        ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+═══════════════════════════════════════════════════════════════════════════════
+EXPERIMENTAL DESIGN: 11 EXPERIMENTS IN 3 PHASES (~5-6 hours total)
+═══════════════════════════════════════════════════════════════════════════════
 
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║ TIER 3: LOWER PRIORITY - Superseded by LoRA                                  ║
-╠═══════════════════════════════════════════════════════════════════════════════╣
-║ 5. LINEAR/AFFINE ADAPTERS (run_adapter_experiment with linear/affine)        ║
-║    Purpose: Full-rank learned transformations                                ║
-║    Why Lower Priority: 50× more params than LoRA, same/worse performance     ║
-║    Status: RECOMMEND SKIPPING - LoRA dominates on all metrics                ║
-║           Keep code for completeness, but don't prioritize runs              ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+PHASE 1: FAST BASELINES (~30 min) - Establish Feasibility Without Training
+───────────────────────────────────────────────────────────────────────────────
 
-RECOMMENDED EXECUTION ORDER FOR CROSS-LLM COMMUNICATION PROJECT:
-1. Run Procrustes (baseline, 10 min) → establishes feasibility
-2. Run Activation Communication (30 min) → validates core hypothesis
-3. Fix Token Compression DDP bug → critical for interlingua
-4. Run Token Compression (2-3 hours) → learns compression
-5. Run LoRA Adapters (3-4 hours) → optimizes alignment
-6. Skip Linear/Affine unless doing ablation study
+EXPERIMENT 1: Procrustes Alignment (Llama 3.1 8B ↔ Llama 3.2 3B) - 5 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: SVD-based orthogonal alignment between hidden states at layers [8,16,24]
+WHY:  Zero-training baseline to establish feasibility ceiling for same-vocab case
+HYPOTHESIS: Same vocabulary (128,256 tokens) should yield CKA > 0.7
+COMPARISON: vs Exp 2 (cross-vocab Procrustes) - isolates vocabulary effect
+LITERATURE: Lester et al. "Model Stitching" (arXiv:2506.06609) - affine +5-8%
+EXPECTED: CKA 0.7-0.8 (high due to identical vocab + similar architecture)
+DECISION: If CKA < 0.5, vocabulary isn't the only problem (architecture matters)
 
-MERGING STRATEGY FOR LATENTWIRE:
-- Core architecture: Token Compression (interlingua) + LoRA Adapters (alignment)
-- Encoder: Use token compression's learned compressor
-- Adapters: Use LoRA for model-specific projections
-- Baseline: Procrustes for quick feasibility testing
-- Validation: Activation communication for end-to-end testing
+EXPERIMENT 2: Procrustes Alignment (Llama 3.1 8B ↔ Mistral 7B) - 5 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Same SVD alignment but with vocabulary mismatch (128K vs 32K tokens)
+WHY:  Tests whether geometric alignment alone can overcome vocab mismatch
+HYPOTHESIS: Vocab mismatch lowers CKA significantly vs Exp 1
+COMPARISON: vs Exp 1 - measures vocabulary penalty on alignment
+EXPECTED: CKA 0.3-0.5 (much lower than Exp 1 due to vocab mismatch)
+DECISION: If CKA ≈ Exp 1, vocab mismatch doesn't matter (surprising!)
+          If CKA << Exp 1, vocab is the key barrier (expected)
 
-CRITICAL BUG IDENTIFIED:
-- Token compression uses DataParallel instead of DDP (line 2030+)
-- Causes "tensor with 4 elements cannot be converted to Scalar" error
-- Fix required before HPC runs (see issue log 20251031_183643)
+EXPERIMENT 3: Activation Communication (Llama 3.1 8B ↔ Llama 3.2 3B) - 10 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Direct hidden state injection - Model A's activations → Model B's layers
+WHY:  Tests whether same-vocab models can consume each other's "thoughts"
+HYPOTHESIS: Should work well with same vocabulary (both use identical embeddings)
+COMPARISON: vs Exp 4 (cross-vocab activation) - isolates vocabulary effect
+LITERATURE: Tandem Transformers (NeurIPS 2024) - hidden state sharing works
+EXPECTED: Coherent generation, cosine similarity > 0.7
+DECISION: If generation is gibberish, even same-vocab fails (architecture issue)
+          If generation is coherent, validates approach for same-vocab case
 
-NEXT STEPS:
-1. Fix token compression DDP bug (PRIORITY 1)
-2. Run activation communication to validate approach
-3. Integrate successful experiments into main LatentWire codebase
-4. Design end-to-end pipeline: Compress → Align → Inject → Generate
+EXPERIMENT 4: Activation Communication (Llama 3.1 8B ↔ Mistral 7B) - 10 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Same hidden state injection but with vocab mismatch
+WHY:  Core LatentWire hypothesis - can different models share representations?
+HYPOTHESIS: Vocab mismatch breaks zero-shot injection (needs learned alignment)
+COMPARISON: vs Exp 3 - measures how much vocab mismatch hurts communication
+EXPECTED: Low cosine similarity (0.3-0.5), degraded generation quality
+DECISION: If this works zero-shot, learned adapters might be unnecessary!
+          If it fails, justifies Phases 2-3 (learned alignment training)
+
+PHASE 1 SUMMARY: 30 minutes → Establishes feasibility & vocabulary penalty
+───────────────────────────────────────────────────────────────────────────────
+Key Comparisons:
+- Exp 1 vs 2: How much does vocab mismatch hurt Procrustes? (CKA gap)
+- Exp 3 vs 4: How much does vocab mismatch hurt activation sharing? (quality gap)
+- Procrustes vs Activation: Is geometric alignment enough, or need training?
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 2: TRAINED ADAPTERS - SAME VOCAB (~2-3 hours) - Validate Learning Works
+───────────────────────────────────────────────────────────────────────────────
+
+EXPERIMENT 5: LoRA Adapter (Llama 3.1 8B ↔ Llama 3.2 3B) - 45 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Low-rank adapter (260K params) trained with InfoNCE contrastive loss
+WHY:  Tests whether learned alignment beats Procrustes for same-vocab case
+HYPOTHESIS: Should achieve CKA > 0.8 (better than Procrustes Exp 1)
+COMPARISON: vs Exp 1 (Procrustes) - does training help same-vocab?
+            vs Exp 6,7 (Linear/Affine) - parameter efficiency comparison
+            vs Exp 8 (LoRA cross-vocab) - isolates vocabulary effect
+LITERATURE: Cross-LoRA (arXiv:2508.05232) - 85-95% performance retention
+EXPECTED: CKA 0.8-0.9, generation loss 2.5-3.5 (validates approach works)
+DECISION: If CKA < Exp 1, training doesn't help (algorithm bug)
+          If CKA >> Exp 1, training significantly improves alignment
+
+EXPERIMENT 6: Linear Adapter (Llama 3.1 8B ↔ Llama 3.2 3B) - 45 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Full-rank linear projection (16M params, no bias)
+WHY:  Upper bound on linear alignment capacity
+HYPOTHESIS: Should perform similar to LoRA but with 50× more parameters
+COMPARISON: vs Exp 5 (LoRA) - tests parameter efficiency
+            vs Exp 7 (Affine) - tests whether bias term helps
+EXPECTED: CKA 0.8-0.9 (similar to LoRA)
+DECISION: If Linear >> LoRA, low-rank bottleneck hurts (increase rank)
+          If Linear ≈ LoRA, LoRA is sufficient (use LoRA for efficiency)
+
+EXPERIMENT 7: Affine Adapter (Llama 3.1 8B ↔ Llama 3.2 3B) - 45 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Full-rank affine projection (16M params + 4K bias)
+WHY:  Tests whether bias term provides additional alignment capacity
+HYPOTHESIS: Bias should provide minimal improvement over Linear
+COMPARISON: vs Exp 6 (Linear) - isolates bias term contribution
+LITERATURE: Lester et al. - affine +5-8% over orthogonal Procrustes
+EXPECTED: CKA 0.8-0.9 (similar to Linear and LoRA)
+DECISION: If Affine >> Linear, bias term is critical (unexpected)
+          If Affine ≈ Linear, bias is redundant (as expected)
+
+PHASE 2 SUMMARY: ~2-3 hours → Validates learned alignment works for same-vocab
+───────────────────────────────────────────────────────────────────────────────
+Key Comparisons:
+- All vs Exp 1: Does training beat Procrustes? (should improve CKA by 0.1-0.2)
+- LoRA vs Linear: Is low-rank sufficient? (parameter efficiency question)
+- Linear vs Affine: Does bias help? (probably not much)
+
+Expected Outcome: LoRA ≈ Linear ≈ Affine >> Procrustes (training helps)
+Decision Point: If same-vocab experiments succeed (CKA > 0.8), proceed to Phase 3
+                If they fail (CKA < 0.6), fundamental approach is flawed
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 3: TRAINED ADAPTERS - CROSS VOCAB (~2-3 hours) - The Hard Test
+───────────────────────────────────────────────────────────────────────────────
+
+EXPERIMENT 8: LoRA Adapter (Llama 3.1 8B ↔ Mistral 7B) - 45 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Same LoRA architecture as Exp 5, but with vocab mismatch (128K vs 32K)
+WHY:  Tests whether learned alignment can overcome vocabulary barrier
+HYPOTHESIS: Vocab mismatch makes alignment harder (CKA < Exp 5)
+COMPARISON: vs Exp 5 (same-vocab LoRA) - CRITICAL vocabulary ablation
+            vs Exp 2 (cross-vocab Procrustes) - does training help?
+EXPECTED: CKA 0.4-0.6 (lower than Exp 5, but better than Exp 2)
+          Generation loss stuck at ~8.7 (vocabulary mismatch barrier)
+DECISION: If CKA < 0.5, vocabulary mismatch is insurmountable with LoRA
+          If CKA > 0.7, vocabulary mismatch can be overcome (surprising!)
+
+**CRITICAL COMPARISON**: Exp 5 vs Exp 8 isolates vocabulary effect
+- If (Exp 5 CKA) - (Exp 8 CKA) > 0.3, vocabulary is the main barrier
+- If (Exp 5 CKA) ≈ (Exp 8 CKA), vocabulary doesn't matter (architecture does)
+
+EXPERIMENT 9: Token Compression (Llama 3.1 8B ↔ Mistral 7B) - 45 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Learned compressor that maps 512 tokens → 64 soft prompts (8× compression)
+WHY:  This IS the LatentWire interlingua - the actual wire format
+HYPOTHESIS: Token-level compression might sidestep vocabulary mismatch
+COMPARISON: vs Exp 8 (LoRA) - different compression approach
+LITERATURE: LLMLingua (20× compression), CompactPrompt (60% reduction)
+EXPECTED: Perplexity < 30, 60-70% token accuracy
+DECISION: If perplexity << LoRA, compression is better approach
+          If perplexity ≈ LoRA, both methods are equivalent
+
+EXPERIMENT 10: Linear Adapter (Llama 3.1 8B ↔ Mistral 7B) - 45 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Full-rank linear (16M params) for cross-vocab alignment
+WHY:  Tests whether more parameters help overcome vocabulary mismatch
+HYPOTHESIS: Linear should perform similarly to LoRA (low-rank is sufficient)
+COMPARISON: vs Exp 8 (LoRA) - parameter efficiency for cross-vocab case
+EXPECTED: CKA 0.4-0.6 (similar to LoRA Exp 8)
+DECISION: If Linear >> LoRA, need more capacity for cross-vocab
+          If Linear ≈ LoRA, parameter count isn't the limiting factor
+
+EXPERIMENT 11: Affine Adapter (Llama 3.1 8B ↔ Mistral 7B) - 45 min
+─────────────────────────────────────────────────────────────────────────────
+WHAT: Full-rank affine (16M + 4K params) for cross-vocab alignment
+WHY:  Completeness - tests bias term for cross-vocab case
+HYPOTHESIS: Bias provides minimal benefit (same as Exp 7 conclusion)
+COMPARISON: vs Exp 10 (Linear) - isolates bias contribution for cross-vocab
+EXPECTED: CKA 0.4-0.6 (similar to Linear and LoRA)
+DECISION: If Affine >> Linear, bias matters for cross-vocab (unexpected)
+          If Affine ≈ Linear, bias is still redundant
+
+PHASE 3 SUMMARY: ~2-3 hours → Tests whether cross-vocab alignment is feasible
+───────────────────────────────────────────────────────────────────────────────
+Key Comparisons:
+- Exp 8 vs Exp 5: Vocabulary mismatch penalty (MOST IMPORTANT)
+- Exp 8 vs Exp 2: Does training help cross-vocab? (LoRA vs Procrustes)
+- Exp 8/10/11: Parameter efficiency holds even for cross-vocab
+
+Expected Outcome: All cross-vocab experiments struggle (CKA 0.4-0.6)
+Critical Question: Is vocabulary mismatch insurmountable, or just harder?
+
+═══════════════════════════════════════════════════════════════════════════════
+SCIENTIFIC RATIONALE SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+The 11 experiments form a 2×3×2 factorial design:
+
+FACTOR 1: Model Pair (vocabulary)
+  - Same vocabulary (Llama 3.1 8B ↔ Llama 3.2 3B): Exps 1,3,5,6,7
+  - Different vocabulary (Llama 3.1 8B ↔ Mistral 7B): Exps 2,4,8,9,10,11
+
+FACTOR 2: Alignment Method
+  - Geometric (Procrustes): Exps 1,2
+  - Hidden state injection (Activation): Exps 3,4
+  - Learned adapters (LoRA/Linear/Affine): Exps 5,6,7,8,10,11
+  - Token compression: Exp 9
+
+FACTOR 3: Training
+  - Zero-training (Procrustes, Activation): Exps 1,2,3,4
+  - Trained (LoRA, Linear, Affine, Compression): Exps 5,6,7,8,9,10,11
+
+KEY ABLATIONS:
+1. Vocabulary Effect: Compare same-vocab (1,3,5,6,7) vs cross-vocab (2,4,8,9,10,11)
+   → Quantifies how much vocabulary mismatch hurts alignment
+
+2. Training Effect: Compare Procrustes (1,2) vs LoRA (5,8)
+   → Quantifies how much learned alignment helps vs geometric baseline
+
+3. Parameter Efficiency: Compare LoRA (260K) vs Linear (16M) vs Affine (16M+4K)
+   → Tests whether low-rank bottleneck limits performance
+
+4. Method Comparison: Procrustes vs Activation vs Adapters vs Compression
+   → Identifies best approach for cross-model communication
+
+CRITICAL SUCCESS CRITERIA:
+- Phase 1 (30 min): Establishes feasibility & vocabulary penalty
+  → If Procrustes fails for same-vocab (CKA < 0.5), approach is flawed
+
+- Phase 2 (2-3 hrs): Validates learning improves same-vocab alignment
+  → If trained adapters don't beat Procrustes, training algorithm has bugs
+
+- Phase 3 (2-3 hrs): Tests whether cross-vocab alignment is possible
+  → If cross-vocab CKA > 0.7, vocabulary mismatch can be overcome
+  → If cross-vocab CKA < 0.5, vocabulary mismatch is insurmountable
+
+DECISION TREE:
+┌─ Phase 1 Results ─┐
+│ Same-vocab CKA?   │
+├─ > 0.7: Good! ────┼─→ Proceed to Phase 2
+├─ 0.5-0.7: OK ─────┼─→ Proceed with caution
+└─ < 0.5: BAD ──────┴─→ STOP - fundamental approach is flawed
+
+┌─ Phase 2 Results ─┐
+│ Trained vs Proc?  │
+├─ +0.2 CKA: Good! ─┼─→ Training helps, proceed to Phase 3
+├─ +0.1 CKA: Meh ───┼─→ Training helps slightly
+└─ +0.0 CKA: BAD ───┴─→ STOP - training algorithm is broken
+
+┌─ Phase 3 Results ─────────────┐
+│ Cross-vocab vs Same-vocab?    │
+├─ Within 0.1 CKA: GREAT! ──────┼─→ Vocabulary doesn't matter!
+├─ Within 0.2 CKA: Good ────────┼─→ Vocab hurts but manageable
+├─ Within 0.3 CKA: Struggling ──┼─→ Vocab is major barrier
+└─ > 0.3 CKA gap: FAIL ─────────┴─→ Vocabulary mismatch is insurmountable
 """
 
 import torch
