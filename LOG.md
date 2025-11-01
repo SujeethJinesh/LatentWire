@@ -2,6 +2,125 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 📊 ENHANCED METRICS: Beyond Just Loss (2025-10-31 18:30)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### User Question: "Is there something like a score aside from loss?"
+
+**Answer**: Yes! Loss alone doesn't tell the full story. Added comprehensive metrics for better training visibility.
+
+### New Metrics Added
+
+#### For Learned Adapter Experiments:
+
+**Before**: Only showed total loss
+**Now**: Comprehensive breakdown
+
+1. **Loss Components**:
+   - **Generation Loss**: Cross-entropy for text prediction from aligned embeddings
+   - **Contrastive Loss**: InfoNCE similarity between aligned and target embeddings
+   - **Total Loss**: Gen + 0.1 × Contrastive (weighted combination)
+
+2. **Learning Rate**: Cosine annealing (5e-5 → 0) - shows optimization progress
+
+3. **Gradient Norm**: Post-clipping magnitude - training stability indicator
+
+4. **CKA Score**: Centered Kernel Alignment (0-1) - overall alignment quality
+
+**Example output**:
+```
+  [ 40.0%] Step  400/1000 | Loss: 2.3456 (Gen: 2.2123, Contr: 1.3334) | LR: 4.23e-05 | GradNorm: 0.432 | 5.2 steps/s | ETA: 115.4m
+
+================================================================================
+Epoch 3/10 Complete | Time: 192.3m | Total: 576.9m
+  Total Loss: 2.1234 (Gen: 1.9876, Contr: 1.3580)
+  CKA Score: 0.7234 | LR: 3.87e-05
+  ETA for remaining 7 epochs: 1346.1m
+================================================================================
+```
+
+**What to watch**:
+- ✅ **Gen Loss ↓**: Model learning to decode from aligned embeddings
+- ✅ **Contr Loss ↓**: Embeddings getting closer to targets
+- ✅ **CKA ↑**: Overall alignment quality improving
+- ✅ **GradNorm 0.1-1.0**: Stable training
+- ⚠️ **GradNorm >5**: Training unstable, may need lower LR
+- ❌ **Gen ↓ but Contr flat**: Embeddings generate but aren't truly aligned
+- ❌ **Contr ↓ but Gen flat**: Embeddings close but can't generate properly
+
+#### For Token Compression Experiments:
+
+**Before**: Only showed loss
+**Now**: Interpretable metrics
+
+1. **Perplexity (PPL)**: exp(loss) - more intuitive than raw loss
+   - PPL = 1: Perfect prediction
+   - PPL = 10-20: Good compression quality
+   - PPL = 50+: Poor compression
+   - Lower is better
+
+2. **Learning Rate**: Current optimization rate
+
+3. **Gradient Norm**: Training stability
+
+**Example output**:
+```
+  [ 40.0%] Batch   10/25 | Loss: 2.3456 | PPL: 10.44 | LR: 5.00e-05 | GradNorm: 0.623 | 1.25 batches/s | ETA: 12.0m
+
+================================================================================
+Epoch 3/10 Complete | Time: 19.5m | Total: 58.5m
+  Avg Loss: 2.1234 | Perplexity: 8.36 | Compression: 50.0x
+  ETA for remaining 7 epochs: 136.5m
+================================================================================
+```
+
+**What to watch**:
+- ✅ **PPL ↓**: Compression quality improving
+- ✅ **PPL <20**: Good compression
+- ⚠️ **PPL 20-50**: Acceptable but could be better
+- ❌ **PPL >100**: Very poor, may need more model capacity
+- ✅ **GradNorm 0.1-1.0**: Healthy training
+
+### Why These Metrics Matter
+
+**Generation vs Contrastive Loss**:
+- **Gen Loss**: "Can we decode text from aligned embeddings?"
+- **Contrastive Loss**: "Are aligned embeddings similar to targets?"
+- Both must decrease together for true alignment
+- Helps diagnose whether alignment or generation is the bottleneck
+
+**Perplexity Intuition**:
+- Roughly: "Model is uncertain between this many tokens on average"
+- PPL = 10 → "Narrows down to ~10 plausible tokens" (good!)
+- PPL = 1000 → "All tokens seem equally likely" (bad!)
+- More interpretable than loss (exp makes it human-readable)
+
+**Gradient Norm as Early Warning**:
+- Sudden spikes → LR too high or problematic batch
+- Gradual increase → Model diverging
+- Stable 0.1-1.0 → Healthy training
+- Exploding (>5.0) → Training unstable, reduce LR
+
+**Learning Rate Visibility**:
+- Confirms cosine schedule working correctly
+- Helps understand why progress may slow (lower LR = smaller updates)
+- Useful for debugging if training stagnates
+
+### Metric Health Ranges
+
+| Metric | Purpose | Healthy | Warning | Critical |
+|--------|---------|---------|---------|----------|
+| **Gen Loss** | Text prediction | Steadily ↓ | Stagnant | Increasing |
+| **Contr Loss** | Alignment | Steadily ↓ | Not tracking Gen | Increasing |
+| **CKA Score** | Quality | 0.6-0.9 | 0.3-0.6 | <0.3 |
+| **Perplexity** | Compression | 10-20 | 20-50 | >50 |
+| **Grad Norm** | Stability | 0.1-1.0 | 1.0-5.0 | >5.0 |
+| **Learning Rate** | Schedule | Smoothly ↓ | Constant | N/A |
+
+**Status**: All experiments now report rich metrics beyond just loss, enabling better diagnosis of training health and quality.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🐛 BUG FIXES & COMPREHENSIVE LOGGING (2025-10-31 18:15)
 ## ═══════════════════════════════════════════════════════════════════════════
 

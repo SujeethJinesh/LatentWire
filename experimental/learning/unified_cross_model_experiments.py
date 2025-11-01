@@ -947,6 +947,8 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
     for epoch in range(start_epoch, EPOCHS):
         epoch_loss = 0.0
+        epoch_gen_loss = 0.0
+        epoch_contrast_loss = 0.0
         epoch_steps = 0
         epoch_start_time = time.time()
 
@@ -1048,25 +1050,34 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             total_loss = total_loss / GRAD_ACCUM_STEPS
             total_loss.backward()
 
+            grad_norm = 0.0
             if (batch_idx + 1) % GRAD_ACCUM_STEPS == 0:
-                torch.nn.utils.clip_grad_norm_(adapter.parameters(), max_norm=1.0)
+                grad_norm = torch.nn.utils.clip_grad_norm_(adapter.parameters(), max_norm=1.0)
                 optimizer.step()
                 scheduler.step()  # Step the scheduler
                 optimizer.zero_grad()
 
             epoch_loss += total_loss.item() * GRAD_ACCUM_STEPS
+            epoch_gen_loss += generation_loss.item()
+            epoch_contrast_loss += contrastive_loss.item()
             epoch_steps += 1
 
             # Progress logging every 100 steps (more informative but not spammy)
             if (batch_idx + 1) % 100 == 0:
                 avg_loss = epoch_loss / epoch_steps
+                avg_gen_loss = epoch_gen_loss / epoch_steps
+                avg_contrast_loss = epoch_contrast_loss / epoch_steps
+                current_lr = optimizer.param_groups[0]['lr']
                 progress_pct = 100 * (batch_idx + 1) / len(dataloader)
                 elapsed = time.time() - epoch_start_time
                 steps_per_sec = (batch_idx + 1) / elapsed
                 eta_seconds = (len(dataloader) - batch_idx - 1) / steps_per_sec if steps_per_sec > 0 else 0
                 eta_minutes = eta_seconds / 60
 
-                msg = f"  [{progress_pct:5.1f}%] Step {batch_idx+1:4d}/{len(dataloader)} | Loss: {avg_loss:.4f} | {steps_per_sec:.2f} steps/s | ETA: {eta_minutes:.1f}m"
+                msg = f"  [{progress_pct:5.1f}%] Step {batch_idx+1:4d}/{len(dataloader)} | "
+                msg += f"Loss: {avg_loss:.4f} (Gen: {avg_gen_loss:.4f}, Contr: {avg_contrast_loss:.4f}) | "
+                msg += f"LR: {current_lr:.2e} | GradNorm: {grad_norm:.3f} | "
+                msg += f"{steps_per_sec:.2f} steps/s | ETA: {eta_minutes:.1f}m"
                 print(msg, file=log_file)
                 print(msg)  # Also to stdout
                 log_file.flush()
@@ -1074,10 +1085,14 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             # Quick check-in every 10 steps (just to log file, not stdout)
             elif (batch_idx + 1) % 10 == 0:
                 avg_loss = epoch_loss / epoch_steps
-                print(f"  Step {batch_idx+1}/{len(dataloader)}: Loss = {avg_loss:.4f}",
+                avg_gen_loss = epoch_gen_loss / epoch_steps
+                avg_contrast_loss = epoch_contrast_loss / epoch_steps
+                print(f"  Step {batch_idx+1}/{len(dataloader)}: Loss = {avg_loss:.4f} (Gen: {avg_gen_loss:.4f}, Contr: {avg_contrast_loss:.4f})",
                       file=log_file)
 
         avg_epoch_loss = epoch_loss / epoch_steps
+        avg_epoch_gen_loss = epoch_gen_loss / epoch_steps
+        avg_epoch_contrast_loss = epoch_contrast_loss / epoch_steps
 
         # Compute CKA similarity at end of epoch
         with torch.no_grad():
@@ -1118,6 +1133,8 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
         training_metrics["epochs"].append({
             "epoch": epoch + 1,
             "loss": avg_epoch_loss,
+            "generation_loss": avg_epoch_gen_loss,
+            "contrastive_loss": avg_epoch_contrast_loss,
             "cka_score": avg_cka,
             "lr": optimizer.param_groups[0]['lr']
         })
@@ -1131,7 +1148,8 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
         msg = f"\n{'='*80}\n"
         msg += f"Epoch {epoch+1}/{EPOCHS} Complete | Time: {epoch_time/60:.1f}m | Total: {total_elapsed/60:.1f}m\n"
-        msg += f"  Avg Loss: {avg_epoch_loss:.4f} | CKA Score: {avg_cka:.4f} | LR: {optimizer.param_groups[0]['lr']:.6f}\n"
+        msg += f"  Total Loss: {avg_epoch_loss:.4f} (Gen: {avg_epoch_gen_loss:.4f}, Contr: {avg_epoch_contrast_loss:.4f})\n"
+        msg += f"  CKA Score: {avg_cka:.4f} | LR: {optimizer.param_groups[0]['lr']:.6f}\n"
         if remaining_epochs > 0:
             msg += f"  ETA for remaining {remaining_epochs} epochs: {eta_total:.1f}m\n"
         msg += f"{'='*80}"
@@ -1610,6 +1628,7 @@ def run_token_compression_experiment(
             # Backward pass
             optimizer.zero_grad()
             loss.backward()
+            grad_norm = torch.nn.utils.clip_grad_norm_(all_params, max_norm=1.0)
             optimizer.step()
 
             batch_num += 1
@@ -1617,13 +1636,18 @@ def run_token_compression_experiment(
             # Progress logging every 10 batches with detailed info
             if batch_num % 10 == 0:
                 avg_loss = sum(epoch_losses) / len(epoch_losses)
+                perplexity = math.exp(min(avg_loss, 10))  # Cap to prevent overflow
+                current_lr = optimizer.param_groups[0]['lr']
                 progress_pct = 100 * batch_num / num_batches
                 elapsed = time.time() - epoch_start_time
                 batches_per_sec = batch_num / elapsed if elapsed > 0 else 0
                 eta_seconds = (num_batches - batch_num) / batches_per_sec if batches_per_sec > 0 else 0
                 eta_minutes = eta_seconds / 60
 
-                msg = f"  [{progress_pct:5.1f}%] Batch {batch_num:4d}/{num_batches} | Loss: {avg_loss:.4f} | {batches_per_sec:.2f} batches/s | ETA: {eta_minutes:.1f}m"
+                msg = f"  [{progress_pct:5.1f}%] Batch {batch_num:4d}/{num_batches} | "
+                msg += f"Loss: {avg_loss:.4f} | PPL: {perplexity:.2f} | "
+                msg += f"LR: {current_lr:.2e} | GradNorm: {grad_norm:.3f} | "
+                msg += f"{batches_per_sec:.2f} batches/s | ETA: {eta_minutes:.1f}m"
                 print(msg)
 
         avg_loss = sum(epoch_losses) / len(epoch_losses)
