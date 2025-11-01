@@ -567,7 +567,8 @@ class ProcrustesAlignment:
 
         # Step 3: Compute cross-covariance matrix in float32 for numerical stability
         # CRITICAL: Large hidden dims (4096x4096) in low precision accumulate errors
-        M = (source_normalized.T @ target_normalized).float()  # [D, D] in float32
+        # Must convert inputs to float32 BEFORE matmul, not after
+        M = source_normalized.float().T @ target_normalized.float()  # [D, D] matmul in float32
 
         # Step 4: SVD of M in float32 (SVD is numerically sensitive, needs high precision)
         U, S, Vt = torch.linalg.svd(M, full_matrices=False)
@@ -715,8 +716,11 @@ class TokenInitializedCompressor(nn.Module):
         self.hidden_dim = hidden_dim
         self.d_z = d_z  # Latent dimension (much smaller than hidden_dim)
 
-        # Get the embedding layer
-        self.embed_layer = model.get_input_embeddings()
+        # Get the embedding layer (handle DataParallel wrapped models)
+        # CRITICAL: DataParallel wraps models, so attributes like get_input_embeddings()
+        # are accessed via .module for wrapped models
+        base_model = model.module if isinstance(model, nn.DataParallel) else model
+        self.embed_layer = base_model.get_input_embeddings()
 
         # Project from model space to latent z space
         self.to_latent = nn.Sequential(
@@ -1177,6 +1181,16 @@ def run_procrustes_experiment():
             print(f"    Mistral→Llama: {mistral_llama_count}/5 succeeded, {mistral_llama_failed}/5 failed")
 
     print("=" * 80)
+
+    # CRITICAL: Explicitly delete models and clear GPU memory before returning
+    # Without this, models remain in GPU memory and cause OOM for next experiments
+    print("\nCleaning up Procrustes experiment...")
+    del llama_model
+    del mistral_model
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    print("  Models deleted and GPU memory cleared")
 
     return results
 

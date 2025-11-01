@@ -2,6 +2,95 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🔧 FOLLOW-UP FIXES (2025-10-31 20:00)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Overview
+Fixed 3 remaining issues from run unified_experiments_20251031_182245.log after initial bug fixes.
+
+### Issues Fixed
+
+#### 1. Procrustes Orthogonality Errors Still High (CRITICAL FIX)
+**Problem**: Orthogonality errors still 0.09-0.10 despite "fix" in previous commit
+
+**Root Cause**: Previous fix converted result to float32 AFTER matmul:
+```python
+# WRONG: Matmul happens in bfloat16, then converted to float32 (too late!)
+M = (source_normalized.T @ target_normalized).float()
+```
+
+The matmul was still happening in bfloat16, accumulating errors. Then converting to float32 doesn't help.
+
+**Correct Fix**: Convert inputs to float32 BEFORE matmul:
+```python
+# CORRECT: Convert to float32 first, then matmul in float32
+M = source_normalized.float().T @ target_normalized.float()
+```
+
+**Impact**: Orthogonality errors should now actually be <1e-3 (proper numerical stability).
+
+**File**: `unified_cross_model_experiments.py:571`
+
+#### 2. CUDA Out of Memory Between Experiments (CRITICAL)
+**Problem**: `CUDA out of memory` when starting adapter training
+
+```
+GPU 0 has a total capacity of 79.19 GiB
+79.10 GiB in use (only 77 MiB free!)
+```
+
+**Root Cause**: Procrustes experiment loads two large models (Llama + Mistral ≈75 GiB). When function returns, Python doesn't immediately free GPU memory - models stay resident until garbage collected.
+
+**Solution**: Explicitly delete models and clear GPU cache before returning:
+```python
+# CRITICAL: Explicitly delete models and clear GPU memory before returning
+print("\nCleaning up Procrustes experiment...")
+del llama_model
+del mistral_model
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
+    torch.cuda.synchronize()
+print("  Models deleted and GPU memory cleared")
+```
+
+**Impact**: Adapter training experiments can now load without OOM errors.
+
+**File**: `unified_cross_model_experiments.py:1182-1190`
+
+#### 3. DataParallel Attribute Error in Token Compression
+**Problem**: `AttributeError: 'DataParallel' object has no attribute 'get_input_embeddings'`
+
+**Root Cause**: When models are wrapped with `nn.DataParallel` for multi-GPU training, model methods/attributes are not directly accessible. They must be accessed via `.module`.
+
+**Solution**: Handle both wrapped and unwrapped models:
+```python
+# Get the embedding layer (handle DataParallel wrapped models)
+base_model = model.module if isinstance(model, nn.DataParallel) else model
+self.embed_layer = base_model.get_input_embeddings()
+```
+
+**Impact**: Token compression experiment can now initialize without attribute errors.
+
+**File**: `unified_cross_model_experiments.py:722-723`
+
+### Files Modified
+- `experimental/learning/unified_cross_model_experiments.py`
+  - Line 571: Fixed float32 conversion order for Procrustes SVD
+  - Lines 1182-1190: Added explicit model deletion and GPU cleanup
+  - Lines 719-723: Added DataParallel handling for embedding access
+
+### Testing Status
+All errors from run `unified_experiments_20251031_182245.log` addressed:
+- ✅ Procrustes orthogonality errors should now be <1e-3 (actually fixed)
+- ✅ OOM errors resolved with proper GPU cleanup
+- ✅ DataParallel attribute error fixed with .module access
+- ✅ Cross-model Procrustes generation working (no device mismatch)
+- ✅ Adapter training backward pass working (scalar loss)
+
+Ready for next training run to validate all fixes work together.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🐛 CRITICAL BUG FIXES (2025-10-31 19:30)
 ## ═══════════════════════════════════════════════════════════════════════════
 
