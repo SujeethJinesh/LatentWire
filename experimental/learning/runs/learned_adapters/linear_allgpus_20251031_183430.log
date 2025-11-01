@@ -2,7 +2,7 @@
 LEARNED ADAPTER EXPERIMENT - LINEAR
 ================================================================================
 Platform: hpc
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_allgpus_20251031_182415.log
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/linear_allgpus_20251031_183430.log
 
 ================================================================================
 GPU CONFIGURATION
@@ -20,14 +20,14 @@ Effective batch (with grad accum): 320
 Loading models on hpc...
 Using bfloat16 for H100
 Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4110.05it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4110.05it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3950.37it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 3950.37it/s]
 
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.84it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.84it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.55it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.55it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.83it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.83it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.84it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:00,  8.84it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.52it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:00<00:00, 13.52it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.83it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 13.83it/s]
 
 Wrapped Llama model with DataParallel
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3981.93it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3981.93it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3911.38it/s]Downloading shards: 100%|##########| 3/3 [00:00<00:00, 3911.38it/s]
 
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.45it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.45it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 14.36it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 14.36it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.43it/s]Loading checkpoint shards:  67%|######6   | 2/3 [00:00<00:00, 13.43it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 14.34it/s]Loading checkpoint shards: 100%|##########| 3/3 [00:00<00:00, 14.34it/s]
 
 Wrapped Mistral model with DataParallel
 
@@ -62,16 +62,16 @@ Epoch 1/10
 ================================================================================
 LINEAR ADAPTER EXPERIMENT FAILED
 ================================================================================
-Error: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 77.00 MiB is free. Including non-PyTorch memory, this process has 79.10 GiB memory in use. Of the allocated memory 75.69 GiB is allocated by PyTorch, and 1.57 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Error: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 97.00 MiB is free. Including non-PyTorch memory, this process has 79.08 GiB memory in use. Of the allocated memory 76.69 GiB is allocated by PyTorch, and 559.95 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
 Traceback (most recent call last):
 Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1703, in run_adapter_experiment
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1717, in run_adapter_experiment
     adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1703, in run_adapter_experiment
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1717, in run_adapter_experiment
     adapter, metrics = train_adapter(
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1411, in train_adapter
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1425, in train_adapter
     total_loss.backward()
-  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1411, in train_adapter
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1425, in train_adapter
     total_loss.backward()
   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
     torch.autograd.backward(
@@ -109,5 +109,5 @@ Traceback (most recent call last):
     result = torch.empty_like(inputs[root_index])
   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/comm.py", line 107, in reduce_add
     result = torch.empty_like(inputs[root_index])
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 77.00 MiB is free. Including non-PyTorch memory, this process has 79.10 GiB memory in use. Of the allocated memory 75.69 GiB is allocated by PyTorch, and 1.57 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 77.00 MiB is free. Including non-PyTorch memory, this process has 79.10 GiB memory in use. Of the allocated memory 75.69 GiB is allocated by PyTorch, and 1.57 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 97.00 MiB is free. Including non-PyTorch memory, this process has 79.08 GiB memory in use. Of the allocated memory 76.69 GiB is allocated by PyTorch, and 559.95 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 112.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 97.00 MiB is free. Including non-PyTorch memory, this process has 79.08 GiB memory in use. Of the allocated memory 76.69 GiB is allocated by PyTorch, and 559.95 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

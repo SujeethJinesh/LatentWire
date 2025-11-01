@@ -1,0 +1,75 @@
+================================================================================
+TOKEN COMPRESSION EXPERIMENT
+================================================================================
+Platform: hpc
+Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/token_compression/token_compression_allgpus_20251031_183643.log
+
+================================================================================
+GPU CONFIGURATION
+================================================================================
+Mode: DataParallel (multi-GPU)
+Number of GPUs: 4
+GPU IDs: [0, 1, 2, 3]
+Primary device: cuda:0
+Batch size per GPU: 10
+Total batch size: 40
+================================================================================
+
+
+================================================================================
+TOKEN-INITIALIZED COMPRESSION EXPERIMENT
+================================================================================
+Loading meta-llama/Llama-3.1-8B...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8422.30it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 8422.30it/s]
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 16.52it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:00<00:00, 16.52it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.91it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.91it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.83it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:00<00:00, 16.83it/s]
+
+Wrapped Llama model with DataParallel
+Applying LoRA to all transformer layers...
+Warning: Could not apply LoRA: 'DataParallel' object has no attribute 'prepare_inputs_for_generation'
+Creating token-initialized compressor (compressed_length=64, d_z=256)...
+Loading SQuAD dataset (1000 samples)...
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/_compile.py:32: UserWarning: optimizer contains a parameter group with duplicate parameters; in future, this will cause an error; see github.com/pytorch/pytorch/issues/40967 for more information
+  return disable_fn(*args, **kwargs)
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/_compile.py:32: UserWarning: optimizer contains a parameter group with duplicate parameters; in future, this will cause an error; see github.com/pytorch/pytorch/issues/40967 for more information
+  return disable_fn(*args, **kwargs)
+
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+Total epochs: 10
+Total samples: 1000
+Batch size: 40
+Batches per epoch: 25
+Total training batches: 250
+Learning rate: 5e-05
+Compressed length: 64 tokens
+Latent dimension: 256
+Using LoRA: True
+================================================================================
+
+
+================================================================================
+Epoch 1/10
+================================================================================
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:2006: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=USE_BF16 and PLATFORM == 'hpc'):
+/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py:2006: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=USE_BF16 and PLATFORM == 'hpc'):
+
+================================================================================
+TOKEN COMPRESSION EXPERIMENT FAILED
+================================================================================
+Error: a Tensor with 4 elements cannot be converted to Scalar
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1788, in run_token_compression_wrapper
+    results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 1788, in run_token_compression_wrapper
+    results = run_token_compression_experiment(
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 2014, in run_token_compression_experiment
+    epoch_losses.append(loss.item())
+  File "/projects/m000066/sujinesh/LatentWire/experimental/learning/unified_cross_model_experiments.py", line 2014, in run_token_compression_experiment
+    epoch_losses.append(loss.item())
+RuntimeError: a Tensor with 4 elements cannot be converted to Scalar
+RuntimeError: a Tensor with 4 elements cannot be converted to Scalar
