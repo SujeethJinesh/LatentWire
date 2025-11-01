@@ -2,6 +2,86 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 💾 CHECKPOINTING STATUS & SAMPLE COUNT DECISION (2025-10-31 17:15)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### User Questions
+
+1. **Checkpointing for preemptible cluster?**
+2. **10k vs 50k samples - which is necessary?**
+
+### Checkpointing Status: ✅ Fully Implemented
+
+**Good news**: Checkpointing is already working!
+
+**Implementation details**:
+- **Saves**: After every epoch (lines 1135-1147)
+- **Resumes**: Automatically on restart (lines 867-873, 918-921)
+- **Location**: `runs/learned_adapters/{adapter_type}_checkpoint/checkpoint.pt`
+
+**What's saved**:
+```python
+- Epoch number (resume from correct epoch)
+- Adapter weights (model state)
+- Optimizer state (momentum, learning rate history)
+- Scheduler state (cosine annealing position)
+- Training metrics (loss curves, CKA scores)
+```
+
+**How it works on preemption**:
+1. Job gets preempted during epoch N
+2. Checkpoint from end of epoch N-1 exists
+3. Restart job → automatically loads checkpoint
+4. Training resumes from start of epoch N
+5. No progress lost except current incomplete epoch
+
+**Example**:
+```
+Run 1: Epochs 1-3 complete → checkpoint saved
+[PREEMPTED]
+Run 2: Loads checkpoint → resumes from epoch 4
+```
+
+### Sample Count Decision: 10k (Conservative) ✅
+
+**User concern**: Preemptible cluster + long experiments
+
+**Analysis**:
+
+| Samples | Steps/Epoch | Time/Adapter | Total Time | Risk |
+|---------|-------------|--------------|------------|------|
+| **10k** | 1,000 | ~1.5-2h | **~4.5-6h** | Low ✓ |
+| 50k | 5,000 | ~8-10h | ~24-30h | High ✗ |
+
+**Decision: 10k samples** (line 80)
+
+**Rationale**:
+1. **Lower preemption risk**: Shorter jobs (4.5-6h vs 24-30h)
+2. **Faster iteration**: Quick validation of full pipeline
+3. **Sufficient for first run**: Cross-model alignment papers often start with 10-20k samples
+4. **Easy to scale up**: If results look good, increase to 50k on second iteration
+5. **With checkpointing**: Even if preempted, minimal loss (~1 epoch max)
+
+**Training configuration**:
+```python
+num_samples = 10,000        # Conservative choice
+batch_size = 10
+epochs = 10
+steps_per_epoch = 1,000
+total_iterations = 10,000
+expected_time = ~4.5-6 hours total (all 3 adapters)
+```
+
+**When to use 50k**:
+- After validating 10k run works end-to-end
+- For final production-quality results
+- When you have guaranteed longer job allocation
+- For comparison with full-scale papers
+
+**Status**: Set to 10k, checkpointing enabled, ready for safe preemptible run.
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## 🎯 BATCH SIZE INCREASE: Better Memory Utilization (2025-10-31 17:10)
 ## ═══════════════════════════════════════════════════════════════════════════
 
