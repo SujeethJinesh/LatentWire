@@ -3276,18 +3276,18 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
 
         if projection_path.exists():
             try:
-                learned_projection = LearnedProjection(dim_a, dim_b).to(device).eval()
+                learned_projection = LearnedProjection(dim_a, dim_b).to(device=device, dtype=dtype).eval()
                 state = torch.load(projection_path, map_location=device, weights_only=False)
                 learned_projection.load_state_dict(state)
                 print("  ✓ Loaded pre-trained projection")
             except Exception as e:
                 print(f"  ✗ Could not load projection: {e}")
                 print("  Creating new untrained projection (will use random initialization)")
-                learned_projection = LearnedProjection(dim_a, dim_b).to(device).eval()
+                learned_projection = LearnedProjection(dim_a, dim_b).to(device=device, dtype=dtype).eval()
         else:
             print("  ✗ No pre-trained projection found")
             print("  Creating new untrained projection (will use random initialization)")
-            learned_projection = LearnedProjection(dim_a, dim_b).to(device).eval()
+            learned_projection = LearnedProjection(dim_a, dim_b).to(device=device, dtype=dtype).eval()
     else:
         print(f"\n✓ Dimensions match ({dim_a} = {dim_b}), no projection needed")
 
