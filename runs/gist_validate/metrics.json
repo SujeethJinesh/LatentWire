@@ -1,0 +1,12 @@
+{
+  "num_gist_tokens": 1,
+  "num_samples": 2000,
+  "num_epochs": 2,
+  "batch_size": 12,
+  "world_size": 4,
+  "learning_rate": 0.0001,
+  "final_loss": 0.13877456080878064,
+  "total_steps": 42,
+  "total_time_minutes": 0.9518867611885071,
+  "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct"
+}
