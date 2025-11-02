@@ -2245,21 +2245,28 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
     if rank == 0:
         print(f"Loading dataset ({num_samples} samples)...", file=log_file)
 
-    # Fix cache corruption (only rank 0 should clear cache)
-    if rank == 0:
-        cache_dir = Path.home() / ".cache" / "huggingface" / "datasets"
-        wikitext_cache = cache_dir / "wikitext"
-        if wikitext_cache.exists():
-            shutil.rmtree(wikitext_cache)
+    # IMPORTANT: Don't clear cache during training - can cause race conditions
+    # Let HuggingFace handle caching automatically
 
     # Synchronize all processes before loading dataset
     if use_ddp:
+        if rank == 0:
+            print("Rank 0: Waiting for all ranks before dataset loading...", file=log_file, flush=True)
         dist.barrier()
+
+    if rank == 0:
+        print(f"Rank {rank}: Loading wikitext dataset...", file=log_file, flush=True)
 
     dataset = load_dataset("wikitext", "wikitext-103-v1", split="train")
     texts = [item["text"] for item in dataset if len(item["text"]) > 100][:num_samples]
 
+    if rank == 0:
+        print(f"Rank {rank}: Creating alignment dataset with {len(texts)} samples...", file=log_file, flush=True)
+
     train_dataset = AlignmentDataset(texts, tokenizer_a, tokenizer_b, MAX_LENGTH)
+
+    if rank == 0:
+        print(f"Rank {rank}: Dataset created successfully", file=log_file, flush=True)
 
     # Data loading configuration
     # NOTE: HPC system can't handle multiple workers (causes freeze), use single-threaded
@@ -2267,12 +2274,16 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
 
     # Use DistributedSampler for DDP to split data across processes
     if use_ddp:
+        if rank == 0:
+            print(f"Rank {rank}: Creating DistributedSampler...", file=log_file, flush=True)
         sampler = DistributedSampler(
             train_dataset,
             num_replicas=world_size,
             rank=rank,
             shuffle=True
         )
+        if rank == 0:
+            print(f"Rank {rank}: Creating DataLoader with DDP...", file=log_file, flush=True)
         dataloader = DataLoader(
             train_dataset,
             batch_size=BATCH_SIZE,
@@ -2280,6 +2291,11 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             num_workers=num_workers,
             pin_memory=True if PLATFORM == 'hpc' else False,
         )
+        if rank == 0:
+            print(f"Rank {rank}: DataLoader created, syncing ranks...", file=log_file, flush=True)
+        dist.barrier()  # Ensure all ranks have created dataloader
+        if rank == 0:
+            print(f"Rank {rank}: All ranks ready with dataloader", file=log_file, flush=True)
     else:
         dataloader = DataLoader(
             train_dataset,
@@ -2366,7 +2382,17 @@ def train_adapter(model_a, model_b, tokenizer_a, tokenizer_b, adapter,
             print(msg)  # Also print to stdout for tee capture
             log_file.flush()
 
+        # Synchronize all ranks before starting dataloader iteration
+        if use_ddp:
+            if rank == 0:
+                print(f"Rank {rank}: Syncing before dataloader iteration...", file=log_file, flush=True)
+            dist.barrier()
+            if rank == 0:
+                print(f"Rank {rank}: All ranks ready, starting batch iteration...", file=log_file, flush=True)
+
         for batch_idx, batch in enumerate(dataloader):
+            if rank == 0 and batch_idx == 0:
+                print(f"Rank {rank}: Processing first batch of epoch {epoch+1}...", file=log_file, flush=True)
             # Move to device
             input_ids_a = batch["input_ids_a"].to(device)
             attention_mask_a = batch["attention_mask_a"].to(device)

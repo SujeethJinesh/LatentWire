@@ -175,8 +175,13 @@ def load_hotpot_subset(
 
 def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v2: bool = False) -> List[Dict[str, Any]]:
     name = "squad_v2" if v2 else "squad"
-    # Load without config parameter (HuggingFace docs show config is optional)
-    ds = load_dataset(f"rajpurkar/{name}", split=split)
+    # Load dataset - explicitly specify plain_text=False for older datasets library
+    try:
+        ds = load_dataset(f"rajpurkar/{name}", split=split)
+    except TypeError:
+        # Fallback for older datasets library that requires trust_remote_code
+        ds = load_dataset(f"rajpurkar/{name}", split=split, trust_remote_code=True)
+
     rng = random.Random(seed)
     idxs = list(range(len(ds)))
     rng.shuffle(idxs)
@@ -185,11 +190,20 @@ def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v
     for i in idxs:
         ex = ds[i]
         # HuggingFace datasets return dict-like objects with direct key access
-        context = ex["context"]
-        question = ex["question"]
+        context = str(ex["context"])
+        question = str(ex["question"])
         # answers is a dict with 'text' key containing a list of answer strings
-        ans_list = ex["answers"]["text"]
-        answer = ans_list[0] if ans_list else ""
+        # Handle both dict and object access patterns
+        answers_obj = ex["answers"]
+        if hasattr(answers_obj, "get"):
+            ans_list = answers_obj.get("text", [])
+        elif hasattr(answers_obj, "text"):
+            ans_list = answers_obj.text
+        else:
+            # Fallback: try dictionary access
+            ans_list = answers_obj["text"] if "text" in answers_obj else []
+
+        answer = str(ans_list[0]) if ans_list else ""
 
         source = f"Context: {context}\nQuestion: {question}\n"
         out.append({"source": source, "answer": answer})
