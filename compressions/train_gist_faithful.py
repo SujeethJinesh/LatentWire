@@ -812,7 +812,7 @@ def train_gist(
         # Save training metrics
         metrics = {
             'num_gist_tokens': num_gist_tokens,
-            'num_samples': num_samples,
+            'num_samples': len(dataset),  # ACTUAL samples used (not requested)
             'num_epochs': num_epochs,
             'batch_size': batch_size,
             'world_size': world_size,

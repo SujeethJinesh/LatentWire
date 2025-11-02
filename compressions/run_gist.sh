@@ -40,8 +40,8 @@ case $MODE in
         OUTPUT_DIR="runs/gist_validate"
         ;;
     full)
-        echo "Running FULL REPRODUCTION (52K samples, 3 epochs)"
-        SAMPLES=52000
+        echo "Running FULL REPRODUCTION (51560 samples, 3 epochs)"
+        SAMPLES=51560  # Alpaca has 51760 total, use 51560 for train, 200 for test
         EPOCHS=3
         OUTPUT_DIR="runs/gist_full"
         ;;
