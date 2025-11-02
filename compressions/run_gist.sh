@@ -11,7 +11,7 @@ set -e
 
 # Configuration
 SCRIPT="compressions/train_gist_faithful.py"
-MODEL="meta-llama/Meta-Llama-3.1-8B"  # Base model (NOT Instruct) - paper trains gist WITH instruction tuning
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"  # Instruct model - already trained for instruction following
 NUM_GIST_TOKENS=1
 BATCH_SIZE=12  # Per-GPU batch size (conservative for H100 80GB)
 GRAD_ACCUM_STEPS=2  # Gradient accumulation (effective batch size multiplier)

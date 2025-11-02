@@ -12077,3 +12077,44 @@ All fixes committed and pushed. Training completes successfully with correct con
 
 **Status**: All 5 critical bugs fixed. Training succeeds. Ready for evaluation run.
 
+---
+### Evaluation Results with Base Model (2025-11-02 11:04)
+
+**Pipeline Status**: ✅ End-to-end success (training + evaluation)
+
+**ROUGE-L Scores**:
+- Full text: 0.0517
+- Gist: 0.0270 (52% of full text)
+- Truncated: 0.0290 (56% of full text)
+
+**Critical Problem**: All baselines generate degenerate repetitive outputs
+
+**Sample Outputs**:
+```
+Full text: "best of the best of the best of the best..."
+Gist: "www.google.com\nOutput:www.google.com\nOutput:www..."
+Truncated: "2018/2018/2018/2018/2018..."
+```
+
+**Root Cause**: Base model (`meta-llama/Meta-Llama-3.1-8B`) was never instruction-tuned and doesn't understand Alpaca-style prompts. It just continues the text pattern instead of following instructions.
+
+**Paper's Approach**: Mu et al. (2023) simultaneously trained gist tokens AND performed full instruction tuning on Alpaca (both model parameters and gist embeddings trained together).
+
+**Our Constraint**: Training full 8B model is expensive (hours + 52k samples). We only train gist embeddings (fast, <1 min).
+
+### Decision: Switch to Instruct Model (2025-11-02)
+
+**Change**: `meta-llama/Meta-Llama-3.1-8B` → `meta-llama/Meta-Llama-3.1-8B-Instruct`
+
+**Rationale**:
+1. **Immediate validation**: Instruct model already follows instructions, giving meaningful results
+2. **Scientifically valid**: Paper's core contribution is gist token compression, not instruction tuning
+3. **Practical approach**: Validates if gist tokens can compress prompts for already-tuned models
+4. **Fast iteration**: Training gist embeddings only takes ~1 minute vs hours for full tuning
+
+**Trade-off**: Deviates from paper's exact training setup (base + simultaneous instruction tuning), but validates the core compression mechanism.
+
+**Next**: If Instruct model shows good gist compression, we can later attempt full instruction tuning for faithful reproduction.
+
+**Status**: Switched to Instruct model. Ready for re-run with meaningful evaluation.
+
