@@ -49,7 +49,7 @@ class CompressionConfig:
 
     # Compression
     target_length: int = 64  # M: number of compressed tokens
-    architecture: str = "cross_attention"  # cross_attention, conv, pooling
+    architecture: str = "cross_attention"  # cross_attention, conv, pooling, gist
 
     # Training
     batch_size: int = 8
@@ -277,6 +277,110 @@ class WeightedPoolingCompressor(nn.Module):
         return compressed, self.importance_weights
 
 
+class GistCompressor(nn.Module):
+    """
+    Compress via learnable "gist" tokens inserted into the sequence.
+
+    Reference: "Learning to Compress Prompts with Gist Tokens" (Mu et al., NeurIPS 2023)
+    Paper: https://arxiv.org/abs/2304.08467
+
+    Key idea:
+    - Insert learnable gist tokens at the beginning of the sequence
+    - Gist tokens attend to full sequence and compress information
+    - Rest of model only needs to attend to gist tokens
+    - Trained via masked instruction finetuning
+
+    Implementation:
+    - Learnable gist token embeddings
+    - Bidirectional attention (gist tokens can see everything)
+    - Position-aware to maintain sequence order
+    """
+    def __init__(self, target_length=64, hidden_dim=4096):
+        super().__init__()
+        self.target_length = target_length  # Number of gist tokens
+        self.hidden_dim = hidden_dim
+
+        # Learnable gist token embeddings
+        # Initialize similar to word embeddings
+        self.gist_embeddings = nn.Parameter(
+            torch.randn(target_length, hidden_dim) * 0.02
+        )
+
+        # Transformer layer for gist token refinement
+        # Gist tokens attend to full sequence to compress information
+        self.gist_attention = nn.MultiheadAttention(
+            embed_dim=hidden_dim,
+            num_heads=32,  # Match Llama architecture
+            batch_first=True,
+            dropout=0.1
+        )
+
+        # Self-attention among gist tokens for refinement
+        self.gist_self_attention = nn.MultiheadAttention(
+            embed_dim=hidden_dim,
+            num_heads=32,
+            batch_first=True,
+            dropout=0.1
+        )
+
+        # Layer norms
+        self.norm1 = nn.LayerNorm(hidden_dim)
+        self.norm2 = nn.LayerNorm(hidden_dim)
+        self.norm3 = nn.LayerNorm(hidden_dim)
+
+        # Feed-forward network for gist token refinement
+        self.ffn = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim * 4),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim * 4, hidden_dim),
+            nn.Dropout(0.1)
+        )
+
+        # Positional encoding for gist tokens
+        self.gist_position_embed = nn.Parameter(
+            torch.randn(target_length, hidden_dim) * 0.02
+        )
+
+    def forward(self, full_embeds):
+        """
+        Args:
+            full_embeds: [batch, seq_len, hidden_dim] - full sequence embeddings
+        Returns:
+            compressed: [batch, target_length, hidden_dim] - gist tokens
+            attn_weights: Attention weights showing what gist tokens attend to
+        """
+        batch_size = full_embeds.size(0)
+
+        # Initialize gist tokens with learned embeddings + positional encoding
+        gist_tokens = self.gist_embeddings.unsqueeze(0).expand(batch_size, -1, -1)
+        gist_tokens = gist_tokens + self.gist_position_embed.unsqueeze(0)
+
+        # Step 1: Gist tokens attend to full sequence (compression step)
+        # Query: gist tokens, Key/Value: full sequence
+        compressed, attn_weights = self.gist_attention(
+            query=gist_tokens,
+            key=full_embeds,
+            value=full_embeds
+        )
+        compressed = self.norm1(compressed + gist_tokens)
+
+        # Step 2: Self-attention among gist tokens (refinement step)
+        # This allows gist tokens to exchange information
+        refined, _ = self.gist_self_attention(
+            query=compressed,
+            key=compressed,
+            value=compressed
+        )
+        compressed = self.norm2(compressed + refined)
+
+        # Step 3: Feed-forward network for final refinement
+        output = self.ffn(compressed)
+        compressed = self.norm3(compressed + output)
+
+        return compressed, attn_weights
+
+
 # ============================================================================
 # SQuAD Dataset Wrapper
 # ============================================================================
@@ -464,8 +568,14 @@ class CompressionTrainer:
                 target_length=self.config.target_length,
                 hidden_dim=hidden_dim
             ).to(self.device, dtype=dtype)
+        elif self.config.architecture == "gist":
+            self.compressor = GistCompressor(
+                target_length=self.config.target_length,
+                hidden_dim=hidden_dim
+            ).to(self.device, dtype=dtype)
         else:
-            raise ValueError(f"Unknown architecture: {self.config.architecture}")
+            raise ValueError(f"Unknown architecture: {self.config.architecture}. "
+                           f"Choose from: cross_attention, conv, pooling, gist")
 
         # Get embedding layer
         self.embed_layer = self.base_model.get_input_embeddings()
