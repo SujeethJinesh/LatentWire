@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 24, in <module>
+    from rouge_score import rouge_scorer
+ModuleNotFoundError: No module named 'rouge_score'
