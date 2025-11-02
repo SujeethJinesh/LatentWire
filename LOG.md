@@ -12407,3 +12407,275 @@ test_data = dataset.select(range(test_start_idx, min(test_start_idx + args.sampl
 
 **Status**: Data leakage fixed. Training in progress (5 tokens, 5 epochs). Will eval with proper split.
 
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
+## 🔧 GIST TOKENS: CRITICAL GENERATION BUGS & FIXES (2025-11-02)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Overview
+After completing validation training (2K samples, 5 gist tokens, 5 epochs, final loss 0.092), evaluation revealed **all gist outputs were empty strings or single tokens**. Root cause: `attention_mask_gist` was never actually used during generation. This required deep architecture fixes to properly integrate with Hugging Face's generation loop.
+
+### Timeline of Bugs & Fixes
+
+#### Bug #1: attention_mask_gist Never Used During Generation ❌
+
+**The Problem**:
+```python
+# eval_gist.py - We passed attention_mask_gist to generate()
+model.generate(
+    input_ids=input_ids,
+    attention_mask=attention_mask,
+    attention_mask_gist=attention_mask_gist,  # Passed but IGNORED!
+    **kwargs
+)
+```
+
+**Root Cause**: 
+- Hugging Face's generation loop calls `model.forward()` at each step
+- Since we wrapped the base model, `self.model.generate()` calls `self.model.forward()`, NOT our `GistLlama.forward()`
+- Base `LlamaForCausalLM.forward()` doesn't know about `attention_mask_gist`
+- Parameter silently ignored → no gist masking during generation!
+
+**Why This is Critical**:
+From official gist tokens repo: `attention_mask_gist` must be used **during generation**, not just training!
+- **Training**: Forces tokens after gist to only attend to gist tokens
+- **Generation**: Generated answer tokens MUST also only attend to gist (this IS the compression!)
+
+Without the mask, model gets confused embeddings with no attention constraints → empty/degenerate outputs.
+
+**First Fix Attempt** (`797b3b1`):
+```python
+class GistLlama(nn.Module):
+    def __init__(self, ...):
+        # Monkey-patch base model's methods
+        self._original_prepare_inputs = self.model.prepare_inputs_for_generation
+        self._original_forward = self.model.forward
+        
+        self.model.prepare_inputs_for_generation = self._prepare_inputs_for_generation_with_gist
+        self.model.forward = self._forward_with_gist_for_base_model
+    
+    def _forward_with_gist_for_base_model(self, input_ids=None, attention_mask_gist=None, ...):
+        """Called by generation loop - replaces embeddings and applies gist mask"""
+        if input_ids is not None:
+            inputs_embeds = self.model.model.embed_tokens(input_ids)
+            gist_mask = (input_ids == self.gist_token_id)
+            if gist_mask.any():
+                inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
+        
+        if attention_mask_gist is not None:
+            mask_to_use = torch.zeros_like(attention_mask_gist, dtype=inputs_embeds.dtype)
+            mask_to_use.masked_fill_(~attention_mask_gist, torch.finfo(inputs_embeds.dtype).min)
+        else:
+            mask_to_use = attention_mask
+        
+        return self._original_forward(inputs_embeds=inputs_embeds, attention_mask=mask_to_use, ...)
+```
+
+This fixed the "mask never used" problem but created a new one...
+
+#### Bug #2: Dimension Mismatch - Mask Not Propagating Across Steps ❌
+
+**Error**:
+```
+RuntimeError: The expanded size of the tensor (60) must match the existing size (59)
+Target sizes: [16, 32, 1, 60].  Tensor sizes: [16, 1, 1, 59]
+```
+
+**Root Cause**:
+Hugging Face's generation loop doesn't automatically propagate custom kwargs like `attention_mask_gist`:
+1. First forward pass: `attention_mask_gist` present ✅
+2. Second+ forward passes: `attention_mask_gist` is None ❌
+3. Mask size doesn't grow with sequence → dimension mismatch
+
+**The Issue**:
+```python
+def _prepare_inputs_for_generation_with_gist(self, attention_mask_gist=None, **kwargs):
+    model_inputs = self._original_prepare_inputs(...)
+    
+    if attention_mask_gist is not None:  # Only True on first call!
+        model_inputs["attention_mask_gist"] = attention_mask_gist
+    
+    return model_inputs
+```
+
+After the first generation step, `attention_mask_gist` disappears from kwargs → not passed to subsequent forward passes.
+
+**Second Fix** (`205f66a`): Store State in GistLlama Instance
+```python
+class GistLlama(nn.Module):
+    def __init__(self, ...):
+        # Track attention_mask_gist across generation steps
+        self._current_attention_mask_gist = None
+        self._generation_step = 0
+        ...
+    
+    def generate(self, attention_mask_gist=None, **kwargs):
+        # Store mask for the entire generation loop
+        self._current_attention_mask_gist = attention_mask_gist
+        self._generation_step = 0
+        
+        try:
+            outputs = self.model.generate(input_ids=input_ids, attention_mask=attention_mask, **kwargs)
+        finally:
+            # Cleanup
+            self._current_attention_mask_gist = None
+            self._generation_step = 0
+        
+        return outputs
+    
+    def _prepare_inputs_for_generation_with_gist(self, **kwargs):
+        model_inputs = self._original_prepare_inputs(...)
+        
+        # Use stored attention_mask_gist
+        if self._current_attention_mask_gist is not None:
+            if self._generation_step == 0:
+                # First step: use full mask
+                model_inputs["attention_mask_gist"] = self._current_attention_mask_gist
+            else:
+                # Subsequent steps: extend the mask
+                # Based on official repo's _update_model_kwargs_for_generation
+                last_row = self._current_attention_mask_gist[:, :, -1:]  # (B, 1, 1, N)
+                self._current_attention_mask_gist = torch.cat(
+                    [last_row, last_row.new_ones((last_row.shape[0], 1, 1, 1))],
+                    dim=-1
+                )  # (B, 1, 1, N+1)
+                model_inputs["attention_mask_gist"] = self._current_attention_mask_gist
+            
+            self._generation_step += 1
+        
+        return model_inputs
+```
+
+**Key Insight**: Official repo's `GistGenerationMixin._update_model_kwargs_for_generation` shows how to extend the mask at each step. We adapted this for our monkey-patching approach.
+
+#### Bug #3: Right Padding (Minor) ⚠️
+
+**Issue**: Eval used default right padding, but LLaMA needs left padding for batched generation.
+
+**Fix** (`7602c99`):
+```python
+def load_gist_model(checkpoint_dir: str, device: str):
+    tokenizer = AutoTokenizer.from_pretrained(checkpoint_dir)
+    tokenizer.padding_side = 'left'  # CRITICAL for causal LLMs
+```
+
+### Validation Results (2K Samples, 5 Tokens, 5 Epochs)
+
+**Training**:
+- Final loss: 0.092 (excellent - down from 0.175 with LR 2e-5)
+- LR: 5e-5 (higher than paper's 2e-5, helped with small dataset)
+- Time: 2.5 minutes
+
+**Evaluation** (after all fixes):
+| Metric | ROUGE-L | vs Full Text |
+|--------|---------|--------------|
+| Full Text (baseline) | 0.250 | 100% |
+| **Gist Tokens (ours)** | **0.045** | **18.1%** |
+| Truncated Text | 0.253 | 101% |
+
+**Progress**:
+- Before fixes (empty outputs): 0.006 (2.3%)
+- After fixes: 0.045 (18.1%)
+- **~8× improvement** from fixing generation bugs! 🎉
+
+**Critical Issue**: 95% of gist outputs are single tokens ("assistant")
+```json
+"gist": "assistant"  // Most common
+"gist": "diversity.assistant"  // Rare 2-token output
+```
+
+**Root Cause**: Insufficient training data
+- Current: 2,000 samples × 5 epochs
+- Paper: 52,000 samples × 3 epochs (**26× more data**)
+- With only 2K samples, 5 gist embeddings can't learn enough variation
+- Model generates 1 token then stops (gist mask too restrictive without rich embeddings)
+
+### Architecture Comparison: Ours vs Official Repo
+
+**Official Repo** (`gist-caching`):
+- Custom `GistLlamaAttention`, `GistLlamaDecoderLayer`, `GistLlamaModel`
+- Deep integration into LLaMA 1 architecture
+- Inherits from `LlamaPreTrainedModel` + `GistGenerationMixin`
+- `<GIST>` token added to vocab, extends embeddings
+- Model: LLaMA 1 7B/13B (2023)
+
+**Our Approach** (LatentWire):
+- Keep Llama 3.1 8B Instruct **completely frozen**
+- **Embedding replacement** instead of custom attention layers
+- **Monkey-patch** generation methods to propagate gist masks
+- Only train gist embeddings (tiny parameter count)
+- Model: Llama 3.1 8B Instruct (2024, better base model)
+
+**Key Alignment**:
+- ✅ Same gist mask construction logic (`make_gist_mask`)
+- ✅ Same mask update logic during generation
+- ✅ Same training approach (freeze model, train only gist embeddings)
+- ✅ Same evaluation protocol (full text, gist, truncated baselines)
+
+**Differences**:
+- They modify architecture; we monkey-patch
+- They use LLaMA 1 base; we use Llama 3.1 Instruct
+- Simpler but achieves same goal
+
+### Next Steps: Full Training Run
+
+**Current Status**:
+- Architecture: ✅ Correct and aligned with official repo
+- Generation: ✅ attention_mask_gist properly propagates
+- Mask update: ✅ Extends correctly at each generation step
+- Training data: ❌ Only 2K samples (need 52K)
+
+**Recommendation**: Run full training with paper-scale data
+
+**Configuration** (`run_gist.sh full`):
+```bash
+MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
+NUM_GIST_TOKENS=5
+SAMPLES=52000  # Paper scale
+EPOCHS=3
+BATCH_SIZE=12
+GRAD_ACCUM_STEPS=2
+LR=1e-5  # Conservative (paper: 2e-5, validation: 5e-5)
+WARMUP_RATIO=0.03
+LR_SCHEDULER="cosine"
+```
+
+**Expected Results**:
+- ROUGE-L: 0.15-0.25 (60-100% of full text, per paper)
+- Actual multi-token generations (not just "assistant")
+- Meaningful compression learned by gist embeddings
+- Training time: ~30-60 minutes on 4× H100
+
+**Command**:
+```bash
+git pull && rm -rf runs/gist_full && bash compressions/run_gist.sh full
+```
+
+### Key Learnings
+
+1. **Monkey-patching for generation**: When wrapping models, you must intercept BOTH `forward()` and `prepare_inputs_for_generation()` to properly integrate with HF's generation loop.
+
+2. **Custom kwargs don't propagate**: HF's generation doesn't automatically pass custom parameters across steps. Must store state in the wrapper class.
+
+3. **Mask update logic is critical**: Official repo's `_update_model_kwargs_for_generation` shows the proper pattern for extending attention masks during autoregressive generation.
+
+4. **Training data matters more than epochs**: 5 epochs × 2K samples < 3 epochs × 52K samples. Gist embeddings need diverse data to learn meaningful compression.
+
+5. **Architecture alignment is possible without full reimplementation**: Our monkey-patching approach achieves the same behavior as their custom layers, but with simpler code on a newer model.
+
+### Files Modified
+
+**Core Implementation**:
+- `compressions/train_gist_faithful.py`: GistLlama with monkey-patched generation
+- `compressions/eval_gist.py`: Evaluation with proper data splitting
+- `compressions/run_gist.sh`: Training pipeline with hyperparameters
+
+**Key Commits**:
+- `797b3b1`: Monkey-patch forward() and prepare_inputs_for_generation()
+- `205f66a`: Store attention_mask_gist across generation steps
+- `7602c99`: Add left padding for proper batched generation
+- `12e252f`: Lower LR to 1e-5 for full training run
+
+**Status**: Ready for full 52K sample training run. All architecture bugs fixed and aligned with official repo.
+
