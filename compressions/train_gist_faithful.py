@@ -339,6 +339,7 @@ def train_gist(
     num_gist_tokens: int,
     num_samples: int,
     batch_size: int,
+    gradient_accumulation_steps: int,
     learning_rate: float,
     num_epochs: int,
     output_dir: str,
@@ -352,6 +353,7 @@ def train_gist(
         num_gist_tokens: Number of gist tokens (1, 2, 5, 10 in paper)
         num_samples: Training samples (52K in paper, configurable for quick tests)
         batch_size: Per-GPU batch size (MUST be 1 for position IDs)
+        gradient_accumulation_steps: Accumulate gradients over N steps (effective batch size multiplier)
         learning_rate: 1e-4 per their configs
         num_epochs: 3 in paper
         output_dir: Where to save checkpoints
@@ -361,6 +363,7 @@ def train_gist(
     rank, world_size, local_rank = setup_ddp()
 
     if is_main_process():
+        effective_batch_size = batch_size * world_size * gradient_accumulation_steps
         print(f"\n{'='*80}")
         print(f"FAITHFUL GIST TOKENS REPRODUCTION")
         print(f"{'='*80}")
@@ -369,7 +372,8 @@ def train_gist(
         print(f"Samples: {num_samples:,} ({'QUICK TEST' if num_samples < 5000 else 'VALIDATION' if num_samples < 20000 else 'FULL REPRODUCTION'})")
         print(f"GPUs: {world_size}")
         print(f"Batch size per GPU: {batch_size} (REQUIRED=1 for position IDs)")
-        print(f"Effective batch size: {batch_size * world_size}")
+        print(f"Gradient accumulation steps: {gradient_accumulation_steps}")
+        print(f"Effective batch size: {effective_batch_size} ({batch_size} × {world_size} GPUs × {gradient_accumulation_steps} accum)")
         print(f"Learning rate: {learning_rate}")
         print(f"Epochs: {num_epochs}")
         print(f"Output: {output_dir}")
@@ -530,21 +534,34 @@ def train_gist(
 
             loss = outputs.loss
 
+            # Scale loss for gradient accumulation
+            scaled_loss = loss / gradient_accumulation_steps
+
             # Backward
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            optimizer.step()
-            optimizer.zero_grad()
+            scaled_loss.backward()
+
+            # Only step optimizer every gradient_accumulation_steps
+            if (batch_idx + 1) % gradient_accumulation_steps == 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                optimizer.step()
+                optimizer.zero_grad()
+                global_step += 1
 
             epoch_losses.append(loss.item())
             all_losses.append(loss.item())
-            global_step += 1
 
             # Update progress
             progress.set_postfix({
                 'loss': f'{loss.item():.4f}',
                 'avg_loss': f'{sum(epoch_losses)/len(epoch_losses):.4f}'
             })
+
+        # Step optimizer with any leftover accumulated gradients at end of epoch
+        if (batch_idx + 1) % gradient_accumulation_steps != 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+            optimizer.zero_grad()
+            global_step += 1
 
         avg_epoch_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
         if is_main_process():
@@ -620,6 +637,8 @@ if __name__ == "__main__":
     # Training args
     parser.add_argument('--batch_size', type=int, default=1,
                         help='MUST be 1 for position IDs (per paper)')
+    parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
+                        help='Gradient accumulation steps (effective batch size multiplier)')
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='Learning rate')
 
@@ -642,6 +661,7 @@ if __name__ == "__main__":
         num_gist_tokens=args.num_gist_tokens,
         num_samples=args.samples,
         batch_size=args.batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
         learning_rate=args.lr,
         num_epochs=args.epochs,
         output_dir=args.output_dir,

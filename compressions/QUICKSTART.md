@@ -32,8 +32,9 @@ bash compressions/run_gist.sh full
 ```
 
 **Multi-GPU:** Uses all 4 GPUs automatically with DDP (4× speedup!)
-- Per-GPU batch size: 1 (required)
-- Effective batch size: 4
+- Per-GPU batch size: 1 (required for position IDs)
+- Gradient accumulation: 8 steps (to utilize GPU memory)
+- Effective batch size: 32 (1 × 4 GPUs × 8 accum)
 
 ## What's Faithful to Paper?
 
@@ -81,13 +82,15 @@ torchrun --nproc_per_node=4 compressions/train_gist_faithful.py \
     --num_gist_tokens 1 \
     --samples 5000 \
     --epochs 2 \
+    --gradient_accumulation_steps 8 \
     --lr 1e-4 \
     --output_dir runs/gist_custom \
     --device auto
 
-# Single GPU
+# Single GPU with larger effective batch size
 python compressions/train_gist_faithful.py \
     --samples 1000 \
+    --gradient_accumulation_steps 16 \
     --device cuda:0
 ```
 
