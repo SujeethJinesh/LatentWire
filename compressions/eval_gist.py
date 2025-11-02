@@ -182,12 +182,26 @@ def main():
     test_end_idx = min(test_start_idx + args.samples, total_size)
 
     if test_end_idx <= test_start_idx:
-        raise ValueError(f"Not enough data for test set! Training used {num_train_samples} samples, "
-                        f"dataset has {total_size} total. Need at least {num_train_samples + args.samples} samples.")
+        # Not enough data for clean test set - use last samples from training (DATA LEAKAGE!)
+        print(f"\n{'='*80}")
+        print(f"WARNING: DATA LEAKAGE EVALUATION")
+        print(f"{'='*80}")
+        print(f"Training used all {num_train_samples} samples, dataset has {total_size} total.")
+        print(f"No held-out test data available!")
+        print(f"Using LAST {args.samples} training samples for evaluation (indices {total_size-args.samples}-{total_size})")
+        print(f"Results will show UPPER BOUND performance (model has seen this data)")
+        print(f"{'='*80}\n")
+        test_start_idx = max(0, total_size - args.samples)
+        test_end_idx = total_size
 
     test_data = dataset.select(range(test_start_idx, test_end_idx))
-    print(f"✓ Loaded {len(test_data)} test samples (indices {test_start_idx}-{test_end_idx})")
-    print(f"✓ Zero overlap with training data (training used indices 0-{num_train_samples} after shuffle)\n")
+
+    if test_start_idx >= num_train_samples:
+        print(f"✓ Loaded {len(test_data)} test samples (indices {test_start_idx}-{test_end_idx})")
+        print(f"✓ Zero overlap with training data (training used indices 0-{num_train_samples} after shuffle)\n")
+    else:
+        print(f"✓ Loaded {len(test_data)} samples (indices {test_start_idx}-{test_end_idx})")
+        print(f"⚠ DATA LEAKAGE: These samples were in training set!\n")
 
     # Evaluate all samples in batches
     print(f"Evaluating samples (batch_size={args.batch_size})...")

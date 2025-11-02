@@ -1,6 +1,6 @@
 {
   "num_gist_tokens": 5,
-  "num_samples": 52000,
+  "num_samples": 51760,
   "num_epochs": 3,
   "batch_size": 12,
   "world_size": 4,
