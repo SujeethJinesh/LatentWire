@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Run Gist Tokens Faithful Reproduction
+# Run Gist Tokens Faithful Reproduction with Multi-GPU Support
 #
 # Usage:
 #   bash run_gist.sh test       # Quick test (100 samples)
@@ -13,8 +13,9 @@ set -e
 SCRIPT="compressions/train_gist_faithful.py"
 MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 NUM_GIST_TOKENS=1
-BATCH_SIZE=1  # REQUIRED (per paper)
+BATCH_SIZE=1  # Per-GPU batch size (REQUIRED=1 per paper)
 LR=1e-4
+NUM_GPUS=4    # Use all 4 GPUs
 
 # Set PYTHONPATH
 export PYTHONPATH=.
@@ -53,21 +54,25 @@ mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="$OUTPUT_DIR/train_${TIMESTAMP}.log"
 
-echo "Starting Gist training..."
+echo "Starting Gist training on $NUM_GPUS GPUs..."
+echo "Effective batch size: $((BATCH_SIZE * NUM_GPUS))"
 echo "Log file: $LOG_FILE"
 echo ""
 
-# Run training with tee to capture output
+# Run training with torchrun for multi-GPU (DDP)
 {
-    python $SCRIPT \
-        --model_id "$MODEL" \
-        --num_gist_tokens $NUM_GIST_TOKENS \
-        --samples $SAMPLES \
-        --epochs $EPOCHS \
-        --batch_size $BATCH_SIZE \
-        --lr $LR \
-        --output_dir "$OUTPUT_DIR" \
-        --device cuda:0
+    torchrun \
+        --nproc_per_node=$NUM_GPUS \
+        --master_port=29500 \
+        $SCRIPT \
+            --model_id "$MODEL" \
+            --num_gist_tokens $NUM_GIST_TOKENS \
+            --samples $SAMPLES \
+            --epochs $EPOCHS \
+            --batch_size $BATCH_SIZE \
+            --lr $LR \
+            --output_dir "$OUTPUT_DIR" \
+            --device auto
 } 2>&1 | tee "$LOG_FILE"
 
 echo ""
@@ -75,3 +80,7 @@ echo "Complete! Results saved to:"
 echo "  - $OUTPUT_DIR/pytorch_model.bin"
 echo "  - $OUTPUT_DIR/metrics.json"
 echo "  - $LOG_FILE"
+echo ""
+echo "GPUs used: $NUM_GPUS"
+echo "Per-GPU batch size: $BATCH_SIZE"
+echo "Effective batch size: $((BATCH_SIZE * NUM_GPUS))"

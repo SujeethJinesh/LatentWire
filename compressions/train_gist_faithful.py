@@ -33,12 +33,48 @@ import json
 import os
 import torch
 import torch.nn as nn
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.data.distributed import DistributedSampler
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 from typing import Optional
 from tqdm import tqdm
 from pathlib import Path
 import time
+
+
+# ==============================================================================
+# Multi-GPU Setup
+# ==============================================================================
+
+def setup_ddp():
+    """Initialize DDP for multi-GPU training."""
+    if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
+        rank = int(os.environ['RANK'])
+        world_size = int(os.environ['WORLD_SIZE'])
+        local_rank = int(os.environ['LOCAL_RANK'])
+    else:
+        rank = 0
+        world_size = 1
+        local_rank = 0
+
+    if world_size > 1:
+        dist.init_process_group(backend='nccl')
+        torch.cuda.set_device(local_rank)
+
+    return rank, world_size, local_rank
+
+
+def cleanup_ddp():
+    """Cleanup DDP."""
+    if dist.is_initialized():
+        dist.destroy_process_group()
+
+
+def is_main_process():
+    """Check if this is the main process."""
+    return not dist.is_initialized() or dist.get_rank() == 0
 
 
 # ==============================================================================
@@ -311,35 +347,49 @@ def train_gist(
     device: str,
 ):
     """
-    Faithful Gist training with configurable data size.
+    Faithful Gist training with configurable data size and multi-GPU support.
 
     Args:
         model_id: HuggingFace model ID (default: Llama 3.1 8B)
         num_gist_tokens: Number of gist tokens (1, 2, 5, 10 in paper)
         num_samples: Training samples (52K in paper, configurable for quick tests)
-        batch_size: MUST be 1 for position embeddings (per their repo)
+        batch_size: Per-GPU batch size (MUST be 1 for position IDs)
         learning_rate: 1e-4 per their configs
         num_epochs: 3 in paper
         output_dir: Where to save checkpoints
-        device: cuda device
+        device: cuda device (or auto for DDP)
     """
-    print(f"\n{'='*80}")
-    print(f"FAITHFUL GIST TOKENS REPRODUCTION")
-    print(f"{'='*80}")
-    print(f"Model: {model_id}")
-    print(f"Gist tokens: {num_gist_tokens}")
-    print(f"Samples: {num_samples:,} ({'QUICK TEST' if num_samples < 5000 else 'VALIDATION' if num_samples < 20000 else 'FULL REPRODUCTION'})")
-    print(f"Batch size: {batch_size} (REQUIRED=1 for position IDs)")
-    print(f"Learning rate: {learning_rate}")
-    print(f"Epochs: {num_epochs}")
-    print(f"Output: {output_dir}")
-    print(f"{'='*80}\n")
+    # Setup DDP
+    rank, world_size, local_rank = setup_ddp()
 
-    # Create output directory
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"FAITHFUL GIST TOKENS REPRODUCTION")
+        print(f"{'='*80}")
+        print(f"Model: {model_id}")
+        print(f"Gist tokens: {num_gist_tokens}")
+        print(f"Samples: {num_samples:,} ({'QUICK TEST' if num_samples < 5000 else 'VALIDATION' if num_samples < 20000 else 'FULL REPRODUCTION'})")
+        print(f"GPUs: {world_size}")
+        print(f"Batch size per GPU: {batch_size} (REQUIRED=1 for position IDs)")
+        print(f"Effective batch size: {batch_size * world_size}")
+        print(f"Learning rate: {learning_rate}")
+        print(f"Epochs: {num_epochs}")
+        print(f"Output: {output_dir}")
+        print(f"{'='*80}\n")
 
-    # Load tokenizer
-    print("Loading tokenizer...")
+    # Set device
+    if world_size > 1:
+        device = f"cuda:{local_rank}"
+    elif device == "auto":
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+    # Create output directory (only rank 0)
+    if is_main_process():
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    # Load tokenizer (all ranks)
+    if is_main_process():
+        print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "left"  # REQUIRED for LLaMA
@@ -347,36 +397,48 @@ def train_gist(
     # Add <GIST> token (their train.py line 188)
     tokenizer.add_special_tokens({"additional_special_tokens": ["<GIST>"]})
     gist_token_id = tokenizer.additional_special_tokens_ids[-1]
-    print(f"✓ Added <GIST> token with ID: {gist_token_id}")
+    if is_main_process():
+        print(f"✓ Added <GIST> token with ID: {gist_token_id}")
 
-    # Load model
-    print(f"Loading model: {model_id}...")
+    # Load model (all ranks)
+    if is_main_process():
+        print(f"Loading model: {model_id}...")
     base_model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.bfloat16,
-        device_map=device,
+        device_map=None,  # Don't use device_map with DDP
     )
+    base_model = base_model.to(device)
 
     # Resize embeddings for <GIST> token
     base_model.resize_token_embeddings(len(tokenizer))
 
     # Initialize new token to average of existing (their train.py lines 197-200)
-    print("Initializing <GIST> embedding...")
+    if is_main_process():
+        print("Initializing <GIST> embedding...")
     with torch.no_grad():
         base_model.model.embed_tokens.weight[-1] = base_model.model.embed_tokens.weight[:-1].mean(0)
         base_model.lm_head.weight[-1] = base_model.lm_head.weight[:-1].mean(0)
-    print("✓ Initialized <GIST> to vocab average")
+    if is_main_process():
+        print("✓ Initialized <GIST> to vocab average")
 
     # Wrap model
     model = GistLlama(base_model)
+
+    # Wrap in DDP if multi-GPU
+    if world_size > 1:
+        model = DDP(model, device_ids=[local_rank], output_device=local_rank)
+
     model.train()
 
     # Load Alpaca dataset (their train.py line 95-101)
-    print(f"\nLoading Alpaca+ dataset...")
+    if is_main_process():
+        print(f"\nLoading Alpaca+ dataset...")
     dataset = load_dataset("yahma/alpaca-cleaned", split="train")
     dataset = dataset.shuffle(seed=42)  # Deterministic shuffle
     dataset = dataset.select(range(min(num_samples, len(dataset))))
-    print(f"✓ Loaded {len(dataset):,} samples")
+    if is_main_process():
+        print(f"✓ Loaded {len(dataset):,} samples")
 
     # Create data collator
     collator = GistDataCollator(
@@ -386,11 +448,13 @@ def train_gist(
         max_length=512,  # Their max_length (256+256)
     )
 
-    # Create dataloader
+    # Create dataloader with DistributedSampler for multi-GPU
+    sampler = DistributedSampler(dataset, shuffle=True) if world_size > 1 else None
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=(sampler is None),  # Don't shuffle if using DistributedSampler
+        sampler=sampler,
         collate_fn=collator,
     )
 
@@ -398,17 +462,22 @@ def train_gist(
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
     # Training loop
-    print(f"\n{'='*80}")
-    print(f"STARTING TRAINING")
-    print(f"{'='*80}\n")
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"STARTING TRAINING")
+        print(f"{'='*80}\n")
 
     start_time = time.time()
     global_step = 0
     all_losses = []
 
     for epoch in range(num_epochs):
+        # Set epoch for DistributedSampler
+        if sampler is not None:
+            sampler.set_epoch(epoch)
+
         epoch_losses = []
-        progress = tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")
+        progress = tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}", disable=not is_main_process())
 
         for batch_idx, batch in enumerate(progress):
             # Move to device
@@ -456,41 +525,51 @@ def train_gist(
                 'avg_loss': f'{sum(epoch_losses)/len(epoch_losses):.4f}'
             })
 
-        avg_epoch_loss = sum(epoch_losses) / len(epoch_losses)
-        print(f"\nEpoch {epoch+1}/{num_epochs} complete - Avg loss: {avg_epoch_loss:.4f}")
+        avg_epoch_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
+        if is_main_process():
+            print(f"\nEpoch {epoch+1}/{num_epochs} complete - Avg loss: {avg_epoch_loss:.4f}")
 
     # Training complete
     elapsed = time.time() - start_time
-    print(f"\n{'='*80}")
-    print(f"TRAINING COMPLETE")
-    print(f"{'='*80}")
-    print(f"Total time: {elapsed/60:.2f} minutes")
-    print(f"Total steps: {global_step:,}")
-    print(f"Final avg loss: {sum(all_losses[-100:])/min(100, len(all_losses)):.4f}")
 
-    # Save checkpoint
-    print(f"\nSaving checkpoint to {output_dir}...")
-    model.save_pretrained(output_dir)
-    tokenizer.save_pretrained(output_dir)
+    if is_main_process():
+        print(f"\n{'='*80}")
+        print(f"TRAINING COMPLETE")
+        print(f"{'='*80}")
+        print(f"Total time: {elapsed/60:.2f} minutes")
+        print(f"Total steps: {global_step:,}")
+        print(f"Final avg loss: {sum(all_losses[-100:])/min(100, len(all_losses)):.4f}")
 
-    # Save training metrics
-    metrics = {
-        'num_gist_tokens': num_gist_tokens,
-        'num_samples': num_samples,
-        'num_epochs': num_epochs,
-        'batch_size': batch_size,
-        'learning_rate': learning_rate,
-        'final_loss': sum(all_losses[-100:])/min(100, len(all_losses)),
-        'total_steps': global_step,
-        'total_time_minutes': elapsed/60,
-        'model_id': model_id,
-    }
+    # Save checkpoint (only rank 0)
+    if is_main_process():
+        print(f"\nSaving checkpoint to {output_dir}...")
+        # Unwrap DDP if needed
+        save_model = model.module if isinstance(model, DDP) else model
+        save_model.save_pretrained(output_dir)
+        tokenizer.save_pretrained(output_dir)
 
-    with open(Path(output_dir) / 'metrics.json', 'w') as f:
-        json.dump(metrics, f, indent=2)
+        # Save training metrics
+        metrics = {
+            'num_gist_tokens': num_gist_tokens,
+            'num_samples': num_samples,
+            'num_epochs': num_epochs,
+            'batch_size': batch_size,
+            'world_size': world_size,
+            'learning_rate': learning_rate,
+            'final_loss': sum(all_losses[-100:])/min(100, len(all_losses)),
+            'total_steps': global_step,
+            'total_time_minutes': elapsed/60,
+            'model_id': model_id,
+        }
 
-    print(f"✓ Saved to {output_dir}")
-    print(f"\nDone!")
+        with open(Path(output_dir) / 'metrics.json', 'w') as f:
+            json.dump(metrics, f, indent=2)
+
+        print(f"✓ Saved to {output_dir}")
+        print(f"\nDone!")
+
+    # Cleanup DDP
+    cleanup_ddp()
 
 
 # ==============================================================================
@@ -521,8 +600,8 @@ if __name__ == "__main__":
     # Output args
     parser.add_argument('--output_dir', type=str, default='runs/gist_faithful',
                         help='Output directory')
-    parser.add_argument('--device', type=str, default='cuda:0',
-                        help='Device')
+    parser.add_argument('--device', type=str, default='auto',
+                        help='Device (auto for DDP, cuda:N for single GPU)')
 
     args = parser.parse_args()
 

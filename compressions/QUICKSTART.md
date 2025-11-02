@@ -21,15 +21,19 @@ Tokens after gist can **only** attend to gist tokens → forces all prompt info 
 ## Quick Start (3 Commands)
 
 ```bash
-# 1. Quick test (100 samples, ~15 min)
+# 1. Quick test (100 samples, ~5-10 min on 4 GPUs)
 bash compressions/run_gist.sh test
 
-# 2. Validation (2K samples, ~2 hours)
+# 2. Validation (2K samples, ~30-60 min on 4 GPUs)
 bash compressions/run_gist.sh validate
 
-# 3. Full reproduction (52K samples, ~8 hours)
+# 3. Full reproduction (52K samples, ~2-4 hours on 4 GPUs)
 bash compressions/run_gist.sh full
 ```
+
+**Multi-GPU:** Uses all 4 GPUs automatically with DDP (4× speedup!)
+- Per-GPU batch size: 1 (required)
+- Effective batch size: 4
 
 ## What's Faithful to Paper?
 
@@ -50,11 +54,11 @@ bash compressions/run_gist.sh full
 
 ## Expected Results
 
-| Mode     | Samples | Time    | Purpose                 |
-|----------|---------|---------|-------------------------|
-| Test     | 100     | ~15 min | Verify infrastructure   |
-| Validate | 2K      | ~2 hrs  | Good results quickly    |
-| Full     | 52K     | ~8 hrs  | Match paper (26× comp.) |
+| Mode     | Samples | Time (4 GPUs) | Purpose                 |
+|----------|---------|---------------|-------------------------|
+| Test     | 100     | ~5-10 min     | Verify infrastructure   |
+| Validate | 2K      | ~30-60 min    | Good results quickly    |
+| Full     | 52K     | ~2-4 hrs      | Match paper (26× comp.) |
 
 ## Output
 
@@ -71,14 +75,19 @@ runs/gist_validate/
 ## Advanced Usage
 
 ```bash
-# Custom configuration
-python compressions/train_gist_faithful.py \
+# Custom configuration with multi-GPU (torchrun)
+torchrun --nproc_per_node=4 compressions/train_gist_faithful.py \
     --model_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
     --num_gist_tokens 1 \
     --samples 5000 \
     --epochs 2 \
     --lr 1e-4 \
     --output_dir runs/gist_custom \
+    --device auto
+
+# Single GPU
+python compressions/train_gist_faithful.py \
+    --samples 1000 \
     --device cuda:0
 ```
 
