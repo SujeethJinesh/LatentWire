@@ -198,9 +198,10 @@ class GistLlama(nn.Module):
         **kwargs,
     ):
         """
-        Forward with gist embedding replacement.
+        Forward with gist embedding replacement and gist attention masking.
 
         Replaces gist token IDs with learned gist embeddings before forward pass.
+        Uses gist attention mask to force compression (tokens after gist only see gist).
         """
         # Get base embeddings
         inputs_embeds = self.model.model.embed_tokens(input_ids)
@@ -210,10 +211,14 @@ class GistLlama(nn.Module):
         if gist_mask.any():
             inputs_embeds[gist_mask] = self.gist_embedding
 
-        # Forward with embedded inputs
+        # Use gist attention mask if provided (4D mask for compression)
+        # This is the KEY to gist tokens: forces later tokens to only attend to gist
+        mask_to_use = attention_mask_gist if attention_mask_gist is not None else attention_mask
+
+        # Forward with embedded inputs and gist attention mask
         outputs = self.model(
             inputs_embeds=inputs_embeds,
-            attention_mask=attention_mask,
+            attention_mask=mask_to_use,
             labels=labels,
             **kwargs,
         )
