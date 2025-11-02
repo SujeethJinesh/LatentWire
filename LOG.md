@@ -12353,3 +12353,57 @@ git pull && rm -rf runs/gist_full && bash compressions/run_gist.sh full
 
 **Status**: Root causes identified. Fixes applied (5 tokens, 5 epochs). Ready for re-training.
 
+---
+### Critical Data Leakage Bug Fixed (2025-11-02)
+
+**Issue Discovered**: Training and eval were using different data splits, causing potential overlap!
+
+**The Bug**:
+
+Training (train_gist_faithful.py:551-552):
+```python
+dataset = dataset.shuffle(seed=42)  # Shuffle first!
+dataset = dataset.select(range(min(num_samples, len(dataset))))  # Take first 2K
+```
+→ Uses first 2,000 samples AFTER shuffling with seed=42
+
+Eval (eval_gist.py:157-159) **BEFORE FIX**:
+```python
+dataset = load_dataset("yahma/alpaca-cleaned", split="train")
+# Use last samples as test (assuming training used first samples)
+test_data = dataset.select(range(len(dataset) - args.samples, len(dataset)))
+```
+→ Uses last 200 samples WITHOUT shuffling (wrong assumption!)
+
+**The Problem**:
+- Training shuffles, eval doesn't → Different orderings
+- Eval comment assumed training used first samples, but training shuffles first
+- Probability of overlap: ~3.8% per sample
+- Expected leakage: ~7-8 samples out of 200
+- **Any overlap invalidates evaluation results!**
+
+**The Fix** (eval_gist.py:159-170):
+```python
+# CRITICAL: Use same shuffle as training (seed=42) to ensure proper split
+dataset = dataset.shuffle(seed=42)
+
+# Training uses first N samples, we use samples after that for test
+test_start_idx = 52000  # After max possible training samples
+test_data = dataset.select(range(test_start_idx, min(test_start_idx + args.samples, total_size)))
+```
+
+**Now**:
+- Both use `shuffle(seed=42)`
+- Training: indices 0-52000 (after shuffle)
+- Eval: indices 52000+ (after shuffle)
+- **Zero overlap guaranteed!**
+
+**Impact**:
+- Previous eval results (ROUGE-L 0.320 for full, 0.025 for gist) may have been slightly inflated
+- Current training run (5 tokens, 5 epochs) should be re-evaluated with fixed split
+- Proper train/test separation now enforced
+
+**Key Lesson**: Always verify data splits! Even with identical dataset names, different preprocessing (shuffle vs no shuffle) can cause leakage.
+
+**Status**: Data leakage fixed. Training in progress (5 tokens, 5 epochs). Will eval with proper split.
+
