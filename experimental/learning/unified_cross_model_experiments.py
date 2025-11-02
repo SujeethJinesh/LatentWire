@@ -3790,8 +3790,8 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print(f"{'='*60}")
 
     try:
-        # Load SQuAD samples - 20 for faster iteration (can increase later)
-        squad_samples = load_squad_subset(split="validation", samples=20, seed=42)
+        # Load SQuAD samples - 100 for better statistical significance
+        squad_samples = load_squad_subset(split="validation", samples=100, seed=42)
         print(f"Loaded {len(squad_samples)} SQuAD validation examples")
         print(f"Will print first 3 examples for inspection\n")
 
@@ -4008,8 +4008,8 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
     print(f"{'='*60}")
 
     try:
-        # Load GSM8K samples - 20 for faster iteration (can increase later)
-        gsm8k_samples = load_gsm8k_subset(split="test", samples=20, seed=42)
+        # Load GSM8K samples - 100 for better statistical significance
+        gsm8k_samples = load_gsm8k_subset(split="test", samples=100, seed=42)
         print(f"Loaded {len(gsm8k_samples)} GSM8K test examples")
         print(f"Will print first 3 examples for inspection\n")
 
