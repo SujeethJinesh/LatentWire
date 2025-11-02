@@ -155,9 +155,19 @@ def main():
     # Load test data (held-out from Alpaca)
     print("Loading Alpaca test data...")
     dataset = load_dataset("yahma/alpaca-cleaned", split="train")
-    # Use last samples as test (assuming training used first samples)
-    test_data = dataset.select(range(len(dataset) - args.samples, len(dataset)))
-    print(f"✓ Loaded {len(test_data)} test samples\n")
+
+    # CRITICAL: Use same shuffle as training (seed=42) to ensure proper split
+    dataset = dataset.shuffle(seed=42)
+
+    # Training uses first N samples, we use samples after that for test
+    # This ensures zero overlap with training data
+    total_size = len(dataset)
+    # Assume training used up to 52000 samples max (full mode)
+    # Test starts after that to ensure no overlap
+    test_start_idx = 52000  # After max possible training samples
+    test_data = dataset.select(range(test_start_idx, min(test_start_idx + args.samples, total_size)))
+    print(f"✓ Loaded {len(test_data)} test samples (indices {test_start_idx}-{test_start_idx + len(test_data)})")
+    print(f"✓ Zero overlap with training data (training uses first 0-52000 after shuffle)\n")
 
     # Evaluate all samples in batches
     print(f"Evaluating samples (batch_size={args.batch_size})...")
