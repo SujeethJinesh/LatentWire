@@ -173,25 +173,44 @@ def main():
         instruction = example['instruction']
         input_text = example.get('input', '')
 
-        # Full prompt baseline (includes instruction)
-        if input_text:
-            full_prompt = f"Instruction: {instruction}\nInput: {input_text}\nOutput:"
-        else:
-            full_prompt = f"Instruction: {instruction}\nOutput:"
+        # Format using chat template for Llama 3.1 Instruct
 
-        # Gist prompt: REMOVE INSTRUCTION, only gist tokens + input
+        # Full prompt baseline (includes full instruction + input)
+        if input_text:
+            full_user_content = f"{instruction}\n\n{input_text}"
+        else:
+            full_user_content = instruction
+
+        full_messages = [{"role": "user", "content": full_user_content}]
+        full_prompt = tokenizer.apply_chat_template(
+            full_messages, tokenize=False, add_generation_prompt=True
+        )
+
+        # Gist prompt: REPLACE instruction with gist tokens, keep input
         # This achieves the actual compression that the paper demonstrates
         gist_str = " ".join(["<GIST>"] * num_gist_tokens)
         if input_text:
-            gist_prompt = f"{gist_str}\nInput: {input_text}\nOutput:"
+            gist_user_content = f"{gist_str}\n\n{input_text}"
         else:
-            gist_prompt = f"{gist_str}\nOutput:"
+            gist_user_content = gist_str
 
-        # Truncated text baseline (truncate full prompt to similar length as gist)
-        full_tokens = tokenizer(full_prompt, return_tensors="pt").input_ids[0]
-        truncate_len = min(len(full_tokens), 50 + num_gist_tokens * 10)
-        truncated_ids = full_tokens[:truncate_len]
-        truncated_prompt = tokenizer.decode(truncated_ids, skip_special_tokens=True) + "\nOutput:"
+        gist_messages = [{"role": "user", "content": gist_user_content}]
+        gist_prompt = tokenizer.apply_chat_template(
+            gist_messages, tokenize=False, add_generation_prompt=True
+        )
+
+        # Truncated text baseline (truncate instruction to similar length as gist)
+        # Truncate the user content, not the full formatted prompt
+        full_content_tokens = tokenizer(full_user_content, add_special_tokens=False).input_ids
+        truncate_len = min(len(full_content_tokens), num_gist_tokens * 10)
+        truncated_content = tokenizer.decode(
+            full_content_tokens[:truncate_len], skip_special_tokens=True
+        )
+
+        truncated_messages = [{"role": "user", "content": truncated_content}]
+        truncated_prompt = tokenizer.apply_chat_template(
+            truncated_messages, tokenize=False, add_generation_prompt=True
+        )
 
         all_prompts_full.append(full_prompt)
         all_prompts_gist.append(gist_prompt)

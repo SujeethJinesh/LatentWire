@@ -334,23 +334,32 @@ class GistDataCollator:
         labels_list = []
 
         for example in batch:
-            # Format (from their repo lines 185-192):
-            # "Instruction: {text}\n<GIST> <GIST> ...\nInput: {input}\nOutput: {response}"
             instruction = example['instruction']
             input_text = example.get('input', '')
             output = example['output']
 
-            # Add gist tokens (space-separated, line 185-187)
+            # Add gist tokens (space-separated)
             gist_str = " ".join(["<GIST>" for _ in range(self.num_gist_tokens)])
 
+            # Format using chat template for Llama 3.1 Instruct
+            # Combine instruction and input into user message, with gist tokens after instruction
             if input_text:
-                prompt = f"Instruction: {instruction}\n{gist_str}\nInput: {input_text}\nOutput:"
+                user_content = f"{instruction}\n{gist_str}\n\n{input_text}"
             else:
-                prompt = f"Instruction: {instruction}\n{gist_str}\nOutput:"
+                user_content = f"{instruction}\n{gist_str}"
 
-            # Tokenize
-            prompt_ids = self.tokenizer(prompt, add_special_tokens=True)["input_ids"]
-            output_ids = self.tokenizer(" " + output, add_special_tokens=False)["input_ids"]  # Space before output
+            messages = [{"role": "user", "content": user_content}]
+
+            # Apply chat template (adds proper formatting with special tokens)
+            prompt = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True  # Adds <|start_header_id|>assistant<|end_header_id|>
+            )
+
+            # Tokenize prompt and output
+            prompt_ids = self.tokenizer(prompt, add_special_tokens=False)["input_ids"]  # Template already adds tokens
+            output_ids = self.tokenizer(output, add_special_tokens=False)["input_ids"]
             output_ids += [self.tokenizer.eos_token_id]
 
             # Combine
