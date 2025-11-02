@@ -1,0 +1,22 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+================================================================================
+GIST TOKENS EVALUATION
+================================================================================
+Checkpoint: runs/gist_full
+Test samples: 200
+Max new tokens: 128
+Device: cuda:0
+================================================================================
+
+Loading gist model from runs/gist_full...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:15<00:45, 15.21s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:32<00:32, 16.29s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:49<00:16, 16.83s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:54<00:00, 11.88s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:54<00:00, 13.50s/it]
+✓ Loaded GistLlama wrapper with 5 gist tokens
+Loading Alpaca test data...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 377, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 185, in main
+    raise ValueError(f"Not enough data for test set! Training used {num_train_samples} samples, "
+ValueError: Not enough data for test set! Training used 52000 samples, dataset has 51760 total. Need at least 52200 samples.
