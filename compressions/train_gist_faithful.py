@@ -171,15 +171,23 @@ def make_gist_mask(
 
 class GistLlama(nn.Module):
     """
-    Wrapper around Llama that properly integrates gist attention masking.
+    Wrapper around Llama with learnable gist embeddings and proper masking.
 
-    This modifies the forward pass to combine gist mask with causal mask.
+    This keeps the base model frozen and only trains the gist token embeddings.
     """
 
-    def __init__(self, base_model: AutoModelForCausalLM):
+    def __init__(self, base_model: AutoModelForCausalLM, num_gist_tokens: int, gist_token_id: int, hidden_dim: int):
         super().__init__()
         self.model = base_model
         self.config = base_model.config
+        self.num_gist_tokens = num_gist_tokens
+        self.gist_token_id = gist_token_id
+
+        # Learnable gist embeddings (ONLY thing we train)
+        # Initialize to average of existing embeddings
+        with torch.no_grad():
+            init_embedding = base_model.model.embed_tokens.weight.mean(dim=0)
+        self.gist_embedding = nn.Parameter(init_embedding.clone().detach())
 
     def forward(
         self,
@@ -190,52 +198,42 @@ class GistLlama(nn.Module):
         **kwargs,
     ):
         """
-        Forward with optional gist masking.
+        Forward with gist embedding replacement.
 
-        When attention_mask_gist is provided, we integrate it properly.
-        The trick: Convert gist mask to additive form and combine with causal mask.
+        Replaces gist token IDs with learned gist embeddings before forward pass.
         """
-        if attention_mask_gist is not None:
-            # attention_mask_gist is [batch, 1, seq, seq] with 1=attend, 0=don't
-            # We need to convert to format where 0=attend, large_negative=don't
+        # Get base embeddings
+        inputs_embeds = self.model.model.embed_tokens(input_ids)
 
-            # Create attention_mask if not provided
-            if attention_mask is None:
-                batch_size, seq_len = input_ids.shape
-                attention_mask = torch.ones((batch_size, seq_len), dtype=torch.long, device=input_ids.device)
+        # Replace gist tokens with learned embedding
+        gist_mask = (input_ids == self.gist_token_id)
+        if gist_mask.any():
+            inputs_embeds[gist_mask] = self.gist_embedding
 
-            # The model will create a causal mask from attention_mask
-            # We need to intercept and add our gist mask
-            # Solution: Pass attention_mask_gist via the standard attention_mask parameter
-            # by pre-computing the combined mask
-
-            # This is a simplified approach - the full implementation would
-            # modify the model's forward to accept attention_mask_gist directly
-            # For now, we'll pass the gist pattern through attention_mask
-
-            # Convert gist mask: [batch, 1, seq, seq] with 1=attend, 0=don't attend
-            # to [batch, seq, seq] format that standard Llama expects
-            # We need to apply this as an additive mask
-
-            # Standard approach: Use attention_mask normally
-            # The model handles causal masking internally
-            pass
-
+        # Forward with embedded inputs
         outputs = self.model(
-            input_ids=input_ids,
+            inputs_embeds=inputs_embeds,
             attention_mask=attention_mask,
             labels=labels,
             **kwargs,
         )
 
-        # Store gist mask for potential future use
-        if attention_mask_gist is not None:
-            outputs.attention_mask_gist = attention_mask_gist
-
         return outputs
 
-    def save_pretrained(self, *args, **kwargs):
-        return self.model.save_pretrained(*args, **kwargs)
+    def save_pretrained(self, save_directory, *args, **kwargs):
+        """Save model and gist embeddings."""
+        # Save base model
+        self.model.save_pretrained(save_directory, *args, **kwargs)
+
+        # Save gist embedding separately
+        import torch
+        from pathlib import Path
+        gist_path = Path(save_directory) / "gist_embedding.pt"
+        torch.save({
+            'gist_embedding': self.gist_embedding,
+            'num_gist_tokens': self.num_gist_tokens,
+            'gist_token_id': self.gist_token_id,
+        }, gist_path)
 
     def get_input_embeddings(self):
         return self.model.get_input_embeddings()
@@ -422,8 +420,31 @@ def train_gist(
     if is_main_process():
         print("✓ Initialized <GIST> to vocab average")
 
-    # Wrap model
-    model = GistLlama(base_model)
+    # Freeze base model (per paper - only train gist embeddings)
+    # Their repo line 163-165: "# Freeze base model (we only train gist + LoRA)"
+    if is_main_process():
+        print("Freezing base model (only training gist token embedding)...")
+
+    # Freeze everything
+    for param in base_model.parameters():
+        param.requires_grad = False
+
+    # Wrap model with learnable gist embeddings
+    # This creates a separate nn.Parameter for the gist embedding
+    # which is the ONLY trainable parameter
+    hidden_dim = base_model.config.hidden_size
+    model = GistLlama(
+        base_model=base_model,
+        num_gist_tokens=num_gist_tokens,
+        gist_token_id=gist_token_id,
+        hidden_dim=hidden_dim,
+    )
+
+    if is_main_process():
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        total_params = sum(p.numel() for p in model.parameters())
+        print(f"✓ Trainable params: {trainable_params:,} / {total_params:,} ({100*trainable_params/total_params:.4f}%)")
+        print(f"✓ Gist embedding: {hidden_dim:,} parameters (trainable)")
 
     # Wrap in DDP if multi-GPU
     if world_size > 1:
@@ -545,8 +566,13 @@ def train_gist(
         print(f"\nSaving checkpoint to {output_dir}...")
         # Unwrap DDP if needed
         save_model = model.module if isinstance(model, DDP) else model
+
+        # Save the gist model (includes base model + gist embeddings)
         save_model.save_pretrained(output_dir)
         tokenizer.save_pretrained(output_dir)
+
+        print(f"✓ Saved base model to {output_dir}")
+        print(f"✓ Saved gist embeddings to {output_dir}/gist_embedding.pt")
 
         # Save training metrics
         metrics = {
