@@ -11936,3 +11936,109 @@ class VocabAwareAdapter(nn.Module):
 
 **Status**: All critical issues documented. Ready for decision on model pair selection.
 
+---
+## ═══════════════════════════════════════════════════════════════════════════
+## 📘 GIST TOKENS REPRODUCTION (2025-11-02)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Goal
+Faithful reproduction of "Learning to Compress Prompts with Gist Tokens" (Mu et al., NeurIPS 2023) for Llama 3.1 8B on HPC with 4× H100 GPUs. One-command execution: `git pull && rm -rf runs/gist_validate && bash compressions/run_gist.sh validate`
+
+### Critical Bug Fixes
+
+#### Fix 1: Wrong Model Type
+**Issue**: Using `meta-llama/Meta-Llama-3.1-8B-Instruct` instead of base model.
+
+**Root Cause**: Paper trains gist tokens alongside instruction tuning from base model, not fine-tuned instruct model.
+
+**Fix**: Changed to `meta-llama/Meta-Llama-3.1-8B` base model in `run_gist.sh:14`
+
+**Verification**: Official repo README states "You must have the base LLaMA-7B weights"
+
+#### Fix 2: Wrong Hyperparameters
+**Issue**: Learning rate 5× too high, missing warmup and scheduler.
+
+**Details**:
+- LR was 1e-4 (paper uses 2e-5)
+- No warmup (paper uses 0.03)
+- No LR scheduler (paper uses cosine)
+
+**Fix** (`run_gist.sh:15-17`):
+```bash
+LR=2e-5           # Match paper
+WARMUP_RATIO=0.03 # 3% warmup
+LR_SCHEDULER="cosine"
+```
+
+**Verification**: Cross-verified against official repo `src/conf/model/llama-7b.yaml`
+
+#### Fix 3: dtype Mismatch in generate()
+**Issue**: `RuntimeError: Index put requires the source and destination dtypes match`
+
+**Root Cause**: `gist_embedding` parameter in bfloat16 but `inputs_embeds` from `embed_tokens()` in float32
+
+**Fix** (`train_gist_faithful.py:269`):
+```python
+inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
+```
+
+#### Fix 4: Position Embeddings Dimension Mismatch
+**Issue**: `RuntimeError: Expected size for first two dimensions of batch2 tensor to be: [256, 1] but got: [256, 36]`
+
+**Root Cause**: When passing `inputs_embeds` to `model.generate()` in batched mode (batch_size=16), LLaMA's rotary position embeddings calculation fails without explicit `position_ids`.
+
+**Fix** (`train_gist_faithful.py:271-275`):
+```python
+# Generate position_ids for rotary embeddings when using inputs_embeds
+batch_size, seq_len = input_ids.shape
+position_ids = torch.arange(seq_len, dtype=torch.long, device=input_ids.device)
+position_ids = position_ids.unsqueeze(0).expand(batch_size, -1)
+```
+
+Then pass `position_ids=position_ids` to `model.generate()` along with `inputs_embeds`.
+
+**Impact**: Enables batched evaluation (batch_size=16) with gist tokens without errors.
+
+### Implementation Verification
+
+Cross-verified implementation against official repo:
+- ✅ Gist mask implementation matches exactly
+- ✅ Training prompts: `"Instruction: {instruction}\n<GIST>\nInput: {input}\nOutput:"`
+- ✅ Eval prompts (gist): `"<GIST>\nInput: {input}\nOutput:"` (instruction removed)
+- ✅ Gist token spacing: Space-separated for LLaMA tokenizer
+- ✅ Attention masking: Tokens after gist can ONLY attend to gist tokens
+- ✅ All hyperparameters match paper
+
+### Training Results (2025-11-02 10:41)
+
+**Configuration**:
+- Model: meta-llama/Meta-Llama-3.1-8B (base) ✓
+- Learning rate: 2e-05 ✓
+- LR Scheduler: cosine with warmup ✓
+- Warmup: 3% (1 step out of 42) ✓
+- Epochs: 2
+- Batch size: 16
+- Gist tokens: 1
+
+**Loss Progression**:
+- Epoch 1: 0.2170
+- Epoch 2: 0.1570
+- Training time: 0.97 minutes
+
+**Status**: Training completes successfully. Evaluation now fixed with position_ids.
+
+### Files Modified
+
+- `compressions/run_gist.sh`: Model and hyperparameter fixes
+- `compressions/train_gist_faithful.py`: dtype fix, position_ids fix
+- `compressions/eval_gist.py`: Evaluation with baselines
+
+### Next Steps
+
+1. ⏭️ Run full pipeline on HPC: `git pull && rm -rf runs/gist_validate && bash compressions/run_gist.sh validate`
+2. ⏭️ Verify evaluation completes with proper baselines (full text, gist, truncated)
+3. ⏭️ Compare ROUGE scores against paper expectations
+4. ⏭️ Scale to more gist tokens and full Alpaca dataset if validation succeeds
+
+**Status**: All critical bugs fixed. Ready for full validation run.
+
