@@ -1,0 +1,146 @@
+{
+  "layer_0": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.5533652901649475,
+      "cka_after_mistral_to_llama": 0.6503325700759888,
+      "cka_after_llama_to_mistral": 0.5165482759475708,
+      "cka_improvement": 0.09696727991104126
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
+      "prompt_2": "To solve this problem, we need to understand the difference between the two types of errors.\n\nThe first type of error is the one",
+      "prompt_3": "The future of artificial intelligence is here.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into 10 districts,",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats are obligate"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of many faces. It is a city of history, a city of culture, a city",
+      "prompt_2": "To solve this problem, we need to find the value of the expression. We can do this by substituting the given values for the variables",
+      "prompt_3": "The future of artificial intelligence is here, and it\u2019s already changing the way we live and work. From self-driving cars to virtual",
+      "prompt_4": "In the year 2050, the world is a very different place. The population has grown to 10 billion, and the demand",
+      "prompt_5": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are independent and prefer to be alone"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "\n\nThe 2018-19 season is the 100th anniversary",
+      "prompt_2": "\n\n# The 10 Best Things to Do in Koh Samui, Thailand\n\n",
+      "prompt_3": "\n\nThe 1990s were a time of great change in the world of work",
+      "prompt_4": "\n\n**A**\n\n**C**\n\n**C**\n\n**C**",
+      "prompt_5": "\n\nThe 1990s were a time of great change in the world of work"
+    },
+    "mistral_to_llama": {
+      "prompt_1": ", and the other, which was the most beautiful, was of gold. The golden one was the",
+      "prompt_2": " s. The first is the fact that the word \"loaf\" is a homophone of \"",
+      "prompt_3": "\nGigantic, gigantic, gigantic, gigantic, gigantic, gigantic, gigantic, gigantic, gigantic",
+      "prompt_4": "\nThe following is a list of the most cited articles based on citations published in the last three years",
+      "prompt_5": " to the sinner. The word \"Christ\" is a Greek word meaning \"anointed one.\""
+    }
+  },
+  "layer_8": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.9998031258583069,
+      "cka_after_mistral_to_llama": 0.9999275803565979,
+      "cka_after_llama_to_mistral": 0.9999277591705322,
+      "cka_improvement": 0.00012445449829101562
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
+      "prompt_2": "To solve this problem, we need to understand the difference between the two types of errors.\n\nThe first type of error is the one",
+      "prompt_3": "The future of artificial intelligence is here.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into 10 districts,",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats are obligate"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of many faces. It is a city of history, a city of culture, a city",
+      "prompt_2": "To solve this problem, we need to find the value of the expression. We can do this by substituting the given values for the variables",
+      "prompt_3": "The future of artificial intelligence is here, and it\u2019s already changing the way we live and work. From self-driving cars to virtual",
+      "prompt_4": "In the year 2050, the world is a very different place. The population has grown to 10 billion, and the demand",
+      "prompt_5": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are independent and prefer to be alone"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "of the 19th century, the building is a typical example of the neoclassical",
+      "prompt_2": "a, b, c, d, e, f, g, h, i, j,",
+      "prompt_3": ", the building is a fine example of the work of the architects of the 19th",
+      "prompt_4": "s,,, the first thing you notice is the large, open space. The second thing you",
+      "prompt_5": "s, and the other.\n\n## The Architecture of the Architecture\n\nThe Architect"
+    },
+    "mistral_to_llama": {
+      "prompt_1": " Church\nThe Church\nThe Church\nThe Church\nThe Church\nThe Church\n\n\n\n",
+      "prompt_2": ", the Church, the Church, the Church, the Church, the Church, the Church, the",
+      "prompt_3": " the Church of the Church of the Church of the Church of the Church of the Church of the Church",
+      "prompt_4": "\nArch\nArch\nArch\nArch\nArch\nArch\n\n\n\nArch\nArch\n",
+      "prompt_5": " the Church of the Church of the Church of the Churchof theChurchof theChurchof theChurch"
+    }
+  },
+  "layer_16": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.9963118433952332,
+      "cka_after_mistral_to_llama": 0.9995721578598022,
+      "cka_after_llama_to_mistral": 0.9995745420455933,
+      "cka_improvement": 0.003260314464569092
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
+      "prompt_2": "To solve this problem, we need to understand the difference between the two types of errors.\n\nThe first type of error is the one",
+      "prompt_3": "The future of artificial intelligence is here.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into 10 districts,",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats are obligate"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of many faces. It is a city of history, a city of culture, a city",
+      "prompt_2": "To solve this problem, we need to find the value of the expression. We can do this by substituting the given values for the variables",
+      "prompt_3": "The future of artificial intelligence is here, and it\u2019s already changing the way we live and work. From self-driving cars to virtual",
+      "prompt_4": "In the year 2050, the world is a very different place. The population has grown to 10 billion, and the demand",
+      "prompt_5": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are independent and prefer to be alone"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "building is a 19th century building, which was built in 1890.",
+      "prompt_2": "is a building or structure that is designed to provide shelter from the elements. It is usually a large",
+      "prompt_3": "s of the building are in the form of a cross. The main entrance is on the north side",
+      "prompt_4": "the church of the Holy Trinity, built in 1830, is a typical example",
+      "prompt_5": "s are the most important part of the building. They are the most important part of the building."
+    },
+    "mistral_to_llama": {
+      "prompt_1": "\nThe following is a list of the most important\nThe following is a list of the most\n",
+      "prompt_2": "\nThe architectural style is used to emphasize text\nThe architecturalstyle\nThe architecturalstyle\nThe architectural",
+      "prompt_3": " 1. The 2. The 3. The 4. The 5. The",
+      "prompt_4": " the Church of the Holy Roman\nThe Church of the Holy Roman\n the Holy Roman\nThe Holy",
+      "prompt_5": "\nThe following is a list of the most important of the mostimportantof the most\u91cd\u8981most\n"
+    }
+  },
+  "layer_24": {
+    "cka_metrics": {
+      "cka_before_alignment": 0.9633739590644836,
+      "cka_after_mistral_to_llama": 0.9933817386627197,
+      "cka_after_llama_to_mistral": 0.9918633699417114,
+      "cka_improvement": 0.030007779598236084
+    },
+    "mistral_to_mistral": {
+      "prompt_1": "The capital of France is a city that is full of history and culture. It is a city that is full of life and",
+      "prompt_2": "To solve this problem, we need to understand the difference between the two types of errors.\n\nThe first type of error is the one",
+      "prompt_3": "The future of artificial intelligence is here.\n\nThe future of artificial intelligence is here.\n\nThe future of artificial intelligence is",
+      "prompt_4": "In the year 2050, the world is a very different place. The United States has been divided into 10 districts,",
+      "prompt_5": "The main difference between cats and dogs is that cats are carnivores and dogs are omnivores. Cats are obligate"
+    },
+    "llama_to_llama": {
+      "prompt_1": "The capital of France is a city of many faces. It is a city of history, a city of culture, a city",
+      "prompt_2": "To solve this problem, we need to find the value of the expression. We can do this by substituting the given values for the variables",
+      "prompt_3": "The future of artificial intelligence is here, and it\u2019s already changing the way we live and work. From self-driving cars to virtual",
+      "prompt_4": "In the year 2050, the world is a very different place. The population has grown to 10 billion, and the demand",
+      "prompt_5": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are independent and prefer to be alone"
+    },
+    "llama_to_mistral": {
+      "prompt_1": "the, theology  Questionnaire,\n\n### 1.1.1.1.",
+      "prompt_2": "the church of St. of St. John the Baptist in the village of Krasnoe",
+      "prompt_3": "the the, Question  Question, and Answer.\n\nThe Question is the first of the three",
+      "prompt_4": "the Question of the Day is a daily feature of The Economist newspaper which asks a question on a",
+      "prompt_5": "the, Question  Question,\n.\n\n## The 100th Anniversary of"
+    },
+    "mistral_to_llama": {
+      "prompt_1": " in the 19th century, and the 19th century in the 19th century,",
+      "prompt_2": " most of the most of the most of the most of themost of themost of themost of",
+      "prompt_3": " in the 201s, the 201s, the 201s, the 201s",
+      "prompt_4": " the most important.com\nThe mostimportant.com\nThemostimportant\n\n\nThe most\nThe",
+      "prompt_5": " and the\nThe 201111\nThe 201111\nThe 201"
+    }
+  }
+}

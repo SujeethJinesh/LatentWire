@@ -1,0 +1,75 @@
+{
+  "epoch": 2,
+  "alignment_layer": 16,
+  "cka_scores": {
+    "mean": NaN,
+    "per_layer": {
+      "8": NaN,
+      "16": NaN,
+      "24": NaN
+    },
+    "samples_per_layer": {
+      "8": [
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN
+      ],
+      "16": [
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN
+      ],
+      "24": [
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN
+      ]
+    }
+  },
+  "cosine_similarities": {
+    "mean": NaN,
+    "per_layer": {
+      "8": NaN,
+      "16": NaN,
+      "24": NaN
+    }
+  },
+  "generations": {
+    "prompt_1": {
+      "text": "The capital of France is",
+      "model_a_baseline": "The capital of France is a city of many faces. It is a city of history, a city of culture, a city",
+      "model_b_baseline": "The capital of France is Paris. It is the largest city in France and the capital of the \u00cele-de-France region",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_2": {
+      "text": "To solve this problem, we need to",
+      "model_a_baseline": "To solve this problem, we need to find the value of the expression. We can do this by substituting the given values for the variables",
+      "model_b_baseline": "To solve this problem, we need to find the value of x. We can do this by using the fact that the sum of the angles",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_3": {
+      "text": "The future of artificial intelligence",
+      "model_a_baseline": "The future of artificial intelligence is here, and it\u2019s already changing the way we live and work. From self-driving cars to",
+      "model_b_baseline": "The future of artificial intelligence (AI) is bright, but it\u2019s not without its challenges. One of the biggest challenges is",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_4": {
+      "text": "In the year 2050, humanity will",
+      "model_a_baseline": "In the year 2050, humanity will be extinct. The only survivors will be the robots that we have created. They will be the ones",
+      "model_b_baseline": "In the year 2050, humanity will have colonized the solar system. The first colony on Mars has been established and the first manned mission",
+      "note": "Cross-model injection requires additional implementation"
+    },
+    "prompt_5": {
+      "text": "The main difference between cats and dogs",
+      "model_a_baseline": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are independent and prefer to be",
+      "model_b_baseline": "The main difference between cats and dogs is that cats are solitary animals, while dogs are social animals. Cats are also more independent than dogs",
+      "note": "Cross-model injection requires additional implementation"
+    }
+  }
+}

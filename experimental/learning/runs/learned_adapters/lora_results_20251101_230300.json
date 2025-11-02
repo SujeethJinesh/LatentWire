@@ -1,0 +1,29 @@
+{
+  "adapter_type": "lora",
+  "gpu_id": null,
+  "training_metrics": {
+    "epochs": [
+      {
+        "epoch": 1,
+        "loss": NaN,
+        "generation_loss": NaN,
+        "contrastive_loss": NaN,
+        "cka_score": NaN,
+        "lr": 4.528444596391433e-05
+      },
+      {
+        "epoch": 2,
+        "loss": NaN,
+        "generation_loss": NaN,
+        "contrastive_loss": NaN,
+        "cka_score": NaN,
+        "lr": 3.291669984503684e-05
+      }
+    ],
+    "cka_scores": [
+      NaN,
+      NaN
+    ]
+  },
+  "timestamp": "20251101_230300"
+}
