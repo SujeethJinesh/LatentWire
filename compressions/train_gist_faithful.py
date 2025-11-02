@@ -258,37 +258,42 @@ class GistLlama(nn.Module):
         Generation with gist embeddings.
 
         This method wraps the base model's generate() to properly handle:
-        1. Replacing gist token IDs with learned embeddings
+        1. Replacing gist token IDs with learned embeddings (ONLY if gist tokens present)
         2. Using standard 2D attention mask (gist mask only used during training)
 
         Note: The 4D gist attention mask is only used during training to enforce
         the attention pattern. During generation, we use standard 2D masks and rely
         on the learned gist embeddings.
         """
-        # Replace gist tokens with learned embeddings
-        inputs_embeds = self.model.model.embed_tokens(input_ids)
+        # Check if there are any gist tokens in the input
         gist_mask = (input_ids == self.gist_token_id)
+
         if gist_mask.any():
+            # GIST PATH: Replace gist tokens with learned embeddings
+            inputs_embeds = self.model.model.embed_tokens(input_ids)
             # Ensure dtype matches (gist_embedding might be bfloat16 while inputs_embeds is float32)
             inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
 
-        # Generate position_ids for rotary embeddings when using inputs_embeds
-        # This is required to avoid dimension mismatch errors in batched generation
-        batch_size, seq_len = input_ids.shape
-        position_ids = torch.arange(seq_len, dtype=torch.long, device=input_ids.device)
-        position_ids = position_ids.unsqueeze(0).expand(batch_size, -1)
+            # Generate position_ids for rotary embeddings when using inputs_embeds
+            # This is required to avoid dimension mismatch errors in batched generation
+            batch_size, seq_len = input_ids.shape
+            position_ids = torch.arange(seq_len, dtype=torch.long, device=input_ids.device)
+            position_ids = position_ids.unsqueeze(0).expand(batch_size, -1)
 
-        # During generation, always use standard 2D attention_mask (not 4D gist mask)
-        # The generate() method needs to be able to extend the mask for new tokens
-        # and this only works with 2D masks
-
-        # Generate with embedded inputs, position_ids, and standard 2D attention mask
-        return self.model.generate(
-            inputs_embeds=inputs_embeds,
-            attention_mask=attention_mask,
-            position_ids=position_ids,
-            **kwargs
-        )
+            # Generate with embedded inputs, position_ids, and standard 2D attention mask
+            return self.model.generate(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                **kwargs
+            )
+        else:
+            # NO GIST TOKENS: Use normal generation path (more stable)
+            return self.model.generate(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                **kwargs
+            )
 
     def save_pretrained(self, save_directory, *args, **kwargs):
         """Save model and gist embeddings."""
