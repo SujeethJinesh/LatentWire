@@ -32,9 +32,9 @@ bash compressions/run_gist.sh full
 ```
 
 **Multi-GPU:** Uses all 4 GPUs automatically with DDP (4× speedup!)
-- Per-GPU batch size: 32 (optimized for H100 80GB)
+- Per-GPU batch size: 24 (optimized for H100 80GB with safety margin)
 - Gradient accumulation: 2 steps
-- Effective batch size: 256 (32 × 4 GPUs × 2 accum)
+- Effective batch size: 192 (24 × 4 GPUs × 2 accum)
 
 ## What's Faithful to Paper?
 
