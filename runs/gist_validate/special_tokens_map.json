@@ -16,11 +16,11 @@
     "single_word": false
   },
   "eos_token": {
-    "content": "<|end_of_text|>",
+    "content": "<|eot_id|>",
     "lstrip": false,
     "normalized": false,
     "rstrip": false,
     "single_word": false
   },
-  "pad_token": "<|end_of_text|>"
+  "pad_token": "<|eot_id|>"
 }
