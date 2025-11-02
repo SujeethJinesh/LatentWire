@@ -1,0 +1,30 @@
+{
+  "checkpoint": "runs/gist_validate",
+  "num_samples": 200,
+  "num_gist_tokens": 5,
+  "compression_ratio": 1.091703905187488,
+  "avg_full_tokens": 56.19,
+  "avg_gist_tokens": 51.47,
+  "rouge_scores": {
+    "full_text": {
+      "rouge1": 0.39817826667064327,
+      "rouge2": 0.18132252306123864,
+      "rougeL": 0.2873660842150654
+    },
+    "gist": {
+      "rouge1": 0.013919890291954817,
+      "rouge2": 0.00295810029186638,
+      "rougeL": 0.011428303920188138
+    },
+    "truncated": {
+      "rouge1": 0.39321192981531666,
+      "rouge2": 0.17637220272125206,
+      "rougeL": 0.28261424635130505
+    }
+  },
+  "relative_performance": {
+    "gist_vs_full": 0.039769146562317254,
+    "truncated_vs_full": 0.9834641660071338
+  },
+  "eval_time_seconds": 187.62002301216125
+}

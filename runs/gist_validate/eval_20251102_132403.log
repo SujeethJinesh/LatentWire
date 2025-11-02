@@ -1,0 +1,92 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+================================================================================
+GIST TOKENS EVALUATION
+================================================================================
+Checkpoint: runs/gist_validate
+Test samples: 200
+Max new tokens: 128
+Device: cuda:0
+================================================================================
+
+Loading gist model from runs/gist_validate...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:15<00:45, 15.01s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:31<00:31, 15.81s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:48<00:16, 16.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:52<00:00, 11.43s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:52<00:00, 13.04s/it]
+✓ Loaded GistLlama wrapper with 5 gist tokens
+Loading Alpaca test data...
+✓ Loaded 200 test samples (indices 2000-2200)
+✓ Zero overlap with training data (training used indices 0-2000 after shuffle)
+
+Evaluating samples (batch_size=16)...
+Preparing prompts...
+CRITICAL: Gist prompts have INSTRUCTION REMOVED for true compression!
+Generating outputs...
+Batches:   0%|          | 0/13 [00:00<?, ?it/s]/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:   8%|▊         | 1/13 [00:11<02:13, 11.11s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  15%|█▌        | 2/13 [00:25<02:23, 13.08s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  23%|██▎       | 3/13 [00:38<02:11, 13.15s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  31%|███       | 4/13 [00:52<02:01, 13.50s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  38%|███▊      | 5/13 [01:07<01:50, 13.76s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  46%|████▌     | 6/13 [01:21<01:37, 13.92s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  54%|█████▍    | 7/13 [01:40<01:33, 15.63s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  62%|██████▏   | 8/13 [01:57<01:19, 15.96s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  69%|██████▉   | 9/13 [02:13<01:04, 16.02s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  77%|███████▋  | 10/13 [02:27<00:46, 15.51s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  85%|████████▍ | 11/13 [02:42<00:30, 15.22s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches:  92%|█████████▏| 12/13 [02:54<00:14, 14.42s/it]A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Batches: 100%|██████████| 13/13 [03:07<00:00, 13.90s/it]Batches: 100%|██████████| 13/13 [03:07<00:00, 14.42s/it]
+
+Computing ROUGE scores...
+
+================================================================================
+RESULTS
+================================================================================
+
+Compression:
+  Full text avg tokens: 56.2
+  Gist avg tokens: 51.5
+  Compression ratio: 1.09×
+
+ROUGE Scores:
+
+  Full Text (positive control):
+    ROUGE-1: 0.3982
+    ROUGE-2: 0.1813
+    ROUGE-L: 0.2874
+
+  Gist Tokens (our method):
+    ROUGE-1: 0.0139
+    ROUGE-2: 0.0030
+    ROUGE-L: 0.0114
+
+  Truncated Text (negative control):
+    ROUGE-1: 0.3932
+    ROUGE-2: 0.1764
+    ROUGE-L: 0.2826
+
+  Relative Performance (vs Full Text):
+    Gist ROUGE-L: 4.0% of full text
+    Truncated ROUGE-L: 98.3% of full text
+
+  Evaluation time: 187.6s (0.94s per sample)
+================================================================================
+
+✓ Saved results to runs/gist_validate/eval_results.json
+✓ Saved sample outputs to runs/gist_validate/sample_outputs.json
