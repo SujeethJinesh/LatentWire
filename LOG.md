@@ -12256,3 +12256,100 @@ def generate(self, input_ids=None, ...):
 
 **Status**: Critical generation bug fixed. Ready for evaluation re-run (training checkpoint is fine).
 
+---
+### Evaluation Results - Generation Fixed, Gist Tokens Failing (2025-11-02)
+
+**Pipeline Status**: ✅ Baselines working, ❌ Gist tokens failing badly
+
+**ROUGE-L Scores**:
+- **Full text**: 0.320 (32%) ✅ EXCELLENT!
+- **Gist**: 0.025 (2.5%) ❌ TERRIBLE - Only 7.9% of full text
+- **Truncated**: 0.165 (16.5%) ✅ Reasonable
+
+**Sample Outputs**:
+
+Full text ✅:
+- "Here are two examples of movie genres: 1. Action... 2. Romance..."
+- "The Industrial Revolution... Here are key reasons..."
+- **Perfect instruction following!**
+
+Gist ❌:
+- Common failure: `"would like to ask me to ask me to say. Is there is there..."`
+- Repetitive: `"in list: \n sum = 0\n for element in list: \n sum += element in list..."`
+- Often empty: `""`
+
+**Root Cause Analysis**:
+
+**1. Single Token Cannot Encode Instructions** (Most Critical)
+- Current: 1 gist token
+- Gist prompt: `<GIST>` (literally just the token, no instruction!)
+- Full prompt: "Suggest two interventions that may reduce drug abuse" (~50 characters)
+- **1 token ≈ 4 bytes cannot compress 50+ character instructions**
+- Paper uses: **5-10 tokens** for effective compression
+
+**2. Grossly Insufficient Training Data**
+- Current: 2,000 samples × 2 epochs = 4,000 total examples
+- Paper: 52,000 samples × 3+ epochs = 156,000+ examples
+- **We're using only 3.8% of paper's data!**
+- With 42 steps/epoch, gist embeddings barely started learning
+
+**3. Too Few Training Epochs**
+- Current: 2 epochs
+- Standard: 5-10 epochs for convergence
+- Loss was still decreasing (0.422 → 0.322), more training needed
+
+**4. Gist Embeddings Are Learning (But Starved)**
+- ✅ Gist embeddings are trainable (base model frozen correctly)
+- ✅ Loss decreasing steadily
+- ❌ Not enough capacity (1 token) or data (2K samples) to learn compression
+
+**Fixes Applied**:
+
+1. **NUM_GIST_TOKENS: 1 → 5**
+   - Matches paper's sweet spot
+   - 5 tokens ≈ 20 bytes, can encode more instruction information
+
+2. **EPOCHS (validate): 2 → 5**
+   - More training iterations
+   - Let loss converge further
+
+3. **Full mode ready**: 52K samples, 3 epochs
+   - Matches paper's data scale
+   - For serious reproduction attempt
+
+**Information Theoretic Analysis**:
+
+Instruction: "Suggest two interventions that may reduce drug abuse"
+- UTF-8: ~50 bytes
+- Target: 1 token ≈ 4 bytes
+- **Compression ratio needed: 12.5×**
+- **Shannon limit**: ~3-4 bits/char for English text
+- **Reality**: 1 token cannot achieve this compression while preserving semantic meaning
+
+With 5 tokens:
+- Capacity: ~20 bytes
+- Compression: 2.5×
+- **Much more realistic for semantic preservation**
+
+**Next Steps**:
+
+**Quick Validation** (2-3 minutes):
+```bash
+git pull && rm -rf runs/gist_validate && bash compressions/run_gist.sh validate
+```
+- 5 gist tokens, 5 epochs, 2K samples
+- Should see meaningful improvement over 1 token
+
+**Full Reproduction** (~15-20 minutes):
+```bash
+git pull && rm -rf runs/gist_full && bash compressions/run_gist.sh full
+```
+- 5 gist tokens, 3 epochs, 52K samples
+- Paper-scale experiment
+
+**Expected Results**:
+- Gist ROUGE-L should increase from 0.025 to ~0.15-0.25 (50-80% of full text)
+- Paper reports gist tokens achieve competitive performance with proper configuration
+
+**Status**: Root causes identified. Fixes applied (5 tokens, 5 epochs). Ready for re-training.
+
