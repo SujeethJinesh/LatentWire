@@ -255,11 +255,15 @@ class GistLlama(nn.Module):
 
     def generate(self, input_ids=None, attention_mask=None, attention_mask_gist=None, **kwargs):
         """
-        Generation with gist embeddings and attention masking.
+        Generation with gist embeddings.
 
         This method wraps the base model's generate() to properly handle:
         1. Replacing gist token IDs with learned embeddings
-        2. Applying gist attention mask during generation
+        2. Using standard 2D attention mask (gist mask only used during training)
+
+        Note: The 4D gist attention mask is only used during training to enforce
+        the attention pattern. During generation, we use standard 2D masks and rely
+        on the learned gist embeddings.
         """
         # Replace gist tokens with learned embeddings
         inputs_embeds = self.model.model.embed_tokens(input_ids)
@@ -274,18 +278,14 @@ class GistLlama(nn.Module):
         position_ids = torch.arange(seq_len, dtype=torch.long, device=input_ids.device)
         position_ids = position_ids.unsqueeze(0).expand(batch_size, -1)
 
-        # Apply gist attention mask if provided
-        if attention_mask_gist is not None:
-            # Convert bool mask to float matching model dtype
-            mask_to_use = torch.zeros_like(attention_mask_gist, dtype=inputs_embeds.dtype)
-            mask_to_use.masked_fill_(~attention_mask_gist, torch.finfo(inputs_embeds.dtype).min)
-        else:
-            mask_to_use = attention_mask
+        # During generation, always use standard 2D attention_mask (not 4D gist mask)
+        # The generate() method needs to be able to extend the mask for new tokens
+        # and this only works with 2D masks
 
-        # Generate with embedded inputs, position_ids, and gist attention mask
+        # Generate with embedded inputs, position_ids, and standard 2D attention mask
         return self.model.generate(
             inputs_embeds=inputs_embeds,
-            attention_mask=mask_to_use,
+            attention_mask=attention_mask,
             position_ids=position_ids,
             **kwargs
         )
