@@ -39,6 +39,7 @@ def load_gist_model(checkpoint_dir: str, device: str):
     # Load base model and tokenizer
     base_model = AutoModelForCausalLM.from_pretrained(checkpoint_dir).to(device)
     tokenizer = AutoTokenizer.from_pretrained(checkpoint_dir)
+    tokenizer.padding_side = 'left'  # CRITICAL: Causal LLMs need left padding for batched generation
 
     # Load gist embedding data
     gist_path = Path(checkpoint_dir) / "gist_embedding.pt"
@@ -68,6 +69,14 @@ def generate_batch(model, tokenizer, prompts: List[str], max_new_tokens: int = 1
     """Generate outputs from batch of prompts with optional gist attention masking."""
     inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
     input_lengths = inputs.attention_mask.sum(dim=1)
+
+    # Debug: Check if gist tokens are present
+    if use_gist_mask and gist_token_id is not None:
+        gist_count = (inputs.input_ids == gist_token_id).sum().item()
+        if gist_count == 0:
+            print(f"WARNING: use_gist_mask=True but no gist tokens found in batch!")
+            print(f"  gist_token_id={gist_token_id}")
+            print(f"  First prompt: {prompts[0][:200]}")
 
     # Prepare kwargs for generation
     gen_kwargs = {
