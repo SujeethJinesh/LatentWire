@@ -15,7 +15,9 @@ MODEL="meta-llama/Meta-Llama-3.1-8B"  # Base model (NOT Instruct) - paper trains
 NUM_GIST_TOKENS=1
 BATCH_SIZE=12  # Per-GPU batch size (conservative for H100 80GB)
 GRAD_ACCUM_STEPS=2  # Gradient accumulation (effective batch size multiplier)
-LR=1e-4
+LR=2e-5  # Match paper: 2e-5 (was 1e-4 - 5x too high!)
+WARMUP_RATIO=0.03  # Match paper: 3% warmup
+LR_SCHEDULER="cosine"  # Match paper: cosine decay
 NUM_GPUS=4    # Use all 4 GPUs
 
 # Set PYTHONPATH
@@ -75,6 +77,8 @@ echo ""
             --batch_size $BATCH_SIZE \
             --gradient_accumulation_steps $GRAD_ACCUM_STEPS \
             --lr $LR \
+            --warmup_ratio $WARMUP_RATIO \
+            --lr_scheduler $LR_SCHEDULER \
             --output_dir "$OUTPUT_DIR" \
             --device auto
 } 2>&1 | tee "$LOG_FILE"

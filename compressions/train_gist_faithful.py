@@ -406,6 +406,8 @@ def train_gist(
     num_epochs: int,
     output_dir: str,
     device: str,
+    warmup_ratio: float = 0.03,
+    lr_scheduler_type: str = 'cosine',
 ):
     """
     Faithful Gist training with configurable data size and multi-GPU support.
@@ -416,10 +418,12 @@ def train_gist(
         num_samples: Training samples (52K in paper, configurable for quick tests)
         batch_size: Per-GPU batch size (increase to utilize GPU memory)
         gradient_accumulation_steps: Accumulate gradients over N steps (effective batch size multiplier)
-        learning_rate: 1e-4 per their configs
+        learning_rate: 2e-5 in paper
         num_epochs: 3 in paper
         output_dir: Where to save checkpoints
         device: cuda device (or auto for DDP)
+        warmup_ratio: Warmup ratio (0.03 = 3% of training steps, from paper)
+        lr_scheduler_type: LR scheduler (cosine in paper)
     """
     # Setup DDP
     rank, world_size, local_rank = setup_ddp()
@@ -548,6 +552,31 @@ def train_gist(
     # Optimizer (AdamW, standard for transformers)
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
+    # Calculate total training steps for scheduler
+    steps_per_epoch = len(dataloader) // gradient_accumulation_steps
+    total_steps = steps_per_epoch * num_epochs
+    warmup_steps = int(total_steps * warmup_ratio)
+
+    # Learning rate scheduler (cosine with warmup, matching paper)
+    if lr_scheduler_type == 'cosine':
+        from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
+        # Warmup phase
+        warmup_scheduler = LinearLR(optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_steps)
+        # Cosine decay phase
+        cosine_scheduler = CosineAnnealingLR(optimizer, T_max=total_steps - warmup_steps, eta_min=0.0)
+        # Combine: warmup then cosine
+        scheduler = SequentialLR(optimizer, schedulers=[warmup_scheduler, cosine_scheduler], milestones=[warmup_steps])
+    elif lr_scheduler_type == 'linear':
+        from torch.optim.lr_scheduler import LinearLR
+        scheduler = LinearLR(optimizer, start_factor=1.0, end_factor=0.0, total_iters=total_steps)
+    else:  # constant
+        from torch.optim.lr_scheduler import LambdaLR
+        scheduler = LambdaLR(optimizer, lambda step: 1.0)
+
+    if is_main_process():
+        print(f"LR Scheduler: {lr_scheduler_type}")
+        print(f"Warmup steps: {warmup_steps} ({warmup_ratio*100:.1f}% of {total_steps} total steps)")
+
     # Training loop
     if is_main_process():
         print(f"\n{'='*80}")
@@ -606,6 +635,7 @@ def train_gist(
             if (batch_idx + 1) % gradient_accumulation_steps == 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()
+                scheduler.step()  # Step LR scheduler
                 optimizer.zero_grad()
                 global_step += 1
 
@@ -622,6 +652,7 @@ def train_gist(
         if (batch_idx + 1) % gradient_accumulation_steps != 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
+            scheduler.step()  # Step LR scheduler
             optimizer.zero_grad()
             global_step += 1
 
@@ -701,8 +732,13 @@ if __name__ == "__main__":
                         help='Per-GPU batch size (use larger values to utilize GPU memory)')
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
                         help='Gradient accumulation steps (effective batch size multiplier)')
-    parser.add_argument('--lr', type=float, default=1e-4,
-                        help='Learning rate')
+    parser.add_argument('--lr', type=float, default=2e-5,
+                        help='Learning rate (2e-5 in paper)')
+    parser.add_argument('--warmup_ratio', type=float, default=0.03,
+                        help='Warmup ratio (0.03 = 3% of training steps for warmup)')
+    parser.add_argument('--lr_scheduler', type=str, default='cosine',
+                        choices=['linear', 'cosine', 'constant'],
+                        help='Learning rate scheduler type (cosine in paper)')
 
     # Output args
     parser.add_argument('--output_dir', type=str, default='runs/gist_faithful',
@@ -728,4 +764,6 @@ if __name__ == "__main__":
         num_epochs=args.epochs,
         output_dir=args.output_dir,
         device=args.device,
+        warmup_ratio=args.warmup_ratio,
+        lr_scheduler_type=args.lr_scheduler,
     )
