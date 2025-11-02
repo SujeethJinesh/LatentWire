@@ -68,12 +68,47 @@ Individual experiment modules in `experiments/`:
 
 ## Usage
 
-```bash
-# Run all experiments
-python cross_model/run_experiments.py
+### Full Experiment Suite
 
-# With DDP on 4 GPUs
-torchrun --nproc_per_node=4 cross_model/run_experiments.py
+Run all experiments (Procrustes, Activation Communication, Adapters):
+
+```bash
+# Standard workflow (recommended)
+git pull && rm -rf runs && PYTHONPATH=. torchrun --nproc_per_node=4 cross_model/run_experiments.py
+```
+
+This runs the complete experiment suite with:
+- Procrustes alignment (Llama ↔ Mistral, Llama ↔ Llama)
+- Activation communication with text similarity + task evaluation (SQuAD, GSM8K)
+- Adapter training experiments (LoRA, Linear, Affine)
+
+### Individual Experiments
+
+You can also run specific experiments:
+
+```python
+from cross_model.experiments.procrustes import run_procrustes_experiment
+from cross_model.experiments.activation_communication import run_activation_communication_experiment
+from cross_model.experiments.adapters import run_lora_adapter_experiment
+
+# Run Procrustes baseline
+results = run_procrustes_experiment(
+    model_a_id="meta-llama/Llama-3.1-8B",
+    model_b_id="mistralai/Mistral-7B-v0.3"
+)
+
+# Run activation communication
+results = run_activation_communication_experiment(
+    model_a_id="meta-llama/Llama-3.1-8B",
+    model_b_id="meta-llama/Llama-3.2-3B"
+)
+
+# Run LoRA adapter training
+results = run_lora_adapter_experiment(
+    model_a_id="meta-llama/Llama-3.1-8B",
+    model_b_id="meta-llama/Llama-3.2-3B",
+    gpu_id=0
+)
 ```
 
 ## Model Support
