@@ -2722,7 +2722,7 @@ def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=Non
 
     log_path = output_dir / f"{adapter_type}_{gpu_label}{model_suffix}_{timestamp}.log"
 
-    # Only rank 0 opens log file
+    # Only rank 0 opens log file, but all ranks need log_file for printing
     if is_main_process():
         log_file = open(log_path, 'w')
         # Redirect output to both console and file
@@ -2731,7 +2731,10 @@ def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=Non
         sys.stdout = TeeLogger(log_file)
         sys.stderr = TeeLogger(log_file)
     else:
-        log_file = None
+        # For non-rank-0 processes, use stdout so their prints are visible
+        log_file = sys.stdout
+        old_stdout = None
+        old_stderr = None
 
     try:
         # Print header (only rank 0)
@@ -4045,7 +4048,10 @@ def run_activation_communication_experiment(model_a_id=None, model_b_id=None):
         }
 
     except Exception as e:
+        import traceback
         print(f"  SQuAD evaluation failed: {str(e)}")
+        print(f"  Full traceback:")
+        traceback.print_exc()
         task_results["squad"] = {"error": str(e)}
 
     # ========================================================================
