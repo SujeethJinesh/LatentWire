@@ -12118,3 +12118,61 @@ Truncated: "2018/2018/2018/2018/2018..."
 
 **Status**: Switched to Instruct model. Ready for re-run with meaningful evaluation.
 
+---
+### Instruct Model Results - Chat Template Issue (2025-11-02 11:25)
+
+**Pipeline Status**: ✅ Training success, ⚠️ Still degenerate outputs
+
+**Training** (with Instruct model):
+- Loss: 0.342 → 0.280 (18% reduction) ✓
+- Time: 0.98 minutes ✓
+- Progression: Healthy, steady decrease ✓
+
+**Evaluation Results**:
+- ROUGE-L: Full 0.099, Gist 0.044, Truncated 0.106
+- **Problem**: Still generating repetitive text!
+
+**Sample Outputs**:
+- Full: `"Optimization\nThe\nThe\nOptimization\nThe\nThe..."`
+- Gist: `"Analyze the problem and identify the problem\nThe problem\nThe problem..."` (often empty)
+- Truncated: `"Counseling**: Counseling**: Counseling**: Counseling**:..."`
+
+**Root Cause Identified**: Chat Template Mismatch
+
+Llama 3.1 Instruct was trained on chat template format:
+```
+<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
+{user message}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+```
+
+But we were sending raw Alpaca format:
+```
+Instruction: {task}
+Input: {input}
+Output:
+```
+
+The model doesn't recognize this format and generates continuations instead of following instructions.
+
+**Fix Applied**: Use `tokenizer.apply_chat_template()`
+
+Modified both `train_gist_faithful.py` and `eval_gist.py` to:
+1. Format prompts as proper user/assistant messages
+2. Use tokenizer's built-in chat template
+3. Place gist tokens within the user message content
+4. Apply to all three baselines (full, gist, truncated)
+
+**Training Assessment**:
+- Current training used WRONG format (Alpaca)
+- Gist embeddings learned to compress Alpaca-style prompts
+- Need to re-train with chat template format
+- Loss curves look healthy (0.342 → 0.280), just wrong prompt format
+
+**Next Steps**:
+1. ⏭️ Re-train with chat template format
+2. ⏭️ Evaluate with proper instruction following
+3. ⏭️ Expect meaningful outputs instead of repetitive text
+
+**Status**: Chat template fix applied. Ready for re-training with correct format.
+
