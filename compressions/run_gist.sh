@@ -14,6 +14,7 @@ SCRIPT="compressions/train_gist_faithful.py"
 MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 NUM_GIST_TOKENS=1
 BATCH_SIZE=1  # Per-GPU batch size (REQUIRED=1 per paper)
+GRAD_ACCUM_STEPS=8  # Gradient accumulation (effective batch size multiplier)
 LR=1e-4
 NUM_GPUS=4    # Use all 4 GPUs
 
@@ -55,7 +56,9 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="$OUTPUT_DIR/train_${TIMESTAMP}.log"
 
 echo "Starting Gist training on $NUM_GPUS GPUs..."
-echo "Effective batch size: $((BATCH_SIZE * NUM_GPUS))"
+echo "Per-GPU batch size: $BATCH_SIZE"
+echo "Gradient accumulation steps: $GRAD_ACCUM_STEPS"
+echo "Effective batch size: $((BATCH_SIZE * NUM_GPUS * GRAD_ACCUM_STEPS))"
 echo "Log file: $LOG_FILE"
 echo ""
 
@@ -70,6 +73,7 @@ echo ""
             --samples $SAMPLES \
             --epochs $EPOCHS \
             --batch_size $BATCH_SIZE \
+            --gradient_accumulation_steps $GRAD_ACCUM_STEPS \
             --lr $LR \
             --output_dir "$OUTPUT_DIR" \
             --device auto
@@ -83,4 +87,5 @@ echo "  - $LOG_FILE"
 echo ""
 echo "GPUs used: $NUM_GPUS"
 echo "Per-GPU batch size: $BATCH_SIZE"
-echo "Effective batch size: $((BATCH_SIZE * NUM_GPUS))"
+echo "Gradient accumulation steps: $GRAD_ACCUM_STEPS"
+echo "Effective batch size: $((BATCH_SIZE * NUM_GPUS * GRAD_ACCUM_STEPS))"

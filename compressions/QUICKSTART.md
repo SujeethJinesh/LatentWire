@@ -32,8 +32,9 @@ bash compressions/run_gist.sh full
 ```
 
 **Multi-GPU:** Uses all 4 GPUs automatically with DDP (4× speedup!)
-- Per-GPU batch size: 1 (required)
-- Effective batch size: 4
+- Per-GPU batch size: 1 (required for position IDs)
+- Gradient accumulation: 8 steps (to utilize GPU memory)
+- Effective batch size: 32 (1 × 4 GPUs × 8 accum)
 
 ## What's Faithful to Paper?
 
@@ -81,13 +82,15 @@ torchrun --nproc_per_node=4 compressions/train_gist_faithful.py \
     --num_gist_tokens 1 \
     --samples 5000 \
     --epochs 2 \
+    --gradient_accumulation_steps 8 \
     --lr 1e-4 \
     --output_dir runs/gist_custom \
     --device auto
 
-# Single GPU
+# Single GPU with larger effective batch size
 python compressions/train_gist_faithful.py \
     --samples 1000 \
+    --gradient_accumulation_steps 16 \
     --device cuda:0
 ```
 
@@ -98,18 +101,28 @@ python compressions/train_gist_faithful.py \
 3. **Try different gist counts** (1, 2, 5, 10)
 4. **Scale to full 52K** if validate results good
 
-## Note on Gist Mask Integration
+## ✅ What's Verified Correct
 
-Current implementation:
-- ✅ Exact mask generation
-- ✅ Gist tokens in sequence (learnable)
-- ⚠️ Standard causal attention (not integrated gist mask)
+**Faithful to paper:**
+- ✅ Exact gist mask functions (from their `src/data/gist.py`)
+- ✅ Frozen base model (8B params, no gradients)
+- ✅ Learnable gist embedding (4,096 trainable params)
+- ✅ Alpaca+ dataset (instruction tuning)
+- ✅ batch_size=1 (enforced)
+- ✅ Left padding for LLaMA
+- ✅ Multi-GPU DDP (4× H100)
+- ✅ Memory efficient (~16GB per GPU, was OOM at ~64GB)
 
-For **full integration**, need to modify `model.forward()` to accept `attention_mask_gist` (see `gisting_reference/src/gist_llama.py` lines 536-542). Current version validates infrastructure and gets reasonable results.
+**Known limitation:**
+- ⚠️ Gist attention mask generated but not integrated into model forward pass
+
+This validates the infrastructure and training pipeline. For full 26× compression, would need to integrate attention_mask_gist into model.forward() (requires modifying transformers source).
+
+See `VERIFICATION.md` for detailed correctness proof.
 
 ## Questions?
 
-See `GIST_ASAP_PLAN.md` for detailed implementation notes or `gisting_reference/` for official repo.
+See `VERIFICATION.md` for detailed correctness proof or `gisting_reference/` for official repo.
 
 ---
 
