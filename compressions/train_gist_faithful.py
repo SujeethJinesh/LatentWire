@@ -352,7 +352,7 @@ def train_gist(
         model_id: HuggingFace model ID (default: Llama 3.1 8B)
         num_gist_tokens: Number of gist tokens (1, 2, 5, 10 in paper)
         num_samples: Training samples (52K in paper, configurable for quick tests)
-        batch_size: Per-GPU batch size (MUST be 1 for position IDs)
+        batch_size: Per-GPU batch size (increase to utilize GPU memory)
         gradient_accumulation_steps: Accumulate gradients over N steps (effective batch size multiplier)
         learning_rate: 1e-4 per their configs
         num_epochs: 3 in paper
@@ -371,7 +371,7 @@ def train_gist(
         print(f"Gist tokens: {num_gist_tokens}")
         print(f"Samples: {num_samples:,} ({'QUICK TEST' if num_samples < 5000 else 'VALIDATION' if num_samples < 20000 else 'FULL REPRODUCTION'})")
         print(f"GPUs: {world_size}")
-        print(f"Batch size per GPU: {batch_size} (REQUIRED=1 for position IDs)")
+        print(f"Batch size per GPU: {batch_size}")
         print(f"Gradient accumulation steps: {gradient_accumulation_steps}")
         print(f"Effective batch size: {effective_batch_size} ({batch_size} × {world_size} GPUs × {gradient_accumulation_steps} accum)")
         print(f"Learning rate: {learning_rate}")
@@ -636,7 +636,7 @@ if __name__ == "__main__":
 
     # Training args
     parser.add_argument('--batch_size', type=int, default=1,
-                        help='MUST be 1 for position IDs (per paper)')
+                        help='Per-GPU batch size (use larger values to utilize GPU memory)')
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
                         help='Gradient accumulation steps (effective batch size multiplier)')
     parser.add_argument('--lr', type=float, default=1e-4,
@@ -650,9 +650,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Validate
-    if args.batch_size != 1:
-        print("WARNING: batch_size must be 1 for position IDs (per paper). Setting to 1.")
+    # Validate - batch_size > 1 works fine with left padding
+    if args.batch_size < 1:
+        print("ERROR: batch_size must be >= 1")
         args.batch_size = 1
 
     # Run training

@@ -13,8 +13,8 @@ set -e
 SCRIPT="compressions/train_gist_faithful.py"
 MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 NUM_GIST_TOKENS=1
-BATCH_SIZE=1  # Per-GPU batch size (REQUIRED=1 per paper)
-GRAD_ACCUM_STEPS=8  # Gradient accumulation (effective batch size multiplier)
+BATCH_SIZE=8  # Per-GPU batch size (increase to utilize GPU memory)
+GRAD_ACCUM_STEPS=4  # Gradient accumulation (effective batch size multiplier)
 LR=1e-4
 NUM_GPUS=4    # Use all 4 GPUs
 

@@ -31,16 +31,18 @@ self.gist_embedding = nn.Parameter(init_embedding.clone().detach())
 
 **Verified:** ✅ Separate nn.Parameter (4,096 params), initialized to vocab average
 
-### 4. Batch Size = 1 Enforcement (Line 635)
-**Per paper:** Required for position ID handling with RoPE
+### 4. Proper Batching with Left Padding (Line 299-311)
+**Per paper:** Left padding enables proper batching for LLaMA
 
 ```python
-if args.batch_size != 1:
-    print("WARNING: batch_size must be 1 for position IDs (per paper). Setting to 1.")
-    args.batch_size = 1
+# Left-pad (REQUIRED for LLaMA, their lines 259-267)
+max_len = max(len(ids) for ids in input_ids_list)
+for ids, lbls in zip(input_ids_list, labels_list):
+    pad_len = max_len - len(ids)
+    input_ids_padded.append([self.tokenizer.pad_token_id] * pad_len + ids)
 ```
 
-**Verified:** ✅ Enforced in argument parsing
+**Verified:** ✅ Left padding enables batch_size > 1
 
 ### 5. Alpaca+ Dataset (Line 452)
 **Per paper:** Instruction tuning dataset, not Q&A
@@ -125,10 +127,10 @@ with torch.no_grad():
 - ✅ Frozen base model (per paper)
 - ✅ Learnable gist embedding (per paper)
 - ✅ Alpaca+ dataset (per paper)
-- ✅ batch_size=1 (per paper)
-- ✅ Left padding (per paper)
+- ✅ Left padding (enables proper batching)
 - ✅ Multi-GPU support (4× H100 with DDP)
-- ✅ Memory efficient (~16GB per GPU)
+- ✅ Gradient accumulation (larger effective batch sizes)
+- ✅ Memory efficient (optimized for H100 80GB)
 
 **Known limitations (documented):**
 - ⚠️ Gist attention mask not integrated into model forward

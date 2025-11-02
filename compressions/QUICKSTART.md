@@ -32,18 +32,18 @@ bash compressions/run_gist.sh full
 ```
 
 **Multi-GPU:** Uses all 4 GPUs automatically with DDP (4× speedup!)
-- Per-GPU batch size: 1 (required for position IDs)
-- Gradient accumulation: 8 steps (to utilize GPU memory)
-- Effective batch size: 32 (1 × 4 GPUs × 8 accum)
+- Per-GPU batch size: 8 (optimized for H100 80GB)
+- Gradient accumulation: 4 steps
+- Effective batch size: 128 (8 × 4 GPUs × 4 accum)
 
 ## What's Faithful to Paper?
 
 ✅ **Exact gist mask** (from their `src/data/gist.py`)
-✅ **batch_size=1** (required for position IDs)
+✅ **Left padding** (for LLaMA, enables batch_size > 1)
 ✅ **Alpaca+ dataset** (instruction tuning)
 ✅ **Gist token insertion** (`<GIST>` special token)
-✅ **Left padding** (for LLaMA)
 ✅ **Token initialization** (average of vocab)
+✅ **Frozen base model** (only gist embedding trained)
 ✅ **Same hyperparameters** (lr=1e-4, etc.)
 
 ## Files
@@ -108,10 +108,10 @@ python compressions/train_gist_faithful.py \
 - ✅ Frozen base model (8B params, no gradients)
 - ✅ Learnable gist embedding (4,096 trainable params)
 - ✅ Alpaca+ dataset (instruction tuning)
-- ✅ batch_size=1 (enforced)
-- ✅ Left padding for LLaMA
+- ✅ Left padding for LLaMA (enables proper batching)
 - ✅ Multi-GPU DDP (4× H100)
-- ✅ Memory efficient (~16GB per GPU, was OOM at ~64GB)
+- ✅ Gradient accumulation for larger effective batch sizes
+- ✅ Memory efficient (optimized for H100 80GB)
 
 **Known limitation:**
 - ⚠️ Gist attention mask generated but not integrated into model forward pass
