@@ -15,6 +15,7 @@ Measures:
 
 import argparse
 import json
+import os
 import time
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -159,15 +160,25 @@ def main():
     # CRITICAL: Use same shuffle as training (seed=42) to ensure proper split
     dataset = dataset.shuffle(seed=42)
 
+    # Read actual number of training samples from checkpoint metadata
+    metrics_path = os.path.join(args.checkpoint, 'metrics.json')
+    with open(metrics_path, 'r') as f:
+        metrics = json.load(f)
+    num_train_samples = metrics['num_samples']
+
     # Training uses first N samples, we use samples after that for test
     # This ensures zero overlap with training data
     total_size = len(dataset)
-    # Assume training used up to 52000 samples max (full mode)
-    # Test starts after that to ensure no overlap
-    test_start_idx = 52000  # After max possible training samples
-    test_data = dataset.select(range(test_start_idx, min(test_start_idx + args.samples, total_size)))
-    print(f"✓ Loaded {len(test_data)} test samples (indices {test_start_idx}-{test_start_idx + len(test_data)})")
-    print(f"✓ Zero overlap with training data (training uses first 0-52000 after shuffle)\n")
+    test_start_idx = num_train_samples  # Start right after training data
+    test_end_idx = min(test_start_idx + args.samples, total_size)
+
+    if test_end_idx <= test_start_idx:
+        raise ValueError(f"Not enough data for test set! Training used {num_train_samples} samples, "
+                        f"dataset has {total_size} total. Need at least {num_train_samples + args.samples} samples.")
+
+    test_data = dataset.select(range(test_start_idx, test_end_idx))
+    print(f"✓ Loaded {len(test_data)} test samples (indices {test_start_idx}-{test_end_idx})")
+    print(f"✓ Zero overlap with training data (training used indices 0-{num_train_samples} after shuffle)\n")
 
     # Evaluate all samples in batches
     print(f"Evaluating samples (batch_size={args.batch_size})...")
