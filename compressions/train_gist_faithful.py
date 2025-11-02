@@ -217,9 +217,9 @@ class GistLlama(nn.Module):
         # This is the KEY to gist tokens: forces later tokens to only attend to gist
         if attention_mask_gist is not None:
             # Convert bool mask to float: True->0.0 (attend), False->-10000.0 (mask)
-            # This is required by transformers' AttentionMaskConverter
-            mask_to_use = torch.zeros_like(attention_mask_gist, dtype=torch.float32)
-            mask_to_use.masked_fill_(~attention_mask_gist, -10000.0)
+            # Must match dtype of model (bfloat16 for Llama 3.1)
+            mask_to_use = torch.zeros_like(attention_mask_gist, dtype=inputs_embeds.dtype)
+            mask_to_use.masked_fill_(~attention_mask_gist, torch.finfo(inputs_embeds.dtype).min)
         else:
             mask_to_use = attention_mask
 
