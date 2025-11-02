@@ -268,6 +268,12 @@ class GistLlama(nn.Module):
             # Ensure dtype matches (gist_embedding might be bfloat16 while inputs_embeds is float32)
             inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
 
+        # Generate position_ids for rotary embeddings when using inputs_embeds
+        # This is required to avoid dimension mismatch errors in batched generation
+        batch_size, seq_len = input_ids.shape
+        position_ids = torch.arange(seq_len, dtype=torch.long, device=input_ids.device)
+        position_ids = position_ids.unsqueeze(0).expand(batch_size, -1)
+
         # Apply gist attention mask if provided
         if attention_mask_gist is not None:
             # Convert bool mask to float matching model dtype
@@ -276,10 +282,11 @@ class GistLlama(nn.Module):
         else:
             mask_to_use = attention_mask
 
-        # Generate with embedded inputs and gist attention mask
+        # Generate with embedded inputs, position_ids, and gist attention mask
         return self.model.generate(
             inputs_embeds=inputs_embeds,
             attention_mask=mask_to_use,
+            position_ids=position_ids,
             **kwargs
         )
 
