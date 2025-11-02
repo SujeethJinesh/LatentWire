@@ -4,12 +4,12 @@ Evaluate gist tokens on Alpaca dataset with baselines.
 
 Compares:
 1. Full text (positive control - full prompt)
-2. Gist tokens (our method - compressed prompt)
+2. Gist tokens (our method - compressed prompt, NO instruction)
 3. Truncated text (negative control - truncate to gist token count)
 
 Measures:
 - ROUGE scores (generation quality)
-- Compression ratio
+- Compression ratio (actual compression by removing instruction)
 - Output quality vs baselines
 """
 
@@ -17,7 +17,7 @@ import argparse
 import json
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import torch
 from datasets import load_dataset
@@ -25,37 +25,71 @@ from rouge_score import rouge_scorer
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+# Import GistLlama wrapper and mask functions from training script
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from compressions.train_gist_faithful import GistLlama, make_gist_mask
+
 
 def load_gist_model(checkpoint_dir: str, device: str):
-    """Load trained gist model."""
+    """Load trained gist model with GistLlama wrapper."""
     print(f"Loading gist model from {checkpoint_dir}...")
 
     # Load base model and tokenizer
-    model = AutoModelForCausalLM.from_pretrained(checkpoint_dir).to(device)
+    base_model = AutoModelForCausalLM.from_pretrained(checkpoint_dir).to(device)
     tokenizer = AutoTokenizer.from_pretrained(checkpoint_dir)
 
-    # Load gist embedding
+    # Load gist embedding data
     gist_path = Path(checkpoint_dir) / "gist_embedding.pt"
-    if gist_path.exists():
-        gist_data = torch.load(gist_path, map_location=device)
-        print(f"✓ Loaded gist embedding: {gist_data['num_gist_tokens']} tokens")
-        return model, tokenizer, gist_data
-    else:
+    if not gist_path.exists():
         raise FileNotFoundError(f"No gist embedding found at {gist_path}")
 
+    gist_data = torch.load(gist_path, map_location=device, weights_only=False)
+    num_gist_tokens = gist_data['num_gist_tokens']
+    gist_token_id = gist_data['gist_token_id']
 
-def generate_batch(model, tokenizer, prompts: List[str], max_new_tokens: int = 128, device: str = "cuda"):
-    """Generate outputs from batch of prompts."""
+    # Wrap with GistLlama to enable gist attention masking
+    model = GistLlama(
+        base_model=base_model,
+        num_gist_tokens=num_gist_tokens,
+        gist_token_id=gist_token_id,
+        hidden_dim=base_model.config.hidden_size
+    )
+
+    # Load trained gist embedding
+    model.gist_embedding.data = gist_data['gist_embedding'].to(device)
+
+    print(f"✓ Loaded GistLlama wrapper with {num_gist_tokens} gist tokens")
+    return model, tokenizer, gist_data
+
+
+def generate_batch(model, tokenizer, prompts: List[str], max_new_tokens: int = 128, device: str = "cuda", use_gist_mask: bool = False, gist_token_id: Optional[int] = None):
+    """Generate outputs from batch of prompts with optional gist attention masking."""
     inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
     input_lengths = inputs.attention_mask.sum(dim=1)
 
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            do_sample=False,  # Deterministic for fair comparison
-            pad_token_id=tokenizer.pad_token_id,
+    # Prepare kwargs for generation
+    gen_kwargs = {
+        'input_ids': inputs.input_ids,
+        'attention_mask': inputs.attention_mask,
+        'max_new_tokens': max_new_tokens,
+        'do_sample': False,  # Deterministic for fair comparison
+        'pad_token_id': tokenizer.pad_token_id,
+    }
+
+    # Add gist attention mask if requested
+    if use_gist_mask and gist_token_id is not None:
+        # Create gist attention mask for the batch
+        attention_mask_gist = make_gist_mask(
+            inputs.input_ids,
+            gist_token=gist_token_id,
+            pad_token=tokenizer.pad_token_id,
+            dtype=torch.bool
         )
+        gen_kwargs['attention_mask_gist'] = attention_mask_gist
+
+    with torch.no_grad():
+        outputs = model.generate(**gen_kwargs)
 
     # Decode only the generated part (skip input) for each sample
     generated_texts = []
@@ -116,6 +150,7 @@ def main():
     model, tokenizer, gist_data = load_gist_model(args.checkpoint, args.device)
     model.eval()
     num_gist_tokens = gist_data['num_gist_tokens']
+    gist_token_id = gist_data['gist_token_id']
 
     # Load test data (held-out from Alpaca)
     print("Loading Alpaca test data...")
@@ -133,20 +168,26 @@ def main():
 
     # First, prepare all prompts
     print("Preparing prompts...")
+    print("CRITICAL: Gist prompts have INSTRUCTION REMOVED for true compression!")
     for example in test_data:
         instruction = example['instruction']
         input_text = example.get('input', '')
 
+        # Full prompt baseline (includes instruction)
         if input_text:
             full_prompt = f"Instruction: {instruction}\nInput: {input_text}\nOutput:"
-            gist_str = " ".join(["<GIST>"] * num_gist_tokens)
-            gist_prompt = f"Instruction: {instruction}\n{gist_str}\nInput: {input_text}\nOutput:"
         else:
             full_prompt = f"Instruction: {instruction}\nOutput:"
-            gist_str = " ".join(["<GIST>"] * num_gist_tokens)
-            gist_prompt = f"Instruction: {instruction}\n{gist_str}\nOutput:"
 
-        # Truncated text baseline
+        # Gist prompt: REMOVE INSTRUCTION, only gist tokens + input
+        # This achieves the actual compression that the paper demonstrates
+        gist_str = " ".join(["<GIST>"] * num_gist_tokens)
+        if input_text:
+            gist_prompt = f"{gist_str}\nInput: {input_text}\nOutput:"
+        else:
+            gist_prompt = f"{gist_str}\nOutput:"
+
+        # Truncated text baseline (truncate full prompt to similar length as gist)
         full_tokens = tokenizer(full_prompt, return_tensors="pt").input_ids[0]
         truncate_len = min(len(full_tokens), 50 + num_gist_tokens * 10)
         truncated_ids = full_tokens[:truncate_len]
@@ -162,16 +203,29 @@ def main():
     for i in tqdm(range(0, len(test_data), args.batch_size), desc="Batches"):
         batch_end = min(i + args.batch_size, len(test_data))
 
-        # Full text baseline
-        full_batch = generate_batch(model, tokenizer, all_prompts_full[i:batch_end], args.max_new_tokens, args.device)
+        # Full text baseline (no gist masking)
+        full_batch = generate_batch(
+            model, tokenizer, all_prompts_full[i:batch_end],
+            args.max_new_tokens, args.device,
+            use_gist_mask=False
+        )
         full_outputs.extend(full_batch)
 
-        # Gist tokens
-        gist_batch = generate_batch(model, tokenizer, all_prompts_gist[i:batch_end], args.max_new_tokens, args.device)
+        # Gist tokens (WITH gist masking - critical!)
+        gist_batch = generate_batch(
+            model, tokenizer, all_prompts_gist[i:batch_end],
+            args.max_new_tokens, args.device,
+            use_gist_mask=True,
+            gist_token_id=gist_token_id
+        )
         gist_outputs.extend(gist_batch)
 
-        # Truncated baseline
-        truncated_batch = generate_batch(model, tokenizer, all_prompts_truncated[i:batch_end], args.max_new_tokens, args.device)
+        # Truncated baseline (no gist masking)
+        truncated_batch = generate_batch(
+            model, tokenizer, all_prompts_truncated[i:batch_end],
+            args.max_new_tokens, args.device,
+            use_gist_mask=False
+        )
         truncated_outputs.extend(truncated_batch)
 
     elapsed = time.time() - start_time

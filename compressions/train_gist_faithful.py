@@ -233,6 +233,35 @@ class GistLlama(nn.Module):
 
         return outputs
 
+    def generate(self, input_ids=None, attention_mask=None, attention_mask_gist=None, **kwargs):
+        """
+        Generation with gist embeddings and attention masking.
+
+        This method wraps the base model's generate() to properly handle:
+        1. Replacing gist token IDs with learned embeddings
+        2. Applying gist attention mask during generation
+        """
+        # Replace gist tokens with learned embeddings
+        inputs_embeds = self.model.model.embed_tokens(input_ids)
+        gist_mask = (input_ids == self.gist_token_id)
+        if gist_mask.any():
+            inputs_embeds[gist_mask] = self.gist_embedding
+
+        # Apply gist attention mask if provided
+        if attention_mask_gist is not None:
+            # Convert bool mask to float matching model dtype
+            mask_to_use = torch.zeros_like(attention_mask_gist, dtype=inputs_embeds.dtype)
+            mask_to_use.masked_fill_(~attention_mask_gist, torch.finfo(inputs_embeds.dtype).min)
+        else:
+            mask_to_use = attention_mask
+
+        # Generate with embedded inputs and gist attention mask
+        return self.model.generate(
+            inputs_embeds=inputs_embeds,
+            attention_mask=mask_to_use,
+            **kwargs
+        )
+
     def save_pretrained(self, save_directory, *args, **kwargs):
         """Save model and gist embeddings."""
         # Save base model
