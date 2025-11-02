@@ -193,7 +193,11 @@ def make_gist_mask(
 
 class GistLlama(nn.Module):
     """
-    Wrapper around Llama with learnable gist embeddings and proper masking.
+    Llama model with learnable gist embeddings and proper gist attention masking.
+
+    Key difference from official repo:
+    - Official repo modifies Llama architecture (custom attention layers)
+    - We use embedding replacement + attention masking (simpler, trainable embeddings only)
 
     This keeps the base model frozen and only trains the gist token embeddings.
     """
@@ -206,10 +210,19 @@ class GistLlama(nn.Module):
         self.gist_token_id = gist_token_id
 
         # Learnable gist embeddings (ONLY thing we train)
-        # Initialize to average of existing embeddings
+        # Initialize to average of existing embeddings (matches official repo's initialization)
         with torch.no_grad():
             init_embedding = base_model.model.embed_tokens.weight.mean(dim=0)
         self.gist_embedding = nn.Parameter(init_embedding.clone().detach())
+
+        # Monkey-patch the base model to use our methods during generation
+        # This is CRITICAL for generation to work with gist tokens
+        self._original_prepare_inputs = self.model.prepare_inputs_for_generation
+        self._original_forward = self.model.forward
+
+        # Replace base model's methods with ours (bound methods)
+        self.model.prepare_inputs_for_generation = self._prepare_inputs_for_generation_with_gist
+        self.model.forward = self._forward_with_gist_for_base_model
 
     def forward(
         self,
@@ -253,47 +266,122 @@ class GistLlama(nn.Module):
 
         return outputs
 
+    def _forward_with_gist_for_base_model(
+        self,
+        input_ids: torch.LongTensor = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        attention_mask_gist: Optional[torch.Tensor] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        **kwargs,
+    ):
+        """
+        Forward method that will be called by the generation loop.
+
+        This replaces the base model's forward() to:
+        1. Replace gist token IDs with learned embeddings (if input_ids provided)
+        2. Apply gist attention mask if provided
+        3. Call original forward with modified inputs
+        """
+        # If inputs_embeds already provided (from first generation step), use them
+        if inputs_embeds is None and input_ids is not None:
+            # Get base embeddings
+            inputs_embeds = self.model.model.embed_tokens(input_ids)
+
+            # Replace gist tokens with learned embedding
+            gist_mask = (input_ids == self.gist_token_id)
+            if gist_mask.any():
+                inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
+
+        # Use gist attention mask if provided
+        if attention_mask_gist is not None:
+            # Convert bool mask to float: True->0.0 (attend), False->-inf (mask)
+            mask_to_use = torch.zeros_like(attention_mask_gist, dtype=inputs_embeds.dtype)
+            mask_to_use.masked_fill_(~attention_mask_gist, torch.finfo(inputs_embeds.dtype).min)
+        else:
+            mask_to_use = attention_mask
+
+        # Call original forward with modified inputs
+        return self._original_forward(
+            inputs_embeds=inputs_embeds,
+            attention_mask=mask_to_use,
+            **kwargs
+        )
+
+    def _prepare_inputs_for_generation_with_gist(
+        self,
+        input_ids,
+        past_key_values=None,
+        attention_mask=None,
+        inputs_embeds=None,
+        attention_mask_gist=None,
+        **kwargs,
+    ):
+        """
+        Prepare inputs for generation, including attention_mask_gist.
+
+        This overrides the base model's prepare_inputs_for_generation to:
+        1. Call the original method to get standard inputs
+        2. Add attention_mask_gist to model_inputs if provided
+        3. Update attention_mask_gist for each generation step (like official repo)
+
+        Based on official repo's GistGenerationMixin._update_model_kwargs_for_generation
+        """
+        # Call original prepare_inputs_for_generation
+        model_inputs = self._original_prepare_inputs(
+            input_ids=input_ids,
+            past_key_values=past_key_values,
+            attention_mask=attention_mask,
+            inputs_embeds=inputs_embeds,
+            **kwargs
+        )
+
+        # Handle attention_mask_gist for generation (critical!)
+        if attention_mask_gist is not None:
+            # During generation, we need to update the gist mask at each step
+            # Based on official repo's _update_model_kwargs_for_generation
+
+            # If this is the first generation step, use the full gist mask
+            # Otherwise, take the last row and append a 1 (newly generated token can be attended to)
+            if past_key_values is None:
+                # First step: use full mask
+                model_inputs["attention_mask_gist"] = attention_mask_gist
+            else:
+                # Subsequent steps: extend the mask
+                # Take last row: (B, 1, 1, N) and append 1: (B, 1, 1, N+1)
+                last_row = attention_mask_gist[:, :, -1:]  # (B, 1, M, N) -> (B, 1, 1, N)
+                attention_mask_gist = torch.cat(
+                    [
+                        last_row,  # (B, 1, 1, N)
+                        last_row.new_ones((last_row.shape[0], 1, 1, 1)),  # (B, 1, 1, 1)
+                    ],
+                    dim=-1,
+                )  # (B, 1, 1, N+1)
+                model_inputs["attention_mask_gist"] = attention_mask_gist
+
+        return model_inputs
+
     def generate(self, input_ids=None, attention_mask=None, attention_mask_gist=None, **kwargs):
         """
-        Generation with gist embeddings.
+        Generation with gist embeddings and proper gist attention masking.
 
-        This method wraps the base model's generate() to properly handle:
-        1. Replacing gist token IDs with learned embeddings (ONLY if gist tokens present)
-        2. Using standard 2D attention mask (gist mask only used during training)
+        CRITICAL FIX: Now properly uses attention_mask_gist during generation!
 
-        Note: The 4D gist attention mask is only used during training to enforce
-        the attention pattern. During generation, we use standard 2D masks and rely
-        on the learned gist embeddings.
+        This method:
+        1. Passes attention_mask_gist to the base model's generate()
+        2. Our monkey-patched forward() handles embedding replacement and masking
+        3. Generated tokens properly attend only to gist tokens (compression!)
+
+        The key insight from official repo: attention_mask_gist must be used DURING GENERATION,
+        not just training, because generated tokens must also only attend to gist tokens.
         """
-        # Check if there are any gist tokens in the input
-        gist_mask = (input_ids == self.gist_token_id)
-
-        if gist_mask.any():
-            # GIST PATH: Replace gist tokens with learned embeddings
-            inputs_embeds = self.model.model.embed_tokens(input_ids)
-            # Ensure dtype matches (gist_embedding might be bfloat16 while inputs_embeds is float32)
-            inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
-
-            # Generate position_ids for rotary embeddings when using inputs_embeds
-            # This is required to avoid dimension mismatch errors in batched generation
-            batch_size, seq_len = input_ids.shape
-            position_ids = torch.arange(seq_len, dtype=torch.long, device=input_ids.device)
-            position_ids = position_ids.unsqueeze(0).expand(batch_size, -1)
-
-            # Generate with embedded inputs, position_ids, and standard 2D attention mask
-            return self.model.generate(
-                inputs_embeds=inputs_embeds,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                **kwargs
-            )
-        else:
-            # NO GIST TOKENS: Use normal generation path (more stable)
-            return self.model.generate(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                **kwargs
-            )
+        # Simply pass through to base model's generate
+        # Our monkey-patched forward() and prepare_inputs_for_generation() handle everything
+        return self.model.generate(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            attention_mask_gist=attention_mask_gist,  # <- Propagated via monkey-patched methods
+            **kwargs
+        )
 
     def save_pretrained(self, save_directory, *args, **kwargs):
         """Save model and gist embeddings."""
