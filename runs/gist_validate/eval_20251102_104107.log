@@ -1,0 +1,63 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+================================================================================
+GIST TOKENS EVALUATION
+================================================================================
+Checkpoint: runs/gist_validate
+Test samples: 200
+Max new tokens: 128
+Device: cuda:0
+================================================================================
+
+Loading gist model from runs/gist_validate...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:15<00:46, 15.55s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:32<00:32, 16.11s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:49<00:16, 16.59s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:53<00:00, 11.58s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:53<00:00, 13.28s/it]
+✓ Loaded GistLlama wrapper with 1 gist tokens
+Loading Alpaca test data...
+✓ Loaded 200 test samples
+
+Evaluating samples (batch_size=16)...
+Preparing prompts...
+CRITICAL: Gist prompts have INSTRUCTION REMOVED for true compression!
+Generating outputs...
+Batches:   0%|          | 0/13 [00:00<?, ?it/s]/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Batches:   0%|          | 0/13 [00:05<?, ?it/s]
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 328, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 215, in main
+    gist_batch = generate_batch(
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 92, in generate_batch
+    outputs = model.generate(**gen_kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/compressions/train_gist_faithful.py", line 280, in generate
+    return self.model.generate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/utils.py", line 2215, in generate
+    result = self._sample(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/utils.py", line 3206, in _sample
+    outputs = self(**model_inputs, return_dict=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 1190, in forward
+    outputs = self.model(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 921, in forward
+    position_embeddings = self.rotary_emb(hidden_states, position_ids)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 158, in forward
+    freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(1, 2)
+RuntimeError: Expected size for first two dimensions of batch2 tensor to be: [256, 1] but got: [256, 36].
