@@ -4,6 +4,9 @@ Faithful Gist Tokens Reproduction for Llama 3.1 8B - Reduced Data Version
 This is a FAITHFUL reproduction of:
 "Learning to Compress Prompts with Gist Tokens" (Mu et al., NeurIPS 2023)
 
+CRITICAL: Use BASE model (meta-llama/Meta-Llama-3.1-8B), NOT Instruct variant!
+The paper trains gist tokens alongside instruction tuning from the base model.
+
 Key differences from paper:
 - Uses Llama 3.1 8B instead of LLaMA-7B (similar architecture)
 - Configurable data size (default 2K instead of 52K for quick validation)
@@ -16,16 +19,17 @@ Faithful to paper:
 ✓ <GIST> token insertion and initialization
 ✓ Left padding for LLaMA
 ✓ Same hyperparameters
+✓ Starts from BASE model (not instruction-tuned)
 
 Usage:
     # Quick test (100 samples)
-    python train_gist_faithful.py --samples 100 --epochs 1
+    python train_gist_faithful.py --samples 100 --epochs 1 --model_id meta-llama/Meta-Llama-3.1-8B
 
     # Validation run (2K samples)
-    python train_gist_faithful.py --samples 2000 --epochs 2
+    python train_gist_faithful.py --samples 2000 --epochs 2 --model_id meta-llama/Meta-Llama-3.1-8B
 
     # Full reproduction (52K samples)
-    python train_gist_faithful.py --samples 52000 --epochs 3
+    python train_gist_faithful.py --samples 52000 --epochs 3 --model_id meta-llama/Meta-Llama-3.1-8B
 """
 
 import argparse
