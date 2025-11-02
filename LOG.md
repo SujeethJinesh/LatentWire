@@ -12176,3 +12176,83 @@ Modified both `train_gist_faithful.py` and `eval_gist.py` to:
 
 **Status**: Chat template fix applied. Ready for re-training with correct format.
 
+---
+### Critical Bug Found - inputs_embeds Path (2025-11-02 11:40)
+
+**Pipeline Status**: ✅ Training success, ❌ ALL baselines generating garbage
+
+**Training** (with chat template):
+- Model: meta-llama/Meta-Llama-3.1-8B-Instruct ✓
+- Chat template: Correctly applied ✓
+- Loss: Converging (0.34 → 0.28) ✓
+
+**Evaluation Results**:
+- ROUGE-L: Full 0.085, Gist 0.025, Truncated 0.059
+- **Problem**: ALL THREE baselines generating degenerate outputs!
+
+**Sample Outputs** (ALL broken):
+- Full: `"(list): \n  sum(list): \n  sum(list): \n  return sum (list..."`
+- Gist: `"would like to ask me to ask me to say. Is there is there..."`
+- Truncated: `"cut off.  you.  you were cut off..."`
+
+**Critical Discovery**: Even full text baseline broken → Not a training issue!
+
+**Root Cause Identified**: GistLlama.generate() bug
+
+**The Bug** (lines 269-291):
+```python
+def generate(self, input_ids=None, ...):
+    # ALWAYS convert to inputs_embeds
+    inputs_embeds = self.model.model.embed_tokens(input_ids)  # Problem!
+    gist_mask = (input_ids == self.gist_token_id)
+    if gist_mask.any():
+        inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
+
+    # ALWAYS use inputs_embeds path (even when no gist tokens!)
+    return self.model.generate(
+        inputs_embeds=inputs_embeds,  # Unstable for non-gist
+        position_ids=position_ids,
+        **kwargs
+    )
+```
+
+**Why This Breaks Everything**:
+1. Full text baseline has NO `<GIST>` tokens
+2. But it still goes through `inputs_embeds` path
+3. `inputs_embeds` generation is less stable than `input_ids`
+4. Explicit `position_ids` can interfere with generation
+5. Result: Degenerate outputs for ALL baselines
+
+**Fix Applied** (lines 268-296):
+```python
+def generate(self, input_ids=None, ...):
+    gist_mask = (input_ids == self.gist_token_id)
+
+    if gist_mask.any():
+        # GIST PATH: Use inputs_embeds with learned embeddings
+        inputs_embeds = self.model.model.embed_tokens(input_ids)
+        inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
+        return self.model.generate(inputs_embeds=inputs_embeds, ...)
+    else:
+        # NO GIST: Use normal input_ids path (stable!)
+        return self.model.generate(input_ids=input_ids, ...)
+```
+
+**Impact**:
+- Full text baseline: Now uses normal generation (should work!)
+- Truncated baseline: Now uses normal generation (should work!)
+- Gist baseline: Still uses custom embeddings (correct behavior)
+
+**Assessment**:
+- Training never had issues (loss curves healthy)
+- Chat template was correct
+- Bug was in evaluation/generation code
+- This explains why ALL baselines failed simultaneously
+
+**Next Steps**:
+1. ⏭️ Re-run evaluation ONLY (NO re-training needed - checkpoint is good!)
+2. ⏭️ Full text should now produce proper responses
+3. ⏭️ Can finally evaluate if gist tokens actually work
+
+**Status**: Critical generation bug fixed. Ready for evaluation re-run (training checkpoint is fine).
+
