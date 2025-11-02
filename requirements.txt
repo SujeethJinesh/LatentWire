@@ -12,6 +12,7 @@ sentence-transformers
 sentencepiece>=0.1.99
 protobuf>=3.20.0
 tokenizers>=0.13.0
+rouge-score>=0.1.2
 
 # Optional dependencies
 # bitsandbytes is Linux/CUDA specific; safely ignored on macOS

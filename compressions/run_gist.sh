@@ -80,12 +80,39 @@ echo ""
 } 2>&1 | tee "$LOG_FILE"
 
 echo ""
-echo "Complete! Results saved to:"
+echo "Training complete! Results saved to:"
 echo "  - $OUTPUT_DIR/pytorch_model.bin"
 echo "  - $OUTPUT_DIR/metrics.json"
 echo "  - $LOG_FILE"
 echo ""
-echo "GPUs used: $NUM_GPUS"
-echo "Per-GPU batch size: $BATCH_SIZE"
-echo "Gradient accumulation steps: $GRAD_ACCUM_STEPS"
-echo "Effective batch size: $((BATCH_SIZE * NUM_GPUS * GRAD_ACCUM_STEPS))"
+
+# Run evaluation with baselines
+echo "Starting evaluation with baselines..."
+EVAL_LOG_FILE="$OUTPUT_DIR/eval_${TIMESTAMP}.log"
+
+{
+    python compressions/eval_gist.py \
+        --checkpoint "$OUTPUT_DIR" \
+        --samples 200 \
+        --max_new_tokens 128 \
+        --device cuda:0
+} 2>&1 | tee "$EVAL_LOG_FILE"
+
+echo ""
+echo "="$(printf '=%.0s' {1..78})
+echo "COMPLETE! All results saved to:"
+echo "  Training:"
+echo "    - $OUTPUT_DIR/pytorch_model.bin"
+echo "    - $OUTPUT_DIR/metrics.json"
+echo "    - $LOG_FILE"
+echo "  Evaluation:"
+echo "    - $OUTPUT_DIR/eval_results.json"
+echo "    - $OUTPUT_DIR/sample_outputs.json"
+echo "    - $EVAL_LOG_FILE"
+echo ""
+echo "Configuration:"
+echo "  GPUs: $NUM_GPUS"
+echo "  Per-GPU batch size: $BATCH_SIZE"
+echo "  Gradient accumulation: $GRAD_ACCUM_STEPS"
+echo "  Effective batch size: $((BATCH_SIZE * NUM_GPUS * GRAD_ACCUM_STEPS))"
+echo "="$(printf '=%.0s' {1..78})

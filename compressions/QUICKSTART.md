@@ -63,15 +63,24 @@ bash compressions/run_gist.sh full
 
 ## Output
 
-After training completes:
+After running (training + evaluation), you'll get:
 ```
 runs/gist_validate/
-├── pytorch_model.bin       # Trained model
-├── config.json            # Model config
-├── tokenizer_config.json  # Tokenizer
-├── metrics.json           # Training metrics
-└── train_YYYYMMDD_HHMMSS.log  # Full training log
+├── pytorch_model.bin           # Trained gist model
+├── config.json                # Model config
+├── tokenizer_config.json      # Tokenizer
+├── gist_embedding.pt          # Learned gist embeddings
+├── metrics.json               # Training metrics
+├── train_YYYYMMDD_HHMMSS.log  # Training log
+├── eval_results.json          # Evaluation results with baselines
+├── sample_outputs.json        # Sample outputs for inspection
+└── eval_YYYYMMDD_HHMMSS.log   # Evaluation log
 ```
+
+**eval_results.json** contains:
+- ROUGE scores (full text, gist, truncated baselines)
+- Compression ratio
+- Relative performance vs baselines
 
 ## Advanced Usage
 
@@ -94,31 +103,49 @@ python compressions/train_gist_faithful.py \
     --device cuda:0
 ```
 
-## Next Steps After Training
+## Interpreting Results
 
-1. **Evaluate ROUGE scores** (as in paper)
-2. **Compare to truncation baseline** (truncate to M tokens)
-3. **Try different gist counts** (1, 2, 5, 10)
-4. **Scale to full 52K** if validate results good
+The script automatically runs evaluation with baselines:
+
+1. **Full Text (Positive Control)**: Full prompt, upper bound performance
+2. **Gist Tokens (Our Method)**: Compressed prompt with learned gist embeddings
+3. **Truncated Text (Negative Control)**: Truncate prompt to same token count as gist
+
+**Key metrics to check:**
+- **ROUGE-L score**: Gist should be >> Truncated, approaching Full Text
+- **Compression ratio**: Should be ~10-26× depending on prompt length
+- **Relative performance**: Gist vs Full Text percentage
+
+**Good results:**
+- Gist ROUGE-L > 80% of Full Text
+- Compression ratio > 10×
+- Gist >> Truncated baseline
+
+## Next Steps
+
+1. **Analyze results** in `eval_results.json`
+2. **Try different gist counts** (1, 2, 5, 10) if results are promising
+3. **Scale to full 52K samples** for paper reproduction
+4. **Add LoRA** for more expressive model (as in paper)
 
 ## ✅ What's Verified Correct
 
 **Faithful to paper:**
 - ✅ Exact gist mask functions (from their `src/data/gist.py`)
+- ✅ Gist attention mask integrated into forward pass (tokens after gist only see gist)
 - ✅ Frozen base model (8B params, no gradients)
 - ✅ Learnable gist embedding (4,096 trainable params)
 - ✅ Alpaca+ dataset (instruction tuning)
 - ✅ Left padding for LLaMA (enables proper batching)
 - ✅ Multi-GPU DDP (4× H100)
 - ✅ Gradient accumulation for larger effective batch sizes
-- ✅ Memory efficient (optimized for H100 80GB)
+- ✅ Evaluation with baselines (full text, gist, truncated)
+- ✅ ROUGE score measurement
 
 **Known limitation:**
-- ⚠️ Gist attention mask generated but not integrated into model forward pass
+- ⚠️ No LoRA adapters (paper uses LoRA + gist embeddings)
 
-This validates the infrastructure and training pipeline. For full 26× compression, would need to integrate attention_mask_gist into model.forward() (requires modifying transformers source).
-
-See `VERIFICATION.md` for detailed correctness proof.
+This is a faithful reproduction of the gist tokens approach with automated evaluation.
 
 ## Questions?
 
