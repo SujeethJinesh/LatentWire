@@ -215,6 +215,10 @@ class GistLlama(nn.Module):
             init_embedding = base_model.model.embed_tokens.weight.mean(dim=0)
         self.gist_embedding = nn.Parameter(init_embedding.clone().detach())
 
+        # Track attention_mask_gist across generation steps (needed since HF doesn't propagate custom kwargs)
+        self._current_attention_mask_gist = None
+        self._generation_step = 0
+
         # Monkey-patch the base model to use our methods during generation
         # This is CRITICAL for generation to work with gist tokens
         self._original_prepare_inputs = self.model.prepare_inputs_for_generation
@@ -321,7 +325,7 @@ class GistLlama(nn.Module):
 
         This overrides the base model's prepare_inputs_for_generation to:
         1. Call the original method to get standard inputs
-        2. Add attention_mask_gist to model_inputs if provided
+        2. Add attention_mask_gist to model_inputs if provided or use stored one
         3. Update attention_mask_gist for each generation step (like official repo)
 
         Based on official repo's GistGenerationMixin._update_model_kwargs_for_generation
@@ -335,28 +339,28 @@ class GistLlama(nn.Module):
             **kwargs
         )
 
-        # Handle attention_mask_gist for generation (critical!)
-        if attention_mask_gist is not None:
-            # During generation, we need to update the gist mask at each step
+        # Use stored attention_mask_gist if we're in the middle of generation
+        if self._current_attention_mask_gist is not None:
+            # Update the mask for this generation step
             # Based on official repo's _update_model_kwargs_for_generation
 
-            # If this is the first generation step, use the full gist mask
-            # Otherwise, take the last row and append a 1 (newly generated token can be attended to)
-            if past_key_values is None:
-                # First step: use full mask
-                model_inputs["attention_mask_gist"] = attention_mask_gist
+            if self._generation_step == 0:
+                # First step: use full mask as-is
+                model_inputs["attention_mask_gist"] = self._current_attention_mask_gist
             else:
                 # Subsequent steps: extend the mask
                 # Take last row: (B, 1, 1, N) and append 1: (B, 1, 1, N+1)
-                last_row = attention_mask_gist[:, :, -1:]  # (B, 1, M, N) -> (B, 1, 1, N)
-                attention_mask_gist = torch.cat(
+                last_row = self._current_attention_mask_gist[:, :, -1:]  # (B, 1, M, N) -> (B, 1, 1, N)
+                self._current_attention_mask_gist = torch.cat(
                     [
                         last_row,  # (B, 1, 1, N)
                         last_row.new_ones((last_row.shape[0], 1, 1, 1)),  # (B, 1, 1, 1)
                     ],
                     dim=-1,
                 )  # (B, 1, 1, N+1)
-                model_inputs["attention_mask_gist"] = attention_mask_gist
+                model_inputs["attention_mask_gist"] = self._current_attention_mask_gist
+
+            self._generation_step += 1
 
         return model_inputs
 
@@ -367,21 +371,32 @@ class GistLlama(nn.Module):
         CRITICAL FIX: Now properly uses attention_mask_gist during generation!
 
         This method:
-        1. Passes attention_mask_gist to the base model's generate()
+        1. Stores attention_mask_gist for the generation loop
         2. Our monkey-patched forward() handles embedding replacement and masking
-        3. Generated tokens properly attend only to gist tokens (compression!)
+        3. Our monkey-patched prepare_inputs updates the mask at each step
+        4. Generated tokens properly attend only to gist tokens (compression!)
 
         The key insight from official repo: attention_mask_gist must be used DURING GENERATION,
         not just training, because generated tokens must also only attend to gist tokens.
         """
-        # Simply pass through to base model's generate
-        # Our monkey-patched forward() and prepare_inputs_for_generation() handle everything
-        return self.model.generate(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            attention_mask_gist=attention_mask_gist,  # <- Propagated via monkey-patched methods
-            **kwargs
-        )
+        # Store attention_mask_gist and reset generation step counter
+        self._current_attention_mask_gist = attention_mask_gist
+        self._generation_step = 0
+
+        try:
+            # Call base model's generate
+            # Our monkey-patched methods handle propagating and updating the gist mask
+            outputs = self.model.generate(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                **kwargs
+            )
+        finally:
+            # Clean up after generation (important for next generation call)
+            self._current_attention_mask_gist = None
+            self._generation_step = 0
+
+        return outputs
 
     def save_pretrained(self, save_directory, *args, **kwargs):
         """Save model and gist embeddings."""
