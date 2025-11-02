@@ -59,7 +59,23 @@ def setup_ddp():
         world_size = 1
         local_rank = 0
 
+    # Check GPU availability before initializing DDP
     if world_size > 1:
+        num_gpus = torch.cuda.device_count()
+        if num_gpus == 0:
+            raise RuntimeError(
+                f"torchrun launched with {world_size} processes but no GPUs detected!\n"
+                f"Possible causes:\n"
+                f"  1. Running on a node without GPUs (check with: nvidia-smi)\n"
+                f"  2. CUDA_VISIBLE_DEVICES not set by SLURM\n"
+                f"  3. GPUs not allocated in SLURM job (need: #SBATCH --gres=gpu:4)\n"
+                f"Environment:\n"
+                f"  CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES', 'NOT SET')}\n"
+                f"  SLURM_GPUS_ON_NODE={os.environ.get('SLURM_GPUS_ON_NODE', 'NOT SET')}\n"
+            )
+        if num_gpus < world_size:
+            print(f"WARNING: Requested {world_size} processes but only {num_gpus} GPUs available")
+
         dist.init_process_group(backend='nccl')
         torch.cuda.set_device(local_rank)
 
