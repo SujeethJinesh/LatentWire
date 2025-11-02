@@ -2696,6 +2696,7 @@ def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=Non
         log_file = None
 
     try:
+        # Print header (only rank 0)
         if is_main_process():
             print("=" * 80)
             print(f"LEARNED ADAPTER EXPERIMENT - {adapter_type.upper()}")
@@ -2705,30 +2706,31 @@ def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=Non
             print(f"Model B: {model_b_id}")
             print(f"Log file: {log_path}")
 
-            # Device configuration - use DDP for multi-GPU
-            use_ddp = False
-            rank = 0
-            world_size = 1
+        # Device configuration - ALL RANKS MUST EXECUTE THIS
+        use_ddp = False
+        rank = 0
+        world_size = 1
 
-            if PLATFORM == 'hpc' and gpu_id is None and torch.cuda.device_count() > 1:
-                # Use DDP for multi-GPU training
-                rank, world_size, device = setup_ddp()
-                use_ddp = True
-                if is_main_process():
-                    print(f"\n{'='*80}")
-                    print(f"GPU CONFIGURATION")
-                    print(f"{'='*80}")
-                    print(f"Mode: DistributedDataParallel (DDP)")
-                    print(f"Number of GPUs: {world_size}")
-                    print(f"GPU IDs: {list(range(world_size))}")
-                    print(f"Rank: {rank}, Device: {device}")
-                    print(f"Batch size per GPU: {BATCH_SIZE}")
-                    print(f"Global batch size: {BATCH_SIZE * world_size}")
-                    print(f"Effective batch (with grad accum): {BATCH_SIZE * world_size * GRAD_ACCUM_STEPS}")
-                    print(f"{'='*80}\n")
-            elif PLATFORM == 'hpc' and gpu_id is not None:
-                # Use specific GPU
-                device = torch.device(f"cuda:{gpu_id}")
+        if PLATFORM == 'hpc' and gpu_id is None and torch.cuda.device_count() > 1:
+            # Use DDP for multi-GPU training - ALL RANKS participate
+            rank, world_size, device = setup_ddp()
+            use_ddp = True
+            if is_main_process():
+                print(f"\n{'='*80}")
+                print(f"GPU CONFIGURATION")
+                print(f"{'='*80}")
+                print(f"Mode: DistributedDataParallel (DDP)")
+                print(f"Number of GPUs: {world_size}")
+                print(f"GPU IDs: {list(range(world_size))}")
+                print(f"Rank: {rank}, Device: {device}")
+                print(f"Batch size per GPU: {BATCH_SIZE}")
+                print(f"Global batch size: {BATCH_SIZE * world_size}")
+                print(f"Effective batch (with grad accum): {BATCH_SIZE * world_size * GRAD_ACCUM_STEPS}")
+                print(f"{'='*80}\n")
+        elif PLATFORM == 'hpc' and gpu_id is not None:
+            # Use specific GPU
+            device = torch.device(f"cuda:{gpu_id}")
+            if is_main_process():
                 print(f"\n{'='*80}")
                 print(f"GPU CONFIGURATION")
                 print(f"{'='*80}")
@@ -2737,79 +2739,87 @@ def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=Non
                 print(f"Batch size: {BATCH_SIZE}")
                 print(f"Effective batch (with grad accum): {BATCH_SIZE * GRAD_ACCUM_STEPS}")
                 print(f"{'='*80}\n")
-            else:
-                # Use default device (MPS/CPU/single GPU)
-                device = DEVICE
+        else:
+            # Use default device (MPS/CPU/single GPU)
+            device = DEVICE
+            if is_main_process():
                 print(f"\nDevice: {device}\n")
 
-            # Platform-specific model loading
+        # Platform-specific model loading - ALL RANKS MUST LOAD MODELS
+        if is_main_process():
             print(f"\nLoading models on {PLATFORM}...")
 
-            # Select dtype based on platform
-            if PLATFORM == 'mac':
-                dtype = torch.float32  # MPS works best with float32
+        # Select dtype based on platform
+        if PLATFORM == 'mac':
+            dtype = torch.float32  # MPS works best with float32
+            if is_main_process():
                 print("Using float32 for MPS")
-            elif USE_BF16:
-                dtype = torch.bfloat16
+        elif USE_BF16:
+            dtype = torch.bfloat16
+            if is_main_process():
                 print("Using bfloat16 for H100")
-            else:
-                dtype = torch.float16
+        else:
+            dtype = torch.float16
+            if is_main_process():
                 print("Using float16")
 
-            # Model loading arguments
-            model_kwargs = {
-                'torch_dtype': dtype,
-                'low_cpu_mem_usage': True,
-            }
+        # Model loading arguments
+        model_kwargs = {
+            'torch_dtype': dtype,
+            'low_cpu_mem_usage': True,
+        }
 
-            # Add Flash Attention for HPC only
-            if USE_FLASH_ATTENTION:
-                model_kwargs['attn_implementation'] = "flash_attention_2"
+        # Add Flash Attention for HPC only
+        if USE_FLASH_ATTENTION:
+            model_kwargs['attn_implementation'] = "flash_attention_2"
+            if is_main_process():
                 print("Using Flash Attention 2")
 
-            model_a = AutoModelForCausalLM.from_pretrained(
-                model_a_id,
-                **model_kwargs
-            ).to(device).eval()
+        # ALL RANKS load models
+        model_a = AutoModelForCausalLM.from_pretrained(
+            model_a_id,
+            **model_kwargs
+        ).to(device).eval()
 
-            # Freeze model A parameters to save memory and compute
-            for param in model_a.parameters():
-                param.requires_grad = False
+        # Freeze model A parameters to save memory and compute
+        for param in model_a.parameters():
+            param.requires_grad = False
 
-            # Enable gradient checkpointing to save activation memory during backprop
-            # (still needed even with frozen params, reduces activation memory 2-3×)
-            model_a.gradient_checkpointing_enable()
+        # Enable gradient checkpointing to save activation memory during backprop
+        # (still needed even with frozen params, reduces activation memory 2-3×)
+        model_a.gradient_checkpointing_enable()
 
-            model_b = AutoModelForCausalLM.from_pretrained(
-                model_b_id,
-                **model_kwargs
-            ).to(device).eval()
+        model_b = AutoModelForCausalLM.from_pretrained(
+            model_b_id,
+            **model_kwargs
+        ).to(device).eval()
 
-            # Freeze model B parameters to save memory and compute
-            for param in model_b.parameters():
-                param.requires_grad = False
+        # Freeze model B parameters to save memory and compute
+        for param in model_b.parameters():
+            param.requires_grad = False
 
-            # Enable gradient checkpointing to save activation memory during backprop
-            model_b.gradient_checkpointing_enable()
+        # Enable gradient checkpointing to save activation memory during backprop
+        model_b.gradient_checkpointing_enable()
 
-            # Note: Models are frozen (requires_grad=False), so no need to wrap with DDP
-            # Gradient checkpointing still helps reduce activation memory during backprop
-            # Only the adapter will be wrapped with DDP in train_adapter()
+        # Note: Models are frozen (requires_grad=False), so no need to wrap with DDP
+        # Gradient checkpointing still helps reduce activation memory during backprop
+        # Only the adapter will be wrapped with DDP in train_adapter()
 
-            # Load tokenizers
-            tokenizer_a = AutoTokenizer.from_pretrained(model_a_id)
-            tokenizer_b = AutoTokenizer.from_pretrained(model_b_id)
+        # Load tokenizers - ALL RANKS
+        tokenizer_a = AutoTokenizer.from_pretrained(model_a_id)
+        tokenizer_b = AutoTokenizer.from_pretrained(model_b_id)
 
-            # Set padding tokens
-            if tokenizer_a.pad_token is None:
-                tokenizer_a.pad_token = tokenizer_a.eos_token
-            if tokenizer_b.pad_token is None:
-                tokenizer_b.pad_token = tokenizer_b.eos_token
+        # Set padding tokens
+        if tokenizer_a.pad_token is None:
+            tokenizer_a.pad_token = tokenizer_a.eos_token
+        if tokenizer_b.pad_token is None:
+            tokenizer_b.pad_token = tokenizer_b.eos_token
 
-            # Get model dimensions from config
-            source_dim = model_a.config.hidden_size
-            target_dim = model_b.config.hidden_size
+        # Get model dimensions from config
+        source_dim = model_a.config.hidden_size
+        target_dim = model_b.config.hidden_size
 
+        if is_main_process():
             print(f"\nModel dimensions:")
             print(f"  Model A ({model_a_id}): {source_dim}")
             print(f"  Model B ({model_b_id}): {target_dim}")
@@ -2819,43 +2829,43 @@ def run_adapter_experiment(adapter_type, gpu_id, model_a_id=None, model_b_id=Non
             else:
                 print(f"  Dimensions match - adapter will preserve dimension")
 
-            # Create adapter with correct dimensions
-            if adapter_type == "linear":
-                adapter = LinearAdapter(source_dim=source_dim, target_dim=target_dim)
-            elif adapter_type == "affine":
-                adapter = AffineAdapter(source_dim=source_dim, target_dim=target_dim)
-            elif adapter_type == "lora":
-                adapter = LoRAAdapter(source_dim=source_dim, target_dim=target_dim)
-            else:
-                raise ValueError(f"Unknown adapter type: {adapter_type}")
+        # Create adapter with correct dimensions - ALL RANKS
+        if adapter_type == "linear":
+            adapter = LinearAdapter(source_dim=source_dim, target_dim=target_dim)
+        elif adapter_type == "affine":
+            adapter = AffineAdapter(source_dim=source_dim, target_dim=target_dim)
+        elif adapter_type == "lora":
+            adapter = LoRAAdapter(source_dim=source_dim, target_dim=target_dim)
+        else:
+            raise ValueError(f"Unknown adapter type: {adapter_type}")
 
-            # Create checkpoint directory for this adapter
-            checkpoint_dir = output_dir / f"{adapter_type}{model_suffix}_checkpoint"
+        # Create checkpoint directory for this adapter (only rank 0)
+        checkpoint_dir = output_dir / f"{adapter_type}{model_suffix}_checkpoint"
 
-            # Train adapter with checkpointing
-            adapter, metrics = train_adapter(
-                model_a, model_b, tokenizer_a, tokenizer_b,
-                adapter, device, log_file, NUM_SAMPLES,
-                checkpoint_dir=checkpoint_dir,
-                use_ddp=use_ddp,
-                rank=rank,
-                world_size=world_size
-            )
+        # Train adapter with checkpointing - ALL RANKS participate
+        adapter, metrics = train_adapter(
+            model_a, model_b, tokenizer_a, tokenizer_b,
+            adapter, device, log_file, NUM_SAMPLES,
+            checkpoint_dir=checkpoint_dir,
+            use_ddp=use_ddp,
+            rank=rank,
+            world_size=world_size
+        )
 
-            # Save results (only on main process)
-            if is_main_process():
-                results = {
-                    "adapter_type": adapter_type,
-                    "gpu_id": gpu_id,
-                    "training_metrics": metrics,
-                    "timestamp": timestamp
-                }
+        # Save results (only on main process)
+        if is_main_process():
+            results = {
+                "adapter_type": adapter_type,
+                "gpu_id": gpu_id,
+                "training_metrics": metrics,
+                "timestamp": timestamp
+            }
 
-                results_path = output_dir / f"{adapter_type}_results_{timestamp}.json"
-                with open(results_path, 'w') as f:
-                    json.dump(results, f, indent=2)
+            results_path = output_dir / f"{adapter_type}_results_{timestamp}.json"
+            with open(results_path, 'w') as f:
+                json.dump(results, f, indent=2)
 
-                print(f"\nResults saved to: {results_path}")
+            print(f"\nResults saved to: {results_path}")
             print("=" * 80)
             print(f"{adapter_type.upper()} EXPERIMENT COMPLETE")
             print("=" * 80)
