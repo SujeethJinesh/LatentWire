@@ -1,0 +1,112 @@
+[
+  {
+    "full_text": "",
+    "gist": "5\nInput, 5\nInput, 5\nInput, 5\nInput,5\nInput,5\nInput,5\nInput,5\nInput,5\nInput,6\nInput,6\nInput,6\nInput,6\nInput,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,Input,",
+    "truncated": "",
+    "reference": "One way to optimize the given code for efficiency is to eliminate the for loop and use the built-in Python function `sum()` to calculate the total sum of the list. This function is specifically designed to perform this operation efficiently on an iterable object, such as a list, and can reduce the runtime of the code.\n\nHere is the optimized version of the code:\n\ndef calculate_total_sum(lst): \n    return sum(lst)",
+    "prompts": {
+      "full": "Instruction: Suggest a way to optimize the given code for efficiency.\nInput: def calculate_total_sum(list): \n  sum = 0\n  for element in list: \n    sum += element \n  return sum\nOutput:",
+      "gist": "<GIST>\nInput: def calculate_total_sum(list): \n  sum = 0\n  for element in list: \n    sum += element \n  return sum\nOutput:",
+      "truncated": "Instruction: Suggest a way to optimize the given code for efficiency.\nInput: def calculate_total_sum(list): \n  sum = 0\n  for element in list: \n    sum += element \n  return sum\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "",
+    "gist": ": The S&P500\nInput: The S&P500\nInput: The S&P500\nInput: Data: The S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe S&P 500\nThe",
+    "truncated": "2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/2018/",
+    "reference": "Based on the current trend of the S&P 500 index trading higher for seven consecutive days, it is likely that the stock market will continue its upward trend in the short-term.",
+    "prompts": {
+      "full": "Instruction: Make a one sentence prediction of the stock market using the given information.\nInput: Data: The S&P 500 index is currently trading higher for the seventh consecutive day.\nOutput:",
+      "gist": "<GIST>\nInput: Data: The S&P 500 index is currently trading higher for the seventh consecutive day.\nOutput:",
+      "truncated": "Instruction: Make a one sentence prediction of the stock market using the given information.\nInput: Data: The S&P 500 index is currently trading higher for the seventh consecutive day.\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "6-6-8 points) What are the following questions\n1. What are the following questions\n1. What are the following questions are you will be the following questions are you will be answered in the following questions are you will be answered in the following questions. 2. 2. 2. 2. 2. 2. 2. 2. 2. 2. What are. What are. What are. What are. What are 2. What are 2. What are the following are the following",
+    "gist": "Output:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www\nOutput:www\nOutput:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:",
+    "truncated": "",
+    "reference": "1) Educational programs: Educational programs that involve schools, community centers and media campaigns can raise awareness about the dangers and negative consequences of drug abuse. These programs can also provide information about healthy coping mechanisms and resources for seeking help. Educational programs should not only target adolescents, but also adults, as drug abuse can occur at any age.\n\n2) Improved access to addiction treatment: Drug abuse often stems from underlying mental health issues, such as depression, anxiety or trauma. Providing individuals with improved access to addiction treatment and therapy can help address these underlying issues and reduce the likelihood of drug abuse. Treatment can include cognitive-behavioral therapy, individual or group counseling, medication-assisted treatment, and support groups. Ensuring that individuals have access to affordable and comprehensive care is crucial in reducing drug abuse.",
+    "prompts": {
+      "full": "Instruction: Suggest two interventions that may reduce drug abuse.\nOutput:",
+      "gist": "<GIST>\nOutput:",
+      "truncated": "Instruction: Suggest two interventions that may reduce drug abuse.\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best.\nI can'the best.\nI can'the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of the best of",
+    "gist": "Output:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www\nOutput:www\nOutput:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:",
+    "truncated": "",
+    "reference": "Two upbeat songs that could be great additions to a jogging playlist are 1) \"Can't Hold Us\" by Macklemore & Ryan Lewis, and 2) \"Eye of the Tiger\" by Survivor. These songs have a fast tempo and energizing lyrics that can help keep you motivated during your jog.",
+    "prompts": {
+      "full": "Instruction: Suggest two songs that may be used for a jogging playlist.\nOutput:",
+      "gist": "<GIST>\nOutput:",
+      "truncated": "Instruction: Suggest two songs that may be used for a jogging playlist.\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "choice and a movie title and a movie title and a genre and a movie title and a genre.\nOutput: \"genre\" and the movie title and the movie title.\nOutput: \"The genre of your choice of your choice.",
+    "gist": "Output:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www\nOutput:www\nOutput:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:",
+    "truncated": "",
+    "reference": "1. Drama - usually involves realistic characters and emotional themes that carries a significant meaning, often representing a larger picture of life or society.\n2. Science Fiction - usually involves imaginative concepts such as futuristic settings, new technological and scientific innovations, space travel or time-travel.",
+    "prompts": {
+      "full": "Instruction: Provide two examples of movie genres.\nOutput:",
+      "gist": "<GIST>\nOutput:",
+      "truncated": "Instruction: Provide two examples of movie genres.\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "",
+    "gist": "Output: \"Don't quit. Suffer now and live the rest of your life as a\nOutput: \"Don't quit. Suffer now and live the rest of your life as a champion.\" - Muhammad Ali\nOutput: \"Don't\nOutput: \"Don't quit. Suffer now and live the rest of your life as a",
+    "truncated": "quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote/quote",
+    "reference": "This quote may not be the most appropriate for a yoga class. Yoga emphasizes mindfulness, non-competitiveness, and non-violence, and while the sentiment of perseverance in this quote can be inspirational, the use of words such as \"suffer\" and \"champion\" may not align with the core principles of a yoga practice.",
+    "prompts": {
+      "full": "Instruction: Detect if the quote is appropriate for a yoga class.\nInput: \"Don't quit. Suffer now and live the rest of your life as a champion.\" - Muhammad Ali\nOutput:",
+      "gist": "<GIST>\nInput: \"Don't quit. Suffer now and live the rest of your life as a champion.\" - Muhammad Ali\nOutput:",
+      "truncated": "Instruction: Detect if the quote is appropriate for a yoga class.\nInput: \"Don't quit. Suffer now and live the rest of your life as a champion.\" - Muhammad Ali\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "Industrial Revolution happened in England.\nThe Industrial Revolution happened in England.\nThe Industrial Revolution in England.",
+    "gist": "Output:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www\nOutput:www\nOutput:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:",
+    "truncated": "",
+    "reference": "There are several reasons why the Industrial Revolution began in England. Here are some of the most important factors:\n\n1. Agriculture improvements: Changes in agricultural practices led to an increase in food production, which meant people had more food to eat and were healthier. This also meant that fewer people were needed to work in agriculture, freeing up labor for industry.\n\n2. Natural resources: England had abundant natural resources such as coal, water, and iron, which were essential for the development of industry. The supply of these resources helped to fuel the growth of industry in the country.\n\n3. Colonies and trade: England's colonies provided the raw materials for its factories and also served as markets for the finished goods. This helped stimulate the growth of industry in the country.\n\n4. Economic policies: The government's economic policies encouraged trade and supported the growth of industry. In particular, the government invested in infrastructure projects such as roads and canals, which helped to improve transportation and make it easier for goods to be transported.\n\n5. Banking system: England had a well-developed banking system, which provided the capital needed for industrial development. This made it easier for entrepreneurs to start businesses and for factories to expand.\n\n6. Entrepreneurship and innovation: The country had a culture of entrepreneurship and innovation, with many inventors and entrepreneurs developing new technologies and business models. This helped fuel the growth of industry and paved the way for the technological advances that drove the Industrial Revolution.\n\nIn summary, the Industrial Revolution happened in England due to a combination of factors, including agricultural improvements, natural resources, trade and colonialism, supportive government policies, a well-developed banking system, and a culture of entrepreneurship and innovation.",
+    "prompts": {
+      "full": "Instruction: Analyze why the Industrial Revolution happened in England.\nOutput:",
+      "gist": "<GIST>\nOutput:",
+      "truncated": "Instruction: Analyze why the Industrial Revolution happened in England.\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "a reflective essay.",
+    "gist": "Output:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www\nOutput:www\nOutput:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:",
+    "truncated": "is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie that I watched. It is a movie I watched. It is a movie I",
+    "reference": "The movie Titanic, directed by James Cameron and released in 1997, is a film that has managed to capture the hearts of millions around the world. The film tells the ill-fated story of the \u201cunsinkable\u201d ship Titanic, which tragically sank on its maiden voyage. The film offers a glimpse into the lives of its passengers, particularly the love story of Jack and Rose, who come from different social classes but manage to find love on the ship. As an AI, I do not have personal feelings or emotions, but I can analyze and reflect on the themes and impact of the film.\n\nOne of the most striking aspects of the film is the theme of social class. Throughout the film, we see the stark contrast between the wealthy passengers and the poorer passengers. The wealthy passengers are depicted living in luxury, enjoying lavish parties and exquisite meals. The poorer passengers, on the other hand, are shown living in cramped quarters, struggling to make ends meet. The love story between Jack and Rose highlights this theme of social class, as they come from opposite ends of the social spectrum. Despite their differences, they manage to find love and happiness. This shows that love knows no boundaries and can transcend social class.\n\nAnother prominent theme is the fragility of life. The sinking of the Titanic is a stark reminder that life can be unpredictable and can change in an instant. The passengers on the ship had no idea that they were about to face a tragedy. The film shows the panic and chaos that ensued as the ship began to sink, and the desperate attempts to save as many lives as possible. It is a heart-wrenching reminder that life is precious and should never be taken for granted.\n\nThe film also highlights the power of the human spirit. In the face of tragedy, the passengers and crew of the Titanic showed remarkable courage and resilience. We see acts of selflessness and bravery, as people put their own lives at risk to save others. The film is a testament to the strength of the human spirit and our capacity to overcome even the greatest of challenges.\n\nIn conclusion, the movie Titanic is a powerful and moving film that leaves a lasting impact on its viewers. It is a film that explores the themes of social class, the fragility of life, and the power of the human spirit. It is a timeless story that will continue to touch the hearts of audiences for generations to come.",
+    "prompts": {
+      "full": "Instruction: After watching the movie Titanic, compose a reflective essay about the film.\nOutput:",
+      "gist": "<GIST>\nOutput:",
+      "truncated": "Instruction: After watching the movie Titanic, compose a reflective essay about the film.\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "a question about the of free will.\n//",
+    "gist": "Output:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www\nOutput:www\nOutput:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:",
+    "truncated": ".//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//www.//",
+    "reference": "What is the concept of free will and how does it relate to personal responsibility and moral actions?",
+    "prompts": {
+      "full": "Instruction: Formulate a question about the concept of free will.\nOutput:",
+      "gist": "<GIST>\nOutput:",
+      "truncated": "Instruction: Formulate a question about the concept of free will.\nOutput:\nOutput:"
+    }
+  },
+  {
+    "full_text": "",
+    "gist": "Output:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www.google.com\nOutput:www\nOutput:www\nOutput:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:Output:",
+    "truncated": "",
+    "reference": "1. Understanding the basics of renewable energy: A beginner's guide.\n2. The top benefits of using renewable energy sources in your home.\n3. How renewable energy is revolutionizing the power industry.\n4. The future is bright: The potential and promise of renewable energy.\n5. Solar power for your home: How to evaluate its viability and practicality.\n6. Wind, water, and sun: An overview of the most popular renewable energy sources.\n7. How to reduce your carbon footprint with renewable energy.\n8. The economic benefits of renewable energy: Jobs, cost savings and more.\n9. Renewable energy policy: How governments are promoting green energy.\n10. Success stories: Inspirational case studies of renewable energy projects around the world.",
+    "prompts": {
+      "full": "Instruction: Generate content ideas for a blog post on renewable energy.\nOutput:",
+      "gist": "<GIST>\nOutput:",
+      "truncated": "Instruction: Generate content ideas for a blog post on renewable energy.\nOutput:\nOutput:"
+    }
+  }
+]
