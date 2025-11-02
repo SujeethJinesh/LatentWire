@@ -262,10 +262,19 @@ import re
 
 # Suppress known warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
+warnings.filterwarnings("ignore", message=".*The attention mask and the pad token id were not set.*")
+warnings.filterwarnings("ignore", message=".*Setting `pad_token_id` to `eos_token_id`.*")
+warnings.filterwarnings("ignore", message=".*expandable_segments not supported.*")
+
+# Suppress NCCL and PyTorch warnings
+os.environ['NCCL_SUPPRESS_WARN'] = '1'
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:False'
 os.environ['HF_HOME'] = os.environ.get('HF_HOME', os.path.expanduser('~/.cache/huggingface'))
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import logging as transformers_logging
 from datasets import load_dataset
+import datasets
 import json
 import time
 from pathlib import Path
@@ -273,7 +282,10 @@ from datetime import datetime
 import math
 import multiprocessing as mp
 import shutil
-import datasets
+
+# Suppress transformers and datasets logging warnings
+transformers_logging.set_verbosity_error()
+datasets.logging.set_verbosity_error()
 
 # Add path to import from latentwire package
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
