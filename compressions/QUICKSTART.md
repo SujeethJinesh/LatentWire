@@ -4,6 +4,13 @@
 
 A **faithful reproduction** of "Learning to Compress Prompts with Gist Tokens" (Mu et al., NeurIPS 2023) for Llama 3.1 8B, with **configurable data size** for quick validation.
 
+## Prerequisites
+
+Make sure `rouge-score` is installed:
+```bash
+pip install rouge-score>=0.1.2
+```
+
 ### The Innovation
 
 Gist tokens enable **26× prompt compression** with **40% FLOPs reduction** via special attention masking:

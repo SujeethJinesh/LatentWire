@@ -116,7 +116,7 @@ def make_gist_mask(
     inputs: torch.Tensor,
     gist_token: int,
     pad_token: Optional[int] = None,
-    dtype=torch.int64,
+    dtype=torch.bool,
 ) -> torch.Tensor:
     """
     Creates 4D gist attention mask - EXACT implementation from paper.
@@ -137,9 +137,10 @@ def make_gist_mask(
         inputs: [batch_size, seq_len] input token IDs
         gist_token: integer ID of <GIST> token
         pad_token: optional padding token to mask out
+        dtype: Output dtype (default: torch.bool for compatibility with bfloat16 models)
 
     Returns:
-        mask: [batch_size, 1, seq_len, seq_len] attention mask
+        mask: [batch_size, 1, seq_len, seq_len] attention mask (dtype: bool for bfloat16 compatibility)
     """
     # Mask for tokens before last gist
     pre_gist_mask = make_mask_post_last_gist(inputs, gist_token, dtype=torch.bool)[
@@ -162,6 +163,7 @@ def make_gist_mask(
     if pad_token is not None:
         mask = mask & (inputs != pad_token)[:, None, None]
 
+    # Return as bool for bfloat16 compatibility (required by PyTorch scaled_dot_product_attention)
     return mask.type(dtype)
 
 
