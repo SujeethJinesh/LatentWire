@@ -1,0 +1,45 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+================================================================================
+GIST TOKENS EVALUATION
+================================================================================
+Checkpoint: runs/gist_validate
+Test samples: 200
+Max new tokens: 128
+Device: cuda:0
+================================================================================
+
+Loading gist model from runs/gist_validate...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:43, 14.41s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:30<00:31, 15.56s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:47<00:15, 15.90s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:51<00:00, 11.36s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:51<00:00, 12.87s/it]
+✓ Loaded GistLlama wrapper with 1 gist tokens
+Loading Alpaca test data...
+✓ Loaded 200 test samples
+
+Evaluating samples (batch_size=16)...
+Preparing prompts...
+CRITICAL: Gist prompts have INSTRUCTION REMOVED for true compression!
+Generating outputs...
+Batches:   0%|          | 0/13 [00:00<?, ?it/s]/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Batches:   0%|          | 0/13 [00:05<?, ?it/s]
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 328, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 215, in main
+    gist_batch = generate_batch(
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 92, in generate_batch
+    outputs = model.generate(**gen_kwargs)
+  File "/projects/m000066/sujinesh/LatentWire/compressions/train_gist_faithful.py", line 286, in generate
+    return self.model.generate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/utils.py", line 2215, in generate
+    result = self._sample(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/utils.py", line 3209, in _sample
+    model_kwargs = self._update_model_kwargs_for_generation(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/utils.py", line 770, in _update_model_kwargs_for_generation
+    model_kwargs["attention_mask"] = torch.cat(
+RuntimeError: Tensors must have same number of dimensions: got 4 and 2
