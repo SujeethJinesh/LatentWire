@@ -12,7 +12,7 @@ set -e
 # Configuration
 SCRIPT="compressions/train_gist_faithful.py"
 MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"  # Instruct model - already trained for instruction following
-NUM_GIST_TOKENS=1
+NUM_GIST_TOKENS=5  # Paper uses 5-10 tokens for effective compression
 BATCH_SIZE=12  # Per-GPU batch size (conservative for H100 80GB)
 GRAD_ACCUM_STEPS=2  # Gradient accumulation (effective batch size multiplier)
 LR=2e-5  # Match paper: 2e-5 (was 1e-4 - 5x too high!)
@@ -34,9 +34,9 @@ case $MODE in
         OUTPUT_DIR="runs/gist_test"
         ;;
     validate)
-        echo "Running VALIDATION (2K samples, 2 epochs)"
+        echo "Running VALIDATION (2K samples, 5 epochs)"
         SAMPLES=2000
-        EPOCHS=2
+        EPOCHS=5
         OUTPUT_DIR="runs/gist_validate"
         ;;
     full)
