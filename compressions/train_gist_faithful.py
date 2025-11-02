@@ -215,7 +215,13 @@ class GistLlama(nn.Module):
 
         # Use gist attention mask if provided (4D mask for compression)
         # This is the KEY to gist tokens: forces later tokens to only attend to gist
-        mask_to_use = attention_mask_gist if attention_mask_gist is not None else attention_mask
+        if attention_mask_gist is not None:
+            # Convert bool mask to float: True->0.0 (attend), False->-10000.0 (mask)
+            # This is required by transformers' AttentionMaskConverter
+            mask_to_use = torch.zeros_like(attention_mask_gist, dtype=torch.float32)
+            mask_to_use.masked_fill_(~attention_mask_gist, -10000.0)
+        else:
+            mask_to_use = attention_mask
 
         # Forward with embedded inputs and gist attention mask
         outputs = self.model(
