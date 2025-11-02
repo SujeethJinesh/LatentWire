@@ -11,7 +11,7 @@ Device: cuda:0
 ================================================================================
 
 Loading gist model from runs/gist_validate...
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:16<00:48, 16.08s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:33<00:33, 16.85s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:51<00:17, 17.28s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:55<00:00, 11.99s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:55<00:00, 13.79s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:43, 14.38s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:30<00:30, 15.44s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:46<00:15, 15.67s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:50<00:00, 11.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:50<00:00, 12.71s/it]
 ✓ Loaded GistLlama wrapper with 1 gist tokens
 Loading Alpaca test data...
 ✓ Loaded 200 test samples
@@ -24,7 +24,7 @@ Generating outputs...
   warnings.warn(
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
   warnings.warn(
-Batches:   8%|▊         | 1/13 [00:13<02:45, 13.82s/it]Batches:  15%|█▌        | 2/13 [00:26<02:26, 13.28s/it]Batches:  23%|██▎       | 3/13 [00:40<02:13, 13.38s/it]Batches:  31%|███       | 4/13 [00:54<02:02, 13.67s/it]Batches:  38%|███▊      | 5/13 [01:07<01:47, 13.45s/it]Batches:  46%|████▌     | 6/13 [01:21<01:35, 13.60s/it]Batches:  54%|█████▍    | 7/13 [01:30<01:12, 12.15s/it]Batches:  62%|██████▏   | 8/13 [01:43<01:02, 12.52s/it]Batches:  69%|██████▉   | 9/13 [01:52<00:45, 11.43s/it]Batches:  77%|███████▋  | 10/13 [02:02<00:32, 10.92s/it]Batches:  85%|████████▍ | 11/13 [02:17<00:24, 12.29s/it]Batches:  92%|█████████▏| 12/13 [02:29<00:12, 12.19s/it]Batches: 100%|██████████| 13/13 [02:50<00:00, 14.74s/it]Batches: 100%|██████████| 13/13 [02:50<00:00, 13.12s/it]
+Batches:   8%|▊         | 1/13 [00:14<02:52, 14.35s/it]Batches:  15%|█▌        | 2/13 [00:27<02:32, 13.90s/it]Batches:  23%|██▎       | 3/13 [00:41<02:17, 13.77s/it]Batches:  31%|███       | 4/13 [00:56<02:06, 14.06s/it]Batches:  38%|███▊      | 5/13 [01:09<01:51, 13.92s/it]Batches:  46%|████▌     | 6/13 [01:23<01:38, 14.02s/it]Batches:  54%|█████▍    | 7/13 [01:37<01:23, 13.88s/it]Batches:  62%|██████▏   | 8/13 [01:51<01:08, 13.77s/it]Batches:  69%|██████▉   | 9/13 [02:01<00:50, 12.58s/it]Batches:  77%|███████▋  | 10/13 [02:14<00:38, 12.88s/it]Batches:  85%|████████▍ | 11/13 [02:30<00:27, 13.73s/it]Batches:  92%|█████████▏| 12/13 [02:43<00:13, 13.65s/it]Batches: 100%|██████████| 13/13 [02:52<00:00, 12.28s/it]Batches: 100%|██████████| 13/13 [02:52<00:00, 13.29s/it]
 
 Computing ROUGE scores...
 
@@ -33,32 +33,32 @@ RESULTS
 ================================================================================
 
 Compression:
-  Full text avg tokens: 33.3
-  Gist avg tokens: 12.4
-  Compression ratio: 2.69×
+  Full text avg tokens: 63.3
+  Gist avg tokens: 43.8
+  Compression ratio: 1.45×
 
 ROUGE Scores:
 
   Full Text (positive control):
-    ROUGE-1: 0.1241
-    ROUGE-2: 0.0352
-    ROUGE-L: 0.0988
+    ROUGE-1: 0.1102
+    ROUGE-2: 0.0325
+    ROUGE-L: 0.0849
 
   Gist Tokens (our method):
-    ROUGE-1: 0.0520
-    ROUGE-2: 0.0114
-    ROUGE-L: 0.0443
+    ROUGE-1: 0.0313
+    ROUGE-2: 0.0047
+    ROUGE-L: 0.0254
 
   Truncated Text (negative control):
-    ROUGE-1: 0.1331
-    ROUGE-2: 0.0386
-    ROUGE-L: 0.1059
+    ROUGE-1: 0.0746
+    ROUGE-2: 0.0202
+    ROUGE-L: 0.0587
 
   Relative Performance (vs Full Text):
-    Gist ROUGE-L: 44.8% of full text
-    Truncated ROUGE-L: 107.2% of full text
+    Gist ROUGE-L: 29.9% of full text
+    Truncated ROUGE-L: 69.2% of full text
 
-  Evaluation time: 170.6s (0.85s per sample)
+  Evaluation time: 172.9s (0.86s per sample)
 ================================================================================
 
 ✓ Saved results to runs/gist_validate/eval_results.json

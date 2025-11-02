@@ -2,29 +2,29 @@
   "checkpoint": "runs/gist_validate",
   "num_samples": 200,
   "num_gist_tokens": 1,
-  "compression_ratio": 2.689446016983421,
-  "avg_full_tokens": 33.255,
-  "avg_gist_tokens": 12.365,
+  "compression_ratio": 1.4453455168475158,
+  "avg_full_tokens": 63.27,
+  "avg_gist_tokens": 43.775,
   "rouge_scores": {
     "full_text": {
-      "rouge1": 0.12406075299140644,
-      "rouge2": 0.035156813198185095,
-      "rougeL": 0.09880885788337858
+      "rouge1": 0.11020369795444371,
+      "rouge2": 0.03252150786264321,
+      "rougeL": 0.08487097984730353
     },
     "gist": {
-      "rouge1": 0.052045229999183214,
-      "rouge2": 0.01137405380530826,
-      "rougeL": 0.044283930419634895
+      "rouge1": 0.031301754041354504,
+      "rouge2": 0.0047172088137982845,
+      "rougeL": 0.0253840716912204
     },
     "truncated": {
-      "rouge1": 0.13313842913122234,
-      "rouge2": 0.03855209105313011,
-      "rougeL": 0.10587449268607556
+      "rouge1": 0.07462524463045975,
+      "rouge2": 0.020173776029076492,
+      "rougeL": 0.058698835762609064
     }
   },
   "relative_performance": {
-    "gist_vs_full": 0.4481777379908795,
-    "truncated_vs_full": 1.0715081112569518
+    "gist_vs_full": 0.2990901216987291,
+    "truncated_vs_full": 0.6916243440127315
   },
-  "eval_time_seconds": 170.58288717269897
+  "eval_time_seconds": 172.90331435203552
 }
