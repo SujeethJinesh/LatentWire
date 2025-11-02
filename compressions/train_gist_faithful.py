@@ -265,7 +265,8 @@ class GistLlama(nn.Module):
         inputs_embeds = self.model.model.embed_tokens(input_ids)
         gist_mask = (input_ids == self.gist_token_id)
         if gist_mask.any():
-            inputs_embeds[gist_mask] = self.gist_embedding
+            # Ensure dtype matches (gist_embedding might be bfloat16 while inputs_embeds is float32)
+            inputs_embeds[gist_mask] = self.gist_embedding.to(inputs_embeds.dtype)
 
         # Apply gist attention mask if provided
         if attention_mask_gist is not None:
