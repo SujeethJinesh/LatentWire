@@ -7,6 +7,6 @@
   "learning_rate": 2e-05,
   "final_loss": 0.18700584609593665,
   "total_steps": 42,
-  "total_time_minutes": 0.9826194365819295,
+  "total_time_minutes": 0.9722209533055624,
   "model_id": "meta-llama/Meta-Llama-3.1-8B"
 }

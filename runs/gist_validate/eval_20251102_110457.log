@@ -1,0 +1,65 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+================================================================================
+GIST TOKENS EVALUATION
+================================================================================
+Checkpoint: runs/gist_validate
+Test samples: 200
+Max new tokens: 128
+Device: cuda:0
+================================================================================
+
+Loading gist model from runs/gist_validate...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:43, 14.45s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:31<00:31, 15.78s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:48<00:16, 16.34s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:52<00:00, 11.54s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:52<00:00, 13.09s/it]
+✓ Loaded GistLlama wrapper with 1 gist tokens
+Loading Alpaca test data...
+✓ Loaded 200 test samples
+
+Evaluating samples (batch_size=16)...
+Preparing prompts...
+CRITICAL: Gist prompts have INSTRUCTION REMOVED for true compression!
+Generating outputs...
+Batches:   0%|          | 0/13 [00:00<?, ?it/s]/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Batches:   8%|▊         | 1/13 [00:14<02:48, 14.02s/it]Batches:  15%|█▌        | 2/13 [00:27<02:29, 13.57s/it]Batches:  23%|██▎       | 3/13 [00:40<02:14, 13.50s/it]Batches:  31%|███       | 4/13 [00:54<02:04, 13.79s/it]Batches:  38%|███▊      | 5/13 [01:08<01:48, 13.53s/it]Batches:  46%|████▌     | 6/13 [01:22<01:35, 13.70s/it]Batches:  54%|█████▍    | 7/13 [01:35<01:20, 13.49s/it]Batches:  62%|██████▏   | 8/13 [01:48<01:06, 13.36s/it]Batches:  69%|██████▉   | 9/13 [02:01<00:53, 13.25s/it]Batches:  77%|███████▋  | 10/13 [02:13<00:39, 13.10s/it]Batches:  85%|████████▍ | 11/13 [02:29<00:27, 13.77s/it]Batches:  92%|█████████▏| 12/13 [02:43<00:13, 13.86s/it]Batches: 100%|██████████| 13/13 [02:57<00:00, 14.11s/it]Batches: 100%|██████████| 13/13 [02:57<00:00, 13.69s/it]
+
+Computing ROUGE scores...
+
+================================================================================
+RESULTS
+================================================================================
+
+Compression:
+  Full text avg tokens: 33.3
+  Gist avg tokens: 12.4
+  Compression ratio: 2.69×
+
+ROUGE Scores:
+
+  Full Text (positive control):
+    ROUGE-1: 0.0617
+    ROUGE-2: 0.0200
+    ROUGE-L: 0.0517
+
+  Gist Tokens (our method):
+    ROUGE-1: 0.0306
+    ROUGE-2: 0.0134
+    ROUGE-L: 0.0270
+
+  Truncated Text (negative control):
+    ROUGE-1: 0.0323
+    ROUGE-2: 0.0062
+    ROUGE-L: 0.0290
+
+  Relative Performance (vs Full Text):
+    Gist ROUGE-L: 52.1% of full text
+    Truncated ROUGE-L: 56.0% of full text
+
+  Evaluation time: 178.0s (0.89s per sample)
+================================================================================
+
+✓ Saved results to runs/gist_validate/eval_results.json
+✓ Saved sample outputs to runs/gist_validate/sample_outputs.json
