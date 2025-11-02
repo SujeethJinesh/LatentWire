@@ -1,0 +1,34 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+================================================================================
+GIST TOKENS EVALUATION
+================================================================================
+Checkpoint: runs/gist_validate
+Test samples: 200
+Max new tokens: 128
+Device: cuda:0
+================================================================================
+
+Loading gist model from runs/gist_validate...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:42, 14.02s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:29<00:30, 15.06s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:46<00:15, 15.71s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:49<00:00, 10.97s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:49<00:00, 12.50s/it]
+✓ Loaded GistLlama wrapper with 5 gist tokens
+Loading Alpaca test data...
+✓ Loaded 0 test samples (indices 52000-52000)
+✓ Zero overlap with training data (training uses first 0-52000 after shuffle)
+
+Evaluating samples (batch_size=16)...
+Preparing prompts...
+CRITICAL: Gist prompts have INSTRUCTION REMOVED for true compression!
+Generating outputs...
+Batches: 0it [00:00, ?it/s]Batches: 0it [00:00, ?it/s]
+
+Computing ROUGE scores...
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 357, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 279, in main
+    rouge_full = compute_rouge(full_outputs, references)
+  File "/projects/m000066/sujinesh/LatentWire/compressions/eval_gist.py", line 117, in compute_rouge
+    'rouge1': sum(scores['rouge1']) / len(scores['rouge1']),
+ZeroDivisionError: division by zero
