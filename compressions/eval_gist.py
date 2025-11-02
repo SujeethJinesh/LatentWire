@@ -44,9 +44,10 @@ def load_gist_model(checkpoint_dir: str, device: str):
         raise FileNotFoundError(f"No gist embedding found at {gist_path}")
 
 
-def generate_output(model, tokenizer, prompt: str, max_new_tokens: int = 128, device: str = "cuda"):
-    """Generate output from prompt."""
-    inputs = tokenizer(prompt, return_tensors="pt", padding=True).to(device)
+def generate_batch(model, tokenizer, prompts: List[str], max_new_tokens: int = 128, device: str = "cuda"):
+    """Generate outputs from batch of prompts."""
+    inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+    input_lengths = inputs.attention_mask.sum(dim=1)
 
     with torch.no_grad():
         outputs = model.generate(
@@ -56,58 +57,13 @@ def generate_output(model, tokenizer, prompt: str, max_new_tokens: int = 128, de
             pad_token_id=tokenizer.pad_token_id,
         )
 
-    # Decode only the generated part (skip input)
-    generated = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
-    return generated.strip()
+    # Decode only the generated part (skip input) for each sample
+    generated_texts = []
+    for i, output in enumerate(outputs):
+        generated = tokenizer.decode(output[input_lengths[i]:], skip_special_tokens=True)
+        generated_texts.append(generated.strip())
 
-
-def evaluate_sample(
-    model,
-    tokenizer,
-    instruction: str,
-    input_text: str,
-    reference_output: str,
-    num_gist_tokens: int,
-    max_new_tokens: int,
-    device: str,
-) -> Dict:
-    """Evaluate one sample with all baselines."""
-
-    # Format prompts
-    if input_text:
-        full_prompt = f"Instruction: {instruction}\nInput: {input_text}\nOutput:"
-        gist_str = " ".join(["<GIST>"] * num_gist_tokens)
-        gist_prompt = f"Instruction: {instruction}\n{gist_str}\nInput: {input_text}\nOutput:"
-    else:
-        full_prompt = f"Instruction: {instruction}\nOutput:"
-        gist_str = " ".join(["<GIST>"] * num_gist_tokens)
-        gist_prompt = f"Instruction: {instruction}\n{gist_str}\nOutput:"
-
-    # Baseline 1: Full text (positive control)
-    full_output = generate_output(model, tokenizer, full_prompt, max_new_tokens, device)
-
-    # Our method: Gist tokens
-    gist_output = generate_output(model, tokenizer, gist_prompt, max_new_tokens, device)
-
-    # Baseline 2: Truncated text (negative control - truncate to num_gist_tokens)
-    full_tokens = tokenizer(full_prompt, return_tensors="pt").input_ids[0]
-    # Truncate to approximately num_gist_tokens (keep instruction + num_gist_tokens worth of input)
-    truncate_len = min(len(full_tokens), 50 + num_gist_tokens * 10)  # Heuristic
-    truncated_ids = full_tokens[:truncate_len]
-    truncated_prompt = tokenizer.decode(truncated_ids, skip_special_tokens=True) + "\nOutput:"
-    truncated_output = generate_output(model, tokenizer, truncated_prompt, max_new_tokens, device)
-
-    return {
-        "full_text": full_output,
-        "gist": gist_output,
-        "truncated": truncated_output,
-        "reference": reference_output,
-        "prompts": {
-            "full": full_prompt,
-            "gist": gist_prompt,
-            "truncated": truncated_prompt,
-        }
-    }
+    return generated_texts
 
 
 def compute_rouge(predictions: List[str], references: List[str]) -> Dict[str, float]:
@@ -135,6 +91,7 @@ def main():
     parser.add_argument('--checkpoint', type=str, required=True, help='Gist model checkpoint directory')
     parser.add_argument('--samples', type=int, default=200, help='Number of test samples')
     parser.add_argument('--max_new_tokens', type=int, default=128, help='Max tokens to generate')
+    parser.add_argument('--batch_size', type=int, default=16, help='Batch size for evaluation')
     parser.add_argument('--device', type=str, default='cuda', help='Device')
     parser.add_argument('--output_dir', type=str, default=None, help='Output directory (defaults to checkpoint dir)')
 
@@ -167,32 +124,72 @@ def main():
     test_data = dataset.select(range(len(dataset) - args.samples, len(dataset)))
     print(f"✓ Loaded {len(test_data)} test samples\n")
 
-    # Evaluate all samples
-    print("Evaluating samples...")
-    results = []
+    # Evaluate all samples in batches
+    print(f"Evaluating samples (batch_size={args.batch_size})...")
     full_outputs, gist_outputs, truncated_outputs, references = [], [], [], []
+    all_prompts_full, all_prompts_gist, all_prompts_truncated = [], [], []
 
     start_time = time.time()
 
-    for i, example in enumerate(tqdm(test_data, desc="Evaluating")):
-        result = evaluate_sample(
-            model=model,
-            tokenizer=tokenizer,
-            instruction=example['instruction'],
-            input_text=example.get('input', ''),
-            reference_output=example['output'],
-            num_gist_tokens=num_gist_tokens,
-            max_new_tokens=args.max_new_tokens,
-            device=args.device,
-        )
+    # First, prepare all prompts
+    print("Preparing prompts...")
+    for example in test_data:
+        instruction = example['instruction']
+        input_text = example.get('input', '')
 
-        results.append(result)
-        full_outputs.append(result['full_text'])
-        gist_outputs.append(result['gist'])
-        truncated_outputs.append(result['truncated'])
-        references.append(result['reference'])
+        if input_text:
+            full_prompt = f"Instruction: {instruction}\nInput: {input_text}\nOutput:"
+            gist_str = " ".join(["<GIST>"] * num_gist_tokens)
+            gist_prompt = f"Instruction: {instruction}\n{gist_str}\nInput: {input_text}\nOutput:"
+        else:
+            full_prompt = f"Instruction: {instruction}\nOutput:"
+            gist_str = " ".join(["<GIST>"] * num_gist_tokens)
+            gist_prompt = f"Instruction: {instruction}\n{gist_str}\nOutput:"
+
+        # Truncated text baseline
+        full_tokens = tokenizer(full_prompt, return_tensors="pt").input_ids[0]
+        truncate_len = min(len(full_tokens), 50 + num_gist_tokens * 10)
+        truncated_ids = full_tokens[:truncate_len]
+        truncated_prompt = tokenizer.decode(truncated_ids, skip_special_tokens=True) + "\nOutput:"
+
+        all_prompts_full.append(full_prompt)
+        all_prompts_gist.append(gist_prompt)
+        all_prompts_truncated.append(truncated_prompt)
+        references.append(example['output'])
+
+    # Process in batches
+    print("Generating outputs...")
+    for i in tqdm(range(0, len(test_data), args.batch_size), desc="Batches"):
+        batch_end = min(i + args.batch_size, len(test_data))
+
+        # Full text baseline
+        full_batch = generate_batch(model, tokenizer, all_prompts_full[i:batch_end], args.max_new_tokens, args.device)
+        full_outputs.extend(full_batch)
+
+        # Gist tokens
+        gist_batch = generate_batch(model, tokenizer, all_prompts_gist[i:batch_end], args.max_new_tokens, args.device)
+        gist_outputs.extend(gist_batch)
+
+        # Truncated baseline
+        truncated_batch = generate_batch(model, tokenizer, all_prompts_truncated[i:batch_end], args.max_new_tokens, args.device)
+        truncated_outputs.extend(truncated_batch)
 
     elapsed = time.time() - start_time
+
+    # Store results for saving
+    results = []
+    for i in range(len(test_data)):
+        results.append({
+            "full_text": full_outputs[i],
+            "gist": gist_outputs[i],
+            "truncated": truncated_outputs[i],
+            "reference": references[i],
+            "prompts": {
+                "full": all_prompts_full[i],
+                "gist": all_prompts_gist[i],
+                "truncated": all_prompts_truncated[i],
+            }
+        })
 
     # Compute ROUGE scores
     print("\nComputing ROUGE scores...")
