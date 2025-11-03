@@ -2,6 +2,210 @@
 
 ---
 ## ═══════════════════════════════════════════════════════════════════════════
+## 🔍 GIST TOKENS ROOT CAUSE ANALYSIS (2025-11-02)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Problem
+Gist tokens training achieved low loss (0.0086) but evaluation failed completely (ROUGE-L 0.061, only 6.1%). Most outputs were template fragments like "assistant" or boilerplate text.
+
+### Root Cause Findings
+
+After thorough analysis of the official gist tokens repo and paper, identified **5 critical implementation differences**:
+
+#### 1. **FUNDAMENTAL: Gist Token Initialization**
+
+**Official (CORRECT)**:
+```python
+# Add <GIST> to vocabulary, resize embeddings
+tokenizer.add_special_tokens({"additional_special_tokens": ["<GIST>"]})
+model.resize_token_embeddings(len(tokenizer))
+
+# Initialize new token embedding to mean of existing embeddings
+model.model.embed_tokens.weight[-1] = model.model.embed_tokens.weight[:-1].mean(0)
+model.lm_head.weight[-1] = model.lm_head.weight[:-1].mean(0)
+```
+
+**Ours (WRONG)**:
+```python
+# Create separate learnable parameter OUTSIDE vocabulary
+self.gist_embedding = nn.Parameter(init_embedding.clone())
+
+# Replace token IDs with this parameter during forward
+inputs_embeds[gist_mask] = self.gist_embedding
+```
+
+**Impact**: We're learning embeddings in isolation. Official repo uses the token from vocabulary and learns through normal backprop.
+
+#### 2. **Architecture Modifications**
+
+**Official (CORRECT)**:
+- Custom `GistLlamaAttention` with `gist_offset` parameter for rotary embeddings
+- Custom `GistLlamaDecoderLayer` passing `gist_offset` through layers
+- Custom `GistLlamaModel` accepting `attention_mask_gist` parameter
+- Integrated KV cache handling for compression/generation workflow
+
+**Ours (WRONG)**:
+- Wrapper class around base model
+- Manual embedding replacement during forward
+- No architectural modifications to attention layers
+
+**Impact**: Missing proper position embedding handling and KV cache integration.
+
+#### 3. **Compression/Generation Workflow**
+
+**Official (CORRECT)**:
+```python
+# PHASE 1: COMPRESSION - Extract gist activations
+prompt = f"Instruction: {instruction}\n<GIST> <GIST> <GIST>"
+gist_activations = model.get_gist_activations(
+    input_ids=tokenizer.encode(prompt),
+    attention_mask=attention_mask,
+    attention_mask_gist=gist_mask,
+    gist_token=gist_token_id,
+    num_gist_tokens=num_gist_tokens,
+)
+# Returns: GistActivations(past_key_values, gist_indices, last_hidden_state)
+
+# PHASE 2: GENERATION - Use cached KV states
+outputs = model.generate(
+    input_ids=input_ids,  # Just input, NO instruction
+    past_key_values=gist_activations.past_key_values,  # Cached gist KVs
+    gist_offset=gist_activations.gist_indices,  # Position offset
+    ...
+)
+```
+
+**Ours (WRONG)**:
+```python
+# Try to generate directly with gist tokens in prompt
+gist_prompt = f"<GIST> <GIST> <GIST>\n{input_text}"
+outputs = model.generate(
+    input_ids=tokenizer.encode(gist_prompt),
+    use_gist_mask=True,
+    ...
+)
+```
+
+**Impact**: We never extract or cache gist activations. We try to generate with raw gist token IDs, which can't work because the embeddings haven't learned meaningful compression.
+
+#### 4. **Training Format**
+
+**Official (CORRECT)**:
+```python
+# Clean simple format
+prompt = "Instruction: {instruction}\n<GIST> <GIST> ...\nOutput: {output}"
+```
+
+**Ours (WRONG)**:
+```python
+# Llama 3.1 Instruct chat template
+messages = [{"role": "user", "content": f"{instruction}\n{gist_str}"}]
+prompt = tokenizer.apply_chat_template(messages, ...)
+# Results in: "<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n..."
+```
+
+**Impact**: Chat template adds ~40 special tokens and rigid structure. May interfere with gist compression mechanism.
+
+#### 5. **Key Missing Component: `get_gist_activations()`**
+
+**Official implementation** (gist_llama.py:634-656):
+```python
+def get_gist_activations(self, input_ids, attention_mask, attention_mask_gist,
+                         gist_token, num_gist_tokens):
+    # Process full sequence with gist mask
+    model_outputs = self.model(
+        input_ids,
+        attention_mask=attention_mask,
+        attention_mask_gist=attention_mask_gist,
+        output_hidden_states=True,
+        use_cache=True,  # KEY: returns past_key_values
+    )
+
+    # Extract KV cache at gist token positions
+    return GistActivations.from_model_outputs(
+        model_outputs=model_outputs,
+        input_ids=input_ids,
+        gist_token=gist_token,
+        num_gist_tokens=num_gist_tokens,
+    )
+```
+
+**We have**: Nothing - this method doesn't exist in our implementation.
+
+**Impact**: Can't extract or cache gist activations, which is the ENTIRE POINT of gist tokens.
+
+### How Gist Tokens Actually Work
+
+Official implementation workflow:
+
+```
+TRAINING:
+Input:  "Instruction: Generate password\n<GIST><GIST><GIST>\nOutput: xK9$mP2q"
+Mask:   Tokens after gist can't attend to tokens before gist
+Result: Forces compression of instruction into gist positions via attention mask
+
+COMPRESSION (Inference Phase 1):
+Input:  "Instruction: Generate password\n<GIST><GIST><GIST>"
+Call:   get_gist_activations() with use_cache=True
+Output: GistActivations(past_key_values=KV_cache_at_gist_positions, ...)
+
+GENERATION (Inference Phase 2):
+Input:  ""  (empty or just additional input)
+Call:   model.generate(past_key_values=cached_gist_KVs, gist_offset=positions)
+Output: "xK9$mP2q"  (generated from cached gist activations only)
+```
+
+The gist tokens work by **caching KV states**, not by learning embedding values!
+
+### Fix Plan
+
+**COPY OFFICIAL ARCHITECTURE DIRECTLY** (user requested "keep it dead simple and copy code"):
+
+1. **Copy official `gist_llama.py`** to `compressions/gist_llama_official.py`
+   - Includes all custom classes: GistLlamaRotaryEmbedding, GistLlamaAttention, GistLlamaDecoderLayer, GistLlamaModel, GistLlamaForCausalLM
+   - Update `PRETRAINED_VOCAB_SIZE` constant for Llama 3.1 (128256 vs 32000)
+
+2. **Copy official `gist_caching.py`** to `compressions/gist_caching.py`
+   - Includes `GistActivations` dataclass and `from_model_outputs()` method
+
+3. **Copy official gist mask utilities** from `data/gist.py`
+   - `make_gist_mask()` - creates proper 4D attention mask
+   - `get_gist_index()` - finds gist token positions
+
+4. **Simplify training format** - remove chat template:
+   ```python
+   prompt = f"Instruction: {instruction}\n<GIST> <GIST> ...\nOutput: {output}"
+   ```
+
+5. **Implement proper eval with compression/generation**:
+   ```python
+   # Compression
+   gist_acts = model.get_gist_activations(...)
+
+   # Generation
+   outputs = model.generate(past_key_values=gist_acts.past_key_values, ...)
+   ```
+
+### Key Insights
+
+1. **Gist tokens are NOT learned embeddings** - they're positions where KV cache is extracted
+2. **The "learning" happens through attention masks** - forcing information flow through gist
+3. **Compression is a two-phase process** - compress to KV cache, then generate from cache
+4. **Architecture modifications are essential** - can't work with just a wrapper
+
+### References
+
+- Paper: "Learning to Compress Prompts with Gist Tokens" (NeurIPS 2023)
+- Official repo: `compressions/official_gisting_repo/`
+- Key files analyzed:
+  - `src/gist_llama.py` - Architecture modifications
+  - `src/train.py` - Training setup
+  - `src/compress.py` - Compression/generation workflow
+  - `src/gist_caching.py` - KV cache extraction
+  - `src/data/gist.py` - Mask creation utilities
+
+---
+## ═══════════════════════════════════════════════════════════════════════════
 ## ⚡ DISTRIBUTED DATA PARALLEL (DDP) IMPLEMENTATION (2025-10-31 22:00)
 ## ═══════════════════════════════════════════════════════════════════════════
 
