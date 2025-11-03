@@ -12679,3 +12679,205 @@ git pull && rm -rf runs/gist_full && bash compressions/run_gist.sh full
 
 **Status**: Ready for full 52K sample training run. All architecture bugs fixed and aligned with official repo.
 
+---
+## ═══════════════════════════════════════════════════════════════════════════
+## 🔴 GIST TOKENS: POST-MORTEM ANALYSIS (2025-11-02 17:00)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Training Success, Evaluation Failure
+
+**Training Results**: 51,760 samples, 3 epochs, LR=2e-5
+- Final loss: 0.0086 (excellent convergence!)
+- Training time: 38.8 minutes on 4× H100
+- Smooth loss curves, no instability
+
+**Evaluation Results** (with data leakage):
+- Full text ROUGE-L: 0.263 (26.3% - baseline)
+- **Gist ROUGE-L: 0.061 (6.1% - FAILED)**
+- Gist performance: Only 23% of full text baseline
+- Sample outputs: Mostly template fragments or "assistant" token
+
+**The Paradox**: Training loss is excellent (0.0086) but generation quality is terrible. Why?
+
+### Root Cause #1: Loss Doesn't Measure Compression
+
+**What We Thought We Were Training**:
+- Gist embeddings learn to compress instruction information
+- Output can be generated from compressed gist tokens alone
+- Low loss = good compression
+
+**What Actually Happened**:
+The training loss is cross-entropy on output tokens:
+```
+[Instruction tokens] <GIST> <GIST> <GIST> [Output tokens we predict]
+```
+
+With gist masking:
+- Gist tokens CAN attend to instruction tokens (they come before gist)
+- Output tokens can ONLY attend to gist tokens (compression mechanism)
+
+The model achieves low loss by:
+1. Gist tokens attend to instruction tokens via self-attention
+2. Pass through instruction info to outputs via attention patterns
+3. Never actually encode information IN the gist embedding values
+4. Gist embeddings remain essentially random/unused
+
+**The gradient signal for "compress into embedding values" is very weak!** The model finds a shortcut: just use attention patterns instead of embedding content.
+
+At inference:
+- Instruction tokens are removed
+- Gist tokens have no context to attend to
+- Embedding values are meaningless (never learned)
+- Generation fails → outputs template boilerplate
+
+### Root Cause #2: Instruct Model Alignment Conflicts
+
+**Paper Uses**: LLaMA-7B BASE model (no instruction tuning)
+**We Used**: Llama 3.1 8B INSTRUCT (heavily aligned with RLHF/DPO)
+
+At evaluation, the prompt is:
+```
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+Cutting Knowledge Date: December 2023
+Today Date: 26 Jul 2024
+<|eot_id|><|start_header_id|>user<|end_header_id|>
+<GIST> <GIST> <GIST>
+<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+```
+
+The Instruct model sees:
+- Valid chat structure (system + user + assistant headers) ✅
+- But NO actual instruction, just mysterious `<GIST>` tokens ❌
+- Out-of-distribution for instruction-following training
+
+Instruct model's safety alignment kicks in:
+- "This doesn't match learned instruction patterns"
+- "No clear task to follow"
+- Falls back to safe behavior: generate template text or stop early
+
+### Root Cause #3: Fundamental Architecture Mismatch
+
+**Official Gist Implementation** (official_gisting_repo/src/compress.py):
+1. Process "Instruction: X\n<GIST>" through full model
+2. **Extract hidden states** at <GIST> positions → `gist_activations.past_key_values`
+3. During generation, **insert cached activations** into KV cache
+4. New tokens attend to cached activations as if instruction was processed
+
+This is **KV caching**, not embedding learning!
+
+**Our Implementation**:
+1. Replace <GIST> token IDs with learned embedding parameters
+2. Process embeddings like normal input tokens  
+3. Apply gist mask during forward pass
+4. Never extract or cache intermediate activations
+
+**The Fundamental Issue**: Gist tokens work by caching layer activations across all 32 transformer layers, not by learning input embedding values at layer 0.
+
+Our learned gist embeddings:
+- Are input-layer only (layer 0 out of 32)
+- Never get meaningful gradient signal (only 5 out of ~500 tokens)
+- Can't encode instruction information without processing context
+- By the time they reach output (layer 32), they've been transformed
+- Those transformations need instruction context, missing at inference
+
+### Why Official Repo Works But Ours Doesn't
+
+| Aspect | Official Implementation | Our Implementation |
+|--------|------------------------|-------------------|
+| **Base Model** | LLaMA-7B BASE (no alignment) | Llama 3.1 8B Instruct (aligned) |
+| **Format** | Simple "Instruction: ... Output:" | Complex chat template (~40 special tokens) |
+| **Mechanism** | Extract & cache hidden states | Learn embedding values |
+| **Architecture** | Custom attention layers | Monkey-patched generation |
+| **KV Caching** | Yes - cached gist activations | No - just embedding replacement |
+
+**Key Insight from Official Code** (compress.py:128-150):
+```python
+# Compress instruction
+prepped_instruction = f"Instruction: {instruction}\n{gist_str}"
+instruction_input_ids = tokenizer.encode(prepped_instruction)
+
+# Extract gist activations (hidden states at gist positions)
+gist_activations = model.get_gist_activations(
+    input_ids=instruction_input_ids_tensor,
+    gist_token=gist_token,
+    num_gist_tokens=num_gist_tokens,
+)
+
+# Generate using cached activations
+gen_kwargs["past_key_values"] = gist_activations.past_key_values
+generated_tokens = model.generate(**gen_kwargs)
+```
+
+They don't learn embeddings - they cache and reuse the processed activations!
+
+### What Would Be Required to Fix This
+
+**Option 1: Faithful KV Caching Implementation**
+1. Switch to Llama 3.1 8B BASE (not Instruct)
+2. Remove chat template (use simple "Instruction: ... Output:")
+3. Implement `get_gist_activations()` to extract hidden states
+4. Modify `generate()` to accept and use `past_key_values`
+5. Handle position IDs correctly with cached KVs
+6. Implement attention mask adjustments for cached positions
+
+This requires:
+- Deep understanding of HuggingFace generation internals
+- Careful handling of position embeddings
+- Proper attention mask construction
+- Testing with various sequence lengths and batch sizes
+
+**Estimated Effort**: 2-3 days of implementation + debugging
+
+**Option 2: Abandon Gist Tokens**
+- Gist tokens solve a different problem (Alpaca instruction compression)
+- LatentWire is about cross-model latent communication
+- These are orthogonal objectives
+- Better to focus on core interlingua goals
+
+### Key Learnings
+
+1. **Low training loss ≠ learned compression**: The model found a shortcut via attention patterns instead of embedding values.
+
+2. **Instruct models have strong priors**: Alignment training creates distribution assumptions that conflict with novel prompting methods.
+
+3. **Embeddings vs Activations**: Input embeddings (layer 0) can't encode rich information without processing. Gist works by caching deep activations (all layers).
+
+4. **Architecture details matter**: "Learning gist embeddings" and "caching gist activations" sound similar but are fundamentally different mechanisms.
+
+5. **Official code is the ground truth**: When reproducing papers, study the actual implementation, not just the paper's high-level description.
+
+### Evaluation Data Leakage Note
+
+The evaluation used samples 51,560-51,760 (last 200 training samples) due to training on full dataset. Results show upper bound performance with leakage. Even with this advantage, gist only achieved 6.1% ROUGE-L.
+
+With proper held-out test data, performance would likely be even worse.
+
+### Decision: Pivot Back to LatentWire
+
+**Conclusion**: Gist tokens require KV caching implementation that's beyond our current scope. The approach is interesting for single-model prompt compression, but doesn't align with LatentWire's cross-model interlingua objectives.
+
+**Action**: Archive gist experiments, return focus to LatentWire core tasks:
+- Cross-model latent communication (Llama ↔ Qwen)
+- Learned compression without retraining base models
+- SQuAD F1 improvement with projection training
+- Honest compression ratios via quantization
+
+### Files Modified
+
+**Implementation**:
+- `compressions/train_gist_faithful.py`: Training with gist embeddings
+- `compressions/eval_gist.py`: Evaluation with data leakage fallback
+- `compressions/run_gist.sh`: Full training pipeline
+
+**Results**:
+- `runs/gist_full/metrics.json`: Training metrics (loss=0.0086)
+- `runs/gist_full/eval_results.json`: Evaluation metrics (ROUGE-L=0.061)
+- `runs/gist_full/sample_outputs.json`: Example generations
+
+**Key Commits**:
+- `386e810`: Fix dataset size handling (51,560 vs 52,000)
+- `e6f0974`: Enable data leakage evaluation mode
+- `9bca1e9`: Evaluation results pushed from HPC
+
+**Status**: Gist experiment complete. Results documented. Pivoting back to LatentWire core objectives.
+
