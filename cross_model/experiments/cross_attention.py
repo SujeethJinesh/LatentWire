@@ -256,7 +256,7 @@ def build_batch_inputs(samples: List[Sample],
 
     # Source encoding (no grad)
     with torch.no_grad():
-        src_enc = src_tok([s.src_prompt for s in samples], return_tensors="pt", padding=True, truncation=True)
+        src_enc = src_tok([s.src_prompt for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=2048)
         src_enc = {k: v.to(device) for k, v in src_enc.items()}
         src_out = src_model(**src_enc, output_hidden_states=True)
         # last hidden states: [B, T_src, d_src]
@@ -270,7 +270,7 @@ def build_batch_inputs(samples: List[Sample],
                   else translator(src_h)  # [B, K, d_tgt]
 
     # Target tokenization
-    tgt_batch = tgt_tok([s.tgt_full for s in samples], return_tensors="pt", padding=True, truncation=True)
+    tgt_batch = tgt_tok([s.tgt_full for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=2048)
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
 
     # Target input embeddings
@@ -346,7 +346,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     base_texts = []
     with torch.no_grad():
         prompts = [s.tgt_prompt for s in samples]
-        enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True).to(device)
+        enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
         base_out = tgt_model.generate(**enc, max_new_tokens=max_new_tokens, do_sample=False,
                                       eos_token_id=tgt_tok.eos_token_id)
         base_texts = tgt_tok.batch_decode(base_out, skip_special_tokens=True)
@@ -398,6 +398,8 @@ def main():
     # Load models/tokenizers (frozen)
     log("Loading source model/tokenizer...")
     src_tok = AutoTokenizer.from_pretrained(args.source_model, use_fast=True)
+    if src_tok.pad_token is None:
+        src_tok.pad_token = src_tok.eos_token
     src_model = AutoModelForCausalLM.from_pretrained(
         args.source_model, torch_dtype=dtype, device_map=None
     ).eval().to(device)
