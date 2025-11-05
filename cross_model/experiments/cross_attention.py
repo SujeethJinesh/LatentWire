@@ -422,11 +422,11 @@ def main():
     if args.translator_type == "cross_attn":
         translator = CrossAttnResamplerTranslator(
             src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, depth=args.depth, n_heads=args.heads
-        ).to(device)
+        ).to(device=device, dtype=dtype)
     else:
         translator = LinearTranslator(
             src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, hidden=4*d_tgt
-        ).to(device)
+        ).to(device=device, dtype=dtype)
 
     # DDP only on translator (models are frozen)
     if dist.is_initialized():

@@ -98,7 +98,7 @@ EVAL_LOG_FILE="$OUTPUT_DIR/eval_${TIMESTAMP}.log"
     python compressions/eval_gist.py \
         --checkpoint "$OUTPUT_DIR" \
         --samples 200 \
-        --batch_size 16 \
+        --batch_size 20 \
         --max_new_tokens 128 \
         --device cuda:0
 } 2>&1 | tee "$EVAL_LOG_FILE"
