@@ -165,6 +165,130 @@ class CrossAttentionBlock(nn.Module):
         return q_tokens
 
 
+class GatedCrossAttentionBlock(nn.Module):
+    """
+    Bottlenecked cross-attention block with tanh gating (Flamingo-style).
+    All operations happen at bottleneck dimension for efficiency.
+    """
+    def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4):
+        super().__init__()
+        self.bottleneck_dim = bottleneck_dim
+
+        # Layer norms
+        self.q_norm = nn.LayerNorm(bottleneck_dim, elementwise_affine=True)
+        self.src_norm = nn.LayerNorm(src_dim, elementwise_affine=True)
+
+        # Self-attention on queries (in bottleneck space)
+        self.self_attn = nn.MultiheadAttention(
+            embed_dim=bottleneck_dim,
+            num_heads=n_heads,
+            batch_first=True
+        )
+
+        # Cross-attention projections
+        self.cross_q_proj = nn.Linear(bottleneck_dim, bottleneck_dim)
+        self.cross_k_proj = nn.Linear(src_dim, bottleneck_dim)
+        self.cross_v_proj = nn.Linear(src_dim, bottleneck_dim)
+        self.cross_out = nn.Linear(bottleneck_dim, bottleneck_dim)
+
+        # Tanh gating on cross-attention (Flamingo-style)
+        self.cross_gate = nn.Parameter(torch.zeros(1))
+
+        # FFN in bottleneck space
+        self.ffn = nn.Sequential(
+            nn.Linear(bottleneck_dim, ffn_mult * bottleneck_dim),
+            nn.GELU(),
+            nn.Linear(ffn_mult * bottleneck_dim, bottleneck_dim)
+        )
+        self.ffn_norm = nn.LayerNorm(bottleneck_dim)
+
+    def forward(self, q_tokens: torch.Tensor, src_seq: torch.Tensor,
+                src_mask: torch.Tensor = None) -> torch.Tensor:
+        # q_tokens: [B, K, bottleneck_dim], src_seq: [B, T, src_dim]
+
+        # Self-attention on queries
+        q_norm = self.q_norm(q_tokens)
+        sa_out, _ = self.self_attn(q_norm, q_norm, q_norm, need_weights=False)
+        q_tokens = q_tokens + sa_out
+
+        # Cross-attention with gating
+        qn = self.q_norm(q_tokens)
+        srcn = self.src_norm(src_seq)
+        Q = self.cross_q_proj(qn)
+        K = self.cross_k_proj(srcn)
+        V = self.cross_v_proj(srcn)
+
+        # Compute attention
+        attn_logits = torch.matmul(Q, K.transpose(1, 2)) / math.sqrt(Q.size(-1))
+        if src_mask is not None:
+            mask_expanded = src_mask[:, None, :].to(dtype=attn_logits.dtype)
+            attn_logits = attn_logits.masked_fill(mask_expanded == 0, -1e4)
+        attn_weights = torch.softmax(attn_logits, dim=-1)
+        cross = torch.matmul(attn_weights, V)
+        cross = self.cross_out(cross)
+
+        # Apply tanh gating (starts at 0, learns to open)
+        gate = torch.tanh(self.cross_gate)
+        q_tokens = q_tokens + gate * cross
+
+        # FFN
+        ff = self.ffn(self.ffn_norm(q_tokens))
+        q_tokens = q_tokens + ff
+
+        return q_tokens
+
+
+class BottleneckedGatedTranslator(nn.Module):
+    """
+    Improved translator with bottleneck architecture and gating.
+    Processes at bottleneck_dim internally, only projects to target_dim at the end.
+    """
+    def __init__(self, src_dim: int, tgt_dim: int, bottleneck_dim: int = 1024,
+                 soft_tokens: int = 48, depth: int = 6, n_heads: int = 16, ffn_mult: int = 4):
+        super().__init__()
+        self.K = soft_tokens
+        self.bottleneck_dim = bottleneck_dim
+
+        # Learned query tokens in bottleneck space
+        self.query_tokens = nn.Parameter(
+            torch.randn(1, soft_tokens, bottleneck_dim) / math.sqrt(bottleneck_dim)
+        )
+
+        # Cross-attention blocks (all in bottleneck space)
+        self.blocks = nn.ModuleList([
+            GatedCrossAttentionBlock(
+                bottleneck_dim=bottleneck_dim,
+                src_dim=src_dim,
+                n_heads=n_heads,
+                ffn_mult=ffn_mult
+            )
+            for _ in range(depth)
+        ])
+
+        # Final projection from bottleneck to target dimension
+        self.output_proj = nn.Linear(bottleneck_dim, tgt_dim)
+        self.output_norm = nn.LayerNorm(bottleneck_dim)
+
+    def forward(self, src_hiddens: torch.Tensor,
+                src_mask: torch.Tensor = None) -> torch.Tensor:
+        """
+        src_hiddens: [B, T_src, src_dim]
+        returns: [B, K, tgt_dim]
+        """
+        B = src_hiddens.size(0)
+        q = self.query_tokens.expand(B, -1, -1)  # [B, K, bottleneck_dim]
+
+        # Process through gated cross-attention blocks
+        for blk in self.blocks:
+            q = blk(q, src_hiddens, src_mask)
+
+        # Project to target dimension
+        q = self.output_norm(q)
+        soft_tokens = self.output_proj(q)  # [B, K, tgt_dim]
+
+        return soft_tokens
+
+
 class CrossAttnResamplerTranslator(nn.Module):
     """
     Learn K target-space 'query tokens' which (after some depth) cross-attend to the source sequence
@@ -369,7 +493,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source_model", type=str, default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--target_model", type=str, default="meta-llama/Llama-3.2-1B-Instruct")
-    parser.add_argument("--translator_type", type=str, choices=["cross_attn", "linear"], default="cross_attn")
+    parser.add_argument("--translator_type", type=str, choices=["cross_attn", "linear", "bottleneck_gated"], default="cross_attn")
+    parser.add_argument("--bottleneck_dim", type=int, default=1024, help="Bottleneck dimension for gated translator")
     parser.add_argument("--soft_tokens", type=int, default=32)
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
@@ -400,6 +525,9 @@ def main():
     src_tok = AutoTokenizer.from_pretrained(args.source_model, use_fast=True)
     if src_tok.pad_token is None:
         src_tok.pad_token = src_tok.eos_token
+    src_tok.padding_side = "left"  # Critical for decoder-only models
+    src_tok.model_max_length = 2048
+
     src_model = AutoModelForCausalLM.from_pretrained(
         args.source_model, torch_dtype=dtype, device_map=None
     ).eval().to(device)
@@ -409,6 +537,8 @@ def main():
     tgt_tok = AutoTokenizer.from_pretrained(args.target_model, use_fast=True)
     if tgt_tok.pad_token is None:
         tgt_tok.pad_token = tgt_tok.eos_token
+    tgt_tok.padding_side = "left"  # Critical for decoder-only models
+    tgt_tok.model_max_length = 2048
     tgt_model = AutoModelForCausalLM.from_pretrained(
         args.target_model, torch_dtype=dtype, device_map=None
     ).eval().to(device)
@@ -421,7 +551,12 @@ def main():
     log(f"Source hidden dim: {d_src} | Target hidden dim: {d_tgt}")
 
     # Build translator
-    if args.translator_type == "cross_attn":
+    if args.translator_type == "bottleneck_gated":
+        translator = BottleneckedGatedTranslator(
+            src_dim=d_src, tgt_dim=d_tgt, bottleneck_dim=args.bottleneck_dim,
+            soft_tokens=args.soft_tokens, depth=args.depth, n_heads=args.heads
+        ).to(device=device, dtype=dtype)
+    elif args.translator_type == "cross_attn":
         translator = CrossAttnResamplerTranslator(
             src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, depth=args.depth, n_heads=args.heads
         ).to(device=device, dtype=dtype)
@@ -429,6 +564,10 @@ def main():
         translator = LinearTranslator(
             src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, hidden=4*d_tgt
         ).to(device=device, dtype=dtype)
+
+    # Count parameters
+    param_count = sum(p.numel() for p in translator.parameters())
+    log(f"Translator parameters: {param_count / 1e6:.1f}M")
 
     # DDP only on translator (models are frozen)
     if dist.is_initialized():
@@ -468,9 +607,12 @@ def main():
         # Forward (compute loss on target)
         out = tgt_model(**data)
         loss = out.loss
+
+        # Detach for logging to avoid DDP autograd warning
+        loss_scalar = loss.detach()
         if dist.is_initialized():
-            dist.all_reduce(loss, op=dist.ReduceOp.AVG)
-        running += loss.item()
+            dist.all_reduce(loss_scalar, op=dist.ReduceOp.AVG)
+        running += loss_scalar.item()
 
         # Backward into translator only
         optim.zero_grad(set_to_none=True)

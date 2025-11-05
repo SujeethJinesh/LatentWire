@@ -5,10 +5,11 @@ set -e
 OUTPUT_DIR="${OUTPUT_DIR:-runs/cross_attention}"
 SOURCE_MODEL="${SOURCE_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}"
 TARGET_MODEL="${TARGET_MODEL:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
-TRANSLATOR_TYPE="${TRANSLATOR_TYPE:-cross_attn}"
-SOFT_TOKENS="${SOFT_TOKENS:-32}"
-DEPTH="${DEPTH:-2}"
-HEADS="${HEADS:-8}"
+TRANSLATOR_TYPE="${TRANSLATOR_TYPE:-bottleneck_gated}"  # Use improved translator by default
+BOTTLENECK_DIM="${BOTTLENECK_DIM:-1024}"  # Efficient bottleneck dimension
+SOFT_TOKENS="${SOFT_TOKENS:-48}"  # More soft tokens for better capacity
+DEPTH="${DEPTH:-6}"  # Deeper but narrower architecture
+HEADS="${HEADS:-16}"  # More heads in bottleneck space
 TRAIN_STEPS="${TRAIN_STEPS:-2000}"
 WARMUP_STEPS="${WARMUP_STEPS:-100}"
 PER_DEVICE_BATCH="${PER_DEVICE_BATCH:-16}"
@@ -35,7 +36,9 @@ echo "Configuration:"
 echo "  Source model: $SOURCE_MODEL"
 echo "  Target model: $TARGET_MODEL"
 echo "  Translator type: $TRANSLATOR_TYPE"
+echo "  Bottleneck dim: $BOTTLENECK_DIM"
 echo "  Soft tokens: $SOFT_TOKENS"
+echo "  Depth: $DEPTH layers"
 echo "  Training steps: $TRAIN_STEPS"
 echo "  Per-device batch: $PER_DEVICE_BATCH"
 echo "  Effective batch size: $((PER_DEVICE_BATCH * 4)) (4 H100 GPUs)"
@@ -48,6 +51,7 @@ echo ""
         --source_model "$SOURCE_MODEL" \
         --target_model "$TARGET_MODEL" \
         --translator_type "$TRANSLATOR_TYPE" \
+        --bottleneck_dim "$BOTTLENECK_DIM" \
         --soft_tokens "$SOFT_TOKENS" \
         --depth "$DEPTH" \
         --heads "$HEADS" \
