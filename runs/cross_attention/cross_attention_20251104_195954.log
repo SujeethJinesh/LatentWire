@@ -1,0 +1,214 @@
+W1104 19:59:57.092000 1453310 torch/distributed/run.py:793] 
+W1104 19:59:57.092000 1453310 torch/distributed/run.py:793] *****************************************
+W1104 19:59:57.092000 1453310 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1104 19:59:57.092000 1453310 torch/distributed/run.py:793] *****************************************
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==== Config ====
+source_model: Qwen/Qwen2.5-1.5B-Instruct
+target_model: meta-llama/Llama-3.2-1B-Instruct
+translator_type: cross_attn
+soft_tokens: 32
+depth: 2
+heads: 8
+lr: 0.0003
+weight_decay: 0.0
+train_steps: 2000
+warmup_steps: 100
+per_device_batch: 2
+eval_every: 200
+eval_samples: 200
+max_new_tokens: 256
+seed: 1234
+bf16: True
+save_path: runs/cross_attention/translator_checkpoint.pt
+Loading source model/tokenizer...
+Loading target model/tokenizer...
+Source hidden dim: 1536 | Target hidden dim: 2048
+Loading GSM8K...
+Generating train split:   0%|          | 0/7473 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 7473/7473 [00:00<00:00, 210717.61 examples/s]
+Generating test split:   0%|          | 0/1319 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1319/1319 [00:00<00:00, 305887.81 examples/s]
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 512, in <module>
+[rank3]:     main()
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 463, in main
+[rank3]:     data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 270, in build_batch_inputs
+[rank3]:     else translator(src_h)  # [B, K, d_tgt]
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank3]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank3]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 190, in forward
+[rank3]:     q = blk(q, src_hiddens, src_mask)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 147, in forward
+[rank3]:     srcn = self.src_norm(src_seq)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/normalization.py", line 217, in forward
+[rank3]:     return F.layer_norm(
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/functional.py", line 2900, in layer_norm
+[rank3]:     return torch.layer_norm(
+[rank3]: RuntimeError: expected scalar type BFloat16 but found Float
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 512, in <module>
+[rank0]:     main()
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 463, in main
+[rank0]:     data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 270, in build_batch_inputs
+[rank0]:     else translator(src_h)  # [B, K, d_tgt]
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank0]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank0]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 190, in forward
+[rank0]:     q = blk(q, src_hiddens, src_mask)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 147, in forward
+[rank0]:     srcn = self.src_norm(src_seq)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/normalization.py", line 217, in forward
+[rank0]:     return F.layer_norm(
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/functional.py", line 2900, in layer_norm
+[rank0]:     return torch.layer_norm(
+[rank0]: RuntimeError: expected scalar type BFloat16 but found Float
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 512, in <module>
+[rank1]:     main()
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 463, in main
+[rank1]:     data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 270, in build_batch_inputs
+[rank1]:     else translator(src_h)  # [B, K, d_tgt]
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank1]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank1]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 190, in forward
+[rank1]:     q = blk(q, src_hiddens, src_mask)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 147, in forward
+[rank1]:     srcn = self.src_norm(src_seq)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/normalization.py", line 217, in forward
+[rank1]:     return F.layer_norm(
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/functional.py", line 2900, in layer_norm
+[rank1]:     return torch.layer_norm(
+[rank1]: RuntimeError: expected scalar type BFloat16 but found Float
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 512, in <module>
+[rank2]:     main()
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 463, in main
+[rank2]:     data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 270, in build_batch_inputs
+[rank2]:     else translator(src_h)  # [B, K, d_tgt]
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank2]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank2]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 190, in forward
+[rank2]:     q = blk(q, src_hiddens, src_mask)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 147, in forward
+[rank2]:     srcn = self.src_norm(src_seq)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/normalization.py", line 217, in forward
+[rank2]:     return F.layer_norm(
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/functional.py", line 2900, in layer_norm
+[rank2]:     return torch.layer_norm(
+[rank2]: RuntimeError: expected scalar type BFloat16 but found Float
+[rank0]:[W1104 20:01:15.314983245 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W1104 20:01:17.428000 1453310 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1453326 closing signal SIGTERM
+W1104 20:01:17.433000 1453310 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1453327 closing signal SIGTERM
+W1104 20:01:17.433000 1453310 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1453328 closing signal SIGTERM
+E1104 20:01:17.798000 1453310 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 1453325) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+Traceback (most recent call last):
+  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+cross_model/experiments/cross_attention.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-11-04_20:01:17
+  host      : n03.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1453325)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
