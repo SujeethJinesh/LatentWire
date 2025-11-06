@@ -396,3 +396,58 @@ Bridged generation start: 000000000000000000000000000000000000000000000000000000
 
 [Eval] Step 1750 | Target-alone acc: 0.730 | Bridged acc: 0.065
 Step 1760/3500 | Loss (avg over last 20): 4.4412
+Step 1780/3500 | Loss (avg over last 20): 4.3662
+Step 1800/3500 | Loss (avg over last 20): 4.5217
+Step 1820/3500 | Loss (avg over last 20): 4.4866
+Step 1840/3500 | Loss (avg over last 20): 4.4463
+Step 1860/3500 | Loss (avg over last 20): 4.4413
+Step 1880/3500 | Loss (avg over last 20): 4.4637
+Step 1900/3500 | Loss (avg over last 20): 4.4775
+Step 1920/3500 | Loss (avg over last 20): 4.5000
+Step 1940/3500 | Loss (avg over last 20): 4.4474
+Step 1960/3500 | Loss (avg over last 20): 4.4396
+Step 1980/3500 | Loss (avg over last 20): 4.5336
+Step 2000/3500 | Loss (avg over last 20): 4.4362
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 
+Bridged generation start: ############################################################################################################################################################################################################################################################################################################...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 
+Bridged generation start: ############################################################################################################################################################################################################################################################################################################...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Bridged generation start: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...
+============================================================
+
+[Eval] Step 2000 | Target-alone acc: 0.730 | Bridged acc: 0.040
+Step 2020/3500 | Loss (avg over last 20): 4.4509
+Step 2040/3500 | Loss (avg over last 20): 4.5143
+Step 2060/3500 | Loss (avg over last 20): 4.4925
+Step 2080/3500 | Loss (avg over last 20): 4.4454
+Step 2100/3500 | Loss (avg over last 20): 4.3712
+Step 2120/3500 | Loss (avg over last 20): 4.4589
