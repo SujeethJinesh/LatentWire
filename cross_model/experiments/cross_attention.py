@@ -434,7 +434,8 @@ def build_batch_inputs(samples: List[Sample],
 # ---------------------------
 
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
-                              device, dtype, num_samples: int = 200, max_new_tokens: int = 256):
+                              device, dtype, num_samples: int = 200, max_new_tokens: int = 256,
+                              show_samples: bool = True):
     """
     Compare (i) Target alone vs (ii) Source→Translator→Target.
     """
@@ -497,6 +498,24 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     acc_bridged = compute_acc(bridged_texts)
     acc_baseline = compute_acc(base_texts)
 
+    # Print sample outputs for inspection (only from main process)
+    if show_samples and num_samples >= 3:
+        log("\n" + "="*60)
+        log("SAMPLE OUTPUTS (first 3 examples):")
+        log("="*60)
+        for i in range(min(3, len(samples))):
+            log(f"\n--- Example {i+1} ---")
+            log(f"Question: {samples[i].tgt_prompt[:200]}...")
+            log(f"Gold answer: {extract_final_answer(samples[i].tgt_full)}")
+            log(f"Target-alone: {extract_final_answer(base_texts[i])}")
+            log(f"Bridged: {extract_final_answer(bridged_texts[i])}")
+
+            # Show first 300 chars of actual generation for debugging
+            if len(bridged_texts[i]) > len(samples[i].tgt_prompt):
+                generated_part = bridged_texts[i][len(samples[i].tgt_prompt):][:300]
+                log(f"Bridged generation start: {generated_part}...")
+        log("="*60 + "\n")
+
     return acc_baseline, acc_bridged
 
 def main():
@@ -519,6 +538,8 @@ def main():
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--bf16", action="store_true")
     parser.add_argument("--save_path", type=str, default="translator_ckpt.pt")
+    parser.add_argument("--show_eval_samples", type=int, default=1,
+                        help="Show sample outputs during eval (0=none, 1=brief, 2=detailed)")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -662,7 +683,8 @@ def main():
                 with torch.no_grad():
                     acc_base, acc_bridged = evaluate_numeric_accuracy(
                         test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-                        device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens
+                        device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+                        show_samples=(args.show_eval_samples > 0)
                     )
                 log(f"[Eval] Step {step} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
@@ -676,7 +698,8 @@ def main():
         with torch.no_grad():
             acc_base, acc_bridged = evaluate_numeric_accuracy(
                 test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-                device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens
+                device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+                show_samples=(args.show_eval_samples > 0)
             )
         log(f"[Final Eval] Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
