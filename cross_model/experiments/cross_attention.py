@@ -458,6 +458,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             attention_mask=batch["attention_mask"],
             max_new_tokens=max_new_tokens,
             do_sample=False,
+            temperature=None,  # Explicitly disable to avoid warnings
+            top_p=None,  # Explicitly disable to avoid warnings
+            pad_token_id=tgt_tok.pad_token_id,
             eos_token_id=tgt_tok.eos_token_id
         )
         # Strip off the K soft tokens from positions when decoding
@@ -471,8 +474,15 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     with torch.no_grad():
         prompts = [s.tgt_prompt for s in samples]
         enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
-        base_out = tgt_model.generate(**enc, max_new_tokens=max_new_tokens, do_sample=False,
-                                      eos_token_id=tgt_tok.eos_token_id)
+        base_out = tgt_model.generate(
+            **enc,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            temperature=None,  # Explicitly disable to avoid warnings
+            top_p=None,  # Explicitly disable to avoid warnings
+            pad_token_id=tgt_tok.pad_token_id,
+            eos_token_id=tgt_tok.eos_token_id
+        )
         base_texts = tgt_tok.batch_decode(base_out, skip_special_tokens=True)
 
     # Compute accuracy
@@ -582,9 +592,25 @@ def main():
     # A very simple random sampler over training set
     rng = random.Random(args.seed)
 
-    # Optimizer & sched
-    optim = torch.optim.AdamW([p for p in translator.parameters() if p.requires_grad],
-                              lr=args.lr, weight_decay=args.weight_decay)
+    # Optimizer with proper weight decay filtering (exclude LayerNorm and biases)
+    decay_params = []
+    no_decay_params = []
+
+    for name, param in translator.named_parameters():
+        if not param.requires_grad:
+            continue
+        # Don't apply weight decay to bias terms and layer norms
+        if 'bias' in name or 'norm' in name:
+            no_decay_params.append(param)
+        else:
+            decay_params.append(param)
+
+    optim_groups = [
+        {'params': decay_params, 'weight_decay': args.weight_decay},
+        {'params': no_decay_params, 'weight_decay': 0.0}
+    ]
+
+    optim = torch.optim.AdamW(optim_groups, lr=args.lr)
     sched = get_linear_schedule_with_warmup(optim, num_warmup_steps=args.warmup_steps,
                                             num_training_steps=args.train_steps)
 
@@ -617,6 +643,10 @@ def main():
         # Backward into translator only
         optim.zero_grad(set_to_none=True)
         loss.backward()
+
+        # Gradient clipping for stability
+        torch.nn.utils.clip_grad_norm_(translator.parameters(), 1.0)
+
         optim.step()
         sched.step()
         step += 1
