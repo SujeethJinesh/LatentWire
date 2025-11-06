@@ -72,11 +72,38 @@ def extract_final_answer(text: str) -> str:
     If not found, fallback to last integer in the string.
     """
     m = re.search(r"####\s*(-?\d+)", text)
-    if m: 
+    if m:
         return m.group(1)
     # fallback: last integer
     ints = re.findall(r"-?\d+", text)
     return ints[-1] if ints else ""
+
+def compute_rms(x: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
+    """
+    Compute RMS (root mean square) over the last dimension.
+    Returns: [B, ...] with RMS for each position
+    """
+    return x.pow(2).mean(dim=-1, keepdim=True).sqrt().clamp_min(eps)
+
+def apply_rms_matching(soft_tokens: torch.Tensor, target_rms: float) -> torch.Tensor:
+    """
+    Normalize soft tokens and rescale to match target embedding RMS statistics.
+    This prevents scale mismatch that causes logit collapse.
+
+    Args:
+        soft_tokens: [B, K, d_model] translator output
+        target_rms: scalar RMS of target model's embedding table
+
+    Returns:
+        Normalized and rescaled soft tokens [B, K, d_model]
+    """
+    # LayerNorm to center and normalize distribution
+    soft_tokens = torch.nn.functional.layer_norm(soft_tokens, (soft_tokens.size(-1),))
+
+    # RMS matching to ensure magnitude is consistent with target embeddings
+    soft_tokens = soft_tokens / compute_rms(soft_tokens) * target_rms
+
+    return soft_tokens
 
 @dataclass
 class Sample:
@@ -170,7 +197,7 @@ class GatedCrossAttentionBlock(nn.Module):
     Bottlenecked cross-attention block with tanh gating (Flamingo-style).
     All operations happen at bottleneck dimension for efficiency.
     """
-    def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4):
+    def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4, dropout: float = 0.1):
         super().__init__()
         self.bottleneck_dim = bottleneck_dim
 
@@ -194,10 +221,14 @@ class GatedCrossAttentionBlock(nn.Module):
         # Tanh gating on cross-attention (Flamingo-style)
         self.cross_gate = nn.Parameter(torch.zeros(1))
 
+        # Dropout for regularization (prevents over-reliance on soft tokens)
+        self.dropout = nn.Dropout(dropout)
+
         # FFN in bottleneck space
         self.ffn = nn.Sequential(
             nn.Linear(bottleneck_dim, ffn_mult * bottleneck_dim),
             nn.GELU(),
+            nn.Dropout(dropout),  # Dropout in FFN as well
             nn.Linear(ffn_mult * bottleneck_dim, bottleneck_dim)
         )
         self.ffn_norm = nn.LayerNorm(bottleneck_dim)
@@ -227,9 +258,9 @@ class GatedCrossAttentionBlock(nn.Module):
         cross = torch.matmul(attn_weights, V)
         cross = self.cross_out(cross)
 
-        # Apply tanh gating (starts at 0, learns to open)
+        # Apply tanh gating (starts at 0, learns to open) with dropout for regularization
         gate = torch.tanh(self.cross_gate)
-        q_tokens = q_tokens + gate * cross
+        q_tokens = q_tokens + gate * self.dropout(cross)
 
         # FFN
         ff = self.ffn(self.ffn_norm(q_tokens))
@@ -367,11 +398,13 @@ def build_batch_inputs(samples: List[Sample],
                        src_model, src_tok,
                        tgt_model, tgt_tok,
                        translator,
-                       device, dtype):
+                       device, dtype,
+                       target_rms: float = None):
     """
     For each sample:
       - Encode source prompt with A; get last-layer hidden states (no grad)
       - Translator -> K soft tokens in B's space
+      - Apply RMS matching to prevent scale mismatch
       - Tokenize tgt_full with B; embed its input ids
       - Concatenate soft tokens + tgt embeddings; build attention mask and labels
     Returns: dict ready for target forward
@@ -392,6 +425,10 @@ def build_batch_inputs(samples: List[Sample],
     # Translator (grad flows)
     soft_tokens = translator(src_h, src_mask) if isinstance(translator, CrossAttnResamplerTranslator) \
                   else translator(src_h)  # [B, K, d_tgt]
+
+    # Apply RMS matching to prevent logit collapse (CRITICAL for stability)
+    if target_rms is not None:
+        soft_tokens = apply_rms_matching(soft_tokens, target_rms)
 
     # Target tokenization
     tgt_batch = tgt_tok([s.tgt_full for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=2048)
@@ -435,7 +472,7 @@ def build_batch_inputs(samples: List[Sample],
 
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
                               device, dtype, num_samples: int = 200, max_new_tokens: int = 256,
-                              show_samples: bool = True):
+                              show_samples: bool = True, target_rms: float = None):
     """
     Compare (i) Target alone vs (ii) Source→Translator→Target.
     """
@@ -453,7 +490,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
     # Build bridged inputs (uses inputs_embeds)
     with torch.no_grad():
-        batch = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype)
+        batch = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms)
         gen = tgt_model.generate(
             inputs_embeds=batch["inputs_embeds"],
             attention_mask=batch["attention_mask"],
@@ -518,6 +555,65 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
     return acc_baseline, acc_bridged
 
+def analyze_bridge_quality(soft_tokens: torch.Tensor, target_model, prompt_ids: torch.Tensor,
+                           prompt_mask: torch.Tensor, tokenizer, target_rms: float):
+    """
+    Diagnose why bridged generations might degenerate.
+
+    Returns dict with:
+        - RMS statistics (soft tokens vs target embeddings)
+        - First-token entropy (bridged vs baseline)
+        - Top-5 token probabilities for both
+    """
+    with torch.no_grad():
+        # 1. RMS scale comparison
+        tgt_embed = target_model.get_input_embeddings().weight
+        tgt_rms_actual = tgt_embed.pow(2).mean(dim=1).sqrt()
+        soft_rms = soft_tokens.pow(2).mean(dim=-1).sqrt()
+
+        stats = {
+            "soft_rms_mean": soft_rms.mean().item(),
+            "soft_rms_max": soft_rms.max().item(),
+            "soft_rms_min": soft_rms.min().item(),
+            "tgt_embed_rms_mean": tgt_rms_actual.mean().item(),
+            "tgt_embed_rms_target": target_rms,
+        }
+
+        # 2. First-token distribution comparison
+        # Baseline: text-only
+        baseline_out = target_model(input_ids=prompt_ids, attention_mask=prompt_mask)
+        baseline_probs = baseline_out.logits[:, -1].softmax(-1)
+
+        # Bridged: with soft tokens
+        tgt_embeds = target_model.get_input_embeddings()(prompt_ids)
+        bridged_inputs = torch.cat([soft_tokens, tgt_embeds], dim=1)
+        bridged_mask = torch.cat([
+            torch.ones(soft_tokens.size(0), soft_tokens.size(1), device=prompt_mask.device),
+            prompt_mask
+        ], dim=1)
+        bridged_out = target_model(inputs_embeds=bridged_inputs, attention_mask=bridged_mask)
+        # First token after prompt
+        first_gen_pos = soft_tokens.size(1) + prompt_ids.size(1) - 1
+        bridged_probs = bridged_out.logits[:, first_gen_pos].softmax(-1)
+
+        # Entropy (low entropy = over-confident = likely to loop)
+        def entropy(p):
+            return (-p * p.clamp_min(1e-9).log()).sum(-1).mean().item()
+
+        # Top-5 tokens
+        def top5(p):
+            vals, inds = p[0].topk(5)
+            return [(tokenizer.decode([idx.item()]), prob.item()) for idx, prob in zip(inds, vals)]
+
+        analysis = {
+            "entropy_baseline": entropy(baseline_probs),
+            "entropy_bridged": entropy(bridged_probs),
+            "top5_baseline": top5(baseline_probs),
+            "top5_bridged": top5(bridged_probs),
+        }
+
+        return {**stats, **analysis}
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source_model", type=str, default="Qwen/Qwen2.5-1.5B-Instruct")
@@ -581,6 +677,12 @@ def main():
         d_tgt = tgt_model.config.hidden_size
     log(f"Source hidden dim: {d_src} | Target hidden dim: {d_tgt}")
 
+    # Compute target embedding RMS for normalization (CRITICAL for stability)
+    with torch.no_grad():
+        tgt_embed_table = tgt_model.get_input_embeddings().weight  # [vocab_size, d_tgt]
+        target_rms = tgt_embed_table.pow(2).mean(dim=1).sqrt().mean().item()
+    log(f"Target embedding RMS: {target_rms:.4f}")
+
     # Build translator
     if args.translator_type == "bottleneck_gated":
         translator = BottleneckedGatedTranslator(
@@ -614,24 +716,31 @@ def main():
     rng = random.Random(args.seed)
 
     # Optimizer with proper weight decay filtering (exclude LayerNorm and biases)
+    # Gate parameters get higher LR (×3) to open gradually (Flamingo-style)
     decay_params = []
     no_decay_params = []
+    gate_params = []
 
     for name, param in translator.named_parameters():
         if not param.requires_grad:
             continue
+        # Gate parameters: higher LR, no weight decay
+        if 'cross_gate' in name:
+            gate_params.append(param)
         # Don't apply weight decay to bias terms and layer norms
-        if 'bias' in name or 'norm' in name:
+        elif 'bias' in name or 'norm' in name:
             no_decay_params.append(param)
         else:
             decay_params.append(param)
 
     optim_groups = [
-        {'params': decay_params, 'weight_decay': args.weight_decay},
-        {'params': no_decay_params, 'weight_decay': 0.0}
+        {'params': decay_params, 'weight_decay': args.weight_decay, 'lr': args.lr},
+        {'params': no_decay_params, 'weight_decay': 0.0, 'lr': args.lr},
+        {'params': gate_params, 'weight_decay': 0.0, 'lr': args.lr * 3.0}  # Gates open faster
     ]
 
-    optim = torch.optim.AdamW(optim_groups, lr=args.lr)
+    log(f"Optimizer groups: {len(decay_params)} decay, {len(no_decay_params)} no_decay, {len(gate_params)} gates (LR ×3)")
+    optim = torch.optim.AdamW(optim_groups, betas=(0.9, 0.98), eps=1e-8)
     sched = get_linear_schedule_with_warmup(optim, num_warmup_steps=args.warmup_steps,
                                             num_training_steps=args.train_steps)
 
@@ -648,12 +757,40 @@ def main():
                  "answer":   [train_ds[i]["answer"]   for i in batch_idx]}
         samples = build_samples(batch, src_tok, tgt_tok, device, tgt_model)
 
+        # Build bridged inputs (with soft tokens)
         data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
-                                  translator, device, dtype)
+                                  translator, device, dtype, target_rms=target_rms)
 
-        # Forward (compute loss on target)
+        # Forward (compute NLL loss on target)
         out = tgt_model(**data)
-        loss = out.loss
+        nll_loss = out.loss
+
+        # KL consistency loss to prevent distribution collapse
+        # Compare bridged vs baseline (text-only) distributions on first 20 tokens
+        kl_loss = torch.tensor(0.0, device=device, dtype=dtype)
+        if step > args.warmup_steps:  # Only after warmup
+            with torch.no_grad():
+                # Baseline: text-only input (no soft tokens)
+                tgt_prompts = [s.tgt_prompt for s in samples]
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+                baseline_out = tgt_model(**tgt_enc)
+                baseline_logits = baseline_out.logits[:, :20, :]  # First 20 positions
+
+            # Bridged logits (first 20 positions after soft tokens)
+            K = data["inputs_embeds"].size(1) - out.logits.size(1) if out.logits.size(1) < data["inputs_embeds"].size(1) else 0
+            bridged_logits = out.logits[:, :20, :]  # First 20 generation positions
+
+            # KL divergence: KL(bridged || baseline)
+            # Prevent bridged from diverging into degenerate modes
+            if bridged_logits.size(1) >= 20 and baseline_logits.size(1) >= 20:
+                kl_loss = torch.nn.functional.kl_div(
+                    torch.nn.functional.log_softmax(bridged_logits, dim=-1),
+                    torch.nn.functional.softmax(baseline_logits, dim=-1),
+                    reduction="batchmean"
+                )
+
+        # Total loss: NLL + λ * KL (λ = 0.03)
+        loss = nll_loss + 0.03 * kl_loss
 
         # Detach for logging to avoid DDP autograd warning
         loss_scalar = loss.detach()
@@ -684,7 +821,7 @@ def main():
                     acc_base, acc_bridged = evaluate_numeric_accuracy(
                         test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                         device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
-                        show_samples=(args.show_eval_samples > 0)
+                        show_samples=(args.show_eval_samples > 0), target_rms=target_rms
                     )
                 log(f"[Eval] Step {step} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
@@ -699,7 +836,7 @@ def main():
             acc_base, acc_bridged = evaluate_numeric_accuracy(
                 test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                 device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
-                show_samples=(args.show_eval_samples > 0)
+                show_samples=(args.show_eval_samples > 0), target_rms=target_rms
             )
         log(f"[Final Eval] Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
