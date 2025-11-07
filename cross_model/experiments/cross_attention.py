@@ -474,56 +474,68 @@ def build_batch_inputs(samples: List[Sample],
 
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
                               device, dtype, num_samples: int = 200, max_new_tokens: int = 256,
-                              show_samples: bool = True, target_rms: float = None):
+                              show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50):
     """
     Compare (i) Target alone vs (ii) Source→Translator→Target.
+    Evaluates in batches to avoid OOM with large num_samples.
     """
     tgt_model.eval()
     src_model.eval()
     translator.eval()
 
-    samples = []
+    # Collect all samples first
+    all_samples = []
     taken = 0
     for ex in dataset:
         if taken >= num_samples: break
-        samples.extend(build_samples({"question":[ex["question"]], "answer":[ex["answer"]]},
-                                     src_tok, tgt_tok, device, tgt_model))
+        all_samples.extend(build_samples({"question":[ex["question"]], "answer":[ex["answer"]]},
+                                         src_tok, tgt_tok, device, tgt_model))
         taken += 1
 
-    # Build bridged inputs (uses inputs_embeds)
-    with torch.no_grad():
-        batch = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms)
-        gen = tgt_model.generate(
-            inputs_embeds=batch["inputs_embeds"],
-            attention_mask=batch["attention_mask"],
-            max_new_tokens=max_new_tokens,
-            do_sample=False,
-            repetition_penalty=1.1,  # Prevent "181818..." loops
-            no_repeat_ngram_size=3,  # Prevent repeating 3-grams
-            pad_token_id=tgt_tok.pad_token_id,
-            eos_token_id=tgt_tok.eos_token_id
-        )
-        # Strip off the K soft tokens from positions when decoding
-        # We can't directly decode inputs_embeds, so decode the generated tail.
-        # Take only newly generated tokens:
-        # Transformers returns full sequence when using inputs_embeds. We approximate by decoding all and taking answer lines.
-        bridged_texts = tgt_tok.batch_decode(gen, skip_special_tokens=True)
+    # Process in batches to avoid OOM
+    all_bridged_texts = []
+    all_base_texts = []
 
-    # Target-alone baseline
-    base_texts = []
-    with torch.no_grad():
-        prompts = [s.tgt_prompt for s in samples]
-        enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
-        base_out = tgt_model.generate(
-            **enc,
-            max_new_tokens=max_new_tokens,
-            do_sample=False,
-            repetition_penalty=1.1,  # Prevent loops
-            no_repeat_ngram_size=3,  # Prevent repeating 3-grams
-            pad_token_id=tgt_tok.pad_token_id,
-            eos_token_id=tgt_tok.eos_token_id
-        )
-        base_texts = tgt_tok.batch_decode(base_out, skip_special_tokens=True)
+    for start_idx in range(0, len(all_samples), eval_batch_size):
+        end_idx = min(start_idx + eval_batch_size, len(all_samples))
+        samples_batch = all_samples[start_idx:end_idx]
+
+        # Build bridged inputs (uses inputs_embeds)
+        with torch.no_grad():
+            batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms)
+            gen = tgt_model.generate(
+                inputs_embeds=batch["inputs_embeds"],
+                attention_mask=batch["attention_mask"],
+                max_new_tokens=max_new_tokens,
+                do_sample=False,
+                repetition_penalty=1.1,  # Prevent "181818..." loops
+                no_repeat_ngram_size=3,  # Prevent repeating 3-grams
+                pad_token_id=tgt_tok.pad_token_id,
+                eos_token_id=tgt_tok.eos_token_id
+            )
+            bridged_texts_batch = tgt_tok.batch_decode(gen, skip_special_tokens=True)
+            all_bridged_texts.extend(bridged_texts_batch)
+
+        # Target-alone baseline
+        with torch.no_grad():
+            prompts = [s.tgt_prompt for s in samples_batch]
+            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+            base_out = tgt_model.generate(
+                **enc,
+                max_new_tokens=max_new_tokens,
+                do_sample=False,
+                repetition_penalty=1.1,  # Prevent loops
+                no_repeat_ngram_size=3,  # Prevent repeating 3-grams
+                pad_token_id=tgt_tok.pad_token_id,
+                eos_token_id=tgt_tok.eos_token_id
+            )
+            base_texts_batch = tgt_tok.batch_decode(base_out, skip_special_tokens=True)
+            all_base_texts.extend(base_texts_batch)
+
+    # Now use accumulated results
+    samples = all_samples
+    bridged_texts = all_bridged_texts
+    base_texts = all_base_texts
 
     # Compute accuracy
     def compute_acc(pred_texts):
