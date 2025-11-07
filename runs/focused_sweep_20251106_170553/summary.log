@@ -1,0 +1,41 @@
+=== FOCUSED HYPERPARAMETER SWEEP ===
+Output: runs/focused_sweep_20251106_170553
+
+========================================
+Experiment: 1_conservative
+Description: Lower LR, longer warmup, proven architecture
+Start: Thu Nov  6 17:05:53 PST 2025
+----------------------------------------
+End: Thu Nov  6 17:09:09 PST 2025
+
+========================================
+Experiment: 2_aggressive
+Description: Higher LR, standard warmup, same architecture
+Start: Thu Nov  6 17:09:09 PST 2025
+----------------------------------------
+End: Thu Nov  6 17:12:27 PST 2025
+
+========================================
+Experiment: 3_high_capacity
+Description: 64 tokens, 8 layers deep, might capture more
+Start: Thu Nov  6 17:12:27 PST 2025
+----------------------------------------
+End: Thu Nov  6 17:15:50 PST 2025
+
+========================================
+Experiment: 4_efficient
+Description: Smaller bottleneck, fewer tokens, shallower
+Start: Thu Nov  6 17:15:51 PST 2025
+----------------------------------------
+End: Thu Nov  6 17:18:58 PST 2025
+
+========================================
+SWEEP COMPLETE at Thu Nov  6 17:18:58 PST 2025
+
+RESULTS SUMMARY:
+----------------------------------------
+Experiment  Target-Alone  Bridged  Gap
+
+All logs saved to: runs/focused_sweep_20251106_170553
+Analysis script created: runs/focused_sweep_20251106_170553/analyze.py
+Run 'python runs/focused_sweep_20251106_170553/analyze.py' after completion for detailed analysis
