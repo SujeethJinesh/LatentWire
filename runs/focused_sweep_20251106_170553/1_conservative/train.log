@@ -1,136 +1,0 @@
-W1106 17:05:55.398000 4093053 torch/distributed/run.py:793] 
-W1106 17:05:55.398000 4093053 torch/distributed/run.py:793] *****************************************
-W1106 17:05:55.398000 4093053 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1106 17:05:55.398000 4093053 torch/distributed/run.py:793] *****************************************
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-==== Config ====
-source_model: mistralai/Mistral-7B-Instruct-v0.3
-target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
-translator_type: bottleneck_gated
-bottleneck_dim: 1024
-soft_tokens: 48
-depth: 6
-heads: 16
-lr: 5e-05
-weight_decay: 0.01
-train_steps: 3500
-warmup_steps: 1000
-per_device_batch: 10
-eval_every: 250
-eval_samples: 1000
-max_new_tokens: 256
-seed: 1234
-bf16: True
-save_path: runs/focused_sweep_20251106_170553/1_conservative/checkpoint.pt
-show_eval_samples: 1
-early_stop_patience: 5
-Loading source model/tokenizer...
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 512.77it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.29it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1332.79it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 9815.06it/s]
-Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.79it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8659.95it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  3.04it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.90it/s]
-Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.30it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.23it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.21it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.54it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.43it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.44it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.63it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.55it/s]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.57it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.58it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.51it/s]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.51it/s]
-Loading target model/tokenizer...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 878.89it/s]
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 555.10it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6098.59it/s]
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 279.74it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.21it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.19it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.20it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.27it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.96it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:01,  1.99it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.95it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.95it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.71it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.71it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.69it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.69it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.79it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.79it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.78it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.79it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.81it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.81it/s]
-
-Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.81it/s]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.82it/s]
-Source hidden dim: 4096 | Target hidden dim: 4096
-Target embedding RMS: 0.0105
-Translator parameters: 142.8M
-Loading GSM8K...
-Optimizer groups: 50 decay, 87 no_decay, 6 gates (LR ×3)
-Step 20/3500 | Loss (avg over last 20): 9.7072
-Step 40/3500 | Loss (avg over last 20): 9.8164
-Step 60/3500 | Loss (avg over last 20): 9.9950
-Step 80/3500 | Loss (avg over last 20): 9.2649
-Step 100/3500 | Loss (avg over last 20): 9.0194
-Step 120/3500 | Loss (avg over last 20): 8.7421
-Step 140/3500 | Loss (avg over last 20): 8.4507
-Step 160/3500 | Loss (avg over last 20): 8.3512
-Step 180/3500 | Loss (avg over last 20): 8.3215
-Step 200/3500 | Loss (avg over last 20): 8.0367
-Step 220/3500 | Loss (avg over last 20): 7.7442
-Step 240/3500 | Loss (avg over last 20): 7.4209
-[rank0]: Traceback (most recent call last):
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 905, in <module>
-[rank0]:     main()
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 857, in main
-[rank0]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 495, in evaluate_numeric_accuracy
-[rank0]:     batch = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms)
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/cross_model/experiments/cross_attention.py", line 420, in build_batch_inputs
-[rank0]:     src_out = src_model(**src_enc, output_hidden_states=True)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
-[rank0]:     outputs = self.model(
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
-[rank0]:     layer_outputs = decoder_layer(
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
-[rank0]:     hidden_states = self.mlp(hidden_states)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
-[rank0]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
-[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 5.47 GiB. GPU 0 has a total capacity of 79.19 GiB of which 4.75 GiB is free. Including non-PyTorch memory, this process has 74.43 GiB memory in use. Of the allocated memory 54.98 GiB is allocated by PyTorch, and 16.50 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-[rank0]:[W1106 17:09:05.688374083 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
-W1106 17:09:07.603000 4093053 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 4093069 closing signal SIGTERM
-W1106 17:09:07.604000 4093053 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 4093070 closing signal SIGTERM
-W1106 17:09:07.604000 4093053 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 4093071 closing signal SIGTERM
-E1106 17:09:08.916000 4093053 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 4093068) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
-Traceback (most recent call last):
-  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
-    sys.exit(main())
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
-    return f(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
-    run(args)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
-    elastic_launch(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
-============================================================
-cross_model/experiments/cross_attention.py FAILED
-------------------------------------------------------------
-Failures:
-  <NO_OTHER_FAILURES>
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-11-06_17:09:07
-  host      : n07.cm.cluster
-  rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 4093068)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-============================================================
