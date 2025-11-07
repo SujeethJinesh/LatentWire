@@ -1,0 +1,56 @@
+W1106 23:37:36.689000 438681 torch/distributed/run.py:793] 
+W1106 23:37:36.689000 438681 torch/distributed/run.py:793] *****************************************
+W1106 23:37:36.689000 438681 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1106 23:37:36.689000 438681 torch/distributed/run.py:793] *****************************************
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==== Config ====
+source_model: mistralai/Mistral-7B-Instruct-v0.3
+target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
+translator_type: bottleneck_gated
+bottleneck_dim: 1024
+soft_tokens: 48
+depth: 6
+heads: 16
+lr: 5e-05
+weight_decay: 0.01
+train_steps: 3500
+warmup_steps: 1000
+per_device_batch: 10
+eval_every: 250
+eval_samples: 500
+max_new_tokens: 256
+seed: 1234
+bf16: True
+save_path: runs/focused_sweep_20251106_233735/1_conservative/checkpoint.pt
+show_eval_samples: 1
+early_stop_patience: 5
+Loading source model/tokenizer...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2822.55it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.77it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  3.26it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  3.44it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  3.31it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3235.51it/s]
+Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1481.74it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1688.08it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.49it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.44it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.23it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.62it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.53it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.54it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.68it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.66it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.59it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.57it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.62it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.55it/s]
+Loading target model/tokenizer...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3559.77it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8788.48it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8317.91it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 420.10it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.23it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.20it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.19it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.21it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.37it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.34it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.32it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.37it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.44it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.52it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.39it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.39it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.63it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.50it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.48it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.48it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.48it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.42it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.42it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.41it/s]
+Source hidden dim: 4096 | Target hidden dim: 4096
+Target embedding RMS: 0.0105
+Translator parameters: 142.8M
+Loading GSM8K...
+Optimizer groups: 50 decay, 87 no_decay, 6 gates (LR ×3)
