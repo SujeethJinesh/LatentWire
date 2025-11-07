@@ -18,7 +18,7 @@ TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 TRANSLATOR_TYPE="bottleneck_gated"
 PER_DEVICE_BATCH=10
 EVAL_EVERY=250
-EVAL_SAMPLES=200
+EVAL_SAMPLES=1000  # Increased from 200 for lower variance (ChatGPT recommendation)
 MAX_NEW_TOKENS=256
 
 # Create output directory

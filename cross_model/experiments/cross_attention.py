@@ -219,7 +219,9 @@ class GatedCrossAttentionBlock(nn.Module):
         self.cross_out = nn.Linear(bottleneck_dim, bottleneck_dim)
 
         # Tanh gating on cross-attention (Flamingo-style)
-        self.cross_gate = nn.Parameter(torch.zeros(1))
+        # Initialize with negative bias so gate starts slightly open after tanh
+        # tanh(-2.0) ≈ -0.96, meaning gate starts almost closed but learns to open
+        self.cross_gate = nn.Parameter(torch.tensor([-2.0]))
 
         # Dropout for regularization (prevents over-reliance on soft tokens)
         self.dropout = nn.Dropout(dropout)
@@ -496,8 +498,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             attention_mask=batch["attention_mask"],
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            temperature=None,  # Explicitly disable to avoid warnings
-            top_p=None,  # Explicitly disable to avoid warnings
+            repetition_penalty=1.1,  # Prevent "181818..." loops
+            no_repeat_ngram_size=3,  # Prevent repeating 3-grams
             pad_token_id=tgt_tok.pad_token_id,
             eos_token_id=tgt_tok.eos_token_id
         )
@@ -516,8 +518,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             **enc,
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            temperature=None,  # Explicitly disable to avoid warnings
-            top_p=None,  # Explicitly disable to avoid warnings
+            repetition_penalty=1.1,  # Prevent loops
+            no_repeat_ngram_size=3,  # Prevent repeating 3-grams
             pad_token_id=tgt_tok.pad_token_id,
             eos_token_id=tgt_tok.eos_token_id
         )
@@ -629,13 +631,15 @@ def main():
     parser.add_argument("--warmup_steps", type=int, default=100)
     parser.add_argument("--per_device_batch", type=int, default=2)
     parser.add_argument("--eval_every", type=int, default=200)
-    parser.add_argument("--eval_samples", type=int, default=200)
+    parser.add_argument("--eval_samples", type=int, default=1000, help="Number of eval samples (default 1000 for lower variance)")
     parser.add_argument("--max_new_tokens", type=int, default=256)
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--bf16", action="store_true")
     parser.add_argument("--save_path", type=str, default="translator_ckpt.pt")
     parser.add_argument("--show_eval_samples", type=int, default=1,
                         help="Show sample outputs during eval (0=none, 1=brief, 2=detailed)")
+    parser.add_argument("--early_stop_patience", type=int, default=5,
+                        help="Stop training if no improvement for N evals (0=disabled)")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -750,6 +754,11 @@ def main():
     running = 0.0
     last_eval = -1
 
+    # Early stopping tracking
+    best_bridged_acc = 0.0
+    patience_counter = 0
+    best_checkpoint = None
+
     while step < args.train_steps:
         # sample a batch
         batch_idx = [rng.randrange(0, len(train_ds)) for _ in range(args.per_device_batch)]
@@ -789,8 +798,35 @@ def main():
                     reduction="batchmean"
                 )
 
-        # Total loss: NLL + λ * KL (λ = 0.03)
-        loss = nll_loss + 0.03 * kl_loss
+        # InfoNCE anti-collapse loss (prevent all inputs mapping to same vector)
+        # Compare translator soft tokens with actual target embeddings
+        info_nce_loss = torch.tensor(0.0, device=device, dtype=dtype)
+        if step > args.warmup_steps // 2:  # Start after 50% of warmup
+            with torch.no_grad():
+                # Get target embeddings for the prompt (stop gradient)
+                tgt_prompts = [s.tgt_prompt for s in samples]
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+                tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
+                # Pool target embeddings (mean over sequence)
+                tgt_pooled = tgt_embeds_full.mean(dim=1)  # [B, d_model]
+
+            # Get soft tokens from translator (already computed above in data)
+            # Pool soft tokens (mean over K tokens)
+            K = data["inputs_embeds"].size(1) - out.logits.size(1) if out.logits.size(1) < data["inputs_embeds"].size(1) else 0
+            soft_pooled = data["inputs_embeds"][:, :K, :].mean(dim=1) if K > 0 else data["inputs_embeds"][:, :32, :].mean(dim=1)  # [B, d_model]
+
+            # Normalize for cosine similarity
+            soft_norm = torch.nn.functional.normalize(soft_pooled, dim=-1)
+            tgt_norm = torch.nn.functional.normalize(tgt_pooled, dim=-1)
+
+            # InfoNCE: positive pairs (i,i) vs negative pairs (i,j≠i)
+            temperature = 0.07
+            logits_contrastive = soft_norm @ tgt_norm.T / temperature  # [B, B]
+            labels_contrastive = torch.arange(logits_contrastive.size(0), device=device)
+            info_nce_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
+
+        # Total loss: NLL + λ_KL * KL + λ_InfoNCE * InfoNCE
+        loss = nll_loss + 0.03 * kl_loss + 0.05 * info_nce_loss
 
         # Detach for logging to avoid DDP autograd warning
         loss_scalar = loss.detach()
@@ -825,11 +861,34 @@ def main():
                     )
                 log(f"[Eval] Step {step} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
+                # Early stopping check
+                if args.early_stop_patience > 0:
+                    if acc_bridged > best_bridged_acc:
+                        best_bridged_acc = acc_bridged
+                        patience_counter = 0
+                        # Save best checkpoint
+                        best_checkpoint = (translator.module if isinstance(translator, DDP) else translator).state_dict()
+                        log(f"[Early Stop] New best bridged acc: {best_bridged_acc:.3f}, resetting patience")
+                    else:
+                        patience_counter += 1
+                        log(f"[Early Stop] No improvement, patience: {patience_counter}/{args.early_stop_patience}")
+
+                    if patience_counter >= args.early_stop_patience:
+                        log(f"[Early Stop] Stopping early at step {step}. Best bridged acc: {best_bridged_acc:.3f}")
+                        break
+
     # Final save (translator weights)
     if is_main():
-        state = (translator.module if isinstance(translator, DDP) else translator).state_dict()
-        torch.save(state, args.save_path)
-        log(f"Saved translator to {args.save_path}")
+        # If early stopping saved a best checkpoint, use that
+        if best_checkpoint is not None and args.early_stop_patience > 0:
+            torch.save(best_checkpoint, args.save_path)
+            log(f"Saved BEST translator (acc={best_bridged_acc:.3f}) to {args.save_path}")
+            # Also load it for final eval
+            (translator.module if isinstance(translator, DDP) else translator).load_state_dict(best_checkpoint)
+        else:
+            state = (translator.module if isinstance(translator, DDP) else translator).state_dict()
+            torch.save(state, args.save_path)
+            log(f"Saved translator to {args.save_path}")
 
         # Final eval
         with torch.no_grad():
