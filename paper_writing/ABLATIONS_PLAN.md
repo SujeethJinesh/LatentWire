@@ -86,59 +86,76 @@
 
 ---
 
-## Ablation 4: Quantization (Compression - P0)
+## Ablation 4: Inference Metrics (KV Cache & Latency - P0)
 
-**Research Question**: What's the honest compression with wire protocol overhead?
+**Research Question**: What are the practical memory and time savings?
 
-**Method**: Post-hoc analysis (no training needed!)
+**Goal**: Measure KV cache memory usage and end-to-end latency for longer outputs
+- Why KV cache matters: Memory grows with sequence length during generation
+- Longer outputs → more KV cache → more memory savings with compression
+
+**Method**: Benchmark all baselines on evaluation samples
 - Take trained checkpoint from Ablation 1 (64 tokens, stable)
-- Evaluate on 200 GSM8K test samples
-- For each sample, measure bytes transmitted:
+- Evaluate on ALL test samples (full dataset)
+- **Store per-sample raw data** for later analysis
 
-**Configurations**:
-1. **Text baseline**: UTF-8 encoded prompt bytes
-2. **FP16 quantization**: 2 bytes per value + scales
-3. **INT8 quantization**: 1 byte per value + scales (group size = 32)
-4. **INT6 quantization**: 0.75 bytes per value + scales
-5. **INT4 quantization**: 0.5 bytes per value + scales
+**Baselines to Measure**:
+1. **Text-only**: Full prompt via text to target model (Llama)
+2. **Latent**: Compressed soft tokens (our method)
+3. **Token-budget**: Text truncated to M tokens (fairness baseline)
+4. **TBD - Token transfer baseline** ⚠️ NEEDS CLARIFICATION
 
-**Overhead accounting**:
-- Group-wise quantization: scale per group (4 bytes each)
-- Metadata: shape, dtype info (~16 bytes)
-- Anchor text: "Answer: " (always sent as text)
+**Per-Sample Metrics** (store raw data):
+- KV cache memory usage (MB) during generation
+- End-to-end latency (seconds) from prompt to completion
+- Peak GPU memory (MB)
+- Generated text quality (EM/F1)
+- Input sequence length (tokens)
+- Output sequence length (tokens)
 
-**Metrics**:
-- Average bytes: text vs each quantization level
-- Compression ratio: text_bytes / latent_bytes
-- Quality degradation: accuracy drop per quantization level
+**Aggregate Metrics**:
+- Average KV cache: text vs latent
+- KV cache reduction (MB and %)
+- Average latency: text vs latent
+- Latency reduction (seconds and %)
+- Quality comparison (EM/F1)
 
-**Runtime**: <1 hour (analysis only, no training)
-**Dataset**: GSM8K (200 test samples)
+**Output Format**:
+- `per_sample_metrics.jsonl` - One JSON object per sample with all metrics
+- `aggregate_metrics.json` - Summary statistics
+- Allows flexible post-hoc analysis and plotting
+
+**Runtime**: ~2 hours (depends on dataset size)
+**Dataset**: GSM8K test set (1,319 samples) or subset
+
+## Baseline Clarification Needed ⚠️
+
+**Question**: What should the "token transfer from Mistral to Llama" baseline be?
+
+**Option A: Cascade Generation**
+- Mistral generates K tokens of the answer (as text)
+- Feed those K tokens + original question to Llama
+- Llama continues generation from there
+- **Use case**: See if Mistral's partial answer helps Llama
+
+**Option B: Truncated Mistral Output**
+- Mistral generates full answer
+- Truncate to K tokens
+- Feed to Llama as "prior knowledge"
+- **Use case**: Compare text transfer vs latent transfer
+
+**Option C: Shared KV Cache** (probably not feasible)
+- Try to use Mistral's KV cache with Llama
+- **Issue**: Different architectures, incompatible
+
+**Current baselines we have**:
+1. ✅ Text-only: Full prompt → Llama
+2. ✅ Latent: Question → Mistral → Translator (64 soft tokens) → Llama
+3. ✅ Token-budget: Truncated prompt (M tokens) → Llama
+
+**Recommendation**: Option A (Cascade) seems most useful - shows whether text-based transfer can compete with latent transfer.
 
 ---
-
-## Optional Ablation 5: Inference Benchmarks (P2)
-
-**Research Question**: Real-world speedup and memory savings?
-
-**Method**: Benchmark script measuring:
-1. **Latency**: Wall-clock time per sample (text vs latent)
-2. **Memory**: Peak GPU memory during generation
-3. **Throughput**: Samples/sec at batch sizes [1, 4, 8]
-
-**Configurations**:
-- Text baseline (full prompt)
-- Latent (64 tokens)
-- Latent (32 tokens)
-
-**Metrics**:
-- Time per sample (ms)
-- Peak memory (GB)
-- Memory reduction (%)
-- Throughput (samples/sec)
-
-**Runtime**: 2 hours
-**Dataset**: GSM8K (100 samples)
 
 ---
 
@@ -146,12 +163,12 @@
 
 | Ablation | Priority | GPU Hours | Configs | Purpose |
 |----------|----------|-----------|---------|---------|
-| 1. Stability Fixes | P0 | 6h | 2 | Prove fixes prevent collapse |
-| 2. Sequence Length | P0 | 9h | 3 | Compression-quality tradeoff |
+| 1. Stability Fixes | P0 | 3h | 1 new + 1 reuse | Prove fixes prevent collapse |
+| 2. Sequence Length | P0 | 6h | 2 new + 1 reuse | Compression-quality tradeoff |
 | 3. Dataset (HotpotQA) | P1 | 3h | 1 | Generalization beyond math |
-| 4. Quantization | P0 | <1h | 5 | Honest wire compression |
-| 5. Inference Bench | P2 | 2h | 3 | Real-world speedup |
-| **TOTAL** | | **~20h** | **14** | |
+| 4. Inference Metrics | P0 | 2h | Analysis | KV cache + latency measurement |
+| **TOTAL TRAINING** | | **~12h** | **4 new runs** | |
+| **TOTAL WITH ANALYSIS** | | **~14h** | | |
 
 ---
 
@@ -180,10 +197,8 @@ From `successful_experiments/cross_model/85/`:
 | Sequence: 48 tokens + stability | 3h | New run |
 | Sequence: 64 tokens + stability | 0h | **Same as stability ablation** |
 | Dataset: HotpotQA | 3h | New run |
-| Quantization analysis | <1h | Post-hoc |
-| Inference benchmarks (optional) | 2h | If time permits |
-| **TOTAL REQUIRED** | **~13h** | Core experiments |
-| **TOTAL WITH OPTIONAL** | **~15h** | Including benchmarks |
+| Inference metrics (KV cache + latency) | 2h | Per-sample measurement |
+| **TOTAL REQUIRED** | **~14h** | Core experiments |
 
 ---
 
@@ -211,11 +226,11 @@ From `successful_experiments/cross_model/85/`:
 # Ablation 3: Dataset
 - 3a_hotpotqa_64tok (with stability)
 
-# Ablation 4: Quantization
-- 4_quantization_analysis.py (post-hoc script)
+# Ablation 4: Inference Metrics
+- 4_inference_metrics.py (KV cache + latency benchmarking)
 ```
 
-**Total unique runs needed**: 4 configs × 3 hours = 12 hours
+**Total unique runs needed**: 4 training runs (12h) + 1 inference analysis (2h) = 14 hours
 
 ---
 
@@ -237,9 +252,9 @@ From `successful_experiments/cross_model/85/`:
 **Evidence**: Beats baseline on HotpotQA (different reasoning type)
 **Ablation**: Dataset
 
-### Claim 5: Practical Compression
-**Evidence**: 2-5× compression with quantization, maintains quality
-**Ablation**: Quantization
+### Claim 5: KV Cache Savings and Latency Reduction
+**Evidence**: Reduced KV cache memory (43-59 MB saved) and faster inference for longer outputs
+**Ablation**: Inference Metrics
 
 ---
 
