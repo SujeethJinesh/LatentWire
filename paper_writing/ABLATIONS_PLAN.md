@@ -100,10 +100,12 @@
 - **Store per-sample raw data** for later analysis
 
 **Baselines to Measure**:
-1. **Text-only**: Full prompt via text to target model (Llama)
-2. **Latent**: Compressed soft tokens (our method)
-3. **Token-budget**: Text truncated to M tokens (fairness baseline)
-4. **TBD - Token transfer baseline** ⚠️ NEEDS CLARIFICATION
+1. **Source-alone (Mistral)**: Question → Mistral → Answer (P0 - CRITICAL)
+   - Proves improvement isn't just from using Mistral
+2. **Target-alone (Llama)**: Full prompt → Llama (standard baseline)
+3. **Latent**: Question → Mistral → Translator (64 soft tokens) → Llama (our method)
+4. **Token-budget**: Truncated prompt (M tokens) → Llama (fairness baseline)
+5. **Cascade**: Mistral generates text → Llama refines (P2 - text vs soft token transfer)
 
 **Per-Sample Metrics** (store raw data):
 - KV cache memory usage (MB) during generation
@@ -125,35 +127,8 @@
 - `aggregate_metrics.json` - Summary statistics
 - Allows flexible post-hoc analysis and plotting
 
-**Runtime**: ~2 hours (depends on dataset size)
+**Runtime**: ~2-3 hours (depends on dataset size, 5 baselines per sample)
 **Dataset**: GSM8K test set (1,319 samples) or subset
-
-## Baseline Clarification Needed ⚠️
-
-**Question**: What should the "token transfer from Mistral to Llama" baseline be?
-
-**Option A: Cascade Generation**
-- Mistral generates K tokens of the answer (as text)
-- Feed those K tokens + original question to Llama
-- Llama continues generation from there
-- **Use case**: See if Mistral's partial answer helps Llama
-
-**Option B: Truncated Mistral Output**
-- Mistral generates full answer
-- Truncate to K tokens
-- Feed to Llama as "prior knowledge"
-- **Use case**: Compare text transfer vs latent transfer
-
-**Option C: Shared KV Cache** (probably not feasible)
-- Try to use Mistral's KV cache with Llama
-- **Issue**: Different architectures, incompatible
-
-**Current baselines we have**:
-1. ✅ Text-only: Full prompt → Llama
-2. ✅ Latent: Question → Mistral → Translator (64 soft tokens) → Llama
-3. ✅ Token-budget: Truncated prompt (M tokens) → Llama
-
-**Recommendation**: Option A (Cascade) seems most useful - shows whether text-based transfer can compete with latent transfer.
 
 ---
 
@@ -236,9 +211,10 @@ From `successful_experiments/cross_model/85/`:
 
 ## Success Metrics (Paper Claims)
 
-### Claim 1: Information Enrichment
-**Evidence**: Latent (81.5%) > Text baseline (73%) on GSM8K
-**Ablation**: Stability (reuse existing result)
+### Claim 1: Cross-Model Information Enrichment
+**Evidence**: Latent beats BOTH source-alone (Mistral) AND target-alone (Llama)
+**Ablation**: Inference Metrics (P0 - will reveal which scenario we're in)
+**Critical**: This determines if we have genuine cross-model fusion vs just knowledge transfer
 
 ### Claim 2: Stability Fixes Work
 **Evidence**: Final accuracy >70% vs 36% collapse

@@ -82,35 +82,43 @@ All configs WITH stability fixes (InfoNCE + early stopping + gen hygiene)
 
 ---
 
-### ABLATION 4: Quantization (Compression Analysis)
+### ABLATION 4: Inference Metrics (KV Cache & Latency)
 
 Post-hoc analysis, NO TRAINING REQUIRED
 
 **Input**: Checkpoint from 1a_stable_64tok
-**Analysis**: Measure wire bytes for different quantization levels
+**Analysis**: Benchmark all baselines on test set, measure practical benefits
 
-#### Quantization Levels
-1. **Text baseline**: UTF-8 encoded prompt (~600-800 bytes typical)
-2. **FP16**: 2 bytes/value + metadata (~16 KB for 64×4096 tokens)
-3. **INT8**: 1 byte/value + scales (~8 KB + overhead)
-4. **INT6**: 0.75 bytes/value + scales (~6 KB + overhead)
-5. **INT4**: 0.5 bytes/value + scales (~4 KB + overhead)
+#### Baselines (5 Total)
+1. **Source-alone (Mistral)**: Question → Mistral → Answer (P0 - CRITICAL)
+   - Purpose: Prove improvement isn't just from using Mistral
+2. **Target-alone (Llama)**: Full prompt → Llama
+   - Purpose: Standard single-model baseline
+3. **Latent (Our method)**: Question → Mistral → Translator → Llama
+   - Purpose: Cross-model translation via soft tokens
+4. **Token-budget**: Truncated prompt (K tokens) → Llama
+   - Purpose: Fair compression baseline
+5. **Cascade**: Mistral text answer → Llama refinement (P2)
+   - Purpose: Compare soft tokens vs discrete text transfer
 
-**Overhead accounting**:
-- Group-wise quantization: 4 bytes per group (group_size=32)
-- Metadata: shape, dtype (~16 bytes)
-- Anchor text: "Answer: " (~8 bytes, always sent as text)
+**Per-Sample Metrics** (stored in JSONL):
+- KV cache memory (MB) during generation
+- End-to-end latency (seconds)
+- Peak GPU memory (MB)
+- Quality (EM/F1)
+- Sequence lengths (input/output)
 
-**Method**: `analyze_compression.py` script
-**Samples**: 200 from GSM8K test set
-**Runtime**: <1 hour
+**Key Comparisons**:
+- Does latent beat BOTH single models? (Information enrichment)
+- Does latent beat cascade? (Soft tokens > text tokens)
+- KV cache savings: target_alone vs latent
+- Latency reduction for longer outputs
 
-**Metrics**:
-- Average bytes transmitted (text vs each quantization)
-- Compression ratio (text_bytes / latent_bytes)
-- Quality degradation (if any, measure accuracy drop)
+**Method**: `benchmark_inference.py` script
+**Samples**: Full GSM8K test set (1,319 samples)
+**Runtime**: 2-3 hours (5 baselines × ~1.3K samples)
 
-**Purpose**: Honest wire protocol compression for paper
+**Purpose**: Determine paper narrative + practical benefits
 
 ---
 
@@ -126,19 +134,19 @@ Post-hoc analysis, NO TRAINING REQUIRED
 | 2b_stable_48tok | 48 | GSM8K | YES | 3h | ⏳ TODO |
 | 2c_stable_64tok | 64 | GSM8K | YES | 0h | ✅ REUSE 1a |
 | 3a_hotpotqa_64tok | 64 | HotpotQA | YES | 3h | ⏳ TODO |
-| 4_quantization | - | - | - | <1h | ⏳ TODO |
-| **TOTAL** | | | | **~13h** | |
+| 4_inference_metrics | - | - | - | 2-3h | ⏳ TODO |
+| **TOTAL** | | | | **~14h** | |
 
 ### Paper Claims Matrix
 
 | Claim | Evidence | Ablation | Status |
 |-------|----------|----------|--------|
-| Information enrichment (> baseline) | 81.5% > 73% | 1b (reuse) | ✅ HAVE |
+| **Cross-model fusion beats both** | Latent > source AND target | 4 (P0 - CRITICAL) | ⏳ TODO |
 | Stability fixes work | >70% final vs 36% | 1a vs 1b | ⏳ TODO |
 | Compression-quality tradeoff | 32→48→64 tokens | 2a, 2b, 2c | ⏳ TODO |
 | Generalizes beyond math | HotpotQA beats baseline | 3a | ⏳ TODO |
-| Practical compression (2-5×) | INT8/INT6/INT4 | 4 | ⏳ TODO |
-| KV cache savings | 43-59 MB saved | All configs | ✅ CALC |
+| Soft tokens > text transfer | Latent > cascade | 4 (P2) | ⏳ TODO |
+| KV cache savings | 43-59 MB saved | 4 | ⏳ TODO |
 
 ---
 

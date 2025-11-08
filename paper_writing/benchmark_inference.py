@@ -285,6 +285,164 @@ def benchmark_token_budget(
     }
 
 
+def benchmark_source_alone(
+    sample: Dict,
+    src_model,
+    src_tok,
+    max_new_tokens: int,
+    device: str
+) -> Dict:
+    """
+    Benchmark source-alone baseline (P0 - CRITICAL)
+    Question → Mistral → Answer (no Llama involved)
+
+    This is essential to prove the improvement isn't just from using Mistral.
+    """
+    gc.collect()
+    torch.cuda.empty_cache()
+    torch.cuda.reset_peak_memory_stats()
+
+    start_mem = get_gpu_memory()
+    start_time = time.time()
+
+    # Tokenize input
+    inputs = src_tok(
+        sample['src_prompt'],
+        return_tensors='pt',
+        padding=True,
+        truncation=True,
+        max_length=2048
+    ).to(device)
+
+    input_len = inputs['input_ids'].shape[1]
+
+    # Generate
+    with torch.no_grad():
+        outputs = src_model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            return_dict_in_generate=True,
+            use_cache=True
+        )
+
+    end_time = time.time()
+    peak_mem = torch.cuda.max_memory_allocated() / (1024 ** 2)
+
+    # Decode
+    generated_ids = outputs.sequences[0, input_len:]
+    generated_text = src_tok.decode(generated_ids, skip_special_tokens=True)
+
+    # KV cache
+    output_len = len(generated_ids)
+    total_seq_len = input_len + output_len
+    kv_cache_mb = total_seq_len * 0.5
+
+    return {
+        'method': 'source_alone',
+        'generated_text': generated_text,
+        'input_len': input_len,
+        'output_len': output_len,
+        'total_seq_len': total_seq_len,
+        'kv_cache_mb': kv_cache_mb,
+        'latency_sec': end_time - start_time,
+        'peak_mem_mb': peak_mem,
+        'mem_delta_mb': peak_mem - start_mem
+    }
+
+
+def benchmark_cascade(
+    sample: Dict,
+    src_model,
+    src_tok,
+    tgt_model,
+    tgt_tok,
+    max_new_tokens: int,
+    device: str
+) -> Dict:
+    """
+    Benchmark cascade baseline (P2 - Nice to have)
+    Mistral generates answer → feed as text to Llama
+
+    Tests whether soft tokens > discrete text for cross-model transfer.
+    """
+    gc.collect()
+    torch.cuda.empty_cache()
+    torch.cuda.reset_peak_memory_stats()
+
+    start_mem = get_gpu_memory()
+    start_time = time.time()
+
+    # Step 1: Mistral generates answer
+    src_inputs = src_tok(
+        sample['src_prompt'],
+        return_tensors='pt',
+        padding=True,
+        truncation=True,
+        max_length=2048
+    ).to(device)
+
+    with torch.no_grad():
+        src_outputs = src_model.generate(
+            **src_inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            use_cache=True
+        )
+
+    # Decode Mistral's answer
+    src_input_len = src_inputs['input_ids'].shape[1]
+    src_answer_ids = src_outputs[0, src_input_len:]
+    src_answer_text = src_tok.decode(src_answer_ids, skip_special_tokens=True)
+
+    # Step 2: Feed Mistral's answer to Llama
+    # Format: "Question: {Q}\nMistral's answer: {A}\nRefined answer:"
+    cascade_prompt = f"{sample['tgt_prompt']}\n\nMistral's answer: {src_answer_text}\n\nRefined answer:"
+
+    tgt_inputs = tgt_tok(
+        cascade_prompt,
+        return_tensors='pt',
+        padding=True,
+        truncation=True,
+        max_length=2048
+    ).to(device)
+
+    tgt_input_len = tgt_inputs['input_ids'].shape[1]
+
+    with torch.no_grad():
+        tgt_outputs = tgt_model.generate(
+            **tgt_inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            use_cache=True
+        )
+
+    end_time = time.time()
+    peak_mem = torch.cuda.max_memory_allocated() / (1024 ** 2)
+
+    # Decode final answer
+    tgt_answer_ids = tgt_outputs[0, tgt_input_len:]
+    generated_text = tgt_tok.decode(tgt_answer_ids, skip_special_tokens=True)
+
+    # KV cache (for Llama's generation only, Mistral's is discarded)
+    output_len = len(tgt_answer_ids)
+    total_seq_len = tgt_input_len + output_len
+    kv_cache_mb = total_seq_len * 0.5
+
+    return {
+        'method': 'cascade',
+        'generated_text': generated_text,
+        'mistral_answer': src_answer_text,
+        'input_len': tgt_input_len,
+        'output_len': output_len,
+        'total_seq_len': total_seq_len,
+        'kv_cache_mb': kv_cache_mb,
+        'latency_sec': end_time - start_time,
+        'peak_mem_mb': peak_mem,
+        'mem_delta_mb': peak_mem - start_mem
+    }
+
+
 def run_benchmark(
     checkpoint_path: str,
     source_model_id: str,
@@ -349,8 +507,8 @@ def run_benchmark(
     results = []
 
     print(f"\nBenchmarking {num_samples} samples...")
-    print(f"Methods: text_baseline, latent, token_budget_{K}")
-    print("-" * 60)
+    print(f"Methods: source_alone, target_alone, latent, token_budget_{K}, cascade")
+    print("-" * 70)
 
     for i, example in enumerate(dataset):
         if i >= num_samples:
@@ -380,7 +538,17 @@ def run_benchmark(
             'gold_answer': gold_answer
         }
 
-        # 1. Text baseline
+        # 1. Source-alone (Mistral) - P0 CRITICAL
+        source_result = benchmark_source_alone(
+            sample, src_model, src_tok, max_new_tokens, device
+        )
+        pred_source = extract_answer_number(source_result['generated_text'])
+        em, f1 = compute_em_f1(pred_source, gold_answer)
+        source_result['em'] = em
+        source_result['f1'] = f1
+        sample_results['source_alone'] = source_result
+
+        # 2. Target-alone (Llama) - Text baseline
         text_result = benchmark_text_baseline(
             sample, tgt_model, tgt_tok, max_new_tokens, device
         )
@@ -388,9 +556,9 @@ def run_benchmark(
         em, f1 = compute_em_f1(pred_text, gold_answer)
         text_result['em'] = em
         text_result['f1'] = f1
-        sample_results['text_baseline'] = text_result
+        sample_results['target_alone'] = text_result
 
-        # 2. Latent
+        # 3. Latent (our method)
         latent_result = benchmark_latent(
             sample, src_model, src_tok, tgt_model, tgt_tok,
             translator, max_new_tokens, device, dtype
@@ -401,7 +569,7 @@ def run_benchmark(
         latent_result['f1'] = f1
         sample_results['latent'] = latent_result
 
-        # 3. Token budget (truncate to K tokens)
+        # 4. Token budget (truncate to K tokens)
         budget_result = benchmark_token_budget(
             sample, tgt_model, tgt_tok, max_new_tokens, K, device
         )
@@ -410,6 +578,17 @@ def run_benchmark(
         budget_result['em'] = em
         budget_result['f1'] = f1
         sample_results['token_budget'] = budget_result
+
+        # 5. Cascade (Mistral text → Llama) - P2 optional
+        cascade_result = benchmark_cascade(
+            sample, src_model, src_tok, tgt_model, tgt_tok,
+            max_new_tokens, device
+        )
+        pred_cascade = extract_answer_number(cascade_result['generated_text'])
+        em, f1 = compute_em_f1(pred_cascade, gold_answer)
+        cascade_result['em'] = em
+        cascade_result['f1'] = f1
+        sample_results['cascade'] = cascade_result
 
         results.append(sample_results)
 
@@ -425,7 +604,7 @@ def run_benchmark(
     # Compute aggregate statistics
     print("\nComputing aggregate statistics...")
 
-    methods = ['text_baseline', 'latent', 'token_budget']
+    methods = ['source_alone', 'target_alone', 'latent', 'token_budget', 'cascade']
     aggregate = {}
 
     for method in methods:
@@ -452,13 +631,13 @@ def run_benchmark(
             }
         }
 
-    # Compute savings
-    text_kv = aggregate['text_baseline']['kv_cache_mb']['mean']
+    # Compute savings (latent vs target_alone)
+    target_kv = aggregate['target_alone']['kv_cache_mb']['mean']
     latent_kv = aggregate['latent']['kv_cache_mb']['mean']
 
     aggregate['kv_cache_savings'] = {
-        'absolute_mb': text_kv - latent_kv,
-        'relative_pct': (text_kv - latent_kv) / text_kv * 100
+        'absolute_mb': target_kv - latent_kv,
+        'relative_pct': (target_kv - latent_kv) / target_kv * 100
     }
 
     # Save aggregate results
@@ -469,18 +648,39 @@ def run_benchmark(
     print(f"\nSaved aggregate results to {aggregate_file}")
 
     # Print summary
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print("INFERENCE BENCHMARK RESULTS")
-    print("=" * 60)
+    print("=" * 70)
 
     for method in methods:
         stats = aggregate[method]
-        print(f"\n{method.upper()}:")
+        print(f"\n{method.upper().replace('_', ' ')}:")
         print(f"  KV Cache:  {stats['kv_cache_mb']['mean']:>6.1f} MB (avg)")
         print(f"  Latency:   {stats['latency_sec']['mean']:>6.2f} sec (avg)")
         print(f"  Accuracy:  EM={stats['accuracy']['em']:.1%}, F1={stats['accuracy']['f1']:.1%}")
 
-    print(f"\nKV CACHE SAVINGS (latent vs text):")
+    print(f"\n" + "=" * 70)
+    print("KEY COMPARISONS")
+    print("=" * 70)
+
+    # Latent vs both single models
+    source_acc = aggregate['source_alone']['accuracy']['em']
+    target_acc = aggregate['target_alone']['accuracy']['em']
+    latent_acc = aggregate['latent']['accuracy']['em']
+
+    print(f"\nACCURACY COMPARISON:")
+    print(f"  Source-alone (Mistral): {source_acc:.1%}")
+    print(f"  Target-alone (Llama):   {target_acc:.1%}")
+    print(f"  Latent (Our method):    {latent_acc:.1%}")
+
+    if latent_acc > max(source_acc, target_acc):
+        print(f"  ✅ Latent BEATS both single models! (Information enrichment)")
+    elif latent_acc > target_acc:
+        print(f"  ✅ Latent beats target-alone (+{(latent_acc - target_acc)*100:.1f}%)")
+    else:
+        print(f"  ⚠️  Latent below target ({(latent_acc - target_acc)*100:.1f}%)")
+
+    print(f"\nKV CACHE SAVINGS (latent vs target-alone):")
     print(f"  Absolute:  {aggregate['kv_cache_savings']['absolute_mb']:.1f} MB")
     print(f"  Relative:  {aggregate['kv_cache_savings']['relative_pct']:.1f}%")
 
