@@ -2,83 +2,179 @@
 
 **Timeline**: 3 weeks (Experiments + Writing)
 **Target Venue**: arXiv preprint / workshop paper (4-8 pages)
-**Core Claim**: Cross-model translation can exceed single-model baselines through information enrichment
+**Core Claim**: Cross-model translation beats both single models through information enrichment
+
+---
+
+## Overview
+
+**What we already have** ✅:
+- 81.5% peak result exceeding 73% baseline (successful_experiments/cross_model/85/)
+- Sequence length ablations: 32, 48, 64 soft tokens (without stability fixes)
+- Architecture ablations: Depth (4-8 layers), learning rate, warmup
+- GSM8K dataset: 1,319 held-out test samples
+
+**What we need** ⏳:
+- Validate stability fixes prevent collapse
+- Measure if latent beats BOTH source (Mistral) and target (Llama) models
+- Test generalization to HotpotQA
+- Benchmark KV cache savings and latency
+
+**Total GPU time**: ~14 hours on 4× H100
 
 ---
 
 ## Week 1: Core Experiments (Nov 8-14)
 
-### Experiments We Already Have ✅
-- **81.5% peak result** exceeding 73% baseline (successful_experiments/cross_model/85/)
-- **Sequence length ablations**: 32, 48, 64 soft tokens
-- **Architecture ablations**: Depth (4-8 layers), learning rate, warmup
-- **Stability analysis**: Identified collapse patterns and root causes
-- **GSM8K dataset**: 1,319 held-out test samples
+### Ablation 1: Stability Fixes (P0 - CRITICAL)
 
-### Critical Experiments Needed (Priority 1)
+**Research Question**: Do InfoNCE + early stopping + generation hygiene prevent collapse?
 
-#### 1.1 Validate Stability Fixes (2-3 days)
-**Goal**: Prove we can maintain high performance with recent fixes
+**Configurations**:
+1. **Baseline (no fixes)** - REUSE successful_experiments/cross_model/85/3_high_capacity
+   - 64 tokens, depth=8, lr=1e-4, warmup=750
+   - NO InfoNCE, NO early stopping, NO repetition penalty
+   - Result: Peak 81.5%, collapsed to 36%
 
-**Experiment**: Re-run high capacity config (64 tokens) with:
-- InfoNCE anti-collapse loss (λ=0.05)
-- Early stopping (patience=5)
-- Batched evaluation (500 samples)
-- Generation hygiene (repetition_penalty=1.1)
-
-**Success Metric**:
-- Maintain >70% accuracy at final checkpoint (vs 36% before)
-- Peak >75% and hold within 10% of peak
-
-**Script**: Update `run_cross_attention_focused_sweep.sh` with single "stable" config
-**Runtime**: ~2-3 hours on 4× H100
-
----
-
-#### 1.2 Compression Analysis (1 day)
-**Goal**: Quantify honest compression with wire protocol
-
-**Experiment**: Measure actual bytes transmitted for 200 test samples
-- Text baseline: UTF-8 encoded prompt
-- Latent: Quantized soft tokens (fp16, int8, int6, int4)
-- Include overhead: scales, metadata, anchor text
-
-**Analysis**:
-- Average compression ratio by quantization level
-- Quality vs compression tradeoff
-- KV cache savings calculation
-
-**Script**: Add compression measurement to existing eval script
-**Runtime**: <1 hour (analysis only, no training)
-
----
-
-#### 1.3 Minimal Generalization Test (2-3 days)
-**Goal**: Show method generalizes beyond GSM8K
-
-**Experiment**: Train on ONE additional dataset (pick easiest)
-- **Option A**: HotpotQA (already in codebase, multi-hop reasoning)
-- **Option B**: TriviaQA (factual knowledge)
-- **Recommendation**: HotpotQA (different reasoning type than GSM8K)
-
-**Config**: Use validated stable config from 1.1
-**Success Metric**: Beat baseline on at least 1 eval checkpoint
-**Runtime**: ~2-3 hours training + eval
-
----
-
-### Optional Experiments (If Time Permits)
-
-#### 1.4 Inference Benchmarks (1 day)
-**Goal**: Measure real-world speedup and memory savings
+2. **With stability fixes** - NEW RUN (3 hours)
+   - Same architecture (64 tokens, depth=8, lr=1e-4, warmup=750)
+   - InfoNCE loss (λ=0.05, start after 50% warmup)
+   - Early stopping (patience=5 on bridged accuracy)
+   - Repetition penalty (1.1) + no_repeat_ngram_size=3
+   - Expected: Maintain >70% final accuracy
 
 **Metrics**:
-- Wall-clock time: text vs latent prompting
-- Peak GPU memory during generation
-- Throughput (samples/sec) at batch sizes 1, 4, 8
+- Peak bridged accuracy
+- Final bridged accuracy
+- Degradation (peak - final)
+- Training curves (plot accuracy over time)
 
-**Method**: Simple benchmark script on 100 samples
-**Runtime**: <2 hours
+**Runtime**: 3 hours
+**Dataset**: GSM8K (1,319 test samples)
+
+---
+
+### Ablation 2: Sequence Length (P0)
+
+**Research Question**: How does soft token count affect compression vs quality?
+
+**Configurations** (all with stability fixes):
+
+1. **32 tokens** - NEW RUN (3 hours)
+   - Bottleneck=768, depth=4, heads=12, lr=1e-4, warmup=600
+   - Compression: ~4.7× (150 → 32 tokens)
+   - KV cache saved: 118 tokens × 0.5 MB = ~59 MB
+   - Expected: Moderate quality, best stability
+
+2. **48 tokens** - NEW RUN (3 hours)
+   - Bottleneck=1024, depth=6, heads=16, lr=1e-4, warmup=750
+   - Compression: ~3.1× (150 → 48 tokens)
+   - KV cache saved: 102 tokens × 0.5 MB = ~51 MB
+   - Expected: Better quality than 32
+
+3. **64 tokens** - REUSE from Ablation 1 (with stability)
+   - Bottleneck=1024, depth=8, heads=16, lr=1e-4, warmup=750
+   - Compression: ~2.3× (150 → 64 tokens)
+   - KV cache saved: 86 tokens × 0.5 MB = ~43 MB
+   - Expected: Best quality
+
+**Metrics**:
+- Bridged accuracy vs soft token count
+- Compression ratio vs quality tradeoff
+- KV cache savings
+- Training stability (peak - final degradation)
+
+**Runtime**: 6 hours (2 new configs)
+**Dataset**: GSM8K
+
+---
+
+### Ablation 3: Dataset Generalization (P1)
+
+**Research Question**: Does method generalize beyond math reasoning?
+
+**Configuration**: HotpotQA - NEW RUN (3 hours)
+- Same best config from Ablation 1 (64 tokens, with stability fixes)
+- Different reasoning type (knowledge retrieval + multi-hop)
+- Expected: Beat baseline on at least 1 checkpoint
+
+**Metrics**:
+- Bridged vs text baseline on HotpotQA
+- Cross-dataset comparison (GSM8K vs HotpotQA)
+
+**Runtime**: 3 hours
+**Dataset**: HotpotQA (7,405 train, ~1,000 test)
+
+---
+
+### Ablation 4: Inference Metrics (P0 - CRITICAL)
+
+**Research Question**: What are the practical memory and time savings? Does latent beat BOTH single models?
+
+**Method**: Benchmark all 5 baselines on full test set
+- Use trained checkpoint from Ablation 1 (64 tokens, stable)
+- Evaluate on ALL 1,319 test samples
+- **Store per-sample raw data** for flexible analysis
+
+**Baselines (5 Total)**:
+
+1. **Source-alone (Mistral)** - P0 CRITICAL
+   - Question → Mistral → Answer (no Llama)
+   - Purpose: Prove improvement isn't just from using Mistral
+   - **This determines the paper story!**
+
+2. **Target-alone (Llama)** - Standard baseline
+   - Full prompt → Llama
+   - Purpose: Single-model performance
+
+3. **Latent (Our method)**
+   - Question → Mistral → Translator (64 soft tokens) → Llama
+   - Purpose: Cross-model translation
+
+4. **Token-budget**
+   - Truncated prompt (K tokens) → Llama
+   - Purpose: Fair compression baseline
+
+5. **Cascade** - P2 (nice to have)
+   - Mistral generates text → Llama refines
+   - Purpose: Test soft tokens vs discrete text transfer
+
+**Per-Sample Metrics** (stored in JSONL):
+- KV cache memory (MB) during generation
+- End-to-end latency (seconds)
+- Peak GPU memory (MB)
+- Quality (EM/F1)
+- Sequence lengths (input/output)
+
+**Key Comparisons**:
+- Does latent beat BOTH source AND target? (Information enrichment!)
+- Does latent beat cascade? (Soft tokens > text)
+- KV cache savings: target_alone vs latent
+- Latency reduction for longer outputs
+
+**Runtime**: 2-3 hours
+**Dataset**: GSM8K (1,319 samples)
+
+**Output**:
+- `inference_per_sample.jsonl` - Raw data for all samples
+- `inference_aggregate.json` - Summary statistics
+
+---
+
+### Week 1 Summary
+
+| Experiment | Runtime | Status | Purpose |
+|------------|---------|--------|---------|
+| 1. Stability (with fixes) | 3h | ⏳ TODO | Prevent collapse |
+| 2a. Sequence (32 tok) | 3h | ⏳ TODO | High compression |
+| 2b. Sequence (48 tok) | 3h | ⏳ TODO | Medium compression |
+| 3. HotpotQA | 3h | ⏳ TODO | Generalization |
+| 4. Inference metrics | 2-3h | ⏳ TODO | KV cache + latency |
+| **TOTAL** | **~14h** | | |
+
+**Reused (no GPU time)**:
+- Baseline (no fixes): 81.5% → 36% collapse
+- 64 tokens (with fixes): Same as experiment 1
 
 ---
 
@@ -86,43 +182,46 @@
 
 ### Analysis Tasks (3-4 days)
 
-#### 2.1 Results Compilation
+#### Results Compilation
 - Extract all metrics from logs (peak/final acc, compression ratios)
-- Create comparison tables (text vs latent vs token-budget)
+- Create comparison tables for all 5 baselines
 - Generate training curves (accuracy over time)
-- Compute statistical significance (if multiple seeds run)
+- Analyze which scenario we're in:
+  - **Best**: Latent > source AND target (cross-model fusion)
+  - **Good**: Latent > target (knowledge transfer)
+  - **Problem**: Latent < source (degrading better model)
 
-#### 2.2 Qualitative Analysis
+#### Qualitative Analysis
 - Sample 10-20 examples showing:
-  - Success cases: latent matches or exceeds text
+  - Success cases: latent matches or exceeds both models
   - Failure modes: when/why latent fails
-  - Information enrichment: cases where latent > text baseline
+  - Information enrichment: cases where latent > both baselines
 - Analyze what information the translator captures
 
-#### 2.3 Ablation Summary
+#### Ablation Summary
 - Consolidate sequence length ablations (32/48/64)
-- Architecture depth analysis (4/6/8 layers)
-- Training dynamics (LR, warmup, stability fixes impact)
+- Stability fixes impact (with vs without)
+- Training dynamics visualization
 
-### Paper Drafting (4-5 days)
+---
 
-#### 2.4 Paper Structure (Target: 6 pages + refs)
+### Paper Structure (Target: 6 pages + refs)
 
 **1. Introduction** (0.75 pages)
 - Problem: LLMs are large, prompts consume memory (KV cache)
-- Idea: Compress prompts via cross-model translation
-- Key result: 81.5% accuracy vs 73% baseline on GSM8K (information enrichment!)
+- Idea: Cross-model translation via learned interlingua
+- Key result: Latent beats BOTH source and target models (information enrichment!)
 - Contributions:
-  1. Architecture for cross-model translation
+  1. Architecture for cross-model translation via soft tokens
   2. Training methodology with stability improvements
-  3. Demonstration of information enrichment (not just compression)
-  4. Analysis of compression-quality tradeoffs
+  3. Demonstration of cross-model information enrichment
+  4. Analysis of compression-quality tradeoffs and practical benefits
 
 **2. Related Work** (0.75 pages)
 - Prompt compression (LLMLingua, AutoCompressor)
 - Soft prompting (prefix tuning, prompt tuning)
 - Cross-model knowledge distillation
-- Interlingua in translation (classic NMT work)
+- Interlingua in neural machine translation
 
 **3. Method** (2 pages)
 - Architecture:
@@ -131,36 +230,34 @@
   - Target model (Llama-3.1-8B) generates answer
 - Training:
   - Teacher-forced cross-entropy on answers
-  - InfoNCE anti-collapse loss
+  - InfoNCE anti-collapse loss (λ=0.05)
   - Early stopping on validation accuracy
   - Generation hygiene (repetition penalty)
 - Calibration and anchoring (RMS matching, "Answer: " anchor)
 
 **4. Experiments** (2 pages)
 - Datasets: GSM8K (primary), HotpotQA (generalization)
-- Baselines:
-  - Text: Full prompt via text
-  - Token-budget: Text truncated to M tokens
-  - Latent: Compressed soft tokens
-- Metrics: EM/F1, compression ratio, KV cache savings
+- Baselines: source-alone, target-alone, latent, token-budget, cascade
+- Metrics: EM/F1, KV cache savings, latency, compression ratio
 - Results:
-  - Main: 81.5% latent vs 73% text on GSM8K (Table)
-  - Ablations: Sequence length (32/48/64), depth, stability fixes (Figures)
+  - Main: Latent vs both single models (Table + key finding)
+  - Ablations: Sequence length (32/48/64), stability fixes (Figures)
   - Generalization: HotpotQA results (Table)
-  - Compression: Bytes saved by quantization level (Table)
+  - Efficiency: KV cache savings, latency reduction (Table)
 
 **5. Analysis** (1 page)
-- Why does it exceed baseline?
-  - Cross-model information fusion
+- Why does it work?
+  - Cross-model information fusion hypothesis
   - Mistral's reasoning + Llama's generation
 - Training dynamics:
   - Peak-and-collapse without stability fixes (Figure)
-  - Stable training with InfoNCE + early stopping (Figure)
+  - Stable training with fixes (Figure)
+- Soft tokens vs text transfer (cascade comparison)
 - Failure modes and limitations
 
 **6. Conclusion** (0.5 pages)
 - Demonstrated cross-model translation can enrich information
-- Achieved 2-5× compression with quality maintained
+- Achieved 2-5× compression with practical KV cache savings
 - Future work: scaling to more models, online adaptation
 
 **References** (1 page)
@@ -190,89 +287,115 @@
 
 ---
 
-## Experiments Summary (Minimal Viable Set)
+## Paper Claims (Evidence Matrix)
 
-| Experiment | Priority | Runtime | Status |
-|------------|----------|---------|--------|
-| Stable training (64 tokens) | P0 | 3h | TODO |
-| Compression analysis | P0 | 1h | TODO |
-| HotpotQA generalization | P1 | 3h | TODO |
-| Inference benchmarks | P2 | 2h | OPTIONAL |
-| Multiple seeds (robustness) | P2 | 9h | OPTIONAL |
+| # | Claim | Evidence | Ablation | Status |
+|---|-------|----------|----------|--------|
+| **1** | **Cross-model fusion beats both models** | Latent > source AND target | 4 (P0) | ⏳ TODO |
+| 2 | Stability fixes prevent collapse | >70% final vs 36% | 1 | ⏳ TODO |
+| 3 | Compression-quality tradeoff exists | 32/48/64 tokens analysis | 2 | ⏳ TODO |
+| 4 | Generalizes beyond math | HotpotQA results | 3 | ⏳ TODO |
+| 5 | Soft tokens > discrete text | Latent > cascade | 4 (P2) | ⏳ TODO |
+| 6 | Practical KV cache savings | 43-59 MB saved | 4 | ⏳ TODO |
 
-**Total Core Runtime**: ~7 hours on 4× H100
-**Total with Optional**: ~18 hours
+**Critical**: Claim #1 determines the entire paper narrative. Ablation 4 will reveal which scenario we're in.
 
 ---
 
-## Key Decisions to Make Now
+## Scope Boundaries (What NOT to do)
 
-### 1. Target Venue
-- **arXiv preprint**: No deadline, flexible length
-- **NeurIPS workshop**: Strict deadline, 4-6 pages
-- **ACL workshop**: Longer format, June deadline
-- **Recommendation**: Start with arXiv preprint (most flexible)
-
-### 2. Scope Boundaries (What NOT to do)
-❌ Test on 5+ datasets (pick 2 max: GSM8K + HotpotQA)
+❌ Test on 5+ datasets (pick 2: GSM8K + HotpotQA)
 ❌ Try 10 different model pairs (stick with Mistral→Llama)
-❌ Implement complex baselines (use simple text/truncated/latent)
-❌ Extensive hyperparameter sweeps (use what worked: 64 tokens, stable config)
-❌ Multi-seed statistical analysis (single seed is fine for first paper)
+❌ Implement complex baselines (5 simple baselines is enough)
+❌ Extensive hyperparameter sweeps (use what worked)
+❌ Multi-seed statistical analysis (single seed fine for first paper)
 ❌ Theoretical analysis (empirical focus)
-
-### 3. Core Message
-**Primary**: Cross-model translation can **enrich** information, not just compress
-**Secondary**: Practical benefits (KV cache savings, compression)
-**Evidence**: 81.5% > 73% baseline on held-out test set
+❌ Over-the-wire quantization analysis (focus on KV cache)
 
 ---
 
 ## Risks and Mitigations
 
-### Risk 1: Can't reproduce 81.5% with stability fixes
-**Mitigation**: Paper focuses on "peak performance possible" + stability as future work
-**Backup**: Present both unstable 81.5% peak and stable ~70% as tradeoff
+### Risk 1: Latent doesn't beat both models
+**Mitigation**: Pivot story based on which scenario emerges
+- If latent > target only: "Effective knowledge transfer"
+- If latent < source: Focus on compression benefits, frame as exploration
 
-### Risk 2: Doesn't generalize to HotpotQA
+### Risk 2: Stability fixes don't maintain 70%+
+**Mitigation**: Present tradeoff between peak performance and stability
+**Backup**: Use existing 81.5% result, discuss stability as future work
+
+### Risk 3: Doesn't generalize to HotpotQA
 **Mitigation**: GSM8K alone is sufficient for proof of concept
-**Backup**: Frame as "domain-specific information enrichment" on math reasoning
+**Backup**: Frame as "domain-specific" method, future work for generalization
 
-### Risk 3: Not enough time for writing
-**Mitigation**: Start paper structure NOW (Week 1), fill in as experiments complete
-**Backup**: Reduce page count to 4 pages (short paper format)
+### Risk 4: Not enough time for writing
+**Mitigation**: Start paper template in Week 1, fill sections incrementally
+**Backup**: Reduce to 4 pages (short paper format)
 
 ---
 
 ## Success Criteria (Minimum Viable Paper)
 
 ✅ **Required**:
-1. Demonstrate cross-model translation architecture works
-2. Show at least one case where latent > text baseline
-3. Quantify compression achieved (honest wire protocol)
-4. Analyze why it works (information enrichment hypothesis)
+1. Demonstrate cross-model translation works
+2. Compare against source-alone AND target-alone baselines
+3. Quantify KV cache savings and compression
+4. Show at least one case where method provides benefit
 5. Complete paper draft with intro/method/experiments/conclusion
 
 ✅ **Nice to Have**:
-6. Generalization to second dataset
-7. Inference speed/memory benchmarks
-8. Multiple checkpoints showing stability fixes work
-9. Qualitative examples of enrichment
+6. Latent beats BOTH single models (information enrichment)
+7. Generalization to second dataset
+8. Soft tokens beat text transfer (cascade)
+9. Multiple stability checkpoints
 
 ---
 
-## Next Steps (Immediate Actions)
+## Execution Checklist
 
-1. **Review this plan** - adjust scope if too ambitious
-2. **Set up experiments** - update sweep script for stable config
-3. **Start paper template** - create LaTeX skeleton with sections
-4. **Run first experiment** - validate stability fixes (highest priority)
-5. **Daily check-ins** - track progress against timeline
+**Week 1** (Nov 8-14):
+- [ ] Run Ablation 1: Stability fixes (3h)
+- [ ] Run Ablation 2a: 32 tokens (3h)
+- [ ] Run Ablation 2b: 48 tokens (3h)
+- [ ] Run Ablation 3: HotpotQA (3h)
+- [ ] Run Ablation 4: Inference metrics (2-3h)
+- [ ] Git pull results locally
+- [ ] Verify all experiments completed
 
-**Estimated Total Time**:
-- Experiments: 4-5 days (Week 1 + part of Week 2)
-- Analysis: 2-3 days (Week 2)
-- Writing: 8-10 days (Week 2-3)
-- Buffer: 2-3 days for unexpected issues
+**Week 2** (Nov 15-21):
+- [ ] Analyze all results
+- [ ] Determine which scenario (latent vs source/target)
+- [ ] Create all tables and figures
+- [ ] Draft paper sections (parallel to analysis)
+- [ ] Write intro based on results
 
-This is aggressive but achievable with focused execution and minimal scope creep.
+**Week 3** (Nov 22-28):
+- [ ] Complete full draft
+- [ ] Multiple revision passes
+- [ ] Polish figures and tables
+- [ ] LaTeX compilation
+- [ ] Final submission prep
+
+---
+
+## Quick Reference
+
+**Scripts**:
+- Training: `paper_writing/run_ablations.sh`
+- Inference: `paper_writing/benchmark_inference.py`
+- Analysis: Auto-generated in runs directory
+
+**Key Files**:
+- This plan: `paper_writing/PLAN.md`
+- Experiment details: `paper_writing/EXPERIMENTS_SUMMARY.md`
+- README: `paper_writing/README.md`
+- Preserved 81.5% result: `successful_experiments/cross_model/85/`
+
+**Timeline**: 3 weeks total
+**GPU Budget**: ~14 hours on 4× H100
+**Target**: 6-page paper on arXiv
+
+---
+
+This is aggressive but achievable with focused execution and no scope creep.
