@@ -1,0 +1,762 @@
+W1106 14:16:28.584000 3866715 torch/distributed/run.py:793] 
+W1106 14:16:28.584000 3866715 torch/distributed/run.py:793] *****************************************
+W1106 14:16:28.584000 3866715 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1106 14:16:28.584000 3866715 torch/distributed/run.py:793] *****************************************
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+==== Config ====
+source_model: mistralai/Mistral-7B-Instruct-v0.3
+target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
+translator_type: bottleneck_gated
+bottleneck_dim: 768
+soft_tokens: 32
+depth: 4
+heads: 12
+lr: 0.0001
+weight_decay: 0.01
+train_steps: 3000
+warmup_steps: 600
+per_device_batch: 10
+eval_every: 250
+eval_samples: 200
+max_new_tokens: 256
+seed: 1234
+bf16: True
+save_path: runs/focused_sweep_20251106_120543/4_efficient/checkpoint.pt
+show_eval_samples: 1
+Loading source model/tokenizer...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3171.10it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  8.80it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  4.15it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  5.14it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  5.14it/s]
+Loading target model/tokenizer...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 36.44it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  4.74it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 220.47it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1045.18it/s]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  4.30it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  3.85it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  3.96it/s]
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.22it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  2.38it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.47it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  2.86it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  3.34it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  3.12it/s]
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 57.98it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.75it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  2.58it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.98it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:01<00:01,  1.19it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.62it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  2.00it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:02<00:00,  1.81it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1277.49it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  1.92it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  3.02it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 398.11it/s]
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 314.57it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  1.72it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.14it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.16it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:00<00:01,  2.18it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.10it/s]
+Source hidden dim: 4096 | Target hidden dim: 4096
+Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.68it/s]Loading checkpoint shards:  50%|█████     | 2/4 [00:00<00:00,  2.64it/s]Target embedding RMS: 0.0105
+Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.52it/s]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:01<00:00,  2.52it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.54it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.50it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.49it/s]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:01<00:00,  2.47it/s]
+Translator parameters: 61.5M
+Loading GSM8K...
+Optimizer groups: 34 decay, 59 no_decay, 4 gates (LR ×3)
+Step 20/3000 | Loss (avg over last 20): 10.3316
+Step 40/3000 | Loss (avg over last 20): 10.3981
+Step 60/3000 | Loss (avg over last 20): 10.4263
+Step 80/3000 | Loss (avg over last 20): 8.8287
+Step 100/3000 | Loss (avg over last 20): 7.9218
+Step 120/3000 | Loss (avg over last 20): 7.6426
+Step 140/3000 | Loss (avg over last 20): 7.2670
+Step 160/3000 | Loss (avg over last 20): 7.3652
+Step 180/3000 | Loss (avg over last 20): 7.4457
+Step 200/3000 | Loss (avg over last 20): 7.3576
+Step 220/3000 | Loss (avg over last 20): 7.2497
+Step 240/3000 | Loss (avg over last 20): 7.2365
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 000
+Bridged generation start: OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 000
+Bridged generation start: OO (OO (OO (OO (OO (OO (000OO ( ( ( ( ( ( ( (000OO ( ( ( (000 ( (000 (000 (000 (OO (000 (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000
+Bridged generation start: 000 (000 (000 (000 ( (000 (OOOO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (OO (  ( ( (000  ( ( (000 (OO (...
+============================================================
+
+[Eval] Step 250 | Target-alone acc: 0.730 | Bridged acc: 0.005
+Step 260/3000 | Loss (avg over last 20): 6.8884
+Step 280/3000 | Loss (avg over last 20): 6.6267
+Step 300/3000 | Loss (avg over last 20): 6.5409
+Step 320/3000 | Loss (avg over last 20): 6.2383
+Step 340/3000 | Loss (avg over last 20): 6.1129
+Step 360/3000 | Loss (avg over last 20): 6.0486
+Step 380/3000 | Loss (avg over last 20): 5.9391
+Step 400/3000 | Loss (avg over last 20): 5.8903
+Step 420/3000 | Loss (avg over last 20): 5.8774
+Step 440/3000 | Loss (avg over last 20): 5.7415
+Step 460/3000 | Loss (avg over last 20): 5.8137
+Step 480/3000 | Loss (avg over last 20): 5.7201
+Step 500/3000 | Loss (avg over last 20): 5.6928
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 00
+Bridged generation start: = of = of of = of of = of of = of of = of of = of of = of = of = of = of = of = of =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 0 =0 0 =0 0 =0 00 =0 00 =0 00 00 00 00 00 00 00 00000000000 0000000000000000000000000000000 00 00 00 00 00...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000000000000000000000000000000000000000000000000000000000000000000000000
+Bridged generation start: 000=7000000=7000000=7000000=7000000=7000000=7000000=7000000=7000000=7000000=000=000=000=000=000=000=000=000=000=000=000=000=000=000=000=000=000=000=000=000000000000000000000000000000000000000000000000000000000000000000000000000...
+============================================================
+
+[Eval] Step 500 | Target-alone acc: 0.730 | Bridged acc: 0.150
+Step 520/3000 | Loss (avg over last 20): 5.7025
+Step 540/3000 | Loss (avg over last 20): 5.5481
+Step 560/3000 | Loss (avg over last 20): 5.5460
+Step 580/3000 | Loss (avg over last 20): 5.4092
+Step 600/3000 | Loss (avg over last 20): 5.3956
+Step 620/3000 | Loss (avg over last 20): 10.3378
+Step 640/3000 | Loss (avg over last 20): 7.3864
+Step 660/3000 | Loss (avg over last 20): 6.5752
+Step 680/3000 | Loss (avg over last 20): 6.6336
+Step 700/3000 | Loss (avg over last 20): 6.3327
+Step 720/3000 | Loss (avg over last 20): 6.5245
+Step 740/3000 | Loss (avg over last 20): 6.1257
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 8181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 2
+Bridged generation start: 2 222 222 222 222 222 2...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Bridged generation start: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...
+============================================================
+
+[Eval] Step 750 | Target-alone acc: 0.730 | Bridged acc: 0.185
+Step 760/3000 | Loss (avg over last 20): 6.0886
+Step 780/3000 | Loss (avg over last 20): 6.0952
+Step 800/3000 | Loss (avg over last 20): 6.0483
+Step 820/3000 | Loss (avg over last 20): 5.9584
+Step 840/3000 | Loss (avg over last 20): 6.0324
+Step 860/3000 | Loss (avg over last 20): 6.1369
+Step 880/3000 | Loss (avg over last 20): 6.1499
+Step 900/3000 | Loss (avg over last 20): 5.8644
+Step 920/3000 | Loss (avg over last 20): 6.0731
+Step 940/3000 | Loss (avg over last 20): 5.9582
+Step 960/3000 | Loss (avg over last 20): 5.8352
+Step 980/3000 | Loss (avg over last 20): 5.8019
+Step 1000/3000 | Loss (avg over last 20): 5.7426
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 1818
+Bridged generation start: 1818
+1818
+1818
+1818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 2
+Bridged generation start: 2
+2
+2
+2
+2
+2
+2
+2
+2
+2
+2
+2...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000
+Bridged generation start: 000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=...
+============================================================
+
+[Eval] Step 1000 | Target-alone acc: 0.730 | Bridged acc: 0.555
+Step 1020/3000 | Loss (avg over last 20): 5.7873
+Step 1040/3000 | Loss (avg over last 20): 5.8621
+Step 1060/3000 | Loss (avg over last 20): 5.8810
+Step 1080/3000 | Loss (avg over last 20): 5.8472
+Step 1100/3000 | Loss (avg over last 20): 5.6196
+Step 1120/3000 | Loss (avg over last 20): 5.7564
+Step 1140/3000 | Loss (avg over last 20): 5.7132
+Step 1160/3000 | Loss (avg over last 20): 5.7068
+Step 1180/3000 | Loss (avg over last 20): 5.5753
+Step 1200/3000 | Loss (avg over last 20): 5.7688
+Step 1220/3000 | Loss (avg over last 20): 5.7175
+Step 1240/3000 | Loss (avg over last 20): 5.8924
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 18
+Bridged generation start: =18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+=18
+...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Bridged generation start: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...
+============================================================
+
+[Eval] Step 1250 | Target-alone acc: 0.730 | Bridged acc: 0.420
+Step 1260/3000 | Loss (avg over last 20): 5.6429
+Step 1280/3000 | Loss (avg over last 20): 5.5797
+Step 1300/3000 | Loss (avg over last 20): 5.7978
+Step 1320/3000 | Loss (avg over last 20): 5.6003
+Step 1340/3000 | Loss (avg over last 20): 5.6198
+Step 1360/3000 | Loss (avg over last 20): 5.5785
+Step 1380/3000 | Loss (avg over last 20): 5.4984
+Step 1400/3000 | Loss (avg over last 20): 5.4846
+Step 1420/3000 | Loss (avg over last 20): 5.5103
+Step 1440/3000 | Loss (avg over last 20): 5.6678
+Step 1460/3000 | Loss (avg over last 20): 5.5120
+Step 1480/3000 | Loss (avg over last 20): 5.4437
+Step 1500/3000 | Loss (avg over last 20): 5.5198
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: 3
+3
+3
+3
+3
+3
+3
+3
+3
+3
+3
+3...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Bridged generation start: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...
+============================================================
+
+[Eval] Step 1500 | Target-alone acc: 0.730 | Bridged acc: 0.385
+Step 1520/3000 | Loss (avg over last 20): 5.5085
+Step 1540/3000 | Loss (avg over last 20): 5.4051
+Step 1560/3000 | Loss (avg over last 20): 5.4211
+Step 1580/3000 | Loss (avg over last 20): 5.4850
+Step 1600/3000 | Loss (avg over last 20): 5.4956
+Step 1620/3000 | Loss (avg over last 20): 5.5554
+Step 1640/3000 | Loss (avg over last 20): 5.3411
+Step 1660/3000 | Loss (avg over last 20): 5.5390
+Step 1680/3000 | Loss (avg over last 20): 5.4539
+Step 1700/3000 | Loss (avg over last 20): 5.3660
+Step 1720/3000 | Loss (avg over last 20): 5.5322
+Step 1740/3000 | Loss (avg over last 20): 5.3185
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: <<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Bridged generation start: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...
+============================================================
+
+[Eval] Step 1750 | Target-alone acc: 0.730 | Bridged acc: 0.410
+Step 1760/3000 | Loss (avg over last 20): 5.5656
+Step 1780/3000 | Loss (avg over last 20): 5.3865
+Step 1800/3000 | Loss (avg over last 20): 5.3985
+Step 1820/3000 | Loss (avg over last 20): 5.3774
+Step 1840/3000 | Loss (avg over last 20): 5.3523
+Step 1860/3000 | Loss (avg over last 20): 5.2614
+Step 1880/3000 | Loss (avg over last 20): 5.4467
+Step 1900/3000 | Loss (avg over last 20): 5.3790
+Step 1920/3000 | Loss (avg over last 20): 5.3940
+Step 1940/3000 | Loss (avg over last 20): 5.3419
+Step 1960/3000 | Loss (avg over last 20): 5.3243
+Step 1980/3000 | Loss (avg over last 20): 5.3677
+Step 2000/3000 | Loss (avg over last 20): 5.2961
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: 3
+3
+3
+3
+3
+3
+3
+3
+3
+3
+3
+3...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Bridged generation start: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...
+============================================================
+
+[Eval] Step 2000 | Target-alone acc: 0.730 | Bridged acc: 0.425
+Step 2020/3000 | Loss (avg over last 20): 5.4664
+Step 2040/3000 | Loss (avg over last 20): 5.4159
+Step 2060/3000 | Loss (avg over last 20): 5.3238
+Step 2080/3000 | Loss (avg over last 20): 5.3950
+Step 2100/3000 | Loss (avg over last 20): 5.3471
+Step 2120/3000 | Loss (avg over last 20): 5.3690
+Step 2140/3000 | Loss (avg over last 20): 5.3257
+Step 2160/3000 | Loss (avg over last 20): 5.2637
+Step 2180/3000 | Loss (avg over last 20): 5.4258
+Step 2200/3000 | Loss (avg over last 20): 5.3108
+Step 2220/3000 | Loss (avg over last 20): 5.3486
+Step 2240/3000 | Loss (avg over last 20): 5.3899
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: 3<<<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<<<3<<<<3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000
+Bridged generation start: 000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=...
+============================================================
+
+[Eval] Step 2250 | Target-alone acc: 0.730 | Bridged acc: 0.420
+Step 2260/3000 | Loss (avg over last 20): 5.2354
+Step 2280/3000 | Loss (avg over last 20): 5.3595
+Step 2300/3000 | Loss (avg over last 20): 5.2957
+Step 2320/3000 | Loss (avg over last 20): 5.3613
+Step 2340/3000 | Loss (avg over last 20): 5.2821
+Step 2360/3000 | Loss (avg over last 20): 5.3575
+Step 2380/3000 | Loss (avg over last 20): 5.3332
+Step 2400/3000 | Loss (avg over last 20): 5.2965
+Step 2420/3000 | Loss (avg over last 20): 5.2615
+Step 2440/3000 | Loss (avg over last 20): 5.2673
+Step 2460/3000 | Loss (avg over last 20): 5.3984
+Step 2480/3000 | Loss (avg over last 20): 5.2535
+Step 2500/3000 | Loss (avg over last 20): 5.3279
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: <3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000
+Bridged generation start: 000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=...
+============================================================
+
+[Eval] Step 2500 | Target-alone acc: 0.730 | Bridged acc: 0.410
+Step 2520/3000 | Loss (avg over last 20): 5.3006
+Step 2540/3000 | Loss (avg over last 20): 5.3416
+Step 2560/3000 | Loss (avg over last 20): 5.2257
+Step 2580/3000 | Loss (avg over last 20): 5.3195
+Step 2600/3000 | Loss (avg over last 20): 5.1980
+Step 2620/3000 | Loss (avg over last 20): 5.3872
+Step 2640/3000 | Loss (avg over last 20): 5.3440
+Step 2660/3000 | Loss (avg over last 20): 5.2943
+Step 2680/3000 | Loss (avg over last 20): 5.2556
+Step 2700/3000 | Loss (avg over last 20): 5.3095
+Step 2720/3000 | Loss (avg over last 20): 5.2531
+Step 2740/3000 | Loss (avg over last 20): 5.2110
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: <<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<<<3<<<<3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000
+Bridged generation start: 000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=...
+============================================================
+
+[Eval] Step 2750 | Target-alone acc: 0.730 | Bridged acc: 0.440
+Step 2760/3000 | Loss (avg over last 20): 5.3615
+Step 2780/3000 | Loss (avg over last 20): 5.2601
+Step 2800/3000 | Loss (avg over last 20): 5.3009
+Step 2820/3000 | Loss (avg over last 20): 5.2772
+Step 2840/3000 | Loss (avg over last 20): 5.3533
+Step 2860/3000 | Loss (avg over last 20): 5.2852
+Step 2880/3000 | Loss (avg over last 20): 5.2501
+Step 2900/3000 | Loss (avg over last 20): 5.3171
+Step 2920/3000 | Loss (avg over last 20): 5.2674
+Step 2940/3000 | Loss (avg over last 20): 5.2422
+Step 2960/3000 | Loss (avg over last 20): 5.2632
+Step 2980/3000 | Loss (avg over last 20): 5.2204
+Step 3000/3000 | Loss (avg over last 20): 5.2793
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: 3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<<<3<<<<3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000
+Bridged generation start: 000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=...
+============================================================
+
+[Eval] Step 3000 | Target-alone acc: 0.730 | Bridged acc: 0.420
+Saved translator to runs/focused_sweep_20251106_120543/4_efficient/checkpoint.pt
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and...
+Gold answer: 18
+Target-alone: 18
+Bridged: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818
+Bridged generation start: 18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818...
+
+--- Example 2 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolt...
+Gold answer: 3
+Target-alone: 5
+Bridged: 3
+Bridged generation start: 3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<3<<<<3<<<<3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<...
+
+--- Example 3 ---
+Question: You are a helpful math tutor. Solve the problem step by step, then end your final line with '#### <number>'.
+
+Problem:
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts ...
+Gold answer: 70000
+Target-alone: 65000
+Bridged: 000000
+Bridged generation start: 000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=000000=...
+============================================================
+
+[Final Eval] Target-alone acc: 0.730 | Bridged acc: 0.420
