@@ -1,0 +1,40 @@
+=== ABLATION EXPERIMENTS ===
+Output directory: paper_writing/runs/ablations_20251108_190831
+
+╔════════════════════════════════════════╗
+║  ABLATION 1: STABILITY FIXES          ║
+╚════════════════════════════════════════╝
+
+==========================================
+Experiment: 1a_stable_64tok
+Description: 64 tokens WITH InfoNCE + early stopping + gen hygiene
+Start: Sat Nov  8 19:08:31 PST 2025
+------------------------------------------
+End: Sat Nov  8 20:22:28 PST 2025
+Results:
+Peak accuracy:
+  Peak bridged: 1.6%
+
+
+NOTE: Baseline (1b_baseline_64tok) reuses successful_experiments/cross_model/85/train_high_capacity.log
+      Peak: 81.5% → Final: 36.0% (no stability fixes)
+
+╔════════════════════════════════════════╗
+║  ABLATION 2: SEQUENCE LENGTH          ║
+╚════════════════════════════════════════╝
+
+==========================================
+Experiment: 2a_stable_32tok
+Description: 32 tokens (4.7× compression) WITH stability fixes
+Start: Sat Nov  8 20:22:28 PST 2025
+------------------------------------------
+End: Sat Nov  8 22:38:11 PST 2025
+Results:
+Peak accuracy:
+  Peak bridged: 1.4%
+
+==========================================
+Experiment: 2b_stable_48tok
+Description: 48 tokens (3.1× compression) WITH stability fixes
+Start: Sat Nov  8 22:38:11 PST 2025
+------------------------------------------
