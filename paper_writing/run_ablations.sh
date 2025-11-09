@@ -17,7 +17,6 @@ export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 SOURCE_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
-TRANSLATOR_TYPE="bottleneck_gated"
 PER_DEVICE_BATCH=10
 EVAL_EVERY=250
 EVAL_SAMPLES=500  # Batched evaluation to avoid OOM
@@ -56,7 +55,6 @@ run_experiment() {
         torchrun --nproc_per_node=4 --master_port "$RANDOM_PORT" paper_writing/cross_attention.py \
             --source_model "$SOURCE_MODEL" \
             --target_model "$TARGET_MODEL" \
-            --translator_type "$TRANSLATOR_TYPE" \
             --per_device_batch "$PER_DEVICE_BATCH" \
             --eval_every "$EVAL_EVERY" \
             --eval_samples "$EVAL_SAMPLES" \
