@@ -68,15 +68,22 @@ def to_dtype_device(x, dtype, device):
 
 def extract_final_answer(text: str) -> str:
     """
-    GSM8K solutions often end with '#### <number>'.
-    If not found, fallback to last integer in the string.
+    Extract final answer from GSM8K solution using official evaluation method.
+    Official pattern: '#### <number>' where number can include decimals and commas.
+    Returns '[invalid]' if no #### marker found (NO fallback to last number).
+
+    Reference: github.com/openai/grade-school-math
     """
-    m = re.search(r"####\s*(-?\d+)", text)
+    # Official regex: supports negative numbers, decimals, and commas
+    m = re.search(r"#### (\-?[0-9\.\,]+)", text)
     if m:
-        return m.group(1)
-    # fallback: last integer
-    ints = re.findall(r"-?\d+", text)
-    return ints[-1] if ints else ""
+        answer = m.group(1).strip()
+        # Remove commas from numbers (official normalization)
+        answer = answer.replace(",", "")
+        return answer
+    else:
+        # Official behavior: return invalid marker (NO fallback)
+        return "[invalid]"
 
 def compute_rms(x: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
     """
