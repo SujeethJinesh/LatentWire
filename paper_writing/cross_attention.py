@@ -865,9 +865,12 @@ def main():
     src_tok.padding_side = "left"  # Critical for decoder-only models
     src_tok.model_max_length = 2048
 
+    # Load source model directly to GPU to avoid CPU RAM exhaustion
+    # With 4 processes each loading ~30GB models, we'd need 120GB+ CPU RAM
+    # device_map loads directly to GPU, bypassing CPU bottleneck
     src_model = AutoModelForCausalLM.from_pretrained(
-        args.source_model, torch_dtype=dtype, device_map=None
-    ).eval().to(device)
+        args.source_model, torch_dtype=dtype, device_map=str(device)
+    ).eval()
     for p in src_model.parameters(): p.requires_grad = False
 
     log("Loading target model/tokenizer...")
@@ -886,9 +889,10 @@ def main():
             "This usually means no fast tokenizer is available for this model."
         )
 
+    # Load target model directly to GPU (same reason as source model)
     tgt_model = AutoModelForCausalLM.from_pretrained(
-        args.target_model, torch_dtype=dtype, device_map=None
-    ).eval().to(device)
+        args.target_model, torch_dtype=dtype, device_map=str(device)
+    ).eval()
     for p in tgt_model.parameters(): p.requires_grad = False
 
     # Compile target model for faster inference (PyTorch 2.0+)
