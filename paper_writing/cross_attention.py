@@ -166,6 +166,62 @@ def extract_final_answer(text: str) -> str:
         # From official code: INVALID_ANS = "[invalid]"
         return "[invalid]"
 
+def extract_hotpotqa_answer(text: str, gold_answer: str = None) -> str:
+    """
+    Extract answer from HotpotQA generation.
+
+    HotpotQA answers are short phrases (e.g., "yes", "no", person names, dates).
+    We use simple heuristics:
+    1. Take last sentence if multiple sentences
+    2. Strip common prefixes like "The answer is"
+    3. Take first 10 words maximum
+    4. Normalize: lowercase, strip punctuation
+
+    Args:
+        text: Generated text
+        gold_answer: Gold answer for length guidance (optional)
+
+    Returns:
+        Normalized answer string
+    """
+    # Remove common answer prefixes
+    text = text.strip()
+    prefixes = [
+        "the answer is",
+        "the final answer is",
+        "answer:",
+        "therefore,",
+        "thus,",
+        "so,",
+        "hence,"
+    ]
+    text_lower = text.lower()
+    for prefix in prefixes:
+        if text_lower.startswith(prefix):
+            text = text[len(prefix):].strip()
+            break
+
+    # Take last sentence if multiple (final answer usually at end)
+    sentences = text.split('.')
+    if len(sentences) > 1:
+        # Get last non-empty sentence
+        for sent in reversed(sentences):
+            if sent.strip():
+                text = sent.strip()
+                break
+
+    # Take first 10 words (answers are usually short)
+    words = text.split()[:10]
+    text = ' '.join(words)
+
+    # Normalize: lowercase, remove punctuation except spaces
+    import string
+    text = text.lower()
+    text = ''.join(c if c.isalnum() or c.isspace() else ' ' for c in text)
+    text = ' '.join(text.split())  # Normalize whitespace
+
+    return text if text else "[invalid]"
+
 def compute_rms(x: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
     """
     Compute RMS (root mean square) over the last dimension.
@@ -572,11 +628,15 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
 
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
                               device, dtype, num_samples: int = 200, max_new_tokens: int = 256,
-                              show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50):
+                              show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50,
+                              dataset_name: str = 'gsm8k'):
     """
     Distributed evaluation: each rank processes num_samples // world_size samples.
     Results are gathered on rank 0 for final metric computation.
     Evaluates in batches to avoid OOM.
+
+    Args:
+        dataset_name: 'gsm8k' or 'hotpotqa' for dataset-specific answer extraction
     """
     tgt_model.eval()
     src_model.eval()
@@ -684,13 +744,20 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     bridged_texts = all_bridged_texts
     base_texts = all_base_texts
 
-    # Compute accuracy
+    # Compute accuracy with dataset-specific answer extraction
     def compute_acc(pred_texts):
         correct = 0
         for text, s in zip(pred_texts, samples):
-            pred = extract_final_answer(text)
-            gold_full_text = s.tgt_prompt + " " + s.tgt_answer
-            gold = extract_final_answer(gold_full_text)
+            # Dataset-specific answer extraction
+            if dataset_name == 'gsm8k':
+                pred = extract_final_answer(text)
+                gold_full_text = s.tgt_prompt + " " + s.tgt_answer
+                gold = extract_final_answer(gold_full_text)
+            elif dataset_name == 'hotpotqa':
+                gold = extract_hotpotqa_answer(s.tgt_answer)
+                pred = extract_hotpotqa_answer(text, gold)
+            else:
+                raise ValueError(f"Unknown dataset: {dataset_name}")
             correct += int(pred == gold)
         return correct / len(samples)
 
@@ -705,10 +772,18 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         for i in range(min(3, len(samples))):
             log(f"\n--- Example {i+1} ---")
             log(f"Question: {samples[i].tgt_prompt[:200]}...")
-            gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
-            log(f"Gold answer: {extract_final_answer(gold_full_text)}")
-            log(f"Target-alone: {extract_final_answer(base_texts[i])}")
-            log(f"Bridged: {extract_final_answer(bridged_texts[i])}")
+            # Dataset-specific answer extraction for display
+            if dataset_name == 'gsm8k':
+                gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
+                log(f"Gold answer: {extract_final_answer(gold_full_text)}")
+                log(f"Target-alone: {extract_final_answer(base_texts[i])}")
+                log(f"Bridged: {extract_final_answer(bridged_texts[i])}")
+            elif dataset_name == 'hotpotqa':
+                log(f"Gold answer: {extract_hotpotqa_answer(samples[i].tgt_answer)}")
+                log(f"Target-alone: {extract_hotpotqa_answer(base_texts[i])}")
+                log(f"Bridged: {extract_hotpotqa_answer(bridged_texts[i])}")
+            else:
+                raise ValueError(f"Unknown dataset: {dataset_name}")
 
             # Show first 300 chars of actual generation for debugging
             if len(bridged_texts[i]) > len(samples[i].tgt_prompt):
@@ -865,9 +940,16 @@ def main():
     for p in tgt_model.parameters(): p.requires_grad = False
 
     # Compile target model for faster inference (PyTorch 2.0+)
+    # DISABLED by default due to CUDA Graph OOM with dynamic shapes (creates 51+ graphs, 23-25 GiB each)
     if torch.__version__ >= "2.0" and not args.no_compile:
         log("Compiling target model with torch.compile for faster inference...")
         tgt_model = torch.compile(tgt_model, mode="reduce-overhead")
+        log("Compilation complete")
+    else:
+        if args.no_compile:
+            log("torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)")
+        else:
+            log("torch.compile() not available (PyTorch < 2.0)")
 
     # Infer dims
     with torch.no_grad():
@@ -977,7 +1059,8 @@ def main():
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
             device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-            eval_batch_size=args.eval_batch_size
+            eval_batch_size=args.eval_batch_size,
+            dataset_name=args.dataset
         )
 
     if is_main():
@@ -1120,7 +1203,8 @@ def main():
                     test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                     device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
                     show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-                    eval_batch_size=args.eval_batch_size
+                    eval_batch_size=args.eval_batch_size,
+                    dataset_name=args.dataset
                 )
 
             # Only rank 0 logs and checks early stopping
@@ -1166,7 +1250,8 @@ def main():
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
             device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-            eval_batch_size=args.eval_batch_size
+            eval_batch_size=args.eval_batch_size,
+            dataset_name=args.dataset
         )
 
     # Synchronize all ranks before cleanup

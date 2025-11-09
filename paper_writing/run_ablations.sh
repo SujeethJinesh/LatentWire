@@ -61,6 +61,7 @@ run_experiment() {
             --eval_batch_size 125 \
             --max_new_tokens "$MAX_NEW_TOKENS" \
             --bf16 \
+            --no_compile \
             --save_path "$EXP_DIR/checkpoint.pt" \
             "$@"
     } 2>&1 | tee "$LOG_FILE"
