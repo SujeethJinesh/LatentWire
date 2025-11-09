@@ -467,26 +467,28 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
     rank = dist.get_rank()
 
     # Convert to tensors for gathering
-    # Pad all strings to same length for gathering
-    max_len = max(len(t) for t in local_texts) if local_texts else 1
+    # Encode to bytes first, then find max BYTE length (not char length)
+    encoded_bytes = [text.encode('utf-8') for text in local_texts]
+    max_byte_len = max(len(b) for b in encoded_bytes) if encoded_bytes else 1
 
-    # Gather max_len from all ranks
-    max_len_tensor = torch.tensor([max_len], dtype=torch.long, device='cuda')
+    # Gather max_byte_len from all ranks
+    max_len_tensor = torch.tensor([max_byte_len], dtype=torch.long, device='cuda')
     max_len_list = [torch.zeros(1, dtype=torch.long, device='cuda') for _ in range(world_size)]
     dist.all_gather(max_len_list, max_len_tensor)
-    global_max_len = max(t.item() for t in max_len_list)
+    global_max_byte_len = max(t.item() for t in max_len_list)
 
-    # Pad and encode strings
-    encoded = []
-    for text in local_texts:
-        padded = text.ljust(global_max_len)
-        encoded.append(list(padded.encode('utf-8')))
-
-    if not encoded:
-        encoded = [[0] * global_max_len]  # Empty placeholder
-
-    # Convert to tensor
-    local_tensor = torch.tensor(encoded, dtype=torch.uint8, device='cuda')
+    # Pad bytes to global_max_byte_len
+    # Convert to tensor (handle empty case properly)
+    if not encoded_bytes:
+        # Create empty tensor instead of placeholder
+        local_tensor = torch.zeros((0, global_max_byte_len), dtype=torch.uint8, device='cuda')
+    else:
+        encoded = []
+        for byte_string in encoded_bytes:
+            # Pad with zeros to global_max_byte_len
+            padded = list(byte_string) + [0] * (global_max_byte_len - len(byte_string))
+            encoded.append(padded)
+        local_tensor = torch.tensor(encoded, dtype=torch.uint8, device='cuda')
 
     # Gather batch sizes from all ranks
     batch_size_tensor = torch.tensor([len(local_texts)], dtype=torch.long, device='cuda')
@@ -496,7 +498,7 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
 
     # Gather all texts to rank 0
     if rank == 0:
-        gathered = [torch.zeros((bs, global_max_len), dtype=torch.uint8, device='cuda')
+        gathered = [torch.zeros((bs, global_max_byte_len), dtype=torch.uint8, device='cuda')
                    for bs in batch_sizes]
         gathered[0] = local_tensor
 
@@ -504,11 +506,15 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
             if batch_sizes[src_rank] > 0:
                 dist.recv(gathered[src_rank], src=src_rank)
 
-        # Decode back to strings
+        # Decode back to strings (strip null bytes from padding)
         all_texts = []
         for rank_texts in gathered:
             for encoded_text in rank_texts:
-                decoded = bytes(encoded_text.cpu().numpy()).decode('utf-8').rstrip()
+                # Remove null byte padding (0 bytes at end)
+                byte_array = encoded_text.cpu().numpy()
+                # Find first null byte (if any) and truncate
+                null_idx = (byte_array == 0).argmax() if 0 in byte_array else len(byte_array)
+                decoded = bytes(byte_array[:null_idx]).decode('utf-8')
                 all_texts.append(decoded)
         return all_texts
     else:
@@ -547,6 +553,17 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         end_idx = num_samples
 
     local_num_samples = end_idx - start_idx
+
+    # Debug: log rank distribution
+    if dist.is_initialized() and rank == 0:
+        log(f"[Distributed Eval] Sharding {num_samples} samples across {world_size} ranks:")
+        for r in range(world_size):
+            r_start = r * samples_per_rank
+            r_end = r_start + samples_per_rank
+            if r == world_size - 1:
+                r_end = num_samples
+            r_samples = r_end - r_start
+            log(f"  Rank {r}: samples {r_start} to {r_end} ({r_samples} samples)")
 
     # Collect LOCAL samples only (this rank's portion)
     all_samples = []
@@ -1088,6 +1105,10 @@ def main():
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
             eval_batch_size=args.eval_batch_size
         )
+
+    # Synchronize all ranks before cleanup
+    if dist.is_initialized():
+        dist.barrier()
 
     if is_main():
         log(f"[Final Eval] Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
