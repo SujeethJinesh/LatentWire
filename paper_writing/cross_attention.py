@@ -27,9 +27,11 @@ Notes:
 import os, math, re, json, random, argparse, time
 from dataclasses import dataclass
 from typing import List, Dict, Tuple
+from datetime import timedelta
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -449,14 +451,20 @@ def build_batch_inputs(samples: List[Sample],
     if target_rms is not None:
         soft_tokens = apply_rms_matching(soft_tokens, target_rms)
 
-    # Target tokenization - do FULL TEXT and PROMPTS ONLY separately for correct label alignment
+    # Target tokenization with offset mapping for correct boundary detection
+    # CRITICAL: Use offset mapping to avoid context-dependent tokenization mismatches
+    # Tokenizing prompts separately would give different token boundaries due to BPE/WordPiece
     tgt_full_texts = [s.tgt_prompt + " " + s.tgt_answer for s in samples]
-    tgt_batch = tgt_tok(tgt_full_texts, return_tensors="pt", padding=True, truncation=True, max_length=2048)
+    tgt_batch = tgt_tok(
+        tgt_full_texts,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=2048,
+        return_offsets_mapping=True  # Get character position mappings
+    )
+    offset_mapping = tgt_batch.pop("offset_mapping")  # Remove before passing to model
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
-
-    # Tokenize prompts only to find boundary
-    tgt_prompts_only = [s.tgt_prompt for s in samples]
-    prompt_batch = tgt_tok(tgt_prompts_only, return_tensors="pt", padding=True, truncation=True, max_length=2048)
 
     # Target input embeddings
     with torch.no_grad():
@@ -471,20 +479,27 @@ def build_batch_inputs(samples: List[Sample],
     # Attention mask (1s for all positions we pass)
     attn_mask = torch.ones((B, K + max_T), dtype=torch.long, device=device)
 
-    # Labels — compute with correct alignment based on batch tokenization
-    # Strategy: mask prompt tokens (set to -100), supervise answer tokens, mask padding
+    # Labels — use offset mapping to find exact prompt/answer boundary
+    # This prevents tokenization mismatches from context-dependent BPE/WordPiece
     labels = tgt_batch["input_ids"].clone()
 
-    # Mask prompt tokens for each sample
     for i in range(B):
-        # Find where actual tokens end in prompt (before padding)
-        prompt_attention = prompt_batch["attention_mask"][i]
-        prompt_len = prompt_attention.sum().item()
+        # Find character length of prompt (ground truth boundary)
+        prompt_text = samples[i].tgt_prompt + " "  # Include space before answer
+        prompt_char_len = len(prompt_text)
 
-        # Mask everything up to prompt length
-        labels[i, :prompt_len] = -100
+        # Find first token that starts after prompt ends using offset mapping
+        offsets = offset_mapping[i]
+        prompt_end_token = 0
+        for token_idx, (char_start, char_end) in enumerate(offsets):
+            if char_start >= prompt_char_len:
+                prompt_end_token = token_idx
+                break
 
-        # Also mask padding tokens in full sequence
+        # Mask all prompt tokens with -100
+        labels[i, :prompt_end_token] = -100
+
+        # Also mask padding tokens
         labels[i, tgt_batch["attention_mask"][i] == 0] = -100
 
     # Prepend -100 for K soft tokens (no loss on them)
@@ -834,15 +849,24 @@ def main():
             log(f"  Input embeddings shape: {data['inputs_embeds'].shape}")
             log(f"  Labels shape: {data['labels'].shape}")
             log(f"  Attention mask shape: {data['attention_mask'].shape}")
+
+            # Get K directly from translator
+            K = translator.module.K if isinstance(translator, DDP) else translator.K
+            log(f"  Soft token count (K): {K}")
+
             log(f"  Total tokens: {data['labels'].numel()}")
-            log(f"  Non-masked labels (-100): {(data['labels'] != -100).sum().item()}")
-            log(f"  Masked labels: {(data['labels'] == -100).sum().item()}")
+            log(f"  Supervised tokens: {(data['labels'] != -100).sum().item()}")
+            log(f"  Masked tokens: {(data['labels'] == -100).sum().item()}")
             log(f"  Sample 0 first 10 labels: {data['labels'][0, :10].tolist()}")
             log(f"  Sample 0 last 10 labels: {data['labels'][0, -10:].tolist()}")
-            # Verify K soft tokens are all masked
-            K = data['inputs_embeds'].shape[1] - data['labels'].shape[1] + data['labels'].shape[1]
-            soft_token_count = data['inputs_embeds'].shape[1] - (data['labels'].shape[1] - (data['labels'][0] == -100).sum().item() + (data['labels'][0] != -100).sum().item())
-            log(f"  Verification: All soft token labels == -100? {(data['labels'][:, :translator.module.K if isinstance(translator, DDP) else translator.K] == -100).all().item()}")
+
+            # Verify all soft token positions are masked
+            soft_labels_masked = (data['labels'][:, :K] == -100).all().item()
+            log(f"  All soft token labels == -100? {soft_labels_masked}")
+
+            if not soft_labels_masked:
+                log("  ⚠️  WARNING: Some soft token positions have non--100 labels!")
+
             log("="*60 + "\n")
 
         # Forward (compute NLL loss on target)
