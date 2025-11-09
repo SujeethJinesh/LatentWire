@@ -40,7 +40,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     set_seed,
-    get_scheduler  # Unified scheduler API (replaces get_linear_schedule_with_warmup)
+    get_scheduler
 )
 
 # ---------------------------
@@ -165,7 +165,8 @@ def apply_rms_matching(
 
     # Clamp scale to prevent pathological rescaling
     if clamp is not None:
-        scale = scale.clamp(min=clamp[0], max=clamp[1])
+        lo, hi = clamp
+        scale = scale.clamp(min=lo, max=hi)
 
     # Apply scale (preserves direction, fixes magnitude)
     return soft_tokens * scale
