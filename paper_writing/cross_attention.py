@@ -142,9 +142,7 @@ def apply_rms_matching(soft_tokens: torch.Tensor, target_rms: float) -> torch.Te
 class Sample:
     src_prompt: str
     tgt_prompt: str
-    tgt_full: str
-    tgt_prompt_len_tokens: int
-    label_ids: torch.Tensor  # full sequence labels (w/ -100 before answer)
+    tgt_answer: str  # Just the answer text, not tokenized
 
 # ---------------------------
 # Translator modules
@@ -398,30 +396,16 @@ def format_prompts(problem: str) -> Tuple[str, str]:
 
 def build_samples(batch, src_tok, tgt_tok, device, tgt_model, answer_as_label=True) -> List[Sample]:
     """
-    Prepare per-example structures for collating later. We tokenize here for the target to slice label regions.
+    Prepare per-example structures - NO TOKENIZATION HERE.
+    Tokenization happens in build_batch_inputs for correct alignment.
     """
     samples: List[Sample] = []
     for prob, sol in zip(batch["question"], batch["answer"]):
         src_prompt, tgt_prompt = format_prompts(prob)
-        # Full target text for supervised LM loss
-        tgt_full = tgt_prompt + " " + sol.strip()
-
-        # Token counts for label masking
-        with torch.no_grad():
-            tgt_prompt_ids = tgt_tok(tgt_prompt, add_special_tokens=True).input_ids
-            tgt_full_ids = tgt_tok(tgt_full, add_special_tokens=True).input_ids
-
-        prompt_len = len(tgt_prompt_ids)
-        labels = torch.tensor(tgt_full_ids, dtype=torch.long)
-        # mask everything up to the last token of the prompt
-        labels[:prompt_len] = -100
-
         samples.append(Sample(
             src_prompt=src_prompt,
             tgt_prompt=tgt_prompt,
-            tgt_full=tgt_full,
-            tgt_prompt_len_tokens=prompt_len,
-            label_ids=labels
+            tgt_answer=sol.strip()
         ))
     return samples
 
@@ -465,9 +449,14 @@ def build_batch_inputs(samples: List[Sample],
     if target_rms is not None:
         soft_tokens = apply_rms_matching(soft_tokens, target_rms)
 
-    # Target tokenization
-    tgt_batch = tgt_tok([s.tgt_full for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=2048)
+    # Target tokenization - do FULL TEXT and PROMPTS ONLY separately for correct label alignment
+    tgt_full_texts = [s.tgt_prompt + " " + s.tgt_answer for s in samples]
+    tgt_batch = tgt_tok(tgt_full_texts, return_tensors="pt", padding=True, truncation=True, max_length=2048)
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
+
+    # Tokenize prompts only to find boundary
+    tgt_prompts_only = [s.tgt_prompt for s in samples]
+    prompt_batch = tgt_tok(tgt_prompts_only, return_tensors="pt", padding=True, truncation=True, max_length=2048)
 
     # Target input embeddings
     with torch.no_grad():
@@ -481,19 +470,28 @@ def build_batch_inputs(samples: List[Sample],
 
     # Attention mask (1s for all positions we pass)
     attn_mask = torch.ones((B, K + max_T), dtype=torch.long, device=device)
-    # Labels — need to left-pad with -100 for K soft tokens (no loss on them)
-    # Also preserve the per-example masked prompt region already set in label_ids
-    labels_list = []
-    for i, s in enumerate(samples):
-        labels = s.label_ids.to(device)
-        # Pad labels to max_T
-        if labels.size(0) < max_T:
-            pad = torch.full((max_T - labels.size(0),), -100, dtype=labels.dtype, device=device)
-            labels = torch.cat([labels, pad], dim=0)
-        # Prepend -100 for soft tokens
-        labels = torch.cat([torch.full((K,), -100, dtype=labels.dtype, device=device), labels], dim=0)
-        labels_list.append(labels)
-    labels = torch.stack(labels_list, dim=0)  # [B, K+T]
+
+    # Labels — compute with correct alignment based on batch tokenization
+    # Strategy: mask prompt tokens (set to -100), supervise answer tokens, mask padding
+    labels = tgt_batch["input_ids"].clone()
+
+    # Mask prompt tokens for each sample
+    for i in range(B):
+        # Find where actual tokens end in prompt (before padding)
+        prompt_attention = prompt_batch["attention_mask"][i]
+        prompt_len = prompt_attention.sum().item()
+
+        # Mask everything up to prompt length
+        labels[i, :prompt_len] = -100
+
+        # Also mask padding tokens in full sequence
+        labels[i, tgt_batch["attention_mask"][i] == 0] = -100
+
+    # Prepend -100 for K soft tokens (no loss on them)
+    labels = torch.cat([
+        torch.full((B, K), -100, dtype=labels.dtype, device=device),
+        labels
+    ], dim=1)  # [B, K+T]
 
     return {
         "inputs_embeds": inputs_embeds,
@@ -575,7 +573,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         correct = 0
         for text, s in zip(pred_texts, samples):
             pred = extract_final_answer(text)
-            gold = extract_final_answer(s.tgt_full)
+            gold_full_text = s.tgt_prompt + " " + s.tgt_answer
+            gold = extract_final_answer(gold_full_text)
             correct += int(pred == gold)
         return correct / len(samples)
 
@@ -590,7 +589,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         for i in range(min(3, len(samples))):
             log(f"\n--- Example {i+1} ---")
             log(f"Question: {samples[i].tgt_prompt[:200]}...")
-            log(f"Gold answer: {extract_final_answer(samples[i].tgt_full)}")
+            gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
+            log(f"Gold answer: {extract_final_answer(gold_full_text)}")
             log(f"Target-alone: {extract_final_answer(base_texts[i])}")
             log(f"Bridged: {extract_final_answer(bridged_texts[i])}")
 
@@ -825,6 +825,25 @@ def main():
         # Build bridged inputs (with soft tokens)
         data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
                                   translator, device, dtype, target_rms=target_rms)
+
+        # Diagnostic: verify label alignment (only first step)
+        if step == 0 and is_main():
+            log("\n" + "="*60)
+            log("LABEL ALIGNMENT DIAGNOSTIC (Step 0)")
+            log("="*60)
+            log(f"  Input embeddings shape: {data['inputs_embeds'].shape}")
+            log(f"  Labels shape: {data['labels'].shape}")
+            log(f"  Attention mask shape: {data['attention_mask'].shape}")
+            log(f"  Total tokens: {data['labels'].numel()}")
+            log(f"  Non-masked labels (-100): {(data['labels'] != -100).sum().item()}")
+            log(f"  Masked labels: {(data['labels'] == -100).sum().item()}")
+            log(f"  Sample 0 first 10 labels: {data['labels'][0, :10].tolist()}")
+            log(f"  Sample 0 last 10 labels: {data['labels'][0, -10:].tolist()}")
+            # Verify K soft tokens are all masked
+            K = data['inputs_embeds'].shape[1] - data['labels'].shape[1] + data['labels'].shape[1]
+            soft_token_count = data['inputs_embeds'].shape[1] - (data['labels'].shape[1] - (data['labels'][0] == -100).sum().item() + (data['labels'][0] != -100).sum().item())
+            log(f"  Verification: All soft token labels == -100? {(data['labels'][:, :translator.module.K if isinstance(translator, DDP) else translator.K] == -100).all().item()}")
+            log("="*60 + "\n")
 
         # Forward (compute NLL loss on target)
         out = tgt_model(**data)
