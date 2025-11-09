@@ -43,6 +43,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Tuple
 from datetime import timedelta
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -113,6 +114,9 @@ def setup_reproducibility(seed: int, rank: int = 0):
     # Python's random module
     random.seed(effective_seed)
 
+    # NumPy random operations (used by many libraries)
+    np.random.seed(effective_seed)
+
     # PyTorch CPU and all CUDA devices
     torch.manual_seed(effective_seed)
     torch.cuda.manual_seed_all(effective_seed)
@@ -126,10 +130,32 @@ def setup_reproducibility(seed: int, rank: int = 0):
     torch.backends.cudnn.benchmark = False
 
     # CUBLAS workspace config for deterministic matrix operations (CUDA 10.2+)
-    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    # Using ':16:8' instead of ':4096:8' to reduce memory pressure
+    # Both are valid; ':16:8' uses less workspace memory
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':16:8'
 
     if rank == 0:
         log(f"Reproducibility enabled: base_seed={seed}, effective_seed={effective_seed}")
+
+def worker_init_fn(worker_id: int):
+    """
+    DataLoader worker initialization function for reproducible data loading.
+
+    Use with DataLoader like:
+        DataLoader(..., num_workers=4, worker_init_fn=worker_init_fn)
+
+    Each worker gets a unique seed to prevent identical randomness across workers.
+
+    Args:
+        worker_id: Worker ID (0 to num_workers-1)
+
+    References:
+        - PyTorch DataLoader: https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
+    """
+    # Get the base seed from PyTorch's initial_seed (set by setup_reproducibility)
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 def to_dtype_device(x, dtype, device):
     return x.to(device=device, dtype=dtype)
