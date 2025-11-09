@@ -40,7 +40,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     set_seed,
-    get_linear_schedule_with_warmup  # NOTE: Consider get_scheduler(scheduler_type="linear") for future transformers versions
+    get_scheduler  # Unified scheduler API (replaces get_linear_schedule_with_warmup)
 )
 
 # ---------------------------
@@ -506,8 +506,12 @@ def build_batch_inputs(samples: List[Sample],
     max_T = tgt_embeds.size(1)
     inputs_embeds = torch.cat([soft_tokens, tgt_embeds], dim=1)  # [B, K+T, d]
 
-    # Attention mask (1s for all positions we pass)
-    attn_mask = torch.ones((B, K + max_T), dtype=torch.long, device=device)
+    # Attention mask: concatenate 1s for soft tokens with actual text attention mask
+    # This prevents attending to padding tokens in the text portion
+    attn_mask = torch.cat([
+        torch.ones((B, K), dtype=torch.long, device=device),  # Soft tokens always attended
+        tgt_batch["attention_mask"]  # Text mask (0 for padding)
+    ], dim=1)
 
     # Labels — use offset mapping to find exact prompt/answer boundary
     # This prevents tokenization mismatches from context-dependent BPE/WordPiece
@@ -787,10 +791,12 @@ def main():
     log(f"Source hidden dim: {d_src} | Target hidden dim: {d_tgt}")
 
     # Compute target embedding RMS for normalization (CRITICAL for stability)
+    # Use median for robustness to outliers in vocabulary distribution
     with torch.no_grad():
-        tgt_embed_table = tgt_model.get_input_embeddings().weight  # [vocab_size, d_tgt]
-        target_rms = tgt_embed_table.pow(2).mean(dim=1).sqrt().mean().item()
-    log(f"Target embedding RMS: {target_rms:.4f}")
+        tgt_embed_table = tgt_model.get_input_embeddings().weight.float()  # [vocab_size, d_tgt]
+        per_token_rms = tgt_embed_table.pow(2).mean(dim=1).sqrt()
+        target_rms = per_token_rms.median().item()  # Median more robust than mean
+    log(f"Target embedding RMS (median): {target_rms:.4f}")
 
     # Build translator
     if args.translator_type == "bottleneck_gated":
@@ -857,8 +863,12 @@ def main():
 
     log(f"Optimizer groups: {len(decay_params)} decay, {len(no_decay_params)} no_decay, {len(gate_params)} gates (LR ×3)")
     optim = torch.optim.AdamW(optim_groups, betas=(0.9, 0.98), eps=1e-8)
-    sched = get_linear_schedule_with_warmup(optim, num_warmup_steps=args.warmup_steps,
-                                            num_training_steps=args.train_steps)
+    sched = get_scheduler(
+        "linear",
+        optimizer=optim,
+        num_warmup_steps=args.warmup_steps,
+        num_training_steps=args.train_steps
+    )
 
     # --------- Train loop ---------
     step = 0
