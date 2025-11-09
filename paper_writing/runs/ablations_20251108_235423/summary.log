@@ -1,5 +1,5 @@
 === ABLATION EXPERIMENTS ===
-Output directory: paper_writing/runs/ablations_20251108_234822
+Output directory: paper_writing/runs/ablations_20251108_235423
 
 ╔════════════════════════════════════════╗
 ║  ABLATION 1: STABILITY FIXES          ║
@@ -8,11 +8,12 @@ Output directory: paper_writing/runs/ablations_20251108_234822
 ==========================================
 Experiment: 1a_stable_64tok
 Description: 64 tokens WITH InfoNCE + early stopping + gen hygiene
-Start: Sat Nov  8 23:48:22 PST 2025
+Start: Sat Nov  8 23:54:23 PST 2025
 ------------------------------------------
-End: Sat Nov  8 23:51:16 PST 2025
+End: Sun Nov  9 00:55:42 PST 2025
 Results:
 Peak accuracy:
+  Peak bridged: 0.0%
 
 
 NOTE: Baseline (1b_baseline_64tok) reuses successful_experiments/cross_model/85/train_high_capacity.log
@@ -25,5 +26,32 @@ NOTE: Baseline (1b_baseline_64tok) reuses successful_experiments/cross_model/85/
 ==========================================
 Experiment: 2a_stable_32tok
 Description: 32 tokens (4.7× compression) WITH stability fixes
-Start: Sat Nov  8 23:51:16 PST 2025
+Start: Sun Nov  9 00:55:42 PST 2025
+------------------------------------------
+End: Sun Nov  9 03:59:52 PST 2025
+Results:
+Peak accuracy:
+  Peak bridged: 3.0%
+
+==========================================
+Experiment: 2b_stable_48tok
+Description: 48 tokens (3.1× compression) WITH stability fixes
+Start: Sun Nov  9 03:59:52 PST 2025
+------------------------------------------
+End: Sun Nov  9 04:57:41 PST 2025
+Results:
+Peak accuracy:
+  Peak bridged: 0.0%
+
+
+NOTE: 64 tokens result is same as 1a_stable_64tok (reused)
+
+╔════════════════════════════════════════╗
+║  ABLATION 3: DATASET GENERALIZATION   ║
+╚════════════════════════════════════════╝
+
+==========================================
+Experiment: 3a_hotpotqa_64tok
+Description: HotpotQA dataset, 64 tokens WITH stability fixes
+Start: Sun Nov  9 04:57:41 PST 2025
 ------------------------------------------
