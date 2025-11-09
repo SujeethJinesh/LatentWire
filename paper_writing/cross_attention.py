@@ -2,26 +2,33 @@
 # -*- coding: utf-8 -*-
 """
 Inter-LLM "interlingua" prototype:
-- Source LLM A → (get hidden states) → Translator → K soft tokens in target space
+- Source LLM A → (get hidden states) → BottleneckedGatedTranslator → K soft tokens in target space
 - Target LLM B consumes [soft tokens || B's own embeddings] and generates answers.
-- Train only the translator with teacher-forced LM loss on GSM8K.
-- Evaluate numeric exact-match accuracy on GSM8K.
+- Train only the translator with teacher-forced LM loss on GSM8K/HotpotQA.
+- Evaluate numeric exact-match accuracy.
+
+Architecture:
+- Uses BottleneckedGatedTranslator: bottlenecked cross-attention with Flamingo-style tanh gating
+- All operations in bottleneck dimension for efficiency
+- Dropout for regularization to prevent over-reliance on soft tokens
 
 Run (4x H100, DDP):
-  torchrun --nproc_per_node=4 interlingua_bridge.py \
-    --source_model Qwen/Qwen2.5-1.5B-Instruct \
-    --target_model meta-llama/Llama-3.2-1B-Instruct \
-    --translator_type cross_attn \
-    --soft_tokens 32 \
-    --train_steps 2000 \
-    --per_device_batch 2 \
-    --eval_samples 200 \
+  torchrun --nproc_per_node=4 cross_attention.py \
+    --source_model mistralai/Mistral-7B-Instruct-v0.3 \
+    --target_model meta-llama/Meta-Llama-3.1-8B-Instruct \
+    --bottleneck_dim 1024 \
+    --soft_tokens 64 \
+    --depth 8 \
+    --heads 16 \
+    --train_steps 3000 \
+    --per_device_batch 10 \
+    --eval_samples 1000 \
     --bf16
 
 Notes:
-- Defaults pick small-ish models; swap to your pair as desired.
-- Both models are frozen; only the translator trains (few million params).
+- Both models are frozen; only the translator trains (~10-50M params).
 - Script uses BF16 on Ampere/Hopper and DDP across 4 GPUs.
+- Scale-only RMS matching preserves learned representations while fixing magnitude.
 """
 
 import os, math, re, json, random, argparse, time
@@ -123,12 +130,12 @@ def apply_rms_matching(
     soft_tokens: torch.Tensor,
     target_rms: float,
     eps: float = 1e-8,
-    detach_stats: bool = True,
-    clamp: tuple = (0.25, 4.0),
-    blend: float = 1.0,
+    detach_stats: bool = True,            # stop grads through stats
+    clamp: tuple[float, float] | None = (0.25, 4.0),  # avoid extreme rescale
+    blend: float = 1.0,                   # 0..1; 1 = full match
 ) -> torch.Tensor:
     """
-    Scale-only normalization to match target model's embedding RMS statistics.
+    Scale-only RMS matching to match target model's embedding RMS statistics.
     Preserves learned directions; fixes magnitude to prevent attention/logit dominance.
 
     Unlike LayerNorm, this preserves the mean and directional information the
@@ -180,81 +187,6 @@ class Sample:
 # ---------------------------
 # Translator modules
 # ---------------------------
-
-class LinearTranslator(nn.Module):
-    """
-    Maps pooled source hidden states (mean-pool over tokens, last layer)
-    to K soft tokens in target embedding space via MLP.
-    """
-    def __init__(self, src_dim: int, tgt_dim: int, soft_tokens: int = 32, hidden: int = 2048):
-        super().__init__()
-        self.soft_tokens = soft_tokens
-        self.mlp = nn.Sequential(
-            nn.Linear(src_dim, hidden),
-            nn.GELU(),
-            nn.Linear(hidden, soft_tokens * tgt_dim)
-        )
-        self.tgt_dim = tgt_dim
-
-    def forward(self, src_hiddens: torch.Tensor) -> torch.Tensor:
-        """
-        src_hiddens: [B, T_src, d_src] (last layer states of source)
-        Returns soft_tokens: [B, K, d_tgt]
-        """
-        pooled = src_hiddens.mean(dim=1)  # [B, d_src]
-        out = self.mlp(pooled)            # [B, K*d_tgt]
-        return out.view(src_hiddens.size(0), self.soft_tokens, self.tgt_dim)
-
-
-class CrossAttentionBlock(nn.Module):
-    """
-    One block of (self-attn on queries) + (cross-attn from queries to src) + FFN, with RMS norms.
-    """
-    def __init__(self, d_q: int, d_kv: int, n_heads: int, ffn_mult: int = 4):
-        super().__init__()
-        self.q_norm = nn.LayerNorm(d_q, elementwise_affine=True)
-        self.src_norm = nn.LayerNorm(d_kv, elementwise_affine=True)
-        self.self_attn = nn.MultiheadAttention(embed_dim=d_q, num_heads=n_heads, batch_first=True)
-        self.cross_q_proj = nn.Linear(d_q, d_q)
-        self.cross_k_proj = nn.Linear(d_kv, d_q)
-        self.cross_v_proj = nn.Linear(d_kv, d_q)
-        self.cross_out = nn.Linear(d_q, d_q)
-        self.ffn = nn.Sequential(
-            nn.Linear(d_q, ffn_mult*d_q),
-            nn.GELU(),
-            nn.Linear(ffn_mult*d_q, d_q)
-        )
-
-    def forward(self, q_tokens: torch.Tensor, src_seq: torch.Tensor, src_mask: torch.Tensor = None):
-        # q_tokens: [B, K, d_q], src_seq: [B, T, d_kv]
-        B, K, d_q = q_tokens.shape
-        # Self-attention on queries
-        q_norm = self.q_norm(q_tokens)
-        sa_out, _ = self.self_attn(q_norm, q_norm, q_norm, need_weights=False)
-        q_tokens = q_tokens + sa_out
-
-        # Cross-attention: queries attend to source sequence
-        qn = self.q_norm(q_tokens)
-        srcn = self.src_norm(src_seq)
-        Q = self.cross_q_proj(qn)
-        K_ = self.cross_k_proj(srcn)
-        V_ = self.cross_v_proj(srcn)
-
-        # Compute scaled dot-product attention manually to support mask
-        attn_logits = torch.matmul(Q, K_.transpose(1, 2)) / math.sqrt(Q.size(-1))  # [B, K, T]
-        if src_mask is not None:
-            mask = src_mask[:, None, :].to(dtype=attn_logits.dtype)  # [B,1,T]
-            attn_logits = attn_logits.masked_fill(mask == 0, -1e4)
-        attn_weights = torch.softmax(attn_logits, dim=-1)           # [B, K, T]
-        cross = torch.matmul(attn_weights, V_)                       # [B, K, d_q]
-        cross = self.cross_out(cross)
-        q_tokens = q_tokens + cross
-
-        # FFN
-        ff = self.ffn(self.q_norm(q_tokens))
-        q_tokens = q_tokens + ff
-        return q_tokens
-
 
 class GatedCrossAttentionBlock(nn.Module):
     """
@@ -385,32 +317,6 @@ class BottleneckedGatedTranslator(nn.Module):
 
         return soft_tokens
 
-
-class CrossAttnResamplerTranslator(nn.Module):
-    """
-    Learn K target-space 'query tokens' which (after some depth) cross-attend to the source sequence
-    and become the soft tokens passed into the target LLM (akin to BLIP-2/Perceiver-resampler style).
-    """
-    def __init__(self, src_dim: int, tgt_dim: int, soft_tokens: int = 32, depth: int = 2, n_heads: int = 8, ffn_mult: int = 4):
-        super().__init__()
-        self.K = soft_tokens
-        self.query_tokens = nn.Parameter(torch.randn(1, soft_tokens, tgt_dim) / math.sqrt(tgt_dim))
-        self.blocks = nn.ModuleList([
-            CrossAttentionBlock(d_q=tgt_dim, d_kv=src_dim, n_heads=n_heads, ffn_mult=ffn_mult)
-            for _ in range(depth)
-        ])
-
-    def forward(self, src_hiddens: torch.Tensor, src_mask: torch.Tensor = None) -> torch.Tensor:
-        """
-        src_hiddens: [B, T_src, d_src]
-        returns soft tokens: [B, K, d_tgt]
-        """
-        B = src_hiddens.size(0)
-        q = self.query_tokens.expand(B, -1, -1)  # [B, K, d_tgt]
-        for blk in self.blocks:
-            q = blk(q, src_hiddens, src_mask)
-        return q
-
 # ---------------------------
 # Data prep (GSM8K)
 # ---------------------------
@@ -474,9 +380,8 @@ def build_batch_inputs(samples: List[Sample],
         # Source mask
         src_mask = src_enc["attention_mask"]
 
-    # Translator (grad flows)
-    soft_tokens = translator(src_h, src_mask) if isinstance(translator, CrossAttnResamplerTranslator) \
-                  else translator(src_h)  # [B, K, d_tgt]
+    # Translator (grad flows) - BottleneckedGatedTranslator supports src_mask
+    soft_tokens = translator(src_h, src_mask)  # [B, K, d_tgt]
 
     # Apply RMS matching to prevent logit collapse (CRITICAL for stability)
     if target_rms is not None:
@@ -716,8 +621,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source_model", type=str, default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--target_model", type=str, default="meta-llama/Llama-3.2-1B-Instruct")
-    parser.add_argument("--translator_type", type=str, choices=["cross_attn", "linear", "bottleneck_gated"], default="cross_attn")
-    parser.add_argument("--bottleneck_dim", type=int, default=1024, help="Bottleneck dimension for gated translator")
+    parser.add_argument("--bottleneck_dim", type=int, default=1024, help="Bottleneck dimension for BottleneckedGatedTranslator")
     parser.add_argument("--soft_tokens", type=int, default=32)
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
@@ -799,20 +703,15 @@ def main():
         target_rms = per_token_rms.median().item()  # Median more robust than mean
     log(f"Target embedding RMS (median): {target_rms:.4f}")
 
-    # Build translator
-    if args.translator_type == "bottleneck_gated":
-        translator = BottleneckedGatedTranslator(
-            src_dim=d_src, tgt_dim=d_tgt, bottleneck_dim=args.bottleneck_dim,
-            soft_tokens=args.soft_tokens, depth=args.depth, n_heads=args.heads
-        ).to(device=device, dtype=dtype)
-    elif args.translator_type == "cross_attn":
-        translator = CrossAttnResamplerTranslator(
-            src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, depth=args.depth, n_heads=args.heads
-        ).to(device=device, dtype=dtype)
-    else:
-        translator = LinearTranslator(
-            src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, hidden=4*d_tgt
-        ).to(device=device, dtype=dtype)
+    # Build translator (BottleneckedGatedTranslator with Flamingo-style gating)
+    translator = BottleneckedGatedTranslator(
+        src_dim=d_src,
+        tgt_dim=d_tgt,
+        bottleneck_dim=args.bottleneck_dim,
+        soft_tokens=args.soft_tokens,
+        depth=args.depth,
+        n_heads=args.heads
+    ).to(device=device, dtype=dtype)
 
     # Count parameters
     param_count = sum(p.numel() for p in translator.parameters())
