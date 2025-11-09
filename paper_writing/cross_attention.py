@@ -29,6 +29,13 @@ Notes:
 - Both models are frozen; only the translator trains (~10-50M params).
 - Script uses BF16 on Ampere/Hopper and DDP across 4 GPUs.
 - Scale-only RMS matching preserves learned representations while fixing magnitude.
+
+Reproducibility:
+- Full determinism enabled via torch.use_deterministic_algorithms()
+- Each DDP rank uses seed + rank offset to ensure different data sampling
+- cuDNN benchmark disabled for consistent algorithm selection
+- CUBLAS workspace configured for deterministic matrix operations
+- May reduce performance 5-15% but ensures reproducible results
 """
 
 import os, math, re, json, random, argparse, time
@@ -83,6 +90,46 @@ def cleanup_ddp():
             log(f"Warning: Barrier failed during cleanup: {e}")
         finally:
             dist.destroy_process_group()
+
+def setup_reproducibility(seed: int, rank: int = 0):
+    """
+    Setup full reproducibility for PyTorch DDP training.
+
+    Each DDP rank gets a unique seed (seed + rank) to ensure different data sampling.
+    Enables deterministic CUDA operations for reproducible results.
+
+    Args:
+        seed: Base random seed
+        rank: DDP rank (0 for main process, 1-3 for other GPUs in 4-GPU setup)
+
+    References:
+        - PyTorch Reproducibility: https://pytorch.org/docs/stable/notes/randomness.html
+        - DDP seed offset is critical to avoid identical batches per GPU
+    """
+    # CRITICAL: Offset seed by rank so each GPU samples different data
+    # Without this, all GPUs see identical batches → wasted compute
+    effective_seed = seed + rank
+
+    # Python's random module
+    random.seed(effective_seed)
+
+    # PyTorch CPU and all CUDA devices
+    torch.manual_seed(effective_seed)
+    torch.cuda.manual_seed_all(effective_seed)
+
+    # Enable deterministic algorithms (may reduce performance 5-15%)
+    # warn_only=True allows fallback for ops without deterministic implementation
+    torch.use_deterministic_algorithms(True, warn_only=True)
+
+    # Disable cuDNN benchmark for deterministic algorithm selection
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    # CUBLAS workspace config for deterministic matrix operations (CUDA 10.2+)
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+
+    if rank == 0:
+        log(f"Reproducibility enabled: base_seed={seed}, effective_seed={effective_seed}")
 
 def to_dtype_device(x, dtype, device):
     return x.to(device=device, dtype=dtype)
@@ -763,14 +810,25 @@ def main():
                         help="Disable torch.compile (use if PyTorch < 2.0 or for debugging)")
     args = parser.parse_args()
 
-    set_seed(args.seed)
     setup_ddp()
+    rank = dist.get_rank() if dist.is_initialized() else 0
+    setup_reproducibility(args.seed, rank=rank)
     device = torch.device(f"cuda:{local_rank()}")
     dtype = torch.bfloat16 if args.bf16 else torch.float16
 
     if is_main():
         log("==== Config ====")
         for k,v in vars(args).items(): log(f"{k}: {v}")
+
+        log("\n==== Reproducibility Settings ====")
+        log(f"Base seed: {args.seed}")
+        rank = dist.get_rank() if dist.is_initialized() else 0
+        log(f"Effective seed (with rank offset): {args.seed + rank}")
+        log(f"CUDA deterministic: {torch.backends.cudnn.deterministic}")
+        log(f"CUDA benchmark: {torch.backends.cudnn.benchmark}")
+        log(f"Deterministic algorithms: {torch.are_deterministic_algorithms_enabled()}")
+        log(f"CUBLAS workspace: {os.environ.get('CUBLAS_WORKSPACE_CONFIG', 'Not set')}")
+        log(f"World size: {world_size()} (each rank samples different data)")
 
     # Load models/tokenizers (frozen)
     log("Loading source model/tokenizer...")
@@ -857,7 +915,12 @@ def main():
         raise ValueError(f"Unknown dataset: {args.dataset}")
 
     # A very simple random sampler over training set
-    rng = random.Random(args.seed)
+    # CRITICAL: Use rank-offset seed so each GPU samples different batches
+    # Without this, all DDP processes sample identical indices → massive waste
+    rank = dist.get_rank() if dist.is_initialized() else 0
+    rng = random.Random(args.seed + rank)
+    if is_main():
+        log(f"Data sampler initialized with seed {args.seed + rank} (base={args.seed}, rank={rank})")
 
     # Optimizer with proper weight decay filtering (exclude LayerNorm and biases)
     # Gate parameters get higher LR (×3) to open gradually (Flamingo-style)
