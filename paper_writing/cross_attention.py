@@ -652,6 +652,10 @@ def main():
                         help="Show sample outputs during eval (0=none, 1=brief, 2=detailed)")
     parser.add_argument("--early_stop_patience", type=int, default=5,
                         help="Stop training if no improvement for N evals (0=disabled)")
+    parser.add_argument("--dataset", type=str, choices=["gsm8k", "hotpotqa"], default="gsm8k",
+                        help="Dataset to use for training")
+    parser.add_argument("--info_nce_weight", type=float, default=0.05,
+                        help="Weight for InfoNCE anti-collapse loss")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -723,10 +727,17 @@ def main():
         translator = DDP(translator, device_ids=[local_rank()], output_device=local_rank(), find_unused_parameters=False)
 
     # Data
-    log("Loading GSM8K...")
-    ds = load_dataset("gsm8k", "main")
-    train_ds = ds["train"]
-    test_ds  = ds["test"]
+    log(f"Loading {args.dataset.upper()}...")
+    if args.dataset == "gsm8k":
+        ds = load_dataset("gsm8k", "main")
+        train_ds = ds["train"]
+        test_ds  = ds["test"]
+    elif args.dataset == "hotpotqa":
+        ds = load_dataset("hotpot_qa", "distractor")
+        train_ds = ds["train"]
+        test_ds  = ds["validation"]  # HotpotQA uses "validation" split for test
+    else:
+        raise ValueError(f"Unknown dataset: {args.dataset}")
 
     # A very simple random sampler over training set
     rng = random.Random(args.seed)
@@ -838,7 +849,7 @@ def main():
             info_nce_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
 
         # Total loss: NLL + λ_KL * KL + λ_InfoNCE * InfoNCE
-        loss = nll_loss + 0.03 * kl_loss + 0.05 * info_nce_loss
+        loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss
 
         # Detach for logging to avoid DDP autograd warning
         loss_scalar = loss.detach()
