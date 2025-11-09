@@ -490,7 +490,8 @@ def build_batch_inputs(samples: List[Sample],
 
         # Find first token that starts after prompt ends using offset mapping
         offsets = offset_mapping[i]
-        prompt_end_token = 0
+        # Default to masking all tokens if no answer found (e.g., truncation/empty answer)
+        prompt_end_token = len(offsets)
         for token_idx, (char_start, char_end) in enumerate(offsets):
             if char_start >= prompt_char_len:
                 prompt_end_token = token_idx
@@ -734,6 +735,16 @@ def main():
         tgt_tok.pad_token = tgt_tok.eos_token
     tgt_tok.padding_side = "left"  # Critical for decoder-only models
     tgt_tok.model_max_length = 2048
+
+    # Verify tokenizer supports offset mapping (required for label alignment)
+    if not tgt_tok.is_fast:
+        raise ValueError(
+            f"Tokenizer for {args.target_model} must be a 'fast' tokenizer to support "
+            "offset mapping (required for correct label alignment). "
+            "The tokenizer was loaded with use_fast=True but is not fast. "
+            "This usually means no fast tokenizer is available for this model."
+        )
+
     tgt_model = AutoModelForCausalLM.from_pretrained(
         args.target_model, torch_dtype=dtype, device_map=None
     ).eval().to(device)
@@ -866,6 +877,12 @@ def main():
 
             if not soft_labels_masked:
                 log("  ⚠️  WARNING: Some soft token positions have non--100 labels!")
+
+            # Sanity check: verify at least SOME tokens are supervised per sample
+            supervised_per_sample = [(data['labels'][i] != -100).sum().item() for i in range(len(samples))]
+            log(f"  Supervised tokens per sample: {supervised_per_sample}")
+            if any(count == 0 for count in supervised_per_sample):
+                log("  ⚠️  WARNING: Some samples have ZERO supervised tokens! Check truncation/prompts.")
 
             log("="*60 + "\n")
 
