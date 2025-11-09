@@ -65,6 +65,12 @@ from transformers import (
     get_scheduler
 )
 
+# Feature test: prefer built-in nn.RMSNorm if available (PyTorch 2.4+)
+try:
+    _HAS_TORCH_RMSNORM = hasattr(nn, "RMSNorm")
+except Exception:
+    _HAS_TORCH_RMSNORM = False
+
 # ---------------------------
 # Utilities
 # ---------------------------
@@ -295,6 +301,35 @@ class Sample:
 # Translator modules
 # ---------------------------
 
+class RMSNorm(nn.Module):
+    """
+    Local RMSNorm fallback (for PyTorch < 2.4).
+    Prefer nn.RMSNorm when available via _make_norm helper.
+    """
+    def __init__(self, dim: int, eps: float = 1e-6):
+        super().__init__()
+        self.scale = nn.Parameter(torch.ones(dim))
+        self.eps = eps
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        norm = x.pow(2).mean(dim=-1, keepdim=True).sqrt().clamp_min(self.eps)
+        return self.scale * x / norm
+
+def _make_norm(dim: int, use_rmsnorm: bool):
+    """
+    Create normalization layer with automatic fallback.
+    Prefers nn.RMSNorm (PyTorch 2.4+), falls back to local RMSNorm, then LayerNorm.
+    """
+    if use_rmsnorm and _HAS_TORCH_RMSNORM:
+        return nn.RMSNorm(dim, elementwise_affine=True)
+    if use_rmsnorm:
+        # Fallback to local RMSNorm
+        try:
+            return RMSNorm(dim)
+        except NameError:
+            return nn.LayerNorm(dim, elementwise_affine=True)
+    return nn.LayerNorm(dim, elementwise_affine=True)
+
 class GatedCrossAttentionBlock(nn.Module):
     """
     Bottlenecked cross-attention block with tanh gating (Flamingo-style).
@@ -305,15 +340,15 @@ class GatedCrossAttentionBlock(nn.Module):
     - Cross-attention gating allows gradual opening (starts at 0)
     """
     def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4, dropout: float = 0.1,
-                 ffn_act: str = "swiglu"):
+                 use_rmsnorm: bool = True, ffn_act: str = "swiglu"):
         super().__init__()
         assert bottleneck_dim % n_heads == 0, "bottleneck_dim must be divisible by n_heads"
 
         self.bottleneck_dim = bottleneck_dim
 
-        # Layer norms (RMSNorm, matching modern LLMs)
-        self.q_norm = nn.RMSNorm(bottleneck_dim, elementwise_affine=True)
-        self.src_norm = nn.RMSNorm(src_dim, elementwise_affine=True)
+        # Layer norms (RMSNorm by default, matching modern LLMs)
+        self.q_norm = _make_norm(bottleneck_dim, use_rmsnorm)
+        self.src_norm = _make_norm(src_dim, use_rmsnorm)
 
         # Self-attention on queries (in bottleneck space)
         self.self_attn = nn.MultiheadAttention(
@@ -359,7 +394,7 @@ class GatedCrossAttentionBlock(nn.Module):
                 nn.Linear(ffn_mult * bottleneck_dim, bottleneck_dim)
             )
             self._use_swiglu = False
-        self.ffn_norm = nn.RMSNorm(bottleneck_dim, elementwise_affine=True)
+        self.ffn_norm = _make_norm(bottleneck_dim, use_rmsnorm)
 
         # FFN gating (Flamingo-style)
         self.ffn_gate = nn.Parameter(torch.tensor([0.0]))
@@ -413,7 +448,7 @@ class BottleneckedGatedTranslator(nn.Module):
     """
     def __init__(self, src_dim: int, tgt_dim: int, bottleneck_dim: int = 1024,
                  soft_tokens: int = 48, depth: int = 6, n_heads: int = 16, ffn_mult: int = 4,
-                 ffn_act: str = "swiglu"):
+                 use_rmsnorm: bool = True, ffn_act: str = "swiglu"):
         super().__init__()
         self.K = soft_tokens
         self.bottleneck_dim = bottleneck_dim
@@ -430,6 +465,7 @@ class BottleneckedGatedTranslator(nn.Module):
                 src_dim=src_dim,
                 n_heads=n_heads,
                 ffn_mult=ffn_mult,
+                use_rmsnorm=use_rmsnorm,
                 ffn_act=ffn_act,
             )
             for _ in range(depth)
@@ -437,7 +473,7 @@ class BottleneckedGatedTranslator(nn.Module):
 
         # Final projection from bottleneck to target dimension
         self.output_proj = nn.Linear(bottleneck_dim, tgt_dim)
-        self.output_norm = nn.RMSNorm(bottleneck_dim, elementwise_affine=True)
+        self.output_norm = _make_norm(bottleneck_dim, use_rmsnorm)
 
     def forward(self, src_hiddens: torch.Tensor,
                 src_mask: torch.Tensor = None) -> torch.Tensor:
