@@ -2,39 +2,53 @@
 # -*- coding: utf-8 -*-
 """
 Inter-LLM "interlingua" prototype:
-- Source LLM A → (get hidden states) → Translator → K soft tokens in target space
+- Source LLM A → (get hidden states) → BottleneckedGatedTranslator → K soft tokens in target space
 - Target LLM B consumes [soft tokens || B's own embeddings] and generates answers.
-- Train only the translator with teacher-forced LM loss on GSM8K.
-- Evaluate numeric exact-match accuracy on GSM8K.
+- Train only the translator with teacher-forced LM loss on GSM8K/HotpotQA.
+- Evaluate numeric exact-match accuracy.
+
+Architecture:
+- Uses BottleneckedGatedTranslator: bottlenecked cross-attention with Flamingo-style tanh gating
+- All operations in bottleneck dimension for efficiency
+- Dropout for regularization to prevent over-reliance on soft tokens
 
 Run (4x H100, DDP):
-  torchrun --nproc_per_node=4 interlingua_bridge.py \
-    --source_model Qwen/Qwen2.5-1.5B-Instruct \
-    --target_model meta-llama/Llama-3.2-1B-Instruct \
-    --translator_type cross_attn \
-    --soft_tokens 32 \
-    --train_steps 2000 \
-    --per_device_batch 2 \
-    --eval_samples 200 \
+  torchrun --nproc_per_node=4 cross_attention.py \
+    --source_model mistralai/Mistral-7B-Instruct-v0.3 \
+    --target_model meta-llama/Meta-Llama-3.1-8B-Instruct \
+    --bottleneck_dim 1024 \
+    --soft_tokens 64 \
+    --depth 8 \
+    --heads 16 \
+    --train_steps 3000 \
+    --per_device_batch 10 \
+    --eval_samples 1000 \
     --bf16
 
 Notes:
-- Defaults pick small-ish models; swap to your pair as desired.
-- Both models are frozen; only the translator trains (few million params).
+- Both models are frozen; only the translator trains (~10-50M params).
 - Script uses BF16 on Ampere/Hopper and DDP across 4 GPUs.
+- Scale-only RMS matching preserves learned representations while fixing magnitude.
 """
 
 import os, math, re, json, random, argparse, time
 from dataclasses import dataclass
 from typing import List, Dict, Tuple
+from datetime import timedelta
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, get_linear_schedule_with_warmup
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    set_seed,
+    get_scheduler
+)
 
 # ---------------------------
 # Utilities
@@ -59,9 +73,16 @@ def setup_ddp():
         torch.cuda.set_device(local_rank())
 
 def cleanup_ddp():
+    """Clean up distributed training process group."""
     if dist.is_initialized():
-        dist.barrier()
-        dist.destroy_process_group()
+        try:
+            # Simple barrier without timeout - let PyTorch handle it
+            # monitored_barrier is mainly for debugging, not cleanup
+            dist.barrier()  # Standard barrier is sufficient
+        except Exception as e:
+            log(f"Warning: Barrier failed during cleanup: {e}")
+        finally:
+            dist.destroy_process_group()
 
 def to_dtype_device(x, dtype, device):
     return x.to(device=device, dtype=dtype)
@@ -69,20 +90,33 @@ def to_dtype_device(x, dtype, device):
 def extract_final_answer(text: str) -> str:
     """
     Extract final answer from GSM8K solution using official evaluation method.
+    
     Official pattern: '#### <number>' where number can include decimals and commas.
     Returns '[invalid]' if no #### marker found (NO fallback to last number).
-
-    Reference: github.com/openai/grade-school-math
+    
+    Official implementation:
+    https://github.com/openai/grade-school-math/blob/master/grade_school_math/dataset.py#L24-L35
+    
+    Paper: https://arxiv.org/abs/2110.14168
+    Repository: https://github.com/openai/grade-school-math
+    
+    Reference from official README:
+    "To extract the final numeric solution for a particular question, simply parse 
+    the completion to extract the numeric value immediately following the #### token."
+    Source: https://github.com/openai/grade-school-math/blob/master/README.md
     """
-    # Official regex: supports negative numbers, decimals, and commas
+    # Official regex from dataset.py: supports negative numbers, decimals, and commas
+    # ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
     m = re.search(r"#### (\-?[0-9\.\,]+)", text)
     if m:
         answer = m.group(1).strip()
         # Remove commas from numbers (official normalization)
+        # From official code: match_str = match_str.replace(",", "")
         answer = answer.replace(",", "")
         return answer
     else:
-        # Official behavior: return invalid marker (NO fallback)
+        # Official behavior: return '[invalid]' marker (NO fallback)
+        # From official code: INVALID_ANS = "[invalid]"
         return "[invalid]"
 
 def compute_rms(x: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
@@ -92,112 +126,67 @@ def compute_rms(x: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
     """
     return x.pow(2).mean(dim=-1, keepdim=True).sqrt().clamp_min(eps)
 
-def apply_rms_matching(soft_tokens: torch.Tensor, target_rms: float) -> torch.Tensor:
+def apply_rms_matching(
+    soft_tokens: torch.Tensor,
+    target_rms: float,
+    eps: float = 1e-8,
+    detach_stats: bool = True,            # stop grads through stats
+    clamp: tuple[float, float] | None = (0.25, 4.0),  # avoid extreme rescale
+    blend: float = 1.0,                   # 0..1; 1 = full match
+) -> torch.Tensor:
     """
-    Normalize soft tokens and rescale to match target embedding RMS statistics.
-    This prevents scale mismatch that causes logit collapse.
+    Scale-only RMS matching to match target model's embedding RMS statistics.
+    Preserves learned directions; fixes magnitude to prevent attention/logit dominance.
+
+    Unlike LayerNorm, this preserves the mean and directional information the
+    translator learned, only adjusting the magnitude to match the target model's
+    embedding space. This is consistent with:
+    - LLaVA's vision-text magnitude imbalance (arXiv:2503.17349)
+    - Nemesis Low-Norm Effect for soft prompts (ICLR 2024)
+    - RMSNorm used in Llama-family models
 
     Args:
         soft_tokens: [B, K, d_model] translator output
         target_rms: scalar RMS of target model's embedding table
+        eps: small constant for numerical stability
+        detach_stats: if True, detach current RMS to prevent gaming the rescaler
+        clamp: (min, max) bounds for scale factor to prevent extreme rescaling
+        blend: interpolation factor (0=no scaling, 1=full match to target_rms)
 
     Returns:
-        Normalized and rescaled soft tokens [B, K, d_model]
+        Rescaled soft tokens [B, K, d_model] with magnitude matching target embeddings
     """
-    # LayerNorm to center and normalize distribution
-    soft_tokens = torch.nn.functional.layer_norm(soft_tokens, (soft_tokens.size(-1),))
+    # Compute current per-token RMS: [B, K, 1]
+    current_rms = soft_tokens.pow(2).mean(dim=-1, keepdim=True).sqrt().clamp_min(eps)
 
-    # RMS matching to ensure magnitude is consistent with target embeddings
-    soft_tokens = soft_tokens / compute_rms(soft_tokens) * target_rms
+    # Detach to prevent translator from gaming the rescaler by learning extreme norms
+    if detach_stats:
+        current_rms = current_rms.detach()
 
-    return soft_tokens
+    # Compute scale factor to match target RMS
+    scale = target_rms / current_rms
+
+    # Optional: blend toward target (useful for gradual phase-in during training)
+    if blend != 1.0:
+        scale = scale.pow(blend)
+
+    # Clamp scale to prevent pathological rescaling
+    if clamp is not None:
+        lo, hi = clamp
+        scale = scale.clamp(min=lo, max=hi)
+
+    # Apply scale (preserves direction, fixes magnitude)
+    return soft_tokens * scale
 
 @dataclass
 class Sample:
     src_prompt: str
     tgt_prompt: str
-    tgt_full: str
-    tgt_prompt_len_tokens: int
-    label_ids: torch.Tensor  # full sequence labels (w/ -100 before answer)
+    tgt_answer: str  # Just the answer text, not tokenized
 
 # ---------------------------
 # Translator modules
 # ---------------------------
-
-class LinearTranslator(nn.Module):
-    """
-    Maps pooled source hidden states (mean-pool over tokens, last layer)
-    to K soft tokens in target embedding space via MLP.
-    """
-    def __init__(self, src_dim: int, tgt_dim: int, soft_tokens: int = 32, hidden: int = 2048):
-        super().__init__()
-        self.soft_tokens = soft_tokens
-        self.mlp = nn.Sequential(
-            nn.Linear(src_dim, hidden),
-            nn.GELU(),
-            nn.Linear(hidden, soft_tokens * tgt_dim)
-        )
-        self.tgt_dim = tgt_dim
-
-    def forward(self, src_hiddens: torch.Tensor) -> torch.Tensor:
-        """
-        src_hiddens: [B, T_src, d_src] (last layer states of source)
-        Returns soft_tokens: [B, K, d_tgt]
-        """
-        pooled = src_hiddens.mean(dim=1)  # [B, d_src]
-        out = self.mlp(pooled)            # [B, K*d_tgt]
-        return out.view(src_hiddens.size(0), self.soft_tokens, self.tgt_dim)
-
-
-class CrossAttentionBlock(nn.Module):
-    """
-    One block of (self-attn on queries) + (cross-attn from queries to src) + FFN, with RMS norms.
-    """
-    def __init__(self, d_q: int, d_kv: int, n_heads: int, ffn_mult: int = 4):
-        super().__init__()
-        self.q_norm = nn.LayerNorm(d_q, elementwise_affine=True)
-        self.src_norm = nn.LayerNorm(d_kv, elementwise_affine=True)
-        self.self_attn = nn.MultiheadAttention(embed_dim=d_q, num_heads=n_heads, batch_first=True)
-        self.cross_q_proj = nn.Linear(d_q, d_q)
-        self.cross_k_proj = nn.Linear(d_kv, d_q)
-        self.cross_v_proj = nn.Linear(d_kv, d_q)
-        self.cross_out = nn.Linear(d_q, d_q)
-        self.ffn = nn.Sequential(
-            nn.Linear(d_q, ffn_mult*d_q),
-            nn.GELU(),
-            nn.Linear(ffn_mult*d_q, d_q)
-        )
-
-    def forward(self, q_tokens: torch.Tensor, src_seq: torch.Tensor, src_mask: torch.Tensor = None):
-        # q_tokens: [B, K, d_q], src_seq: [B, T, d_kv]
-        B, K, d_q = q_tokens.shape
-        # Self-attention on queries
-        q_norm = self.q_norm(q_tokens)
-        sa_out, _ = self.self_attn(q_norm, q_norm, q_norm, need_weights=False)
-        q_tokens = q_tokens + sa_out
-
-        # Cross-attention: queries attend to source sequence
-        qn = self.q_norm(q_tokens)
-        srcn = self.src_norm(src_seq)
-        Q = self.cross_q_proj(qn)
-        K_ = self.cross_k_proj(srcn)
-        V_ = self.cross_v_proj(srcn)
-
-        # Compute scaled dot-product attention manually to support mask
-        attn_logits = torch.matmul(Q, K_.transpose(1, 2)) / math.sqrt(Q.size(-1))  # [B, K, T]
-        if src_mask is not None:
-            mask = src_mask[:, None, :].to(dtype=attn_logits.dtype)  # [B,1,T]
-            attn_logits = attn_logits.masked_fill(mask == 0, -1e4)
-        attn_weights = torch.softmax(attn_logits, dim=-1)           # [B, K, T]
-        cross = torch.matmul(attn_weights, V_)                       # [B, K, d_q]
-        cross = self.cross_out(cross)
-        q_tokens = q_tokens + cross
-
-        # FFN
-        ff = self.ffn(self.q_norm(q_tokens))
-        q_tokens = q_tokens + ff
-        return q_tokens
-
 
 class GatedCrossAttentionBlock(nn.Module):
     """
@@ -206,6 +195,8 @@ class GatedCrossAttentionBlock(nn.Module):
     """
     def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4, dropout: float = 0.1):
         super().__init__()
+        assert bottleneck_dim % n_heads == 0, "bottleneck_dim must be divisible by n_heads"
+
         self.bottleneck_dim = bottleneck_dim
 
         # Layer norms
@@ -219,16 +210,19 @@ class GatedCrossAttentionBlock(nn.Module):
             batch_first=True
         )
 
-        # Cross-attention projections
-        self.cross_q_proj = nn.Linear(bottleneck_dim, bottleneck_dim)
-        self.cross_k_proj = nn.Linear(src_dim, bottleneck_dim)
-        self.cross_v_proj = nn.Linear(src_dim, bottleneck_dim)
-        self.cross_out = nn.Linear(bottleneck_dim, bottleneck_dim)
+        # Cross-attention using MultiheadAttention (Flamingo-style)
+        self.cross_attn = nn.MultiheadAttention(
+            embed_dim=bottleneck_dim,
+            num_heads=n_heads,
+            kdim=src_dim,
+            vdim=src_dim,
+            batch_first=True,
+            dropout=dropout
+        )
 
         # Tanh gating on cross-attention (Flamingo-style)
-        # Initialize with negative bias so gate starts slightly open after tanh
-        # tanh(-2.0) ≈ -0.96, meaning gate starts almost closed but learns to open
-        self.cross_gate = nn.Parameter(torch.tensor([-2.0]))
+        # Initialize at 0.0 so tanh(0)=0 (closed). Matches Flamingo: model behaves like frozen LM at init, learns to open gradually.
+        self.cross_gate = nn.Parameter(torch.tensor([0.0]))
 
         # Dropout for regularization (prevents over-reliance on soft tokens)
         self.dropout = nn.Dropout(dropout)
@@ -242,6 +236,9 @@ class GatedCrossAttentionBlock(nn.Module):
         )
         self.ffn_norm = nn.LayerNorm(bottleneck_dim)
 
+        # FFN gating (Flamingo-style)
+        self.ffn_gate = nn.Parameter(torch.tensor([0.0]))
+
     def forward(self, q_tokens: torch.Tensor, src_seq: torch.Tensor,
                 src_mask: torch.Tensor = None) -> torch.Tensor:
         # q_tokens: [B, K, bottleneck_dim], src_seq: [B, T, src_dim]
@@ -251,29 +248,22 @@ class GatedCrossAttentionBlock(nn.Module):
         sa_out, _ = self.self_attn(q_norm, q_norm, q_norm, need_weights=False)
         q_tokens = q_tokens + sa_out
 
-        # Cross-attention with gating
+        # Cross-attention with gating (Flamingo-style)
         qn = self.q_norm(q_tokens)
         srcn = self.src_norm(src_seq)
-        Q = self.cross_q_proj(qn)
-        K = self.cross_k_proj(srcn)
-        V = self.cross_v_proj(srcn)
 
-        # Compute attention
-        attn_logits = torch.matmul(Q, K.transpose(1, 2)) / math.sqrt(Q.size(-1))
-        if src_mask is not None:
-            mask_expanded = src_mask[:, None, :].to(dtype=attn_logits.dtype)
-            attn_logits = attn_logits.masked_fill(mask_expanded == 0, -1e4)
-        attn_weights = torch.softmax(attn_logits, dim=-1)
-        cross = torch.matmul(attn_weights, V)
-        cross = self.cross_out(cross)
+        # Convert attention mask to key_padding_mask format (True = ignore)
+        kpm = (src_mask == 0) if src_mask is not None else None
+        cross, _ = self.cross_attn(qn, srcn, srcn, key_padding_mask=kpm, need_weights=False)
 
         # Apply tanh gating (starts at 0, learns to open) with dropout for regularization
         gate = torch.tanh(self.cross_gate)
         q_tokens = q_tokens + gate * self.dropout(cross)
 
-        # FFN
+        # FFN with gating (Flamingo-style)
         ff = self.ffn(self.ffn_norm(q_tokens))
-        q_tokens = q_tokens + ff
+        fgate = torch.tanh(self.ffn_gate)
+        q_tokens = q_tokens + fgate * ff
 
         return q_tokens
 
@@ -328,32 +318,6 @@ class BottleneckedGatedTranslator(nn.Module):
 
         return soft_tokens
 
-
-class CrossAttnResamplerTranslator(nn.Module):
-    """
-    Learn K target-space 'query tokens' which (after some depth) cross-attend to the source sequence
-    and become the soft tokens passed into the target LLM (akin to BLIP-2/Perceiver-resampler style).
-    """
-    def __init__(self, src_dim: int, tgt_dim: int, soft_tokens: int = 32, depth: int = 2, n_heads: int = 8, ffn_mult: int = 4):
-        super().__init__()
-        self.K = soft_tokens
-        self.query_tokens = nn.Parameter(torch.randn(1, soft_tokens, tgt_dim) / math.sqrt(tgt_dim))
-        self.blocks = nn.ModuleList([
-            CrossAttentionBlock(d_q=tgt_dim, d_kv=src_dim, n_heads=n_heads, ffn_mult=ffn_mult)
-            for _ in range(depth)
-        ])
-
-    def forward(self, src_hiddens: torch.Tensor, src_mask: torch.Tensor = None) -> torch.Tensor:
-        """
-        src_hiddens: [B, T_src, d_src]
-        returns soft tokens: [B, K, d_tgt]
-        """
-        B = src_hiddens.size(0)
-        q = self.query_tokens.expand(B, -1, -1)  # [B, K, d_tgt]
-        for blk in self.blocks:
-            q = blk(q, src_hiddens, src_mask)
-        return q
-
 # ---------------------------
 # Data prep (GSM8K)
 # ---------------------------
@@ -372,30 +336,16 @@ def format_prompts(problem: str) -> Tuple[str, str]:
 
 def build_samples(batch, src_tok, tgt_tok, device, tgt_model, answer_as_label=True) -> List[Sample]:
     """
-    Prepare per-example structures for collating later. We tokenize here for the target to slice label regions.
+    Prepare per-example structures - NO TOKENIZATION HERE.
+    Tokenization happens in build_batch_inputs for correct alignment.
     """
     samples: List[Sample] = []
     for prob, sol in zip(batch["question"], batch["answer"]):
         src_prompt, tgt_prompt = format_prompts(prob)
-        # Full target text for supervised LM loss
-        tgt_full = tgt_prompt + " " + sol.strip()
-
-        # Token counts for label masking
-        with torch.no_grad():
-            tgt_prompt_ids = tgt_tok(tgt_prompt, add_special_tokens=True).input_ids
-            tgt_full_ids = tgt_tok(tgt_full, add_special_tokens=True).input_ids
-
-        prompt_len = len(tgt_prompt_ids)
-        labels = torch.tensor(tgt_full_ids, dtype=torch.long)
-        # mask everything up to the last token of the prompt
-        labels[:prompt_len] = -100
-
         samples.append(Sample(
             src_prompt=src_prompt,
             tgt_prompt=tgt_prompt,
-            tgt_full=tgt_full,
-            tgt_prompt_len_tokens=prompt_len,
-            label_ids=labels
+            tgt_answer=sol.strip()
         ))
     return samples
 
@@ -431,16 +381,26 @@ def build_batch_inputs(samples: List[Sample],
         # Source mask
         src_mask = src_enc["attention_mask"]
 
-    # Translator (grad flows)
-    soft_tokens = translator(src_h, src_mask) if isinstance(translator, CrossAttnResamplerTranslator) \
-                  else translator(src_h)  # [B, K, d_tgt]
+    # Translator (grad flows) - BottleneckedGatedTranslator supports src_mask
+    soft_tokens = translator(src_h, src_mask)  # [B, K, d_tgt]
 
     # Apply RMS matching to prevent logit collapse (CRITICAL for stability)
     if target_rms is not None:
         soft_tokens = apply_rms_matching(soft_tokens, target_rms)
 
-    # Target tokenization
-    tgt_batch = tgt_tok([s.tgt_full for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=2048)
+    # Target tokenization with offset mapping for correct boundary detection
+    # CRITICAL: Use offset mapping to avoid context-dependent tokenization mismatches
+    # Tokenizing prompts separately would give different token boundaries due to BPE/WordPiece
+    tgt_full_texts = [s.tgt_prompt + " " + s.tgt_answer for s in samples]
+    tgt_batch = tgt_tok(
+        tgt_full_texts,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=2048,
+        return_offsets_mapping=True  # Get character position mappings
+    )
+    offset_mapping = tgt_batch.pop("offset_mapping")  # Remove before passing to model
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
 
     # Target input embeddings
@@ -453,21 +413,42 @@ def build_batch_inputs(samples: List[Sample],
     max_T = tgt_embeds.size(1)
     inputs_embeds = torch.cat([soft_tokens, tgt_embeds], dim=1)  # [B, K+T, d]
 
-    # Attention mask (1s for all positions we pass)
-    attn_mask = torch.ones((B, K + max_T), dtype=torch.long, device=device)
-    # Labels — need to left-pad with -100 for K soft tokens (no loss on them)
-    # Also preserve the per-example masked prompt region already set in label_ids
-    labels_list = []
-    for i, s in enumerate(samples):
-        labels = s.label_ids.to(device)
-        # Pad labels to max_T
-        if labels.size(0) < max_T:
-            pad = torch.full((max_T - labels.size(0),), -100, dtype=labels.dtype, device=device)
-            labels = torch.cat([labels, pad], dim=0)
-        # Prepend -100 for soft tokens
-        labels = torch.cat([torch.full((K,), -100, dtype=labels.dtype, device=device), labels], dim=0)
-        labels_list.append(labels)
-    labels = torch.stack(labels_list, dim=0)  # [B, K+T]
+    # Attention mask: concatenate 1s for soft tokens with actual text attention mask
+    # This prevents attending to padding tokens in the text portion
+    attn_mask = torch.cat([
+        torch.ones((B, K), dtype=torch.long, device=device),  # Soft tokens always attended
+        tgt_batch["attention_mask"]  # Text mask (0 for padding)
+    ], dim=1)
+
+    # Labels — use offset mapping to find exact prompt/answer boundary
+    # This prevents tokenization mismatches from context-dependent BPE/WordPiece
+    labels = tgt_batch["input_ids"].clone()
+
+    for i in range(B):
+        # Find character length of prompt (ground truth boundary)
+        prompt_text = samples[i].tgt_prompt + " "  # Include space before answer
+        prompt_char_len = len(prompt_text)
+
+        # Find first token that starts after prompt ends using offset mapping
+        offsets = offset_mapping[i]
+        # Default to masking all tokens if no answer found (e.g., truncation/empty answer)
+        prompt_end_token = len(offsets)
+        for token_idx, (char_start, char_end) in enumerate(offsets):
+            if char_start >= prompt_char_len:
+                prompt_end_token = token_idx
+                break
+
+        # Mask all prompt tokens with -100
+        labels[i, :prompt_end_token] = -100
+
+        # Also mask padding tokens
+        labels[i, tgt_batch["attention_mask"][i] == 0] = -100
+
+    # Prepend -100 for K soft tokens (no loss on them)
+    labels = torch.cat([
+        torch.full((B, K), -100, dtype=labels.dtype, device=device),
+        labels
+    ], dim=1)  # [B, K+T]
 
     return {
         "inputs_embeds": inputs_embeds,
@@ -549,7 +530,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         correct = 0
         for text, s in zip(pred_texts, samples):
             pred = extract_final_answer(text)
-            gold = extract_final_answer(s.tgt_full)
+            gold_full_text = s.tgt_prompt + " " + s.tgt_answer
+            gold = extract_final_answer(gold_full_text)
             correct += int(pred == gold)
         return correct / len(samples)
 
@@ -564,7 +546,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         for i in range(min(3, len(samples))):
             log(f"\n--- Example {i+1} ---")
             log(f"Question: {samples[i].tgt_prompt[:200]}...")
-            log(f"Gold answer: {extract_final_answer(samples[i].tgt_full)}")
+            gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
+            log(f"Gold answer: {extract_final_answer(gold_full_text)}")
             log(f"Target-alone: {extract_final_answer(base_texts[i])}")
             log(f"Bridged: {extract_final_answer(bridged_texts[i])}")
 
@@ -639,8 +622,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source_model", type=str, default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--target_model", type=str, default="meta-llama/Llama-3.2-1B-Instruct")
-    parser.add_argument("--translator_type", type=str, choices=["cross_attn", "linear", "bottleneck_gated"], default="cross_attn")
-    parser.add_argument("--bottleneck_dim", type=int, default=1024, help="Bottleneck dimension for gated translator")
+    parser.add_argument("--bottleneck_dim", type=int, default=1024, help="Bottleneck dimension for BottleneckedGatedTranslator")
     parser.add_argument("--soft_tokens", type=int, default=32)
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
@@ -693,6 +675,16 @@ def main():
         tgt_tok.pad_token = tgt_tok.eos_token
     tgt_tok.padding_side = "left"  # Critical for decoder-only models
     tgt_tok.model_max_length = 2048
+
+    # Verify tokenizer supports offset mapping (required for label alignment)
+    if not tgt_tok.is_fast:
+        raise ValueError(
+            f"Tokenizer for {args.target_model} must be a 'fast' tokenizer to support "
+            "offset mapping (required for correct label alignment). "
+            "The tokenizer was loaded with use_fast=True but is not fast. "
+            "This usually means no fast tokenizer is available for this model."
+        )
+
     tgt_model = AutoModelForCausalLM.from_pretrained(
         args.target_model, torch_dtype=dtype, device_map=None
     ).eval().to(device)
@@ -705,25 +697,22 @@ def main():
     log(f"Source hidden dim: {d_src} | Target hidden dim: {d_tgt}")
 
     # Compute target embedding RMS for normalization (CRITICAL for stability)
+    # Use median for robustness to outliers in vocabulary distribution
     with torch.no_grad():
-        tgt_embed_table = tgt_model.get_input_embeddings().weight  # [vocab_size, d_tgt]
-        target_rms = tgt_embed_table.pow(2).mean(dim=1).sqrt().mean().item()
-    log(f"Target embedding RMS: {target_rms:.4f}")
+        tgt_embed_table = tgt_model.get_input_embeddings().weight.float()  # [vocab_size, d_tgt]
+        per_token_rms = tgt_embed_table.pow(2).mean(dim=1).sqrt()
+        target_rms = per_token_rms.median().item()  # Median more robust than mean
+    log(f"Target embedding RMS (median): {target_rms:.4f}")
 
-    # Build translator
-    if args.translator_type == "bottleneck_gated":
-        translator = BottleneckedGatedTranslator(
-            src_dim=d_src, tgt_dim=d_tgt, bottleneck_dim=args.bottleneck_dim,
-            soft_tokens=args.soft_tokens, depth=args.depth, n_heads=args.heads
-        ).to(device=device, dtype=dtype)
-    elif args.translator_type == "cross_attn":
-        translator = CrossAttnResamplerTranslator(
-            src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, depth=args.depth, n_heads=args.heads
-        ).to(device=device, dtype=dtype)
-    else:
-        translator = LinearTranslator(
-            src_dim=d_src, tgt_dim=d_tgt, soft_tokens=args.soft_tokens, hidden=4*d_tgt
-        ).to(device=device, dtype=dtype)
+    # Build translator (BottleneckedGatedTranslator with Flamingo-style gating)
+    translator = BottleneckedGatedTranslator(
+        src_dim=d_src,
+        tgt_dim=d_tgt,
+        bottleneck_dim=args.bottleneck_dim,
+        soft_tokens=args.soft_tokens,
+        depth=args.depth,
+        n_heads=args.heads
+    ).to(device=device, dtype=dtype)
 
     # Count parameters
     param_count = sum(p.numel() for p in translator.parameters())
@@ -758,8 +747,8 @@ def main():
     for name, param in translator.named_parameters():
         if not param.requires_grad:
             continue
-        # Gate parameters: higher LR, no weight decay
-        if 'cross_gate' in name:
+        # Gate parameters: higher LR, no weight decay (cross_gate and ffn_gate)
+        if 'cross_gate' in name or 'ffn_gate' in name:
             gate_params.append(param)
         # Don't apply weight decay to bias terms and layer norms
         elif 'bias' in name or 'norm' in name:
@@ -775,8 +764,12 @@ def main():
 
     log(f"Optimizer groups: {len(decay_params)} decay, {len(no_decay_params)} no_decay, {len(gate_params)} gates (LR ×3)")
     optim = torch.optim.AdamW(optim_groups, betas=(0.9, 0.98), eps=1e-8)
-    sched = get_linear_schedule_with_warmup(optim, num_warmup_steps=args.warmup_steps,
-                                            num_training_steps=args.train_steps)
+    sched = get_scheduler(
+        "linear",
+        optimizer=optim,
+        num_warmup_steps=args.warmup_steps,
+        num_training_steps=args.train_steps
+    )
 
     # --------- Train loop ---------
     step = 0
@@ -799,6 +792,40 @@ def main():
         # Build bridged inputs (with soft tokens)
         data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
                                   translator, device, dtype, target_rms=target_rms)
+
+        # Diagnostic: verify label alignment (only first step)
+        if step == 0 and is_main():
+            log("\n" + "="*60)
+            log("LABEL ALIGNMENT DIAGNOSTIC (Step 0)")
+            log("="*60)
+            log(f"  Input embeddings shape: {data['inputs_embeds'].shape}")
+            log(f"  Labels shape: {data['labels'].shape}")
+            log(f"  Attention mask shape: {data['attention_mask'].shape}")
+
+            # Get K directly from translator
+            K = translator.module.K if isinstance(translator, DDP) else translator.K
+            log(f"  Soft token count (K): {K}")
+
+            log(f"  Total tokens: {data['labels'].numel()}")
+            log(f"  Supervised tokens: {(data['labels'] != -100).sum().item()}")
+            log(f"  Masked tokens: {(data['labels'] == -100).sum().item()}")
+            log(f"  Sample 0 first 10 labels: {data['labels'][0, :10].tolist()}")
+            log(f"  Sample 0 last 10 labels: {data['labels'][0, -10:].tolist()}")
+
+            # Verify all soft token positions are masked
+            soft_labels_masked = (data['labels'][:, :K] == -100).all().item()
+            log(f"  All soft token labels == -100? {soft_labels_masked}")
+
+            if not soft_labels_masked:
+                log("  ⚠️  WARNING: Some soft token positions have non--100 labels!")
+
+            # Sanity check: verify at least SOME tokens are supervised per sample
+            supervised_per_sample = [(data['labels'][i] != -100).sum().item() for i in range(len(samples))]
+            log(f"  Supervised tokens per sample: {supervised_per_sample}")
+            if any(count == 0 for count in supervised_per_sample):
+                log("  ⚠️  WARNING: Some samples have ZERO supervised tokens! Check truncation/prompts.")
+
+            log("="*60 + "\n")
 
         # Forward (compute NLL loss on target)
         out = tgt_model(**data)
