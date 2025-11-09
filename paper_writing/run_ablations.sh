@@ -49,8 +49,11 @@ run_experiment() {
     LOG_FILE="$EXP_DIR/train.log"
 
     # Run with all remaining arguments
+    # Use random port to avoid conflicts with other training jobs
+    RANDOM_PORT=$((29500 + RANDOM % 1000))
+
     {
-        torchrun --nproc_per_node=4 paper_writing/cross_attention.py \
+        torchrun --nproc_per_node=4 --master_port "$RANDOM_PORT" paper_writing/cross_attention.py \
             --source_model "$SOURCE_MODEL" \
             --target_model "$TARGET_MODEL" \
             --translator_type "$TRANSLATOR_TYPE" \
