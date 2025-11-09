@@ -737,6 +737,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 attention_mask=batch["attention_mask"],
                 max_new_tokens=max_new_tokens,
                 do_sample=False,
+                top_p=None,  # Disable sampling params for greedy decoding
                 repetition_penalty=1.1,  # Prevent "181818..." loops
                 no_repeat_ngram_size=3,  # Prevent repeating 3-grams
                 pad_token_id=tgt_tok.pad_token_id,
@@ -755,6 +756,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 **enc,
                 max_new_tokens=max_new_tokens,
                 do_sample=False,
+                top_p=None,  # Disable sampling params for greedy decoding
                 repetition_penalty=1.1,  # Prevent loops
                 no_repeat_ngram_size=3,  # Prevent repeating 3-grams
                 pad_token_id=tgt_tok.pad_token_id,
