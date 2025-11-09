@@ -65,12 +65,6 @@ from transformers import (
     get_scheduler
 )
 
-# Feature test: prefer built-in nn.RMSNorm if available (PyTorch 2.4+)
-try:
-    _HAS_TORCH_RMSNORM = hasattr(nn, "RMSNorm")
-except Exception:
-    _HAS_TORCH_RMSNORM = False
-
 # ---------------------------
 # Utilities
 # ---------------------------
@@ -301,35 +295,6 @@ class Sample:
 # Translator modules
 # ---------------------------
 
-class RMSNorm(nn.Module):
-    """
-    Local RMSNorm fallback (for PyTorch < 2.4).
-    Prefer nn.RMSNorm when available via _make_norm helper.
-    """
-    def __init__(self, dim: int, eps: float = 1e-6):
-        super().__init__()
-        self.scale = nn.Parameter(torch.ones(dim))
-        self.eps = eps
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        norm = x.pow(2).mean(dim=-1, keepdim=True).sqrt().clamp_min(self.eps)
-        return self.scale * x / norm
-
-def _make_norm(dim: int, use_rmsnorm: bool):
-    """
-    Create normalization layer with automatic fallback.
-    Prefers nn.RMSNorm (PyTorch 2.4+), falls back to local RMSNorm, then LayerNorm.
-    """
-    if use_rmsnorm and _HAS_TORCH_RMSNORM:
-        return nn.RMSNorm(dim, elementwise_affine=True)
-    if use_rmsnorm:
-        # Fallback to local RMSNorm
-        try:
-            return RMSNorm(dim)
-        except NameError:
-            return nn.LayerNorm(dim, elementwise_affine=True)
-    return nn.LayerNorm(dim, elementwise_affine=True)
-
 class GatedCrossAttentionBlock(nn.Module):
     """
     Bottlenecked cross-attention block with tanh gating (Flamingo-style).
@@ -346,9 +311,9 @@ class GatedCrossAttentionBlock(nn.Module):
 
         self.bottleneck_dim = bottleneck_dim
 
-        # Layer norms (RMSNorm by default, matching modern LLMs)
-        self.q_norm = _make_norm(bottleneck_dim, use_rmsnorm)
-        self.src_norm = _make_norm(src_dim, use_rmsnorm)
+        # Layer norms (RMSNorm, matching modern LLMs)
+        self.q_norm = nn.RMSNorm(bottleneck_dim, elementwise_affine=True)
+        self.src_norm = nn.RMSNorm(src_dim, elementwise_affine=True)
 
         # Self-attention on queries (in bottleneck space)
         self.self_attn = nn.MultiheadAttention(
@@ -394,7 +359,7 @@ class GatedCrossAttentionBlock(nn.Module):
                 nn.Linear(ffn_mult * bottleneck_dim, bottleneck_dim)
             )
             self._use_swiglu = False
-        self.ffn_norm = _make_norm(bottleneck_dim, use_rmsnorm)
+        self.ffn_norm = nn.RMSNorm(bottleneck_dim, elementwise_affine=True)
 
         # FFN gating (Flamingo-style)
         self.ffn_gate = nn.Parameter(torch.tensor([0.0]))
@@ -473,7 +438,7 @@ class BottleneckedGatedTranslator(nn.Module):
 
         # Final projection from bottleneck to target dimension
         self.output_proj = nn.Linear(bottleneck_dim, tgt_dim)
-        self.output_norm = _make_norm(bottleneck_dim, use_rmsnorm)
+        self.output_norm = nn.RMSNorm(bottleneck_dim, elementwise_affine=True)
 
     def forward(self, src_hiddens: torch.Tensor,
                 src_mask: torch.Tensor = None) -> torch.Tensor:
@@ -491,21 +456,6 @@ class BottleneckedGatedTranslator(nn.Module):
         # Project to target dimension
         q = self.output_norm(q)
         soft_tokens = self.output_proj(q)  # [B, K, tgt_dim]
-
-        # TODO: Precompute target_rms = get_target_embedding_rms(target_model) once
-        # and pass it explicitly for optimal cross-LLM scale matching
-        # Scale-match to target embedding distribution for cross-LLM compatibility
-        # Note: target_rms should be precomputed once and passed in or cached
-        # For now, we apply scale matching with default parameters
-        # Users should call get_target_embedding_rms(target_model) and pass it to apply_rms_matching
-        soft_tokens = apply_rms_matching(
-            soft_tokens,
-            target_rms=None,  # Will use current RMS if None; recommend setting explicitly
-            eps=1e-8,
-            detach_stats=True,
-            clamp=(0.25, 4.0),
-            blend=1.0
-        )
 
         return soft_tokens
 
@@ -1278,8 +1228,7 @@ def main():
                     test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                     device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
                     show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-                    eval_batch_size=args.eval_batch_size,
-                    dataset_name=args.dataset
+                    eval_batch_size=args.eval_batch_size
                 )
 
             # Only rank 0 logs and checks early stopping
