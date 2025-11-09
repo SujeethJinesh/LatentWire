@@ -119,35 +119,56 @@ def compute_rms(x: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
     """
     return x.pow(2).mean(dim=-1, keepdim=True).sqrt().clamp_min(eps)
 
-def apply_rms_matching(soft_tokens: torch.Tensor, target_rms: float) -> torch.Tensor:
+def apply_rms_matching(
+    soft_tokens: torch.Tensor,
+    target_rms: float,
+    eps: float = 1e-8,
+    detach_stats: bool = True,
+    clamp: tuple = (0.25, 4.0),
+    blend: float = 1.0,
+) -> torch.Tensor:
     """
-    Normalize soft tokens and rescale to match target embedding RMS statistics.
-    This prevents scale mismatch that causes logit collapse.
+    Scale-only normalization to match target model's embedding RMS statistics.
+    Preserves learned directions; fixes magnitude to prevent attention/logit dominance.
 
-    Two-step process:
-    1. LayerNorm: Centers distribution (zero mean, unit variance)
-    2. RMS Scaling: Matches magnitude to target model embeddings
-
-    Inspired by:
-    - Vision embedding magnitude imbalance in LLaVA (arXiv:2503.17349)
-    - Low-Norm Effect in soft prompts (Nemesis, ICLR 2024)
+    Unlike LayerNorm, this preserves the mean and directional information the
+    translator learned, only adjusting the magnitude to match the target model's
+    embedding space. This is consistent with:
+    - LLaVA's vision-text magnitude imbalance (arXiv:2503.17349)
+    - Nemesis Low-Norm Effect for soft prompts (ICLR 2024)
+    - RMSNorm used in Llama-family models
 
     Args:
         soft_tokens: [B, K, d_model] translator output
         target_rms: scalar RMS of target model's embedding table
+        eps: small constant for numerical stability
+        detach_stats: if True, detach current RMS to prevent gaming the rescaler
+        clamp: (min, max) bounds for scale factor to prevent extreme rescaling
+        blend: interpolation factor (0=no scaling, 1=full match to target_rms)
 
     Returns:
-        Normalized and rescaled soft tokens [B, K, d_model]
+        Rescaled soft tokens [B, K, d_model] with magnitude matching target embeddings
     """
-    # Step 1: Center and normalize distribution
-    soft_tokens = F.layer_norm(soft_tokens, (soft_tokens.size(-1),))
-    
-    # Step 2: RMS matching to target embedding scale
-    # Prevents attention dominance by magnitude rather than semantics
-    current_rms = compute_rms(soft_tokens)
-    soft_tokens = soft_tokens / current_rms * target_rms
-    
-    return soft_tokens
+    # Compute current per-token RMS: [B, K, 1]
+    current_rms = soft_tokens.pow(2).mean(dim=-1, keepdim=True).sqrt().clamp_min(eps)
+
+    # Detach to prevent translator from gaming the rescaler by learning extreme norms
+    if detach_stats:
+        current_rms = current_rms.detach()
+
+    # Compute scale factor to match target RMS
+    scale = target_rms / current_rms
+
+    # Optional: blend toward target (useful for gradual phase-in during training)
+    if blend != 1.0:
+        scale = scale.pow(blend)
+
+    # Clamp scale to prevent pathological rescaling
+    if clamp is not None:
+        scale = scale.clamp(min=clamp[0], max=clamp[1])
+
+    # Apply scale (preserves direction, fixes magnitude)
+    return soft_tokens * scale
 
 @dataclass
 class Sample:
