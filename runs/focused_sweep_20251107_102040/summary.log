@@ -1,8 +1,8 @@
 === FOCUSED HYPERPARAMETER SWEEP ===
-Output: runs/focused_sweep_20251106_233735
+Output: runs/focused_sweep_20251107_102040
 
 ========================================
 Experiment: 1_conservative
 Description: Lower LR, longer warmup, proven architecture
-Start: Thu Nov  6 11:37:35 PM PST 2025
+Start: Fri Nov  7 10:20:40 PST 2025
 ----------------------------------------
