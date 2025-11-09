@@ -36,7 +36,12 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, get_linear_schedule_with_warmup
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    set_seed,
+    get_linear_schedule_with_warmup  # NOTE: Consider get_scheduler(scheduler_type="linear") for future transformers versions
+)
 
 # ---------------------------
 # Utilities
@@ -61,11 +66,14 @@ def setup_ddp():
         torch.cuda.set_device(local_rank())
 
 def cleanup_ddp():
+    """Clean up distributed training process group."""
     if dist.is_initialized():
         try:
-            dist.monitored_barrier(timeout=timedelta(seconds=30))
+            # Simple barrier without timeout - let PyTorch handle it
+            # monitored_barrier is mainly for debugging, not cleanup
+            dist.barrier()  # Standard barrier is sufficient
         except Exception as e:
-            log(f"Warning: Barrier timeout during cleanup: {e}")
+            log(f"Warning: Barrier failed during cleanup: {e}")
         finally:
             dist.destroy_process_group()
 
@@ -119,10 +127,11 @@ def apply_rms_matching(soft_tokens: torch.Tensor, target_rms: float) -> torch.Te
     Two-step process:
     1. LayerNorm: Centers distribution (zero mean, unit variance)
     2. RMS Scaling: Matches magnitude to target model embeddings
-    
-    Reference: Based on techniques from LLaVA (arXiv:2503.17349) and 
-    Nemesis soft prompt normalization (ICCV 2023)
-    
+
+    Inspired by:
+    - Vision embedding magnitude imbalance in LLaVA (arXiv:2503.17349)
+    - Low-Norm Effect in soft prompts (Nemesis, ICLR 2024)
+
     Args:
         soft_tokens: [B, K, d_model] translator output
         target_rms: scalar RMS of target model's embedding table
