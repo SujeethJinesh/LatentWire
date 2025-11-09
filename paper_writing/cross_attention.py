@@ -494,7 +494,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 repetition_penalty=1.1,  # Prevent "181818..." loops
                 no_repeat_ngram_size=3,  # Prevent repeating 3-grams
                 pad_token_id=tgt_tok.pad_token_id,
-                eos_token_id=tgt_tok.eos_token_id
+                eos_token_id=tgt_tok.eos_token_id,
+                cache_implementation="static",  # Use static KV cache for speed
+                use_cache=True
             )
             bridged_texts_batch = tgt_tok.batch_decode(gen, skip_special_tokens=True)
             all_bridged_texts.extend(bridged_texts_batch)
@@ -510,7 +512,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 repetition_penalty=1.1,  # Prevent loops
                 no_repeat_ngram_size=3,  # Prevent repeating 3-grams
                 pad_token_id=tgt_tok.pad_token_id,
-                eos_token_id=tgt_tok.eos_token_id
+                eos_token_id=tgt_tok.eos_token_id,
+                cache_implementation="static",  # Use static KV cache for speed
+                use_cache=True
             )
             base_texts_batch = tgt_tok.batch_decode(base_out, skip_special_tokens=True)
             all_base_texts.extend(base_texts_batch)
@@ -640,6 +644,10 @@ def main():
                         help="Dataset to use for training")
     parser.add_argument("--info_nce_weight", type=float, default=0.05,
                         help="Weight for InfoNCE anti-collapse loss")
+    parser.add_argument("--eval_batch_size", type=int, default=50,
+                        help="Batch size for evaluation (default 50, try 64-100 on H100)")
+    parser.add_argument("--no_compile", action="store_true",
+                        help="Disable torch.compile (use if PyTorch < 2.0 or for debugging)")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -684,6 +692,11 @@ def main():
         args.target_model, torch_dtype=dtype, device_map=None
     ).eval().to(device)
     for p in tgt_model.parameters(): p.requires_grad = False
+
+    # Compile target model for faster inference (PyTorch 2.0+)
+    if torch.__version__ >= "2.0" and not args.no_compile:
+        log("Compiling target model with torch.compile for faster inference...")
+        tgt_model = torch.compile(tgt_model, mode="reduce-overhead")
 
     # Infer dims
     with torch.no_grad():
@@ -909,7 +922,8 @@ def main():
                     acc_base, acc_bridged = evaluate_numeric_accuracy(
                         test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                         device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
-                        show_samples=(args.show_eval_samples > 0), target_rms=target_rms
+                        show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
+                        eval_batch_size=args.eval_batch_size
                     )
                 log(f"[Eval] Step {step} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
@@ -947,7 +961,8 @@ def main():
             acc_base, acc_bridged = evaluate_numeric_accuracy(
                 test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                 device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
-                show_samples=(args.show_eval_samples > 0), target_rms=target_rms
+                show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
+                eval_batch_size=args.eval_batch_size
             )
         log(f"[Final Eval] Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 

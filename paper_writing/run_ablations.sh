@@ -58,6 +58,7 @@ run_experiment() {
             --per_device_batch "$PER_DEVICE_BATCH" \
             --eval_every "$EVAL_EVERY" \
             --eval_samples "$EVAL_SAMPLES" \
+            --eval_batch_size 80 \
             --max_new_tokens "$MAX_NEW_TOKENS" \
             --bf16 \
             --save_path "$EXP_DIR/checkpoint.pt" \
