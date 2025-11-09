@@ -455,22 +455,109 @@ def build_batch_inputs(samples: List[Sample],
 # Training / Evaluation loops
 # ---------------------------
 
+def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
+    """
+    Gather text generations from all ranks to rank 0.
+    Returns full list on rank 0, empty list on other ranks.
+    """
+    if not dist.is_initialized():
+        return local_texts
+
+    world_size = dist.get_world_size()
+    rank = dist.get_rank()
+
+    # Convert to tensors for gathering
+    # Pad all strings to same length for gathering
+    max_len = max(len(t) for t in local_texts) if local_texts else 1
+
+    # Gather max_len from all ranks
+    max_len_tensor = torch.tensor([max_len], dtype=torch.long, device='cuda')
+    max_len_list = [torch.zeros(1, dtype=torch.long, device='cuda') for _ in range(world_size)]
+    dist.all_gather(max_len_list, max_len_tensor)
+    global_max_len = max(t.item() for t in max_len_list)
+
+    # Pad and encode strings
+    encoded = []
+    for text in local_texts:
+        padded = text.ljust(global_max_len)
+        encoded.append(list(padded.encode('utf-8')))
+
+    if not encoded:
+        encoded = [[0] * global_max_len]  # Empty placeholder
+
+    # Convert to tensor
+    local_tensor = torch.tensor(encoded, dtype=torch.uint8, device='cuda')
+
+    # Gather batch sizes from all ranks
+    batch_size_tensor = torch.tensor([len(local_texts)], dtype=torch.long, device='cuda')
+    batch_sizes = [torch.zeros(1, dtype=torch.long, device='cuda') for _ in range(world_size)]
+    dist.all_gather(batch_sizes, batch_size_tensor)
+    batch_sizes = [bs.item() for bs in batch_sizes]
+
+    # Gather all texts to rank 0
+    if rank == 0:
+        gathered = [torch.zeros((bs, global_max_len), dtype=torch.uint8, device='cuda')
+                   for bs in batch_sizes]
+        gathered[0] = local_tensor
+
+        for src_rank in range(1, world_size):
+            if batch_sizes[src_rank] > 0:
+                dist.recv(gathered[src_rank], src=src_rank)
+
+        # Decode back to strings
+        all_texts = []
+        for rank_texts in gathered:
+            for encoded_text in rank_texts:
+                decoded = bytes(encoded_text.cpu().numpy()).decode('utf-8').rstrip()
+                all_texts.append(decoded)
+        return all_texts
+    else:
+        # Send to rank 0
+        if len(local_texts) > 0:
+            dist.send(local_tensor, dst=0)
+        return []
+
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
                               device, dtype, num_samples: int = 200, max_new_tokens: int = 256,
                               show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50):
     """
-    Compare (i) Target alone vs (ii) Source→Translator→Target.
-    Evaluates in batches to avoid OOM with large num_samples.
+    Distributed evaluation: each rank processes num_samples // world_size samples.
+    Results are gathered on rank 0 for final metric computation.
+    Evaluates in batches to avoid OOM.
     """
     tgt_model.eval()
     src_model.eval()
     translator.eval()
 
-    # Collect all samples first
+    # Determine rank and world_size for distributed evaluation
+    if dist.is_initialized():
+        rank = dist.get_rank()
+        world_size = dist.get_world_size()
+    else:
+        rank = 0
+        world_size = 1
+
+    # Shard samples across ranks
+    samples_per_rank = num_samples // world_size
+    start_idx = rank * samples_per_rank
+    end_idx = start_idx + samples_per_rank
+
+    # Last rank takes any remainder
+    if rank == world_size - 1:
+        end_idx = num_samples
+
+    local_num_samples = end_idx - start_idx
+
+    # Collect LOCAL samples only (this rank's portion)
     all_samples = []
     taken = 0
+    skip = 0
     for ex in dataset:
-        if taken >= num_samples: break
+        if skip < start_idx:
+            skip += 1
+            continue
+        if taken >= local_num_samples:
+            break
         all_samples.extend(build_samples({"question":[ex["question"]], "answer":[ex["answer"]]},
                                          src_tok, tgt_tok, device, tgt_model))
         taken += 1
@@ -519,8 +606,17 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             base_texts_batch = tgt_tok.batch_decode(base_out, skip_special_tokens=True)
             all_base_texts.extend(base_texts_batch)
 
-    # Now use accumulated results
-    samples = all_samples
+    # Gather all generations from all ranks to rank 0
+    all_bridged_texts = gather_texts_from_all_ranks(all_bridged_texts)
+    all_base_texts = gather_texts_from_all_ranks(all_base_texts)
+    all_answers = gather_texts_from_all_ranks([s.tgt_answer for s in all_samples])
+
+    # Only rank 0 computes metrics
+    if rank != 0:
+        return 0.0, 0.0  # Other ranks return dummy values
+
+    # Reconstruct samples on rank 0 (for ground truth)
+    samples = [Sample(src_prompt="", tgt_prompt="", tgt_answer=ans) for ans in all_answers]
     bridged_texts = all_bridged_texts
     base_texts = all_base_texts
 
@@ -790,20 +886,27 @@ def main():
     patience_counter = 0
     best_checkpoint = None
 
-    # Initial evaluation at step 0 (before training)
+    # Initial evaluation at step 0 (before training) - ALL ranks participate
     if is_main():
         log("\n" + "="*60)
         log("INITIAL EVALUATION (Step 0 - Before Training)")
         log("="*60)
-        with torch.no_grad():
-            acc_base, acc_bridged = evaluate_numeric_accuracy(
-                test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-                device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
-                show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-                eval_batch_size=args.eval_batch_size
-            )
+
+    with torch.no_grad():
+        acc_base, acc_bridged = evaluate_numeric_accuracy(
+            test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
+            device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+            show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
+            eval_batch_size=args.eval_batch_size
+        )
+
+    if is_main():
         log(f"[Eval] Step 0 | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
         log("="*60 + "\n")
+
+    # Synchronize all ranks after evaluation
+    if dist.is_initialized():
+        dist.barrier()
 
     while step < args.train_steps:
         # sample a batch
@@ -929,17 +1032,19 @@ def main():
             log(f"Step {step}/{args.train_steps} | Loss (avg over last 20): {running/20:.4f}")
             running = 0.0
 
-        # Periodic eval
+        # Periodic eval - ALL ranks participate
         if args.eval_every > 0 and step % args.eval_every == 0 and step != last_eval:
             last_eval = step
+            with torch.no_grad():
+                acc_base, acc_bridged = evaluate_numeric_accuracy(
+                    test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
+                    device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+                    show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
+                    eval_batch_size=args.eval_batch_size
+                )
+
+            # Only rank 0 logs and checks early stopping
             if is_main():
-                with torch.no_grad():
-                    acc_base, acc_bridged = evaluate_numeric_accuracy(
-                        test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-                        device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
-                        show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-                        eval_batch_size=args.eval_batch_size
-                    )
                 log(f"[Eval] Step {step} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
                 # Early stopping check
@@ -958,6 +1063,10 @@ def main():
                         log(f"[Early Stop] Stopping early at step {step}. Best bridged acc: {best_bridged_acc:.3f}")
                         break
 
+            # Synchronize all ranks after evaluation
+            if dist.is_initialized():
+                dist.barrier()
+
     # Final save (translator weights)
     if is_main():
         # If early stopping saved a best checkpoint, use that
@@ -971,14 +1080,16 @@ def main():
             torch.save(state, args.save_path)
             log(f"Saved translator to {args.save_path}")
 
-        # Final eval
-        with torch.no_grad():
-            acc_base, acc_bridged = evaluate_numeric_accuracy(
-                test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-                device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
-                show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-                eval_batch_size=args.eval_batch_size
-            )
+    # Final eval - ALL ranks participate
+    with torch.no_grad():
+        acc_base, acc_bridged = evaluate_numeric_accuracy(
+            test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
+            device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+            show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
+            eval_batch_size=args.eval_batch_size
+        )
+
+    if is_main():
         log(f"[Final Eval] Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
     cleanup_ddp()
