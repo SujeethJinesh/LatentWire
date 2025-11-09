@@ -358,14 +358,21 @@ def build_batch_inputs(samples: List[Sample],
                        tgt_model, tgt_tok,
                        translator,
                        device, dtype,
-                       target_rms: float = None):
+                       target_rms: float = None,
+                       mode: str = 'train'):
     """
     For each sample:
       - Encode source prompt with A; get last-layer hidden states (no grad)
       - Translator -> K soft tokens in B's space
       - Apply RMS matching to prevent scale mismatch
-      - Tokenize tgt_full with B; embed its input ids
+      - Tokenize target text with B; embed its input ids
       - Concatenate soft tokens + tgt embeddings; build attention mask and labels
+
+    Args:
+        mode: 'train' or 'eval'
+            - 'train': Uses answer text only for teacher forcing (model must use soft tokens for question)
+            - 'eval': Uses start token only for generation (model generates full answer)
+
     Returns: dict ready for target forward
     """
     B = len(samples)
@@ -388,19 +395,21 @@ def build_batch_inputs(samples: List[Sample],
     if target_rms is not None:
         soft_tokens = apply_rms_matching(soft_tokens, target_rms)
 
-    # Target tokenization with offset mapping for correct boundary detection
-    # CRITICAL: Use offset mapping to avoid context-dependent tokenization mismatches
-    # Tokenizing prompts separately would give different token boundaries due to BPE/WordPiece
-    tgt_full_texts = [s.tgt_prompt + " " + s.tgt_answer for s in samples]
+    # Target tokenization
+    # Training: answer only (model must use soft tokens to understand question)
+    # Eval: start token only (model generates full answer)
+    if mode == 'train':
+        tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
+    else:
+        tgt_texts = [" " for _ in samples]  # Start token for generation
+
     tgt_batch = tgt_tok(
-        tgt_full_texts,
+        tgt_texts,
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=2048,
-        return_offsets_mapping=True  # Get character position mappings
+        max_length=2048
     )
-    offset_mapping = tgt_batch.pop("offset_mapping")  # Remove before passing to model
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
 
     # Target input embeddings
@@ -420,29 +429,15 @@ def build_batch_inputs(samples: List[Sample],
         tgt_batch["attention_mask"]  # Text mask (0 for padding)
     ], dim=1)
 
-    # Labels — use offset mapping to find exact prompt/answer boundary
-    # This prevents tokenization mismatches from context-dependent BPE/WordPiece
+    # Labels
     labels = tgt_batch["input_ids"].clone()
-
-    for i in range(B):
-        # Find character length of prompt (ground truth boundary)
-        prompt_text = samples[i].tgt_prompt + " "  # Include space before answer
-        prompt_char_len = len(prompt_text)
-
-        # Find first token that starts after prompt ends using offset mapping
-        offsets = offset_mapping[i]
-        # Default to masking all tokens if no answer found (e.g., truncation/empty answer)
-        prompt_end_token = len(offsets)
-        for token_idx, (char_start, char_end) in enumerate(offsets):
-            if char_start >= prompt_char_len:
-                prompt_end_token = token_idx
-                break
-
-        # Mask all prompt tokens with -100
-        labels[i, :prompt_end_token] = -100
-
-        # Also mask padding tokens
-        labels[i, tgt_batch["attention_mask"][i] == 0] = -100
+    if mode == 'train':
+        # Mask padding tokens only (answer is already isolated, no prompt to mask)
+        for i in range(B):
+            labels[i, tgt_batch["attention_mask"][i] == 0] = -100
+    else:
+        # Eval mode: dummy labels (not used for generation)
+        labels = torch.full((B, 1), -100, dtype=labels.dtype, device=device)
 
     # Prepend -100 for K soft tokens (no loss on them)
     labels = torch.cat([
@@ -490,7 +485,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
         # Build bridged inputs (uses inputs_embeds)
         with torch.no_grad():
-            batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms)
+            batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval')
             gen = tgt_model.generate(
                 inputs_embeds=batch["inputs_embeds"],
                 attention_mask=batch["attention_mask"],
@@ -791,7 +786,7 @@ def main():
 
         # Build bridged inputs (with soft tokens)
         data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
-                                  translator, device, dtype, target_rms=target_rms)
+                                  translator, device, dtype, target_rms=target_rms, mode='train')
 
         # Diagnostic: verify label alignment (only first step)
         if step == 0 and is_main():
