@@ -1,5 +1,5 @@
 === ABLATION EXPERIMENTS ===
-Output directory: paper_writing/runs/ablations_20251108_182257
+Output directory: paper_writing/runs/ablations_20251108_182515
 
 ╔════════════════════════════════════════╗
 ║  ABLATION 1: STABILITY FIXES          ║
@@ -8,9 +8,9 @@ Output directory: paper_writing/runs/ablations_20251108_182257
 ==========================================
 Experiment: 1a_stable_64tok
 Description: 64 tokens WITH InfoNCE + early stopping + gen hygiene
-Start: Sat Nov  8 18:22:57 PST 2025
+Start: Sat Nov  8 18:25:15 PST 2025
 ------------------------------------------
-End: Sat Nov  8 18:23:00 PST 2025
+End: Sat Nov  8 18:25:28 PST 2025
 Results:
 Peak accuracy:
 
@@ -25,18 +25,18 @@ NOTE: Baseline (1b_baseline_64tok) reuses successful_experiments/cross_model/85/
 ==========================================
 Experiment: 2a_stable_32tok
 Description: 32 tokens (4.7× compression) WITH stability fixes
-Start: Sat Nov  8 18:23:00 PST 2025
+Start: Sat Nov  8 18:25:28 PST 2025
 ------------------------------------------
-End: Sat Nov  8 18:23:02 PST 2025
+End: Sat Nov  8 18:25:40 PST 2025
 Results:
 Peak accuracy:
 
 ==========================================
 Experiment: 2b_stable_48tok
 Description: 48 tokens (3.1× compression) WITH stability fixes
-Start: Sat Nov  8 18:23:02 PST 2025
+Start: Sat Nov  8 18:25:40 PST 2025
 ------------------------------------------
-End: Sat Nov  8 18:23:03 PST 2025
+End: Sat Nov  8 18:25:51 PST 2025
 Results:
 Peak accuracy:
 
@@ -50,15 +50,15 @@ NOTE: 64 tokens result is same as 1a_stable_64tok (reused)
 ==========================================
 Experiment: 3a_hotpotqa_64tok
 Description: HotpotQA dataset, 64 tokens WITH stability fixes
-Start: Sat Nov  8 18:23:03 PST 2025
+Start: Sat Nov  8 18:25:51 PST 2025
 ------------------------------------------
-End: Sat Nov  8 18:23:05 PST 2025
+End: Sat Nov  8 18:26:03 PST 2025
 Results:
 Peak accuracy:
 
 ==========================================
 ALL ABLATIONS COMPLETE
-End time: Sat Nov  8 18:23:05 PST 2025
+End time: Sat Nov  8 18:26:03 PST 2025
 ==========================================
 
 RESULTS COMPARISON:
@@ -66,9 +66,9 @@ RESULTS COMPARISON:
 Experiment         Tokens  Dataset  Peak   Final  Degradation
 1b_baseline_64tok  64      GSM8K    81.5%  36.0%  45.5%
 
-All logs saved to: paper_writing/runs/ablations_20251108_182257
+All logs saved to: paper_writing/runs/ablations_20251108_182515
 
 ==========================================
-Analysis script created: paper_writing/runs/ablations_20251108_182257/analyze_ablations.py
-Run 'python paper_writing/runs/ablations_20251108_182257/analyze_ablations.py' to analyze results
+Analysis script created: paper_writing/runs/ablations_20251108_182515/analyze_ablations.py
+Run 'python paper_writing/runs/ablations_20251108_182515/analyze_ablations.py' to analyze results
 ==========================================
