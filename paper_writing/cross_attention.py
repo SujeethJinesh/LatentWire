@@ -195,6 +195,8 @@ class GatedCrossAttentionBlock(nn.Module):
     """
     def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4, dropout: float = 0.1):
         super().__init__()
+        assert bottleneck_dim % n_heads == 0, "bottleneck_dim must be divisible by n_heads"
+
         self.bottleneck_dim = bottleneck_dim
 
         # Layer norms
@@ -208,16 +210,19 @@ class GatedCrossAttentionBlock(nn.Module):
             batch_first=True
         )
 
-        # Cross-attention projections
-        self.cross_q_proj = nn.Linear(bottleneck_dim, bottleneck_dim)
-        self.cross_k_proj = nn.Linear(src_dim, bottleneck_dim)
-        self.cross_v_proj = nn.Linear(src_dim, bottleneck_dim)
-        self.cross_out = nn.Linear(bottleneck_dim, bottleneck_dim)
+        # Cross-attention using MultiheadAttention (Flamingo-style)
+        self.cross_attn = nn.MultiheadAttention(
+            embed_dim=bottleneck_dim,
+            num_heads=n_heads,
+            kdim=src_dim,
+            vdim=src_dim,
+            batch_first=True,
+            dropout=dropout
+        )
 
         # Tanh gating on cross-attention (Flamingo-style)
-        # Initialize with negative bias so gate starts slightly open after tanh
-        # tanh(-2.0) ≈ -0.96, meaning gate starts almost closed but learns to open
-        self.cross_gate = nn.Parameter(torch.tensor([-2.0]))
+        # Initialize at 0.0 so tanh(0)=0 (closed). Matches Flamingo: model behaves like frozen LM at init, learns to open gradually.
+        self.cross_gate = nn.Parameter(torch.tensor([0.0]))
 
         # Dropout for regularization (prevents over-reliance on soft tokens)
         self.dropout = nn.Dropout(dropout)
@@ -231,6 +236,9 @@ class GatedCrossAttentionBlock(nn.Module):
         )
         self.ffn_norm = nn.LayerNorm(bottleneck_dim)
 
+        # FFN gating (Flamingo-style)
+        self.ffn_gate = nn.Parameter(torch.tensor([0.0]))
+
     def forward(self, q_tokens: torch.Tensor, src_seq: torch.Tensor,
                 src_mask: torch.Tensor = None) -> torch.Tensor:
         # q_tokens: [B, K, bottleneck_dim], src_seq: [B, T, src_dim]
@@ -240,29 +248,22 @@ class GatedCrossAttentionBlock(nn.Module):
         sa_out, _ = self.self_attn(q_norm, q_norm, q_norm, need_weights=False)
         q_tokens = q_tokens + sa_out
 
-        # Cross-attention with gating
+        # Cross-attention with gating (Flamingo-style)
         qn = self.q_norm(q_tokens)
         srcn = self.src_norm(src_seq)
-        Q = self.cross_q_proj(qn)
-        K = self.cross_k_proj(srcn)
-        V = self.cross_v_proj(srcn)
 
-        # Compute attention
-        attn_logits = torch.matmul(Q, K.transpose(1, 2)) / math.sqrt(Q.size(-1))
-        if src_mask is not None:
-            mask_expanded = src_mask[:, None, :].to(dtype=attn_logits.dtype)
-            attn_logits = attn_logits.masked_fill(mask_expanded == 0, -1e4)
-        attn_weights = torch.softmax(attn_logits, dim=-1)
-        cross = torch.matmul(attn_weights, V)
-        cross = self.cross_out(cross)
+        # Convert attention mask to key_padding_mask format (True = ignore)
+        kpm = (src_mask == 0) if src_mask is not None else None
+        cross, _ = self.cross_attn(qn, srcn, srcn, key_padding_mask=kpm, need_weights=False)
 
         # Apply tanh gating (starts at 0, learns to open) with dropout for regularization
         gate = torch.tanh(self.cross_gate)
         q_tokens = q_tokens + gate * self.dropout(cross)
 
-        # FFN
+        # FFN with gating (Flamingo-style)
         ff = self.ffn(self.ffn_norm(q_tokens))
-        q_tokens = q_tokens + ff
+        fgate = torch.tanh(self.ffn_gate)
+        q_tokens = q_tokens + fgate * ff
 
         return q_tokens
 
@@ -746,8 +747,8 @@ def main():
     for name, param in translator.named_parameters():
         if not param.requires_grad:
             continue
-        # Gate parameters: higher LR, no weight decay
-        if 'cross_gate' in name:
+        # Gate parameters: higher LR, no weight decay (cross_gate and ffn_gate)
+        if 'cross_gate' in name or 'ffn_gate' in name:
             gate_params.append(param)
         # Don't apply weight decay to bias terms and layer norms
         elif 'bias' in name or 'norm' in name:
