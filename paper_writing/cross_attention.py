@@ -65,6 +65,12 @@ from transformers import (
     get_scheduler
 )
 
+# Feature test: prefer built-in nn.RMSNorm if available (PyTorch 2.4+)
+try:
+    _RMSNORM_AVAILABLE = hasattr(nn, "RMSNorm")
+except Exception:
+    _RMSNORM_AVAILABLE = False
+
 # ---------------------------
 # Utilities
 # ---------------------------
@@ -336,15 +342,17 @@ class GatedCrossAttentionBlock(nn.Module):
     - Self-attention gating prevents noise from randomly-initialized queries
     - Cross-attention gating allows gradual opening (starts at 0)
     """
-    def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4, dropout: float = 0.1):
+    def __init__(self, bottleneck_dim: int, src_dim: int, n_heads: int, ffn_mult: int = 4, dropout: float = 0.1,
+                 use_rmsnorm: bool = True, ffn_act: str = "swiglu"):
         super().__init__()
         assert bottleneck_dim % n_heads == 0, "bottleneck_dim must be divisible by n_heads"
 
         self.bottleneck_dim = bottleneck_dim
 
-        # Layer norms
-        self.q_norm = nn.LayerNorm(bottleneck_dim, elementwise_affine=True)
-        self.src_norm = nn.LayerNorm(src_dim, elementwise_affine=True)
+        # Layer norms (RMSNorm by default, matching modern LLMs)
+        Norm = nn.RMSNorm if (use_rmsnorm and _RMSNORM_AVAILABLE) else nn.LayerNorm
+        self.q_norm = Norm(bottleneck_dim, elementwise_affine=True)
+        self.src_norm = Norm(src_dim, elementwise_affine=True)
 
         # Self-attention on queries (in bottleneck space)
         self.self_attn = nn.MultiheadAttention(
@@ -374,14 +382,23 @@ class GatedCrossAttentionBlock(nn.Module):
         # Dropout for regularization (prevents over-reliance on soft tokens)
         self.dropout = nn.Dropout(dropout)
 
-        # FFN in bottleneck space
-        self.ffn = nn.Sequential(
-            nn.Linear(bottleneck_dim, ffn_mult * bottleneck_dim),
-            nn.GELU(),
-            nn.Dropout(dropout),  # Dropout in FFN as well
-            nn.Linear(ffn_mult * bottleneck_dim, bottleneck_dim)
-        )
-        self.ffn_norm = nn.LayerNorm(bottleneck_dim)
+        # FFN in bottleneck space (SwiGLU by default, matching modern LLMs)
+        inner = int((ffn_mult * bottleneck_dim) * 2 / 3)  # param-parity for SwiGLU vs 4*d GELU
+        if ffn_act.lower() == "swiglu":
+            self.up_value = nn.Linear(bottleneck_dim, inner, bias=True)
+            self.up_gate = nn.Linear(bottleneck_dim, inner, bias=True)
+            self.down = nn.Linear(inner, bottleneck_dim, bias=True)
+            self.ffn_dropout = nn.Dropout(dropout)
+            self._use_swiglu = True
+        else:
+            self.ffn = nn.Sequential(
+                nn.Linear(bottleneck_dim, ffn_mult * bottleneck_dim),
+                nn.GELU(),
+                nn.Dropout(dropout),  # Dropout in FFN as well
+                nn.Linear(ffn_mult * bottleneck_dim, bottleneck_dim)
+            )
+            self._use_swiglu = False
+        self.ffn_norm = Norm(bottleneck_dim, elementwise_affine=True)
 
         # FFN gating (Flamingo-style)
         self.ffn_gate = nn.Parameter(torch.tensor([0.0]))
@@ -409,7 +426,14 @@ class GatedCrossAttentionBlock(nn.Module):
         q_tokens = q_tokens + gate * self.dropout(cross)
 
         # FFN with gating (Flamingo-style)
-        ff = self.ffn(self.ffn_norm(q_tokens))
+        ff_input = self.ffn_norm(q_tokens)
+        if self._use_swiglu:
+            gate = F.silu(self.up_gate(ff_input))
+            value = self.up_value(ff_input)
+            ff = self.down(gate * value)
+            ff = self.ffn_dropout(ff)
+        else:
+            ff = self.ffn(ff_input)
         fgate = torch.tanh(self.ffn_gate)
         q_tokens = q_tokens + fgate * ff
 
@@ -427,7 +451,8 @@ class BottleneckedGatedTranslator(nn.Module):
     - RMS scale matching for cross-LLM compatibility
     """
     def __init__(self, src_dim: int, tgt_dim: int, bottleneck_dim: int = 1024,
-                 soft_tokens: int = 48, depth: int = 6, n_heads: int = 16, ffn_mult: int = 4):
+                 soft_tokens: int = 48, depth: int = 6, n_heads: int = 16, ffn_mult: int = 4,
+                 use_rmsnorm: bool = True, ffn_act: str = "swiglu"):
         super().__init__()
         self.K = soft_tokens
         self.bottleneck_dim = bottleneck_dim
@@ -443,14 +468,17 @@ class BottleneckedGatedTranslator(nn.Module):
                 bottleneck_dim=bottleneck_dim,
                 src_dim=src_dim,
                 n_heads=n_heads,
-                ffn_mult=ffn_mult
+                ffn_mult=ffn_mult,
+                use_rmsnorm=use_rmsnorm,
+                ffn_act=ffn_act,
             )
             for _ in range(depth)
         ])
 
         # Final projection from bottleneck to target dimension
         self.output_proj = nn.Linear(bottleneck_dim, tgt_dim)
-        self.output_norm = nn.LayerNorm(bottleneck_dim)
+        Norm = nn.RMSNorm if (use_rmsnorm and _RMSNORM_AVAILABLE) else nn.LayerNorm
+        self.output_norm = Norm(bottleneck_dim, elementwise_affine=True)
 
     def forward(self, src_hiddens: torch.Tensor,
                 src_mask: torch.Tensor = None) -> torch.Tensor:
