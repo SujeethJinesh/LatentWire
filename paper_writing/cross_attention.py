@@ -60,8 +60,12 @@ def setup_ddp():
 
 def cleanup_ddp():
     if dist.is_initialized():
-        dist.barrier()
-        dist.destroy_process_group()
+        try:
+            dist.monitored_barrier(timeout=timedelta(seconds=30))
+        except Exception as e:
+            log(f"Warning: Barrier timeout during cleanup: {e}")
+        finally:
+            dist.destroy_process_group()
 
 def to_dtype_device(x, dtype, device):
     return x.to(device=device, dtype=dtype)
@@ -69,20 +73,33 @@ def to_dtype_device(x, dtype, device):
 def extract_final_answer(text: str) -> str:
     """
     Extract final answer from GSM8K solution using official evaluation method.
+    
     Official pattern: '#### <number>' where number can include decimals and commas.
     Returns '[invalid]' if no #### marker found (NO fallback to last number).
-
-    Reference: github.com/openai/grade-school-math
+    
+    Official implementation:
+    https://github.com/openai/grade-school-math/blob/master/grade_school_math/dataset.py#L24-L35
+    
+    Paper: https://arxiv.org/abs/2110.14168
+    Repository: https://github.com/openai/grade-school-math
+    
+    Reference from official README:
+    "To extract the final numeric solution for a particular question, simply parse 
+    the completion to extract the numeric value immediately following the #### token."
+    Source: https://github.com/openai/grade-school-math/blob/master/README.md
     """
-    # Official regex: supports negative numbers, decimals, and commas
+    # Official regex from dataset.py: supports negative numbers, decimals, and commas
+    # ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
     m = re.search(r"#### (\-?[0-9\.\,]+)", text)
     if m:
         answer = m.group(1).strip()
         # Remove commas from numbers (official normalization)
+        # From official code: match_str = match_str.replace(",", "")
         answer = answer.replace(",", "")
         return answer
     else:
-        # Official behavior: return invalid marker (NO fallback)
+        # Official behavior: return '[invalid]' marker (NO fallback)
+        # From official code: INVALID_ANS = "[invalid]"
         return "[invalid]"
 
 def compute_rms(x: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
@@ -97,6 +114,13 @@ def apply_rms_matching(soft_tokens: torch.Tensor, target_rms: float) -> torch.Te
     Normalize soft tokens and rescale to match target embedding RMS statistics.
     This prevents scale mismatch that causes logit collapse.
 
+    Two-step process:
+    1. LayerNorm: Centers distribution (zero mean, unit variance)
+    2. RMS Scaling: Matches magnitude to target model embeddings
+    
+    Reference: Based on techniques from LLaVA (arXiv:2503.17349) and 
+    Nemesis soft prompt normalization (ICCV 2023)
+    
     Args:
         soft_tokens: [B, K, d_model] translator output
         target_rms: scalar RMS of target model's embedding table
@@ -104,12 +128,14 @@ def apply_rms_matching(soft_tokens: torch.Tensor, target_rms: float) -> torch.Te
     Returns:
         Normalized and rescaled soft tokens [B, K, d_model]
     """
-    # LayerNorm to center and normalize distribution
-    soft_tokens = torch.nn.functional.layer_norm(soft_tokens, (soft_tokens.size(-1),))
-
-    # RMS matching to ensure magnitude is consistent with target embeddings
-    soft_tokens = soft_tokens / compute_rms(soft_tokens) * target_rms
-
+    # Step 1: Center and normalize distribution
+    soft_tokens = F.layer_norm(soft_tokens, (soft_tokens.size(-1),))
+    
+    # Step 2: RMS matching to target embedding scale
+    # Prevents attention dominance by magnitude rather than semantics
+    current_rms = compute_rms(soft_tokens)
+    soft_tokens = soft_tokens / current_rms * target_rms
+    
     return soft_tokens
 
 @dataclass
