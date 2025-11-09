@@ -790,6 +790,21 @@ def main():
     patience_counter = 0
     best_checkpoint = None
 
+    # Initial evaluation at step 0 (before training)
+    if is_main():
+        log("\n" + "="*60)
+        log("INITIAL EVALUATION (Step 0 - Before Training)")
+        log("="*60)
+        with torch.no_grad():
+            acc_base, acc_bridged = evaluate_numeric_accuracy(
+                test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
+                device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+                show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
+                eval_batch_size=args.eval_batch_size
+            )
+        log(f"[Eval] Step 0 | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
+        log("="*60 + "\n")
+
     while step < args.train_steps:
         # sample a batch
         batch_idx = [rng.randrange(0, len(train_ds)) for _ in range(args.per_device_batch)]
