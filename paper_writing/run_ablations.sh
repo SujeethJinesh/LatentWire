@@ -162,33 +162,6 @@ echo "NOTE: 64 tokens result is same as 1a_stable_64tok (reused)" | tee -a "$SUM
 echo "" | tee -a "$SUMMARY_LOG"
 
 # ============================================
-# ABLATION 3: Dataset Generalization
-# Research Question: Does it generalize beyond math?
-# ============================================
-
-echo "╔════════════════════════════════════════╗" | tee -a "$SUMMARY_LOG"
-echo "║  ABLATION 3: DATASET GENERALIZATION   ║" | tee -a "$SUMMARY_LOG"
-echo "╚════════════════════════════════════════╝" | tee -a "$SUMMARY_LOG"
-echo "" | tee -a "$SUMMARY_LOG"
-
-# Config 3a: HotpotQA (multi-hop reasoning)
-run_experiment \
-    "3a_hotpotqa_64tok" \
-    "HotpotQA dataset, 64 tokens WITH stability fixes" \
-    --dataset hotpotqa \
-    --lr 1e-4 \
-    --bottleneck_dim 1024 \
-    --soft_tokens 64 \
-    --depth 8 \
-    --heads 16 \
-    --weight_decay 0.01 \
-    --train_steps 3000 \
-    --warmup_steps 750 \
-    --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
-    --seed 1234
-
-# ============================================
 # Summary and Analysis
 # ============================================
 
