@@ -1345,8 +1345,10 @@ def main():
     log(f"Translator parameters: {param_count / 1e6:.1f}M")
 
     # DDP only on translator (models are frozen)
+    # find_unused_parameters=True needed for DiT: training uses _forward_train_rf (no CFG),
+    # while eval uses _sample_rf (may use CFG/uncond params)
     if dist.is_initialized():
-        translator = DDP(translator, device_ids=[local_rank()], output_device=local_rank(), find_unused_parameters=False)
+        translator = DDP(translator, device_ids=[local_rank()], output_device=local_rank(), find_unused_parameters=True)
 
     # Data
     log(f"Loading {args.dataset.upper()}...")
