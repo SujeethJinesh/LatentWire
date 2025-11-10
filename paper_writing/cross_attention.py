@@ -655,7 +655,8 @@ def build_batch_inputs(samples: List[Sample],
     return {
         "inputs_embeds": inputs_embeds,
         "attention_mask": attn_mask,
-        "labels": labels
+        "labels": labels,
+        "K": K
     }
 
 # ---------------------------
@@ -1236,7 +1237,7 @@ def main():
                 baseline_logits = baseline_out.logits[:, :20, :]  # First 20 positions
 
             # Bridged logits (first 20 positions after soft tokens)
-            K = data["inputs_embeds"].size(1) - out.logits.size(1) if out.logits.size(1) < data["inputs_embeds"].size(1) else 0
+            K = data.get("K", 0)
             bridged_logits = out.logits[:, :20, :]  # First 20 generation positions
 
             # KL divergence: KL(bridged || baseline)
@@ -1262,8 +1263,8 @@ def main():
 
             # Get soft tokens from translator (already computed above in data)
             # Pool soft tokens (mean over K tokens)
-            K = data["inputs_embeds"].size(1) - out.logits.size(1) if out.logits.size(1) < data["inputs_embeds"].size(1) else 0
-            soft_pooled = data["inputs_embeds"][:, :K, :].mean(dim=1) if K > 0 else data["inputs_embeds"][:, :32, :].mean(dim=1)  # [B, d_model]
+            K = data.get("K", 0)
+            soft_pooled = data["inputs_embeds"][:, :K, :].mean(dim=1)  # [B, d_model]
 
             # Normalize for cosine similarity
             soft_norm = torch.nn.functional.normalize(soft_pooled, dim=-1)
