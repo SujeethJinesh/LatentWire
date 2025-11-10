@@ -110,7 +110,7 @@ run_experiment \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
     --train_steps 1000 \
-    --warmup_steps 750 \
+    --warmup_steps 100 \
     --info_nce_weight 0.05 \
     --early_stop_patience 2 \
     --seed 1234
@@ -133,7 +133,7 @@ run_experiment \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
     --train_steps 1000 \
-    --warmup_steps 750 \
+    --warmup_steps 100 \
     --info_nce_weight 0.05 \
     --early_stop_patience 2 \
     --seed 1234
@@ -156,7 +156,7 @@ run_experiment \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
     --train_steps 1000 \
-    --warmup_steps 750 \
+    --warmup_steps 100 \
     --info_nce_weight 0.05 \
     --early_stop_patience 2 \
     --seed 1234
@@ -181,7 +181,7 @@ run_experiment \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
     --train_steps 1000 \
-    --warmup_steps 750 \
+    --warmup_steps 100 \
     --info_nce_weight 0.05 \
     --early_stop_patience 2 \
     --seed 1234
@@ -206,7 +206,7 @@ run_experiment \
     --dit_loss_warmup 500 \
     --weight_decay 0.01 \
     --train_steps 1000 \
-    --warmup_steps 750 \
+    --warmup_steps 100 \
     --info_nce_weight 0.05 \
     --early_stop_patience 2 \
     --seed 1234
