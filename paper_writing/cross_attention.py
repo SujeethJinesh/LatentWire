@@ -607,7 +607,8 @@ def build_batch_inputs(samples: List[Sample],
     if mode == 'train':
         tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
     else:
-        tgt_texts = [" " for _ in samples]  # Start token for generation
+        starter = tgt_tok.bos_token or " "  # BOS token if available, else space
+        tgt_texts = [starter for _ in samples]  # Start token for generation
 
     tgt_batch = tgt_tok(
         tgt_texts,
@@ -650,6 +651,10 @@ def build_batch_inputs(samples: List[Sample],
         torch.full((B, K), -100, dtype=labels.dtype, device=device),
         labels
     ], dim=1)  # [B, K+T]
+
+    # Shape sanity checks
+    assert inputs_embeds.shape[:2] == attn_mask.shape, "mask length mismatch"
+    assert inputs_embeds.shape[:2] == labels.shape, "labels length mismatch"
 
     return {
         "inputs_embeds": inputs_embeds,
@@ -1017,7 +1022,7 @@ def main():
 
     log("Loading target model/tokenizer...")
     tgt_tok = AutoTokenizer.from_pretrained(args.target_model, use_fast=True)
-    if tgt_tok.pad_token is None:
+    if tgt_tok.pad_token_id is None and tgt_tok.eos_token_id is not None:
         tgt_tok.pad_token = tgt_tok.eos_token
     tgt_tok.padding_side = "left"  # Critical for decoder-only models
     tgt_tok.model_max_length = 2048
