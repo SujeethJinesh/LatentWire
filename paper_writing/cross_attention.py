@@ -961,7 +961,10 @@ def main():
     # With 4 processes each loading ~30GB models, we'd need 120GB+ CPU RAM
     # device_map loads directly to GPU, bypassing CPU bottleneck
     src_model = AutoModelForCausalLM.from_pretrained(
-        args.source_model, torch_dtype=dtype, device_map=str(device)
+        args.source_model,
+        torch_dtype=dtype,
+        device_map={"": local_rank()},
+        low_cpu_mem_usage=True,
     ).eval()
     for p in src_model.parameters(): p.requires_grad = False
 
@@ -983,7 +986,10 @@ def main():
 
     # Load target model directly to GPU (same reason as source model)
     tgt_model = AutoModelForCausalLM.from_pretrained(
-        args.target_model, torch_dtype=dtype, device_map=str(device)
+        args.target_model,
+        torch_dtype=dtype,
+        device_map={"": local_rank()},
+        low_cpu_mem_usage=True,
     ).eval()
     for p in tgt_model.parameters(): p.requires_grad = False
 
@@ -1013,7 +1019,7 @@ def main():
         per_token_rms = tgt_embed_table.pow(2).mean(dim=1).sqrt()
         target_rms = per_token_rms.median().item()  # Median more robust than mean
     log(f"Target embedding RMS (median): {target_rms:.4f}")
-    log(f"NOTE: RMS scale matching is now applied automatically in translator forward pass")
+    log(f"NOTE: RMS scale matching is applied during batch collation (before concat)")
 
     # Build translator (BottleneckedGatedTranslator with Flamingo-style gating)
     translator = BottleneckedGatedTranslator(
@@ -1063,8 +1069,8 @@ def main():
     for name, param in translator.named_parameters():
         if not param.requires_grad:
             continue
-        # Gate parameters: higher LR, no weight decay (cross_gate and ffn_gate)
-        if 'cross_gate' in name or 'ffn_gate' in name:
+        # Gate parameters: higher LR, no weight decay (cross_gate, ffn_gate, sa_gate)
+        if 'cross_gate' in name or 'ffn_gate' in name or 'sa_gate' in name:
             gate_params.append(param)
         # Don't apply weight decay to bias terms and layer norms
         elif 'bias' in name or 'norm' in name:
@@ -1107,7 +1113,7 @@ def main():
     with torch.no_grad():
         acc_base, acc_bridged = evaluate_numeric_accuracy(
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-            device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+            device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
             eval_batch_size=args.eval_batch_size
         )
