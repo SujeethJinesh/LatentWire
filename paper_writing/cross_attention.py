@@ -1005,6 +1005,11 @@ def main():
         else:
             log("torch.compile() not available (PyTorch < 2.0)")
 
+    # Set generation config once for consistency
+    gen_cfg = tgt_model.generation_config
+    gen_cfg.pad_token_id = tgt_tok.pad_token_id
+    gen_cfg.eos_token_id = tgt_tok.eos_token_id
+
     # Infer dims
     with torch.no_grad():
         d_src = src_model.config.hidden_size
@@ -1085,7 +1090,7 @@ def main():
     ]
 
     log(f"Optimizer groups: {len(decay_params)} decay, {len(no_decay_params)} no_decay, {len(gate_params)} gates (LR ×3)")
-    optim = torch.optim.AdamW(optim_groups, betas=(0.9, 0.98), eps=1e-8)
+    optim = torch.optim.AdamW(optim_groups, betas=(0.9, 0.98), eps=1e-8, fused=True)
     sched = get_scheduler(
         "linear",
         optimizer=optim,
@@ -1192,10 +1197,13 @@ def main():
 
             # KL divergence: KL(bridged || baseline)
             # Prevent bridged from diverging into degenerate modes
+            # Compute in float32 for numerical stability
             if bridged_logits.size(1) >= 20 and baseline_logits.size(1) >= 20:
+                bridged_logits_f = bridged_logits.float()
+                baseline_logits_f = baseline_logits.float()
                 kl_loss = torch.nn.functional.kl_div(
-                    torch.nn.functional.log_softmax(bridged_logits, dim=-1),
-                    torch.nn.functional.softmax(baseline_logits, dim=-1),
+                    torch.nn.functional.log_softmax(bridged_logits_f, dim=-1),
+                    torch.nn.functional.softmax(baseline_logits_f, dim=-1),
                     reduction="batchmean"
                 )
 
@@ -1216,9 +1224,9 @@ def main():
             K = data.get("K", 0)
             soft_pooled = data["inputs_embeds"][:, :K, :].mean(dim=1)  # [B, d_model]
 
-            # Normalize for cosine similarity
-            soft_norm = torch.nn.functional.normalize(soft_pooled, dim=-1)
-            tgt_norm = torch.nn.functional.normalize(tgt_pooled, dim=-1)
+            # Normalize for cosine similarity (in float32 for stability)
+            soft_norm = torch.nn.functional.normalize(soft_pooled.float(), dim=-1)
+            tgt_norm = torch.nn.functional.normalize(tgt_pooled.float(), dim=-1)
 
             # InfoNCE: positive pairs (i,i) vs negative pairs (i,j≠i)
             temperature = 0.07
