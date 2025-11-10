@@ -47,7 +47,7 @@ Reproducibility:
 
 import os, math, re, json, random, argparse, time
 from dataclasses import dataclass
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional, Set, Literal
 from datetime import timedelta
 
 import numpy as np
@@ -463,92 +463,91 @@ class BottleneckedGatedTranslator(nn.Module):
 # Data prep (GSM8K)
 # ---------------------------
 
-# Global state for train/eval mode switching
-EVAL_MODE = False
-EVAL_EXEMPLARS = None
-
-def _format_train_prompt(problem: str) -> str:
+@dataclass
+class EvalConfig:
     """
-    Training prompt: minimal, bridge-friendly template.
-
-    Simple CoT + '#### <number>' keeps training stable and isolates translator effects;
-    evaluation handles leaderboard comparability.
+    Configuration for evaluation mode.
+    If None passed to format_prompts, defaults to training mode (simple CoT).
+    If provided, uses prebuilt few-shot prefix for evaluation.
     """
-    return (
-        "Solve the problem step by step, then end your final line with '#### <number>'.\n\n"
-        "Problem:\n"
-        f"{problem.strip()}\n\n"
-        "Answer:"
-    )
+    # If None, training mode (simple CoT). If provided, use the prebuilt few-shot prefix.
+    fewshot_prefix: Optional[str] = None
+    mode: Literal["train_simple", "eval_8shot"] = "train_simple"
 
-def _format_eval_8shot_prompt(problem: str, exemplars: List[Tuple[str, str, str]]) -> str:
+def build_gsm8k_fewshot_prefix(train_ds, k: int = 8, seed: int = 42, avoid_ids: Optional[Set[int]] = None) -> str:
     """
-    Evaluation prompt: 8-shot Chain-of-Thought with fixed exemplars.
+    Prebuild the fixed 8-shot few-shot prefix ONCE for evaluation.
 
     8-shot Chain-of-Thought is the de-facto GSM8K evaluation style used in many reports
     and matches lm-evaluation-harness `gsm8k_cot` behavior.
     (Kojima et al., 2022; EleutherAI lm-eval harness)
 
     Args:
-        problem: The question to solve
-        exemplars: List of 8 tuples (question, rationale_text, final_number_string)
-    """
-    header = "Answer the following questions step by step and end with '#### <number>'.\n\n"
-    fewshot = "\n\n".join(
-        f"Q: {q}\nA: {r}\n#### {ans}"
-        for (q, r, ans) in exemplars
-    )
-    target = f"\n\nQ: {problem.strip()}\nA: Let's think step by step.\n\nAnswer:"
-    return header + fewshot + target
-
-def _sample_gsm8k_exemplars(train_ds, k: int = 8, seed: int = 42, avoid_idx: int = None):
-    """
-    Sample k exemplars from GSM8K train split with fixed seed for reproducible few-shot eval.
-
-    Args:
         train_ds: GSM8K train dataset
         k: Number of exemplars (default 8)
         seed: Random seed for reproducibility (default 42)
-        avoid_idx: Optional index to exclude from sampling
+        avoid_ids: Optional set of indices to exclude from sampling
 
     Returns:
-        List of k tuples (question, rationale, final_answer_number)
+        Prebuilt string prefix with header + 8 exemplars (ready for appending target Q)
     """
+    header = "Answer the following questions step by step and end with '#### <number>'.\n\n"
     rng = random.Random(seed)
-    pool = [i for i in range(len(train_ds)) if i != avoid_idx]
+    pool = [i for i in range(len(train_ds)) if (avoid_ids is None or i not in avoid_ids)]
     idxs = rng.sample(pool, k)
     exemplars = []
     for j in idxs:
         q = train_ds[j]["question"].strip()
         full = train_ds[j]["answer"].strip()
         final = extract_final_answer(full)  # existing #### extractor
-        rationale = full.rsplit("####", 1)[0].strip() if "####" in full else full
+        rationale = full.rsplit('####', 1)[0].strip() if '####' in full else full
         exemplars.append((q, rationale, final))
-    return exemplars
+    fewshot = "\n\n".join(f"Q: {q}\nA: {r}\n#### {ans}" for (q, r, ans) in exemplars)
+    return header + fewshot
 
-def format_prompts(problem: str) -> Tuple[str, str]:
+def format_prompts(problem: str, cfg: Optional[EvalConfig] = None) -> Tuple[str, str]:
     """
     Build comparable prompts for source and target.
-    Automatically uses train format or 8-shot eval format based on EVAL_MODE.
-    """
-    if not EVAL_MODE:
-        # Training: simple CoT template
-        prompt = _format_train_prompt(problem)
-    else:
-        # Evaluation: 8-shot CoT with fixed exemplars
-        assert EVAL_EXEMPLARS is not None and len(EVAL_EXEMPLARS) == 8, \
-            "EVAL_EXEMPLARS must be set to 8 exemplars before eval"
-        prompt = _format_eval_8shot_prompt(problem, EVAL_EXEMPLARS)
-    return prompt, prompt  # use same text for A and B
+    Pure function - no global state.
 
-def build_samples(batch, src_tok, tgt_tok, device, tgt_model, answer_as_label=True) -> List[Sample]:
+    Args:
+        problem: The question to solve
+        cfg: Optional evaluation config. If None, uses training mode (simple CoT).
+
+    Returns:
+        (src_prompt, tgt_prompt) - identical for both models
+    """
+    if cfg is None or cfg.mode == "train_simple":
+        # Training: simple CoT template
+        prompt = (
+            "Solve the problem step by step, then end your final line with '#### <number>'.\n\n"
+            "Problem:\n"
+            f"{problem.strip()}\n\n"
+            "Answer:"
+        )
+    else:
+        # Evaluation: append target Q after prebuilt 8-shot prefix
+        assert cfg.fewshot_prefix is not None and cfg.mode == "eval_8shot", \
+            "EvalConfig must have fewshot_prefix set for eval_8shot mode"
+        prompt = (
+            cfg.fewshot_prefix
+            + f"\n\nQ: {problem.strip()}\nA: Let's think step by step.\n\nAnswer:"
+        )
+    return prompt, prompt  # identical for source/target
+
+def build_samples(batch, src_tok, tgt_tok, device, tgt_model,
+                  answer_as_label=True, cfg: Optional[EvalConfig] = None) -> List[Sample]:
     """
     Prepare per-example structures - NO TOKENIZATION HERE.
     Tokenization happens in build_batch_inputs for correct alignment.
+
+    Args:
+        batch: Dict with "question" and "answer" keys
+        cfg: Optional evaluation config for 8-shot prompts (None = training mode)
     """
     samples: List[Sample] = []
     for prob, sol in zip(batch["question"], batch["answer"]):
-        src_prompt, tgt_prompt = format_prompts(prob)
+        src_prompt, tgt_prompt = format_prompts(prob, cfg)
         samples.append(Sample(
             src_prompt=src_prompt,
             tgt_prompt=tgt_prompt,
@@ -746,10 +745,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     src_model.eval()
     translator.eval()
 
-    # Enable evaluation mode with 8-shot CoT prompts
-    global EVAL_MODE, EVAL_EXEMPLARS
-    EVAL_MODE = True
-    EVAL_EXEMPLARS = _sample_gsm8k_exemplars(train_ds, k=8, seed=42)
+    # Prebuild 8-shot CoT prefix once for all evaluation samples
+    fewshot_prefix = build_gsm8k_fewshot_prefix(train_ds, k=8, seed=42)
+    eval_cfg = EvalConfig(fewshot_prefix=fewshot_prefix, mode="eval_8shot")
 
     # Determine rank and world_size for distributed evaluation
     if dist.is_initialized():
@@ -792,7 +790,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         if taken >= local_num_samples:
             break
         all_samples.extend(build_samples({"question":[ex["question"]], "answer":[ex["answer"]]},
-                                         src_tok, tgt_tok, device, tgt_model))
+                                         src_tok, tgt_tok, device, tgt_model, cfg=eval_cfg))
         taken += 1
 
     # Process in batches to avoid OOM
@@ -886,10 +884,6 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 generated_part = bridged_texts[i][len(samples[i].tgt_prompt):][:300]
                 log(f"Bridged generation start: {generated_part}...")
         log("="*60 + "\n")
-
-    # Reset evaluation mode
-    EVAL_MODE = False
-    EVAL_EXEMPLARS = None
 
     return acc_baseline, acc_bridged
 
