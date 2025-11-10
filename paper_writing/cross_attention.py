@@ -483,6 +483,8 @@ class TimestepEmbedding(nn.Module):
         emb = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
         if self.embed_dim % 2:
             emb = torch.cat([emb, emb.new_zeros(emb.size(0), 1)], dim=-1)
+        # Cast to MLP dtype (bfloat16 when using --bf16)
+        emb = emb.to(self.mlp[0].weight.dtype)
         return self.mlp(emb)
 
 class SourceConditioner(nn.Module):
@@ -518,8 +520,11 @@ class SourceConditioner(nn.Module):
             if src_mask is None:
                 pooled = src_h.mean(dim=1)
             else:
-                w = src_mask.float().unsqueeze(-1)  # [B,T,1]
+                # Use same dtype as src_h to avoid dtype promotion to float32
+                w = src_mask.to(src_h.dtype).unsqueeze(-1)  # [B,T,1]
                 pooled = (src_h * w).sum(dim=1) / (w.sum(dim=1).clamp_min(1e-6))
+        # Ensure pooled matches proj dtype (handles both mean and attn pooling)
+        pooled = pooled.to(self.proj[0].weight.dtype)
         return self.proj(pooled)  # [B, d_cond]
 
 class DiTBlock(nn.Module):
