@@ -461,6 +461,202 @@ class BottleneckedGatedTranslator(nn.Module):
         return soft_tokens
 
 # ---------------------------
+# DiT-Bridge Translator (Rectified Flow)
+# ---------------------------
+
+class TimestepEmbedding(nn.Module):
+    def __init__(self, embed_dim, max_period=10000):
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.max_period = max_period
+        self.mlp = nn.Sequential(
+            nn.Linear(embed_dim, 4 * embed_dim),
+            nn.SiLU(),
+            nn.Linear(4 * embed_dim, embed_dim)
+        )
+    def forward(self, t):  # t: [B] in [0,1]
+        half = self.embed_dim // 2
+        freqs = torch.exp(
+            -math.log(self.max_period) * torch.arange(0, half, device=t.device, dtype=torch.float32) / half
+        )
+        args = t.float().unsqueeze(1) * freqs.unsqueeze(0)
+        emb = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
+        if self.embed_dim % 2:
+            emb = torch.cat([emb, emb.new_zeros(emb.size(0), 1)], dim=-1)
+        return self.mlp(emb)
+
+class SourceConditioner(nn.Module):
+    def __init__(self, src_dim, d_cond, pool="mean", n_heads=8, dropout=0.1):
+        super().__init__()
+        self.pool = pool
+        if pool == "attn":
+            self.query = nn.Parameter(torch.randn(1, 1, src_dim))
+            self.attn = nn.MultiheadAttention(src_dim, num_heads=n_heads,
+                                              dropout=dropout, batch_first=True)
+            self.proj = nn.Sequential(
+                nn.Linear(src_dim, 4 * d_cond),
+                nn.GELU(approximate="tanh"),
+                nn.Dropout(dropout),
+                nn.Linear(4 * d_cond, d_cond)
+            )
+        else:
+            self.proj = nn.Sequential(
+                nn.Linear(src_dim, 4 * d_cond),
+                nn.GELU(approximate="tanh"),
+                nn.Dropout(dropout),
+                nn.Linear(4 * d_cond, d_cond)
+            )
+    def forward(self, src_h, src_mask):
+        # src_h: [B, T, d_src], src_mask: [B, T] with 1/0 valid/pad
+        if self.pool == "attn":
+            B = src_h.size(0)
+            q = self.query.expand(B, -1, -1)  # [B,1,d_src]
+            # PyTorch semantics: key_padding_mask True=PAD/ignore
+            kpm = (src_mask == 0) if src_mask is not None else None
+            pooled = self.attn(q, src_h, src_h, key_padding_mask=kpm, need_weights=False)[0].squeeze(1)
+        else:
+            if src_mask is None:
+                pooled = src_h.mean(dim=1)
+            else:
+                w = src_mask.float().unsqueeze(-1)  # [B,T,1]
+                pooled = (src_h * w).sum(dim=1) / (w.sum(dim=1).clamp_min(1e-6))
+        return self.proj(pooled)  # [B, d_cond]
+
+class DiTBlock(nn.Module):
+    def __init__(self, model_dim, n_heads, d_cond, dropout=0.1):
+        super().__init__()
+        self.norm1 = nn.RMSNorm(model_dim, elementwise_affine=False, eps=1e-6)
+        self.attn = nn.MultiheadAttention(model_dim, n_heads, batch_first=True, dropout=dropout)
+        self.norm2 = nn.RMSNorm(model_dim, elementwise_affine=False, eps=1e-6)
+        self.mlp = nn.Sequential(
+            nn.Linear(model_dim, 4 * model_dim),
+            nn.GELU(approximate="tanh"),
+            nn.Dropout(dropout),
+            nn.Linear(4 * model_dim, model_dim),
+            nn.Dropout(dropout)
+        )
+        # AdaLN-Zero: output 6 * model_dim, zero-init final linear
+        self.mod = nn.Sequential(nn.SiLU(), nn.Linear(d_cond, 6 * model_dim, bias=True))
+        nn.init.zeros_(self.mod[-1].weight)
+        nn.init.zeros_(self.mod[-1].bias)
+
+    def forward(self, x, full_cond):  # x: [B,K,D], full_cond: [B,D]
+        s_attn, b_attn, g_attn, s_mlp, b_mlp, g_mlp = self.mod(full_cond).chunk(6, dim=-1)
+        # broadcast to tokens
+        s_attn = s_attn.unsqueeze(1); b_attn = b_attn.unsqueeze(1); g_attn = g_attn.unsqueeze(1)
+        s_mlp  = s_mlp.unsqueeze(1);  b_mlp  = b_mlp .unsqueeze(1);  g_mlp  = g_mlp .unsqueeze(1)
+        # attention path
+        x_norm = self.norm1(x) * (1 + s_attn) + b_attn
+        attn_out = self.attn(x_norm, x_norm, x_norm, need_weights=False)[0]
+        x = x + g_attn * attn_out        # NO activation on gates
+        # mlp path
+        x_norm = self.norm2(x) * (1 + s_mlp) + b_mlp
+        mlp_out = self.mlp(x_norm)
+        x = x + g_mlp * mlp_out          # NO activation on gates
+        return x
+
+class DiTBridgeTranslator(nn.Module):
+    """
+    Dimension conventions:
+    - tgt_dim: target LLM embedding dim (e.g., 4096)
+    - model_dim: internal DiT width (e.g., 512)
+    - Flow: tgt_dim -> model_dim (DiT) -> tgt_dim
+    """
+    def __init__(self, src_dim, tgt_dim, model_dim, soft_tokens,
+                 depth=6, n_heads=8, dropout=0.1,
+                 steps_train=2, steps_eval=4,
+                 cfg_scale=0.0, cfg_dropout=0.1,
+                 pool="mean", cond_dim=None):
+        super().__init__()
+        self.K = soft_tokens
+        self.tgt_dim = tgt_dim
+        self.model_dim = model_dim
+        self.steps_train = steps_train
+        self.steps_eval = steps_eval
+        self.cfg_scale = cfg_scale
+        self.cfg_dropout = cfg_dropout
+
+        d_cond = cond_dim or model_dim
+        self.to_model = nn.Linear(tgt_dim, model_dim)
+        self.to_tgt   = nn.Linear(model_dim, tgt_dim)
+
+        self.time = TimestepEmbedding(model_dim)
+        self.cond = SourceConditioner(src_dim, d_cond=model_dim, pool=pool, n_heads=8, dropout=dropout)
+
+        self.blocks = nn.ModuleList([DiTBlock(model_dim, n_heads, d_cond=model_dim, dropout=dropout)
+                                     for _ in range(depth)])
+        self.uncond = nn.Parameter(torch.randn(1, model_dim))  # unconditional cond for CFG
+        self._last_losses = {}
+
+    # ----- internal helpers -----
+    def _forward_step(self, x_m, t, cond_vec):
+        # x_m: [B,K,Dm] in model space; cond_vec: [B,Dm]; t: [B] in [0,1]
+        t_vec = self.time(t)  # [B,Dm]
+        full_cond = cond_vec + t_vec
+        for blk in self.blocks:
+            x_m = blk(x_m, full_cond)
+        # predict a velocity in model space
+        return x_m
+
+    def _sample_rf(self, src_h, src_mask, steps):
+        B = src_h.size(0); device = src_h.device; dtype = src_h.dtype
+        # init: noise in target space, then project to model space
+        x_t = torch.randn(B, self.K, self.tgt_dim, device=device, dtype=dtype)
+        x_m = self.to_model(x_t)
+        cond = self.cond(src_h, src_mask)  # [B,Dm]
+
+        for i in range(steps):
+            t = torch.full((B,), (i+1)/steps, device=device, dtype=torch.float32)
+            if self.cfg_scale > 0:
+                v_u = self._forward_step(x_m, t, self.uncond.expand(B, -1))
+                v_c = self._forward_step(x_m, t, cond)
+                v   = v_u + self.cfg_scale * (v_c - v_u)
+            else:
+                v = self._forward_step(x_m, t, cond)
+            x_m = x_m + v * (1.0/steps)  # Euler step
+        return self.to_tgt(x_m)  # [B,K,tgt_dim]
+
+    def _forward_train_rf(self, src_h, src_mask, teacher_tgt):  # teacher_tgt: [B,K,tgt_dim]
+        B = src_h.size(0); device = src_h.device; dtype = src_h.dtype
+        # project teacher & noise to model space
+        x1_m = self.to_model(teacher_tgt)
+        z_m  = torch.randn_like(x1_m)
+        # sample t ~ U(0,1), build x_t and target velocity
+        t = torch.rand(B, device=device, dtype=torch.float32)
+        t3d = t.view(B, 1, 1)
+        x_t = (1.0 - t3d) * z_m + t3d * x1_m
+        v_target = x1_m - z_m  # rectified-flow velocity
+
+        # cond with optional classifier-free dropout (training only)
+        cond = self.cond(src_h, src_mask)
+        if self.cfg_scale > 0 and self.cfg_dropout > 0:
+            drop = (torch.rand(B, 1, device=device) < self.cfg_dropout)
+            cond = torch.where(drop, self.uncond.expand(B, -1), cond)
+
+        v_pred = self._forward_step(x_t, t, cond)
+        flow_loss = F.mse_loss(v_pred, v_target)
+
+        # store side-channel loss
+        self._last_losses["dit_flow"] = flow_loss.detach()
+
+        # provide a denoised guess for outer LM path
+        x0_m = x_t + v_pred * (1.0 - t3d)   # x0 ≈ x_t + v*(1-t)
+        return self.to_tgt(x0_m)
+
+    def pop_last_losses(self):
+        out = self._last_losses
+        self._last_losses = {}
+        return out
+
+    # ----- public API -----
+    def forward(self, src_h, src_mask=None, teacher_soft_tokens=None):
+        # Use PyTorch's training flag; no extra 'train' argument
+        if self.training and teacher_soft_tokens is not None:
+            return self._forward_train_rf(src_h, src_mask, teacher_soft_tokens)
+        steps = self.steps_train if self.training else self.steps_eval
+        return self._sample_rf(src_h, src_mask, steps)
+
+# ---------------------------
 # Data prep (GSM8K)
 # ---------------------------
 
@@ -560,13 +756,27 @@ def build_samples(batch, src_tok, tgt_tok, device, tgt_model,
 # Collation building inputs_embeds with soft tokens
 # ---------------------------
 
+def _repeat_to_k(x, K):
+    """
+    Repeat embeddings to K tokens (for DiT teacher embeddings).
+    x: [B, T, d]
+    Returns: [B, K, d]
+    """
+    B, T, d = x.shape
+    if T == 0:
+        return x.new_zeros(B, K, d)  # fallback; upstream we substitute BOS so T>0 in practice
+    reps = math.ceil(K / T)
+    y = x.repeat(1, reps, 1)[:, :K, :]
+    return y
+
 def build_batch_inputs(samples: List[Sample],
                        src_model, src_tok,
                        tgt_model, tgt_tok,
                        translator,
                        device, dtype,
                        target_rms: float = None,
-                       mode: str = 'train'):
+                       mode: str = 'train',
+                       args = None):
     """
     For each sample:
       - Encode source prompt with A; get last-layer hidden states (no grad)
@@ -595,8 +805,19 @@ def build_batch_inputs(samples: List[Sample],
         # Source mask
         src_mask = src_enc["attention_mask"]
 
-    # Translator (grad flows) - BottleneckedGatedTranslator supports src_mask
-    soft_tokens = translator(src_h, src_mask)  # [B, K, d_tgt]
+    # Translator (grad flows)
+    # For DiT bridge in training mode, provide teacher embeddings
+    if args is not None and args.bridge == "dit" and mode == "train":
+        K = translator.K if hasattr(translator, 'K') else args.soft_tokens
+        with torch.no_grad():
+            prompts = [s.tgt_prompt if s.tgt_prompt.strip() else (tgt_tok.bos_token or " ") for s in samples]
+            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048)
+            enc = {k: v.to(device) for k, v in enc.items()}
+            emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, Tp, d_tgt]
+            teacher_soft = _repeat_to_k(emb, K)                                # [B, K, d_tgt]
+        soft_tokens = translator(src_h, src_mask, teacher_soft_tokens=teacher_soft)
+    else:
+        soft_tokens = translator(src_h, src_mask)  # [B, K, d_tgt]
 
     # Apply RMS matching to prevent logit collapse (CRITICAL for stability)
     if target_rms is not None:
@@ -689,7 +910,8 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
 
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
                               device, dtype, train_ds, num_samples: int = 200, max_new_tokens: int = 256,
-                              show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50):
+                              show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50,
+                              args = None):
     """
     Distributed evaluation: each rank processes num_samples // world_size samples.
     Results are gathered on rank 0 for final metric computation.
@@ -757,7 +979,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
         # Build bridged inputs (uses inputs_embeds)
         with torch.inference_mode():
-            batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval')
+            batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
             gen = tgt_model.generate(
                 inputs_embeds=batch["inputs_embeds"],
                 attention_mask=batch["attention_mask"],
@@ -927,6 +1149,19 @@ def main():
                         help="Batch size for evaluation (default 50, try 64-100 on H100)")
     parser.add_argument("--no_compile", action="store_true",
                         help="Disable torch.compile (use if PyTorch < 2.0 or for debugging)")
+    # DiT-Bridge options
+    parser.add_argument("--bridge", type=str, choices=["cross", "dit"], default="cross")
+    parser.add_argument("--dit_dim", type=int, default=512, help="DiT internal width (project to/from d_tgt)")
+    parser.add_argument("--dit_depth", type=int, default=6)
+    parser.add_argument("--dit_heads", type=int, default=8, help="512/8 = 64 dims per head")
+    parser.add_argument("--dit_steps_train", type=int, default=2, help="Small for first ablation")
+    parser.add_argument("--dit_steps_eval", type=int, default=4)
+    parser.add_argument("--dit_dropout", type=float, default=0.1)
+    parser.add_argument("--dit_cfg", type=float, default=0.0, help="CFG scale (off by default)")
+    parser.add_argument("--dit_cfg_dropout", type=float, default=0.1, help="p(cond drop) when training if CFG>0")
+    parser.add_argument("--dit_pool", type=str, choices=["mean", "attn"], default="mean")
+    parser.add_argument("--dit_cond_dim", type=int, default=512, help="Conditioner MLP width")
+    parser.add_argument("--dit_loss_weight", type=float, default=0.1)
     args = parser.parse_args()
 
     setup_ddp()
@@ -1026,15 +1261,37 @@ def main():
     log(f"Target embedding RMS (median): {target_rms:.4f}")
     log(f"NOTE: RMS scale matching is applied during batch collation (before concat)")
 
-    # Build translator (BottleneckedGatedTranslator with Flamingo-style gating)
-    translator = BottleneckedGatedTranslator(
-        src_dim=d_src,
-        tgt_dim=d_tgt,
-        bottleneck_dim=args.bottleneck_dim,
-        soft_tokens=args.soft_tokens,
-        depth=args.depth,
-        n_heads=args.heads
-    ).to(device=device, dtype=dtype)
+    # Build translator
+    if args.bridge == "cross":
+        translator = BottleneckedGatedTranslator(
+            src_dim=d_src,
+            tgt_dim=d_tgt,
+            bottleneck_dim=args.bottleneck_dim,
+            soft_tokens=args.soft_tokens,
+            depth=args.depth,
+            n_heads=args.heads
+        ).to(device=device, dtype=dtype)
+        log(f"Bridge: {args.bridge} (BottleneckedGatedTranslator)")
+    else:
+        translator = DiTBridgeTranslator(
+            src_dim=d_src,
+            tgt_dim=d_tgt,
+            model_dim=args.dit_dim,
+            soft_tokens=args.soft_tokens,
+            depth=args.dit_depth,
+            n_heads=args.dit_heads,
+            dropout=args.dit_dropout,
+            steps_train=args.dit_steps_train,
+            steps_eval=args.dit_steps_eval,
+            cfg_scale=args.dit_cfg,
+            cfg_dropout=args.dit_cfg_dropout,
+            pool=args.dit_pool,
+            cond_dim=args.dit_cond_dim
+        ).to(device=device, dtype=dtype)
+        log(f"Bridge: {args.bridge} (DiTBridgeTranslator)")
+        log(f"  Using DiTBridge: dim={args.dit_dim}, depth={args.dit_depth}, heads={args.dit_heads}, "
+            f"steps(train/eval)={args.dit_steps_train}/{args.dit_steps_eval}, cfg={args.dit_cfg}, "
+            f"pool={args.dit_pool}, cond_dim={args.dit_cond_dim}")
 
     # Count parameters
     param_count = sum(p.numel() for p in translator.parameters())
@@ -1120,7 +1377,7 @@ def main():
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
             device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-            eval_batch_size=args.eval_batch_size
+            eval_batch_size=args.eval_batch_size, args=args
         )
 
     if is_main():
@@ -1140,7 +1397,7 @@ def main():
 
         # Build bridged inputs (with soft tokens)
         data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
-                                  translator, device, dtype, target_rms=target_rms, mode='train')
+                                  translator, device, dtype, target_rms=target_rms, mode='train', args=args)
 
         # Diagnostic: verify label alignment (only first step)
         if step == 0 and is_main():
@@ -1237,6 +1494,12 @@ def main():
         # Total loss: NLL + λ_KL * KL + λ_InfoNCE * InfoNCE
         loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss
 
+        # Add DiT flow loss if using DiT bridge
+        if args.bridge == "dit":
+            aux = getattr(translator, "pop_last_losses", lambda: {})()
+            dit_flow_loss = aux.get("dit_flow", torch.tensor(0.0, device=loss.device, dtype=loss.dtype))
+            loss = loss + args.dit_loss_weight * dit_flow_loss
+
         # Detach for logging to avoid DDP autograd warning
         loss_scalar = loss.detach()
         if dist.is_initialized():
@@ -1266,7 +1529,7 @@ def main():
                     test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                     device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
                     show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-                    eval_batch_size=args.eval_batch_size
+                    eval_batch_size=args.eval_batch_size, args=args
                 )
 
             # Only rank 0 logs and checks early stopping
@@ -1310,9 +1573,9 @@ def main():
     with torch.no_grad():
         acc_base, acc_bridged = evaluate_numeric_accuracy(
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-            device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+            device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-            eval_batch_size=args.eval_batch_size
+            eval_batch_size=args.eval_batch_size, args=args
         )
 
     # Synchronize all ranks before cleanup
