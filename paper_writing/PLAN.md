@@ -17,10 +17,9 @@
 **What we need** ⏳:
 - Validate stability fixes prevent collapse
 - Measure if latent beats BOTH source (Mistral) and target (Llama) models
-- Test generalization to HotpotQA
 - Benchmark KV cache savings and latency
 
-**Total GPU time**: ~14 hours on 4× H100
+**Total GPU time**: ~9 hours on 4× H100
 
 ---
 
@@ -40,7 +39,8 @@
    - Same architecture (64 tokens, depth=8, lr=1e-4, warmup=750)
    - InfoNCE loss (λ=0.05, start after 50% warmup)
    - Early stopping (patience=5 on bridged accuracy)
-   - Repetition penalty (1.1) + no_repeat_ngram_size=3
+   - Pure greedy decoding (no repetition penalty)
+   - 8-shot CoT evaluation with fixed seed=42 exemplars
    - Expected: Maintain >70% final accuracy
 
 **Metrics**:
@@ -89,34 +89,16 @@
 
 ---
 
-### Ablation 3: Dataset Generalization (P1)
-
-**Research Question**: Does method generalize beyond math reasoning?
-
-**Configuration**: HotpotQA - NEW RUN (3 hours)
-- Same best config from Ablation 1 (64 tokens, with stability fixes)
-- Different reasoning type (knowledge retrieval + multi-hop)
-- Expected: Beat baseline on at least 1 checkpoint
-
-**Metrics**:
-- Bridged vs text baseline on HotpotQA
-- Cross-dataset comparison (GSM8K vs HotpotQA)
-
-**Runtime**: 3 hours
-**Dataset**: HotpotQA (7,405 train, ~1,000 test)
-
----
-
-### Ablation 4: Inference Metrics (P0 - CRITICAL)
+### Ablation 3: Inference Metrics (P0 - CRITICAL)
 
 **Research Question**: What are the practical memory and time savings? Does latent beat BOTH single models?
 
-**Method**: Benchmark all 5 baselines on full test set
+**Method**: Benchmark all 4 baselines on full test set
 - Use trained checkpoint from Ablation 1 (64 tokens, stable)
 - Evaluate on ALL 1,319 test samples
 - **Store per-sample raw data** for flexible analysis
 
-**Baselines (5 Total)**:
+**Baselines (4 Total)**:
 
 1. **Source-alone (Mistral)** - P0 CRITICAL
    - Question → Mistral → Answer (no Llama)
@@ -135,10 +117,6 @@
    - Truncated prompt (K tokens) → Llama
    - Purpose: Fair compression baseline
 
-5. **Cascade** - P2 (nice to have)
-   - Mistral generates text → Llama refines
-   - Purpose: Test soft tokens vs discrete text transfer
-
 **Per-Sample Metrics** (stored in JSONL):
 - KV cache memory (MB) during generation
 - End-to-end latency (seconds)
@@ -148,11 +126,10 @@
 
 **Key Comparisons**:
 - Does latent beat BOTH source AND target? (Information enrichment!)
-- Does latent beat cascade? (Soft tokens > text)
 - KV cache savings: target_alone vs latent
 - Latency reduction for longer outputs
 
-**Runtime**: 2-3 hours
+**Runtime**: 1-2 hours
 **Dataset**: GSM8K (1,319 samples)
 
 **Output**:
@@ -168,9 +145,8 @@
 | 1. Stability (with fixes) | 3h | ⏳ TODO | Prevent collapse |
 | 2a. Sequence (32 tok) | 3h | ⏳ TODO | High compression |
 | 2b. Sequence (48 tok) | 3h | ⏳ TODO | Medium compression |
-| 3. HotpotQA | 3h | ⏳ TODO | Generalization |
-| 4. Inference metrics | 2-3h | ⏳ TODO | KV cache + latency |
-| **TOTAL** | **~14h** | | |
+| 3. Inference metrics | 1-2h | ⏳ TODO | KV cache + latency |
+| **TOTAL** | **~9-10h** | | |
 
 **Reused (no GPU time)**:
 - Baseline (no fixes): 81.5% → 36% collapse
@@ -184,7 +160,7 @@
 
 #### Results Compilation
 - Extract all metrics from logs (peak/final acc, compression ratios)
-- Create comparison tables for all 5 baselines
+- Create comparison tables for all 4 baselines
 - Generate training curves (accuracy over time)
 - Analyze which scenario we're in:
   - **Best**: Latent > source AND target (cross-model fusion)
@@ -226,23 +202,26 @@
 **3. Method** (2 pages)
 - Architecture:
   - Source model (Mistral-7B) encodes question
-  - Bottleneck-gated translator (cross-attention resampler)
+  - Bottleneck-gated translator (Flamingo-style gated cross-attention)
+  - Orthogonal query initialization, RMSNorm, SwiGLU activation
   - Target model (Llama-3.1-8B) generates answer
 - Training:
   - Teacher-forced cross-entropy on answers
-  - InfoNCE anti-collapse loss (λ=0.05)
+  - InfoNCE anti-collapse loss (λ=0.05, float32 for stability)
   - Early stopping on validation accuracy
-  - Generation hygiene (repetition penalty)
-- Calibration and anchoring (RMS matching, "Answer: " anchor)
+  - Pure greedy decoding (no repetition penalty)
+  - Fused AdamW optimizer with high-LR gate parameters
+- Evaluation:
+  - 8-shot Chain-of-Thought prompting (seed=42)
+  - Calibration and anchoring (RMS matching, "Answer: " anchor)
 
 **4. Experiments** (2 pages)
-- Datasets: GSM8K (primary), HotpotQA (generalization)
-- Baselines: source-alone, target-alone, latent, token-budget, cascade
-- Metrics: EM/F1, KV cache savings, latency, compression ratio
+- Dataset: GSM8K (1,319 test samples)
+- Baselines: source-alone, target-alone, latent, token-budget
+- Metrics: Accuracy, KV cache savings, latency, compression ratio
 - Results:
   - Main: Latent vs both single models (Table + key finding)
   - Ablations: Sequence length (32/48/64), stability fixes (Figures)
-  - Generalization: HotpotQA results (Table)
   - Efficiency: KV cache savings, latency reduction (Table)
 
 **5. Analysis** (1 page)
@@ -252,7 +231,7 @@
 - Training dynamics:
   - Peak-and-collapse without stability fixes (Figure)
   - Stable training with fixes (Figure)
-- Soft tokens vs text transfer (cascade comparison)
+- Compression-quality tradeoff (32/48/64 tokens)
 - Failure modes and limitations
 
 **6. Conclusion** (0.5 pages)
@@ -291,26 +270,24 @@
 
 | # | Claim | Evidence | Ablation | Status |
 |---|-------|----------|----------|--------|
-| **1** | **Cross-model fusion beats both models** | Latent > source AND target | 4 (P0) | ⏳ TODO |
+| **1** | **Cross-model fusion beats both models** | Latent > source AND target | 3 (P0) | ⏳ TODO |
 | 2 | Stability fixes prevent collapse | >70% final vs 36% | 1 | ⏳ TODO |
 | 3 | Compression-quality tradeoff exists | 32/48/64 tokens analysis | 2 | ⏳ TODO |
-| 4 | Generalizes beyond math | HotpotQA results | 3 | ⏳ TODO |
-| 5 | Soft tokens > discrete text | Latent > cascade | 4 (P2) | ⏳ TODO |
-| 6 | Practical KV cache savings | 43-59 MB saved | 4 | ⏳ TODO |
+| 4 | Practical KV cache savings | 43-59 MB saved | 3 | ⏳ TODO |
 
-**Critical**: Claim #1 determines the entire paper narrative. Ablation 4 will reveal which scenario we're in.
+**Critical**: Claim #1 determines the entire paper narrative. Ablation 3 will reveal which scenario we're in.
 
 ---
 
 ## Scope Boundaries (What NOT to do)
 
-❌ Test on 5+ datasets (pick 2: GSM8K + HotpotQA)
+❌ Test on multiple datasets (focus on GSM8K only)
 ❌ Try 10 different model pairs (stick with Mistral→Llama)
-❌ Implement complex baselines (5 simple baselines is enough)
+❌ Implement complex baselines (4 simple baselines is enough)
 ❌ Extensive hyperparameter sweeps (use what worked)
 ❌ Multi-seed statistical analysis (single seed fine for first paper)
 ❌ Theoretical analysis (empirical focus)
-❌ Over-the-wire quantization analysis (focus on KV cache)
+❌ Over-the-wire quantization analysis (focus on compression-quality tradeoff)
 
 ---
 
@@ -325,11 +302,7 @@
 **Mitigation**: Present tradeoff between peak performance and stability
 **Backup**: Use existing 81.5% result, discuss stability as future work
 
-### Risk 3: Doesn't generalize to HotpotQA
-**Mitigation**: GSM8K alone is sufficient for proof of concept
-**Backup**: Frame as "domain-specific" method, future work for generalization
-
-### Risk 4: Not enough time for writing
+### Risk 3: Not enough time for writing
 **Mitigation**: Start paper template in Week 1, fill sections incrementally
 **Backup**: Reduce to 4 pages (short paper format)
 
@@ -346,9 +319,8 @@
 
 ✅ **Nice to Have**:
 6. Latent beats BOTH single models (information enrichment)
-7. Generalization to second dataset
-8. Soft tokens beat text transfer (cascade)
-9. Multiple stability checkpoints
+7. Multiple stability checkpoints
+8. Detailed compression-quality analysis at different token counts
 
 ---
 
@@ -358,8 +330,7 @@
 - [ ] Run Ablation 1: Stability fixes (3h)
 - [ ] Run Ablation 2a: 32 tokens (3h)
 - [ ] Run Ablation 2b: 48 tokens (3h)
-- [ ] Run Ablation 3: HotpotQA (3h)
-- [ ] Run Ablation 4: Inference metrics (2-3h)
+- [ ] Run Ablation 3: Inference metrics (1-2h)
 - [ ] Git pull results locally
 - [ ] Verify all experiments completed
 
@@ -383,18 +354,19 @@
 
 **Scripts**:
 - Training: `paper_writing/run_ablations.sh`
-- Inference: `paper_writing/benchmark_inference.py`
+- Main script: `paper_writing/cross_attention.py`
 - Analysis: Auto-generated in runs directory
 
 **Key Files**:
 - This plan: `paper_writing/PLAN.md`
-- Experiment details: `paper_writing/EXPERIMENTS_SUMMARY.md`
 - README: `paper_writing/README.md`
 - Preserved 81.5% result: `successful_experiments/cross_model/85/`
 
 **Timeline**: 3 weeks total
-**GPU Budget**: ~14 hours on 4× H100
+**GPU Budget**: ~9-10 hours on 4× H100
 **Target**: 6-page paper on arXiv
+**Dataset**: GSM8K only (1,319 test samples)
+**Evaluation**: 8-shot Chain-of-Thought with seed=42
 
 ---
 

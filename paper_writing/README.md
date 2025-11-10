@@ -9,14 +9,12 @@
 
 ### Planning Documents
 - **PLAN.md** - Overall 3-week timeline (experiments + writing)
-- **ABLATIONS_PLAN.md** - Detailed ablation study specifications
-- **README.md** - This file
+- **README.md** - This file (quick reference)
 
 ### Scripts
-- **cross_attention.py** - Main training script (copied from cross_model/experiments/)
-- **run_ablations.sh** - Runs all ablation experiments (~12 hours on 4× H100)
-- **analyze_compression.py** - Post-hoc compression analysis for different quantization levels
-- **run_sweep.sh** - Original sweep script (backup, not actively used)
+- **cross_attention.py** - Main training script with BottleneckedGatedTranslator
+- **run_ablations.sh** - Runs all ablation experiments (~9 hours on 4× H100)
+- **benchmark_inference.py** - Standalone inference benchmarking utility (not actively used)
 
 ### Output (Generated During Experiments)
 - **runs/** - All experiment outputs, logs, and checkpoints
@@ -24,7 +22,6 @@
     - `1a_stable_64tok/` - 64 tokens WITH stability fixes
     - `2a_stable_32tok/` - 32 tokens WITH stability fixes
     - `2b_stable_48tok/` - 48 tokens WITH stability fixes
-    - `3a_hotpotqa_64tok/` - HotpotQA generalization test
     - `summary.log` - Consolidated results table
     - `analyze_ablations.py` - Generated analysis script
 
@@ -43,24 +40,10 @@ rm -rf paper_writing/runs  # Clean previous runs
 PYTHONPATH=. bash paper_writing/run_ablations.sh
 ```
 
-**Expected runtime**: ~12 hours
+**Expected runtime**: ~9 hours
 **Output**: `paper_writing/runs/ablations_YYYYMMDD_HHMMSS/`
 
-### Step 2: Analyze Compression (Week 1)
-
-After Step 1 completes:
-
-```bash
-# Use checkpoint from stable 64-token config
-python paper_writing/analyze_compression.py \
-    --checkpoint paper_writing/runs/ablations_*/1a_stable_64tok/checkpoint.pt \
-    --num_samples 200
-```
-
-**Expected runtime**: <1 hour
-**Output**: `compression_analysis.json` in checkpoint directory
-
-### Step 3: Analyze Results (Week 2)
+### Step 2: Analyze Results (Week 2)
 
 ```bash
 cd paper_writing/runs/ablations_*/
@@ -71,7 +54,7 @@ Generates:
 - `ablation_results.json` - Raw data for all experiments
 - Summary tables and statistics
 
-### Step 4: Generate Plots (Week 2)
+### Step 3: Generate Plots (Week 2)
 
 ```python
 # TODO: Add plotting script for:
@@ -106,27 +89,18 @@ Generates:
 
 **Expected outcome**: Higher tokens = better quality but less compression
 
-### Ablation 3: Dataset Generalization (P1)
-**Question**: Does it generalize beyond math?
+### Ablation 3: Inference Metrics (P0)
+**Question**: Practical memory and latency savings?
 
-| Dataset | Type | Runtime | Status |
-|---------|------|---------|--------|
-| GSM8K | Math reasoning | 0h | ✅ Reuse 1a |
-| HotpotQA | Multi-hop QA | 3h | ⏳ TODO |
+**Baselines**:
+- Source-alone (Mistral)
+- Target-alone (Llama)
+- Latent (our method)
+- Token-budget (fair compression baseline)
 
-**Expected outcome**: Beats baseline on at least 1 HotpotQA checkpoint
+**Metrics**: KV cache savings, latency, accuracy
 
-### Ablation 4: Quantization (P0)
-**Question**: Honest wire compression?
-
-| Method | Bytes/Value | Overhead | Status |
-|--------|-------------|----------|--------|
-| FP16 | 2.0 | Minimal | ⏳ TODO |
-| INT8 | 1.0 | Scales | ⏳ TODO |
-| INT6 | 0.75 | Scales | ⏳ TODO |
-| INT4 | 0.5 | Scales | ⏳ TODO |
-
-**Expected outcome**: 2-5× compression with minimal quality loss
+**Expected outcome**: Demonstrate practical benefits with 2-5× compression
 
 ---
 
@@ -135,7 +109,6 @@ Generates:
 **Week 1 (Nov 8-14): Run Experiments**
 - [ ] Run `run_ablations.sh` on HPC
 - [ ] Monitor progress (check logs every few hours)
-- [ ] Run `analyze_compression.py` after training completes
 - [ ] Git pull results locally
 - [ ] Verify all experiments completed successfully
 
@@ -172,13 +145,9 @@ Generates:
 - **Evidence**: 32tok (4.7×, ~55%) → 48tok (3.1×, ~TBD%) → 64tok (2.3×, ~75%+)
 - **Source**: `2a_stable_32tok/`, `2b_stable_48tok/`, `1a_stable_64tok/`
 
-### Claim: Generalizes Beyond Math
-- **Evidence**: Beats baseline on HotpotQA
-- **Source**: `3a_hotpotqa_64tok/`
-
-### Claim: Practical Compression
-- **Evidence**: 2-5× bytes saved with INT8/INT6/INT4
-- **Source**: `compression_analysis.json`
+### Claim: Practical KV Cache Savings
+- **Evidence**: 43-59 MB saved per inference with soft tokens
+- **Source**: Inference metrics from Ablation 3
 
 ---
 
@@ -203,18 +172,28 @@ Generates:
 
 ## Notes
 
+### Architecture
+- BottleneckedGatedTranslator with Flamingo-style gated cross-attention
+- Orthogonal query initialization, RMSNorm, SwiGLU activation
+- Gate parameters (sa_gate, cross_gate, ffn_gate) at 3× learning rate
+
+### Training
 - All experiments use `seed=1234` for reproducibility
-- Evaluation uses 500 samples (batched to avoid OOM)
+- InfoNCE weight = 0.05 (starts after 50% warmup, computed in float32)
 - Early stopping patience = 5 evaluations
-- InfoNCE weight = 0.05 (starts after 50% warmup)
-- Repetition penalty = 1.1, no_repeat_ngram_size = 3
+- Fused AdamW optimizer for efficiency
+- Pure greedy decoding (no repetition penalty)
+
+### Evaluation
+- 500 samples per evaluation (batched to avoid OOM)
+- 8-shot Chain-of-Thought prompting with fixed seed=42 exemplars
+- Stable tokenization spacing (clean_up_tokenization_spaces=False)
 
 ---
 
 ## Contact
 
 Questions? Check:
-1. **PLAN.md** - Overall timeline and strategy
-2. **ABLATIONS_PLAN.md** - Detailed experiment specifications
-3. **../CLAUDE.md** - Project-wide instructions
-4. **../CROSS_MODEL_LOG.md** - Experiment history and findings
+1. **PLAN.md** - Overall timeline and detailed experiment specifications
+2. **../CLAUDE.md** - Project-wide instructions
+3. **../LOG.md** - Experiment history and findings
