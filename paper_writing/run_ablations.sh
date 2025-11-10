@@ -14,7 +14,7 @@ echo ""
 
 # Base configuration
 export PYTHONPATH=.
-: ${PY_SCRIPT:=cross_attention.py}
+: ${PY_SCRIPT:=paper_writing/cross_attention.py}
 SOURCE_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 PER_DEVICE_BATCH=10
