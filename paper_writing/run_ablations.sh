@@ -82,98 +82,18 @@ run_experiment() {
 }
 
 # ============================================
-# ABLATION 1: Stability Fixes (64 tokens)
-# Research Question: Do stability fixes prevent collapse?
-# ============================================
-
-echo "╔════════════════════════════════════════╗" | tee -a "$SUMMARY_LOG"
-echo "║  ABLATION 1: STABILITY FIXES          ║" | tee -a "$SUMMARY_LOG"
-echo "╚════════════════════════════════════════╝" | tee -a "$SUMMARY_LOG"
-echo "" | tee -a "$SUMMARY_LOG"
-
-# Config 1a: WITH stability fixes (NEW RUN)
-run_experiment \
-    "1a_stable_64tok" \
-    "64 tokens WITH InfoNCE + early stopping + gen hygiene" \
-    --dataset gsm8k \
-    --lr 1e-4 \
-    --bottleneck_dim 1024 \
-    --soft_tokens 64 \
-    --depth 8 \
-    --heads 16 \
-    --weight_decay 0.01 \
-    --train_steps 3000 \
-    --warmup_steps 750 \
-    --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
-    --seed 1234
-
-echo "" | tee -a "$SUMMARY_LOG"
-echo "NOTE: Baseline (1b_baseline_64tok) reuses successful_experiments/cross_model/85/train_high_capacity.log" | tee -a "$SUMMARY_LOG"
-echo "      Peak: 81.5% → Final: 36.0% (no stability fixes)" | tee -a "$SUMMARY_LOG"
-echo "" | tee -a "$SUMMARY_LOG"
-
-# ============================================
-# ABLATION 2: Sequence Length (all with stability)
-# Research Question: Compression vs quality tradeoff?
-# ============================================
-
-echo "╔════════════════════════════════════════╗" | tee -a "$SUMMARY_LOG"
-echo "║  ABLATION 2: SEQUENCE LENGTH          ║" | tee -a "$SUMMARY_LOG"
-echo "╚════════════════════════════════════════╝" | tee -a "$SUMMARY_LOG"
-echo "" | tee -a "$SUMMARY_LOG"
-
-# Config 2a: 32 tokens (high compression)
-run_experiment \
-    "2a_stable_32tok" \
-    "32 tokens (4.7× compression) WITH stability fixes" \
-    --dataset gsm8k \
-    --lr 1e-4 \
-    --bottleneck_dim 768 \
-    --soft_tokens 32 \
-    --depth 4 \
-    --heads 12 \
-    --weight_decay 0.01 \
-    --train_steps 3000 \
-    --warmup_steps 600 \
-    --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
-    --seed 1234
-
-# Config 2b: 48 tokens (medium compression)
-run_experiment \
-    "2b_stable_48tok" \
-    "48 tokens (3.1× compression) WITH stability fixes" \
-    --dataset gsm8k \
-    --lr 1e-4 \
-    --bottleneck_dim 1024 \
-    --soft_tokens 48 \
-    --depth 6 \
-    --heads 16 \
-    --weight_decay 0.01 \
-    --train_steps 3000 \
-    --warmup_steps 750 \
-    --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
-    --seed 1234
-
-echo "" | tee -a "$SUMMARY_LOG"
-echo "NOTE: 64 tokens result is same as 1a_stable_64tok (reused)" | tee -a "$SUMMARY_LOG"
-echo "" | tee -a "$SUMMARY_LOG"
-
-# ============================================
-# ABLATION 3: DiT Bridge Architecture
+# ABLATION 1: DiT Bridge Architecture
 # Research Question: Does iterative refinement prevent collapse?
 # ============================================
 
 echo "╔════════════════════════════════════════╗" | tee -a "$SUMMARY_LOG"
-echo "║  ABLATION 3: DiT BRIDGE               ║" | tee -a "$SUMMARY_LOG"
+echo "║  ABLATION 1: DiT BRIDGE               ║" | tee -a "$SUMMARY_LOG"
 echo "╚════════════════════════════════════════╝" | tee -a "$SUMMARY_LOG"
 echo "" | tee -a "$SUMMARY_LOG"
 
-# Config 3a: DiT-2step (minimal diffusion, faster)
+# Config 1a: DiT-2step (minimal diffusion, faster)
 run_experiment \
-    "3a_dit_2step_64tok" \
+    "1a_dit_2step_64tok" \
     "DiT 64 tokens, 2 training steps (like Transfusion)" \
     --dataset gsm8k \
     --bridge dit \
@@ -194,9 +114,9 @@ run_experiment \
     --early_stop_patience 5 \
     --seed 1234
 
-# Config 3b: DiT-4step (more refinement)
+# Config 1b: DiT-4step (more refinement)
 run_experiment \
-    "3b_dit_4step_64tok" \
+    "1b_dit_4step_64tok" \
     "DiT 64 tokens, 4 training steps (more denoising)" \
     --dataset gsm8k \
     --bridge dit \
@@ -217,9 +137,9 @@ run_experiment \
     --early_stop_patience 5 \
     --seed 1234
 
-# Config 3c: DiT with attention pooling (richer conditioning)
+# Config 1c: DiT with attention pooling (richer conditioning)
 run_experiment \
-    "3c_dit_attn_64tok" \
+    "1c_dit_attn_64tok" \
     "DiT 64 tokens, attention pooling for source conditioning" \
     --dataset gsm8k \
     --bridge dit \
@@ -240,9 +160,9 @@ run_experiment \
     --early_stop_patience 5 \
     --seed 1234
 
-# Config 3d: DiT with CFG (classifier-free guidance)
+# Config 1d: DiT with CFG (classifier-free guidance)
 run_experiment \
-    "3d_dit_cfg_64tok" \
+    "1d_dit_cfg_64tok" \
     "DiT 64 tokens with CFG for better mode coverage" \
     --dataset gsm8k \
     --bridge dit \
@@ -268,6 +188,86 @@ run_experiment \
 echo "" | tee -a "$SUMMARY_LOG"
 echo "NOTE: DiT experiments test if iterative refinement prevents collapse (81.5% → 36%)" | tee -a "$SUMMARY_LOG"
 echo "      Key question: Does DiT maintain high final accuracy vs cross-attention?" | tee -a "$SUMMARY_LOG"
+echo "" | tee -a "$SUMMARY_LOG"
+
+# ============================================
+# ABLATION 2: Stability Fixes (64 tokens)
+# Research Question: Do stability fixes prevent collapse?
+# ============================================
+
+echo "╔════════════════════════════════════════╗" | tee -a "$SUMMARY_LOG"
+echo "║  ABLATION 2: STABILITY FIXES          ║" | tee -a "$SUMMARY_LOG"
+echo "╚════════════════════════════════════════╝" | tee -a "$SUMMARY_LOG"
+echo "" | tee -a "$SUMMARY_LOG"
+
+# Config 2a: WITH stability fixes (NEW RUN)
+run_experiment \
+    "2a_stable_64tok" \
+    "64 tokens WITH InfoNCE + early stopping + gen hygiene" \
+    --dataset gsm8k \
+    --lr 1e-4 \
+    --bottleneck_dim 1024 \
+    --soft_tokens 64 \
+    --depth 8 \
+    --heads 16 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 750 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
+echo "" | tee -a "$SUMMARY_LOG"
+echo "NOTE: Baseline (2b_baseline_64tok) reuses successful_experiments/cross_model/85/train_high_capacity.log" | tee -a "$SUMMARY_LOG"
+echo "      Peak: 81.5% → Final: 36.0% (no stability fixes)" | tee -a "$SUMMARY_LOG"
+echo "" | tee -a "$SUMMARY_LOG"
+
+# ============================================
+# ABLATION 3: Sequence Length (all with stability)
+# Research Question: Compression vs quality tradeoff?
+# ============================================
+
+echo "╔════════════════════════════════════════╗" | tee -a "$SUMMARY_LOG"
+echo "║  ABLATION 3: SEQUENCE LENGTH          ║" | tee -a "$SUMMARY_LOG"
+echo "╚════════════════════════════════════════╝" | tee -a "$SUMMARY_LOG"
+echo "" | tee -a "$SUMMARY_LOG"
+
+# Config 3a: 32 tokens (high compression)
+run_experiment \
+    "3a_stable_32tok" \
+    "32 tokens (4.7× compression) WITH stability fixes" \
+    --dataset gsm8k \
+    --lr 1e-4 \
+    --bottleneck_dim 768 \
+    --soft_tokens 32 \
+    --depth 4 \
+    --heads 12 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 600 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
+# Config 3b: 48 tokens (medium compression)
+run_experiment \
+    "3b_stable_48tok" \
+    "48 tokens (3.1× compression) WITH stability fixes" \
+    --dataset gsm8k \
+    --lr 1e-4 \
+    --bottleneck_dim 1024 \
+    --soft_tokens 48 \
+    --depth 6 \
+    --heads 16 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 750 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
+echo "" | tee -a "$SUMMARY_LOG"
+echo "NOTE: 64 tokens result is same as 2a_stable_64tok (reused)" | tee -a "$SUMMARY_LOG"
 echo "" | tee -a "$SUMMARY_LOG"
 
 # ============================================
@@ -329,15 +329,15 @@ echo "------------------------------------------" | tee -a "$SUMMARY_LOG"
     done
 
     # Add baseline from existing experiment (for reference)
-    echo "1b_baseline_64tok,64,GSM8K,81.5%,36.0%,45.5%"
+    echo "2b_baseline_64tok,64,GSM8K,81.5%,36.0%,45.5%"
 
 } | column -t -s',' | tee -a "$SUMMARY_LOG"
 
 echo "" | tee -a "$SUMMARY_LOG"
 echo "STABILITY ANALYSIS:" | tee -a "$SUMMARY_LOG"
-echo "Cross-attention baseline (1b): Peak 81.5% → Final 36.0% (45.5% degradation)" | tee -a "$SUMMARY_LOG"
-echo "Cross-attention w/ fixes (1a): Target <10% degradation" | tee -a "$SUMMARY_LOG"
-echo "DiT experiments (3a-3d): Testing if iterative refinement prevents collapse" | tee -a "$SUMMARY_LOG"
+echo "Cross-attention baseline (2b): Peak 81.5% → Final 36.0% (45.5% degradation)" | tee -a "$SUMMARY_LOG"
+echo "Cross-attention w/ fixes (2a): Target <10% degradation" | tee -a "$SUMMARY_LOG"
+echo "DiT experiments (1a-1d): Testing if iterative refinement prevents collapse" | tee -a "$SUMMARY_LOG"
 echo "  → Success criteria: Final accuracy within 10% of peak" | tee -a "$SUMMARY_LOG"
 echo "  → Key: Does DiT maintain performance better than cross-attention?" | tee -a "$SUMMARY_LOG"
 echo "" | tee -a "$SUMMARY_LOG"
@@ -416,7 +416,7 @@ def main():
             results[exp_name] = parse_log(log_file)
 
     # Add baseline from existing experiment (for comparison)
-    results['1b_baseline_64tok'] = {
+    results['2b_baseline_64tok'] = {
         'evals': [
             {'step': 250, 'target': 0.730, 'bridged': 0.290},
             {'step': 500, 'target': 0.730, 'bridged': 0.655},
