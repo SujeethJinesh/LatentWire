@@ -20,8 +20,8 @@ SOURCE_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 PER_DEVICE_BATCH=4  # Reduced from 10 to avoid OOM with 2× 7B/8B models
 EVAL_EVERY=250
-EVAL_SAMPLES=500  # Batched evaluation to avoid OOM
-MAX_NEW_TOKENS=256
+EVAL_SAMPLES=200  # Reduced for faster eval iterations (was 500)
+MAX_NEW_TOKENS=100  # Sufficient for GSM8K answers (was 256)
 
 # Create output directory
 OUTPUT_DIR="paper_writing/runs/ablations_$(date +"%Y%m%d_%H%M%S")"
@@ -59,7 +59,7 @@ run_experiment() {
             --per_device_batch "$PER_DEVICE_BATCH" \
             --eval_every "$EVAL_EVERY" \
             --eval_samples "$EVAL_SAMPLES" \
-            --eval_batch_size 20 \
+            --eval_batch_size 50 \
             --max_new_tokens "$MAX_NEW_TOKENS" \
             --bf16 \
             --no_compile \
