@@ -463,16 +463,82 @@ class BottleneckedGatedTranslator(nn.Module):
 # Data prep (GSM8K)
 # ---------------------------
 
+# Global state for train/eval mode switching
+EVAL_MODE = False
+EVAL_EXEMPLARS = None
+
+def _format_train_prompt(problem: str) -> str:
+    """
+    Training prompt: minimal, bridge-friendly template.
+
+    Simple CoT + '#### <number>' keeps training stable and isolates translator effects;
+    evaluation handles leaderboard comparability.
+    """
+    return (
+        "Solve the problem step by step, then end your final line with '#### <number>'.\n\n"
+        "Problem:\n"
+        f"{problem.strip()}\n\n"
+        "Answer:"
+    )
+
+def _format_eval_8shot_prompt(problem: str, exemplars: List[Tuple[str, str, str]]) -> str:
+    """
+    Evaluation prompt: 8-shot Chain-of-Thought with fixed exemplars.
+
+    8-shot Chain-of-Thought is the de-facto GSM8K evaluation style used in many reports
+    and matches lm-evaluation-harness `gsm8k_cot` behavior.
+    (Kojima et al., 2022; EleutherAI lm-eval harness)
+
+    Args:
+        problem: The question to solve
+        exemplars: List of 8 tuples (question, rationale_text, final_number_string)
+    """
+    header = "Answer the following questions step by step and end with '#### <number>'.\n\n"
+    fewshot = "\n\n".join(
+        f"Q: {q}\nA: {r}\n#### {ans}"
+        for (q, r, ans) in exemplars
+    )
+    target = f"\n\nQ: {problem.strip()}\nA: Let's think step by step.\n\nAnswer:"
+    return header + fewshot + target
+
+def _sample_gsm8k_exemplars(train_ds, k: int = 8, seed: int = 42, avoid_idx: int = None):
+    """
+    Sample k exemplars from GSM8K train split with fixed seed for reproducible few-shot eval.
+
+    Args:
+        train_ds: GSM8K train dataset
+        k: Number of exemplars (default 8)
+        seed: Random seed for reproducibility (default 42)
+        avoid_idx: Optional index to exclude from sampling
+
+    Returns:
+        List of k tuples (question, rationale, final_answer_number)
+    """
+    rng = random.Random(seed)
+    pool = [i for i in range(len(train_ds)) if i != avoid_idx]
+    idxs = rng.sample(pool, k)
+    exemplars = []
+    for j in idxs:
+        q = train_ds[j]["question"].strip()
+        full = train_ds[j]["answer"].strip()
+        final = extract_final_answer(full)  # existing #### extractor
+        rationale = full.rsplit("####", 1)[0].strip() if "####" in full else full
+        exemplars.append((q, rationale, final))
+    return exemplars
+
 def format_prompts(problem: str) -> Tuple[str, str]:
     """
     Build comparable prompts for source and target.
-    Keep it simple and consistent so we don't inject extra prompt mismatch.
+    Automatically uses train format or 8-shot eval format based on EVAL_MODE.
     """
-    base = (
-        "You are a helpful math tutor. Solve the problem step by step, "
-        "then end your final line with '#### <number>'.\n\nProblem:\n"
-    )
-    prompt = base + problem.strip() + "\n\nAnswer:"
+    if not EVAL_MODE:
+        # Training: simple CoT template
+        prompt = _format_train_prompt(problem)
+    else:
+        # Evaluation: 8-shot CoT with fixed exemplars
+        assert EVAL_EXEMPLARS is not None and len(EVAL_EXEMPLARS) == 8, \
+            "EVAL_EXEMPLARS must be set to 8 exemplars before eval"
+        prompt = _format_eval_8shot_prompt(problem, EVAL_EXEMPLARS)
     return prompt, prompt  # use same text for A and B
 
 def build_samples(batch, src_tok, tgt_tok, device, tgt_model, answer_as_label=True) -> List[Sample]:
@@ -665,17 +731,24 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
         return []
 
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
-                              device, dtype, num_samples: int = 200, max_new_tokens: int = 256,
+                              device, dtype, train_ds, num_samples: int = 200, max_new_tokens: int = 256,
                               show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50):
     """
     Distributed evaluation: each rank processes num_samples // world_size samples.
     Results are gathered on rank 0 for final metric computation.
     Evaluates in batches to avoid OOM.
     Uses GSM8K answer extraction (#### <number> format).
+
+    Evaluation automatically uses 8-shot CoT prompting with fixed seed=42 exemplars.
     """
     tgt_model.eval()
     src_model.eval()
     translator.eval()
+
+    # Enable evaluation mode with 8-shot CoT prompts
+    global EVAL_MODE, EVAL_EXEMPLARS
+    EVAL_MODE = True
+    EVAL_EXEMPLARS = _sample_gsm8k_exemplars(train_ds, k=8, seed=42)
 
     # Determine rank and world_size for distributed evaluation
     if dist.is_initialized():
@@ -812,6 +885,10 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 generated_part = bridged_texts[i][len(samples[i].tgt_prompt):][:300]
                 log(f"Bridged generation start: {generated_part}...")
         log("="*60 + "\n")
+
+    # Reset evaluation mode
+    EVAL_MODE = False
+    EVAL_EXEMPLARS = None
 
     return acc_baseline, acc_bridged
 
@@ -1228,7 +1305,7 @@ def main():
             with torch.no_grad():
                 acc_base, acc_bridged = evaluate_numeric_accuracy(
                     test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
-                    device, dtype, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
+                    device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
                     show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
                     eval_batch_size=args.eval_batch_size
                 )
