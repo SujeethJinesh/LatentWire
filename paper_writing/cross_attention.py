@@ -628,6 +628,10 @@ class DiTBridgeTranslator(nn.Module):
         return self.to_tgt(x_m)  # [B,K,tgt_dim]
 
     def _forward_train_rf(self, src_h, src_mask, teacher_tgt):  # teacher_tgt: [B,K,tgt_dim]
+        """
+        Rectified Flow training: interpolate x_t linearly from noise z to data x₁;
+        predict velocity v = x₁ − z; provide x̂₀ ≈ x_t + v·(1−t) to outer LM path.
+        """
         B = src_h.size(0); device = src_h.device; dtype = src_h.dtype
         # project teacher & noise to model space
         x1_m = self.to_model(teacher_tgt)  # data endpoint (answer embeddings)
@@ -826,15 +830,22 @@ def build_batch_inputs(samples: List[Sample],
     if args is not None and args.bridge == "dit" and mode == "train":
         K = translator.K if hasattr(translator, 'K') else args.soft_tokens
         with torch.no_grad():
-            # CRITICAL: Use answer text (tgt_answer), NOT prompt text (tgt_prompt)!
-            # The DiT learns to denoise towards answer embeddings, which is what the model generates.
-            # We repeat/tile the answer embeddings to K tokens to provide dense supervision.
-            # This is the Transfusion-style approach: teach the diffusion model the target distribution.
-            answers = [s.tgt_answer if s.tgt_answer.strip() else (tgt_tok.bos_token or " ") for s in samples]
-            enc = tgt_tok(answers, return_tensors="pt", padding=True, truncation=True, max_length=2048)
+            # Teacher embedding choice: answer vs. prompt
+            # - answer (default): DiT learns to denoise towards answer embeddings (output-space alignment)
+            #   This is the Transfusion-style approach: teach the diffusion model the target distribution.
+            # - prompt: DiT learns to denoise towards prompt embeddings (conditioning alignment)
+            #   This may help the DiT learn better representations of the question/context.
+            if args.dit_teacher == "answer":
+                # Answer teacher: use answer text (what the model generates)
+                texts = [s.tgt_answer if s.tgt_answer.strip() else (tgt_tok.bos_token or " ") for s in samples]
+            else:
+                # Prompt teacher: use prompt text (the question/context)
+                texts = [s.tgt_prompt if s.tgt_prompt.strip() else (tgt_tok.bos_token or " ") for s in samples]
+
+            enc = tgt_tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=2048)
             enc = {k: v.to(device) for k, v in enc.items()}
-            emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, Ta, d_tgt]
-            teacher_soft = _repeat_to_k(emb, K)                                # [B, K, d_tgt]
+            emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, T_text, d_tgt]
+            teacher_soft = _repeat_to_k(emb, K)                                  # [B, K, d_tgt]
         soft_tokens = translator(src_h, src_mask, teacher_soft_tokens=teacher_soft)
     else:
         soft_tokens = translator(src_h, src_mask)  # [B, K, d_tgt]
@@ -1182,6 +1193,12 @@ def main():
     parser.add_argument("--dit_pool", type=str, choices=["mean", "attn"], default="mean")
     parser.add_argument("--dit_cond_dim", type=int, default=512, help="Conditioner MLP width")
     parser.add_argument("--dit_loss_weight", type=float, default=0.1)
+    parser.add_argument("--dit_loss_warmup", type=int, default=0,
+                        help="Warm up dit_loss_weight linearly over the first N steps (0=off).")
+    parser.add_argument("--dit_teacher", type=str,
+                        choices=["answer", "prompt"],
+                        default="answer",
+                        help="Supervision for teacher_tgt: 'answer' (current) or 'prompt' (prefix).")
     args = parser.parse_args()
 
     setup_ddp()
@@ -1515,16 +1532,22 @@ def main():
         loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss
 
         # Add DiT flow loss if using DiT bridge
-        # Flow loss is applied uniformly (no warmup) - we want the DiT to learn from step 1
         # The args.dit_loss_weight balances flow loss vs LM loss (default 0.1)
         # Too high: DiT dominates, model ignores LM signal
         # Too low: DiT doesn't learn proper denoising
+        # Optional linear warmup over first N steps via args.dit_loss_warmup
         if args.bridge == "dit":
             # Get the module (unwrap DDP if needed)
             module = translator.module if isinstance(translator, DDP) else translator
             aux = getattr(module, "pop_last_losses", lambda: {})()
             dit_flow_loss = aux.get("dit_flow", torch.tensor(0.0, device=loss.device, dtype=loss.dtype))
-            loss = loss + args.dit_loss_weight * dit_flow_loss
+
+            # Apply warmup if configured
+            weight = args.dit_loss_weight
+            if args.dit_loss_warmup and step <= args.dit_loss_warmup:
+                weight = weight * float(step) / float(max(1, args.dit_loss_warmup))
+
+            loss = loss + weight * dit_flow_loss
 
         # Detach for logging to avoid DDP autograd warning
         loss_scalar = loss.detach()

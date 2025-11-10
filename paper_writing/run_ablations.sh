@@ -185,6 +185,31 @@ run_experiment \
     --early_stop_patience 5 \
     --seed 1234
 
+# Config 1e: DiT with prompt-teacher + flow warmup
+run_experiment \
+    "1e_dit_prompt_teacher_64tok" \
+    "DiT 64 tokens, teacher=prompt, flow warmup 500" \
+    --dataset gsm8k \
+    --bridge dit \
+    --lr 1e-4 \
+    --dit_dim 512 \
+    --soft_tokens 64 \
+    --dit_depth 6 \
+    --dit_heads 8 \
+    --dit_steps_train 2 \
+    --dit_steps_eval 4 \
+    --dit_dropout 0.1 \
+    --dit_pool mean \
+    --dit_teacher prompt \
+    --dit_loss_weight 0.1 \
+    --dit_loss_warmup 500 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 750 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
 echo "" | tee -a "$SUMMARY_LOG"
 echo "NOTE: DiT experiments test if iterative refinement prevents collapse (81.5% → 36%)" | tee -a "$SUMMARY_LOG"
 echo "      Key question: Does DiT maintain high final accuracy vs cross-attention?" | tee -a "$SUMMARY_LOG"
