@@ -1189,7 +1189,8 @@ def main():
     parser.add_argument("--dit_steps_eval", type=int, default=4)
     parser.add_argument("--dit_dropout", type=float, default=0.1)
     parser.add_argument("--dit_cfg", type=float, default=0.0, help="CFG scale (off by default)")
-    parser.add_argument("--dit_cfg_dropout", type=float, default=0.1, help="p(cond drop) when training if CFG>0")
+    parser.add_argument("--dit_drop_cond", type=float, default=0.1, help="p(cond drop) when training if CFG>0")
+    parser.add_argument("--dit_cfg_dropout", type=float, default=None, help="Alias for --dit_drop_cond (deprecated)")
     parser.add_argument("--dit_pool", type=str, choices=["mean", "attn"], default="mean")
     parser.add_argument("--dit_cond_dim", type=int, default=512, help="Conditioner MLP width")
     parser.add_argument("--dit_loss_weight", type=float, default=0.1)
@@ -1200,6 +1201,10 @@ def main():
                         default="answer",
                         help="Supervision for teacher_tgt: 'answer' (current) or 'prompt' (prefix).")
     args = parser.parse_args()
+
+    # Handle deprecated alias
+    if args.dit_cfg_dropout is not None:
+        args.dit_drop_cond = args.dit_cfg_dropout
 
     setup_ddp()
     rank = dist.get_rank() if dist.is_initialized() else 0
@@ -1321,7 +1326,7 @@ def main():
             steps_train=args.dit_steps_train,
             steps_eval=args.dit_steps_eval,
             cfg_scale=args.dit_cfg,
-            cfg_dropout=args.dit_cfg_dropout,
+            cfg_dropout=args.dit_drop_cond,
             pool=args.dit_pool,
             cond_dim=args.dit_cond_dim
         ).to(device=device, dtype=dtype)
