@@ -1,118 +1,0 @@
-W1110 10:29:31.612000 168756 torch/distributed/run.py:793] 
-W1110 10:29:31.612000 168756 torch/distributed/run.py:793] *****************************************
-W1110 10:29:31.612000 168756 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1110 10:29:31.612000 168756 torch/distributed/run.py:793] *****************************************
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-[W1110 10:29:42.303628747 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1110 10:29:42.326045394 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1110 10:29:42.331240228 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1110 10:29:42.364720183 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-Reproducibility enabled: base_seed=1234, effective_seed=1234
-==== Config ====
-source_model: mistralai/Mistral-7B-Instruct-v0.3
-target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
-bottleneck_dim: 1024
-soft_tokens: 64
-depth: 2
-heads: 8
-lr: 0.0001
-weight_decay: 0.01
-train_steps: 3000
-warmup_steps: 750
-per_device_batch: 4
-eval_every: 250
-eval_samples: 500
-max_new_tokens: 256
-seed: 1234
-bf16: True
-save_path: paper_writing/runs/ablations_20251110_102930/1a_dit_2step_64tok/checkpoint.pt
-show_eval_samples: 1
-early_stop_patience: 5
-dataset: gsm8k
-info_nce_weight: 0.05
-eval_batch_size: 20
-no_compile: True
-bridge: dit
-dit_dim: 512
-dit_depth: 6
-dit_heads: 8
-dit_steps_train: 2
-dit_steps_eval: 4
-dit_dropout: 0.1
-dit_cfg: 0.0
-dit_drop_cond: 0.1
-dit_cfg_dropout: None
-dit_pool: mean
-dit_cond_dim: 512
-dit_loss_weight: 0.1
-dit_loss_warmup: 0
-dit_teacher: answer
-
-==== Reproducibility Settings ====
-Base seed: 1234
-Effective seed (with rank offset): 1234
-CUDA deterministic: True
-CUDA benchmark: False
-Deterministic algorithms: True
-CUBLAS workspace: :16:8
-World size: 4 (each rank samples different data)
-Loading source model/tokenizer...
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2983.15it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3371.63it/s]
-Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1408.75it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 4188.72it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:16<00:33, 16.63s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:14<00:29, 14.86s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:14<00:29, 14.88s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:15<00:30, 15.29s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:29<00:14, 14.63s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:31<00:15, 15.42s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:29<00:14, 14.72s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:29<00:14, 14.91s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:41<00:00, 13.69s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:41<00:00, 13.97s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:43<00:00, 14.17s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:43<00:00, 14.63s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:42<00:00, 13.74s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:42<00:00, 14.02s/it]
-Loading target model/tokenizer...
-Loading checkpoint shards: 100%|██████████| 3/3 [00:42<00:00, 13.68s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:42<00:00, 14.05s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 447.27it/s]
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 500.39it/s]
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 126.15it/s]
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 101.44it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:42, 14.11s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:42, 14.03s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:42, 14.11s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:14<00:43, 14.47s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:27, 13.77s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:27, 13.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:27, 13.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:28<00:28, 14.17s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:13, 13.74s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:13, 13.73s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:13, 13.85s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:42<00:14, 14.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:45<00:00,  9.86s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:45<00:00,  9.85s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:45<00:00, 11.32s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:45<00:00, 11.30s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:45<00:00,  9.89s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:45<00:00, 11.36s/it]
-torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)
-Source hidden dim: 4096 | Target hidden dim: 4096
-Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 10.00s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 11.54s/it]
-Target embedding RMS (median): 0.0107
-NOTE: RMS scale matching is applied during batch collation (before concat)
-Bridge: dit (DiTBridgeTranslator)
-  Using DiTBridge: dim=512, depth=6, heads=8, steps(train/eval)=2/4, cfg=0.0, pool=mean, cond_dim=512
-Translator parameters: 44.1M
-Loading GSM8K...
-Data sampler initialized with seed 1234 (base=1234, rank=0)
-Optimizer groups: 37 decay, 36 no_decay, 0 gates (LR ×3)
-
-============================================================
-INITIAL EVALUATION (Step 0 - Before Training)
-============================================================
-[Distributed Eval] Sharding 500 samples across 4 ranks:
-  Rank 0: samples 0 to 125 (125 samples)
-  Rank 1: samples 125 to 250 (125 samples)
-  Rank 2: samples 250 to 375 (125 samples)
-  Rank 3: samples 375 to 500 (125 samples)
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
