@@ -1,0 +1,347 @@
+W1109 15:27:22.314000 3164056 torch/distributed/run.py:793] 
+W1109 15:27:22.314000 3164056 torch/distributed/run.py:793] *****************************************
+W1109 15:27:22.314000 3164056 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1109 15:27:22.314000 3164056 torch/distributed/run.py:793] *****************************************
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Reproducibility enabled: base_seed=1234, effective_seed=1234
+==== Config ====
+source_model: mistralai/Mistral-7B-Instruct-v0.3
+target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
+bottleneck_dim: 1024
+soft_tokens: 64
+depth: 8
+heads: 16
+lr: 0.0001
+weight_decay: 0.01
+train_steps: 3000
+warmup_steps: 750
+per_device_batch: 10
+eval_every: 250
+eval_samples: 500
+max_new_tokens: 256
+seed: 1234
+bf16: True
+save_path: paper_writing/runs/ablations_20251109_152720/1a_stable_64tok/checkpoint.pt
+show_eval_samples: 1
+early_stop_patience: 5
+dataset: gsm8k
+info_nce_weight: 0.05
+eval_batch_size: 125
+no_compile: True
+
+==== Reproducibility Settings ====
+Base seed: 1234
+Effective seed (with rank offset): 1234
+CUDA deterministic: True
+CUDA benchmark: False
+Deterministic algorithms: True
+CUBLAS workspace: :16:8
+World size: 4 (each rank samples different data)
+Loading source model/tokenizer...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2023.95it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 6216.85it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 6339.00it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 4959.76it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:13<00:27, 13.64s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:13<00:27, 13.65s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:13<00:27, 13.65s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:15<00:30, 15.12s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:27<00:13, 13.86s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:27<00:13, 13.86s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:27<00:13, 13.86s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:29<00:14, 14.63s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.25s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.25s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.39s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.26s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.39s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.40s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:41<00:00, 13.58s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:41<00:00, 13.91s/it]
+Loading target model/tokenizer...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3917.16it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6056.76it/s]
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 520.95it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4878.52it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:40, 13.48s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:41, 13.70s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:40, 13.54s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:41, 13.88s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:26<00:26, 13.40s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:26, 13.48s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:26<00:26, 13.40s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:27, 13.66s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:40<00:13, 13.51s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:40<00:13, 13.56s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:40<00:13, 13.53s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:13, 13.83s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00,  9.63s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00,  9.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00, 11.05s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00,  9.67s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00, 11.09s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00, 11.04s/it]
+
+Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00,  9.70s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:44<00:00, 11.20s/it]
+torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)
+Source hidden dim: 4096 | Target hidden dim: 4096
+Target embedding RMS (median): 0.0107
+NOTE: RMS scale matching is now applied automatically in translator forward pass
+Translator parameters: 189.0M
+Loading GSM8K...
+Data sampler initialized with seed 1234 (base=1234, rank=0)
+Optimizer groups: 82 decay, 82 no_decay, 16 gates (LR ×3)
+
+============================================================
+INITIAL EVALUATION (Step 0 - Before Training)
+============================================================
+[Distributed Eval] Sharding 500 samples across 4 ranks:
+  Rank 0: samples 0 to 125 (125 samples)
+  Rank 1: samples 125 to 250 (125 samples)
+  Rank 2: samples 250 to 375 (125 samples)
+  Rank 3: samples 375 to 500 (125 samples)
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: ...
+Gold answer: 18
+Target-alone: 210.0.0
+Bridged: [invalid]
+Bridged generation start:  1. The first step is to identify the problem or issue that needs to be addressed.
+  2. The second step is for the individual to take responsibility for their own learning and development, which includes taking action to address the identified problem or need.
+ 3. The third step is a process of self...
+
+--- Example 2 ---
+Question: ...
+Gold answer: 3
+Target-alone: 3
+Bridged: [invalid]
+Bridged generation start:  1. The first step is to identify the problem or issue that needs to be addressed.
+  2. The second step is for the individual to take responsibility for their own learning and development, which includes taking action to address the identified problem or need.
+ 3. The third step is a process of self...
+
+--- Example 3 ---
+Question: ...
+Gold answer: 70000
+Target-alone: [invalid]
+Bridged: [invalid]
+Bridged generation start:  1. The first step is to identify the problem or issue that needs to be addressed.
+  2. The second step is for the individual to take responsibility for their own learning and development, which includes taking action to address the identified problem or need.
+ 3. The third step is a process of self...
+============================================================
+
+[Eval] Step 0 | Target-alone acc: 0.298 | Bridged acc: 0.000
+============================================================
+
+
+============================================================
+LABEL ALIGNMENT DIAGNOSTIC (Step 0)
+============================================================
+  Input embeddings shape: torch.Size([10, 277, 4096])
+  Labels shape: torch.Size([10, 277])
+  Attention mask shape: torch.Size([10, 277])
+  Soft token count (K): 64
+  Total tokens: 2770
+  Supervised tokens: 1035
+  Masked tokens: 1735
+  Sample 0 first 10 labels: [-100, -100, -100, -100, -100, -100, -100, -100, -100, -100]
+  Sample 0 last 10 labels: [717, 2511, 717, 2033, 12556, 3153, 627, 827, 220, 717]
+  All soft token labels == -100? True
+  Supervised tokens per sample: [87, 133, 62, 125, 96, 55, 143, 213, 51, 70]
+============================================================
+
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Step 20/3000 | Loss (avg over last 20): 1.8483
+Step 40/3000 | Loss (avg over last 20): 1.8117
+Step 60/3000 | Loss (avg over last 20): 1.7813
+Step 80/3000 | Loss (avg over last 20): 1.7420
+Step 100/3000 | Loss (avg over last 20): 1.7256
+Step 120/3000 | Loss (avg over last 20): 1.6750
+Step 140/3000 | Loss (avg over last 20): 1.6066
+Step 160/3000 | Loss (avg over last 20): 1.5031
+Step 180/3000 | Loss (avg over last 20): 1.3998
+Step 200/3000 | Loss (avg over last 20): 1.3597
+Step 220/3000 | Loss (avg over last 20): 1.3086
+Step 240/3000 | Loss (avg over last 20): 1.2775
+[Distributed Eval] Sharding 500 samples across 4 ranks:
+  Rank 0: samples 0 to 125 (125 samples)
+  Rank 1: samples 125 to 250 (125 samples)
+  Rank 2: samples 250 to 375 (125 samples)
+  Rank 3: samples 375 to 500 (125 samples)
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: ...
+Gold answer: 18
+Target-alone: 210.0.0
+Bridged: [invalid]
+Bridged generation start:  1.00
+2.00 + 0.50 = <<2+0.5=2.5>>2.50
+3.00 – 2.25 = <<3-2.75=0.25>>0.2500
+4.00 x 0,25 =<<4*0.025=0,10>>0,1000
+5.00 / 2 = <<5/2=2,5>> 2,500
+6.00 - 2.50 =<<6-2,50=3,50>>3,5000
+7.00 * 0,25 = 1,75
+8.00/2 = 4,00
+9.00-2,50 = 6,50
+10.00*0,05 = 0,,50
+11.00+0,50 =11,50 
+12.00–2,00 = 10,00 
+13.00×0,20 = 2,60
+...
+
+--- Example 2 ---
+Question: ...
+Gold answer: 3
+Target-alone: 3
+Bridged: 3.5
+Bridged generation start:  1.00
+2.00 + 0.50 = 2.50
+3.00 - 2,50 = <<3-2.5=0.5>>0.5000
+4.00 – 0,50=<<4-0,5=3,5>>3.50
+
+#### 3.5
+#### 2 #### 0 #### 3,50
+####   1 #### 2 ##### 0 ##### 2
+####     1   #### 1 ##### 1  ####  1
+####       1     ####  ###### 1 
+####         1       ####  ### 1  
+####           1         ####  ## 1   
+#...
+
+--- Example 3 ---
+Question: ...
+Gold answer: 70000
+Target-alone: [invalid]
+Bridged: [invalid]
+Bridged generation start:  1.00
+2.00 
+3.00
+
+4.00 
+
+5.00
+ 
+6.00 
+ 
+7.00  
+8.00   
+9.00    
+10.00     
+11.00      
+12.00       
+13.00        
+14.00         
+15.00          
+16.00           
+17.00            
+18.00             
+19.00              
+20.00               
+21.00                
+22.00                 
+23.00          ...
+============================================================
+
+[Eval] Step 250 | Target-alone acc: 0.298 | Bridged acc: 0.000
+[Early Stop] No improvement, patience: 1/5
+Step 260/3000 | Loss (avg over last 20): 1.2224
+Step 280/3000 | Loss (avg over last 20): 1.2507
+Step 300/3000 | Loss (avg over last 20): 1.2204
+Step 320/3000 | Loss (avg over last 20): 1.2163
+Step 340/3000 | Loss (avg over last 20): 1.1865
+Step 360/3000 | Loss (avg over last 20): 1.2090
+Step 380/3000 | Loss (avg over last 20): 1.1790
+Step 400/3000 | Loss (avg over last 20): 1.2506
+Step 420/3000 | Loss (avg over last 20): 1.2609
+Step 440/3000 | Loss (avg over last 20): 1.2251
+Step 460/3000 | Loss (avg over last 20): 1.2465
+Step 480/3000 | Loss (avg over last 20): 1.2380
+Step 500/3000 | Loss (avg over last 20): 1.2276
+[Distributed Eval] Sharding 500 samples across 4 ranks:
+  Rank 0: samples 0 to 125 (125 samples)
+  Rank 1: samples 125 to 250 (125 samples)
+  Rank 2: samples 250 to 375 (125 samples)
+  Rank 3: samples 375 to 500 (125 samples)
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question: ...
+Gold answer: 18
+Target-alone: 210.0.0
+Bridged: 6.25
+Bridged generation start: 4.5 + 2 = <<4.50+2=6.50>>6.5
+#### 6.25 - 0.25 = <<6.250-0.250=6>>6
+#### (3 * 1) + (2 * 2) = <<(3*1)+(2*2)=7>>7
+#### $10 / 2 =$<<$10/2=5>>5
+##### 8 * 0 = <<8*0=0>>0
+#### ($15 *.05) + ($20 *.03) = $<<15*.05+20*.03=1.80>>1.8
+#### ((100 * 3) + 200) / 4 = <<((100*3)+200)/4=125>>125
+#### $(12 * 5) + $10 =...
+
+--- Example 2 ---
+Question: ...
+Gold answer: 3
+Target-alone: 3
+Bridged: 7.75
+Bridged generation start:  2.5 * 3 = <<2.50*3=7.50>>7.5
+#### 7.75 - 7.5 = <<7.25-7.55=0.30>>0.3
+####.3 /.05 = <<.3/.05=6>>6
+#### $<<6*10=60>>60
+#### The total cost is $60 + $15 = $<<60+15=75>>75
+#### Which is a 20% increase from the original price of $75
+##### ###### 100/4 = <<100/5=20>>20%
+#### So the new price is 120% of t...
+
+--- Example 3 ---
+Question: ...
+Gold answer: 70000
+Target-alone: [invalid]
+Bridged: 6.25
+Bridged generation start: 4.5 + 2 = <<4.50+2=6.50>>6.5
+#### 6.25 + 0.25 = <<6.2500+0.25000=6>>6
+####.75 + 1.25 - 0 = <<.75+1.250-0=2>>2
+#### $3.50 + $2.50 = $<<3.5+2.5=6>>>6
+$6.00 - $0.50 =$<<6-0.5=.5>>.5 is the difference between the two prices.
+#### 10 x 0/100 = $<<(10*0)/100=0>>0
+#### The price of the shirt is $<<15=15>>1...
+============================================================
+
+[Eval] Step 500 | Target-alone acc: 0.298 | Bridged acc: 0.004
+[Early Stop] New best bridged acc: 0.004, resetting patience
+Step 520/3000 | Loss (avg over last 20): 1.2293
+Step 540/3000 | Loss (avg over last 20): 1.2093
+Step 560/3000 | Loss (avg over last 20): 1.2052
+Step 580/3000 | Loss (avg over last 20): 1.2012
+Step 600/3000 | Loss (avg over last 20): 1.1939
+Step 620/3000 | Loss (avg over last 20): 1.1952
+Step 640/3000 | Loss (avg over last 20): 1.1934
+Step 660/3000 | Loss (avg over last 20): 1.1809
+Step 680/3000 | Loss (avg over last 20): 1.1929
+Step 700/3000 | Loss (avg over last 20): 1.2009
+Step 720/3000 | Loss (avg over last 20): 1.1989
+Step 740/3000 | Loss (avg over last 20): 1.1683
+[Distributed Eval] Sharding 500 samples across 4 ranks:
+  Rank 0: samples 0 to 125 (125 samples)
+  Rank 1: samples 125 to 250 (125 samples)
+  Rank 2: samples 250 to 375 (125 samples)
+  Rank 3: samples 375 to 500 (125 samples)

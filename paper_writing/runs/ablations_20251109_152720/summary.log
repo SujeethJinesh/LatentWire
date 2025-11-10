@@ -1,0 +1,12 @@
+=== ABLATION EXPERIMENTS ===
+Output directory: paper_writing/runs/ablations_20251109_152720
+
+╔════════════════════════════════════════╗
+║  ABLATION 1: STABILITY FIXES          ║
+╚════════════════════════════════════════╝
+
+==========================================
+Experiment: 1a_stable_64tok
+Description: 64 tokens WITH InfoNCE + early stopping + gen hygiene
+Start: Sun Nov  9 15:27:20 PST 2025
+------------------------------------------
