@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 # Paper Ablation Studies - Focused experiments for 3-week deadline
 # Total runtime: ~12 hours on 4× H100
@@ -14,7 +14,7 @@ echo ""
 
 # Base configuration
 export PYTHONPATH=.
-export PYTORCH_ENABLE_MPS_FALLBACK=1
+: ${PY_SCRIPT:=cross_attention.py}
 SOURCE_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 PER_DEVICE_BATCH=10
@@ -52,13 +52,13 @@ run_experiment() {
     RANDOM_PORT=$((29500 + RANDOM % 1000))
 
     {
-        torchrun --nproc_per_node=4 --master_port "$RANDOM_PORT" paper_writing/cross_attention.py \
+        torchrun --standalone --nproc_per_node=4 --master_port "$RANDOM_PORT" "$PY_SCRIPT" \
             --source_model "$SOURCE_MODEL" \
             --target_model "$TARGET_MODEL" \
             --per_device_batch "$PER_DEVICE_BATCH" \
             --eval_every "$EVAL_EVERY" \
             --eval_samples "$EVAL_SAMPLES" \
-            --eval_batch_size 125 \
+            --eval_batch_size 100 \
             --max_new_tokens "$MAX_NEW_TOKENS" \
             --bf16 \
             --no_compile \
@@ -212,7 +212,7 @@ echo "------------------------------------------" | tee -a "$SUMMARY_LOG"
                 peak_val=$(echo "$peak" | tr -d '%')
                 final_val=$(echo "$final" | tr -d '%')
                 if [ -n "$peak_val" ] && [ -n "$final_val" ]; then
-                    deg=$(echo "$peak_val - $final_val" | bc -l | xargs printf "%.1f%%")
+                    deg=$(awk -v p="$peak_val" -v f="$final_val" 'BEGIN{printf "%.1f%%", (p - f)}')
                     echo "$name,$tokens,$dataset,$peak,$final,$deg"
                 fi
             fi
@@ -333,7 +333,6 @@ def main():
         print(f"{name:<25} {peak:>6.1f}%   {final:>6.1f}%   {deg:>6.1f}%")
 
     print(f"\nDetailed results saved to: {script_dir / 'ablation_results.json'}")
-    print(f"\nTo generate plots, run: python {__file__} --plot")
 
 if __name__ == '__main__':
     main()
