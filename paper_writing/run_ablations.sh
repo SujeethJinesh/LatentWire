@@ -112,7 +112,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 750 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 # Config 1b: DiT-4step (more refinement)
@@ -135,7 +135,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 750 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 # Config 1c: DiT with attention pooling (richer conditioning)
@@ -158,7 +158,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 750 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 # Config 1d: DiT with CFG (classifier-free guidance)
@@ -183,7 +183,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 750 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 # Config 1e: DiT with prompt-teacher + flow warmup
@@ -208,7 +208,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 750 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 echo "" | tee -a "$SUMMARY_LOG"
@@ -240,7 +240,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 750 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 echo "" | tee -a "$SUMMARY_LOG"
@@ -272,7 +272,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 600 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 # Config 3b: 48 tokens (medium compression)
@@ -289,7 +289,7 @@ run_experiment \
     --train_steps 3000 \
     --warmup_steps 750 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 5 \
+    --early_stop_patience 2 \
     --seed 1234
 
 echo "" | tee -a "$SUMMARY_LOG"
