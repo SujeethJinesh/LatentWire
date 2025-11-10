@@ -625,7 +625,7 @@ def build_batch_inputs(samples: List[Sample],
 
     # Concatenate soft tokens in front
     K = soft_tokens.size(1)
-    max_T = tgt_embeds.size(1)
+    T_tgt = tgt_embeds.size(1)
     inputs_embeds = torch.cat([soft_tokens, tgt_embeds], dim=1)  # [B, K+T, d]
 
     # Attention mask: concatenate 1s for soft tokens with actual text attention mask
@@ -642,8 +642,8 @@ def build_batch_inputs(samples: List[Sample],
         for i in range(B):
             labels[i, tgt_batch["attention_mask"][i] == 0] = -100
     else:
-        # Eval mode: dummy labels (not used for generation)
-        labels = torch.full((B, 1), -100, dtype=labels.dtype, device=device)
+        # Eval mode: dummy labels (shape must match T_tgt before K-prepend)
+        labels = tgt_batch["input_ids"].new_full((B, T_tgt), -100)
 
     # Prepend -100 for K soft tokens (no loss on them)
     labels = torch.cat([
