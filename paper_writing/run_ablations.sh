@@ -162,6 +162,115 @@ echo "NOTE: 64 tokens result is same as 1a_stable_64tok (reused)" | tee -a "$SUM
 echo "" | tee -a "$SUMMARY_LOG"
 
 # ============================================
+# ABLATION 3: DiT Bridge Architecture
+# Research Question: Does iterative refinement prevent collapse?
+# ============================================
+
+echo "╔════════════════════════════════════════╗" | tee -a "$SUMMARY_LOG"
+echo "║  ABLATION 3: DiT BRIDGE               ║" | tee -a "$SUMMARY_LOG"
+echo "╚════════════════════════════════════════╝" | tee -a "$SUMMARY_LOG"
+echo "" | tee -a "$SUMMARY_LOG"
+
+# Config 3a: DiT-2step (minimal diffusion, faster)
+run_experiment \
+    "3a_dit_2step_64tok" \
+    "DiT 64 tokens, 2 training steps (like Transfusion)" \
+    --dataset gsm8k \
+    --bridge dit \
+    --lr 1e-4 \
+    --dit_dim 512 \
+    --soft_tokens 64 \
+    --dit_depth 6 \
+    --dit_heads 8 \
+    --dit_steps_train 2 \
+    --dit_steps_eval 4 \
+    --dit_dropout 0.1 \
+    --dit_pool mean \
+    --dit_loss_weight 0.1 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 750 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
+# Config 3b: DiT-4step (more refinement)
+run_experiment \
+    "3b_dit_4step_64tok" \
+    "DiT 64 tokens, 4 training steps (more denoising)" \
+    --dataset gsm8k \
+    --bridge dit \
+    --lr 1e-4 \
+    --dit_dim 512 \
+    --soft_tokens 64 \
+    --dit_depth 6 \
+    --dit_heads 8 \
+    --dit_steps_train 4 \
+    --dit_steps_eval 8 \
+    --dit_dropout 0.1 \
+    --dit_pool mean \
+    --dit_loss_weight 0.1 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 750 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
+# Config 3c: DiT with attention pooling (richer conditioning)
+run_experiment \
+    "3c_dit_attn_64tok" \
+    "DiT 64 tokens, attention pooling for source conditioning" \
+    --dataset gsm8k \
+    --bridge dit \
+    --lr 1e-4 \
+    --dit_dim 512 \
+    --soft_tokens 64 \
+    --dit_depth 6 \
+    --dit_heads 8 \
+    --dit_steps_train 2 \
+    --dit_steps_eval 4 \
+    --dit_dropout 0.1 \
+    --dit_pool attn \
+    --dit_loss_weight 0.1 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 750 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
+# Config 3d: DiT with CFG (classifier-free guidance)
+run_experiment \
+    "3d_dit_cfg_64tok" \
+    "DiT 64 tokens with CFG for better mode coverage" \
+    --dataset gsm8k \
+    --bridge dit \
+    --lr 1e-4 \
+    --dit_dim 512 \
+    --soft_tokens 64 \
+    --dit_depth 6 \
+    --dit_heads 8 \
+    --dit_steps_train 2 \
+    --dit_steps_eval 4 \
+    --dit_dropout 0.1 \
+    --dit_pool mean \
+    --dit_cfg 1.5 \
+    --dit_cfg_dropout 0.1 \
+    --dit_loss_weight 0.1 \
+    --weight_decay 0.01 \
+    --train_steps 3000 \
+    --warmup_steps 750 \
+    --info_nce_weight 0.05 \
+    --early_stop_patience 5 \
+    --seed 1234
+
+echo "" | tee -a "$SUMMARY_LOG"
+echo "NOTE: DiT experiments test if iterative refinement prevents collapse (81.5% → 36%)" | tee -a "$SUMMARY_LOG"
+echo "      Key question: Does DiT maintain high final accuracy vs cross-attention?" | tee -a "$SUMMARY_LOG"
+echo "" | tee -a "$SUMMARY_LOG"
+
+# ============================================
 # Summary and Analysis
 # ============================================
 
@@ -224,6 +333,13 @@ echo "------------------------------------------" | tee -a "$SUMMARY_LOG"
 
 } | column -t -s',' | tee -a "$SUMMARY_LOG"
 
+echo "" | tee -a "$SUMMARY_LOG"
+echo "STABILITY ANALYSIS:" | tee -a "$SUMMARY_LOG"
+echo "Cross-attention baseline (1b): Peak 81.5% → Final 36.0% (45.5% degradation)" | tee -a "$SUMMARY_LOG"
+echo "Cross-attention w/ fixes (1a): Target <10% degradation" | tee -a "$SUMMARY_LOG"
+echo "DiT experiments (3a-3d): Testing if iterative refinement prevents collapse" | tee -a "$SUMMARY_LOG"
+echo "  → Success criteria: Final accuracy within 10% of peak" | tee -a "$SUMMARY_LOG"
+echo "  → Key: Does DiT maintain performance better than cross-attention?" | tee -a "$SUMMARY_LOG"
 echo "" | tee -a "$SUMMARY_LOG"
 echo "All logs saved to: $OUTPUT_DIR" | tee -a "$SUMMARY_LOG"
 echo "" | tee -a "$SUMMARY_LOG"

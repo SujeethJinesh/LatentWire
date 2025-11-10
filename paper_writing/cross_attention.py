@@ -542,17 +542,28 @@ class DiTBlock(nn.Module):
 
     def forward(self, x, full_cond):  # x: [B,K,D], full_cond: [B,D]
         s_attn, b_attn, g_attn, s_mlp, b_mlp, g_mlp = self.mod(full_cond).chunk(6, dim=-1)
+
+        # Sanity check: gates should start near 0 (due to zero-init) and gradually open
+        # Monitor gate magnitude during training - should grow from ~0 to ~0.3-1.0
+        # Remove this check after verifying training works
+        if torch.is_grad_enabled():
+            gate_mag = (g_attn.abs().mean() + g_mlp.abs().mean()) / 2
+            if hasattr(self, '_gate_mag_ema'):
+                self._gate_mag_ema = 0.99 * self._gate_mag_ema + 0.01 * gate_mag.item()
+            else:
+                self._gate_mag_ema = gate_mag.item()
+
         # broadcast to tokens
         s_attn = s_attn.unsqueeze(1); b_attn = b_attn.unsqueeze(1); g_attn = g_attn.unsqueeze(1)
         s_mlp  = s_mlp.unsqueeze(1);  b_mlp  = b_mlp .unsqueeze(1);  g_mlp  = g_mlp .unsqueeze(1)
         # attention path
         x_norm = self.norm1(x) * (1 + s_attn) + b_attn
         attn_out = self.attn(x_norm, x_norm, x_norm, need_weights=False)[0]
-        x = x + g_attn * attn_out        # NO activation on gates
+        x = x + g_attn * attn_out        # NO activation on gates (AdaLN-Zero)
         # mlp path
         x_norm = self.norm2(x) * (1 + s_mlp) + b_mlp
         mlp_out = self.mlp(x_norm)
-        x = x + g_mlp * mlp_out          # NO activation on gates
+        x = x + g_mlp * mlp_out          # NO activation on gates (AdaLN-Zero)
         return x
 
 class DiTBridgeTranslator(nn.Module):
@@ -619,13 +630,18 @@ class DiTBridgeTranslator(nn.Module):
     def _forward_train_rf(self, src_h, src_mask, teacher_tgt):  # teacher_tgt: [B,K,tgt_dim]
         B = src_h.size(0); device = src_h.device; dtype = src_h.dtype
         # project teacher & noise to model space
-        x1_m = self.to_model(teacher_tgt)
-        z_m  = torch.randn_like(x1_m)
-        # sample t ~ U(0,1), build x_t and target velocity
+        x1_m = self.to_model(teacher_tgt)  # data endpoint (answer embeddings)
+        z_m  = torch.randn_like(x1_m)      # noise endpoint
+
+        # Rectified Flow: straight-line interpolation from noise (t=0) to data (t=1)
+        # Sample random timestep t ~ U(0,1) and build interpolated state
         t = torch.rand(B, device=device, dtype=torch.float32)
         t3d = t.view(B, 1, 1)
-        x_t = (1.0 - t3d) * z_m + t3d * x1_m
-        v_target = x1_m - z_m  # rectified-flow velocity
+        x_t = (1.0 - t3d) * z_m + t3d * x1_m  # linear interpolation
+
+        # Velocity target: constant vector field from noise to data
+        # This is the key insight of Rectified Flow - the ODE is dx/dt = v = x1 - x0
+        v_target = x1_m - z_m
 
         # cond with optional classifier-free dropout (training only)
         cond = self.cond(src_h, src_mask)
@@ -810,10 +826,14 @@ def build_batch_inputs(samples: List[Sample],
     if args is not None and args.bridge == "dit" and mode == "train":
         K = translator.K if hasattr(translator, 'K') else args.soft_tokens
         with torch.no_grad():
-            prompts = [s.tgt_prompt if s.tgt_prompt.strip() else (tgt_tok.bos_token or " ") for s in samples]
-            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048)
+            # CRITICAL: Use answer text (tgt_answer), NOT prompt text (tgt_prompt)!
+            # The DiT learns to denoise towards answer embeddings, which is what the model generates.
+            # We repeat/tile the answer embeddings to K tokens to provide dense supervision.
+            # This is the Transfusion-style approach: teach the diffusion model the target distribution.
+            answers = [s.tgt_answer if s.tgt_answer.strip() else (tgt_tok.bos_token or " ") for s in samples]
+            enc = tgt_tok(answers, return_tensors="pt", padding=True, truncation=True, max_length=2048)
             enc = {k: v.to(device) for k, v in enc.items()}
-            emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, Tp, d_tgt]
+            emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, Ta, d_tgt]
             teacher_soft = _repeat_to_k(emb, K)                                # [B, K, d_tgt]
         soft_tokens = translator(src_h, src_mask, teacher_soft_tokens=teacher_soft)
     else:
@@ -1495,8 +1515,14 @@ def main():
         loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss
 
         # Add DiT flow loss if using DiT bridge
+        # Flow loss is applied uniformly (no warmup) - we want the DiT to learn from step 1
+        # The args.dit_loss_weight balances flow loss vs LM loss (default 0.1)
+        # Too high: DiT dominates, model ignores LM signal
+        # Too low: DiT doesn't learn proper denoising
         if args.bridge == "dit":
-            aux = getattr(translator, "pop_last_losses", lambda: {})()
+            # Get the module (unwrap DDP if needed)
+            module = translator.module if isinstance(translator, DDP) else translator
+            aux = getattr(module, "pop_last_losses", lambda: {})()
             dit_flow_loss = aux.get("dit_flow", torch.tensor(0.0, device=loss.device, dtype=loss.dtype))
             loss = loss + args.dit_loss_weight * dit_flow_loss
 
@@ -1518,7 +1544,16 @@ def main():
         step += 1
 
         if step % 20 == 0 and is_main():
-            log(f"Step {step}/{args.train_steps} | Loss (avg over last 20): {running/20:.4f}")
+            log_msg = f"Step {step}/{args.train_steps} | Loss (avg over last 20): {running/20:.4f}"
+
+            # Add DiT-specific metrics if using DiT bridge
+            if args.bridge == "dit":
+                module = translator.module if isinstance(translator, DDP) else translator
+                aux_losses = getattr(module, '_last_losses', {})
+                if 'dit_flow' in aux_losses:
+                    log_msg += f" | DiT_flow: {aux_losses['dit_flow']:.4f}"
+
+            log(log_msg)
             running = 0.0
 
         # Periodic eval - ALL ranks participate
