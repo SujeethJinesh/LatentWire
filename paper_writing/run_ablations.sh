@@ -14,10 +14,11 @@ echo ""
 
 # Base configuration
 export PYTHONPATH=.
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True  # Reduce memory fragmentation
 : ${PY_SCRIPT:=paper_writing/cross_attention.py}
 SOURCE_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
-PER_DEVICE_BATCH=10
+PER_DEVICE_BATCH=4  # Reduced from 10 to avoid OOM with 2× 7B/8B models
 EVAL_EVERY=250
 EVAL_SAMPLES=500  # Batched evaluation to avoid OOM
 MAX_NEW_TOKENS=256
@@ -58,7 +59,7 @@ run_experiment() {
             --per_device_batch "$PER_DEVICE_BATCH" \
             --eval_every "$EVAL_EVERY" \
             --eval_samples "$EVAL_SAMPLES" \
-            --eval_batch_size 100 \
+            --eval_batch_size 20 \
             --max_new_tokens "$MAX_NEW_TOKENS" \
             --bf16 \
             --no_compile \
