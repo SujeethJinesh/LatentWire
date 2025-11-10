@@ -49,6 +49,7 @@ import os, math, re, json, random, argparse, time
 from dataclasses import dataclass
 from typing import List, Dict, Tuple, Optional, Set, Literal
 from datetime import timedelta
+from itertools import islice
 
 import numpy as np
 import torch
@@ -674,65 +675,16 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
     """
     if not dist.is_initialized():
         return local_texts
-
-    world_size = dist.get_world_size()
     rank = dist.get_rank()
+    world_size = dist.get_world_size()
 
-    # Convert to tensors for gathering
-    # Encode to bytes first, then find max BYTE length (not char length)
-    encoded_bytes = [text.encode('utf-8') for text in local_texts]
-    max_byte_len = max(len(b) for b in encoded_bytes) if encoded_bytes else 1
-
-    # Gather max_byte_len from all ranks
-    max_len_tensor = torch.tensor([max_byte_len], dtype=torch.long, device='cuda')
-    max_len_list = [torch.zeros(1, dtype=torch.long, device='cuda') for _ in range(world_size)]
-    dist.all_gather(max_len_list, max_len_tensor)
-    global_max_byte_len = max(t.item() for t in max_len_list)
-
-    # Pad bytes to global_max_byte_len
-    # Convert to tensor (handle empty case properly)
-    if not encoded_bytes:
-        # Create empty tensor instead of placeholder
-        local_tensor = torch.zeros((0, global_max_byte_len), dtype=torch.uint8, device='cuda')
-    else:
-        encoded = []
-        for byte_string in encoded_bytes:
-            # Pad with zeros to global_max_byte_len
-            padded = list(byte_string) + [0] * (global_max_byte_len - len(byte_string))
-            encoded.append(padded)
-        local_tensor = torch.tensor(encoded, dtype=torch.uint8, device='cuda')
-
-    # Gather batch sizes from all ranks
-    batch_size_tensor = torch.tensor([len(local_texts)], dtype=torch.long, device='cuda')
-    batch_sizes = [torch.zeros(1, dtype=torch.long, device='cuda') for _ in range(world_size)]
-    dist.all_gather(batch_sizes, batch_size_tensor)
-    batch_sizes = [bs.item() for bs in batch_sizes]
-
-    # Gather all texts to rank 0
     if rank == 0:
-        gathered = [torch.zeros((bs, global_max_byte_len), dtype=torch.uint8, device='cuda')
-                   for bs in batch_sizes]
-        gathered[0] = local_tensor
-
-        for src_rank in range(1, world_size):
-            if batch_sizes[src_rank] > 0:
-                dist.recv(gathered[src_rank], src=src_rank)
-
-        # Decode back to strings (strip null bytes from padding)
-        all_texts = []
-        for rank_texts in gathered:
-            for encoded_text in rank_texts:
-                # Remove null byte padding (0 bytes at end)
-                byte_array = encoded_text.cpu().numpy()
-                # Find first null byte (if any) and truncate
-                null_idx = (byte_array == 0).argmax() if 0 in byte_array else len(byte_array)
-                decoded = bytes(byte_array[:null_idx]).decode('utf-8')
-                all_texts.append(decoded)
-        return all_texts
+        gathered: List[List[str]] = [None] * world_size  # type: ignore
+        dist.gather_object(local_texts, object_gather_list=gathered)
+        # Flatten preserving rank order
+        return [t for sub in gathered if sub for t in sub]
     else:
-        # Send to rank 0
-        if len(local_texts) > 0:
-            dist.send(local_tensor, dst=0)
+        dist.gather_object(local_texts, object_gather_list=None)
         return []
 
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
@@ -762,6 +714,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         rank = 0
         world_size = 1
 
+    # Clamp num_samples to dataset length
+    num_samples = min(num_samples, len(dataset))
+
     # Shard samples across ranks
     samples_per_rank = num_samples // world_size
     start_idx = rank * samples_per_rank
@@ -785,18 +740,12 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             log(f"  Rank {r}: samples {r_start} to {r_end} ({r_samples} samples)")
 
     # Collect LOCAL samples only (this rank's portion)
+    shard = islice(dataset, start_idx, end_idx)
+
     all_samples = []
-    taken = 0
-    skip = 0
-    for ex in dataset:
-        if skip < start_idx:
-            skip += 1
-            continue
-        if taken >= local_num_samples:
-            break
+    for ex in shard:
         all_samples.extend(build_samples({"question":[ex["question"]], "answer":[ex["answer"]]},
                                          src_tok, tgt_tok, device, tgt_model, cfg=eval_cfg))
-        taken += 1
 
     # Process in batches to avoid OOM
     all_bridged_texts = []
@@ -863,8 +812,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         correct = 0
         for text, s in zip(pred_texts, samples):
             pred = extract_final_answer(text)
-            gold_full_text = s.tgt_prompt + " " + s.tgt_answer
-            gold = extract_final_answer(gold_full_text)
+            gold = extract_final_answer(s.tgt_answer)
             correct += int(pred == gold)
         return correct / len(samples)
 
@@ -904,7 +852,7 @@ def analyze_bridge_quality(soft_tokens: torch.Tensor, target_model, prompt_ids: 
     """
     with torch.no_grad():
         # 1. RMS scale comparison
-        tgt_embed = target_model.get_input_embeddings().weight
+        tgt_embed = target_model.get_input_embeddings().weight.float()
         tgt_rms_actual = tgt_embed.pow(2).mean(dim=1).sqrt()
         soft_rms = soft_tokens.pow(2).mean(dim=-1).sqrt()
 
@@ -925,7 +873,8 @@ def analyze_bridge_quality(soft_tokens: torch.Tensor, target_model, prompt_ids: 
         tgt_embeds = target_model.get_input_embeddings()(prompt_ids)
         bridged_inputs = torch.cat([soft_tokens, tgt_embeds], dim=1)
         bridged_mask = torch.cat([
-            torch.ones(soft_tokens.size(0), soft_tokens.size(1), device=prompt_mask.device),
+            torch.ones(soft_tokens.size(0), soft_tokens.size(1),
+                      device=prompt_mask.device, dtype=prompt_mask.dtype),
             prompt_mask
         ], dim=1)
         bridged_out = target_model(inputs_embeds=bridged_inputs, attention_mask=bridged_mask)
