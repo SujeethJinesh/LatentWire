@@ -85,8 +85,36 @@ def local_rank():
 
 def setup_ddp():
     if "RANK" in os.environ and "WORLD_SIZE" in os.environ:
-        dist.init_process_group(backend="nccl")
-        torch.cuda.set_device(local_rank())
+        rank = int(os.environ["RANK"])
+        world_size = int(os.environ["WORLD_SIZE"])
+        local_rank_id = int(os.environ["LOCAL_RANK"])
+
+        # Log before DDP to prove rank is alive
+        print(f"[Rank {rank}/{world_size}] Starting DDP initialization...", flush=True)
+
+        # Check GPU availability BEFORE init_process_group
+        if not torch.cuda.is_available():
+            raise RuntimeError(f"[Rank {rank}] CUDA not available!")
+
+        if local_rank_id >= torch.cuda.device_count():
+            raise RuntimeError(
+                f"[Rank {rank}] LOCAL_RANK={local_rank_id} but only {torch.cuda.device_count()} GPUs available"
+            )
+
+        # Log GPU info
+        device_name = torch.cuda.get_device_name(local_rank_id)
+        print(f"[Rank {rank}] GPU {local_rank_id} available: {device_name}", flush=True)
+
+        # Initialize DDP with TIMEOUT to prevent infinite hangs
+        # If any rank fails to connect within 60 seconds, the whole job fails fast
+        print(f"[Rank {rank}] Calling init_process_group (timeout=60s)...", flush=True)
+        dist.init_process_group(
+            backend="nccl",
+            timeout=timedelta(seconds=60)
+        )
+
+        torch.cuda.set_device(local_rank_id)
+        print(f"[Rank {rank}] DDP initialized successfully on GPU {local_rank_id}", flush=True)
 
 def cleanup_ddp():
     """Clean up distributed training process group."""
@@ -115,6 +143,8 @@ def setup_reproducibility(seed: int, rank: int = 0):
         - PyTorch Reproducibility: https://pytorch.org/docs/stable/notes/randomness.html
         - DDP seed offset is critical to avoid identical batches per GPU
     """
+    print(f"[Rank {rank}] Setting up reproducibility (base_seed={seed})...", flush=True)
+
     # CRITICAL: Offset seed by rank so each GPU samples different data
     # Without this, all GPUs see identical batches → wasted compute
     effective_seed = seed + rank
@@ -141,6 +171,8 @@ def setup_reproducibility(seed: int, rank: int = 0):
     # Using ':16:8' instead of ':4096:8' to reduce memory pressure
     # Both are valid; ':16:8' uses less workspace memory
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':16:8'
+
+    print(f"[Rank {rank}] Reproducibility setup complete (effective_seed={effective_seed})", flush=True)
 
     if rank == 0:
         log(f"Reproducibility enabled: base_seed={seed}, effective_seed={effective_seed}")
