@@ -109,10 +109,10 @@ run_experiment \
     --dit_pool mean \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
-    --train_steps 1000 \
-    --warmup_steps 100 \
+    --train_steps 2000 \
+    --warmup_steps 200 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 2 \
+    --early_stop_patience 3 \
     --seed 1234
 
 # Config 1b: DiT-4step (more refinement)
@@ -132,10 +132,10 @@ run_experiment \
     --dit_pool mean \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
-    --train_steps 1000 \
-    --warmup_steps 100 \
+    --train_steps 2000 \
+    --warmup_steps 200 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 2 \
+    --early_stop_patience 3 \
     --seed 1234
 
 # Config 1c: DiT with attention pooling (richer conditioning)
@@ -155,10 +155,10 @@ run_experiment \
     --dit_pool attn \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
-    --train_steps 1000 \
-    --warmup_steps 100 \
+    --train_steps 2000 \
+    --warmup_steps 200 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 2 \
+    --early_stop_patience 3 \
     --seed 1234
 
 # Config 1d: DiT with CFG (classifier-free guidance)
@@ -180,10 +180,10 @@ run_experiment \
     --dit_cfg_dropout 0.1 \
     --dit_loss_weight 0.1 \
     --weight_decay 0.01 \
-    --train_steps 1000 \
-    --warmup_steps 100 \
+    --train_steps 2000 \
+    --warmup_steps 200 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 2 \
+    --early_stop_patience 3 \
     --seed 1234
 
 # Config 1e: DiT with prompt-teacher + flow warmup
@@ -205,10 +205,10 @@ run_experiment \
     --dit_loss_weight 0.1 \
     --dit_loss_warmup 500 \
     --weight_decay 0.01 \
-    --train_steps 1000 \
-    --warmup_steps 100 \
+    --train_steps 2000 \
+    --warmup_steps 200 \
     --info_nce_weight 0.05 \
-    --early_stop_patience 2 \
+    --early_stop_patience 3 \
     --seed 1234
 
 echo "" | tee -a "$SUMMARY_LOG"
