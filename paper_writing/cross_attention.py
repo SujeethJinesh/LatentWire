@@ -93,15 +93,22 @@ def setup_ddp():
         print(f"[Rank {rank}/{world_size}] Starting DDP initialization...", flush=True)
 
         # Check GPU availability BEFORE init_process_group
-        if not torch.cuda.is_available():
+        print(f"[Rank {rank}] Checking torch.cuda.is_available()...", flush=True)
+        cuda_avail = torch.cuda.is_available()
+        print(f"[Rank {rank}]   Result: {cuda_avail}", flush=True)
+        if not cuda_avail:
             raise RuntimeError(f"[Rank {rank}] CUDA not available!")
 
-        if local_rank_id >= torch.cuda.device_count():
+        print(f"[Rank {rank}] Checking torch.cuda.device_count()...", flush=True)
+        dev_count = torch.cuda.device_count()
+        print(f"[Rank {rank}]   Result: {dev_count} devices", flush=True)
+        if local_rank_id >= dev_count:
             raise RuntimeError(
-                f"[Rank {rank}] LOCAL_RANK={local_rank_id} but only {torch.cuda.device_count()} GPUs available"
+                f"[Rank {rank}] LOCAL_RANK={local_rank_id} but only {dev_count} GPUs available"
             )
 
         # Log GPU info
+        print(f"[Rank {rank}] Getting device name for GPU {local_rank_id}...", flush=True)
         device_name = torch.cuda.get_device_name(local_rank_id)
         print(f"[Rank {rank}] GPU {local_rank_id} available: {device_name}", flush=True)
 
@@ -1245,6 +1252,24 @@ def main():
     # Handle deprecated alias
     if args.dit_cfg_dropout is not None:
         args.dit_drop_cond = args.dit_cfg_dropout
+
+    # Early CUDA diagnostics (before DDP)
+    print("=" * 60, flush=True)
+    print("EARLY CUDA DIAGNOSTICS (before DDP setup)", flush=True)
+    print("=" * 60, flush=True)
+    print(f"torch.cuda.is_available() check...", flush=True)
+    cuda_available = torch.cuda.is_available()
+    print(f"  Result: {cuda_available}", flush=True)
+    if cuda_available:
+        print(f"torch.cuda.device_count() check...", flush=True)
+        device_count = torch.cuda.device_count()
+        print(f"  Result: {device_count} GPUs", flush=True)
+        for i in range(device_count):
+            print(f"  GPU {i}: {torch.cuda.get_device_name(i)}", flush=True)
+    else:
+        print("  WARNING: CUDA not available!", flush=True)
+    print("=" * 60, flush=True)
+    print("", flush=True)
 
     setup_ddp()
     rank = dist.get_rank() if dist.is_initialized() else 0
