@@ -1,373 +1,0 @@
-W1110 15:32:34.309000 3746078 torch/distributed/run.py:793] 
-W1110 15:32:34.309000 3746078 torch/distributed/run.py:793] *****************************************
-W1110 15:32:34.309000 3746078 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1110 15:32:34.309000 3746078 torch/distributed/run.py:793] *****************************************
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-[W1110 15:32:49.236358383 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1110 15:32:49.236648989 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1110 15:32:49.239931856 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1110 15:32:49.286221919 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-Reproducibility enabled: base_seed=1234, effective_seed=1234
-==== Config ====
-source_model: mistralai/Mistral-7B-Instruct-v0.3
-target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
-bottleneck_dim: 1024
-soft_tokens: 64
-depth: 2
-heads: 8
-lr: 0.0001
-weight_decay: 0.01
-train_steps: 1000
-warmup_steps: 100
-per_device_batch: 10
-eval_every: 250
-eval_samples: 200
-max_new_tokens: 100
-seed: 1234
-bf16: True
-save_path: paper_writing/runs/ablations_20251110_153232/1a_dit_2step_64tok/checkpoint.pt
-show_eval_samples: 1
-early_stop_patience: 2
-dataset: gsm8k
-info_nce_weight: 0.05
-eval_batch_size: 50
-no_compile: True
-bridge: dit
-dit_dim: 512
-dit_depth: 6
-dit_heads: 8
-dit_steps_train: 2
-dit_steps_eval: 4
-dit_dropout: 0.1
-dit_cfg: 0.0
-dit_drop_cond: 0.1
-dit_cfg_dropout: None
-dit_pool: mean
-dit_cond_dim: 512
-dit_loss_weight: 0.1
-dit_loss_warmup: 0
-dit_teacher: answer
-
-==== Reproducibility Settings ====
-Base seed: 1234
-Effective seed (with rank offset): 1234
-CUDA deterministic: True
-CUDA benchmark: False
-Deterministic algorithms: True
-CUBLAS workspace: :16:8
-World size: 4 (each rank samples different data)
-Loading source model/tokenizer...
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3069.75it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2156.45it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 6967.28it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 5400.39it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:13<00:27, 13.51s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:15<00:30, 15.31s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:13<00:27, 13.51s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:13<00:27, 13.53s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:29<00:14, 14.46s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:27<00:13, 13.72s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:27<00:13, 13.78s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:27<00:13, 13.78s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:39<00:00, 13.04s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:39<00:00, 13.06s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:39<00:00, 13.22s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:39<00:00, 13.22s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:39<00:00, 13.05s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:39<00:00, 13.22s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:41<00:00, 13.47s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:41<00:00, 13.83s/it]
-Loading target model/tokenizer...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1555.61it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1528.82it/s]
-
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 233.38it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7970.17it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:40, 13.40s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:40, 13.40s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:40, 13.41s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:13<00:40, 13.41s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:27, 13.93s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:27, 13.93s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:27, 13.94s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:27<00:28, 14.06s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:13, 13.95s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:13, 13.99s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:14, 14.00s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:41<00:14, 14.04s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 10.39s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 10.44s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 10.43s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 11.69s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 11.69s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 11.69s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 10.44s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:46<00:00, 11.69s/it]
-torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)
-Source hidden dim: 4096 | Target hidden dim: 4096
-Target embedding RMS (median): 0.0107
-NOTE: RMS scale matching is applied during batch collation (before concat)
-Bridge: dit (DiTBridgeTranslator)
-  Using DiTBridge: dim=512, depth=6, heads=8, steps(train/eval)=2/4, cfg=0.0, pool=mean, cond_dim=512
-Translator parameters: 44.1M
-Loading GSM8K...
-Data sampler initialized with seed 1234 (base=1234, rank=0)
-Optimizer groups: 37 decay, 36 no_decay, 0 gates (LR ×3)
-
-============================================================
-INITIAL EVALUATION (Step 0 - Before Training)
-============================================================
-[Distributed Eval] Sharding 200 samples across 4 ranks:
-  Rank 0: samples 0 to 50 (50 samples)
-  Rank 1: samples 50 to 100 (50 samples)
-  Rank 2: samples 100 to 150 (50 samples)
-  Rank 3: samples 150 to 200 (50 samples)
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-
-============================================================
-SAMPLE OUTPUTS (first 3 examples):
-============================================================
-
---- Example 1 ---
-Question: ...
-Gold answer: 18
-Target-alone: 12
-Bridged: [invalid]
-Bridged generation start: _REFUSE) to the rescue.\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\...
-
---- Example 2 ---
-Question: ...
-Gold answer: 3
-Target-alone: 12
-Bridged: [invalid]
-Bridged generation start: _REFUSE
-
-## Step 1: Identify the main topic of the text
-The main topic of the text is the comparison between the two types of texts: a formal text and an informal text.
-
-## Step 2: Identify the key features of the formal text
-The key features of the formal text are:
-- It is written in a professional...
-
---- Example 3 ---
-Question: ...
-Gold answer: 70000
-Target-alone: 12
-Bridged: [invalid]
-Bridged generation start: _REF_1_._|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|...
-============================================================
-
-[Eval] Step 0 | Target-alone acc: 0.010 | Bridged acc: 0.000
-============================================================
-
-
-============================================================
-LABEL ALIGNMENT DIAGNOSTIC (Step 0)
-============================================================
-  Input embeddings shape: torch.Size([10, 277, 4096])
-  Labels shape: torch.Size([10, 277])
-  Attention mask shape: torch.Size([10, 277])
-  Soft token count (K): 64
-  Total tokens: 2770
-  Supervised tokens: 1035
-  Masked tokens: 1735
-  Sample 0 first 10 labels: [-100, -100, -100, -100, -100, -100, -100, -100, -100, -100]
-  Sample 0 last 10 labels: [717, 2511, 717, 2033, 12556, 3153, 627, 827, 220, 717]
-  All soft token labels == -100? True
-  Supervised tokens per sample: [87, 133, 62, 125, 96, 55, 143, 213, 51, 70]
-============================================================
-
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
-  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-Step 20/1000 | Loss (avg over last 20): 2.0408
-Step 40/1000 | Loss (avg over last 20): 1.5710
-Step 60/1000 | Loss (avg over last 20): 1.2293
-Step 80/1000 | Loss (avg over last 20): 1.2007
-Step 100/1000 | Loss (avg over last 20): 1.1831
-Step 120/1000 | Loss (avg over last 20): 3.5563
-Step 140/1000 | Loss (avg over last 20): 2.3441
-Step 160/1000 | Loss (avg over last 20): 2.1060
-Step 180/1000 | Loss (avg over last 20): 2.0628
-Step 200/1000 | Loss (avg over last 20): 2.0715
-Step 220/1000 | Loss (avg over last 20): 2.0620
-Step 240/1000 | Loss (avg over last 20): 1.9642
-[Distributed Eval] Sharding 200 samples across 4 ranks:
-  Rank 0: samples 0 to 50 (50 samples)
-  Rank 1: samples 50 to 100 (50 samples)
-  Rank 2: samples 100 to 150 (50 samples)
-  Rank 3: samples 150 to 200 (50 samples)
-[rank2]: Traceback (most recent call last):
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1661, in <module>
-[rank2]:     main()
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1598, in main
-[rank2]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1018, in evaluate_numeric_accuracy
-[rank2]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 826, in build_batch_inputs
-[rank2]:     src_out = src_model(**src_enc, output_hidden_states=True)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank2]:     return self._call_impl(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank2]:     return forward_call(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
-[rank2]:     outputs = self.model(
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank2]:     return self._call_impl(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank2]:     return forward_call(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
-[rank2]:     layer_outputs = decoder_layer(
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank2]:     return self._call_impl(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank2]:     return forward_call(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
-[rank2]:     hidden_states = self.mlp(hidden_states)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank2]:     return self._call_impl(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank2]:     return forward_call(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
-[rank2]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
-[rank2]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.46 GiB. GPU 2 has a total capacity of 79.19 GiB of which 2.38 GiB is free. Including non-PyTorch memory, this process has 76.80 GiB memory in use. Of the allocated memory 72.88 GiB is allocated by PyTorch, and 961.92 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-[rank0]: Traceback (most recent call last):
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1661, in <module>
-[rank0]:     main()
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1598, in main
-[rank0]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1018, in evaluate_numeric_accuracy
-[rank0]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 826, in build_batch_inputs
-[rank0]:     src_out = src_model(**src_enc, output_hidden_states=True)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
-[rank0]:     outputs = self.model(
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
-[rank0]:     layer_outputs = decoder_layer(
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
-[rank0]:     hidden_states = self.mlp(hidden_states)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
-[rank0]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
-[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.46 GiB. GPU 0 has a total capacity of 79.19 GiB of which 2.43 GiB is free. Including non-PyTorch memory, this process has 76.75 GiB memory in use. Of the allocated memory 71.93 GiB is allocated by PyTorch, and 1.01 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-[rank1]: Traceback (most recent call last):
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1661, in <module>
-[rank1]:     main()
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1598, in main
-[rank1]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1018, in evaluate_numeric_accuracy
-[rank1]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 826, in build_batch_inputs
-[rank1]:     src_out = src_model(**src_enc, output_hidden_states=True)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank1]:     return self._call_impl(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank1]:     return forward_call(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
-[rank1]:     outputs = self.model(
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank1]:     return self._call_impl(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank1]:     return forward_call(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
-[rank1]:     layer_outputs = decoder_layer(
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank1]:     return self._call_impl(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank1]:     return forward_call(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
-[rank1]:     hidden_states = self.mlp(hidden_states)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank1]:     return self._call_impl(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank1]:     return forward_call(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
-[rank1]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
-[rank1]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.45 GiB. GPU 1 has a total capacity of 79.19 GiB of which 1.38 GiB is free. Including non-PyTorch memory, this process has 77.80 GiB memory in use. Of the allocated memory 73.86 GiB is allocated by PyTorch, and 973.16 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-[rank3]: Traceback (most recent call last):
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1661, in <module>
-[rank3]:     main()
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1598, in main
-[rank3]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1018, in evaluate_numeric_accuracy
-[rank3]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 826, in build_batch_inputs
-[rank3]:     src_out = src_model(**src_enc, output_hidden_states=True)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank3]:     return self._call_impl(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank3]:     return forward_call(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
-[rank3]:     outputs = self.model(
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank3]:     return self._call_impl(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank3]:     return forward_call(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
-[rank3]:     layer_outputs = decoder_layer(
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank3]:     return self._call_impl(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank3]:     return forward_call(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
-[rank3]:     hidden_states = self.mlp(hidden_states)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank3]:     return self._call_impl(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank3]:     return forward_call(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
-[rank3]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
-[rank3]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.46 GiB. GPU 3 has a total capacity of 79.19 GiB of which 1.60 GiB is free. Including non-PyTorch memory, this process has 77.58 GiB memory in use. Of the allocated memory 73.76 GiB is allocated by PyTorch, and 1.07 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-[rank0]:[W1110 15:44:30.633457484 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
-W1110 15:44:33.932000 3746078 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3746101 closing signal SIGTERM
-E1110 15:44:34.996000 3746078 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 3 (pid: 3746106) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
-Traceback (most recent call last):
-  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
-    sys.exit(main())
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
-    return f(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
-    run(args)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
-    elastic_launch(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
-============================================================
-paper_writing/cross_attention.py FAILED
-------------------------------------------------------------
-Failures:
-  <NO_OTHER_FAILURES>
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-11-10_15:44:33
-  host      : n05.cm.cluster
-  rank      : 3 (local_rank: 3)
-  exitcode  : 1 (pid: 3746106)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-============================================================
