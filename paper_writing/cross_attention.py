@@ -1047,6 +1047,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                                                     clean_up_tokenization_spaces=False)
             all_base_texts.extend(base_texts_batch)
 
+        # Clear CUDA cache after each batch to reduce fragmentation
+        torch.cuda.empty_cache()
+
     # Gather all generations from all ranks to rank 0
     all_bridged_texts = gather_texts_from_all_ranks(all_bridged_texts)
     all_base_texts = gather_texts_from_all_ranks(all_base_texts)
