@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+module load gcc/13.1.0
+module load conda/24.3.0-0
+module load cudatoolkit/12.5
+module load nvhpc/24.7
+
+
 # Paper Ablation Studies - Focused experiments for 3-week deadline
 # Total runtime: ~12 hours on 4× H100
 # Output: paper_writing/runs/
@@ -21,7 +27,7 @@ TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 PER_DEVICE_BATCH=10  # Reduced from 10 to avoid OOM with 2× 7B/8B models
 EVAL_EVERY=250
 EVAL_SAMPLES=200  # Reduced for faster eval iterations (was 500)
-MAX_NEW_TOKENS=100  # Sufficient for GSM8K answers (was 256)
+MAX_NEW_TOKENS=256  # GSM8K CoT reasoning + #### marker typically needs 150-250 tokens
 
 # Create output directory
 OUTPUT_DIR="paper_writing/runs/ablations_$(date +"%Y%m%d_%H%M%S")"

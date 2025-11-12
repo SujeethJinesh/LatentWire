@@ -1072,7 +1072,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         # Target-alone baseline
         with torch.inference_mode():
             prompts = [s.tgt_prompt for s in samples_batch]
-            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=4096).to(device)
             base_out = tgt_model.generate(
                 **enc,
                 max_new_tokens=max_new_tokens,
