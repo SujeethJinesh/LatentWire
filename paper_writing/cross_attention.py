@@ -1000,7 +1000,10 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     translator.eval()
 
     # Prebuild 8-shot CoT prefix once for all evaluation samples
-    fewshot_prefix = build_gsm8k_fewshot_prefix(train_ds, k=8, seed=42)
+    if args is not None and getattr(args, "fewshot_prefix", None):
+        fewshot_prefix = args.fewshot_prefix
+    else:
+        fewshot_prefix = build_gsm8k_fewshot_prefix(train_ds, k=8, seed=42)
     eval_cfg = EvalConfig(fewshot_prefix=fewshot_prefix, mode="eval_8shot")
 
     # Determine rank and world_size for distributed evaluation
@@ -1451,10 +1454,14 @@ def main():
 
     # Data
     log(f"Loading {args.dataset.upper()}...")
+    train_prompt_cfg = None
     if args.dataset == "gsm8k":
         ds = load_dataset("gsm8k", "main")
         train_ds = ds["train"]
         test_ds  = ds["test"]
+        fewshot_prefix = build_gsm8k_fewshot_prefix(train_ds, k=8, seed=42)
+        args.fewshot_prefix = fewshot_prefix
+        train_prompt_cfg = EvalConfig(fewshot_prefix=fewshot_prefix, mode="eval_8shot")
     elif args.dataset == "hotpotqa":
         ds = load_dataset("hotpot_qa", "distractor")
         train_ds = ds["train"]
@@ -1541,7 +1548,7 @@ def main():
         batch_idx = [rng.randrange(0, len(train_ds)) for _ in range(args.per_device_batch)]
         batch = {"question": [train_ds[i]["question"] for i in batch_idx],
                  "answer":   [train_ds[i]["answer"]   for i in batch_idx]}
-        samples = build_samples(batch, src_tok, tgt_tok, device, tgt_model)
+        samples = build_samples(batch, src_tok, tgt_tok, device, tgt_model, cfg=train_prompt_cfg)
 
         # Build bridged inputs (with soft tokens)
         data = build_batch_inputs(samples, src_model, src_tok, tgt_model, tgt_tok,
