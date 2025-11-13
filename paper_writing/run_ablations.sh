@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-module load gcc/13.1.0
-module load conda/24.3.0-0
-module load cudatoolkit/12.5
-module load nvhpc/24.7
-
+# Load HPC modules if available (cluster environment)
+# Skip if module command doesn't exist (local/CI environments)
+if command -v module >/dev/null 2>&1; then
+    module load gcc/13.1.0
+    module load conda/24.3.0-0
+    module load cudatoolkit/12.5
+    module load nvhpc/24.7
+fi
 
 # Paper Ablation Studies - Focused experiments for 3-week deadline
 # Total runtime: ~12 hours on 4× H100

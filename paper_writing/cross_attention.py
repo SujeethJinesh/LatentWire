@@ -860,7 +860,7 @@ def build_batch_inputs(samples: List[Sample],
 
     # Source encoding (no grad)
     with torch.no_grad():
-        src_enc = src_tok([s.src_prompt for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=2048)
+        src_enc = src_tok([s.src_prompt for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=4096)
         src_enc = {k: v.to(device) for k, v in src_enc.items()}
         src_out = src_model(**src_enc, output_hidden_states=True)
         # last hidden states: [B, T_src, d_src]
@@ -886,7 +886,7 @@ def build_batch_inputs(samples: List[Sample],
                 # Prompt teacher: use prompt text (the question/context)
                 texts = [s.tgt_prompt if s.tgt_prompt.strip() else (tgt_tok.bos_token or " ") for s in samples]
 
-            enc = tgt_tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=2048)
+            enc = tgt_tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=4096)
             enc = {k: v.to(device) for k, v in enc.items()}
             emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, T_text, d_tgt]
             teacher_soft = _repeat_to_k(emb, K)                                  # [B, K, d_tgt]
@@ -912,7 +912,7 @@ def build_batch_inputs(samples: List[Sample],
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=2048
+        max_length=4096
     )
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
 
@@ -1297,7 +1297,7 @@ def main():
     if src_tok.pad_token is None:
         src_tok.pad_token = src_tok.eos_token
     src_tok.padding_side = "left"  # Critical for decoder-only models
-    src_tok.model_max_length = 2048
+    src_tok.model_max_length = 4096
 
     # Load source model directly to GPU to avoid CPU RAM exhaustion
     # With 4 processes each loading ~30GB models, we'd need 120GB+ CPU RAM
@@ -1315,7 +1315,7 @@ def main():
     if tgt_tok.pad_token_id is None and tgt_tok.eos_token_id is not None:
         tgt_tok.pad_token = tgt_tok.eos_token
     tgt_tok.padding_side = "left"  # Critical for decoder-only models
-    tgt_tok.model_max_length = 2048
+    tgt_tok.model_max_length = 4096
 
     # Verify tokenizer supports offset mapping (required for label alignment)
     if not tgt_tok.is_fast:
@@ -1553,7 +1553,7 @@ def main():
             with torch.no_grad():
                 # Baseline: text-only input (no soft tokens)
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=4096).to(device)
                 baseline_out = tgt_model(**tgt_enc)
                 baseline_logits = baseline_out.logits[:, :20, :]  # First 20 positions
 
@@ -1580,7 +1580,7 @@ def main():
             with torch.no_grad():
                 # Get target embeddings for the prompt (stop gradient)
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(device)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=4096).to(device)
                 tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
                 # Pool target embeddings (mean over sequence)
                 tgt_pooled = tgt_embeds_full.mean(dim=1)  # [B, d_model]
