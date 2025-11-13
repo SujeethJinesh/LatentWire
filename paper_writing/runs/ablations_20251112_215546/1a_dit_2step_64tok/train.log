@@ -1,0 +1,774 @@
+W1112 21:55:47.969000 4157585 torch/distributed/run.py:793] 
+W1112 21:55:47.969000 4157585 torch/distributed/run.py:793] *****************************************
+W1112 21:55:47.969000 4157585 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1112 21:55:47.969000 4157585 torch/distributed/run.py:793] *****************************************
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+================================================================================================================================================================================================================================================
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
+
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
+
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
+
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: 4 GPUs
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 3/4] Starting DDP initialization...
+[Rank 3] Checking torch.cuda.is_available()...
+[Rank 3]   Result: True
+[Rank 3] Checking torch.cuda.device_count()...
+[Rank 3]   Result: 4 devices
+[Rank 3] Getting device name for GPU 3...
+[Rank 3] GPU 3 available: NVIDIA H100 80GB HBM3
+[Rank 3] Calling init_process_group (timeout=60s)...
+[W1112 21:55:58.496742011 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 2/4] Starting DDP initialization...
+[Rank 2] Checking torch.cuda.is_available()...
+[Rank 2]   Result: True
+[Rank 2] Checking torch.cuda.device_count()...
+[Rank 2]   Result: 4 devices
+[Rank 2] Getting device name for GPU 2...
+[Rank 2] GPU 2 available: NVIDIA H100 80GB HBM3
+[Rank 2] Calling init_process_group (timeout=60s)...
+[W1112 21:55:58.589297298 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 1/4] Starting DDP initialization...
+[Rank 1] Checking torch.cuda.is_available()...
+[Rank 1]   Result: True
+[Rank 1] Checking torch.cuda.device_count()...
+[Rank 1]   Result: 4 devices
+[Rank 1] Getting device name for GPU 1...
+[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
+[Rank 1] Calling init_process_group (timeout=60s)...
+[W1112 21:55:58.633561152 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 0/4] Starting DDP initialization...
+[Rank 0] Checking torch.cuda.is_available()...
+[Rank 0]   Result: True
+[Rank 0] Checking torch.cuda.device_count()...
+[Rank 0]   Result: 4 devices
+[Rank 0] Getting device name for GPU 0...
+[Rank 0] GPU 0 available: NVIDIA H100 80GB HBM3
+[Rank 0] Calling init_process_group (timeout=60s)...
+[W1112 21:55:58.268757162 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[Rank 0] DDP initialized successfully on GPU 0
+[Rank 0] Setting up reproducibility (base_seed=1234)...
+[Rank 0] Reproducibility setup complete (effective_seed=1234)
+Reproducibility enabled: base_seed=1234, effective_seed=1234
+==== Config ====
+source_model: mistralai/Mistral-7B-Instruct-v0.3
+target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
+bottleneck_dim: 1024
+soft_tokens: 64
+depth: 2
+heads: 8
+lr: 0.0001
+weight_decay: 0.01
+train_steps: 2000
+warmup_steps: 200
+per_device_batch: 10
+eval_every: 250
+eval_samples: 200
+max_new_tokens: 512
+log_dir: paper_writing/runs/ablations_20251112_215546/1a_dit_2step_64tok
+seed: 1234
+bf16: True
+save_path: paper_writing/runs/ablations_20251112_215546/1a_dit_2step_64tok/checkpoint.pt
+show_eval_samples: 1
+early_stop_patience: 3
+dataset: gsm8k
+info_nce_weight: 0.05
+eval_batch_size: 64
+no_compile: True
+bridge: dit
+dit_dim: 512
+dit_depth: 6
+dit_heads: 8
+dit_steps_train: 2
+dit_steps_eval: 4
+dit_dropout: 0.1
+dit_cfg: 0.0
+dit_drop_cond: 0.1
+dit_cfg_dropout: None
+dit_pool: mean
+dit_cond_dim: 512
+dit_loss_weight: 0.1
+dit_loss_warmup: 0
+dit_teacher: answer
+
+==== Reproducibility Settings ====
+Base seed: 1234
+Effective seed (with rank offset): 1234
+CUDA deterministic: True
+CUDA benchmark: False
+Deterministic algorithms: True
+CUBLAS workspace: :16:8
+World size: 4 (each rank samples different data)
+Loading source model/tokenizer...
+[Rank 3] DDP initialized successfully on GPU 3[Rank 1] DDP initialized successfully on GPU 1
+[Rank 3] Setting up reproducibility (base_seed=1234)...
+
+[Rank 1] Setting up reproducibility (base_seed=1234)...
+[Rank 3] Reproducibility setup complete (effective_seed=1237)
+[Rank 1] Reproducibility setup complete (effective_seed=1235)
+[Rank 2] DDP initialized successfully on GPU 2
+[Rank 2] Setting up reproducibility (base_seed=1234)...
+[Rank 2] Reproducibility setup complete (effective_seed=1236)
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3079.52it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1670.37it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 4085.36it/s]
+Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 260.85it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:23, 11.65s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:23, 11.60s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:12<00:24, 12.18s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:23, 11.58s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:11, 11.36s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:11, 11.32s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:23<00:11, 11.62s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:11, 11.41s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.08s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.10s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.19s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.18s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.12s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.22s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:34<00:00, 11.24s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:34<00:00, 11.40s/it]
+Loading target model/tokenizer...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3368.92it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1062.86it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2484.41it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 9565.12it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.22s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.24s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.23s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.25s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.18s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.19s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.19s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.19s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.31s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.31s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.30s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.31s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.24s/it]
+
+Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.24s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.08s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.24s/it]
+torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)
+Source hidden dim: 4096 | Target hidden dim: 4096
+Target embedding RMS (median): 0.0107
+NOTE: RMS scale matching is applied during batch collation (before concat)
+Bridge: dit (DiTBridgeTranslator)
+  Using DiTBridge: dim=512, depth=6, heads=8, steps(train/eval)=2/4, cfg=0.0, pool=mean, cond_dim=512
+Translator parameters: 44.1M
+Loading GSM8K...
+Data sampler initialized with seed 1234 (base=1234, rank=0)
+Optimizer groups: 37 decay, 36 no_decay, 0 gates (LR ×3)
+
+============================================================
+INITIAL EVALUATION (Step 0 - Before Training)
+============================================================
+[Distributed Eval] Sharding 200 samples across 4 ranks:
+  Rank 0: samples 0 to 50 (50 samples)
+  Rank 1: samples 50 to 100 (50 samples)
+  Rank 2: samples 100 to 150 (50 samples)
+  Rank 3: samples 150 to 200 (50 samples)
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+
+--- Example 1 ---
+Question (full prompt):
+[empty prompt]
+Gold answer: 18
+Target-alone (extracted): 12
+Target-alone full output:
+Answer the following questions step by step and end with '#### <number>'.
+
+Q: For every 12 cans you recycle, you receive $0.50, and for every 5 kilograms of newspapers, you receive $1.50. If your family collected 144 cans and 20 kilograms of newspapers, how much money would you receive?
+A: There are 144/12 = <<144/12=12>>12 sets of 12 cans that the family collected.
+So, the family would receive $0.50 x 12 = $<<0.50*12=6>>6 for the cans.
+There are 20/5 = <<20/5=4>>4 sets of 5 kilograms of newspapers that the family collected.
+So, the family would receive $1.50 x 4 = $<<1.50*4=6>>6 for the newspapers.
+Therefore, the family would receive a total of $6 + $6 = $<<6+6=12>>12.
+#### 12
+
+Q: Betty picked 16 strawberries. Matthew picked 20 more strawberries than Betty and twice as many as Natalie. They used their strawberries to make jam. One jar of jam used 7 strawberries and they sold each jar at $4. How much money were they able to make from the strawberries they picked?
+A: Matthew picked 16 + 20 = <<16+20=36>>36 strawberries.
+Natalie picked 36/2 = <<36/2=18>>18 strawberries.
+All together, they have 16 + 36 + 18 = <<16+36+18=70>>70 strawberries.
+They can make 70/7 = <<70/7=10>>10 jars of strawberries.
+They earn 10 x $4 = $<<10*4=40>>40 from the strawberries they picked.
+#### 40
+
+Q: Jack has a stack of books that is 12 inches thick. He knows from experience that 80 pages is one inch thick. If he has 6 books, how many pages is each one on average?
+A: There are 960 pages because 80 x 12 = <<80*12=960>>960
+Each book is 160 pages because 960 / 6 = <<960/6=160>>160
+#### 160
+
+Q: James dumps his whole collection of 500 Legos on the floor and starts building a castle out of them.  He uses half the pieces before finishing and is told to put the rest away.  He puts all of the leftover pieces back in the box they came from, except for 5 missing pieces that he can't find.  How many Legos are in the box at the end?
+A: James starts with 500 Legos and uses half of them, leaving 500/2=<<500/2=250>>250 Legos unused.
+He puts those unused Legos away but since he's missing 5 he only puts 250-5=<<250-5=245>>245 Legos away.
+#### 245
+
+Q: Ines had $20 in her purse. She bought 3 pounds of peaches, which are $2 per pound at the local farmers’ market. How much did she have left?
+A: Ines bought 3 pounds of peaches for 3 peaches * $2/peach = $<<3*2=6>>6.
+Ines has $20 - $6 = $<<20-6=14>>14 left.
+#### 14
+
+Q: Aaron pays his actuary membership fees each year. The membership fee increases yearly by $10. If he pays $80 in the first year, how much does his membership cost, in dollars, in the sixth year?
+A: In year 2 he pays 80+10=$<<80+10=90>>90.
+In year 3 he pays 90+10=$<<90+10=100>>100.
+In year 4 he pays 100+10=$<<100+10=110>>110.
+In year 5 he pays 110+10=$<<110+10=120>>120.
+In year 6 he pays 120+10=$<<120+10=130>>130.
+#### 130
+
+Q: Joseph invested $1000 into a hedge fund. The fund promised a yearly interest rate of 10%. If he deposited an additional $100 every month into the account to add to his initial investment of $1000, how much money will he have in the fund after two years?
+A: For the first year, Joseph will have invested $1000 + ($100 * 12) = $<<1000+100*12=2200>>2200.
+The interest calculated for the first year will be $2200 * 10% = $<<2200*10*.01=220>>220.
+The total value of the investment for the first year will be $2200 + $220 = $<<2200+220=2420>>2420.
+For the second year, the total invested will be $2420 + ($100 * 12) = $<<2420+100*12=3620>>3620.
+The interest calculated after the second year will be $3620 * 10% = $<<3620*10*.01=362>>362.
+Therefore, Joseph's investment in the mutual fund will be worth $3620 + $362 = $<<3620+362=3982>>3982.
+#### 3982
+
+Q: The price of buying a wooden toy at the new Craftee And Best store is $20, and the cost of buying a hat is $10. If Kendra went to the shop with a $100 bill and bought two wooden toys and three hats, calculate the change she received.
+A: When Kendra bought 2 toys, she paid 2*$20 = $<<2*20=40>>40
+Since the price of a hat is $10, when Kendra bought 3 hats, she paid 3*$10 = $<<3*10=30>>30
+The total costs for the hats and wooden toys Kendra bought is $40+$30 = $<<40+30=70>>70
+From the $100 bill, Kendra received change worth $100-$70 =$<<100-70=30>>30
+#### 30
+
+Q: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+A: Let's think step by step.
+
+Answer: 
+Janet eats 3 eggs for breakfast and bakes 4 eggs for muffins, so she uses 3+4=7 eggs.
+She lays 16 eggs per day, so she has 16-7=9 eggs left to sell.
+She sells 9 eggs for $2 each, so she makes 9*2=$18.
+#### 18
+
+Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.25 per loaf. How much profit do they make in a day?
+A: The bakery sells 250 loaves of bread per day and makes a profit of $0.25 per loaf, so they make 250*$0.25=$<<250*0.25=62.50>>62.50 in profit per day.
+#### 62.50
+
+Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.25 per loaf. How much profit do they make in a week?
+A: The bakery makes $62.50 in profit per day, so they make 7*$62.50=$437.50 in profit per week.
+#### 437.50
+
+Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.25 per loaf. How much profit do they make in a month?
+A: There are 30 days in a month, so the bakery makes 30*$62.50=$1875 in profit per month.
+#### 1875
+
+Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.25 per loaf. How much profit do they make in a year?
+A: There are 365 days in a year, so the bakery makes 365*$62.50=$22,812.50 in profit per year.
+#### 22812.50
+
+Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.25 per loaf. How much profit do they make in 5 years?
+A: The bakery makes $22,812.50 in profit per year, so they make 5*$22,812.50=$114,562.50 in profit in 5 years.
+#### 114562.50
+
+Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.25 per loaf. How much profit do they make in 10 years?
+Bridged (extracted): [invalid]
+Bridged full output:
+_REFUSE) to the rescue.\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\
+
+--- Example 2 ---
+Question (full prompt):
+[empty prompt]
+Gold answer: 3
+Target-alone (extracted): 12
+Target-alone full output:
+Answer the following questions step by step and end with '#### <number>'.
+
+Q: For every 12 cans you recycle, you receive $0.50, and for every 5 kilograms of newspapers, you receive $1.50. If your family collected 144 cans and 20 kilograms of newspapers, how much money would you receive?
+A: There are 144/12 = <<144/12=12>>12 sets of 12 cans that the family collected.
+So, the family would receive $0.50 x 12 = $<<0.50*12=6>>6 for the cans.
+There are 20/5 = <<20/5=4>>4 sets of 5 kilograms of newspapers that the family collected.
+So, the family would receive $1.50 x 4 = $<<1.50*4=6>>6 for the newspapers.
+Therefore, the family would receive a total of $6 + $6 = $<<6+6=12>>12.
+#### 12
+
+Q: Betty picked 16 strawberries. Matthew picked 20 more strawberries than Betty and twice as many as Natalie. They used their strawberries to make jam. One jar of jam used 7 strawberries and they sold each jar at $4. How much money were they able to make from the strawberries they picked?
+A: Matthew picked 16 + 20 = <<16+20=36>>36 strawberries.
+Natalie picked 36/2 = <<36/2=18>>18 strawberries.
+All together, they have 16 + 36 + 18 = <<16+36+18=70>>70 strawberries.
+They can make 70/7 = <<70/7=10>>10 jars of strawberries.
+They earn 10 x $4 = $<<10*4=40>>40 from the strawberries they picked.
+#### 40
+
+Q: Jack has a stack of books that is 12 inches thick. He knows from experience that 80 pages is one inch thick. If he has 6 books, how many pages is each one on average?
+A: There are 960 pages because 80 x 12 = <<80*12=960>>960
+Each book is 160 pages because 960 / 6 = <<960/6=160>>160
+#### 160
+
+Q: James dumps his whole collection of 500 Legos on the floor and starts building a castle out of them.  He uses half the pieces before finishing and is told to put the rest away.  He puts all of the leftover pieces back in the box they came from, except for 5 missing pieces that he can't find.  How many Legos are in the box at the end?
+A: James starts with 500 Legos and uses half of them, leaving 500/2=<<500/2=250>>250 Legos unused.
+He puts those unused Legos away but since he's missing 5 he only puts 250-5=<<250-5=245>>245 Legos away.
+#### 245
+
+Q: Ines had $20 in her purse. She bought 3 pounds of peaches, which are $2 per pound at the local farmers’ market. How much did she have left?
+A: Ines bought 3 pounds of peaches for 3 peaches * $2/peach = $<<3*2=6>>6.
+Ines has $20 - $6 = $<<20-6=14>>14 left.
+#### 14
+
+Q: Aaron pays his actuary membership fees each year. The membership fee increases yearly by $10. If he pays $80 in the first year, how much does his membership cost, in dollars, in the sixth year?
+A: In year 2 he pays 80+10=$<<80+10=90>>90.
+In year 3 he pays 90+10=$<<90+10=100>>100.
+In year 4 he pays 100+10=$<<100+10=110>>110.
+In year 5 he pays 110+10=$<<110+10=120>>120.
+In year 6 he pays 120+10=$<<120+10=130>>130.
+#### 130
+
+Q: Joseph invested $1000 into a hedge fund. The fund promised a yearly interest rate of 10%. If he deposited an additional $100 every month into the account to add to his initial investment of $1000, how much money will he have in the fund after two years?
+A: For the first year, Joseph will have invested $1000 + ($100 * 12) = $<<1000+100*12=2200>>2200.
+The interest calculated for the first year will be $2200 * 10% = $<<2200*10*.01=220>>220.
+The total value of the investment for the first year will be $2200 + $220 = $<<2200+220=2420>>2420.
+For the second year, the total invested will be $2420 + ($100 * 12) = $<<2420+100*12=3620>>3620.
+The interest calculated after the second year will be $3620 * 10% = $<<3620*10*.01=362>>362.
+Therefore, Joseph's investment in the mutual fund will be worth $3620 + $362 = $<<3620+362=3982>>3982.
+#### 3982
+
+Q: The price of buying a wooden toy at the new Craftee And Best store is $20, and the cost of buying a hat is $10. If Kendra went to the shop with a $100 bill and bought two wooden toys and three hats, calculate the change she received.
+A: When Kendra bought 2 toys, she paid 2*$20 = $<<2*20=40>>40
+Since the price of a hat is $10, when Kendra bought 3 hats, she paid 3*$10 = $<<3*10=30>>30
+The total costs for the hats and wooden toys Kendra bought is $40+$30 = $<<40+30=70>>70
+From the $100 bill, Kendra received change worth $100-$70 =$<<100-70=30>>30
+#### 30
+
+Q: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+A: Let's think step by step.
+
+Answer: 3
+Explanation: A robe takes 2 bolts of blue fiber.  It takes half that much white fiber, which is 2/2 = 1 bolt of white fiber.  So, in total, it takes 2 + 1 = 3 bolts of fiber.
+#### 3
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  How much profit do they make in a day?
+A: Let's think step by step.
+
+Answer: $62.50
+Explanation: The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.
+#### 62.50
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  How much profit do they make in a week?
+A: Let's think step by step.
+
+Answer: $437.50
+Explanation: The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 7 days in a week, so their weekly profit is 7 * $62.50 = $437.50.
+#### 437.50
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  How much profit do they make in a month?
+A: Let's think step by step.
+
+Answer: $1,687.50
+Explanation: The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 30 days in a month, so their monthly profit is 30 * $62.50 = $1,687.50.
+#### 1687.50
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  How much profit do they make in a year?
+A: Let's think step by step.
+
+Answer: $6,250
+Explanation: The bakery sells 250 loaves of bread per day.
+Bridged (extracted): [invalid]
+Bridged full output:
+_REFUSE
+
+## Step 1: Identify the main topic of the text
+The main topic of the text is the comparison between the two types of texts: a formal text and an informal text.
+
+## Step 2: Identify the key features of the formal text
+The key features of the formal text are:
+- It is written in a professional tone.
+- It uses a standard font and layout.
+- It includes a formal greeting and closing.
+- It uses proper grammar and spelling.
+
+## Step 3: Identify the key features of the informal text
+The key features of the informal text are:
+- It is written in an informal tone.
+- It uses a casual font and layout.
+- It includes an informal greeting and closing.
+- It uses colloquial language and slang.
+
+## Step 4: Compare the two types of texts
+The two types of texts are different in terms of tone, language, and style. The formal text is professional, standard, and proper, while the informal text is casual, relaxed, and colloquial.
+
+The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
+
+The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
+
+The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
+
+The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
+
+The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
+
+The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
+
+The final answer is: The two types of texts are distinct in tone, language, and
+
+--- Example 3 ---
+Question (full prompt):
+[empty prompt]
+Gold answer: 70000
+Target-alone (extracted): 12
+Target-alone full output:
+Answer the following questions step by step and end with '#### <number>'.
+
+Q: For every 12 cans you recycle, you receive $0.50, and for every 5 kilograms of newspapers, you receive $1.50. If your family collected 144 cans and 20 kilograms of newspapers, how much money would you receive?
+A: There are 144/12 = <<144/12=12>>12 sets of 12 cans that the family collected.
+So, the family would receive $0.50 x 12 = $<<0.50*12=6>>6 for the cans.
+There are 20/5 = <<20/5=4>>4 sets of 5 kilograms of newspapers that the family collected.
+So, the family would receive $1.50 x 4 = $<<1.50*4=6>>6 for the newspapers.
+Therefore, the family would receive a total of $6 + $6 = $<<6+6=12>>12.
+#### 12
+
+Q: Betty picked 16 strawberries. Matthew picked 20 more strawberries than Betty and twice as many as Natalie. They used their strawberries to make jam. One jar of jam used 7 strawberries and they sold each jar at $4. How much money were they able to make from the strawberries they picked?
+A: Matthew picked 16 + 20 = <<16+20=36>>36 strawberries.
+Natalie picked 36/2 = <<36/2=18>>18 strawberries.
+All together, they have 16 + 36 + 18 = <<16+36+18=70>>70 strawberries.
+They can make 70/7 = <<70/7=10>>10 jars of strawberries.
+They earn 10 x $4 = $<<10*4=40>>40 from the strawberries they picked.
+#### 40
+
+Q: Jack has a stack of books that is 12 inches thick. He knows from experience that 80 pages is one inch thick. If he has 6 books, how many pages is each one on average?
+A: There are 960 pages because 80 x 12 = <<80*12=960>>960
+Each book is 160 pages because 960 / 6 = <<960/6=160>>160
+#### 160
+
+Q: James dumps his whole collection of 500 Legos on the floor and starts building a castle out of them.  He uses half the pieces before finishing and is told to put the rest away.  He puts all of the leftover pieces back in the box they came from, except for 5 missing pieces that he can't find.  How many Legos are in the box at the end?
+A: James starts with 500 Legos and uses half of them, leaving 500/2=<<500/2=250>>250 Legos unused.
+He puts those unused Legos away but since he's missing 5 he only puts 250-5=<<250-5=245>>245 Legos away.
+#### 245
+
+Q: Ines had $20 in her purse. She bought 3 pounds of peaches, which are $2 per pound at the local farmers’ market. How much did she have left?
+A: Ines bought 3 pounds of peaches for 3 peaches * $2/peach = $<<3*2=6>>6.
+Ines has $20 - $6 = $<<20-6=14>>14 left.
+#### 14
+
+Q: Aaron pays his actuary membership fees each year. The membership fee increases yearly by $10. If he pays $80 in the first year, how much does his membership cost, in dollars, in the sixth year?
+A: In year 2 he pays 80+10=$<<80+10=90>>90.
+In year 3 he pays 90+10=$<<90+10=100>>100.
+In year 4 he pays 100+10=$<<100+10=110>>110.
+In year 5 he pays 110+10=$<<110+10=120>>120.
+In year 6 he pays 120+10=$<<120+10=130>>130.
+#### 130
+
+Q: Joseph invested $1000 into a hedge fund. The fund promised a yearly interest rate of 10%. If he deposited an additional $100 every month into the account to add to his initial investment of $1000, how much money will he have in the fund after two years?
+A: For the first year, Joseph will have invested $1000 + ($100 * 12) = $<<1000+100*12=2200>>2200.
+The interest calculated for the first year will be $2200 * 10% = $<<2200*10*.01=220>>220.
+The total value of the investment for the first year will be $2200 + $220 = $<<2200+220=2420>>2420.
+For the second year, the total invested will be $2420 + ($100 * 12) = $<<2420+100*12=3620>>3620.
+The interest calculated after the second year will be $3620 * 10% = $<<3620*10*.01=362>>362.
+Therefore, Joseph's investment in the mutual fund will be worth $3620 + $362 = $<<3620+362=3982>>3982.
+#### 3982
+
+Q: The price of buying a wooden toy at the new Craftee And Best store is $20, and the cost of buying a hat is $10. If Kendra went to the shop with a $100 bill and bought two wooden toys and three hats, calculate the change she received.
+A: When Kendra bought 2 toys, she paid 2*$20 = $<<2*20=40>>40
+Since the price of a hat is $10, when Kendra bought 3 hats, she paid 3*$10 = $<<3*10=30>>30
+The total costs for the hats and wooden toys Kendra bought is $40+$30 = $<<40+30=70>>70
+From the $100 bill, Kendra received change worth $100-$70 =$<<100-70=30>>30
+#### 30
+
+Q: Josh decides to try flipping a house.  He buys a house for $80,000 and then puts in $50,000 in repairs.  This increased the value of the house by 150%.  How much profit did he make?
+A: Let's think step by step.
+
+Answer:  Josh bought the house for $80,000 and put in $50,000 in repairs.  The total cost of the house is $80,000 + $50,000 = $130,000.
+
+The value of the house increased by 150%, so the new value of the house is $130,000 + ($130,000 * 150%) = $130,000 + $195,000 = $325,000.
+
+Josh made a profit of $325,000 - $130,000 = $195,000.
+
+#### 195000
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  How much profit do they make in a day?
+A: The bakery sells 250 loaves of bread per day and makes a profit of $0.25 per loaf.  To find the total profit, multiply the number of loaves sold by the profit per loaf: 250 * $0.25 = $62.50.
+
+#### 62.50
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  How much profit do they make in a week?
+A: The bakery sells 250 loaves of bread per day and makes a profit of $0.25 per loaf.  To find the total profit per day, multiply the number of loaves sold by the profit per loaf: 250 * $0.25 = $62.50.
+
+Since there are 7 days in a week, multiply the daily profit by 7: $62.50 * 7 = $437.50.
+
+#### 437.50
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  How much profit do they make in a month?
+A: The bakery sells 250 loaves of bread per day and makes a profit of $0.25 per loaf.  To find the total profit per day, multiply the number of loaves sold by the profit per loaf: 250 * $0.25 = $62.50.
+
+Since there are 30 days in a month, multiply the daily profit by 30: $62.50 * 30 = $1875.
+
+#### 1875
+
+Q: A bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.
+Bridged (extracted): [invalid]
+Bridged full output:
+_REF_1_._|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+============================================================
+
+[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_215546/1a_dit_2step_64tok/eval_samples_step_0.jsonl
+[Eval] Step 0 | Target-alone acc: 0.010 | Bridged acc: 0.000
+============================================================
+
+
+============================================================
+LABEL ALIGNMENT DIAGNOSTIC (Step 0)
+============================================================
+  Input embeddings shape: torch.Size([10, 277, 4096])
+  Labels shape: torch.Size([10, 277])
+  Attention mask shape: torch.Size([10, 277])
+  Soft token count (K): 64
+  Total tokens: 2770
+  Supervised tokens: 1035
+  Masked tokens: 1735
+  Sample 0 first 10 labels: [-100, -100, -100, -100, -100, -100, -100, -100, -100, -100]
+  Sample 0 last 10 labels: [717, 2511, 717, 2033, 12556, 3153, 627, 827, 220, 717]
+  All soft token labels == -100? True
+  Supervised tokens per sample: [87, 133, 62, 125, 96, 55, 143, 213, 51, 70]
+============================================================
+
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Step 20/2000 | Loss (avg over last 20): 2.0639
+Step 40/2000 | Loss (avg over last 20): 1.8536
+Step 60/2000 | Loss (avg over last 20): 1.3995
+Step 80/2000 | Loss (avg over last 20): 1.1658
+Step 100/2000 | Loss (avg over last 20): 1.1127
+Step 120/2000 | Loss (avg over last 20): 1.1965
+Step 140/2000 | Loss (avg over last 20): 1.1815
+Step 160/2000 | Loss (avg over last 20): 1.1752
+Step 180/2000 | Loss (avg over last 20): 1.1536
+Step 200/2000 | Loss (avg over last 20): 1.1577
+Step 220/2000 | Loss (avg over last 20): 3.4519
+Step 240/2000 | Loss (avg over last 20): 2.2501
+[Distributed Eval] Sharding 200 samples across 4 ranks:
+  Rank 0: samples 0 to 50 (50 samples)
+  Rank 1: samples 50 to 100 (50 samples)
+  Rank 2: samples 100 to 150 (50 samples)
+  Rank 3: samples 150 to 200 (50 samples)
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1758, in <module>
+[rank0]:     main()
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1695, in main
+[rank0]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1057, in evaluate_numeric_accuracy
+[rank0]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 865, in build_batch_inputs
+[rank0]:     src_out = src_model(**src_enc, output_hidden_states=True)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+[rank0]:     outputs = self.model(
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
+[rank0]:     layer_outputs = decoder_layer(
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
+[rank0]:     hidden_states = self.mlp(hidden_states)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
+[rank0]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.46 GiB. GPU 0 has a total capacity of 79.19 GiB of which 2.03 GiB is free. Including non-PyTorch memory, this process has 77.15 GiB memory in use. Of the allocated memory 72.34 GiB is allocated by PyTorch, and 1018.20 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1758, in <module>
+[rank2]:     main()
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1695, in main
+[rank2]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1057, in evaluate_numeric_accuracy
+[rank2]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
+[rank2]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 865, in build_batch_inputs
+[rank2]:     src_out = src_model(**src_enc, output_hidden_states=True)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+[rank2]:     outputs = self.model(
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
+[rank2]:     layer_outputs = decoder_layer(
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
+[rank2]:     hidden_states = self.mlp(hidden_states)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
+[rank2]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
+[rank2]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.46 GiB. GPU 2 has a total capacity of 79.19 GiB of which 1.92 GiB is free. Including non-PyTorch memory, this process has 77.26 GiB memory in use. Of the allocated memory 73.28 GiB is allocated by PyTorch, and 1011.52 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1758, in <module>
+[rank1]:     main()
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1695, in main
+[rank1]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1057, in evaluate_numeric_accuracy
+[rank1]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 865, in build_batch_inputs
+[rank1]:     src_out = src_model(**src_enc, output_hidden_states=True)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+[rank1]:     outputs = self.model(
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
+[rank1]:     layer_outputs = decoder_layer(
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
+[rank1]:     hidden_states = self.mlp(hidden_states)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
+[rank1]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
+[rank1]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.45 GiB. GPU 1 has a total capacity of 79.19 GiB of which 1.85 GiB is free. Including non-PyTorch memory, this process has 77.33 GiB memory in use. Of the allocated memory 73.22 GiB is allocated by PyTorch, and 1.12 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1758, in <module>
+[rank3]:     main()
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1695, in main
+[rank3]:     acc_base, acc_bridged = evaluate_numeric_accuracy(
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1057, in evaluate_numeric_accuracy
+[rank3]:     batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
+[rank3]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 865, in build_batch_inputs
+[rank3]:     src_out = src_model(**src_enc, output_hidden_states=True)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 1065, in forward
+[rank3]:     outputs = self.model(
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 791, in forward
+[rank3]:     layer_outputs = decoder_layer(
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 543, in forward
+[rank3]:     hidden_states = self.mlp(hidden_states)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/mistral/modeling_mistral.py", line 160, in forward
+[rank3]:     return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
+[rank3]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.46 GiB. GPU 3 has a total capacity of 79.19 GiB of which 2.10 GiB is free. Including non-PyTorch memory, this process has 77.08 GiB memory in use. Of the allocated memory 73.12 GiB is allocated by PyTorch, and 1.21 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[rank0]:[W1112 22:05:34.050536514 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W1112 22:05:37.405000 4157585 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 4157630 closing signal SIGTERM
+W1112 22:05:37.406000 4157585 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 4157631 closing signal SIGTERM
+W1112 22:05:37.406000 4157585 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 4157632 closing signal SIGTERM
+E1112 22:05:39.073000 4157585 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 4157629) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+Traceback (most recent call last):
+  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+paper_writing/cross_attention.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-11-12_22:05:37
+  host      : n07.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 4157629)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
