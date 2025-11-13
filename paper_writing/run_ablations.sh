@@ -4,11 +4,12 @@ set -euo pipefail
 # Load HPC modules if available (cluster environment)
 # Skip if module command doesn't exist (local/CI environments)
 if command -v module >/dev/null 2>&1; then
+    module purge  # Clear any conflicting modules from environment
     module load gcc/13.1.0
     module load conda/24.3.0-0
     module load stockcuda/12.6.2
     # NOTE: cudatoolkit/12.5 and nvhpc/24.7 cause "Error 803: unsupported display driver"
-    # stockcuda/12.6.2 works on current HPC nodes (tested on n23)
+    # stockcuda/12.6.2 works on current HPC nodes (tested on n23 with module purge)
 fi
 
 # Paper Ablation Studies - Focused experiments for 3-week deadline
