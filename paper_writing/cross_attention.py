@@ -860,7 +860,7 @@ def build_batch_inputs(samples: List[Sample],
 
     # Source encoding (no grad)
     with torch.no_grad():
-        src_enc = src_tok([s.src_prompt for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=4096)
+        src_enc = src_tok([s.src_prompt for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=8192)
         src_enc = {k: v.to(device) for k, v in src_enc.items()}
         src_out = src_model(**src_enc, output_hidden_states=True)
         # last hidden states: [B, T_src, d_src]
@@ -886,7 +886,7 @@ def build_batch_inputs(samples: List[Sample],
                 # Prompt teacher: use prompt text (the question/context)
                 texts = [s.tgt_prompt if s.tgt_prompt.strip() else (tgt_tok.bos_token or " ") for s in samples]
 
-            enc = tgt_tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=4096)
+            enc = tgt_tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=8192)
             enc = {k: v.to(device) for k, v in enc.items()}
             emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, T_text, d_tgt]
             teacher_soft = _repeat_to_k(emb, K)                                  # [B, K, d_tgt]
@@ -912,7 +912,7 @@ def build_batch_inputs(samples: List[Sample],
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=4096
+        max_length=8192
     )
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
 
@@ -986,7 +986,7 @@ def gather_texts_from_all_ranks(local_texts: List[str]) -> List[str]:
 def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, translator,
                               device, dtype, train_ds, num_samples: int = 200, max_new_tokens: int = 256,
                               show_samples: bool = True, target_rms: float = None, eval_batch_size: int = 50,
-                              args = None):
+                              args = None, eval_step: Optional[object] = None):
     """
     Distributed evaluation: each rank processes num_samples // world_size samples.
     Results are gathered on rank 0 for final metric computation.
@@ -1072,7 +1072,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         # Target-alone baseline
         with torch.inference_mode():
             prompts = [s.tgt_prompt for s in samples_batch]
-            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=False).to(device)
+            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
             base_out = tgt_model.generate(
                 **enc,
                 max_new_tokens=max_new_tokens,
@@ -1103,41 +1103,71 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     bridged_texts = all_bridged_texts
     base_texts = all_base_texts
 
-    # Compute accuracy using GSM8K answer extraction
-    def compute_acc(pred_texts):
-        correct = 0
-        for text, s in zip(pred_texts, samples):
-            pred = extract_final_answer(text)
-            gold = extract_final_answer(s.tgt_answer)
-            correct += int(pred == gold)
-        return correct / len(samples)
+    eval_label = str(eval_step) if eval_step is not None else "unspecified"
+    sample_records: List[Dict[str, str]] = []
+    correct_baseline = 0
+    correct_bridged = 0
 
-    acc_bridged = compute_acc(bridged_texts)
-    acc_baseline = compute_acc(base_texts)
+    for idx, (sample, base_text, bridged_text) in enumerate(zip(samples, base_texts, bridged_texts)):
+        question_text = sample.tgt_prompt.strip()
+        gold_full_text = (sample.tgt_prompt + " " + sample.tgt_answer).strip()
+        gold_answer = extract_final_answer(gold_full_text)
+
+        target_full = base_text.strip()
+        target_answer = extract_final_answer(base_text)
+
+        bridged_full = bridged_text.strip()
+        bridged_answer = extract_final_answer(bridged_text)
+
+        sample_records.append({
+            "eval_step": eval_label,
+            "index": idx,
+            "question": question_text,
+            "gold_full_text": gold_full_text,
+            "gold_extracted": gold_answer,
+            "target_full": target_full,
+            "target_extracted": target_answer,
+            "bridged_full": bridged_full,
+            "bridged_extracted": bridged_answer,
+        })
+
+        correct_baseline += int(target_answer == gold_answer)
+        correct_bridged += int(bridged_answer == gold_answer)
+
+    total_samples = max(1, len(sample_records))
+    acc_baseline = correct_baseline / total_samples
+    acc_bridged = correct_bridged / total_samples
 
     # Print sample outputs for inspection (only from main process)
     if show_samples and num_samples >= 3:
         log("\n" + "="*60)
         log("SAMPLE OUTPUTS (first 3 examples):")
         log("="*60)
-        for i in range(min(3, len(samples))):
+        for i in range(min(3, len(sample_records))):
+            rec = sample_records[i]
             log(f"\n--- Example {i+1} ---")
-            question_text = samples[i].tgt_prompt.strip()
-            gold_full_text = (samples[i].tgt_prompt + " " + samples[i].tgt_answer).strip()
             log("Question (full prompt):")
-            log(question_text if question_text else "[empty prompt]")
-            log(f"Gold answer: {extract_final_answer(gold_full_text)}")
+            log(rec["question"] if rec["question"] else "[empty prompt]")
+            log(f"Gold answer: {rec['gold_extracted']}")
 
-            target_full = base_texts[i].strip()
-            log(f"Target-alone (extracted): {extract_final_answer(base_texts[i])}")
+            log(f"Target-alone (extracted): {rec['target_extracted']}")
             log("Target-alone full output:")
-            log(target_full if target_full else "[empty output]")
+            log(rec["target_full"] if rec["target_full"] else "[empty output]")
 
-            bridged_full = bridged_texts[i].strip()
-            log(f"Bridged (extracted): {extract_final_answer(bridged_texts[i])}")
+            log(f"Bridged (extracted): {rec['bridged_extracted']}")
             log("Bridged full output:")
-            log(bridged_full if bridged_full else "[empty output]")
+            log(rec["bridged_full"] if rec["bridged_full"] else "[empty output]")
         log("="*60 + "\n")
+
+    log_dir = getattr(args, "log_dir", "") if args is not None else ""
+    if log_dir and len(sample_records) > 0:
+        os.makedirs(log_dir, exist_ok=True)
+        safe_label = str(eval_label).replace(" ", "_")
+        jsonl_path = os.path.join(log_dir, f"eval_samples_step_{safe_label}.jsonl")
+        with open(jsonl_path, "w", encoding="utf-8") as f:
+            for rec in sample_records:
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        log(f"[Eval] Saved sample outputs to {jsonl_path}")
 
     return acc_baseline, acc_bridged
 
@@ -1217,6 +1247,8 @@ def main():
     parser.add_argument("--eval_every", type=int, default=200)
     parser.add_argument("--eval_samples", type=int, default=1000, help="Number of eval samples (default 1000 for lower variance)")
     parser.add_argument("--max_new_tokens", type=int, default=256)
+    parser.add_argument("--log_dir", type=str, default="",
+                        help="Directory to write logs/artifacts (e.g., eval sample JSONL)")
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--bf16", action="store_true")
     parser.add_argument("--save_path", type=str, default="translator_ckpt.pt")
@@ -1302,7 +1334,7 @@ def main():
     if src_tok.pad_token is None:
         src_tok.pad_token = src_tok.eos_token
     src_tok.padding_side = "left"  # Critical for decoder-only models
-    src_tok.model_max_length = 4096
+    src_tok.model_max_length = 8192
 
     # Load source model directly to GPU to avoid CPU RAM exhaustion
     # With 4 processes each loading ~30GB models, we'd need 120GB+ CPU RAM
@@ -1320,7 +1352,7 @@ def main():
     if tgt_tok.pad_token_id is None and tgt_tok.eos_token_id is not None:
         tgt_tok.pad_token = tgt_tok.eos_token
     tgt_tok.padding_side = "left"  # Critical for decoder-only models
-    tgt_tok.model_max_length = 4096
+    tgt_tok.model_max_length = 8192
 
     # Verify tokenizer supports offset mapping (required for label alignment)
     if not tgt_tok.is_fast:
@@ -1491,7 +1523,7 @@ def main():
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
             device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-            eval_batch_size=args.eval_batch_size, args=args
+            eval_batch_size=args.eval_batch_size, args=args, eval_step=0
         )
 
     if is_main():
@@ -1558,7 +1590,7 @@ def main():
             with torch.no_grad():
                 # Baseline: text-only input (no soft tokens)
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=4096).to(device)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
                 baseline_out = tgt_model(**tgt_enc)
                 baseline_logits = baseline_out.logits[:, :20, :]  # First 20 positions
 
@@ -1585,7 +1617,7 @@ def main():
             with torch.no_grad():
                 # Get target embeddings for the prompt (stop gradient)
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=4096).to(device)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
                 tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
                 # Pool target embeddings (mean over sequence)
                 tgt_pooled = tgt_embeds_full.mean(dim=1)  # [B, d_model]
@@ -1664,7 +1696,7 @@ def main():
                     test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                     device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
                     show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-                    eval_batch_size=args.eval_batch_size, args=args
+                    eval_batch_size=args.eval_batch_size, args=args, eval_step=step
                 )
 
             # Only rank 0 logs and checks early stopping
@@ -1710,7 +1742,7 @@ def main():
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
             device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
-            eval_batch_size=args.eval_batch_size, args=args
+            eval_batch_size=args.eval_batch_size, args=args, eval_step="final"
         )
 
     # Synchronize all ranks before cleanup

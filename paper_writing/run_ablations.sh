@@ -33,7 +33,7 @@ TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 PER_DEVICE_BATCH=10  # Reduced from 10 to avoid OOM with 2× 7B/8B models
 EVAL_EVERY=250
 EVAL_SAMPLES=200  # Reduced for faster eval iterations (was 500)
-MAX_NEW_TOKENS=8192  # High limit to ensure complete reasoning chains + #### marker
+MAX_NEW_TOKENS=512  # Enough for full CoT + #### while respecting 8k context window
 
 # Create output directory
 OUTPUT_DIR="paper_writing/runs/ablations_$(date +"%Y%m%d_%H%M%S")"
@@ -76,6 +76,7 @@ run_experiment() {
             --bf16 \
             --no_compile \
             --save_path "$EXP_DIR/checkpoint.pt" \
+            --log_dir "$EXP_DIR" \
             "$@"
     } 2>&1 | tee "$LOG_FILE"
 
