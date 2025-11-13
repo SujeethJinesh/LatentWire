@@ -1050,6 +1050,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     # Process in batches to avoid OOM
     all_bridged_texts = []
     all_base_texts = []
+    all_source_texts = []
 
     for start_idx in range(0, len(all_samples), eval_batch_size):
         end_idx = min(start_idx + eval_batch_size, len(all_samples))
@@ -1072,7 +1073,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                                                        clean_up_tokenization_spaces=False)
             all_bridged_texts.extend(bridged_texts_batch)
 
-        # Target-alone baseline
+        # Target-alone baseline (Llama only)
         with torch.inference_mode():
             prompts = [s.tgt_prompt for s in samples_batch]
             enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
@@ -1089,6 +1090,22 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                                                     clean_up_tokenization_spaces=False)
             all_base_texts.extend(base_texts_batch)
 
+        # Source-only baseline (Mistral only)
+        with torch.inference_mode():
+            prompts = [s.src_prompt for s in samples_batch]
+            src_enc = src_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
+            src_out = src_model.generate(
+                **src_enc,
+                max_new_tokens=max_new_tokens,
+                do_sample=False,
+                pad_token_id=src_tok.pad_token_id,
+                eos_token_id=src_tok.eos_token_id,
+                use_cache=True
+            )
+            source_texts_batch = src_tok.batch_decode(src_out, skip_special_tokens=True,
+                                                      clean_up_tokenization_spaces=False)
+            all_source_texts.extend(source_texts_batch)
+
         # Clear CUDA cache after each batch to reduce fragmentation
         torch.cuda.empty_cache()
 
@@ -1097,6 +1114,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     all_base_texts = gather_texts_from_all_ranks(all_base_texts)
     all_answers = gather_texts_from_all_ranks([s.tgt_answer for s in all_samples])
     all_questions = gather_texts_from_all_ranks([s.tgt_prompt for s in all_samples])
+    all_source_texts = gather_texts_from_all_ranks(all_source_texts)
 
     # Only rank 0 computes metrics
     if rank != 0:
@@ -1107,13 +1125,15 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                for prompt, ans in zip(all_questions, all_answers)]
     bridged_texts = all_bridged_texts
     base_texts = all_base_texts
+    source_texts = all_source_texts
 
     eval_label = str(eval_step) if eval_step is not None else "unspecified"
     sample_records: List[Dict[str, str]] = []
+    correct_source = 0
     correct_baseline = 0
     correct_bridged = 0
 
-    for idx, (sample, base_text, bridged_text) in enumerate(zip(samples, base_texts, bridged_texts)):
+    for idx, (sample, base_text, bridged_text, source_text) in enumerate(zip(samples, base_texts, bridged_texts, source_texts)):
         question_text = sample.tgt_prompt.strip()
         gold_full_text = (sample.tgt_prompt + " " + sample.tgt_answer).strip()
         # FIX: Extract gold answer from tgt_answer only, not from prompt+answer
@@ -1122,6 +1142,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
         target_full = base_text.strip()
         target_answer = extract_final_answer(base_text)
+
+        source_full = source_text.strip()
+        source_answer = extract_final_answer(source_text)
 
         bridged_full = bridged_text.strip()
         bridged_answer = extract_final_answer(bridged_text)
@@ -1132,16 +1155,20 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             "question": question_text,
             "gold_full_text": gold_full_text,
             "gold_extracted": gold_answer,
+            "source_full": source_full,
+            "source_extracted": source_answer,
             "target_full": target_full,
             "target_extracted": target_answer,
             "bridged_full": bridged_full,
             "bridged_extracted": bridged_answer,
         })
 
+        correct_source += int(source_answer == gold_answer)
         correct_baseline += int(target_answer == gold_answer)
         correct_bridged += int(bridged_answer == gold_answer)
 
     total_samples = max(1, len(sample_records))
+    acc_source = correct_source / total_samples
     acc_baseline = correct_baseline / total_samples
     acc_bridged = correct_bridged / total_samples
 
@@ -1156,6 +1183,10 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             log("Question (full prompt):")
             log(rec["question"] if rec["question"] else "[empty prompt]")
             log(f"Gold answer: {rec['gold_extracted']}")
+
+            log(f"Source-alone (extracted): {rec['source_extracted']}")
+            log("Source-alone full output:")
+            log(rec["source_full"] if rec["source_full"] else "[empty output]")
 
             log(f"Target-alone (extracted): {rec['target_extracted']}")
             log("Target-alone full output:")
@@ -1174,9 +1205,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         with open(jsonl_path, "w", encoding="utf-8") as f:
             for rec in sample_records:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-        log(f"[Eval] Saved sample outputs to {jsonl_path}")
+    log(f"[Eval] Saved sample outputs to {jsonl_path}")
 
-    return acc_baseline, acc_bridged
+    return acc_source, acc_baseline, acc_bridged
 
 def analyze_bridge_quality(soft_tokens: torch.Tensor, target_model, prompt_ids: torch.Tensor,
                            prompt_mask: torch.Tensor, tokenizer, target_rms: float):
@@ -1530,7 +1561,7 @@ def main():
         log("="*60)
 
     with torch.no_grad():
-        acc_base, acc_bridged = evaluate_numeric_accuracy(
+        acc_source, acc_base, acc_bridged = evaluate_numeric_accuracy(
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
             device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
@@ -1538,7 +1569,7 @@ def main():
         )
 
     if is_main():
-        log(f"[Eval] Step 0 | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
+        log(f"[Eval] Step 0 | Source-alone acc: {acc_source:.3f} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
         log("="*60 + "\n")
 
     # Synchronize all ranks after evaluation
@@ -1703,7 +1734,7 @@ def main():
         if args.eval_every > 0 and step % args.eval_every == 0 and step != last_eval:
             last_eval = step
             with torch.no_grad():
-                acc_base, acc_bridged = evaluate_numeric_accuracy(
+                acc_source, acc_base, acc_bridged = evaluate_numeric_accuracy(
                     test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
                     device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
                     show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
@@ -1713,7 +1744,7 @@ def main():
             # Only rank 0 logs and checks early stopping
             stop_training = torch.tensor(0, device=device)
             if is_main():
-                log(f"[Eval] Step {step} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
+                log(f"[Eval] Step {step} | Source-alone acc: {acc_source:.3f} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
                 # Early stopping check
                 if args.early_stop_patience > 0:
@@ -1755,7 +1786,7 @@ def main():
 
     # Final eval - ALL ranks participate
     with torch.no_grad():
-        acc_base, acc_bridged = evaluate_numeric_accuracy(
+        acc_source, acc_base, acc_bridged = evaluate_numeric_accuracy(
             test_ds, src_model, src_tok, tgt_model, tgt_tok, translator.module if isinstance(translator, DDP) else translator,
             device, dtype, train_ds, num_samples=args.eval_samples, max_new_tokens=args.max_new_tokens,
             show_samples=(args.show_eval_samples > 0), target_rms=target_rms,
@@ -1767,7 +1798,7 @@ def main():
         dist.barrier()
 
     if is_main():
-        log(f"[Final Eval] Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
+        log(f"[Final Eval] Source-alone acc: {acc_source:.3f} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
     cleanup_ddp()
 

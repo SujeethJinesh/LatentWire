@@ -323,7 +323,7 @@ echo "" | tee -a "$SUMMARY_LOG"
 echo "RESULTS COMPARISON:" | tee -a "$SUMMARY_LOG"
 echo "------------------------------------------" | tee -a "$SUMMARY_LOG"
 {
-    echo "Experiment,Tokens,Dataset,Peak,Final,FinalTarget,Degradation"
+    echo "Experiment,Tokens,Dataset,Peak,Final,FinalSource,FinalTarget,Degradation"
 
     # Extract results from logs
     for exp_dir in "$OUTPUT_DIR"/*/; do
@@ -360,20 +360,25 @@ echo "------------------------------------------" | tee -a "$SUMMARY_LOG"
                 peak_val=$(echo "$peak" | tr -d '%')
                 final_val=$(echo "$final" | tr -d '%')
                 if [ -n "$peak_val" ] && [ -n "$final_val" ]; then
+                    final_source=$(grep "Final.*Source-alone acc:" "$log" | tail -1 | \
+                           grep -oE "Source-alone acc: [0-9.]+" | \
+                           grep -oE "[0-9.]+" | \
+                           awk '{printf "%.1f%%", $1 * 100}')
+
                     final_target=$(grep "Final.*Target-alone acc:" "$log" | tail -1 | \
                            grep -oE "Target-alone acc: [0-9.]+" | \
                            grep -oE "[0-9.]+" | \
                            awk '{printf "%.1f%%", $1 * 100}')
 
                     deg=$(awk -v p="$peak_val" -v f="$final_val" 'BEGIN{printf "%.1f%%", (p - f)}')
-                    echo "$name,$tokens,$dataset,$peak,$final,$final_target,$deg"
+                    echo "$name,$tokens,$dataset,$peak,$final,$final_source,$final_target,$deg"
                 fi
             fi
         fi
     done
 
     # Add baseline from existing experiment (for reference)
-    echo "2b_baseline_64tok,64,GSM8K,81.5%,36.0%,73.0%,45.5%"
+    echo "2b_baseline_64tok,64,GSM8K,81.5%,36.0%,N/A,73.0%,45.5%"
 
 } | column -t -s',' | tee -a "$SUMMARY_LOG"
 
@@ -417,7 +422,8 @@ def parse_log(log_file):
         'peak_bridged': 0,
         'peak_step': 0,
         'final_bridged': 0,
-        'final_target': 0
+        'final_target': 0,
+        'final_source': 0
     }
 
     with open(log_file) as f:
@@ -426,11 +432,13 @@ def parse_log(log_file):
             if '[Eval] Step' in line and 'Bridged acc:' in line:
                 parts = line.split('|')
                 step = int(re.search(r'Step (\d+)', parts[0]).group(1))
-                target = float(re.search(r'Target-alone acc: ([0-9.]+)', parts[1]).group(1))
-                bridged = float(re.search(r'Bridged acc: ([0-9.]+)', parts[2]).group(1))
+                source = float(re.search(r'Source-alone acc: ([0-9.]+)', line).group(1))
+                target = float(re.search(r'Target-alone acc: ([0-9.]+)', line).group(1))
+                bridged = float(re.search(r'Bridged acc: ([0-9.]+)', line).group(1))
 
                 results['evals'].append({
                     'step': step,
+                    'source': source,
                     'target': target,
                     'bridged': bridged
                 })
@@ -441,6 +449,7 @@ def parse_log(log_file):
 
             # Extract final results
             if '[Final Eval]' in line and 'Bridged acc:' in line:
+                results['final_source'] = float(re.search(r'Source-alone acc: ([0-9.]+)', line).group(1))
                 results['final_target'] = float(re.search(r'Target-alone acc: ([0-9.]+)', line).group(1))
                 results['final_bridged'] = float(re.search(r'Bridged acc: ([0-9.]+)', line).group(1))
 
@@ -462,20 +471,21 @@ def main():
     # Add baseline from existing experiment (for comparison)
     results['2b_baseline_64tok'] = {
         'evals': [
-            {'step': 250, 'target': 0.730, 'bridged': 0.290},
-            {'step': 500, 'target': 0.730, 'bridged': 0.655},
-            {'step': 750, 'target': 0.730, 'bridged': 0.535},
-            {'step': 1000, 'target': 0.730, 'bridged': 0.815},
-            {'step': 1250, 'target': 0.730, 'bridged': 0.755},
-            {'step': 1500, 'target': 0.730, 'bridged': 0.655},
-            {'step': 2000, 'target': 0.730, 'bridged': 0.635},
-            {'step': 2500, 'target': 0.730, 'bridged': 0.375},
-            {'step': 3000, 'target': 0.730, 'bridged': 0.360},
+            {'step': 250, 'source': 0.120, 'target': 0.730, 'bridged': 0.290},
+            {'step': 500, 'source': 0.120, 'target': 0.730, 'bridged': 0.655},
+            {'step': 750, 'source': 0.120, 'target': 0.730, 'bridged': 0.535},
+            {'step': 1000, 'source': 0.120, 'target': 0.730, 'bridged': 0.815},
+            {'step': 1250, 'source': 0.120, 'target': 0.730, 'bridged': 0.755},
+            {'step': 1500, 'source': 0.120, 'target': 0.730, 'bridged': 0.655},
+            {'step': 2000, 'source': 0.120, 'target': 0.730, 'bridged': 0.635},
+            {'step': 2500, 'source': 0.120, 'target': 0.730, 'bridged': 0.375},
+            {'step': 3000, 'source': 0.120, 'target': 0.730, 'bridged': 0.360},
         ],
         'peak_bridged': 0.815,
         'peak_step': 1000,
         'final_bridged': 0.360,
-        'final_target': 0.730
+        'final_target': 0.730,
+        'final_source': 0.120
     }
 
     # Save raw results
@@ -483,15 +493,16 @@ def main():
         json.dump(results, f, indent=2)
 
     print(f"\n=== SUMMARY ===")
-    print(f"{'Experiment':<25} {'PeakBr':<10} {'FinalBr':<10} {'FinalTarget':<13} {'Degradation':<12}")
+    print(f"{'Experiment':<25} {'PeakBr':<10} {'FinalBr':<10} {'FinalSrc':<10} {'FinalTgt':<10} {'Degradation':<12}")
     print("-" * 60)
 
     for name, data in sorted(results.items()):
         peak = data['peak_bridged'] * 100
         final = data['final_bridged'] * 100
         deg = peak - final
+        final_source = data.get('final_source', 0) * 100
         final_target = data.get('final_target', 0) * 100
-        print(f"{name:<25} {peak:>6.1f}%   {final:>6.1f}%   {final_target:>6.1f}%     {deg:>6.1f}%")
+        print(f"{name:<25} {peak:>6.1f}%   {final:>6.1f}%   {final_source:>6.1f}%   {final_target:>6.1f}%   {deg:>6.1f}%")
 
     print(f"\nDetailed results saved to: {script_dir / 'ablation_results.json'}")
 
