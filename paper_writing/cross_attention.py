@@ -1093,13 +1093,15 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     all_bridged_texts = gather_texts_from_all_ranks(all_bridged_texts)
     all_base_texts = gather_texts_from_all_ranks(all_base_texts)
     all_answers = gather_texts_from_all_ranks([s.tgt_answer for s in all_samples])
+    all_questions = gather_texts_from_all_ranks([s.tgt_prompt for s in all_samples])
 
     # Only rank 0 computes metrics
     if rank != 0:
         return 0.0, 0.0  # Other ranks return dummy values
 
     # Reconstruct samples on rank 0 (for ground truth)
-    samples = [Sample(src_prompt="", tgt_prompt="", tgt_answer=ans) for ans in all_answers]
+    samples = [Sample(src_prompt="", tgt_prompt=prompt, tgt_answer=ans)
+               for prompt, ans in zip(all_questions, all_answers)]
     bridged_texts = all_bridged_texts
     base_texts = all_base_texts
 
