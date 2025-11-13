@@ -323,7 +323,7 @@ echo "" | tee -a "$SUMMARY_LOG"
 echo "RESULTS COMPARISON:" | tee -a "$SUMMARY_LOG"
 echo "------------------------------------------" | tee -a "$SUMMARY_LOG"
 {
-    echo "Experiment,Tokens,Dataset,Peak,Final,Degradation"
+    echo "Experiment,Tokens,Dataset,Peak,Final,FinalTarget,Degradation"
 
     # Extract results from logs
     for exp_dir in "$OUTPUT_DIR"/*/; do
@@ -360,15 +360,20 @@ echo "------------------------------------------" | tee -a "$SUMMARY_LOG"
                 peak_val=$(echo "$peak" | tr -d '%')
                 final_val=$(echo "$final" | tr -d '%')
                 if [ -n "$peak_val" ] && [ -n "$final_val" ]; then
+                    final_target=$(grep "Final.*Target-alone acc:" "$log" | tail -1 | \
+                           grep -oE "Target-alone acc: [0-9.]+" | \
+                           grep -oE "[0-9.]+" | \
+                           awk '{printf "%.1f%%", $1 * 100}')
+
                     deg=$(awk -v p="$peak_val" -v f="$final_val" 'BEGIN{printf "%.1f%%", (p - f)}')
-                    echo "$name,$tokens,$dataset,$peak,$final,$deg"
+                    echo "$name,$tokens,$dataset,$peak,$final,$final_target,$deg"
                 fi
             fi
         fi
     done
 
     # Add baseline from existing experiment (for reference)
-    echo "2b_baseline_64tok,64,GSM8K,81.5%,36.0%,45.5%"
+    echo "2b_baseline_64tok,64,GSM8K,81.5%,36.0%,73.0%,45.5%"
 
 } | column -t -s',' | tee -a "$SUMMARY_LOG"
 
@@ -478,14 +483,15 @@ def main():
         json.dump(results, f, indent=2)
 
     print(f"\n=== SUMMARY ===")
-    print(f"{'Experiment':<25} {'Peak':<10} {'Final':<10} {'Degradation':<12}")
+    print(f"{'Experiment':<25} {'PeakBr':<10} {'FinalBr':<10} {'FinalTarget':<13} {'Degradation':<12}")
     print("-" * 60)
 
     for name, data in sorted(results.items()):
         peak = data['peak_bridged'] * 100
         final = data['final_bridged'] * 100
         deg = peak - final
-        print(f"{name:<25} {peak:>6.1f}%   {final:>6.1f}%   {deg:>6.1f}%")
+        final_target = data.get('final_target', 0) * 100
+        print(f"{name:<25} {peak:>6.1f}%   {final:>6.1f}%   {final_target:>6.1f}%     {deg:>6.1f}%")
 
     print(f"\nDetailed results saved to: {script_dir / 'ablation_results.json'}")
 
