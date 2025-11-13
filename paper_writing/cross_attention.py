@@ -901,15 +901,12 @@ def build_batch_inputs(samples: List[Sample],
     # Target tokenization
     # Training: answer only (model must use soft tokens to understand question)
     # Eval: start token only (model generates full answer)
+    starter = tgt_tok.bos_token or " "  # BOS token if available, else space
     if mode == 'train':
         tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
     else:
-        starter = tgt_tok.bos_token or " "  # BOS token if available, else space
-    if mode == 'eval':
         format_prompt = "\nAnswer the question above, then end your final line with '#### <number>'."
         tgt_texts = [starter + format_prompt for _ in samples]
-    else:
-        tgt_texts = [starter for _ in samples]
 
     tgt_batch = tgt_tok(
         tgt_texts,
