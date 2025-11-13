@@ -905,7 +905,11 @@ def build_batch_inputs(samples: List[Sample],
         tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
     else:
         starter = tgt_tok.bos_token or " "  # BOS token if available, else space
-        tgt_texts = [starter for _ in samples]  # Start token for generation
+    if mode == 'eval':
+        format_prompt = "\nAnswer the question above, then end your final line with '#### <number>'."
+        tgt_texts = [starter + format_prompt for _ in samples]
+    else:
+        tgt_texts = [starter for _ in samples]
 
     tgt_batch = tgt_tok(
         tgt_texts,
@@ -1679,8 +1683,20 @@ def main():
             labels_contrastive = torch.arange(logits_contrastive.size(0), device=device)
             info_nce_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
 
-        # Total loss: NLL + λ_KL * KL + λ_InfoNCE * InfoNCE
-        loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss
+        # Format penalty: encourage outputs that include #### markers
+        format_loss = torch.tensor(0.0, device=device, dtype=dtype)
+        if mode == 'train':
+            with torch.no_grad():
+                decoded = tgt_tok.batch_decode(tgt_model.generate(
+                    input_ids=data['labels'].clone().masked_fill(data['labels'] == -100, tgt_tok.pad_token_id),
+                    max_new_tokens=0
+                ))
+            missing = [int('####' not in txt) for txt in decoded]
+            if missing:
+                format_loss = torch.tensor(sum(missing)/len(missing), device=device, dtype=dtype)
+
+        # Total loss: NLL + λ_KL * KL + λ_InfoNCE * InfoNCE + λ_format * format_loss
+        loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss + 0.1 * format_loss
 
         # Add DiT flow loss if using DiT bridge
         # The args.dit_loss_weight balances flow loss vs LM loss (default 0.1)
