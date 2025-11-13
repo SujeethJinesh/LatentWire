@@ -1122,7 +1122,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
     # Only rank 0 computes metrics
     if rank != 0:
-        return 0.0, 0.0  # Other ranks return dummy values
+        return 0.0, 0.0, 0.0  # Other ranks return dummy values
 
     # Reconstruct samples on rank 0 (for ground truth)
     samples = [Sample(src_prompt="", tgt_prompt=prompt, tgt_answer=ans)
@@ -1683,17 +1683,18 @@ def main():
             labels_contrastive = torch.arange(logits_contrastive.size(0), device=device)
             info_nce_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
 
-        # Format penalty: encourage outputs that include #### markers
+        # Format penalty: encourage #### markers in model's free-form predictions
         format_loss = torch.tensor(0.0, device=device, dtype=dtype)
-        if mode == 'train':
-            with torch.no_grad():
-                decoded = tgt_tok.batch_decode(tgt_model.generate(
-                    input_ids=data['labels'].clone().masked_fill(data['labels'] == -100, tgt_tok.pad_token_id),
-                    max_new_tokens=0
-                ))
-            missing = [int('####' not in txt) for txt in decoded]
-            if missing:
-                format_loss = torch.tensor(sum(missing)/len(missing), device=device, dtype=dtype)
+        with torch.no_grad():
+            pred_ids = out.logits.argmax(dim=-1)
+        label_mask = data['labels'] != -100
+        misses = []
+        for i in range(pred_ids.size(0)):
+            tokens = pred_ids[i][label_mask[i]]
+            text = tgt_tok.decode(tokens, skip_special_tokens=True)
+            misses.append(int('####' not in text))
+        if misses:
+            format_loss = torch.tensor(sum(misses)/len(misses), device=device, dtype=dtype)
 
         # Total loss: NLL + λ_KL * KL + λ_InfoNCE * InfoNCE + λ_format * format_loss
         loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss + 0.1 * format_loss
