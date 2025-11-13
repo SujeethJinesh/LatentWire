@@ -1072,7 +1072,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         # Target-alone baseline
         with torch.inference_mode():
             prompts = [s.tgt_prompt for s in samples_batch]
-            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=4096).to(device)
+            enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=False).to(device)
             base_out = tgt_model.generate(
                 **enc,
                 max_new_tokens=max_new_tokens,
@@ -1122,16 +1122,21 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         log("="*60)
         for i in range(min(3, len(samples))):
             log(f"\n--- Example {i+1} ---")
-            log(f"Question: {samples[i].tgt_prompt[:200]}...")
-            gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
+            question_text = samples[i].tgt_prompt.strip()
+            gold_full_text = (samples[i].tgt_prompt + " " + samples[i].tgt_answer).strip()
+            log("Question (full prompt):")
+            log(question_text if question_text else "[empty prompt]")
             log(f"Gold answer: {extract_final_answer(gold_full_text)}")
-            log(f"Target-alone: {extract_final_answer(base_texts[i])}")
-            log(f"Bridged: {extract_final_answer(bridged_texts[i])}")
 
-            # Show first 300 chars of actual generation for debugging
-            if len(bridged_texts[i]) > len(samples[i].tgt_prompt):
-                generated_part = bridged_texts[i][len(samples[i].tgt_prompt):][:300]
-                log(f"Bridged generation start: {generated_part}...")
+            target_full = base_texts[i].strip()
+            log(f"Target-alone (extracted): {extract_final_answer(base_texts[i])}")
+            log("Target-alone full output:")
+            log(target_full if target_full else "[empty output]")
+
+            bridged_full = bridged_texts[i].strip()
+            log(f"Bridged (extracted): {extract_final_answer(bridged_texts[i])}")
+            log("Bridged full output:")
+            log(bridged_full if bridged_full else "[empty output]")
         log("="*60 + "\n")
 
     return acc_baseline, acc_bridged
