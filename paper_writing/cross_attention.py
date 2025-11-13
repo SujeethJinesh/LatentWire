@@ -1709,6 +1709,7 @@ def main():
                 )
 
             # Only rank 0 logs and checks early stopping
+            stop_training = torch.tensor(0, device=device)
             if is_main():
                 log(f"[Eval] Step {step} | Target-alone acc: {acc_base:.3f} | Bridged acc: {acc_bridged:.3f}")
 
@@ -1726,7 +1727,12 @@ def main():
 
                     if patience_counter >= args.early_stop_patience:
                         log(f"[Early Stop] Stopping early at step {step}. Best bridged acc: {best_bridged_acc:.3f}")
-                        break
+                        stop_training.fill_(1)
+
+            if dist.is_initialized():
+                dist.broadcast(stop_training, src=0)
+            if stop_training.item():
+                break
 
             # Synchronize all ranks after evaluation
             if dist.is_initialized():
