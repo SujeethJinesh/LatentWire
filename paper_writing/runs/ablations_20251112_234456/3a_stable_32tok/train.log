@@ -1,7 +1,7 @@
-W1112 22:45:10.997000 41077 torch/distributed/run.py:793] 
-W1112 22:45:10.997000 41077 torch/distributed/run.py:793] *****************************************
-W1112 22:45:10.997000 41077 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1112 22:45:10.997000 41077 torch/distributed/run.py:793] *****************************************
+W1113 06:53:20.248000 403514 torch/distributed/run.py:793] 
+W1113 06:53:20.248000 403514 torch/distributed/run.py:793] *****************************************
+W1113 06:53:20.248000 403514 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1113 06:53:20.248000 403514 torch/distributed/run.py:793] *****************************************
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
@@ -10,30 +10,78 @@ W1112 22:45:10.997000 41077 torch/distributed/run.py:793] **********************
   warnings.warn(
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
-================================================================================================================================================================================================================================================
+============================================================
 EARLY CUDA DIAGNOSTICS (before DDP setup)
 ============================================================
 torch.cuda.is_available() check...
-
+============================================================
 EARLY CUDA DIAGNOSTICS (before DDP setup)
 ============================================================
 torch.cuda.is_available() check...
-
+============================================================
 EARLY CUDA DIAGNOSTICS (before DDP setup)
-
-============================================================EARLY CUDA DIAGNOSTICS (before DDP setup)
-torch.cuda.is_available() check...
-
 ============================================================
 torch.cuda.is_available() check...
-  Result: True
+============================================================
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
+  Result: True  Result: True
 torch.cuda.device_count() check...
   Result: True
 torch.cuda.device_count() check...
   Result: True
 torch.cuda.device_count() check...
-  Result: True
+
 torch.cuda.device_count() check...
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 3/4] Starting DDP initialization...
+[Rank 3] Checking torch.cuda.is_available()...
+[Rank 3]   Result: True
+[Rank 3] Checking torch.cuda.device_count()...
+[Rank 3]   Result: 4 devices
+[Rank 3] Getting device name for GPU 3...
+[Rank 3] GPU 3 available: NVIDIA H100 80GB HBM3
+[Rank 3] Calling init_process_group (timeout=60s)...
+[W1113 06:53:30.463236439 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 2/4] Starting DDP initialization...
+[Rank 2] Checking torch.cuda.is_available()...
+[Rank 2]   Result: True
+[Rank 2] Checking torch.cuda.device_count()...
+[Rank 2]   Result: 4 devices
+[Rank 2] Getting device name for GPU 2...
+[Rank 2] GPU 2 available: NVIDIA H100 80GB HBM3
+[Rank 2] Calling init_process_group (timeout=60s)...
+  Result: 4 GPUs
+[W1113 06:53:30.553736496 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 1/4] Starting DDP initialization...
+[Rank 1] Checking torch.cuda.is_available()...
+[Rank 1]   Result: True
+[Rank 1] Checking torch.cuda.device_count()...
+[Rank 1]   Result: 4 devices
+[Rank 1] Getting device name for GPU 1...
+[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
+[Rank 1] Calling init_process_group (timeout=60s)...
+[W1113 06:53:30.565748649 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
   Result: 4 GPUs
   GPU 0: NVIDIA H100 80GB HBM3
   GPU 1: NVIDIA H100 80GB HBM3
@@ -49,7 +97,7 @@ torch.cuda.device_count() check...
 [Rank 0] Getting device name for GPU 0...
 [Rank 0] GPU 0 available: NVIDIA H100 80GB HBM3
 [Rank 0] Calling init_process_group (timeout=60s)...
-[W1112 22:45:21.852335160 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[W1113 06:53:30.652370620 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
 [Rank 0] DDP initialized successfully on GPU 0
 [Rank 0] Setting up reproducibility (base_seed=1234)...
 [Rank 0] Reproducibility setup complete (effective_seed=1234)
@@ -57,29 +105,29 @@ Reproducibility enabled: base_seed=1234, effective_seed=1234
 ==== Config ====
 source_model: mistralai/Mistral-7B-Instruct-v0.3
 target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
-bottleneck_dim: 1024
-soft_tokens: 64
-depth: 2
-heads: 8
+bottleneck_dim: 768
+soft_tokens: 32
+depth: 4
+heads: 12
 lr: 0.0001
 weight_decay: 0.01
-train_steps: 2000
-warmup_steps: 200
-per_device_batch: 10
+train_steps: 3000
+warmup_steps: 600
+per_device_batch: 4
 eval_every: 250
 eval_samples: 200
 max_new_tokens: 512
-log_dir: paper_writing/runs/ablations_20251112_224509/1a_dit_2step_64tok
+log_dir: paper_writing/runs/ablations_20251112_234456/3a_stable_32tok
 seed: 1234
 bf16: True
-save_path: paper_writing/runs/ablations_20251112_224509/1a_dit_2step_64tok/checkpoint.pt
+save_path: paper_writing/runs/ablations_20251112_234456/3a_stable_32tok/checkpoint.pt
 show_eval_samples: 1
-early_stop_patience: 3
+early_stop_patience: 2
 dataset: gsm8k
 info_nce_weight: 0.05
 eval_batch_size: 36
 no_compile: True
-bridge: dit
+bridge: cross
 dit_dim: 512
 dit_depth: 6
 dit_heads: 8
@@ -104,90 +152,41 @@ Deterministic algorithms: True
 CUBLAS workspace: :16:8
 World size: 4 (each rank samples different data)
 Loading source model/tokenizer...
-  Result: 4 GPUs
-  GPU 0: NVIDIA H100 80GB HBM3
-  GPU 1: NVIDIA H100 80GB HBM3
-  GPU 2: NVIDIA H100 80GB HBM3
-  GPU 3: NVIDIA H100 80GB HBM3
-============================================================
-
-[Rank 2/4] Starting DDP initialization...
-[Rank 2] Checking torch.cuda.is_available()...
-[Rank 2]   Result: True
-[Rank 2] Checking torch.cuda.device_count()...
-[Rank 2]   Result: 4 devices
-[Rank 2] Getting device name for GPU 2...
-[Rank 2] GPU 2 available: NVIDIA H100 80GB HBM3
-[Rank 2] Calling init_process_group (timeout=60s)...
-  Result: 4 GPUs
-[W1112 22:45:21.020067336 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-  GPU 0: NVIDIA H100 80GB HBM3
-  GPU 1: NVIDIA H100 80GB HBM3
-  GPU 2: NVIDIA H100 80GB HBM3
-  GPU 3: NVIDIA H100 80GB HBM3
-============================================================
-
-[Rank 1/4] Starting DDP initialization...
-[Rank 1] Checking torch.cuda.is_available()...
-[Rank 1]   Result: True
-[Rank 1] Checking torch.cuda.device_count()...
-[Rank 1]   Result: 4 devices
-[Rank 1] Getting device name for GPU 1...
-[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
-[Rank 1] Calling init_process_group (timeout=60s)...
-[W1112 22:45:21.039282612 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-  Result: 4 GPUs
-  GPU 0: NVIDIA H100 80GB HBM3
-  GPU 1: NVIDIA H100 80GB HBM3
-  GPU 2: NVIDIA H100 80GB HBM3
-  GPU 3: NVIDIA H100 80GB HBM3
-============================================================
-
-[Rank 3/4] Starting DDP initialization...
-[Rank 3] Checking torch.cuda.is_available()...
-[Rank 3]   Result: True
-[Rank 3] Checking torch.cuda.device_count()...
-[Rank 3]   Result: 4 devices
-[Rank 3] Getting device name for GPU 3...
-[Rank 3] GPU 3 available: NVIDIA H100 80GB HBM3
-[Rank 3] Calling init_process_group (timeout=60s)...
-[W1112 22:45:21.059850203 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[Rank 2] DDP initialized successfully on GPU 2
-[Rank 2] Setting up reproducibility (base_seed=1234)...
-[Rank 1] DDP initialized successfully on GPU 1
-[Rank 1] Setting up reproducibility (base_seed=1234)...
-[Rank 2] Reproducibility setup complete (effective_seed=1236)
-[Rank 1] Reproducibility setup complete (effective_seed=1235)
 [Rank 3] DDP initialized successfully on GPU 3
 [Rank 3] Setting up reproducibility (base_seed=1234)...
 [Rank 3] Reproducibility setup complete (effective_seed=1237)
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3633.53it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 5670.53it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 4239.53it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 4689.87it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:12<00:25, 12.72s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:23, 11.94s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:12<00:24, 12.08s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:12<00:24, 12.18s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:23<00:11, 11.59s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:24<00:11, 11.94s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:23<00:11, 11.69s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:23<00:11, 11.84s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:34<00:00, 11.33s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:34<00:00, 11.57s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.15s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.31s/it]
+[Rank 2] DDP initialized successfully on GPU 2[Rank 1] DDP initialized successfully on GPU 1
+[Rank 2] Setting up reproducibility (base_seed=1234)...
+
+[Rank 1] Setting up reproducibility (base_seed=1234)...
+[Rank 2] Reproducibility setup complete (effective_seed=1236)[Rank 1] Reproducibility setup complete (effective_seed=1235)
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2752.77it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 7570.95it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3776.38it/s]
+Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 400.78it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:22, 11.03s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:10<00:21, 10.96s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:22, 11.04s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:23, 11.84s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:10, 11.00s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:11, 11.00s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:21<00:10, 10.98s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:23<00:11, 11.48s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:31<00:00, 10.43s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:31<00:00, 10.42s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:31<00:00, 10.44s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:31<00:00, 10.59s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:31<00:00, 10.57s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:31<00:00, 10.62s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:32<00:00, 10.64s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:32<00:00, 10.90s/it]
 Loading target model/tokenizer...
-Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.03s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.25s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 10.99s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.25s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2653.36it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8608.11it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 9258.95it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 9113.10it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.57s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.55s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.52s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.57s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.47s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.40s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.43s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:23<00:23, 11.54s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.52s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.45s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.43s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.67s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.28s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.47s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.23s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.42s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.21s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.40s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3170.30it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7763.64it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7781.64it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8701.88it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.09s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.16s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.03s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.18s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.12s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.21s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.18s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.20s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:32<00:10, 10.94s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:10, 10.96s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:10, 10.98s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  7.76s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  7.77s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  8.97s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  8.99s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  7.75s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  8.96s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  7.73s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:35<00:00,  8.98s/it]
 torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)
 Source hidden dim: 4096 | Target hidden dim: 4096
-Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.39s/it]
 Target embedding RMS (median): 0.0107
 NOTE: RMS scale matching is applied during batch collation (before concat)
-Bridge: dit (DiTBridgeTranslator)
-  Using DiTBridge: dim=512, depth=6, heads=8, steps(train/eval)=2/4, cfg=0.0, pool=mean, cond_dim=512
-Translator parameters: 44.1M
+Bridge: cross (BottleneckedGatedTranslator)
+Translator parameters: 61.4M
 Loading GSM8K...
 Data sampler initialized with seed 1234 (base=1234, rank=0)
-Optimizer groups: 37 decay, 36 no_decay, 0 gates (LR ×3)
+Optimizer groups: 38 decay, 42 no_decay, 12 gates (LR ×3)
 
 ============================================================
 INITIAL EVALUATION (Step 0 - Before Training)
@@ -367,7 +366,7 @@ The bakery makes a total of $625+$437.50=$1062.50.
 The bakery makes a
 Bridged (extracted): [invalid]
 Bridged full output:
-_REFUSE) to the rescue.\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\
+√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√
 
 --- Example 2 ---
 Question (full prompt):
@@ -521,41 +520,7 @@ Explanation: The bakery sells 250 loaves of bread per day.  They make a profit o
 The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 30 days in a month, so their monthly
 Bridged (extracted): [invalid]
 Bridged full output:
-_REFUSE
-
-## Step 1: Identify the main topic of the text
-The main topic of the text is the comparison between the two types of texts: a formal text and an informal text.
-
-## Step 2: Identify the key features of the formal text
-The key features of the formal text are:
-- It is written in a professional tone.
-- It uses a standard font and layout.
-- It includes a formal greeting and closing.
-- It uses proper grammar and spelling.
-
-## Step 3: Identify the key features of the informal text
-The key features of the informal text are:
-- It is written in an informal tone.
-- It uses a casual font and layout.
-- It includes an informal greeting and closing.
-- It uses colloquial language and slang.
-
-## Step 4: Compare the two types of texts
-The two types of texts are different in terms of tone, language, and style. The formal text is professional, standard, and proper, while the informal text is casual, relaxed, and colloquial.
-
-The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
-
-The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
-
-The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
-
-The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
-
-The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
-
-The final answer is: The two types of texts are distinct in tone, language, and style, with the formal text being professional, standard, and proper, and the informal text being casual, relaxed, and colloquial. 
-
-The final answer is: The two types of texts are distinct in tone, language, and
+√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√
 
 --- Example 3 ---
 Question (full prompt):
@@ -712,30 +677,34 @@ A: The bakery makes a profit of $42000 per year.
 In 5 years, they make a profit of $42000 * 5 = $<<42000*5=210000>>
 Bridged (extracted): [invalid]
 Bridged full output:
-_REF_1_._|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√
 ============================================================
 
-[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_224509/1a_dit_2step_64tok/eval_samples_step_0.jsonl
+[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_234456/3a_stable_32tok/eval_samples_step_0.jsonl
 [Eval] Step 0 | Target-alone acc: 1.000 | Bridged acc: 0.000
 ============================================================
 
+[rank1]:[W1113 07:01:34.910214587 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank0]:[W1113 07:01:34.918418069 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
 
-============================================================
+============================================================[rank3]:[W1113 07:01:34.955951395 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+
 LABEL ALIGNMENT DIAGNOSTIC (Step 0)
 ============================================================
-  Input embeddings shape: torch.Size([10, 277, 4096])
-  Labels shape: torch.Size([10, 277])
-  Attention mask shape: torch.Size([10, 277])
-  Soft token count (K): 64
-  Total tokens: 2770
-  Supervised tokens: 1035
-  Masked tokens: 1735
+  Input embeddings shape: torch.Size([4, 165, 4096])
+  Labels shape: torch.Size([4, 165])
+  Attention mask shape: torch.Size([4, 165])
+  Soft token count (K): 32
+  Total tokens: 660
+  Supervised tokens: 407
+  Masked tokens: 253
   Sample 0 first 10 labels: [-100, -100, -100, -100, -100, -100, -100, -100, -100, -100]
   Sample 0 last 10 labels: [717, 2511, 717, 2033, 12556, 3153, 627, 827, 220, 717]
   All soft token labels == -100? True
-  Supervised tokens per sample: [87, 133, 62, 125, 96, 55, 143, 213, 51, 70]
+  Supervised tokens per sample: [87, 133, 62, 125]
 ============================================================
 
+[rank2]:[W1113 07:01:34.005834933 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
 /users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:655.)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
 /users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
@@ -752,18 +721,18 @@ LABEL ALIGNMENT DIAGNOSTIC (Step 0)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
 /users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-Step 20/2000 | Loss (avg over last 20): 2.0639
-Step 40/2000 | Loss (avg over last 20): 1.8536
-Step 60/2000 | Loss (avg over last 20): 1.3995
-Step 80/2000 | Loss (avg over last 20): 1.1658
-Step 100/2000 | Loss (avg over last 20): 1.1127
-Step 120/2000 | Loss (avg over last 20): 1.1965
-Step 140/2000 | Loss (avg over last 20): 1.1815
-Step 160/2000 | Loss (avg over last 20): 1.1752
-Step 180/2000 | Loss (avg over last 20): 1.1536
-Step 200/2000 | Loss (avg over last 20): 1.1577
-Step 220/2000 | Loss (avg over last 20): 3.4519
-Step 240/2000 | Loss (avg over last 20): 2.2501
+Step 20/3000 | Loss (avg over last 20): 1.6729
+Step 40/3000 | Loss (avg over last 20): 1.6981
+Step 60/3000 | Loss (avg over last 20): 1.6424
+Step 80/3000 | Loss (avg over last 20): 1.5665
+Step 100/3000 | Loss (avg over last 20): 1.4623
+Step 120/3000 | Loss (avg over last 20): 1.3959
+Step 140/3000 | Loss (avg over last 20): 1.2929
+Step 160/3000 | Loss (avg over last 20): 1.1412
+Step 180/3000 | Loss (avg over last 20): 1.1164
+Step 200/3000 | Loss (avg over last 20): 1.0939
+Step 220/3000 | Loss (avg over last 20): 1.0741
+Step 240/3000 | Loss (avg over last 20): 1.1047
 [Distributed Eval] Sharding 200 samples across 4 ranks:
   Rank 0: samples 0 to 50 (50 samples)
   Rank 1: samples 50 to 100 (50 samples)
@@ -923,7 +892,27 @@ The bakery makes a total of $625+$437.50=$1062.50.
 The bakery makes a
 Bridged (extracted): [invalid]
 Bridged full output:
-The number of people who have a birthday in the month of May is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of June is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of July is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of August is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of September is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of October is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of November is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of December is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of January is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of February is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of March is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of April is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of May is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of June is 1/12
+The total number of students in the school is 2,000 + 1,500 = <<2,000+1,500=3,500>>3,500.
+The number of students in the school who are not in the math club is 3,500 - 1,000 = <<3500-1000=2,500>>2,500.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club and are not in the science club is 1,000 - 500 = <<1000-500=500>>500.
+The number of students in the school who are in the math club and are in the science club is 1,000 - 500 = <<1000-500=500>>500.
+The number of students in the school who are in the math club and are not in the science club is 500.
+The number of students in the school who are in the math club and are in the science club is 500.
+The number of students in the school who are in the math club is 500 + 500 = <<500+500=1,000>>1,000.
+The number of students in the school who are in the math club and are in the science club is 1,000.
+The number of students in the school who are in the math club and are not in the science club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club is 1,000.
 
 --- Example 2 ---
 Question (full prompt):
@@ -1077,7 +1066,26 @@ Explanation: The bakery sells 250 loaves of bread per day.  They make a profit o
 The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 30 days in a month, so their monthly
 Bridged (extracted): [invalid]
 Bridged full output:
-The number of people who have a birthday in the month of May is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of June is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of July is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of August is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of September is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of October is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of November is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of December is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of January is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of February is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of March is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of April is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of May is 1/12 of the total number of people, so 1/12 * 120 = 10 people. The number of people who have a birthday in the month of June is 1/12
+The total number of students in the school is 2,000 + 1,500 = <<2,000+1,500=3,500>>3,500.
+The number of students in the school who are not in the math club is 3,500 - 1,000 = <<3500-1000=2,500>>2,500.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club and are not in the science club is 1,000 - 500 = <<1000-500=500>>500.
+The number of students in the school who are in the math club and are in the science club is 1,000 - 500 = <<1000-500=500>>500.
+The number of students in the school who are in the math club or the science club is 500 + 500 = <<500+500=1,000>>1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students in the school who are in the math club or the science club is 1,000.
+The number of students
 
 --- Example 3 ---
 Question (full prompt):
@@ -1232,27 +1240,48 @@ In a year, they make a profit of $3500 * 12 = $<<3500*12=42000>>42000.
 Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.50 per loaf. How much profit do they make in 5 years?
 A: The bakery makes a profit of $42000 per year.
 In 5 years, they make a profit of $42000 * 5 = $<<42000*5=210000>>
-Bridged (extracted): [invalid]
+Bridged (extracted): 500
 Bridged full output:
-The number of people who have a birthday in the month of May is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of June is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of July is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of August is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of September is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of October is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of November is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of December is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of January is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of February is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of March is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of April is 1/12 of the total number of people, which is 1/12 * 100 = 8.33. The number of people who have a birthday in the month of May is 1/12 of the total number of people, which is 1/12 *
+The total number of students in the school is 2,000 + 1,500 = <<2,000+1,500=3,500>>3,500.
+The number of students in the school who are not in the math club is 3,500 - 1,000 = <<3500-1000=2,500>>2,500.
+The number of students in the school who are in the math club is 1,000.
+The number of students in the school who are in the math club and are not in the science club is 1,000 - 500 = <<1000-500=500>>500.
+The number of students in the school who are in the math club and are in the science club is 1,000 - 500 = <<1000-500=500>>500.
+#### 500+500=1000>>1000 students are in both the math and science clubs.
+#### 2500+1000=3500>>3,500 students are in the school.
+#### 1000+500=1500>>1,500 students are in the math club.
+#### 500+1000=1500>>1,500 students are in the science club.
+#### 1000+500=1500>>1,500 students are in the math and science clubs.
+#### 2500+1000=3500>>3,500 students are in the school.
+#### 1000+500=1500>>1,500 students are in the math club.
+#### 500+1000=1500>>1,500 students are in the science club.
+#### 1000+500=1500>>1,500 students are in the math and science clubs.
+#### 2500+1000=3500>>3,500 students are in the school.
+#### 1000+500=1500>>1,500 students are in the math club.
+#### 500+1000=1500>>1,500 students are in the science club.
+#### 1000+500=1500>>1,500 students are in the math and science clubs.
+#### 2500+1000=3500>>3,500 students are in the school.
+#### 1000+500=1500>>1,500 students are in the math club.
+#### 500+1000=1500>>1,500 students are in the science club.
+#### 1000+500=1500>>1,500
 ============================================================
 
-[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_224509/1a_dit_2step_64tok/eval_samples_step_250.jsonl
+[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_234456/3a_stable_32tok/eval_samples_step_250.jsonl
 [Eval] Step 250 | Target-alone acc: 1.000 | Bridged acc: 0.000
-[Early Stop] No improvement, patience: 1/3
-Step 260/2000 | Loss (avg over last 20): 2.1076
-Step 280/2000 | Loss (avg over last 20): 2.0639
-Step 300/2000 | Loss (avg over last 20): 2.1140
-Step 320/2000 | Loss (avg over last 20): 2.0109
-Step 340/2000 | Loss (avg over last 20): 2.1712
-Step 360/2000 | Loss (avg over last 20): 1.9709
-Step 380/2000 | Loss (avg over last 20): 1.9346
-Step 400/2000 | Loss (avg over last 20): 2.0652
-Step 420/2000 | Loss (avg over last 20): 1.9886
-Step 440/2000 | Loss (avg over last 20): 1.9287
-Step 460/2000 | Loss (avg over last 20): 2.0262
-Step 480/2000 | Loss (avg over last 20): 2.0434
-Step 500/2000 | Loss (avg over last 20): 1.9308
+[Early Stop] No improvement, patience: 1/2
+Step 260/3000 | Loss (avg over last 20): 1.0831
+Step 280/3000 | Loss (avg over last 20): 1.0828
+Step 300/3000 | Loss (avg over last 20): 1.0955
+Step 320/3000 | Loss (avg over last 20): 1.1488
+Step 340/3000 | Loss (avg over last 20): 1.1485
+Step 360/3000 | Loss (avg over last 20): 1.1150
+Step 380/3000 | Loss (avg over last 20): 1.1482
+Step 400/3000 | Loss (avg over last 20): 1.1330
+Step 420/3000 | Loss (avg over last 20): 1.1249
+Step 440/3000 | Loss (avg over last 20): 1.1479
+Step 460/3000 | Loss (avg over last 20): 1.1134
+Step 480/3000 | Loss (avg over last 20): 1.1443
+Step 500/3000 | Loss (avg over last 20): 1.1279
 [Distributed Eval] Sharding 200 samples across 4 ranks:
   Rank 0: samples 0 to 50 (50 samples)
   Rank 1: samples 50 to 100 (50 samples)
@@ -1410,19 +1439,23 @@ A: The bakery sells 250 loaves of whole wheat bread for $2.50 each, so they make
 The bakery sells 250 loaves of white bread for $1.75 each, so they make 250*1.75=$437.50.
 The bakery makes a total of $625+$437.50=$1062.50.
 The bakery makes a
-Bridged (extracted): [invalid]
+Bridged (extracted): 2.
 Bridged full output:
-The total number of people who have been to the museum is 1000 - 200 = <<1000-200=800>>800
-The number of people who have been to the museum and have seen the exhibit is 800 - 300 = <<800-300=500>>500
-The number of people who have been to the museum and have seen the exhibit and have also seen the movie is 500 - 200 = <<500-200=300>>300
-The number of people who have been to the museum, seen the exhibit, seen the movie, and have also seen the play is 300 - 100 = <<300-100=200>>200
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, and have also seen the concert is 200 - 50 = <<200-50=150>>150
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, and have also seen the ballet is 150 - 20 = <<150-20=130>>130
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, and have also seen the opera is 130 - 10 = <<130-10=120>>120
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, and have also seen the musical is 120 - 5 = <<120-5=115>>115
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, seen the musical, and have also seen the comedy is 115 - 2 = <<115-2=113>>113
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, seen the musical, seen the comedy, and have also seen the drama is 113 - 1 = <<113-1=112>>112
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, seen the musical, seen the comedy, seen
+The total number of students in the school is 2 x 3 = <<2*3=6>>6.
+The number of students in the school who are in the 5th grade is 6 x 1/3 = <<6*1/3=2>>2.
+#### 2. The number of students in the school who are in the 5th grade is 2. 
+#### 3. The number of students in the school who are in the 6th grade is 6 - 2 = <<6-2=4>>4.
+#### 4. The number of students in the school who are in the 7th grade is 4 - 2 = <<4-2=2>>2.
+#### 5. The number of students in the school who are in the 8th grade is 2 - 1 = <<2-1=1>>1.
+#### 6. The number of students in the school who are in the 9th grade is 1 - 1 = <<1-1=0>>0.
+#### 7. The number of students in the school who are in the 10th grade is 0 - 1 = <<0-1=-1>>-1.
+#### 8. The number of students in the school who are in the 11th grade is -1 - 1 = << -1 -1 = -2>>-2.
+#### 9. The number of students in the school who are in the 12th grade is -2 - 1 = << -2 -1 = -3>>-3.
+#### 10. The number of students in the school who are in the 13th grade is -3 - 1 = << -3 -1 = -4>>-4.
+#### 11. The number of students in the school who are in the 14th grade is -4 - 1 = << -4 -1 = -5>>-5.
+#### 12. The number of students in the school who are in the 15th grade is -5 - 1 = << -5 -1 = -6>>-6.
+#### 13. The number of students in the school who are in the 16th grade is -6 - 1 = << -6 -1 = -7>>-7.
+#### 14. The number of students in the school who are in the 17th grade is -7 - 1
 
 --- Example 2 ---
 Question (full prompt):
@@ -1574,17 +1607,124 @@ A: Let's think step by step.
 Answer: $1,562.50
 Explanation: The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 30 days in a month, so their monthly profit is 30 * $62.50 = $1,875.  However, this is not the correct answer.  We need to find the correct answer.
 The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 30 days in a month, so their monthly
-Bridged (extracted): [invalid]
+Bridged (extracted): 2
 Bridged full output:
-The total number of people who have been to the museum is 1000 - 200 = <<1000-200=800>>800
-The number of people who have been to the museum and have seen the new exhibit is 800 - 300 = <<800-300=500>>500
-The number of people who have been to the museum and have seen the new exhibit and have also seen the old exhibit is 500 - 200 = <<500-200=300>>300
-The number of people who have been to the museum and have seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit is 300 - 100 = <<300-100=200>>200
-The number of people who have been to the museum and have seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit is 200 - 50 = <<200-50=150>>150
-The number of people who have been to the museum and have seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit is 150 - 25 = <<150-25=125>>125
-The number of people who have been to the museum and have seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit is 125 - 12 = <<125-12=113>>113
-The number of people who have been to the museum and have seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit is 113 - 6 = <<113-6=107>>107
-The number of people who have been to the museum and have seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the new exhibit and have also seen the old exhibit and have also seen the
+The total number of students in the school is 2 x 3 = <<2*3=6>>6.
+The number of students in the school who are in the 5th grade is 6 x 1/3 = <<6*1/3=2>>2.
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+####
 
 --- Example 3 ---
 Question (full prompt):
@@ -1739,36 +1879,131 @@ In a year, they make a profit of $3500 * 12 = $<<3500*12=42000>>42000.
 Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.50 per loaf. How much profit do they make in 5 years?
 A: The bakery makes a profit of $42000 per year.
 In 5 years, they make a profit of $42000 * 5 = $<<42000*5=210000>>
-Bridged (extracted): [invalid]
+Bridged (extracted): 2
 Bridged full output:
-The total number of people who have been to the museum is 1000 - 200 = <<1000-200=800>>800
-The number of people who have been to the museum and have seen the exhibit is 800 - 300 = <<800-300=500>>500
-The number of people who have been to the museum and have seen the exhibit and have also seen the movie is 500 - 200 = <<500-200=300>>300
-The number of people who have been to the museum, seen the exhibit, seen the movie, and have also seen the play is 300 - 100 = <<300-100=200>>200
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, and have also seen the concert is 200 - 50 = <<200-50=150>>150
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, and have also seen the ballet is 150 - 20 = <<150-20=130>>130
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, and have also seen the opera is 130 - 10 = <<130-10=120>>120
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, and have also seen the musical is 120 - 5 = <<120-5=115>>115
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, seen the musical, and have also seen the comedy is 115 - 2 = <<115-2=113>>113
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, seen the musical, seen the comedy, and have also seen the drama is 113 - 1 = <<113-1=112>>112
-The number of people who have been to the museum, seen the exhibit, seen the movie, seen the play, seen the concert, seen the ballet, seen the opera, seen the musical, seen the comedy, seen
+The total number of students in the school is 2 x 3 = <<2*3=6>>6.
+The number of students in the school who are in the 5th grade is 6 x 1/3 = <<6*1/3=2>>2.
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+####
 ============================================================
 
-[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_224509/1a_dit_2step_64tok/eval_samples_step_500.jsonl
+[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_234456/3a_stable_32tok/eval_samples_step_500.jsonl
 [Eval] Step 500 | Target-alone acc: 1.000 | Bridged acc: 0.000
-[Early Stop] No improvement, patience: 2/3
-Step 520/2000 | Loss (avg over last 20): 1.9547
-Step 540/2000 | Loss (avg over last 20): 2.0037
-Step 560/2000 | Loss (avg over last 20): 1.9152
-Step 580/2000 | Loss (avg over last 20): 1.9184
-Step 600/2000 | Loss (avg over last 20): 1.9252
-Step 620/2000 | Loss (avg over last 20): 1.9408
-Step 640/2000 | Loss (avg over last 20): 1.9467
-Step 660/2000 | Loss (avg over last 20): 1.9299
-Step 680/2000 | Loss (avg over last 20): 1.8780
-Step 700/2000 | Loss (avg over last 20): 1.9440
-Step 720/2000 | Loss (avg over last 20): 1.9687
-Step 740/2000 | Loss (avg over last 20): 1.9462
+[Early Stop] No improvement, patience: 2/2
+[Early Stop] Stopping early at step 500. Best bridged acc: 0.000
+Saved translator to paper_writing/runs/ablations_20251112_234456/3a_stable_32tok/checkpoint.pt
 [Distributed Eval] Sharding 200 samples across 4 ranks:
   Rank 0: samples 0 to 50 (50 samples)
   Rank 1: samples 50 to 100 (50 samples)
@@ -1926,9 +2161,23 @@ A: The bakery sells 250 loaves of whole wheat bread for $2.50 each, so they make
 The bakery sells 250 loaves of white bread for $1.75 each, so they make 250*1.75=$437.50.
 The bakery makes a total of $625+$437.50=$1062.50.
 The bakery makes a
-Bridged (extracted): [invalid]
+Bridged (extracted): 2.
 Bridged full output:
-The total cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is
+The total number of students in the school is 2 x 3 = <<2*3=6>>6.
+The number of students in the school who are in the 5th grade is 6 x 1/3 = <<6*1/3=2>>2.
+#### 2. The number of students in the school who are in the 5th grade is 2. 
+#### 3. The number of students in the school who are in the 6th grade is 6 - 2 = <<6-2=4>>4.
+#### 4. The number of students in the school who are in the 7th grade is 4 - 2 = <<4-2=2>>2.
+#### 5. The number of students in the school who are in the 8th grade is 2 - 1 = <<2-1=1>>1.
+#### 6. The number of students in the school who are in the 9th grade is 1 - 1 = <<1-1=0>>0.
+#### 7. The number of students in the school who are in the 10th grade is 0 - 1 = <<0-1=-1>>-1.
+#### 8. The number of students in the school who are in the 11th grade is -1 - 1 = << -1 -1 = -2>>-2.
+#### 9. The number of students in the school who are in the 12th grade is -2 - 1 = << -2 -1 = -3>>-3.
+#### 10. The number of students in the school who are in the 13th grade is -3 - 1 = << -3 -1 = -4>>-4.
+#### 11. The number of students in the school who are in the 14th grade is -4 - 1 = << -4 -1 = -5>>-5.
+#### 12. The number of students in the school who are in the 15th grade is -5 - 1 = << -5 -1 = -6>>-6.
+#### 13. The number of students in the school who are in the 16th grade is -6 - 1 = << -6 -1 = -7>>-7.
+#### 14. The number of students in the school who are in the 17th grade is -7 - 1
 
 --- Example 2 ---
 Question (full prompt):
@@ -2080,9 +2329,124 @@ A: Let's think step by step.
 Answer: $1,562.50
 Explanation: The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 30 days in a month, so their monthly profit is 30 * $62.50 = $1,875.  However, this is not the correct answer.  We need to find the correct answer.
 The bakery sells 250 loaves of bread per day.  They make a profit of $0.25 per loaf.  So, their daily profit is 250 * $0.25 = $62.50.  There are 30 days in a month, so their monthly
-Bridged (extracted): [invalid]
+Bridged (extracted): 2
 Bridged full output:
-The cost of the new computer is $1,000. The cost of the new printer is $200. The cost of the new software is $300. The cost of the new chair is $100. The cost of the new desk is $500. The total cost of the new computer and accessories is $1,000 + $200 + $300 + $100 + $500 = $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories is $2,000. The cost of the new computer and accessories
+The total number of students in the school is 2 x 3 = <<2*3=6>>6.
+The number of students in the school who are in the 5th grade is 6 x 1/3 = <<6*1/3=2>>2.
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+####
 
 --- Example 3 ---
 Question (full prompt):
@@ -2237,155 +2601,125 @@ In a year, they make a profit of $3500 * 12 = $<<3500*12=42000>>42000.
 Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.50 per loaf. How much profit do they make in 5 years?
 A: The bakery makes a profit of $42000 per year.
 In 5 years, they make a profit of $42000 * 5 = $<<42000*5=210000>>
-Bridged (extracted): [invalid]
+Bridged (extracted): 2
 Bridged full output:
-The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $1,000,000. The cost of the new equipment is $
+The total number of students in the school is 2 x 3 = <<2*3=6>>6.
+The number of students in the school who are in the 5th grade is 6 x 1/3 = <<6*1/3=2>>2.
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+#### 2
+####
 ============================================================
 
-[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_224509/1a_dit_2step_64tok/eval_samples_step_750.jsonl
-[Eval] Step 750 | Target-alone acc: 1.000 | Bridged acc: 0.000
-[Early Stop] No improvement, patience: 3/3
-[Early Stop] Stopping early at step 750. Best bridged acc: 0.000
-Saved translator to paper_writing/runs/ablations_20251112_224509/1a_dit_2step_64tok/checkpoint.pt
-[Distributed Eval] Sharding 200 samples across 4 ranks:
-  Rank 0: samples 0 to 50 (50 samples)
-  Rank 1: samples 50 to 100 (50 samples)
-  Rank 2: samples 100 to 150 (50 samples)
-  Rank 3: samples 150 to 200 (50 samples)
-[rank1]:[E1112 23:26:08.661084240 ProcessGroupNCCL.cpp:616] [Rank 1] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60064 milliseconds before timing out.
-[rank1]:[E1112 23:26:08.661202013 ProcessGroupNCCL.cpp:1785] [PG ID 0 PG GUID 0(default_pg) Rank 1] Exception (either an error or timeout) detected by watchdog at work: 5289, last enqueued NCCL work: 5289, last completed NCCL work: 5288.
-[rank2]:[E1112 23:26:08.668044070 ProcessGroupNCCL.cpp:616] [Rank 2] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60033 milliseconds before timing out.
-[rank2]:[E1112 23:26:08.668113654 ProcessGroupNCCL.cpp:1785] [PG ID 0 PG GUID 0(default_pg) Rank 2] Exception (either an error or timeout) detected by watchdog at work: 5289, last enqueued NCCL work: 5289, last completed NCCL work: 5288.
-[rank3]:[E1112 23:26:08.672028685 ProcessGroupNCCL.cpp:616] [Rank 3] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60077 milliseconds before timing out.
-[rank3]:[E1112 23:26:08.672092950 ProcessGroupNCCL.cpp:1785] [PG ID 0 PG GUID 0(default_pg) Rank 3] Exception (either an error or timeout) detected by watchdog at work: 5289, last enqueued NCCL work: 5289, last completed NCCL work: 5288.
-[rank1]:[E1112 23:26:09.392382617 ProcessGroupNCCL.cpp:1834] [PG ID 0 PG GUID 0(default_pg) Rank 1] Timeout at NCCL work: 5289, last enqueued NCCL work: 5289, last completed NCCL work: 5288.
-[rank2]:[E1112 23:26:09.426011213 ProcessGroupNCCL.cpp:1834] [PG ID 0 PG GUID 0(default_pg) Rank 2] Timeout at NCCL work: 5289, last enqueued NCCL work: 5289, last completed NCCL work: 5288.
-[rank2]:[E1112 23:26:09.426048882 ProcessGroupNCCL.cpp:630] [Rank 2] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
-[rank2]:[E1112 23:26:09.426057207 ProcessGroupNCCL.cpp:636] [Rank 2] To avoid data inconsistency, we are taking the entire process down.
-[rank2]:[E1112 23:26:09.427184583 ProcessGroupNCCL.cpp:1595] [PG ID 0 PG GUID 0(default_pg) Rank 2] Process group watchdog thread terminated with exception: [Rank 2] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60033 milliseconds before timing out.
-Exception raised from checkTimeout at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:618 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x282 (0x155506fcfa92 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x233 (0x155506fd6ed3 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x155506fd893d in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #4: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #5: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #6: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-terminate called after throwing an instance of 'c10::DistBackendError'
-  what():  [PG ID 0 PG GUID 0(default_pg) Rank 2] Process group watchdog thread terminated with exception: [Rank 2] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60033 milliseconds before timing out.
-Exception raised from checkTimeout at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:618 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x282 (0x155506fcfa92 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x233 (0x155506fd6ed3 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x155506fd893d in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #4: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #5: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #6: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-Exception raised from ncclCommWatchdog at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1601 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: <unknown function> + 0xe7eb1b (0x155506c4db1b in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #3: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #4: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-[rank1]:[E1112 23:26:09.428325132 ProcessGroupNCCL.cpp:630] [Rank 1] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
-[rank1]:[E1112 23:26:09.428337676 ProcessGroupNCCL.cpp:636] [Rank 1] To avoid data inconsistency, we are taking the entire process down.
-[rank1]:[E1112 23:26:09.429333992 ProcessGroupNCCL.cpp:1595] [PG ID 0 PG GUID 0(default_pg) Rank 1] Process group watchdog thread terminated with exception: [Rank 1] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60064 milliseconds before timing out.
-Exception raised from checkTimeout at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:618 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x282 (0x155506fcfa92 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x233 (0x155506fd6ed3 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x155506fd893d in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #4: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #5: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #6: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-terminate called after throwing an instance of 'c10::DistBackendError'
-  what():  [PG ID 0 PG GUID 0(default_pg) Rank 1] Process group watchdog thread terminated with exception: [Rank 1] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60064 milliseconds before timing out.
-Exception raised from checkTimeout at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:618 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x282 (0x155506fcfa92 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x233 (0x155506fd6ed3 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x155506fd893d in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #4: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #5: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #6: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-Exception raised from ncclCommWatchdog at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1601 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: <unknown function> + 0xe7eb1b (0x155506c4db1b in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #3: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #4: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-[rank3]:[E1112 23:26:09.551020583 ProcessGroupNCCL.cpp:1834] [PG ID 0 PG GUID 0(default_pg) Rank 3] Timeout at NCCL work: 5289, last enqueued NCCL work: 5289, last completed NCCL work: 5288.
-[rank3]:[E1112 23:26:09.556034946 ProcessGroupNCCL.cpp:630] [Rank 3] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
-[rank3]:[E1112 23:26:09.556094434 ProcessGroupNCCL.cpp:636] [Rank 3] To avoid data inconsistency, we are taking the entire process down.
-[rank3]:[E1112 23:26:09.557147844 ProcessGroupNCCL.cpp:1595] [PG ID 0 PG GUID 0(default_pg) Rank 3] Process group watchdog thread terminated with exception: [Rank 3] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60077 milliseconds before timing out.
-Exception raised from checkTimeout at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:618 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x282 (0x155506fcfa92 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x233 (0x155506fd6ed3 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x155506fd893d in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #4: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #5: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #6: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-terminate called after throwing an instance of 'c10::DistBackendError'
-  what():  [PG ID 0 PG GUID 0(default_pg) Rank 3] Process group watchdog thread terminated with exception: [Rank 3] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=5289, OpType=ALLREDUCE, NumelIn=1, NumelOut=1, Timeout(ms)=60000) ran for 60077 milliseconds before timing out.
-Exception raised from checkTimeout at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:618 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x282 (0x155506fcfa92 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x233 (0x155506fd6ed3 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x155506fd893d in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #4: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #5: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #6: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-Exception raised from ncclCommWatchdog at ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1601 (most recent call first):
-frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x1555516b9446 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libc10.so)
-frame #1: <unknown function> + 0xe7eb1b (0x155506c4db1b in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
-frame #2: <unknown function> + 0x145c0 (0x155551b345c0 in /users/sujinesh/.local/lib/python3.10/site-packages/torch/lib/libtorch.so)
-frame #3: <unknown function> + 0x94ac3 (0x15555526fac3 in /lib/x86_64-linux-gnu/libc.so.6)
-frame #4: <unknown function> + 0x126850 (0x155555301850 in /lib/x86_64-linux-gnu/libc.so.6)
-
-W1112 23:26:10.753000 41077 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 41084 closing signal SIGTERM
-W1112 23:26:10.755000 41077 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 41087 closing signal SIGTERM
-E1112 23:26:11.601000 41077 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: -6) local_rank: 1 (pid: 41085) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
-Traceback (most recent call last):
-  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
-    sys.exit(main())
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
-    return f(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
-    run(args)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
-    elastic_launch(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
-======================================================
-paper_writing/cross_attention.py FAILED
-------------------------------------------------------
-Failures:
-[1]:
-  time      : 2025-11-12_23:26:10
-  host      : n07.cm.cluster
-  rank      : 2 (local_rank: 2)
-  exitcode  : -6 (pid: 41086)
-  error_file: <N/A>
-  traceback : Signal 6 (SIGABRT) received by PID 41086
-------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-11-12_23:26:10
-  host      : n07.cm.cluster
-  rank      : 1 (local_rank: 1)
-  exitcode  : -6 (pid: 41085)
-  error_file: <N/A>
-  traceback : Signal 6 (SIGABRT) received by PID 41085
-======================================================
+[Eval] Saved sample outputs to paper_writing/runs/ablations_20251112_234456/3a_stable_32tok/eval_samples_step_final.jsonl
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000

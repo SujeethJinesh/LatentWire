@@ -1,0 +1,145 @@
+=== ABLATION EXPERIMENTS ===
+Output directory: paper_writing/runs/ablations_20251112_234456
+
+╔════════════════════════════════════════╗
+║  ABLATION 1: DiT BRIDGE               ║
+╚════════════════════════════════════════╝
+
+==========================================
+Experiment: 1a_dit_2step_64tok
+Description: DiT 64 tokens, 2 training steps (like Transfusion)
+Start: Wed Nov 12 23:44:56 PST 2025
+------------------------------------------
+End: Thu Nov 13 01:09:20 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 0.5%
+
+==========================================
+Experiment: 1b_dit_4step_64tok
+Description: DiT 64 tokens, 4 training steps (more denoising)
+Start: Thu Nov 13 01:09:20 PST 2025
+------------------------------------------
+End: Thu Nov 13 02:39:59 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 0.5%
+
+==========================================
+Experiment: 1c_dit_attn_64tok
+Description: DiT 64 tokens, attention pooling for source conditioning
+Start: Thu Nov 13 02:39:59 PST 2025
+------------------------------------------
+End: Thu Nov 13 04:03:33 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 21.5%
+
+==========================================
+Experiment: 1d_dit_cfg_64tok
+Description: DiT 64 tokens with CFG for better mode coverage
+Start: Thu Nov 13 04:03:33 PST 2025
+------------------------------------------
+End: Thu Nov 13 04:55:56 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 0.0%
+
+==========================================
+Experiment: 1e_dit_prompt_teacher_64tok
+Description: DiT 64 tokens, teacher=prompt, flow warmup 500
+Start: Thu Nov 13 04:55:56 PST 2025
+------------------------------------------
+End: Thu Nov 13 06:19:23 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 0.5%
+
+
+NOTE: DiT experiments test if iterative refinement prevents collapse (81.5% → 36%)
+      Key question: Does DiT maintain high final accuracy vs cross-attention?
+
+╔════════════════════════════════════════╗
+║  ABLATION 2: STABILITY FIXES          ║
+╚════════════════════════════════════════╝
+
+==========================================
+Experiment: 2a_stable_64tok
+Description: 64 tokens WITH InfoNCE + early stopping + gen hygiene
+Start: Thu Nov 13 06:19:23 PST 2025
+------------------------------------------
+End: Thu Nov 13 06:53:18 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 0.0%
+
+
+NOTE: Baseline (2b_baseline_64tok) reuses successful_experiments/cross_model/85/train_high_capacity.log
+      Peak: 81.5% → Final: 36.0% (no stability fixes)
+
+╔════════════════════════════════════════╗
+║  ABLATION 3: SEQUENCE LENGTH          ║
+╚════════════════════════════════════════╝
+
+==========================================
+Experiment: 3a_stable_32tok
+Description: 32 tokens (4.7× compression) WITH stability fixes
+Start: Thu Nov 13 06:53:18 PST 2025
+------------------------------------------
+End: Thu Nov 13 07:26:39 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 0.0%
+
+==========================================
+Experiment: 3b_stable_48tok
+Description: 48 tokens (3.1× compression) WITH stability fixes
+Start: Thu Nov 13 07:26:39 PST 2025
+------------------------------------------
+End: Thu Nov 13 08:00:13 PST 2025
+Results:
+[Final Eval] Target-alone acc: 1.000 | Bridged acc: 0.000
+Peak accuracy:
+  Peak bridged: 0.0%
+
+
+NOTE: 64 tokens result is same as 2a_stable_64tok (reused)
+
+==========================================
+ALL ABLATIONS COMPLETE
+End time: Thu Nov 13 08:00:13 PST 2025
+==========================================
+
+RESULTS COMPARISON:
+------------------------------------------
+Experiment                   Tokens  Dataset  Peak   Final  Degradation
+1a_dit_2step_64tok           64      GSM8K    0.5%   0.0%   0.5%
+1b_dit_4step_64tok           64      GSM8K    0.5%   0.0%   0.5%
+1c_dit_attn_64tok            64      GSM8K    21.5%  0.0%   21.5%
+1d_dit_cfg_64tok             64      GSM8K    0.0%   0.0%   0.0%
+1e_dit_prompt_teacher_64tok  64      GSM8K    0.5%   0.0%   0.5%
+2a_stable_64tok              64      GSM8K    0.0%   0.0%   0.0%
+3a_stable_32tok              32      GSM8K    0.0%   0.0%   0.0%
+3b_stable_48tok              48      GSM8K    0.0%   0.0%   0.0%
+2b_baseline_64tok            64      GSM8K    81.5%  36.0%  45.5%
+
+STABILITY ANALYSIS:
+Cross-attention baseline (2b): Peak 81.5% → Final 36.0% (45.5% degradation)
+Cross-attention w/ fixes (2a): Target <10% degradation
+DiT experiments (1a-1d): Testing if iterative refinement prevents collapse
+  → Success criteria: Final accuracy within 10% of peak
+  → Key: Does DiT maintain performance better than cross-attention?
+
+All logs saved to: paper_writing/runs/ablations_20251112_234456
+
+==========================================
+Analysis script created: paper_writing/runs/ablations_20251112_234456/analyze_ablations.py
+Run 'python paper_writing/runs/ablations_20251112_234456/analyze_ablations.py' to analyze results
+==========================================
