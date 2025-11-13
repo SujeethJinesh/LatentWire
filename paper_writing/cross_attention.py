@@ -1116,7 +1116,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     for idx, (sample, base_text, bridged_text) in enumerate(zip(samples, base_texts, bridged_texts)):
         question_text = sample.tgt_prompt.strip()
         gold_full_text = (sample.tgt_prompt + " " + sample.tgt_answer).strip()
-        gold_answer = extract_final_answer(gold_full_text)
+        # FIX: Extract gold answer from tgt_answer only, not from prompt+answer
+        # (prompt contains 8-shot examples with "####" markers that would be extracted first)
+        gold_answer = extract_final_answer(sample.tgt_answer)
 
         target_full = base_text.strip()
         target_answer = extract_final_answer(base_text)
