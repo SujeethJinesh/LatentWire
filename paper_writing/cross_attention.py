@@ -1141,14 +1141,25 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         # (prompt contains 8-shot examples with "####" markers that would be extracted first)
         gold_answer = extract_final_answer(sample.tgt_answer)
 
-        target_full = base_text.strip()
-        target_answer = extract_final_answer(base_text)
+        # Truncate outputs at first new "Q:" to prevent continuation behavior
+        # Models sometimes generate additional Q&A pairs after answering the test question
+        def truncate_at_new_question(text: str) -> str:
+            """Remove everything after the first standalone 'Q:' (new question marker)"""
+            # Find "Q:" that appears after some content (not at start of string)
+            parts = text.split('\nQ:')
+            if len(parts) > 1:
+                # Keep only the first part (answer to our test question)
+                return parts[0].strip()
+            return text.strip()
 
-        source_full = source_text.strip()
-        source_answer = extract_final_answer(source_text)
+        target_full = truncate_at_new_question(base_text)
+        target_answer = extract_final_answer(target_full)
 
-        bridged_full = bridged_text.strip()
-        bridged_answer = extract_final_answer(bridged_text)
+        source_full = truncate_at_new_question(source_text)
+        source_answer = extract_final_answer(source_full)
+
+        bridged_full = truncate_at_new_question(bridged_text)
+        bridged_answer = extract_final_answer(bridged_full)
 
         sample_records.append({
             "eval_step": eval_label,
