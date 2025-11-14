@@ -518,5 +518,270 @@ paper_writing/runs/ablations_20251112_234456/
 
 ---
 
+## Comparison with Codex Analysis
+
+### Areas of Agreement ✅
+
+Codex and I agree on the fundamental observations:
+
+1. **Target-alone accuracy = 100%** across all experiments
+2. **Bridged accuracy collapsed to 0%** for all experiments by end of training
+3. **Experiment 1c (attention pooling) achieved 21.5% peak** at step 750
+4. **Missing "####" markers** in bridged outputs
+5. **No OOM issues** with current batch configuration (per_device_batch=4)
+6. **Loss decreases** but doesn't correlate with accuracy improvement
+7. **Training shows initial promise** before collapsing
+
+### Critical Disagreement: Gold Answer Extraction Bug 🚨
+
+**My Finding** (HIGH CONFIDENCE):
+```python
+# Current code (cross_attention.py line ~1126)
+gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
+log(f"Gold answer: {extract_final_answer(gold_full_text)}")
+```
+
+**The Bug**: `extract_final_answer()` uses regex `r"#### (\-?[0-9\.\,]+)"` which matches the **FIRST** "####" occurrence in the concatenated string. Since `tgt_prompt` contains 8 exemplars with "####" markers, it always extracts the first exemplar's answer.
+
+**Evidence**:
+```
+Example from 1c_dit_attn_64tok/train.log lines 280-285:
+Q: "Janet's ducks lay 16 eggs per day. She eats three for breakfast every morning
+    and bakes muffins for her friends every day with four. She sells the remainder
+    at the farmers' market daily for $2 per fresh duck egg. How much in dollars
+    does she make every day at the farmers' market?"
+
+Correct answer: 18 (16 - 3 - 4 = 9 eggs × $2 = $18)
+Reported gold answer: 12 (from first 8-shot exemplar about recycling cans)
+Target-alone (extracted): 12
+```
+
+All 24 logged gold answers are "12". This is impossible - GSM8K test set has diverse answers.
+
+**Impact**:
+- Target-alone 100% accuracy is **INVALID** (it's echoing the first exemplar, not solving questions)
+- We cannot trust ANY accuracy numbers
+- Codex's analysis assumes the 100% baseline is real - it's not
+
+**Codex's Position**: Codex states "baseline (target-alone) accuracy stabilized at 1.000" and treats this as correct behavior now that "training and eval both wrap GSM8K in the 8-shot prefix." This is incorrect - the 100% accuracy is an artifact of the extraction bug, not actual question-solving.
+
+### Disagreement on "Museum Text" Template Persistence
+
+**Codex's Claim**: "Template collapse persists across variants... The repeated museum text in eval logs proves we're stuck in a local minimum where the translator feeds Llama a fixed soft prefix regardless of question."
+
+**My Observation**: Looking at 1c_dit_attn_64tok logs:
+- **Step 0**: Garbage (`_REFUSE) to the rescue...`)
+- **Step 250**: Valid GSM8K reasoning about birthdays and gift-giving
+  ```
+  "The number of people who have not yet received a gift is 100 - 50 = <<100-50=50>>50."
+  ```
+- **Step 500**: Valid museum-themed problems (but different from step 250)
+  ```
+  "The total number of people who have been to the museum is 1000 - 200 = <<1000-200=800>>800"
+  ```
+- **Step 750**: Valid answers with "####" markers (peak performance)
+  ```
+  Bridged: 3 (valid answer)
+  Bridged: 2 (valid answer)
+  ```
+
+**Analysis**: The outputs DO show template-like behavior (museum themes appear frequently), but they're not identical across all steps. The model IS learning different content at different training stages. The "museum" pattern may indicate overfitting to specific training examples, but it's not a completely frozen template.
+
+**Partial Agreement**: Codex is right that there's template-like behavior indicating the translator isn't fully encoding question-specific information. However, the evidence shows this template CHANGES during training (steps 0→250→500→750 show different content), suggesting some learning is occurring.
+
+### Disagreement on Root Cause Priority
+
+**Codex's Root Cause Hypothesis**:
+1. "Insufficient supervision on free-form generation"
+2. "DiT bridge never sees textual instruction tokens" during eval
+
+**My Root Cause Hypothesis**:
+1. **Evaluation is broken** (gold answer extraction bug) - FIRST PRIORITY
+2. Training collapse mechanism unclear until we have correct metrics
+3. Format compliance (missing "####") is a secondary issue
+
+**Why This Matters**: Codex recommends architectural changes (textual anchors, contrastive loss) before fixing the evaluation. I believe we must fix evaluation FIRST because:
+- We don't know if current approach works at all (metrics are wrong)
+- Architectural changes without valid metrics = flying blind
+- The 21.5% peak in 1c might actually be 50%+ if gold answers were correct
+
+### Codex's Architectural Insights (Valid but Premature)
+
+**Codex's Recommendation**: "Provide textual anchors during generation... prepend a short hard prompt ('Solve the following GSM8K problem… end with ####')."
+
+**My Assessment**: This is a GOOD idea, but:
+1. **Premature**: We need correct evaluation first
+2. **May not be needed**: If 1c@step750 already achieves high accuracy (once bug is fixed), we don't need this
+3. **Changes the task**: Adding textual anchors means we're no longer compressing the full prompt into soft tokens
+
+**Alternative**: Keep pure soft-token approach, but:
+- Fix evaluation to see true performance
+- Add format compliance loss (penalize missing "####")
+- Save checkpoints at 500/750/1000 to analyze collapse
+
+### Agreement on Training Dynamics
+
+Both analyses agree:
+- Loss decreases to ~1.1-1.9 range
+- Accuracy improves initially (at least in 1c)
+- Collapse happens around step 750-1000
+- Early stopping triggers on broken metrics
+
+**Codex's Insight**: "Loss and accuracy diverge: the LM loss keeps falling but bridged accuracy hits zero"
+
+**My Addition**: This suggests teacher-forced CE loss is not predictive of generation quality. Need separate validation metrics.
+
+### Agreement on Next Steps (with Different Priorities)
+
+**Codex's Recommendations** (in order):
+1. Validate run with single GPU
+2. Implement textual anchors + contrastive supervision
+3. Rerun single config (1c)
+4. Full ablation sweep
+
+**My Recommendations** (in order):
+1. **Fix gold answer extraction bug** (CRITICAL)
+2. **Re-run 1c with intermediate checkpoints** (500, 750, 1000)
+3. **Analyze checkpoint @ step 750** (may already be good)
+4. **THEN consider architectural changes** if needed
+
+### Where Codex is Right and I Should Emphasize More
+
+**Codex's Point**: "DiT bridge never sees textual instruction tokens" during eval - entire prompt is replaced with soft tokens.
+
+**Why This Matters**: During eval, we do:
+```python
+inputs_embeds = [soft_tokens] + [BOS]  # No text!
+```
+
+This means Llama has NO textual grounding for:
+- Format instructions ("end with ####")
+- Task framing ("solve step by step")
+- CoT structure
+
+**Codex is right**: This is a fundamental design choice that may contribute to collapse. However, I still believe we should:
+1. Fix evaluation FIRST to see if it's actually a problem
+2. If 1c@step750 already achieves good accuracy, the approach works
+3. If not, THEN add textual anchors as Codex suggests
+
+### Synthesis: Aligned Next Steps
+
+Combining both analyses, here's the prioritized action plan:
+
+#### Phase 1: Fix Evaluation (CRITICAL - Do First)
+
+1. **Fix gold answer extraction** (1 hour of work)
+   ```python
+   # cross_attention.py line ~1126
+   # OLD: gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
+   # NEW: Extract only from test answer
+   gold_answer = extract_final_answer(samples[i].tgt_answer)
+   ```
+
+2. **Re-run 1c ONLY** with:
+   - Intermediate checkpoints (save at 250, 500, 750, 1000, 1500)
+   - Fixed gold answer extraction
+   - Full 2000 steps (disable early stopping)
+   - **Expected outcome**: See TRUE accuracy numbers
+
+3. **Analyze results**:
+   - If step 750 shows >40% accuracy → approach works, just unstable
+   - If step 750 shows <10% accuracy → need architectural changes
+
+#### Phase 2: Stabilization (If Needed)
+
+**If 1c@step750 shows promise (>30% accuracy)**:
+1. Add format compliance loss (penalize missing "####")
+2. Reduce learning rate (1e-4 → 5e-5)
+3. Add LR warmup schedule
+4. Increase max_new_tokens to 768
+
+**If 1c@step750 is still poor (<10% accuracy)**:
+1. Implement Codex's textual anchor approach
+2. Add contrastive loss on soft vs text prompts
+3. Try hybrid approach (soft tokens + format instructions)
+
+#### Phase 3: Architecture Improvements (If Baseline Works)
+
+1. **Optimize attention pooling** (since it gave 43× improvement)
+   - Try more heads (dit_heads=16)
+   - Try deeper network (dit_depth=8 or 12)
+   - Experiment with different pooling mechanisms
+
+2. **Add semantic supervision** (Codex's suggestion)
+   - Contrastive loss between translator outputs and text prompts
+   - KL divergence on hidden states
+
+3. **Monitor training better**
+   - TensorBoard logging (Codex's suggestion)
+   - Per-checkpoint evaluation
+   - Output diversity metrics
+
+#### Phase 4: Full Ablation (Only After Validation)
+
+Once we have a stable configuration:
+1. Re-run all 8 experiments with fixed evaluation
+2. Compare against cross-attention baseline (81.5% peak)
+3. Write paper with valid numbers
+
+### Key Disagreement on Methodology
+
+**Codex's Approach**: Fix architecture first, validate later
+**My Approach**: Fix metrics first, then fix architecture if needed
+
+**Why I Prioritize Differently**:
+1. **Scientific method**: You can't improve what you can't measure
+2. **Efficiency**: Why change architecture if current one works? (we don't know yet)
+3. **Debugging**: If metrics are broken, architectural changes won't help
+4. **Risk**: Adding complexity (textual anchors) without knowing if it's needed
+
+**Where Codex is Right**:
+- Textual anchors are probably a good idea EVENTUALLY
+- Contrastive supervision would help
+- The full-soft-token approach may be fundamentally limited
+
+**Compromise Position**:
+1. Fix evaluation (1 hour)
+2. Re-run 1c to see true performance (2 hours)
+3. If it's already good (>40% at step 750), focus on stabilization
+4. If it's poor (<10%), implement Codex's architectural changes
+5. Either way, we'll have data-driven direction
+
+### Final Recommendation
+
+**DO THIS IMMEDIATELY**:
+```bash
+# 1. Fix the bug (in cross_attention.py)
+git checkout -b fix-gold-answer-extraction
+
+# Edit cross_attention.py line ~1126:
+# Change: gold_full_text = samples[i].tgt_prompt + " " + samples[i].tgt_answer
+# To:     gold_answer = extract_final_answer(samples[i].tgt_answer)
+
+# 2. Re-run ONLY experiment 1c
+cd paper_writing
+# Edit run_ablations.sh to only run 1c, save checkpoints at 250,500,750,1000,1500
+bash run_ablations.sh
+
+# 3. Analyze checkpoint at step 750
+python analyze_checkpoint.py --ckpt runs/1c_dit_attn_64tok/checkpoint_step750.pt
+
+# 4. THEN decide next steps based on REAL numbers
+```
+
+**Expected Timeline**:
+- Bug fix: 1 hour
+- Re-run 1c: 2 hours (single experiment)
+- Analysis: 30 minutes
+- **Total: 3.5 hours to ground truth**
+
+**Avoid**:
+- Running all 8 experiments again (12 GPU-hours) until we know what works
+- Implementing architectural changes without valid baselines
+- Writing paper with broken metrics
+
+---
+
 **Report Generated**: 2025-11-13
-**Next Update**: After Bug #1 fix and re-run of Experiment 1c
+**Updated**: 2025-11-13 (Added Codex comparison)
+**Next Update**: After Bug #1 fix and single 1c re-run
