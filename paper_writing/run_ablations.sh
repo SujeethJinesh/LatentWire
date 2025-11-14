@@ -33,7 +33,7 @@ TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 PER_DEVICE_BATCH=4  # Lower for 8-shot training prompts to avoid OOM
 EVAL_EVERY=250
 EVAL_SAMPLES=200  # Reduced for faster eval iterations (was 500)
-MAX_NEW_TOKENS=512  # Enough for full CoT + #### while respecting 8k context window
+MAX_NEW_TOKENS=256  # Shorter generations for faster eval
 
 # Create output directory
 OUTPUT_DIR="paper_writing/runs/ablations_$(date +"%Y%m%d_%H%M%S")"
@@ -113,7 +113,7 @@ run_experiment \
     --bridge dit \
     --lr 1e-4 \
     --dit_dim 512 \
-    --soft_tokens 64 \
+    --soft_tokens -1 \
     --dit_depth 6 \
     --dit_heads 8 \
     --dit_steps_train 2 \
@@ -136,7 +136,7 @@ run_experiment \
     --bridge dit \
     --lr 1e-4 \
     --dit_dim 512 \
-    --soft_tokens 64 \
+    --soft_tokens -1 \
     --dit_depth 6 \
     --dit_heads 8 \
     --dit_steps_train 4 \
@@ -159,7 +159,7 @@ run_experiment \
     --bridge dit \
     --lr 1e-4 \
     --dit_dim 512 \
-    --soft_tokens 64 \
+    --soft_tokens -1 \
     --dit_depth 6 \
     --dit_heads 8 \
     --dit_steps_train 2 \
@@ -182,7 +182,7 @@ run_experiment \
     --bridge dit \
     --lr 1e-4 \
     --dit_dim 512 \
-    --soft_tokens 64 \
+    --soft_tokens -1 \
     --dit_depth 6 \
     --dit_heads 8 \
     --dit_steps_train 2 \
@@ -207,7 +207,7 @@ run_experiment \
     --bridge dit \
     --lr 1e-4 \
     --dit_dim 512 \
-    --soft_tokens 64 \
+    --soft_tokens -1 \
     --dit_depth 6 \
     --dit_heads 8 \
     --dit_steps_train 2 \
@@ -246,7 +246,7 @@ run_experiment \
     --dataset gsm8k \
     --lr 1e-4 \
     --bottleneck_dim 1024 \
-    --soft_tokens 64 \
+    --soft_tokens -1 \
     --depth 8 \
     --heads 16 \
     --weight_decay 0.01 \
@@ -278,7 +278,7 @@ run_experiment \
     --dataset gsm8k \
     --lr 1e-4 \
     --bottleneck_dim 768 \
-    --soft_tokens 32 \
+    --soft_tokens -1 \
     --depth 4 \
     --heads 12 \
     --weight_decay 0.01 \
@@ -295,7 +295,7 @@ run_experiment \
     --dataset gsm8k \
     --lr 1e-4 \
     --bottleneck_dim 1024 \
-    --soft_tokens 48 \
+    --soft_tokens -1 \
     --depth 6 \
     --heads 16 \
     --weight_decay 0.01 \

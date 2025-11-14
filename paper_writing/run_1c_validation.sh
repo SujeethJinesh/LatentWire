@@ -35,7 +35,7 @@ TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 PER_DEVICE_BATCH=4
 EVAL_EVERY=250
 EVAL_SAMPLES=200
-MAX_NEW_TOKENS=512
+MAX_NEW_TOKENS=256
 
 # Create output directory
 OUTPUT_DIR="paper_writing/runs/1c_validation_$(date +"%Y%m%d_%H%M%S")"
@@ -67,7 +67,7 @@ echo "Starting training..."
         --bridge dit \
         --lr 1e-4 \
         --dit_dim 512 \
-        --soft_tokens 64 \
+        --soft_tokens -1 \
         --dit_depth 6 \
         --dit_heads 8 \
         --dit_steps_train 2 \

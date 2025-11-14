@@ -766,6 +766,23 @@ def build_gsm8k_fewshot_prefix(train_ds, k: int = 8, seed: int = 42, avoid_ids: 
     fewshot = "\n\n".join(f"Q: {q}\nA: {r}\n#### {ans}" for (q, r, ans) in exemplars)
     return header + fewshot
 
+
+def compute_format_penalty(pred_logits: torch.Tensor, labels: torch.Tensor, tokenizer) -> torch.Tensor:
+    """Penalize sequences that fail to emit the #### marker."""
+    device = pred_logits.device
+    preds = pred_logits.argmax(dim=-1)
+    penalties = []
+    for pred_row, label_row in zip(preds, labels):
+        token_ids = [pid.item() for pid, lid in zip(pred_row, label_row) if lid != -100]
+        if not token_ids:
+            penalties.append(1.0)
+            continue
+        text = tokenizer.decode(token_ids, skip_special_tokens=True)
+        penalties.append(0.0 if "####" in text else 1.0)
+    if not penalties:
+        return torch.tensor(0.0, device=device)
+    return torch.tensor(sum(penalties)/len(penalties), device=device)
+
 def format_prompts(problem: str, cfg: Optional[EvalConfig] = None) -> Tuple[str, str]:
     """
     Build comparable prompts for source and target.
@@ -820,17 +837,17 @@ def build_samples(batch, src_tok, tgt_tok, device, tgt_model,
 # Collation building inputs_embeds with soft tokens
 # ---------------------------
 
-def _repeat_to_k(x, K):
+def _pad_or_truncate_to_k(x, K):
     """
-    Repeat embeddings to K tokens (for DiT teacher embeddings).
+    Pad embeddings to K tokens (truncate if exceeding K).
     x: [B, T, d]
     Returns: [B, K, d]
     """
     B, T, d = x.shape
-    if T == 0:
-        return x.new_zeros(B, K, d)  # fallback; upstream we substitute BOS so T>0 in practice
-    reps = math.ceil(K / T)
-    y = x.repeat(1, reps, 1)[:, :K, :]
+    if T >= K:
+        return x[:, :K, :]
+    y = x.new_zeros(B, K, d)
+    y[:, :T, :] = x
     return y
 
 def build_batch_inputs(samples: List[Sample],
@@ -889,7 +906,7 @@ def build_batch_inputs(samples: List[Sample],
             enc = tgt_tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=8192)
             enc = {k: v.to(device) for k, v in enc.items()}
             emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, T_text, d_tgt]
-            teacher_soft = _repeat_to_k(emb, K)                                  # [B, K, d_tgt]
+            teacher_soft = _pad_or_truncate_to_k(emb, K)                         # [B, K, d_tgt]
         soft_tokens = translator(src_h, src_mask, teacher_soft_tokens=teacher_soft)
     else:
         soft_tokens = translator(src_h, src_mask)  # [B, K, d_tgt]
@@ -898,6 +915,18 @@ def build_batch_inputs(samples: List[Sample],
     if target_rms is not None:
         soft_tokens = apply_rms_matching(soft_tokens, target_rms)
 
+    prompt_alignment_loss = torch.tensor(0.0, device=device, dtype=dtype)
+    if mode == 'train':
+        prompt_ids = tgt_tok([
+            s.tgt_prompt for s in samples
+        ], return_tensors="pt", padding=True, truncation=True, max_length=K)
+        prompt_ids = {k: v.to(device) for k, v in prompt_ids.items()}
+        prompt_embeds = tgt_model.get_input_embeddings()(prompt_ids["input_ids"]).to(dtype)
+        prompt_mask = prompt_ids["attention_mask"].unsqueeze(-1)
+        diff = (soft_tokens - prompt_embeds) * prompt_mask
+        denom = prompt_mask.sum().clamp_min(1.0)
+        prompt_alignment_loss = diff.pow(2).sum() / denom
+
     # Target tokenization
     # Training: answer only (model must use soft tokens to understand question)
     # Eval: start token only (model generates full answer)
@@ -905,8 +934,8 @@ def build_batch_inputs(samples: List[Sample],
     if mode == 'train':
         tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
     else:
-        format_prompt = "\nAnswer the question above, then end your final line with '#### <number>'."
-        tgt_texts = [starter + format_prompt for _ in samples]
+        format_prompt = "\nAnswer the question above and end with '#### <number>'."
+        tgt_texts = [samples[i].tgt_prompt + format_prompt for i in range(len(samples))]
 
     tgt_batch = tgt_tok(
         tgt_texts,
@@ -958,7 +987,8 @@ def build_batch_inputs(samples: List[Sample],
         "inputs_embeds": inputs_embeds,
         "attention_mask": attn_mask,
         "labels": labels,
-        "K": K
+        "K": K,
+        "prompt_alignment_loss": prompt_alignment_loss
     }
 
 # ---------------------------
@@ -1143,7 +1173,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
         # Truncate outputs at first new "Q:" to prevent continuation behavior
         # Models sometimes generate additional Q&A pairs after answering the test question
-        def clean_generation(text: str, prompt_prefix: str | None = None) -> str:
+        def clean_generation(text: str, prompt_prefix: Optional[str] = None) -> str:
             """Strip the original prompt and drop any follow-up questions."""
             cleaned = text.strip()
             if prompt_prefix:
@@ -1291,7 +1321,8 @@ def main():
     parser.add_argument("--source_model", type=str, default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--target_model", type=str, default="meta-llama/Llama-3.2-1B-Instruct")
     parser.add_argument("--bottleneck_dim", type=int, default=1024, help="Bottleneck dimension for BottleneckedGatedTranslator")
-    parser.add_argument("--soft_tokens", type=int, default=32)
+    parser.add_argument("--soft_tokens", type=int, default=-1,
+                        help="Number of soft tokens to generate (<=0 uses full prompt length)")
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-4)
@@ -1408,6 +1439,10 @@ def main():
         tgt_tok.pad_token = tgt_tok.eos_token
     tgt_tok.padding_side = "left"  # Critical for decoder-only models
     tgt_tok.model_max_length = 8192
+
+    if args.soft_tokens <= 0:
+        args.soft_tokens = src_tok.model_max_length
+        log(f"Soft tokens not specified; using full prompt length: {args.soft_tokens}")
 
     # Verify tokenizer supports offset mapping (required for label alignment)
     if not tgt_tok.is_fast:
@@ -1642,79 +1677,52 @@ def main():
         out = tgt_model(**data)
         nll_loss = out.loss
 
-        # KL consistency loss to prevent distribution collapse
-        # Compare bridged vs baseline (text-only) distributions on first 20 tokens
+        # KL consistency loss (align first textual tokens between bridged and baseline)
         kl_loss = torch.tensor(0.0, device=device, dtype=dtype)
-        if step > args.warmup_steps:  # Only after warmup
+        if step > args.warmup_steps:
             with torch.no_grad():
-                # Baseline: text-only input (no soft tokens)
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=data.get("K", 0)).to(device)
                 baseline_out = tgt_model(**tgt_enc)
-                baseline_logits = baseline_out.logits[:, :20, :]  # First 20 positions
+                baseline_logits = baseline_out.logits
 
-            # Bridged logits (first 20 positions after soft tokens)
-            K = data.get("K", 0)
-            bridged_logits = out.logits[:, :20, :]  # First 20 generation positions
-
-            # KL divergence: KL(bridged || baseline)
-            # Prevent bridged from diverging into degenerate modes
-            # Compute in float32 for numerical stability
-            if bridged_logits.size(1) >= 20 and baseline_logits.size(1) >= 20:
-                bridged_logits_f = bridged_logits.float()
-                baseline_logits_f = baseline_logits.float()
+            K_soft = data.get("K", 0)
+            available = out.logits.size(1) - K_soft
+            num_compare = min(20, baseline_logits.size(1), available)
+            if num_compare > 0:
+                bridged_slice = out.logits[:, K_soft:K_soft + num_compare, :]
+                baseline_slice = baseline_logits[:, :num_compare, :]
                 kl_loss = torch.nn.functional.kl_div(
-                    torch.nn.functional.log_softmax(bridged_logits_f, dim=-1),
-                    torch.nn.functional.softmax(baseline_logits_f, dim=-1),
+                    torch.nn.functional.log_softmax(bridged_slice.float(), dim=-1),
+                    torch.nn.functional.softmax(baseline_slice.float(), dim=-1),
                     reduction="batchmean"
                 )
 
-        # InfoNCE anti-collapse loss (prevent all inputs mapping to same vector)
-        # Compare translator soft tokens with actual target embeddings
         info_nce_loss = torch.tensor(0.0, device=device, dtype=dtype)
-        if step > args.warmup_steps // 2:  # Start after 50% of warmup
+        if step > args.warmup_steps // 2:
             with torch.no_grad():
-                # Get target embeddings for the prompt (stop gradient)
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=data.get("K", 0)).to(device)
                 tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
-                # Pool target embeddings (mean over sequence)
-                tgt_pooled = tgt_embeds_full.mean(dim=1)  # [B, d_model]
+                tgt_pooled = tgt_embeds_full.mean(dim=1)
 
-            # Get soft tokens from translator (already computed above in data)
-            # Pool soft tokens (mean over K tokens)
             K = data.get("K", 0)
-            soft_pooled = data["inputs_embeds"][:, :K, :].mean(dim=1)  # [B, d_model]
-
-            # Normalize for cosine similarity (in float32 for stability)
+            soft_pooled = data["inputs_embeds"][:, :K, :].mean(dim=1)
             soft_norm = torch.nn.functional.normalize(soft_pooled.float(), dim=-1)
             tgt_norm = torch.nn.functional.normalize(tgt_pooled.float(), dim=-1)
-
-            # InfoNCE: positive pairs (i,i) vs negative pairs (i,j≠i)
             temperature = 0.07
-            logits_contrastive = soft_norm @ tgt_norm.T / temperature  # [B, B]
+            logits_contrastive = soft_norm @ tgt_norm.T / temperature
             labels_contrastive = torch.arange(logits_contrastive.size(0), device=device)
             info_nce_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
 
-        # Format penalty: encourage #### markers in model's free-form predictions
-        format_loss = torch.tensor(0.0, device=device, dtype=dtype)
-        with torch.no_grad():
-            pred_ids = out.logits.argmax(dim=-1)
-        label_mask = data['labels'] != -100
-        misses = []
-        for i in range(pred_ids.size(0)):
-            tokens = pred_ids[i][label_mask[i]]
-            text = tgt_tok.decode(tokens, skip_special_tokens=True)
-            misses.append(int('####' not in text))
-        if misses:
-            format_loss = torch.tensor(sum(misses)/len(misses), device=device, dtype=dtype)
+        format_loss = compute_format_penalty(out.logits.detach(), data['labels'], tgt_tok)
+        prompt_alignment_loss = data.get("prompt_alignment_loss", torch.tensor(0.0, device=device, dtype=dtype))
 
-        # Total loss: NLL + λ_InfoNCE * InfoNCE + λ_format * format_loss
-        # DISABLED KL loss: Causes training instability due to position misalignment
-        # - Compares baseline[:, :20] (prompt positions) vs bridged[:, :20] (generated positions)
-        # - When enabled at step 201 (after warmup), causes loss spike from ~1.1 to ~4.0
-        # - Original: loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss + 0.1 * format_loss
-        loss = nll_loss + args.info_nce_weight * info_nce_loss + 0.1 * format_loss
+        loss = nll_loss \
+            + 0.03 * kl_loss \
+            + args.info_nce_weight * info_nce_loss \
+            + 0.05 * prompt_alignment_loss \
+            + 0.1 * format_loss
 
         # Add DiT flow loss if using DiT bridge
         # The args.dit_loss_weight balances flow loss vs LM loss (default 0.1)
