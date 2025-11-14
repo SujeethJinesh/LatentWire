@@ -1,5 +1,5 @@
 === ABLATION EXPERIMENTS ===
-Output directory: paper_writing/runs/ablations_20251113_211430
+Output directory: paper_writing/runs/ablations_20251113_212352
 
 ╔════════════════════════════════════════╗
 ║  ABLATION 1: DiT BRIDGE               ║
@@ -8,5 +8,5 @@ Output directory: paper_writing/runs/ablations_20251113_211430
 ==========================================
 Experiment: 1a_dit_2step_64tok_soft_only
 Description: DiT 64 tokens, 2 training steps (like Transfusion) (prompt=soft_only)
-Start: Thu Nov 13 21:14:30 PST 2025
+Start: Thu Nov 13 21:23:52 PST 2025
 ------------------------------------------
