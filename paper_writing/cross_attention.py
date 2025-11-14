@@ -917,12 +917,21 @@ def build_batch_inputs(samples: List[Sample],
 
     prompt_alignment_loss = torch.tensor(0.0, device=device, dtype=dtype)
     if mode == 'train':
-        prompt_ids = tgt_tok([
-            s.tgt_prompt for s in samples
-        ], return_tensors="pt", padding=True, truncation=True, max_length=K)
+        prompt_ids = tgt_tok(
+            [s.tgt_prompt for s in samples],
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=K
+        )
         prompt_ids = {k: v.to(device) for k, v in prompt_ids.items()}
         prompt_embeds = tgt_model.get_input_embeddings()(prompt_ids["input_ids"]).to(dtype)
-        prompt_mask = prompt_ids["attention_mask"].unsqueeze(-1)
+        prompt_embeds = _pad_or_truncate_to_k(prompt_embeds, K)
+        prompt_mask = prompt_ids["attention_mask"]
+        if prompt_mask.size(1) < K:
+            pad = torch.zeros(prompt_mask.size(0), K - prompt_mask.size(1), device=device, dtype=prompt_mask.dtype)
+            prompt_mask = torch.cat([prompt_mask, pad], dim=1)
+        prompt_mask = prompt_mask.unsqueeze(-1)
         diff = (soft_tokens - prompt_embeds) * prompt_mask
         denom = prompt_mask.sum().clamp_min(1.0)
         prompt_alignment_loss = diff.pow(2).sum() / denom
