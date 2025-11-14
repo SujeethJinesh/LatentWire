@@ -1704,8 +1704,12 @@ def main():
         if misses:
             format_loss = torch.tensor(sum(misses)/len(misses), device=device, dtype=dtype)
 
-        # Total loss: NLL + λ_KL * KL + λ_InfoNCE * InfoNCE + λ_format * format_loss
-        loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss + 0.1 * format_loss
+        # Total loss: NLL + λ_InfoNCE * InfoNCE + λ_format * format_loss
+        # DISABLED KL loss: Causes training instability due to position misalignment
+        # - Compares baseline[:, :20] (prompt positions) vs bridged[:, :20] (generated positions)
+        # - When enabled at step 201 (after warmup), causes loss spike from ~1.1 to ~4.0
+        # - Original: loss = nll_loss + 0.03 * kl_loss + args.info_nce_weight * info_nce_loss + 0.1 * format_loss
+        loss = nll_loss + args.info_nce_weight * info_nce_loss + 0.1 * format_loss
 
         # Add DiT flow loss if using DiT bridge
         # The args.dit_loss_weight balances flow loss vs LM loss (default 0.1)
