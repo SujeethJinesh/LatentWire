@@ -80,7 +80,8 @@ echo "Starting training..."
         --warmup_steps 200 \
         --info_nce_weight 0.05 \
         --early_stop_patience 999 \
-        --seed 1234
+        --seed 1234 \
+        --eval_prompt_mode soft_plus_text
 } 2>&1 | tee "$LOG_FILE"
 
 echo ""

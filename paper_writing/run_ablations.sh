@@ -35,6 +35,9 @@ EVAL_EVERY=250
 EVAL_SAMPLES=200  # Reduced for faster eval iterations (was 500)
 MAX_NEW_TOKENS=256  # Shorter generations for faster eval
 
+# Prompt-mode variants (soft_tokens only vs. soft tokens + raw prompt)
+PROMPT_MODES=("soft_only" "soft_plus_text")
+
 # Create output directory
 OUTPUT_DIR="paper_writing/runs/ablations_$(date +"%Y%m%d_%H%M%S")"
 mkdir -p "$OUTPUT_DIR"
@@ -95,6 +98,19 @@ run_experiment() {
     echo "" | tee -a "$SUMMARY_LOG"
 }
 
+# Helper to run both prompt variants for a given config
+run_prompt_variants() {
+    local base_name=$1
+    local desc=$2
+    shift 2
+
+    for mode in "${PROMPT_MODES[@]}"; do
+        local name="${base_name}_${mode}"
+        local full_desc="${desc} (prompt=${mode})"
+        run_experiment "$name" "$full_desc" --eval_prompt_mode "$mode" "$@"
+    done
+}
+
 # ============================================
 # ABLATION 1: DiT Bridge Architecture
 # Research Question: Does iterative refinement prevent collapse?
@@ -106,7 +122,7 @@ echo "╚═══════════════════════�
 echo "" | tee -a "$SUMMARY_LOG"
 
 # Config 1a: DiT-2step (minimal diffusion, faster)
-run_experiment \
+run_prompt_variants \
     "1a_dit_2step_64tok" \
     "DiT 64 tokens, 2 training steps (like Transfusion)" \
     --dataset gsm8k \
@@ -129,7 +145,7 @@ run_experiment \
     --seed 1234
 
 # Config 1b: DiT-4step (more refinement)
-run_experiment \
+run_prompt_variants \
     "1b_dit_4step_64tok" \
     "DiT 64 tokens, 4 training steps (more denoising)" \
     --dataset gsm8k \
@@ -152,7 +168,7 @@ run_experiment \
     --seed 1234
 
 # Config 1c: DiT with attention pooling (richer conditioning)
-run_experiment \
+run_prompt_variants \
     "1c_dit_attn_64tok" \
     "DiT 64 tokens, attention pooling for source conditioning" \
     --dataset gsm8k \
@@ -175,7 +191,7 @@ run_experiment \
     --seed 1234
 
 # Config 1d: DiT with CFG (classifier-free guidance)
-run_experiment \
+run_prompt_variants \
     "1d_dit_cfg_64tok" \
     "DiT 64 tokens with CFG for better mode coverage" \
     --dataset gsm8k \
@@ -200,7 +216,7 @@ run_experiment \
     --seed 1234
 
 # Config 1e: DiT with prompt-teacher + flow warmup
-run_experiment \
+run_prompt_variants \
     "1e_dit_prompt_teacher_64tok" \
     "DiT 64 tokens, teacher=prompt, flow warmup 500" \
     --dataset gsm8k \
@@ -240,7 +256,7 @@ echo "╚═══════════════════════�
 echo "" | tee -a "$SUMMARY_LOG"
 
 # Config 2a: WITH stability fixes (NEW RUN)
-run_experiment \
+run_prompt_variants \
     "2a_stable_64tok" \
     "64 tokens WITH InfoNCE + early stopping + gen hygiene" \
     --dataset gsm8k \
@@ -272,7 +288,7 @@ echo "╚═══════════════════════�
 echo "" | tee -a "$SUMMARY_LOG"
 
 # Config 3a: 32 tokens (high compression)
-run_experiment \
+run_prompt_variants \
     "3a_stable_32tok" \
     "32 tokens (4.7× compression) WITH stability fixes" \
     --dataset gsm8k \
@@ -289,7 +305,7 @@ run_experiment \
     --seed 1234
 
 # Config 3b: 48 tokens (medium compression)
-run_experiment \
+run_prompt_variants \
     "3b_stable_48tok" \
     "48 tokens (3.1× compression) WITH stability fixes" \
     --dataset gsm8k \

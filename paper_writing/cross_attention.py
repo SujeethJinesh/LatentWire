@@ -935,7 +935,11 @@ def build_batch_inputs(samples: List[Sample],
         tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
     else:
         format_prompt = "\nAnswer the question above and end with '#### <number>'."
-        tgt_texts = [samples[i].tgt_prompt + format_prompt for i in range(len(samples))]
+        prompt_mode = getattr(args, "eval_prompt_mode", "soft_plus_text")
+        if prompt_mode == "soft_plus_text":
+            tgt_texts = [samples[i].tgt_prompt + format_prompt for i in range(len(samples))]
+        else:  # soft_only
+            tgt_texts = [starter + format_prompt for _ in samples]
 
     tgt_batch = tgt_tok(
         tgt_texts,
@@ -1097,7 +1101,6 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 do_sample=False,
                 pad_token_id=tgt_tok.pad_token_id,
                 eos_token_id=tgt_tok.eos_token_id,
-                cache_implementation="static",  # Use static KV cache for speed
                 use_cache=True
             )
             bridged_texts_batch = tgt_tok.batch_decode(gen, skip_special_tokens=True,
@@ -1114,7 +1117,6 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                 do_sample=False,
                 pad_token_id=tgt_tok.pad_token_id,
                 eos_token_id=tgt_tok.eos_token_id,
-                cache_implementation="static",  # Use static KV cache for speed
                 use_cache=True
             )
             base_texts_batch = tgt_tok.batch_decode(base_out, skip_special_tokens=True,
@@ -1322,7 +1324,10 @@ def main():
     parser.add_argument("--target_model", type=str, default="meta-llama/Llama-3.2-1B-Instruct")
     parser.add_argument("--bottleneck_dim", type=int, default=1024, help="Bottleneck dimension for BottleneckedGatedTranslator")
     parser.add_argument("--soft_tokens", type=int, default=-1,
-                        help="Number of soft tokens to generate (<=0 uses full prompt length)")
+                        help="Number of soft tokens to generate (<=0 chooses full prompt length)")
+    parser.add_argument("--eval_prompt_mode", type=str,
+                        choices=["soft_only", "soft_plus_text"], default="soft_plus_text",
+                        help="How much literal text to feed Llama during evaluation.")
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-4)
@@ -1441,8 +1446,9 @@ def main():
     tgt_tok.model_max_length = 8192
 
     if args.soft_tokens <= 0:
-        args.soft_tokens = src_tok.model_max_length
-        log(f"Soft tokens not specified; using full prompt length: {args.soft_tokens}")
+        # Use full prompt length but cap to 2048 to prevent OOM
+        args.soft_tokens = min(src_tok.model_max_length, 2048)
+        log(f"Soft tokens not specified; capping to {args.soft_tokens} tokens")
 
     # Verify tokenizer supports offset mapping (required for label alignment)
     if not tgt_tok.is_fast:
