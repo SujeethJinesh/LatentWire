@@ -1143,22 +1143,27 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
 
         # Truncate outputs at first new "Q:" to prevent continuation behavior
         # Models sometimes generate additional Q&A pairs after answering the test question
-        def truncate_at_new_question(text: str) -> str:
-            """Remove everything after the first standalone 'Q:' (new question marker)"""
-            # Find "Q:" that appears after some content (not at start of string)
-            parts = text.split('\nQ:')
-            if len(parts) > 1:
-                # Keep only the first part (answer to our test question)
-                return parts[0].strip()
-            return text.strip()
+        def clean_generation(text: str, prompt_prefix: str | None = None) -> str:
+            """Strip the original prompt and drop any follow-up questions."""
+            cleaned = text.strip()
+            if prompt_prefix:
+                prefix = prompt_prefix.strip()
+                if cleaned.startswith(prefix):
+                    cleaned = cleaned[len(prefix):].lstrip()
 
-        target_full = truncate_at_new_question(base_text)
+            # Find second "\nQ:" occurrence (first is the real question)
+            matches = [m.start() for m in re.finditer(r'\nQ:', cleaned)]
+            if len(matches) >= 2:
+                cleaned = cleaned[:matches[1]]
+            return cleaned.strip()
+
+        target_full = clean_generation(base_text, sample.tgt_prompt)
         target_answer = extract_final_answer(target_full)
 
-        source_full = truncate_at_new_question(source_text)
+        source_full = clean_generation(source_text, sample.tgt_prompt)
         source_answer = extract_final_answer(source_full)
 
-        bridged_full = truncate_at_new_question(bridged_text)
+        bridged_full = clean_generation(bridged_text)
         bridged_answer = extract_final_answer(bridged_full)
 
         sample_records.append({
