@@ -530,6 +530,11 @@ class SourceConditioner(nn.Module):
     def __init__(self, src_dim, d_cond, pool="mean", n_heads=8, dropout=0.1):
         super().__init__()
         self.pool = pool
+        self.align = nn.Linear(src_dim, src_dim, bias=False)
+        with torch.no_grad():
+            eye = torch.eye(src_dim, dtype=self.align.weight.dtype)
+            if self.align.weight.shape == eye.shape:
+                self.align.weight.copy_(eye)
         if pool == "attn":
             self.query = nn.Parameter(torch.randn(1, 1, src_dim))
             self.attn = nn.MultiheadAttention(src_dim, num_heads=n_heads,
@@ -549,6 +554,7 @@ class SourceConditioner(nn.Module):
             )
     def forward(self, src_h, src_mask):
         # src_h: [B, T, d_src], src_mask: [B, T] with 1/0 valid/pad
+        src_h = self.align(src_h)
         if self.pool == "attn":
             B = src_h.size(0)
             q = self.query.expand(B, -1, -1)  # [B,1,d_src]
@@ -940,15 +946,24 @@ def build_batch_inputs(samples: List[Sample],
     # Training: answer only (model must use soft tokens to understand question)
     # Eval: start token only (model generates full answer)
     starter = tgt_tok.bos_token or " "  # BOS token if available, else space
+    format_prompt = "\nAnswer the question above and end with '#### <number>'."
     if mode == 'train':
         tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
+        decode_prompt_texts = None
+    elif mode == 'decode':
+        prompt_texts = [samples[i].tgt_prompt + format_prompt for i in range(len(samples))]
+        tgt_texts = [
+            prompt_texts[i] + ("\n\n" if not samples[i].tgt_answer.startswith("\n") else "") + samples[i].tgt_answer
+            for i in range(len(samples))
+        ]
+        decode_prompt_texts = prompt_texts
     else:
-        format_prompt = "\nAnswer the question above and end with '#### <number>'."
         prompt_mode = getattr(args, "eval_prompt_mode", "soft_plus_text")
         if prompt_mode == "soft_plus_text":
             tgt_texts = [samples[i].tgt_prompt + format_prompt for i in range(len(samples))]
         else:  # soft_only
             tgt_texts = [starter + format_prompt for _ in samples]
+        decode_prompt_texts = None
 
     tgt_batch = tgt_tok(
         tgt_texts,
@@ -958,6 +973,18 @@ def build_batch_inputs(samples: List[Sample],
         max_length=8192
     )
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
+
+    prompt_token_lengths = None
+    if mode == 'decode' and decode_prompt_texts is not None:
+        prompt_batch = tgt_tok(
+            decode_prompt_texts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=8192
+        )
+        prompt_batch = {k: v.to(device) for k, v in prompt_batch.items()}
+        prompt_token_lengths = prompt_batch["attention_mask"].sum(dim=1)
 
     # Target input embeddings
     with torch.no_grad():
@@ -982,6 +1009,12 @@ def build_batch_inputs(samples: List[Sample],
         # Mask padding tokens only (answer is already isolated, no prompt to mask)
         for i in range(B):
             labels[i, tgt_batch["attention_mask"][i] == 0] = -100
+    elif mode == 'decode':
+        for i in range(B):
+            if prompt_token_lengths is not None:
+                keep_from = int(prompt_token_lengths[i].item())
+                labels[i, :keep_from] = -100
+            labels[i, tgt_batch["attention_mask"][i] == 0] = -100
     else:
         # Eval mode: dummy labels (shape must match T_tgt before K-prepend)
         labels = tgt_batch["input_ids"].new_full((B, T_tgt), -100)
@@ -1001,7 +1034,8 @@ def build_batch_inputs(samples: List[Sample],
         "attention_mask": attn_mask,
         "labels": labels,
         "K": K,
-        "prompt_alignment_loss": prompt_alignment_loss
+        "prompt_alignment_loss": prompt_alignment_loss,
+        "text_lengths": tgt_batch["attention_mask"].sum(dim=1)
     }
 
 # ---------------------------
@@ -1362,6 +1396,14 @@ def main():
                         help="Weight for InfoNCE anti-collapse loss")
     parser.add_argument("--eval_batch_size", type=int, default=50,
                         help="Batch size for evaluation (default 50, try 64-100 on H100)")
+    parser.add_argument("--decode_loss_weight", type=float, default=0.0,
+                        help="Weight for decode-aware supervision (0 disables)")
+    parser.add_argument("--decode_interval", type=int, default=50,
+                        help="Frequency (in steps) to apply decode-aware supervision")
+    parser.add_argument("--kl_max_length", type=int, default=512,
+                        help="Maximum token length when encoding answers for KL baseline")
+    parser.add_argument("--kl_tokens", type=int, default=20,
+                        help="Number of answer tokens to compare in KL alignment")
     parser.add_argument("--no_compile", action="store_true",
                         help="Disable torch.compile (use if PyTorch < 2.0 or for debugging)")
     # DiT-Bridge options
@@ -1696,14 +1738,20 @@ def main():
         kl_loss = torch.tensor(0.0, device=device, dtype=dtype)
         if step > args.warmup_steps:
             with torch.no_grad():
-                tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=data.get("K", 0)).to(device)
-                baseline_out = tgt_model(**tgt_enc)
+                tgt_answers = [s.tgt_answer for s in samples]
+                kl_enc = tgt_tok(
+                    tgt_answers,
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                    max_length=args.kl_max_length
+                ).to(device)
+                baseline_out = tgt_model(**kl_enc)
                 baseline_logits = baseline_out.logits
 
             K_soft = data.get("K", 0)
             available = out.logits.size(1) - K_soft
-            num_compare = min(20, baseline_logits.size(1), available)
+            num_compare = min(args.kl_tokens, baseline_logits.size(1), available)
             if num_compare > 0:
                 bridged_slice = out.logits[:, K_soft:K_soft + num_compare, :]
                 baseline_slice = baseline_logits[:, :num_compare, :]
@@ -1733,11 +1781,21 @@ def main():
         format_loss = compute_format_penalty(out.logits.detach(), data['labels'], tgt_tok)
         prompt_alignment_loss = data.get("prompt_alignment_loss", torch.tensor(0.0, device=device, dtype=dtype))
 
+        decode_loss = torch.tensor(0.0, device=device, dtype=dtype)
+        if args.decode_loss_weight > 0 and args.decode_interval > 0 and (step % args.decode_interval == 0):
+            decode_data = build_batch_inputs(
+                samples, src_model, src_tok, tgt_model, tgt_tok,
+                translator, device, dtype, target_rms=target_rms, mode='decode', args=args
+            )
+            decode_out = tgt_model(**decode_data)
+            decode_loss = decode_out.loss
+
         loss = nll_loss \
             + 0.03 * kl_loss \
             + args.info_nce_weight * info_nce_loss \
-            + 0.05 * prompt_alignment_loss \
-            + 0.1 * format_loss
+            + 0.001 * prompt_alignment_loss \
+            + 0.1 * format_loss \
+            + args.decode_loss_weight * decode_loss
 
         # Add DiT flow loss if using DiT bridge
         # The args.dit_loss_weight balances flow loss vs LM loss (default 0.1)
