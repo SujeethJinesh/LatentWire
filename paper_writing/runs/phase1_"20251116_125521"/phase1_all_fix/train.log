@@ -1,7 +1,7 @@
-W1116 11:38:44.386000 1019096 torch/distributed/run.py:793] 
-W1116 11:38:44.386000 1019096 torch/distributed/run.py:793] *****************************************
-W1116 11:38:44.386000 1019096 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1116 11:38:44.386000 1019096 torch/distributed/run.py:793] *****************************************
+W1116 12:55:22.189000 1125438 torch/distributed/run.py:793] 
+W1116 12:55:22.189000 1125438 torch/distributed/run.py:793] *****************************************
+W1116 12:55:22.189000 1125438 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1116 12:55:22.189000 1125438 torch/distributed/run.py:793] *****************************************
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
@@ -16,41 +16,35 @@ EARLY CUDA DIAGNOSTICS (before DDP setup)
 torch.cuda.is_available() check...
 
 EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
 
-============================================================EARLY CUDA DIAGNOSTICS (before DDP setup)
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
 
-EARLY CUDA DIAGNOSTICS (before DDP setup)torch.cuda.is_available() check...
-
-
-========================================================================================================================
-
-torch.cuda.is_available() check...torch.cuda.is_available() check...
-
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
   Result: True  Result: True
 torch.cuda.device_count() check...
+  Result: True
+torch.cuda.device_count() check...
 
 torch.cuda.device_count() check...
   Result: True
 torch.cuda.device_count() check...
-  Result: True
-torch.cuda.device_count() check...
   Result: 4 GPUs
   Result: 4 GPUs
-  GPU 0: NVIDIA H100 80GB HBM3  GPU 0: NVIDIA H100 80GB HBM3
+  Result: 4 GPUs
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
   GPU 1: NVIDIA H100 80GB HBM3
   GPU 2: NVIDIA H100 80GB HBM3
   GPU 3: NVIDIA H100 80GB HBM3
 ============================================================
 
-[Rank 0/4] Starting DDP initialization...
-[Rank 0] Checking torch.cuda.is_available()...
-[Rank 0]   Result: True
-[Rank 0] Checking torch.cuda.device_count()...
-[Rank 0]   Result: 4 devices
-[Rank 0] Getting device name for GPU 0...
-[Rank 0] GPU 0 available: NVIDIA H100 80GB HBM3
-[Rank 0] Calling init_process_group (timeout=60s)...
-
+[Rank 3/4] Starting DDP initialization...  GPU 0: NVIDIA H100 80GB HBM3
   GPU 1: NVIDIA H100 80GB HBM3
   GPU 2: NVIDIA H100 80GB HBM3
   GPU 3: NVIDIA H100 80GB HBM3
@@ -64,18 +58,8 @@ torch.cuda.device_count() check...
 [Rank 2] Getting device name for GPU 2...
 [Rank 2] GPU 2 available: NVIDIA H100 80GB HBM3
 [Rank 2] Calling init_process_group (timeout=60s)...
-  Result: 4 GPUs
-  GPU 0: NVIDIA H100 80GB HBM3
-  GPU 1: NVIDIA H100 80GB HBM3
-  GPU 2: NVIDIA H100 80GB HBM3
-  GPU 3: NVIDIA H100 80GB HBM3
-============================================================
-[W1116 11:38:55.657993907 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1116 11:38:55.658030843 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[Rank 0] DDP initialized successfully on GPU 0
-[Rank 0] Setting up reproducibility (base_seed=1234)...
+  GPU 0: NVIDIA H100 80GB HBM3[W1116 12:55:32.122045890 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
 
-[Rank 3/4] Starting DDP initialization...
 [Rank 3] Checking torch.cuda.is_available()...
 [Rank 3]   Result: True
 [Rank 3] Checking torch.cuda.device_count()...
@@ -83,7 +67,39 @@ torch.cuda.device_count() check...
 [Rank 3] Getting device name for GPU 3...
 [Rank 3] GPU 3 available: NVIDIA H100 80GB HBM3
 [Rank 3] Calling init_process_group (timeout=60s)...
-[W1116 11:38:55.681966926 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 1/4] Starting DDP initialization...
+[Rank 1] Checking torch.cuda.is_available()...
+[Rank 1]   Result: True[W1116 12:55:32.144233911 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+
+[Rank 1] Checking torch.cuda.device_count()...
+[Rank 1]   Result: 4 devices
+[Rank 1] Getting device name for GPU 1...
+[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
+[Rank 1] Calling init_process_group (timeout=60s)...
+[W1116 12:55:32.145772537 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 0/4] Starting DDP initialization...
+[Rank 0] Checking torch.cuda.is_available()...
+[Rank 0]   Result: True
+[Rank 0] Checking torch.cuda.device_count()...
+[Rank 0]   Result: 4 devices
+[Rank 0] Getting device name for GPU 0...
+[Rank 0] GPU 0 available: NVIDIA H100 80GB HBM3
+[Rank 0] Calling init_process_group (timeout=60s)...
+[W1116 12:55:32.312796258 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[Rank 0] DDP initialized successfully on GPU 0
+[Rank 0] Setting up reproducibility (base_seed=1234)...
 [Rank 0] Reproducibility setup complete (effective_seed=1234)
 Reproducibility enabled: base_seed=1234, effective_seed=1234
 ==== Config ====
@@ -102,10 +118,10 @@ per_device_batch: 2
 eval_every: 250
 eval_samples: 200
 max_new_tokens: 256
-log_dir: paper_writing/runs/phase1_"20251116_113841"/phase1_all_fix
+log_dir: paper_writing/runs/phase1_"20251116_125521"/phase1_all_fix
 seed: 1234
 bf16: True
-save_path: paper_writing/runs/phase1_"20251116_113841"/phase1_all_fix/checkpoint.pt
+save_path: paper_writing/runs/phase1_"20251116_125521"/phase1_all_fix/checkpoint.pt
 show_eval_samples: 1
 early_stop_patience: 3
 dataset: gsm8k
@@ -142,49 +158,33 @@ Deterministic algorithms: True
 CUBLAS workspace: :16:8
 World size: 4 (each rank samples different data)
 Loading source model/tokenizer...
-  Result: 4 GPUs
-  GPU 0: NVIDIA H100 80GB HBM3
-  GPU 1: NVIDIA H100 80GB HBM3
-  GPU 2: NVIDIA H100 80GB HBM3
-  GPU 3: NVIDIA H100 80GB HBM3
-============================================================
-
-[Rank 1/4] Starting DDP initialization...
-[Rank 1] Checking torch.cuda.is_available()...
-[Rank 1]   Result: True
-[Rank 1] Checking torch.cuda.device_count()...
-[Rank 1]   Result: 4 devices
-[Rank 1] Getting device name for GPU 1...
-[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
-[Rank 1] Calling init_process_group (timeout=60s)...
-[W1116 11:38:55.780749797 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[Rank 1] DDP initialized successfully on GPU 1[Rank 3] DDP initialized successfully on GPU 3
-[Rank 3] Setting up reproducibility (base_seed=1234)...
-
+[Rank 1] DDP initialized successfully on GPU 1
 [Rank 1] Setting up reproducibility (base_seed=1234)...
-[Rank 3] Reproducibility setup complete (effective_seed=1237)
+[Rank 3] DDP initialized successfully on GPU 3
+[Rank 3] Setting up reproducibility (base_seed=1234)...
 [Rank 1] Reproducibility setup complete (effective_seed=1235)
+[Rank 3] Reproducibility setup complete (effective_seed=1237)
 [Rank 2] DDP initialized successfully on GPU 2
 [Rank 2] Setting up reproducibility (base_seed=1234)...
 [Rank 2] Reproducibility setup complete (effective_seed=1236)
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2013.91it/s]
-Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 797.24it/s]
-Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 992.11it/s]
-Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 600.44it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:19<00:38, 19.44s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:19<00:39, 19.70s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:19<00:39, 19.71s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:19<00:39, 19.54s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:38<00:18, 18.90s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:38<00:18, 18.93s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:38<00:18, 18.97s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:38<00:19, 19.10s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.20s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.74s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.27s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.82s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.23s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.74s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.33s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:53<00:00, 17.83s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3519.70it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 7210.84it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3728.27it/s]
+Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 404.61it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:23, 11.82s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:11<00:23, 11.91s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:12<00:24, 12.06s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:12<00:25, 12.86s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:11, 11.18s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:23<00:11, 11.55s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:11, 11.25s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:22<00:11, 11.30s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:32<00:00, 10.77s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 10.97s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.27s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 10.81s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:32<00:00, 10.96s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:33<00:00, 11.01s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:32<00:00, 10.78s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:32<00:00, 10.97s/it]
 Loading target model/tokenizer...
 Soft tokens not specified; capping to 2048 tokens
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2034.10it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 9157.87it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4931.57it/s]
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 502.52it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:18<00:55, 18.35s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:18<00:54, 18.09s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:18<00:54, 18.07s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:18<00:54, 18.08s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:34<00:34, 17.38s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:34<00:34, 17.38s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:35<00:35, 17.52s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:35<00:34, 17.40s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:52<00:17, 17.52s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:52<00:17, 17.60s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:52<00:17, 17.54s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:52<00:17, 17.56s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 12.46s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 14.40s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 12.43s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 12.42s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 14.33s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 14.32s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 12.44s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:57<00:00, 14.33s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 845.37it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3934.62it/s]
+
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 278.58it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8643.59it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.62s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.58s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.56s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.58s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.33s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.31s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.32s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.42s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.32s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.34s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.35s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.51s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.07s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.09s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.28s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.29s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.30s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  7.99s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.28s/it]
 torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)
 Source hidden dim: 4096 | Target hidden dim: 4096
 Target embedding RMS (median): 0.0107
@@ -521,7 +521,7 @@ He knows from experience that is 160 pages is one inch thick. If he has a stack 
 A: There are 14 stack of stacks that is 15 stacks thick. If he has a shelf of books that is 16 shelves thick. He knows from knowledge that is 17 shelves thick. If he has a table of books that is 18 tables thick. He knows from understanding that is 19 understandings of 20 understandings of 21 understandings. The interest calculated for the first year will be 22 values is each one on 23 values is 24 values is 25 values is 26 values is 27 values is 28 values is 29 values is 30 values is 31 values is 32 values is 33 values is 34 values is 35 values is 36 values is 37 values is 38 values is 39 values is 40 values is 41 values is 42 values is 43 values is 44 values is 45 values is 46 values is 47 values is 48 values is 49 values is 50 values is 51 values is
 ============================================================
 
-[Eval] Saved sample outputs to paper_writing/runs/phase1_"20251116_113841"/phase1_all_fix/eval_samples_step_0.jsonl
+[Eval] Saved sample outputs to paper_writing/runs/phase1_"20251116_125521"/phase1_all_fix/eval_samples_step_0.jsonl
 [Eval] Step 0 | Source-alone acc: 0.540 | Target-alone acc: 0.770 | Bridged acc: 0.005
 ============================================================
 
@@ -558,18 +558,18 @@ LABEL ALIGNMENT DIAGNOSTIC (Step 0)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
 /users/sujinesh/.local/lib/python3.10/site-packages/torch/autograd/graph.py:825: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at ../aten/src/ATen/native/transformers/cuda/attention_backward.cu:102.)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-Step 20/2000 | Loss (avg over last 20): 4.8223
-Step 40/2000 | Loss (avg over last 20): 3.4777
-Step 60/2000 | Loss (avg over last 20): 2.0662
-Step 80/2000 | Loss (avg over last 20): 1.8350
-Step 100/2000 | Loss (avg over last 20): 1.7430
-Step 120/2000 | Loss (avg over last 20): 1.6585
-Step 140/2000 | Loss (avg over last 20): 1.6239
-Step 160/2000 | Loss (avg over last 20): 1.5122
-Step 180/2000 | Loss (avg over last 20): 1.5253
-Step 200/2000 | Loss (avg over last 20): 1.4410
-Step 220/2000 | Loss (avg over last 20): 2.6316
-Step 240/2000 | Loss (avg over last 20): 2.1999
+Step 20/2000 | Loss (avg over last 20): 4.8224
+Step 40/2000 | Loss (avg over last 20): 3.4809
+Step 60/2000 | Loss (avg over last 20): 2.0654
+Step 80/2000 | Loss (avg over last 20): 1.8357
+Step 100/2000 | Loss (avg over last 20): 1.7407
+Step 120/2000 | Loss (avg over last 20): 1.6602
+Step 140/2000 | Loss (avg over last 20): 1.6206
+Step 160/2000 | Loss (avg over last 20): 1.5070
+Step 180/2000 | Loss (avg over last 20): 1.5351
+Step 200/2000 | Loss (avg over last 20): 1.4386
+Step 220/2000 | Loss (avg over last 20): 2.6594
+Step 240/2000 | Loss (avg over last 20): 2.1974
 [Distributed Eval] Sharding 200 samples across 4 ranks:
   Rank 0: samples 0 to 50 (50 samples)
   Rank 1: samples 50 to 100 (50 samples)
@@ -672,11 +672,15 @@ The bakery makes a 10% profit on each loaf, so they make a 10% profit on 250 loa
 Bridged (extracted): 18
 Bridged full output:
 '
-Q: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
-A: Janet eats 3 eggs for breakfast, leaving 16 - 3 = <<16-3=13>>13 eggs.
-She bakes 4 muffins, leaving 13 - 4 = <<13-4=9>>9 eggs.
-She sells 9 eggs at the market for $2 per egg, making $9 * $2 = $<<9*2=18>>18.
+A: Janet lays 16 eggs per day.
+She eats 3 eggs for breakfast, leaving 16 - 3 = <<16-3=13>>13 eggs.
+She bakes 4 eggs for her friends, leaving 13 - 4 = <<13-4=9>>9 eggs.
+She sells 9 eggs at the market for $2 each, earning 9 * $2 = $<<9*2=18>>18.
 #### 18
+
+Q: A bookshelf has 5 shelves, and each shelf can hold 8 books. If the bookshelf is full, how many books are on it?
+A: There are 5 shelves, and each shelf can hold 8 books, so the bookshelf can hold 5*8=<<5*8=40>>40 books.
+#### 40
 
 --- Example 2 ---
 Question (full prompt):
@@ -771,11 +775,11 @@ Explanation: The bakery sells 250 loaves of bread per day.  They make a profit o
 #### 62.50
 Bridged (extracted): 3
 Bridged full output:
-A: A robe takes 2 bolts of blue fiber and half that much white fiber.  So, it takes 2 + 2/2 = 2 + 1 = <<2+1=3>>3 bolts in total.
+2 + 2/2 = 2 + 1 = <<2+1=3>>3
 #### 3
 
-Q: A bookshelf has 5 shelves, and each shelf can hold 8 books.  How many books can the bookshelf hold in total?
-A: The bookshelf can hold 5 * 8 = <<5*8=40>>40 books in total.
+Q: A bookshelf has 5 shelves, and each shelf can hold 8 books. If the bookshelf is currently empty, how many books can be placed on it in total?
+A: If each shelf can hold 8 books, then 5 shelves can hold 5*8=<<5*8=40>>40 books.
 #### 40
 
 --- Example 3 ---
@@ -864,25 +868,24 @@ Josh made a profit of $325,000 - $130,000 = $<<325000-130000=195000>>195,000.
 Q: A bakery sells 250 loaves of bread per day. They make a profit of $0.50 per loaf. How much profit do they make in a day?
 A: The bakery makes a profit of $0.50 * 250 = $<<0.50*250=125>>125 per day.
 #### 125
-Bridged (extracted): 120000
+Bridged (extracted): 170000
 Bridged full output:
-The value of the house increased by 150% of $80,000 = $80,000 + $80,000 * 150% = $80,000 + $120,000 = $<<80000+120000=200000>>200,000
-The profit Josh made is $200,000 - $80,000 = $<<200000-80000=120000>>120,000
-#### 120000
+Josh bought the house for $80,000 and put in $50,000 in repairs.  This increased the value of the house by 150%.  The value of the house after the repairs is $80,000 + $50,000 = $<<80000+50000=130000>>130,000.
+The value of the house increased by 150% of $80,000 = $80,000 * 150% = $<<80000*150*.01=120000>>120,000.
+The value of the house after the repairs is $130,000 + $120,000 = $<<130000+120000=250000>>250,000.
+Therefore, Josh made a profit of $250,000 - $80,000 = $<<250000-80000=170000>>170,000.
+#### 170000
 
-Q: A store is having a sale.  A shirt that originally cost $25 is now on sale for $15.  A pair of pants that originally cost $40 is now on sale for $20.  If you buy 2 shirts and 3 pairs of pants, how much will you save?
-A: The shirt is on sale for $15, so buying 2 shirts will save 2*$15 = $<<2*15=30>>30
-The pants are on sale for $20, so buying 3 pairs will save 3*$20 = $<<3*20=60>>60
-You will save $30 + $60 = $<<30+60=90>>90
-#### 90
+Q: A bakery sells a total of 240 loaves of bread per day.  They sell 3/4 of their bread in the morning and 1/2 in the afternoon.  How many loaves of bread do they sell in the afternoon?
+A: The bakery sells 3/4 of 240 loaves in the morning, which is 3/4
 ============================================================
 
-[Eval] Saved sample outputs to paper_writing/runs/phase1_"20251116_113841"/phase1_all_fix/eval_samples_step_250.jsonl
+[Eval] Saved sample outputs to paper_writing/runs/phase1_"20251116_125521"/phase1_all_fix/eval_samples_step_250.jsonl
 [Eval] Step 250 | Source-alone acc: 0.540 | Target-alone acc: 0.770 | Bridged acc: 0.465
 [Early Stop] New best bridged acc: 0.465, resetting patience
-Step 260/2000 | Loss (avg over last 20): 2.2043
-Step 280/2000 | Loss (avg over last 20): 2.0957
-Step 300/2000 | Loss (avg over last 20): 2.0003
+Step 260/2000 | Loss (avg over last 20): 2.1491
+Step 280/2000 | Loss (avg over last 20): 2.0885
+Step 300/2000 | Loss (avg over last 20): 1.9986
 [rank0]: Traceback (most recent call last):
 [rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1937, in <module>
 [rank0]:     main()
@@ -913,11 +916,11 @@ Step 300/2000 | Loss (avg over last 20): 2.0003
 [rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 72, in forward
 [rank0]:     variance = hidden_states.pow(2).mean(-1, keepdim=True)
 [rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 56.00 MiB. GPU 0 has a total capacity of 79.19 GiB of which 55.00 MiB is free. Including non-PyTorch memory, this process has 79.13 GiB memory in use. Of the allocated memory 75.01 GiB is allocated by PyTorch, and 306.25 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-[rank0]:[W1116 12:00:49.137859072 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
-W1116 12:00:52.934000 1019096 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1019154 closing signal SIGTERM
-W1116 12:00:52.935000 1019096 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1019155 closing signal SIGTERM
-W1116 12:00:52.936000 1019096 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1019156 closing signal SIGTERM
-E1116 12:00:56.929000 1019096 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 1019153) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+[rank0]:[W1116 13:16:55.791958761 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W1116 13:16:58.548000 1125438 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1125449 closing signal SIGTERM
+W1116 13:16:58.549000 1125438 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1125450 closing signal SIGTERM
+W1116 13:16:58.549000 1125438 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1125453 closing signal SIGTERM
+E1116 13:17:00.778000 1125438 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 1125448) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
 Traceback (most recent call last):
   File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
     sys.exit(main())
@@ -940,10 +943,10 @@ Failures:
 ------------------------------------------------------------
 Root Cause (first observed failure):
 [0]:
-  time      : 2025-11-16_12:00:52
+  time      : 2025-11-16_13:16:58
   host      : n16.cm.cluster
   rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 1019153)
+  exitcode  : 1 (pid: 1125448)
   error_file: <N/A>
   traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
 ============================================================
