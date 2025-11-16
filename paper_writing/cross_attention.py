@@ -1788,10 +1788,10 @@ def main():
                 and step > args.warmup_steps
                 and (step % args.decode_interval == 0)):
             run_decode = True
-            world_size = 1
+            decode_world_size = 1
             rank = 0
             if dist.is_initialized():
-                world_size = dist.get_world_size()
+                decode_world_size = dist.get_world_size()
                 rank = dist.get_rank()
                 run_decode = (rank == 0)
             if run_decode:
@@ -1804,7 +1804,7 @@ def main():
                     translator, device, dtype, target_rms=target_rms, mode='decode', args=args
                 )
                 decode_out = tgt_model(**decode_data)
-                decode_loss = decode_out.loss * world_size
+                decode_loss = decode_out.loss * decode_world_size
 
         loss = nll_loss \
             + 0.03 * kl_loss \
