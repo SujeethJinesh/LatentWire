@@ -1400,6 +1400,8 @@ def main():
                         help="Weight for decode-aware supervision (0 disables)")
     parser.add_argument("--decode_interval", type=int, default=50,
                         help="Frequency (in steps) to apply decode-aware supervision")
+    parser.add_argument("--decode_samples", type=int, default=1,
+                        help="Number of samples per rank for decode-aware supervision (0 = use full batch)")
     parser.add_argument("--kl_max_length", type=int, default=512,
                         help="Maximum token length when encoding answers for KL baseline")
     parser.add_argument("--kl_tokens", type=int, default=20,
@@ -1783,8 +1785,12 @@ def main():
 
         decode_loss = torch.tensor(0.0, device=device, dtype=dtype)
         if args.decode_loss_weight > 0 and args.decode_interval > 0 and (step % args.decode_interval == 0):
+            decode_subset = samples
+            if args.decode_samples > 0 and len(samples) > args.decode_samples:
+                idxs = rng.sample(range(len(samples)), args.decode_samples)
+                decode_subset = [samples[i] for i in idxs]
             decode_data = build_batch_inputs(
-                samples, src_model, src_tok, tgt_model, tgt_tok,
+                decode_subset, src_model, src_tok, tgt_model, tgt_tok,
                 translator, device, dtype, target_rms=target_rms, mode='decode', args=args
             )
             decode_out = tgt_model(**decode_data)
