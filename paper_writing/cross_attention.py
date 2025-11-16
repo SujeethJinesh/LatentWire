@@ -1784,7 +1784,9 @@ def main():
         prompt_alignment_loss = data.get("prompt_alignment_loss", torch.tensor(0.0, device=device, dtype=dtype))
 
         decode_loss = torch.tensor(0.0, device=device, dtype=dtype)
-        if args.decode_loss_weight > 0 and args.decode_interval > 0 and (step % args.decode_interval == 0):
+        if (args.decode_loss_weight > 0 and args.decode_interval > 0
+                and step > args.warmup_steps
+                and (step % args.decode_interval == 0)):
             decode_subset = samples
             if args.decode_samples > 0 and len(samples) > args.decode_samples:
                 idxs = rng.sample(range(len(samples)), args.decode_samples)
