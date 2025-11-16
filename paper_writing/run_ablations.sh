@@ -26,8 +26,9 @@ EVAL_EVERY=250
 EVAL_SAMPLES=200
 MAX_NEW_TOKENS=256
 PROMPT_MODE="soft_plus_text"
-DECODE_INTERVAL=100
-DECODE_WEIGHT=0.05
+DECODE_INTERVAL=200
+DECODE_WEIGHT=0.01
+DECODE_MAX_LEN=4096
 KL_MAX_LEN=512
 KL_TOKENS=20
 
@@ -55,6 +56,7 @@ torchrun --standalone --nproc_per_node=4 --master_port "$RANDOM_PORT" paper_writ
     --eval_prompt_mode "$PROMPT_MODE" \
     --decode_loss_weight "$DECODE_WEIGHT" \
     --decode_interval "$DECODE_INTERVAL" \
+    --decode_max_length "$DECODE_MAX_LEN" \
     --kl_max_length "$KL_MAX_LEN" \
     --kl_tokens "$KL_TOKENS" \
     --bridge dit \

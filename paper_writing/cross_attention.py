@@ -947,6 +947,7 @@ def build_batch_inputs(samples: List[Sample],
     # Eval: start token only (model generates full answer)
     starter = tgt_tok.bos_token or " "  # BOS token if available, else space
     format_prompt = "\nAnswer the question above and end with '#### <number>'."
+    decode_max_len = getattr(args, "decode_max_length", 8192)
     if mode == 'train':
         tgt_texts = [s.tgt_answer for s in samples]  # Answer only for teacher forcing
         decode_prompt_texts = None
@@ -965,12 +966,13 @@ def build_batch_inputs(samples: List[Sample],
             tgt_texts = [starter + format_prompt for _ in samples]
         decode_prompt_texts = None
 
+    max_len = decode_max_len if (mode == 'decode') else 8192
     tgt_batch = tgt_tok(
         tgt_texts,
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=8192
+        max_length=max_len
     )
     tgt_batch = {k: v.to(device) for k, v in tgt_batch.items()}
 
@@ -981,7 +983,7 @@ def build_batch_inputs(samples: List[Sample],
             return_tensors="pt",
             padding=True,
             truncation=True,
-            max_length=8192
+            max_length=max_len
         )
         prompt_batch = {k: v.to(device) for k, v in prompt_batch.items()}
         prompt_token_lengths = prompt_batch["attention_mask"].sum(dim=1)
@@ -1402,6 +1404,8 @@ def main():
                         help="Frequency (in steps) to apply decode-aware supervision")
     parser.add_argument("--decode_samples", type=int, default=1,
                         help="Number of samples per rank for decode-aware supervision (0 = use full batch)")
+    parser.add_argument("--decode_max_length", type=int, default=4096,
+                        help="Max token length for decode-aware supervision inputs")
     parser.add_argument("--kl_max_length", type=int, default=512,
                         help="Maximum token length when encoding answers for KL baseline")
     parser.add_argument("--kl_tokens", type=int, default=20,
