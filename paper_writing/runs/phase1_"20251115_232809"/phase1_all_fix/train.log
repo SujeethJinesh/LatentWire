@@ -1,0 +1,207 @@
+W1115 23:28:11.124000 2734148 torch/distributed/run.py:793] 
+W1115 23:28:11.124000 2734148 torch/distributed/run.py:793] *****************************************
+W1115 23:28:11.124000 2734148 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1115 23:28:11.124000 2734148 torch/distributed/run.py:793] *****************************************
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+================================================================================================================================================================================================================================================
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+============================================================torch.cuda.is_available() check...
+torch.cuda.is_available() check...
+
+
+
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================EARLY CUDA DIAGNOSTICS (before DDP setup)
+torch.cuda.is_available() check...
+============================================================
+
+torch.cuda.is_available() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: True
+torch.cuda.device_count() check...
+  Result: 4 GPUs
+  Result: 4 GPUs
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 2/4] Starting DDP initialization...
+[Rank 2] Checking torch.cuda.is_available()...
+[Rank 2]   Result: True
+[Rank 2] Checking torch.cuda.device_count()...
+[Rank 2]   Result: 4 devices
+[Rank 2] Getting device name for GPU 2...
+[Rank 2] GPU 2 available: NVIDIA H100 80GB HBM3
+[Rank 2] Calling init_process_group (timeout=60s)...
+[W1115 23:28:21.949705564 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 0/4] Starting DDP initialization...
+[Rank 0] Checking torch.cuda.is_available()...
+[Rank 0]   Result: True
+[Rank 0] Checking torch.cuda.device_count()...
+[Rank 0]   Result: 4 devices
+[Rank 0] Getting device name for GPU 0...
+[Rank 0] GPU 0 available: NVIDIA H100 80GB HBM3
+[Rank 0] Calling init_process_group (timeout=60s)...
+[W1115 23:28:21.962764753 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[Rank 0] DDP initialized successfully on GPU 0
+[Rank 0] Setting up reproducibility (base_seed=1234)...
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 1/4] Starting DDP initialization...[Rank 0] Reproducibility setup complete (effective_seed=1234)
+Reproducibility enabled: base_seed=1234, effective_seed=1234
+==== Config ====
+source_model: mistralai/Mistral-7B-Instruct-v0.3
+target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
+bottleneck_dim: 1024
+soft_tokens: -1
+eval_prompt_mode: soft_plus_text
+depth: 2
+heads: 8
+lr: 0.0001
+weight_decay: 0.01
+train_steps: 2000
+warmup_steps: 200
+per_device_batch: 2
+eval_every: 250
+eval_samples: 200
+max_new_tokens: 256
+log_dir: paper_writing/runs/phase1_"20251115_232809"/phase1_all_fix
+seed: 1234
+bf16: True
+save_path: paper_writing/runs/phase1_"20251115_232809"/phase1_all_fix/checkpoint.pt
+show_eval_samples: 1
+early_stop_patience: 3
+dataset: gsm8k
+info_nce_weight: 0.05
+eval_batch_size: 36
+decode_loss_weight: 0.05
+decode_interval: 100
+decode_samples: 1
+kl_max_length: 512
+kl_tokens: 20
+no_compile: True
+bridge: dit
+dit_dim: 512
+dit_depth: 6
+dit_heads: 8
+dit_steps_train: 4
+dit_steps_eval: 8
+dit_dropout: 0.1
+dit_cfg: 0.0
+dit_drop_cond: 0.1
+dit_cfg_dropout: None
+dit_pool: mean
+dit_cond_dim: 512
+dit_loss_weight: 0.1
+dit_loss_warmup: 0
+dit_teacher: answer
+
+==== Reproducibility Settings ====
+Base seed: 1234
+Effective seed (with rank offset): 1234
+CUDA deterministic: True
+CUDA benchmark: False
+Deterministic algorithms: True
+CUBLAS workspace: :16:8
+
+[Rank 1] Checking torch.cuda.is_available()...
+[Rank 1]   Result: True
+[Rank 1] Checking torch.cuda.device_count()...
+[Rank 1]   Result: 4 devices
+[Rank 1] Getting device name for GPU 1...
+[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
+[Rank 1] Calling init_process_group (timeout=60s)...
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1937, in <module>
+[rank0]:     main()
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1473, in main
+[rank0]:     log(f"World size: {world_size()} (each rank samples different data)")
+[rank0]: UnboundLocalError: local variable 'world_size' referenced before assignment
+[W1115 23:28:21.984311438 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  Result: 4 GPUs
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 3/4] Starting DDP initialization...
+[Rank 3] Checking torch.cuda.is_available()...
+[Rank 3]   Result: True
+[Rank 3] Checking torch.cuda.device_count()...
+[Rank 3]   Result: 4 devices
+[Rank 3] Getting device name for GPU 3...
+[Rank 3] GPU 3 available: NVIDIA H100 80GB HBM3
+[Rank 3] Calling init_process_group (timeout=60s)...
+[W1115 23:28:21.157866732 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[rank0]:[W1115 23:28:21.423748267 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+[Rank 2] DDP initialized successfully on GPU 2
+[Rank 2] Setting up reproducibility (base_seed=1234)...
+[Rank 2] Reproducibility setup complete (effective_seed=1236)
+[Rank 1] DDP initialized successfully on GPU 1
+[Rank 1] Setting up reproducibility (base_seed=1234)...
+[Rank 1] Reproducibility setup complete (effective_seed=1235)
+[Rank 3] DDP initialized successfully on GPU 3
+[Rank 3] Setting up reproducibility (base_seed=1234)...
+[Rank 3] Reproducibility setup complete (effective_seed=1237)
+W1115 23:28:22.068000 2734148 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 2734347 closing signal SIGTERM
+W1115 23:28:22.068000 2734148 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 2734348 closing signal SIGTERM
+W1115 23:28:22.068000 2734148 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 2734351 closing signal SIGTERM
+E1115 23:28:22.652000 2734148 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 2734346) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+Traceback (most recent call last):
+  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+paper_writing/cross_attention.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-11-15_23:28:22
+  host      : n30.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 2734346)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
