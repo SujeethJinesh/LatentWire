@@ -1787,16 +1787,24 @@ def main():
         if (args.decode_loss_weight > 0 and args.decode_interval > 0
                 and step > args.warmup_steps
                 and (step % args.decode_interval == 0)):
-            decode_subset = samples
-            if args.decode_samples > 0 and len(samples) > args.decode_samples:
-                idxs = rng.sample(range(len(samples)), args.decode_samples)
-                decode_subset = [samples[i] for i in idxs]
-            decode_data = build_batch_inputs(
-                decode_subset, src_model, src_tok, tgt_model, tgt_tok,
-                translator, device, dtype, target_rms=target_rms, mode='decode', args=args
-            )
-            decode_out = tgt_model(**decode_data)
-            decode_loss = decode_out.loss
+            run_decode = True
+            world_size = 1
+            rank = 0
+            if dist.is_initialized():
+                world_size = dist.get_world_size()
+                rank = dist.get_rank()
+                run_decode = (rank == 0)
+            if run_decode:
+                decode_subset = samples
+                if args.decode_samples > 0 and len(samples) > args.decode_samples:
+                    idxs = rng.sample(range(len(samples)), args.decode_samples)
+                    decode_subset = [samples[i] for i in idxs]
+                decode_data = build_batch_inputs(
+                    decode_subset, src_model, src_tok, tgt_model, tgt_tok,
+                    translator, device, dtype, target_rms=target_rms, mode='decode', args=args
+                )
+                decode_out = tgt_model(**decode_data)
+                decode_loss = decode_out.loss * world_size
 
         loss = nll_loss \
             + 0.03 * kl_loss \
