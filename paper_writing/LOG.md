@@ -16,5 +16,9 @@
     - Fixed truncation to remove follow-up questions while preserving the ground-truth answer.
     - Resolved repeated CUDA OOMs by capping soft tokens, dropping `cache_implementation="static"`, and halving `per_device_batch` from 4 → 2 in both ablation and validation scripts.
     - Added padding to prompt-alignment tensors so shapes always match the soft-token length.
-  - Current status: `soft_plus_text` configs ready for rerun with the new losses; `soft_only` runs continue to serve as a lower-bound (expected near 0%). Source/target baselines report realistic numbers again, so bridged metrics are trustworthy.
+- Current status: `soft_plus_text` configs ready for rerun with the new losses; `soft_only` runs continue to serve as a lower-bound (expected near 0%). Source/target baselines report realistic numbers again, so bridged metrics are trustworthy.
 
+- **2025-11-16 – Phase1 retries + decode-aware OOM**
+  - Ran `paper_writing/run_ablations.sh` (DiT 4-step, `soft_plus_text`, decode-aware supervision enabled) three times on the HPC cluster. Each run reached the first evaluation (step 250, bridged acc ≈0.46–0.49) but crashed when the decode-aware supervision block fired (rank 0 OOM at `decode_out = tgt_model(**decode_data)` around step 300–400).
+  - Archived partial artifacts under `paper_writing/runs/archive/phase1_20251116_132540/` (train log + eval JSONL dumps) for later analysis.
+  - To unblock Phase1, disabled decode-aware loss in the main ablation runner (`DECODE_WEIGHT=0` in `run_ablations.sh`). KL, prompt-alignment, and RoPE-alignment fixes remain active; decode supervision will be reintroduced later via lighter ablations once the baseline finishes end-to-end.

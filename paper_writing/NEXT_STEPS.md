@@ -3,12 +3,13 @@
 ## 0. Prep (Today)
 - Sync to latest `main`, archive prior run logs, and reserve a 4× H100 slot.
 - Double-check module stack (`gcc/13.1.0`, `conda/24.3.0-0`, `stockcuda/12.6.2`, `cudnn/cuda12/9.3.0.75`) before launching any job.
+- Run a quick single-GPU smoke check (20 steps, `per_device_batch=1`, `--dit_steps_train=1`, decode loss off) to ensure the translator compiles/logs correctly before consuming H100 hours.
 
 ## 1. Phase 1 Run — All Fixes at Once (ETA: 2 hrs GPU)
 Implement in `paper_writing/cross_attention.py`:
 1. **KL Slice Alignment** — compare answer tokens to answer tokens by re-tokenizing baselines with answer text and shifting the bridged logits past `soft_tokens + prompt_length`.
 2. **Prompt Alignment Weight** — reduce coefficient from `0.05` to `0.001`.
-3. **Decode-Aware Supervision** — once per `eval_every`, run the translator+Llama stack in free-generation mode on a small mini-batch, compute GSM8K loss on decoded tokens, and backpropagate into the translator.
+3. **Decode-Aware Supervision** — leave the code path available but keep `decode_loss_weight=0` in the main Phase 1 job (recent runs OOM around step 400). Re-enable in Phase 1.5 ablations once the baseline finishes end-to-end.
 4. **RoPE/Tokenizer Projection** — insert a learnable projection layer right after we capture Mistral hidden states to map the 32 768-token/roto-phase space into Llama’s 128 256-token geometry before diffusion.
 
 After code changes:
