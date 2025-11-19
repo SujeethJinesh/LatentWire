@@ -24,6 +24,12 @@ After code changes:
 ## 2. Phase 2 Experiments (post-success)
 1. **Bidirectional Swap:** run Llama 3.1 as source and Mistral as target using the stabilized translator; reuse Phase 1 hyperparameters. _Status:_ first attempt (Nov 18) with `dit_teacher=prompt` + `soft_plus_text` collapsed to 0.26 bridged accuracy because the soft tokens duplicated the literal question. Scripts now auto-switch to `soft_only` in this mode—relaunch after pulling to validate whether the translated prompt alone can lift Mistral past 0.515.
 2. **Hybrid Conditioning Baseline:** keep literal prompts in place and inject DiT outputs via adapters or residual addition, verifying whether textual anchoring alone closes the remaining gap.
+3. **Soft-only alignment fixes:**
+   - Add a curriculum mode that starts training with `soft_plus_text` and linearly fades to `soft_only` after 1k steps so the DiT learns content-bearing soft tokens before we remove the literal prompt.
+   - Introduce a contrastive prompt loss (InfoNCE between soft-token pools and target prompt embeddings) controlled by `--prompt_contrast_weight` so constant outputs are penalized.
+   - Implement a lightweight probe/auxiliary loss that predicts the source prompt embedding (or category) from the soft tokens; this ties soft-only outputs back to the question even when no text is shown at inference.
+   - Strengthen the format loss coupling when `prompt_alignment_weight` is large (e.g., scale the 0.1 coefficient accordingly) to keep invalid outputs suppressed.
+4. **Tokenizer/RoPE alignment:** design an explicit loss that forces the DiT projection to mimic Llama’s positional/vocabulary geometry (e.g., align rotary phases or KL-match logits on a shared sub-vocab) so cross-model vocab differences don’t manifest as degenerate soft tokens.
 
 ## 3. Phase 3 (only if GPU queue opens up)
 - Compression sweep (64/128/256/512 soft tokens) using the stabilized codepath.
