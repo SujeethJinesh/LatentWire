@@ -20,6 +20,14 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 SOURCE_MODEL="${SOURCE_MODEL:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 TARGET_MODEL="${TARGET_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}"
 DIT_TEACHER="${DIT_TEACHER:-prompt}"
+PER_DEVICE_BATCH="${PER_DEVICE_BATCH:-2}"
+EVAL_EVERY="${EVAL_EVERY:-250}"
+EVAL_SAMPLES="${EVAL_SAMPLES:-200}"
+MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-256}"
+PROMPT_MODE="${PROMPT_MODE:-soft_plus_text}"
+if [[ "$DIT_TEACHER" == "prompt" && "$PROMPT_MODE" == "soft_plus_text" ]]; then
+    PROMPT_MODE="soft_only"
+fi
 
 echo "=========================================="
 echo "PHASE 2 – BIDIRECTIONAL SWAP (Llama -> Mistral)"
@@ -29,6 +37,7 @@ echo ""
 echo "Source model: $SOURCE_MODEL"
 echo "Target model: $TARGET_MODEL"
 echo "DiT teacher supervision: $DIT_TEACHER"
+echo "Eval prompt mode: $PROMPT_MODE"
 echo ""
 
 detect_nproc() {
@@ -53,16 +62,7 @@ PY
 NPROC=$(detect_nproc)
 echo "Detected $NPROC GPU(s); override with NUM_GPUS if needed."
 
-SOURCE_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
-TARGET_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
-PER_DEVICE_BATCH=2
-EVAL_EVERY=250
-EVAL_SAMPLES=200
-MAX_NEW_TOKENS=256
-PROMPT_MODE="soft_plus_text"
-DIT_TEACHER="${DIT_TEACHER:-prompt}"
-
-RUN_ID="phase2_swap_$(date +\"%Y%m%d_%H%M%S\")"
+RUN_ID="phase2_swap_$(date +%Y%m%d_%H%M%S)"
 OUTPUT_DIR="paper_writing/runs/$RUN_ID"
 mkdir -p "$OUTPUT_DIR"
 SUMMARY_LOG="$OUTPUT_DIR/summary.log"

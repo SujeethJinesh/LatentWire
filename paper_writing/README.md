@@ -74,6 +74,7 @@ Generates:
 - **Ablation B (KL only)** finalized via `bash paper_writing/run_ablation_B.sh`: 0.710 peak → 0.625 final. Demonstrates KL alone underperforms; logs in `paper_writing/preserved_data/ablB_20251116_234242/`.
 - **Ablation C (KL + prompt alignment, no RoPE)** finalized via `bash paper_writing/run_ablation_C.sh`: plateau around 0.615 during training, recovered to 0.655 on the final checkpoint. Artifacts under `paper_writing/preserved_data/ablC_20251117_013909/`.
 - **Next HPC run**: Phase 2 “bidirectional swap” to flip source and target models (Mistral ↔ Llama) while keeping the Phase 1 hyperparameters. Launch via the same torchrun invocation as Phase 1 but set `SOURCE_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct` and `TARGET_MODEL=mistralai/Mistral-7B-Instruct-v0.3`. New logs should be timestamped `paper_writing/runs/phase2_swap_*` before being copied into `paper_writing/preserved_data/`.
+- **Phase 2 swap attempt (Nov 18)** preserved under `paper_writing/preserved_data/phase2_swap_20251118_192955/`: source-alone 0.765, target-alone 0.515, bridged 0.26 because prompt-teacher soft tokens were concatenated with the literal prompt. `run_phase2_swap.sh` now auto-selects `soft_only` whenever `dit_teacher=prompt` to prevent duplicated context.
 
 Consult `paper_writing/preserved_data/README.md` for detailed rationale, results, and publishability notes for each preserved run.
 

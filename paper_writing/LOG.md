@@ -21,4 +21,14 @@
 - **2025-11-16 – Phase1 retries + decode-aware OOM**
   - Ran `paper_writing/run_ablations.sh` (DiT 4-step, `soft_plus_text`, decode-aware supervision enabled) three times on the HPC cluster. Each run reached the first evaluation (step 250, bridged acc ≈0.46–0.49) but crashed when the decode-aware supervision block fired (rank 0 OOM at `decode_out = tgt_model(**decode_data)` around step 300–400).
   - Archived partial artifacts under `paper_writing/runs/archive/phase1_20251116_132540/` (train log + eval JSONL dumps) for later analysis.
-  - To unblock Phase1, disabled decode-aware loss in the main ablation runner (`DECODE_WEIGHT=0` in `run_ablations.sh`). KL, prompt-alignment, and RoPE-alignment fixes remain active; decode supervision will be reintroduced later via lighter ablations once the baseline finishes end-to-end.
+- To unblock Phase1, disabled decode-aware loss in the main ablation runner (`DECODE_WEIGHT=0` in `run_ablations.sh`). KL, prompt-alignment, and RoPE-alignment fixes remain active; decode supervision will be reintroduced later via lighter ablations once the baseline finishes end-to-end.
+- **2025-11-17 – Phase1 baseline + ablations**
+  - Phase1 (all fixes except decode) completed: peak bridged = 0.680, final = 0.645 (source 0.540, target 0.770). Artifacts preserved under `paper_writing/preserved_data/phase1_full_20251116_201212/` for publishable references.
+  - Ablation B (“KL only”) run: bridged peaked at 0.640, final 0.625. Shows KL alignment alone recovers most of the pre-fix baseline but falls ~2 pts short of the full stack.
+  - Ablation C (“KL + prompt-alignment drop”, no RoPE) run: peak ≈0.665, final 0.655—within 1 pt of the full Phase1, indicating prompt-alignment tweaks are the dominant factor; RoPE projection adds marginal gains.
+  - All ablation logs/JSONLs archived under `paper_writing/preserved_data/ablB_20251116_234242/` and `paper_writing/preserved_data/ablC_20251117_013909/` so the numbers are auditable.
+- **2025-11-18 – Phase2 bidirectional swap diagnosis**
+  - Swapped direction (Llama source 0.765 → Mistral target 0.515) and switched the DiT teacher to `prompt`, expecting the soft tokens to carry a translated question. Run path: `paper_writing/preserved_data/phase2_swap_20251118_192955/`.
+  - Result: Bridged accuracy peaked at 0.29 and finalized at 0.26—worse than the 0.515 target baseline—because evaluation still used `soft_plus_text`, so Mistral saw `[soft prompt || literal prompt]` and treated the learned embeddings as conflicting noise.
+  - JSONL dumps show 100% `[invalid]` answers at step 0 and ~35% invalid thereafter; all `bridged_full` entries re-emit the question text rather than providing new reasoning.
+  - Fix: `run_phase2_swap.sh` now (a) corrects the quoted run ID bug, (b) auto-detects GPU count, and (c) forces `soft_only` when `dit_teacher=prompt` so the target relies solely on the translated prompt. Users can still override `PROMPT_MODE` manually if needed.

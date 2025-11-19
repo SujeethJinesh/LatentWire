@@ -17,14 +17,11 @@ After code changes:
 - Success criterion: bridged accuracy ≥ 70 %.
 
 ## 1.5 Conditional Ablations (only if Phase 1 < 70 %)
-- **If 65–69 %:** run two jobs back-to-back (~4 hrs total):
-  - **B:** KL fix only (no prompt/decoder/RoPE changes).
-  - **C:** KL + prompt-weight + decode-aware (no RoPE projection).
-- **If <65 %:** add **A** (KL fix only) so we complete A/B/C alongside the Phase 1 “full” run for attribution.
-- Keep configs identical except for toggled features; reuse the same node if available to avoid cache thrash.
+- **Status:** Completed. Ablation B (KL only) final bridged 0.625; ablation C (KL + prompt alignment drop) final 0.655. Both runs kept decode loss disabled to avoid OOM. Artifacts preserved under `paper_writing/preserved_data/ablB_20251116_234242/` and `paper_writing/preserved_data/ablC_20251117_013909/` for reproducibility.
+- **If rerun required:** use `paper_writing/run_ablation_B.sh` or `_C.sh` directly (same configs), keeping decode loss off. Only rerun if new code changes warrant revalidation.
 
 ## 2. Phase 2 Experiments (post-success)
-1. **Bidirectional Swap:** run Llama 3.1 as source and Mistral as target using the stabilized translator; reuse Phase 1 hyperparameters. Goal: test directionality sensitivity without adding new knobs.
+1. **Bidirectional Swap:** run Llama 3.1 as source and Mistral as target using the stabilized translator; reuse Phase 1 hyperparameters. _Status:_ first attempt (Nov 18) with `dit_teacher=prompt` + `soft_plus_text` collapsed to 0.26 bridged accuracy because the soft tokens duplicated the literal question. Scripts now auto-switch to `soft_only` in this mode—relaunch after pulling to validate whether the translated prompt alone can lift Mistral past 0.515.
 2. **Hybrid Conditioning Baseline:** keep literal prompts in place and inject DiT outputs via adapters or residual addition, verifying whether textual anchoring alone closes the remaining gap.
 
 ## 3. Phase 3 (only if GPU queue opens up)

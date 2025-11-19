@@ -1,8 +1,8 @@
 # Complete Ablation Studies Summary
 
-**Total Experiments**: 4 new runs + 1 reused baseline = 5 total configurations
-**Total GPU Time**: ~12 hours on 4× H100
-**Timeline**: Week 1 (Nov 8-14)
+**Total Experiments Logged**: 3 fresh runs (Phase 1 + Ablations B/C) + 1 reused baseline (1b)
+**Total GPU Time (to date)**: ~9 hours on 4× H100
+**Timeline**: Week 1 (Nov 8-14) completed; remaining configs roll into Week 2.
 
 ---
 
@@ -24,13 +24,12 @@
 
 ### ABLATION 1: Stability Fixes
 
-#### 1a_stable_64tok ⏳ TODO
-- **Config**: 64 tokens, depth=8, lr=1e-4, warmup=750
-- **Stability**: InfoNCE (λ=0.05), early stopping (patience=5), repetition_penalty=1.1
-- **Dataset**: GSM8K
-- **Expected**: Maintain >70% final (vs 36% collapse)
-- **Runtime**: ~3 hours
-- **Purpose**: Prove stability fixes prevent collapse
+#### 1a_stable_64tok ✅ DONE (Phase 1 All-Fix Baseline)
+- **Config**: 64 tokens, depth=8, lr=1e-4, warmup=750, InfoNCE, early stopping, prompt alignment, RoPE projection, decode loss disabled.
+- **Result**: Peak bridged 0.680 (step 1500), final 0.645 with source-alone 0.540 and target-alone 0.770. Degradation: 0.035.
+- **Runtime**: ~3 hours on 4× H100 (completed 2025-11-16).
+- **Artifacts**: `paper_writing/preserved_data/phase1_full_20251116_201212/phase1_all_fix/`.
+- **Purpose**: Demonstrate stability fixes prevent collapse; serves as primary baseline though still short of target performance.
 
 **Comparison**: 1a vs 1b shows impact of stability fixes
 
@@ -122,13 +121,26 @@ Post-hoc analysis, NO TRAINING REQUIRED
 
 ---
 
+## Completed Runs (Nov 16-17, 2025)
+
+| Run | Description | Peak → Final Bridged | Publishability Note | Artifacts |
+|-----|-------------|----------------------|--------------------|-----------|
+| `phase1_all_fix` | Phase 1 baseline with KL + prompt alignment + RoPE projection (decode loss off) | 0.680 → 0.645 (source 0.540, target 0.770) | Stable and main result, but still −0.125 vs target so narrative requires either directionality wins or compression benefits. | `paper_writing/preserved_data/phase1_full_20251116_201212/` |
+| `ablB_kl_only` | KL-only stack (prompt/RoPE removed) | 0.710 → 0.625 | Demonstrates KL alone underperforms; retain for ablation table to justify extra losses. | `paper_writing/preserved_data/ablB_20251116_234242/` |
+| `ablC_kl_prompt` | KL + prompt alignment (no RoPE projection) | ≈0.615 plateau → 0.655 | Matches Phase 1 within ~1 pt without RoPE; shows prompt anchoring is critical. | `paper_writing/preserved_data/ablC_20251117_013909/` |
+| `phase2_swap_prompt` | Llama→Mistral bidirectional swap with prompt teacher, `soft_plus_text` evaluation | 0.290 peak → 0.260 final (source 0.765, target 0.515) | Soft tokens duplicated the question text and hurt the target; preserved to justify forcing `soft_only` when using prompt-teacher mode. | `paper_writing/preserved_data/phase2_swap_20251118_192955/` |
+
+These entries capture the GPU time already spent and explain how close we are to publishable accuracy. Future HPC job selection should reference why each run fell short before allocating new hours (e.g., test directionality before attempting more compression sweeps).
+
+---
+
 ## Summary Tables
 
 ### Execution Plan
 
 | Experiment | Tokens | Dataset | Stability | Runtime | Status |
 |------------|--------|---------|-----------|---------|--------|
-| 1a_stable_64tok | 64 | GSM8K | YES | 3h | ⏳ TODO |
+| 1a_stable_64tok | 64 | GSM8K | YES | 3h | ✅ DONE (phase1_all_fix) |
 | 1b_baseline_64tok | 64 | GSM8K | NO | 0h | ✅ REUSE |
 | 2a_stable_32tok | 32 | GSM8K | YES | 3h | ⏳ TODO |
 | 2b_stable_48tok | 48 | GSM8K | YES | 3h | ⏳ TODO |
@@ -142,7 +154,7 @@ Post-hoc analysis, NO TRAINING REQUIRED
 | Claim | Evidence | Ablation | Status |
 |-------|----------|----------|--------|
 | **Cross-model fusion beats both** | Latent > source AND target | 4 (P0 - CRITICAL) | ⏳ TODO |
-| Stability fixes work | >70% final vs 36% | 1a vs 1b | ⏳ TODO |
+| Stability fixes work | >70% final vs 36% | 1a vs 1b | 🟡 Partial (1a done, inference comparison pending) |
 | Compression-quality tradeoff | 32→48→64 tokens | 2a, 2b, 2c | ⏳ TODO |
 | Generalizes beyond math | HotpotQA beats baseline | 3a | ⏳ TODO |
 | Soft tokens > text transfer | Latent > cascade | 4 (P2) | ⏳ TODO |
@@ -156,8 +168,8 @@ Based on prior experiments and stability improvements:
 
 | Config | Peak Acc | Final Acc | Degradation | Compression |
 |--------|----------|-----------|-------------|-------------|
-| 1a (64 tok, stable) | ~75-80% | ~70-75% | <10% | 2.3× |
-| 1b (64 tok, unstable) | 81.5% | 36.0% | 45.5% | 2.3× |
+| 1a (64 tok, stable) | **0.680 (observed)** | **0.645 (observed)** | 0.035 | 2.3× |
+| 1b (64 tok, unstable) | 0.815 (observed) | 0.360 (observed) | 0.455 | 2.3× |
 | 2a (32 tok, stable) | ~55-60% | ~50-55% | <10% | 4.7× |
 | 2b (48 tok, stable) | ~65-70% | ~60-65% | <10% | 3.1× |
 | 3a (HotpotQA, 64 tok) | TBD | TBD | TBD | 2.3× |

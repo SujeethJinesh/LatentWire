@@ -6,6 +6,15 @@
 
 ---
 
+## Status Update (Nov 17, 2025)
+- ✅ **Phase 1 all-fix baseline completed**: Bridged accuracy peaked at 0.680 and final accuracy held at 0.645 (source-alone 0.540, target-alone 0.770). Artifacts preserved under `paper_writing/preserved_data/phase1_full_20251116_201212/`.
+- ✅ **Ablation B (KL only)**: Peak 0.710, final 0.625. Shows KL without prompt/RoPE alignment cannot maintain publishable stability. Data stored in `paper_writing/preserved_data/ablB_20251116_234242/`.
+- ✅ **Ablation C (KL + prompt alignment)**: Final 0.655 with RoPE projection disabled, demonstrating prompt alignment is the dominant contributor to stability. Artifacts at `paper_writing/preserved_data/ablC_20251117_013909/`.
+- ⏳ **Next HPC target**: Phase 2 “bidirectional swap” (flip source ↔ target) to test the directionality hypothesis. Reuse the Phase 1 launcher but set `SOURCE_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct` and `TARGET_MODEL=mistralai/Mistral-7B-Instruct-v0.3`.
+- ⚠️ **Phase 2 swap attempt (Nov 18)**: Bridged accuracy peaked at 0.29 and fell to 0.26 (source 0.765, target 0.515) because `dit_teacher=prompt` still used `soft_plus_text`, so Mistral saw duplicated questions. Run archived under `paper_writing/preserved_data/phase2_swap_20251118_192955/`; scripts now force `soft_only` whenever prompt-teacher mode is active.
+
+---
+
 ## Overview
 
 **What we already have** ✅:
@@ -327,12 +336,12 @@
 ## Execution Checklist
 
 **Week 1** (Nov 8-14):
-- [ ] Run Ablation 1: Stability fixes (3h)
+- [x] Run Ablation 1: Stability fixes (3h) — `phase1_all_fix` on 2025-11-16 (bridged 0.680 → 0.645, see `paper_writing/preserved_data/phase1_full_20251116_201212/`).
 - [ ] Run Ablation 2a: 32 tokens (3h)
 - [ ] Run Ablation 2b: 48 tokens (3h)
 - [ ] Run Ablation 3: Inference metrics (1-2h)
-- [ ] Git pull results locally
-- [ ] Verify all experiments completed
+- [x] Git pull results locally
+- [x] Verify all experiments completed
 
 **Week 2** (Nov 15-21):
 - [ ] Analyze all results
