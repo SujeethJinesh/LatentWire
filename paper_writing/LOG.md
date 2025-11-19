@@ -32,3 +32,4 @@
   - Result: Bridged accuracy peaked at 0.29 and finalized at 0.26—worse than the 0.515 target baseline—because evaluation still used `soft_plus_text`, so Mistral saw `[soft prompt || literal prompt]` and treated the learned embeddings as conflicting noise.
   - JSONL dumps show 100% `[invalid]` answers at step 0 and ~35% invalid thereafter; all `bridged_full` entries re-emit the question text rather than providing new reasoning.
   - Fix: `run_phase2_swap.sh` now (a) corrects the quoted run ID bug, (b) auto-detects GPU count, and (c) forces `soft_only` when `dit_teacher=prompt` so the target relies solely on the translated prompt. Users can still override `PROMPT_MODE` manually if needed.
+  - Follow-up single-GPU run (same day) with `soft_only` confirmed the DiT collapses without answer supervision (bridged ≤0.005, outputs stuck at `#### 1000`). Artifacts copied to `paper_writing/preserved_data/phase2_swap_20251118_213543/`.

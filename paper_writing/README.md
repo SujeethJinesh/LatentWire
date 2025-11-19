@@ -15,7 +15,9 @@
 - **cross_attention.py** - Main training script with BottleneckedGatedTranslator
 - **run_ablations.sh** - Runs all ablation experiments (~9 hours on 4× H100)
 - **run_phase2_swap.sh** - Bidirectional swap launcher (Llama source → Mistral target)
+- **run_phase2_single_gpu_suite.sh** - Sequential single-GPU sweep with automatic preservation
 - **benchmark_inference.py** - Standalone inference benchmarking utility (not actively used)
+- **scripts/summarize_eval_jsonl.py** - Utility to report invalid vs valid answers in eval JSONLs
 
 ### Output (Generated During Experiments)
 - **runs/** - All experiment outputs, logs, and checkpoints
@@ -57,6 +59,13 @@ Generates:
 - `ablation_results.json` - Raw data for all experiments
 - Summary tables and statistics
 
+For per-eval diagnostics on preserved runs:
+
+```bash
+python paper_writing/scripts/summarize_eval_jsonl.py paper_writing/preserved_data/phase1_full_20251116_201212/phase1_all_fix/
+```
+
+
 ### Step 3: Generate Plots (Week 2)
 
 ```python
@@ -74,7 +83,8 @@ Generates:
 - **Ablation B (KL only)** finalized via `bash paper_writing/run_ablation_B.sh`: 0.710 peak → 0.625 final. Demonstrates KL alone underperforms; logs in `paper_writing/preserved_data/ablB_20251116_234242/`.
 - **Ablation C (KL + prompt alignment, no RoPE)** finalized via `bash paper_writing/run_ablation_C.sh`: plateau around 0.615 during training, recovered to 0.655 on the final checkpoint. Artifacts under `paper_writing/preserved_data/ablC_20251117_013909/`.
 - **Next HPC run**: Phase 2 “bidirectional swap” to flip source and target models (Mistral ↔ Llama) while keeping the Phase 1 hyperparameters. Launch via the same torchrun invocation as Phase 1 but set `SOURCE_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct` and `TARGET_MODEL=mistralai/Mistral-7B-Instruct-v0.3`. New logs should be timestamped `paper_writing/runs/phase2_swap_*` before being copied into `paper_writing/preserved_data/`.
-- **Phase 2 swap attempt (Nov 18)** preserved under `paper_writing/preserved_data/phase2_swap_20251118_192955/`: source-alone 0.765, target-alone 0.515, bridged 0.26 because prompt-teacher soft tokens were concatenated with the literal prompt. `run_phase2_swap.sh` now auto-selects `soft_only` whenever `dit_teacher=prompt` to prevent duplicated context.
+- **Phase 2 swap attempt (Nov 18, soft+text)** preserved under `paper_writing/preserved_data/phase2_swap_20251118_192955/`: source-alone 0.765, target-alone 0.515, bridged 0.26 because prompt-teacher soft tokens were concatenated with the literal prompt. `run_phase2_swap.sh` now auto-selects `soft_only` whenever `dit_teacher=prompt` to prevent duplicated context.
+- **Phase 2 swap attempt (Nov 18, soft-only)** preserved under `paper_writing/preserved_data/phase2_swap_20251118_213543/`: even with `soft_only`, prompt-teacher DiT collapsed (bridged ≤0.005) and emitted constant tokens, so future runs need stronger supervision or hybrid conditioning.
 
 Consult `paper_writing/preserved_data/README.md` for detailed rationale, results, and publishability notes for each preserved run.
 

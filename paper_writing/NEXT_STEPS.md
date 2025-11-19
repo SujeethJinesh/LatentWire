@@ -4,6 +4,7 @@
 - Sync to latest `main`, archive prior run logs, and reserve a 4× H100 slot.
 - Double-check module stack (`gcc/13.1.0`, `conda/24.3.0-0`, `stockcuda/12.6.2`, `cudnn/cuda12/9.3.0.75`) before launching any job.
 - Run a quick single-GPU smoke check (20 steps, `per_device_batch=1`, `--dit_steps_train=1`, decode loss off) to ensure the translator compiles/logs correctly before consuming H100 hours.
+- For overnight single-GPU sweeps, use `bash paper_writing/run_phase2_single_gpu_suite.sh` (auto-runs prompt soft-only + answer soft-plus-text variants, copies each run into `paper_writing/preserved_data/`).
 
 ## 1. Phase 1 Run — All Fixes at Once (ETA: 2 hrs GPU)
 Implement in `paper_writing/cross_attention.py`:

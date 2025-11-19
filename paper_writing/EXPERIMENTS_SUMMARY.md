@@ -129,6 +129,7 @@ Post-hoc analysis, NO TRAINING REQUIRED
 | `ablB_kl_only` | KL-only stack (prompt/RoPE removed) | 0.710 → 0.625 | Demonstrates KL alone underperforms; retain for ablation table to justify extra losses. | `paper_writing/preserved_data/ablB_20251116_234242/` |
 | `ablC_kl_prompt` | KL + prompt alignment (no RoPE projection) | ≈0.615 plateau → 0.655 | Matches Phase 1 within ~1 pt without RoPE; shows prompt anchoring is critical. | `paper_writing/preserved_data/ablC_20251117_013909/` |
 | `phase2_swap_prompt` | Llama→Mistral bidirectional swap with prompt teacher, `soft_plus_text` evaluation | 0.290 peak → 0.260 final (source 0.765, target 0.515) | Soft tokens duplicated the question text and hurt the target; preserved to justify forcing `soft_only` when using prompt-teacher mode. | `paper_writing/preserved_data/phase2_swap_20251118_192955/` |
+| `phase2_swap_prompt_softonly` | Prompt teacher + soft-only decoding (single H100) | 0.005 peak → early stop (source 0.765, target 0.515) | DiT collapsed to a constant latent prompt; highlights need for richer supervision before soft-only runs are viable. | `paper_writing/preserved_data/phase2_swap_20251118_213543/` |
 
 These entries capture the GPU time already spent and explain how close we are to publishable accuracy. Future HPC job selection should reference why each run fell short before allocating new hours (e.g., test directionality before attempting more compression sweeps).
 
