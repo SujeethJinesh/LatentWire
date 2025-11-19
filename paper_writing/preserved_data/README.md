@@ -75,7 +75,7 @@ Every directory below mirrors the exact artifact layout that came off the HPC cl
 - **Key metrics** (`phase2_swap_all_fix/train.log`):
   - Source-alone 0.765 (unchanged), target-alone 0.515.
   - Bridged accuracy never exceeded 0.005 (step 500) and early-stopped immediately afterward.
-  - `eval_samples_step_0.jsonl`: 100% `[invalid]` answers; by step 500 only 15/200 samples emitted any digits and most outputs repeated `#### 1000`.
+  - `eval_samples_step_0.jsonl`: 100% `[invalid]` answers; by step 500, 185/200 samples emitted numbers (101× "1000", 59× "100"), but only 1/200 matched gold and 15/200 remained invalid.
 - **Root cause**: With soft-only prompting, the prompt-supervised DiT failed to produce useful latent prompts—most embeddings collapsed to a constant value, so Llama never answered the GSM8K question. We need either answer supervision or a more informative conditioning path before reattempting.
 - **Artifacts**:
   - `phase2_swap_all_fix/train.log`

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Sequential single-GPU sweep for Phase 2 configs.
+# Sequential sweep for Phase 2 configs (supports arbitrary GPU count via NUM_GPUS env var).
 # Runs both prompt-supervised (soft-only) and answer-supervised (soft+text) variants.
+# Usage: NUM_GPUS=4 bash run_phase2_single_gpu_suite.sh
 
 if command -v module >/dev/null 2>&1; then
     module purge
@@ -32,12 +33,29 @@ for entry in "${CONFIGS[@]}"; do
     PYTHONPATH=. NUM_GPUS="$NUM_GPUS" DIT_TEACHER="$DIT_TEACHER" PROMPT_MODE="$PROMPT_MODE" \
         bash paper_writing/run_phase2_swap.sh
 
-    latest=$(ls -td paper_writing/runs/phase2_swap_* | head -n 1)
+    # Find the most recently created phase2_swap directory
+    latest=$(ls -td paper_writing/runs/phase2_swap_* 2>/dev/null | head -n 1 || true)
+    if [[ -z "$latest" ]]; then
+        echo "ERROR: No phase2_swap_* directory found in paper_writing/runs/"
+        exit 1
+    fi
+
     run_name=$(basename "$latest")
     relabeled="paper_writing/runs/${label}_${run_name}"
-    mv "$latest" "$relabeled"
+
+    if ! mv "$latest" "$relabeled"; then
+        echo "ERROR: Failed to rename $latest to $relabeled"
+        exit 1
+    fi
+
     preserved="paper_writing/preserved_data/${label}_${run_name}"
-    cp -R "$relabeled" "$preserved"
+    mkdir -p "paper_writing/preserved_data"
+
+    if ! cp -R "$relabeled" "$preserved"; then
+        echo "ERROR: Failed to copy $relabeled to $preserved"
+        exit 1
+    fi
+
     echo "Saved run to: $relabeled"
     echo "Copied artifacts to: $preserved"
 done
