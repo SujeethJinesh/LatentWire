@@ -1736,6 +1736,11 @@ def main():
 
             log("="*60 + "\n")
 
+        # Extract metadata from data dict (not valid model forward args)
+        K_soft = data.pop("K", 0)
+        prompt_alignment_loss = data.pop("prompt_alignment_loss", torch.tensor(0.0, device=device, dtype=dtype))
+        text_lengths = data.pop("text_lengths", None)
+
         # Forward (compute NLL loss on target)
         out = tgt_model(**data)
         nll_loss = out.loss
@@ -1754,8 +1759,6 @@ def main():
                 ).to(device)
                 baseline_out = tgt_model(**kl_enc)
                 baseline_logits = baseline_out.logits
-
-            K_soft = data.get("K", 0)
             available = out.logits.size(1) - K_soft
             num_compare = min(args.kl_tokens, baseline_logits.size(1), available)
             if num_compare > 0:
@@ -1771,12 +1774,11 @@ def main():
         if step > args.warmup_steps // 2:
             with torch.no_grad():
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=data.get("K", 0)).to(device)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=K_soft).to(device)
                 tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
                 tgt_pooled = tgt_embeds_full.mean(dim=1)
 
-            K = data.get("K", 0)
-            soft_pooled = data["inputs_embeds"][:, :K, :].mean(dim=1)
+            soft_pooled = data["inputs_embeds"][:, :K_soft, :].mean(dim=1)
             soft_norm = torch.nn.functional.normalize(soft_pooled.float(), dim=-1)
             tgt_norm = torch.nn.functional.normalize(tgt_pooled.float(), dim=-1)
             temperature = 0.07
@@ -1785,7 +1787,7 @@ def main():
             info_nce_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
 
         format_loss = compute_format_penalty(out.logits.detach(), data['labels'], tgt_tok)
-        prompt_alignment_loss = data.get("prompt_alignment_loss", torch.tensor(0.0, device=device, dtype=dtype))
+        # prompt_alignment_loss already extracted at line 1741
 
         decode_loss = torch.tensor(0.0, device=device, dtype=dtype)
         if (args.decode_loss_weight > 0 and args.decode_interval > 0
