@@ -14,6 +14,13 @@ if command -v module >/dev/null 2>&1; then
     module load cudnn/cuda12/9.3.0.75
 fi
 
+export PYTHONPATH=.
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+SOURCE_MODEL="${SOURCE_MODEL:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
+TARGET_MODEL="${TARGET_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}"
+DIT_TEACHER="${DIT_TEACHER:-prompt}"
+
 echo "=========================================="
 echo "PHASE 2 – BIDIRECTIONAL SWAP (Llama -> Mistral)"
 echo "=========================================="
@@ -23,9 +30,6 @@ echo "Source model: $SOURCE_MODEL"
 echo "Target model: $TARGET_MODEL"
 echo "DiT teacher supervision: $DIT_TEACHER"
 echo ""
-
-export PYTHONPATH=.
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 detect_nproc() {
     if [[ -n "${NUM_GPUS:-}" ]]; then
