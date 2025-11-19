@@ -18,8 +18,8 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 NUM_GPUS=${NUM_GPUS:-1}
 
 declare -a CONFIGS=(
-    "label=prompt_softonly DIT_TEACHER=prompt PROMPT_MODE=soft_only"
-    "label=answer_softplus DIT_TEACHER=answer PROMPT_MODE=soft_plus_text"
+    "label=prompt_softonly DIT_TEACHER=prompt PROMPT_MODE=soft_only EXTRA_ARGS='--prompt_alignment_weight 1.0 --dit_loss_weight 1.0'"
+    "label=answer_softplus DIT_TEACHER=answer PROMPT_MODE=soft_plus_text EXTRA_ARGS='--prompt_alignment_weight 0.001 --dit_loss_weight 0.1'"
 )
 
 for entry in "${CONFIGS[@]}"; do
@@ -30,7 +30,7 @@ for entry in "${CONFIGS[@]}"; do
     echo "  PROMPT_MODE=$PROMPT_MODE"
     echo "  NUM_GPUS=$NUM_GPUS"
     echo "=========================================="
-    PYTHONPATH=. NUM_GPUS="$NUM_GPUS" DIT_TEACHER="$DIT_TEACHER" PROMPT_MODE="$PROMPT_MODE" \
+    PYTHONPATH=. NUM_GPUS="$NUM_GPUS" DIT_TEACHER="$DIT_TEACHER" PROMPT_MODE="$PROMPT_MODE" EXTRA_ARGS="$EXTRA_ARGS" \
         bash paper_writing/run_phase2_swap.sh
 
     # Find the most recently created phase2_swap directory

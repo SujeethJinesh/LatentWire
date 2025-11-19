@@ -28,6 +28,7 @@ PROMPT_MODE="${PROMPT_MODE:-soft_plus_text}"
 if [[ "$DIT_TEACHER" == "prompt" && "$PROMPT_MODE" == "soft_plus_text" ]]; then
     PROMPT_MODE="soft_only"
 fi
+EXTRA_ARGS=${EXTRA_ARGS:-""}
 
 echo "=========================================="
 echo "PHASE 2 – BIDIRECTIONAL SWAP (Llama -> Mistral)"
@@ -107,7 +108,8 @@ torchrun --standalone --nproc_per_node="$NPROC" --master_port "$RANDOM_PORT" pap
     --bf16 \
     --no_compile \
     --save_path "$EXP_DIR/checkpoint.pt" \
-    --log_dir "$EXP_DIR"
+    --log_dir "$EXP_DIR" \
+    $EXTRA_ARGS
 } 2>&1 | tee "$LOG_FILE"
 
 echo "End time: $(date)" | tee -a "$SUMMARY_LOG"

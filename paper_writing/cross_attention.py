@@ -940,7 +940,7 @@ def build_batch_inputs(samples: List[Sample],
         prompt_mask = prompt_mask.unsqueeze(-1)
         diff = (soft_tokens - prompt_embeds) * prompt_mask
         denom = prompt_mask.sum().clamp_min(1.0)
-        prompt_alignment_loss = diff.pow(2).sum() / denom
+        prompt_alignment_loss = (diff.pow(2).sum() / denom) * args.prompt_alignment_weight
 
     # Target tokenization
     # Training: answer only (model must use soft tokens to understand question)
@@ -1410,6 +1410,8 @@ def main():
                         help="Maximum token length when encoding answers for KL baseline")
     parser.add_argument("--kl_tokens", type=int, default=20,
                         help="Number of answer tokens to compare in KL alignment")
+    parser.add_argument("--prompt_alignment_weight", type=float, default=0.001,
+                        help="Scaling factor for prompt-alignment loss")
     parser.add_argument("--no_compile", action="store_true",
                         help="Disable torch.compile (use if PyTorch < 2.0 or for debugging)")
     # DiT-Bridge options
@@ -1815,7 +1817,7 @@ def main():
         loss = nll_loss \
             + 0.03 * kl_loss \
             + args.info_nce_weight * info_nce_loss \
-            + 0.001 * prompt_alignment_loss \
+            + args.prompt_alignment_weight * prompt_alignment_loss \
             + 0.1 * format_loss \
             + args.decode_loss_weight * decode_loss
 
