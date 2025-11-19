@@ -14,6 +14,7 @@
 ### Scripts
 - **cross_attention.py** - Main training script with BottleneckedGatedTranslator
 - **run_ablations.sh** - Runs all ablation experiments (~9 hours on 4× H100)
+- **run_phase2_swap.sh** - Bidirectional swap launcher (Llama source → Mistral target)
 - **benchmark_inference.py** - Standalone inference benchmarking utility (not actively used)
 
 ### Output (Generated During Experiments)
@@ -43,6 +44,8 @@ PYTHONPATH=. bash paper_writing/run_ablations.sh
 **Expected runtime**: ~9 hours
 **Output**: `paper_writing/runs/ablations_YYYYMMDD_HHMMSS/`
 
+**GPU Scaling**: All launcher scripts auto-detect available GPUs (NUM_GPUS env var → `nvidia-smi` → PyTorch). Set `NUM_GPUS=N` before the command if you need to pin the world size (e.g., `NUM_GPUS=1 PYTHONPATH=. bash paper_writing/run_phase2_swap.sh`).
+
 ### Step 2: Analyze Results (Week 2)
 
 ```bash
@@ -66,6 +69,16 @@ Generates:
 
 ---
 
+## Current Status (Nov 17, 2025)
+- **Phase 1 all-fix baseline completed** (command: `PYTHONPATH=. bash paper_writing/run_ablations.sh`). Bridged accuracy: 0.680 peak → 0.645 final (source 0.540, target 0.770). Artifacts preserved under `paper_writing/preserved_data/phase1_full_20251116_201212/`.
+- **Ablation B (KL only)** finalized via `bash paper_writing/run_ablation_B.sh`: 0.710 peak → 0.625 final. Demonstrates KL alone underperforms; logs in `paper_writing/preserved_data/ablB_20251116_234242/`.
+- **Ablation C (KL + prompt alignment, no RoPE)** finalized via `bash paper_writing/run_ablation_C.sh`: plateau around 0.615 during training, recovered to 0.655 on the final checkpoint. Artifacts under `paper_writing/preserved_data/ablC_20251117_013909/`.
+- **Next HPC run**: Phase 2 “bidirectional swap” to flip source and target models (Mistral ↔ Llama) while keeping the Phase 1 hyperparameters. Launch via the same torchrun invocation as Phase 1 but set `SOURCE_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct` and `TARGET_MODEL=mistralai/Mistral-7B-Instruct-v0.3`. New logs should be timestamped `paper_writing/runs/phase2_swap_*` before being copied into `paper_writing/preserved_data/`.
+
+Consult `paper_writing/preserved_data/README.md` for detailed rationale, results, and publishability notes for each preserved run.
+
+---
+
 ## Ablation Experiments
 
 ### Ablation 1: Stability Fixes (P0)
@@ -73,7 +86,7 @@ Generates:
 
 | Config | Description | Runtime | Status |
 |--------|-------------|---------|--------|
-| 1a_stable_64tok | WITH fixes | 3h | ⏳ TODO |
+| 1a_stable_64tok | WITH fixes | 3h | ✅ DONE (phase1_all_fix) |
 | 1b_baseline_64tok | NO fixes | 0h | ✅ Reuse existing (81.5% → 36%) |
 
 **Expected outcome**: 1a maintains >70% final vs 36% collapse in 1b

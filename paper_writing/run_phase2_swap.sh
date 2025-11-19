@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# PHASE 2: Bidirectional swap (Llama source -> Mistral target)
+# Purpose: Test whether flipping the direction unlocks bridged accuracy >= target-alone.
+# NOTE: Keep an eye on soft_only eval rows in train.log—if they remain at 0%,
+#       stop early and revisit DiT supervision (dit_teacher, loss weights).
+
 if command -v module >/dev/null 2>&1; then
     module purge
     module load gcc/13.1.0
@@ -10,9 +15,13 @@ if command -v module >/dev/null 2>&1; then
 fi
 
 echo "=========================================="
-echo "ABLATION C – KL + PROMPT ALIGNMENT"
+echo "PHASE 2 – BIDIRECTIONAL SWAP (Llama -> Mistral)"
 echo "=========================================="
 echo "Start time: $(date)"
+echo ""
+echo "Source model: $SOURCE_MODEL"
+echo "Target model: $TARGET_MODEL"
+echo "DiT teacher supervision: $DIT_TEACHER"
 echo ""
 
 export PYTHONPATH=.
@@ -38,24 +47,24 @@ PY
 }
 
 NPROC=$(detect_nproc)
-echo "Using $NPROC GPU(s) (set NUM_GPUS to override)."
+echo "Detected $NPROC GPU(s); override with NUM_GPUS if needed."
 
-SOURCE_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
-TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
+SOURCE_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
+TARGET_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 PER_DEVICE_BATCH=2
 EVAL_EVERY=250
 EVAL_SAMPLES=200
 MAX_NEW_TOKENS=256
 PROMPT_MODE="soft_plus_text"
-KL_MAX_LEN=512
-KL_TOKENS=20
+DIT_TEACHER="${DIT_TEACHER:-prompt}"
 
-OUTPUT_DIR="paper_writing/runs/ablC_$(date +"%Y%m%d_%H%M%S")"
+RUN_ID="phase2_swap_$(date +\"%Y%m%d_%H%M%S\")"
+OUTPUT_DIR="paper_writing/runs/$RUN_ID"
 mkdir -p "$OUTPUT_DIR"
 SUMMARY_LOG="$OUTPUT_DIR/summary.log"
 echo "Run directory: $OUTPUT_DIR" | tee "$SUMMARY_LOG"
 
-CONFIG_NAME="ablC_kl_prompt"
+CONFIG_NAME="phase2_swap_all_fix"
 EXP_DIR="$OUTPUT_DIR/$CONFIG_NAME"
 mkdir -p "$EXP_DIR"
 LOG_FILE="$EXP_DIR/train.log"
@@ -84,6 +93,7 @@ torchrun --standalone --nproc_per_node="$NPROC" --master_port "$RANDOM_PORT" pap
     --dit_pool mean \
     --dit_loss_weight 0.1 \
     --info_nce_weight 0.05 \
+    --dit_teacher "$DIT_TEACHER" \
     --train_steps 2000 \
     --warmup_steps 200 \
     --early_stop_patience 3 \

@@ -29,6 +29,29 @@ echo ""
 # Base configuration (same as ablation script)
 export PYTHONPATH=.
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+detect_nproc() {
+    if [[ -n "${NUM_GPUS:-}" ]]; then
+        echo "$NUM_GPUS"
+        return
+    fi
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        local count
+        count=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l | tr -d ' ')
+        if [[ "$count" -gt 0 ]]; then
+            echo "$count"
+            return
+        fi
+    fi
+    python - <<'PY' 2>/dev/null || echo 1
+import torch
+print(torch.cuda.device_count() or 1)
+PY
+}
+
+NPROC=$(detect_nproc)
+echo "Using $NPROC GPU(s) (override with NUM_GPUS)."
+
 PY_SCRIPT=paper_writing/cross_attention.py
 SOURCE_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 TARGET_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
@@ -51,7 +74,7 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
 
 echo "Starting training..."
 {
-    torchrun --standalone --nproc_per_node=4 --master_port "$RANDOM_PORT" "$PY_SCRIPT" \
+    torchrun --standalone --nproc_per_node="$NPROC" --master_port "$RANDOM_PORT" "$PY_SCRIPT" \
         --source_model "$SOURCE_MODEL" \
         --target_model "$TARGET_MODEL" \
         --per_device_batch "$PER_DEVICE_BATCH" \
