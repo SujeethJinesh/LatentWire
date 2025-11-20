@@ -1909,6 +1909,8 @@ def main():
                 aux_losses = getattr(module, '_last_losses', {})
                 if 'dit_flow' in aux_losses:
                     log_msg += f" | DiT_flow: {aux_losses['dit_flow']:.4f}"
+            if args.token_alignment_weight > 0:
+                log_msg += f" | TokenAlign: {token_alignment_loss.item():.4f}"
 
             log(log_msg)
             running = 0.0

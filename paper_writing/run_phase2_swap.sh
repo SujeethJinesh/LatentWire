@@ -25,7 +25,8 @@ EVAL_EVERY="${EVAL_EVERY:-250}"
 EVAL_SAMPLES="${EVAL_SAMPLES:-200}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-256}"
 PROMPT_MODE="${PROMPT_MODE:-soft_plus_text}"
-if [[ "$DIT_TEACHER" == "prompt" && "$PROMPT_MODE" == "soft_plus_text" ]]; then
+AUTO_SOFT_ONLY="${AUTO_SOFT_ONLY:-1}"
+if [[ "$DIT_TEACHER" == "prompt" && "$PROMPT_MODE" == "soft_plus_text" && "$AUTO_SOFT_ONLY" == "1" ]]; then
     PROMPT_MODE="soft_only"
 fi
 EXTRA_ARGS=${EXTRA_ARGS:-""}
