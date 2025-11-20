@@ -13,14 +13,21 @@ This report summarizes the complete experimental history of learning cross-model
 
 ### Headline Results
 
-| Experiment | Direction | Peak Accuracy | Final Accuracy | vs Target | Status |
-|-----------|-----------|---------------|----------------|-----------|--------|
-| **3_high_capacity (Nov 6)** | Mistral→Llama | **81.5%** (step 1000) | 36% (step 3000) | **+8.5 pts peak** | ⚠️ Unstable |
-| **Phase 1 stable (Nov 16)** | Mistral→Llama | 68% (step 250) | 64.5% (final) | -12.5 pts | ✅ Stable |
-| **Ablation C (Nov 17)** | Mistral→Llama | 66.5% (step ~500) | 65.5% (final) | -11.5 pts | ✅ Stable |
-| **Phase 2 answer (Nov 19)** | Llama→Mistral | 36% (step 1250) | 31.5% (step 1750) | -20 pts | ⚠️ Below target |
+| Experiment | Direction | Source-Alone | Target-Alone | Peak Bridged | Final Bridged | vs Target | Status |
+|-----------|-----------|--------------|--------------|--------------|---------------|-----------|--------|
+| **3_high_capacity (Nov 6)** | Mistral→Llama | 54% | **73%** | **81.5%** (step 1000) | 36% | **+8.5 pts peak** | ⚠️ Unstable |
+| **Phase 1 stable (Nov 16)** | Mistral→Llama | 54% | **77%** | 68% (step 250) | 64.5% | -12.5 pts | ✅ Stable |
+| **Ablation B (Nov 16)** | Mistral→Llama | 54% | **77%** | 71% | 62.5% | -14.5 pts | ✅ Stable |
+| **Ablation C (Nov 17)** | Mistral→Llama | 54% | **77%** | 66.5% | 65.5% | -11.5 pts | ✅ Stable |
+| **Phase 2 answer (Nov 19)** | Llama→Mistral | 76.5% | **51.5%** | 36% (step 1250) | 31.5% | -20 pts | ⚠️ Below target |
 
-**Key Finding**: Cross-model translation **can exceed native text processing** (81.5% > 73% target), but stabilityremains a challenge.
+**Baselines:**
+- **Mistral 7B (source)**: 54% on GSM8K
+- **Llama 3.1 8B (target)**: 73-77% on GSM8K depending on eval setup
+- **Llama 3.1 8B (source)**: 76.5% on GSM8K
+- **Mistral 7B (target)**: 51.5% on GSM8K
+
+**Key Finding**: Cross-model translation **can exceed native text processing** (81.5% > 73% target), but stability remains a challenge.
 
 ---
 
@@ -143,14 +150,15 @@ To isolate which fixes contributed most to stability:
 
 ### Summary of Stability Contributions
 
-| Configuration | Final Accuracy | Degradation | Interpretation |
-|--------------|----------------|-------------|----------------|
-| Baseline (no fixes) | 36.0% | -45.5 pts | Unstable |
-| KL only (Ablation B) | 62.5% | -8.5 pts | Major improvement |
-| KL + Prompt (Ablation C) | 65.5% | ~-5 pts | Dominant factors |
-| All fixes (Phase 1) | 64.5% | -3.5 pts | Best stability |
+| Configuration | Source | Target | Peak Bridged | Final Bridged | Degradation | Interpretation |
+|--------------|--------|--------|--------------|---------------|-------------|----------------|
+| **Baselines** | **54%** | **77%** | - | - | - | Native performance |
+| Baseline (no fixes) | 54% | 77% | 81.5% | 36.0% | -45.5 pts | Unstable collapse |
+| KL only (Ablation B) | 54% | 77% | 71.0% | 62.5% | -8.5 pts | Major improvement |
+| KL + Prompt (Abl C) | 54% | 77% | 66.5% | 65.5% | ~-1 pts | Dominant factors |
+| All fixes (Phase 1) | 54% | 77% | 68.0% | 64.5% | -3.5 pts | Best stability |
 
-**Conclusion**: KL alignment + prompt weight reduction are the critical stability fixes. RoPE projection provides modest additional benefit.
+**Conclusion**: KL alignment + prompt weight reduction are the critical stability fixes. RoPE projection provides modest additional benefit. All stable configs beat source (54%) but trail target (77%) by 11.5-14.5 pts.
 
 ---
 
@@ -226,15 +234,17 @@ A: Josh spent $80,000… Profit is $70,000.
 
 ## 5. Complete Experimental Timeline
 
-| Date | Experiment | Configuration | Result | Status |
-|------|-----------|---------------|--------|--------|
-| **Nov 6** | 3_high_capacity | Cross-attention, 64tok, 8 layers | **81.5% peak** → 36% final | ⚠️ Proved concept, unstable |
-| Nov 16 | Phase 1 full | KL + prompt + RoPE, decode off | 68% → 64.5% | ✅ Stable |
-| Nov 16 | Ablation B | KL only | 71% → 62.5% | ✅ Identified KL importance |
-| Nov 17 | Ablation C | KL + prompt, no RoPE | ~61.5% → 65.5% | ✅ Confirmed prompt role |
-| Nov 18 | Phase 2 v1 | Prompt teacher, soft+text | 29% → 26% | ❌ Soft override |
-| Nov 19 | Phase 2 v2 | Prompt teacher, soft-only | 2.5% (constant) | ❌ Collapsed |
-| Nov 19 | Phase 2 v3 | Answer teacher, soft+text | 36% (step 1250) | ⚠️ Below target |
+| Date | Experiment | Direction | Source | Target | Peak→Final Bridged | vs Target | Status |
+|------|-----------|-----------|--------|--------|-------------------|-----------|--------|
+| **Nov 6** | 3_high_capacity | Mistral→Llama | 54% | 73% | **81.5%** → 36% | +8.5 → -37 pts | ⚠️ Proved concept, unstable |
+| Nov 16 | Phase 1 full | Mistral→Llama | 54% | 77% | 68% → 64.5% | -9 → -12.5 pts | ✅ Stable |
+| Nov 16 | Ablation B | Mistral→Llama | 54% | 77% | 71% → 62.5% | -6 → -14.5 pts | ✅ KL importance |
+| Nov 17 | Ablation C | Mistral→Llama | 54% | 77% | 66.5% → 65.5% | -10.5 → -11.5 pts | ✅ Prompt role |
+| Nov 18 | Phase 2 v1 | Llama→Mistral | 76.5% | 51.5% | 29% → 26% | -22.5 → -25.5 pts | ❌ Soft override |
+| Nov 19 | Phase 2 v2 | Llama→Mistral | 76.5% | 51.5% | 2.5% (constant) | -49 pts | ❌ Collapsed |
+| Nov 19 | Phase 2 v3 | Llama→Mistral | 76.5% | 51.5% | 36% → 31.5% | -15.5 → -20 pts | ⚠️ Below target |
+
+**Note**: "vs Target" shows gap between bridged accuracy and target model's native performance. Positive = beating target, negative = below target.
 
 ---
 
