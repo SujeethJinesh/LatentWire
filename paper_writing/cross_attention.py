@@ -1044,14 +1044,10 @@ def build_batch_inputs(samples: List[Sample],
         "K": K,
         "prompt_alignment_loss": prompt_alignment_loss,
         "text_lengths": tgt_batch["attention_mask"].sum(dim=1),
-        "soft_token_mean": soft_tokens.mean(dim=1),
-        "src_prompt_mean": src_h.mean(dim=1),
         "soft_tokens_full": soft_tokens
     }
     if 'teacher_soft' in locals():
         out["teacher_soft"] = teacher_soft.detach()
-    if args is not None and getattr(args, "return_soft_tokens", False):
-        out["soft_tokens_full"] = soft_tokens
     return out
 
 # ---------------------------
@@ -1773,6 +1769,8 @@ def main():
         K_soft = data.pop("K", 0)
         prompt_alignment_loss = data.pop("prompt_alignment_loss", torch.tensor(0.0, device=device, dtype=dtype))
         text_lengths = data.pop("text_lengths", None)
+        soft_tokens_full = data.pop("soft_tokens_full", None)
+        teacher_soft_tokens = data.pop("teacher_soft", None)
 
         # Forward (compute NLL loss on target)
         out = tgt_model(**data)
@@ -1813,16 +1811,17 @@ def main():
                 tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
                 tgt_pooled = tgt_embeds_full.mean(dim=1)
 
-            soft_pooled = data["soft_tokens_full"].mean(dim=1)
-            soft_norm = torch.nn.functional.normalize(soft_pooled.float(), dim=-1)
-            tgt_norm = torch.nn.functional.normalize(tgt_pooled.float(), dim=-1)
-            temperature = 0.07
-            logits_contrastive = soft_norm @ tgt_norm.T / temperature
-            labels_contrastive = torch.arange(logits_contrastive.size(0), device=device)
-            contrastive_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
+            if soft_tokens_full is not None:
+                soft_pooled = soft_tokens_full.mean(dim=1)
+                soft_norm = torch.nn.functional.normalize(soft_pooled.float(), dim=-1)
+                tgt_norm = torch.nn.functional.normalize(tgt_pooled.float(), dim=-1)
+                temperature = 0.07
+                logits_contrastive = soft_norm @ tgt_norm.T / temperature
+                labels_contrastive = torch.arange(logits_contrastive.size(0), device=device)
+                contrastive_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
 
-            if args.aux_probe_weight > 0:
-                aux_probe_loss = torch.nn.functional.mse_loss(soft_pooled, tgt_pooled.float())
+                if args.aux_probe_weight > 0:
+                    aux_probe_loss = torch.nn.functional.mse_loss(soft_pooled, tgt_pooled.float())
 
         format_loss = compute_format_penalty(out.logits.detach(), data['labels'], tgt_tok)
         # prompt_alignment_loss already extracted at line 1741
@@ -1847,6 +1846,8 @@ def main():
                     decode_subset, src_model, src_tok, tgt_model, tgt_tok,
                     translator, device, dtype, target_rms=target_rms, mode='decode', args=args
                 )
+                for key in ["prompt_alignment_loss", "text_lengths", "soft_tokens_full", "teacher_soft", "K"]:
+                    decode_data.pop(key, None)
                 decode_out = tgt_model(**decode_data)
                 decode_loss = decode_out.loss * decode_world_size
 
@@ -1860,10 +1861,8 @@ def main():
             + args.aux_probe_weight * aux_probe_loss
 
         token_alignment_loss = torch.tensor(0.0, device=device, dtype=dtype)
-        if args.token_alignment_weight > 0 and "teacher_soft" in data:
-            token_alignment_loss = torch.nn.functional.mse_loss(
-                data["soft_tokens_full"], data["teacher_soft"]
-            )
+        if args.token_alignment_weight > 0 and soft_tokens_full is not None and teacher_soft_tokens is not None:
+            token_alignment_loss = torch.nn.functional.mse_loss(soft_tokens_full, teacher_soft_tokens)
             loss = loss + args.token_alignment_weight * token_alignment_loss
 
         # Add DiT flow loss if using DiT bridge
