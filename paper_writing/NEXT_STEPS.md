@@ -39,3 +39,107 @@ After code changes:
 ## 4. Reporting
 - After every run, update `paper_writing/CODEX_REPORT.md`, `LOG.md`, and `EXPERIMENTS_SUMMARY.md` with metrics plus JSONL paths.
 - If conditional ablations fire, add a short appendix summarizing the comparative gains so Claude’s publication concerns are satisfied.
+
+---
+
+## CLAUDE'S ALTERNATIVE PLAN (Based on Nov 19 Results)
+
+**Context:** Nov 19 test showed answer_softplus=36% vs target=51.5% → **translator degrades performance by 15.5 pts**
+
+### Critical Issue
+
+| Direction | Best Bridged | Target | Gap | Status |
+|-----------|--------------|--------|-----|--------|
+| Phase 1 (Mistral→Llama) | 64.5% | 77.0% | -12.5 pts | ⚠️ Viable |
+| Phase 2 (Llama→Mistral) | 36.0% | 51.5% | **-15.5 pts** | ❌ Degrading |
+
+**Phase 2 translator actively hurts target performance.** Need diagnostic before investing 4×H100.
+
+---
+
+### RECOMMENDED: Validation-First Approach
+
+#### Step 1: Hybrid Conditioning Test (2 GPU hrs) — DO THIS FIRST
+
+**Goal:** Diagnose if "soft token override" causes degradation
+
+**Implementation:**
+- Keep literal prompts intact
+- Inject DiT via learned adapters (not prepending to embeddings)
+- Test if preserving text fixes degradation
+
+**Decision Criterion:**
+- ✅ bridged ≥ 51.5% → Continue Phase 2 (Step 2)
+- ❌ bridged < 51.5% → ABANDON Phase 2 (Option B)
+
+---
+
+#### Step 2: IF Hybrid Works — Add Alignment (2 GPU hrs)
+- Tokenizer/RoPE projection (32K→128K)
+- Expected: +5-10 pts
+- **Decision:** bridged ≥ 60% → Step 3, else → Option B
+
+#### Step 3: IF Alignment Works — Full Training (4×H100)
+- Target: bridged ≥ 60%
+
+---
+
+### OPTION B: Refocus on Phase 1 (If Phase 2 Fails)
+
+Phase 1 baseline is **24% better** than Phase 2.
+
+#### B1. Phase 1 Improvements (4×H100, 2 hrs)
+- KL slice alignment
+- Reduce prompt_alignment_weight → 0.001
+- RoPE/tokenizer projection
+- **Target:** ≥75% (within 2 pts of target)
+
+#### B2. Compression Sweep (4×H100, ~6 hrs)
+- Test 32/48/64/128 tokens
+- Find optimal compression/accuracy tradeoff
+
+#### B3. Publication
+- Phase 1 ≥75% accuracy
+- Compression analysis
+- Ablations (done)
+
+---
+
+### Claude's Assessment of Codex's Plan (Section 2)
+
+❌ **DISAGREE: Soft-only fixes (2.3) premature**
+- Soft+text already underperforms by 15.5 pts
+- Don't invest in soft-only when soft+text doesn't work
+- **Defer until soft+text ≥ target**
+
+⚠️ **PARTIAL: Tokenizer alignment (2.4) won't fix alone**
+- Addresses real issue but won't close 15.5 pt gap
+- Expected: +5-10 pts
+- **Do AFTER hybrid test**
+
+✅ **AGREE: Hybrid conditioning (2.2) CRITICAL**
+- 2 hrs to diagnose root cause
+- **DO THIS FIRST**
+
+---
+
+### Decision Flow
+
+```
+Hybrid Test (2h) → bridged≥51.5%? 
+                      ├─YES→ Alignment(2h) → bridged≥60%?
+                      │                        ├─YES→ Full training
+                      │                        └─NO → Phase 1
+                      └─NO → Phase 1 (safer investment)
+```
+
+---
+
+### ACTION REQUIRED
+
+**Choose:**
+- [ ] Run hybrid test tomorrow (2 GPU hrs, data-driven)
+- [ ] Skip Phase 2, do Phase 1 fixes (safer)
+
+**Claude's vote:** Hybrid test first (2 hrs decides everything)
+
