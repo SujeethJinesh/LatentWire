@@ -940,7 +940,7 @@ def build_batch_inputs(samples: List[Sample],
         prompt_mask = prompt_mask.unsqueeze(-1)
         diff = (soft_tokens - prompt_embeds) * prompt_mask
         denom = prompt_mask.sum().clamp_min(1.0)
-        prompt_alignment_loss = (diff.pow(2).sum() / denom) * args.prompt_alignment_weight
+        prompt_alignment_loss = diff.pow(2).sum() / denom
 
     # Target tokenization
     # Training: answer only (model must use soft tokens to understand question)
@@ -960,6 +960,12 @@ def build_batch_inputs(samples: List[Sample],
         decode_prompt_texts = prompt_texts
     else:
         prompt_mode = getattr(args, "eval_prompt_mode", "soft_plus_text")
+        if args is not None:
+            curriculum_steps = getattr(args, "soft_only_curriculum_steps", 0)
+            curr_step = getattr(args, "_curriculum_eval_step", None)
+            if (prompt_mode == "soft_only" and curriculum_steps > 0
+                    and isinstance(curr_step, int) and curr_step < curriculum_steps):
+                prompt_mode = "soft_plus_text"
         if prompt_mode == "soft_plus_text":
             tgt_texts = [samples[i].tgt_prompt + format_prompt for i in range(len(samples))]
         else:  # soft_only
@@ -1031,14 +1037,22 @@ def build_batch_inputs(samples: List[Sample],
     assert inputs_embeds.shape[:2] == attn_mask.shape, "mask length mismatch"
     assert inputs_embeds.shape[:2] == labels.shape, "labels length mismatch"
 
-    return {
+    out = {
         "inputs_embeds": inputs_embeds,
         "attention_mask": attn_mask,
         "labels": labels,
         "K": K,
         "prompt_alignment_loss": prompt_alignment_loss,
-        "text_lengths": tgt_batch["attention_mask"].sum(dim=1)
+        "text_lengths": tgt_batch["attention_mask"].sum(dim=1),
+        "soft_token_mean": soft_tokens.mean(dim=1),
+        "src_prompt_mean": src_h.mean(dim=1),
+        "soft_tokens_full": soft_tokens
     }
+    if 'teacher_soft' in locals():
+        out["teacher_soft"] = teacher_soft.detach()
+    if args is not None and getattr(args, "return_soft_tokens", False):
+        out["soft_tokens_full"] = soft_tokens
+    return out
 
 # ---------------------------
 # Training / Evaluation loops
@@ -1078,6 +1092,12 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     tgt_model.eval()
     src_model.eval()
     translator.eval()
+
+    if args is not None:
+        if isinstance(eval_step, int):
+            args._curriculum_eval_step = eval_step
+        else:
+            args._curriculum_eval_step = getattr(args, "train_steps", 0)
 
     # Prebuild 8-shot CoT prefix once for all evaluation samples
     if args is not None and getattr(args, "fewshot_prefix", None):
@@ -1412,6 +1432,16 @@ def main():
                         help="Number of answer tokens to compare in KL alignment")
     parser.add_argument("--prompt_alignment_weight", type=float, default=0.001,
                         help="Scaling factor for prompt-alignment loss")
+    parser.add_argument("--soft_only_curriculum_steps", type=int, default=0,
+                        help="Keep literal prompt until this step when eval_prompt_mode=soft_only")
+    parser.add_argument("--prompt_contrast_weight", type=float, default=0.0,
+                        help="Extra weight for prompt contrastive InfoNCE loss")
+    parser.add_argument("--aux_probe_weight", type=float, default=0.0,
+                        help="Weight for auxiliary probe aligning pooled soft tokens to prompt embeddings")
+    parser.add_argument("--format_loss_weight", type=float, default=0.1,
+                        help="Scaling factor for format penalty")
+    parser.add_argument("--token_alignment_weight", type=float, default=0.0,
+                        help="Align soft tokens to teacher embeddings (addresses vocab/pos mismatch)")
     parser.add_argument("--no_compile", action="store_true",
                         help="Disable torch.compile (use if PyTorch < 2.0 or for debugging)")
     # DiT-Bridge options
@@ -1694,6 +1724,7 @@ def main():
         dist.barrier()
 
     while step < args.train_steps:
+        args._current_step = step
         # sample a batch
         batch_idx = [rng.randrange(0, len(train_ds)) for _ in range(args.per_device_batch)]
         batch = {"question": [train_ds[i]["question"] for i in batch_idx],
@@ -1772,21 +1803,26 @@ def main():
                     reduction="batchmean"
                 )
 
-        info_nce_loss = torch.tensor(0.0, device=device, dtype=dtype)
-        if step > args.warmup_steps // 2:
+        contrastive_loss = torch.tensor(0.0, device=device, dtype=dtype)
+        aux_probe_loss = torch.tensor(0.0, device=device, dtype=dtype)
+        if (step > args.warmup_steps // 2
+                and (args.info_nce_weight > 0 or args.prompt_contrast_weight > 0 or args.aux_probe_weight > 0)):
             with torch.no_grad():
                 tgt_prompts = [s.tgt_prompt for s in samples]
                 tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=K_soft).to(device)
                 tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
                 tgt_pooled = tgt_embeds_full.mean(dim=1)
 
-            soft_pooled = data["inputs_embeds"][:, :K_soft, :].mean(dim=1)
+            soft_pooled = data["soft_tokens_full"].mean(dim=1)
             soft_norm = torch.nn.functional.normalize(soft_pooled.float(), dim=-1)
             tgt_norm = torch.nn.functional.normalize(tgt_pooled.float(), dim=-1)
             temperature = 0.07
             logits_contrastive = soft_norm @ tgt_norm.T / temperature
             labels_contrastive = torch.arange(logits_contrastive.size(0), device=device)
-            info_nce_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
+            contrastive_loss = torch.nn.functional.cross_entropy(logits_contrastive, labels_contrastive)
+
+            if args.aux_probe_weight > 0:
+                aux_probe_loss = torch.nn.functional.mse_loss(soft_pooled, tgt_pooled.float())
 
         format_loss = compute_format_penalty(out.logits.detach(), data['labels'], tgt_tok)
         # prompt_alignment_loss already extracted at line 1741
@@ -1816,10 +1852,19 @@ def main():
 
         loss = nll_loss \
             + 0.03 * kl_loss \
-            + args.info_nce_weight * info_nce_loss \
+            + args.info_nce_weight * contrastive_loss \
+            + args.prompt_contrast_weight * contrastive_loss \
             + args.prompt_alignment_weight * prompt_alignment_loss \
-            + 0.1 * format_loss \
-            + args.decode_loss_weight * decode_loss
+            + args.format_loss_weight * format_loss \
+            + args.decode_loss_weight * decode_loss \
+            + args.aux_probe_weight * aux_probe_loss
+
+        token_alignment_loss = torch.tensor(0.0, device=device, dtype=dtype)
+        if args.token_alignment_weight > 0 and "teacher_soft" in data:
+            token_alignment_loss = torch.nn.functional.mse_loss(
+                data["soft_tokens_full"], data["teacher_soft"]
+            )
+            loss = loss + args.token_alignment_weight * token_alignment_loss
 
         # Add DiT flow loss if using DiT bridge
         # The args.dit_loss_weight balances flow loss vs LM loss (default 0.1)

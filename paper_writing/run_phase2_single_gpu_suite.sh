@@ -18,7 +18,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 NUM_GPUS=${NUM_GPUS:-1}
 
 declare -a CONFIGS=(
-    "label=prompt_softonly DIT_TEACHER=prompt PROMPT_MODE=soft_only EXTRA_ARGS='--prompt_alignment_weight 1.0 --dit_loss_weight 1.0'"
+    "label=prompt_softonly DIT_TEACHER=prompt PROMPT_MODE=soft_only EXTRA_ARGS='--prompt_alignment_weight 1.0 --dit_loss_weight 1.0 --soft_only_curriculum_steps 1000 --prompt_contrast_weight 0.2 --aux_probe_weight 0.1 --token_alignment_weight 0.1 --format_loss_weight 0.2'"
     "label=answer_softplus DIT_TEACHER=answer PROMPT_MODE=soft_plus_text EXTRA_ARGS='--prompt_alignment_weight 0.001 --dit_loss_weight 0.1'"
 )
 
