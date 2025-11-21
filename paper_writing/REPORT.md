@@ -285,6 +285,10 @@ Based on comprehensive experimental results and Claude's analysis (see `CLAUDE_P
 2. Expected gain: +5-10 pts
 3. Full 4×H100 training if alignment works
 
+### Additional Experiments (Not Yet Run)
+
+- **Soft-only + larger bridge sweep**: increase soft tokens (128–192) and/or DiT depth for a curriculum that ends in pure soft tokens. Goal is to verify whether a higher-capacity translator can survive without textual scaffolding. _Status:_ **Not yet attempted**; schedule after current hybrid test.
+
 ---
 
 ## 8. Publications & Deliverables
