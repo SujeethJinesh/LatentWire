@@ -11,18 +11,19 @@
 - Outcome: Bridged 45.5–46.0% (plateaued through step 1000, early stop), target-alone 54.0%, source-alone 77.0%; invalids ~25% (48–50/200, step0 70/200). Run: `paper_writing/preserved_data/phase2_hybrid_adapter_phase2_swap_20251120_224319/`.
 - Interpretation: Hybrid adapters reliably improve ~+8 pts over prompt-aligned but still **below target by 8.0–8.5 pts**. Decision criterion (≥51.5%) still not met → stay pivoted to Phase 1.
 
-## 1. Phase 1 Push (pivot path)
-- **Goals:** Close the remaining 5–6 pt gap to target (77%) and reach ≥75% bridged.
-- **Next runs (4× H100, ~2 hrs each):**
-  1) **128-token DiT**: `soft_tokens=128`, prompt weight 0.001, dit_loss_weight 0.1, token_alignment_weight 0, eval_every=250. Expect +2–3 pts vs 96tok without destabilizing.
-  2) **96-token refine with light decode loss**: reuse breakthrough config, add `--decode_loss_weight 0.02 --decode_interval 100 --decode_samples 2` to see if answer-formatting improves final accuracy; abort if memory >70 GB.
-- **If both fail to reach ≥75%:** revert to 64-token stable config and adjust LR schedule (plateau LR decay after step 1000) as a low-cost follow-up.
+## 1. Phase 1 Status and Next Push
+- **Latest:** 128-token run peaked 75.0%, final 73.5% (invalid ≤6%), gap to Llama target 3–4 pts. 96-token + light decode peaked 74.5%, final 73.0% (invalid ~4%), early-stopped at step 1000.
+- **Goal:** Close the last 2–3 pts to ≥75–77%, maintain low invalid rate.
+- **Next runs (overnight-ready, 4× H100):**
+  1) **LR decay / shorter train:** re-run 128-token with cosine decay after step 1250 (or stop-at-best checkpoint) to lock in the 75% peak. Add `--train_steps 1500 --early_stop_patience 0` and save best at step 1250 if possible.
+  2) **160-token headroom (optional):** `soft_tokens=160`, same stable weights, to test if a small capacity bump clears the remaining gap without destabilizing. Abort if invalids rise >10%.
+- **If these miss ≥75%:** try smaller LR (8e-5) with 128 tokens and plateau decay at step 1000.
 
-## 2. Phase 2 Status (paused unless high-ROI change)
-- Hybrid adapter diagnostic (rerun) again missed the ≥51.5% bar (45–46%); Phase 2 still degrades target performance.
-- **Default:** pause Phase 2 until Phase 1 hits ≥75%.
-- **Optional single follow-up (only if spare cycles):** answer-teacher + adapter injection with a gentler residual (`adapter_scale=0.3`, `token_alignment_weight=0.2`) to test whether answer supervision + smaller override helps fidelity. One shot, 2 hrs max; abort Phase 2 entirely if this also underperforms target.
-- **Deferrals:** soft-only curriculum, prompt contrastive, and tokenizer/RoPE alignment remain deprioritized until a text-anchored setup beats target.
+## 2. Phase 2 Status (still paused)
+- Hybrid adapter reruns plateau at 45–46% (−8.5 pts); still below the 54% target.
+- **Default:** continue pause until Phase 1 is ≥75%.
+- **Optional single follow-up (only if idle GPUs):** answer-teacher + adapter_scale=0.3, token_alignment_weight=0.2; 2 hrs max; drop Phase 2 if still < target.
+- **Deferrals:** soft-only curriculum, prompt contrastive, tokenizer/RoPE alignment remain on hold until a text-anchored setup beats target.
 
 ## 3. Phase 3 (only if GPU queue opens up)
 - Compression sweep (64/128/256/512 soft tokens) using the stabilized codepath.
