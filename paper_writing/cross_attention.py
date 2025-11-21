@@ -999,17 +999,30 @@ def build_batch_inputs(samples: List[Sample],
         embed = tgt_model.get_input_embeddings()  # nn.Embedding
         tgt_embeds = embed(tgt_batch["input_ids"]).to(dtype)  # [B, T_tgt, d_tgt]
 
-    # Concatenate soft tokens in front
-    K = soft_tokens.size(1)
     T_tgt = tgt_embeds.size(1)
-    inputs_embeds = torch.cat([soft_tokens, tgt_embeds], dim=1)  # [B, K+T, d]
+    translator_k = soft_tokens.size(1)
+    soft_prefix_len = 0
+    injection_mode = getattr(args, "soft_injection", "prepend") if args is not None else "prepend"
+    adapter_scale = getattr(args, "adapter_scale", 1.0) if args is not None else 1.0
 
-    # Attention mask: concatenate 1s for soft tokens with actual text attention mask
-    # This prevents attending to padding tokens in the text portion
-    attn_mask = torch.cat([
-        torch.ones((B, K), dtype=torch.long, device=device),  # Soft tokens always attended
-        tgt_batch["attention_mask"]  # Text mask (0 for padding)
-    ], dim=1)
+    if injection_mode == "prepend":
+        # Original behavior: prepend soft tokens ahead of the literal prompt/answer
+        inputs_embeds = torch.cat([soft_tokens, tgt_embeds], dim=1)  # [B, K+T, d]
+        soft_prefix_len = translator_k
+        attn_mask = torch.cat([
+            torch.ones((B, translator_k), dtype=torch.long, device=device),  # Soft tokens always attended
+            tgt_batch["attention_mask"]  # Text mask (0 for padding)
+        ], dim=1)
+    elif injection_mode == "adapter":
+        # Hybrid conditioning: keep literal tokens, add translator outputs as residual adapters
+        apply_len = min(translator_k, tgt_embeds.size(1))
+        inputs_embeds = tgt_embeds.clone()
+        if apply_len > 0:
+            inputs_embeds[:, :apply_len, :] = inputs_embeds[:, :apply_len, :] + adapter_scale * soft_tokens[:, :apply_len, :]
+        attn_mask = tgt_batch["attention_mask"]
+        soft_prefix_len = 0
+    else:
+        raise ValueError(f"Unknown soft_injection mode: {injection_mode}")
 
     # Labels
     labels = tgt_batch["input_ids"].clone()
@@ -1027,11 +1040,12 @@ def build_batch_inputs(samples: List[Sample],
         # Eval mode: dummy labels (shape must match T_tgt before K-prepend)
         labels = tgt_batch["input_ids"].new_full((B, T_tgt), -100)
 
-    # Prepend -100 for K soft tokens (no loss on them)
-    labels = torch.cat([
-        torch.full((B, K), -100, dtype=labels.dtype, device=device),
-        labels
-    ], dim=1)  # [B, K+T]
+    # Prepend -100 for soft tokens (no loss on them) if we added them as a prefix
+    if soft_prefix_len > 0:
+        labels = torch.cat([
+            torch.full((B, soft_prefix_len), -100, dtype=labels.dtype, device=device),
+            labels
+        ], dim=1)  # [B, K+T]
 
     # Shape sanity checks
     assert inputs_embeds.shape[:2] == attn_mask.shape, "mask length mismatch"
@@ -1041,7 +1055,9 @@ def build_batch_inputs(samples: List[Sample],
         "inputs_embeds": inputs_embeds,
         "attention_mask": attn_mask,
         "labels": labels,
-        "K": K,
+        "K": soft_prefix_len,
+        "soft_prefix_len": soft_prefix_len,
+        "soft_token_count": translator_k,
         "prompt_alignment_loss": prompt_alignment_loss,
         "text_lengths": tgt_batch["attention_mask"].sum(dim=1),
         "soft_tokens_full": soft_tokens
@@ -1389,6 +1405,10 @@ def main():
     parser.add_argument("--eval_prompt_mode", type=str,
                         choices=["soft_only", "soft_plus_text"], default="soft_plus_text",
                         help="How much literal text to feed Llama during evaluation.")
+    parser.add_argument("--soft_injection", type=str, choices=["prepend", "adapter"], default="prepend",
+                        help="How to inject translator outputs into the target model. 'prepend' adds soft tokens ahead of text, 'adapter' adds them as residuals on the prompt tokens.")
+    parser.add_argument("--adapter_scale", type=float, default=1.0,
+                        help="Scaling factor when soft_injection=adapter (multiplies the residual before adding to prompt embeddings).")
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-4)
@@ -1766,7 +1786,8 @@ def main():
             log("="*60 + "\n")
 
         # Extract metadata from data dict (not valid model forward args)
-        K_soft = data.pop("K", 0)
+        soft_prefix_len = data.pop("soft_prefix_len", data.pop("K", 0))
+        soft_token_count = data.pop("soft_token_count", soft_prefix_len)
         prompt_alignment_loss = data.pop("prompt_alignment_loss", torch.tensor(0.0, device=device, dtype=dtype))
         text_lengths = data.pop("text_lengths", None)
         soft_tokens_full = data.pop("soft_tokens_full", None)
@@ -1790,10 +1811,10 @@ def main():
                 ).to(device)
                 baseline_out = tgt_model(**kl_enc)
                 baseline_logits = baseline_out.logits
-            available = out.logits.size(1) - K_soft
+            available = out.logits.size(1) - soft_prefix_len
             num_compare = min(args.kl_tokens, baseline_logits.size(1), available)
             if num_compare > 0:
-                bridged_slice = out.logits[:, K_soft:K_soft + num_compare, :]
+                bridged_slice = out.logits[:, soft_prefix_len:soft_prefix_len + num_compare, :]
                 baseline_slice = baseline_logits[:, :num_compare, :]
                 kl_loss = torch.nn.functional.kl_div(
                     torch.nn.functional.log_softmax(bridged_slice.float(), dim=-1),
@@ -1807,7 +1828,8 @@ def main():
                 and (args.info_nce_weight > 0 or args.prompt_contrast_weight > 0 or args.aux_probe_weight > 0)):
             with torch.no_grad():
                 tgt_prompts = [s.tgt_prompt for s in samples]
-                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=K_soft).to(device)
+                max_prompt_len = max(soft_token_count, 1)
+                tgt_enc = tgt_tok(tgt_prompts, return_tensors="pt", padding=True, truncation=True, max_length=max_prompt_len).to(device)
                 tgt_embeds_full = tgt_model.get_input_embeddings()(tgt_enc["input_ids"])
                 tgt_pooled = tgt_embeds_full.mean(dim=1)
 
@@ -1846,7 +1868,7 @@ def main():
                     decode_subset, src_model, src_tok, tgt_model, tgt_tok,
                     translator, device, dtype, target_rms=target_rms, mode='decode', args=args
                 )
-                for key in ["prompt_alignment_loss", "text_lengths", "soft_tokens_full", "teacher_soft", "K"]:
+                for key in ["prompt_alignment_loss", "text_lengths", "soft_tokens_full", "teacher_soft", "K", "soft_prefix_len", "soft_token_count"]:
                     decode_data.pop(key, None)
                 decode_out = tgt_model(**decode_data)
                 decode_loss = decode_out.loss * decode_world_size
