@@ -6,30 +6,23 @@
 - Run a quick single-GPU smoke check (20 steps, `per_device_batch=1`, `--dit_steps_train=1`, decode loss off) to ensure the translator compiles/logs correctly before consuming H100 hours.
 - For overnight single-GPU sweeps, use `bash paper_writing/run_phase2_single_gpu_suite.sh` (auto-runs prompt soft-only + answer soft-plus-text variants, copies each run into `paper_writing/preserved_data/`).
 
-## 1. Phase 1 Run — All Fixes at Once (ETA: 2 hrs GPU)
-Implement in `paper_writing/cross_attention.py`:
-1. **KL Slice Alignment** — compare answer tokens to answer tokens by re-tokenizing baselines with answer text and shifting the bridged logits past `soft_tokens + prompt_length`.
-2. **Prompt Alignment Weight** — reduce coefficient from `0.05` to `0.001`.
-3. **Decode-Aware Supervision** — leave the code path available but keep `decode_loss_weight=0` in the main Phase 1 job (recent runs OOM around step 400). Re-enable in Phase 1.5 ablations once the baseline finishes end-to-end.
-4. **RoPE/Tokenizer Projection** — insert a learnable projection layer right after we capture Mistral hidden states to map the 32 768-token/roto-phase space into Llama’s 128 256-token geometry before diffusion.
+## Latest Result (Nov 20, 2025 — Phase 2 hybrid adapter)
+- Config: `soft_injection=adapter`, prompt teacher, `soft_tokens=64`, `token_alignment_weight=0.1`, `adapter_scale=1.0`, eval prompt mode `soft_plus_text`.
+- Outcome: Bridged 45.5% (plateaued through step 1000, early stop), target-alone 54.0%, source-alone 77.0%; invalids 48–50/200 (24–25%). Run: `paper_writing/preserved_data/phase2_hybrid_adapter_phase2_swap_20251120_210533/`.
+- Interpretation: Hybrid adapters improve ~+8 pts over prompt-aligned but still **below target by 8.5 pts**. Decision criterion (≥51.5%) not met → pivot to Phase 1.
 
-After code changes:
-- Run `git pull`, stage edits, and launch `PYTHONPATH=. bash paper_writing/run_ablations.sh` but **only** the Phase 1 config (1b_dit_4step_64tok_soft_plus_text) with the updated flags (`PROMPT_MODES=("soft_plus_text")`, `PER_DEVICE_BATCH=2`, `eval_batch=36`). Log run ID and GPU node.
-- Success criterion: bridged accuracy ≥ 70 %.
+## 1. Phase 1 Push (pivot path)
+- **Goals:** Close the remaining 5–6 pt gap to target (77%) and reach ≥75% bridged.
+- **Next runs (4× H100, ~2 hrs each):**
+  1) **128-token DiT**: `soft_tokens=128`, prompt weight 0.001, dit_loss_weight 0.1, token_alignment_weight 0, eval_every=250. Expect +2–3 pts vs 96tok without destabilizing.
+  2) **96-token refine with light decode loss**: reuse breakthrough config, add `--decode_loss_weight 0.02 --decode_interval 100 --decode_samples 2` to see if answer-formatting improves final accuracy; abort if memory >70 GB.
+- **If both fail to reach ≥75%:** revert to 64-token stable config and adjust LR schedule (plateau LR decay after step 1000) as a low-cost follow-up.
 
-## 1.5 Conditional Ablations (only if Phase 1 < 70 %)
-- **Status:** Completed. Ablation B (KL only) final bridged 0.625; ablation C (KL + prompt alignment drop) final 0.655. Both runs kept decode loss disabled to avoid OOM. Artifacts preserved under `paper_writing/preserved_data/ablB_20251116_234242/` and `paper_writing/preserved_data/ablC_20251117_013909/` for reproducibility.
-- **If rerun required:** use `paper_writing/run_ablation_B.sh` or `_C.sh` directly (same configs), keeping decode loss off. Only rerun if new code changes warrant revalidation.
-
-## 2. Phase 2 Experiments (post-success)
-1. **Bidirectional Swap:** run Llama 3.1 as source and Mistral as target using the stabilized translator; reuse Phase 1 hyperparameters. _Status:_ first attempt (Nov 18) with `dit_teacher=prompt` + `soft_plus_text` collapsed to 0.26 bridged accuracy because the soft tokens duplicated the literal question. Scripts now auto-switch to `soft_only` in this mode—relaunch after pulling to validate whether the translated prompt alone can lift Mistral past 0.515.
-2. **Hybrid Conditioning Baseline:** keep literal prompts in place and inject DiT outputs via adapters or residual addition, verifying whether textual anchoring alone closes the remaining gap.
-3. **Soft-only alignment fixes:**
-   - Add a curriculum mode that starts training with `soft_plus_text` and linearly fades to `soft_only` after 1k steps so the DiT learns content-bearing soft tokens before we remove the literal prompt.
-   - Introduce a contrastive prompt loss (InfoNCE between soft-token pools and target prompt embeddings) controlled by `--prompt_contrast_weight` so constant outputs are penalized.
-   - Implement a lightweight probe/auxiliary loss that predicts the source prompt embedding (or category) from the soft tokens; this ties soft-only outputs back to the question even when no text is shown at inference.
-   - Strengthen the format loss coupling when `prompt_alignment_weight` is large (e.g., scale the 0.1 coefficient accordingly) to keep invalid outputs suppressed.
-4. **Tokenizer/RoPE alignment:** design an explicit loss that forces the DiT projection to mimic Llama’s positional/vocabulary geometry (e.g., align rotary phases or KL-match logits on a shared sub-vocab) so cross-model vocab differences don’t manifest as degenerate soft tokens.
+## 2. Phase 2 Status (paused unless high-ROI change)
+- Hybrid adapter diagnostic failed target threshold (45.5% < 51.5%); Phase 2 remains degrading target performance.
+- **Default:** pause Phase 2 until Phase 1 hits ≥75%.
+- **Optional single follow-up (only if time permits):** answer-teacher + adapter injection with a gentler residual (`adapter_scale=0.3`, `token_alignment_weight=0.2`) to test whether answer supervision + smaller override helps fidelity. One shot, 2 hrs max; skip if Phase 1 jobs are queued.
+- **Deferrals:** soft-only curriculum, prompt contrastive, and tokenizer/RoPE alignment are deprioritized until soft+text/adapter clears the target baseline.
 
 ## 3. Phase 3 (only if GPU queue opens up)
 - Compression sweep (64/128/256/512 soft tokens) using the stabilized codepath.
@@ -44,82 +37,31 @@ After code changes:
 
 ## CLAUDE'S ALTERNATIVE PLAN (Based on Nov 19 Results)
 
-**Context:** Nov 19 test showed answer_softplus=36% vs target=51.5% → **translator degrades performance by 15.5 pts**
+**Context (updated Nov 20):** Hybrid adapter test hit 45.5% vs target=54.0% (−8.5 pts). Translator still degrades target performance, though less severely than the Nov 19 runs.
 
 ### Critical Issue
 
 | Direction | Best Bridged | Target | Gap | Status |
 |-----------|--------------|--------|-----|--------|
 | Phase 1 (Mistral→Llama) | 64.5% | 77.0% | -12.5 pts | ⚠️ Viable |
-| Phase 2 (Llama→Mistral) | 36.0% | 51.5% | **-15.5 pts** | ❌ Degrading |
+| Phase 2 (Llama→Mistral) | 45.5% | 54.0% | **-8.5 pts** | ⚠️ Still degrading (hybrid) |
 
 **Phase 2 translator actively hurts target performance.** Need diagnostic before investing 4×H100.
 
 ---
 
-### RECOMMENDED: Validation-First Approach
+### RECOMMENDED: Pivot to Phase 1
 
-#### Step 1: Hybrid Conditioning Test (2 GPU hrs) — DO THIS FIRST
-
-**Goal:** Diagnose if "soft token override" causes degradation
-
-**Implementation:**
-- Keep literal prompts intact
-- Inject DiT via learned adapters (not prepending to embeddings)
-- Test if preserving text fixes degradation
-
-**Decision Criterion:**
-- ✅ bridged ≥ 51.5% → Continue Phase 2 (Step 2)
-- ❌ bridged < 51.5% → ABANDON Phase 2 (Option B)
-
----
-
-#### Step 2: IF Hybrid Works — Add Alignment (2 GPU hrs)
-- Tokenizer/RoPE projection (32K→128K)
-- Expected: +5-10 pts
-- **Decision:** bridged ≥ 60% → Step 3, else → Option B
-
-#### Step 3: IF Alignment Works — Full Training (4×H100)
-- Target: bridged ≥ 60%
-
----
-
-### OPTION B: Refocus on Phase 1 (If Phase 2 Fails)
-
-Phase 1 baseline is **24% better** than Phase 2.
-
-#### B1. Phase 1 Improvements (4×H100, 2 hrs)
-- KL slice alignment
-- Reduce prompt_alignment_weight → 0.001
-- RoPE/tokenizer projection
-- **Target:** ≥75% (within 2 pts of target)
-
-#### B2. Compression Sweep (4×H100, ~6 hrs)
-- Test 32/48/64/128 tokens
-- Find optimal compression/accuracy tradeoff
-
-#### B3. Publication
-- Phase 1 ≥75% accuracy
-- Compression analysis
-- Ablations (done)
-
----
+- Hybrid diagnostic missed the ≥51.5% bar; per decision tree, shift compute to Phase 1 until ≥75% bridged is achieved.
+- Retain Phase 2 only for a single low-risk follow-up (answer-teacher + small adapter_scale) once Phase 1 jobs are underway; abort Phase 2 if it still underperforms target.
 
 ### Claude's Assessment of Codex's Plan (Section 2)
 
-❌ **DISAGREE: Soft-only fixes (2.3) premature**
-- Soft+text already underperforms by 15.5 pts
-- Don't invest in soft-only when soft+text doesn't work
-- **Defer until soft+text ≥ target**
+❌ **DISAGREE: Soft-only fixes remain premature**
+- Soft+text/adapter still under target; pause soft-only curriculum until a text-anchored setup beats target.
 
-⚠️ **PARTIAL: Tokenizer alignment (2.4) won't fix alone**
-- Addresses real issue but won't close 15.5 pt gap
-- Expected: +5-10 pts
-- **Do AFTER hybrid test**
-
-✅ **AGREE: Hybrid conditioning (2.2) CRITICAL**
-- 2 hrs to diagnose root cause
-- **DO THIS FIRST**
+⚠️ **PARTIAL: Tokenizer alignment might add 5–10 pts but won't erase the gap alone**
+- Only consider after Phase 1 milestone or if the optional Phase 2 follow-up crosses the target baseline.
 
 ---
 
@@ -142,4 +84,3 @@ Hybrid Test (2h) → bridged≥51.5%?
 - [ ] Skip Phase 2, do Phase 1 fixes (safer)
 
 **Claude's vote:** Hybrid test first (2 hrs decides everything)
-

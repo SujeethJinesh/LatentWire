@@ -13,11 +13,12 @@ Two new overnight experiments pushed both directions simultaneously:
 
 1. **Phase 1 96-token breakthrough** (Mistral→Llama, answer teacher, `soft_tokens=96`). Bridged accuracy reached **74.5% at step 250** and finished at **71.5%** (gap to Llama target: −5.5 pts). Only 10/200 final samples were invalid, and outputs look like textbook GSM8K reasoning (“The ducks lay 16 eggs… she sells 9 eggs for $2 each… #### 18”).
 2. **Phase 2 prompt-aligned** (Llama→Mistral, prompt teacher, `token_alignment_weight=0.1`). Bridged accuracy peaked at **41.5%** (step 750) but ended at **37.5%**, well below the 51.5% Mistral baseline. Final eval shows 79/200 correct answers and 57 invalid; generations largely paraphrase the question (“Q: Janet’s ducks lay 16 eggs…” ) instead of solving it.
+3. **Phase 2 hybrid adapter diagnostic** (Llama→Mistral, prompt teacher, `soft_injection=adapter`, `token_alignment_weight=0.1`). Bridged accuracy plateaued at **45.5%** (steps 250–1000) and early-stopped; ~**48/200** invalid generations remain. This is a +8 pt gain over the prompt-aligned run but still **−8.5 pts vs the 54% Mistral baseline** (target-alone).
 
 **Top-line bullets**
 - Phase 1 direction now hits 74–75 % bridged accuracy with 96 tokens; next priority is closing the remaining 5–6 pt gap to Llama’s 77 %.
-- Phase 2 direction still trails the 51.5 % target by ~14 pts; prompt alignment fixed token geometry but not answer fidelity.
-- Qualitative gap: Phase 1 outputs remain fluent GSM8K completions; Phase 2 outputs echo the prompt without consistent “#### <answer>” endings.
+- Phase 2 direction still trails the 51.5–54 % target by ~9 pts even with hybrid adapters; prompt/token alignment helps geometry but answer fidelity and invalids remain open.
+- Qualitative gap: Phase 1 outputs remain fluent GSM8K completions; Phase 2 outputs often copy the prompt or drift, with ~25% invalid.
 
 **Current baselines:**
 - Mistral 7B (source-only, Phase 1 direction): 54 %
@@ -201,6 +202,26 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 
 **Example Output** (step 1250): “Q: Josh decides to try flipping a house… A: Josh spent $80,000… Profit is $70,000. #### 70000”
 
+### Hybrid Diagnostic: Adapter Injection (Nov 20)
+
+**Configuration**: Prompt teacher, `soft_injection=adapter`, `adapter_scale=1.0`, `soft_tokens=64`, `token_alignment_weight=0.1`, `eval_prompt_mode=soft_plus_text` (literal prompt kept; DiT injected as residual adapter on prompt tokens)
+**Location**: `paper_writing/preserved_data/phase2_hybrid_adapter_phase2_swap_20251120_210533/`
+
+**Results**:
+```
+Step   0: Bridged 33.5% (48/200 invalid)
+Step 250: Bridged 45.5% (49/200 invalid)
+Step 500: Bridged 44.0% (47/200 invalid)
+Step 750: Bridged 43.0% (48/200 invalid)
+Step 1000: Bridged 45.5% (48/200 invalid) ← BEST/FINAL (early stop)
+Target-alone: 54.0% | Source-alone: 77.0%
+```
+
+**Key Observations**:
+- 📈 **+8 pts over prompt-aligned** (37.5 → 45.5) with a smaller invalid rate (~24–25%), so anchoring text plus residual adapters helps geometry.
+- ❌ **Still below target**: −8.5 pts vs the 54% Mistral baseline; plateaued from step 250 onward despite early stopping.
+- ⚠️ **Label diagnostic mismatch**: Step‑0 check still flags soft-token labels because it logs translator K (64) even when `soft_prefix_len=0`; harmless but needs cleanup for clarity.
+
 ### Phase 2 Findings
 
 | Configuration | Peak Bridged | Target | Gap | Conclusion |
@@ -208,6 +229,7 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 | Prompt + soft_only | 2.5% | 51.5% | -49 pts | ❌ Collapsed |
 | Answer + soft_plus_text | 36.0% | 51.5% | -15.5 pts | ⚠️ Degrading |
 | Prompt teacher + token alignment (Nov 20) | 41.5% | 51.5% | -10 pts | ⚠️ Improved but still below target |
+| Prompt teacher + adapter injection (Nov 20) | 45.5% | 54.0% | -8.5 pts | ⚠️ Hybrid beats prior runs but still below target |
 
 **Critical Issue**: Llama→Mistral translator **degrades target performance** rather than enhancing it. This differs from Phase 1 (Mistral→Llama) where translator **improves over source**.
 
@@ -226,6 +248,7 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 | Nov 19 | Phase 2 v3 | Llama→Mistral | 76.5% | 51.5% | 36% → 31.5% | -15.5 → -20 pts | ⚠️ Below target |
 | Nov 20 | Phase 1 96tok | Mistral→Llama | 54% | 77% | **74.5%** → **71.5%** | -2.5 → -5.5 pts | ✅ New best |
 | Nov 20 | Phase 2 prompt-aligned | Llama→Mistral | 76.5% | 51.5% | 41.5% → 37.5% | -10 → -14 pts | ⚠️ Needs fidelity |
+| Nov 20 | Phase 2 hybrid adapter | Llama→Mistral | 76.5% | 54.0% | 45.5% → 45.5% | -8.5 pts | ⚠️ Improved, still below target |
 
 **Note**: "vs Target" shows gap between bridged accuracy and target model's native performance. Positive = beating target, negative = below target.
 
@@ -241,6 +264,7 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 4. **Answer supervision**: Essential for Phase 2 (36% vs 2.5%)
 5. **Stable training**: 3.5 pts degradation achievable (vs 45.5 pts)
 6. **Bottleneck relaxation**: Increasing soft_tokens to 96 recovers ~3 pts (74.5% peak vs 68%) without destabilizing training.
+7. **Hybrid adapters reduce invalids**: Keeping literal text and injecting DiT as residual adapters bumps Phase 2 from 37.5% → 45.5% and cuts invalids to ~25%.
 
 ### What Doesn't Work ❌
 
@@ -248,6 +272,7 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 2. **Prompt-only supervision**: Insufficient for cross-model transfer (2.5%)
 3. **Llama→Mistral direction**: Worse gap than Mistral→Llama (15.5 vs 12.5 pts)
 4. **Soft-only evaluation**: Requires literal text grounding to prevent collapse
+5. **Adapters alone are insufficient**: Even with residual injection, bridged accuracy plateaus at 45.5% (−8.5 pts vs target).
 
 ### Open Challenges ⚠️
 
@@ -255,6 +280,7 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 2. **Gap to target**: Best stable result still -12.5 pts below target
 3. **Phase 2 viability**: Translator degrades Mistral's native performance
 4. **Directionality**: Why is Llama→Mistral harder than Mistral→Llama?
+5. **Invalids remain high in Phase 2**: ~24–25% invalid generations even with hybrid adapters.
 
 ---
 
