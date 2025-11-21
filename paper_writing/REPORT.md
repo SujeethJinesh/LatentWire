@@ -205,15 +205,16 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 ### Hybrid Diagnostic: Adapter Injection (Nov 20)
 
 **Configuration**: Prompt teacher, `soft_injection=adapter`, `adapter_scale=1.0`, `soft_tokens=64`, `token_alignment_weight=0.1`, `eval_prompt_mode=soft_plus_text` (literal prompt kept; DiT injected as residual adapter on prompt tokens)
-**Location**: `paper_writing/preserved_data/phase2_hybrid_adapter_phase2_swap_20251120_210533/`
+**Location**: `paper_writing/preserved_data/phase2_hybrid_adapter_phase2_swap_20251120_224319/` (rerun of adapter diagnostic)
 
 **Results**:
 ```
-Step   0: Bridged 33.5% (48/200 invalid)
+Step   0: Bridged 33.5% (70/200 invalid)
 Step 250: Bridged 45.5% (49/200 invalid)
 Step 500: Bridged 44.0% (47/200 invalid)
 Step 750: Bridged 43.0% (48/200 invalid)
-Step 1000: Bridged 45.5% (48/200 invalid) ← BEST/FINAL (early stop)
+Step 1000: Bridged 45.5% (48/200 invalid)
+Step final: 46.0%  (50/200 invalid) ← early stop @ step 1000, final eval repeated
 Target-alone: 54.0% | Source-alone: 77.0%
 ```
 
@@ -221,6 +222,7 @@ Target-alone: 54.0% | Source-alone: 77.0%
 - 📈 **+8 pts over prompt-aligned** (37.5 → 45.5) with a smaller invalid rate (~24–25%), so anchoring text plus residual adapters helps geometry.
 - ❌ **Still below target**: −8.5 pts vs the 54% Mistral baseline; plateaued from step 250 onward despite early stopping.
 - ⚠️ **Label diagnostic mismatch**: Step‑0 check still flags soft-token labels because it logs translator K (64) even when `soft_prefix_len=0`; harmless but needs cleanup for clarity.
+- 🔁 **Replication**: Second run reproduced the 45–46% plateau and ~25% invalids → hybrid adapters are capped without additional changes.
 
 ### Phase 2 Findings
 

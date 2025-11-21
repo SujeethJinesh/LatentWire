@@ -8,8 +8,8 @@
 
 ## Latest Result (Nov 20, 2025 — Phase 2 hybrid adapter)
 - Config: `soft_injection=adapter`, prompt teacher, `soft_tokens=64`, `token_alignment_weight=0.1`, `adapter_scale=1.0`, eval prompt mode `soft_plus_text`.
-- Outcome: Bridged 45.5% (plateaued through step 1000, early stop), target-alone 54.0%, source-alone 77.0%; invalids 48–50/200 (24–25%). Run: `paper_writing/preserved_data/phase2_hybrid_adapter_phase2_swap_20251120_210533/`.
-- Interpretation: Hybrid adapters improve ~+8 pts over prompt-aligned but still **below target by 8.5 pts**. Decision criterion (≥51.5%) not met → pivot to Phase 1.
+- Outcome: Bridged 45.5–46.0% (plateaued through step 1000, early stop), target-alone 54.0%, source-alone 77.0%; invalids ~25% (48–50/200, step0 70/200). Run: `paper_writing/preserved_data/phase2_hybrid_adapter_phase2_swap_20251120_224319/`.
+- Interpretation: Hybrid adapters reliably improve ~+8 pts over prompt-aligned but still **below target by 8.0–8.5 pts**. Decision criterion (≥51.5%) still not met → stay pivoted to Phase 1.
 
 ## 1. Phase 1 Push (pivot path)
 - **Goals:** Close the remaining 5–6 pt gap to target (77%) and reach ≥75% bridged.
@@ -19,10 +19,10 @@
 - **If both fail to reach ≥75%:** revert to 64-token stable config and adjust LR schedule (plateau LR decay after step 1000) as a low-cost follow-up.
 
 ## 2. Phase 2 Status (paused unless high-ROI change)
-- Hybrid adapter diagnostic failed target threshold (45.5% < 51.5%); Phase 2 remains degrading target performance.
+- Hybrid adapter diagnostic (rerun) again missed the ≥51.5% bar (45–46%); Phase 2 still degrades target performance.
 - **Default:** pause Phase 2 until Phase 1 hits ≥75%.
-- **Optional single follow-up (only if time permits):** answer-teacher + adapter injection with a gentler residual (`adapter_scale=0.3`, `token_alignment_weight=0.2`) to test whether answer supervision + smaller override helps fidelity. One shot, 2 hrs max; skip if Phase 1 jobs are queued.
-- **Deferrals:** soft-only curriculum, prompt contrastive, and tokenizer/RoPE alignment are deprioritized until soft+text/adapter clears the target baseline.
+- **Optional single follow-up (only if spare cycles):** answer-teacher + adapter injection with a gentler residual (`adapter_scale=0.3`, `token_alignment_weight=0.2`) to test whether answer supervision + smaller override helps fidelity. One shot, 2 hrs max; abort Phase 2 entirely if this also underperforms target.
+- **Deferrals:** soft-only curriculum, prompt contrastive, and tokenizer/RoPE alignment remain deprioritized until a text-anchored setup beats target.
 
 ## 3. Phase 3 (only if GPU queue opens up)
 - Compression sweep (64/128/256/512 soft tokens) using the stabilized codepath.
