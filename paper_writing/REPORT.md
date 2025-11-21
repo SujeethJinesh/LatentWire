@@ -7,25 +7,23 @@
 
 ---
 
-## Executive Summary
+## Executive Summary (updated Nov 20, 2025)
 
-This report summarizes the complete experimental history of learning cross-model translation between heterogeneous LLMs (Mistral 7B ↔ Llama 3.1 8B) using diffusion-based soft token bridges. Key findings include achieving **81.5% peak accuracy** (exceeding native text baseline), identifying stability challenges, and testing bidirectional transfer.
+Two new overnight experiments pushed both directions simultaneously:
 
-### Headline Results
+1. **Phase 1 96-token breakthrough** (Mistral→Llama, answer teacher, `soft_tokens=96`). Bridged accuracy reached **74.5% at step 250** and finished at **71.5%** (gap to Llama target: −5.5 pts). Only 10/200 final samples were invalid, and outputs look like textbook GSM8K reasoning (“The ducks lay 16 eggs… she sells 9 eggs for $2 each… #### 18”).
+2. **Phase 2 prompt-aligned** (Llama→Mistral, prompt teacher, `token_alignment_weight=0.1`). Bridged accuracy peaked at **41.5%** (step 750) but ended at **37.5%**, well below the 51.5% Mistral baseline. Final eval shows 79/200 correct answers and 57 invalid; generations largely paraphrase the question (“Q: Janet’s ducks lay 16 eggs…” ) instead of solving it.
 
-| Experiment | Direction | Source-Alone | Target-Alone | Peak Bridged | Final Bridged | vs Target | Status |
-|-----------|-----------|--------------|--------------|--------------|---------------|-----------|--------|
-| **3_high_capacity (Nov 6)** | Mistral→Llama | 54% | **73%** | **81.5%** (step 1000) | 36% | **+8.5 pts peak** | ⚠️ Unstable |
-| **Phase 1 stable (Nov 16)** | Mistral→Llama | 54% | **77%** | 68% (step 250) | 64.5% | -12.5 pts | ✅ Stable |
-| **Ablation B (Nov 16)** | Mistral→Llama | 54% | **77%** | 71% | 62.5% | -14.5 pts | ✅ Stable |
-| **Ablation C (Nov 17)** | Mistral→Llama | 54% | **77%** | 66.5% | 65.5% | -11.5 pts | ✅ Stable |
-| **Phase 2 answer (Nov 19)** | Llama→Mistral | 76.5% | **51.5%** | 36% (step 1250) | 31.5% | -20 pts | ⚠️ Below target |
+**Top-line bullets**
+- Phase 1 direction now hits 74–75 % bridged accuracy with 96 tokens; next priority is closing the remaining 5–6 pt gap to Llama’s 77 %.
+- Phase 2 direction still trails the 51.5 % target by ~14 pts; prompt alignment fixed token geometry but not answer fidelity.
+- Qualitative gap: Phase 1 outputs remain fluent GSM8K completions; Phase 2 outputs echo the prompt without consistent “#### <answer>” endings.
 
-**Baselines:**
-- **Mistral 7B (source)**: 54% on GSM8K
-- **Llama 3.1 8B (target)**: 73-77% on GSM8K depending on eval setup
-- **Llama 3.1 8B (source)**: 76.5% on GSM8K
-- **Mistral 7B (target)**: 51.5% on GSM8K
+**Current baselines:**
+- Mistral 7B (source-only, Phase 1 direction): 54 %
+- Llama 3.1 8B (target-only, Phase 1 direction): 73–77 %
+- Llama 3.1 8B (source-only, Phase 2 direction): 76.5 %
+- Mistral 7B (target-only, Phase 2 direction): 51.5 %
 
 **Key Finding**: Cross-model translation **can exceed native text processing** (81.5% > 73% target), but stability remains a challenge.
 
@@ -109,17 +107,7 @@ Gap to target: -12.5 pts
 - ✅ **No catastrophic collapse**: Accuracy never dropped below 60%
 - ⚠️ **Lower peak**: 68% vs 81.5% (-13.5 pts tradeoff for stability)
 
-**Example Output** (from `eval_samples_step_final.jsonl`):
-```
-Q: Janet's ducks lay 16 eggs per day. She eats three for breakfast every
-   morning and bakes muffins for her friends every day with four. She sells
-   the remainder at the farmers' market daily for $2 per fresh duck egg.
-   How much in dollars does she make every day at the farmers' market?
-
-A: Janet eats 3 eggs for breakfast… She sells 9 eggs for $2 each, so she
-   makes $18.
-   #### 18
-```
+**Example Output (64 tokens)**: “Janet eats 3 eggs for breakfast… She sells 9 eggs for $2 each, so she makes $18. #### 18”
 
 ---
 
@@ -211,15 +199,7 @@ Step 1750: Bridged 31.5% (64 invalid, 63 gold matches)
 - ⚠️ **Directional asymmetry**: Phase 1 gap = -12.5 pts, Phase 2 gap = -15.5 pts (~24% worse)
 - 📈 **Progress**: Invalid rate dropped from 78/200 to 64/200 during training
 
-**Example Output** (step 1250):
-```
-Q: Josh decides to try flipping a house. He buys a house for $80,000 and then
-   puts in $50,000 in repairs. This increased the value of the house by 150%.
-   How much profit did he make?
-
-A: Josh spent $80,000… Profit is $70,000.
-   #### 70000
-```
+**Example Output** (step 1250): “Q: Josh decides to try flipping a house… A: Josh spent $80,000… Profit is $70,000. #### 70000”
 
 ### Phase 2 Findings
 
@@ -227,6 +207,7 @@ A: Josh spent $80,000… Profit is $70,000.
 |--------------|--------------|--------|-----|------------|
 | Prompt + soft_only | 2.5% | 51.5% | -49 pts | ❌ Collapsed |
 | Answer + soft_plus_text | 36.0% | 51.5% | -15.5 pts | ⚠️ Degrading |
+| Prompt teacher + token alignment (Nov 20) | 41.5% | 51.5% | -10 pts | ⚠️ Improved but still below target |
 
 **Critical Issue**: Llama→Mistral translator **degrades target performance** rather than enhancing it. This differs from Phase 1 (Mistral→Llama) where translator **improves over source**.
 
@@ -243,6 +224,8 @@ A: Josh spent $80,000… Profit is $70,000.
 | Nov 18 | Phase 2 v1 | Llama→Mistral | 76.5% | 51.5% | 29% → 26% | -22.5 → -25.5 pts | ❌ Soft override |
 | Nov 19 | Phase 2 v2 | Llama→Mistral | 76.5% | 51.5% | 2.5% (constant) | -49 pts | ❌ Collapsed |
 | Nov 19 | Phase 2 v3 | Llama→Mistral | 76.5% | 51.5% | 36% → 31.5% | -15.5 → -20 pts | ⚠️ Below target |
+| Nov 20 | Phase 1 96tok | Mistral→Llama | 54% | 77% | **74.5%** → **71.5%** | -2.5 → -5.5 pts | ✅ New best |
+| Nov 20 | Phase 2 prompt-aligned | Llama→Mistral | 76.5% | 51.5% | 41.5% → 37.5% | -10 → -14 pts | ⚠️ Needs fidelity |
 
 **Note**: "vs Target" shows gap between bridged accuracy and target model's native performance. Positive = beating target, negative = below target.
 
@@ -257,6 +240,7 @@ A: Josh spent $80,000… Profit is $70,000.
 3. **Prompt weight reduction**: Prevents over-constraint (65.5% vs 62.5%)
 4. **Answer supervision**: Essential for Phase 2 (36% vs 2.5%)
 5. **Stable training**: 3.5 pts degradation achievable (vs 45.5 pts)
+6. **Bottleneck relaxation**: Increasing soft_tokens to 96 recovers ~3 pts (74.5% peak vs 68%) without destabilizing training.
 
 ### What Doesn't Work ❌
 
