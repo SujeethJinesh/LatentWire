@@ -15,6 +15,7 @@ Two new overnight experiments pushed both directions simultaneously:
 2. **Phase 2 prompt-aligned** (Llama→Mistral, prompt teacher, `token_alignment_weight=0.1`). Bridged accuracy peaked at **41.5%** (step 750) but ended at **37.5%**, well below the 51.5% Mistral baseline. Final eval shows 79/200 correct answers and 57 invalid; generations largely paraphrase the question (“Q: Janet’s ducks lay 16 eggs…” ) instead of solving it.
 3. **Phase 2 hybrid adapter diagnostic** (Llama→Mistral, prompt teacher, `soft_injection=adapter`, `token_alignment_weight=0.1`). Bridged accuracy plateaued at **45.5%** (steps 250–1000) and early-stopped; ~**48/200** invalid generations remain. This is a +8 pt gain over the prompt-aligned run but still **−8.5 pts vs the 54% Mistral baseline** (target-alone).
 4. **Phase 1 128-token push (Nov 21)** (Mistral→Llama, answer teacher, `soft_tokens=128`). Bridged accuracy peaked at **75.0% (step 1250)**, finished at **73.5%** with **9/200** invalid; gap to the 77% Llama target is now **−3.5 pts**. A 96-token variant with light decode loss peaked at 74.5%, finished 73.0% (invalid 8/200).
+5. **Phase 1 128-token short attempt (Nov 21, second run)** (`train_steps=1500`, `early_stop=0`). Run terminated early (last log ~step 340); only eval at step 250 recorded **71.5% bridged, 7/200 invalid**. No final metrics—needs rerun to completion.
 
 **Top-line bullets**
 - Phase 1 direction now hits 74–75 % bridged accuracy with 96 tokens; next priority is closing the remaining 5–6 pt gap to Llama’s 77 %.
@@ -263,6 +264,17 @@ Target-alone: 77.0% | Source-alone: 54.0%
 - 🧱 **Decode loss adds steadiness, not peak**: 96tok + decode peaks 74.5%, finals 73.0% with ~8/200 invalid; early-stopped at step 1000.
 - ⚠️ **LR/plateau behavior**: Both runs flatten after ~1250 steps; LR decay or shorter training (checkpoint at peak) may close the last 2–3 pts.
 - ✅ **Stability preserved**: No collapse; invalids remain <6% after step 250.
+
+### Phase 1 Gap-Close (Attempted short run, Nov 21 evening)
+
+**Configuration**: `soft_tokens=128`, `train_steps=1500`, `early_stop_patience=0` (stop at end), other hyperparameters same as the stable 128-token run.
+**Location**: `paper_writing/preserved_data/phase1_128tok_short_20251121_093920/` (incomplete)
+
+**Result**:
+- Only eval logged at **step 250: 71.5% bridged, invalid 7/200**; logs stop around step ~340 with no further evals or summary.
+- No final checkpoint/metrics; run likely interrupted or truncated.
+
+**Takeaway**: Short-run gap-close attempt did not complete; rerun required to assess whether shorter schedule can lock in the 75% peak.
 
 ### Phase 2 Findings
 

@@ -15,7 +15,7 @@
 - **Latest:** 128-token run peaked 75.0%, final 73.5% (invalid ≤6%), gap to Llama target 3–4 pts. 96-token + light decode peaked 74.5%, final 73.0% (invalid ~4%), early-stopped at step 1000.
 - **Goal:** Close the last 2–3 pts to ≥75–77%, maintain low invalid rate.
 - **Next runs (overnight-ready, 4× H100):**
-  1) **LR decay / shorter train:** re-run 128-token with cosine decay after step 1250 (or stop-at-best checkpoint) to lock in the 75% peak. Add `--train_steps 1500 --early_stop_patience 0` and save best at step 1250 if possible.
+  1) **128-token short rerun (must complete):** Re-run the 1500-step schedule (no early stop) and ensure full evals; previous attempt truncated at ~step 340 with only step-250 metrics logged.
   2) **160-token headroom (optional):** `soft_tokens=160`, same stable weights, to test if a small capacity bump clears the remaining gap without destabilizing. Abort if invalids rise >10%.
 - **If these miss ≥75%:** try smaller LR (8e-5) with 128 tokens and plateau decay at step 1000.
 
