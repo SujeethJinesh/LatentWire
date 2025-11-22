@@ -15,7 +15,8 @@ Two new overnight experiments pushed both directions simultaneously:
 2. **Phase 2 prompt-aligned** (Llama→Mistral, prompt teacher, `token_alignment_weight=0.1`). Bridged accuracy peaked at **41.5%** (step 750) but ended at **37.5%**, well below the 51.5% Mistral baseline. Final eval shows 79/200 correct answers and 57 invalid; generations largely paraphrase the question (“Q: Janet’s ducks lay 16 eggs…” ) instead of solving it.
 3. **Phase 2 hybrid adapter diagnostic** (Llama→Mistral, prompt teacher, `soft_injection=adapter`, `token_alignment_weight=0.1`). Bridged accuracy plateaued at **45.5%** (steps 250–1000) and early-stopped; ~**48/200** invalid generations remain. This is a +8 pt gain over the prompt-aligned run but still **−8.5 pts vs the 54% Mistral baseline** (target-alone).
 4. **Phase 1 128-token push (Nov 21)** (Mistral→Llama, answer teacher, `soft_tokens=128`). Bridged accuracy peaked at **75.0% (step 1250)**, finished at **73.5%** with **9/200** invalid; gap to the 77% Llama target is now **−3.5 pts**. A 96-token variant with light decode loss peaked at 74.5%, finished 73.0% (invalid 8/200).
-5. **Phase 1 128-token short attempt (Nov 21, second run)** (`train_steps=1500`, `early_stop=0`). Run terminated early (last log ~step 340); only eval at step 250 recorded **71.5% bridged, 7/200 invalid**. No final metrics—needs rerun to completion.
+5. **Phase 1 128-token short rerun (Nov 21 pm)** (`train_steps=1500`, `early_stop=0`). Completed with evals through step 1500; bridged peaked ~73.5% (step 1500), final 73.5% with invalid 11/200—slightly below the earlier 75% peak, indicating shorter schedule alone doesn’t close the gap.
+6. **Phase 1 160-token probe (Nov 21 pm)** (`train_steps=1500`, `early_stop=2`). Bridged hovered 67–70% during training; final 73.0% (invalid 10/200). Higher K did not outperform the 128-token runs and added instability (dropping to 67.5% at step 750).
 
 **Top-line bullets**
 - Phase 1 direction now hits 74–75 % bridged accuracy with 96 tokens; next priority is closing the remaining 5–6 pt gap to Llama’s 77 %.
@@ -267,14 +268,38 @@ Target-alone: 77.0% | Source-alone: 54.0%
 
 ### Phase 1 Gap-Close (Attempted short run, Nov 21 evening)
 
-**Configuration**: `soft_tokens=128`, `train_steps=1500`, `early_stop_patience=0` (stop at end), other hyperparameters same as the stable 128-token run.
-**Location**: `paper_writing/preserved_data/phase1_128tok_short_20251121_093920/` (incomplete)
+**Configuration**: `soft_tokens=128`, `train_steps=1500`, `early_stop_patience=0` (no early stop), other hyperparameters same as the stable 128-token run.
+**Location**: `paper_writing/preserved_data/phase1_128tok_short_20251121_191357/`
 
 **Result**:
-- Only eval logged at **step 250: 71.5% bridged, invalid 7/200**; logs stop around step ~340 with no further evals or summary.
-- No final checkpoint/metrics; run likely interrupted or truncated.
+```
+Step 250: Bridged 71.5% (7/200 invalid)
+Step 500: Bridged 72.0% (13/200 invalid)
+Step 750: Bridged 73.0% (11/200 invalid)
+Step 1000: Bridged 71.0% (8/200 invalid)
+Step 1250: Bridged 72.0% (5/200 invalid)
+Step 1500: Bridged 72.5% (7/200 invalid)
+Final:    Bridged 73.5% (11/200 invalid)
+Target-alone: 77.0% | Source-alone: 54.0%
+```
 
-**Takeaway**: Short-run gap-close attempt did not complete; rerun required to assess whether shorter schedule can lock in the 75% peak.
+**Takeaway**: Short schedule finishes cleanly but peaks lower (73–73.5%) than the 75% longer run; shortening alone doesn’t recover the missing 2–3 pts.
+
+### Phase 1 Gap-Close: 160-token Probe (Nov 21 evening)
+
+**Configuration**: `soft_tokens=160`, `train_steps=1500`, `early_stop_patience=2`, otherwise same as the stable 128-token config.
+**Location**: `paper_writing/preserved_data/phase1_160tok_probe_20251121_204041/`
+
+**Result**:
+```
+Step 250: Bridged 70.0% (14/200 invalid)
+Step 500: Bridged 69.5% (15/200 invalid)
+Step 750: Bridged 67.5% (11/200 invalid)
+Final:    Bridged 73.0% (10/200 invalid)
+Target-alone: 77.0% | Source-alone: 54.0%
+```
+
+**Takeaway**: Increasing K to 160 did not outperform 128 tokens; training dipped to 67.5% and recovered to 73.0% final, suggesting diminishing returns or mild instability with larger K.
 
 ### Phase 2 Findings
 
@@ -305,6 +330,8 @@ Target-alone: 77.0% | Source-alone: 54.0%
 | Nov 20 | Phase 2 hybrid adapter | Llama→Mistral | 76.5% | 54.0% | 45.5% → 45.5% | -8.5 pts | ⚠️ Improved, still below target |
 | Nov 21 | Phase 1 128tok push | Mistral→Llama | 54% | 77% | **75.0%** → 73.5% | -2.0 → -3.5 pts | ✅ Near target |
 | Nov 21 | Phase 1 96tok decode refine | Mistral→Llama | 54% | 77% | 74.5% → 73.0% | -2.5 → -4.0 pts | ✅ Near target (early stop) |
+| Nov 21 | Phase 1 128tok short | Mistral→Llama | 54% | 77% | 73.5% → 73.5% | -3.5 pts | ⚠️ Shorter schedule, lower peak |
+| Nov 21 | Phase 1 160tok probe | Mistral→Llama | 54% | 77% | 70.0% → 73.0% | -7.0 → -4.0 pts | ⚠️ Larger K underperforms |
 
 **Note**: "vs Target" shows gap between bridged accuracy and target model's native performance. Positive = beating target, negative = below target.
 

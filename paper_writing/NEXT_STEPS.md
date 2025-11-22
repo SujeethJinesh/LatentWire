@@ -12,12 +12,13 @@
 - Interpretation: Hybrid adapters reliably improve ~+8 pts over prompt-aligned but still **below target by 8.0–8.5 pts**. Decision criterion (≥51.5%) still not met → stay pivoted to Phase 1.
 
 ## 1. Phase 1 Status and Next Push
-- **Latest:** 128-token run peaked 75.0%, final 73.5% (invalid ≤6%), gap to Llama target 3–4 pts. 96-token + light decode peaked 74.5%, final 73.0% (invalid ~4%), early-stopped at step 1000.
+- **Latest:** 128-token (long) peaked 75.0%, final 73.5% (invalid ≤6%); 128-token short finished 73.5% (lower peak ~73%); 96-token + light decode peaked 74.5%, final 73.0%; 160-token probe peaked ~70%, final 73.0% (no gain).
 - **Goal:** Close the last 2–3 pts to ≥75–77%, maintain low invalid rate.
 - **Next runs (overnight-ready, 4× H100):**
-  1) **128-token short rerun (must complete):** Re-run the 1500-step schedule (no early stop) and ensure full evals; previous attempt truncated at ~step 340 with only step-250 metrics logged.
-  2) **160-token headroom (optional):** `soft_tokens=160`, same stable weights, to test if a small capacity bump clears the remaining gap without destabilizing. Abort if invalids rise >10%.
-- **If these miss ≥75%:** try smaller LR (8e-5) with 128 tokens and plateau decay at step 1000.
+  1) **128-token with LR decay/stop-at-best:** Re-run 75% config but enable cosine decay after step 750 and checkpoint best eval (to avoid late drift). Target: lock ≥75% peak as final.
+  2) **128-token lower LR variant:** Repeat long schedule with `--lr 8e-5` to test if smaller step size recovers/extends the 75% peak.
+- **Drop for now:** 160-token configs (did not outperform 128); short schedule alone does not close the gap.
+- **If still <75%:** consider adding light decode loss to 128-token (reuse 96tok decode settings) or InfoNCE temp tweak; keep invalids <10%.
 
 ## 2. Phase 2 Status (still paused)
 - Hybrid adapter reruns plateau at 45–46% (−8.5 pts); still below the 54% target.
