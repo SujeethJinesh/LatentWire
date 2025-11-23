@@ -108,6 +108,7 @@ for S in "${SOURCE_LAYERS[@]}"; do
             --no_compile \
             --prompt_alignment_weight 0.001 \
             --token_alignment_weight 0.0 \
+            --skip_source_baseline \
             --save_path "$OUTPUT_DIR/checkpoint.pt" \
             --log_dir "$OUTPUT_DIR" \
             $EXTRA_ARGS

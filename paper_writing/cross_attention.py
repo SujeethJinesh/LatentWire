@@ -1167,9 +1167,9 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                                          src_tok, tgt_tok, device, tgt_model, cfg=eval_cfg))
 
     # Process in batches to avoid OOM
-    all_bridged_texts = []
-    all_base_texts = []
-    all_source_texts = []
+        all_bridged_texts = []
+        all_base_texts = []
+        all_source_texts = []
 
     for start_idx in range(0, len(all_samples), eval_batch_size):
         end_idx = min(start_idx + eval_batch_size, len(all_samples))
@@ -1207,21 +1207,22 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                                                     clean_up_tokenization_spaces=False)
             all_base_texts.extend(base_texts_batch)
 
-        # Source-only baseline (Mistral only)
-        with torch.inference_mode():
-            prompts = [s.src_prompt for s in samples_batch]
-            src_enc = src_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
-            src_out = src_model.generate(
-                **src_enc,
-                max_new_tokens=max_new_tokens,
-                do_sample=False,
-                pad_token_id=src_tok.pad_token_id,
-                eos_token_id=src_tok.eos_token_id,
-                use_cache=True
-            )
-            source_texts_batch = src_tok.batch_decode(src_out, skip_special_tokens=True,
-                                                      clean_up_tokenization_spaces=False)
-            all_source_texts.extend(source_texts_batch)
+        # Source-only baseline (optional)
+        if not getattr(args, "skip_source_baseline", False):
+            with torch.inference_mode():
+                prompts = [s.src_prompt for s in samples_batch]
+                src_enc = src_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
+                src_out = src_model.generate(
+                    **src_enc,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    pad_token_id=src_tok.pad_token_id,
+                    eos_token_id=src_tok.eos_token_id,
+                    use_cache=True
+                )
+                source_texts_batch = src_tok.batch_decode(src_out, skip_special_tokens=True,
+                                                          clean_up_tokenization_spaces=False)
+                all_source_texts.extend(source_texts_batch)
 
         # Clear CUDA cache after each batch to reduce fragmentation
         torch.cuda.empty_cache()
@@ -1231,7 +1232,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     all_base_texts = gather_texts_from_all_ranks(all_base_texts)
     all_answers = gather_texts_from_all_ranks([s.tgt_answer for s in all_samples])
     all_questions = gather_texts_from_all_ranks([s.tgt_prompt for s in all_samples])
-    all_source_texts = gather_texts_from_all_ranks(all_source_texts)
+    all_source_texts = gather_texts_from_all_ranks(all_source_texts) if not getattr(args, "skip_source_baseline", False) else []
 
     # Only rank 0 computes metrics
     if rank != 0:
@@ -1242,7 +1243,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                for prompt, ans in zip(all_questions, all_answers)]
     bridged_texts = all_bridged_texts
     base_texts = all_base_texts
-    source_texts = all_source_texts
+        source_texts = all_source_texts
 
     eval_label = str(eval_step) if eval_step is not None else "unspecified"
     sample_records: List[Dict[str, str]] = []
@@ -1422,6 +1423,8 @@ def main():
                         help="How to inject translator outputs into the target model. 'prepend' adds soft tokens ahead of text, 'adapter' adds them as residuals on the prompt tokens.")
     parser.add_argument("--adapter_scale", type=float, default=1.0,
                         help="Scaling factor when soft_injection=adapter (multiplies the residual before adding to prompt embeddings).")
+    parser.add_argument("--skip_source_baseline", action="store_true",
+                        help="Skip source-alone baseline generation during eval (useful for same-model runs).")
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-4)
