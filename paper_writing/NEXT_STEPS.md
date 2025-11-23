@@ -12,13 +12,13 @@
 - Interpretation: Hybrid adapters reliably improve ~+8 pts over prompt-aligned but still **below target by 8.0–8.5 pts**. Decision criterion (≥51.5%) still not met → stay pivoted to Phase 1.
 
 ## 1. Phase 1 Status and Next Push
-- **Latest:** 128-token (long) peaked 75.0%, final 73.5% (invalid ≤6%); 128-token short finished 73.5% (lower peak ~73%); 96-token + light decode peaked 74.5%, final 73.0%; 160-token probe peaked ~70%, final 73.0% (no gain).
-- **Goal:** Close the last 2–3 pts to ≥75–77%, maintain low invalid rate.
-- **Next runs (overnight-ready, 4× H100):**
-  1) **128-token with LR decay/stop-at-best:** Re-run 75% config but enable cosine decay after step 750 and checkpoint best eval (to avoid late drift). Target: lock ≥75% peak as final.
-  2) **128-token lower LR variant:** Repeat long schedule with `--lr 8e-5` to test if smaller step size recovers/extends the 75% peak.
-- **Drop for now:** 160-token configs (did not outperform 128); short schedule alone does not close the gap.
-- **If still <75%:** consider adding light decode loss to 128-token (reuse 96tok decode settings) or InfoNCE temp tweak; keep invalids <10%.
+- **Latest:** 128-token long peaked 75.0% (final 73.5%); 128-token short finished 73.5%; 96-token + decode peaked 74.5% (final 73.0%); 160-token probe underperformed. LR sweep (2000 steps): lr=1e-4 peaked ~73% but final 69.5%; lr=8e-5 peaked 75.0% at 1750 but final 70.5% — best checkpoint not retained.
+- **Goal:** Lock in ≥75% as the final metric (reduce late drift) while keeping invalids <10%.
+- **Next runs (4× H100, overnight-ready):**
+  1) **128-token, lr=8e-5, best-checkpoint lock:** 2000 steps, `early_stop_patience=2` so final eval reloads best (expect to retain the 75% peak). If drift persists, cap `train_steps` to 1800.
+  2) **128-token, lr=1e-4, stop-at-best:** Same as above but lr=1e-4 to see if best-lock fixes the 69.5% final drop.
+- **Drop:** 160-token configs (no gain), pure short schedule (no improvement).
+- **If still <75% final:** consider light decode loss on 128-token (borrow settings from 96tok decode) or introduce LR decay after step 1000.
 
 ## 2. Phase 2 Status (still paused)
 - Hybrid adapter reruns plateau at 45–46% (−8.5 pts); still below the 54% target.

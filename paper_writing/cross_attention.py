@@ -886,33 +886,40 @@ def build_batch_inputs(samples: List[Sample],
         src_enc = src_tok([s.src_prompt for s in samples], return_tensors="pt", padding=True, truncation=True, max_length=8192)
         src_enc = {k: v.to(device) for k, v in src_enc.items()}
         src_out = src_model(**src_enc, output_hidden_states=True)
-        # last hidden states: [B, T_src, d_src]
-        src_h = src_out.hidden_states[-1].to(dtype)
+        # select source hidden layer
+        layer_idx = getattr(args, "source_layer", -1) if args is not None else -1
+        try:
+            src_h = src_out.hidden_states[layer_idx].to(dtype)
+        except Exception:
+            src_h = src_out.hidden_states[-1].to(dtype)
 
         # Source mask
         src_mask = src_enc["attention_mask"]
 
-    # Translator (grad flows)
-    # For DiT bridge in training mode, provide teacher embeddings
-    if args is not None and args.bridge == "dit" and mode == "train":
+    # Translator (grad flows) or passthrough
+    if args is not None and getattr(args, "passthrough_soft", False):
+        K = args.soft_tokens if args.soft_tokens > 0 else (translator.K if hasattr(translator, "K") else src_h.size(1))
+        with torch.no_grad():
+            soft_tokens = _pad_or_truncate_to_k(src_h, K).to(dtype)
+    elif args is not None and args.bridge == "dit" and mode == "train":
         K = translator.K if hasattr(translator, 'K') else args.soft_tokens
         with torch.no_grad():
-            # Teacher embedding choice: answer vs. prompt
-            # - answer (default): DiT learns to denoise towards answer embeddings (output-space alignment)
-            #   This is the Transfusion-style approach: teach the diffusion model the target distribution.
-            # - prompt: DiT learns to denoise towards prompt embeddings (conditioning alignment)
-            #   This may help the DiT learn better representations of the question/context.
+            # Teacher embedding choice: answer vs. prompt vs. target layer
             if args.dit_teacher == "answer":
-                # Answer teacher: use answer text (what the model generates)
                 texts = [s.tgt_answer if s.tgt_answer.strip() else (tgt_tok.bos_token or " ") for s in samples]
             else:
-                # Prompt teacher: use prompt text (the question/context)
                 texts = [s.tgt_prompt if s.tgt_prompt.strip() else (tgt_tok.bos_token or " ") for s in samples]
 
             enc = tgt_tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=8192)
             enc = {k: v.to(device) for k, v in enc.items()}
-            emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, T_text, d_tgt]
-            teacher_soft = _pad_or_truncate_to_k(emb, K)                         # [B, K, d_tgt]
+
+            if getattr(args, "target_layer", -1) >= 0:
+                out = tgt_model(**enc, output_hidden_states=True)
+                tgt_h = out.hidden_states[args.target_layer].to(dtype)
+                teacher_soft = _pad_or_truncate_to_k(tgt_h, K)
+            else:
+                emb = tgt_model.get_input_embeddings()(enc["input_ids"]).to(dtype)  # [B, T_text, d_tgt]
+                teacher_soft = _pad_or_truncate_to_k(emb, K)                         # [B, K, d_tgt]
         soft_tokens = translator(src_h, src_mask, teacher_soft_tokens=teacher_soft)
     else:
         soft_tokens = translator(src_h, src_mask)  # [B, K, d_tgt]
@@ -1405,6 +1412,12 @@ def main():
     parser.add_argument("--eval_prompt_mode", type=str,
                         choices=["soft_only", "soft_plus_text"], default="soft_plus_text",
                         help="How much literal text to feed Llama during evaluation.")
+    parser.add_argument("--source_layer", type=int, default=-1,
+                        help="Which source hidden_states layer to tap (0 = embeddings, -1 = last)")
+    parser.add_argument("--target_layer", type=int, default=-1,
+                        help="Which target hidden_states layer to use as teacher (0 = embeddings, -1 = last embedding lookup)")
+    parser.add_argument("--passthrough_soft", action="store_true",
+                        help="Bypass translator and use source hidden states directly as soft tokens (same-model only).")
     parser.add_argument("--soft_injection", type=str, choices=["prepend", "adapter"], default="prepend",
                         help="How to inject translator outputs into the target model. 'prepend' adds soft tokens ahead of text, 'adapter' adds them as residuals on the prompt tokens.")
     parser.add_argument("--adapter_scale", type=float, default=1.0,

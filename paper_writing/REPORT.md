@@ -15,7 +15,9 @@ Two new overnight experiments pushed both directions simultaneously:
 2. **Phase 2 prompt-aligned** (Llama→Mistral, prompt teacher, `token_alignment_weight=0.1`). Bridged accuracy peaked at **41.5%** (step 750) but ended at **37.5%**, well below the 51.5% Mistral baseline. Final eval shows 79/200 correct answers and 57 invalid; generations largely paraphrase the question (“Q: Janet’s ducks lay 16 eggs…” ) instead of solving it.
 3. **Phase 2 hybrid adapter diagnostic** (Llama→Mistral, prompt teacher, `soft_injection=adapter`, `token_alignment_weight=0.1`). Bridged accuracy plateaued at **45.5%** (steps 250–1000) and early-stopped; ~**48/200** invalid generations remain. This is a +8 pt gain over the prompt-aligned run but still **−8.5 pts vs the 54% Mistral baseline** (target-alone).
 4. **Phase 1 128-token push (Nov 21)** (Mistral→Llama, answer teacher, `soft_tokens=128`). Bridged accuracy peaked at **75.0% (step 1250)**, finished at **73.5%** with **9/200** invalid; gap to the 77% Llama target is now **−3.5 pts**. A 96-token variant with light decode loss peaked at 74.5%, finished 73.0% (invalid 8/200).
-5. **Phase 1 128-token short rerun (Nov 21 pm)** (`train_steps=1500`, `early_stop=0`). Completed with evals through step 1500; bridged peaked ~73.5% (step 1500), final 73.5% with invalid 11/200—slightly below the earlier 75% peak, indicating shorter schedule alone doesn’t close the gap.
+5. **Phase 1 gap-lock LR sweep (Nov 21 night)** (`soft_tokens=128`, answer teacher). Two full runs:
+   - **lr=1e-4**: Bridged ~73.0% peak, final **69.5%** (invalid 13/200) due to late drift.
+   - **lr=8e-5**: Bridged **75.0%** at step 1750 (invalid 8/200) but finished at **70.5%** (invalid 13/200); best checkpoint not retained for final eval.
 6. **Phase 1 160-token probe (Nov 21 pm)** (`train_steps=1500`, `early_stop=2`). Bridged hovered 67–70% during training; final 73.0% (invalid 10/200). Higher K did not outperform the 128-token runs and added instability (dropping to 67.5% at step 750).
 
 **Top-line bullets**
@@ -301,6 +303,41 @@ Target-alone: 77.0% | Source-alone: 54.0%
 
 **Takeaway**: Increasing K to 160 did not outperform 128 tokens; training dipped to 67.5% and recovered to 73.0% final, suggesting diminishing returns or mild instability with larger K.
 
+### Phase 1 Gap-Lock: 128-token LR Sweep (Nov 21 night)
+
+**Configuration**: `soft_tokens=128`, answer teacher, 2000 steps, early_stop_patience=0, two learning rates.
+**Locations**:
+- `paper_writing/preserved_data/phase1_128tok_lr1e4_20251121_220343/`
+- `paper_writing/preserved_data/phase1_128tok_lr8e5_20251121_235251/`
+
+**Results (lr=1e-4)**:
+```
+Step 250: 71.5% (invalid 9/200)
+Step 500: 72.0% (invalid 8/200)
+Step 750: 73.0% (invalid 8/200) ← PEAK
+Step 1000: 71.5% (invalid 10/200)
+Step 1250: 73.0% (invalid 7/200)
+Step 1500: 71.5% (invalid 9/200)
+Step 1750: 71.0% (invalid 8/200)
+Step 2000: 72.0% (invalid 6/200)
+Final: 69.5% (invalid 13/200)
+```
+
+**Results (lr=8e-5)**:
+```
+Step 250: 72.5% (invalid 8/200)
+Step 500: 70.0% (invalid 9/200)
+Step 750: 69.0% (invalid 9/200)
+Step 1000: 69.0% (invalid 13/200)
+Step 1250: 73.5% (invalid 8/200)
+Step 1500: 72.5% (invalid 7/200)
+Step 1750: 75.0% (invalid 8/200) ← PEAK
+Step 2000: 71.0% (invalid 7/200)
+Final: 70.5% (invalid 13/200)
+```
+
+**Takeaway**: Lower LR can hit the 75% peak (step 1750) but collapses by final eval; best checkpoint is not preserved. Need best-checkpoint locking or shorter training/early-stop to keep the peak.
+
 ### Phase 2 Findings
 
 | Configuration | Peak Bridged | Target | Gap | Conclusion |
@@ -332,6 +369,8 @@ Target-alone: 77.0% | Source-alone: 54.0%
 | Nov 21 | Phase 1 96tok decode refine | Mistral→Llama | 54% | 77% | 74.5% → 73.0% | -2.5 → -4.0 pts | ✅ Near target (early stop) |
 | Nov 21 | Phase 1 128tok short | Mistral→Llama | 54% | 77% | 73.5% → 73.5% | -3.5 pts | ⚠️ Shorter schedule, lower peak |
 | Nov 21 | Phase 1 160tok probe | Mistral→Llama | 54% | 77% | 70.0% → 73.0% | -7.0 → -4.0 pts | ⚠️ Larger K underperforms |
+| Nov 21 | Phase 1 128tok lr=1e-4 (2000s) | Mistral→Llama | 54% | 77% | 73.0% → 69.5% | -4.0 → -7.5 pts | ⚠️ Late drift, peak lost |
+| Nov 21 | Phase 1 128tok lr=8e-5 (2000s) | Mistral→Llama | 54% | 77% | **75.0%** → 70.5% | -2.0 → -6.5 pts | ⚠️ Peak not retained |
 
 **Note**: "vs Target" shows gap between bridged accuracy and target model's native performance. Positive = beating target, negative = below target.
 
