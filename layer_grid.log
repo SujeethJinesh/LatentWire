@@ -1,0 +1,88 @@
+nohup: ignoring input
+
+Note: the module "s" cannot be unloaded because it was not loaded.
+
+From github.com:SujeethJinesh/LatentWire
+   31f228e..732c7d8  main       -> origin/main
+Updating 31f228e..732c7d8
+Fast-forward
+ paper_writing/cross_attention.py       | 43 ++++++++++++++++++----------------
+ paper_writing/run_phase1_layer_grid.sh |  3 ++-
+ 2 files changed, 25 insertions(+), 21 deletions(-)
+==========================================
+Launching Llama->Llama layer grid:
+  Label:        layer_s0_t0_passthrough
+  Source layer: 0
+  Target layer: 0
+  Passthrough:  1
+  Train steps:  0
+  Early stop:   0
+  GPUs:         4
+==========================================
+W1122 17:04:21.875000 2475813 torch/distributed/run.py:793] 
+W1122 17:04:21.875000 2475813 torch/distributed/run.py:793] *****************************************
+W1122 17:04:21.875000 2475813 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1122 17:04:21.875000 2475813 torch/distributed/run.py:793] *****************************************
+  File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1246
+    source_texts = all_source_texts
+IndentationError: unexpected indent
+  File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1246
+    source_texts = all_source_texts
+IndentationError: unexpected indent
+  File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1246
+    source_texts = all_source_texts
+IndentationError: unexpected indent
+  File "/projects/m000066/sujinesh/LatentWire/paper_writing/cross_attention.py", line 1246
+    source_texts = all_source_texts
+IndentationError: unexpected indent
+E1122 17:04:22.141000 2475813 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 2475853) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+Traceback (most recent call last):
+  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+paper_writing/cross_attention.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2025-11-22_17:04:22
+  host      : n02.cm.cluster
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 2475854)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2025-11-22_17:04:22
+  host      : n02.cm.cluster
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 2475856)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[3]:
+  time      : 2025-11-22_17:04:22
+  host      : n02.cm.cluster
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 2475857)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-11-22_17:04:22
+  host      : n02.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 2475853)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: n02: task 0: Exited with exit code 1
