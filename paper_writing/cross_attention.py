@@ -1243,7 +1243,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                for prompt, ans in zip(all_questions, all_answers)]
     bridged_texts = all_bridged_texts
     base_texts = all_base_texts
-        source_texts = all_source_texts
+    source_texts = all_source_texts
 
     eval_label = str(eval_step) if eval_step is not None else "unspecified"
     sample_records: List[Dict[str, str]] = []
