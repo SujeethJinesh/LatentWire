@@ -83,7 +83,7 @@ for S in "${SOURCE_LAYERS[@]}"; do
             --target_model meta-llama/Meta-Llama-3.1-8B-Instruct \
             --per_device_batch 2 \
             --eval_every 250 \
-            --eval_samples 200 \
+            --eval_samples 100 \
             --eval_batch_size 36 \
             --max_new_tokens 256 \
             --bridge dit \
