@@ -1293,7 +1293,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
                                                        clean_up_tokenization_spaces=False))
         all_questions = [s.tgt_prompt for s in built]
         all_answers = [s.tgt_answer for s in built]
-        source_texts = []  # skip source baseline in fallback
+        samples = built
+        source_texts = [""] * len(bridged_texts)  # skip source baseline in fallback
 
     for idx, (sample, base_text, bridged_text, source_text) in enumerate(zip(samples, base_texts, bridged_texts, source_texts)):
         question_text = sample.tgt_prompt.strip()
