@@ -1251,6 +1251,50 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     correct_baseline = 0
     correct_bridged = 0
 
+    # Fallback: if distributed gather produced no outputs (e.g., DDP sharding edge cases), rerun eval locally on rank 0
+    if is_main() and len(bridged_texts) == 0 and len(base_texts) == 0:
+        log(f"[Eval] No texts gathered across ranks; running fallback eval locally for {num_samples} samples")
+        tgt_model.eval(); src_model.eval(); translator.eval()
+        local_samples = list(islice(dataset, 0, num_samples))
+        # Build samples without sharding
+        built = []
+        for ex in local_samples:
+            built.extend(build_samples({"question":[ex["question"]], "answer":[ex["answer"]]},
+                                       src_tok, tgt_tok, device, tgt_model,
+                                       cfg=EvalConfig(fewshot_prefix=build_gsm8k_fewshot_prefix(train_ds, k=8, seed=42), mode="eval_8shot")))
+        for start_idx in range(0, len(built), eval_batch_size):
+            end_idx = min(start_idx + eval_batch_size, len(built))
+            samples_batch = built[start_idx:end_idx]
+            with torch.inference_mode():
+                batch = build_batch_inputs(samples_batch, src_model, src_tok, tgt_model, tgt_tok, translator, device, dtype, target_rms=target_rms, mode='eval', args=args)
+                gen = tgt_model.generate(
+                    inputs_embeds=batch["inputs_embeds"],
+                    attention_mask=batch["attention_mask"],
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    pad_token_id=tgt_tok.pad_token_id,
+                    eos_token_id=tgt_tok.eos_token_id,
+                    use_cache=True
+                )
+                bridged_texts.extend(tgt_tok.batch_decode(gen, skip_special_tokens=True,
+                                                          clean_up_tokenization_spaces=False))
+            with torch.inference_mode():
+                prompts = [s.tgt_prompt for s in samples_batch]
+                enc = tgt_tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=8192).to(device)
+                base_out = tgt_model.generate(
+                    **enc,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    pad_token_id=tgt_tok.pad_token_id,
+                    eos_token_id=tgt_tok.eos_token_id,
+                    use_cache=True
+                )
+                base_texts.extend(tgt_tok.batch_decode(base_out, skip_special_tokens=True,
+                                                       clean_up_tokenization_spaces=False))
+        all_questions = [s.tgt_prompt for s in built]
+        all_answers = [s.tgt_answer for s in built]
+        source_texts = []  # skip source baseline in fallback
+
     for idx, (sample, base_text, bridged_text, source_text) in enumerate(zip(samples, base_texts, bridged_texts, source_texts)):
         question_text = sample.tgt_prompt.strip()
         gold_full_text = (sample.tgt_prompt + " " + sample.tgt_answer).strip()
