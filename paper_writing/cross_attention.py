@@ -1339,7 +1339,7 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         with open(jsonl_path, "w", encoding="utf-8") as f:
             for rec in sample_records:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    log(f"[Eval] Saved sample outputs to {jsonl_path}")
+        log(f"[Eval] Saved sample outputs to {jsonl_path}")
 
     return acc_source, acc_baseline, acc_bridged
 
