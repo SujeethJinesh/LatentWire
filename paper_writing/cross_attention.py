@@ -1251,17 +1251,19 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
     correct_baseline = 0
     correct_bridged = 0
 
-    # Fallback: if distributed gather produced no outputs (e.g., DDP sharding edge cases), rerun eval locally on rank 0
-    if is_main() and len(bridged_texts) == 0 and len(base_texts) == 0:
-        log(f"[Eval] No texts gathered across ranks; running fallback eval locally for {num_samples} samples")
+    def run_local_eval_fallback():
+        nonlocal bridged_texts, base_texts, source_texts, samples, all_questions, all_answers
+        log(f"[Eval] Fallback eval on rank 0 for {num_samples} samples (gathered counts: bridged={len(bridged_texts)}, base={len(base_texts)})")
         tgt_model.eval(); src_model.eval(); translator.eval()
         local_samples = list(islice(dataset, 0, num_samples))
-        # Build samples without sharding
         built = []
+        fewshot = build_gsm8k_fewshot_prefix(train_ds, k=8, seed=42)
         for ex in local_samples:
             built.extend(build_samples({"question":[ex["question"]], "answer":[ex["answer"]]},
                                        src_tok, tgt_tok, device, tgt_model,
-                                       cfg=EvalConfig(fewshot_prefix=build_gsm8k_fewshot_prefix(train_ds, k=8, seed=42), mode="eval_8shot")))
+                                       cfg=EvalConfig(fewshot_prefix=fewshot, mode="eval_8shot")))
+        bridged_texts = []
+        base_texts = []
         for start_idx in range(0, len(built), eval_batch_size):
             end_idx = min(start_idx + eval_batch_size, len(built))
             samples_batch = built[start_idx:end_idx]
@@ -1295,6 +1297,11 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
         all_answers = [s.tgt_answer for s in built]
         samples = built
         source_texts = [""] * len(bridged_texts)  # skip source baseline in fallback
+
+    # Fallback if gathered outputs are missing or mismatched
+    if is_main():
+        if len(bridged_texts) == 0 or len(base_texts) == 0 or len(bridged_texts) != len(base_texts) or len(all_questions) != len(base_texts):
+            run_local_eval_fallback()
 
     for idx, (sample, base_text, bridged_text, source_text) in enumerate(zip(samples, base_texts, bridged_texts, source_texts)):
         question_text = sample.tgt_prompt.strip()
