@@ -1385,6 +1385,8 @@ def evaluate_numeric_accuracy(dataset, src_model, src_tok, tgt_model, tgt_tok, t
             for rec in sample_records:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
         log(f"[Eval] Saved sample outputs to {jsonl_path}")
+    elif log_dir:
+        log(f"[Eval] No sample outputs to save for {eval_label} (sample_records empty)")
 
     return acc_source, acc_baseline, acc_bridged
 
