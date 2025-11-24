@@ -65,8 +65,8 @@ for S in "${SOURCE_LAYERS[@]}"; do
         echo "  GPUs:         $NPROC"
         echo "=========================================="
 
-        RUN_ID="${LABEL}_$(date +%Y%m%d_%H%M%S)"
-        OUTPUT_DIR="paper_writing/runs/${RUN_ID}"
+    RUN_ID="${LABEL}_$(date +%Y%m%d_%H%M%S)"
+    OUTPUT_DIR="paper_writing/runs/${RUN_ID}"
         mkdir -p "$OUTPUT_DIR"
         SUMMARY_LOG="$OUTPUT_DIR/summary.log"
 
