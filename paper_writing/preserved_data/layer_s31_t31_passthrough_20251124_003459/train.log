@@ -1,7 +1,7 @@
-W1123 22:21:49.423000 1824118 torch/distributed/run.py:793] 
-W1123 22:21:49.423000 1824118 torch/distributed/run.py:793] *****************************************
-W1123 22:21:49.423000 1824118 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1123 22:21:49.423000 1824118 torch/distributed/run.py:793] *****************************************
+W1124 00:35:01.040000 2000439 torch/distributed/run.py:793] 
+W1124 00:35:01.040000 2000439 torch/distributed/run.py:793] *****************************************
+W1124 00:35:01.040000 2000439 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1124 00:35:01.040000 2000439 torch/distributed/run.py:793] *****************************************
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 /users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
@@ -12,10 +12,6 @@ W1123 22:21:49.423000 1824118 torch/distributed/run.py:793] ********************
   warnings.warn(
 ================================================================================================================================================================================================================================================
 EARLY CUDA DIAGNOSTICS (before DDP setup)
-
-============================================================EARLY CUDA DIAGNOSTICS (before DDP setup)
-torch.cuda.is_available() check...
-
 ============================================================
 torch.cuda.is_available() check...
 
@@ -26,15 +22,18 @@ torch.cuda.is_available() check...
 EARLY CUDA DIAGNOSTICS (before DDP setup)
 ============================================================
 torch.cuda.is_available() check...
-  Result: True
-torch.cuda.device_count() check...
+
+EARLY CUDA DIAGNOSTICS (before DDP setup)
+============================================================
+torch.cuda.is_available() check...
   Result: True  Result: True
 torch.cuda.device_count() check...
-
+  Result: True
 torch.cuda.device_count() check...
   Result: True
 torch.cuda.device_count() check...
-  Result: 4 GPUs
+
+torch.cuda.device_count() check...
   Result: 4 GPUs
   Result: 4 GPUs
   GPU 0: NVIDIA H100 80GB HBM3
@@ -51,8 +50,9 @@ torch.cuda.device_count() check...
 [Rank 3] Getting device name for GPU 3...
 [Rank 3] GPU 3 available: NVIDIA H100 80GB HBM3
 [Rank 3] Calling init_process_group (timeout=60s)...
-  GPU 0: NVIDIA H100 80GB HBM3[W1123 22:21:58.619448560 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-
+  Result: 4 GPUs
+  Result: 4 GPUs
+[W1124 00:35:10.808136238 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
   GPU 0: NVIDIA H100 80GB HBM3
   GPU 1: NVIDIA H100 80GB HBM3
   GPU 2: NVIDIA H100 80GB HBM3
@@ -67,21 +67,37 @@ torch.cuda.device_count() check...
 [Rank 2] Getting device name for GPU 2...
 [Rank 2] GPU 2 available: NVIDIA H100 80GB HBM3
 [Rank 2] Calling init_process_group (timeout=60s)...
+  GPU 0: NVIDIA H100 80GB HBM3[W1124 00:35:10.821068937 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+  GPU 0: NVIDIA H100 80GB HBM3
+  GPU 1: NVIDIA H100 80GB HBM3
+  GPU 2: NVIDIA H100 80GB HBM3
+  GPU 3: NVIDIA H100 80GB HBM3
+============================================================
+
+[Rank 1/4] Starting DDP initialization...
+[Rank 1] Checking torch.cuda.is_available()...
+[Rank 1]   Result: True
+[Rank 1] Checking torch.cuda.device_count()...
+[Rank 1]   Result: 4 devices
+[Rank 1] Getting device name for GPU 1...
+[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
+[Rank 1] Calling init_process_group (timeout=60s)...
+
   GPU 1: NVIDIA H100 80GB HBM3
   GPU 2: NVIDIA H100 80GB HBM3
   GPU 3: NVIDIA H100 80GB HBM3
 ============================================================
 
 [Rank 0/4] Starting DDP initialization...
-[Rank 0] Checking torch.cuda.is_available()...
+[Rank 0] Checking torch.cuda.is_available()...[W1124 00:35:10.830723724 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+
 [Rank 0]   Result: True
 [Rank 0] Checking torch.cuda.device_count()...
 [Rank 0]   Result: 4 devices
 [Rank 0] Getting device name for GPU 0...
 [Rank 0] GPU 0 available: NVIDIA H100 80GB HBM3
 [Rank 0] Calling init_process_group (timeout=60s)...
-[W1123 22:21:58.628062017 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1123 22:21:58.629333798 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[W1124 00:35:10.844333082 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
 [Rank 0] DDP initialized successfully on GPU 0
 [Rank 0] Setting up reproducibility (base_seed=1234)...
 [Rank 0] Reproducibility setup complete (effective_seed=1234)
@@ -92,8 +108,8 @@ target_model: meta-llama/Meta-Llama-3.1-8B-Instruct
 bottleneck_dim: 1024
 soft_tokens: 128
 eval_prompt_mode: soft_only
-source_layer: 0
-target_layer: 0
+source_layer: 31
+target_layer: 31
 passthrough_soft: True
 soft_injection: prepend
 adapter_scale: 1.0
@@ -108,10 +124,10 @@ per_device_batch: 2
 eval_every: 250
 eval_samples: 100
 max_new_tokens: 256
-log_dir: paper_writing/runs/layer_s0_t0_passthrough_20251123_222148
+log_dir: paper_writing/runs/layer_s31_t31_passthrough_20251124_003459
 seed: 1234
 bf16: True
-save_path: paper_writing/runs/layer_s0_t0_passthrough_20251123_222148/checkpoint.pt
+save_path: paper_writing/runs/layer_s31_t31_passthrough_20251124_003459/checkpoint.pt
 show_eval_samples: 1
 early_stop_patience: 0
 dataset: gsm8k
@@ -155,48 +171,32 @@ Deterministic algorithms: True
 CUBLAS workspace: :16:8
 World size: 4 (each rank samples different data)
 Loading source model/tokenizer...
-  Result: 4 GPUs
-  GPU 0: NVIDIA H100 80GB HBM3
-  GPU 1: NVIDIA H100 80GB HBM3
-  GPU 2: NVIDIA H100 80GB HBM3
-  GPU 3: NVIDIA H100 80GB HBM3
-============================================================
-
-[Rank 1/4] Starting DDP initialization...
-[Rank 1] Checking torch.cuda.is_available()...
-[Rank 1]   Result: True
-[Rank 1] Checking torch.cuda.device_count()...
-[Rank 1]   Result: 4 devices
-[Rank 1] Getting device name for GPU 1...
-[Rank 1] GPU 1 available: NVIDIA H100 80GB HBM3
-[Rank 1] Calling init_process_group (timeout=60s)...
-[W1123 22:21:58.816444824 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[Rank 3] DDP initialized successfully on GPU 3[Rank 2] DDP initialized successfully on GPU 2
-[Rank 3] Setting up reproducibility (base_seed=1234)...
-
+[Rank 2] DDP initialized successfully on GPU 2
 [Rank 2] Setting up reproducibility (base_seed=1234)...
-[Rank 3] Reproducibility setup complete (effective_seed=1237)[Rank 2] Reproducibility setup complete (effective_seed=1236)
-
+[Rank 2] Reproducibility setup complete (effective_seed=1236)
+[Rank 3] DDP initialized successfully on GPU 3
+[Rank 3] Setting up reproducibility (base_seed=1234)...
+[Rank 3] Reproducibility setup complete (effective_seed=1237)
 [Rank 1] DDP initialized successfully on GPU 1
 [Rank 1] Setting up reproducibility (base_seed=1234)...
 [Rank 1] Reproducibility setup complete (effective_seed=1235)
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2386.18it/s]
-Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 630.20it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3918.99it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 5860.01it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.23s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.25s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.23s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:12<00:36, 12.33s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.28s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.28s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.29s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:24<00:24, 12.19s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.14s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.14s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.15s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:36<00:11, 11.96s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.95s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.95s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.95s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.15s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.15s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.15s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:38<00:00,  8.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:38<00:00,  9.55s/it]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 5005.14it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 10248.76it/s]
-Loading target model/tokenizer...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8120.63it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1972.86it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.16s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.28s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.33s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:35, 11.78s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.34s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.38s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.41s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:24<00:24, 12.10s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.23s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.21s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.24s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.01s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.01s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.00s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.19s/it]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2889.63it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3331.46it/s]
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2115.93it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6681.49it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:12<00:38, 12.68s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:35, 11.72s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.65s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.58s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.29s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:24<00:23, 11.89s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.31s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.34s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.09s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.47s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.17s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:34<00:11, 11.35s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.01s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.21s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  8.02s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:38<00:00,  8.22s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:38<00:00,  9.56s/it]
 Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.23s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.22s/it]
-Loading checkpoint shards:  75%|███████▌  | 3/4 [00:35<00:11, 11.76s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  8.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:37<00:00,  9.46s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.99s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.24s/it]
+Loading target model/tokenizer...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4718.00it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4951.95it/s]
+Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 329.80it/s]
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 8957.40it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.34s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:33, 11.24s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.40s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:11<00:34, 11.39s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.28s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.27s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.29s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:22<00:22, 11.23s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.04s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.07s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.08s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:33<00:11, 11.08s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.91s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.89s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.91s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.08s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.13s/it]
+
+Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  7.91s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.12s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:36<00:00,  9.12s/it]
 torch.compile() disabled via --no_compile flag (prevents CUDA Graph OOM)
 Source hidden dim: 4096 | Target hidden dim: 4096
 Target embedding RMS (median): 0.0107
@@ -238,12 +238,21 @@ SAMPLE OUTPUTS (first 3 examples):
 ============================================================
 ============================================================
 
+[Eval] No sample outputs to save for 0 (sample_records empty)
 [Eval] Step 0 | Source-alone acc: 0.000 | Target-alone acc: 0.000 | Bridged acc: 0.000
 ============================================================
 
-Saved translator to paper_writing/runs/layer_s0_t0_passthrough_20251123_222148/checkpoint.pt
+Saved translator to paper_writing/runs/layer_s31_t31_passthrough_20251124_003459/checkpoint.pt
 [Distributed Eval] Sharding 100 samples across 4 ranks:
   Rank 0: samples 0 to 25 (25 samples)
   Rank 1: samples 25 to 50 (25 samples)
   Rank 2: samples 50 to 75 (25 samples)
   Rank 3: samples 75 to 100 (25 samples)
+
+============================================================
+SAMPLE OUTPUTS (first 3 examples):
+============================================================
+============================================================
+
+[Eval] No sample outputs to save for final (sample_records empty)
+[Final Eval] Source-alone acc: 0.000 | Target-alone acc: 0.000 | Bridged acc: 0.000
