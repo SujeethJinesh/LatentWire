@@ -1103,3 +1103,81 @@ git pull && rm -rf runs && bash run_telepathy_v8.sh
 | 2025-11-29 | Created train_telepathy_v8.py with recon_weight parameter |
 | 2025-11-29 | Created run_telepathy_v8.sh |
 | 2025-11-29 | Updated eval_telepathy.py to handle V8 tuple output |
+| 2025-11-29 | **Phase 8 eval: 5% correct, 25% partial - Mode Collapse NOT fixed** |
+| 2025-11-29 | Recon loss dropped to 0.008 by step 100 - too easy to satisfy |
+| 2025-11-29 | Mean-pooling destroys entity info; bridge satisfies loss with generic vectors |
+
+---
+
+## 29. Phase 8 Results: Reconstruction Loss Failed
+
+### Evaluation Results
+
+| Metric | Phase 7 | Phase 8 | Change |
+|--------|---------|---------|--------|
+| Correct | 0% (0/20) | **5% (1/20)** | +1 |
+| Partial | 40% (8/20) | 25% (5/20) | -3 |
+| Failed | 60% | 70% | +2 |
+
+### Training Metrics
+
+| Metric | Start | End | Problem |
+|--------|-------|-----|---------|
+| **Recon Loss** | 0.3506 | **0.0086** | ← Dropped too fast! |
+| LM Loss | 1.500 | 0.838 | OK |
+| Anchor Loss | 0.5265 | 0.0786 | OK |
+| Contrastive | 1.382 | 0.557 | OK |
+| Scale | 0.0022 | 0.0042 | OK |
+
+### Why Reconstruction Loss Failed
+
+The reconstruction target is **mean-pooled source hidden states**:
+
+```python
+src_vec = (src_h * mask).sum(dim=1) / mask.sum(dim=1)  # Average all tokens
+```
+
+This average is dominated by:
+- ✅ Common structure: "Question:", "How many", "per day"
+- ❌ NOT entities: "ducks", "Janet", "pomegranates"
+
+**The bridge can satisfy recon loss by encoding generic math-problem structure while ignoring specific entities.**
+
+### Evidence: Recon Loss Too Easy
+
+| Step | Recon Loss | Interpretation |
+|------|------------|----------------|
+| 50 | 0.3506 | Learning |
+| 100 | 0.0598 | Already low |
+| 500 | 0.0099 | Near-zero |
+| 2500 | 0.0086 | Trivially satisfied |
+
+By step 100, the bridge learned to reconstruct "generic math question vector" without needing entity-specific information.
+
+### Sample Outputs (Mode Collapse Persists)
+
+```
+Q: Janet's ducks lay 16 eggs...
+V8: "The number of apples that the boy has..."
+
+Q: Nissa hires 60 elves...
+V8: "The number of students in the school is 120 * 2..."
+
+Q: cherries shared by Richard, Jerry, Robert...
+V8: "The total number of apples is 30 + 20 + 20..."
+```
+
+### Regression: Degenerate Loops Returned
+
+Tests 12 and 18 show number explosions (`30000000000000...`), which V7 had eliminated.
+
+### Next Directions
+
+The fundamental issue: **mean-pooling destroys entity information**.
+
+Potential fixes:
+1. **Token-level reconstruction** - predict each source token position
+2. **Entity extraction loss** - explicitly match named entities (NER)
+3. **Lower layer** - layer 12 instead of 16 for more surface features
+4. **CLS-style token** - dedicated position for entity encoding
+5. **Contrastive on entities** - pull together same-entity examples
