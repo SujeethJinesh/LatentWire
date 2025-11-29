@@ -64,7 +64,7 @@ CONTRASTIVE_TEMP="${CONTRASTIVE_TEMP:-0.07}"
 
 # Training
 STEPS="${STEPS:-2500}"
-BATCH_SIZE="${BATCH_SIZE:-8}"
+BATCH_SIZE="${BATCH_SIZE:-4}"  # Reduced from 8 due to OOM on H100s
 LR="${LR:-1e-4}"
 
 # Output
