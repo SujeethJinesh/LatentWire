@@ -202,7 +202,7 @@ if [[ -f "$CHECKPOINT" ]]; then
             --num_samples 20 \
             --max_new_tokens 150 \
             --output_dir "$OUTPUT_DIR" \
-            --bridge_version 3
+            --bridge_version 1
     } 2>&1 | tee "$EVAL_LOG"
 
     echo ""
