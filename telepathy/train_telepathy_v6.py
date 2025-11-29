@@ -102,12 +102,10 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     with torch.no_grad():
         src_enc = src_tok(src_texts, return_tensors="pt", padding=True, truncation=True, max_length=512).to(device)
         src_out = src_model(**src_enc, output_hidden_states=True)
-        src_h = src_out.hidden_states[args.source_layer].clone()
+        src_h = src_out.hidden_states[args.source_layer]
         if args.bf16:
             src_h = src_h.bfloat16()
-        src_mask = src_enc.attention_mask.clone()
-        del src_out  # Free memory
-        torch.cuda.empty_cache()
+        src_mask = src_enc.attention_mask
 
     # 2. Bridge Forward
     soft_tokens = bridge(src_h, src_mask)
