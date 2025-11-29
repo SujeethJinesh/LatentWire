@@ -1,17 +1,18 @@
 {
-    "run_id": "telepathy_v3_20251128_194239",
-    "phase": 3,
+    "run_id": "telepathy_v5_20251128_202041",
+    "phase": 5,
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
     "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
-    "source_layer": 20,
-    "soft_tokens": 128,
+    "source_layer": 16,
+    "soft_tokens": 256,
     "depth": 4,
     "heads": 8,
-    "steps": 2000,
+    "steps": 2500,
     "batch_size": 8,
     "lr": 1e-4,
-    "anchor_weight": 1.0,
+    "anchor_weight": 2.0,
     "contrastive_weight": 0.1,
     "contrastive_temp": 0.07,
-    "num_gpus": 4
+    "num_gpus": 4,
+    "changes": "Layer 20->16, Tokens 128->256, Anchor 1.0->2.0"
 }
