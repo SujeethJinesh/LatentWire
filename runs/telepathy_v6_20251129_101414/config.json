@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v6_20251129_101028",
+    "run_id": "telepathy_v6_20251129_101414",
     "phase": 6,
     "key_change": "Anchor to QUESTION embeddings instead of ANSWER embeddings",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -9,7 +9,7 @@
     "depth": 4,
     "heads": 8,
     "steps": 3000,
-    "batch_size": 8,
+    "batch_size": 4,
     "lr": 1e-4,
     "anchor_weight": 2.0,
     "contrastive_weight": 0.1,
