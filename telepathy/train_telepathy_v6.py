@@ -246,13 +246,8 @@ def main():
         # Periodic logging
         if local_rank == 0 and (step + 1) % 50 == 0:
             avg = {k: v / 50 for k, v in running.items()}
-            soft_scale = 0.0
-            with torch.no_grad():
-                bridge_module = bridge.module if torch.distributed.is_initialized() else bridge
-                test_out = bridge_module(src_h[:1], src_mask[:1])
-                soft_scale = test_out.abs().mean().item()
             print(f"\n[Step {step+1}/{args.steps}] Total: {avg['total']:.3f} | LM: {avg['lm']:.3f} | "
-                  f"Anchor: {avg['anchor']:.4f} | Ctr: {avg['contrastive']:.3f} | Scale: {soft_scale:.4f}")
+                  f"Anchor: {avg['anchor']:.4f} | Ctr: {avg['contrastive']:.3f}")
             running = {k: 0 for k in running}
 
         # Save checkpoints

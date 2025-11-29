@@ -779,3 +779,4 @@ If outputs mention "ducks" when question has "ducks" (instead of "apples"), the 
 | 2025-11-29 | **Critical insight: Anchoring to answers forces bridge to solve math** |
 | 2025-11-29 | Phase 6: The Translator Pivot (anchor to question embeddings) |
 | 2025-11-29 | Phase 6 OOM crash - reduced batch size 8→4, added memory clearing |
+| 2025-11-29 | Phase 6 NameError crash - fixed src_h reference in logging code |
