@@ -780,3 +780,8 @@ If outputs mention "ducks" when question has "ducks" (instead of "apples"), the 
 | 2025-11-29 | Phase 6: The Translator Pivot (anchor to question embeddings) |
 | 2025-11-29 | Phase 6 OOM crash - reduced batch size 8→4, added memory clearing |
 | 2025-11-29 | Phase 6 NameError crash - fixed src_h reference in logging code |
+| 2025-11-29 | Phase 6 slow training (3s/iter) - removed torch.cuda.empty_cache() |
+| 2025-11-29 | Phase 6 training completed at step 2147/3000 (71%) |
+| 2025-11-29 | Phase 6 final metrics: Total=3.86, LM=3.46, Anchor=0.18, Contrastive=0.54 |
+| 2025-11-29 | Phase 6 eval crashed: architecture mismatch (LatentBridgeV3 vs LatentBridge) |
+| 2025-11-29 | Fixed: bridge_version 3→1 in run_telepathy_v6.sh (awaiting re-run) |
