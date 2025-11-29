@@ -46,21 +46,36 @@ fi
 
 RUN_DIR=$(dirname "$CHECKPOINT")
 STATS_PATH="${RUN_DIR}/stats.pt"
+CONFIG_FILE="${RUN_DIR}/config.json"
 LOG_FILE="${RUN_DIR}/eval_$(date +%Y%m%d_%H%M%S).log"
 
 # =============================================================================
-# Configuration
+# Configuration (auto-detect from config.json if available)
 # =============================================================================
 NUM_SAMPLES="${NUM_SAMPLES:-20}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-150}"
 
+# Read architecture params from config.json
+if [[ -f "$CONFIG_FILE" ]]; then
+    SOFT_TOKENS=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('soft_tokens', 64))")
+    DEPTH=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('depth', 4))")
+    HEADS=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('heads', 8))")
+    echo "Auto-detected from config.json: soft_tokens=$SOFT_TOKENS, depth=$DEPTH, heads=$HEADS"
+else
+    SOFT_TOKENS="${SOFT_TOKENS:-64}"
+    DEPTH="${DEPTH:-4}"
+    HEADS="${HEADS:-8}"
+    echo "Using defaults: soft_tokens=$SOFT_TOKENS, depth=$DEPTH, heads=$HEADS"
+fi
+
 echo "=========================================================================="
 echo " Telepathy Evaluation"
 echo "=========================================================================="
-echo " Checkpoint:  $CHECKPOINT"
-echo " Stats:       $STATS_PATH"
-echo " Samples:     $NUM_SAMPLES"
-echo " Log:         $LOG_FILE"
+echo " Checkpoint:   $CHECKPOINT"
+echo " Stats:        $STATS_PATH"
+echo " Soft Tokens:  $SOFT_TOKENS"
+echo " Samples:      $NUM_SAMPLES"
+echo " Log:          $LOG_FILE"
 echo "=========================================================================="
 echo ""
 
@@ -71,6 +86,9 @@ echo ""
     python telepathy/eval_telepathy.py \
         --checkpoint "$CHECKPOINT" \
         --stats_path "$STATS_PATH" \
+        --soft_tokens "$SOFT_TOKENS" \
+        --depth "$DEPTH" \
+        --heads "$HEADS" \
         --num_samples "$NUM_SAMPLES" \
         --max_new_tokens "$MAX_NEW_TOKENS" \
         --output_dir "$RUN_DIR"

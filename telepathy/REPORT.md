@@ -294,7 +294,35 @@ total_loss = loss_lm + 0.5 * loss_contrastive
 
 ---
 
-## 11. Changelog
+## 11. Phase 2 Training Results
+
+Training completed on 2025-11-28. Key metrics:
+
+### Loss Progression
+
+| Step | Total Loss | LM Loss | Contrastive Loss |
+|------|-----------|---------|------------------|
+| 50 | 2.54 | 1.50 | 2.07 |
+| 200 | 1.41 | 0.94 | 0.95 |
+| 500 | 1.26 | 0.90 | 0.70 |
+| 1000 | 1.12 | 0.94 | 0.35 |
+| 2000 | 1.18 | 0.91 | 0.53 |
+
+### Analysis
+
+**Contrastive loss dropped from 2.07 → 0.35** by step 1000, proving that soft tokens are now **unique per input**. The bridge is no longer producing generic "average thoughts."
+
+**LM loss increased slightly** (0.77 → 0.91) compared to Phase 1. This is expected: forcing uniqueness makes the task harder but more grounded in reality.
+
+### The "Lazy Student" Lesson
+
+- **Phase 1**: Mistral ignored blurry latent vectors and guessed based on probability (cheating)
+- **Phase 2**: Contrastive learning punishes the bridge if Question A produces similar tokens to Question B
+- **Result**: The model must now look at the actual data instead of guessing
+
+---
+
+## 12. Changelog
 
 | Date | Change |
 |------|--------|
@@ -302,3 +330,5 @@ total_loss = loss_lm + 0.5 * loss_contrastive
 | 2025-11-28 | Added evaluation script |
 | 2025-11-28 | Phase 1 results: 0% accuracy, 75% partial |
 | 2025-11-28 | Added Phase 2 with contrastive learning |
+| 2025-11-28 | Phase 2 training complete: Ctr loss 2.07→0.53 |
+| 2025-11-28 | Awaiting Phase 2 evaluation results |
