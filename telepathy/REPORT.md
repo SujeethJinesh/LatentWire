@@ -468,6 +468,7 @@ With anchor loss actually working:
 | 2025-11-28 | Diagnosed anchor loss scale mismatch bug |
 | 2025-11-28 | Phase 3.1: Fixed anchor loss (MSE→Cosine) |
 | 2025-11-28 | Phase 3.1 eval: 5% acc, **85% partial** (↑15%) |
+| 2025-11-28 | **Phase 4: Found train/eval primer mismatch bug!** |
 
 ---
 
@@ -506,3 +507,33 @@ Output: "The thought vector has 100 components..."
 1. **Change primer** from "Analysis of received thought vector:" to "Answer:" or "Solution:"
 2. **Entity alignment loss**: Penalize when output entities differ from input entities
 3. **Longer training**: 2000 steps may be insufficient for semantic grounding
+
+---
+
+## 18. Phase 4: Train/Eval Primer Mismatch Fix
+
+### The Bug
+
+| Component | Primer Used |
+|-----------|-------------|
+| Training (`train_telepathy_v3.py`) | `"Answer: "` ✓ |
+| Evaluation (`eval_telepathy.py`) | `"Analysis of received thought vector: "` ✗ |
+
+**The model was trained correctly but evaluated with the wrong primer!**
+
+This explains why Mistral generated "thought vector" meta-commentary - the eval primer literally asked it to analyze thought vectors.
+
+### The Fix
+
+Changed `eval_telepathy.py` line 249:
+```python
+# OLD (wrong):
+primer = "Analysis of received thought vector: "
+
+# NEW (matches training):
+primer = "Answer: "
+```
+
+### Expected Impact
+
+With matching primers, the existing Phase 3.1 checkpoint should work properly. No retraining needed - just re-run evaluation.

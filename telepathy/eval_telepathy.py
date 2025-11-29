@@ -246,7 +246,7 @@ def main():
             soft_tokens = bridge(src_h, src_inputs.attention_mask)
 
         # 3. Target Generation - Mistral receives only soft tokens
-        primer = "Analysis of received thought vector: "
+        primer = "Answer: "  # Must match training primer
         primer_inputs = tgt_tok(primer, return_tensors="pt").to(device)
         primer_embeds = tgt_model.get_input_embeddings()(primer_inputs.input_ids)
 
