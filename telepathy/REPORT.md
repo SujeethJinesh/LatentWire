@@ -471,6 +471,7 @@ With anchor loss actually working:
 | 2025-11-28 | **Phase 4: Found train/eval primer mismatch bug!** |
 | 2025-11-28 | Phase 4 eval: 0% acc, but NO MORE meta-commentary! |
 | 2025-11-28 | New failure: Entity scrambling (ducks→chickens) |
+| 2025-11-28 | Phase 5: High-res telepathy (256 tokens, layer 16) |
 
 ---
 
@@ -596,3 +597,37 @@ The 128 soft tokens preserve **task structure** but lose **semantic details**. T
 2. **Entity-aware loss**: Penalize when output entities differ from input
 3. **Stronger anchor weight**: Currently 1.0, try 2.0-5.0
 4. **Different source layer**: Layer 20 may be too abstract, try layer 16 or 24
+
+---
+
+## 20. Phase 5: High-Resolution Telepathy
+
+### The Insight
+
+Phase 4 proved semantic transfer works - "pomegranates" → "apples" shows category-level understanding. We just need to **sharpen the image**.
+
+### Changes
+
+| Parameter | Phase 4 | Phase 5 | Rationale |
+|-----------|---------|---------|-----------|
+| Soft Tokens | 128 | **256** | Double bandwidth for entity details |
+| Source Layer | 20 | **16** | More concrete features, less abstract |
+| Anchor Weight | 1.0 | **2.0** | Force stronger semantic alignment |
+| Steps | 2000 | **2500** | More training for larger capacity |
+
+### Why Layer 16?
+
+- **Layer 20**: Abstract reasoning ("This is math about quantities")
+- **Layer 16**: Concrete concepts ("This is about ducks and eggs")
+
+Lower layers preserve more surface-level details like entity names.
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v5.sh
+```
+
+### Success Criteria
+
+If "Janet" and "ducks" appear in output (not "chickens"), we've succeeded. Target: >10% accuracy with entity preservation.
