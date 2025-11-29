@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v6_20251129_101414",
+    "run_id": "telepathy_v6_20251129_103704",
     "phase": 6,
     "key_change": "Anchor to QUESTION embeddings instead of ANSWER embeddings",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
