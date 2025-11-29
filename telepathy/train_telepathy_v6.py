@@ -100,17 +100,20 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
 
     # 1. Source Forward (Llama processes Question)
     with torch.no_grad():
-        src_enc = src_tok(src_texts, return_tensors="pt", padding=True, truncation=True, max_length=1024).to(device)
+        src_enc = src_tok(src_texts, return_tensors="pt", padding=True, truncation=True, max_length=512).to(device)
         src_out = src_model(**src_enc, output_hidden_states=True)
-        src_h = src_out.hidden_states[args.source_layer]
+        src_h = src_out.hidden_states[args.source_layer].clone()
         if args.bf16:
             src_h = src_h.bfloat16()
-        src_mask = src_enc.attention_mask
+        src_mask = src_enc.attention_mask.clone()
+        del src_out  # Free memory
+        torch.cuda.empty_cache()
 
     # 2. Bridge Forward
     soft_tokens = bridge(src_h, src_mask)
 
     # 3. V6 ANCHOR: Target is Mistral's QUESTION embeddings (not answer!)
+    # Note: Using embedding layer directly (no forward pass) to save memory
     with torch.no_grad():
         tgt_q_enc = tgt_tok(tgt_q_texts, return_tensors="pt", padding=True, truncation=True, max_length=512).to(device)
         target_q_embeds = tgt_model.get_input_embeddings()(tgt_q_enc.input_ids)
