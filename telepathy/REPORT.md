@@ -791,6 +791,8 @@ If outputs mention "ducks" when question has "ducks" (instead of "apples"), the 
 | 2025-11-29 | **Gemini identified Magnitude Bug: 33x signal overload** |
 | 2025-11-29 | Phase 7: Scale-Corrected Telepathy (tanh + learnable scale) |
 | 2025-11-29 | Created latent_bridge_v7.py, train_telepathy_v7.py, run_telepathy_v7.sh |
+| 2025-11-29 | Phase 7 crashed: dtype mismatch (float32 vs bfloat16) in cross_attn |
+| 2025-11-29 | Fixed: cast normalized output back to input dtype before resampler |
 
 ---
 
