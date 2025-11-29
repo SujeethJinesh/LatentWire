@@ -33,6 +33,10 @@ try:
     from latent_bridge_v7 import LatentBridgeV7
 except ImportError:
     LatentBridgeV7 = None
+try:
+    from latent_bridge_v8 import LatentBridgeV8
+except ImportError:
+    LatentBridgeV8 = None
 
 
 def parse_args():
@@ -114,7 +118,9 @@ def main():
     # Detect bridge version
     bridge_version = args.bridge_version
     if bridge_version is None:
-        if "v7" in args.checkpoint:
+        if "v8" in args.checkpoint:
+            bridge_version = 8
+        elif "v7" in args.checkpoint:
             bridge_version = 7
         elif "v5" in args.checkpoint or "v4" in args.checkpoint or "v3" in args.checkpoint:
             bridge_version = 3
@@ -136,7 +142,16 @@ def main():
         tgt_embeds = tgt_model.get_input_embeddings().weight.float()
         target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
 
-    if bridge_version == 7:
+    if bridge_version == 8:
+        if LatentBridgeV8 is None:
+            raise ImportError("LatentBridgeV8 not found. Check latent_bridge_v8.py exists.")
+        bridge = LatentBridgeV8(
+            BridgeArgs(),
+            src_model.config.hidden_size,
+            tgt_model.config.hidden_size,
+            target_rms=target_rms
+        )
+    elif bridge_version == 7:
         if LatentBridgeV7 is None:
             raise ImportError("LatentBridgeV7 not found. Check latent_bridge_v7.py exists.")
         bridge = LatentBridgeV7(
@@ -245,7 +260,12 @@ def main():
 
         # 2. Bridge: Compress to soft tokens
         with torch.no_grad():
-            soft_tokens = bridge(src_h, src_inputs.attention_mask)
+            bridge_out = bridge(src_h, src_inputs.attention_mask)
+            # V7/V8 return tuple (scaled, raw), earlier versions return just soft_tokens
+            if isinstance(bridge_out, tuple):
+                soft_tokens = bridge_out[0]  # Use scaled output
+            else:
+                soft_tokens = bridge_out
 
         # 3. Mistral generates from soft tokens
         primer = "Answer: "  # Must match training

@@ -3,7 +3,7 @@
 **Project**: Cross-Model Latent Communication
 **Models**: Llama 3.1 8B → Mistral 0.3 7B
 **Date**: November 29, 2025
-**Status**: Phase 6 Ready (Translator Pivot)
+**Status**: Phase 8 Ready (Reconstruction Loss)
 
 ---
 
@@ -985,3 +985,121 @@ git pull && rm -rf runs && bash run_telepathy_v7.sh
 | Coherent numbers (not 10*10*10...) | ✓ Scale fix working |
 | Still degenerate loops | Need further magnitude debugging |
 | Correct answers | 🎉 Full success |
+
+---
+
+## 27. Phase 8: Reconstruction Loss (Mode Collapse Fix)
+
+### Diagnosis: Mode Collapse
+
+Phase 7 fixed the scale issue, but revealed a deeper problem: **Mode Collapse**.
+
+The bridge learned to output generic "GSM8K templates" regardless of input:
+
+```
+Question: Janet's ducks lay 16 eggs...
+Output: "The total number of students is 3600..."
+
+Question: Jim spends 2 hours watching TV...
+Output: "The number of students in the first class is 1200..."
+```
+
+All outputs mention "students", "clubs", "10th grade" - memorized patterns from the GSM8K training distribution.
+
+### Root Cause Analysis
+
+| What Happened | Why |
+|---------------|-----|
+| Bridge outputs similar vectors for all inputs | Anchor loss (cosine) can be minimized by collapsing to mean |
+| Mistral generates coherent but wrong content | The "students/clubs" template satisfies LM loss on average |
+| No specific entity encoding | No objective forces bridge to encode "ducks" specifically |
+
+**The Problem**: Nothing prevents the bridge from learning:
+```python
+def collapsed_forward(self, any_input):
+    return GENERIC_MATH_TEMPLATE_VECTOR  # Works "on average"
+```
+
+### The Fix: Reconstruction Loss
+
+If we can reconstruct the source hidden states from soft tokens, the bridge **must** encode input-specific information.
+
+```python
+class LatentBridgeV8(nn.Module):
+    def __init__(self, ...):
+        # ... existing components ...
+
+        # PHASE 8: Reconstruction Head
+        self.recon_proj = nn.Linear(tgt_dim, src_dim)
+
+    def forward(self, src_hidden, src_mask=None):
+        # ... normalization and compression ...
+        compressed = self.resampler(normed, src_mask)
+        scaled_out = torch.tanh(compressed) * self.output_scale
+
+        # Return BOTH: scaled (for Mistral) and raw (for recon loss)
+        return scaled_out, compressed
+```
+
+### Training Objective
+
+```python
+# Phase 8: Reconstruction Loss
+recon_vec = bridge.recon_proj(raw_compressed).mean(dim=1)  # [B, src_dim]
+src_vec = masked_mean(src_hidden)  # Target: original source representation
+loss_recon = F.mse_loss(recon_vec, src_vec)
+
+total_loss = loss_lm + anchor_weight * loss_anchor +
+             contrastive_weight * loss_contrastive +
+             recon_weight * loss_recon  # NEW
+```
+
+### Why This Works
+
+| Without Recon Loss | With Recon Loss |
+|-------------------|-----------------|
+| Bridge can output generic vector | Must preserve input-specific info |
+| "ducks" → template | "ducks" → must be reconstructable |
+| Mode collapse allowed | Mode collapse prevented |
+
+If the bridge collapses to a generic template, reconstruction loss will spike because it can't distinguish "ducks" from "students".
+
+### Configuration
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Source Layer | 16 | Same as V7 |
+| Soft Tokens | 256 | Same as V7 |
+| Anchor Weight | 2.0 | Same as V7 |
+| Contrastive Weight | 0.1 | Same as V7 |
+| **Recon Weight** | 1.0 | **NEW** |
+| Batch Size | 4 | Reduced (V7 OOM fix) |
+| Steps | 2500 | Same as V7 |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v8.sh
+```
+
+### Success Criteria
+
+| Output Contains | What It Means |
+|-----------------|---------------|
+| Input-specific entities ("ducks" when question has "ducks") | ✓ Recon loss working |
+| Still generic templates ("students") | Need stronger recon weight |
+| Correct answers | 🎉 Full success |
+
+---
+
+## 28. Changelog (Continued)
+
+| Date | Change |
+|------|--------|
+| 2025-11-29 | **Diagnosed Mode Collapse in V7** |
+| 2025-11-29 | V7 outputs coherent but all hallucinate "students/clubs" templates |
+| 2025-11-29 | **Phase 8: Reconstruction Loss to force information preservation** |
+| 2025-11-29 | Created latent_bridge_v8.py with ReconstructionHead |
+| 2025-11-29 | Created train_telepathy_v8.py with recon_weight parameter |
+| 2025-11-29 | Created run_telepathy_v8.sh |
+| 2025-11-29 | Updated eval_telepathy.py to handle V8 tuple output |
