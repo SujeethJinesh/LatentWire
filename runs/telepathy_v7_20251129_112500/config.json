@@ -1,15 +1,18 @@
 {
-    "run_id": "telepathy_v6_20251129_103704",
-    "phase": 6,
-    "key_change": "Anchor to QUESTION embeddings instead of ANSWER embeddings",
+    "run_id": "telepathy_v7_20251129_112500",
+    "phase": 7,
+    "key_fixes": [
+        "Output scaling (tanh + learnable scale)",
+        "Reverted to Answer anchoring (V5 logic)"
+    ],
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
     "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
     "source_layer": 16,
     "soft_tokens": 256,
     "depth": 4,
     "heads": 8,
-    "steps": 3000,
-    "batch_size": 4,
+    "steps": 2500,
+    "batch_size": 8,
     "lr": 1e-4,
     "anchor_weight": 2.0,
     "contrastive_weight": 0.1,
