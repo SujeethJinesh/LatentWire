@@ -22,7 +22,12 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 
+# Import all bridge versions
 from latent_bridge import LatentBridge
+try:
+    from latent_bridge_v3 import LatentBridgeV3
+except ImportError:
+    LatentBridgeV3 = None
 
 
 def parse_args():
@@ -88,6 +93,12 @@ def parse_args():
         default=None,
         help="Output directory (defaults to checkpoint dir)"
     )
+    parser.add_argument(
+        "--bridge_version",
+        type=int,
+        default=None,
+        help="Bridge version (1, 2, or 3). Auto-detected from checkpoint name if not specified."
+    )
     return parser.parse_args()
 
 
@@ -147,8 +158,17 @@ def main():
     tgt_tok = AutoTokenizer.from_pretrained(args.target_model)
     tgt_tok.pad_token = tgt_tok.eos_token
 
-    # Load Bridge
-    print(f"[3/4] Loading Bridge from {args.checkpoint}...")
+    # Detect bridge version from checkpoint name if not specified
+    bridge_version = args.bridge_version
+    if bridge_version is None:
+        if "v3" in args.checkpoint:
+            bridge_version = 3
+        elif "v2" in args.checkpoint:
+            bridge_version = 2
+        else:
+            bridge_version = 1
+
+    print(f"[3/4] Loading Bridge V{bridge_version} from {args.checkpoint}...")
 
     class BridgeArgs:
         stats_path = args.stats_path
@@ -156,11 +176,26 @@ def main():
         heads = args.heads
         depth = args.depth
 
-    bridge = LatentBridge(
-        BridgeArgs(),
-        src_model.config.hidden_size,
-        tgt_model.config.hidden_size
-    )
+    # Calculate target RMS for V3
+    with torch.no_grad():
+        tgt_embeds = tgt_model.get_input_embeddings().weight.float()
+        target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
+
+    if bridge_version == 3:
+        if LatentBridgeV3 is None:
+            raise ImportError("LatentBridgeV3 not found. Check latent_bridge_v3.py exists.")
+        bridge = LatentBridgeV3(
+            BridgeArgs(),
+            src_model.config.hidden_size,
+            tgt_model.config.hidden_size,
+            target_rms=target_rms
+        )
+    else:
+        bridge = LatentBridge(
+            BridgeArgs(),
+            src_model.config.hidden_size,
+            tgt_model.config.hidden_size
+        )
     bridge.load_state_dict(torch.load(args.checkpoint, map_location=device, weights_only=True))
     bridge.to(device).bfloat16().eval()
 

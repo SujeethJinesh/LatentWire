@@ -322,7 +322,77 @@ Training completed on 2025-11-28. Key metrics:
 
 ---
 
-## 12. Changelog
+## 12. Phase 2 Evaluation Results (FAILURE)
+
+| Metric | Phase 1 | Phase 2 |
+|--------|---------|---------|
+| **Accuracy** | 0% | 0% |
+| **Partial** | 75% | **50%** ⬇️ |
+| **Failed** | 25% | **50%** ⬆️ |
+
+**Phase 2 performed WORSE than Phase 1.**
+
+### Failure Mode: Semantic Drift
+
+The outputs revealed garbage tokens:
+```
+"schen: I'm going to have 10000000000000000000..."
+"rile=100*100/100=1000000000000000000..."
+"pile of 100000000000000000000..."
+```
+
+### Root Cause Analysis
+
+Contrastive learning made vectors **mathematically unique** but pushed them into **dead zones** - regions of Mistral's embedding space that don't map to real words.
+
+| Symptom | Evidence |
+|---------|----------|
+| Corrupted tokens | "schen:", "rile=", "nek@", "bia=" |
+| Value explosion | 10^100+ numbers |
+| No entity transfer | Never see input words like "Janet", "eggs" |
+
+The StatisticalNormalizer matched mean/std but not the **geometric structure** of the embedding manifold.
+
+---
+
+## 13. Phase 3: Manifold Anchoring
+
+### The Fix
+
+Three changes to keep soft tokens in the "Safe Operating Area":
+
+1. **Learnable Normalizer**: Unfreeze affine parameters (l_mean, l_std, m_mean, m_std) so gradients can fine-tune the voltage match.
+
+2. **Output Clamping**: Apply `tanh()` to bound outputs to [-1, 1], then scale by learnable factor. Prevents 10^100 explosion.
+
+3. **Batch Anchor Loss**: Pull soft tokens toward target answer embeddings:
+   ```python
+   loss_anchor = F.mse_loss(soft_tokens.mean(1), answer_embeds.mean(1))
+   ```
+
+### Loss Weights
+
+| Loss | Phase 2 | Phase 3 |
+|------|---------|---------|
+| LM | 1.0 | 1.0 |
+| Contrastive | 0.5 | **0.1** (reduced) |
+| Anchor | 0 | **1.0** (new) |
+
+### Architecture Changes
+
+```python
+# V3: Learnable normalizer
+self.l_mean = nn.Parameter(l_mean)  # was: register_buffer
+
+# V3: Output clamping
+x = self.output_ln(x)
+x = torch.tanh(x)  # bound to [-1, 1]
+x = x * self.output_scale  # learnable scale
+```
+
+---
+
+## 14. Changelog
 
 | Date | Change |
 |------|--------|
@@ -330,5 +400,7 @@ Training completed on 2025-11-28. Key metrics:
 | 2025-11-28 | Added evaluation script |
 | 2025-11-28 | Phase 1 results: 0% accuracy, 75% partial |
 | 2025-11-28 | Added Phase 2 with contrastive learning |
-| 2025-11-28 | Phase 2 training complete: Ctr loss 2.07→0.53 |
-| 2025-11-28 | Awaiting Phase 2 evaluation results |
+| 2025-11-28 | Phase 2 training: Ctr loss 2.07→0.53 |
+| 2025-11-28 | Phase 2 eval: 0% acc, 50% partial (WORSE) |
+| 2025-11-28 | Diagnosed "Semantic Drift" failure mode |
+| 2025-11-28 | Added Phase 3: Manifold Anchoring |
