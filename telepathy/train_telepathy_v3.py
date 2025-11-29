@@ -92,28 +92,38 @@ def batch_anchor_loss(
     target_mask: torch.Tensor
 ) -> torch.Tensor:
     """
-    V3: Batch Anchor Loss.
+    V3: Batch Anchor Loss (Scale-Invariant).
 
-    Pulls soft tokens toward the target answer embeddings for the current batch.
-    This ensures soft tokens stay in the "valid language manifold".
+    Pulls soft tokens toward the target answer embeddings using COSINE SIMILARITY
+    instead of MSE. This is critical because:
+    - soft_tokens are clamped to ~±0.003 (tanh * output_scale)
+    - answer_embeds have ~10x larger magnitude (~0.03)
+    - MSE would be ~0.0000007 (no gradient signal)
+    - Cosine similarity ignores scale, measures directional alignment
 
     Args:
-        soft_tokens: [B, K, D] - Output from bridge
+        soft_tokens: [B, K, D] - Output from bridge (clamped small values)
         target_answer_embeds: [B, T, D] - Target model's answer embeddings
         target_mask: [B, T] - Mask for answer tokens
 
     Returns:
-        Scalar loss
+        Scalar loss (1 - cosine_similarity)
     """
     # Mean pool soft tokens: [B, K, D] -> [B, D]
-    soft_mean = soft_tokens.mean(dim=1)
+    soft_mean = soft_tokens.mean(dim=1).float()
 
     # Mean pool answer embeddings (masked): [B, T, D] -> [B, D]
     mask = target_mask.unsqueeze(-1).float()
     answer_mean = (target_answer_embeds * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
+    answer_mean = answer_mean.float()
 
-    # MSE loss pulls soft tokens toward answer embeddings
-    return F.mse_loss(soft_mean.float(), answer_mean.float())
+    # Normalize for cosine similarity
+    soft_norm = F.normalize(soft_mean, dim=1)
+    answer_norm = F.normalize(answer_mean, dim=1)
+
+    # Cosine similarity loss: 1 - cos_sim (0 = perfect alignment, 2 = opposite)
+    cos_sim = (soft_norm * answer_norm).sum(dim=1).mean()
+    return 1.0 - cos_sim
 
 
 def train_step(

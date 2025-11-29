@@ -392,7 +392,67 @@ x = x * self.output_scale  # learnable scale
 
 ---
 
-## 14. Changelog
+## 14. Phase 3 Evaluation Results (FIRST SUCCESS!)
+
+| Metric | Phase 1 | Phase 2 | Phase 3 |
+|--------|---------|---------|---------|
+| **Accuracy** | 0% | 0% | **5% (1/20)** ✓ |
+| **Partial** | 75% | 50% | 70% |
+| **Failed** | 25% | 50% | 25% |
+
+**Phase 3 achieved the FIRST CORRECT ANSWER!** The output clamping and learnable normalizer helped, even though anchor loss was broken.
+
+### Training Metrics
+
+| Step | Total | LM | Anchor | Contrastive |
+|------|-------|-----|--------|-------------|
+| 50 | 1.48 | 1.28 | 0.0000 | 2.06 |
+| 500 | 0.93 | 0.90 | 0.0000 | 0.26 |
+| 2000 | 0.76 | 0.76 | 0.0000 | 0.02 |
+
+**BUG DISCOVERED**: Anchor loss was 0.0000 throughout training!
+
+---
+
+## 15. Phase 3.1: Anchor Loss Bug Fix
+
+### Root Cause
+
+The anchor loss used MSE between vectors with **10x scale mismatch**:
+
+| Component | Scale |
+|-----------|-------|
+| soft_tokens (after tanh×scale) | ±0.003 |
+| answer_embeds (raw embeddings) | ±0.03 |
+| MSE result | ~0.0000007 |
+
+The MSE was so small it provided no gradient signal.
+
+### The Fix
+
+Changed from MSE to **cosine similarity**, which is scale-invariant:
+
+```python
+# OLD (broken): MSE with scale mismatch
+return F.mse_loss(soft_mean, answer_mean)  # → 0.0000
+
+# NEW (fixed): Cosine similarity ignores scale
+soft_norm = F.normalize(soft_mean, dim=1)
+answer_norm = F.normalize(answer_mean, dim=1)
+cos_sim = (soft_norm * answer_norm).sum(dim=1).mean()
+return 1.0 - cos_sim  # 0 = aligned, 2 = opposite
+```
+
+### Expected Impact
+
+With anchor loss actually working:
+- Soft tokens will be **directionally aligned** with answer embeddings
+- Combined with contrastive loss: unique AND meaningful vectors
+- Expected accuracy improvement from 5% → 10-20%
+
+---
+
+## 16. Changelog
 
 | Date | Change |
 |------|--------|
@@ -404,3 +464,6 @@ x = x * self.output_scale  # learnable scale
 | 2025-11-28 | Phase 2 eval: 0% acc, 50% partial (WORSE) |
 | 2025-11-28 | Diagnosed "Semantic Drift" failure mode |
 | 2025-11-28 | Added Phase 3: Manifold Anchoring |
+| 2025-11-28 | Phase 3 eval: **5% acc** (FIRST SUCCESS!) |
+| 2025-11-28 | Diagnosed anchor loss scale mismatch bug |
+| 2025-11-28 | Phase 3.1: Fixed anchor loss (MSE→Cosine) |
