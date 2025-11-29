@@ -469,6 +469,8 @@ With anchor loss actually working:
 | 2025-11-28 | Phase 3.1: Fixed anchor loss (MSE→Cosine) |
 | 2025-11-28 | Phase 3.1 eval: 5% acc, **85% partial** (↑15%) |
 | 2025-11-28 | **Phase 4: Found train/eval primer mismatch bug!** |
+| 2025-11-28 | Phase 4 eval: 0% acc, but NO MORE meta-commentary! |
+| 2025-11-28 | New failure: Entity scrambling (ducks→chickens) |
 
 ---
 
@@ -537,3 +539,60 @@ primer = "Answer: "
 ### Expected Impact
 
 With matching primers, the existing Phase 3.1 checkpoint should work properly. No retraining needed - just re-run evaluation.
+
+---
+
+## 19. Phase 4 Evaluation Results
+
+### Summary
+
+| Metric | Phase 3.1 | Phase 4 | Change |
+|--------|-----------|---------|--------|
+| Accuracy | 5% | 0% | ⬇️ |
+| Partial | 85% | 75% | ⬇️ |
+| Failed | 10% | 25% | ⬆️ |
+
+### Major Behavioral Shift: No More Meta-Commentary!
+
+**Before (Phase 3.1 - wrong primer)**:
+```
+Input:  "Janet's ducks lay 16 eggs..."
+Output: "The thought vector has 100 components..."
+```
+
+**After (Phase 4 - correct primer)**:
+```
+Input:  "Janet's ducks lay 16 eggs..."
+Output: "The number of eggs that the chickens lay in a week is 16 * 4 = <<16*4=64>>64..."
+```
+
+The model now generates **actual GSM8K-style math reasoning**!
+
+### New Failure Mode: Entity Scrambling
+
+| Question | Output |
+|----------|--------|
+| Janet's **ducks** | **Chickens** |
+| 60 **elves** | **People at party** |
+| **Cherries** | **Apples** |
+| **Pomegranates** | **Apples** |
+
+### What the Bridge Transmits
+
+| Information | Transmitted? |
+|-------------|--------------|
+| "This is a math problem" | ✅ Yes |
+| "Use GSM8K format" | ✅ Yes |
+| Specific entities | ❌ No |
+| Specific numbers | ❌ Partially |
+
+### Diagnosis: Lossy Compression
+
+The 128 soft tokens preserve **task structure** but lose **semantic details**. The bridge acts like a "blurry JPEG" - you can tell it's a math problem but can't read the specifics.
+
+### Potential Fixes
+
+1. **More soft tokens**: 128 → 256 or 512
+2. **Entity-aware loss**: Penalize when output entities differ from input
+3. **Stronger anchor weight**: Currently 1.0, try 2.0-5.0
+4. **Different source layer**: Layer 20 may be too abstract, try layer 16 or 24
