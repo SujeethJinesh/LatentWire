@@ -36,7 +36,16 @@ else
         echo "Usage: bash run_telepathy_eval.sh <checkpoint_path>"
         exit 1
     fi
-    CHECKPOINT="${LATEST_RUN}/bridge_final.pt"
+    # Try different checkpoint names (v2 uses bridge_v2_final.pt)
+    if [[ -f "${LATEST_RUN}/bridge_v2_final.pt" ]]; then
+        CHECKPOINT="${LATEST_RUN}/bridge_v2_final.pt"
+    elif [[ -f "${LATEST_RUN}/bridge_final.pt" ]]; then
+        CHECKPOINT="${LATEST_RUN}/bridge_final.pt"
+    else
+        echo "ERROR: No checkpoint found in ${LATEST_RUN}"
+        echo "Looking for: bridge_final.pt or bridge_v2_final.pt"
+        exit 1
+    fi
 fi
 
 if [[ ! -f "$CHECKPOINT" ]]; then

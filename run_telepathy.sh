@@ -197,3 +197,46 @@ echo "   - train.log:          Phase 2 output"
 echo "   - bridge_final.pt:    Final model checkpoint"
 echo "   - bridge_step*.pt:    Intermediate checkpoints"
 echo "=========================================================================="
+
+# =============================================================================
+# Automatic Evaluation
+# =============================================================================
+CHECKPOINT="${OUTPUT_DIR}/bridge_final.pt"
+SKIP_EVAL="${SKIP_EVAL:-false}"
+
+if [[ "$SKIP_EVAL" == "true" ]]; then
+    echo ""
+    echo "Skipping evaluation (SKIP_EVAL=true)"
+    echo "Run manually: bash run_telepathy_eval.sh $CHECKPOINT"
+elif [[ -f "$CHECKPOINT" ]]; then
+    echo ""
+    echo "=========================================================================="
+    echo " Running Automatic Evaluation"
+    echo "=========================================================================="
+
+    EVAL_LOG="${OUTPUT_DIR}/eval_$(date +%Y%m%d_%H%M%S).log"
+
+    {
+        python telepathy/eval_telepathy.py \
+            --checkpoint "$CHECKPOINT" \
+            --stats_path "$STATS_FILE" \
+            --soft_tokens "$SOFT_TOKENS" \
+            --depth "$DEPTH" \
+            --heads "$HEADS" \
+            --num_samples 20 \
+            --max_new_tokens 150 \
+            --output_dir "$OUTPUT_DIR"
+    } 2>&1 | tee "$EVAL_LOG"
+
+    echo ""
+    echo "=========================================================================="
+    echo " Evaluation Complete!"
+    echo "=========================================================================="
+    echo " Results: ${OUTPUT_DIR}/eval_results.json"
+    echo " Log:     $EVAL_LOG"
+    echo "=========================================================================="
+else
+    echo ""
+    echo "WARNING: Checkpoint not found, skipping evaluation"
+    echo "Expected: $CHECKPOINT"
+fi
