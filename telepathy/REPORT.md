@@ -2,8 +2,8 @@
 
 **Project**: Cross-Model Latent Communication
 **Models**: Llama 3.1 8B → Mistral 0.3 7B
-**Date**: November 28, 2025
-**Status**: Phase 1 Complete, Phase 2 Ready
+**Date**: November 29, 2025
+**Status**: Phase 6 Ready (Translator Pivot)
 
 ---
 
@@ -631,3 +631,150 @@ git pull && rm -rf runs && bash run_telepathy_v5.sh
 ### Success Criteria
 
 If "Janet" and "ducks" appear in output (not "chickens"), we've succeeded. Target: >10% accuracy with entity preservation.
+
+---
+
+## 21. Phase 5 Evaluation Results
+
+### Training Completion
+
+Training completed successfully on 2025-11-29. Final metrics at step 1170:
+
+| Metric | Value |
+|--------|-------|
+| Total Loss | ~1.17 |
+| LM Loss | ~0.79 |
+| Anchor Loss | ~0.13 |
+| Contrastive Loss | ~1.66 |
+
+### Evaluation Results
+
+| Metric | Phase 4 | Phase 5 | Change |
+|--------|---------|---------|--------|
+| **Accuracy** | 0% | **5% (1/20)** | ⬆️ |
+| **Partial** | 75% | **40%** | ⬇️ |
+| **Failed** | 25% | **55%** | ⬆️ |
+
+### Text Baseline Comparison
+
+| Method | Accuracy |
+|--------|----------|
+| Text Baseline (Mistral reads question) | 0% |
+| Telepathy (Llama→Bridge→Mistral) | 5% |
+
+**Note**: The text baseline also failed (0%), suggesting GSM8K requires chain-of-thought prompting for Mistral.
+
+### Entity Scrambling Persists
+
+| Question Topic | Telepathy Output Topic |
+|---------------|----------------------|
+| Ducks laying eggs | Farmer selling **apples** |
+| Knitting wool skeins | Pounds of **meat** |
+| Pomegranates | Pieces of **candy** |
+| Cherries | **Apples** |
+
+### The One Correct Answer
+
+```
+Question: "20 students, 5 good at math only, 8 good at English only..."
+GT Answer: 12
+Telepathy: "There are 12 people in the group..." → 12 ✓
+```
+
+Interestingly, the telepathy output describes a completely different scenario ("people in a group", "men/women") but arrives at the correct number. This suggests the bridge transfers numerical relationships but scrambles entities.
+
+### Diagnosis
+
+Phase 5 changes (Layer 16, 256 tokens, Anchor 2.0) did **NOT** fix entity scrambling. The bridge transfers:
+- ✅ Task structure (math word problem format)
+- ✅ GSM8K-style reasoning chains (with `####` markers)
+- ❌ Specific entities (consistently scrambled)
+
+---
+
+## 22. Phase 6: The Translator Pivot
+
+### Critical Architectural Insight
+
+**The Deep Bug**: We are training the bridge to be a **Math Solver**, not a **Translator**.
+
+#### Current Training (V1-V5)
+
+```
+Input:    Llama reads Question ("Janet has 16 ducks...")
+Anchor:   Mistral's Answer embeddings ("16 * 4 = 64...")
+Problem:  Bridge must convert Q→A (solve math!)
+Result:   Bridge learns generic "math vectors", discards entities
+```
+
+The bridge (a small 4-layer adapter) cannot solve math. To minimize loss, it learns to output generic "math answer vectors" that are directionally similar to answers, discarding specific entities ("ducks") because they aren't central to the answer embedding space.
+
+#### The Fix (V6)
+
+```
+Input:    Llama reads Question ("Janet has 16 ducks...")
+Anchor:   Mistral's Question embeddings ("Janet has 16 ducks...")
+Goal:     Bridge(Llama_Q) ≈ Mistral(Q)
+Result:   Bridge translates Q→Q, Mistral's 7B params do reasoning
+```
+
+### Key Code Change
+
+```python
+# V5 (broken): Anchor to ANSWER embeddings
+with torch.no_grad():
+    tgt_ans_enc = tgt_tok(tgt_answer_texts, ...)
+    target_embeds = tgt_model.get_input_embeddings()(tgt_ans_enc.input_ids)
+
+# V6 (fixed): Anchor to QUESTION embeddings
+with torch.no_grad():
+    tgt_q_enc = tgt_tok(tgt_q_texts, ...)  # "Question: {q}\nAnswer:"
+    target_q_embeds = tgt_model.get_input_embeddings()(tgt_q_enc.input_ids)
+```
+
+### Conceptual Shift
+
+| Aspect | V1-V5 | V6 |
+|--------|-------|-----|
+| Bridge Role | Solver (Q→A) | Translator (Q→Q) |
+| Anchor Target | Answer embeddings | Question embeddings |
+| Who does reasoning? | Bridge (4 layers) | Mistral (7B params) |
+| Entity preservation | ❌ Lost in compression | ✅ Should be preserved |
+
+### Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Source Layer | 16 |
+| Soft Tokens | 256 |
+| Anchor Weight | 2.0 |
+| Steps | 3000 |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v6.sh
+```
+
+### Success Criteria
+
+If outputs mention "ducks" when question has "ducks" (instead of "apples"), the architectural insight is correct and entity scrambling should be fixed.
+
+### Expected Outcome
+
+| Scenario | What It Means |
+|----------|---------------|
+| Entities preserved | ✓ Translator pivot works! |
+| Entities still scrambled | Need different approach (entity extraction, explicit copying) |
+
+---
+
+## 23. Changelog (Continued)
+
+| Date | Change |
+|------|--------|
+| 2025-11-29 | Phase 5 training completed |
+| 2025-11-29 | Phase 5 eval: 5% acc, 40% partial |
+| 2025-11-29 | Entity scrambling persists despite changes |
+| 2025-11-29 | **Critical insight: Anchoring to answers forces bridge to solve math** |
+| 2025-11-29 | Phase 6: The Translator Pivot (anchor to question embeddings) |
