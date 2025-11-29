@@ -1,6 +1,6 @@
 {
   "config": {
-    "checkpoint": "runs/telepathy_v7_20251129_115242/bridge_v7_final.pt",
+    "checkpoint": "runs/telepathy_v8_20251129_140323/bridge_v8_final.pt",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
     "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
     "source_layer": 16,
@@ -10,10 +10,10 @@
   "summary": {
     "baseline_correct": 0,
     "baseline_accuracy": 0.0,
-    "telepathy_correct": 0,
-    "telepathy_partial": 8,
-    "telepathy_accuracy": 0.0,
-    "telepathy_partial_rate": 40.0
+    "telepathy_correct": 1,
+    "telepathy_partial": 5,
+    "telepathy_accuracy": 5.0,
+    "telepathy_partial_rate": 25.0
   },
   "results": [
     {
@@ -26,8 +26,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "=====\nThe total number of students is 3600.\nThe number of students in the first class is 1200.\nThe number of students in the second class is 1200.\nThe number of students in the third class is 1200.\nThe number of students in the fourth class is 300.\nThe number of students in the fifth class is 300.\nThe number of students in the sixth class is 300.\nThe number of students in the seventh class is 60.\nThe number of students in the eighth class is 60.\nThe number of students in the ninth class is 6",
-        "pred": "6",
+        "response": "The number of apples that the boy has is 16 + 2 = <<16+2=18>>18\nThe number of apples that the boy has is 18 * 3 = <<18*3=54>>54\nThe number of apples that the boy has is 54 + 12 = <<54+12=66>>66\nThe number of apples that the boy has is 66 * 2 = <<66*2=132>>132\nThe number of apples that the boy has is 132 + 12 = <<132+12=14",
+        "pred": "14",
         "correct": false,
         "partial": false
       }
@@ -42,8 +42,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe first number is 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "pred": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "response": "He runs 2 miles every day, so he runs 2*7 = <<2*7=14>>14 miles in a week.\nHe runs 14 miles every week, so he runs 14*4 = <<14*4=56>>56 miles in a month.\nHe runs 56 miles every month, so he runs 56*12 = <<56*12=672>>672 miles in a year.\n#### 672",
+        "pred": "672",
         "correct": false,
         "partial": false
       }
@@ -58,8 +58,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1000\nThe number of students who are not in the club is 500\nThe number of students who are in the club is 1000-500=<<1000-500=500>>500\nThe number of students who are in the club and are not in the math club is 200\nThe number of students who are in both clubs is 500-200=<<500-200=300>>300\n#### 300",
-        "pred": "300",
+        "response": "The number of students in the school is 120 * 2 = <<120*2=240>>240.\nThe number of students in the school who are in the 6th grade is 40 * 2 = <<40*2=80>>80.\nThe number of students in the school who are in the 7th grade is 40 * 2 = <<40*2=80>>80.\nThe number of students in the school who are in the 8th grade is 40 * 2 = <<40*2=80>>80.\nThe number of students in the school who are",
+        "pred": "80",
         "correct": false,
         "partial": false
       }
@@ -74,8 +74,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe first number is 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "pred": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "response": "The total cost of the two shirts is 2*$12 = $<<2*12=24>>24\nThe total cost of the two pairs of pants is 2*$10 = $<<2*10=20>>20\nThe total cost of the two pairs of shoes is 2*$8 = $<<2*8=16>>16\nThe total cost of the two pairs of socks is 2*$6 = $<<2*6=12>>12\nThe total cost of the two pairs of underwear is 2*$4 = $<<2*4=8>>8\nThe total cost of the two pairs",
+        "pred": "8",
         "correct": false,
         "partial": false
       }
@@ -90,10 +90,10 @@
         "correct": false
       },
       "telepathy": {
-        "response": "=====\nThe total number of students is 1200.\nThe number of students who are not in the 10th grade is 1200 - 300 = <<1200-300=900>>900.\nThe number of students who are in the 10th grade is 300.\nThe number of students who are in the 10th grade and are not in the soccer team is 300 - 100 = <<300-100=200>>200.\nThe number of students who are in the 10th grade and are in the soccer team is",
-        "pred": "10",
+        "response": "The number of apples that the boy has is 48 + 24 + 16 = <<48+24+16=88>>88\nThe number of apples that the boy has is 88 + 24 = <<88+24=112>>112\nThe number of apples that the boy has is 112 + 48 = <<112+48=160>>160\nThe number of apples that the boy has is 160 + 24 = <<160+24=184>>184\nThe number of apples that the boy",
+        "pred": "184",
         "correct": false,
-        "partial": true
+        "partial": false
       }
     },
     {
@@ -106,8 +106,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1000\nThe number of students who are not in the club is 500\nThe number of students who are in the club is 1000-500=<<1000-500=500>>500\nThe number of students who are in the club and are not in the math club is 200\nThe number of students who are in both clubs is 500-200=<<500-200=300>>300\nThe number of students who are in the math club is 800\nThe number of students who are in the math",
-        "pred": "800",
+        "response": "The total number of tickets sold is 4000 * 1000 = <<4000*1000=4000000>>4,000,000\nThe total amount of money collected is 4,000,000 * $10 = $<<4000000*10=40000000>>40,000,000\nThe total amount of money collected from the 2000 tickets sold at $20 each is 2000 * $20 = $<<2000*20=40000",
+        "pred": "40000",
         "correct": false,
         "partial": false
       }
@@ -122,8 +122,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "=====\nThe total number of students is 1200.\nThe number of students who are not in the 10th grade is 1200 - 300 = <<1200-300=900>>900.\nThe number of students who are in the 10th grade is 300.\nThe number of students who are in the 10th grade and are not in the soccer team is 300 - 100 = <<300-100=200>>200.\nThe number of students who are in the 10th grade and are in the soccer team is",
-        "pred": "10",
+        "response": "First, find the total number of apples that the boy has: 12 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18 + 18",
+        "pred": "18",
         "correct": false,
         "partial": false
       }
@@ -138,8 +138,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 3000\nThe number of students who are not in the club is 2000\nThe number of students who are in the club is 1000\nThe number of students who are in the club and are also in the honor society is 100\nThe number of students who are in the honor society but not in the club is 900\nThe number of students who are in the club and are also in the honor society is 100\nThe number of students who are in the honor society is 1000\nThe number of students who are in the honor societ",
-        "pred": "100",
+        "response": "The total amount of water in the pool is 10000 gallons / 2 = <<10000/2=5000>>5000 gallons.\nThe amount of water in the pool is 5000 gallons * 8.33 pounds per gallon = <<5000*8.33=41650>>41650 pounds.\nThe amount of water in the pool is 41650 pounds / 2 = <<41650/2=20825>>20825 pounds.\n#### 20825",
+        "pred": "20825",
         "correct": false,
         "partial": false
       }
@@ -154,10 +154,10 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1200\nThe number of students who are not in the club is 1200-100=<<1200-100=1100>>1100\nThe number of students who are in the club is 100\nThe number of students who are in the club and are not in the club is 0\n#### 1100",
-        "pred": "1100",
+        "response": "The number of apples is 3 + 3 + 3 = <<3+3+3=9>>9\nThe number of pears is 2 + 2 + 2 = <<2+2+2=6>>6\nThe number of oranges is 2 + 2 + 2 = <<2+2+2=6>>6\nThe number of bananas is 3 + 3 + 3 = <<3+3+3=9>>9\nThe number of grapes is 2 + 2 + 2 = <<2+2+2=6>>6\nThe number of strawberries is 3 + 3 + 3 = <<3+3",
+        "pred": "+3",
         "correct": false,
-        "partial": false
+        "partial": true
       }
     },
     {
@@ -170,8 +170,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1000\nThe number of students who are not in the club is 1000 - 300 = <<1000-300=700>>700\nThe number of students who are in the club is 300\nThe number of students who are in the club and are also in the math club is 300 * 1/4 = <<300*1/4=75>>75\nThe number of students who are in the math club but not in the club is 100 - 75 = <<100-75=25>>25\nThe",
-        "pred": "25",
+        "response": "The total number of goals scored by the team is 2 + 3 = <<2+3=5>>5\nThe total number of goals scored by the team is 5 + 2 = <<5+2=7>>7\nThe total number of goals scored by the team is 7 + 3 = <<7+3=10>>10\nThe total number of goals scored by the team is 10 + 2 = <<10+2=12>>12\nThe total number of goals scored by the team is 12 + 3 = <<12+3=15>>15\nThe total number of goals scored by the team is 15 +",
+        "pred": "15",
         "correct": false,
         "partial": false
       }
@@ -186,8 +186,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 3000\nThe number of students who are not in the club is 2000\nThe number of students who are in the club is 1000\nThe number of students who are in the club and are also in the honor society is 100\nThe number of students who are in the honor society but not in the club is 900\nThe number of students who are in the club and are also in the honor society is 100\nThe number of students who are in the honor society is 1000\nThe number of students who are in the honor societ",
-        "pred": "100",
+        "response": "The total cost of the 2000 pounds of apples is 2000 * $1.50 = $<<2000*1.50=3000>>3000\nThe total cost of the 1000 pounds of pears is 1000 * $1.00 = $<<1000*1.00=1000>>1000\nThe total cost of the 500 pounds of grapes is 500 * $2.00 = $<<500*2.00=1000>>1000\nThe total cost of the",
+        "pred": "1000",
         "correct": false,
         "partial": false
       }
@@ -202,8 +202,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1000\nThe number of students who are not in the club is 1000 - 300 = <<1000-300=700>>700\nThe number of students who are in the club is 300\nThe number of students who are in the club and are also in the math club is 300 * 1/4 = <<300*1/4=75>>75\nThe number of students who are in the math club but not in the club is 100 - 75 = <<100-75=25>>25\nThe",
-        "pred": "25",
+        "response": "The total cost of the 30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "pred": "30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
         "correct": false,
         "partial": false
       }
@@ -218,10 +218,10 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1000\nThe number of students who are not in the club is 1000 - 300 = <<1000-300=700>>700\nThe number of students who are in the club is 300\nThe number of students who are in the club and are not in the club is 0\nThe number of students who are in the club and are not in the club is 0 - 300 = <<0-300=-300>>-300\nThe number of students who are not in the club and are not in the club is 1000 -",
-        "pred": "1000",
+        "response": "The total number of goals scored by the team is 10 + 3 = <<10+3=13>>13\nThe total number of goals scored by the team is 13 + 10 = <<13+10=23>>23\nThe total number of goals scored by the team is 23 + 10 = <<23+10=33>>33\n#### 33",
+        "pred": "33",
         "correct": false,
-        "partial": true
+        "partial": false
       }
     },
     {
@@ -234,8 +234,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "=====\nThe total number of students is 1200.\nThe number of students who are not in the 10th grade is 800.\nThe number of students who are in the 10th grade is 400.\nThe number of students who are in the 10th grade and are in the soccer team is 120.\nThe number of students who are in the 10th grade and are in the basketball team is 100.\nThe number of students who are in the 10th grade and are in both teams is 20.\nThe number of students who are in the 10th grade and are in either",
-        "pred": "10",
+        "response": "The number of goals scored by the team is 20 + 12 = <<20+12=32>>32\nThe number of goals scored by the team is 32 * 3 = <<32*3=96>>96\nThe number of goals scored by the team is 96 + 12 = <<96+12=108>>108\nThe number of goals scored by the team is 108 * 2 = <<108*2=216>>216\nThe number of goals scored by the team is 216 + 12 = <<216+12=2",
+        "pred": "2",
         "correct": false,
         "partial": true
       }
@@ -250,8 +250,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1200\nThe number of students who are not in the club is 1200 - 300 = <<1200-300=800>>800\nThe number of students who are in the club is 300\nThe number of students who are in the club and are not in the club is 0\nThe number of students who are in the club and are not in the club is 0 - 300 = <<0-300=-300>>-300\nThe number of students who are not in the club and are not in the club is 1200 -",
-        "pred": "1200",
+        "response": "The total number of miles that the two cars traveled is 400 + 200 = <<400+200=600>>600 miles.\nThe total number of miles that the two cars traveled is 600 + 200 = <<600+200=800>>800 miles.\nThe total number of miles that the two cars traveled is 800 + 200 = <<800+200=1000>>1000 miles.\n#### 1000",
+        "pred": "1000",
         "correct": false,
         "partial": true
       }
@@ -266,10 +266,10 @@
         "correct": false
       },
       "telepathy": {
-        "response": "=====\nThe total number of students is 1200.\nThe number of students who are not in the 10th grade is 800.\nThe number of students who are in the 10th grade is 400.\nThe number of students who are in the 10th grade and are in the soccer team is 300.\nThe number of students who are in the 10th grade and are in the basketball team is 100.\nThe number of students who are in the 10th grade and are in both teams is 200.\nThe number of students who are in the 10th grade and are in",
-        "pred": "10",
+        "response": "The total number of apples is 30 + 20 + 20 = <<30+20+20=60>>60\nThe total number of apples is 60 + 40 = <<60+40=100>>100\nThe total number of apples is 100 + 20 = <<100+20=120>>120\nThe total number of apples is 120 + 40 = <<120+40=160>>160\nThe total number of apples is 160 + 20 = <<160",
+        "pred": "160",
         "correct": false,
-        "partial": true
+        "partial": false
       }
     },
     {
@@ -282,8 +282,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1200\nThe number of students who are not in the club is 1200-100=<<1200-100=1100>>1100\nThe number of students who are in the club is 100\nThe number of students who are in the club and are also in the math club is 100*20=<<100*20=2000>>2000\nThe number of students who are in the math club but not in the club is 1100-2000=<<1100-2000=-",
-        "pred": "-2000",
+        "response": "The total number of goals scored by the team is 150 + 145 + 145 = <<150+145+145=440>>440\nThe total number of goals scored by the team is 440 + 145 = <<440+145=585>>585\nThe total number of goals scored by the team is 585 + 145 = <<585+145=730>>730\n#### 730",
+        "pred": "730",
         "correct": false,
         "partial": false
       }
@@ -298,8 +298,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "igten\nThe number of students is 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "pred": "1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "response": "The total amount of money that the company has is 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "pred": "100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
         "correct": false,
         "partial": true
       }
@@ -314,10 +314,10 @@
         "correct": false
       },
       "telepathy": {
-        "response": "=====\nThe total number of students is 1200.\nThe number of students who are not in the 10th grade is 800.\nThe number of students who are in the 10th grade is 400.\nThe number of students who are in the 10th grade and are in the soccer team is 120.\nThe number of students who are in the 10th grade and are in the basketball team is 100.\nThe number of students who are in the 10th grade and are in both teams is 20.\nThe number of students who are in the 10th grade and are in either",
-        "pred": "10",
-        "correct": false,
-        "partial": true
+        "response": "First, find the total number of windows in the house: 2 + 3 + 4 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 2",
+        "pred": "2",
+        "correct": true,
+        "partial": false
       }
     },
     {
@@ -330,8 +330,8 @@
         "correct": false
       },
       "telepathy": {
-        "response": "=====\nThe total number of students is 1200.\nThe number of students who are not in the 10th grade is 1200 - 300 = <<1200-300=900>>900.\nThe number of students who are in the 10th grade is 300.\nThe number of students who are in the 10th grade and are not in the soccer team is 300 - 100 = <<300-100=200>>200.\nThe number of students who are in the 10th grade and are in the soccer team is",
-        "pred": "10",
+        "response": "The total length of the two sides of the square is 400 + 400 = <<400+400=800>>800 feet\nThe length of the diagonal of the square is 800 * sqrt(2) = 1130.97 feet\nThe length of the diagonal of the rectangle is 1130.97 * 1.414 = <<1130.97*1.414=1600>>1600 feet\n#### 1600",
+        "pred": "1600",
         "correct": false,
         "partial": true
       }

@@ -1,10 +1,7 @@
 {
-    "run_id": "telepathy_v7_20251129_115242",
-    "phase": 7,
-    "key_fixes": [
-        "Output scaling (tanh + learnable scale)",
-        "Reverted to Answer anchoring (V5 logic)"
-    ],
+    "run_id": "telepathy_v8_20251129_140323",
+    "phase": 8,
+    "key_fix": "Reconstruction Loss to force information preservation",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
     "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
     "source_layer": 16,
@@ -17,5 +14,6 @@
     "anchor_weight": 2.0,
     "contrastive_weight": 0.1,
     "contrastive_temp": 0.07,
+    "recon_weight": 1.0,
     "num_gpus": 4
 }

@@ -1,44 +1,0 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-============================================================
-Phase 1: Statistical Calibration
-============================================================
-Source: meta-llama/Meta-Llama-3.1-8B-Instruct
-Target: mistralai/Mistral-7B-Instruct-v0.3
-Source layer: 16
-Samples: 500
-Output: runs/telepathy_v7_20251129_115242/stats.pt
-============================================================
-
-[1/4] Loading Source Model: meta-llama/Meta-Llama-3.1-8B-Instruct...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3437.95it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:07<00:22,  7.59s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:11<00:11,  5.59s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:13<00:03,  3.87s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  2.44s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  3.46s/it]
-  Hidden size: 4096
-  Num layers: 32
-
-[2/4] Loading Target Model: mistralai/Mistral-7B-Instruct-v0.3...
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2418.86it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.05it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:02<00:01,  1.25s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.33s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.28s/it]
-  Hidden size: 4096
-  Num layers: 32
-
-[3/4] Loading GSM8K dataset...
-  Total samples available: 7473
-
-[4/4] Running Calibration (500 samples)...
-Calibrating:   0%|          | 0/125 [00:00<?, ?it/s]Calibrating:   1%|          | 1/125 [00:00<00:51,  2.39it/s]Calibrating:   2%|▏         | 2/125 [00:00<00:31,  3.90it/s]Calibrating:   4%|▍         | 5/125 [00:00<00:12,  9.95it/s]Calibrating:   8%|▊         | 10/125 [00:00<00:05, 19.55it/s]Calibrating:  11%|█         | 14/125 [00:00<00:04, 23.15it/s]Calibrating:  14%|█▎        | 17/125 [00:01<00:04, 24.68it/s]Calibrating:  16%|█▌        | 20/125 [00:01<00:04, 23.54it/s]Calibrating:  18%|█▊        | 23/125 [00:01<00:04, 23.20it/s]Calibrating:  21%|██        | 26/125 [00:01<00:04, 22.59it/s]Calibrating:  23%|██▎       | 29/125 [00:01<00:04, 22.31it/s]Calibrating:  26%|██▋       | 33/125 [00:01<00:03, 26.21it/s]Calibrating:  30%|███       | 38/125 [00:01<00:02, 32.13it/s]Calibrating:  34%|███▍      | 43/125 [00:01<00:02, 36.23it/s]Calibrating:  38%|███▊      | 47/125 [00:01<00:02, 37.02it/s]Calibrating:  42%|████▏     | 52/125 [00:02<00:01, 40.29it/s]Calibrating:  46%|████▌     | 57/125 [00:02<00:01, 41.50it/s]Calibrating:  50%|████▉     | 62/125 [00:02<00:01, 41.56it/s]Calibrating:  54%|█████▎    | 67/125 [00:02<00:01, 42.88it/s]Calibrating:  58%|█████▊    | 72/125 [00:02<00:01, 44.25it/s]Calibrating:  62%|██████▏   | 77/125 [00:02<00:01, 44.16it/s]Calibrating:  66%|██████▌   | 82/125 [00:02<00:00, 45.04it/s]Calibrating:  70%|██████▉   | 87/125 [00:02<00:00, 44.88it/s]Calibrating:  74%|███████▎  | 92/125 [00:02<00:00, 44.67it/s]Calibrating:  78%|███████▊  | 97/125 [00:03<00:00, 44.96it/s]Calibrating:  82%|████████▏ | 102/125 [00:03<00:00, 39.59it/s]Calibrating:  86%|████████▌ | 107/125 [00:03<00:00, 41.01it/s]Calibrating:  90%|████████▉ | 112/125 [00:03<00:00, 41.28it/s]Calibrating:  94%|█████████▎| 117/125 [00:03<00:00, 42.54it/s]Calibrating:  98%|█████████▊| 122/125 [00:03<00:00, 42.57it/s]Calibrating: 100%|██████████| 125/125 [00:03<00:00, 32.71it/s]
-
-============================================================
-Calibration Results
-============================================================
-Source (Layer 16):
-  Mean norm: 11.2542
-  Std mean:  0.0389
-Target (Embeddings):
-  Mean norm: 0.0294
-  Std mean:  0.0003
-  RMS:       0.0027
-Scale ratio: 0.00x
-
-Saved statistics to: runs/telepathy_v7_20251129_115242/stats.pt
-============================================================
