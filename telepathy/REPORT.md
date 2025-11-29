@@ -467,3 +467,42 @@ With anchor loss actually working:
 | 2025-11-28 | Phase 3 eval: **5% acc** (FIRST SUCCESS!) |
 | 2025-11-28 | Diagnosed anchor loss scale mismatch bug |
 | 2025-11-28 | Phase 3.1: Fixed anchor loss (MSE→Cosine) |
+| 2025-11-28 | Phase 3.1 eval: 5% acc, **85% partial** (↑15%) |
+
+---
+
+## 17. Phase 3.1 Evaluation Results
+
+### Training Success
+
+| Metric | Phase 3 | Phase 3.1 |
+|--------|---------|-----------|
+| Anchor Loss Start | 0.0000 | **0.7160** |
+| Anchor Loss End | 0.0000 | **0.1167** |
+
+**The fix worked** - anchor loss now provides gradient signal.
+
+### Evaluation Results
+
+| Metric | Phase 3 | Phase 3.1 | Change |
+|--------|---------|-----------|--------|
+| Accuracy | 5% | 5% | — |
+| Partial | 70% | **85%** | +15% |
+| Failed | 25% | **10%** | -15% |
+
+### Remaining Issue: "Thought Vector" Meta-Commentary
+
+The model generates **descriptions of vectors** rather than solving problems:
+
+```
+Input:  "Janet's ducks lay 16 eggs..."
+Output: "The thought vector has 100 components..."
+```
+
+**Hypothesis**: The primer "Analysis of received thought vector:" triggers Mistral to describe vectors rather than use them as context.
+
+### Next Steps (Phase 4)
+
+1. **Change primer** from "Analysis of received thought vector:" to "Answer:" or "Solution:"
+2. **Entity alignment loss**: Penalize when output entities differ from input entities
+3. **Longer training**: 2000 steps may be insufficient for semantic grounding
