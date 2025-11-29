@@ -1,44 +1,0 @@
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-============================================================
-Phase 1: Statistical Calibration
-============================================================
-Source: meta-llama/Meta-Llama-3.1-8B-Instruct
-Target: mistralai/Mistral-7B-Instruct-v0.3
-Source layer: 16
-Samples: 500
-Output: runs/telepathy_v7_20251129_113707/stats.pt
-============================================================
-
-[1/4] Loading Source Model: meta-llama/Meta-Llama-3.1-8B-Instruct...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4102.01it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.99s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:02,  1.50s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.78s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.20s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.39s/it]
-  Hidden size: 4096
-  Num layers: 32
-
-[2/4] Loading Target Model: mistralai/Mistral-7B-Instruct-v0.3...
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3354.55it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:03,  1.80s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:06<00:03,  3.42s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.99s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.68s/it]
-  Hidden size: 4096
-  Num layers: 32
-
-[3/4] Loading GSM8K dataset...
-  Total samples available: 7473
-
-[4/4] Running Calibration (500 samples)...
-Calibrating:   0%|          | 0/125 [00:00<?, ?it/s]Calibrating:   1%|          | 1/125 [00:00<00:32,  3.82it/s]Calibrating:   4%|▍         | 5/125 [00:00<00:07, 16.52it/s]Calibrating:   8%|▊         | 10/125 [00:00<00:04, 26.82it/s]Calibrating:  12%|█▏        | 15/125 [00:00<00:03, 32.88it/s]Calibrating:  16%|█▌        | 20/125 [00:00<00:02, 37.07it/s]Calibrating:  20%|██        | 25/125 [00:00<00:02, 39.88it/s]Calibrating:  24%|██▍       | 30/125 [00:00<00:02, 41.00it/s]Calibrating:  28%|██▊       | 35/125 [00:01<00:02, 42.48it/s]Calibrating:  33%|███▎      | 41/125 [00:01<00:01, 44.73it/s]Calibrating:  37%|███▋      | 46/125 [00:01<00:01, 42.98it/s]Calibrating:  41%|████      | 51/125 [00:01<00:01, 38.92it/s]Calibrating:  45%|████▍     | 56/125 [00:01<00:02, 32.72it/s]Calibrating:  48%|████▊     | 60/125 [00:01<00:02, 26.54it/s]Calibrating:  50%|█████     | 63/125 [00:02<00:02, 25.44it/s]Calibrating:  54%|█████▍    | 68/125 [00:02<00:01, 29.20it/s]Calibrating:  58%|█████▊    | 73/125 [00:02<00:01, 33.41it/s]Calibrating:  62%|██████▏   | 78/125 [00:02<00:01, 36.58it/s]Calibrating:  66%|██████▋   | 83/125 [00:02<00:01, 39.09it/s]Calibrating:  70%|███████   | 88/125 [00:02<00:00, 40.69it/s]Calibrating:  74%|███████▍  | 93/125 [00:02<00:00, 41.72it/s]Calibrating:  78%|███████▊  | 98/125 [00:02<00:00, 43.30it/s]Calibrating:  82%|████████▏ | 103/125 [00:02<00:00, 41.94it/s]Calibrating:  86%|████████▋ | 108/125 [00:03<00:00, 42.61it/s]Calibrating:  90%|█████████ | 113/125 [00:03<00:00, 42.83it/s]Calibrating:  94%|█████████▍| 118/125 [00:03<00:00, 43.34it/s]Calibrating:  98%|█████████▊| 123/125 [00:03<00:00, 44.10it/s]Calibrating: 100%|██████████| 125/125 [00:03<00:00, 36.64it/s]
-
-============================================================
-Calibration Results
-============================================================
-Source (Layer 16):
-  Mean norm: 11.2542
-  Std mean:  0.0389
-Target (Embeddings):
-  Mean norm: 0.0294
-  Std mean:  0.0003
-  RMS:       0.0027
-Scale ratio: 0.00x
-
-Saved statistics to: runs/telepathy_v7_20251129_113707/stats.pt
-============================================================

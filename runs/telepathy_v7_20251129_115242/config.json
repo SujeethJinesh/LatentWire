@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v7_20251129_113707",
+    "run_id": "telepathy_v7_20251129_115242",
     "phase": 7,
     "key_fixes": [
         "Output scaling (tanh + learnable scale)",
@@ -12,7 +12,7 @@
     "depth": 4,
     "heads": 8,
     "steps": 2500,
-    "batch_size": 8,
+    "batch_size": 4,
     "lr": 1e-4,
     "anchor_weight": 2.0,
     "contrastive_weight": 0.1,
