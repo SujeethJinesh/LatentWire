@@ -794,6 +794,69 @@ If outputs mention "ducks" when question has "ducks" (instead of "apples"), the 
 | 2025-11-29 | Phase 7 crashed: dtype mismatch (float32 vs bfloat16) in cross_attn |
 | 2025-11-29 | Fixed: cast normalized output back to input dtype before resampler |
 | 2025-11-29 | Phase 7 OOM crash on all 4 H100s - reduced batch size 8→4 |
+| 2025-11-29 | **Phase 7 eval: 0% correct, 40% partial - scale fix worked, but semantics lost** |
+| 2025-11-29 | No more degenerate loops, but outputs hallucinate "students/clubs" templates |
+| 2025-11-29 | Output scale converged to 0.0022 (target ~0.0027) |
+
+---
+
+## 26. Phase 7 Results: Scale Fix Worked, Semantics Lost
+
+### Evaluation Results
+
+| Metric | Phase 5 | Phase 6 | Phase 7 |
+|--------|---------|---------|---------|
+| Correct | 5% (1/20) | 0% (0/20) | 0% (0/20) |
+| Partial | 40% (8/20) | 5% (1/20) | **40% (8/20)** |
+| Output Quality | Entity scrambled | Degenerate loops | Hallucinated templates |
+
+### Training Metrics (Step 2500)
+
+| Metric | Value |
+|--------|-------|
+| Total Loss | 1.766 |
+| LM Loss | 1.019 |
+| Anchor Loss | 0.323 (↓ from 0.55) |
+| Contrastive Loss | 1.008 |
+| **Output Scale** | 0.0022 |
+
+### What Worked
+
+1. **No more degenerate loops** - Outputs are coherent sentences, not `10*10*10...`
+2. **Scale fix effective** - Output magnitude (~0.002) matches Mistral's expected range
+3. **Attention not saturating** - Softmax no longer "hard max"
+
+### What Failed
+
+Outputs are coherent but **completely hallucinated**:
+
+```
+Question: Janet's ducks lay 16 eggs...
+V7 Output: The total number of students is 3600.
+           The number of students in the first class is 1200...
+
+Question: Jim spends 2 hours watching TV...
+V7 Output: igten
+           The first number is 10000000000...
+```
+
+All outputs talk about "students", "clubs", "10th grade" - a generic math problem template.
+
+### Diagnosis
+
+The bridge learned to generate **generic math problem patterns** rather than encoding specific question semantics.
+
+Hypotheses:
+1. Anchor loss (cosine to answer embeddings) might be too weak to enforce semantic alignment
+2. The 256 soft tokens might collapse to similar representations
+3. Contrastive loss alone isn't sufficient for semantic preservation
+
+### Next Directions
+
+1. **Increase anchor weight** - Force stronger alignment to specific answers
+2. **Add reconstruction loss** - Decode soft tokens back to text
+3. **Use KL divergence** - Match full output distribution, not just embeddings
+4. **Try smaller soft token count** - 256 might allow too much collapse
 
 ---
 
