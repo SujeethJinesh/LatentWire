@@ -37,6 +37,10 @@ try:
     from latent_bridge_v8 import LatentBridgeV8
 except ImportError:
     LatentBridgeV8 = None
+try:
+    from latent_bridge_v9 import LatentBridgeV9
+except ImportError:
+    LatentBridgeV9 = None
 
 
 def parse_args():
@@ -118,7 +122,9 @@ def main():
     # Detect bridge version
     bridge_version = args.bridge_version
     if bridge_version is None:
-        if "v8" in args.checkpoint:
+        if "v9" in args.checkpoint:
+            bridge_version = 9
+        elif "v8" in args.checkpoint:
             bridge_version = 8
         elif "v7" in args.checkpoint:
             bridge_version = 7
@@ -142,7 +148,17 @@ def main():
         tgt_embeds = tgt_model.get_input_embeddings().weight.float()
         target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
 
-    if bridge_version == 8:
+    if bridge_version == 9:
+        if LatentBridgeV9 is None:
+            raise ImportError("LatentBridgeV9 not found. Check latent_bridge_v9.py exists.")
+        bridge = LatentBridgeV9(
+            BridgeArgs(),
+            src_model.config.hidden_size,
+            tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            src_vocab_size=src_model.config.vocab_size
+        )
+    elif bridge_version == 8:
         if LatentBridgeV8 is None:
             raise ImportError("LatentBridgeV8 not found. Check latent_bridge_v8.py exists.")
         bridge = LatentBridgeV8(
@@ -261,7 +277,7 @@ def main():
         # 2. Bridge: Compress to soft tokens
         with torch.no_grad():
             bridge_out = bridge(src_h, src_inputs.attention_mask)
-            # V7/V8 return tuple (scaled, raw), earlier versions return just soft_tokens
+            # V7/V8/V9 return tuple (scaled, aux), earlier versions return just soft_tokens
             if isinstance(bridge_out, tuple):
                 soft_tokens = bridge_out[0]  # Use scaled output
             else:

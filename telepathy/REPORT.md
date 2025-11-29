@@ -3,7 +3,7 @@
 **Project**: Cross-Model Latent Communication
 **Models**: Llama 3.1 8B → Mistral 0.3 7B
 **Date**: November 29, 2025
-**Status**: Phase 8 Ready (Reconstruction Loss)
+**Status**: Phase 9 Ready (Bag-of-Words Supervision)
 
 ---
 
@@ -1181,3 +1181,107 @@ Potential fixes:
 3. **Lower layer** - layer 12 instead of 16 for more surface features
 4. **CLS-style token** - dedicated position for entity encoding
 5. **Contrastive on entities** - pull together same-entity examples
+
+---
+
+## 30. Phase 9: Bag-of-Words Supervision
+
+### The "Generic Noun" Trap
+
+The bridge is acting like a **lossy JPEG compressor**:
+
+1. It sees "16 ducks"
+2. Compresses to "Small Number of Farm Animals"
+3. Mistral decompresses to "20 chickens" (closest guess)
+
+**V8's Mean-Pooling Problem**: The "average vector" of a sentence about ducks is mathematically very similar to the "average vector" of a sentence about chickens. The model minimized recon loss without preserving specific entities.
+
+### The Fix: Bag-of-Words Classification
+
+Force the bridge to **prove** it remembers specific words from the input.
+
+**Mechanism**:
+1. Add a "Detector" Head: Linear layer predicting every token in the input
+2. If Llama reads "Janet" and "ducks", bridge must activate those classifiers
+3. If it outputs "Quiara" or "apples", it gets penalized
+
+```python
+class LatentBridgeV9(nn.Module):
+    def __init__(self, ...):
+        # ... existing components ...
+
+        # PHASE 9: Bag-of-Words Head
+        self.bow_head = nn.Linear(tgt_dim, src_vocab_size)  # 4096 -> 128k
+
+    def forward(self, src_hidden, src_mask=None):
+        compressed = self.resampler(...)
+        scaled_out = torch.tanh(compressed) * self.output_scale
+
+        # MAX pooling detects "Did this feature appear?"
+        pooled = compressed.max(dim=1).values  # [B, D]
+        bow_logits = self.bow_head(pooled)     # [B, Vocab]
+
+        return scaled_out, bow_logits
+```
+
+### Training Objective
+
+```python
+# Multi-hot target: Which tokens were in the input?
+bow_targets = torch.zeros(B, vocab_size)
+bow_targets.scatter_(1, src_enc.input_ids, 1.0)  # Set 1 for present tokens
+
+# BCE Loss: Predict 1 for present words, 0 for absent
+loss_bow = F.binary_cross_entropy_with_logits(bow_logits, bow_targets)
+
+total_loss = loss_lm + anchor_weight * loss_anchor +
+             contrastive_weight * loss_contrastive +
+             bow_weight * loss_bow  # NEW: Weight = 5.0
+```
+
+### Why This Should Work
+
+| V8 (Mean Recon) | V9 (BoW) |
+|-----------------|----------|
+| "ducks" → average vector | "ducks" → must predict token 42857 |
+| "chickens" → similar average | "chickens" → different token, different target |
+| Same loss for both | Different loss forces distinction |
+
+### Configuration
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Source Layer | 16 | Same as V8 |
+| Soft Tokens | 256 | Same as V8 |
+| Anchor Weight | 2.0 | Same as V8 |
+| Contrastive Weight | 0.1 | Same as V8 |
+| **BoW Weight** | 5.0 | **NEW: Strong signal** |
+| Batch Size | 4 | Reduced (BoW head adds memory) |
+| Steps | 3000 | Extended training |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v9.sh
+```
+
+### Success Criteria
+
+| Output Contains | What It Means |
+|-----------------|---------------|
+| "ducks" when question has "ducks" | BoW forcing entity transfer |
+| "Janet" when question has "Janet" | Named entities preserved |
+| Still "students/apples" | Need stronger BoW or different approach |
+
+---
+
+## 31. Changelog (Continued)
+
+| Date | Change |
+|------|--------|
+| 2025-11-29 | **Phase 9: Bag-of-Words Supervision** |
+| 2025-11-29 | Created latent_bridge_v9.py with BoW head (tgt_dim -> vocab_size) |
+| 2025-11-29 | Created train_telepathy_v9.py with multi-hot BCE loss |
+| 2025-11-29 | Created run_telepathy_v9.sh with BOW_WEIGHT=5.0 |
+| 2025-11-29 | Updated eval_telepathy.py to handle V9 |
+| 2025-11-29 | Key insight: Mean-pooling allows mode collapse; BoW forces token prediction |
