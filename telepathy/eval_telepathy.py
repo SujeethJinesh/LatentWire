@@ -29,6 +29,10 @@ try:
     from latent_bridge_v3 import LatentBridgeV3
 except ImportError:
     LatentBridgeV3 = None
+try:
+    from latent_bridge_v7 import LatentBridgeV7
+except ImportError:
+    LatentBridgeV7 = None
 
 
 def parse_args():
@@ -110,7 +114,9 @@ def main():
     # Detect bridge version
     bridge_version = args.bridge_version
     if bridge_version is None:
-        if "v5" in args.checkpoint or "v4" in args.checkpoint or "v3" in args.checkpoint:
+        if "v7" in args.checkpoint:
+            bridge_version = 7
+        elif "v5" in args.checkpoint or "v4" in args.checkpoint or "v3" in args.checkpoint:
             bridge_version = 3
         elif "v2" in args.checkpoint:
             bridge_version = 2
@@ -130,7 +136,16 @@ def main():
         tgt_embeds = tgt_model.get_input_embeddings().weight.float()
         target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
 
-    if bridge_version == 3:
+    if bridge_version == 7:
+        if LatentBridgeV7 is None:
+            raise ImportError("LatentBridgeV7 not found. Check latent_bridge_v7.py exists.")
+        bridge = LatentBridgeV7(
+            BridgeArgs(),
+            src_model.config.hidden_size,
+            tgt_model.config.hidden_size,
+            target_rms=target_rms
+        )
+    elif bridge_version == 3:
         if LatentBridgeV3 is None:
             raise ImportError("LatentBridgeV3 not found. Check latent_bridge_v3.py exists.")
         bridge = LatentBridgeV3(

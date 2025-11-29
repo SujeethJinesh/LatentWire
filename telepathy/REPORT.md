@@ -788,6 +788,9 @@ If outputs mention "ducks" when question has "ducks" (instead of "apples"), the 
 | 2025-11-29 | **Phase 6 eval: 0% correct, 5% partial - WORSE than V5** |
 | 2025-11-29 | Outputs are degenerate repetitive loops (10*10*10..., 12=12=12...) |
 | 2025-11-29 | Root cause: Anchor (→Q) and LM (→A) objectives are in conflict |
+| 2025-11-29 | **Gemini identified Magnitude Bug: 33x signal overload** |
+| 2025-11-29 | Phase 7: Scale-Corrected Telepathy (tanh + learnable scale) |
+| 2025-11-29 | Created latent_bridge_v7.py, train_telepathy_v7.py, run_telepathy_v7.sh |
 
 ---
 
@@ -846,9 +849,73 @@ The original hypothesis was:
 The corrected understanding:
 > "The problem isn't Q→A vs Q→Q. The problem is that anchor and LM must agree on what soft tokens represent."
 
-### Next Steps
+### Next Steps → Phase 7
 
-The fundamental architecture needs rethinking:
-1. Remove anchor loss entirely (pure LM supervision)
-2. Use KL divergence to teacher model instead of anchor
-3. Try different compression approach (VAE, quantization)
+---
+
+## 25. Phase 7: Scale-Corrected Telepathy
+
+### The Magnitude Bug (Root Cause)
+
+Gemini identified a critical physical implementation bug:
+
+| Component | Expected | Actual | Problem |
+|-----------|----------|--------|---------|
+| Mistral input range | ~0.03 std | - | - |
+| Perceiver output | - | ~1.0 std | LayerNorm guarantees unit variance |
+| **Overload** | - | **33x** | Attention softmax saturates |
+
+**The Physics:**
+1. Perceiver ends with LayerNorm + residuals → output std ≈ 1.0
+2. Mistral's embedding layer expects std ≈ 0.03
+3. We're feeding 33x louder signals than expected
+4. Attention softmax saturates → "hard max" → stuck in loops
+
+This explains the degenerate outputs (`10*10*10...`, `100000...`). It's like audio clipping.
+
+### The Fix: LatentBridgeV7
+
+```python
+class LatentBridgeV7(nn.Module):
+    def __init__(self, args, src_dim, tgt_dim, target_rms=0.03):
+        # ... existing components ...
+
+        # PHASE 7 FIX: Output Scaling
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+
+    def forward(self, src_hidden, src_mask=None):
+        normed = self.normalizer(src_hidden)
+        compressed = self.resampler(normed, src_mask)
+
+        # tanh bounds to [-1, 1], then scale to target range
+        return torch.tanh(compressed) * self.output_scale
+```
+
+### Two Key Fixes
+
+1. **Output Scaling**: `tanh(output) * 0.03` to match Mistral's expected range
+2. **Reverted to Answer Anchoring**: V6's Question anchor had conflicting objectives
+
+### Configuration
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Source Layer | 16 | Same as V5/V6 |
+| Soft Tokens | 256 | Same as V5/V6 |
+| Anchor Weight | 2.0 | V5 settings |
+| Steps | 2500 | Slightly reduced |
+| **Output Scale** | ~0.03 | **NEW: Learnable, initialized to target RMS** |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v7.sh
+```
+
+### Success Criteria
+
+| Symptom | What It Means |
+|---------|---------------|
+| Coherent numbers (not 10*10*10...) | ✓ Scale fix working |
+| Still degenerate loops | Need further magnitude debugging |
+| Correct answers | 🎉 Full success |
