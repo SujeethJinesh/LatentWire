@@ -785,3 +785,70 @@ If outputs mention "ducks" when question has "ducks" (instead of "apples"), the 
 | 2025-11-29 | Phase 6 final metrics: Total=3.86, LM=3.46, Anchor=0.18, Contrastive=0.54 |
 | 2025-11-29 | Phase 6 eval crashed: architecture mismatch (LatentBridgeV3 vs LatentBridge) |
 | 2025-11-29 | Fixed: bridge_version 3→1 in run_telepathy_v6.sh (awaiting re-run) |
+| 2025-11-29 | **Phase 6 eval: 0% correct, 5% partial - WORSE than V5** |
+| 2025-11-29 | Outputs are degenerate repetitive loops (10*10*10..., 12=12=12...) |
+| 2025-11-29 | Root cause: Anchor (→Q) and LM (→A) objectives are in conflict |
+
+---
+
+## 24. Phase 6 Results: The Translator Pivot Failed
+
+### Evaluation Results
+
+| Metric | Phase 5 | Phase 6 | Change |
+|--------|---------|---------|--------|
+| Correct | 5% (1/20) | 0% (0/20) | ↓ Worse |
+| Partial | 40% (8/20) | 5% (1/20) | ↓ Much Worse |
+| Entity Preservation | Scrambled | N/A (degenerate) | - |
+
+### Sample Outputs (Degenerate)
+
+```
+Question: Janet's ducks lay 16 eggs...
+Expected: 18
+V6 Output: She day of 2* 12*2*2*2*2*2*2*2*2*2=12=12=12=12=12=12=12...
+
+Question: A company wanted to buy 500 computers...
+Expected: 385000
+V6 Output: The $100000000000000000000000000000000000000000000...
+```
+
+### Why V6 Failed: Conflicting Objectives
+
+The Translator Pivot created a fundamental conflict between training objectives:
+
+```python
+# V6 has CONFLICTING objectives:
+loss_anchor = cosine(soft_tokens, question_embeddings)  # Push soft tokens → Q
+loss_lm = cross_entropy(model.generate(soft_tokens) → answer)  # Need soft tokens to help generate A
+```
+
+**The Conflict:**
+1. Anchor loss wants soft tokens to look like question embeddings
+2. LM loss wants soft tokens to contain answer-generation information
+3. These are mutually exclusive goals
+
+**V5 had ALIGNED objectives:**
+- Anchor loss: soft_tokens → answer_embeddings
+- LM loss: generate(soft_tokens) → answer
+- Both push toward answer representation
+
+**V6 created MISALIGNED objectives:**
+- Anchor loss: soft_tokens → question_embeddings
+- LM loss: generate(soft_tokens) → answer
+- Anchor and LM fight each other
+
+### The Insight Was Wrong
+
+The original hypothesis was:
+> "V5 failed because the bridge tried to solve math (Q→A)"
+
+The corrected understanding:
+> "The problem isn't Q→A vs Q→Q. The problem is that anchor and LM must agree on what soft tokens represent."
+
+### Next Steps
+
+The fundamental architecture needs rethinking:
+1. Remove anchor loss entirely (pure LM supervision)
+2. Use KL divergence to teacher model instead of anchor
+3. Try different compression approach (VAE, quantization)
