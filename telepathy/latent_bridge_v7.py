@@ -99,7 +99,11 @@ class LatentBridgeV7(nn.Module):
         print(f"[LatentBridgeV7] Initialized with target_rms={target_rms:.4f}")
 
     def forward(self, src_hidden, src_mask=None):
+        # Preserve input dtype (bfloat16) after normalization
+        input_dtype = src_hidden.dtype
         normed = self.normalizer(src_hidden)
+        normed = normed.to(input_dtype)  # Cast back to bfloat16
+
         compressed = self.resampler(normed, src_mask)
 
         # Apply scaling with tanh to prevent infinite spikes
