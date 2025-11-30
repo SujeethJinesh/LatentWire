@@ -1664,3 +1664,77 @@ Phase 10 proved that:
 4. ❌ Teacher forcing creates a shortcut the model exploits
 
 **Next Step: Phase 11 - First-K Token Loss Weighting**
+
+---
+
+## 37. Phase 11: Bottleneck Supervision
+
+### The Strategy
+
+The only moment the model truly relies on the bridge is when predicting the **very first word** of the question:
+
+| Position | Context Available | Difficulty |
+|----------|------------------|------------|
+| 128 (Q[0]) | Soft tokens + BOS only | **HARD** (must use bridge) |
+| 129 (Q[1]) | Soft tokens + BOS + Q[0] | Medium |
+| 130 (Q[2]) | Soft tokens + BOS + Q[0:2] | Easy |
+| 200+ | Full question context | Trivial (just copy) |
+
+By weighting the first 10 tokens **100x**, we tell the optimizer: "I don't care if you get the rest wrong. If you miss 'Janet', you fail."
+
+### Implementation
+
+**Key change in `train_telepathy_v11.py`:**
+
+```python
+# Create weight mask
+loss_weights = torch.ones_like(loss_per_token)
+
+# Boost the first K text tokens (the "bottleneck zone")
+bottleneck_start = K - 1  # First text token prediction
+bottleneck_end = min(bottleneck_start + args.bottleneck_tokens, loss_weights.size(1))
+loss_weights[:, bottleneck_start:bottleneck_end] = args.bottleneck_weight  # 100x
+
+# Weighted loss
+weighted_loss = (loss_per_token * loss_weights * valid_mask).sum()
+weighted_loss = weighted_loss / (loss_weights * valid_mask).sum()
+```
+
+### Configuration
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Bottleneck Tokens | 10 | First 10 tokens after soft tokens |
+| Bottleneck Weight | 100.0 | 100x more important than rest |
+| Source Layer | 16 | Same as V10 |
+| Soft Tokens | 128 | Same as V10 |
+| Steps | 3000 | Same as V10 |
+
+### Monitoring
+
+Three loss values are tracked:
+1. **Weighted Loss**: The actual training signal (emphasizes bottleneck)
+2. **Unweighted Loss**: Standard LM loss (for comparison)
+3. **Bottleneck Loss**: Loss on ONLY the first 10 tokens (CRITICAL metric)
+
+If bottleneck loss decreases significantly, the bridge is learning to encode the first few words. If it stays high while unweighted loss drops, the model is still cheating on later tokens.
+
+### Success Criteria
+
+| Bottleneck Loss | Interpretation |
+|-----------------|----------------|
+| Decreases significantly | Bridge is encoding initial tokens |
+| Stays high (>3.0) | Model struggling to read soft tokens |
+| Low but outputs still identical | Need even higher weight or architecture change |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v11.sh
+```
+
+### Why This Should Work
+
+The "cheat sheet" is the teacher-forced question embeddings. But for position 128 (predicting Q[0]), there IS no cheat sheet - only soft tokens and BOS. If we weight this position 100x, the optimizer MUST make the bridge encode "Janet" in a way Mistral can decode.
+
+This is the "needle through the bottleneck" approach: squeeze all the information through the one position where cheating is impossible.
