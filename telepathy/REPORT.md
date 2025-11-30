@@ -1356,3 +1356,113 @@ These share the resampler but have different objectives. The resampler can satis
 | 2025-11-29 | Key insight: Mean-pooling allows mode collapse; BoW forces token prediction |
 | 2025-11-30 | **V9 Results: FAILED** - BoW loss 0.007 but outputs still show mode collapse |
 | 2025-11-30 | Diagnosis: BoW head is separate pathway, doesn't constrain soft tokens |
+
+---
+
+## 33. Phase 10: Auto-Encoder Pivot (The Final Fix)
+
+### Definitive Diagnosis: The Split Brain Problem
+
+The bridge "cheated" in all previous phases:
+
+1. **The Cheat**: Bridge packed entity data ("Janet", "ducks") into specific dimensions/frequencies that auxiliary heads (recon, BoW) could read easily
+2. **The Failure**: It did NOT pack that data into the semantic shape Mistral's embedding space recognizes
+3. **The Result**: `tanh` clamping and Mistral's pre-trained attention filtered out the "auxiliary-friendly" noise, leaving only generic "math" signal
+
+**All previous approaches failed because they treated the bridge as a "black box"**:
+- Phase 2: Contrastive constraint → Cheated by making different but equally generic representations
+- Phases 3-7: Geometry fixes → Cheated by satisfying geometry without encoding semantics
+- Phase 9: Side-channel BoW → Cheated by encoding in separate pathway
+
+### The Fix: Stop Treating This as "Telepathy" - Treat it as "Neural Compression"
+
+**The New Strategy**: Force Mistral to read the **Question** back to us.
+
+| Before (V1-V9) | After (V10) |
+|----------------|-------------|
+| Input: [Soft Tokens] | Input: [Soft Tokens] |
+| Target: [Answer] | Target: [Question] + [Answer] |
+
+**Why This Works**: If we force Mistral to output "Janet has 16 ducks" based only on soft tokens, the bridge **MUST** encode "Janet", "16", and "ducks" in a format Mistral can decode. It cannot cheat by guessing "Students" because the loss directly penalizes wrong entities.
+
+### Architecture
+
+```
+Llama reads: "Question: Janet has 16 ducks..."
+                ↓
+        [Source Hidden States]
+                ↓
+        ┌───────────────┐
+        │    Bridge     │ (PerceiverResampler)
+        └───────────────┘
+                ↓
+        [128 Soft Tokens]
+                ↓
+        ┌───────────────┐
+        │    Mistral    │
+        └───────────────┘
+                ↓
+        Must output: "Janet has 16 ducks...\nAnswer: 18"
+                     ↑
+        Loss penalizes if it says "students" instead of "ducks"
+```
+
+### Training Objective
+
+```python
+# V10: Target includes Question + Answer
+tgt_texts = [f"{q}\nAnswer: {a}" for q, a in zip(questions, answers)]
+
+# Soft tokens must encode enough info to regenerate question
+combined_embeds = torch.cat([soft_tokens, tgt_embeds], dim=1)
+
+# Labels: -100 on soft tokens, then target ids (question + answer)
+labels = torch.cat([ignore_prefix, tgt_ids], dim=1)
+
+# Single LM loss - no auxiliary losses needed!
+loss = tgt_model(inputs_embeds=combined_embeds, labels=labels).loss
+```
+
+### Why This is the "Final Boss"
+
+If Mistral can regenerate "Janet has 16 ducks" from the vectors, then the vectors **provably contain** that information in Mistral-readable format. Once that is proven, the math solving (which Mistral is already good at) will follow naturally.
+
+This removes the "bridge is guessing" variable entirely.
+
+### Configuration
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Source Layer | 16 | Same as previous |
+| Soft Tokens | 128 | Compression challenge |
+| Depth | 4 | Same architecture |
+| Heads | 8 | Same architecture |
+| Batch Size | 4 | Memory efficient |
+| Steps | 3000 | Full training |
+| Loss | LM only | No auxiliary losses needed |
+
+### Success Criteria
+
+| Entity Transfer Rate | Interpretation |
+|---------------------|----------------|
+| > 30% | Working! Auto-encoder approach successful |
+| 10-30% | Partial success, may need more training |
+| < 10% | Still failing, fundamental architecture issue |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v10.sh
+```
+
+---
+
+## 34. Changelog (Continued)
+
+| Date | Change |
+|------|--------|
+| 2025-11-30 | **Phase 10: Auto-Encoder Pivot** |
+| 2025-11-30 | Created train_telepathy_v10.py - Target = Question + Answer |
+| 2025-11-30 | Created eval_telepathy_v10.py - Entity transfer measurement |
+| 2025-11-30 | Created run_telepathy_v10.sh |
+| 2025-11-30 | Key insight: Auxiliary losses can be cheated; main pathway must be supervised |
