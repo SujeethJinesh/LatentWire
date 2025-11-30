@@ -65,7 +65,7 @@ BOW_WEIGHT="${BOW_WEIGHT:-5.0}"  # NEW: Strong signal for entity forcing
 
 # Training
 STEPS="${STEPS:-3000}"
-BATCH_SIZE="${BATCH_SIZE:-4}"  # Keep at 4 to avoid OOM (BoW head adds memory)
+BATCH_SIZE="${BATCH_SIZE:-2}"  # Reduced to 2 due to BoW head memory (525M params)
 LR="${LR:-1e-4}"
 
 # Output
