@@ -1,0 +1,269 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+======================================================================
+Phase 10 Evaluation: Auto-Encoder Test (FIXED)
+======================================================================
+FIX: Added BOS token (Attention Sink) + Explicit Attention Mask
+
+Success Criteria:
+  - Output has input entities → Bridge is working!
+  - Output is coherent but generic → Teacher Forcing Shortcut
+  - Output is empty/garbage → Model collapsed
+======================================================================
+
+Loading models...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2939.25it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:08,  2.94s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.09s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.09s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.44s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3565.57it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:02,  1.40s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:02<00:01,  1.26s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.15s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.19s/it]
+[StatisticalNormalizer] Loaded learnable stats from runs/telepathy_v10_20251130_111023/stats.pt
+[LatentBridgeV9] Initialized with target_rms=0.0300
+[LatentBridgeV9] Added BoW head: 4096 -> 128256
+Loaded checkpoint: runs/telepathy_v10_20251130_111023/bridge_v10_final.pt
+Output scale: 0.0058
+Target embedding RMS: 0.0027
+Soft tokens will have ~2.13x target scale
+BOS token ID: 1
+
+Evaluating 20 samples...
+----------------------------------------------------------------------
+
+[DEBUG] First sample raw output: 'Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswer: D. The number of compounding periods\n\nQuestion 2:\n2. If a person invests $1000 in a savings accou'
+[DEBUG] Generated 200 tokens
+[DEBUG] Soft token stats - min: -0.0058, max: 0.0058, mean: 0.0001
+
+[Sample 0]
+Q: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning an...
+Q Entities: nums=['2', '16'], names=['Janet', 'She', 'How'], nouns=['egg', 'farmers', 'ducks']
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/2, names=0/3, nouns=0/7
+
+[Sample 65]
+Q: Jim spends 2 hours watching TV and then decides to go to bed and reads for half ...
+Q Entities: nums=['2', '3', '4'], names=['He', 'Jim', 'How'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=3/3, names=0/3, nouns=0/0
+
+[Sample 131]
+Q: The expenditure of Joseph in May was $500. In June, his expenditure was $60 less...
+Q Entities: nums=['500', '60'], names=['The', 'June', 'In'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/2, names=1/6, nouns=0/0
+
+[Sample 197]
+Q: In the city of Soda, there are exactly 23786 inhabitants. They include 8417 men ...
+Q Entities: nums=['9092', '23786', '8417'], names=['The', 'They', 'How'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=0/3, names=1/5, nouns=0/0
+
+[Sample 263]
+Q: There are 6 trees in Chris's yard.  Ferdinand has half the number of trees that ...
+Q Entities: nums=['6', '5'], names=['Ferdinand', 'Chris', 'How'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/2, names=0/5, nouns=0/0
+
+[Sample 329]
+Q: Erin has 7 lollipops. Her mother gives Erin another 10 lollipops. If Erin gives ...
+Q Entities: nums=['10', '3', '7'], names=['Erin', 'Ella', 'If'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=2/3, names=1/4, nouns=0/0
+
+[Sample 395]
+Q: Erica made 20 Valentine's cards to pass out.  Her dad brought her 2 boxes of pre...
+Q Entities: nums=['15', '20', '17'], names=['Day', 'Erica', 'Her'], nouns=['friends']
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=2/6, names=0/6, nouns=0/1
+
+[Sample 461]
+Q: Shondra has 7 fewer plants than Toni. Toni has 60% more plants than Frederick. I...
+Q Entities: nums=['10', '60', '7'], names=['Shondra', 'If', 'Toni'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/3, names=1/4, nouns=0/0
+
+[Sample 527]
+Q: If one person can paint half a house in 5 days, how many hours would it take for...
+Q Entities: nums=['5'], names=['If'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/1, names=1/1, nouns=0/0
+
+[Sample 593]
+Q: Mark plants a beanstalk below his second-story window, which is 20 feet off the ...
+Q Entities: nums=['20', '4'], names=['The', 'Mark', 'If'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/2, names=2/3, nouns=0/0
+
+[Sample 659]
+Q: A pound of almonds costs $10 while a pound of walnuts costs $15. How much more d...
+Q Entities: nums=['15', '10', '3'], names=['How'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=5/6, names=0/1, nouns=0/0
+
+[Sample 725]
+Q: A cat eats nine sausages in 30 minutes. A dog can eat the same number of sausage...
+Q Entities: nums=['2', '3', '30'], names=['Calculate'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=2/3, names=0/1, nouns=0/0
+
+[Sample 791]
+Q: A train has 172 people traveling on it. At the first stop 47 people get off and ...
+Q Entities: nums=['172', '38', '47'], names=['At', 'How'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=0/4, names=0/2, nouns=0/0
+
+[Sample 857]
+Q: The amount of water passing through a river at one point in time is 4000 gallons...
+Q Entities: nums=['4000', '6000'], names=['The', 'After', 'If'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=0/2, names=2/3, nouns=0/0
+
+[Sample 923]
+Q: Lana is brewing cups of tea for her friends. She has 27 cups, and she divides th...
+Q Entities: nums=['27', '15', '3'], names=['She', 'Lana', 'In'], nouns=['friends']
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/3, names=0/4, nouns=0/1
+
+[Sample 989]
+Q: Emily can peel 6 shrimp a minute and saute 30 shrimp in 10 minutes. How long wil...
+Q Entities: nums=['10', '6', '90'], names=['Emily', 'How'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/4, names=0/2, nouns=0/0
+
+[Sample 1055]
+Q: James has to buy insurance.  Since he had an accident it was 60% more than norma...
+Q Entities: nums=['120', '60'], names=['Since', 'The', 'James'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=0/2, names=1/4, nouns=0/0
+
+[Sample 1121]
+Q: In 7 days, Sofie will walk twice as far as Brian. If Sofie plans to walk 10 mile...
+Q Entities: nums=['10', '7'], names=['In', 'If', 'Brian'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/2, names=1/4, nouns=0/0
+
+[Sample 1187]
+Q: Jay is making snowballs to prepare for a snowball fight with his sister. He can ...
+Q Entities: nums=['20', '2', '15'], names=['He', 'How', 'Jay'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/4, names=0/3, nouns=0/0
+
+[Sample 1253]
+Q: Tim spends 6 hours each day at work answering phones.  It takes him 15 minutes t...
+Q Entities: nums=['15', '6', '5'], names=['It', 'Tim', 'How'], nouns=[]
+Output: Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time ...
+O Entities: nums=['10', '1550', '4'], names=['Which', 'The', 'Answer'], nouns=[]
+Matches: nums=1/3, names=0/3, nouns=0/0
+
+======================================================================
+PHASE 10 EVALUATION SUMMARY
+======================================================================
+Numbers: 25/60 matched (41.7%)
+Names: 11/67 matched (16.4%)
+Nouns: 0/9 matched (0.0%)
+
+OVERALL ENTITY TRANSFER: 36/136 (26.5%)
+
+======================================================================
+PARTIAL SUCCESS. Some entity transfer detected.
+May need more training or larger soft token count.
+======================================================================
+
+Results saved to: runs/telepathy_v10_20251130_111023/eval_v10_results.json

@@ -2,11 +2,12 @@
   "config": {
     "checkpoint": "runs/telepathy_v10_20251130_111023/bridge_v10_final.pt",
     "soft_tokens": 128,
-    "num_samples": 20
+    "num_samples": 20,
+    "fix_applied": "BOS_token + attention_mask"
   },
   "entity_matches": {
-    "numbers": 0,
-    "names": 0,
+    "numbers": 25,
+    "names": 11,
     "nouns": 0
   },
   "total_entities": {
@@ -14,12 +15,12 @@
     "names": 67,
     "nouns": 9
   },
-  "overall_rate": 0.0,
+  "overall_rate": 26.47058823529412,
   "results": [
     {
       "index": 0,
       "question": "Janet\u2019s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for ...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "2",
@@ -32,21 +33,40 @@
         ],
         "nouns": [
           "egg",
-          "eggs",
+          "farmers",
+          "ducks",
           "market",
           "duck",
-          "farmers",
-          "friends",
-          "ducks"
+          "eggs",
+          "friends"
         ]
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 1,
         "names": 0,
         "nouns": 0
       }
@@ -54,7 +74,7 @@
     {
       "index": 65,
       "question": "Jim spends 2 hours watching TV and then decides to go to bed and reads for half as long.  He does th...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "2",
@@ -62,19 +82,38 @@
           "4"
         ],
         "names": [
-          "How",
+          "He",
           "Jim",
-          "He"
+          "How"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 3,
         "names": 0,
         "nouns": 0
       }
@@ -82,88 +121,145 @@
     {
       "index": 131,
       "question": "The expenditure of Joseph in May was $500. In June, his expenditure was $60 less. How much was his t...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
-          "60",
-          "500"
+          "500",
+          "60"
         ],
         "names": [
-          "June",
           "The",
+          "June",
           "In",
+          "How",
           "Joseph",
-          "May",
-          "How"
+          "May"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
-        "names": 0,
+        "numbers": 1,
+        "names": 1,
         "nouns": 0
       }
     },
     {
       "index": 197,
       "question": "In the city of Soda, there are exactly 23786 inhabitants. They include 8417 men and 9092 women. The ...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
-          "23786",
           "9092",
+          "23786",
           "8417"
         ],
         "names": [
           "The",
-          "In",
           "They",
-          "Soda",
-          "How"
+          "How",
+          "In",
+          "Soda"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
         "numbers": 0,
-        "names": 0,
+        "names": 1,
         "nouns": 0
       }
     },
     {
       "index": 263,
       "question": "There are 6 trees in Chris's yard.  Ferdinand has half the number of trees that Chris has.  Harry ha...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
-          "5",
-          "6"
+          "6",
+          "5"
         ],
         "names": [
           "Ferdinand",
-          "There",
           "Chris",
+          "How",
           "Harry",
-          "How"
+          "There"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 1,
         "names": 0,
         "nouns": 0
       }
@@ -171,64 +267,102 @@
     {
       "index": 329,
       "question": "Erin has 7 lollipops. Her mother gives Erin another 10 lollipops. If Erin gives 3 of her lollipops t...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "10",
-          "7",
-          "3"
+          "3",
+          "7"
         ],
         "names": [
           "Erin",
+          "Ella",
           "If",
-          "Her",
-          "Ella"
+          "Her"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
-        "names": 0,
+        "numbers": 2,
+        "names": 1,
         "nouns": 0
       }
     },
     {
       "index": 395,
       "question": "Erica made 20 Valentine's cards to pass out.  Her dad brought her 2 boxes of pre-made Valentine's ca...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
-          "24",
-          "5",
-          "2",
-          "17",
+          "15",
           "20",
-          "15"
+          "17",
+          "5",
+          "24",
+          "2"
         ],
         "names": [
-          "She",
           "Day",
           "Erica",
-          "Valentine",
+          "Her",
+          "She",
           "How",
-          "Her"
+          "Valentine"
         ],
         "nouns": [
           "friends"
         ]
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 2,
         "names": 0,
         "nouns": 0
       }
@@ -236,36 +370,55 @@
     {
       "index": 461,
       "question": "Shondra has 7 fewer plants than Toni. Toni has 60% more plants than Frederick. If Frederick has 10 p...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "10",
-          "7",
-          "60"
+          "60",
+          "7"
         ],
         "names": [
-          "Toni",
-          "If",
           "Shondra",
+          "If",
+          "Toni",
           "Frederick"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
-        "names": 0,
+        "numbers": 1,
+        "names": 1,
         "nouns": 0
       }
     },
     {
       "index": 527,
       "question": "If one person can paint half a house in 5 days, how many hours would it take for 5 people to paint a...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "5"
@@ -276,20 +429,39 @@
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
-        "names": 0,
+        "numbers": 1,
+        "names": 1,
         "nouns": 0
       }
     },
     {
       "index": 593,
       "question": "Mark plants a beanstalk below his second-story window, which is 20 feet off the ground. The beanstal...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "20",
@@ -297,34 +469,53 @@
         ],
         "names": [
           "The",
-          "If",
-          "Mark"
+          "Mark",
+          "If"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
-        "names": 0,
+        "numbers": 1,
+        "names": 2,
         "nouns": 0
       }
     },
     {
       "index": 659,
       "question": "A pound of almonds costs $10 while a pound of walnuts costs $15. How much more does it cost for a mi...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
+          "15",
           "10",
-          "5",
-          "2",
-          "1",
           "3",
-          "15"
+          "1",
+          "5",
+          "2"
         ],
         "names": [
           "How"
@@ -332,12 +523,31 @@
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 5,
         "names": 0,
         "nouns": 0
       }
@@ -345,7 +555,7 @@
     {
       "index": 725,
       "question": "A cat eats nine sausages in 30 minutes. A dog can eat the same number of sausages in 2/3 the amount ...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "2",
@@ -358,12 +568,31 @@
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 2,
         "names": 0,
         "nouns": 0
       }
@@ -371,13 +600,13 @@
     {
       "index": 791,
       "question": "A train has 172 people traveling on it. At the first stop 47 people get off and 13 more people get o...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
-          "13",
-          "47",
           "172",
-          "38"
+          "38",
+          "47",
+          "13"
         ],
         "names": [
           "At",
@@ -386,8 +615,27 @@
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
@@ -399,44 +647,63 @@
     {
       "index": 857,
       "question": "The amount of water passing through a river at one point in time is 4000 gallons. After a day of hea...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "4000",
           "6000"
         ],
         "names": [
-          "If",
           "The",
-          "After"
+          "After",
+          "If"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
         "numbers": 0,
-        "names": 0,
+        "names": 2,
         "nouns": 0
       }
     },
     {
       "index": 923,
       "question": "Lana is brewing cups of tea for her friends. She has 27 cups, and she divides these into 3 rows. In ...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "27",
-          "3",
-          "15"
+          "15",
+          "3"
         ],
         "names": [
+          "She",
           "Lana",
           "In",
-          "She",
           "How"
         ],
         "nouns": [
@@ -444,12 +711,31 @@
         ]
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 1,
         "names": 0,
         "nouns": 0
       }
@@ -457,27 +743,46 @@
     {
       "index": 989,
       "question": "Emily can peel 6 shrimp a minute and saute 30 shrimp in 10 minutes. How long will it take her to pee...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
-          "30",
-          "90",
           "10",
-          "6"
+          "6",
+          "90",
+          "30"
         ],
         "names": [
-          "How",
-          "Emily"
+          "Emily",
+          "How"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 1,
         "names": 0,
         "nouns": 0
       }
@@ -485,84 +790,141 @@
     {
       "index": 1055,
       "question": "James has to buy insurance.  Since he had an accident it was 60% more than normal.  The normal cost ...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "120",
           "60"
         ],
         "names": [
+          "Since",
           "The",
           "James",
-          "How",
-          "Since"
+          "How"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
         "numbers": 0,
-        "names": 0,
+        "names": 1,
         "nouns": 0
       }
     },
     {
       "index": 1121,
       "question": "In 7 days, Sofie will walk twice as far as Brian. If Sofie plans to walk 10 miles every day, how man...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "10",
           "7"
         ],
         "names": [
-          "If",
           "In",
-          "Sofie",
-          "Brian"
+          "If",
+          "Brian",
+          "Sofie"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
-        "names": 0,
+        "numbers": 1,
+        "names": 1,
         "nouns": 0
       }
     },
     {
       "index": 1187,
       "question": "Jay is making snowballs to prepare for a snowball fight with his sister. He can build 20 snowballs i...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
-          "2",
           "20",
-          "60",
-          "15"
+          "2",
+          "15",
+          "60"
         ],
         "names": [
-          "Jay",
+          "He",
           "How",
-          "He"
+          "Jay"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 1,
         "names": 0,
         "nouns": 0
       }
@@ -570,27 +932,46 @@
     {
       "index": 1253,
       "question": "Tim spends 6 hours each day at work answering phones.  It takes him 15 minutes to deal with a call. ...",
-      "output": "",
+      "output": "Question 1:\n1. Which of the following is not a characteristic of a simple interest?\nA. The rate of change\nB. The amount of money borrowed\nC. The time period\nD. The number of compounding periods\n\nAnswe...",
       "q_entities": {
         "numbers": [
           "15",
-          "5",
-          "6"
+          "6",
+          "5"
         ],
         "names": [
-          "How",
           "It",
-          "Tim"
+          "Tim",
+          "How"
         ],
         "nouns": []
       },
       "o_entities": {
-        "numbers": [],
-        "names": [],
+        "numbers": [
+          "10",
+          "1550",
+          "4",
+          "1",
+          "3",
+          "1600",
+          "1500",
+          "5",
+          "1000",
+          "1650",
+          "500",
+          "2"
+        ],
+        "names": [
+          "Which",
+          "The",
+          "Answer",
+          "Question",
+          "If"
+        ],
         "nouns": []
       },
       "matches": {
-        "numbers": 0,
+        "numbers": 1,
         "names": 0,
         "nouns": 0
       }
