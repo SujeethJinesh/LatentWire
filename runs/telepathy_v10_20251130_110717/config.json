@@ -1,0 +1,15 @@
+{
+    "run_id": "telepathy_v10_20251130_110717",
+    "phase": 10,
+    "key_fix": "Auto-Encoder: Force Mistral to regenerate Question from soft tokens",
+    "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
+    "source_layer": 16,
+    "soft_tokens": 128,
+    "depth": 4,
+    "heads": 8,
+    "steps": 3000,
+    "batch_size": 4,
+    "lr": 1e-4,
+    "num_gpus": 4
+}
