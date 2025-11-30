@@ -1275,7 +1275,76 @@ git pull && rm -rf runs && bash run_telepathy_v9.sh
 
 ---
 
-## 31. Changelog (Continued)
+## 31. Phase 9 Results: BoW Supervision FAILED
+
+**Run**: telepathy_v9_20251130_102755
+**Training**: 3000 steps, batch_size=2 (reduced for BoW head memory)
+
+### Training Metrics
+
+| Step | Total | LM | BoW | Anchor | Scale |
+|------|-------|-----|-----|--------|-------|
+| 50 | 3.52 | 1.58 | 0.077 | 0.745 | 0.0024 |
+| 500 | 2.14 | 1.05 | 0.002 | 0.486 | 0.0030 |
+| 1500 | 1.95 | 1.02 | 0.008 | 0.413 | 0.0032 |
+| 3000 | 1.93 | 1.04 | 0.007 | 0.392 | 0.0034 |
+
+**Key Observation**: BoW loss dropped to ~0.007 - nearly perfect token prediction. Anchor improved from 0.74 to 0.39.
+
+### Evaluation Results
+
+| Metric | Value |
+|--------|-------|
+| Correct | 0/20 (0%) |
+| Partial | 5/20 (25%) |
+| Baseline | 0/20 (0%) |
+
+**MODE COLLAPSE PERSISTS**:
+```
+Question: Janet's ducks lay 16 eggs...
+Output: "Q: 1/2 of 1/3 of 1/4..."  ← Repetitive fraction pattern
+
+Question: Jim spends 2 hours watching TV...
+Output: "Question 1: The number of students in the class is 24..."  ← SAME TEMPLATE
+```
+
+### Why BoW Failed: Separate Pathways
+
+```
+                                    ┌─────────────────┐
+                                    │ BoW Head        │
+Input → Resampler → [pooled] ──────►│ Linear(4096,128k)│───► Token Prediction ✓
+                  │                 └─────────────────┘     (BoW loss: 0.007)
+                  │
+                  └──► [soft tokens] → scale → Mistral ───► Generic Output ✗
+                                                            (Still "students")
+```
+
+**The Problem**: BoW head operates on **pooled** resampler output, not on soft tokens. The bridge can:
+1. Make soft tokens that satisfy anchor loss (generic answer-like vectors)
+2. Separately learn BoW classification from the pooled representation
+
+There's **no gradient forcing soft tokens themselves** to encode different information for different inputs. Mistral still sees the same collapsed representation.
+
+### Fundamental Issue
+
+The BoW loss gradient flows through the resampler, but:
+- Soft tokens = `resampler output` × `learnable scale`
+- BoW logits = `max(resampler output)` → `linear projection`
+
+These share the resampler but have different objectives. The resampler can satisfy both by:
+- Keeping soft token positions generic (for anchor loss)
+- Encoding input info in dimensions that BoW head detects but soft tokens ignore
+
+### What We Learned
+
+1. **Auxiliary classifiers don't fix mode collapse** - they can be satisfied without affecting the main output
+2. **BoW loss needs to directly constrain what Mistral sees**
+3. **Need stronger coupling between input detection and output generation**
+
+---
+
+## 32. Changelog (Continued)
 
 | Date | Change |
 |------|--------|
@@ -1285,3 +1354,5 @@ git pull && rm -rf runs && bash run_telepathy_v9.sh
 | 2025-11-29 | Created run_telepathy_v9.sh with BOW_WEIGHT=5.0 |
 | 2025-11-29 | Updated eval_telepathy.py to handle V9 |
 | 2025-11-29 | Key insight: Mean-pooling allows mode collapse; BoW forces token prediction |
+| 2025-11-30 | **V9 Results: FAILED** - BoW loss 0.007 but outputs still show mode collapse |
+| 2025-11-30 | Diagnosis: BoW head is separate pathway, doesn't constrain soft tokens |
