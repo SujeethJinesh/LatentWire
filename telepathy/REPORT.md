@@ -1853,45 +1853,123 @@ The experiment has hit a fundamental architectural limit. Options:
 **Date**: November 30, 2025
 **Status**: Implemented, Ready to Run
 
-### The Insight: Regression Cannot Work
+### Scientific Pivot: From Regression to Generation
 
-After 11 phases, we've hit a hard wall with the **regression approach**. The fundamental problem is called the **Blur Problem**:
+After 11 phases of systematic experimentation, we have accumulated sufficient evidence to diagnose the fundamental failure mode and propose a theoretically-grounded solution.
 
-#### Why Regression Fails
+---
 
-Given an input like "Janet's ducks lay 16 eggs...", there are many valid Mistral embedding vectors that could decode to this question. Regression (MSE loss) outputs the **mathematical average** of all valid vectors.
+### The Regression Gap: Why V1-V11 Failed
+
+**Theorem (Informal)**: *Any deterministic regression model trained with MSE loss on a one-to-many mapping will produce outputs that lie in the convex hull of valid targets, but not necessarily on the target manifold.*
+
+#### Formal Problem Statement
+
+Let:
+- $\mathcal{M}_L$ = Llama's hidden state manifold
+- $\mathcal{M}_M$ = Mistral's embedding manifold
+- $f: \mathcal{M}_L \rightarrow \mathcal{M}_M$ = our bridge function
+- $\mathcal{T}(x) = \{y \in \mathcal{M}_M : \text{decode}(y) = \text{decode}(x)\}$ = set of valid targets for input $x$
+
+**The Core Issue**: For any input $x$, there exist multiple valid Mistral embeddings $y_1, y_2, ..., y_k \in \mathcal{T}(x)$ that all decode to semantically equivalent outputs. MSE training finds:
+
+$$f^*(x) = \arg\min_f \mathbb{E}_{y \sim \mathcal{T}(x)} \|f(x) - y\|^2 = \mathbb{E}[y | x]$$
+
+The optimal MSE solution is the **conditional expectation** - the centroid of valid targets.
+
+#### Why the Centroid Fails
+
+**Proposition**: *The centroid of points on a curved manifold generally lies off the manifold.*
+
+Consider a simple example: points on a circle. The average of $(1,0)$ and $(-1,0)$ is $(0,0)$ - the center, not on the circle.
 
 ```
-Input: "Janet's ducks..."
+Mistral's embedding manifold (curved):
 
-Valid Mistral vectors:       Regression output:
-   Vector A ----\
-   Vector B -----\---> AVERAGE --> OFF the manifold
-   Vector C -----/
-   Vector D ----/
-
-OFF the manifold = GARBAGE output
+         y₁ ●
+            \
+             \  ← Manifold surface
+              \
+    Centroid → ✕ ← OFF the manifold (garbage region)
+              /
+             /
+            /
+         y₂ ●
 ```
 
-The average of valid vectors doesn't lie ON the embedding manifold. It's in "no man's land" - a region where Mistral has never seen any training data. This explains:
-- V10: Coherent but completely wrong content
-- V11: Pure garbage tokens
+**Evidence from our experiments:**
 
-### The Fix: Diffusion Generates ON the Manifold
+| Phase | Approach | Output | Diagnosis |
+|-------|----------|--------|-----------|
+| V1-V5 | Direct regression | Mode collapse | Centroid = single garbage point |
+| V6-V8 | Reconstruction | Blurry entities | Averaging similar words |
+| V9 | BoW supervision | Wrong content | Centroid in wrong semantic region |
+| V10 | Auto-encoder | Template output | Centroid = most common pattern |
+| V11 | Bottleneck weighting | Garbage tokens | Forced to use bad centroid |
 
-Instead of predicting (regression), we **generate** (diffusion):
+**The Regression Gap** = the distance between the learned centroid and the nearest valid point on the manifold. Our experiments show this gap is catastrophic for cross-model transfer.
+
+---
+
+### Manifold Projection via Diffusion
+
+**Key Insight**: Instead of predicting a point (regression), we learn to **project onto the manifold** (diffusion).
+
+#### Theoretical Foundation
+
+Diffusion models learn the **score function** $\nabla_x \log p(x)$, which points toward high-density regions of the data distribution. This is equivalent to learning to project arbitrary points onto the data manifold.
+
+**Theorem (Score Matching)**: *A model trained to denoise Gaussian-corrupted data learns to approximate the score function, which defines a vector field pointing toward the data manifold.*
+
+For our application:
+1. **Training**: Learn $v_\theta(x_t, t, c)$ that predicts how to move from noise toward valid Mistral embeddings, conditioned on Llama hidden states $c$
+2. **Inference**: Start from noise, follow the learned vector field, arrive ON the manifold
 
 ```
-Diffusion process:
-   Noise --> Learn to denoise --> Output ON the manifold
+Regression (V1-V11):           Diffusion (V12):
 
-   The denoising process inherently pushes toward valid data points.
+   Llama → [Bridge] → ✕        Llama → [Bridge] → Noise
+              ↓                           ↓
+         OFF manifold                   Follow v(x,t)
+              ↓                           ↓
+           GARBAGE                    ● ON manifold
+                                          ↓
+                                       VALID OUTPUT
 ```
 
-**Key insight from 2024/2025 research:**
-- Mar-1 (2024): "Continuous Diffusion for Categorical Data"
-- Latent Diffusion for language: PLAID, SED, etc.
-- DiT (Diffusion Transformer): State-of-the-art architecture
+#### Why Diffusion Solves the Regression Gap
+
+1. **No averaging**: Each sample follows a unique trajectory to a single point
+2. **Manifold constraint**: The score function inherently pushes toward valid data
+3. **Multimodality**: Can sample different valid outputs for the same input
+4. **Proven theory**: Score matching + SDE integration is mathematically sound
+
+#### Related Work Validating This Approach
+
+| Paper | Year | Key Result |
+|-------|------|------------|
+| Diffusion-LM (Li et al.) | 2022 | Continuous diffusion for discrete text generation |
+| PLAID (Gulrajani & Hashimoto) | 2023 | Latent diffusion for language |
+| SED (Strudel et al.) | 2024 | Score entropy discrete diffusion |
+| Flow Matching (Lipman et al.) | 2023 | Rectified Flow for efficient sampling |
+| DiT (Peebles & Xie) | 2023 | Transformer architecture for diffusion |
+
+---
+
+### The Fix: DiT + Rectified Flow
+
+We adopt **Rectified Flow** for its simplicity and efficiency:
+
+**Rectified Flow** (Liu et al., 2022):
+- Linear interpolation: $x_t = t \cdot x_1 + (1-t) \cdot x_0$ where $x_0 \sim \mathcal{N}(0,I)$, $x_1 \sim p_{data}$
+- Constant velocity: $v = x_1 - x_0$
+- Training: $\mathcal{L} = \mathbb{E}_{t,x_0,x_1} \|v_\theta(x_t, t, c) - v\|^2$
+- Inference: ODE integration from $x_0$ to $x_1$
+
+**Advantages over DDPM/Score-based**:
+- Straight trajectories → fewer sampling steps
+- Velocity is constant → easier to learn
+- No variance schedule tuning
 
 ### Architecture: DiT + Rectified Flow
 
