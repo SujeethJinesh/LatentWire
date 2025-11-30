@@ -1845,3 +1845,137 @@ The experiment has hit a fundamental architectural limit. Options:
 2. **Use text bottleneck**: Quantize to actual tokens, then embed in Mistral
 3. **Joint fine-tuning**: Unfreeze Mistral's first layers to learn the bridge's "dialect"
 4. **Different source layer**: Try layer 8 (more surface-level) instead of 16 (more abstract)
+
+---
+
+## 39. Phase 12: Diffusion Bridge (DiT + Rectified Flow)
+
+**Date**: November 30, 2025
+**Status**: Implemented, Ready to Run
+
+### The Insight: Regression Cannot Work
+
+After 11 phases, we've hit a hard wall with the **regression approach**. The fundamental problem is called the **Blur Problem**:
+
+#### Why Regression Fails
+
+Given an input like "Janet's ducks lay 16 eggs...", there are many valid Mistral embedding vectors that could decode to this question. Regression (MSE loss) outputs the **mathematical average** of all valid vectors.
+
+```
+Input: "Janet's ducks..."
+
+Valid Mistral vectors:       Regression output:
+   Vector A ----\
+   Vector B -----\---> AVERAGE --> OFF the manifold
+   Vector C -----/
+   Vector D ----/
+
+OFF the manifold = GARBAGE output
+```
+
+The average of valid vectors doesn't lie ON the embedding manifold. It's in "no man's land" - a region where Mistral has never seen any training data. This explains:
+- V10: Coherent but completely wrong content
+- V11: Pure garbage tokens
+
+### The Fix: Diffusion Generates ON the Manifold
+
+Instead of predicting (regression), we **generate** (diffusion):
+
+```
+Diffusion process:
+   Noise --> Learn to denoise --> Output ON the manifold
+
+   The denoising process inherently pushes toward valid data points.
+```
+
+**Key insight from 2024/2025 research:**
+- Mar-1 (2024): "Continuous Diffusion for Categorical Data"
+- Latent Diffusion for language: PLAID, SED, etc.
+- DiT (Diffusion Transformer): State-of-the-art architecture
+
+### Architecture: DiT + Rectified Flow
+
+**DiT (Diffusion Transformer):**
+- Self-attention + Cross-attention to source
+- AdaLN (Adaptive Layer Norm) conditioning on timestep + source
+
+**Rectified Flow:**
+- Simplest diffusion training: linear interpolation
+- x_t = t * target + (1-t) * noise
+- Predict velocity: v = target - noise (constant)
+- Loss: MSE(v_pred, v_true)
+
+**Advantages over DDPM:**
+- Single-step inference possible
+- Straight trajectories = faster sampling
+- Simpler math, easier to debug
+
+### Implementation
+
+**Files created:**
+- `telepathy/latent_bridge_v12.py` - DiT architecture with Rectified Flow
+- `telepathy/train_telepathy_v12.py` - Training loop with velocity prediction
+- `telepathy/eval_telepathy_v12.py` - Eval with diffusion sampling
+- `run_telepathy_v12.sh` - Execution script
+
+**Key parameters:**
+- DiT depth: 6 layers (vs 4 in Perceiver)
+- Heads: 8
+- Training steps: 5000
+- Learning rate: 3e-4
+- Diffusion steps (sampling): 10
+
+### Training Objective
+
+```python
+# Rectified Flow training step:
+t = torch.rand(B)  # Sample timestep
+noise = torch.randn_like(target)
+x_t = t * target + (1-t) * noise  # Linear interpolation
+v_pred = model(x_t, t, source)  # Predict velocity
+loss = MSE(v_pred, target - noise)  # Velocity loss
+```
+
+### Inference
+
+```python
+# Euler integration from noise to target:
+x = torch.randn(B, L, D)  # Start from noise
+for i in range(num_steps):
+    t = i / num_steps
+    v = model(x, t, source)
+    x = x + v * (1/num_steps)  # Euler step
+return x  # Generated soft tokens
+```
+
+### Success Criteria
+
+| Metric | Target | Interpretation |
+|--------|--------|----------------|
+| Output diversity | >50% unique | Not mode collapsed |
+| Entity transfer | >30% | Information flowing |
+| Output coherence | Readable | ON the manifold |
+
+### Why This Should Work
+
+1. **Diffusion outputs are ON the manifold** - by construction, the denoising process learns to push toward valid data points
+
+2. **No averaging problem** - each sample generates a single coherent vector, not an average of possibilities
+
+3. **Proven in language** - Diffusion-LM, PLAID, SED show continuous diffusion works for discrete language
+
+4. **DiT is powerful** - State-of-the-art for image generation, should transfer to latent spaces
+
+### Expected Challenges
+
+1. **Training may be slow** - Diffusion typically needs more steps than regression
+2. **Sampling quality** - May need >10 steps for good outputs
+3. **Mode coverage** - May generate valid but different content than intended
+
+### Ready to Run
+
+```bash
+bash run_telepathy_v12.sh
+```
+
+Awaiting HPC training results.
