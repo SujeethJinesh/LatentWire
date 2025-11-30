@@ -2056,4 +2056,28 @@ return x  # Generated soft tokens
 bash run_telepathy_v12.sh
 ```
 
-Awaiting HPC training results.
+---
+
+### Run 1: OOM Crash (2025-11-30)
+
+**Result**: SIGKILL (exitcode -9) = Out of Memory
+
+The first run crashed immediately after initializing the DiT bridge:
+```
+[LatentBridgeV12] DiT Diffusion Bridge initialized
+  - num_latents: 128
+  - depth: 6
+  - heads: 8
+  - src_dim: 4096 -> tgt_dim: 4096
+Signal 9 (SIGKILL) received by PID 732643
+```
+
+**Root Cause**: batch_size=16 exceeded H100 80GB memory with:
+- Llama 8B (~16GB)
+- Mistral 7B (~14GB)
+- DiT Bridge (6 layers x 4096 dim)
+- Batch activations
+
+**Fix**: Reduced batch_size from 16 to 4 (1 per GPU instead of 4 per GPU).
+
+Awaiting Run 2 results.
