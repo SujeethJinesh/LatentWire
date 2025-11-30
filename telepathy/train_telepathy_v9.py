@@ -103,8 +103,10 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
 
     # 3. PHASE 9: Bag-of-Words Loss
     # Create Multi-Hot Target: Which tokens were in the input?
-    B, V = bow_logits.shape
-    bow_targets = torch.zeros_like(bow_logits)  # [B, Vocab]
+    # Cast to float32 for numerical stability in BCE
+    bow_logits_f32 = bow_logits.float()
+    B, V = bow_logits_f32.shape
+    bow_targets = torch.zeros_like(bow_logits_f32)  # [B, Vocab]
     # Set 1.0 for every token present in the input
     bow_targets.scatter_(1, src_enc.input_ids, 1.0)
     # Ignore padding token
@@ -112,7 +114,7 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
         bow_targets[:, src_tok.pad_token_id] = 0
 
     # BCE Loss: Predict 1 for present words, 0 for absent
-    loss_bow = F.binary_cross_entropy_with_logits(bow_logits, bow_targets)
+    loss_bow = F.binary_cross_entropy_with_logits(bow_logits_f32, bow_targets)
 
     # 4. Anchor to answer embeddings
     tgt_enc = tgt_tok(tgt_texts, return_tensors="pt", padding=True,

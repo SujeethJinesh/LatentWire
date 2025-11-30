@@ -119,6 +119,6 @@ class LatentBridgeV9(nn.Module):
         # MAX pooling detects "Did this feature appear anywhere?"
         # Better than mean pooling for sparse entity detection
         pooled = compressed.max(dim=1).values  # [B, D]
-        bow_logits = self.bow_head(pooled.float())  # [B, Vocab]
+        bow_logits = self.bow_head(pooled)  # [B, Vocab] - stay in input dtype
 
         return scaled_out, bow_logits
