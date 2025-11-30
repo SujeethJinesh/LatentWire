@@ -1562,3 +1562,105 @@ The loss of 0.9 might be achieved primarily by predicting tokens 130+ (which hav
 # Re-run eval only (no retraining needed)
 git pull && bash run_telepathy_v10_eval_only.sh
 ```
+
+---
+
+## 36. Phase 10 Results (Fixed Eval): TEACHER FORCING SHORTCUT CONFIRMED
+
+### Evaluation Results (With BOS + Attention Mask Fix)
+
+| Metric | Value |
+|--------|-------|
+| Numbers matched | 25/60 (41.7%) |
+| Names matched | 11/67 (16.4%) |
+| Nouns matched | 0/9 (0.0%) |
+| **Overall** | 36/136 (26.5%) |
+
+**BUT WAIT** - these numbers are **FALSE POSITIVES**.
+
+### The Smoking Gun: All Outputs Are IDENTICAL
+
+Every single one of the 20 samples produced the **exact same output**:
+
+```
+Question 1:
+1. Which of the following is not a characteristic of a simple interest?
+A. The rate of change
+B. The amount of money borrowed
+C. The time period
+D. The number of compounding periods
+
+Answer: D. The number of compounding periods
+```
+
+The "entity matches" are coincidental - numbers like "10", "4" appear in this template and happen to match some question numbers.
+
+### Diagnosis: Complete Mode Collapse via Teacher Forcing Shortcut
+
+| Training Setup | Eval Setup |
+|---------------|------------|
+| Input: [Soft Tokens] + [Question Text] | Input: [Soft Tokens] + [BOS] |
+| Model learns: "Copy from Question Text" | No Question Text to copy |
+| Soft tokens = ignorable noise | Falls back to memorized template |
+
+**The model learned to ignore soft tokens entirely.** When teacher-forced question embeddings are available, it copies from them. When they're not (eval), it outputs a generic memorized pattern.
+
+### Soft Token Statistics
+
+```
+min: -0.0058, max: 0.0058, mean: 0.0001
+```
+
+The bridge is mechanically functional (bounded by tanh × scale), but the **semantic content is not being encoded** in a way the model uses.
+
+### Why This Specific Template?
+
+The "simple interest multiple choice" template is likely a high-frequency pattern from Mistral's pretraining. When the model has no useful context from soft tokens, it defaults to this as a "safe" output.
+
+### Root Cause Analysis
+
+The V10 training objective had a fatal flaw:
+
+```python
+# V10 Training: Teacher Forcing
+combined_embeds = torch.cat([soft_tokens, tgt_embeds], dim=1)
+# Position 129 predicts Q[0] by looking at:
+#   - Positions 0-127: soft_tokens (noise)
+#   - Position 128: BOS embedding
+# But position 130 predicts Q[1] by looking at:
+#   - Positions 0-128: soft_tokens + BOS
+#   - Position 129: Q[0] embedding (TEACHER FORCED!)
+```
+
+The model minimized loss by:
+1. Learning that position 128 always predicts something generic (BOS is constant)
+2. Learning to copy from teacher-forced embeddings at positions 129+
+3. **Never learning to extract information from soft tokens**
+
+### The Fix for Phase 11
+
+To prevent the Teacher Forcing Shortcut, we need to remove the "cheat sheet":
+
+**Option A: Pure Generation Loss (Expensive)**
+- Don't use teacher forcing at all
+- Generate autoregressively during training
+- Loss = compare generated tokens to target
+
+**Option B: First-K Token Focus (Efficient)**
+- Weight the loss heavily on the first K tokens after soft tokens
+- These tokens have NO teacher-forced context to cheat from
+- If the model can predict Q[0], Q[1], Q[2] correctly, it MUST be using soft tokens
+
+**Option C: Masked Teacher Forcing**
+- Randomly mask some of the teacher-forced embeddings during training
+- Force model to sometimes rely on soft tokens even for later positions
+
+### Conclusion
+
+Phase 10 proved that:
+1. ✅ The BOS/attention mask fix works (no more empty strings)
+2. ✅ The bridge is mechanically functional (scale, normalization OK)
+3. ❌ The training objective allows complete bypass of soft tokens
+4. ❌ Teacher forcing creates a shortcut the model exploits
+
+**Next Step: Phase 11 - First-K Token Loss Weighting**
