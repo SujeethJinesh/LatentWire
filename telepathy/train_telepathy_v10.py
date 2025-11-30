@@ -166,7 +166,8 @@ def main():
     bridge.to(device)
 
     if torch.distributed.is_initialized():
-        bridge = DDP(bridge, device_ids=[local_rank])
+        # find_unused_parameters=True because we ignore the BoW head from V9
+        bridge = DDP(bridge, device_ids=[local_rank], find_unused_parameters=True)
 
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=args.lr, weight_decay=0.01)
 
