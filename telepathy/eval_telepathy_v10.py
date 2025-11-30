@@ -3,11 +3,14 @@
 """
 Phase 10 Evaluation: Does Mistral "Read Back" the Question?
 
-Success Criteria:
-- Mistral output STARTS with question content (Janet, ducks, 16, etc)
-- Then provides the answer
+FIXED VERSION:
+- Added BOS token as "Attention Sink" (Mistral needs this to dump excess attention)
+- Added explicit attention_mask (prevents HuggingFace from treating embeds as padding)
 
-This proves the soft tokens encode question info in Mistral-readable format.
+Success Criteria:
+- If output contains input entities ("Janet", "ducks", "16") → Bridge is working
+- If output is coherent but generic ("students", "apples") → Teacher Forcing Shortcut
+- If output is empty/garbage → Model collapsed, needs Phase 11
 """
 import torch
 import json
@@ -21,11 +24,8 @@ import argparse
 
 def extract_entities(text):
     """Extract key entities (names, numbers) from text for comparison."""
-    # Find all numbers
     numbers = set(re.findall(r'\b\d+\b', text))
-    # Find capitalized words (names)
     names = set(re.findall(r'\b[A-Z][a-z]+\b', text))
-    # Find key nouns (simplified)
     nouns = set(re.findall(r'\b(ducks?|eggs?|chickens?|students?|apples?|friends?|farmers?|market)\b', text.lower()))
     return numbers, names, nouns
 
@@ -48,10 +48,14 @@ def main():
     TARGET_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
 
     print("=" * 70)
-    print("Phase 10 Evaluation: Auto-Encoder Test")
+    print("Phase 10 Evaluation: Auto-Encoder Test (FIXED)")
     print("=" * 70)
-    print("Success = Mistral 'reads back' the question content from vectors")
-    print("Look for: Entity names, numbers, key nouns from original question")
+    print("FIX: Added BOS token (Attention Sink) + Explicit Attention Mask")
+    print("")
+    print("Success Criteria:")
+    print("  - Output has input entities → Bridge is working!")
+    print("  - Output is coherent but generic → Teacher Forcing Shortcut")
+    print("  - Output is empty/garbage → Model collapsed")
     print("=" * 70)
 
     # Load models
@@ -93,6 +97,18 @@ def main():
         print(f"Target embedding RMS: {tgt_rms:.4f}")
         print(f"Soft tokens will have ~{bridge.output_scale.item()/tgt_rms:.2f}x target scale")
 
+    # Create BOS embedding (The "Attention Sink")
+    # Mistral needs this stable token to dump excess attention scores
+    bos_id = tgt_tok.bos_token_id
+    if bos_id is None:
+        bos_id = 1  # Fallback
+    print(f"BOS token ID: {bos_id}")
+
+    with torch.no_grad():
+        bos_embed = tgt_model.get_input_embeddings()(
+            torch.tensor([[bos_id]], device=DEVICE)
+        ).bfloat16()
+
     # Load test data
     ds = load_dataset("gsm8k", "main", split="test")
 
@@ -126,23 +142,19 @@ def main():
             src_h = src_out.hidden_states[args.source_layer].bfloat16()
             soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
 
-            # FIX: Add BOS token to kick off generation
-            # Training always had BOS after soft tokens, so eval needs it too
-            bos_emb = tgt_model.get_input_embeddings()(
-                torch.tensor([[tgt_tok.bos_token_id]], device=DEVICE)
-            ).bfloat16()
-            inputs_embeds = torch.cat([soft_tokens, bos_emb], dim=1)
+            # FIX: Construct input with BOS as Attention Sink
+            # Training was: [Soft Tokens] + [Target Embeds (which started with BOS)]
+            # So we append BOS after soft tokens to signal "start talking now"
+            input_embeds = torch.cat([soft_tokens, bos_embed], dim=1)
 
-            # FIX: Add attention mask - required for proper attention
-            attention_mask = torch.ones(
-                1, inputs_embeds.shape[1], device=DEVICE, dtype=torch.long
-            )
+            # FIX: Explicit attention mask (all ones = attend to everything)
+            B, L, D = input_embeds.shape
+            attn_mask = torch.ones((B, L), device=DEVICE, dtype=torch.long)
 
-            # Generate from soft tokens + BOS
-            # Mistral should reconstruct question content
+            # Generate
             out_ids = tgt_model.generate(
-                inputs_embeds=inputs_embeds,
-                attention_mask=attention_mask,
+                inputs_embeds=input_embeds,
+                attention_mask=attn_mask,
                 max_new_tokens=args.max_new_tokens,
                 do_sample=False,
                 pad_token_id=tgt_tok.eos_token_id
@@ -153,8 +165,8 @@ def main():
         # Debug: Show raw output for first sample
         if idx == indices[0]:
             raw_output = tgt_tok.decode(out_ids[0], skip_special_tokens=False)
-            print(f"\n[DEBUG] First sample raw output: {repr(raw_output[:200])}")
-            print(f"[DEBUG] Generated {len(out_ids[0])} tokens, soft_tokens shape: {soft_tokens.shape}")
+            print(f"\n[DEBUG] First sample raw output: {repr(raw_output[:300])}")
+            print(f"[DEBUG] Generated {len(out_ids[0])} tokens")
             print(f"[DEBUG] Soft token stats - min: {soft_tokens.min():.4f}, max: {soft_tokens.max():.4f}, mean: {soft_tokens.mean():.4f}")
 
         # Extract entities from output
@@ -181,6 +193,7 @@ def main():
 
         # Print sample
         print(f"\n[Sample {idx}]")
+        print(f"Q: {question[:80]}...")
         print(f"Q Entities: nums={list(q_numbers)[:3]}, names={list(q_names)[:3]}, nouns={list(q_nouns)[:3]}")
         print(f"Output: {output[:150]}...")
         print(f"O Entities: nums={list(o_numbers)[:3]}, names={list(o_names)[:3]}, nouns={list(o_nouns)[:3]}")
@@ -205,14 +218,21 @@ def main():
 
     print("\n" + "=" * 70)
     if overall_rate > 30:
-        print("PROGRESS! Entities are transferring through soft tokens.")
+        print("SUCCESS! Entities are transferring through soft tokens.")
         print("The Auto-Encoder approach is working.")
     elif overall_rate > 10:
         print("PARTIAL SUCCESS. Some entity transfer detected.")
         print("May need more training or larger soft token count.")
+    elif overall_matched > 0:
+        print("MINIMAL TRANSFER. Very few entities getting through.")
+        print("Likely Teacher Forcing Shortcut - model ignores soft tokens.")
     else:
-        print("STILL FAILING. Entities not transferring.")
-        print("Check if loss decreased during training.")
+        print("STILL FAILING. No entity transfer detected.")
+        print("")
+        print("DIAGNOSIS:")
+        print("  - If outputs are EMPTY: Model collapsed to EOS")
+        print("  - If outputs are COHERENT but GENERIC: Teacher Forcing Shortcut")
+        print("  - If outputs are GARBAGE: Attention sink not working")
     print("=" * 70)
 
     # Save results
@@ -224,7 +244,8 @@ def main():
             "config": {
                 "checkpoint": args.checkpoint,
                 "soft_tokens": args.soft_tokens,
-                "num_samples": args.num_samples
+                "num_samples": args.num_samples,
+                "fix_applied": "BOS_token + attention_mask"
             },
             "entity_matches": entity_matches,
             "total_entities": total_entities,
