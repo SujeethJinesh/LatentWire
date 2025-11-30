@@ -4,15 +4,13 @@
 #
 # THE FIX: Stop predicting (regression) → start generating (diffusion).
 #
-# Why regression fails (The Blur Problem):
-# - Given input, many valid Mistral vectors could decode it
-# - Regression outputs AVERAGE of all valid outputs → lies OFF manifold
-# - Off-manifold vectors decode as garbage
+# Optimizations for stable DiT training:
+# 1. Cosine LR Scheduler with Warmup (500 steps)
+# 2. EMA (Exponential Moving Average, decay=0.999)
+# 3. Gradient Clipping (max_norm=1.0)
 #
-# Why diffusion works:
-# - Learns to move TOWARD the data manifold from any starting point
-# - Output guaranteed to lie ON the Mistral embedding manifold
-# - Sharp, valid vectors instead of blurry averages
+# Flow Loss will NOT drop to zero - this is normal.
+# Look for stable loss around 0.3-1.0 (not spikes/NaN).
 
 set -euo pipefail
 
@@ -63,12 +61,14 @@ SOFT_TOKENS="${SOFT_TOKENS:-128}"
 DEPTH="${DEPTH:-6}"
 HEADS="${HEADS:-8}"
 
-# Training
+# Training (optimized for DiT)
 STEPS="${STEPS:-5000}"
-BATCH_SIZE="${BATCH_SIZE:-4}"
+BATCH_SIZE="${BATCH_SIZE:-16}"
 LR="${LR:-3e-4}"
+WARMUP_STEPS="${WARMUP_STEPS:-500}"
+EMA_DECAY="${EMA_DECAY:-0.999}"
 
-# Diffusion
+# Diffusion inference
 DIFFUSION_STEPS="${DIFFUSION_STEPS:-10}"
 
 # Output
@@ -90,17 +90,17 @@ echo " GPUs:               $NPROC"
 echo ""
 echo " THE FIX: Stop predicting → start generating"
 echo ""
-echo " Why regression fails (Blur Problem):"
-echo "   - Outputs average of valid vectors → lies OFF the manifold"
-echo "   - Off-manifold vectors decode as garbage"
-echo ""
-echo " Why diffusion works:"
-echo "   - Learns to move TOWARD the data manifold"
-echo "   - Output is ON the manifold = valid Mistral embedding"
+echo " Optimizations for stable DiT training:"
+echo "   - Cosine LR Scheduler (warmup=${WARMUP_STEPS})"
+echo "   - EMA (decay=${EMA_DECAY})"
+echo "   - Batch size: ${BATCH_SIZE}"
 echo ""
 echo " Architecture: DiT with ${DEPTH} layers, ${HEADS} heads"
 echo " Training: Rectified Flow (predict velocity v = target - noise)"
 echo " Sampling: Euler integration with ${DIFFUSION_STEPS} steps"
+echo ""
+echo " NOTE: Flow Loss will NOT drop to zero - this is normal!"
+echo " Look for stable loss around 0.3-1.0"
 echo "=========================================================================="
 echo ""
 
@@ -109,7 +109,7 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
 {
     "run_id": "$RUN_ID",
     "phase": 12,
-    "key_fix": "Diffusion Bridge: Generate vectors ON the manifold instead of regressing averages",
+    "key_fix": "Diffusion Bridge with EMA + Cosine Annealing",
     "source_model": "$SOURCE_MODEL",
     "target_model": "$TARGET_MODEL",
     "source_layer": $SOURCE_LAYER,
@@ -119,13 +119,15 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
     "steps": $STEPS,
     "batch_size": $BATCH_SIZE,
     "lr": "$LR",
+    "warmup_steps": $WARMUP_STEPS,
+    "ema_decay": $EMA_DECAY,
     "diffusion_steps": $DIFFUSION_STEPS,
     "num_gpus": $NPROC
 }
 EOF
 
 # =============================================================================
-# Phase 1: DDP Training with Rectified Flow
+# Phase 1: DDP Training with Rectified Flow + EMA + Cosine Annealing
 # =============================================================================
 echo "[Phase 1/2] Training Diffusion Bridge on $NPROC GPU(s)..."
 echo "  Log file: $LOG_FILE"
@@ -148,19 +150,32 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
         --steps "$STEPS" \
         --batch_size "$BATCH_SIZE" \
         --lr "$LR" \
+        --warmup_steps "$WARMUP_STEPS" \
+        --ema_decay "$EMA_DECAY" \
         --bf16 \
         --save_every 500 \
         --save_path "${OUTPUT_DIR}/bridge_v12_final.pt"
 } 2>&1 | tee "$LOG_FILE"
 
 # =============================================================================
-# Phase 2: Evaluation
+# Phase 2: Evaluation (Using EMA checkpoint + ODE Solver)
 # =============================================================================
-CHECKPOINT="${OUTPUT_DIR}/bridge_v12_final.pt"
+# Use EMA checkpoint (higher quality) if available, else use standard
+if [[ -f "${OUTPUT_DIR}/bridge_v12_final_ema.pt" ]]; then
+    CHECKPOINT="${OUTPUT_DIR}/bridge_v12_final_ema.pt"
+    echo "Using EMA checkpoint (recommended)"
+elif [[ -f "${OUTPUT_DIR}/bridge_v12_final.pt" ]]; then
+    CHECKPOINT="${OUTPUT_DIR}/bridge_v12_final.pt"
+    echo "Using standard checkpoint"
+else
+    CHECKPOINT=""
+fi
 
-if [[ -f "$CHECKPOINT" ]]; then
+if [[ -n "$CHECKPOINT" ]]; then
     echo ""
     echo "[Phase 2/2] Evaluating Diffusion Bridge..."
+    echo "  Checkpoint: $CHECKPOINT"
+    echo "  CRITICAL: Using bridge.generate() (ODE solver)"
 
     EVAL_LOG="${OUTPUT_DIR}/eval_$(date +%Y%m%d_%H%M%S).log"
 
@@ -172,9 +187,10 @@ if [[ -f "$CHECKPOINT" ]]; then
             --depth "$DEPTH" \
             --heads "$HEADS" \
             --num_samples 20 \
-            --max_new_tokens 200 \
+            --max_new_tokens 128 \
             --diffusion_steps "$DIFFUSION_STEPS" \
-            --output_dir "$OUTPUT_DIR"
+            --output_dir "$OUTPUT_DIR" \
+            --bf16
     } 2>&1 | tee "$EVAL_LOG"
 
     echo ""
@@ -185,18 +201,18 @@ if [[ -f "$CHECKPOINT" ]]; then
     echo " Log:     $EVAL_LOG"
     echo ""
     echo " SUCCESS CRITERIA:"
-    echo "   - Outputs should VARY per input (not all identical)"
+    echo "   - Outputs should VARY per input (diversity > 50%)"
     echo "   - Outputs should contain question entities"
     echo "   - Entity transfer rate > 30% = Working!"
-    echo "   - Output diversity > 50% = Diffusion is generating, not memorizing"
     echo ""
     echo " If still failing:"
     echo "   - Increase training steps (10000+)"
     echo "   - Increase diffusion steps (20+)"
     echo "   - Try deeper DiT (8 layers)"
+    echo "   - Check if loss was stable during training"
     echo "=========================================================================="
 else
     echo ""
-    echo "WARNING: Checkpoint not found, skipping evaluation"
-    echo "Expected: $CHECKPOINT"
+    echo "WARNING: No checkpoint found, skipping evaluation"
+    echo "Expected: ${OUTPUT_DIR}/bridge_v12_final.pt or bridge_v12_final_ema.pt"
 fi

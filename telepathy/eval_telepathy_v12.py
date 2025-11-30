@@ -3,15 +3,17 @@
 """
 Phase 12 Evaluation: Test Diffusion-Generated Soft Tokens
 
+CRITICAL: Uses bridge.generate() (ODE solver) instead of bridge.forward()!
+
 The diffusion bridge GENERATES soft tokens from noise, conditioned on source.
 Unlike regression which outputs blurry averages, diffusion outputs should be
 sharp vectors that lie ON the Mistral embedding manifold.
 
 Evaluation:
-1. Load trained diffusion bridge
+1. Load trained diffusion bridge (EMA weights preferred)
 2. Run Llama on question to get source hidden states
 3. Sample from diffusion (Euler integration from noise)
-4. Prepend generated soft tokens to Mistral
+4. Prepend generated soft tokens + primer to Mistral
 5. Generate answer and check entity preservation
 """
 import os
@@ -20,6 +22,7 @@ import json
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
+from tqdm import tqdm
 import argparse
 
 from latent_bridge_v12 import LatentBridgeV12
@@ -35,15 +38,27 @@ def parse_args():
     parser.add_argument("--depth", type=int, default=6)
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--num_samples", type=int, default=20)
-    parser.add_argument("--max_new_tokens", type=int, default=200)
+    parser.add_argument("--max_new_tokens", type=int, default=128)
     parser.add_argument("--diffusion_steps", type=int, default=10,
                         help="Number of Euler steps for diffusion sampling")
     parser.add_argument("--output_dir", default=".")
+    parser.add_argument("--bf16", action="store_true", default=True)
     return parser.parse_args()
 
 
+def extract_answer(text):
+    """Extract numerical answer from GSM8K format."""
+    match = re.search(r'####\s*(\d+)', text)
+    if match:
+        return match.group(1)
+    matches = re.findall(r'\d+', text)
+    if matches:
+        return matches[-1]
+    return "[None]"
+
+
 def extract_entities(text):
-    """Extract numbers, names, and nouns from text."""
+    """Extract numbers, names from text for entity matching."""
     nums = re.findall(r'\b\d+(?:\.\d+)?\b', text)
     caps = re.findall(r'\b[A-Z][a-z]+\b', text)
     return {
@@ -59,7 +74,11 @@ def main():
     print("=" * 70)
     print("Phase 12 Evaluation: Diffusion-Generated Soft Tokens")
     print("=" * 70)
+    print(f"Checkpoint: {args.checkpoint}")
     print(f"Diffusion steps: {args.diffusion_steps}")
+    print("")
+    print("CRITICAL: Using bridge.generate() (ODE solver)")
+    print("NOT bridge.forward() (velocity prediction)")
     print("")
     print("Success Criteria:")
     print("  - Outputs VARY per input (not all identical)")
@@ -82,23 +101,35 @@ def main():
     tgt_tok = AutoTokenizer.from_pretrained(args.target_model)
     tgt_tok.pad_token = tgt_tok.eos_token
 
+    # Create args-like object for bridge init
+    class BridgeArgs:
+        pass
+    bridge_args = BridgeArgs()
+    bridge_args.soft_tokens = args.soft_tokens
+    bridge_args.depth = args.depth
+    bridge_args.heads = args.heads
+
     # Load bridge
     bridge = LatentBridgeV12(
-        args,
+        bridge_args,
         src_dim=src_model.config.hidden_size,
         tgt_dim=tgt_model.config.hidden_size,
         num_latents=args.soft_tokens,
         depth=args.depth,
         heads=args.heads,
-    ).bfloat16().to(DEVICE).eval()
+    )
 
     checkpoint = torch.load(args.checkpoint, map_location=DEVICE, weights_only=True)
     bridge.load_state_dict(checkpoint)
+    bridge.to(DEVICE)
+    if args.bf16:
+        bridge = bridge.bfloat16()
+    bridge.eval()
     print(f"Loaded checkpoint: {args.checkpoint}")
 
     # Load evaluation data
     ds = load_dataset("gsm8k", "main", split="test")
-    indices = list(range(0, len(ds), len(ds) // args.num_samples))[:args.num_samples]
+    indices = list(range(0, min(len(ds), args.num_samples * 10), 10))[:args.num_samples]
 
     print(f"\nEvaluating {len(indices)} samples...")
     print("-" * 70)
@@ -109,36 +140,46 @@ def main():
     total_names = 0
     matched_names = 0
     unique_outputs = set()
+    correct_answers = 0
 
-    for i, idx in enumerate(indices):
+    for i, idx in enumerate(tqdm(indices, desc="Evaluating")):
         sample = ds[idx]
         question = sample['question']
+        gt_answer = extract_answer(sample['answer'])
 
-        # 1. Get source hidden states
+        # 1. Get source hidden states from Llama
         src_text = f"Question: {question}\nAnswer:"
         with torch.no_grad():
             src_enc = src_tok(src_text, return_tensors="pt").to(DEVICE)
             src_out = src_model(**src_enc, output_hidden_states=True)
-            src_h = src_out.hidden_states[args.source_layer].bfloat16()
+            src_h = src_out.hidden_states[args.source_layer]
+            if args.bf16:
+                src_h = src_h.bfloat16()
             src_mask = src_enc.attention_mask
 
-        # 2. Sample soft tokens from diffusion
+        # 2. GENERATE soft tokens using ODE solver (NOT forward!)
         with torch.no_grad():
-            soft_tokens = bridge.sample(
+            soft_tokens = bridge.generate(
                 src_h, src_mask,
-                num_steps=args.diffusion_steps
+                steps=args.diffusion_steps
             )
 
-        # 3. Add BOS and generate
+        # 3. Create input for Mistral: [Primer] + [Soft Tokens]
+        # Using "Answer: " as primer (standard approach)
+        primer = "Answer: "
         with torch.no_grad():
-            bos_emb = tgt_model.get_input_embeddings()(
-                torch.tensor([[tgt_tok.bos_token_id]], device=DEVICE)
-            ).bfloat16()
-            input_embeds = torch.cat([soft_tokens, bos_emb], dim=1)
-            attn_mask = torch.ones(input_embeds.shape[:2], device=DEVICE, dtype=torch.long)
+            primer_enc = tgt_tok(primer, return_tensors="pt").to(DEVICE)
+            primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids)
+            if args.bf16:
+                primer_embeds = primer_embeds.bfloat16()
 
+            # Combine: [Primer] + [Soft Tokens from Diffusion]
+            combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=DEVICE, dtype=torch.long)
+
+            # Generate
             gen_out = tgt_model.generate(
-                inputs_embeds=input_embeds,
+                inputs_embeds=combined_embeds,
                 attention_mask=attn_mask,
                 max_new_tokens=args.max_new_tokens,
                 do_sample=False,
@@ -148,7 +189,13 @@ def main():
             output_text = tgt_tok.decode(gen_out[0], skip_special_tokens=True)
 
         # Track unique outputs
-        unique_outputs.add(output_text[:100])  # First 100 chars
+        unique_outputs.add(output_text[:100])
+
+        # Extract predicted answer
+        pred_answer = extract_answer(output_text)
+        is_correct = (pred_answer == gt_answer)
+        if is_correct:
+            correct_answers += 1
 
         # Debug: show first sample
         if i == 0:
@@ -173,19 +220,24 @@ def main():
         matched_names += name_matches
 
         results.append({
+            'id': idx,
             'question': question[:80] + "...",
             'output': output_text[:200],
+            'pred_answer': pred_answer,
+            'gt_answer': gt_answer,
+            'correct': is_correct,
             'q_entities': q_entities,
             'o_entities': o_entities,
             'num_matches': num_matches,
             'name_matches': name_matches,
         })
 
+        # Print sample details
         print(f"\n[Sample {idx}]")
         print(f"Q: {question[:80]}...")
-        print(f"Q Entities: nums={q_entities['nums']}, names={q_entities['names']}")
+        print(f"Q Entities: nums={q_entities['nums'][:5]}, names={q_entities['names'][:5]}")
         print(f"Output: {output_text[:100]}...")
-        print(f"O Entities: nums={o_entities['nums']}, names={o_entities['names']}")
+        print(f"Pred: {pred_answer} | GT: {gt_answer} | {'CORRECT' if is_correct else 'wrong'}")
         print(f"Matches: nums={num_matches}/{len(q_entities['nums'])}, "
               f"names={name_matches}/{len(q_entities['names'])}")
 
@@ -200,7 +252,9 @@ def main():
     total_matches = matched_nums + matched_names
     overall_pct = 100 * total_matches / max(total_entities, 1)
     unique_pct = 100 * len(unique_outputs) / args.num_samples
+    accuracy = 100 * correct_answers / args.num_samples
 
+    print(f"Answer Accuracy: {correct_answers}/{args.num_samples} ({accuracy:.1f}%)")
     print(f"Numbers: {matched_nums}/{total_nums} matched ({num_pct:.1f}%)")
     print(f"Names: {matched_names}/{total_names} matched ({name_pct:.1f}%)")
     print(f"\nOVERALL ENTITY TRANSFER: {total_matches}/{total_entities} ({overall_pct:.1f}%)")
@@ -212,20 +266,20 @@ def main():
         print("=" * 70)
         print("LOW DIVERSITY: Outputs are still similar/identical.")
         print("Possible causes:")
-        print("  1. Diffusion not trained enough (needs more steps)")
-        print("  2. Conditioning too weak (source info not propagating)")
-        print("  3. DiT architecture needs tuning")
+        print("  1. Need more training steps")
+        print("  2. Need more diffusion steps at inference")
+        print("  3. DiT may need more depth/capacity")
         print("=" * 70)
     elif overall_pct < 20:
         print("=" * 70)
         print("LOW ENTITY TRANSFER but diverse outputs.")
         print("Bridge generates varied vectors but wrong content.")
-        print("May need better source-target alignment during training.")
+        print("May need different conditioning (cross-attention vs pooling).")
         print("=" * 70)
     elif overall_pct >= 30:
         print("=" * 70)
         print("SUCCESS! Entities are transferring through diffusion bridge.")
-        print("Next: Increase diffusion steps, fine-tune hyperparameters.")
+        print("Next: Increase training steps, tune diffusion steps.")
         print("=" * 70)
     else:
         print("=" * 70)
@@ -235,8 +289,11 @@ def main():
     # Save results
     output_path = os.path.join(args.output_dir, "eval_v12_results.json")
     summary = {
-        'num_samples': args.num_samples,
+        'checkpoint': args.checkpoint,
         'diffusion_steps': args.diffusion_steps,
+        'num_samples': args.num_samples,
+        'accuracy': accuracy,
+        'correct_answers': correct_answers,
         'unique_outputs': len(unique_outputs),
         'unique_pct': unique_pct,
         'num_matches': matched_nums,

@@ -225,6 +225,68 @@ class LatentBridgeV12(nn.Module):
 
         return v_pred
 
+    def _resample_to_latents(self, embeds):
+        """
+        Resample variable-length embeddings to fixed num_latents.
+
+        Args:
+            embeds: [B, S, D] - variable length embeddings
+
+        Returns:
+            resampled: [B, num_latents, D] - fixed length
+        """
+        B, S, D = embeds.shape
+        if S == self.num_latents:
+            return embeds
+        # Use interpolation to resize
+        # [B, S, D] -> [B, D, S] -> interpolate -> [B, D, num_latents] -> [B, num_latents, D]
+        embeds_t = embeds.permute(0, 2, 1)  # [B, D, S]
+        resampled = torch.nn.functional.interpolate(
+            embeds_t.float(),
+            size=self.num_latents,
+            mode='linear',
+            align_corners=True
+        ).to(embeds.dtype)
+        return resampled.permute(0, 2, 1)  # [B, num_latents, D]
+
+    def forward_loss(self, src_hidden, tgt_embeds, src_mask=None):
+        """
+        Compute Rectified Flow training loss.
+
+        Args:
+            src_hidden: [B, S, D_src] - source model hidden states
+            tgt_embeds: [B, T, D_tgt] - target embeddings (ground truth)
+            src_mask: [B, S] - source attention mask
+
+        Returns:
+            loss: scalar - MSE loss on velocity prediction
+        """
+        B = src_hidden.shape[0]
+        device = src_hidden.device
+        dtype = src_hidden.dtype
+
+        # Resample target to fixed num_latents
+        target = self._resample_to_latents(tgt_embeds)  # [B, num_latents, D]
+
+        # Sample noise and timestep
+        noise = torch.randn_like(target)
+        t = torch.rand(B, device=device, dtype=dtype)
+
+        # Linear interpolation: x_t = t * target + (1-t) * noise
+        t_expand = t.view(B, 1, 1)
+        x_t = t_expand * target + (1 - t_expand) * noise
+
+        # Predict velocity
+        v_pred = self.forward(x_t, t, src_hidden, src_mask)
+
+        # True velocity (constant in Rectified Flow)
+        v_true = target - noise
+
+        # MSE loss
+        loss = torch.nn.functional.mse_loss(v_pred, v_true)
+
+        return loss
+
     @torch.no_grad()
     def sample(self, src_hidden, src_mask=None, num_steps=10):
         """
@@ -257,3 +319,10 @@ class LatentBridgeV12(nn.Module):
             x = x + v * dt
 
         return x
+
+    @torch.no_grad()
+    def generate(self, src_hidden, src_mask=None, steps=10):
+        """
+        Alias for sample() - matches eval script API.
+        """
+        return self.sample(src_hidden, src_mask, num_steps=steps)

@@ -3,26 +3,19 @@
 """
 Phase 12: Diffusion Bridge Training with Rectified Flow
 
-THE FIX: Stop predicting (regression) → start generating (diffusion).
-
-Rectified Flow Training:
-    1. Sample timestep t ~ U[0, 1]
-    2. Create noisy interpolation: x_t = t * target + (1-t) * noise
-    3. Predict velocity: v_pred = model(x_t, t, source)
-    4. Loss: MSE(v_pred, target - noise)
+Optimizations for stable DiT training:
+1. Cosine LR Scheduler with Warmup - prevents shocking weights early
+2. EMA (Exponential Moving Average) - smoother, higher-quality outputs
+3. Gradient clipping - prevents explosion
 
 The velocity is CONSTANT in Rectified Flow (straight line from noise to target).
 This makes training simpler than DDPM or score-based methods.
-
-Key insight: We're NOT trying to match Mistral embeddings exactly.
-We're learning to generate vectors that LIE ON the Mistral manifold.
 """
 import os
 import torch
-import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler
 from datasets import load_dataset
 from tqdm import tqdm
 import argparse
@@ -39,6 +32,44 @@ def setup_ddp():
     return False
 
 
+class EMA:
+    """Exponential Moving Average for model weights.
+
+    Standard practice for diffusion models - produces smoother outputs.
+    """
+    def __init__(self, model, decay=0.999):
+        self.model = model
+        self.decay = decay
+        self.shadow = {}
+        self.backup = {}
+        self.register()
+
+    def register(self):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                self.shadow[name] = param.data.clone()
+
+    def update(self):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                new_average = (1.0 - self.decay) * param.data + self.decay * self.shadow[name]
+                self.shadow[name] = new_average.clone()
+
+    def apply_shadow(self):
+        """Apply EMA weights to model (for eval/save)."""
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                self.backup[name] = param.data
+                param.data = self.shadow[name]
+
+    def restore(self):
+        """Restore original weights after eval."""
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                param.data = self.backup[name]
+        self.backup = {}
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source_model", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
@@ -48,63 +79,25 @@ def parse_args():
     parser.add_argument("--depth", type=int, default=6)
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-4)
-    parser.add_argument("--batch_size", type=int, default=4)
+    parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--steps", type=int, default=5000)
+    parser.add_argument("--warmup_steps", type=int, default=500)
     parser.add_argument("--grad_clip", type=float, default=1.0)
-    parser.add_argument("--warmup_steps", type=int, default=200)
+    parser.add_argument("--ema_decay", type=float, default=0.999)
     parser.add_argument("--save_path", default="bridge_v12.pt")
     parser.add_argument("--save_every", type=int, default=500)
     parser.add_argument("--bf16", action="store_true")
     return parser.parse_args()
 
 
-def get_target_embeddings(questions, tgt_tok, tgt_model, device, num_latents):
-    """
-    Get Mistral embeddings for the questions.
-    These are the TARGET vectors we want to learn to generate.
-    """
-    # Format questions for Mistral
-    texts = [f"Question: {q}\nAnswer:" for q in questions]
-
-    with torch.no_grad():
-        enc = tgt_tok(texts, return_tensors="pt", padding=True,
-                      truncation=True, max_length=512).to(device)
-        # Get embeddings (not hidden states - we want the raw embedding layer)
-        embeds = tgt_model.get_input_embeddings()(enc.input_ids)
-
-        # Pool/compress to fixed number of latents
-        # Use simple mean pooling across sequence
-        mask = enc.attention_mask.unsqueeze(-1).float()
-        # Reshape to target number of tokens
-        B, S, D = embeds.shape
-        if S >= num_latents:
-            # Downsample: take evenly spaced positions
-            indices = torch.linspace(0, S-1, num_latents).long().to(device)
-            target = embeds[:, indices, :]
-        else:
-            # Upsample: repeat and interpolate
-            target = torch.nn.functional.interpolate(
-                embeds.permute(0, 2, 1),
-                size=num_latents,
-                mode='linear',
-                align_corners=True
-            ).permute(0, 2, 1)
-
-    return target
-
-
 def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args):
     """
-    Rectified Flow training step.
-
-    1. Get source hidden states (Llama reads question)
-    2. Get target embeddings (Mistral embedding layer)
-    3. Sample timestep and create noisy interpolation
-    4. Predict velocity and compute MSE loss
+    Rectified Flow training step using forward_loss API.
     """
     questions = batch['question']
+    answers = batch['answer']
 
-    # 1. Source: Llama reads the question
+    # Source: Llama reads the question
     src_texts = [f"Question: {q}\nAnswer:" for q in questions]
 
     with torch.no_grad():
@@ -116,50 +109,20 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
             src_h = src_h.bfloat16()
         src_mask = src_enc.attention_mask
 
-    # 2. Target: Mistral embeddings for the question
+    # Target: Mistral embeddings for the answer (the "reasoning path")
+    tgt_texts = [f"{a}{tgt_tok.eos_token}" for a in answers]
+
     with torch.no_grad():
-        target = get_target_embeddings(
-            questions, tgt_tok, tgt_model, device, args.soft_tokens
-        )
+        tgt_enc = tgt_tok(tgt_texts, return_tensors="pt", padding=True,
+                          truncation=True, max_length=512).to(device)
+        tgt_embeds = tgt_model.get_input_embeddings()(tgt_enc.input_ids)
         if args.bf16:
-            target = target.bfloat16()
+            tgt_embeds = tgt_embeds.bfloat16()
 
-    B = target.shape[0]
+    # Compute Rectified Flow loss
+    loss = bridge.forward_loss(src_h, tgt_embeds, src_mask)
 
-    # 3. Sample noise and timestep
-    noise = torch.randn_like(target)
-    t = torch.rand(B, device=device, dtype=target.dtype)
-
-    # 4. Create noisy interpolation: x_t = t * target + (1-t) * noise
-    t_expand = t.view(B, 1, 1)
-    x_t = t_expand * target + (1 - t_expand) * noise
-
-    # 5. Predict velocity
-    v_pred = bridge(x_t, t, src_h, src_mask)
-
-    # 6. True velocity (constant in Rectified Flow)
-    v_true = target - noise
-
-    # 7. MSE loss
-    loss = nn.functional.mse_loss(v_pred, v_true)
-
-    # Compute auxiliary metrics
-    with torch.no_grad():
-        # Cosine similarity between predicted and true velocity
-        cos_sim = nn.functional.cosine_similarity(
-            v_pred.flatten(1), v_true.flatten(1), dim=1
-        ).mean()
-
-        # RMS of predictions
-        pred_rms = v_pred.pow(2).mean().sqrt()
-        true_rms = v_true.pow(2).mean().sqrt()
-
-    return loss, {
-        "loss": loss.item(),
-        "cos_sim": cos_sim.item(),
-        "pred_rms": pred_rms.item(),
-        "true_rms": true_rms.item(),
-    }
+    return loss
 
 
 def main():
@@ -173,14 +136,13 @@ def main():
         print("=" * 70)
         print("Phase 12: Diffusion Bridge with Rectified Flow")
         print("=" * 70)
-        print("THE FIX: Stop predicting → start generating")
+        print("Optimizations enabled:")
+        print(f"  - Cosine LR Scheduler (warmup={args.warmup_steps})")
+        print(f"  - EMA (decay={args.ema_decay})")
+        print(f"  - Gradient Clipping (max_norm={args.grad_clip})")
         print("")
-        print("Why this works:")
-        print("  - Regression outputs AVERAGE of valid vectors (blurry)")
-        print("  - Diffusion generates vectors ON the manifold (sharp)")
-        print("")
-        print(f"Architecture: DiT with {args.depth} layers, {args.heads} heads")
-        print(f"Training: Rectified Flow (velocity prediction)")
+        print("Flow Loss will NOT drop to zero - this is normal.")
+        print("Look for stable loss around 0.3-1.0 (not spikes/NaN).")
         print("=" * 70)
 
     # Load models
@@ -213,14 +175,18 @@ def main():
     if torch.distributed.is_initialized():
         bridge = DDP(bridge, device_ids=[local_rank])
 
+    # Optimizer with cosine annealing
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=args.lr, weight_decay=0.01)
+    scheduler = get_scheduler(
+        "cosine",
+        optimizer=optimizer,
+        num_warmup_steps=args.warmup_steps,
+        num_training_steps=args.steps
+    )
 
-    # Warmup scheduler
-    def lr_lambda(step):
-        if step < args.warmup_steps:
-            return step / args.warmup_steps
-        return 1.0
-    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+    # EMA for smoother outputs
+    bridge_for_ema = bridge.module if torch.distributed.is_initialized() else bridge
+    ema = EMA(bridge_for_ema, decay=args.ema_decay)
 
     # Load data
     ds = load_dataset("gsm8k", "main", split="train")
@@ -230,15 +196,13 @@ def main():
 
     if local_rank == 0:
         print(f"\nTraining on {len(ds)} samples")
-        print(f"Steps: {args.steps}, LR: {args.lr}")
-        print("Monitoring: loss (MSE), cos_sim (velocity alignment)")
+        print(f"Steps: {args.steps}, LR: {args.lr}, Batch: {args.batch_size}")
         print("Starting training loop...")
 
     progress = tqdm(range(args.steps), disable=(local_rank != 0),
-                    desc="V12 Diffusion", ncols=100)
+                    desc="V12 DiT", ncols=100)
     iter_dl = iter(dl)
     running_loss = 0.0
-    running_cos = 0.0
 
     for step in progress:
         try:
@@ -247,51 +211,62 @@ def main():
             iter_dl = iter(dl)
             batch = next(iter_dl)
 
-        loss, metrics = train_step(batch, src_tok, tgt_tok, src_model, bridge,
-                                   tgt_model, device, args)
+        loss = train_step(batch, src_tok, tgt_tok, src_model, bridge,
+                          tgt_model, device, args)
 
         optimizer.zero_grad()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(bridge.parameters(), args.grad_clip)
         optimizer.step()
         scheduler.step()
+        ema.update()
 
-        running_loss += metrics['loss']
-        running_cos += metrics['cos_sim']
+        running_loss += loss.item()
 
         progress.set_postfix({
-            "loss": f"{metrics['loss']:.4f}",
-            "cos": f"{metrics['cos_sim']:.3f}"
+            "loss": f"{loss.item():.4f}",
+            "lr": f"{scheduler.get_last_lr()[0]:.2e}"
         })
 
         # Periodic logging
-        if local_rank == 0 and (step + 1) % 100 == 0:
-            avg_loss = running_loss / 100
-            avg_cos = running_cos / 100
-            lr = scheduler.get_last_lr()[0]
+        if local_rank == 0 and (step + 1) % 50 == 0:
+            avg_loss = running_loss / 50
+            current_lr = scheduler.get_last_lr()[0]
             print(f"\n[Step {step+1}/{args.steps}]")
-            print(f"  MSE Loss: {avg_loss:.4f}")
-            print(f"  Cos Sim: {avg_cos:.3f} (1.0 = perfect velocity prediction)")
-            print(f"  LR: {lr:.2e}")
+            print(f"  Flow Loss: {avg_loss:.4f} (stable ~0.3-1.0 is good)")
+            print(f"  LR: {current_lr:.2e}")
             running_loss = 0.0
-            running_cos = 0.0
 
         # Save checkpoints
         if local_rank == 0 and (step + 1) % args.save_every == 0:
             bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
-            torch.save(bridge_to_save.state_dict(), args.save_path)
-            print(f"  Checkpoint saved: {args.save_path}")
 
-    # Final save
+            # Save standard weights
+            torch.save(bridge_to_save.state_dict(), args.save_path)
+
+            # Save EMA weights (higher quality)
+            ema.apply_shadow()
+            ema_path = args.save_path.replace(".pt", "_ema.pt")
+            torch.save(bridge_to_save.state_dict(), ema_path)
+            ema.restore()
+
+            print(f"  Checkpoints saved: {args.save_path} + {ema_path}")
+
+    # Final save with EMA weights
     if local_rank == 0:
         bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
+
+        # Save EMA as final (best quality)
+        ema.apply_shadow()
         torch.save(bridge_to_save.state_dict(), args.save_path)
+        ema_path = args.save_path.replace(".pt", "_ema.pt")
+        torch.save(bridge_to_save.state_dict(), ema_path)
+
         print("\n" + "=" * 70)
         print("Phase 12 Training Complete!")
-        print(f"Final checkpoint: {args.save_path}")
+        print(f"Final checkpoint (EMA): {args.save_path}")
         print("=" * 70)
-        print("\nNEXT: Run eval to generate soft tokens from noise")
-        print("Success = Outputs vary per input and contain entities")
+        print("\nNEXT: Run eval with bridge.generate() to sample soft tokens")
 
 
 if __name__ == "__main__":
