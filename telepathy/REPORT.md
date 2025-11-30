@@ -1466,3 +1466,99 @@ git pull && rm -rf runs && bash run_telepathy_v10.sh
 | 2025-11-30 | Created eval_telepathy_v10.py - Entity transfer measurement |
 | 2025-11-30 | Created run_telepathy_v10.sh |
 | 2025-11-30 | Key insight: Auxiliary losses can be cheated; main pathway must be supervised |
+| 2025-11-30 | V10 training completed: Loss 5.3→0.9, Scale 0.0027→0.0058 |
+| 2025-11-30 | V10 eval: 0% entity transfer - ALL outputs are empty strings |
+| 2025-11-30 | Diagnosed: Missing attention_mask and BOS token in eval generation |
+| 2025-11-30 | Fixed eval_telepathy_v10.py with attention_mask and BOS embedding |
+
+---
+
+## 35. Phase 10 Results: Training Succeeded, Generation Failed
+
+### Training Metrics
+
+| Step | Loss | Output Scale |
+|------|------|--------------|
+| 50 | 1.42 | 0.0036 |
+| 100 | 0.92 | 0.0035 |
+| 500 | 0.87 | 0.0049 |
+| 1000 | 0.93 | 0.0058 |
+| 2000 | 0.92 | 0.0058 |
+| 3000 | 0.92 | 0.0058 |
+
+Loss converged well from 1.4 → 0.9. Target embedding RMS was measured at 0.0027, and output scale converged to 0.0058 (2x larger - reasonable).
+
+### Evaluation Results
+
+| Metric | Value |
+|--------|-------|
+| Numbers matched | 0/60 (0%) |
+| Names matched | 0/67 (0%) |
+| Nouns matched | 0/9 (0%) |
+| **Overall Entity Transfer** | 0/136 (0%) |
+
+**ALL OUTPUTS WERE EMPTY STRINGS.**
+
+### Root Cause Analysis
+
+The eval script had two critical bugs:
+
+1. **No Attention Mask**: `tgt_model.generate(inputs_embeds=soft_tokens, ...)` was called without `attention_mask`. The model couldn't properly attend to soft tokens.
+
+2. **No BOS Token**: During training, the sequence was `[soft_tokens] + [BOS] + [Question] + [Answer]`. But eval only provided `[soft_tokens]`, missing the BOS token that kicks off generation.
+
+Warning in eval log:
+```
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token
+```
+
+### The Fix
+
+Updated `eval_telepathy_v10.py` lines 122-142:
+
+```python
+# FIX: Add BOS token to kick off generation
+bos_emb = tgt_model.get_input_embeddings()(
+    torch.tensor([[tgt_tok.bos_token_id]], device=DEVICE)
+).bfloat16()
+inputs_embeds = torch.cat([soft_tokens, bos_emb], dim=1)
+
+# FIX: Add attention mask - required for proper attention
+attention_mask = torch.ones(
+    1, inputs_embeds.shape[1], device=DEVICE, dtype=torch.long
+)
+
+# Generate from soft tokens + BOS
+out_ids = tgt_model.generate(
+    inputs_embeds=inputs_embeds,
+    attention_mask=attention_mask,
+    max_new_tokens=args.max_new_tokens,
+    do_sample=False,
+    pad_token_id=tgt_tok.eos_token_id
+)
+```
+
+### Potential Remaining Issue
+
+Even with the fix, there's a deeper concern about the training paradigm:
+
+**During training**: The model sees `[soft_tokens] + [Q+A embeddings]` and predicts Q+A. With teacher forcing, it might learn to predict later tokens from the teacher-forced context rather than from soft tokens.
+
+**Specifically**: To predict token Q[0] at position 129, the model sees soft_tokens (0-127) + BOS (128). This is correct - it must use soft tokens.
+
+But to predict Q[1] at position 130, it sees soft_tokens + BOS + Q[0]. It can rely on the teacher-forced Q[0] more than soft tokens.
+
+The loss of 0.9 might be achieved primarily by predicting tokens 130+ (which have rich context) while failing on tokens 128-129 (which rely on soft tokens).
+
+### Next Steps
+
+1. **Re-run eval** with the fixed script to see if BOS+attention_mask produces non-empty outputs
+2. If outputs are still garbage/hallucinated, investigate if teacher forcing is allowing the model to ignore soft tokens
+3. Consider adding **first-token loss weighting** to emphasize the critical initial tokens
+
+### Execution
+
+```bash
+# Re-run eval only (no retraining needed)
+git pull && bash run_telepathy_v10_eval_only.sh
+```

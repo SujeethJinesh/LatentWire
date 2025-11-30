@@ -86,6 +86,13 @@ def main():
     print(f"Loaded checkpoint: {args.checkpoint}")
     print(f"Output scale: {bridge.output_scale.item():.4f}")
 
+    # Diagnostic: Check embedding scale comparison
+    with torch.no_grad():
+        tgt_emb_weight = tgt_model.get_input_embeddings().weight
+        tgt_rms = tgt_emb_weight.float().pow(2).mean(dim=1).sqrt().median().item()
+        print(f"Target embedding RMS: {tgt_rms:.4f}")
+        print(f"Soft tokens will have ~{bridge.output_scale.item()/tgt_rms:.2f}x target scale")
+
     # Load test data
     ds = load_dataset("gsm8k", "main", split="test")
 
@@ -119,16 +126,36 @@ def main():
             src_h = src_out.hidden_states[args.source_layer].bfloat16()
             soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
 
-            # Generate from soft tokens only (no primer!)
-            # Mistral should naturally reconstruct question content
+            # FIX: Add BOS token to kick off generation
+            # Training always had BOS after soft tokens, so eval needs it too
+            bos_emb = tgt_model.get_input_embeddings()(
+                torch.tensor([[tgt_tok.bos_token_id]], device=DEVICE)
+            ).bfloat16()
+            inputs_embeds = torch.cat([soft_tokens, bos_emb], dim=1)
+
+            # FIX: Add attention mask - required for proper attention
+            attention_mask = torch.ones(
+                1, inputs_embeds.shape[1], device=DEVICE, dtype=torch.long
+            )
+
+            # Generate from soft tokens + BOS
+            # Mistral should reconstruct question content
             out_ids = tgt_model.generate(
-                inputs_embeds=soft_tokens,
+                inputs_embeds=inputs_embeds,
+                attention_mask=attention_mask,
                 max_new_tokens=args.max_new_tokens,
                 do_sample=False,
                 pad_token_id=tgt_tok.eos_token_id
             )
 
         output = tgt_tok.decode(out_ids[0], skip_special_tokens=True)
+
+        # Debug: Show raw output for first sample
+        if idx == indices[0]:
+            raw_output = tgt_tok.decode(out_ids[0], skip_special_tokens=False)
+            print(f"\n[DEBUG] First sample raw output: {repr(raw_output[:200])}")
+            print(f"[DEBUG] Generated {len(out_ids[0])} tokens, soft_tokens shape: {soft_tokens.shape}")
+            print(f"[DEBUG] Soft token stats - min: {soft_tokens.min():.4f}, max: {soft_tokens.max():.4f}, mean: {soft_tokens.mean():.4f}")
 
         # Extract entities from output
         o_numbers, o_names, o_nouns = extract_entities(output)
