@@ -1,0 +1,159 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+======================================================================
+Phase 10 Evaluation: Auto-Encoder Test
+======================================================================
+Success = Mistral 'reads back' the question content from vectors
+Look for: Entity names, numbers, key nouns from original question
+======================================================================
+
+Loading models...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3138.27it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:07<00:23,  7.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:15<00:14,  7.48s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:21<00:07,  7.15s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:23<00:00,  4.98s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:23<00:00,  5.87s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2967.67it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:06<00:12,  6.32s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:07<00:03,  3.15s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:08<00:00,  2.25s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:08<00:00,  2.81s/it]
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+[StatisticalNormalizer] Loaded learnable stats from runs/telepathy_v10_20251130_111023/stats.pt
+[LatentBridgeV9] Initialized with target_rms=0.0300
+[LatentBridgeV9] Added BoW head: 4096 -> 128256
+Loaded checkpoint: runs/telepathy_v10_20251130_111023/bridge_v10_final.pt
+Output scale: 0.0058
+
+Evaluating 20 samples...
+----------------------------------------------------------------------
+
+[Sample 0]
+Q Entities: nums=['2', '16'], names=['Janet', 'She', 'How'], nouns=['egg', 'eggs', 'market']
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/2, names=0/3, nouns=0/7
+
+[Sample 65]
+Q Entities: nums=['2', '3', '4'], names=['How', 'Jim', 'He'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/3, names=0/3, nouns=0/0
+
+[Sample 131]
+Q Entities: nums=['60', '500'], names=['June', 'The', 'In'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/2, names=0/6, nouns=0/0
+
+[Sample 197]
+Q Entities: nums=['23786', '9092', '8417'], names=['The', 'In', 'They'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/3, names=0/5, nouns=0/0
+
+[Sample 263]
+Q Entities: nums=['5', '6'], names=['Ferdinand', 'There', 'Chris'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/2, names=0/5, nouns=0/0
+
+[Sample 329]
+Q Entities: nums=['10', '7', '3'], names=['Erin', 'If', 'Her'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/3, names=0/4, nouns=0/0
+
+[Sample 395]
+Q Entities: nums=['24', '5', '2'], names=['She', 'Day', 'Erica'], nouns=['friends']
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/6, names=0/6, nouns=0/1
+
+[Sample 461]
+Q Entities: nums=['10', '7', '60'], names=['Toni', 'If', 'Shondra'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/3, names=0/4, nouns=0/0
+
+[Sample 527]
+Q Entities: nums=['5'], names=['If'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/1, names=0/1, nouns=0/0
+
+[Sample 593]
+Q Entities: nums=['20', '4'], names=['The', 'If', 'Mark'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/2, names=0/3, nouns=0/0
+
+[Sample 659]
+Q Entities: nums=['10', '5', '2'], names=['How'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/6, names=0/1, nouns=0/0
+
+[Sample 725]
+Q Entities: nums=['2', '3', '30'], names=['Calculate'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/3, names=0/1, nouns=0/0
+
+[Sample 791]
+Q Entities: nums=['13', '47', '172'], names=['At', 'How'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/4, names=0/2, nouns=0/0
+
+[Sample 857]
+Q Entities: nums=['4000', '6000'], names=['If', 'The', 'After'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/2, names=0/3, nouns=0/0
+
+[Sample 923]
+Q Entities: nums=['27', '3', '15'], names=['Lana', 'In', 'She'], nouns=['friends']
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/3, names=0/4, nouns=0/1
+
+[Sample 989]
+Q Entities: nums=['30', '90', '10'], names=['How', 'Emily'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/4, names=0/2, nouns=0/0
+
+[Sample 1055]
+Q Entities: nums=['120', '60'], names=['The', 'James', 'How'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/2, names=0/4, nouns=0/0
+
+[Sample 1121]
+Q Entities: nums=['10', '7'], names=['If', 'In', 'Sofie'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/2, names=0/4, nouns=0/0
+
+[Sample 1187]
+Q Entities: nums=['2', '20', '60'], names=['Jay', 'How', 'He'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/4, names=0/3, nouns=0/0
+
+[Sample 1253]
+Q Entities: nums=['15', '5', '6'], names=['How', 'It', 'Tim'], nouns=[]
+Output: ...
+O Entities: nums=[], names=[], nouns=[]
+Matches: nums=0/3, names=0/3, nouns=0/0
+
+======================================================================
+PHASE 10 EVALUATION SUMMARY
+======================================================================
+Numbers: 0/60 matched (0.0%)
+Names: 0/67 matched (0.0%)
+Nouns: 0/9 matched (0.0%)
+
+OVERALL ENTITY TRANSFER: 0/136 (0.0%)
+
+======================================================================
+STILL FAILING. Entities not transferring.
+Check if loss decreased during training.
+======================================================================
+
+Results saved to: runs/telepathy_v10_20251130_111023/eval_v10_results.json
