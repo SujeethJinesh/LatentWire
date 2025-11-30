@@ -1738,3 +1738,110 @@ git pull && rm -rf runs && bash run_telepathy_v11.sh
 The "cheat sheet" is the teacher-forced question embeddings. But for position 128 (predicting Q[0]), there IS no cheat sheet - only soft tokens and BOS. If we weight this position 100x, the optimizer MUST make the bridge encode "Janet" in a way Mistral can decode.
 
 This is the "needle through the bottleneck" approach: squeeze all the information through the one position where cheating is impossible.
+
+---
+
+## 38. Phase 11 Results: COMPLETE FAILURE
+
+### Training Metrics
+
+| Step | Weighted Loss | Bottleneck Loss | Interpretation |
+|------|---------------|-----------------|----------------|
+| 50 | 9.95 | 10.05 | Near random |
+| 100 | 8.49 | 8.52 | Some learning |
+| 500 | 8.20 | 8.24 | **Plateaued** |
+| 1500 | 8.22 | 8.25 | No improvement |
+| 3000 | 8.22 | 8.25 | Stuck |
+
+**For reference:**
+- Random prediction: ln(32000) ≈ 10.4
+- V11 final: 8.2 → perplexity ≈ 3600
+- Good LM: perplexity ~10-50
+
+The bottleneck loss barely improved from random. The bridge cannot encode the information.
+
+### Evaluation Results
+
+**All 20 outputs are IDENTICAL GARBAGE:**
+
+```
+Q
+ /******/ Q
+ /******/ Q
+ /******/ Q Q
+ /******/ Q
+ /******/  /******/ Q
+ /******/ Q
+
+#
+ ,� Question  Question
+{
+\ Question 1
+\ Question <
+...
+```
+
+### Comparison: V10 vs V11
+
+| Metric | V10 | V11 |
+|--------|-----|-----|
+| Output quality | Coherent wrong English | **Garbage tokens** |
+| Output pattern | "Simple interest" template | Code comment noise |
+| Entity transfer | 0% (false positives) | 0% |
+| Overall | Bad | **Much worse** |
+
+**V11 is objectively worse than V10.** At least V10 produced grammatically correct English.
+
+### Root Cause: Architectural Failure
+
+The 100x bottleneck weighting exposed a fundamental truth: **the bridge architecture cannot encode semantic information**.
+
+| Hypothesis | Evidence |
+|------------|----------|
+| Teacher forcing was the problem | ❌ Removing it made outputs worse |
+| Bridge can encode entities | ❌ Bottleneck loss stuck at ~8.2 (near random) |
+| Soft tokens are meaningful | ❌ Mistral outputs garbage from them |
+
+**The problem is NOT the training objective. The problem is the information pathway.**
+
+### Why V11 Produces Garbage
+
+1. **V10**: Model could cheat by copying teacher-forced text → coherent output
+2. **V11**: Model forced to rely on soft tokens → garbage (because soft tokens ARE garbage to Mistral)
+
+The 100x weighting successfully forced the model to try using soft tokens. But soft tokens contain no usable information, so the model outputs random noise.
+
+### The Deeper Issue
+
+The bridge's Perceiver-Resampler architecture:
+- Takes Llama hidden states (4096 dim)
+- Compresses to 128 soft tokens (4096 dim each)
+- Scales by ~0.007
+
+**But Mistral's embedding space is not the same as Llama's.** Even with statistical normalization, the geometric structure is incompatible. The bridge is trying to:
+1. Extract "Janet" from Llama's layer 16
+2. Encode it in a format Mistral understands
+3. With only learned linear projections
+
+This is like trying to translate Chinese to French with only a volume knob. The normalization matches loudness, but not meaning.
+
+### Implications
+
+After 11 phases:
+- ✅ Scale/magnitude issues solved
+- ✅ Teacher forcing trap identified
+- ❌ **Core problem unsolved: Llama and Mistral speak fundamentally different "languages"**
+
+The statistical normalization (mean/std matching) is not sufficient for cross-model communication. We need either:
+1. **Deeper alignment**: Learn a true translation, not just normalization
+2. **Shared vocabulary**: Use a decoder that both models understand
+3. **Reconstruction objective**: Force the bridge to decode back to Llama space first
+
+### Next Steps
+
+The experiment has hit a fundamental architectural limit. Options:
+
+1. **Add a decoder**: Bridge must reconstruct Llama's hidden states (not Mistral's embeddings)
+2. **Use text bottleneck**: Quantize to actual tokens, then embed in Mistral
+3. **Joint fine-tuning**: Unfreeze Mistral's first layers to learn the bridge's "dialect"
+4. **Different source layer**: Try layer 8 (more surface-level) instead of 16 (more abstract)
