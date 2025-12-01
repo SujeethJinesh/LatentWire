@@ -2363,3 +2363,116 @@ git pull && rm -rf runs && bash run_telepathy_v13.sh
 | 2025-11-30 | **Diagnosed: Global pooling destroys entities** |
 | 2025-11-30 | **Diagnosed: Answer supervision is wrong target** |
 | 2025-11-30 | Phase 13: Cross-attention + Question reconstruction |
+| 2025-11-30 | **Phase 13 Results: Training failed to converge** |
+| 2025-11-30 | Flow Loss plateaued at 1.58 (V12 reached 0.098) |
+| 2025-11-30 | Entity transfer: 5.2% (slight improvement from 0.9%) |
+| 2025-11-30 | Outputs still garbage - cross-attention not enough |
+
+---
+
+## 42. Phase 13 Results: Training Failed to Converge
+
+### Training Comparison
+
+| Metric | V12 | V13 |
+|--------|-----|-----|
+| Initial Loss | 1.13 | 2.80 |
+| Final Loss | **0.098** | **1.58** |
+| Convergence | Smooth to ~0.1 | Plateaued at ~1.6 |
+
+**Critical Finding**: V13 training never converged. The loss got stuck at ~1.6 for thousands of steps.
+
+### Evaluation Results
+
+| Metric | V12 | V13 | Change |
+|--------|-----|-----|--------|
+| Answer Accuracy | 0% | 0% | — |
+| Number Transfer | 0% | 7.1% | +7.1% |
+| Name Transfer | 1.7% | 3.4% | +1.7% |
+| **Overall Entity** | 0.9% | **5.2%** | **+4.3%** |
+| Diversity | 100% | 100% | — |
+
+### Sample Outputs (Still Garbage)
+
+```
+Q: Janet's ducks lay 16 eggs...
+V13: "'s not here. ### What's not here. ### What's not here..."
+
+Q: Two girls each got 1/6...
+V13: "I I I I I I I I I I I I..."
+
+Q: Lloyd has an egg farm...
+V13: "1. The problem is that the answer to the question..."
+```
+
+### Why V13 Failed
+
+**1. Training Never Converged**
+
+The DiT with cross-attention couldn't learn the mapping:
+- V12 (pooled conditioning): Loss → 0.098 ✓
+- V13 (cross-attention): Loss → 1.58 ✗
+
+Possible causes:
+- Cross-attention adds complexity that requires more training
+- Internal dim (512) too small for cross-attention patterns
+- Learning rate may need adjustment for cross-attention
+
+**2. Question Reconstruction May Be Wrong Target**
+
+Even if training worked, the evaluation setup may be flawed:
+- Training target: Mistral question embeddings
+- Eval input: [Soft tokens] + "Answer: "
+- Problem: Mistral sees soft tokens as prefix, not as "the question"
+
+Mistral expects:
+```
+BOS + "Question: Janet has ducks..." + "Answer: "
+```
+
+We provide:
+```
+[128 soft tokens trying to encode question] + "Answer: "
+```
+
+Mistral doesn't understand soft tokens = question semantics.
+
+**3. Cross-Attention Adds Training Difficulty**
+
+V12's pooled conditioning is simpler:
+- Single vector added to timestep
+- Easy for DiT to learn
+
+V13's cross-attention is complex:
+- Every layer must learn to attend to relevant source tokens
+- Requires more capacity and training
+
+### Partial Success: Entity Transfer Improved
+
+Despite training failure, entity transfer improved from 0.9% → 5.2%. This suggests:
+- Cross-attention IS extracting some information
+- But the extraction is very weak due to training plateau
+- More training / higher capacity might help
+
+### Next Directions
+
+**Option A: Fix V13 Training**
+- Increase internal_dim: 512 → 1024 or 2048
+- Increase training steps: 5000 → 20000
+- Lower learning rate for cross-attention layers
+- Add gradient logging to diagnose attention patterns
+
+**Option B: Change Target Again**
+- Instead of question embeddings, use Mistral's hidden states
+- Train: Bridge(Llama_Q) → Mistral_hidden(Q)
+- This gives "how Mistral represents Q internally"
+
+**Option C: Add LM Loss During Training**
+- After generating soft tokens, run Mistral forward
+- Add cross-entropy loss on generating the answer
+- Forces functional correctness, not just geometric similarity
+
+**Option D: Hybrid Approach**
+- Keep V12's training (answer embeddings, pooled conditioning)
+- But add an auxiliary cross-attention path
+- Use both pooled + cross-attention together
