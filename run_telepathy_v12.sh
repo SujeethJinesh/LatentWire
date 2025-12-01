@@ -63,7 +63,7 @@ HEADS="${HEADS:-8}"
 
 # Training (optimized for DiT)
 STEPS="${STEPS:-5000}"
-BATCH_SIZE="${BATCH_SIZE:-4}"  # Reduced from 16 - OOM with both LLMs loaded
+BATCH_SIZE="${BATCH_SIZE:-8}"  # ~55GB/80GB used, can fit 8 per GPU
 LR="${LR:-3e-4}"
 WARMUP_STEPS="${WARMUP_STEPS:-500}"
 EMA_DECAY="${EMA_DECAY:-0.999}"
