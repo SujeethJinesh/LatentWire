@@ -1,185 +1,0 @@
-W1130 16:18:08.358000 797759 torch/distributed/run.py:793] 
-W1130 16:18:08.358000 797759 torch/distributed/run.py:793] *****************************************
-W1130 16:18:08.358000 797759 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W1130 16:18:08.358000 797759 torch/distributed/run.py:793] *****************************************
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-[W1130 16:18:18.810812886 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1130 16:18:18.819099563 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1130 16:18:18.827066906 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-[W1130 16:18:18.860220537 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
-======================================================================
-Phase 12: Diffusion Bridge with Rectified Flow
-======================================================================
-Optimizations enabled:
-  - Cosine LR Scheduler (warmup=500)
-  - EMA (decay=0.999)
-  - Gradient Clipping (max_norm=1.0)
-
-Flow Loss will NOT drop to zero - this is normal.
-Look for stable loss around 0.3-1.0 (not spikes/NaN).
-======================================================================
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2723.57it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7932.49it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7792.48it/s]
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 4871.43it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:06<00:18,  6.32s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:06<00:20,  6.88s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:06<00:20,  6.78s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:06<00:19,  6.53s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:13<00:13,  6.88s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:13<00:13,  6.81s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:13<00:13,  6.69s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:13<00:13,  6.72s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:20<00:06,  6.65s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:19<00:06,  6.54s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:19<00:06,  6.61s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:19<00:06,  6.57s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  4.66s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  5.36s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  4.74s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  4.72s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  5.49s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  4.68s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  5.46s/it]
-Loading checkpoint shards: 100%|██████████| 4/4 [00:21<00:00,  5.38s/it]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2955.12it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1940.61it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 379.40it/s]
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8689.86it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:05<00:10,  5.47s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:05<00:10,  5.49s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:05<00:10,  5.49s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:05<00:10,  5.49s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:09<00:04,  4.48s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:09<00:04,  4.49s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:09<00:04,  4.49s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:09<00:04,  4.50s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.00s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.01s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.24s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.01s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.24s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.24s/it]
-Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.02s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.25s/it]
-[LatentBridgeV12] DiT Diffusion Bridge initialized
-  - num_latents: 128
-  - depth: 4
-  - heads: 8
-  - src_dim: 4096 -> tgt_dim: 4096
-[LatentBridgeV12] DiT Diffusion Bridge initialized[LatentBridgeV12] DiT Diffusion Bridge initialized
-  - num_latents: 128
-  - depth: 4
-  - heads: 8
-  - src_dim: 4096 -> tgt_dim: 4096
-
-  - num_latents: 128
-  - depth: 4
-  - heads: 8
-  - src_dim: 4096 -> tgt_dim: 4096
-[LatentBridgeV12] DiT Diffusion Bridge initialized
-  - num_latents: 128
-  - depth: 4
-  - heads: 8
-  - src_dim: 4096 -> tgt_dim: 4096
-
-Training on 1869 samples
-Steps: 5000, LR: 0.0003, Batch: 4
-Starting training loop...
-V12 DiT:   0%|                                                             | 0/5000 [00:00<?, ?it/s]V12 DiT:   0%|                                                             | 0/5000 [00:00<?, ?it/s]
-[rank2]: Traceback (most recent call last):
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 275, in <module>
-[rank2]:     main()
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 216, in main
-[rank2]:     loss = train_step(batch, src_tok, tgt_tok, src_model, bridge,
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 125, in train_step
-[rank2]:     loss = bridge_module.forward_loss(src_h, tgt_embeds, src_mask)
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 280, in forward_loss
-[rank2]:     v_pred = self.forward(x_t, t, src_hidden, src_mask)
-[rank2]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 199, in forward
-[rank2]:     src_kv = self.src_proj(src_hidden.float()).to(x_t.dtype)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank2]:     return self._call_impl(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank2]:     return forward_call(*args, **kwargs)
-[rank2]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
-[rank2]:     return F.linear(input, self.weight, self.bias)
-[rank2]: RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
-[rank3]: Traceback (most recent call last):
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 275, in <module>
-[rank3]:     main()
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 216, in main
-[rank3]:     loss = train_step(batch, src_tok, tgt_tok, src_model, bridge,
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 125, in train_step
-[rank3]:     loss = bridge_module.forward_loss(src_h, tgt_embeds, src_mask)
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 280, in forward_loss
-[rank3]:     v_pred = self.forward(x_t, t, src_hidden, src_mask)
-[rank3]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 199, in forward
-[rank3]:     src_kv = self.src_proj(src_hidden.float()).to(x_t.dtype)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank3]:     return self._call_impl(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank3]:     return forward_call(*args, **kwargs)
-[rank3]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
-[rank3]:     return F.linear(input, self.weight, self.bias)
-[rank3]: RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
-[rank0]: Traceback (most recent call last):
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 275, in <module>
-[rank0]:     main()
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 216, in main
-[rank0]:     loss = train_step(batch, src_tok, tgt_tok, src_model, bridge,
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 125, in train_step
-[rank0]:     loss = bridge_module.forward_loss(src_h, tgt_embeds, src_mask)
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 280, in forward_loss
-[rank0]:     v_pred = self.forward(x_t, t, src_hidden, src_mask)
-[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 199, in forward
-[rank0]:     src_kv = self.src_proj(src_hidden.float()).to(x_t.dtype)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank0]:     return self._call_impl(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank0]:     return forward_call(*args, **kwargs)
-[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
-[rank0]:     return F.linear(input, self.weight, self.bias)
-[rank0]: RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
-[rank1]: Traceback (most recent call last):
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 275, in <module>
-[rank1]:     main()
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 216, in main
-[rank1]:     loss = train_step(batch, src_tok, tgt_tok, src_model, bridge,
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v12.py", line 125, in train_step
-[rank1]:     loss = bridge_module.forward_loss(src_h, tgt_embeds, src_mask)
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 280, in forward_loss
-[rank1]:     v_pred = self.forward(x_t, t, src_hidden, src_mask)
-[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v12.py", line 199, in forward
-[rank1]:     src_kv = self.src_proj(src_hidden.float()).to(x_t.dtype)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-[rank1]:     return self._call_impl(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-[rank1]:     return forward_call(*args, **kwargs)
-[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
-[rank1]:     return F.linear(input, self.weight, self.bias)
-[rank1]: RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
-[rank0]:[W1130 16:19:58.737813845 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
-W1130 16:20:00.611000 797759 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 797764 closing signal SIGTERM
-E1130 16:20:01.298000 797759 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 797763) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
-Traceback (most recent call last):
-  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
-    sys.exit(main())
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
-    return f(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
-    run(args)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
-    elastic_launch(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
-============================================================
-telepathy/train_telepathy_v12.py FAILED
-------------------------------------------------------------
-Failures:
-[1]:
-  time      : 2025-11-30_16:20:00
-  host      : n19.cm.cluster
-  rank      : 2 (local_rank: 2)
-  exitcode  : 1 (pid: 797765)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-[2]:
-  time      : 2025-11-30_16:20:00
-  host      : n19.cm.cluster
-  rank      : 3 (local_rank: 3)
-  exitcode  : 1 (pid: 797766)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-11-30_16:20:00
-  host      : n19.cm.cluster
-  rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 797763)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-============================================================
