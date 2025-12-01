@@ -57,7 +57,7 @@ DEPTH="${DEPTH:-6}"  # Increased from V13's 4
 
 # Training - V14 longer training
 STEPS="${STEPS:-10000}"  # Increased from 5000
-BATCH_SIZE="${BATCH_SIZE:-4}"  # Reduced due to larger model
+BATCH_SIZE="${BATCH_SIZE:-8}"  # Increased - H100 has headroom (~35GB/81GB used)
 LR="${LR:-3e-4}"
 WARMUP_STEPS="${WARMUP_STEPS:-1000}"  # Increased warmup
 EMA_DECAY="${EMA_DECAY:-0.999}"
