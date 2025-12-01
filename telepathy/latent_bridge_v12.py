@@ -56,6 +56,8 @@ class TimestepEmbedding(nn.Module):
     def forward(self, t):
         # t: [B] in [0, 1]
         t_emb = self.sinusoidal(t)
+        # Match dtype of MLP weights (sinusoidal produces float32)
+        t_emb = t_emb.to(self.mlp[0].weight.dtype)
         return self.mlp(t_emb)
 
 

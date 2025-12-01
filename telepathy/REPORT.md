@@ -2143,4 +2143,22 @@ src_kv = self.src_proj(src_hidden.float()).to(x_t.dtype)
 src_kv = self.src_proj(src_hidden.to(self.src_proj.weight.dtype))
 ```
 
-Awaiting Run 5 results.
+---
+
+### Run 5: Another Dtype Mismatch (2025-11-30)
+
+**Result**: Previous fix worked! But now crashing in TimestepEmbedding:
+```
+File "latent_bridge_v12.py", line 59, in forward
+    return self.mlp(t_emb)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+```
+
+**Root Cause**: `SinusoidalPositionEmbedding` uses `torch.arange` and `torch.exp` which produce float32. When model is bfloat16, the MLP weights are bfloat16 but input is float32.
+
+**Fix**: Convert sinusoidal output to match MLP weight dtype:
+```python
+t_emb = t_emb.to(self.mlp[0].weight.dtype)
+```
+
+Awaiting Run 6 results.
