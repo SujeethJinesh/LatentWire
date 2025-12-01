@@ -2161,4 +2161,23 @@ RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
 t_emb = t_emb.to(self.mlp[0].weight.dtype)
 ```
 
-Awaiting Run 6 results.
+---
+
+### Run 6: Dtype in src_pool (2025-11-30)
+
+**Result**: Previous fix worked! But now crashing in src_pool:
+```
+File "latent_bridge_v12.py", line 212, in forward
+    src_cond = self.src_pool(src_pooled)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+```
+
+**Root Cause**: Mask operations use `.float()` which promotes tensors to float32, but `src_pool` weights are bfloat16.
+
+**Fix**: Keep mask in same dtype as src_kv, and convert src_pooled before passing to src_pool:
+```python
+mask = src_mask.unsqueeze(-1).to(src_kv.dtype)  # Keep same dtype
+src_cond = self.src_pool(src_pooled.to(self.src_pool[0].weight.dtype))
+```
+
+Awaiting Run 7 results.

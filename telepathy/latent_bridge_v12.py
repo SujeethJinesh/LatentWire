@@ -205,11 +205,11 @@ class LatentBridgeV12(nn.Module):
 
         # Global source conditioning (mean pool + transform)
         if src_mask is not None:
-            mask = src_mask.unsqueeze(-1).float()
+            mask = src_mask.unsqueeze(-1).to(src_kv.dtype)  # Keep same dtype
             src_pooled = (src_kv * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
         else:
             src_pooled = src_kv.mean(dim=1)
-        src_cond = self.src_pool(src_pooled)  # [B, D]
+        src_cond = self.src_pool(src_pooled.to(self.src_pool[0].weight.dtype))  # [B, D]
 
         # Combined conditioning
         cond = t_emb + src_cond  # [B, D]
