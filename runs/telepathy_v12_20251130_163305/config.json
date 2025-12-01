@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v12_20251130_162135",
+    "run_id": "telepathy_v12_20251130_163305",
     "phase": 12,
     "key_fix": "Diffusion Bridge with EMA + Cosine Annealing",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
