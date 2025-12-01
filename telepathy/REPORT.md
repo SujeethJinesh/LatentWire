@@ -2472,7 +2472,145 @@ Despite training failure, entity transfer improved from 0.9% → 5.2%. This sugg
 - Add cross-entropy loss on generating the answer
 - Forces functional correctness, not just geometric similarity
 
-**Option D: Hybrid Approach**
+**Option D: Hybrid Approach** ← **CHOSEN FOR PHASE 14**
 - Keep V12's training (answer embeddings, pooled conditioning)
 - But add an auxiliary cross-attention path
 - Use both pooled + cross-attention together
+
+---
+
+## 43. Phase 14: Hybrid Conditioning Diffusion (The Fix for V13's Collapse)
+
+### The Problem: Conditioning Collapse
+
+V13 failed because pure cross-attention was too weak a conditioning signal. The DiT defaulted to predicting "average velocity" → repetitive outputs like "I I I I..." or "What's not here...".
+
+This is a well-known failure mode called **"Conditioning Collapse"** or "Posterior Collapse" in diffusion models.
+
+### The Solution: Hybrid Conditioning
+
+Phase 14 combines V12's global pooling (strong guide rail) with V13's cross-attention (entity details). This mirrors **Stable Diffusion XL**'s architecture:
+
+| Component | V12 | V13 | V14 (Hybrid) |
+|-----------|-----|-----|--------------|
+| Global conditioning | ✓ Mean pooling | ✗ | ✓ Attention pooling |
+| Cross-attention | ✗ | ✓ | ✓ |
+| Internal dim | 512 | 512 | **1024** |
+| Heads | 8 | 8 | **16** |
+| Training steps | 5000 | 5000 | **10000** |
+
+### Architecture Design
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 Hybrid Conditioning (V14)                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Llama Hidden States ─┬──► Attention Pooling ──► Global     │
+│       [B, T, 4096]    │        (learnable query)     Gist   │
+│                       │                               │     │
+│                       │                               ↓     │
+│                       │                    ┌─────────────┐  │
+│                       │                    │ global_cond │  │
+│                       │                    │  + t_emb    │  │
+│                       │                    └─────┬───────┘  │
+│                       │                          │          │
+│                       └──► Cross-Attention ◄─────┘          │
+│                              (each block)   AdaLN           │
+│                                                             │
+│  DiT Block Flow:                                            │
+│    x ──► AdaLN(global) ──► Self-Attn ──► Cross-Attn ──► MLP │
+│                                             ↑               │
+│                                     Llama sequence          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Key Changes from V13
+
+1. **Attention-based Global Pooling** (not mean pooling):
+   ```python
+   # Learnable query attends to source sequence
+   self.cond_query = nn.Parameter(torch.randn(1, 1, dim) * 0.02)
+   self.cond_pool = nn.MultiheadAttention(dim, 8, batch_first=True)
+
+   global_cond, _ = self.cond_pool(query, src_seq, src_seq)
+   ```
+   This extracts a strong "gist" vector that prevents collapse.
+
+2. **AdaLN on Global Conditioning**:
+   ```python
+   # Global cond drives AdaLN gates (V12 style)
+   combined_cond = global_cond + t_emb
+   shift, scale, gate = self.adaLN_modulation(combined_cond)
+   ```
+   The DiT has a strong signal to follow, preventing drift to average.
+
+3. **Cross-Attention for Details**:
+   ```python
+   # Cross-attention fetches specific entities
+   cross_out, _ = self.cross_attn(query=x, key=src_seq, value=src_seq)
+   ```
+   After AdaLN sets the "topic", cross-attention fills in details.
+
+4. **Increased Capacity**:
+   - Internal dim: 1024 (was 512)
+   - Heads: 16 (was 8)
+   - Training steps: 10000 (was 5000)
+
+### Why This Should Work
+
+**V12 Problem**: Global pooling destroyed entity info
+**V13 Problem**: Cross-attention alone was too weak → collapse
+
+**V14 Solution**: Both together
+1. Global pooling tells DiT "this is a math problem about animals"
+2. Cross-attention lets DiT fetch "Janet", "ducks", "16"
+3. AdaLN provides strong conditioning signal (prevents collapse)
+4. More capacity handles the complexity
+
+This is exactly how Stable Diffusion XL works:
+- Pooled CLIP embeddings (global) + Full sequence (local)
+
+### Implementation Files
+
+| File | Purpose |
+|------|---------|
+| `latent_bridge_v14.py` | Hybrid DiT with attention pooling + cross-attention |
+| `train_telepathy_v14.py` | Training with 10k steps, cosine LR |
+| `eval_telepathy_v14.py` | Evaluation with entity tracking |
+| `run_telepathy_v14.sh` | Execution script |
+
+### Success Criteria
+
+| Metric | Target | V13 Result | V12 Result |
+|--------|--------|------------|------------|
+| Flow Loss | **Converges** | 1.58 (failed) | 0.098 ✓ |
+| Output Diversity | > 50% | 100% ✓ | 100% ✓ |
+| Entity Transfer | **> 30%** | 5.2% | 0.9% |
+
+### Expected Outcomes
+
+| Scenario | Interpretation | Next Step |
+|----------|---------------|-----------|
+| Loss converges + Entity > 30% | **Success!** Hybrid fixed it | Add LM loss (Phase 15) |
+| Loss converges + Entity < 30% | Hybrid helps but not enough | Increase capacity or change target |
+| Loss fails to converge | Fundamental issue | Try completely different approach |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v14.sh
+```
+
+---
+
+## 44. Changelog (Continued)
+
+| Date | Change |
+|------|--------|
+| 2025-11-30 | **Phase 14: Hybrid Conditioning implemented** |
+| 2025-11-30 | Architecture: Attention pooling + Cross-attention |
+| 2025-11-30 | Increased capacity: 1024 dim, 16 heads, 10k steps |
+| 2025-11-30 | Created latent_bridge_v14.py, train/eval scripts |
+| 2025-11-30 | Ready for HPC execution |
