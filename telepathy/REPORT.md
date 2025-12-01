@@ -2180,4 +2180,186 @@ mask = src_mask.unsqueeze(-1).to(src_kv.dtype)  # Keep same dtype
 src_cond = self.src_pool(src_pooled.to(self.src_pool[0].weight.dtype))
 ```
 
-Awaiting Run 7 results.
+---
+
+### Run 7: SUCCESS - Training Complete (2025-11-30)
+
+**Result**: All dtype fixes worked! Training completed successfully.
+
+**Training Log Summary:**
+
+| Step | Flow Loss | LR |
+|------|-----------|-----|
+| 50 | 1.1336 | ~3e-4 |
+| 500 | 0.95 | ~2.7e-4 |
+| 1000 | 0.27 | ~2.1e-4 |
+| 2500 | 0.20 | ~5e-5 |
+| 5000 | 0.098 | ~1e-6 |
+
+Flow loss decreased smoothly from 1.13 → 0.098. EMA checkpoints saved.
+
+**Evaluation Results:**
+
+| Metric | Value | Interpretation |
+|--------|-------|----------------|
+| Answer Accuracy | 0/20 (0%) | No correct answers |
+| Number Entity Transfer | 0/56 (0%) | No numbers preserved |
+| Name Entity Transfer | 1/59 (1.7%) | Almost no names |
+| **Overall Entity Transfer** | 1/115 (0.9%) | Near zero |
+| **Output Diversity** | 20/20 (100%) | **NOT collapsed!** |
+
+**Sample Outputs:**
+
+```
+Q: Janet's ducks lay 16 eggs...
+Output: "ska of Question Question mark. Question of Question of..."
+
+Q: Darrell and Allen's ages are in the ratio 7:11...
+Output: "legends to the government. To be or not to be. To be. To be..."
+
+Q: Lloyd has an egg farm. His chickens produce 252 eggs...
+Output: "The best way to get there. ### you can. ### you can..."
+```
+
+**Soft Token Statistics:**
+```
+min: -4.8438, max: 4.8125, mean: -0.0034, std: 1.0612
+```
+
+---
+
+### Phase 12 Analysis: Stability Achieved, Semantics Lost
+
+**The Good News:**
+1. ✅ Diffusion training is stable (Flow Loss 1.13 → 0.098)
+2. ✅ No mode collapse (100% output diversity)
+3. ✅ Soft token statistics are healthy (mean≈0, std≈1)
+4. ✅ ODE solver produces varied outputs
+
+**The Bad News:**
+1. ❌ 0% entity transfer - Mistral doesn't "see" Janet, ducks, or numbers
+2. ❌ Outputs are varied but semantically garbage
+3. ❌ No question content flows through the bridge
+
+### Root Cause: Two Critical Flaws
+
+**Flaw 1: Global Pooling Bottleneck**
+
+The source conditioning uses mean pooling:
+```python
+src_pooled = (src_kv * mask).sum(dim=1) / mask.sum(dim=1)  # [B, D]
+cond = t_emb + src_cond  # Single vector conditioning
+```
+
+All sequence information is destroyed. "Janet's 16 ducks" and "Bob's 160 chickens" likely average to nearly identical vectors. The DiT cannot "un-average" destroyed information.
+
+**Flaw 2: Answer Embedding Supervision**
+
+Training supervises on answer embeddings:
+```python
+tgt_texts = [f"{a}{tgt_tok.eos_token}" for a in answers]  # e.g., "18<eos>"
+tgt_embeds = tgt_model.get_input_embeddings()(tgt_enc.input_ids)
+```
+
+The bridge learns to generate vectors that *look like* "18" geometrically. But at inference, Mistral needs soft tokens that *point to* what answer to produce, not the raw answer embedding.
+
+---
+
+## 40. Phase 13: High-Fidelity Cross-Attention Diffusion
+
+**Date**: November 30, 2025
+**Status**: Ready to Implement
+
+### The Two Fixes
+
+**Fix 1: Remove Global Pooling**
+
+| V12 (Broken) | V13 (Fixed) |
+|--------------|-------------|
+| `cond = t_emb + pooled_src` (1 vector) | Cross-attention to full sequence |
+| Entity info destroyed | Entity info preserved |
+
+The DiT will now have **full cross-attention** to the Llama sequence at every layer. Each position can attend to "Janet" (token 5) and "ducks" (token 12) individually.
+
+**Fix 2: Question Reconstruction Target**
+
+| V12 (Broken) | V13 (Fixed) |
+|--------------|-------------|
+| Target: Answer embeddings ("18") | Target: Question embeddings ("Janet...") |
+| Bridge learns answer geometry | Bridge learns to translate Q→Q |
+| Mistral gets "18-like" noise | Mistral sees question semantics |
+
+If the bridge can reconstruct "Janet has 16 ducks" in Mistral's embedding space, Mistral will naturally solve it (because Mistral is good at math).
+
+### Architecture Changes
+
+```python
+class DiTBlockV13(nn.Module):
+    def __init__(self, dim, heads, cond_dim):
+        # AdaLN for timestep only (not pooled source)
+        self.adaLN_modulation = nn.Linear(dim, 6 * dim)
+
+        # Self-attention
+        self.attn = nn.MultiheadAttention(dim, heads)
+
+        # Cross-attention to FULL Llama sequence (NEW)
+        self.cross_attn = nn.MultiheadAttention(dim, heads)
+
+        # FFN
+        self.mlp = nn.Sequential(...)
+```
+
+### Training Objective
+
+```python
+# V13: Target is QUESTION embeddings, not Answer
+tgt_q_texts = [f"{q}" for q in questions]  # Just the question
+tgt_enc = tgt_tok(tgt_q_texts, ...)
+tgt_embeds = tgt_model.get_input_embeddings()(tgt_enc.input_ids)
+
+# Rectified Flow loss as before
+loss = bridge.forward_loss(src_h, src_mask, tgt_embeds)
+```
+
+### Why This Should Work
+
+1. **No Bottleneck**: Cross-attention can read each token individually
+2. **Correct Target**: Reconstructing questions is well-defined
+3. **Proven Architecture**: This is exactly how Stable Diffusion conditions on CLIP
+4. **Mistral Does Reasoning**: Once it "reads" the question, 7B params do the math
+
+### Implementation Plan
+
+| File | Changes |
+|------|---------|
+| `latent_bridge_v13.py` | DiT with cross-attention, no pooling |
+| `train_telepathy_v13.py` | Question reconstruction target |
+| `eval_telepathy_v13.py` | Pass src_mask to generate() |
+| `run_telepathy_v13.sh` | Execution script |
+
+### Success Criteria
+
+| Entity Transfer Rate | Interpretation |
+|---------------------|----------------|
+| > 30% | **Success!** Cross-attention works |
+| 10-30% | Partial, may need more capacity |
+| < 10% | Still failing, need different approach |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v13.sh
+```
+
+---
+
+## 41. Changelog (Continued)
+
+| Date | Change |
+|------|--------|
+| 2025-11-30 | **Phase 12 Run 7: Training succeeded!** |
+| 2025-11-30 | Flow Loss: 1.13 → 0.098, stable convergence |
+| 2025-11-30 | Evaluation: 0% entity transfer, 100% diversity |
+| 2025-11-30 | **Diagnosed: Global pooling destroys entities** |
+| 2025-11-30 | **Diagnosed: Answer supervision is wrong target** |
+| 2025-11-30 | Phase 13: Cross-attention + Question reconstruction |
