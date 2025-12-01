@@ -1,45 +1,43 @@
 {
-  "checkpoint": "runs/telepathy_v12_20251130_185036/bridge_v12_final_ema.pt",
+  "checkpoint": "runs/telepathy_v13_20251130_193737/bridge_v13_final_ema.pt",
   "diffusion_steps": 10,
   "num_samples": 20,
   "accuracy": 0.0,
   "correct_answers": 0,
   "unique_outputs": 20,
   "unique_pct": 100.0,
-  "num_matches": 0,
+  "num_matches": 4,
   "num_total": 56,
-  "num_pct": 0.0,
-  "name_matches": 1,
+  "num_pct": 7.142857142857143,
+  "name_matches": 2,
   "name_total": 59,
-  "name_pct": 1.694915254237288,
-  "overall_matches": 1,
+  "name_pct": 3.389830508474576,
+  "overall_matches": 6,
   "overall_total": 115,
-  "overall_pct": 0.8695652173913043,
+  "overall_pct": 5.217391304347826,
   "samples": [
     {
       "id": 0,
       "question": "Janet\u2019s ducks lay 16 eggs per day. She eats three for breakfast every morning an...",
-      "output": "ska of  Question  Question mark.  Question of  Question of  Question of\n\n  \ufffd 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      "pred_answer": "100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "output": "'s not here.\n\n### What's not here.\n\n### What's not here.\n\n### What's not here.\n\n### What's not here.\n\n### What's not here.\n\n### What's not here.\n\n### What's not here.\n\n### What's not here.\n\n### What's",
+      "pred_answer": "[None]",
       "gt_answer": "18",
       "correct": false,
       "q_entities": {
         "nums": [
-          "16",
-          "2"
+          "2",
+          "16"
         ],
         "names": [
-          "How",
+          "She",
           "Janet",
-          "She"
+          "How"
         ]
       },
       "o_entities": {
-        "nums": [
-          "100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-        ],
+        "nums": [],
         "names": [
-          "Question"
+          "What"
         ]
       },
       "num_matches": 0,
@@ -48,7 +46,7 @@
     {
       "id": 10,
       "question": "A new program had 60 downloads in the first month. The number of downloads in th...",
-      "output": "anquanxious. Questioning. Question.  Question.  Question. Ques. Question. Question. Ques. Question. Question. Question. Question. Question. Question. Question. Question. Question. Question. Question. ",
+      "output": "'s no longer.\n\n## , of course.\n\nI'm not am I.\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n",
       "pred_answer": "[None]",
       "gt_answer": "366",
       "correct": false,
@@ -64,11 +62,7 @@
       },
       "o_entities": {
         "nums": [],
-        "names": [
-          "Questioning",
-          "Ques",
-          "Question"
-        ]
+        "names": []
       },
       "num_matches": 0,
       "name_matches": 0
@@ -76,29 +70,27 @@
     {
       "id": 20,
       "question": "I have 10 liters of orange drink that are two-thirds water and I wish to add it ...",
-      "output": "zi  Question    Height.\n\n## \ufffdl12.\n Q.e2\n Q.e2\n\n## Q.e1\n\n## Q.e1\n\n## Q.e1\n\n## Q.e0\n.e0\n\n## Q.e-1\n\n## Q.e0\n\n## Q.e-1\n\n## Q.e0\n\n## Q.e-1\n\n## Q.e-0\n\n## Q.e-1\n\n## Q.e0\n\n## Q.e-",
-      "pred_answer": "0",
+      "output": "TMorontofying and and I.\n\n## 1.'s a faulty. Q:'s. I'm not a faulty Q's. I.\n\nComment:\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>\n\n>",
+      "pred_answer": "1",
       "gt_answer": "15",
       "correct": false,
       "q_entities": {
         "nums": [
           "10",
-          "15",
-          "24"
+          "24",
+          "15"
         ],
         "names": [
-          "How",
-          "But"
+          "But",
+          "How"
         ]
       },
       "o_entities": {
         "nums": [
-          "0",
           "1"
         ],
         "names": [
-          "Height",
-          "Question"
+          "Comment"
         ]
       },
       "num_matches": 0,
@@ -107,48 +99,21 @@
     {
       "id": 30,
       "question": "Darrell and Allen's ages are in the ratio of 7:11. If their total age now is 162...",
-      "output": "legends to the government.\n\nTo be or not to be\n\nTo\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\n\nTo be\n\nTo be\n\nTo be\n\nTo be\n\n",
+      "output": ",'s not included.\n\nThe question is:\n\nI'm not included.\n\nI'm not included.\n\nI'm not included.\n\nI'm not included.\n\nI'm not included.\n\nI'm not included.\n\nI'm not included.\n\nI'm not included.\n\nI'm not inc",
       "pred_answer": "[None]",
       "gt_answer": "109",
       "correct": false,
       "q_entities": {
         "nums": [
-          "10",
           "11",
-          "162",
-          "7"
+          "10",
+          "7",
+          "162"
         ],
         "names": [
           "If",
-          "Darrell",
-          "Allen"
-        ]
-      },
-      "o_entities": {
-        "nums": [],
-        "names": [
-          "To"
-        ]
-      },
-      "num_matches": 0,
-      "name_matches": 0
-    },
-    {
-      "id": 40,
-      "question": "Brandon's iPhone is four times as old as Ben's iPhone. Ben's iPhone is two times...",
-      "output": "ERCHANT.\n\n Q.\n Q.\n Q.\n\n## I will pay for the M. Q. The M. Q.\n Q. to the M. Q. to the M. Q. The M. Q. The M. Q. The M. The M Q. to the M Q. The M Q. The M Q.\n\nThe M Q. The M Q.\n\nThe M Q\n\nThe M Q\n\nThe M",
-      "pred_answer": "[None]",
-      "gt_answer": "8",
-      "correct": false,
-      "q_entities": {
-        "nums": [
-          "1"
-        ],
-        "names": [
-          "If",
-          "Ben",
-          "Suzy",
-          "Brandon"
+          "Allen",
+          "Darrell"
         ]
       },
       "o_entities": {
@@ -161,10 +126,35 @@
       "name_matches": 0
     },
     {
+      "id": 40,
+      "question": "Brandon's iPhone is four times as old as Ben's iPhone. Ben's iPhone is two times...",
+      "output": ", as it was a great question.\n\nI'm not a great question\n\nI'm not a great question\n\nI'm not a great question\n\nI'm not a great question\n\nI'm not a great question\n\nI'm not a great question\n\nI'm not a gre",
+      "pred_answer": "[None]",
+      "gt_answer": "8",
+      "correct": false,
+      "q_entities": {
+        "nums": [
+          "1"
+        ],
+        "names": [
+          "If",
+          "Brandon",
+          "Ben",
+          "Suzy"
+        ]
+      },
+      "o_entities": {
+        "nums": [],
+        "names": []
+      },
+      "num_matches": 0,
+      "name_matches": 0
+    },
+    {
       "id": 50,
       "question": "Lloyd has an egg farm. His chickens produce 252 eggs per day and he sells them f...",
-      "output": "r\n\nThe best way to get there\n\n###  you can\n\n\n###  you can\n\n### you can\n\n### you can\n\n### you can\n\n\n### you can\n\n### you can\n\n### you can\n\n### you can\n\n### you can\n\n### you can\n\n### you can\n\n### you ca",
-      "pred_answer": "[None]",
+      "output": "1.\n\nThe problem is that the answer to the question.\n\nThe problem is that the answer is that the question\n\nThe problem is the answer is that the question\n\nThe problem is the answer is that the question",
+      "pred_answer": "1",
       "gt_answer": "294",
       "correct": false,
       "q_entities": {
@@ -179,7 +169,9 @@
         ]
       },
       "o_entities": {
-        "nums": [],
+        "nums": [
+          "1"
+        ],
         "names": [
           "The"
         ]
@@ -190,16 +182,16 @@
     {
       "id": 60,
       "question": "A basket contains 25 oranges among which 1 is bad, 20% are unripe, 2 are sour an...",
-      "output": "oooops 20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.0.20.20.0.20.20.20.20.20.20.20.20.20.20.20.20.20.20",
-      "pred_answer": "20",
+      "output": "1.\n\nI's a lot.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm sorry.\n\nI'm ",
+      "pred_answer": "1",
       "gt_answer": "17",
       "correct": false,
       "q_entities": {
         "nums": [
           "20",
+          "25",
           "1",
-          "2",
-          "25"
+          "2"
         ],
         "names": [
           "How"
@@ -207,61 +199,62 @@
       },
       "o_entities": {
         "nums": [
-          "20.0"
+          "1"
         ],
         "names": []
       },
-      "num_matches": 0,
+      "num_matches": 1,
       "name_matches": 0
     },
     {
       "id": 70,
       "question": "Judy teaches 5 dance classes, every day, on the weekdays and 8 classes on Saturd...",
-      "output": "dedication.\n\n\n\nAnswer.\n\n\n\nAnswer.\n\n\nThe answer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\n\nAnswer.\n\nAnswer.\n\n\nAnswer.\n\nAnswer.\n\n\n\nAnswer.\n\n\n\n\nAnswer.\n\n\nAnswer.\n\n\n\nAnswer.\n\nAnswer.\n\n\n\nAnswer.\n\n\nAnswer.\n\n\n\nA",
-      "pred_answer": "[None]",
+      "output": "1.\n\nThe world's greatest.\n\nI'm not impressed.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n.\n\n",
+      "pred_answer": "1",
       "gt_answer": "7425",
       "correct": false,
       "q_entities": {
         "nums": [
           "15.00",
           "5",
+          "1",
           "15",
-          "8",
-          "1"
+          "8"
         ],
         "names": [
-          "If",
           "Judy",
+          "If",
           "Saturday"
         ]
       },
       "o_entities": {
-        "nums": [],
+        "nums": [
+          "1"
+        ],
         "names": [
-          "Answer",
           "The"
         ]
       },
-      "num_matches": 0,
+      "num_matches": 1,
       "name_matches": 0
     },
     {
       "id": 80,
       "question": "Two girls each got 1/6 of the 24 liters of water. Then a boy got 6 liters of wat...",
-      "output": "acciording to the best of my knowledge\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.\n\nI'm.",
+      "output": " I\n\nI\n\nI\n\nI'm not I\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\n",
       "pred_answer": "[None]",
       "gt_answer": "10",
       "correct": false,
       "q_entities": {
         "nums": [
-          "6",
+          "24",
           "1",
-          "24"
+          "6"
         ],
         "names": [
-          "How",
+          "Then",
           "Two",
-          "Then"
+          "How"
         ]
       },
       "o_entities": {
@@ -274,27 +267,28 @@
     {
       "id": 90,
       "question": "Ted the T-Rex was planning to bring potato salad to the dinosaur picnic.  He kno...",
-      "output": "aggered.\n\n\nI.m.\n\nThe use of.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\n\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem.\n\nThem",
-      "pred_answer": "[None]",
+      "output": "1.\n\nI'm not responsible.\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:\n\nThe following:",
+      "pred_answer": "1",
       "gt_answer": "225",
       "correct": false,
       "q_entities": {
         "nums": [
-          "20",
           "10",
-          "5"
+          "5",
+          "20"
         ],
         "names": [
-          "If",
-          "Rex",
+          "He",
           "Ted",
-          "He"
+          "If",
+          "Rex"
         ]
       },
       "o_entities": {
-        "nums": [],
+        "nums": [
+          "1"
+        ],
         "names": [
-          "Them",
           "The"
         ]
       },
@@ -304,57 +298,61 @@
     {
       "id": 100,
       "question": "Jerome had 4 friends who came to visit him on a certain day. The first friend pr...",
-      "output": "urok..\n\nThe answer is a question mark..\n\nThe answer is a question mark..\n\nThe answer is a question mark is a question mark is a question mark is a question mark is a question mark is a question mark i",
-      "pred_answer": "[None]",
+      "output": "\n\n1.\n\nThe world is not enough.\n\nThe world is not enough\n\nThe world is not enough\n\nThe world is not enough\n\nThe world is not enough\n\nThe world is not enough\n\nThe world is not enough\n\nThe world is not e",
+      "pred_answer": "1",
       "gt_answer": "175",
       "correct": false,
       "q_entities": {
         "nums": [
-          "20",
-          "60",
-          "4",
+          "10",
           "1",
-          "10"
+          "20",
+          "4",
+          "60"
         ],
         "names": [
-          "If",
           "Jerome",
+          "If",
           "The"
         ]
       },
       "o_entities": {
-        "nums": [],
+        "nums": [
+          "1"
+        ],
         "names": [
           "The"
         ]
       },
-      "num_matches": 0,
+      "num_matches": 1,
       "name_matches": 1
     },
     {
       "id": 110,
       "question": "Marcell and Beatrice are having a contest to see who can eat the most fruit roll...",
-      "output": "Duh-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d-d",
-      "pred_answer": "[None]",
+      "output": "1.\n\nThe best answer.\n\nThe best answer.\n\nThe best answer\n\nThe best answer\n\nThe best answer\n\nThe best answer\n\nThe best answer\n\nThe best answer\n\nThe best answer\n\nThe best answer\n\nThe best answer\n\nThe bes",
+      "pred_answer": "1",
       "gt_answer": "45",
       "correct": false,
       "q_entities": {
         "nums": [
-          "14",
+          "24",
           "3",
-          "24"
+          "14"
         ],
         "names": [
-          "If",
-          "Unfortunately",
           "Marcell",
-          "Beatrice"
+          "If",
+          "Beatrice",
+          "Unfortunately"
         ]
       },
       "o_entities": {
-        "nums": [],
+        "nums": [
+          "1"
+        ],
         "names": [
-          "Duh"
+          "The"
         ]
       },
       "num_matches": 0,
@@ -363,7 +361,7 @@
     {
       "id": 120,
       "question": "Miguel uses 2 pads of paper a week for his drawing. If there are 30 sheets of pa...",
-      "output": "Rhetts.\n\nWhat is a typo.\n\nM.\n\nThem.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA.\n\nA",
+      "output": "and the same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.\n\nThe same.",
       "pred_answer": "[None]",
       "gt_answer": "240",
       "correct": false,
@@ -380,9 +378,7 @@
       "o_entities": {
         "nums": [],
         "names": [
-          "What",
-          "Rhetts",
-          "Them"
+          "The"
         ]
       },
       "num_matches": 0,
@@ -391,14 +387,14 @@
     {
       "id": 130,
       "question": "Nissa hires 60 seasonal workers to play elves in her department store's Santa vi...",
-      "output": "anka  Question  Question. Answer.\n\nAnswer. would. Answer. The answer is the name of the city. bekanswer.. The answer is the name of the city. A is the name of the city. The answer is the name of the c",
-      "pred_answer": "[None]",
+      "output": "10\n\n## What\n\nI\n\nI'm not responding\n\nI'm not responding\n\nI'm not responding\n\nI'm not responding\n\nI'm not responding\n\nI'm not responding\n\nI'm not responding\n\nI'm not responding\n\nI'm not responding\n\nI'm ",
+      "pred_answer": "10",
       "gt_answer": "30",
       "correct": false,
       "q_entities": {
         "nums": [
-          "60",
-          "10"
+          "10",
+          "60"
         ],
         "names": [
           "Nissa",
@@ -407,28 +403,28 @@
         ]
       },
       "o_entities": {
-        "nums": [],
+        "nums": [
+          "10"
+        ],
         "names": [
-          "Answer",
-          "Question",
-          "The"
+          "What"
         ]
       },
-      "num_matches": 0,
+      "num_matches": 1,
       "name_matches": 0
     },
     {
       "id": 140,
       "question": "Of the 20 available cars for rent, 12 are automatic cars, 4 are manual cars, and...",
-      "output": "ite\n\n10.5\n\nThe answer.\n\nThe question.\n\nThe question.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe answer.\n\nThe",
-      "pred_answer": "5",
+      "output": "'tout.' ('s.\n\nThe problem is:\n\n>\n\nI\n\nI'm not a factor.\n\nI'm not a factor.\n\nI'm not a factor.\n\nI'm not a factor.\n\nI'm not a factor.\n\nI'm not a factor.\n\nI'm not a factor.\n\nI'm not a factor.\n\nI'm not a f",
+      "pred_answer": "[None]",
       "gt_answer": "20",
       "correct": false,
       "q_entities": {
         "nums": [
           "20",
-          "4",
-          "12"
+          "12",
+          "4"
         ],
         "names": [
           "Of",
@@ -436,9 +432,7 @@
         ]
       },
       "o_entities": {
-        "nums": [
-          "10.5"
-        ],
+        "nums": [],
         "names": [
           "The"
         ]
@@ -449,26 +443,26 @@
     {
       "id": 150,
       "question": "Steve and Tim decide to see who can get home from school the fastest. Steve live...",
-      "output": "anka\n\n0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe 0.0\n\nThe",
-      "pred_answer": "0",
+      "output": "1.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first time.\n\nThe first",
+      "pred_answer": "1",
       "gt_answer": "4",
       "correct": false,
       "q_entities": {
         "nums": [
+          "440",
           "3",
-          "264",
           "2",
-          "440"
+          "264"
         ],
         "names": [
-          "If",
           "Tim",
-          "Steve"
+          "Steve",
+          "If"
         ]
       },
       "o_entities": {
         "nums": [
-          "0.0"
+          "1"
         ],
         "names": [
           "The"
@@ -480,7 +474,7 @@
     {
       "id": 160,
       "question": "A tank of water has a depth of 17 feet on Monday. On Tuesday, the tank had 7 fee...",
-      "output": "Lamb oft to rf.\n\nTheir.\n\n##f.\n\n##f.\n\nTo\n\nThe.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f.\n\n##f",
+      "output": ", as it was,, as it was,, as it was,, as it was.\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI",
       "pred_answer": "[None]",
       "gt_answer": "16",
       "correct": false,
@@ -490,21 +484,16 @@
           "17"
         ],
         "names": [
-          "Monday",
-          "What",
           "Wednesday",
           "Tuesday",
-          "On"
+          "On",
+          "Monday",
+          "What"
         ]
       },
       "o_entities": {
         "nums": [],
-        "names": [
-          "Their",
-          "The",
-          "Lamb",
-          "To"
-        ]
+        "names": []
       },
       "num_matches": 0,
       "name_matches": 0
@@ -512,8 +501,8 @@
     {
       "id": 170,
       "question": "The marching band is ordering new uniforms. Each uniform comes with a hat that c...",
-      "output": "ogan.\n\n0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.",
-      "pred_answer": "0",
+      "output": "and the.\n\nThe:\n\nThe: who\n\nI\n\nI\n\n1.\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n",
+      "pred_answer": "1",
       "gt_answer": "150",
       "correct": false,
       "q_entities": {
@@ -521,46 +510,43 @@
           "25"
         ],
         "names": [
-          "How",
           "Each",
+          "How",
           "The"
         ]
       },
       "o_entities": {
         "nums": [
-          "0.0"
+          "1"
         ],
-        "names": []
+        "names": [
+          "The"
+        ]
       },
       "num_matches": 0,
-      "name_matches": 0
+      "name_matches": 1
     },
     {
       "id": 180,
       "question": "Two candidates are running for class representative at Sarai's school. If the wi...",
-      "output": "stranded to 10.59.9.9.9.0.9.0.9.0. you.0.0.9.0.0.0. you.0.0..0.0.0.0.0.0.0. you.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.\n\n\n### \n0.0.0.0.0..0.0.0.0.0.0.",
-      "pred_answer": "0",
+      "output": "s.\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI\n\nI",
+      "pred_answer": "[None]",
       "gt_answer": "20",
       "correct": false,
       "q_entities": {
         "nums": [
-          "4",
           "3",
-          "80"
+          "80",
+          "4"
         ],
         "names": [
+          "Sarai",
           "If",
-          "Two",
-          "Sarai"
+          "Two"
         ]
       },
       "o_entities": {
-        "nums": [
-          "10.59",
-          "9.0",
-          "0.0",
-          "9.9"
-        ],
+        "nums": [],
         "names": []
       },
       "num_matches": 0,
@@ -569,8 +555,8 @@
     {
       "id": 190,
       "question": "John collects peaches for 3 hours.  He can collect 2 peaches a minute.  How many...",
-      "output": "\ufffdk..\n\n###\n\nAnswer.\n\nThek.\n\nThek.\n\nAnswer.\n\n###\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n\nAnswer.\n",
-      "pred_answer": "10",
+      "output": "s.\u2019s a what.\u2019s.\u2019s fault.\u2019s. Q: Q:,,,,,\u2019s fault.\n\n##\u2019s fault. Q\u2019\u2019s fault. Question: Q\u2019s fault. Q\u2019s fault. Q\u2019s fault Q\u2019s fault Q\u2019s fault Q\u2019s fault Q\u2019s fault Q\u2019s fault Q\u2019s fault Q\u2019s fault Q\u2019s fault Q\u2019s f",
+      "pred_answer": "[None]",
       "gt_answer": "360",
       "correct": false,
       "q_entities": {
@@ -579,18 +565,15 @@
           "2"
         ],
         "names": [
-          "John",
+          "He",
           "How",
-          "He"
+          "John"
         ]
       },
       "o_entities": {
-        "nums": [
-          "10"
-        ],
+        "nums": [],
         "names": [
-          "Thek",
-          "Answer"
+          "Question"
         ]
       },
       "num_matches": 0,

@@ -1,0 +1,23 @@
+{
+    "run_id": "telepathy_v13_20251130_193737",
+    "phase": 13,
+    "key_fix": "Cross-attention + Question reconstruction",
+    "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
+    "source_layer": 16,
+    "soft_tokens": 128,
+    "depth": 4,
+    "internal_dim": 512,
+    "steps": 5000,
+    "batch_size": 8,
+    "lr": "3e-4",
+    "warmup_steps": 500,
+    "ema_decay": 0.999,
+    "diffusion_steps": 10,
+    "num_gpus": 4,
+    "changes_from_v12": [
+        "Full cross-attention to Llama sequence (no pooling)",
+        "Target = Question embeddings (not Answer)",
+        "Smaller internal dim (512) for memory"
+    ]
+}
