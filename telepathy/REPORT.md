@@ -2080,4 +2080,27 @@ Signal 9 (SIGKILL) received by PID 732643
 
 **Fix**: Reduced batch_size from 16 to 4 (1 per GPU instead of 4 per GPU).
 
-Awaiting Run 2 results.
+---
+
+### Run 2: Still OOM (2025-11-30)
+
+**Result**: SIGKILL (exitcode -9) = Still Out of Memory
+
+Even with batch_size=4, the DiT bridge is too large:
+```
+[LatentBridgeV12] DiT Diffusion Bridge initialized
+  - num_latents: 128
+  - depth: 6
+  - heads: 8
+  - src_dim: 4096 -> tgt_dim: 4096
+Signal 9 (SIGKILL) received by PID 759549
+```
+
+**Root Cause**: DiT with depth=6 is much larger than V11's Perceiver:
+- 6 layers × (Self-Attention + Cross-Attention + FFN)
+- Each attention layer: O(128² × 4096) activations per sample
+- Cross-attention to full Llama sequence adds more
+
+**Fix**: Reduced depth from 6 to 4 (matching V11's Perceiver depth).
+
+Awaiting Run 3 results.

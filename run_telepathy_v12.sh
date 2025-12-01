@@ -58,7 +58,7 @@ TARGET_MODEL="${TARGET_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}"
 # Architecture
 SOURCE_LAYER="${SOURCE_LAYER:-16}"
 SOFT_TOKENS="${SOFT_TOKENS:-128}"
-DEPTH="${DEPTH:-6}"
+DEPTH="${DEPTH:-4}"  # Reduced from 6 - OOM with 6 layers
 HEADS="${HEADS:-8}"
 
 # Training (optimized for DiT)
