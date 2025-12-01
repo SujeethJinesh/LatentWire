@@ -81,7 +81,7 @@ def parse_args():
     parser.add_argument("--soft_tokens", type=int, default=128)
     parser.add_argument("--depth", type=int, default=6)  # Increased from V13's 4
     parser.add_argument("--lr", type=float, default=3e-4)
-    parser.add_argument("--batch_size", type=int, default=16)  # H100 still has ~46GB headroom
+    parser.add_argument("--batch_size", type=int, default=64)  # ~50GB estimated, 81GB available
     parser.add_argument("--steps", type=int, default=10000)  # Increased from 5000
     parser.add_argument("--warmup_steps", type=int, default=1000)  # Increased warmup
     parser.add_argument("--grad_clip", type=float, default=1.0)
