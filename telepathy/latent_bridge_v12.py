@@ -195,8 +195,8 @@ class LatentBridgeV12(nn.Module):
         """
         B = x_t.shape[0]
 
-        # Project source to target dimension
-        src_kv = self.src_proj(src_hidden.float()).to(x_t.dtype)
+        # Project source to target dimension (keep same dtype as model)
+        src_kv = self.src_proj(src_hidden.to(self.src_proj.weight.dtype))
 
         # Timestep embedding
         t_emb = self.time_embed(t)  # [B, D]

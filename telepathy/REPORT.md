@@ -2122,4 +2122,25 @@ bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
 loss = bridge_module.forward_loss(src_h, tgt_embeds, src_mask)
 ```
 
-Awaiting Run 4 results.
+---
+
+### Run 4: Dtype Mismatch (2025-11-30)
+
+**Result**: DDP fix worked! Training started but crashed with:
+```
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+```
+
+Error at `latent_bridge_v12.py:199`:
+```python
+src_kv = self.src_proj(src_hidden.float()).to(x_t.dtype)
+```
+
+**Root Cause**: Called `.float()` on input but `src_proj` weights are bfloat16. Linear layer requires matching dtypes.
+
+**Fix**: Convert input to match model weight dtype instead of forcing float32:
+```python
+src_kv = self.src_proj(src_hidden.to(self.src_proj.weight.dtype))
+```
+
+Awaiting Run 5 results.
