@@ -57,7 +57,7 @@ DEPTH="${DEPTH:-6}"  # Increased from V13's 4
 
 # Training - V14 longer training
 STEPS="${STEPS:-10000}"  # Increased from 5000
-BATCH_SIZE="${BATCH_SIZE:-64}"  # ~50GB estimated, can try 128 if this works
+BATCH_SIZE="${BATCH_SIZE:-8}"
 LR="${LR:-3e-4}"
 WARMUP_STEPS="${WARMUP_STEPS:-1000}"  # Increased warmup
 EMA_DECAY="${EMA_DECAY:-0.999}"
