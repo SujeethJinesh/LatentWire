@@ -2103,4 +2103,23 @@ Signal 9 (SIGKILL) received by PID 759549
 
 **Fix**: Reduced depth from 6 to 4 (matching V11's Perceiver depth).
 
-Awaiting Run 3 results.
+---
+
+### Run 3: DDP Attribute Error (2025-11-30)
+
+**Result**: No more OOM! Training started but crashed with:
+```
+AttributeError: 'DistributedDataParallel' object has no attribute 'forward_loss'
+```
+
+The depth=4 fix worked - models loaded, training loop started, but crashed on first step.
+
+**Root Cause**: When wrapped with DDP, custom methods like `forward_loss` must be accessed via `bridge.module.forward_loss()`, not `bridge.forward_loss()`.
+
+**Fix**: Updated `train_step()` to handle DDP wrapper:
+```python
+bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
+loss = bridge_module.forward_loss(src_h, tgt_embeds, src_mask)
+```
+
+Awaiting Run 4 results.

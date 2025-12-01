@@ -120,7 +120,9 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
             tgt_embeds = tgt_embeds.bfloat16()
 
     # Compute Rectified Flow loss
-    loss = bridge.forward_loss(src_h, tgt_embeds, src_mask)
+    # Handle DDP wrapper - access underlying module for custom methods
+    bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
+    loss = bridge_module.forward_loss(src_h, tgt_embeds, src_mask)
 
     return loss
 
