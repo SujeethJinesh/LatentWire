@@ -139,21 +139,10 @@ EOF
 # =============================================================================
 STATS_FILE="${OUTPUT_DIR}/stats.pt"
 
-if [[ -f "telepathy/phase1_calibration.py" ]]; then
-    echo "[Phase 1/3] Computing calibration statistics..."
-    python telepathy/phase1_calibration.py \
-        --source_model "$SOURCE_MODEL" \
-        --target_model "$TARGET_MODEL" \
-        --source_layer "$SOURCE_LAYER" \
-        --num_samples 200 \
-        --batch_size 32 \
-        --output_file "$STATS_FILE" \
-        2>&1 | tee "${OUTPUT_DIR}/calibration.log"
-    STATS_ARG="--stats_path $STATS_FILE"
-else
-    echo "[Phase 1/3] Skipping calibration (no phase1_calibration.py)"
-    STATS_ARG=""
-fi
+# Skip calibration - bridge uses identity normalization fallback
+# Calibration was hanging on model load; not critical for VQ approach
+echo "[Phase 1/3] Skipping calibration (using identity normalization)"
+STATS_ARG=""
 
 # =============================================================================
 # Phase 2: DDP Training with VQ
