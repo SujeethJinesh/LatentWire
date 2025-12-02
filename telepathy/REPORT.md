@@ -2614,3 +2614,155 @@ git pull && rm -rf runs && bash run_telepathy_v14.sh
 | 2025-11-30 | Increased capacity: 1024 dim, 16 heads, 10k steps |
 | 2025-11-30 | Created latent_bridge_v14.py, train/eval scripts |
 | 2025-11-30 | Ready for HPC execution |
+| 2025-12-01 | **Phase 14 Results: COMPLETE FAILURE** |
+| 2025-12-01 | Loss plateaued at 2.0 (worse than V13's 1.58) |
+| 2025-12-01 | Entity transfer: 0.0% (regression from V13's 5.2%) |
+| 2025-12-01 | Hybrid conditioning made things worse |
+| 2025-12-01 | **Phase 15: VQ-Telepathy implemented** |
+| 2025-12-01 | Architecture: Perceiver + Vector Quantization |
+| 2025-12-01 | 4096 codebook entries, LM Loss + VQ Loss |
+| 2025-12-01 | Back to ANSWER target (not question reconstruction) |
+
+---
+
+## 45. Phase 14 Results: COMPLETE FAILURE
+
+### Execution
+
+```
+telepathy_v14_20251130_234649/
+├── train.log           # Training output
+├── eval_20251201_001443.log  # Evaluation output
+└── eval_v14_results.json
+```
+
+### Training Analysis
+
+| Metric | Target | V14 Result | V13 Result | V12 Result |
+|--------|--------|------------|------------|------------|
+| Flow Loss | Converges | **2.0 (PLATEAU)** | 1.58 | 0.098 ✓ |
+| Output Diversity | > 50% | 100% ✓ | 100% ✓ | 100% ✓ |
+| Entity Transfer | > 30% | **0.0%** | 5.2% | 0.9% |
+| Answer Accuracy | > 0% | **0.0%** | 0.0% | 0.0% |
+
+### Sample Output (Catastrophic)
+
+```
+Question: Janet's ducks lay 16 eggs per day...
+Output: "Question is to be a certain is a certain is a certain is a
+        or is await to to be await to be await to..."
+```
+
+### Diagnosis: Manifold Mismatch is Fatal
+
+The progressive failure across phases reveals a fundamental problem:
+
+| Phase | Approach | Loss | Entity | Problem |
+|-------|----------|------|--------|---------|
+| V7 | Regression | Low | Low | Blurry averages (semantic drift) |
+| V12 | Diffusion Global | 0.098 | 0.9% | Lost entity details |
+| V13 | Diffusion Cross-Attn | 1.58 | 5.2% | Failed to converge |
+| V14 | Hybrid Conditioning | 2.0 | 0.0% | Made everything worse |
+
+**Root Cause**: Continuous regression cannot bridge incompatible manifolds. When predicting Mistral embeddings from Llama states:
+- Any error in continuous space leads to invalid vectors
+- Averaging produces "blurry" concepts (Generic Bird instead of Ducks)
+- Diffusion helps but cannot recover entity-specific information
+
+---
+
+## 46. Phase 15: VQ-Telepathy (Vector Quantized Bridge)
+
+### The Insight: Discretization Prevents Manifold Mismatch
+
+| Method | Manifold Mismatch | Entity Preservation |
+|--------|-------------------|---------------------|
+| Regression | Outputs off-manifold vectors | Averages to generic concepts |
+| Diffusion | Converges to manifold but loses details | Cannot recover entities |
+| **Vector Quantization** | **Forces valid vectors** | **Discrete codes = discrete entities** |
+
+### Why VQ Solves This
+
+1. **Prevents Blur**: Every output is a valid codebook entry
+   - Cannot output "0.5 × Duck + 0.5 × Chicken"
+   - Must commit to one code or another
+
+2. **Prevents Drift**: Discrete codes map to specific concepts
+   - "Ducks" → Code #42
+   - "Chickens" → Code #99
+   - Cannot average to "Code #70.5" (Generic Bird)
+
+3. **Efficient**: 1-step inference (no diffusion iteration)
+
+### Architecture
+
+```
+Llama Hidden States [B, T, 4096]
+          ↓
+  StatisticalNormalizer (Llama → Mistral distribution)
+          ↓
+  PerceiverResampler [B, 128, 4096]
+          ↓
+  VectorQuantizer (4096 codebook entries)
+          ↓
+    Quantized Soft Tokens [B, 128, 4096]
+          ↓
+  Output Scale (match Mistral RMS)
+          ↓
+    Mistral inputs_embeds
+```
+
+### Training
+
+**Loss = LM Loss + λ × VQ Loss**
+
+- **LM Loss**: Cross-entropy on answer generation (functional correctness)
+- **VQ Loss**: Codebook loss + commitment loss (discrete bottleneck)
+- **Target**: ANSWER (Mistral generates answer, not question)
+
+The VQ loss has two components:
+```python
+# Codebook loss: pull codebook toward encoder outputs
+q_latent_loss = MSE(quantized, encoder_output.detach())
+
+# Commitment loss: pull encoder toward codebook
+e_latent_loss = MSE(quantized.detach(), encoder_output)
+
+vq_loss = q_latent_loss + 0.25 * e_latent_loss
+```
+
+Gradient flows via **Straight-Through Estimator**:
+```python
+quantized = encoder_output + (quantized - encoder_output).detach()
+```
+
+### Success Criteria
+
+| Metric | Target | Interpretation |
+|--------|--------|----------------|
+| LM Loss | Decreasing | Bridge is learning |
+| Perplexity | > 100 | Many codebook entries used |
+| Output Diversity | > 50% | Not collapsed |
+| Entity Transfer | **> 30%** | VQ preserved entities |
+
+### If VQ Fails
+
+If VQ-Telepathy also fails:
+- The task (Llama → Mistral) may be fundamentally too hard
+- Consider: Larger codebook, more training, hierarchical VQ
+- Or: Task is impossible with current adapter size
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `latent_bridge_v15.py` | VQ-Telepathy bridge architecture |
+| `train_telepathy_v15.py` | Training with LM + VQ loss |
+| `eval_telepathy_v15.py` | Evaluation with entity tracking |
+| `run_telepathy_v15.sh` | Execution script |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v15.sh
+```
