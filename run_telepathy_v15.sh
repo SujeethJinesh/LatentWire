@@ -145,6 +145,8 @@ if [[ -f "telepathy/phase1_calibration.py" ]]; then
         --source_model "$SOURCE_MODEL" \
         --target_model "$TARGET_MODEL" \
         --source_layer "$SOURCE_LAYER" \
+        --num_samples 200 \
+        --batch_size 32 \
         --output_file "$STATS_FILE" \
         2>&1 | tee "${OUTPUT_DIR}/calibration.log"
     STATS_ARG="--stats_path $STATS_FILE"
