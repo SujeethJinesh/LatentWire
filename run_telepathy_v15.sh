@@ -63,7 +63,8 @@ HEADS="${HEADS:-8}"
 
 # Training
 STEPS="${STEPS:-3000}"
-BATCH_SIZE="${BATCH_SIZE:-8}"
+BATCH_SIZE="${BATCH_SIZE:-2}"          # Reduced for OOM - 2 models per GPU
+GRAD_ACCUM="${GRAD_ACCUM:-4}"          # Effective batch = 2 * 4 = 8
 LR="${LR:-2e-4}"
 WARMUP_STEPS="${WARMUP_STEPS:-100}"
 VQ_WEIGHT="${VQ_WEIGHT:-1.0}"
@@ -169,6 +170,7 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
         --heads "$HEADS" \
         --steps "$STEPS" \
         --batch_size "$BATCH_SIZE" \
+        --grad_accum "$GRAD_ACCUM" \
         --lr "$LR" \
         --warmup_steps "$WARMUP_STEPS" \
         --vq_weight "$VQ_WEIGHT" \

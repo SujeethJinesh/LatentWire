@@ -43,7 +43,8 @@ def parse_args():
     parser.add_argument("--depth", type=int, default=4)
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--lr", type=float, default=2e-4)
-    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--grad_accum", type=int, default=4, help="Gradient accumulation steps")
     parser.add_argument("--steps", type=int, default=3000)
     parser.add_argument("--warmup_steps", type=int, default=100)
     parser.add_argument("--grad_clip", type=float, default=1.0)
@@ -233,32 +234,43 @@ def main():
                     desc="V15 VQ-Telepathy", ncols=100)
     iter_dl = iter(dl)
     running = {"total": 0, "lm": 0, "vq": 0, "ppl": 0}
+    grad_accum = args.grad_accum
 
     for step in progress:
-        try:
-            batch = next(iter_dl)
-        except StopIteration:
-            iter_dl = iter(dl)
-            batch = next(iter_dl)
-
-        loss, loss_dict = train_step(
-            batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args
-        )
-
         optimizer.zero_grad()
-        loss.backward()
+        accum_loss_dict = {"total": 0, "lm": 0, "vq": 0, "ppl": 0}
+
+        # Gradient accumulation loop
+        for accum_step in range(grad_accum):
+            try:
+                batch = next(iter_dl)
+            except StopIteration:
+                iter_dl = iter(dl)
+                batch = next(iter_dl)
+
+            loss, loss_dict = train_step(
+                batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args
+            )
+
+            # Scale loss for accumulation
+            scaled_loss = loss / grad_accum
+            scaled_loss.backward()
+
+            for k in accum_loss_dict:
+                accum_loss_dict[k] += loss_dict[k] / grad_accum
+
         torch.nn.utils.clip_grad_norm_(bridge.parameters(), args.grad_clip)
         optimizer.step()
         scheduler.step()
 
         for k in running:
-            running[k] += loss_dict[k]
+            running[k] += accum_loss_dict[k]
 
         progress.set_postfix({
-            "tot": f"{loss_dict['total']:.2f}",
-            "lm": f"{loss_dict['lm']:.2f}",
-            "vq": f"{loss_dict['vq']:.3f}",
-            "ppl": f"{loss_dict['ppl']:.0f}"
+            "tot": f"{accum_loss_dict['total']:.2f}",
+            "lm": f"{accum_loss_dict['lm']:.2f}",
+            "vq": f"{accum_loss_dict['vq']:.3f}",
+            "ppl": f"{accum_loss_dict['ppl']:.0f}"
         })
 
         # Periodic logging
