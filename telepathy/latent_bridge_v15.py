@@ -242,10 +242,9 @@ class LatentBridgeV15(nn.Module):
         depth = getattr(args, 'depth', 4)
         self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
 
-        # LayerNorm before VQ to stabilize input scale
-        self.pre_vq_norm = nn.LayerNorm(tgt_dim)
-
         # VQ Bottleneck (4096 codes, dimension = tgt_dim)
+        # Note: Removed LayerNorm before VQ - it was causing all vectors to look identical
+        # L2 normalization inside VQ (for cosine similarity) is sufficient
         self.vq = VectorQuantizer(
             num_embeddings=4096,
             embedding_dim=tgt_dim,
@@ -279,11 +278,8 @@ class LatentBridgeV15(nn.Module):
         # 2. Compress to fixed-length representation
         compressed = self.resampler(normed, src_mask)  # [B, K, tgt_dim]
 
-        # 3. Normalize before VQ to stabilize codebook distances
-        compressed_norm = self.pre_vq_norm(compressed)
-
-        # 4. Quantize through codebook
-        quantized, vq_loss, perplexity = self.vq(compressed_norm)
+        # 3. Quantize through codebook (L2 normalization happens inside VQ)
+        quantized, vq_loss, perplexity = self.vq(compressed)
 
         # 4. Scale for Mistral embedding space
         out = quantized * self.output_scale
