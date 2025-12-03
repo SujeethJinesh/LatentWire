@@ -100,6 +100,15 @@ class VectorQuantizer(nn.Module):
         avg_probs = torch.mean(encodings, dim=0)
         perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
 
+        # Entropy bonus: maximize entropy to prevent collapse
+        # Higher entropy = more uniform code usage
+        entropy = -torch.sum(avg_probs * torch.log(avg_probs + 1e-10))
+        max_entropy = torch.log(torch.tensor(self.num_embeddings, dtype=torch.float32, device=inputs.device))
+        entropy_bonus = entropy / max_entropy  # Normalized to [0, 1]
+
+        # Subtract entropy bonus from loss (to maximize entropy)
+        loss = loss - 0.1 * entropy_bonus
+
         return quantized, loss, perplexity
 
 
