@@ -348,9 +348,11 @@ class LatentBridgeV15(nn.Module):
             # Compute variance for monitoring (not for loss)
             z_variance = compressed.var(dim=[0, 1]).mean()
 
-        # 4. Bound and scale for Mistral embedding space
-        # tanh bounds to [-1, 1], preventing magnitude explosion during training
-        # This was critical in V7 for stability - unbounded outputs caused 13x variance spikes
-        out = torch.tanh(quantized) * self.output_scale
+        # 4. Normalize and scale for Mistral embedding space
+        # RMS normalization instead of tanh - prevents saturation while preserving structure
+        # tanh caused saturation: Perceiver learned to output variance ~200, all values → ±1
+        # RMS norm: divide by RMS to get ~unit magnitude, then scale to target
+        rms = torch.sqrt((quantized ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        out = (quantized / rms) * self.output_scale
 
         return out, aux_loss, diversity, z_variance

@@ -3243,3 +3243,69 @@ This bounds output to `[-0.0027, +0.0027]` matching Mistral's expected embedding
 tanh chosen because it's proven in V7 and simplest fix.
 
 ---
+
+## 54. Phase 15 Fix: tanh Saturation → RMS Normalization
+
+### Symptom
+
+After adding tanh bounding (Section 53), training was stable but loss PLATEAUED:
+
+| Step | LM Loss | Z Variance | Notes |
+|------|---------|------------|-------|
+| 50 | 1.375 | 0.017 | Healthy |
+| 100 | 1.102 | 0.126 | Good |
+| 200 | 1.078 | 19.1 | Variance exploding |
+| 500 | 1.058 | 207.9 | Plateaued |
+| 1400 | 1.054 | 208.9 | Stuck at ~1.05 |
+
+Z Variance exploded 10,000× (0.017 → 208) while loss stayed flat.
+
+### Root Cause: tanh Saturation
+
+The Perceiver learned to "game" tanh:
+1. Perceiver outputs grow unboundedly (variance → 200, std → 14)
+2. tanh(14) ≈ 1.0 (saturated)
+3. Output becomes essentially binary (±0.0027)
+4. tanh gradient at saturation: sech²(14) ≈ 0 (no learning)
+5. Loss plateaus because gradients vanish
+
+**Analogy**: Like an audio amplifier driven into clipping - only outputs ±V_max.
+
+### Why This Is New
+
+Previous uses of tanh (V3, V7) worked because:
+- Perceiver outputs were naturally in reasonable range
+- No incentive to grow unboundedly
+
+Current continuous mode:
+- No FSQ to constrain values
+- Perceiver discovered it can output ANY magnitude
+- tanh acts as "free normalization" the network exploits
+
+### Fix: RMS Normalization
+
+Replace tanh with RMS-based normalization:
+
+```python
+# Before (saturates):
+out = torch.tanh(quantized) * self.output_scale
+
+# After (preserves structure):
+rms = torch.sqrt((quantized ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+out = (quantized / rms) * self.output_scale
+```
+
+### Why RMS Works
+
+1. **Self-correcting**: If variance grows, RMS grows, output stays bounded
+2. **Preserves structure**: Unlike saturated tanh, relative differences maintained
+3. **Gradients everywhere**: No saturation region with zero gradients
+4. **Proven**: RMSNorm is used in Llama and other modern transformers
+
+### Expected Outcome
+
+- Z Variance may still grow, but output magnitude stays bounded
+- LM Loss should continue decreasing (gradients flow)
+- Output preserves semantic structure (not binary)
+
+---
