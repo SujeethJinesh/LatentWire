@@ -287,9 +287,11 @@ class LatentBridgeV15(nn.Module):
         depth = getattr(args, 'depth', 4)
         self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
 
-        # FSQ Bottleneck - 8 dimensions with 8 levels each = 8^8 = 16,777,216 codes
-        # This replaces VQ which suffered from codebook collapse
-        fsq_levels = getattr(args, 'fsq_levels', [8, 8, 8, 8, 8, 8, 8, 8])
+        # FSQ Bottleneck - 32 dimensions with 5 levels each
+        # Previous 8-dim config collapsed to div=0 (too aggressive compression: 4096->8)
+        # 32 dims preserves more diversity while still being discrete
+        # Effective codes: 5^32 ≈ 2.3 × 10^22
+        fsq_levels = getattr(args, 'fsq_levels', [5] * 32)  # 32 dims, 5 levels each
         self.fsq = FSQ(levels=fsq_levels, input_dim=tgt_dim)
 
         # Output scale to match Mistral embedding magnitude

@@ -8,8 +8,8 @@
 # - FSQ has NO codebook = NO collapse possible
 #
 # FSQ ARCHITECTURE:
-# - 8 dimensions × 8 levels each = 16,777,216 effective codes
-# - Project: 4096 -> 8 -> quantize -> 8 -> 4096
+# - 32 dimensions × 5 levels each = 5^32 ≈ 2.3×10^22 effective codes
+# - Project: 4096 -> 32 -> quantize -> 32 -> 4096
 # - Pure LM loss training (no auxiliary loss)
 
 set -euo pipefail
@@ -91,8 +91,8 @@ echo "     * Cosine similarity, entropy bonus, LayerNorm removal"
 echo "   - FSQ has NO codebook = NO collapse possible"
 echo ""
 echo " FSQ ARCHITECTURE:"
-echo "   - 8 dimensions × 8 levels = 16,777,216 effective codes"
-echo "   - Project: 4096 -> 8 -> quantize -> 8 -> 4096"
+echo "   - 32 dimensions × 5 levels = 5^32 effective codes"
+echo "   - Project: 4096 -> 32 -> quantize -> 32 -> 4096"
 echo "   - Pure LM loss (no auxiliary loss needed)"
 echo "   - Soft tokens: $SOFT_TOKENS"
 echo "   - Depth: $DEPTH, Heads: $HEADS"
@@ -111,8 +111,8 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
     "soft_tokens": $SOFT_TOKENS,
     "depth": $DEPTH,
     "heads": $HEADS,
-    "fsq_levels": [8, 8, 8, 8, 8, 8, 8, 8],
-    "effective_codebook": 16777216,
+    "fsq_levels": [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    "effective_codebook": "5^32",
     "steps": $STEPS,
     "batch_size": $BATCH_SIZE,
     "lr": "$LR",
@@ -120,7 +120,7 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
     "num_gpus": $NPROC,
     "key_changes": [
         "FSQ replaces VQ (no codebook collapse)",
-        "8^8 = 16M effective codes",
+        "32 dims × 5 levels = 5^32 effective codes",
         "Pure LM loss training",
         "1-step inference (no diffusion)"
     ]
