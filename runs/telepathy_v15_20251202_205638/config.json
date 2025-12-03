@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v15_20251202_203958",
+    "run_id": "telepathy_v15_20251202_205638",
     "phase": 15,
     "approach": "Continuous Telepathy (No Quantization)",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
