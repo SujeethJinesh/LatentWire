@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # telepathy/eval_telepathy_v15.py
 """
-Phase 15 Evaluation: VQ-Telepathy
+Phase 15 Evaluation: Continuous Telepathy
 
-Tests if discrete bottleneck produces coherent, relevant outputs.
+Tests if continuous soft tokens produce coherent, relevant outputs.
 
 Success Criteria:
 1. Outputs are coherent (not garbage/repetitive)
@@ -65,13 +65,13 @@ def main():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print("=" * 70)
-    print("Phase 15 Evaluation: VQ-Telepathy")
+    print("Phase 15 Evaluation: Continuous Telepathy")
     print("=" * 70)
     print(f"Checkpoint: {args.checkpoint}")
     print("")
-    print("VQ-Telepathy Key Features:")
-    print("  - Discrete bottleneck (4096 codebook entries)")
-    print("  - Prevents blur/drift via quantization")
+    print("Continuous Telepathy Key Features:")
+    print("  - Perceiver resampler (128 soft tokens)")
+    print("  - RMS normalization for stable training")
     print("  - 1-step inference (no diffusion)")
     print("")
     print("Success Criteria:")
@@ -154,9 +154,9 @@ def main():
                 src_h = src_h.bfloat16()
             src_mask = src_enc.attention_mask
 
-        # 2. Get quantized soft tokens from bridge
+        # 2. Get soft tokens from bridge (continuous mode)
         with torch.no_grad():
-            soft_tokens, vq_loss, perplexity = bridge(src_h, src_mask)
+            soft_tokens, aux_loss, diversity, z_variance = bridge(src_h, src_mask)
 
         # 3. Create input for Mistral
         primer = "Answer: "
@@ -197,7 +197,7 @@ def main():
             print(f"[DEBUG] Soft token stats - min: {soft_stats.min():.4f}, "
                   f"max: {soft_stats.max():.4f}, mean: {soft_stats.mean():.4f}, "
                   f"std: {soft_stats.std():.4f}")
-            print(f"[DEBUG] VQ perplexity: {perplexity:.1f}")
+            print(f"[DEBUG] Diversity: {diversity:.2f}, Z Variance: {z_variance:.4f}")
             print("")
 
         # Entity matching
@@ -258,25 +258,25 @@ def main():
     if unique_pct < 50:
         print("=" * 70)
         print("LOW DIVERSITY: Outputs are similar/identical.")
-        print("VQ may be collapsing to few codes.")
-        print("Consider: Check perplexity, increase codebook diversity")
+        print("Bridge may be producing 'blurry' averaged outputs.")
+        print("Consider: Check soft token variance, more training")
         print("=" * 70)
     elif overall_pct < 10:
         print("=" * 70)
         print("VERY LOW ENTITY TRANSFER (<10%).")
-        print("VQ codes may not capture entity information.")
-        print("Consider: Increase codebook size, more training")
+        print("Soft tokens may not capture entity information.")
+        print("Consider: More training, different architecture")
         print("=" * 70)
     elif overall_pct < 30:
         print("=" * 70)
         print("PARTIAL SUCCESS: Entity transfer 10-30%.")
-        print("VQ is helping but not fully solving the problem.")
-        print("Consider: More training, adjust VQ weight")
+        print("Bridge is learning but not fully solving the problem.")
+        print("Consider: More training, adjust loss weights")
         print("=" * 70)
     elif overall_pct >= 30:
         print("=" * 70)
         print("SUCCESS! Entity transfer >= 30%!")
-        print("VQ-Telepathy is working!")
+        print("Continuous Telepathy is working!")
         print("Next: Tune hyperparameters, increase training")
         print("=" * 70)
 

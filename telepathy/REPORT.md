@@ -3309,3 +3309,56 @@ out = (quantized / rms) * self.output_scale
 - Output preserves semantic structure (not binary)
 
 ---
+
+## Section 55: Periodic Evaluation During Training
+
+**Date**: 2025-12-02
+**Status**: Implemented
+
+### The Problem
+
+RMS normalization fix shows loss continuing to decrease (0.877 at step 650), but:
+- Low loss ≠ good outputs
+- Need early feedback on output quality
+- Waiting until end of training wastes compute if outputs are garbage
+
+### Solution: Quick Eval Every 500 Steps
+
+Added periodic evaluation during training:
+
+```python
+# New arguments
+--eval_every 500    # Run quick eval every N steps
+--eval_samples 10   # Samples per eval
+
+# In training loop
+if (step + 1) % args.eval_every == 0:
+    quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, args, step + 1)
+```
+
+### What Quick Eval Measures
+
+1. **Accuracy**: Does predicted answer match ground truth?
+2. **Entity Transfer**: Do numbers from question appear in output?
+3. **Output Diversity**: Are outputs unique or collapsed?
+4. **Visual Samples**: First 3 outputs printed for inspection
+
+### Implementation Details
+
+- Uses test split of GSM8K (not train)
+- Sets bridge to eval mode, then back to train mode
+- Only runs on rank 0 (no DDP sync needed)
+- Generates with `do_sample=False` for deterministic comparison
+
+### Also Fixed
+
+Eval script (`eval_telepathy_v15.py`) was unpacking 3 return values but bridge returns 4:
+```python
+# Before (broken):
+soft_tokens, vq_loss, perplexity = bridge(src_h, src_mask)
+
+# After (fixed):
+soft_tokens, aux_loss, diversity, z_variance = bridge(src_h, src_mask)
+```
+
+---
