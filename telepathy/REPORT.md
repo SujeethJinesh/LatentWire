@@ -3362,3 +3362,94 @@ soft_tokens, aux_loss, diversity, z_variance = bridge(src_h, src_mask)
 ```
 
 ---
+
+## Section 56: Mode Collapse and Batch Diversity Loss
+
+**Date**: 2025-12-02
+**Status**: Fix Implemented
+
+### The Problem: Mode Collapse
+
+Training with RMS normalization showed good loss (0.916 at step 500), but quick eval revealed catastrophic failure:
+
+```
+Q: Janet's ducks lay 16 eggs per day...
+Output: #1. The number of students in the class is 100 * 1.5 = <<100*1.5=150>>150
+
+Q: A new program had 60 downloads...
+Output: #1. The number of students in the class is 100 * 1.5 = <<100*1.5=150>>150
+
+Q: I have 10 liters of orange drink...
+Output: #1. The number of students in the class is 100 * 1.5 = <<100*1.5=150>>150
+```
+
+**ALL 10 samples produced nearly identical output!**
+
+Metrics:
+- Accuracy: 0/10 (0.0%)
+- Entity Transfer: 7/29 (24.1%) - coincidental
+- Output Diversity: 1/10 (10.0%) - **COLLAPSED**
+
+### Root Cause Analysis
+
+RMS normalization preserves **direction** but removes **magnitude**:
+
+```python
+out = (x / ||x||_rms) * scale
+```
+
+The Perceiver discovered it could achieve low average loss by:
+1. Outputting vectors that differ mainly in magnitude (not direction)
+2. RMS normalization collapses them to the same point on the unit hypersphere
+3. Result: single "average" representation that works reasonably well on average
+
+**Physics Analogy**: Points at (1,1,1) and (10,10,10) both project to the same point on the unit sphere: (0.577, 0.577, 0.577).
+
+**Information Theory**: The bridge found a shortcut - maximum entropy solution when differentiation isn't required by the loss.
+
+### The Fix: Batch Diversity Loss
+
+Added contrastive-style loss that penalizes high cosine similarity between different questions in the same batch:
+
+```python
+# Flatten soft tokens: [B, K, D] -> [B, K*D]
+flat_tokens = soft_tokens.view(B, -1).float()
+# Normalize for cosine similarity
+flat_norm = F.normalize(flat_tokens, dim=1)
+# Compute similarity matrix [B, B]
+sim_matrix = torch.mm(flat_norm, flat_norm.t())
+# Get off-diagonal similarities
+mask = ~torch.eye(B, dtype=torch.bool, device=device)
+off_diag_sim = sim_matrix[mask].mean()
+# Diversity loss: penalize high similarity
+batch_div_loss = off_diag_sim
+```
+
+Total loss becomes:
+```python
+total_loss = loss_lm + diversity_weight * batch_div_loss
+```
+
+Default `diversity_weight = 0.1`.
+
+### Why This Should Work
+
+1. **Direct signal**: Different inputs must produce different outputs
+2. **Batch-level**: No need for large contrastive bank
+3. **Cosine similarity**: Direction-sensitive, immune to magnitude normalization
+4. **Gradient flow**: Smooth, differentiable loss
+
+### Expected Outcome
+
+- Batch similarity should decrease from ~1.0 to < 0.5
+- Output diversity should increase from 10% to > 80%
+- Entity transfer should improve as outputs become input-specific
+- LM loss may increase slightly (tradeoff for diversity)
+
+### Monitoring
+
+New metrics in training logs:
+- `Div Loss`: The diversity penalty (want this low after initial push)
+- `Batch Sim`: Average cosine similarity between batch items (want < 0.5, collapse if ~1.0)
+
+---

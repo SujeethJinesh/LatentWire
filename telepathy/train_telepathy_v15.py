@@ -15,6 +15,7 @@ Key differences from VQ attempt:
 """
 import os
 import torch
+import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler
@@ -53,6 +54,7 @@ def parse_args():
     parser.add_argument("--save_every", type=int, default=500)
     parser.add_argument("--eval_every", type=int, default=500, help="Run quick eval every N steps")
     parser.add_argument("--eval_samples", type=int, default=10, help="Samples for quick eval")
+    parser.add_argument("--diversity_weight", type=float, default=0.1, help="Weight for batch diversity loss")
     parser.add_argument("--bf16", action="store_true", default=True)
     return parser.parse_args()
 
@@ -89,6 +91,24 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     # Bridge Forward: Get quantized soft tokens (FSQ aux_loss is always 0)
     bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
     soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+
+    # Batch Diversity Loss: Penalize when soft tokens are too similar across batch
+    # This prevents mode collapse where all inputs produce the same output
+    B = soft_tokens.shape[0]
+    if B > 1:
+        # Flatten soft tokens: [B, K, D] -> [B, K*D]
+        flat_tokens = soft_tokens.view(B, -1).float()
+        # Normalize for cosine similarity
+        flat_norm = F.normalize(flat_tokens, dim=1)
+        # Compute similarity matrix [B, B]
+        sim_matrix = torch.mm(flat_norm, flat_norm.t())
+        # Get off-diagonal similarities (different questions should be different)
+        mask = ~torch.eye(B, dtype=torch.bool, device=soft_tokens.device)
+        off_diag_sim = sim_matrix[mask].mean()
+        # Diversity loss: penalize high similarity (want off_diag_sim -> 0)
+        batch_div_loss = off_diag_sim
+    else:
+        batch_div_loss = torch.tensor(0.0, device=soft_tokens.device)
 
     # Target: Mistral generates the answer
     # Use full answer for teacher forcing (includes reasoning)
@@ -141,15 +161,17 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     )
     loss_lm = outputs.loss
 
-    # Total loss = LM loss only (no diversity loss for continuous mode)
-    # FSQ diversity loss was removed because discrete bottlenecks collapsed in all tests
-    total_loss = loss_lm
+    # Total loss = LM loss + diversity loss
+    # Diversity loss prevents mode collapse (all inputs -> same output)
+    diversity_weight = getattr(args, 'diversity_weight', 0.1)
+    total_loss = loss_lm + diversity_weight * batch_div_loss
 
     return total_loss, {
         "total": total_loss.item(),
         "lm": loss_lm.item(),
+        "div_loss": batch_div_loss.item(),
         "z_var": z_variance.item() if hasattr(z_variance, 'item') else z_variance,
-        "div": diversity  # 1.0 for continuous, 0-1 for FSQ
+        "batch_sim": off_diag_sim.item() if B > 1 else 0.0  # Track similarity
     }
 
 
@@ -274,10 +296,12 @@ def main():
         print("CONTINUOUS ARCHITECTURE:")
         print("  - Perceiver resampler: compress to 128 soft tokens")
         print("  - NO quantization (continuous values)")
-        print("  - Pure LM loss training")
+        print("  - RMS normalization for output scaling")
+        print("  - BATCH DIVERSITY LOSS to prevent mode collapse")
         print("  - 1-step inference")
         print("")
         print(f"Training: {args.steps} steps, batch={args.batch_size}")
+        print(f"Diversity weight: {args.diversity_weight}")
         print("=" * 70)
 
     # Load models
@@ -341,12 +365,12 @@ def main():
     progress = tqdm(range(args.steps), disable=(local_rank != 0),
                     desc="V15 Continuous", ncols=100)
     iter_dl = iter(dl)
-    running = {"total": 0, "lm": 0, "z_var": 0, "div": 0}
+    running = {"total": 0, "lm": 0, "div_loss": 0, "z_var": 0, "batch_sim": 0}
     grad_accum = args.grad_accum
 
     for step in progress:
         optimizer.zero_grad()
-        accum_loss_dict = {"total": 0, "lm": 0, "z_var": 0, "div": 0}
+        accum_loss_dict = {"total": 0, "lm": 0, "div_loss": 0, "z_var": 0, "batch_sim": 0}
 
         # Gradient accumulation loop
         for accum_step in range(grad_accum):
@@ -376,7 +400,7 @@ def main():
 
         progress.set_postfix({
             "lm": f"{accum_loss_dict['lm']:.2f}",
-            "div": f"{accum_loss_dict['div']:.2f}"  # Diversity: should stay high (0-1)
+            "sim": f"{accum_loss_dict['batch_sim']:.2f}"  # Batch similarity: want this LOW
         })
 
         # Periodic logging
@@ -385,7 +409,9 @@ def main():
             current_lr = scheduler.get_last_lr()[0]
             print(f"\n[Step {step+1}/{args.steps}]")
             print(f"  LM Loss: {avg['lm']:.3f}")
-            print(f"  Z Variance: {avg['z_var']:.4f} (output variance)")
+            print(f"  Div Loss: {avg['div_loss']:.4f} (want low)")
+            print(f"  Batch Sim: {avg['batch_sim']:.3f} (want < 0.5, collapse if ~1.0)")
+            print(f"  Z Variance: {avg['z_var']:.4f}")
             print(f"  LR: {current_lr:.2e}")
             running = {k: 0 for k in running}
 
