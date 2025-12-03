@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v15_20251202_190116",
+    "run_id": "telepathy_v15_20251202_190913",
     "phase": 15,
     "approach": "FSQ-Telepathy (Finite Scalar Quantization)",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",

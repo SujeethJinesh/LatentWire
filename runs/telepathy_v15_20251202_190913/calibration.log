@@ -1,0 +1,44 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+============================================================
+Phase 1: Statistical Calibration
+============================================================
+Source: meta-llama/Meta-Llama-3.1-8B-Instruct
+Target: mistralai/Mistral-7B-Instruct-v0.3
+Source layer: 16
+Samples: 200
+Output: runs/telepathy_v15_20251202_190913/stats.pt
+============================================================
+
+[1/4] Loading Source Model: meta-llama/Meta-Llama-3.1-8B-Instruct...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3785.47it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.53s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.33s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.16s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.22it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.00it/s]
+  Hidden size: 4096
+  Num layers: 32
+
+[2/4] Loading Target Model: mistralai/Mistral-7B-Instruct-v0.3...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1429.71it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:02,  1.08s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:02<00:01,  1.01s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.07s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.06s/it]
+  Hidden size: 4096
+  Num layers: 32
+
+[3/4] Loading GSM8K dataset...
+  Total samples available: 7473
+
+[4/4] Running Calibration (200 samples)...
+Calibrating:   0%|          | 0/13 [00:00<?, ?it/s]Calibrating:   8%|▊         | 1/13 [00:00<00:04,  2.90it/s]Calibrating:  23%|██▎       | 3/13 [00:00<00:01,  6.99it/s]Calibrating:  38%|███▊      | 5/13 [00:00<00:00,  9.89it/s]Calibrating:  54%|█████▍    | 7/13 [00:00<00:00, 11.10it/s]Calibrating:  69%|██████▉   | 9/13 [00:01<00:00,  9.70it/s]Calibrating:  85%|████████▍ | 11/13 [00:01<00:00, 10.81it/s]Calibrating: 100%|██████████| 13/13 [00:01<00:00, 10.38it/s]
+
+============================================================
+Calibration Results
+============================================================
+Source (Layer 16):
+  Mean norm: 11.2480
+  Std mean:  0.0384
+Target (Embeddings):
+  Mean norm: 0.0293
+  Std mean:  0.0003
+  RMS:       0.0027
+Scale ratio: 0.00x
+
+Saved statistics to: runs/telepathy_v15_20251202_190913/stats.pt
+============================================================
