@@ -3453,3 +3453,83 @@ New metrics in training logs:
 - `Batch Sim`: Average cosine similarity between batch items (want < 0.5, collapse if ~1.0)
 
 ---
+
+## Section 57: Phase 16 - SST-2 Signal Check
+
+**Date**: 2025-12-02
+**Status**: Implemented
+
+### The Insight: We Were Running Before We Could Walk
+
+Critical realization: We've been trying to transmit **complex multi-step math** (GSM8K) through an unvalidated channel. Every failure could be:
+1. Architecture problem
+2. Training problem
+3. Task too hard for current bandwidth
+
+**We can't tell which without validating the fundamentals first.**
+
+### The Problem with GSM8K
+
+| Aspect | GSM8K | Why Problematic |
+|--------|-------|-----------------|
+| Precision | Exact numbers | "16 eggs" - one wrong = all wrong |
+| Reasoning | Multi-step | Must encode entire reasoning chain |
+| Data | ~7,500 samples | Limited training data |
+| Evaluation | Binary correct/wrong | No partial credit |
+
+### The Solution: SST-2 Sentiment Classification
+
+| Aspect | SST-2 | Why Better |
+|--------|-------|------------|
+| Precision | Binary | "Positive" or "Negative" |
+| Reasoning | Single step | Just classify sentiment |
+| Data | ~67,000 samples | 10x more data |
+| Evaluation | Accuracy | Clear success metric |
+
+**Key insight**: If the bridge can't transmit "this movie is garbage" → "negative", it definitely can't transmit "16 ducks lay eggs, subtract 3" → "18".
+
+### Implementation
+
+New files created:
+- `latent_bridge_vq.py` - VQ-based bridge (discrete bottleneck)
+- `train_telepathy_sst2.py` - Training on SST-2
+- `eval_telepathy_sst2.py` - Evaluation script
+- `run_sst2_signal_check.sh` - Run script
+
+### Architecture: VQ Bridge
+
+Using Vector Quantization for this task because:
+1. **Discrete decisions** - perfect for binary classification
+2. **Forces categorical encoding** - either positive or negative
+3. **Clear collapse signal** - perplexity = 1 means failure
+
+```
+Llama Hidden -> Perceiver (32 tokens) -> VQ (4096 codes) -> Mistral
+```
+
+### Success Criteria
+
+| Accuracy | Interpretation |
+|----------|---------------|
+| ~50% | Bridge is broken (random chance) |
+| 55-70% | Some info transfers, needs work |
+| 70-85% | Bridge is working |
+| >85% | Bridge is excellent, try harder tasks |
+
+### Why This Matters
+
+This is the **scientific method applied to ML research**:
+1. Start with simplest possible validation
+2. Prove fundamentals work
+3. Then add complexity incrementally
+
+If SST-2 fails → Fix architecture
+If SST-2 succeeds → Try topic classification → Try QA → Try GSM8K
+
+### Run Command
+
+```bash
+git pull && rm -rf runs && bash run_sst2_signal_check.sh
+```
+
+---
