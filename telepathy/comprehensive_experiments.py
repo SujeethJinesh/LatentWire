@@ -179,10 +179,12 @@ class MLPBridge(nn.Module):
         self.tgt_dim = tgt_dim
 
     def forward(self, src_hidden, src_mask=None):
-        # Mean pool
+        # Mean pool (preserve dtype)
+        orig_dtype = src_hidden.dtype
         if src_mask is not None:
             mask = src_mask.unsqueeze(-1).float()
-            pooled = (src_hidden * mask).sum(dim=1) / mask.sum(dim=1)
+            pooled = (src_hidden.float() * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
+            pooled = pooled.to(orig_dtype)
         else:
             pooled = src_hidden.mean(dim=1)
 
@@ -199,9 +201,12 @@ class LinearBridge(nn.Module):
         self.tgt_dim = tgt_dim
 
     def forward(self, src_hidden, src_mask=None):
+        # Mean pool (preserve dtype)
+        orig_dtype = src_hidden.dtype
         if src_mask is not None:
             mask = src_mask.unsqueeze(-1).float()
-            pooled = (src_hidden * mask).sum(dim=1) / mask.sum(dim=1)
+            pooled = (src_hidden.float() * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
+            pooled = pooled.to(orig_dtype)
         else:
             pooled = src_hidden.mean(dim=1)
 
@@ -219,9 +224,12 @@ class MeanPoolBridge(nn.Module):
         self.proj = nn.Linear(src_dim, tgt_dim) if src_dim != tgt_dim else nn.Identity()
 
     def forward(self, src_hidden, src_mask=None):
+        # Mean pool (preserve dtype)
+        orig_dtype = src_hidden.dtype
         if src_mask is not None:
             mask = src_mask.unsqueeze(-1).float()
-            pooled = (src_hidden * mask).sum(dim=1) / mask.sum(dim=1)
+            pooled = (src_hidden.float() * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
+            pooled = pooled.to(orig_dtype)
         else:
             pooled = src_hidden.mean(dim=1)
 
