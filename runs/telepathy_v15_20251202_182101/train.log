@@ -1,0 +1,144 @@
+W1202 18:21:21.758000 1783542 torch/distributed/run.py:793] 
+W1202 18:21:21.758000 1783542 torch/distributed/run.py:793] *****************************************
+W1202 18:21:21.758000 1783542 torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W1202 18:21:21.758000 1783542 torch/distributed/run.py:793] *****************************************
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[W1202 18:21:27.110700545 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+[W1202 18:21:27.118463134 CUDAAllocatorConfig.h:28] Warning: expandable_segments not supported on this platform (function operator())
+======================================================================
+Phase 15: FSQ-Telepathy (Finite Scalar Quantization)
+======================================================================
+
+WHY FSQ INSTEAD OF VQ:
+  - VQ collapsed to 1 code (perplexity=1) despite:
+    * Cosine similarity, entropy bonus, LayerNorm removal
+  - FSQ has NO codebook = NO collapse possible
+
+FSQ ARCHITECTURE:
+  - 8 dimensions × 8 levels each = 16,777,216 effective codes
+  - Project: 4096 -> 8 -> quantize -> 8 -> 4096
+  - Pure LM loss training (no auxiliary loss)
+  - 1-step inference (no diffusion iteration)
+
+Training: 3000 steps, batch=2
+======================================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 6684.15it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 7028.58it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.44s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:08,  2.92s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.37s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:05<00:05,  2.52s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:02,  2.28s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:07<00:02,  2.34s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.89s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.97s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8799.24it/s]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8139.01it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:04,  2.18s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:04,  2.14s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:04<00:02,  2.30s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:04<00:02,  2.28s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.16s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.15s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.18s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.19s/it]
+Target embedding RMS: 0.0027
+[PerceiverResampler] 128 latents, 4 layers, 8 heads
+[FSQ] 8 dimensions, levels=[8, 8, 8, 8, 8, 8, 8, 8]
+[FSQ] Effective codebook size: 16,777,216
+[LatentBridgeV15] FSQ-Telepathy Bridge
+  - src_dim: 4096
+  - tgt_dim: 4096
+  - num_latents: 128
+  - fsq_levels: [8, 8, 8, 8, 8, 8, 8, 8]
+  - effective_codebook: 16,777,216
+  - target_rms: 0.0027
+[PerceiverResampler] 128 latents, 4 layers, 8 heads
+[FSQ] 8 dimensions, levels=[8, 8, 8, 8, 8, 8, 8, 8]
+[FSQ] Effective codebook size: 16,777,216
+[LatentBridgeV15] FSQ-Telepathy Bridge
+  - src_dim: 4096
+  - tgt_dim: 4096
+  - num_latents: 128
+  - fsq_levels: [8, 8, 8, 8, 8, 8, 8, 8]
+  - effective_codebook: 16,777,216
+  - target_rms: 0.0027
+
+Training on 3737 samples
+Starting training loop...
+V15 FSQ-Telepathy:   0%|                                                   | 0/3000 [00:00<?, ?it/s]V15 FSQ-Telepathy:   0%|                                                   | 0/3000 [00:00<?, ?it/s]
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v15.py", line 306, in <module>
+[rank0]:     main()
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v15.py", line 251, in main
+[rank0]:     loss, loss_dict = train_step(
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v15.py", line 89, in train_step
+[rank0]:     soft_tokens, aux_loss, diversity = bridge_module(src_h, src_mask)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v15.py", line 323, in forward
+[rank0]:     quantized, aux_loss, diversity = self.fsq(compressed)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v15.py", line 119, in forward
+[rank0]:     z = self.proj_down(inputs.float())  # [B, K, fsq_dim]
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+[rank0]:     return F.linear(input, self.weight, self.bias)
+[rank0]: RuntimeError: expected mat1 and mat2 to have the same dtype, but got: float != c10::BFloat16
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v15.py", line 306, in <module>
+[rank1]:     main()
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v15.py", line 251, in main
+[rank1]:     loss, loss_dict = train_step(
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/train_telepathy_v15.py", line 89, in train_step
+[rank1]:     soft_tokens, aux_loss, diversity = bridge_module(src_h, src_mask)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v15.py", line 323, in forward
+[rank1]:     quantized, aux_loss, diversity = self.fsq(compressed)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v15.py", line 119, in forward
+[rank1]:     z = self.proj_down(inputs.float())  # [B, K, fsq_dim]
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+[rank1]:     return F.linear(input, self.weight, self.bias)
+[rank1]: RuntimeError: expected mat1 and mat2 to have the same dtype, but got: float != c10::BFloat16
+[rank0]:[W1202 18:22:07.649516232 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W1202 18:22:08.961000 1783542 torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1783551 closing signal SIGTERM
+E1202 18:22:09.291000 1783542 torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 1783550) of binary: /marlowe/apps/Mambaforge/24.3.0-0/bin/python
+Traceback (most recent call last):
+  File "/users/sujinesh/.local/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+telepathy/train_telepathy_v15.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-12-02_18:22:08
+  host      : n23.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1783550)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
