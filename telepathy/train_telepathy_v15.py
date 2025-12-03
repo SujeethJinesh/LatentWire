@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # telepathy/train_telepathy_v15.py
 """
-Phase 15: VQ-Telepathy Training
+Phase 15: FSQ-Telepathy Training (Finite Scalar Quantization)
 
-Training with LM Loss + VQ Loss:
+Training with LM Loss only:
 - LM Loss: Cross-entropy on answer generation (functional correctness)
-- VQ Loss: Codebook + commitment loss (discrete bottleneck)
+- FSQ: No auxiliary loss needed (unlike VQ)
 
-Key difference from V12-14:
-- Back to ANSWER target (Mistral generates answer, not question)
-- Discrete bottleneck prevents blur/drift
+Key differences from VQ attempt:
+- FSQ has NO codebook = NO collapse possible
+- 8^8 = 16M effective codes (vs 4096 VQ codes that collapsed)
+- Pure LM loss training (no VQ loss balancing needed)
 - 1-step inference, no diffusion
 """
 import os
@@ -48,7 +49,6 @@ def parse_args():
     parser.add_argument("--steps", type=int, default=3000)
     parser.add_argument("--warmup_steps", type=int, default=100)
     parser.add_argument("--grad_clip", type=float, default=1.0)
-    parser.add_argument("--vq_weight", type=float, default=1.0)
     parser.add_argument("--save_path", default="bridge_v15.pt")
     parser.add_argument("--save_every", type=int, default=500)
     parser.add_argument("--bf16", action="store_true", default=True)
@@ -65,7 +65,7 @@ def extract_answer_text(answer_str):
 
 def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args):
     """
-    Single training step with LM loss + VQ loss.
+    Single training step with LM loss (FSQ has no auxiliary loss).
     """
     questions = batch['question']
     answers = batch['answer']
@@ -84,9 +84,9 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
             src_h = src_h.bfloat16()
         src_mask = src_enc.attention_mask
 
-    # Bridge Forward: Get quantized soft tokens + VQ loss
+    # Bridge Forward: Get quantized soft tokens (FSQ aux_loss is always 0)
     bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
-    soft_tokens, loss_vq, perplexity = bridge_module(src_h, src_mask)
+    soft_tokens, aux_loss, diversity = bridge_module(src_h, src_mask)
 
     # Target: Mistral generates the answer
     # Use full answer for teacher forcing (includes reasoning)
@@ -139,14 +139,14 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     )
     loss_lm = outputs.loss
 
-    # Total loss
-    total_loss = loss_lm + args.vq_weight * loss_vq
+    # Total loss (FSQ aux_loss is 0, but keep the addition for compatibility)
+    total_loss = loss_lm + aux_loss
 
     return total_loss, {
         "total": total_loss.item(),
         "lm": loss_lm.item(),
-        "vq": loss_vq.item(),
-        "ppl": perplexity.item()
+        "aux": aux_loss.item(),  # Always 0 for FSQ
+        "div": diversity  # Code diversity (0-1), should stay high
     }
 
 
@@ -159,21 +159,21 @@ def main():
 
     if local_rank == 0:
         print("=" * 70)
-        print("Phase 15: VQ-Telepathy (Discrete Bottleneck)")
+        print("Phase 15: FSQ-Telepathy (Finite Scalar Quantization)")
         print("=" * 70)
         print("")
-        print("THE FIX FOR MANIFOLD MISMATCH:")
-        print("  - Regression (V7): Blurry averages")
-        print("  - Diffusion Global (V12): Lost details")
-        print("  - Diffusion Cross-Attn (V13-14): Failed to converge")
+        print("WHY FSQ INSTEAD OF VQ:")
+        print("  - VQ collapsed to 1 code (perplexity=1) despite:")
+        print("    * Cosine similarity, entropy bonus, LayerNorm removal")
+        print("  - FSQ has NO codebook = NO collapse possible")
         print("")
-        print("VQ SOLUTION:")
-        print("  - Discrete bottleneck prevents blur/drift")
-        print("  - 4096 codebook entries for rich concepts")
+        print("FSQ ARCHITECTURE:")
+        print("  - 8 dimensions × 8 levels each = 16,777,216 effective codes")
+        print("  - Project: 4096 -> 8 -> quantize -> 8 -> 4096")
+        print("  - Pure LM loss training (no auxiliary loss)")
         print("  - 1-step inference (no diffusion iteration)")
         print("")
         print(f"Training: {args.steps} steps, batch={args.batch_size}")
-        print(f"VQ weight: {args.vq_weight}")
         print("=" * 70)
 
     # Load models
@@ -231,14 +231,14 @@ def main():
         print("Starting training loop...")
 
     progress = tqdm(range(args.steps), disable=(local_rank != 0),
-                    desc="V15 VQ-Telepathy", ncols=100)
+                    desc="V15 FSQ-Telepathy", ncols=100)
     iter_dl = iter(dl)
-    running = {"total": 0, "lm": 0, "vq": 0, "ppl": 0}
+    running = {"total": 0, "lm": 0, "aux": 0, "div": 0}
     grad_accum = args.grad_accum
 
     for step in progress:
         optimizer.zero_grad()
-        accum_loss_dict = {"total": 0, "lm": 0, "vq": 0, "ppl": 0}
+        accum_loss_dict = {"total": 0, "lm": 0, "aux": 0, "div": 0}
 
         # Gradient accumulation loop
         for accum_step in range(grad_accum):
@@ -267,10 +267,8 @@ def main():
             running[k] += accum_loss_dict[k]
 
         progress.set_postfix({
-            "tot": f"{accum_loss_dict['total']:.2f}",
             "lm": f"{accum_loss_dict['lm']:.2f}",
-            "vq": f"{accum_loss_dict['vq']:.3f}",
-            "ppl": f"{accum_loss_dict['ppl']:.0f}"
+            "div": f"{accum_loss_dict['div']:.2f}"  # Diversity: should stay high (0-1)
         })
 
         # Periodic logging
@@ -278,10 +276,8 @@ def main():
             avg = {k: v / 50 for k, v in running.items()}
             current_lr = scheduler.get_last_lr()[0]
             print(f"\n[Step {step+1}/{args.steps}]")
-            print(f"  Total: {avg['total']:.3f}")
             print(f"  LM Loss: {avg['lm']:.3f}")
-            print(f"  VQ Loss: {avg['vq']:.4f}")
-            print(f"  Perplexity: {avg['ppl']:.1f} (codebook usage)")
+            print(f"  Diversity: {avg['div']:.2f} (FSQ code usage, 0-1)")
             print(f"  LR: {current_lr:.2e}")
             running = {k: 0 for k in running}
 
@@ -296,12 +292,13 @@ def main():
         bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
         torch.save(bridge_to_save.state_dict(), args.save_path)
         print("\n" + "=" * 70)
-        print("Phase 15 Training Complete!")
+        print("Phase 15 FSQ Training Complete!")
         print(f"Final checkpoint: {args.save_path}")
         print("=" * 70)
-        print("\nNEXT: Run eval to check:")
-        print("  - Perplexity should be high (many codes used)")
-        print("  - LM loss should decrease")
+        print("\nKEY METRICS TO CHECK:")
+        print("  - LM loss should decrease steadily")
+        print("  - Diversity should stay high (0.5-1.0)")
+        print("  - NO collapse possible with FSQ (unlike VQ)")
         print("  - Outputs should be coherent and relevant")
 
 

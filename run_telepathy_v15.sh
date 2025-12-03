@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # run_telepathy_v15.sh
-# Phase 15: VQ-Telepathy (Discrete Bottleneck)
+# Phase 15: FSQ-Telepathy (Finite Scalar Quantization)
 #
-# THE FIX FOR MANIFOLD MISMATCH:
-# - Regression (V7): Blurry averages
-# - Diffusion Global (V12): Lost details
-# - Diffusion Cross-Attn (V13-14): Failed to converge
+# WHY FSQ INSTEAD OF VQ:
+# - VQ collapsed to 1 code (perplexity=1) despite:
+#   * Cosine similarity, entropy bonus, LayerNorm removal
+# - FSQ has NO codebook = NO collapse possible
 #
-# VQ SOLUTION:
-# - Discrete bottleneck prevents blur/drift
-# - 4096 codebook entries for rich concepts
-# - 1-step inference (no diffusion iteration)
+# FSQ ARCHITECTURE:
+# - 8 dimensions × 8 levels each = 16,777,216 effective codes
+# - Project: 4096 -> 8 -> quantize -> 8 -> 4096
+# - Pure LM loss training (no auxiliary loss)
 
 set -euo pipefail
 
@@ -67,7 +67,6 @@ BATCH_SIZE="${BATCH_SIZE:-2}"          # Reduced for OOM - 2 models per GPU
 GRAD_ACCUM="${GRAD_ACCUM:-4}"          # Effective batch = 2 * 4 = 8
 LR="${LR:-2e-4}"
 WARMUP_STEPS="${WARMUP_STEPS:-100}"
-VQ_WEIGHT="${VQ_WEIGHT:-1.0}"
 
 # Output
 RUN_ID="telepathy_v15_$(date +%Y%m%d_%H%M%S)"
@@ -80,30 +79,23 @@ mkdir -p "$OUTPUT_DIR"
 # Banner
 # =============================================================================
 echo "=========================================================================="
-echo " Latent Telepathy Phase 15: VQ-Telepathy (Discrete Bottleneck)"
+echo " Latent Telepathy Phase 15: FSQ-Telepathy (Finite Scalar Quantization)"
 echo "=========================================================================="
 echo " Run ID:             $RUN_ID"
 echo " Output Dir:         $OUTPUT_DIR"
 echo " GPUs:               $NPROC"
 echo ""
-echo " THE FIX FOR MANIFOLD MISMATCH:"
+echo " WHY FSQ INSTEAD OF VQ:"
+echo "   - VQ collapsed to 1 code (perplexity=1) despite:"
+echo "     * Cosine similarity, entropy bonus, LayerNorm removal"
+echo "   - FSQ has NO codebook = NO collapse possible"
 echo ""
-echo " Previous Failures:"
-echo "   - Regression (V7): Blurry averages (semantic drift)"
-echo "   - Diffusion Global (V12): Converged but lost details"
-echo "   - Diffusion Cross-Attn (V13-14): Failed to converge"
-echo ""
-echo " VQ SOLUTION:"
-echo "   - Discrete bottleneck prevents blur/drift"
-echo "   - 4096 codebook entries for rich concepts"
-echo "   - 1-step inference (no diffusion iteration)"
-echo "   - LM Loss ensures functional correctness"
-echo ""
-echo " Architecture:"
-echo "   - Perceiver Resampler -> VQ Bottleneck -> Output Scale"
+echo " FSQ ARCHITECTURE:"
+echo "   - 8 dimensions × 8 levels = 16,777,216 effective codes"
+echo "   - Project: 4096 -> 8 -> quantize -> 8 -> 4096"
+echo "   - Pure LM loss (no auxiliary loss needed)"
 echo "   - Soft tokens: $SOFT_TOKENS"
 echo "   - Depth: $DEPTH, Heads: $HEADS"
-echo "   - VQ weight: $VQ_WEIGHT"
 echo "=========================================================================="
 echo ""
 
@@ -112,24 +104,24 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
 {
     "run_id": "$RUN_ID",
     "phase": 15,
-    "approach": "VQ-Telepathy (Discrete Bottleneck)",
+    "approach": "FSQ-Telepathy (Finite Scalar Quantization)",
     "source_model": "$SOURCE_MODEL",
     "target_model": "$TARGET_MODEL",
     "source_layer": $SOURCE_LAYER,
     "soft_tokens": $SOFT_TOKENS,
     "depth": $DEPTH,
     "heads": $HEADS,
-    "codebook_size": 4096,
+    "fsq_levels": [8, 8, 8, 8, 8, 8, 8, 8],
+    "effective_codebook": 16777216,
     "steps": $STEPS,
     "batch_size": $BATCH_SIZE,
     "lr": "$LR",
     "warmup_steps": $WARMUP_STEPS,
-    "vq_weight": $VQ_WEIGHT,
     "num_gpus": $NPROC,
     "key_changes": [
-        "Vector Quantization bottleneck",
-        "4096 discrete codes",
-        "LM loss on answer generation",
+        "FSQ replaces VQ (no codebook collapse)",
+        "8^8 = 16M effective codes",
+        "Pure LM loss training",
         "1-step inference (no diffusion)"
     ]
 }
@@ -157,10 +149,10 @@ else
 fi
 
 # =============================================================================
-# Phase 2: DDP Training with VQ
+# Phase 2: DDP Training with FSQ
 # =============================================================================
 echo ""
-echo "[Phase 2/3] Training VQ-Telepathy Bridge..."
+echo "[Phase 2/3] Training FSQ-Telepathy Bridge..."
 echo "  Log file: $LOG_FILE"
 echo ""
 
@@ -184,7 +176,6 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
         --grad_accum "$GRAD_ACCUM" \
         --lr "$LR" \
         --warmup_steps "$WARMUP_STEPS" \
-        --vq_weight "$VQ_WEIGHT" \
         --bf16 \
         --save_every 500 \
         --save_path "${OUTPUT_DIR}/bridge_v15.pt"
@@ -196,7 +187,7 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
 if [[ -f "${OUTPUT_DIR}/bridge_v15.pt" ]]; then
     CHECKPOINT="${OUTPUT_DIR}/bridge_v15.pt"
     echo ""
-    echo "[Phase 3/3] Evaluating VQ-Telepathy Bridge..."
+    echo "[Phase 3/3] Evaluating FSQ-Telepathy Bridge..."
     echo "  Checkpoint: $CHECKPOINT"
 
     EVAL_LOG="${OUTPUT_DIR}/eval_$(date +%Y%m%d_%H%M%S).log"
@@ -217,24 +208,20 @@ if [[ -f "${OUTPUT_DIR}/bridge_v15.pt" ]]; then
 
     echo ""
     echo "=========================================================================="
-    echo " Phase 15 Complete!"
+    echo " Phase 15 FSQ Complete!"
     echo "=========================================================================="
     echo " Results: ${OUTPUT_DIR}/eval_v15_results.json"
     echo " Log:     $EVAL_LOG"
     echo ""
     echo " SUCCESS CRITERIA:"
     echo "   1. LM Loss should decrease during training"
-    echo "   2. Perplexity should be high (many codes used)"
+    echo "   2. Diversity should stay high (0.5-1.0) - NO COLLAPSE"
     echo "   3. Outputs should be coherent (not repetitive garbage)"
     echo "   4. Entity transfer rate > 30%"
     echo ""
-    echo " If successful:"
-    echo "   => VQ-Telepathy fixed the manifold mismatch!"
-    echo "   => Continue tuning for better accuracy"
-    echo ""
-    echo " If failed:"
-    echo "   => Task may be fundamentally too hard"
-    echo "   => Consider: larger codebook, more training, different arch"
+    echo " KEY DIFFERENCE FROM VQ:"
+    echo "   - VQ collapsed to perplexity=1 (1 code used)"
+    echo "   - FSQ cannot collapse (no learned codebook)"
     echo "=========================================================================="
 else
     echo ""

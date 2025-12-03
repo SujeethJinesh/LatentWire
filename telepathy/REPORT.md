@@ -2837,11 +2837,114 @@ distances = -similarity
 | warmup_steps | 100 | LR warmup |
 | steps | 3000 | Total training steps |
 
+### Issue 5: Persistent Codebook Collapse Despite Cosine Similarity
+**Symptom:** Perplexity collapsed from 12 → 1 within 10 steps, even after removing LayerNorm.
+
+**Root Cause:** Encoder outputs not diverse enough. All inputs map to similar directions on unit sphere.
+
+**Fix:** Added **entropy bonus** to VQ loss:
+```python
+entropy = -torch.sum(avg_probs * torch.log(avg_probs + 1e-10))
+entropy_bonus = entropy / max_entropy  # Normalized [0, 1]
+loss = loss - 0.1 * entropy_bonus  # Subtract to maximize entropy
+```
+
+**If entropy bonus fails:** Pivot to Finite Scalar Quantization (FSQ) - no codebook = no collapse.
+
 ### Training Verification Checklist
 
 | Metric | Good Sign | Bad Sign |
 |--------|-----------|----------|
 | LM Loss | Decreasing over time | Stuck or increasing |
-| VQ Loss | Varying, ~0.1-1.0 | Constant or exploding |
+| VQ Loss | Varying, can be negative | Constant positive |
 | Perplexity | 100+ (many codes) | 1-10 (collapse) |
 | Outputs | Coherent text | Repetitive garbage |
+
+---
+
+## 48. Phase 15 Pivot: VQ → FSQ (Finite Scalar Quantization)
+
+### Why VQ Failed
+
+Despite multiple fixes, VQ consistently collapsed to perplexity=1:
+
+| Attempt | Fix Applied | Result |
+|---------|-------------|--------|
+| 1 | L2 distance | Collapse to 1 code |
+| 2 | Cosine similarity | Still collapsed |
+| 3 | Removed LayerNorm | ppl started at 12, collapsed to 1 within 10 steps |
+| 4 | Entropy bonus (0.1 weight) | Still collapsed by step 16 |
+
+**Root Cause:** The entropy bonus (0.1) was too weak compared to LM loss (1.5-4.0). The LM loss gradient dominated, and all vectors collapsed to the same codebook entry.
+
+**Additional Problem:** Periodic LM loss spikes (8-17) indicated catastrophic mismatch when the single used code didn't fit certain inputs.
+
+### The FSQ Solution
+
+Finite Scalar Quantization (Google Research, 2023) eliminates codebook collapse by removing the codebook entirely:
+
+**Key Differences:**
+| Aspect | VQ | FSQ |
+|--------|-----|-----|
+| Codebook | Learned embeddings | None |
+| Collapse | Possible (and happened) | Impossible |
+| Aux Loss | Commitment + codebook loss | None needed |
+| Codes | 4096 explicit | 8^8 = 16M implicit |
+
+**FSQ Architecture:**
+```
+4096-dim → Project(8) → Quantize each dim to 8 levels → Project(4096)
+```
+
+Each of the 8 dimensions is independently quantized to values in {-1, -0.71, -0.43, -0.14, 0.14, 0.43, 0.71, 1}. The effective codebook size is 8^8 = 16,777,216 codes.
+
+### Implementation Details
+
+**FSQ Class:**
+```python
+class FSQ(nn.Module):
+    def __init__(self, levels=[8,8,8,8,8,8,8,8], input_dim=4096):
+        self.proj_down = nn.Linear(input_dim, len(levels))  # 4096 → 8
+        self.proj_up = nn.Linear(len(levels), input_dim)     # 8 → 4096
+        
+    def forward(self, x):
+        z = self.proj_down(x)           # Project down
+        z = torch.tanh(z)               # Bound to [-1, 1]
+        z = round(z * half_levels) / half_levels  # Quantize (STE)
+        return self.proj_up(z)          # Project back up
+```
+
+**Key Features:**
+1. **No codebook = No collapse**
+2. **No auxiliary loss** - Pure LM loss training
+3. **Deterministic quantization** - Same input → same output
+4. **16M effective codes** - Rich representation capacity
+
+### Training Changes
+
+| Parameter | VQ | FSQ |
+|-----------|-----|-----|
+| Auxiliary Loss | VQ loss (commitment + codebook) | 0 (none needed) |
+| Diversity Metric | Perplexity (should be high) | Diversity ratio (should be high) |
+| Expected Collapse | Possible | Impossible |
+
+### Execution
+
+```bash
+git pull && rm -rf runs && bash run_telepathy_v15.sh
+```
+
+### Success Criteria
+
+| Metric | Expected | If Failed |
+|--------|----------|-----------|
+| LM Loss | Decreasing | Check gradients |
+| Diversity | 0.5-1.0 (high) | Already impossible to collapse |
+| Outputs | Coherent answers | Check FSQ projections |
+
+### Reference
+
+"Finite Scalar Quantization: VQ-VAE Made Simple"
+https://arxiv.org/abs/2309.15505
+
+---

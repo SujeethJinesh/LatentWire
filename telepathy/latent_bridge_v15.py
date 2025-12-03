@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # telepathy/latent_bridge_v15.py
 """
-Phase 15: VQ-Telepathy (Vector Quantized Bridge)
+Phase 15: FSQ-Telepathy (Finite Scalar Quantization Bridge)
 
 THE FIX FOR MANIFOLD MISMATCH:
 
@@ -9,107 +9,140 @@ Previous failures:
 - Regression (V7): Blurry averages (semantic drift)
 - Diffusion Global (V12): Converged but lost details
 - Diffusion Cross-Attn (V13-14): Failed to converge
+- VQ (V15 attempt 1): Codebook collapse (perplexity → 1)
 
-VQ Solution:
-1. Solves "Blur": Forces vectors to snap to discrete codebook entries
-   - Every output is a valid "concept code"
-   - Impossible to output off-manifold vectors
-
-2. Solves "Drift": Entities map to specific codes
-   - "Ducks" -> Code #42
-   - "Chickens" -> Code #99
-   - Cannot average to "Code #70.5" (Generic Bird)
-
-3. Efficiency: 1-step inference (no diffusion iteration)
+FSQ Solution (Google Research, 2023):
+1. No learned codebook = No collapse possible
+2. Each dimension independently quantized to L levels
+3. Effective codebook = product of levels (e.g., 8^8 = 16M codes)
+4. Straight-through estimator for gradients
 
 Architecture:
-    Llama Hidden -> Normalizer -> Perceiver -> VQ Bottleneck -> Scale -> Mistral
+    Llama Hidden -> Normalizer -> Perceiver -> FSQ Bottleneck -> Scale -> Mistral
+
+Reference: "Finite Scalar Quantization: VQ-VAE Made Simple"
+https://arxiv.org/abs/2309.15505
 """
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 
 
-class VectorQuantizer(nn.Module):
+class FSQ(nn.Module):
     """
-    Vector Quantization layer with Straight-Through Estimator (STE).
+    Finite Scalar Quantization (FSQ) - Google Research, 2023
 
-    Based on VQ-VAE (van den Oord et al., 2017).
+    No learned codebook. Each dimension independently quantized to fixed levels.
+    Effective codebook size = product of all levels.
+
+    Key advantages over VQ:
+    - No codebook collapse (no codebook to collapse!)
+    - Simpler training (no commitment loss, no EMA updates)
+    - Deterministic quantization
     """
-    def __init__(self, num_embeddings, embedding_dim, commitment_cost=0.25):
+
+    def __init__(self, levels, input_dim):
+        """
+        Args:
+            levels: List of quantization levels per dimension, e.g., [8,8,8,8,8,8,8,8]
+                    Effective codebook size = product(levels)
+            input_dim: Dimension of input vectors (e.g., 4096)
+        """
         super().__init__()
-        self.num_embeddings = num_embeddings
-        self.embedding_dim = embedding_dim
-        self.commitment_cost = commitment_cost
+        self.levels = levels
+        self.fsq_dim = len(levels)
+        self.input_dim = input_dim
 
-        # The Codebook - initialize with unit-normalized vectors for stable distances
-        self.embedding = nn.Embedding(num_embeddings, embedding_dim)
-        # Initialize with random unit vectors (better for normalized inputs)
-        self.embedding.weight.data.normal_(0, 1)
-        self.embedding.weight.data = F.normalize(self.embedding.weight.data, dim=1)
+        # Register levels as buffer for device handling
+        self.register_buffer("_levels", torch.tensor(levels, dtype=torch.float32))
+
+        # Compute effective codebook size
+        self.codebook_size = math.prod(levels)
+
+        # Project input_dim -> fsq_dim -> input_dim
+        self.proj_down = nn.Linear(input_dim, self.fsq_dim)
+        self.proj_up = nn.Linear(self.fsq_dim, input_dim)
+
+        # Initialize projections for stability
+        nn.init.xavier_uniform_(self.proj_down.weight)
+        nn.init.xavier_uniform_(self.proj_up.weight)
+        nn.init.zeros_(self.proj_down.bias)
+        nn.init.zeros_(self.proj_up.bias)
+
+        print(f"[FSQ] {self.fsq_dim} dimensions, levels={levels}")
+        print(f"[FSQ] Effective codebook size: {self.codebook_size:,}")
+
+    def _bound(self, z):
+        """Bound z to [-1, 1] using tanh."""
+        return torch.tanh(z)
+
+    def _quantize(self, z):
+        """
+        Quantize each dimension to its respective number of levels.
+
+        For L levels, we quantize to: {-(L-1)/2, ..., -1, 0, 1, ..., (L-1)/2} / ((L-1)/2)
+        which gives values in [-1, 1].
+        """
+        # z is bounded to [-1, 1]
+        # Scale to [0, L-1], round, scale back to [-1, 1]
+        half_levels = (self._levels - 1) / 2  # [D]
+
+        # Scale from [-1, 1] to [-half, half]
+        scaled = z * half_levels  # [B, K, D]
+
+        # Round to nearest integer (STE: gradient flows through)
+        quantized_int = torch.round(scaled)
+
+        # Straight-through estimator
+        quantized_int = scaled + (quantized_int - scaled).detach()
+
+        # Scale back to [-1, 1]
+        quantized = quantized_int / half_levels
+
+        return quantized
 
     def forward(self, inputs):
         """
         Args:
-            inputs: [B, K, D] continuous vectors
+            inputs: [B, K, input_dim] continuous vectors
 
         Returns:
-            quantized: [B, K, D] discrete vectors from codebook
-            loss: VQ loss (codebook + commitment)
-            perplexity: Codebook usage metric
+            quantized: [B, K, input_dim] quantized vectors (projected back up)
+            aux_loss: Always 0 (FSQ has no auxiliary loss)
+            codebook_usage: Approximate measure of code diversity
         """
         input_shape = inputs.shape
-        # Use contiguous().view() to handle non-contiguous tensors from attention
-        flat_input = inputs.contiguous().view(-1, self.embedding_dim)
+        dtype = inputs.dtype
 
-        # Ensure same dtype for distance calculation
-        flat_input = flat_input.float()
-        codebook = self.embedding.weight.float()
+        # Project down to FSQ dimension
+        z = self.proj_down(inputs.float())  # [B, K, fsq_dim]
 
-        # L2 normalize both for cosine similarity (prevents collapse)
-        flat_input_norm = F.normalize(flat_input, dim=1)
-        codebook_norm = F.normalize(codebook, dim=1)
+        # Bound to [-1, 1]
+        z_bounded = self._bound(z)
 
-        # Use negative cosine similarity as distance (higher similarity = lower distance)
-        # This prevents collapse by making all codebook entries equally "reachable"
-        similarity = torch.matmul(flat_input_norm, codebook_norm.t())
-        distances = -similarity  # Convert to distance (minimize = maximize similarity)
+        # Quantize each dimension
+        z_quantized = self._quantize(z_bounded)
 
-        # Find nearest codebook entry
-        encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
-        encodings = torch.zeros(encoding_indices.shape[0], self.num_embeddings, device=inputs.device)
-        encodings.scatter_(1, encoding_indices, 1)
+        # Project back up to input dimension
+        out = self.proj_up(z_quantized)  # [B, K, input_dim]
 
-        # Quantize: lookup codebook vectors (use normalized codebook)
-        quantized_norm = torch.matmul(encodings, codebook_norm).view(input_shape)
+        # Compute approximate codebook usage (how many unique codes in batch)
+        # Convert quantized values to integer indices for diversity estimation
+        with torch.no_grad():
+            half_levels = (self._levels - 1) / 2
+            indices = ((z_quantized * half_levels) + half_levels).long()  # [B, K, D]
+            # Flatten to get unique code count (approximate)
+            flat_indices = indices.view(-1, self.fsq_dim)
+            # Simple diversity metric: unique rows / total rows
+            unique_codes = torch.unique(flat_indices, dim=0).shape[0]
+            total_codes = flat_indices.shape[0]
+            diversity = unique_codes / total_codes  # 0 to 1
 
-        # Scale quantized to match input magnitude (preserve scale information)
-        input_scale = flat_input.norm(dim=1, keepdim=True).view(input_shape[0], input_shape[1], 1)
-        quantized = quantized_norm * input_scale.mean()  # Use mean scale for stability
+        # FSQ has no auxiliary loss (huge advantage over VQ!)
+        aux_loss = torch.tensor(0.0, device=inputs.device, dtype=torch.float32)
 
-        # VQ Loss: use normalized vectors for loss computation
-        flat_input_norm_shaped = flat_input_norm.view(input_shape)
-        e_latent_loss = F.mse_loss(quantized_norm.detach(), flat_input_norm_shaped)
-        q_latent_loss = F.mse_loss(quantized_norm, flat_input_norm_shaped.detach())
-        loss = q_latent_loss + self.commitment_cost * e_latent_loss
-
-        # Straight Through Estimator: gradient flows through quantized
-        quantized = inputs + (quantized.to(inputs.dtype) - inputs).detach()
-
-        # Perplexity: how many codes are being used
-        avg_probs = torch.mean(encodings, dim=0)
-        perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
-
-        # Entropy bonus: maximize entropy to prevent collapse
-        # Higher entropy = more uniform code usage
-        entropy = -torch.sum(avg_probs * torch.log(avg_probs + 1e-10))
-        max_entropy = torch.log(torch.tensor(self.num_embeddings, dtype=torch.float32, device=inputs.device))
-        entropy_bonus = entropy / max_entropy  # Normalized to [0, 1]
-
-        # Subtract entropy bonus from loss (to maximize entropy)
-        loss = loss - 0.1 * entropy_bonus
-
-        return quantized, loss, perplexity
+        return out.to(dtype), aux_loss, diversity
 
 
 class StatisticalNormalizer(nn.Module):
@@ -225,16 +258,18 @@ class PerceiverResampler(nn.Module):
 
 class LatentBridgeV15(nn.Module):
     """
-    Phase 15: Vector Quantized Telepathy Bridge
+    Phase 15: FSQ-Telepathy Bridge (Finite Scalar Quantization)
 
     Architecture:
         Llama Hidden -> StatisticalNormalizer -> PerceiverResampler
-                     -> VectorQuantizer -> Output Scale -> Mistral Embeddings
+                     -> FSQ Bottleneck -> Output Scale -> Mistral Embeddings
 
     Key Features:
+    - FSQ: No codebook = No collapse possible
     - Discrete bottleneck prevents blurry/drifted outputs
-    - 4096 codebook entries for rich concept vocabulary
+    - 8^8 = 16M effective codes (vs 4096 VQ codes)
     - 1-step inference (no diffusion iteration)
+    - No auxiliary VQ loss needed
     """
     def __init__(self, args, src_dim, tgt_dim, target_rms=0.03):
         super().__init__()
@@ -251,23 +286,20 @@ class LatentBridgeV15(nn.Module):
         depth = getattr(args, 'depth', 4)
         self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
 
-        # VQ Bottleneck (4096 codes, dimension = tgt_dim)
-        # Note: Removed LayerNorm before VQ - it was causing all vectors to look identical
-        # L2 normalization inside VQ (for cosine similarity) is sufficient
-        self.vq = VectorQuantizer(
-            num_embeddings=4096,
-            embedding_dim=tgt_dim,
-            commitment_cost=0.25
-        )
+        # FSQ Bottleneck - 8 dimensions with 8 levels each = 8^8 = 16,777,216 codes
+        # This replaces VQ which suffered from codebook collapse
+        fsq_levels = getattr(args, 'fsq_levels', [8, 8, 8, 8, 8, 8, 8, 8])
+        self.fsq = FSQ(levels=fsq_levels, input_dim=tgt_dim)
 
         # Output scale to match Mistral embedding magnitude
         self.output_scale = nn.Parameter(torch.tensor(target_rms))
 
-        print(f"[LatentBridgeV15] VQ-Telepathy Bridge")
+        print(f"[LatentBridgeV15] FSQ-Telepathy Bridge")
         print(f"  - src_dim: {src_dim}")
         print(f"  - tgt_dim: {tgt_dim}")
         print(f"  - num_latents: {num_latents}")
-        print(f"  - codebook_size: 4096")
+        print(f"  - fsq_levels: {fsq_levels}")
+        print(f"  - effective_codebook: {self.fsq.codebook_size:,}")
         print(f"  - target_rms: {target_rms:.4f}")
 
     def forward(self, src_hidden, src_mask=None):
@@ -278,8 +310,8 @@ class LatentBridgeV15(nn.Module):
 
         Returns:
             out: [B, K, tgt_dim] - quantized soft tokens for Mistral
-            vq_loss: scalar - VQ training loss
-            perplexity: scalar - codebook usage metric
+            aux_loss: scalar - Always 0 for FSQ (no auxiliary loss needed!)
+            diversity: scalar - Code diversity metric (0-1)
         """
         # 1. Normalize Llama -> Mistral distribution
         normed = self.normalizer(src_hidden)
@@ -287,10 +319,10 @@ class LatentBridgeV15(nn.Module):
         # 2. Compress to fixed-length representation
         compressed = self.resampler(normed, src_mask)  # [B, K, tgt_dim]
 
-        # 3. Quantize through codebook (L2 normalization happens inside VQ)
-        quantized, vq_loss, perplexity = self.vq(compressed)
+        # 3. Quantize through FSQ (no codebook = no collapse)
+        quantized, aux_loss, diversity = self.fsq(compressed)
 
         # 4. Scale for Mistral embedding space
         out = quantized * self.output_scale
 
-        return out, vq_loss, perplexity
+        return out, aux_loss, diversity
