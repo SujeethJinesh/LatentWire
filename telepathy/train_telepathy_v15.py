@@ -97,7 +97,8 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     B = soft_tokens.shape[0]
     if B > 1:
         # Flatten soft tokens: [B, K, D] -> [B, K*D]
-        flat_tokens = soft_tokens.view(B, -1).float()
+        # Use reshape instead of view in case tensor is not contiguous
+        flat_tokens = soft_tokens.reshape(B, -1).float()
         # Normalize for cosine similarity
         flat_norm = F.normalize(flat_tokens, dim=1)
         # Compute similarity matrix [B, B]
