@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 # run_telepathy_v15.sh
-# Phase 15: FSQ-Telepathy (Finite Scalar Quantization)
+# Phase 15: Continuous Telepathy (No Quantization)
 #
-# WHY FSQ INSTEAD OF VQ:
-# - VQ collapsed to 1 code (perplexity=1) despite:
-#   * Cosine similarity, entropy bonus, LayerNorm removal
-# - FSQ has NO codebook = NO collapse possible
+# WHY CONTINUOUS INSTEAD OF DISCRETE:
+# After 6 failed discrete bottleneck attempts (all collapsed):
+#   1. VQ (4096 codes) - collapsed
+#   2. VQ + entropy bonus - collapsed
+#   3. FSQ 8-dim - collapsed
+#   4. FSQ 32-dim - collapsed
+#   5. FSQ + diversity loss - collapsed
+#   6. FSQ + variance loss - collapsed
 #
-# FSQ ARCHITECTURE:
-# - 32 dimensions × 5 levels each = 5^32 ≈ 2.3×10^22 effective codes
-# - Project: 4096 -> 32 -> quantize -> 32 -> 4096
-# - Pure LM loss training (no auxiliary loss)
+# CONTINUOUS ARCHITECTURE:
+# - Perceiver resampler compresses to 128 soft tokens
+# - NO quantization (continuous values)
+# - Pure LM loss training
 
 set -euo pipefail
 
@@ -79,22 +83,24 @@ mkdir -p "$OUTPUT_DIR"
 # Banner
 # =============================================================================
 echo "=========================================================================="
-echo " Latent Telepathy Phase 15: FSQ-Telepathy (Finite Scalar Quantization)"
+echo " Latent Telepathy Phase 15: Continuous Telepathy (No Quantization)"
 echo "=========================================================================="
 echo " Run ID:             $RUN_ID"
 echo " Output Dir:         $OUTPUT_DIR"
 echo " GPUs:               $NPROC"
 echo ""
-echo " WHY FSQ INSTEAD OF VQ:"
-echo "   - VQ collapsed to 1 code (perplexity=1) despite:"
-echo "     * Cosine similarity, entropy bonus, LayerNorm removal"
-echo "   - FSQ has NO codebook = NO collapse possible"
+echo " WHY CONTINUOUS (6 discrete attempts ALL collapsed):"
+echo "   1. VQ (4096 codes) - collapsed"
+echo "   2. VQ + entropy bonus - collapsed"
+echo "   3. FSQ 8-dim - collapsed"
+echo "   4. FSQ 32-dim - collapsed"
+echo "   5. FSQ + diversity loss - collapsed"
+echo "   6. FSQ + variance loss - collapsed"
 echo ""
-echo " FSQ ARCHITECTURE:"
-echo "   - 32 dimensions × 5 levels = 5^32 effective codes"
-echo "   - Project: 4096 -> 32 -> quantize -> 32 -> 4096"
-echo "   - Pure LM loss (no auxiliary loss needed)"
-echo "   - Soft tokens: $SOFT_TOKENS"
+echo " CONTINUOUS ARCHITECTURE:"
+echo "   - Perceiver resampler: 128 soft tokens"
+echo "   - NO quantization (continuous values)"
+echo "   - Pure LM loss training"
 echo "   - Depth: $DEPTH, Heads: $HEADS"
 echo "=========================================================================="
 echo ""
@@ -104,25 +110,24 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
 {
     "run_id": "$RUN_ID",
     "phase": 15,
-    "approach": "FSQ-Telepathy (Finite Scalar Quantization)",
+    "approach": "Continuous Telepathy (No Quantization)",
     "source_model": "$SOURCE_MODEL",
     "target_model": "$TARGET_MODEL",
     "source_layer": $SOURCE_LAYER,
     "soft_tokens": $SOFT_TOKENS,
     "depth": $DEPTH,
     "heads": $HEADS,
-    "fsq_levels": [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
-    "effective_codebook": "5^32",
+    "use_fsq": false,
     "steps": $STEPS,
     "batch_size": $BATCH_SIZE,
     "lr": "$LR",
     "warmup_steps": $WARMUP_STEPS,
     "num_gpus": $NPROC,
     "key_changes": [
-        "FSQ replaces VQ (no codebook collapse)",
-        "32 dims × 5 levels = 5^32 effective codes",
+        "Removed FSQ (discrete bottlenecks collapsed 6 times)",
+        "Continuous soft tokens from Perceiver",
         "Pure LM loss training",
-        "1-step inference (no diffusion)"
+        "1-step inference"
     ]
 }
 EOF

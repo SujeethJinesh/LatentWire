@@ -3116,3 +3116,64 @@ diversity_loss = -torch.log(z_variance + 1e-8)  # Now has gradient path!
 - LM loss may be slightly higher (tradeoff)
 
 ---
+
+## 52. Phase 15 Pivot: Abandon Discrete Bottleneck → Continuous Soft Tokens
+
+### The Evidence
+
+After 6 failed attempts, discrete bottlenecks are proven incompatible with this task:
+
+| # | Approach | Result |
+|---|----------|--------|
+| 1 | VQ (4096 codes) | Collapsed to perplexity=1 |
+| 2 | VQ + entropy bonus | Collapsed to perplexity=1 |
+| 3 | FSQ 8-dim | Collapsed to div=0 by step 5 |
+| 4 | FSQ 32-dim | Collapsed to div=0 by step 7 |
+| 5 | FSQ + diversity loss (non-diff) | Collapsed to div=0 |
+| 6 | FSQ + variance loss (diff) | Collapsed to z_var=0 by step 100 |
+
+### Root Cause Analysis
+
+The discrete bottleneck creates **basins of attraction** that gradients cannot escape:
+
+1. LM loss gradient pushes all 128 tokens toward a single "safe" representation
+2. Discrete quantization rounds small perturbations back to the same bin
+3. Even infinite gradient pressure (from variance loss) cannot overcome discrete rounding
+4. Once collapsed, the network is stuck in a local minimum
+
+### The Solution: Continuous Soft Tokens
+
+Remove FSQ entirely. Use Perceiver resampler output directly:
+
+```
+Llama Hidden → Normalizer → Perceiver → Scale → Mistral
+                              ↓
+                    [128, 4096] continuous
+                    (no quantization)
+```
+
+### Architecture Change
+
+```python
+# Before (FSQ - collapsed)
+quantized, aux_loss, diversity, z_variance = self.fsq(compressed)
+out = quantized * self.output_scale
+
+# After (Continuous)
+out = compressed * self.output_scale  # Direct from Perceiver
+```
+
+### Expected Outcome
+
+- NO collapse possible (continuous values)
+- LM loss should decrease steadily
+- Quality depends on Perceiver's compression ability
+- May see "blurry" outputs (original concern), but better than collapsed
+
+### Potential Concern
+
+The original motivation for discrete bottleneck was to prevent "blurry averages" from continuous regression. If continuous soft tokens produce blurry/generic outputs, we may need a different approach (e.g., contrastive learning, multiple hypotheses).
+
+But first, let's establish if continuous works at all.
+
+---

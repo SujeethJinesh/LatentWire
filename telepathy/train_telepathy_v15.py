@@ -139,22 +139,15 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     )
     loss_lm = outputs.loss
 
-    # Diversity loss: penalize low variance to prevent collapse
-    # Uses z_variance which is DIFFERENTIABLE (has gradient path to FSQ params)
-    # Low variance → high loss → gradients push tokens apart
-    # z_variance is in range [0, ~0.33] for values in [-1,1], so scale appropriately
-    diversity_loss = -torch.log(z_variance + 1e-8)  # DIFFERENTIABLE!
-    div_weight = 0.1  # Weight for diversity loss
-
-    # Total loss = LM loss + diversity penalty
-    total_loss = loss_lm + div_weight * diversity_loss
+    # Total loss = LM loss only (no diversity loss for continuous mode)
+    # FSQ diversity loss was removed because discrete bottlenecks collapsed in all tests
+    total_loss = loss_lm
 
     return total_loss, {
         "total": total_loss.item(),
         "lm": loss_lm.item(),
-        "div_loss": diversity_loss.item(),
-        "z_var": z_variance.item(),  # Variance of quantized values (should stay high)
-        "div": diversity  # Code diversity (0-1), non-differentiable, for logging only
+        "z_var": z_variance.item() if hasattr(z_variance, 'item') else z_variance,
+        "div": diversity  # 1.0 for continuous, 0-1 for FSQ
     }
 
 
@@ -167,19 +160,22 @@ def main():
 
     if local_rank == 0:
         print("=" * 70)
-        print("Phase 15: FSQ-Telepathy (Finite Scalar Quantization)")
+        print("Phase 15: Continuous Telepathy (No Quantization)")
         print("=" * 70)
         print("")
-        print("WHY FSQ INSTEAD OF VQ:")
-        print("  - VQ collapsed to 1 code (perplexity=1) despite:")
-        print("    * Cosine similarity, entropy bonus, LayerNorm removal")
-        print("  - FSQ has NO codebook = NO collapse possible")
+        print("WHY CONTINUOUS INSTEAD OF DISCRETE:")
+        print("  - VQ collapsed to 1 code despite entropy bonus")
+        print("  - FSQ 8-dim collapsed to div=0")
+        print("  - FSQ 32-dim collapsed to div=0")
+        print("  - FSQ + diversity loss collapsed to div=0")
+        print("  - FSQ + variance loss collapsed to z_var=0")
+        print("  -> 6 discrete attempts ALL COLLAPSED")
         print("")
-        print("FSQ ARCHITECTURE:")
-        print("  - 32 dimensions × 5 levels each = 5^32 effective codes")
-        print("  - Project: 4096 -> 32 -> quantize -> 32 -> 4096")
-        print("  - LM loss + diversity loss (prevents collapse)")
-        print("  - 1-step inference (no diffusion iteration)")
+        print("CONTINUOUS ARCHITECTURE:")
+        print("  - Perceiver resampler: compress to 128 soft tokens")
+        print("  - NO quantization (continuous values)")
+        print("  - Pure LM loss training")
+        print("  - 1-step inference")
         print("")
         print(f"Training: {args.steps} steps, batch={args.batch_size}")
         print("=" * 70)
@@ -239,14 +235,14 @@ def main():
         print("Starting training loop...")
 
     progress = tqdm(range(args.steps), disable=(local_rank != 0),
-                    desc="V15 FSQ-Telepathy", ncols=100)
+                    desc="V15 Continuous", ncols=100)
     iter_dl = iter(dl)
-    running = {"total": 0, "lm": 0, "div_loss": 0, "z_var": 0, "div": 0}
+    running = {"total": 0, "lm": 0, "z_var": 0, "div": 0}
     grad_accum = args.grad_accum
 
     for step in progress:
         optimizer.zero_grad()
-        accum_loss_dict = {"total": 0, "lm": 0, "div_loss": 0, "z_var": 0, "div": 0}
+        accum_loss_dict = {"total": 0, "lm": 0, "z_var": 0, "div": 0}
 
         # Gradient accumulation loop
         for accum_step in range(grad_accum):
@@ -285,9 +281,7 @@ def main():
             current_lr = scheduler.get_last_lr()[0]
             print(f"\n[Step {step+1}/{args.steps}]")
             print(f"  LM Loss: {avg['lm']:.3f}")
-            print(f"  Div Loss: {avg['div_loss']:.3f} (DIFFERENTIABLE penalty)")
-            print(f"  Z Variance: {avg['z_var']:.4f} (should stay HIGH, has gradients)")
-            print(f"  Diversity: {avg['div']:.2f} (code usage, for logging only)")
+            print(f"  Z Variance: {avg['z_var']:.4f} (output variance)")
             print(f"  LR: {current_lr:.2e}")
             running = {k: 0 for k in running}
 
@@ -307,9 +301,9 @@ def main():
         print("=" * 70)
         print("\nKEY METRICS TO CHECK:")
         print("  - LM loss should decrease steadily")
-        print("  - Diversity should stay HIGH (0.5-1.0) - diversity loss enforces this")
-        print("  - Div loss should be LOW when diversity is high")
+        print("  - NO diversity collapse possible (continuous)")
         print("  - Outputs should be coherent and relevant")
+        print("  - Compare to text baseline in eval")
 
 
 if __name__ == "__main__":

@@ -266,23 +266,26 @@ class PerceiverResampler(nn.Module):
 
 class LatentBridgeV15(nn.Module):
     """
-    Phase 15: FSQ-Telepathy Bridge (Finite Scalar Quantization)
+    Phase 15: Telepathy Bridge (Continuous or FSQ)
 
     Architecture:
         Llama Hidden -> StatisticalNormalizer -> PerceiverResampler
-                     -> FSQ Bottleneck -> Output Scale -> Mistral Embeddings
+                     -> [Optional FSQ] -> Output Scale -> Mistral Embeddings
 
-    Key Features:
-    - FSQ: No codebook = No collapse possible
-    - Discrete bottleneck prevents blurry/drifted outputs
-    - 8^8 = 16M effective codes (vs 4096 VQ codes)
-    - 1-step inference (no diffusion iteration)
-    - No auxiliary VQ loss needed
+    Modes:
+    - use_fsq=False (default): Continuous soft tokens (no quantization)
+    - use_fsq=True: FSQ discrete bottleneck (collapsed in all tests)
+
+    After 6 failed attempts with discrete bottlenecks (VQ, FSQ variants),
+    we're testing continuous soft tokens as the baseline.
     """
     def __init__(self, args, src_dim, tgt_dim, target_rms=0.03):
         super().__init__()
         self.src_dim = src_dim
         self.tgt_dim = tgt_dim
+
+        # Whether to use FSQ (discrete) or continuous soft tokens
+        self.use_fsq = getattr(args, 'use_fsq', False)  # Default: continuous
 
         # Statistical normalization (Llama -> Mistral distribution)
         stats_path = getattr(args, 'stats_path', None)
@@ -294,22 +297,26 @@ class LatentBridgeV15(nn.Module):
         depth = getattr(args, 'depth', 4)
         self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
 
-        # FSQ Bottleneck - 32 dimensions with 5 levels each
-        # Previous 8-dim config collapsed to div=0 (too aggressive compression: 4096->8)
-        # 32 dims preserves more diversity while still being discrete
-        # Effective codes: 5^32 ≈ 2.3 × 10^22
-        fsq_levels = getattr(args, 'fsq_levels', [5] * 32)  # 32 dims, 5 levels each
-        self.fsq = FSQ(levels=fsq_levels, input_dim=tgt_dim)
+        # FSQ Bottleneck (only used if use_fsq=True)
+        if self.use_fsq:
+            fsq_levels = getattr(args, 'fsq_levels', [5] * 32)
+            self.fsq = FSQ(levels=fsq_levels, input_dim=tgt_dim)
+        else:
+            self.fsq = None
 
         # Output scale to match Mistral embedding magnitude
         self.output_scale = nn.Parameter(torch.tensor(target_rms))
 
-        print(f"[LatentBridgeV15] FSQ-Telepathy Bridge")
+        mode_str = "FSQ (discrete)" if self.use_fsq else "CONTINUOUS (no quantization)"
+        print(f"[LatentBridgeV15] Telepathy Bridge - {mode_str}")
         print(f"  - src_dim: {src_dim}")
         print(f"  - tgt_dim: {tgt_dim}")
         print(f"  - num_latents: {num_latents}")
-        print(f"  - fsq_levels: {fsq_levels}")
-        print(f"  - effective_codebook: {self.fsq.codebook_size:,}")
+        if self.use_fsq:
+            print(f"  - fsq_levels: {fsq_levels}")
+            print(f"  - effective_codebook: {self.fsq.codebook_size:,}")
+        else:
+            print(f"  - mode: CONTINUOUS (Perceiver output directly)")
         print(f"  - target_rms: {target_rms:.4f}")
 
     def forward(self, src_hidden, src_mask=None):
@@ -319,10 +326,10 @@ class LatentBridgeV15(nn.Module):
             src_mask: [B, T] - attention mask
 
         Returns:
-            out: [B, K, tgt_dim] - quantized soft tokens for Mistral
-            aux_loss: scalar - Always 0 for FSQ (no auxiliary loss needed!)
-            diversity: scalar - Code diversity metric (0-1, non-differentiable)
-            z_variance: scalar - Variance of quantized values (DIFFERENTIABLE)
+            out: [B, K, tgt_dim] - soft tokens for Mistral (continuous or quantized)
+            aux_loss: scalar - Always 0 (no auxiliary loss)
+            diversity: scalar - Code diversity metric (1.0 for continuous, 0-1 for FSQ)
+            z_variance: scalar - Variance of output (for monitoring)
         """
         # 1. Normalize Llama -> Mistral distribution
         normed = self.normalizer(src_hidden)
@@ -330,8 +337,16 @@ class LatentBridgeV15(nn.Module):
         # 2. Compress to fixed-length representation
         compressed = self.resampler(normed, src_mask)  # [B, K, tgt_dim]
 
-        # 3. Quantize through FSQ (no codebook = no collapse)
-        quantized, aux_loss, diversity, z_variance = self.fsq(compressed)
+        # 3. Optional: Quantize through FSQ
+        if self.use_fsq and self.fsq is not None:
+            quantized, aux_loss, diversity, z_variance = self.fsq(compressed)
+        else:
+            # CONTINUOUS MODE: Use Perceiver output directly
+            quantized = compressed
+            aux_loss = torch.tensor(0.0, device=src_hidden.device, dtype=torch.float32)
+            diversity = 1.0  # Continuous = infinite diversity
+            # Compute variance for monitoring (not for loss)
+            z_variance = compressed.var(dim=[0, 1]).mean()
 
         # 4. Scale for Mistral embedding space
         out = quantized * self.output_scale
