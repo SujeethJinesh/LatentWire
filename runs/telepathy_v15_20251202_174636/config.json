@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v15_20251202_174255",
+    "run_id": "telepathy_v15_20251202_174636",
     "phase": 15,
     "approach": "VQ-Telepathy (Discrete Bottleneck)",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
