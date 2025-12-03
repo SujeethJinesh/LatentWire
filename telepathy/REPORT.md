@@ -3066,3 +3066,53 @@ total_loss = lm_loss + div_weight * diversity_loss
 - If this still collapses, will abandon discrete bottleneck entirely
 
 ---
+
+## 51. Phase 15 Issue: Diversity Loss Had No Gradients - Fixed with Variance
+
+### Symptom
+
+Diversity loss was being computed and logged, but diversity still collapsed:
+- Step 50: Div Loss=4.42, Diversity=0.12
+- Step 100: Div Loss=5.39, Diversity=0.01
+- Step 150: Div Loss=5.55, Diversity=0.00
+
+The loss was increasing as expected, but the network was not responding.
+
+### Root Cause
+
+The diversity loss had **NO GRADIENT PATH** to the FSQ parameters:
+
+```python
+# BROKEN - no gradients!
+diversity_loss = -torch.log(torch.tensor(diversity + 1e-8, device=device))
+```
+
+The `diversity` variable was a Python float computed from `torch.unique()` (non-differentiable). Creating a new tensor from it breaks the computation graph entirely.
+
+### Fix: Differentiable Variance-Based Loss
+
+Replaced non-differentiable diversity counting with variance of quantized values:
+
+```python
+# In FSQ.forward():
+# z_quantized has gradients via straight-through estimator
+z_variance = z_quantized.var(dim=[0, 1]).mean()  # DIFFERENTIABLE!
+
+# In train_step():
+diversity_loss = -torch.log(z_variance + 1e-8)  # Now has gradient path!
+```
+
+### Why This Works
+
+1. `z_quantized` has gradients via the straight-through estimator (STE)
+2. `var()` is a differentiable operation
+3. When all tokens collapse to same code → variance = 0 → loss = infinity
+4. Gradients now flow: loss → z_variance → z_quantized → proj_down weights
+
+### Expected Outcome
+
+- Z Variance should stay HIGH (> 0.1) due to gradient pressure
+- Diversity should follow (high variance → diverse codes)
+- LM loss may be slightly higher (tradeoff)
+
+---

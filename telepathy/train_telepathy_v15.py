@@ -86,7 +86,7 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
 
     # Bridge Forward: Get quantized soft tokens (FSQ aux_loss is always 0)
     bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
-    soft_tokens, aux_loss, diversity = bridge_module(src_h, src_mask)
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
 
     # Target: Mistral generates the answer
     # Use full answer for teacher forcing (includes reasoning)
@@ -139,9 +139,11 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     )
     loss_lm = outputs.loss
 
-    # Diversity loss: penalize low diversity to prevent collapse
-    # Log penalty: gentle at high diversity (0.9 → 0.1), harsh at low (0.01 → 4.6)
-    diversity_loss = -torch.log(torch.tensor(diversity + 1e-8, device=device))
+    # Diversity loss: penalize low variance to prevent collapse
+    # Uses z_variance which is DIFFERENTIABLE (has gradient path to FSQ params)
+    # Low variance → high loss → gradients push tokens apart
+    # z_variance is in range [0, ~0.33] for values in [-1,1], so scale appropriately
+    diversity_loss = -torch.log(z_variance + 1e-8)  # DIFFERENTIABLE!
     div_weight = 0.1  # Weight for diversity loss
 
     # Total loss = LM loss + diversity penalty
@@ -151,7 +153,8 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
         "total": total_loss.item(),
         "lm": loss_lm.item(),
         "div_loss": diversity_loss.item(),
-        "div": diversity  # Code diversity (0-1), should stay high
+        "z_var": z_variance.item(),  # Variance of quantized values (should stay high)
+        "div": diversity  # Code diversity (0-1), non-differentiable, for logging only
     }
 
 
@@ -238,12 +241,12 @@ def main():
     progress = tqdm(range(args.steps), disable=(local_rank != 0),
                     desc="V15 FSQ-Telepathy", ncols=100)
     iter_dl = iter(dl)
-    running = {"total": 0, "lm": 0, "div_loss": 0, "div": 0}
+    running = {"total": 0, "lm": 0, "div_loss": 0, "z_var": 0, "div": 0}
     grad_accum = args.grad_accum
 
     for step in progress:
         optimizer.zero_grad()
-        accum_loss_dict = {"total": 0, "lm": 0, "div_loss": 0, "div": 0}
+        accum_loss_dict = {"total": 0, "lm": 0, "div_loss": 0, "z_var": 0, "div": 0}
 
         # Gradient accumulation loop
         for accum_step in range(grad_accum):
@@ -282,8 +285,9 @@ def main():
             current_lr = scheduler.get_last_lr()[0]
             print(f"\n[Step {step+1}/{args.steps}]")
             print(f"  LM Loss: {avg['lm']:.3f}")
-            print(f"  Div Loss: {avg['div_loss']:.3f} (penalty for low diversity)")
-            print(f"  Diversity: {avg['div']:.2f} (FSQ code usage, 0-1)")
+            print(f"  Div Loss: {avg['div_loss']:.3f} (DIFFERENTIABLE penalty)")
+            print(f"  Z Variance: {avg['z_var']:.4f} (should stay HIGH, has gradients)")
+            print(f"  Diversity: {avg['div']:.2f} (code usage, for logging only)")
             print(f"  LR: {current_lr:.2e}")
             running = {k: 0 for k in running}
 

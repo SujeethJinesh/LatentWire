@@ -110,7 +110,8 @@ class FSQ(nn.Module):
         Returns:
             quantized: [B, K, input_dim] quantized vectors (projected back up)
             aux_loss: Always 0 (FSQ has no auxiliary loss)
-            codebook_usage: Approximate measure of code diversity
+            codebook_usage: Approximate measure of code diversity (non-differentiable)
+            z_variance: Variance of quantized values (DIFFERENTIABLE - for diversity loss)
         """
         input_shape = inputs.shape
         dtype = inputs.dtype
@@ -128,8 +129,14 @@ class FSQ(nn.Module):
         # Project back up to input dimension (convert back to weight dtype)
         out = self.proj_up(z_quantized.to(z.dtype))  # [B, K, input_dim]
 
+        # DIFFERENTIABLE diversity measure: variance of quantized values
+        # If all tokens collapse to same code, variance → 0
+        # High diversity means high variance across tokens
+        # z_quantized shape: [B, K, fsq_dim], compute variance across B and K dims
+        z_variance = z_quantized.var(dim=[0, 1]).mean()  # scalar, HAS GRADIENTS via STE
+
         # Compute approximate codebook usage (how many unique codes in batch)
-        # Convert quantized values to integer indices for diversity estimation
+        # This is NON-DIFFERENTIABLE, just for logging
         with torch.no_grad():
             half_levels = (self._levels - 1) / 2
             indices = ((z_quantized * half_levels) + half_levels).long()  # [B, K, D]
@@ -143,7 +150,7 @@ class FSQ(nn.Module):
         # FSQ has no auxiliary loss (huge advantage over VQ!)
         aux_loss = torch.tensor(0.0, device=inputs.device, dtype=torch.float32)
 
-        return out.to(dtype), aux_loss, diversity
+        return out.to(dtype), aux_loss, diversity, z_variance
 
 
 class StatisticalNormalizer(nn.Module):
@@ -314,7 +321,8 @@ class LatentBridgeV15(nn.Module):
         Returns:
             out: [B, K, tgt_dim] - quantized soft tokens for Mistral
             aux_loss: scalar - Always 0 for FSQ (no auxiliary loss needed!)
-            diversity: scalar - Code diversity metric (0-1)
+            diversity: scalar - Code diversity metric (0-1, non-differentiable)
+            z_variance: scalar - Variance of quantized values (DIFFERENTIABLE)
         """
         # 1. Normalize Llama -> Mistral distribution
         normed = self.normalizer(src_hidden)
@@ -323,9 +331,9 @@ class LatentBridgeV15(nn.Module):
         compressed = self.resampler(normed, src_mask)  # [B, K, tgt_dim]
 
         # 3. Quantize through FSQ (no codebook = no collapse)
-        quantized, aux_loss, diversity = self.fsq(compressed)
+        quantized, aux_loss, diversity, z_variance = self.fsq(compressed)
 
         # 4. Scale for Mistral embedding space
         out = quantized * self.output_scale
 
-        return out, aux_loss, diversity
+        return out, aux_loss, diversity, z_variance
