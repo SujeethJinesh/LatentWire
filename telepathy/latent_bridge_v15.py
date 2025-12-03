@@ -42,9 +42,11 @@ class VectorQuantizer(nn.Module):
         self.embedding_dim = embedding_dim
         self.commitment_cost = commitment_cost
 
-        # The Codebook
+        # The Codebook - initialize with unit-normalized vectors for stable distances
         self.embedding = nn.Embedding(num_embeddings, embedding_dim)
-        self.embedding.weight.data.uniform_(-1/num_embeddings, 1/num_embeddings)
+        # Initialize with random unit vectors (better for normalized inputs)
+        self.embedding.weight.data.normal_(0, 1)
+        self.embedding.weight.data = F.normalize(self.embedding.weight.data, dim=1)
 
     def forward(self, inputs):
         """
@@ -233,6 +235,9 @@ class LatentBridgeV15(nn.Module):
         depth = getattr(args, 'depth', 4)
         self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
 
+        # LayerNorm before VQ to stabilize input scale
+        self.pre_vq_norm = nn.LayerNorm(tgt_dim)
+
         # VQ Bottleneck (4096 codes, dimension = tgt_dim)
         self.vq = VectorQuantizer(
             num_embeddings=4096,
@@ -267,8 +272,11 @@ class LatentBridgeV15(nn.Module):
         # 2. Compress to fixed-length representation
         compressed = self.resampler(normed, src_mask)  # [B, K, tgt_dim]
 
-        # 3. Quantize through codebook
-        quantized, vq_loss, perplexity = self.vq(compressed)
+        # 3. Normalize before VQ to stabilize codebook distances
+        compressed_norm = self.pre_vq_norm(compressed)
+
+        # 4. Quantize through codebook
+        quantized, vq_loss, perplexity = self.vq(compressed_norm)
 
         # 4. Scale for Mistral embedding space
         out = quantized * self.output_scale
