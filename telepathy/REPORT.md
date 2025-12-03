@@ -2766,3 +2766,82 @@ If VQ-Telepathy also fails:
 ```bash
 git pull && rm -rf runs && bash run_telepathy_v15.sh
 ```
+
+---
+
+## 47. Phase 15 Implementation Issues & Fixes
+
+### Issue 1: Tensor Stride Error
+**Error:** `RuntimeError: view size is not compatible with input tensor's size and stride`
+
+**Cause:** Perceiver attention outputs are non-contiguous tensors.
+
+**Fix:** Added `.contiguous()` before `.view()` in VectorQuantizer:
+```python
+flat_input = inputs.contiguous().view(-1, self.embedding_dim)
+```
+
+### Issue 2: OOM (Out of Memory)
+**Error:** `torch.OutOfMemoryError: CUDA out of memory`
+
+**Cause:** DDP loads both Llama (16GB) and Mistral (14GB) on each GPU. With batch_size=8, activations exceed 80GB.
+
+**Fix:** Reduced batch size + gradient accumulation:
+- `batch_size`: 8 → 2
+- `grad_accum`: 4 (effective batch = 2 × 4 = 8)
+
+### Issue 3: VQ Loss Explosion → NaN
+**Symptom:** VQ Loss exploded from 7 → 3548 → NaN in 48 steps.
+
+**Cause:**
+- Codebook initialized with tiny values (`±0.0002`)
+- Perceiver outputs have much larger magnitude
+- Huge MSE between them → loss explosion
+
+**Fix:**
+1. Added `LayerNorm` before VQ to normalize inputs
+2. Changed codebook initialization to unit-normalized vectors:
+```python
+self.embedding.weight.data.normal_(0, 1)
+self.embedding.weight.data = F.normalize(self.embedding.weight.data, dim=1)
+```
+
+### Issue 4: Codebook Collapse (Perplexity = 1)
+**Symptom:** Only 1-2 codes used out of 4096. VQ Loss constant at 1.249.
+
+**Cause:** L2 distance in high dimensions causes all inputs to map to same nearest code.
+
+**Fix:** Changed from L2 distance to **cosine similarity**:
+```python
+# L2 normalize both for cosine similarity
+flat_input_norm = F.normalize(flat_input, dim=1)
+codebook_norm = F.normalize(codebook, dim=1)
+
+# Use negative cosine similarity as distance
+similarity = torch.matmul(flat_input_norm, codebook_norm.t())
+distances = -similarity
+```
+
+**Expected Result:** Perplexity should increase to 100+ (many codes used).
+
+### Current Configuration
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| batch_size | 2 | Reduced for OOM |
+| grad_accum | 4 | Effective batch = 8 |
+| soft_tokens | 128 | Latent sequence length |
+| codebook_size | 4096 | VQ vocabulary |
+| commitment_cost | 0.25 | VQ hyperparameter |
+| lr | 2e-4 | With cosine + warmup |
+| warmup_steps | 100 | LR warmup |
+| steps | 3000 | Total training steps |
+
+### Training Verification Checklist
+
+| Metric | Good Sign | Bad Sign |
+|--------|-----------|----------|
+| LM Loss | Decreasing over time | Stuck or increasing |
+| VQ Loss | Varying, ~0.1-1.0 | Constant or exploding |
+| Perplexity | 100+ (many codes) | 1-10 (collapse) |
+| Outputs | Coherent text | Repetitive garbage |
