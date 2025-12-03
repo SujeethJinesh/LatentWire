@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v15_20251202_182624",
+    "run_id": "telepathy_v15_20251202_184524",
     "phase": 15,
     "approach": "FSQ-Telepathy (Finite Scalar Quantization)",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -8,8 +8,8 @@
     "soft_tokens": 128,
     "depth": 4,
     "heads": 8,
-    "fsq_levels": [8, 8, 8, 8, 8, 8, 8, 8],
-    "effective_codebook": 16777216,
+    "fsq_levels": [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    "effective_codebook": "5^32",
     "steps": 3000,
     "batch_size": 2,
     "lr": "2e-4",
@@ -17,7 +17,7 @@
     "num_gpus": 2,
     "key_changes": [
         "FSQ replaces VQ (no codebook collapse)",
-        "8^8 = 16M effective codes",
+        "32 dims × 5 levels = 5^32 effective codes",
         "Pure LM loss training",
         "1-step inference (no diffusion)"
     ]
