@@ -57,7 +57,8 @@ class VectorQuantizer(nn.Module):
             perplexity: Codebook usage metric
         """
         input_shape = inputs.shape
-        flat_input = inputs.view(-1, self.embedding_dim)
+        # Use contiguous().view() to handle non-contiguous tensors from attention
+        flat_input = inputs.contiguous().view(-1, self.embedding_dim)
 
         # Ensure same dtype for distance calculation
         flat_input = flat_input.float()
