@@ -53,3 +53,46 @@ echo "==========================================================================
 echo " Results: $OUTPUT_DIR/sst2_baselines.json"
 echo " Log: $LOG_FILE"
 echo "=========================================================================="
+
+# Preserve for paper
+PRESERVE_DIR="telepathy/preserved_data/exp002_sst2_baselines"
+mkdir -p "$PRESERVE_DIR"
+cp "$OUTPUT_DIR/sst2_baselines.json" "$PRESERVE_DIR/"
+cp "$LOG_FILE" "$PRESERVE_DIR/"
+
+cat > "$PRESERVE_DIR/EXPERIMENT_SUMMARY.md" << 'SUMMARY_EOF'
+# Experiment 002: SST-2 Baselines
+
+**Date**: $(date +%Y-%m-%d)
+**Status**: COMPLETE
+**Purpose**: Validate exp001 results by comparing against baselines
+
+---
+
+## Baselines Evaluated
+
+| Baseline | Description |
+|----------|-------------|
+| Random | 50% (trivial lower bound) |
+| Majority class | Based on SST-2 label distribution |
+| Noise | Random soft tokens to Mistral |
+| Mistral text | Full text to Mistral (upper bound) |
+| Llama text | Full text to Llama |
+
+---
+
+## Results
+
+See `sst2_baselines.json` for detailed results.
+
+---
+
+## Interpretation
+
+If bridge (93.46%) is significantly above noise baseline and close to text baseline,
+the bridge is genuinely transmitting semantic information.
+SUMMARY_EOF
+
+echo ""
+echo " Preserved to: $PRESERVE_DIR"
+echo "=========================================================================="
