@@ -2948,3 +2948,121 @@ git pull && rm -rf runs && bash run_telepathy_v15.sh
 https://arxiv.org/abs/2309.15505
 
 ---
+
+---
+
+## 49. Phase 15 Issue: FSQ Also Collapsed (8-dim bottleneck too aggressive)
+
+### Symptom
+
+FSQ collapsed to diversity=0 by step 5, same as VQ:
+
+| Step | LM Loss | Diversity | Observation |
+|------|---------|-----------|-------------|
+| 0-3 | 2.16-2.40 | 0.76-0.84 | Good start |
+| 4 | 2.39 | 0.11 | Dropping |
+| 5+ | 1.5-2.0 | **0.00** | **COLLAPSED** |
+
+### Root Cause
+
+The problem is NOT VQ vs FSQ. The problem is the **bottleneck compression ratio**.
+
+8-dim FSQ:
+```
+Perceiver output: [128, 4096] → proj_down → [128, 8] → quantize → [128, 8] → proj_up → [128, 4096]
+```
+
+The 4096 → 8 projection (512× compression) throws away 99.8% of information. All 128 tokens project to nearly identical 8-dim vectors, which then quantize to the same code.
+
+### Multi-Level Analysis
+
+1. **Low-level (FSQ mechanics):** FSQ working correctly - quantizing inputs
+2. **Medium-level (training dynamics):** LM loss decreasing, but diversity=0
+3. **High-level (architecture):** Bottleneck too aggressive - no room for diversity
+
+### Fix: Increase FSQ Dimensions
+
+| Config | Dimensions | Levels | Effective Codes | Compression |
+|--------|------------|--------|-----------------|-------------|
+| Before | 8 | 8 | 16M | 512× |
+| **After** | **32** | **5** | **5^32 ≈ 2.3×10²²** | **128×** |
+
+32 dimensions preserves 4× more information through the bottleneck, giving diversity a better chance to survive quantization.
+
+### Code Change
+
+```python
+# Before (collapsed)
+fsq_levels = [8, 8, 8, 8, 8, 8, 8, 8]  # 8 dims
+
+# After (fix)
+fsq_levels = [5] * 32  # 32 dims, 5 levels each
+```
+
+### Expected Outcome
+
+- Diversity should stay above 0.1-0.2 instead of collapsing to 0.00
+- LM loss should still decrease
+- If 32-dim still collapses, will need to abandon discrete bottleneck entirely
+
+---
+
+## 50. Phase 15 Issue: 32-dim FSQ Still Collapsed - Adding Diversity Loss
+
+### Symptom
+
+32-dim FSQ also collapsed, just slightly slower than 8-dim:
+
+| Step | Diversity | Observation |
+|------|-----------|-------------|
+| 0-3 | 0.97-0.98 | Healthy |
+| 4 | 0.94 | Starting to drop |
+| 5 | 0.44 | Rapid decline |
+| 6 | 0.28 | Accelerating |
+| 7 | 0.01 | **Collapsed** |
+| 8+ | 0.00 | Flatlined |
+
+LM loss was decreasing (1.96 → 1.43 → 1.22 → 1.08) but this is meaningless - all 128 soft tokens collapsed to a single code.
+
+### Pattern Recognition
+
+| Approach | Result |
+|----------|--------|
+| VQ (4096 codes) | Collapsed to perplexity=1 |
+| VQ + entropy bonus | Collapsed to perplexity=1 |
+| FSQ 8-dim | Collapsed to div=0 by step 5 |
+| FSQ 32-dim | Collapsed to div=0 by step 7 |
+
+**All discrete bottleneck approaches collapse.** The common factor is not the implementation - it's that pure LM loss doesn't penalize collapse.
+
+### Root Cause
+
+The gradient signal from LM loss pushes all 128 latent tokens toward a single "safe" representation. The network learns that outputting 128 identical soft tokens minimizes answer prediction loss. Discreteness does not equal diversity.
+
+### Fix: Add Diversity Loss
+
+Added explicit penalty for low diversity:
+
+```python
+# Diversity loss: penalize low diversity to prevent collapse
+# Log penalty: gentle at high diversity (0.9 → 0.1), harsh at low (0.01 → 4.6)
+diversity_loss = -torch.log(diversity + 1e-8)
+div_weight = 0.1
+
+total_loss = lm_loss + div_weight * diversity_loss
+```
+
+| Diversity | Diversity Loss | Gradient Strength |
+|-----------|----------------|-------------------|
+| 0.90 | 0.11 | Gentle |
+| 0.50 | 0.69 | Moderate |
+| 0.10 | 2.30 | Strong |
+| 0.01 | 4.61 | Very strong |
+
+### Expected Outcome
+
+- Diversity should stay HIGH (0.5-1.0) due to explicit penalty
+- LM loss may be slightly higher (tradeoff with diversity)
+- If this still collapses, will abandon discrete bottleneck entirely
+
+---

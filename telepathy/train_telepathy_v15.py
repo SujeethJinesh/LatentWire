@@ -139,13 +139,18 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     )
     loss_lm = outputs.loss
 
-    # Total loss (FSQ aux_loss is 0, but keep the addition for compatibility)
-    total_loss = loss_lm + aux_loss
+    # Diversity loss: penalize low diversity to prevent collapse
+    # Log penalty: gentle at high diversity (0.9 → 0.1), harsh at low (0.01 → 4.6)
+    diversity_loss = -torch.log(torch.tensor(diversity + 1e-8, device=device))
+    div_weight = 0.1  # Weight for diversity loss
+
+    # Total loss = LM loss + diversity penalty
+    total_loss = loss_lm + div_weight * diversity_loss
 
     return total_loss, {
         "total": total_loss.item(),
         "lm": loss_lm.item(),
-        "aux": aux_loss.item(),  # Always 0 for FSQ
+        "div_loss": diversity_loss.item(),
         "div": diversity  # Code diversity (0-1), should stay high
     }
 
@@ -168,9 +173,9 @@ def main():
         print("  - FSQ has NO codebook = NO collapse possible")
         print("")
         print("FSQ ARCHITECTURE:")
-        print("  - 8 dimensions × 8 levels each = 16,777,216 effective codes")
-        print("  - Project: 4096 -> 8 -> quantize -> 8 -> 4096")
-        print("  - Pure LM loss training (no auxiliary loss)")
+        print("  - 32 dimensions × 5 levels each = 5^32 effective codes")
+        print("  - Project: 4096 -> 32 -> quantize -> 32 -> 4096")
+        print("  - LM loss + diversity loss (prevents collapse)")
         print("  - 1-step inference (no diffusion iteration)")
         print("")
         print(f"Training: {args.steps} steps, batch={args.batch_size}")
@@ -233,12 +238,12 @@ def main():
     progress = tqdm(range(args.steps), disable=(local_rank != 0),
                     desc="V15 FSQ-Telepathy", ncols=100)
     iter_dl = iter(dl)
-    running = {"total": 0, "lm": 0, "aux": 0, "div": 0}
+    running = {"total": 0, "lm": 0, "div_loss": 0, "div": 0}
     grad_accum = args.grad_accum
 
     for step in progress:
         optimizer.zero_grad()
-        accum_loss_dict = {"total": 0, "lm": 0, "aux": 0, "div": 0}
+        accum_loss_dict = {"total": 0, "lm": 0, "div_loss": 0, "div": 0}
 
         # Gradient accumulation loop
         for accum_step in range(grad_accum):
@@ -277,6 +282,7 @@ def main():
             current_lr = scheduler.get_last_lr()[0]
             print(f"\n[Step {step+1}/{args.steps}]")
             print(f"  LM Loss: {avg['lm']:.3f}")
+            print(f"  Div Loss: {avg['div_loss']:.3f} (penalty for low diversity)")
             print(f"  Diversity: {avg['div']:.2f} (FSQ code usage, 0-1)")
             print(f"  LR: {current_lr:.2e}")
             running = {k: 0 for k in running}
@@ -297,8 +303,8 @@ def main():
         print("=" * 70)
         print("\nKEY METRICS TO CHECK:")
         print("  - LM loss should decrease steadily")
-        print("  - Diversity should stay high (0.5-1.0)")
-        print("  - NO collapse possible with FSQ (unlike VQ)")
+        print("  - Diversity should stay HIGH (0.5-1.0) - diversity loss enforces this")
+        print("  - Div loss should be LOW when diversity is high")
         print("  - Outputs should be coherent and relevant")
 
 
