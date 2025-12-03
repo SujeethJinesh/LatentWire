@@ -51,10 +51,22 @@ import argparse
 import json
 import os
 import time
+import random
+import numpy as np
 from datetime import datetime
 from dataclasses import dataclass, asdict
 from typing import Optional, List, Dict, Any
 import math
+
+
+def set_seed(seed=42):
+    """Set seed for reproducibility."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 # =============================================================================
@@ -131,8 +143,13 @@ class DiffusionBridge(nn.Module):
         src_proj = self.input_proj(src_hidden)
         key_padding_mask = ~src_mask.bool() if src_mask is not None else None
 
-        # Start from noise
-        x = torch.randn(B, self.num_latents, self.tgt_dim, device=device, dtype=dtype) * 0.1
+        # Start from noise (use fixed seed during eval for determinism)
+        if self.training:
+            x = torch.randn(B, self.num_latents, self.tgt_dim, device=device, dtype=dtype) * 0.1
+        else:
+            # Deterministic noise for evaluation
+            generator = torch.Generator(device=device).manual_seed(42)
+            x = torch.randn(B, self.num_latents, self.tgt_dim, device=device, dtype=dtype, generator=generator) * 0.1
 
         # Denoise
         for t in reversed(range(self.diffusion_steps)):
@@ -452,6 +469,9 @@ def eval_text_baseline(model, tokenizer, ds, num_samples, device, model_name):
 
 def run_all_experiments(args):
     """Run all experiments."""
+    # Set seed for reproducibility
+    set_seed(42)
+
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print("=" * 80)
@@ -459,6 +479,7 @@ def run_all_experiments(args):
     print("=" * 80)
     print(f"Device: {DEVICE}")
     print(f"Start time: {datetime.now().isoformat()}")
+    print(f"Seed: 42")
     print("")
 
     # Create output directory
@@ -579,7 +600,10 @@ def run_all_experiments(args):
         ))
 
     # 2. Layer ablation (continuous bridge only)
+    # Skip layer 16 since it's already covered in bridge_continuous
     for layer in args.source_layers:
+        if layer == 16:  # Already covered by bridge_continuous
+            continue
         experiments.append(ExperimentConfig(
             name=f"layer_{layer}",
             bridge_type="continuous",
@@ -597,7 +621,10 @@ def run_all_experiments(args):
         ))
 
     # 3. Compression ablation (num_latents)
+    # Skip 32 since it's already covered in bridge_continuous
     for num_latents in args.num_latents_list:
+        if num_latents == 32:  # Already covered by bridge_continuous
+            continue
         experiments.append(ExperimentConfig(
             name=f"latents_{num_latents}",
             bridge_type="continuous",
@@ -615,7 +642,10 @@ def run_all_experiments(args):
         ))
 
     # 4. Depth ablation
+    # Skip depth 2 since it's already covered in bridge_continuous
     for depth in args.depths:
+        if depth == 2:  # Already covered by bridge_continuous
+            continue
         experiments.append(ExperimentConfig(
             name=f"depth_{depth}",
             bridge_type="continuous",
@@ -633,7 +663,10 @@ def run_all_experiments(args):
         ))
 
     # 5. Diversity weight ablation
+    # Skip 0.1 since it's already covered in bridge_continuous
     for div_weight in args.diversity_weights:
+        if div_weight == 0.1:  # Already covered by bridge_continuous
+            continue
         experiments.append(ExperimentConfig(
             name=f"div_weight_{div_weight}",
             bridge_type="continuous",
