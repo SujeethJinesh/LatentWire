@@ -1,5 +1,5 @@
 {
-    "run_id": "telepathy_v15_20251202_174013",
+    "run_id": "telepathy_v15_20251202_174255",
     "phase": 15,
     "approach": "VQ-Telepathy (Discrete Bottleneck)",
     "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -10,7 +10,7 @@
     "heads": 8,
     "codebook_size": 4096,
     "steps": 3000,
-    "batch_size": 8,
+    "batch_size": 2,
     "lr": "2e-4",
     "warmup_steps": 100,
     "vq_weight": 1.0,
