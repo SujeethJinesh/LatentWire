@@ -66,24 +66,31 @@ class VectorQuantizer(nn.Module):
         flat_input = flat_input.float()
         codebook = self.embedding.weight.float()
 
-        # Calculate distances to all codebook entries
-        distances = (
-            torch.sum(flat_input**2, dim=1, keepdim=True)
-            + torch.sum(codebook**2, dim=1)
-            - 2 * torch.matmul(flat_input, codebook.t())
-        )
+        # L2 normalize both for cosine similarity (prevents collapse)
+        flat_input_norm = F.normalize(flat_input, dim=1)
+        codebook_norm = F.normalize(codebook, dim=1)
+
+        # Use negative cosine similarity as distance (higher similarity = lower distance)
+        # This prevents collapse by making all codebook entries equally "reachable"
+        similarity = torch.matmul(flat_input_norm, codebook_norm.t())
+        distances = -similarity  # Convert to distance (minimize = maximize similarity)
 
         # Find nearest codebook entry
         encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
         encodings = torch.zeros(encoding_indices.shape[0], self.num_embeddings, device=inputs.device)
         encodings.scatter_(1, encoding_indices, 1)
 
-        # Quantize: lookup codebook vectors
-        quantized = torch.matmul(encodings, codebook).view(input_shape)
+        # Quantize: lookup codebook vectors (use normalized codebook)
+        quantized_norm = torch.matmul(encodings, codebook_norm).view(input_shape)
 
-        # VQ Loss: codebook loss + commitment loss
-        e_latent_loss = F.mse_loss(quantized.detach(), flat_input.view(input_shape))
-        q_latent_loss = F.mse_loss(quantized, flat_input.view(input_shape).detach())
+        # Scale quantized to match input magnitude (preserve scale information)
+        input_scale = flat_input.norm(dim=1, keepdim=True).view(input_shape[0], input_shape[1], 1)
+        quantized = quantized_norm * input_scale.mean()  # Use mean scale for stability
+
+        # VQ Loss: use normalized vectors for loss computation
+        flat_input_norm_shaped = flat_input_norm.view(input_shape)
+        e_latent_loss = F.mse_loss(quantized_norm.detach(), flat_input_norm_shaped)
+        q_latent_loss = F.mse_loss(quantized_norm, flat_input_norm_shaped.detach())
         loss = q_latent_loss + self.commitment_cost * e_latent_loss
 
         # Straight Through Estimator: gradient flows through quantized
