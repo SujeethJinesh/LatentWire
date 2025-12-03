@@ -31,10 +31,11 @@ preserved_data/
 | ID | Name | Status | Key Result |
 |----|------|--------|------------|
 | exp001 | SST-2 Signal Check | ✅ Complete | 93.46% accuracy |
-| exp002 | SST-2 Baselines | ⏳ Pending | - |
-| exp003 | AG News (4-class) | ⏳ Pending | - |
-| exp004 | QA Task | ⏳ Pending | - |
-| exp005 | GSM8K | ⏳ Pending | - |
+| exp002 | SST-2 Baselines | ✅ Complete | Bridge matches Mistral text (93.5%) |
+| exp003 | SST-2 Ablations | ⏳ Pending | - |
+| exp004 | AG News (4-class) | ⏳ Pending | - |
+| exp005 | QA Task | ⏳ Pending | - |
+| exp006 | GSM8K | ⏳ Pending | - |
 
 ---
 
