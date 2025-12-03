@@ -1,0 +1,24 @@
+{
+    "run_id": "telepathy_v15_20251202_173537",
+    "phase": 15,
+    "approach": "VQ-Telepathy (Discrete Bottleneck)",
+    "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
+    "source_layer": 16,
+    "soft_tokens": 128,
+    "depth": 4,
+    "heads": 8,
+    "codebook_size": 4096,
+    "steps": 3000,
+    "batch_size": 8,
+    "lr": "2e-4",
+    "warmup_steps": 100,
+    "vq_weight": 1.0,
+    "num_gpus": 2,
+    "key_changes": [
+        "Vector Quantization bottleneck",
+        "4096 discrete codes",
+        "LM loss on answer generation",
+        "1-step inference (no diffusion)"
+    ]
+}
