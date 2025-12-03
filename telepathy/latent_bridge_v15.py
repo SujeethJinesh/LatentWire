@@ -115,17 +115,18 @@ class FSQ(nn.Module):
         input_shape = inputs.shape
         dtype = inputs.dtype
 
-        # Project down to FSQ dimension
-        z = self.proj_down(inputs.float())  # [B, K, fsq_dim]
+        # Project down to FSQ dimension (keep in same dtype as weights)
+        z = self.proj_down(inputs)  # [B, K, fsq_dim]
 
-        # Bound to [-1, 1]
-        z_bounded = self._bound(z)
+        # Bound to [-1, 1] - use float32 for precision in quantization
+        z_float = z.float()
+        z_bounded = self._bound(z_float)
 
         # Quantize each dimension
         z_quantized = self._quantize(z_bounded)
 
-        # Project back up to input dimension
-        out = self.proj_up(z_quantized)  # [B, K, input_dim]
+        # Project back up to input dimension (convert back to weight dtype)
+        out = self.proj_up(z_quantized.to(z.dtype))  # [B, K, input_dim]
 
         # Compute approximate codebook usage (how many unique codes in batch)
         # Convert quantized values to integer indices for diversity estimation
