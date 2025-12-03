@@ -3177,3 +3177,69 @@ The original motivation for discrete bottleneck was to prevent "blurry averages"
 But first, let's establish if continuous works at all.
 
 ---
+
+## 53. Phase 15 Fix: Training Instability → Add tanh Bounding
+
+### Symptom
+
+Continuous mode training showed catastrophic instability:
+
+```
+Step 0-90:  lm = 4.59 → 1.14 (healthy learning)
+Step 91:    lm = 8.89  (8× SPIKE)
+Step 92:    lm = 15.37 (continues spiking)
+Step 100:   lm = 3.97, Z_var = 0.2038 (13× variance increase!)
+Step 126:   lm = 8.17 → 12.58 (re-crash)
+```
+
+Key observation: Z Variance jumped 13× (0.0155 → 0.2038) = Perceiver outputs exploding.
+
+### Root Cause
+
+V15 continuous mode lacked the output bounding that V7 had:
+
+```python
+# V7 (stable): Bounded to [-scale, +scale]
+return torch.tanh(compressed) * self.output_scale
+
+# V15 continuous (unstable): UNBOUNDED
+out = quantized * self.output_scale  # compressed can grow arbitrarily large!
+```
+
+Without tanh bounding, a feedback loop occurs:
+1. Large gradients → Perceiver weights change → Larger outputs
+2. Larger outputs → Mistral attention saturates → Worse loss
+3. Worse loss → Larger gradients → Repeat
+
+### Fix
+
+Add tanh bounding to continuous mode output:
+
+```python
+# Before (unstable)
+out = quantized * self.output_scale
+
+# After (stable)
+out = torch.tanh(quantized) * self.output_scale
+```
+
+This bounds output to `[-0.0027, +0.0027]` matching Mistral's expected embedding range.
+
+### Expected Outcome
+
+- NO more loss spikes (bounded outputs)
+- Z Variance should stay stable (tanh prevents magnitude explosion)
+- LM loss should decrease steadily throughout training
+- May still see "blurry" outputs (continuous limitation), but training should be stable
+
+### Alternative Options Considered
+
+| Option | Description | Why Not Chosen |
+|--------|-------------|----------------|
+| Lower LR | 2e-4 → 5e-5 | Slower, may still be unstable |
+| Stronger clip | grad_clip 0.1 | May slow learning |
+| LayerNorm | Normalize outputs | Less proven than tanh |
+
+tanh chosen because it's proven in V7 and simplest fix.
+
+---
