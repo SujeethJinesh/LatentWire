@@ -58,14 +58,13 @@ TARGET_MODEL="${TARGET_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}"
 SOFT_TOKENS="${SOFT_TOKENS:-32}"
 DEPTH="${DEPTH:-2}"
 HEADS="${HEADS:-8}"
-NUM_CODES="${NUM_CODES:-4096}"
 
 # Training
 STEPS="${STEPS:-2000}"
 BATCH_SIZE="${BATCH_SIZE:-16}"
 GRAD_ACCUM="${GRAD_ACCUM:-2}"
 LR="${LR:-2e-4}"
-VQ_WEIGHT="${VQ_WEIGHT:-0.25}"
+DIVERSITY_WEIGHT="${DIVERSITY_WEIGHT:-0.1}"  # Batch diversity loss weight
 
 # Output
 RUN_ID="sst2_signal_check_$(date +%Y%m%d_%H%M%S)"
@@ -78,7 +77,7 @@ mkdir -p "$OUTPUT_DIR"
 # Banner
 # =============================================================================
 echo "=========================================================================="
-echo " Phase 16: SST-2 Signal Check"
+echo " Phase 16: SST-2 Signal Check (CONTINUOUS VERSION)"
 echo "=========================================================================="
 echo " Run ID:        $RUN_ID"
 echo " Output Dir:    $OUTPUT_DIR"
@@ -91,6 +90,11 @@ echo "   - 67,000 training examples (10x more data)"
 echo "   - Binary classification (much simpler task)"
 echo "   - 'Blurriness' acceptable (no exact numbers needed)"
 echo ""
+echo " WHY CONTINUOUS (not VQ):"
+echo "   - VQ collapsed in 7 attempts (perplexity → 1)"
+echo "   - Continuous soft tokens + batch diversity loss"
+echo "   - RMS normalization prevents saturation"
+echo ""
 echo " SUCCESS CRITERIA:"
 echo "   - Accuracy > 50%: Bridge transmits info"
 echo "   - Accuracy > 70%: Bridge is working"
@@ -99,8 +103,9 @@ echo "   - Accuracy ~ 50%: Bridge is broken"
 echo ""
 echo " Architecture:"
 echo "   - Soft tokens: $SOFT_TOKENS"
-echo "   - VQ codes: $NUM_CODES"
+echo "   - Mode: CONTINUOUS (no VQ)"
 echo "   - Depth: $DEPTH"
+echo "   - Diversity weight: $DIVERSITY_WEIGHT"
 echo "=========================================================================="
 echo ""
 
@@ -109,17 +114,17 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
 {
     "run_id": "$RUN_ID",
     "phase": 16,
-    "task": "SST-2 Signal Check",
+    "task": "SST-2 Signal Check (CONTINUOUS)",
     "source_model": "$SOURCE_MODEL",
     "target_model": "$TARGET_MODEL",
     "soft_tokens": $SOFT_TOKENS,
     "depth": $DEPTH,
     "heads": $HEADS,
-    "num_codes": $NUM_CODES,
+    "mode": "continuous",
     "steps": $STEPS,
     "batch_size": $BATCH_SIZE,
     "lr": "$LR",
-    "vq_weight": $VQ_WEIGHT,
+    "diversity_weight": $DIVERSITY_WEIGHT,
     "num_gpus": $NPROC
 }
 EOF
@@ -144,12 +149,11 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
         --soft_tokens "$SOFT_TOKENS" \
         --depth "$DEPTH" \
         --heads "$HEADS" \
-        --num_codes "$NUM_CODES" \
         --steps "$STEPS" \
         --batch_size "$BATCH_SIZE" \
         --grad_accum "$GRAD_ACCUM" \
         --lr "$LR" \
-        --vq_weight "$VQ_WEIGHT" \
+        --diversity_weight "$DIVERSITY_WEIGHT" \
         --eval_every 200 \
         --save_every 500 \
         --bf16 \
@@ -173,7 +177,6 @@ if [[ -f "${OUTPUT_DIR}/bridge_sst2.pt" ]]; then
             --soft_tokens "$SOFT_TOKENS" \
             --depth "$DEPTH" \
             --heads "$HEADS" \
-            --num_codes "$NUM_CODES" \
             --num_samples 872 \
             --output_dir "$OUTPUT_DIR" \
             --bf16
@@ -181,7 +184,7 @@ if [[ -f "${OUTPUT_DIR}/bridge_sst2.pt" ]]; then
 
     echo ""
     echo "=========================================================================="
-    echo " Phase 16 SST-2 Signal Check Complete!"
+    echo " Phase 16 SST-2 Signal Check Complete! (CONTINUOUS VERSION)"
     echo "=========================================================================="
     echo " Results: ${OUTPUT_DIR}/eval_sst2_results.json"
     echo " Train Log: $LOG_FILE"
@@ -189,7 +192,7 @@ if [[ -f "${OUTPUT_DIR}/bridge_sst2.pt" ]]; then
     echo ""
     echo " INTERPRETATION:"
     echo "   - If accuracy > 70%: Bridge works! Try harder tasks."
-    echo "   - If accuracy ~ 50%: Bridge is broken. Need architecture changes."
+    echo "   - If accuracy ~ 50%: Bridge is broken. Check diversity loss."
     echo "=========================================================================="
 else
     echo ""

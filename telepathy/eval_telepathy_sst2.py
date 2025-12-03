@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # telepathy/eval_telepathy_sst2.py
 """
-Phase 16: SST-2 Evaluation
+Phase 16: SST-2 Evaluation (Continuous Version)
 
 Evaluates bridge on sentiment classification.
 Success criteria:
@@ -9,6 +9,8 @@ Success criteria:
   - Accuracy > 70%: Bridge is working
   - Accuracy > 85%: Bridge is excellent
   - Accuracy ~ 50%: Bridge is broken (random chance)
+
+Uses CONTINUOUS soft tokens (not VQ).
 """
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -18,7 +20,7 @@ import argparse
 import json
 import os
 
-from latent_bridge_vq import LatentBridgeVQ
+from latent_bridge_v15 import LatentBridgeV15
 
 
 def parse_args():
@@ -30,10 +32,11 @@ def parse_args():
     parser.add_argument("--soft_tokens", type=int, default=32)
     parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--heads", type=int, default=8)
-    parser.add_argument("--num_codes", type=int, default=4096)
     parser.add_argument("--num_samples", type=int, default=872)  # Full validation set
     parser.add_argument("--output_dir", default=".")
     parser.add_argument("--bf16", action="store_true", default=True)
+    # Continuous mode (no VQ/FSQ)
+    parser.add_argument("--use_fsq", action="store_true", default=False)
     return parser.parse_args()
 
 
@@ -73,8 +76,8 @@ def main():
         tgt_embeds = tgt_model.get_input_embeddings().weight.float()
         target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
 
-    # Load bridge
-    bridge = LatentBridgeVQ(
+    # Load bridge (CONTINUOUS, not VQ)
+    bridge = LatentBridgeV15(
         args,
         src_dim=src_model.config.hidden_size,
         tgt_dim=tgt_model.config.hidden_size,
@@ -118,7 +121,7 @@ def main():
             src_h = src_out.hidden_states[args.source_layer]
             if args.bf16:
                 src_h = src_h.bfloat16()
-            soft_tokens, vq_loss, perplexity = bridge(src_h, src_enc.attention_mask)
+            soft_tokens, _, _, _ = bridge(src_h, src_enc.attention_mask)
 
             # Target: [Primer] + [Soft Tokens] -> Generate
             primer = "Sentiment:"

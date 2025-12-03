@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # telepathy/train_telepathy_sst2.py
 """
-Phase 16: SST-2 Signal Check Training
+Phase 16: SST-2 Signal Check Training (Continuous Version)
 
 Binary sentiment classification to validate bridge fundamentals.
 If accuracy > 50%, the bridge can transmit SOME information.
@@ -10,9 +10,13 @@ If accuracy > 80%, the bridge is working well.
 Dataset: GLUE SST-2 (Stanford Sentiment Treebank)
 - Train: ~67,000 examples
 - Labels: 0=negative, 1=positive
+
+Uses CONTINUOUS soft tokens (not VQ) + batch diversity loss.
+VQ collapsed in 7 attempts. Continuous is the way.
 """
 import os
 import torch
+import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -20,7 +24,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 import argparse
 
-from latent_bridge_vq import LatentBridgeVQ
+from latent_bridge_v15 import LatentBridgeV15
 
 
 def setup_ddp():
@@ -40,7 +44,6 @@ def parse_args():
     parser.add_argument("--soft_tokens", type=int, default=32)  # Smaller for simple task
     parser.add_argument("--depth", type=int, default=2)         # Lighter bridge
     parser.add_argument("--heads", type=int, default=8)
-    parser.add_argument("--num_codes", type=int, default=4096)  # VQ codebook size
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--batch_size", type=int, default=16)   # Larger batch
     parser.add_argument("--grad_accum", type=int, default=2)
@@ -49,8 +52,10 @@ def parse_args():
     parser.add_argument("--save_path", default="bridge_sst2.pt")
     parser.add_argument("--save_every", type=int, default=500)
     parser.add_argument("--eval_every", type=int, default=200)
-    parser.add_argument("--vq_weight", type=float, default=0.25)
+    parser.add_argument("--diversity_weight", type=float, default=0.1)  # Batch diversity loss weight
     parser.add_argument("--bf16", action="store_true", default=True)
+    # Continuous mode (no VQ/FSQ)
+    parser.add_argument("--use_fsq", action="store_true", default=False)
     return parser.parse_args()
 
 
@@ -80,7 +85,7 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
             src_h = src_out.hidden_states[args.source_layer]
             if args.bf16:
                 src_h = src_h.bfloat16()
-            soft_tokens, _, _ = bridge_module(src_h, src_enc.attention_mask)
+            soft_tokens, _, _, _ = bridge_module(src_h, src_enc.attention_mask)
 
             # Target: [Primer] + [Soft Tokens] -> Generate
             primer = "Sentiment:"
@@ -140,11 +145,23 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
             src_h = src_h.bfloat16()
         src_mask = src_enc.attention_mask
 
-    # 2. Bridge
+    # 2. Bridge (continuous soft tokens)
     bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
-    soft_tokens, vq_loss, perplexity = bridge_module(src_h, src_mask)
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
 
-    # 3. Target (Mistral predicts label)
+    # 3. Batch diversity loss (prevent mode collapse)
+    # Penalize high cosine similarity between batch items
+    batch_div_loss = torch.tensor(0.0, device=device)
+    if B > 1:
+        flat_tokens = soft_tokens.reshape(B, -1).float()  # [B, K*D]
+        flat_norm = F.normalize(flat_tokens, dim=1)       # Unit vectors
+        sim_matrix = torch.mm(flat_norm, flat_norm.t())   # [B, B] cosine similarity
+        # Only penalize off-diagonal (cross-batch similarity)
+        mask = ~torch.eye(B, dtype=torch.bool, device=device)
+        off_diag_sim = sim_matrix[mask].mean()
+        batch_div_loss = off_diag_sim  # Higher sim = higher loss
+
+    # 4. Target (Mistral predicts label)
     # Format: [Primer] + [Soft Tokens] + [Answer]
     primer_text = "Sentiment:"
     with torch.no_grad():
@@ -188,14 +205,14 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     )
     loss_lm = outputs.loss
 
-    # Total loss
-    total_loss = loss_lm + args.vq_weight * vq_loss
+    # Total loss: LM + diversity penalty
+    total_loss = loss_lm + args.diversity_weight * batch_div_loss
 
     return total_loss, {
         "total": total_loss.item(),
         "lm": loss_lm.item(),
-        "vq": vq_loss.item(),
-        "ppl": perplexity.item()
+        "div": batch_div_loss.item(),
+        "z_var": z_variance.item() if isinstance(z_variance, torch.Tensor) else z_variance
     }
 
 
@@ -208,7 +225,7 @@ def main():
 
     if local_rank == 0:
         print("=" * 60)
-        print("Phase 16: SST-2 Signal Check")
+        print("Phase 16: SST-2 Signal Check (CONTINUOUS VERSION)")
         print("=" * 60)
         print("")
         print("GOAL: Validate bridge can transmit ANY information")
@@ -221,8 +238,13 @@ def main():
         print("  - Binary classification (simpler than math)")
         print("  - 'Blurriness' acceptable (unlike exact numbers)")
         print("")
+        print("WHY CONTINUOUS (not VQ):")
+        print("  - VQ collapsed in 7 attempts (perplexity → 1)")
+        print("  - Continuous soft tokens + batch diversity loss")
+        print("  - RMS normalization prevents saturation")
+        print("")
         print(f"Training: {args.steps} steps, batch={args.batch_size}")
-        print(f"VQ weight: {args.vq_weight}")
+        print(f"Diversity weight: {args.diversity_weight}")
         print("=" * 60)
 
     # Load models
@@ -245,8 +267,8 @@ def main():
         if local_rank == 0:
             print(f"Target embedding RMS: {target_rms:.4f}")
 
-    # Initialize bridge
-    bridge = LatentBridgeVQ(
+    # Initialize bridge (CONTINUOUS, not VQ)
+    bridge = LatentBridgeV15(
         args,
         src_dim=src_model.config.hidden_size,
         tgt_dim=tgt_model.config.hidden_size,
@@ -279,12 +301,12 @@ def main():
 
     progress = tqdm(range(args.steps), disable=(local_rank != 0), desc="SST-2", ncols=100)
     iter_dl = iter(dl)
-    running = {"total": 0, "lm": 0, "vq": 0, "ppl": 0}
+    running = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
     grad_accum = args.grad_accum
 
     for step in progress:
         optimizer.zero_grad()
-        accum_loss_dict = {"total": 0, "lm": 0, "vq": 0, "ppl": 0}
+        accum_loss_dict = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
 
         for _ in range(grad_accum):
             try:
@@ -311,7 +333,7 @@ def main():
 
         progress.set_postfix({
             "lm": f"{accum_loss_dict['lm']:.2f}",
-            "ppl": f"{accum_loss_dict['ppl']:.0f}"  # VQ perplexity
+            "div": f"{accum_loss_dict['div']:.3f}"  # Batch diversity loss (want low)
         })
 
         # Periodic logging
@@ -319,8 +341,8 @@ def main():
             avg = {k: v / 50 for k, v in running.items()}
             print(f"\n[Step {step+1}/{args.steps}]")
             print(f"  LM Loss: {avg['lm']:.3f}")
-            print(f"  VQ Loss: {avg['vq']:.4f}")
-            print(f"  VQ Perplexity: {avg['ppl']:.1f} (want high, collapse if ~1)")
+            print(f"  Batch Div Loss: {avg['div']:.4f} (want low, high=collapse)")
+            print(f"  Z Variance: {avg['z_var']:.4f} (want non-zero)")
             running = {k: 0 for k in running}
 
         # Quick eval
@@ -338,14 +360,15 @@ def main():
         bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
         torch.save(bridge_to_save.state_dict(), args.save_path)
         print("\n" + "=" * 60)
-        print("Phase 16 SST-2 Training Complete!")
+        print("Phase 16 SST-2 Training Complete! (CONTINUOUS VERSION)")
         print(f"Checkpoint: {args.save_path}")
         print("=" * 60)
         print("\nKEY METRICS:")
         print("  - Accuracy > 50%: Bridge transmits SOME info")
         print("  - Accuracy > 80%: Bridge works well")
         print("  - Accuracy ~ 50%: Bridge is broken")
-        print("  - VQ Perplexity should be high (many codes used)")
+        print("  - Batch Div Loss should be LOW (unique outputs)")
+        print("  - Z Variance should be NON-ZERO")
 
 
 if __name__ == "__main__":
