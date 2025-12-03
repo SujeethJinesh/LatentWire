@@ -51,6 +51,8 @@ def parse_args():
     parser.add_argument("--grad_clip", type=float, default=1.0)
     parser.add_argument("--save_path", default="bridge_v15.pt")
     parser.add_argument("--save_every", type=int, default=500)
+    parser.add_argument("--eval_every", type=int, default=500, help="Run quick eval every N steps")
+    parser.add_argument("--eval_samples", type=int, default=10, help="Samples for quick eval")
     parser.add_argument("--bf16", action="store_true", default=True)
     return parser.parse_args()
 
@@ -151,6 +153,104 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     }
 
 
+def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, args, step):
+    """
+    Quick evaluation during training to check output quality.
+    Returns entity transfer rate and prints sample outputs.
+    """
+    import re
+    bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
+    bridge_module.eval()
+
+    # Sample indices (spread across test set)
+    indices = list(range(0, min(len(eval_ds), args.eval_samples * 10), 10))[:args.eval_samples]
+
+    total_nums = 0
+    matched_nums = 0
+    unique_outputs = set()
+    correct = 0
+
+    print(f"\n{'='*70}")
+    print(f"QUICK EVAL @ Step {step}")
+    print(f"{'='*70}")
+
+    for i, idx in enumerate(indices):
+        sample = eval_ds[idx]
+        question = sample['question']
+        gt_answer = sample['answer'].split("####")[-1].strip() if "####" in sample['answer'] else sample['answer'].strip()
+
+        # Get source hidden states
+        src_text = f"Question: {question}\nAnswer:"
+        with torch.no_grad():
+            src_enc = src_tok(src_text, return_tensors="pt", truncation=True, max_length=512).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[args.source_layer]
+            if args.bf16:
+                src_h = src_h.bfloat16()
+            src_mask = src_enc.attention_mask
+
+            # Get soft tokens
+            soft_tokens, _, _, _ = bridge_module(src_h, src_mask)
+
+            # Create input for Mistral
+            primer = "Answer: "
+            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids)
+            if args.bf16:
+                primer_embeds = primer_embeds.bfloat16()
+
+            # Generate
+            combined_embeds = torch.cat([soft_tokens, primer_embeds], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+
+            gen_out = tgt_model.generate(
+                inputs_embeds=combined_embeds,
+                attention_mask=attn_mask,
+                max_new_tokens=64,
+                do_sample=False,
+                pad_token_id=tgt_tok.pad_token_id,
+                eos_token_id=tgt_tok.eos_token_id,
+            )
+            output_text = tgt_tok.decode(gen_out[0], skip_special_tokens=True)
+
+        unique_outputs.add(output_text[:100])
+
+        # Extract numbers from question and output for entity matching
+        q_nums = set(re.findall(r'\b\d+(?:\.\d+)?\b', question))
+        o_nums = set(re.findall(r'\b\d+(?:\.\d+)?\b', output_text))
+        matches = len(q_nums & o_nums)
+        total_nums += len(q_nums)
+        matched_nums += matches
+
+        # Check if answer is correct
+        pred_nums = re.findall(r'\d+', output_text)
+        pred_answer = pred_nums[-1] if pred_nums else ""
+        if pred_answer == gt_answer:
+            correct += 1
+
+        # Print first 3 samples for visual inspection
+        if i < 3:
+            print(f"\n[Sample {i+1}]")
+            print(f"Q: {question[:80]}...")
+            print(f"Output: {output_text[:120]}...")
+            print(f"Pred: {pred_answer} | GT: {gt_answer} | {'CORRECT' if pred_answer == gt_answer else 'wrong'}")
+
+    # Compute metrics
+    entity_rate = 100 * matched_nums / max(total_nums, 1)
+    unique_rate = 100 * len(unique_outputs) / args.eval_samples
+    accuracy = 100 * correct / args.eval_samples
+
+    print(f"\n{'='*70}")
+    print(f"EVAL RESULTS @ Step {step}:")
+    print(f"  Accuracy: {correct}/{args.eval_samples} ({accuracy:.1f}%)")
+    print(f"  Entity Transfer: {matched_nums}/{total_nums} ({entity_rate:.1f}%)")
+    print(f"  Output Diversity: {len(unique_outputs)}/{args.eval_samples} ({unique_rate:.1f}%)")
+    print(f"{'='*70}\n")
+
+    bridge_module.train()
+    return {"accuracy": accuracy, "entity_rate": entity_rate, "unique_rate": unique_rate}
+
+
 def main():
     setup_ddp()
     args = parse_args()
@@ -230,8 +330,12 @@ def main():
         ds = ds.shard(world_size, local_rank)
     dl = DataLoader(ds, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
+    # Load test dataset for periodic evaluation
+    eval_ds = load_dataset("gsm8k", "main", split="test")
+
     if local_rank == 0:
         print(f"\nTraining on {len(ds)} samples")
+        print(f"Eval on {len(eval_ds)} test samples (using {args.eval_samples} per eval)")
         print("Starting training loop...")
 
     progress = tqdm(range(args.steps), disable=(local_rank != 0),
@@ -290,6 +394,10 @@ def main():
             bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
             torch.save(bridge_to_save.state_dict(), args.save_path)
             print(f"  Checkpoint saved: {args.save_path}")
+
+        # Periodic evaluation
+        if local_rank == 0 and (step + 1) % args.eval_every == 0:
+            quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, args, step + 1)
 
     # Final save
     if local_rank == 0:
