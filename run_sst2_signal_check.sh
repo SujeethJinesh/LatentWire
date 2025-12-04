@@ -54,8 +54,11 @@ NPROC=$(detect_nproc)
 SOURCE_MODEL="${SOURCE_MODEL:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
 TARGET_MODEL="${TARGET_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}"
 
-# Lighter architecture for simple task
-SOFT_TOKENS="${SOFT_TOKENS:-32}"
+# OPTIMAL CONFIG from comprehensive experiments:
+# - Layer 31: 94.5% (vs 92.0% at layer 16)
+# - 8 tokens: 96.5% (vs 92.0% at 32 tokens)
+SOURCE_LAYER="${SOURCE_LAYER:-31}"
+SOFT_TOKENS="${SOFT_TOKENS:-8}"
 DEPTH="${DEPTH:-2}"
 HEADS="${HEADS:-8}"
 
@@ -102,7 +105,8 @@ echo "   - Accuracy > 85%: Bridge is excellent"
 echo "   - Accuracy ~ 50%: Bridge is broken"
 echo ""
 echo " Architecture:"
-echo "   - Soft tokens: $SOFT_TOKENS"
+echo "   - Source layer: $SOURCE_LAYER (optimal from ablation)"
+echo "   - Soft tokens: $SOFT_TOKENS (optimal from ablation)"
 echo "   - Mode: CONTINUOUS (no VQ)"
 echo "   - Depth: $DEPTH"
 echo "   - Diversity weight: $DIVERSITY_WEIGHT"
@@ -113,10 +117,11 @@ echo ""
 cat > "${OUTPUT_DIR}/config.json" << EOF
 {
     "run_id": "$RUN_ID",
-    "phase": 16,
-    "task": "SST-2 Signal Check (CONTINUOUS)",
+    "phase": "16-optimal",
+    "task": "SST-2 Optimal Config (Layer 31 + 8 tokens)",
     "source_model": "$SOURCE_MODEL",
     "target_model": "$TARGET_MODEL",
+    "source_layer": $SOURCE_LAYER,
     "soft_tokens": $SOFT_TOKENS,
     "depth": $DEPTH,
     "heads": $HEADS,
@@ -146,6 +151,7 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
         telepathy/train_telepathy_sst2.py \
         --source_model "$SOURCE_MODEL" \
         --target_model "$TARGET_MODEL" \
+        --source_layer "$SOURCE_LAYER" \
         --soft_tokens "$SOFT_TOKENS" \
         --depth "$DEPTH" \
         --heads "$HEADS" \
@@ -174,6 +180,7 @@ if [[ -f "${OUTPUT_DIR}/bridge_sst2.pt" ]]; then
     {
         python telepathy/eval_telepathy_sst2.py \
             --checkpoint "$CHECKPOINT" \
+            --source_layer "$SOURCE_LAYER" \
             --soft_tokens "$SOFT_TOKENS" \
             --depth "$DEPTH" \
             --heads "$HEADS" \

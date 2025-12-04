@@ -32,9 +32,9 @@ preserved_data/
 |----|------|--------|------------|
 | exp001 | SST-2 Signal Check | ✅ Complete | 93.46% accuracy |
 | exp002 | SST-2 Baselines | ✅ Complete | Bridge matches Mistral text (93.5%) |
-| exp003 | SST-2 Ablations | ⏳ Pending | - |
-| exp004 | AG News (4-class) | ⏳ Pending | - |
-| exp005 | QA Task | ⏳ Pending | - |
+| **exp003** | **Comprehensive Ablations** | ✅ **Complete** | **Layer 31 + 8 tokens = 96.5%** |
+| exp004 | SST-2 Optimal Config | ⏳ Pending | - |
+| exp005 | AG News (4-class) | ⏳ Pending | - |
 | exp006 | GSM8K | ⏳ Pending | - |
 
 ---
@@ -94,5 +94,7 @@ cp telepathy/relevant_scripts.py telepathy/preserved_data/expXXX_name/source_cod
 |---------------|-------------|
 | Method | exp001 (architecture description) |
 | Signal Validation | exp001, exp002 |
-| Scaling | exp003, exp004, exp005 |
-| Ablations | TBD |
+| **Ablations** | **exp003 (comprehensive - 25 configs, 6 dimensions)** |
+| Optimal Config | exp004 (layer 31 + 8 tokens) |
+| Generalization | exp005 (AG News 4-class) |
+| Reasoning | exp006 (GSM8K) |
