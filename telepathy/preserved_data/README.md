@@ -37,7 +37,7 @@ preserved_data/
 | exp002 | SST-2 Baselines | ✅ Complete | Bridge matches Mistral text (93.5%) |
 | **exp003** | **Comprehensive Ablations** | ✅ **Complete** | **Layer 31 + 8 tokens = 96.5%** |
 | **exp004** | **AG News (4-class)** | ✅ **Complete** | **92.3% (exceeds text baselines by 20+pp)** |
-| exp005 | GSM8K | ⏳ Pending | - |
+| exp005 | GSM8K + Latent CoT | ⏳ Ready to Run | Multi-step reasoning via latent chain-of-thought |
 
 ---
 
