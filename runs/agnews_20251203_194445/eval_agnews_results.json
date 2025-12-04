@@ -1,0 +1,191 @@
+{
+  "checkpoint": "runs/agnews_20251203_194445/bridge_agnews.pt",
+  "num_samples": 1000,
+  "accuracy": 92.3,
+  "correct": 923,
+  "total": 1000,
+  "per_class": {
+    "world": {
+      "correct": 246,
+      "total": 268,
+      "accuracy": 91.7910447761194
+    },
+    "sports": {
+      "correct": 268,
+      "total": 274,
+      "accuracy": 97.81021897810218
+    },
+    "business": {
+      "correct": 185,
+      "total": 205,
+      "accuracy": 90.2439024390244
+    },
+    "science": {
+      "correct": 224,
+      "total": 253,
+      "accuracy": 88.53754940711462
+    }
+  },
+  "samples": [
+    {
+      "idx": 0,
+      "text": "Fears for T N pension after talks Unions representing workers at Turner   Newall...",
+      "label": "business",
+      "prediction": "business",
+      "output": "business",
+      "correct": true
+    },
+    {
+      "idx": 1,
+      "text": "The Race is On: Second Private Team Sets Launch Date for Human Spaceflight (SPAC...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 2,
+      "text": "Ky. Company Wins Grant to Study Peptides (AP) AP - A company founded by a chemis...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 3,
+      "text": "Prediction Unit Helps Forecast Wildfires (AP) AP - It's barely dawn when Mike Fi...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 4,
+      "text": "Calif. Aims to Limit Farm-Related Smog (AP) AP - Southern California's smog-figh...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 5,
+      "text": "Open Letter Against British Copyright Indoctrination in Schools The British Depa...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 6,
+      "text": "Loosing the War on Terrorism \\\\\"Sven Jaschan, self-confessed author of the Netsk...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 7,
+      "text": "FOAFKey: FOAF, PGP, Key Distribution, and Bloom Filters \\\\FOAF/LOAF  and bloom f...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 8,
+      "text": "E-mail scam targets police chief Wiltshire Police warns about \"phishing\" after i...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 9,
+      "text": "Card fraud unit nets 36,000 cards In its first two years, the UK's dedicated car...",
+      "label": "science",
+      "prediction": "business",
+      "output": "business",
+      "correct": false
+    },
+    {
+      "idx": 10,
+      "text": "Group to Propose New High-Speed Wireless Format  LOS ANGELES (Reuters) - A group...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 11,
+      "text": "Apple Launches Graphics Software, Video Bundle  LOS ANGELES (Reuters) - Apple Co...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 12,
+      "text": "Dutch Retailer Beats Apple to Local Download Market  AMSTERDAM (Reuters) - Free ...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 13,
+      "text": "Super ant colony hits Australia A giant 100km colony of ants  which has been dis...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 14,
+      "text": "Socialites unite dolphin groups Dolphin groups, or \"pods\", rely on socialites to...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 15,
+      "text": "Teenage T. rex's monster growth Tyrannosaurus rex achieved its massive size due ...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 16,
+      "text": "Scientists Discover Ganymede has a Lumpy Interior Jet Propulsion Lab -- Scientis...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 17,
+      "text": "Mars Rovers Relay Images Through Mars Express European Space Agency -- ESAs Mars...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 18,
+      "text": "Rocking the Cradle of Life When did life begin? One evidential clue stems from t...",
+      "label": "science",
+      "prediction": "science",
+      "output": "science",
+      "correct": true
+    },
+    {
+      "idx": 19,
+      "text": "Storage, servers bruise HP earnings update Earnings per share rise compared with...",
+      "label": "science",
+      "prediction": "business",
+      "output": "business",
+      "correct": false
+    }
+  ]
+}
