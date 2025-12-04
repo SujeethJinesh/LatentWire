@@ -1,29 +1,29 @@
 {
-  "checkpoint": "runs/agnews_20251203_194445/bridge_agnews.pt",
+  "checkpoint": "runs/agnews_20251203_215159/bridge_agnews.pt",
   "num_samples": 1000,
-  "accuracy": 92.3,
-  "correct": 923,
+  "accuracy": 88.9,
+  "correct": 889,
   "total": 1000,
   "per_class": {
     "world": {
-      "correct": 246,
+      "correct": 250,
       "total": 268,
-      "accuracy": 91.7910447761194
+      "accuracy": 93.28358208955224
     },
     "sports": {
-      "correct": 268,
+      "correct": 252,
       "total": 274,
-      "accuracy": 97.81021897810218
+      "accuracy": 91.97080291970804
     },
     "business": {
-      "correct": 185,
+      "correct": 161,
       "total": 205,
-      "accuracy": 90.2439024390244
+      "accuracy": 78.53658536585365
     },
     "science": {
-      "correct": 224,
+      "correct": 226,
       "total": 253,
-      "accuracy": 88.53754940711462
+      "accuracy": 89.32806324110672
     }
   },
   "samples": [
@@ -103,9 +103,9 @@
       "idx": 9,
       "text": "Card fraud unit nets 36,000 cards In its first two years, the UK's dedicated car...",
       "label": "science",
-      "prediction": "business",
-      "output": "business",
-      "correct": false
+      "prediction": "science",
+      "output": "science",
+      "correct": true
     },
     {
       "idx": 10,

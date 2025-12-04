@@ -9,8 +9,8 @@
     "science": 1900
   },
   "mistral_text_baseline": {
-    "accuracy": 70.0,
-    "correct": 140,
+    "accuracy": 70.5,
+    "correct": 141,
     "total": 200,
     "per_class": {
       "world": {
@@ -26,7 +26,7 @@
         "total": 29
       },
       "science": {
-        "correct": 20,
+        "correct": 21,
         "total": 57
       }
     }
@@ -37,8 +37,8 @@
     "total": 200
   },
   "llama_text_baseline": {
-    "accuracy": 74.0,
-    "correct": 148,
+    "accuracy": 74.5,
+    "correct": 149,
     "total": 200,
     "per_class": {
       "world": {
@@ -54,7 +54,7 @@
         "total": 29
       },
       "science": {
-        "correct": 19,
+        "correct": 20,
         "total": 57
       }
     }
