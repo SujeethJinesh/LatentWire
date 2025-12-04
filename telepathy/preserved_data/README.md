@@ -20,7 +20,11 @@ preserved_data/
 │   ├── EXPERIMENT_SUMMARY.md
 │   ├── results.json
 │   └── experiment.log
-└── exp004_agnews/                   # [PENDING] 4-class classification
+└── exp004_agnews/                   # 4-class classification - COMPLETE
+    ├── EXPERIMENT_SUMMARY.md
+    ├── eval_agnews_results.json
+    ├── agnews_baselines.json
+    └── *.log
 ```
 
 ---
@@ -32,7 +36,7 @@ preserved_data/
 | exp001 | SST-2 Signal Check | ✅ Complete | 93.46% accuracy |
 | exp002 | SST-2 Baselines | ✅ Complete | Bridge matches Mistral text (93.5%) |
 | **exp003** | **Comprehensive Ablations** | ✅ **Complete** | **Layer 31 + 8 tokens = 96.5%** |
-| exp004 | AG News (4-class) | ⏳ Pending | - |
+| **exp004** | **AG News (4-class)** | ✅ **Complete** | **92.3% (exceeds text baselines by 20+pp)** |
 | exp005 | GSM8K | ⏳ Pending | - |
 
 ---
