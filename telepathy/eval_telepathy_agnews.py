@@ -26,6 +26,16 @@ from latent_bridge_v15 import LatentBridgeV15
 # AG News class labels
 AGNEWS_LABELS = ["world", "sports", "business", "science"]
 
+# Permissive matching for science/tech (AG News uses "Sci/Tech")
+SCIENCE_SYNONYMS = ["science", "technology", "tech", "sci/tech", "scitech"]
+
+
+def check_label_match(label, output):
+    """Check if label matches output, with permissive matching for science."""
+    if label == "science":
+        return any(syn in output for syn in SCIENCE_SYNONYMS)
+    return label in output
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -146,11 +156,11 @@ def main():
         # Check prediction - find which label appears in output
         pred = "unknown"
         for candidate in AGNEWS_LABELS:
-            if candidate in output:
+            if check_label_match(candidate, output):
                 pred = candidate
                 break
 
-        is_correct = (label in output)
+        is_correct = check_label_match(label, output)
 
         if is_correct:
             correct += 1

@@ -23,6 +23,16 @@ import os
 # AG News class labels
 AGNEWS_LABELS = ["world", "sports", "business", "science"]
 
+# Permissive matching for science/tech (AG News uses "Sci/Tech")
+SCIENCE_SYNONYMS = ["science", "technology", "tech", "sci/tech", "scitech"]
+
+
+def check_label_match(label, output):
+    """Check if label matches output, with permissive matching for science."""
+    if label == "science":
+        return any(syn in output for syn in SCIENCE_SYNONYMS)
+    return label in output
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -59,8 +69,8 @@ def eval_text_baseline(model, tokenizer, ds, num_samples, device, model_name):
             gen_ids = out_ids[0][inputs.input_ids.shape[1]:]
             output = tokenizer.decode(gen_ids, skip_special_tokens=True).strip().lower()
 
-        # Check which label is in output
-        is_correct = label in output
+        # Check which label is in output (permissive for science/tech)
+        is_correct = check_label_match(label, output)
         if is_correct:
             correct += 1
             class_correct[label] += 1
@@ -102,7 +112,7 @@ def eval_noise_baseline(model, tokenizer, ds, num_samples, device, tgt_dim):
             )
             output = tokenizer.decode(out_ids[0], skip_special_tokens=True).strip().lower()
 
-        if label in output:
+        if check_label_match(label, output):
             correct += 1
         total += 1
 
