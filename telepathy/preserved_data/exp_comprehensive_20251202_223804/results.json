@@ -1,0 +1,827 @@
+{
+  "meta": {
+    "start_time": "2025-12-02T22:38:37.824304",
+    "args": {
+      "output_dir": "runs/comprehensive_20251202_223804",
+      "eval_samples": 200,
+      "max_train_samples": 10000,
+      "train_steps": 1000,
+      "batch_size": 16,
+      "bridge_types": [
+        "continuous",
+        "diffusion",
+        "mlp",
+        "linear",
+        "meanpool",
+        "identity"
+      ],
+      "source_layers": [
+        0,
+        8,
+        16,
+        24,
+        31
+      ],
+      "num_latents_list": [
+        4,
+        8,
+        16,
+        32,
+        64
+      ],
+      "depths": [
+        1,
+        2,
+        4
+      ],
+      "diversity_weights": [
+        0.0,
+        0.1,
+        0.5
+      ],
+      "test_reverse": true
+    },
+    "mistral_rms": 0.002720701042562723,
+    "llama_rms": 0.010701796971261501,
+    "end_time": "2025-12-02T23:42:56.903073"
+  },
+  "baselines": {
+    "llama_text": {
+      "accuracy": 89.0,
+      "correct": 178,
+      "total": 200
+    },
+    "mistral_text": {
+      "accuracy": 93.5,
+      "correct": 187,
+      "total": 200
+    },
+    "random": {
+      "accuracy": 50.0
+    },
+    "majority": {
+      "accuracy": 50.91743119266055
+    }
+  },
+  "experiments": {
+    "bridge_continuous": {
+      "accuracy": 92.0,
+      "correct": 184,
+      "total": 200,
+      "config": {
+        "name": "bridge_continuous",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.10509093105792999,
+        0.11336128413677216,
+        0.13273809850215912,
+        0.3010563254356384,
+        0.12169487774372101,
+        0.18541410565376282,
+        0.1576593518257141,
+        0.1297372281551361,
+        0.1422949582338333,
+        0.2642998993396759
+      ],
+      "final_loss": 0.2642998993396759
+    },
+    "bridge_continuous_untrained": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_continuous_untrained",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 0,
+        "batch_size": 16,
+        "lr": 0,
+        "diversity_weight": 0,
+        "trained": false
+      },
+      "train_losses": [],
+      "final_loss": null
+    },
+    "bridge_diffusion": {
+      "accuracy": 85.5,
+      "correct": 171,
+      "total": 200,
+      "config": {
+        "name": "bridge_diffusion",
+        "bridge_type": "diffusion",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.33887356519699097,
+        0.34158438444137573,
+        0.3273947536945343,
+        0.32900938391685486,
+        0.2753468155860901,
+        0.226124107837677,
+        0.18420836329460144,
+        0.14795276522636414,
+        0.24091942608356476,
+        0.1510772556066513
+      ],
+      "final_loss": 0.1510772556066513
+    },
+    "bridge_diffusion_untrained": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_diffusion_untrained",
+        "bridge_type": "diffusion",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 0,
+        "batch_size": 16,
+        "lr": 0,
+        "diversity_weight": 0,
+        "trained": false
+      },
+      "train_losses": [],
+      "final_loss": null
+    },
+    "bridge_mlp": {
+      "accuracy": 91.5,
+      "correct": 183,
+      "total": 200,
+      "config": {
+        "name": "bridge_mlp",
+        "bridge_type": "mlp",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.16237707436084747,
+        0.20971135795116425,
+        0.15649652481079102,
+        0.057193055748939514,
+        0.13859620690345764,
+        0.10689461976289749,
+        0.05807214602828026,
+        0.047526828944683075,
+        0.10931731760501862,
+        0.12159870564937592
+      ],
+      "final_loss": 0.12159870564937592
+    },
+    "bridge_mlp_untrained": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_mlp_untrained",
+        "bridge_type": "mlp",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 0,
+        "batch_size": 16,
+        "lr": 0,
+        "diversity_weight": 0,
+        "trained": false
+      },
+      "train_losses": [],
+      "final_loss": null
+    },
+    "bridge_linear": {
+      "accuracy": 91.5,
+      "correct": 183,
+      "total": 200,
+      "config": {
+        "name": "bridge_linear",
+        "bridge_type": "linear",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.11254248023033142,
+        0.2814275920391083,
+        0.1544184684753418,
+        0.11492017656564713,
+        0.23285244405269623,
+        0.20374824106693268,
+        0.27126559615135193,
+        0.11070751398801804,
+        0.28976231813430786,
+        0.30119627714157104
+      ],
+      "final_loss": 0.30119627714157104
+    },
+    "bridge_linear_untrained": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_linear_untrained",
+        "bridge_type": "linear",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 0,
+        "batch_size": 16,
+        "lr": 0,
+        "diversity_weight": 0,
+        "trained": false
+      },
+      "train_losses": [],
+      "final_loss": null
+    },
+    "bridge_meanpool": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_meanpool",
+        "bridge_type": "meanpool",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        8.846928596496582,
+        8.928375244140625,
+        8.780034065246582,
+        8.589910507202148,
+        8.903648376464844,
+        8.668437004089355,
+        8.89456844329834,
+        8.993302345275879,
+        8.913626670837402,
+        8.741228103637695
+      ],
+      "final_loss": 8.741228103637695
+    },
+    "bridge_meanpool_untrained": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_meanpool_untrained",
+        "bridge_type": "meanpool",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 0,
+        "batch_size": 16,
+        "lr": 0,
+        "diversity_weight": 0,
+        "trained": false
+      },
+      "train_losses": [],
+      "final_loss": null
+    },
+    "bridge_identity": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_identity",
+        "bridge_type": "identity",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        8.888771057128906,
+        8.342236518859863,
+        8.70584774017334,
+        8.354822158813477,
+        8.73605728149414,
+        8.363855361938477,
+        8.687278747558594,
+        8.45640754699707,
+        8.36609935760498,
+        8.690993309020996
+      ],
+      "final_loss": 8.690993309020996
+    },
+    "bridge_identity_untrained": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 200,
+      "config": {
+        "name": "bridge_identity_untrained",
+        "bridge_type": "identity",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 0,
+        "batch_size": 16,
+        "lr": 0,
+        "diversity_weight": 0,
+        "trained": false
+      },
+      "train_losses": [],
+      "final_loss": null
+    },
+    "layer_0": {
+      "accuracy": 66.5,
+      "correct": 133,
+      "total": 200,
+      "config": {
+        "name": "layer_0",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 0,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.2982470989227295,
+        0.3105279505252838,
+        0.2897604703903198,
+        0.19673675298690796,
+        0.1765523999929428,
+        0.22027453780174255,
+        0.24892327189445496,
+        0.36943382024765015,
+        0.5498672723770142,
+        0.2221248596906662
+      ],
+      "final_loss": 0.2221248596906662
+    },
+    "layer_8": {
+      "accuracy": 88.0,
+      "correct": 176,
+      "total": 200,
+      "config": {
+        "name": "layer_8",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 8,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.10425586998462677,
+        0.26875197887420654,
+        0.4790940284729004,
+        0.21307331323623657,
+        0.15616059303283691,
+        0.13429374992847443,
+        0.15810126066207886,
+        0.18486380577087402,
+        0.2639223635196686,
+        0.17951223254203796
+      ],
+      "final_loss": 0.17951223254203796
+    },
+    "layer_24": {
+      "accuracy": 89.0,
+      "correct": 178,
+      "total": 200,
+      "config": {
+        "name": "layer_24",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 24,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.2807588577270508,
+        0.11044807732105255,
+        0.34843817353248596,
+        0.1804448664188385,
+        0.20798160135746002,
+        0.33955878019332886,
+        0.19704869389533997,
+        0.13387887179851532,
+        0.1975635290145874,
+        0.21441715955734253
+      ],
+      "final_loss": 0.21441715955734253
+    },
+    "layer_31": {
+      "accuracy": 94.5,
+      "correct": 189,
+      "total": 200,
+      "config": {
+        "name": "layer_31",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 31,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.1257295161485672,
+        0.25638529658317566,
+        0.30389204621315,
+        0.23851275444030762,
+        0.49900829792022705,
+        0.18848323822021484,
+        0.2042568027973175,
+        0.34914273023605347,
+        0.16118250787258148,
+        0.2444019317626953
+      ],
+      "final_loss": 0.2444019317626953
+    },
+    "latents_4": {
+      "accuracy": 92.5,
+      "correct": 185,
+      "total": 200,
+      "config": {
+        "name": "latents_4",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 4,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.20391976833343506,
+        0.14862443506717682,
+        0.756787121295929,
+        0.15298126637935638,
+        0.2709006369113922,
+        0.19056212902069092,
+        0.18756386637687683,
+        0.31094133853912354,
+        0.13955669105052948,
+        0.1912563145160675
+      ],
+      "final_loss": 0.1912563145160675
+    },
+    "latents_8": {
+      "accuracy": 96.5,
+      "correct": 193,
+      "total": 200,
+      "config": {
+        "name": "latents_8",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 8,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.09122759103775024,
+        0.06286342442035675,
+        0.15970176458358765,
+        0.15905526280403137,
+        0.17134056985378265,
+        0.17307932674884796,
+        0.1602335125207901,
+        0.20327839255332947,
+        0.19096443057060242,
+        0.22918708622455597
+      ],
+      "final_loss": 0.22918708622455597
+    },
+    "latents_16": {
+      "accuracy": 92.5,
+      "correct": 185,
+      "total": 200,
+      "config": {
+        "name": "latents_16",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 16,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.24366159737110138,
+        0.07964853942394257,
+        0.05007534846663475,
+        0.2868431806564331,
+        0.3169878423213959,
+        0.1849919557571411,
+        0.2691771984100342,
+        0.055224157869815826,
+        0.1693575382232666,
+        0.1848921775817871
+      ],
+      "final_loss": 0.1848921775817871
+    },
+    "latents_64": {
+      "accuracy": 90.5,
+      "correct": 181,
+      "total": 200,
+      "config": {
+        "name": "latents_64",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 64,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.024738650768995285,
+        0.08464270085096359,
+        0.1013488695025444,
+        0.05623140186071396,
+        0.18405883014202118,
+        0.02604536898434162,
+        0.20342640578746796,
+        0.1787717193365097,
+        0.0962715670466423,
+        0.046848177909851074
+      ],
+      "final_loss": 0.046848177909851074
+    },
+    "depth_1": {
+      "accuracy": 92.5,
+      "correct": 185,
+      "total": 200,
+      "config": {
+        "name": "depth_1",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 1,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.12530384957790375,
+        0.08563190698623657,
+        0.0111687695607543,
+        0.06140774488449097,
+        0.1743547022342682,
+        0.30217769742012024,
+        0.28065651655197144,
+        0.30094632506370544,
+        0.038226738572120667,
+        0.17414817214012146
+      ],
+      "final_loss": 0.17414817214012146
+    },
+    "depth_4": {
+      "accuracy": 93.0,
+      "correct": 186,
+      "total": 200,
+      "config": {
+        "name": "depth_4",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 4,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.43313947319984436,
+        0.2092248648405075,
+        0.14312973618507385,
+        0.12622256577014923,
+        0.10405877977609634,
+        0.31337058544158936,
+        0.09413871169090271,
+        0.08423998206853867,
+        0.08245004713535309,
+        0.08517252653837204
+      ],
+      "final_loss": 0.08517252653837204
+    },
+    "div_weight_0.0": {
+      "accuracy": 83.5,
+      "correct": 167,
+      "total": 200,
+      "config": {
+        "name": "div_weight_0.0",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.0,
+        "trained": true
+      },
+      "train_losses": [
+        0.22755184769630432,
+        0.02165037766098976,
+        0.017876390367746353,
+        0.05249287560582161,
+        0.0496598556637764,
+        0.34382569789886475,
+        0.007492788601666689,
+        0.2380180060863495,
+        0.13798239827156067,
+        0.23781320452690125
+      ],
+      "final_loss": 0.23781320452690125
+    },
+    "div_weight_0.5": {
+      "accuracy": 91.5,
+      "correct": 183,
+      "total": 200,
+      "config": {
+        "name": "div_weight_0.5",
+        "bridge_type": "continuous",
+        "source_model": "llama",
+        "target_model": "mistral",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.5,
+        "trained": true
+      },
+      "train_losses": [
+        0.4779871702194214,
+        0.45581305027008057,
+        0.4357616901397705,
+        0.7421171069145203,
+        0.52764493227005,
+        0.617828905582428,
+        0.33801454305648804,
+        0.4848269820213318,
+        0.3701572120189667,
+        0.40295031666755676
+      ],
+      "final_loss": 0.40295031666755676
+    },
+    "reverse_mistral_to_llama": {
+      "accuracy": 94.5,
+      "correct": 189,
+      "total": 200,
+      "config": {
+        "name": "reverse_mistral_to_llama",
+        "bridge_type": "continuous",
+        "source_model": "mistral",
+        "target_model": "llama",
+        "source_layer": 16,
+        "num_latents": 32,
+        "depth": 2,
+        "heads": 8,
+        "steps": 1000,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1,
+        "trained": true
+      },
+      "train_losses": [
+        0.10439006984233856,
+        0.1316782385110855,
+        0.08016452938318253,
+        0.025897616520524025,
+        0.19812795519828796,
+        0.040123701095581055,
+        0.2516357898712158,
+        0.06987185031175613,
+        0.01913662627339363,
+        0.041210077702999115
+      ],
+      "final_loss": 0.041210077702999115
+    }
+  }
+}
