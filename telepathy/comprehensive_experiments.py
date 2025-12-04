@@ -323,8 +323,8 @@ class ExperimentConfig:
 
 def train_bridge(config: ExperimentConfig, bridge: UnifiedBridge,
                  src_model, tgt_model, src_tok, tgt_tok,
-                 train_ds, device, verbose=True):
-    """Train a bridge with given config."""
+                 train_ds, src_device, tgt_device, verbose=True):
+    """Train a bridge with given config. Supports multi-GPU (src on one, tgt on another)."""
     bridge.train()
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=config.lr, weight_decay=0.01)
 
@@ -342,7 +342,7 @@ def train_bridge(config: ExperimentConfig, bridge: UnifiedBridge,
 
         optimizer.zero_grad()
 
-        # Source forward
+        # Source forward (on src_device)
         inputs = batch['sentence']
         labels = ["negative" if l == 0 else "positive" for l in batch['label']]
         B = len(inputs)
@@ -351,42 +351,44 @@ def train_bridge(config: ExperimentConfig, bridge: UnifiedBridge,
 
         with torch.no_grad():
             src_enc = src_tok(src_texts, return_tensors="pt", padding=True,
-                            truncation=True, max_length=128).to(device)
+                            truncation=True, max_length=128).to(src_device)
             src_out = src_model(**src_enc, output_hidden_states=True)
-            src_h = src_out.hidden_states[config.source_layer].to(bridge.target_rms.dtype)
+            # Transfer hidden states to target device
+            src_h = src_out.hidden_states[config.source_layer].to(tgt_device).to(bridge.target_rms.dtype)
+            src_mask = src_enc.attention_mask.to(tgt_device)
 
-        # Bridge
-        soft_tokens = bridge(src_h, src_enc.attention_mask)
+        # Bridge (on tgt_device)
+        soft_tokens = bridge(src_h, src_mask)
 
         # Diversity loss
-        div_loss = torch.tensor(0.0, device=device)
+        div_loss = torch.tensor(0.0, device=tgt_device)
         if config.diversity_weight > 0 and B > 1:
             flat = soft_tokens.reshape(B, -1).float()
             flat_norm = F.normalize(flat, dim=1)
             sim = torch.mm(flat_norm, flat_norm.t())
-            mask = ~torch.eye(B, dtype=torch.bool, device=device)
+            mask = ~torch.eye(B, dtype=torch.bool, device=tgt_device)
             div_loss = sim[mask].mean()
 
-        # Target forward
+        # Target forward (on tgt_device)
         with torch.no_grad():
-            primer_enc = tgt_tok(["Sentiment:"] * B, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_enc = tgt_tok(["Sentiment:"] * B, return_tensors="pt", add_special_tokens=False).to(tgt_device)
             primer_emb = tgt_model.get_input_embeddings()(primer_enc.input_ids).to(soft_tokens.dtype)
 
             tgt_texts = [f" {l}{tgt_tok.eos_token}" for l in labels]
             tgt_enc = tgt_tok(tgt_texts, return_tensors="pt", padding=True,
-                            truncation=True, max_length=16, add_special_tokens=False).to(device)
+                            truncation=True, max_length=16, add_special_tokens=False).to(tgt_device)
             answer_emb = tgt_model.get_input_embeddings()(tgt_enc.input_ids).to(soft_tokens.dtype)
 
         inputs_embeds = torch.cat([primer_emb, soft_tokens, answer_emb], dim=1)
 
         K = soft_tokens.shape[1]
         P = primer_emb.shape[1]
-        ignore = torch.full((B, P + K), -100, dtype=torch.long, device=device)
+        ignore = torch.full((B, P + K), -100, dtype=torch.long, device=tgt_device)
         answer_labels = tgt_enc.input_ids.clone()
         answer_labels[tgt_enc.attention_mask == 0] = -100
         labels_tensor = torch.cat([ignore, answer_labels], dim=1)
 
-        soft_mask = torch.ones(B, K, dtype=torch.long, device=device)
+        soft_mask = torch.ones(B, K, dtype=torch.long, device=tgt_device)
         full_mask = torch.cat([primer_enc.attention_mask, soft_mask, tgt_enc.attention_mask], dim=1)
 
         outputs = tgt_model(inputs_embeds=inputs_embeds, attention_mask=full_mask, labels=labels_tensor)
@@ -402,8 +404,8 @@ def train_bridge(config: ExperimentConfig, bridge: UnifiedBridge,
 
 
 def evaluate_bridge(bridge: UnifiedBridge, src_model, tgt_model, src_tok, tgt_tok,
-                   eval_ds, source_layer, device, num_samples=200):
-    """Evaluate a bridge."""
+                   eval_ds, source_layer, src_device, tgt_device, num_samples=200):
+    """Evaluate a bridge. Supports multi-GPU (src on one, tgt on another)."""
     bridge.eval()
     correct = 0
     total = 0
@@ -416,18 +418,23 @@ def evaluate_bridge(bridge: UnifiedBridge, src_model, tgt_model, src_tok, tgt_to
         src_input = f"Review: {text}\nSentiment:"
 
         with torch.no_grad():
-            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(device)
+            # Source forward (on src_device)
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(src_device)
             src_out = src_model(**src_enc, output_hidden_states=True)
-            src_h = src_out.hidden_states[source_layer].to(bridge.target_rms.dtype)
+            # Transfer to target device
+            src_h = src_out.hidden_states[source_layer].to(tgt_device).to(bridge.target_rms.dtype)
+            src_mask = src_enc.attention_mask.to(tgt_device)
 
-            soft_tokens = bridge(src_h, src_enc.attention_mask)
+            # Bridge (on tgt_device)
+            soft_tokens = bridge(src_h, src_mask)
 
+            # Target forward (on tgt_device)
             primer = "Sentiment:"
-            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(tgt_device)
             primer_emb = tgt_model.get_input_embeddings()(primer_enc.input_ids).to(soft_tokens.dtype)
 
             combined = torch.cat([primer_emb, soft_tokens], dim=1)
-            attn_mask = torch.ones(combined.shape[:2], device=device, dtype=torch.long)
+            attn_mask = torch.ones(combined.shape[:2], device=tgt_device, dtype=torch.long)
 
             out_ids = tgt_model.generate(
                 inputs_embeds=combined,
@@ -480,12 +487,21 @@ def run_all_experiments(args):
     # Set seed for reproducibility
     set_seed(42)
 
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Multi-GPU setup: put source model on GPU 0, target model on GPU 1
+    num_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
+    if num_gpus >= 2:
+        DEVICE_LLAMA = torch.device("cuda:0")
+        DEVICE_MISTRAL = torch.device("cuda:1")
+        print(f"Multi-GPU mode: Llama on cuda:0, Mistral on cuda:1")
+    else:
+        DEVICE_LLAMA = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        DEVICE_MISTRAL = DEVICE_LLAMA
+        print(f"Single device mode: {DEVICE_LLAMA}")
 
     print("=" * 80)
     print("COMPREHENSIVE TELEPATHY BRIDGE EXPERIMENTS")
     print("=" * 80)
-    print(f"Device: {DEVICE}")
+    print(f"GPUs available: {num_gpus}")
     print(f"Start time: {datetime.now().isoformat()}")
     print(f"Seed: 42")
     print("")
@@ -494,18 +510,18 @@ def run_all_experiments(args):
     output_dir = args.output_dir
     os.makedirs(output_dir, exist_ok=True)
 
-    # Load models
+    # Load models on separate GPUs
     print("Loading models...")
     llama = AutoModelForCausalLM.from_pretrained(
         "meta-llama/Meta-Llama-3.1-8B-Instruct",
-        torch_dtype=torch.bfloat16, device_map={"": DEVICE}
+        torch_dtype=torch.bfloat16, device_map={"": DEVICE_LLAMA}
     ).eval()
     llama_tok = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
     llama_tok.pad_token = llama_tok.eos_token
 
     mistral = AutoModelForCausalLM.from_pretrained(
         "mistralai/Mistral-7B-Instruct-v0.3",
-        torch_dtype=torch.bfloat16, device_map={"": DEVICE}
+        torch_dtype=torch.bfloat16, device_map={"": DEVICE_MISTRAL}
     ).eval()
     mistral_tok = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3")
     mistral_tok.pad_token = mistral_tok.eos_token
@@ -547,13 +563,13 @@ def run_all_experiments(args):
     # Text baselines
     print("\n[Baseline] Llama text...")
     all_results["baselines"]["llama_text"] = eval_text_baseline(
-        llama, llama_tok, eval_ds, args.eval_samples, DEVICE, "Llama"
+        llama, llama_tok, eval_ds, args.eval_samples, DEVICE_LLAMA, "Llama"
     )
     print(f"  Accuracy: {all_results['baselines']['llama_text']['accuracy']:.1f}%")
 
     print("\n[Baseline] Mistral text...")
     all_results["baselines"]["mistral_text"] = eval_text_baseline(
-        mistral, mistral_tok, eval_ds, args.eval_samples, DEVICE, "Mistral"
+        mistral, mistral_tok, eval_ds, args.eval_samples, DEVICE_MISTRAL, "Mistral"
     )
     print(f"  Accuracy: {all_results['baselines']['mistral_text']['accuracy']:.1f}%")
 
@@ -721,38 +737,38 @@ def run_all_experiments(args):
         print(f"\n[{i+1}/{len(experiments)}] {config.name}")
         print("-" * 60)
 
-        # Select models based on config
+        # Select models and devices based on config
         if config.source_model == "llama":
-            src_model, src_tok, src_dim = llama, llama_tok, llama.config.hidden_size
+            src_model, src_tok, src_dim, src_device = llama, llama_tok, llama.config.hidden_size, DEVICE_LLAMA
         else:
-            src_model, src_tok, src_dim = mistral, mistral_tok, mistral.config.hidden_size
+            src_model, src_tok, src_dim, src_device = mistral, mistral_tok, mistral.config.hidden_size, DEVICE_MISTRAL
 
         if config.target_model == "mistral":
-            tgt_model, tgt_tok, tgt_dim, tgt_rms = mistral, mistral_tok, mistral.config.hidden_size, mistral_rms
+            tgt_model, tgt_tok, tgt_dim, tgt_rms, tgt_device = mistral, mistral_tok, mistral.config.hidden_size, mistral_rms, DEVICE_MISTRAL
         else:
-            tgt_model, tgt_tok, tgt_dim, tgt_rms = llama, llama_tok, llama.config.hidden_size, llama_rms
+            tgt_model, tgt_tok, tgt_dim, tgt_rms, tgt_device = llama, llama_tok, llama.config.hidden_size, llama_rms, DEVICE_LLAMA
 
-        # Create bridge
+        # Create bridge on target device (where we generate)
         bridge = UnifiedBridge(
             config.bridge_type, src_dim, tgt_dim,
             num_latents=config.num_latents,
             depth=config.depth,
             heads=config.heads,
             target_rms=tgt_rms
-        ).to(DEVICE).to(torch.bfloat16)
+        ).to(tgt_device).to(torch.bfloat16)
 
         # Train if needed
         train_losses = []
         if config.trained and config.steps > 0:
             train_losses = train_bridge(
                 config, bridge, src_model, tgt_model, src_tok, tgt_tok,
-                train_ds, DEVICE, verbose=True
+                train_ds, src_device, tgt_device, verbose=True
             )
 
         # Evaluate
         result = evaluate_bridge(
             bridge, src_model, tgt_model, src_tok, tgt_tok,
-            eval_ds, config.source_layer, DEVICE, args.eval_samples
+            eval_ds, config.source_layer, src_device, tgt_device, args.eval_samples
         )
 
         result["config"] = asdict(config)
