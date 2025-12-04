@@ -69,11 +69,15 @@ def parse_args():
 
 
 def extract_answer(text):
-    """Extract numeric answer from GSM8K format '#### number'."""
-    # Look for #### pattern
+    """Extract numeric answer following standard GSM8K format."""
+    # Primary: Look for "The answer is X" (standard CoT format)
+    match = re.search(r'[Tt]he answer is\s*(-?\d+(?:,\d+)*(?:\.\d+)?)', text)
+    if match:
+        return match.group(1).replace(',', '')
+
+    # Secondary: Look for #### pattern (dataset format)
     match = re.search(r'####\s*(-?\d+(?:,\d+)*(?:\.\d+)?)', text)
     if match:
-        # Remove commas and convert to number
         return match.group(1).replace(',', '')
 
     # Fallback: look for last number in text
