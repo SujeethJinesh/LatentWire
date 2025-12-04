@@ -77,8 +77,8 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
         text = item['sentence']
         label = "positive" if item['label'] == 1 else "negative"
 
-        # Source
-        src_input = f"Review: {text}\nSentiment:"
+        # Source (same prompt format as baseline for fair comparison)
+        src_input = f"Review: {text}\nSentiment (positive or negative):"
         with torch.no_grad():
             src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(device)
             src_out = src_model(**src_enc, output_hidden_states=True)
@@ -131,8 +131,8 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
 
     B = len(inputs)
 
-    # 1. Source (Llama reads review)
-    src_texts = [f"Review: {t}\nSentiment:" for t in inputs]
+    # 1. Source (Llama reads review - same format as baseline)
+    src_texts = [f"Review: {t}\nSentiment (positive or negative):" for t in inputs]
 
     with torch.no_grad():
         src_enc = src_tok(

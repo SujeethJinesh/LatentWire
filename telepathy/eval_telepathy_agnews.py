@@ -124,8 +124,8 @@ def main():
         text = item['text']
         label = AGNEWS_LABELS[item['label']]
 
-        # Source
-        src_input = f"Article: {text[:256]}\nTopic:"
+        # Source (same prompt format as text baseline for fair comparison)
+        src_input = f"Article: {text[:256]}\nTopic (world, sports, business, or science):"
         with torch.no_grad():
             src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(DEVICE)
             src_out = src_model(**src_enc, output_hidden_states=True)

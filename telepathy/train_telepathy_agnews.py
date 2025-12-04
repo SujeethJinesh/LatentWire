@@ -36,6 +36,16 @@ from latent_bridge_v15 import LatentBridgeV15
 # AG News class labels
 AGNEWS_LABELS = ["world", "sports", "business", "science"]
 
+# Permissive matching for science/tech (AG News uses "Sci/Tech")
+SCIENCE_SYNONYMS = ["science", "technology", "tech", "sci/tech", "scitech"]
+
+
+def check_label_match(label, output):
+    """Check if label matches output, with permissive matching for science."""
+    if label == "science":
+        return any(syn in output for syn in SCIENCE_SYNONYMS)
+    return label in output
+
 
 def setup_ddp():
     if "RANK" in os.environ:
@@ -89,8 +99,8 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
         text = item['text']
         label = AGNEWS_LABELS[item['label']]
 
-        # Source
-        src_input = f"Article: {text[:256]}\nTopic:"
+        # Source (same prompt format as baseline for fair comparison)
+        src_input = f"Article: {text[:256]}\nTopic (world, sports, business, or science):"
         with torch.no_grad():
             src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
             src_out = src_model(**src_enc, output_hidden_states=True)
@@ -118,8 +128,8 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
             )
             output = tgt_tok.decode(out_ids[0], skip_special_tokens=True).strip().lower()
 
-        # Check if correct label in output
-        is_correct = label in output
+        # Check if correct label in output (permissive for science/tech)
+        is_correct = check_label_match(label, output)
         if is_correct:
             correct += 1
             class_correct[label] += 1
@@ -150,8 +160,8 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
 
     B = len(inputs)
 
-    # 1. Source (Llama reads article)
-    src_texts = [f"Article: {t[:256]}\nTopic:" for t in inputs]
+    # 1. Source (Llama reads article - same format as baseline)
+    src_texts = [f"Article: {t[:256]}\nTopic (world, sports, business, or science):" for t in inputs]
 
     with torch.no_grad():
         src_enc = src_tok(

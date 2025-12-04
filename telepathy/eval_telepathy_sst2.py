@@ -113,8 +113,8 @@ def main():
         text = item['sentence']
         label = "positive" if item['label'] == 1 else "negative"
 
-        # Source
-        src_input = f"Review: {text}\nSentiment:"
+        # Source (same prompt format as text baseline for fair comparison)
+        src_input = f"Review: {text}\nSentiment (positive or negative):"
         with torch.no_grad():
             src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(DEVICE)
             src_out = src_model(**src_enc, output_hidden_states=True)
