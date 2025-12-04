@@ -8,20 +8,19 @@ This directory contains preserved experimental data, results, and source code sn
 
 ```
 preserved_data/
-├── README.md                    # This file
-├── exp001_sst2_signal_check/    # First successful experiment
-│   ├── EXPERIMENT_SUMMARY.md    # Detailed experiment documentation
-│   ├── config.json              # Training configuration
-│   ├── eval_sst2_results.json   # Full evaluation results
-│   ├── training_metrics.txt     # Key training metrics
-│   ├── quick_eval_trajectory.txt # Accuracy during training
-│   └── source_code/             # Code snapshot at time of experiment
-│       ├── latent_bridge_v15.py
-│       ├── train_telepathy_sst2.py
-│       ├── eval_telepathy_sst2.py
-│       └── run_sst2_signal_check.sh
-├── exp002_baselines/            # [PENDING] Baseline comparisons
-└── exp003_agnews/               # [PENDING] 4-class classification
+├── README.md                        # This file
+├── exp001_sst2_signal_check/        # First successful experiment
+│   ├── EXPERIMENT_SUMMARY.md
+│   ├── config.json
+│   ├── eval_sst2_results.json
+│   └── source_code/
+├── exp002_sst2_baselines/           # SST-2 baseline comparisons
+│   └── sst2_baselines.json
+├── exp003_comprehensive_ablations/  # 25 configs, 6 dimensions
+│   ├── EXPERIMENT_SUMMARY.md
+│   ├── results.json
+│   └── experiment.log
+└── exp004_agnews/                   # [PENDING] 4-class classification
 ```
 
 ---
@@ -33,9 +32,8 @@ preserved_data/
 | exp001 | SST-2 Signal Check | ✅ Complete | 93.46% accuracy |
 | exp002 | SST-2 Baselines | ✅ Complete | Bridge matches Mistral text (93.5%) |
 | **exp003** | **Comprehensive Ablations** | ✅ **Complete** | **Layer 31 + 8 tokens = 96.5%** |
-| exp004 | SST-2 Optimal Config | ⏳ Pending | - |
-| exp005 | AG News (4-class) | ⏳ Pending | - |
-| exp006 | GSM8K | ⏳ Pending | - |
+| exp004 | AG News (4-class) | ⏳ Pending | - |
+| exp005 | GSM8K | ⏳ Pending | - |
 
 ---
 
@@ -95,6 +93,5 @@ cp telepathy/relevant_scripts.py telepathy/preserved_data/expXXX_name/source_cod
 | Method | exp001 (architecture description) |
 | Signal Validation | exp001, exp002 |
 | **Ablations** | **exp003 (comprehensive - 25 configs, 6 dimensions)** |
-| Optimal Config | exp004 (layer 31 + 8 tokens) |
-| Generalization | exp005 (AG News 4-class) |
-| Reasoning | exp006 (GSM8K) |
+| Generalization | exp004 (AG News 4-class) |
+| Reasoning | exp005 (GSM8K) |

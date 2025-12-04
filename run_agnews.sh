@@ -128,9 +128,26 @@ cat > "${OUTPUT_DIR}/config.json" << EOF
 EOF
 
 # =============================================================================
-# Training
+# Phase 1: Baselines (establish upper/lower bounds)
 # =============================================================================
-echo "[Phase 1/2] Training AG News Bridge..."
+echo "[Phase 1/3] Running AG News Baselines..."
+BASELINE_LOG="${OUTPUT_DIR}/baselines_$(date +%Y%m%d_%H%M%S).log"
+
+{
+    python telepathy/eval_agnews_baselines.py \
+        --num_samples 200 \
+        --output_dir "$OUTPUT_DIR" \
+        --bf16
+} 2>&1 | tee "$BASELINE_LOG"
+
+echo ""
+echo "Baselines complete. See: ${OUTPUT_DIR}/agnews_baselines.json"
+echo ""
+
+# =============================================================================
+# Phase 2: Training
+# =============================================================================
+echo "[Phase 2/3] Training AG News Bridge..."
 echo "  Log file: $LOG_FILE"
 echo ""
 
@@ -160,12 +177,12 @@ RANDOM_PORT=$((29500 + RANDOM % 1000))
 } 2>&1 | tee "$LOG_FILE"
 
 # =============================================================================
-# Evaluation
+# Phase 3: Evaluation
 # =============================================================================
 if [[ -f "${OUTPUT_DIR}/bridge_agnews.pt" ]]; then
     CHECKPOINT="${OUTPUT_DIR}/bridge_agnews.pt"
     echo ""
-    echo "[Phase 2/2] Evaluating AG News Bridge..."
+    echo "[Phase 3/3] Evaluating AG News Bridge..."
     echo "  Checkpoint: $CHECKPOINT"
 
     EVAL_LOG="${OUTPUT_DIR}/eval_$(date +%Y%m%d_%H%M%S).log"
@@ -186,13 +203,18 @@ if [[ -f "${OUTPUT_DIR}/bridge_agnews.pt" ]]; then
     echo "=========================================================================="
     echo " Phase 17 AG News Complete!"
     echo "=========================================================================="
-    echo " Results: ${OUTPUT_DIR}/eval_agnews_results.json"
-    echo " Train Log: $LOG_FILE"
-    echo " Eval Log: $EVAL_LOG"
+    echo " Results:"
+    echo "   - Baselines: ${OUTPUT_DIR}/agnews_baselines.json"
+    echo "   - Bridge: ${OUTPUT_DIR}/eval_agnews_results.json"
+    echo " Logs:"
+    echo "   - Baselines: $BASELINE_LOG"
+    echo "   - Training: $LOG_FILE"
+    echo "   - Evaluation: $EVAL_LOG"
     echo ""
     echo " INTERPRETATION:"
-    echo "   - If accuracy > 50%: Bridge works for multi-class!"
-    echo "   - If accuracy ~ 25%: Bridge failed on harder task."
+    echo "   - Compare bridge accuracy to Mistral text baseline"
+    echo "   - If bridge > 50%: Bridge works for multi-class!"
+    echo "   - If bridge ~ 25%: Bridge failed on harder task."
     echo "=========================================================================="
 else
     echo ""
