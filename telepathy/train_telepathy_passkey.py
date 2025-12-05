@@ -98,11 +98,12 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, device, num_samples
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]  # Layer 31
+            src_mask = src_inputs.attention_mask
 
         # 2. Bridge Forward
         with torch.no_grad():
             # Bridge returns (latents, aux_loss, diversity, z_variance)
-            latents, _, _, _ = bridge(src_hidden)
+            latents, _, _, _ = bridge(src_hidden, src_mask)
 
         # 3. Target Generation
         # Input: [Primer] + [Latents]
