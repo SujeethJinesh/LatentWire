@@ -1,0 +1,23 @@
+{
+  "random_baseline": 50.0,
+  "majority_baseline": 50.91743119266055,
+  "class_distribution": {
+    "positive": 444,
+    "negative": 428
+  },
+  "mistral_text_baseline": {
+    "accuracy": 93.5,
+    "correct": 187,
+    "total": 200
+  },
+  "noise_baseline": {
+    "accuracy": 0.0,
+    "correct": 0,
+    "total": 200
+  },
+  "llama_text_baseline": {
+    "accuracy": 89.0,
+    "correct": 178,
+    "total": 200
+  }
+}
