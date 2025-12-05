@@ -1,0 +1,63 @@
+{
+  "experiment": "passkey_retrieval",
+  "timestamp": "2025-12-04T21:08:43.233207",
+  "config": {
+    "soft_tokens": 16,
+    "steps": 1000,
+    "batch_size": 8,
+    "diversity_weight": 0.1
+  },
+  "final_results": {
+    "exact_match": 0.0,
+    "digit_accuracy": 22.0,
+    "correct": 0,
+    "total": 100
+  },
+  "training_log": [
+    {
+      "step": 200,
+      "lm_loss": 1.9105974435806274,
+      "div_loss": 0.9999872446060181,
+      "exact_match": 0.0,
+      "digit_accuracy": 8.0,
+      "correct": 0,
+      "total": 50
+    },
+    {
+      "step": 400,
+      "lm_loss": 1.888789176940918,
+      "div_loss": 0.9999786615371704,
+      "exact_match": 0.0,
+      "digit_accuracy": 9.6,
+      "correct": 0,
+      "total": 50
+    },
+    {
+      "step": 600,
+      "lm_loss": 1.8347774744033813,
+      "div_loss": 0.9976578950881958,
+      "exact_match": 0.0,
+      "digit_accuracy": 12.8,
+      "correct": 0,
+      "total": 50
+    },
+    {
+      "step": 800,
+      "lm_loss": 2.055150270462036,
+      "div_loss": 0.9935315251350403,
+      "exact_match": 0.0,
+      "digit_accuracy": 13.600000000000001,
+      "correct": 0,
+      "total": 50
+    },
+    {
+      "step": 1000,
+      "lm_loss": 1.6557940244674683,
+      "div_loss": 0.9951249957084656,
+      "exact_match": 0.0,
+      "digit_accuracy": 22.0,
+      "correct": 0,
+      "total": 50
+    }
+  ]
+}

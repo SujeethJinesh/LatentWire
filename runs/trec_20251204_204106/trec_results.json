@@ -1,0 +1,51 @@
+{
+  "experiment": "trec",
+  "timestamp": "2025-12-04T21:17:27.450128",
+  "config": {
+    "output_dir": "runs/trec_20251204_204106",
+    "steps": 2000,
+    "soft_tokens": 16,
+    "batch_size": 8,
+    "lr": 0.0001,
+    "eval_every": 400,
+    "diversity_weight": 0.1
+  },
+  "num_classes": 50,
+  "final_results": {
+    "accuracy": 1.5,
+    "correct": 3,
+    "total": 200
+  },
+  "training_log": [
+    {
+      "step": 400,
+      "accuracy": 8.0,
+      "correct": 8,
+      "total": 100
+    },
+    {
+      "step": 800,
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 100
+    },
+    {
+      "step": 1200,
+      "accuracy": 1.0,
+      "correct": 1,
+      "total": 100
+    },
+    {
+      "step": 1600,
+      "accuracy": 2.0,
+      "correct": 2,
+      "total": 100
+    },
+    {
+      "step": 2000,
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 100
+    }
+  ]
+}
