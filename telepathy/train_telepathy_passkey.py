@@ -276,7 +276,7 @@ def main():
         latents, aux_loss, diversity, z_var = bridge(src_hidden, src_mask)
 
         # 3. Compute Diversity Loss (prevent mode collapse)
-        flat_tokens = latents.view(B, -1).float()
+        flat_tokens = latents.reshape(B, -1).float()
         flat_norm = F.normalize(flat_tokens, dim=1)
         sim_matrix = torch.mm(flat_norm, flat_norm.t())
         mask = ~torch.eye(B, dtype=torch.bool, device=device)
