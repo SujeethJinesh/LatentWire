@@ -36,6 +36,80 @@ from latent_bridge_v15 import LatentBridgeV15
 # AG News class labels
 AGNEWS_LABELS = ["world", "sports", "business", "science"]
 
+
+def get_nearest_neighbors(latent_vector, embedding_matrix, tokenizer, k=5):
+    """Find k nearest vocabulary tokens to a latent vector."""
+    latent_vector = latent_vector.float()
+    embedding_matrix = embedding_matrix.float()
+
+    latent_norm = F.normalize(latent_vector.unsqueeze(0), p=2, dim=-1)
+    emb_norm = F.normalize(embedding_matrix, p=2, dim=-1)
+    similarity = torch.matmul(latent_norm, emb_norm.t())
+
+    scores, indices = torch.topk(similarity, k)
+
+    neighbors = []
+    for score, idx in zip(scores[0], indices[0]):
+        token_str = tokenizer.decode([idx.item()]).replace('\n', '\\n').replace('\t', '\\t')
+        if token_str.strip() == '':
+            token_str = repr(tokenizer.decode([idx.item()]))
+        neighbors.append((token_str, score.item()))
+    return neighbors
+
+
+def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, args, eval_ds):
+    """Analyze what the soft tokens 'mean' by finding nearest vocabulary neighbors."""
+    print("\n" + "=" * 70)
+    print("LATENT INTERPRETABILITY ANALYSIS")
+    print("=" * 70)
+    print("What vocabulary tokens are closest to each soft token?")
+
+    bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
+    bridge_module.eval()
+    mistral_embeddings = tgt_model.get_input_embeddings().weight.detach()
+
+    # Sample one from each class
+    samples = []
+    seen_labels = set()
+    for i in range(min(200, len(eval_ds))):
+        item = eval_ds[i]
+        label = AGNEWS_LABELS[item['label']]
+        if label not in seen_labels:
+            samples.append((item['text'], label))
+            seen_labels.add(label)
+        if len(samples) >= 4:
+            break
+
+    for text, label in samples:
+        print(f"\n--- Label: {label} ---")
+        print(f"    Input: \"{text[:50]}...\"")
+
+        src_input = f"Article: {text[:256]}\nTopic (world, sports, business, or science):"
+        src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+
+        with torch.no_grad():
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[args.source_layer]
+            if args.bf16:
+                src_h = src_h.bfloat16()
+            latents, _, _, _ = bridge_module(src_h, src_enc.attention_mask)
+
+        latents = latents[0]  # Remove batch dim
+
+        for i in range(min(args.soft_tokens, latents.shape[0])):
+            neighbors = get_nearest_neighbors(latents[i], mistral_embeddings, tgt_tok, k=5)
+            neighbor_str = ", ".join([f"'{tok}'({score:.2f})" for tok, score in neighbors])
+            print(f"  Token {i+1}: {neighbor_str}")
+
+    # Geometry analysis
+    print("\n--- Latent Geometry (last sample) ---")
+    latents_norm = F.normalize(latents.float(), dim=-1)
+    sim_matrix = torch.matmul(latents_norm, latents_norm.t())
+    num_tokens = latents.shape[0]
+    off_diag = sim_matrix[~torch.eye(num_tokens, dtype=torch.bool, device=device)]
+    print(f"  Mean pairwise similarity: {off_diag.mean().item():.3f}")
+    print(f"  Token RMS range: {latents.float().pow(2).mean(dim=-1).sqrt().min().item():.4f} - {latents.float().pow(2).mean(dim=-1).sqrt().max().item():.4f}")
+
 # Permissive matching for science/tech (AG News uses "Sci/Tech")
 SCIENCE_SYNONYMS = ["science", "technology", "tech", "sci/tech", "scitech"]
 
@@ -388,6 +462,9 @@ def main():
         print("  - Accuracy > 50%: Bridge works for multi-class")
         print("  - Accuracy > 70%: Bridge is excellent")
         print("  - Random baseline: 25%")
+
+        # Latent Interpretability Analysis
+        analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, args, eval_ds)
 
 
 if __name__ == "__main__":
