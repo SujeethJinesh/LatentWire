@@ -128,7 +128,7 @@ def main():
 
     # Load dataset
     print("\nLoading Banking77...")
-    dataset = load_dataset("PolyAI/banking77")
+    dataset = load_dataset("PolyAI/banking77", trust_remote_code=True)
     labels = dataset['train'].features['label'].names
     print(f"Classes: {len(labels)}")
     print(f"Train: {len(dataset['train'])}, Test: {len(dataset['test'])}")

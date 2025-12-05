@@ -125,7 +125,7 @@ def main():
 
     # Load dataset
     print("\nLoading TREC...")
-    dataset = load_dataset("CogComp/trec")
+    dataset = load_dataset("CogComp/trec", trust_remote_code=True)
     labels = dataset['train'].features['fine_label'].names
     print(f"Fine labels: {len(labels)}")
     print(f"Train: {len(dataset['train'])}, Test: {len(dataset['test'])}")

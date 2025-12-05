@@ -190,6 +190,8 @@ def main():
     # Load Models
     print("\nLoading models...")
     src_tok = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
+    if src_tok.pad_token is None:
+        src_tok.pad_token = src_tok.eos_token
     src_model = AutoModelForCausalLM.from_pretrained(
         "meta-llama/Meta-Llama-3.1-8B-Instruct",
         torch_dtype=torch.bfloat16
