@@ -65,6 +65,62 @@ class Args:
         self.stats_path = stats_path
 
 
+def get_nearest_neighbors(latent_vector, embedding_matrix, tokenizer, k=5):
+    """Find k nearest vocabulary tokens to a latent vector."""
+    latent_vector = latent_vector.float()
+    embedding_matrix = embedding_matrix.float()
+
+    latent_norm = F.normalize(latent_vector.unsqueeze(0), p=2, dim=-1)
+    emb_norm = F.normalize(embedding_matrix, p=2, dim=-1)
+    similarity = torch.matmul(latent_norm, emb_norm.t())
+
+    scores, indices = torch.topk(similarity, k)
+
+    neighbors = []
+    for score, idx in zip(scores[0], indices[0]):
+        token_str = tokenizer.decode([idx.item()]).replace('\n', '\\n').replace('\t', '\\t')
+        if token_str.strip() == '':
+            token_str = repr(tokenizer.decode([idx.item()]))
+        neighbors.append((token_str, score.item()))
+    return neighbors
+
+
+def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, sample_texts, num_tokens):
+    """Analyze what the soft tokens 'mean' by finding nearest vocabulary neighbors."""
+    print("\n" + "=" * 70)
+    print("LATENT INTERPRETABILITY ANALYSIS")
+    print("=" * 70)
+    print("What vocabulary tokens are closest to each soft token?")
+
+    bridge.eval()
+    mistral_embeddings = tgt_model.get_input_embeddings().weight.detach()
+
+    for text in sample_texts:
+        print(f"\n--- Input: \"{text[:60]}...\" ---")
+
+        src_inputs = src_tok(text, return_tensors="pt").to(device)
+        with torch.no_grad():
+            src_out = src_model(**src_inputs, output_hidden_states=True)
+            src_hidden = src_out.hidden_states[31]
+            src_mask = src_inputs.attention_mask
+            latents, _, _, _ = bridge(src_hidden, src_mask)
+
+        latents = latents[0]  # Remove batch dim
+
+        for i in range(min(num_tokens, latents.shape[0])):
+            neighbors = get_nearest_neighbors(latents[i], mistral_embeddings, tgt_tok, k=5)
+            neighbor_str = ", ".join([f"'{tok}'({score:.2f})" for tok, score in neighbors])
+            print(f"  Token {i+1}: {neighbor_str}")
+
+    # Geometry analysis
+    print("\n--- Latent Geometry (last sample) ---")
+    latents_norm = F.normalize(latents.float(), dim=-1)
+    sim_matrix = torch.matmul(latents_norm, latents_norm.t())
+    off_diag = sim_matrix[~torch.eye(num_tokens, dtype=torch.bool, device=device)]
+    print(f"  Mean pairwise similarity: {off_diag.mean().item():.3f}")
+    print(f"  Token RMS range: {latents.float().pow(2).mean(dim=-1).sqrt().min().item():.4f} - {latents.float().pow(2).mean(dim=-1).sqrt().max().item():.4f}")
+
+
 def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, device, num_samples=100, verbose=True):
     """Run exact match evaluation."""
     bridge.eval()
@@ -374,6 +430,17 @@ def main():
     with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Results saved to: {results_path}")
+
+    # Latent Interpretability Analysis
+    sample_texts = [
+        "The secret access code is 12345. Remember it.",
+        "The secret access code is 99999. Remember it.",
+        "The secret access code is 54321. Remember it.",
+    ]
+    analyze_latent_interpretability(
+        bridge, src_model, tgt_model, src_tok, tgt_tok, device,
+        sample_texts, args.soft_tokens
+    )
 
     # Interpretation
     print("\n" + "=" * 60)
