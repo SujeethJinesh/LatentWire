@@ -43,7 +43,8 @@ echo "[1/5] SST-2 SENTIMENT (Binary Classification)" | tee -a "$LOG_FILE"
 echo "Goal: Validate bridge on binary sentiment task" | tee -a "$LOG_FILE"
 echo "------------------------------------------------------" | tee -a "$LOG_FILE"
 
-mkdir -p "${OUTPUT_BASE}/sst2_${TIMESTAMP}"
+SST2_DIR="${OUTPUT_BASE}/sst2_${TIMESTAMP}"
+mkdir -p "$SST2_DIR"
 {
     python telepathy/train_telepathy_sst2.py \
         --source_layer 31 \
@@ -51,8 +52,9 @@ mkdir -p "${OUTPUT_BASE}/sst2_${TIMESTAMP}"
         --steps 2000 \
         --batch_size 16 \
         --eval_every 200 \
-        --save_path "${OUTPUT_BASE}/sst2_${TIMESTAMP}/bridge_sst2.pt"
-} 2>&1 | tee -a "$LOG_FILE"
+        --output_dir "$SST2_DIR" \
+        --save_path "${SST2_DIR}/bridge_sst2.pt"
+} 2>&1 | tee -a "$LOG_FILE" | tee "${SST2_DIR}/sst2_training.log"
 
 echo "" | tee -a "$LOG_FILE"
 echo "SST-2 Complete: $(date)" | tee -a "$LOG_FILE"
@@ -65,7 +67,8 @@ echo "[2/5] AG NEWS (4-class Topic Classification)" | tee -a "$LOG_FILE"
 echo "Goal: Validate bridge on 4-class topic task" | tee -a "$LOG_FILE"
 echo "------------------------------------------------------" | tee -a "$LOG_FILE"
 
-mkdir -p "${OUTPUT_BASE}/agnews_${TIMESTAMP}"
+AGNEWS_DIR="${OUTPUT_BASE}/agnews_${TIMESTAMP}"
+mkdir -p "$AGNEWS_DIR"
 {
     python telepathy/train_telepathy_agnews.py \
         --source_layer 31 \
@@ -73,8 +76,9 @@ mkdir -p "${OUTPUT_BASE}/agnews_${TIMESTAMP}"
         --steps 3000 \
         --batch_size 16 \
         --eval_every 200 \
-        --save_path "${OUTPUT_BASE}/agnews_${TIMESTAMP}/bridge_agnews.pt"
-} 2>&1 | tee -a "$LOG_FILE"
+        --output_dir "$AGNEWS_DIR" \
+        --save_path "${AGNEWS_DIR}/bridge_agnews.pt"
+} 2>&1 | tee -a "$LOG_FILE" | tee "${AGNEWS_DIR}/agnews_training.log"
 
 echo "" | tee -a "$LOG_FILE"
 echo "AG News Complete: $(date)" | tee -a "$LOG_FILE"
@@ -87,14 +91,16 @@ echo "[3/5] PASSKEY RETRIEVAL (Precision Test)" | tee -a "$LOG_FILE"
 echo "Goal: Can the bridge transmit a 5-digit code exactly?" | tee -a "$LOG_FILE"
 echo "------------------------------------------------------" | tee -a "$LOG_FILE"
 
+PASSKEY_DIR="${OUTPUT_BASE}/passkey_${TIMESTAMP}"
+mkdir -p "$PASSKEY_DIR"
 {
     python telepathy/train_telepathy_passkey.py \
-        --output_dir "${OUTPUT_BASE}/passkey_${TIMESTAMP}" \
+        --output_dir "$PASSKEY_DIR" \
         --steps 1000 \
         --soft_tokens 16 \
         --batch_size 8 \
         --eval_every 200
-} 2>&1 | tee -a "$LOG_FILE"
+} 2>&1 | tee -a "$LOG_FILE" | tee "${PASSKEY_DIR}/passkey_training.log"
 
 echo "" | tee -a "$LOG_FILE"
 echo "Passkey Complete: $(date)" | tee -a "$LOG_FILE"
@@ -107,14 +113,16 @@ echo "[4/5] BANKING77 (Bandwidth Stress Test)" | tee -a "$LOG_FILE"
 echo "Goal: Can 16 tokens distinguish 77 banking intents?" | tee -a "$LOG_FILE"
 echo "------------------------------------------------------" | tee -a "$LOG_FILE"
 
+BANKING77_DIR="${OUTPUT_BASE}/banking77_${TIMESTAMP}"
+mkdir -p "$BANKING77_DIR"
 {
     python telepathy/train_telepathy_banking77.py \
-        --output_dir "${OUTPUT_BASE}/banking77_${TIMESTAMP}" \
+        --output_dir "$BANKING77_DIR" \
         --steps 3000 \
         --soft_tokens 16 \
         --batch_size 8 \
         --eval_every 500
-} 2>&1 | tee -a "$LOG_FILE"
+} 2>&1 | tee -a "$LOG_FILE" | tee "${BANKING77_DIR}/banking77_training.log"
 
 echo "" | tee -a "$LOG_FILE"
 echo "Banking77 Complete: $(date)" | tee -a "$LOG_FILE"
@@ -127,14 +135,16 @@ echo "[5/5] TREC (Generalization Test)" | tee -a "$LOG_FILE"
 echo "Goal: Does bridge work on question type classification?" | tee -a "$LOG_FILE"
 echo "------------------------------------------------------" | tee -a "$LOG_FILE"
 
+TREC_DIR="${OUTPUT_BASE}/trec_${TIMESTAMP}"
+mkdir -p "$TREC_DIR"
 {
     python telepathy/train_telepathy_trec.py \
-        --output_dir "${OUTPUT_BASE}/trec_${TIMESTAMP}" \
+        --output_dir "$TREC_DIR" \
         --steps 2000 \
         --soft_tokens 16 \
         --batch_size 8 \
         --eval_every 400
-} 2>&1 | tee -a "$LOG_FILE"
+} 2>&1 | tee -a "$LOG_FILE" | tee "${TREC_DIR}/trec_training.log"
 
 echo "" | tee -a "$LOG_FILE"
 echo "TREC Complete: $(date)" | tee -a "$LOG_FILE"

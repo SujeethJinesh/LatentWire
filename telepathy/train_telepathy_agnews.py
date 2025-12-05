@@ -30,6 +30,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 from tqdm import tqdm
 import argparse
+import json
+from datetime import datetime
 
 from latent_bridge_v15 import LatentBridgeV15
 
@@ -145,6 +147,7 @@ def parse_args():
     parser.add_argument("--steps", type=int, default=3000)  # More steps for 4-class
     parser.add_argument("--warmup_steps", type=int, default=100)
     parser.add_argument("--save_path", default="bridge_agnews.pt")
+    parser.add_argument("--output_dir", default="runs/agnews")
     parser.add_argument("--save_every", type=int, default=500)
     parser.add_argument("--eval_every", type=int, default=200)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
@@ -223,7 +226,7 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
     print(f"{'='*60}\n")
 
     bridge_module.train()
-    return accuracy
+    return {"accuracy": accuracy, "correct": correct, "total": total}
 
 
 def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args):
@@ -322,6 +325,13 @@ def main():
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     device = torch.device(f"cuda:{local_rank}")
+
+    # Create output directory
+    if local_rank == 0:
+        os.makedirs(args.output_dir, exist_ok=True)
+
+    # Track training progress for JSON output
+    training_log = []
 
     if local_rank == 0:
         print("=" * 60)
@@ -441,7 +451,8 @@ def main():
 
         # Quick eval
         if local_rank == 0 and (step + 1) % args.eval_every == 0:
-            quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, args, step + 1)
+            eval_result = quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, args, step + 1)
+            training_log.append({"step": step + 1, **eval_result})
 
         # Save checkpoint
         if local_rank == 0 and (step + 1) % args.save_every == 0:
@@ -462,6 +473,71 @@ def main():
         print("  - Accuracy > 50%: Bridge works for multi-class")
         print("  - Accuracy > 70%: Bridge is excellent")
         print("  - Random baseline: 25%")
+
+        # Final evaluation on more samples
+        print("\n" + "=" * 60)
+        print("FINAL EVALUATION (200 samples)")
+        print("=" * 60)
+        bridge_module = bridge.module if hasattr(bridge, 'module') else bridge
+        bridge_module.eval()
+        correct = 0
+        total = 0
+        for i in range(min(200, len(eval_ds))):
+            item = eval_ds[i]
+            text = item['text']
+            label = AGNEWS_LABELS[item['label']]
+            src_input = f"Article: {text[:500]}\nTopic (world, sports, business, or science):"
+            with torch.no_grad():
+                src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+                src_out = src_model(**src_enc, output_hidden_states=True)
+                src_h = src_out.hidden_states[args.source_layer]
+                if args.bf16:
+                    src_h = src_h.bfloat16()
+                soft_tokens, _, _, _ = bridge_module(src_h, src_enc.attention_mask)
+                primer = "Topic:"
+                primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+                primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids)
+                if args.bf16:
+                    primer_embeds = primer_embeds.bfloat16()
+                combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
+                attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+                out_ids = tgt_model.generate(
+                    inputs_embeds=combined_embeds,
+                    attention_mask=attn_mask,
+                    max_new_tokens=5,
+                    do_sample=False,
+                    pad_token_id=tgt_tok.eos_token_id,
+                )
+                output = tgt_tok.decode(out_ids[0], skip_special_tokens=True).strip().lower()
+            if check_label_match(label, output):
+                correct += 1
+            total += 1
+        final_accuracy = 100 * correct / total
+        print(f"Accuracy: {final_accuracy:.1f}% ({correct}/{total})")
+        final_results = {"accuracy": final_accuracy, "correct": correct, "total": total}
+
+        # Save JSON results
+        results = {
+            "experiment": "agnews",
+            "timestamp": datetime.now().isoformat(),
+            "config": {
+                "output_dir": args.output_dir,
+                "steps": args.steps,
+                "soft_tokens": args.soft_tokens,
+                "batch_size": args.batch_size,
+                "lr": args.lr,
+                "eval_every": args.eval_every,
+                "diversity_weight": args.diversity_weight,
+                "source_layer": args.source_layer,
+            },
+            "num_classes": 4,
+            "final_results": final_results,
+            "training_log": training_log
+        }
+        json_path = os.path.join(args.output_dir, "agnews_results.json")
+        with open(json_path, "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"Results saved to: {json_path}")
 
         # Latent Interpretability Analysis
         analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, args, eval_ds)
