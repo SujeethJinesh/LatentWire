@@ -5,6 +5,63 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Last Updated**: October 2025
 **Current Date**: 2025 (When working with external APIs and literature, remember the current year is 2025)
 
+## PROACTIVE EXPERIMENT PLANNING (READ FIRST)
+
+### CRITICAL: Plan Before Implementing
+
+**This is MANDATORY for ALL experiments:**
+
+1. **Create a detailed plan BEFORE implementing**
+   - What experiments will be run?
+   - What hypothesis is being tested?
+   - What are the success criteria?
+   - What resources (GPUs, time) are needed?
+
+2. **Self-critique the plan multiple times**
+   - Does it make sense for the current project goals?
+   - Does it duplicate existing experiments (check REPORT.md)?
+   - Are we making forward progress or re-trying failed approaches?
+   - Have we considered alternative approaches?
+
+3. **Update telepathy/REPORT.md before running**
+   - Document the planned experiment
+   - Add it to the changelog
+   - Reference which phase/section it extends
+   - This prevents us from re-trying things that already failed
+
+4. **Think proactively about:**
+   - Logging and visibility (can we monitor progress?)
+   - GPU utilization (are we using all available resources efficiently?)
+   - Result analysis (how will we know if it worked?)
+   - Error handling (what if something crashes?)
+
+5. **After experiments complete**
+   - Update REPORT.md with results
+   - Document what worked and what failed
+   - Propose next steps based on findings
+
+**Example Planning Workflow:**
+
+```
+1. User requests: "Run token ablation experiments"
+2. I should:
+   a. Read REPORT.md to understand current status
+   b. Check what's been tried before (avoid duplicating exp001-007)
+   c. Create a plan with specific experiments
+   d. Self-critique: Does 128 tokens make sense? Do we have baselines?
+   e. Update REPORT.md with planned experiments
+   f. Implement with proper monitoring/logging
+   g. After completion, update REPORT.md with results
+```
+
+**The goal is to act like a TOP RESEARCHER who:**
+- Plans systematically, not reactively
+- Documents everything for reproducibility
+- Learns from failures and doesn't repeat them
+- Makes efficient use of compute resources
+
+---
+
 ## CRITICAL FILE MANAGEMENT DISCIPLINE (READ FIRST)
 
 ### STOP CREATING NEW FILES

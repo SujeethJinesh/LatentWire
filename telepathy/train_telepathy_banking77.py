@@ -170,9 +170,13 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--eval_every", type=int, default=500)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
     args = parser.parse_args()
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # Single GPU mode - both models fit on one 80GB H100
+    num_gpus = torch.cuda.device_count()
+    device = torch.device(f"cuda:{args.gpu}") if num_gpus > args.gpu else torch.device("cpu")
+    print(f"Using GPU {args.gpu} ({num_gpus} available): {device}")
     os.makedirs(args.output_dir, exist_ok=True)
 
     print("=" * 60)
@@ -190,7 +194,7 @@ def main():
     print(f"Classes: {len(labels)}")
     print(f"Train: {len(dataset['train'])}, Test: {len(dataset['test'])}")
 
-    # Load models
+    # Load both models on same GPU
     print("\nLoading models...")
     src_tok = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
     if src_tok.pad_token is None:
@@ -223,7 +227,7 @@ def main():
 
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=args.lr)
 
-    # Primer
+    # Primer (on target device)
     primer = "Intent: "
     primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
     with torch.no_grad():
@@ -251,7 +255,7 @@ def main():
 
         B = len(texts)
 
-        # Source
+        # Source (on device)
         src_inputs = src_tok(
             list(texts),
             return_tensors="pt",
@@ -265,7 +269,7 @@ def main():
             src_hidden = src_out.hidden_states[31]
             src_mask = src_inputs.attention_mask
 
-        # Bridge
+        # Bridge forward
         latents, aux_loss, _, _ = bridge(src_hidden, src_mask)
 
         # Diversity loss
@@ -275,7 +279,7 @@ def main():
         mask = ~torch.eye(B, dtype=torch.bool, device=device)
         div_loss = sim_matrix[mask].mean()
 
-        # Target
+        # Target (on device)
         tgt_inputs = tgt_tok(
             target_strs,
             return_tensors="pt",
@@ -287,7 +291,7 @@ def main():
         primer_batch = primer_embeds[:B]
         inputs_embeds = torch.cat([primer_batch, latents, tgt_embeds], dim=1)
 
-        # Labels
+        # Labels (on device)
         ignore_len = primer_batch.shape[1] + latents.shape[1]
         labels_tensor = torch.full((B, inputs_embeds.shape[1]), -100, dtype=torch.long, device=device)
         labels_tensor[:, ignore_len:] = tgt_inputs.input_ids
@@ -315,6 +319,8 @@ def main():
                 labels, dataset['test'], device, num_samples=100
             )
             metrics_log.append({"step": step + 1, **eval_results})
+            # Clear progress line for grep-able output
+            print(f"\n[CHECKPOINT] Step {step+1}/{args.steps} | Accuracy: {eval_results['accuracy']:.1f}% | GPU: {args.gpu}")
             bridge.train()
 
     # Final eval
@@ -340,6 +346,9 @@ def main():
 
     with open(os.path.join(args.output_dir, "banking77_results.json"), "w") as f:
         json.dump(results, f, indent=2)
+
+    # Final summary line for easy grep
+    print(f"\n[FINAL] Banking77 {args.soft_tokens}tok | Accuracy: {final_results['accuracy']:.1f}% | GPU: {args.gpu}")
 
     # Latent Interpretability Analysis - sample from different classes
     sample_indices = [0, 100, 200, 300]  # Different test samples

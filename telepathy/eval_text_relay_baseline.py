@@ -41,12 +41,12 @@ def generate_summary(model, tokenizer, text, max_input_len=512, max_summary_len=
     return summary.strip()
 
 
-def classify_with_mistral(model, tokenizer, summary, task_prompt, device):
+def classify_with_mistral(model, tokenizer, summary, task_prompt):
     """Have Mistral classify based on Llama's summary."""
     prompt = f"{task_prompt}\n\nText: {summary}\n\nAnswer:"
 
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=256)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
+    inputs = {k: v.to(model.device) for k, v in inputs.items()}
 
     with torch.no_grad():
         outputs = model.generate(
@@ -60,7 +60,7 @@ def classify_with_mistral(model, tokenizer, summary, task_prompt, device):
     return response.strip().lower()
 
 
-def eval_sst2(llama_model, llama_tok, mistral_model, mistral_tok, device, num_samples=200):
+def eval_sst2(llama_model, llama_tok, mistral_model, mistral_tok, num_samples=200):
     """Evaluate text-relay on SST-2."""
     print("\n" + "=" * 60)
     print("SST-2 TEXT-RELAY BASELINE")
@@ -82,7 +82,7 @@ def eval_sst2(llama_model, llama_tok, mistral_model, mistral_tok, device, num_sa
         summary = generate_summary(llama_model, llama_tok, text)
 
         # Step 2: Mistral classifies from summary
-        prediction = classify_with_mistral(mistral_model, mistral_tok, summary, task_prompt, device)
+        prediction = classify_with_mistral(mistral_model, mistral_tok, summary, task_prompt)
 
         if label in prediction:
             correct += 1
@@ -98,7 +98,7 @@ def eval_sst2(llama_model, llama_tok, mistral_model, mistral_tok, device, num_sa
     return {"accuracy": accuracy, "correct": correct, "total": total}
 
 
-def eval_agnews(llama_model, llama_tok, mistral_model, mistral_tok, device, num_samples=200):
+def eval_agnews(llama_model, llama_tok, mistral_model, mistral_tok, num_samples=200):
     """Evaluate text-relay on AG News."""
     print("\n" + "=" * 60)
     print("AG NEWS TEXT-RELAY BASELINE")
@@ -124,7 +124,7 @@ def eval_agnews(llama_model, llama_tok, mistral_model, mistral_tok, device, num_
         summary = generate_summary(llama_model, llama_tok, text[:500])
 
         # Step 2: Mistral classifies from summary
-        prediction = classify_with_mistral(mistral_model, mistral_tok, summary, task_prompt, device)
+        prediction = classify_with_mistral(mistral_model, mistral_tok, summary, task_prompt)
 
         # Check match (permissive for science)
         if label == "science":
@@ -152,6 +152,7 @@ def main():
     parser.add_argument("--num_samples", type=int, default=200)
     parser.add_argument("--llama_model", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
     parser.add_argument("--mistral_model", default="mistralai/Mistral-7B-Instruct-v0.3")
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -164,7 +165,10 @@ def main():
     print(f"Mistral: {args.mistral_model}")
     print("=" * 60)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Single GPU mode - both models fit on one 80GB H100
+    num_gpus = torch.cuda.device_count()
+    device = torch.device(f"cuda:{args.gpu}") if num_gpus > args.gpu else torch.device("cpu")
+    print(f"Using GPU {args.gpu} ({num_gpus} available): {device}")
 
     # Load Llama
     print("\nLoading Llama...")
@@ -172,9 +176,8 @@ def main():
     llama_tok.pad_token = llama_tok.eos_token
     llama_model = AutoModelForCausalLM.from_pretrained(
         args.llama_model,
-        torch_dtype=torch.bfloat16,
-        device_map="auto"
-    )
+        torch_dtype=torch.bfloat16
+    ).to(device)
     llama_model.eval()
 
     # Load Mistral
@@ -183,9 +186,8 @@ def main():
     mistral_tok.pad_token = mistral_tok.eos_token
     mistral_model = AutoModelForCausalLM.from_pretrained(
         args.mistral_model,
-        torch_dtype=torch.bfloat16,
-        device_map="auto"
-    )
+        torch_dtype=torch.bfloat16
+    ).to(device)
     mistral_model.eval()
 
     results = {
@@ -201,11 +203,11 @@ def main():
 
     # Run evaluations
     results["results"]["sst2"] = eval_sst2(
-        llama_model, llama_tok, mistral_model, mistral_tok, device, args.num_samples
+        llama_model, llama_tok, mistral_model, mistral_tok, args.num_samples
     )
 
     results["results"]["agnews"] = eval_agnews(
-        llama_model, llama_tok, mistral_model, mistral_tok, device, args.num_samples
+        llama_model, llama_tok, mistral_model, mistral_tok, args.num_samples
     )
 
     # Summary

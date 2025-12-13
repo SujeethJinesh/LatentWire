@@ -3809,3 +3809,99 @@ Each run contains:
 - Noise: 0.0%
 
 ---
+
+## Section 63: Phase 20 - Token Ablation & Text-Relay Experiments (PLANNED)
+
+**Date**: 2025-12-13
+**Status**: Ready to Execute
+
+### Motivation
+
+Phase 19 established:
+- Classification works well (SST-2: 94.7%, AG News: 88.9%)
+- Reasoning fails completely (GSM8K: 2%)
+
+**Now we need to understand:**
+1. **Bandwidth limits**: Can we handle 77-class classification (Banking77)?
+2. **Precision limits**: Can we transmit exact 5-digit codes (Passkey)?
+3. **Is the bridge better than text relay?** Compare vs "Llama summarizes → text → Mistral classifies"
+
+### Planned Experiments
+
+#### Experiment A: Banking77 Token Ablation
+
+**Goal**: Test if 8-128 soft tokens can handle 77-class classification (19× more classes than AG News's 4).
+
+| Config | Tokens | Steps | Batch | GPU |
+|--------|--------|-------|-------|-----|
+| 16tok | 16 | 3000 | 8 | 0 |
+| 32tok | 32 | 3000 | 8 | 1 |
+| 64tok | 64 | 3000 | 8 | 2 |
+| 128tok | 128 | 3000 | 8 | 3 |
+
+**Hypothesis**: More tokens = better accuracy on fine-grained classification.
+
+**Success Criteria**:
+- Any config achieves >50% accuracy (random = 1.3%)
+- More tokens monotonically improves accuracy
+
+#### Experiment B: Passkey Token Ablation
+
+**Goal**: Test if bridge can transmit exact 5-digit numeric codes (tests precision, not just semantic category).
+
+| Config | Tokens | Steps | Batch | GPU |
+|--------|--------|-------|-------|-----|
+| 16tok | 16 | 1000 | 8 | 0 |
+| 32tok | 32 | 1000 | 8 | 1 |
+| 64tok | 64 | 1000 | 8 | 2 |
+| 128tok | 128 | 1000 | 8 | 3 |
+
+**Hypothesis**: Classification succeeded (low-bit task), but precision may fail (high-bit task).
+
+**Success Criteria**:
+- >30% exact match on 5-digit codes
+- Digit accuracy significantly above random (>50%)
+
+#### Experiment C: Text-Relay Baseline
+
+**Goal**: Is the bridge advantage from (a) Llama's encoding being better, or (b) latent transfer being special?
+
+**Pipeline**: Llama summarizes → text → Mistral classifies (vs Bridge: Llama → soft tokens → Mistral)
+
+**Datasets**: SST-2, AG News (where bridge succeeded)
+
+**Success Criteria**:
+- If text-relay matches bridge: Advantage is from Llama encoding
+- If bridge >> text-relay: Latent transfer has unique benefits
+
+### Execution Plan
+
+```bash
+# Run all experiments in parallel on 4× H100
+git pull && rm -rf runs && bash run_next_experiments.sh
+```
+
+**Monitoring**: `monitor_experiments.sh` provides real-time progress updates.
+
+### Non-Duplication Check
+
+✓ Banking77: New task, never tested before
+✓ Passkey: New task, tests precision (not just classification)
+✓ Text-relay: New baseline, never compared before
+✓ Token ablation: Previous experiments used fixed tokens (8-16), not a sweep
+
+### Self-Critique
+
+**Q: Why these specific token counts (16, 32, 64, 128)?**
+A: Powers of 2 make analysis clean. 16 is our SST-2/AG News default. 128 is upper bound for memory.
+
+**Q: Is 3000 steps enough for Banking77?**
+A: AG News converged by ~1500 steps. Banking77 has more classes, so 3000 should be sufficient. Can extend if needed.
+
+**Q: What if all Banking77 configs fail?**
+A: Would indicate fundamental bandwidth limit. Next step: Try with shared codebook or hierarchical tokens.
+
+**Q: What about GSM8K-style multi-step reasoning?**
+A: Phase 19 proved reasoning fails. These experiments focus on classification/precision, not reasoning.
+
+---

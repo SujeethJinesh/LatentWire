@@ -149,14 +149,14 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, device, num_samples
         src_text = item['source_text']
         target = item['target_label']
 
-        # 1. Source Forward
+        # 1. Source Forward (on device)
         src_inputs = src_tok(src_text, return_tensors="pt").to(device)
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]  # Layer 31
             src_mask = src_inputs.attention_mask
 
-        # 2. Bridge Forward
+        # 2. Bridge Forward (move hidden states to device)
         with torch.no_grad():
             # Bridge returns (latents, aux_loss, diversity, z_variance)
             latents, _, _, _ = bridge(src_hidden, src_mask)
@@ -230,9 +230,13 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--eval_every", type=int, default=200)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
     args = parser.parse_args()
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # Single GPU mode - both models fit on one 80GB H100
+    num_gpus = torch.cuda.device_count()
+    device = torch.device(f"cuda:{args.gpu}") if num_gpus > args.gpu else torch.device("cpu")
+    print(f"Using GPU {args.gpu} ({num_gpus} available): {device}")
     os.makedirs(args.output_dir, exist_ok=True)
 
     print("=" * 60)
@@ -243,7 +247,7 @@ def main():
     print(f"Steps: {args.steps}")
     print("=" * 60)
 
-    # Load Models
+    # Load Models on separate GPUs
     print("\nLoading models...")
     src_tok = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
     if src_tok.pad_token is None:
@@ -269,7 +273,7 @@ def main():
     for p in tgt_model.parameters():
         p.requires_grad = False
 
-    # Init Bridge with args object
+    # Init Bridge with args object (on target device for Mistral interface)
     bridge_args = Args(
         soft_tokens=args.soft_tokens,
         heads=8,
@@ -289,7 +293,7 @@ def main():
     ds = PasskeyDataset(size=args.steps * args.batch_size * 2)
     loader = DataLoader(ds, batch_size=args.batch_size, shuffle=True)
 
-    # Primer embeddings
+    # Primer embeddings (on target device)
     primer = "The code is "
     primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
     with torch.no_grad():
@@ -315,7 +319,7 @@ def main():
 
         B = len(src_texts)
 
-        # 1. Get Source Hidden
+        # 1. Get Source Hidden (on device)
         src_inputs = src_tok(
             list(src_texts),
             return_tensors="pt",
@@ -328,7 +332,7 @@ def main():
             src_hidden = src_out.hidden_states[31]
             src_mask = src_inputs.attention_mask
 
-        # 2. Bridge Forward
+        # 2. Bridge Forward (move hidden states to device)
         latents, aux_loss, diversity, z_var = bridge(src_hidden, src_mask)
 
         # 3. Compute Diversity Loss (prevent mode collapse)
@@ -339,7 +343,7 @@ def main():
         off_diag_sim = sim_matrix[mask].mean()
         div_loss = off_diag_sim
 
-        # 4. Target Forward - LM Loss
+        # 4. Target Forward - LM Loss (on device)
         target_inputs = tgt_tok(
             list(targets),
             return_tensors="pt",
@@ -354,12 +358,12 @@ def main():
         # Concat inputs: [Primer] + [Latents] + [Target]
         inputs_embeds = torch.cat([primer_batch, latents, target_embeds], dim=1)
 
-        # Create Labels: -100 for primer and latents, actual tokens for target
+        # Create Labels: -100 for primer and latents, actual tokens for target (on device)
         ignore_len = primer_batch.shape[1] + latents.shape[1]
         labels = torch.full((B, inputs_embeds.shape[1]), -100, dtype=torch.long, device=device)
         labels[:, ignore_len:] = target_inputs.input_ids
 
-        # Attention mask
+        # Attention mask (on device)
         attn_mask = torch.ones(B, inputs_embeds.shape[1], device=device)
 
         # Mistral Forward
@@ -396,6 +400,8 @@ def main():
                 "div_loss": div_loss.item(),
                 **eval_results
             })
+            # Clear progress line for grep-able output
+            print(f"\n[CHECKPOINT] Step {step+1}/{args.steps} | Exact: {eval_results['exact_match']:.1f}% | Digit: {eval_results['digit_accuracy']:.1f}% | GPU: {args.gpu}")
             bridge.train()
 
     # Final Evaluation
@@ -430,6 +436,9 @@ def main():
     with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Results saved to: {results_path}")
+
+    # Final summary line for easy grep
+    print(f"\n[FINAL] Passkey {args.soft_tokens}tok | Exact: {final_results['exact_match']:.1f}% | Digit: {final_results['digit_accuracy']:.1f}% | GPU: {args.gpu}")
 
     # Latent Interpretability Analysis
     sample_texts = [
