@@ -400,6 +400,8 @@ def main():
                 "div_loss": div_loss.item(),
                 **eval_results
             })
+            # Clear progress line for grep-able output
+            print(f"\n[CHECKPOINT] Step {step+1}/{args.steps} | Exact: {eval_results['exact_match']:.1f}% | Digit: {eval_results['digit_accuracy']:.1f}% | GPU: {args.gpu}")
             bridge.train()
 
     # Final Evaluation
@@ -434,6 +436,9 @@ def main():
     with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Results saved to: {results_path}")
+
+    # Final summary line for easy grep
+    print(f"\n[FINAL] Passkey {args.soft_tokens}tok | Exact: {final_results['exact_match']:.1f}% | Digit: {final_results['digit_accuracy']:.1f}% | GPU: {args.gpu}")
 
     # Latent Interpretability Analysis
     sample_texts = [

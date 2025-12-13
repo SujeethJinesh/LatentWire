@@ -319,6 +319,8 @@ def main():
                 labels, dataset['test'], device, num_samples=100
             )
             metrics_log.append({"step": step + 1, **eval_results})
+            # Clear progress line for grep-able output
+            print(f"\n[CHECKPOINT] Step {step+1}/{args.steps} | Accuracy: {eval_results['accuracy']:.1f}% | GPU: {args.gpu}")
             bridge.train()
 
     # Final eval
@@ -344,6 +346,9 @@ def main():
 
     with open(os.path.join(args.output_dir, "banking77_results.json"), "w") as f:
         json.dump(results, f, indent=2)
+
+    # Final summary line for easy grep
+    print(f"\n[FINAL] Banking77 {args.soft_tokens}tok | Accuracy: {final_results['accuracy']:.1f}% | GPU: {args.gpu}")
 
     # Latent Interpretability Analysis - sample from different classes
     sample_indices = [0, 100, 200, 300]  # Different test samples

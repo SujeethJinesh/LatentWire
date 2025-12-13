@@ -12,6 +12,83 @@
 
 set -e
 
+# =============================================================================
+# MONITORING FUNCTIONS
+# =============================================================================
+
+# Show latest progress from each parallel experiment
+show_progress() {
+    local experiment_type=$1
+    shift
+    local log_files=("$@")
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "PROGRESS UPDATE: $experiment_type @ $(date '+%H:%M:%S')"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    for log_file in "${log_files[@]}"; do
+        if [ -f "$log_file" ]; then
+            local name=$(basename "$log_file" .log)
+            # Get the last training progress line or evaluation result
+            local progress=$(grep -E "(Training:|Accuracy:|Exact Match:|Step)" "$log_file" 2>/dev/null | tail -1)
+            if [ -n "$progress" ]; then
+                printf "  %-20s %s\n" "$name:" "$progress"
+            else
+                # Show last non-empty line as fallback
+                local last_line=$(tail -1 "$log_file" 2>/dev/null | head -c 60)
+                printf "  %-20s %s\n" "$name:" "${last_line}..."
+            fi
+        fi
+    done
+    echo ""
+}
+
+# Monitor parallel jobs with periodic updates
+monitor_jobs() {
+    local experiment_type=$1
+    local update_interval=${2:-30}  # seconds between updates
+    shift 2
+    local pids=("$@")
+
+    echo ""
+    echo "Monitoring ${#pids[@]} parallel jobs (updates every ${update_interval}s)..."
+    echo "Press Ctrl+C to stop monitoring (jobs continue in background)"
+    echo ""
+
+    while true; do
+        # Check if any jobs still running
+        local running=0
+        for pid in "${pids[@]}"; do
+            if kill -0 "$pid" 2>/dev/null; then
+                ((running++))
+            fi
+        done
+
+        if [ $running -eq 0 ]; then
+            echo "All $experiment_type jobs completed!"
+            break
+        fi
+
+        sleep $update_interval
+
+        # Show progress based on experiment type
+        if [[ "$experiment_type" == "Banking77" ]]; then
+            show_progress "$experiment_type" \
+                "${OUTPUT_BASE}/banking77_16tok_${TIMESTAMP}/banking77_16tok.log" \
+                "${OUTPUT_BASE}/banking77_32tok_${TIMESTAMP}/banking77_32tok.log" \
+                "${OUTPUT_BASE}/banking77_64tok_${TIMESTAMP}/banking77_64tok.log" \
+                "${OUTPUT_BASE}/banking77_128tok_${TIMESTAMP}/banking77_128tok.log"
+        elif [[ "$experiment_type" == "Passkey" ]]; then
+            show_progress "$experiment_type" \
+                "${OUTPUT_BASE}/passkey_16tok_${TIMESTAMP}/passkey_16tok.log" \
+                "${OUTPUT_BASE}/passkey_32tok_${TIMESTAMP}/passkey_32tok.log" \
+                "${OUTPUT_BASE}/passkey_64tok_${TIMESTAMP}/passkey_64tok.log" \
+                "${OUTPUT_BASE}/passkey_128tok_${TIMESTAMP}/passkey_128tok.log"
+        fi
+    done
+}
+
 # Configuration
 OUTPUT_BASE="${OUTPUT_BASE:-runs}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
@@ -81,10 +158,11 @@ echo "  GPU 1: Banking77 32 tokens (PID: $PID_B32)" | tee -a "$LOG_FILE"
 echo "  GPU 2: Banking77 64 tokens (PID: $PID_B64)" | tee -a "$LOG_FILE"
 echo "  GPU 3: Banking77 128 tokens (PID: $PID_B128)" | tee -a "$LOG_FILE"
 
-# Wait for all to complete
-echo "" | tee -a "$LOG_FILE"
-echo "Waiting for Banking77 experiments to complete..." | tee -a "$LOG_FILE"
-wait $PID_B16 $PID_B32 $PID_B64 $PID_B128
+# Monitor with progress updates every 30 seconds
+monitor_jobs "Banking77" 30 $PID_B16 $PID_B32 $PID_B64 $PID_B128
+
+# Ensure all complete
+wait $PID_B16 $PID_B32 $PID_B64 $PID_B128 2>/dev/null || true
 
 echo "" | tee -a "$LOG_FILE"
 echo "Banking77 Ablation Complete: $(date)" | tee -a "$LOG_FILE"
@@ -136,10 +214,11 @@ echo "  GPU 1: Passkey 32 tokens (PID: $PID_P32)" | tee -a "$LOG_FILE"
 echo "  GPU 2: Passkey 64 tokens (PID: $PID_P64)" | tee -a "$LOG_FILE"
 echo "  GPU 3: Passkey 128 tokens (PID: $PID_P128)" | tee -a "$LOG_FILE"
 
-# Wait for all to complete
-echo "" | tee -a "$LOG_FILE"
-echo "Waiting for Passkey experiments to complete..." | tee -a "$LOG_FILE"
-wait $PID_P16 $PID_P32 $PID_P64 $PID_P128
+# Monitor with progress updates every 30 seconds
+monitor_jobs "Passkey" 30 $PID_P16 $PID_P32 $PID_P64 $PID_P128
+
+# Ensure all complete
+wait $PID_P16 $PID_P32 $PID_P64 $PID_P128 2>/dev/null || true
 
 echo "" | tee -a "$LOG_FILE"
 echo "Passkey Ablation Complete: $(date)" | tee -a "$LOG_FILE"
