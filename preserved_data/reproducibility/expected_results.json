@@ -26,6 +26,27 @@
       "tolerance": 3.0,
       "notes": "6 coarse classes: ABBR, DESC, ENTY, HUM, LOC, NUM. Converges by step 800."
     },
+    "trec_mistral_text": {
+      "task": "TREC 6-class Question Type Classification",
+      "method": "Mistral Direct Text",
+      "expected_accuracy": "TBD",
+      "tolerance": 5.0,
+      "notes": "First run - expected ~75-85%"
+    },
+    "trec_llama_text": {
+      "task": "TREC 6-class Question Type Classification",
+      "method": "Llama Direct Text",
+      "expected_accuracy": "TBD",
+      "tolerance": 5.0,
+      "notes": "First run - expected ~80-90% (ceiling)"
+    },
+    "trec_text_relay": {
+      "task": "TREC 6-class Question Type Classification",
+      "method": "Text-Relay (Llama summarize → Mistral classify)",
+      "expected_accuracy": "TBD",
+      "tolerance": 5.0,
+      "notes": "First run - expected ~65-80%. Bridge should beat this."
+    },
     "banking77_bridge_16tok": {
       "task": "Banking77 77-class Intent Classification",
       "method": "Bridge (16 soft tokens)",

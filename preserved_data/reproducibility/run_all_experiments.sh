@@ -52,11 +52,12 @@ log "  5. Banking77 Text Baselines (Mistral, Llama)"
 log "  6. Banking77 Text-Relay"
 log "  7. Passkey Token Ablation (16, 32, 64, 128)"
 log "  8. Text-Relay Baselines (SST-2, AG News)"
+log "  9. TREC Baselines (Text + Text-Relay)"
 
 # =============================================================================
 # EXPERIMENT 1: SST-2 BRIDGE
 # =============================================================================
-section "[1/8] SST-2 BRIDGE TRAINING"
+section "[1/9] SST-2 BRIDGE TRAINING"
 log "Expected: ~94.7% accuracy"
 
 SST2_DIR="${OUTPUT_BASE}/sst2_${TIMESTAMP}"
@@ -79,7 +80,7 @@ log "SST-2 training complete"
 # =============================================================================
 # EXPERIMENT 2: AG NEWS BRIDGE
 # =============================================================================
-section "[2/8] AG NEWS BRIDGE TRAINING"
+section "[2/9] AG NEWS BRIDGE TRAINING"
 log "Expected: ~88.9% accuracy"
 
 AGNEWS_DIR="${OUTPUT_BASE}/agnews_${TIMESTAMP}"
@@ -102,7 +103,7 @@ log "AG News training complete"
 # =============================================================================
 # EXPERIMENT 3: TREC BRIDGE (6-class)
 # =============================================================================
-section "[3/8] TREC BRIDGE TRAINING (6-class)"
+section "[3/9] TREC BRIDGE TRAINING (6-class)"
 log "Expected: ~94.5% accuracy"
 
 TREC_DIR="${OUTPUT_BASE}/trec_${TIMESTAMP}"
@@ -124,7 +125,7 @@ log "TREC training complete"
 # =============================================================================
 # EXPERIMENT 4: BANKING77 TOKEN ABLATION (PARALLEL)
 # =============================================================================
-section "[4/8] BANKING77 TOKEN ABLATION (4 GPUs)"
+section "[4/9] BANKING77 TOKEN ABLATION (4 GPUs)"
 log "Expected: 16tok=21.5%, 32tok=13.5%, 64tok=7.5%, 128tok=1%"
 
 TOKENS_LIST=(16 32 64 128)
@@ -160,7 +161,7 @@ log "Banking77 ablation complete"
 # =============================================================================
 # EXPERIMENT 5: BANKING77 TEXT BASELINES
 # =============================================================================
-section "[5/8] BANKING77 TEXT BASELINES"
+section "[5/9] BANKING77 TEXT BASELINES"
 log "Expected: Mistral=19.5%, Llama=22.0%"
 
 BANKING_BASELINE_DIR="${OUTPUT_BASE}/banking77_baselines_${TIMESTAMP}"
@@ -179,7 +180,7 @@ log "Banking77 text baselines complete"
 # =============================================================================
 # EXPERIMENT 6: BANKING77 TEXT-RELAY
 # =============================================================================
-section "[6/8] BANKING77 TEXT-RELAY"
+section "[6/9] BANKING77 TEXT-RELAY"
 log "Expected: TBD (should be < Bridge 21.5%)"
 
 BANKING_RELAY_DIR="${OUTPUT_BASE}/banking77_relay_${TIMESTAMP}"
@@ -198,7 +199,7 @@ log "Banking77 text-relay complete"
 # =============================================================================
 # EXPERIMENT 7: PASSKEY TOKEN ABLATION (PARALLEL)
 # =============================================================================
-section "[7/8] PASSKEY TOKEN ABLATION (4 GPUs)"
+section "[7/9] PASSKEY TOKEN ABLATION (4 GPUs)"
 log "Expected: 0% exact match, digit accuracy degrades with more tokens"
 
 PASSKEY_PIDS=()
@@ -233,7 +234,7 @@ log "Passkey ablation complete"
 # =============================================================================
 # EXPERIMENT 8: TEXT-RELAY BASELINES (SST-2, AG NEWS)
 # =============================================================================
-section "[8/8] TEXT-RELAY BASELINES (SST-2, AG NEWS)"
+section "[8/9] TEXT-RELAY BASELINES (SST-2, AG NEWS)"
 log "Expected: SST-2=71%, AG News=64.5%"
 
 TEXT_RELAY_DIR="${OUTPUT_BASE}/text_relay_${TIMESTAMP}"
@@ -247,6 +248,33 @@ mkdir -p "$TEXT_RELAY_DIR"
 } 2>&1 | tee "${TEXT_RELAY_DIR}/text_relay.log"
 
 log "Text-relay baselines complete"
+
+# =============================================================================
+# EXPERIMENT 9: TREC BASELINES (Text + Text-Relay)
+# =============================================================================
+section "[9/9] TREC BASELINES (Text + Text-Relay)"
+log "Expected: Mistral text ~75-85%, Text-relay ~65-80%, Bridge 94.5%"
+
+TREC_BASELINE_DIR="${OUTPUT_BASE}/trec_baselines_${TIMESTAMP}"
+mkdir -p "$TREC_BASELINE_DIR"
+
+{
+    # Part 1: Direct text baselines
+    python telepathy/eval_text_relay_baseline.py \
+        --trec \
+        --num_samples 200 \
+        --output_dir "$TREC_BASELINE_DIR" \
+        --gpu 0
+
+    # Part 2: Text-relay
+    python telepathy/eval_text_relay_baseline.py \
+        --trec_relay \
+        --num_samples 200 \
+        --output_dir "$TREC_BASELINE_DIR" \
+        --gpu 0
+} 2>&1 | tee "${TREC_BASELINE_DIR}/trec_baselines.log"
+
+log "TREC baselines complete"
 
 # =============================================================================
 # SUMMARY
@@ -273,6 +301,20 @@ fi
 if [ -f "${TREC_DIR}/trec_results.json" ]; then
     TREC_ACC=$(python -c "import json; d=json.load(open('${TREC_DIR}/trec_results.json')); print(d.get('final_results', {}).get('accuracy', 'N/A'))" 2>/dev/null || echo "N/A")
     log "TREC Bridge (6-class): ${TREC_ACC}% (expected: 94.5%)"
+fi
+
+# TREC Baselines
+if [ -f "${TREC_BASELINE_DIR}/trec_baselines.json" ]; then
+    TREC_MISTRAL=$(python -c "import json; print(json.load(open('${TREC_BASELINE_DIR}/trec_baselines.json'))['results']['mistral']['accuracy'])" 2>/dev/null || echo "N/A")
+    TREC_LLAMA=$(python -c "import json; print(json.load(open('${TREC_BASELINE_DIR}/trec_baselines.json'))['results']['llama']['accuracy'])" 2>/dev/null || echo "N/A")
+    log ""
+    log "TREC Text Baselines:"
+    log "  Mistral: ${TREC_MISTRAL}%"
+    log "  Llama: ${TREC_LLAMA}%"
+fi
+if [ -f "${TREC_BASELINE_DIR}/trec_relay_results.json" ]; then
+    TREC_RELAY=$(python -c "import json; print(json.load(open('${TREC_BASELINE_DIR}/trec_relay_results.json'))['results']['trec']['accuracy'])" 2>/dev/null || echo "N/A")
+    log "  Text-Relay: ${TREC_RELAY}%"
 fi
 
 # Banking77 Token Ablation
