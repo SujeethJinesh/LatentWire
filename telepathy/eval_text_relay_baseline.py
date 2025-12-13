@@ -146,6 +146,72 @@ def eval_agnews(llama_model, llama_tok, mistral_model, mistral_tok, num_samples=
     return {"accuracy": accuracy, "correct": correct, "total": total}
 
 
+def eval_banking77_text_baseline(model, tokenizer, num_samples=200):
+    """Evaluate direct text classification on Banking77 (no relay, just model + text)."""
+    print("\n" + "=" * 60)
+    print("BANKING77 TEXT BASELINE")
+    print("=" * 60)
+
+    dataset = load_dataset("PolyAI/banking77", trust_remote_code=True)
+    labels = dataset['train'].features['label'].names
+    test_data = dataset['test']
+
+    print(f"Classes: {len(labels)}")
+    print(f"Test samples: {len(test_data)}")
+
+    # Create a prompt that lists some example intents
+    label_examples = ", ".join(labels[:10]) + "..."
+
+    correct = 0
+    total = 0
+    samples = []
+
+    for i in tqdm(range(min(num_samples, len(test_data))), desc="Banking77"):
+        item = test_data[i]
+        text = item['text']
+        label = labels[item['label']]
+
+        # Direct classification prompt
+        prompt = f"""Classify this banking query into one of the intents.
+
+Query: {text}
+
+Intent:"""
+
+        inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=20,
+                do_sample=False,
+                pad_token_id=tokenizer.eos_token_id,
+            )
+
+        response = tokenizer.decode(outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
+        prediction = response.strip().lower()
+
+        # Check if label matches (flexible matching)
+        label_lower = label.lower().replace("_", " ")
+        is_correct = (label_lower in prediction) or (label.lower() in prediction)
+
+        if is_correct:
+            correct += 1
+        total += 1
+
+        if i < 5:
+            samples.append(f"Q: {text[:50]}... | GT: {label} | Pred: {prediction[:30]}")
+
+    accuracy = 100 * correct / total
+    print(f"\nBanking77 Text Baseline Accuracy: {accuracy:.1f}% ({correct}/{total})")
+    print("\nSamples:")
+    for s in samples:
+        print(f"  {s}")
+
+    return {"accuracy": accuracy, "correct": correct, "total": total, "num_classes": len(labels)}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output_dir", default="runs/text_relay_baseline")
@@ -153,83 +219,153 @@ def main():
     parser.add_argument("--llama_model", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
     parser.add_argument("--mistral_model", default="mistralai/Mistral-7B-Instruct-v0.3")
     parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
+    parser.add_argument("--banking77", action="store_true", help="Run Banking77 text baseline instead of text-relay")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
-
-    print("=" * 60)
-    print("TEXT-RELAY BASELINE")
-    print("=" * 60)
-    print("Pipeline: Llama summarizes → text → Mistral classifies")
-    print(f"Llama: {args.llama_model}")
-    print(f"Mistral: {args.mistral_model}")
-    print("=" * 60)
 
     # Single GPU mode - both models fit on one 80GB H100
     num_gpus = torch.cuda.device_count()
     device = torch.device(f"cuda:{args.gpu}") if num_gpus > args.gpu else torch.device("cpu")
     print(f"Using GPU {args.gpu} ({num_gpus} available): {device}")
 
-    # Load Llama
-    print("\nLoading Llama...")
-    llama_tok = AutoTokenizer.from_pretrained(args.llama_model)
-    llama_tok.pad_token = llama_tok.eos_token
-    llama_model = AutoModelForCausalLM.from_pretrained(
-        args.llama_model,
-        torch_dtype=torch.bfloat16
-    ).to(device)
-    llama_model.eval()
+    if args.banking77:
+        # Banking77 text baseline mode - evaluate both models directly
+        print("=" * 60)
+        print("BANKING77 TEXT BASELINES")
+        print("=" * 60)
+        print("Evaluating direct text classification (no bridge)")
+        print("=" * 60)
 
-    # Load Mistral
-    print("Loading Mistral...")
-    mistral_tok = AutoTokenizer.from_pretrained(args.mistral_model)
-    mistral_tok.pad_token = mistral_tok.eos_token
-    mistral_model = AutoModelForCausalLM.from_pretrained(
-        args.mistral_model,
-        torch_dtype=torch.bfloat16
-    ).to(device)
-    mistral_model.eval()
+        results = {
+            "experiment": "banking77_text_baselines",
+            "timestamp": datetime.now().isoformat(),
+            "config": {
+                "llama_model": args.llama_model,
+                "mistral_model": args.mistral_model,
+                "num_samples": args.num_samples,
+            },
+            "results": {}
+        }
 
-    results = {
-        "experiment": "text_relay_baseline",
-        "timestamp": datetime.now().isoformat(),
-        "config": {
-            "llama_model": args.llama_model,
-            "mistral_model": args.mistral_model,
-            "num_samples": args.num_samples,
-        },
-        "results": {}
-    }
+        # Load and eval Mistral
+        print("\nLoading Mistral...")
+        mistral_tok = AutoTokenizer.from_pretrained(args.mistral_model)
+        mistral_tok.pad_token = mistral_tok.eos_token
+        mistral_model = AutoModelForCausalLM.from_pretrained(
+            args.mistral_model,
+            torch_dtype=torch.bfloat16
+        ).to(device)
+        mistral_model.eval()
 
-    # Run evaluations
-    results["results"]["sst2"] = eval_sst2(
-        llama_model, llama_tok, mistral_model, mistral_tok, args.num_samples
-    )
+        results["results"]["mistral"] = eval_banking77_text_baseline(
+            mistral_model, mistral_tok, args.num_samples
+        )
 
-    results["results"]["agnews"] = eval_agnews(
-        llama_model, llama_tok, mistral_model, mistral_tok, args.num_samples
-    )
+        # Free Mistral memory
+        del mistral_model
+        torch.cuda.empty_cache()
 
-    # Summary
-    print("\n" + "=" * 60)
-    print("TEXT-RELAY BASELINE SUMMARY")
-    print("=" * 60)
-    print(f"SST-2:   {results['results']['sst2']['accuracy']:.1f}%")
-    print(f"AG News: {results['results']['agnews']['accuracy']:.1f}%")
-    print("=" * 60)
+        # Load and eval Llama
+        print("\nLoading Llama...")
+        llama_tok = AutoTokenizer.from_pretrained(args.llama_model)
+        llama_tok.pad_token = llama_tok.eos_token
+        llama_model = AutoModelForCausalLM.from_pretrained(
+            args.llama_model,
+            torch_dtype=torch.bfloat16
+        ).to(device)
+        llama_model.eval()
 
-    # Compare with bridge results
-    print("\nComparison with Bridge:")
-    print("| Task    | Text-Relay | Bridge | Mistral Text |")
-    print("|---------|------------|--------|--------------|")
-    print(f"| SST-2   | {results['results']['sst2']['accuracy']:.1f}%      | 94.7%  | 93.5%        |")
-    print(f"| AG News | {results['results']['agnews']['accuracy']:.1f}%      | 88.9%  | 70.5%        |")
+        results["results"]["llama"] = eval_banking77_text_baseline(
+            llama_model, llama_tok, args.num_samples
+        )
 
-    # Save results
-    json_path = os.path.join(args.output_dir, "text_relay_results.json")
-    with open(json_path, "w") as f:
-        json.dump(results, f, indent=2)
-    print(f"\nResults saved to: {json_path}")
+        # Summary
+        print("\n" + "=" * 60)
+        print("BANKING77 TEXT BASELINES SUMMARY")
+        print("=" * 60)
+        print(f"Mistral Text: {results['results']['mistral']['accuracy']:.1f}%")
+        print(f"Llama Text:   {results['results']['llama']['accuracy']:.1f}%")
+        print(f"Bridge (16 tokens): 21.5%")
+        print(f"Random: 1.3%")
+        print("=" * 60)
+
+        # Save results
+        json_path = os.path.join(args.output_dir, "banking77_baselines.json")
+        with open(json_path, "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"\nResults saved to: {json_path}")
+
+    else:
+        # Original text-relay mode
+        print("=" * 60)
+        print("TEXT-RELAY BASELINE")
+        print("=" * 60)
+        print("Pipeline: Llama summarizes → text → Mistral classifies")
+        print(f"Llama: {args.llama_model}")
+        print(f"Mistral: {args.mistral_model}")
+        print("=" * 60)
+
+        # Load Llama
+        print("\nLoading Llama...")
+        llama_tok = AutoTokenizer.from_pretrained(args.llama_model)
+        llama_tok.pad_token = llama_tok.eos_token
+        llama_model = AutoModelForCausalLM.from_pretrained(
+            args.llama_model,
+            torch_dtype=torch.bfloat16
+        ).to(device)
+        llama_model.eval()
+
+        # Load Mistral
+        print("Loading Mistral...")
+        mistral_tok = AutoTokenizer.from_pretrained(args.mistral_model)
+        mistral_tok.pad_token = mistral_tok.eos_token
+        mistral_model = AutoModelForCausalLM.from_pretrained(
+            args.mistral_model,
+            torch_dtype=torch.bfloat16
+        ).to(device)
+        mistral_model.eval()
+
+        results = {
+            "experiment": "text_relay_baseline",
+            "timestamp": datetime.now().isoformat(),
+            "config": {
+                "llama_model": args.llama_model,
+                "mistral_model": args.mistral_model,
+                "num_samples": args.num_samples,
+            },
+            "results": {}
+        }
+
+        # Run evaluations
+        results["results"]["sst2"] = eval_sst2(
+            llama_model, llama_tok, mistral_model, mistral_tok, args.num_samples
+        )
+
+        results["results"]["agnews"] = eval_agnews(
+            llama_model, llama_tok, mistral_model, mistral_tok, args.num_samples
+        )
+
+        # Summary
+        print("\n" + "=" * 60)
+        print("TEXT-RELAY BASELINE SUMMARY")
+        print("=" * 60)
+        print(f"SST-2:   {results['results']['sst2']['accuracy']:.1f}%")
+        print(f"AG News: {results['results']['agnews']['accuracy']:.1f}%")
+        print("=" * 60)
+
+        # Compare with bridge results
+        print("\nComparison with Bridge:")
+        print("| Task    | Text-Relay | Bridge | Mistral Text |")
+        print("|---------|------------|--------|--------------|")
+        print(f"| SST-2   | {results['results']['sst2']['accuracy']:.1f}%      | 94.7%  | 93.5%        |")
+        print(f"| AG News | {results['results']['agnews']['accuracy']:.1f}%      | 88.9%  | 70.5%        |")
+
+        # Save results
+        json_path = os.path.join(args.output_dir, "text_relay_results.json")
+        with open(json_path, "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"\nResults saved to: {json_path}")
 
 
 if __name__ == "__main__":
