@@ -212,6 +212,67 @@ Intent:"""
     return {"accuracy": accuracy, "correct": correct, "total": total, "num_classes": len(labels)}
 
 
+def eval_banking77_text_relay(llama_model, llama_tok, mistral_model, mistral_tok, num_samples=200):
+    """Evaluate text-relay on Banking77: Llama summarizes → text → Mistral classifies."""
+    print("\n" + "=" * 60)
+    print("BANKING77 TEXT-RELAY BASELINE")
+    print("=" * 60)
+    print("Pipeline: Llama summarizes query → text → Mistral classifies intent")
+    print("=" * 60)
+
+    dataset = load_dataset("PolyAI/banking77", trust_remote_code=True)
+    labels = dataset['train'].features['label'].names
+    test_data = dataset['test']
+
+    print(f"Classes: {len(labels)}")
+    print(f"Test samples: {len(test_data)}")
+
+    # Task prompt for Mistral classification
+    task_prompt = "What is the banking intent of this query? Respond with just the intent category."
+
+    correct = 0
+    total = 0
+    samples = []
+
+    for i in tqdm(range(min(num_samples, len(test_data))), desc="Banking77 Relay"):
+        item = test_data[i]
+        text = item['text']
+        label = labels[item['label']]
+
+        # Step 1: Llama summarizes/rephrases the query
+        summary = generate_summary(llama_model, llama_tok, text, max_input_len=256, max_summary_len=60)
+
+        # Step 2: Mistral classifies from Llama's summary
+        prediction = classify_with_mistral(mistral_model, mistral_tok, summary, task_prompt)
+
+        # Check if label matches (flexible matching)
+        label_lower = label.lower().replace("_", " ")
+        is_correct = (label_lower in prediction) or (label.lower() in prediction)
+
+        if is_correct:
+            correct += 1
+        total += 1
+
+        if i < 5:
+            samples.append({
+                "query": text[:50],
+                "summary": summary[:50],
+                "label": label,
+                "prediction": prediction[:30]
+            })
+
+    accuracy = 100 * correct / total
+    print(f"\nBanking77 Text-Relay Accuracy: {accuracy:.1f}% ({correct}/{total})")
+    print("\nSamples:")
+    for s in samples:
+        print(f"  Q: {s['query']}...")
+        print(f"  Summary: {s['summary']}...")
+        print(f"  GT: {s['label']} | Pred: {s['prediction']}")
+        print()
+
+    return {"accuracy": accuracy, "correct": correct, "total": total, "num_classes": len(labels)}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output_dir", default="runs/text_relay_baseline")
@@ -219,7 +280,8 @@ def main():
     parser.add_argument("--llama_model", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
     parser.add_argument("--mistral_model", default="mistralai/Mistral-7B-Instruct-v0.3")
     parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
-    parser.add_argument("--banking77", action="store_true", help="Run Banking77 text baseline instead of text-relay")
+    parser.add_argument("--banking77", action="store_true", help="Run Banking77 text baseline (direct classification)")
+    parser.add_argument("--banking77_relay", action="store_true", help="Run Banking77 text-relay (Llama summarizes → Mistral classifies)")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -296,8 +358,70 @@ def main():
             json.dump(results, f, indent=2)
         print(f"\nResults saved to: {json_path}")
 
+    elif args.banking77_relay:
+        # Banking77 text-relay mode: Llama summarizes → Mistral classifies
+        print("=" * 60)
+        print("BANKING77 TEXT-RELAY BASELINE")
+        print("=" * 60)
+        print("Pipeline: Llama summarizes → text → Mistral classifies")
+        print(f"Llama: {args.llama_model}")
+        print(f"Mistral: {args.mistral_model}")
+        print("=" * 60)
+
+        # Load both models (need both for relay)
+        print("\nLoading Llama...")
+        llama_tok = AutoTokenizer.from_pretrained(args.llama_model)
+        llama_tok.pad_token = llama_tok.eos_token
+        llama_model = AutoModelForCausalLM.from_pretrained(
+            args.llama_model,
+            torch_dtype=torch.bfloat16
+        ).to(device)
+        llama_model.eval()
+
+        print("Loading Mistral...")
+        mistral_tok = AutoTokenizer.from_pretrained(args.mistral_model)
+        mistral_tok.pad_token = mistral_tok.eos_token
+        mistral_model = AutoModelForCausalLM.from_pretrained(
+            args.mistral_model,
+            torch_dtype=torch.bfloat16
+        ).to(device)
+        mistral_model.eval()
+
+        results = {
+            "experiment": "banking77_text_relay",
+            "timestamp": datetime.now().isoformat(),
+            "config": {
+                "llama_model": args.llama_model,
+                "mistral_model": args.mistral_model,
+                "num_samples": args.num_samples,
+            },
+            "results": {}
+        }
+
+        # Run Banking77 text-relay evaluation
+        results["results"]["banking77"] = eval_banking77_text_relay(
+            llama_model, llama_tok, mistral_model, mistral_tok, args.num_samples
+        )
+
+        # Summary with comparison
+        print("\n" + "=" * 60)
+        print("BANKING77 COMPARISON SUMMARY")
+        print("=" * 60)
+        print(f"Text-Relay (Llama→text→Mistral): {results['results']['banking77']['accuracy']:.1f}%")
+        print(f"Bridge (16 tokens):              21.5%")
+        print(f"Mistral Text (direct):           19.5%")
+        print(f"Llama Text (direct):             22.0%")
+        print(f"Random:                          1.3%")
+        print("=" * 60)
+
+        # Save results
+        json_path = os.path.join(args.output_dir, "banking77_relay_results.json")
+        with open(json_path, "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"\nResults saved to: {json_path}")
+
     else:
-        # Original text-relay mode
+        # Original text-relay mode (SST-2 and AG News)
         print("=" * 60)
         print("TEXT-RELAY BASELINE")
         print("=" * 60)
