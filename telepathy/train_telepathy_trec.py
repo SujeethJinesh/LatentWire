@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 # telepathy/train_telepathy_trec.py
 """
-Phase 22: TREC Question Classification (Generalization Test)
+Phase 23: TREC Question Classification (6-class Coarse Labels)
 
-GOAL: Test if the bridge can handle question type classification.
+GOAL: Test bridge generalization on question type classification.
 This is a different domain than sentiment/topic - it's about understanding
-the TYPE of question being asked (Who, What, Where, When, Why, How).
+the TYPE of question being asked.
 
 Dataset: CogComp/trec
 - Coarse: 6 classes (ABBR, DESC, ENTY, HUM, LOC, NUM)
-- Fine: 50 classes (more specific subtypes)
+  - ABBR: Abbreviation
+  - DESC: Description/abstract concept
+  - ENTY: Entity
+  - HUM: Human/individual
+  - LOC: Location
+  - NUM: Numeric value
 
-We use FINE labels (50 classes) for the challenge.
+Using 6 coarse classes for cleaner paper story: SST-2 (2), AG News (4), TREC (6), Banking77 (77)
 """
 import os
 import torch
@@ -112,7 +117,7 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, 
             break
 
         text = item['text']
-        label_idx = item['fine_label']
+        label_idx = item['coarse_label']
         label = labels[label_idx]
 
         src_inputs = src_tok(text, return_tensors="pt", truncation=True, max_length=128).to(device)
@@ -136,10 +141,8 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, 
             )
             output = tgt_tok.decode(out_ids[0], skip_special_tokens=True).lower()
 
-        # Check match (labels are like "ABBR:abb", "DESC:def", etc.)
-        # Match on the part after colon
-        label_short = label.split(":")[-1].lower() if ":" in label else label.lower()
-        is_correct = label_short in output or label.lower() in output
+        # Check match (coarse labels are simple: ABBR, DESC, ENTY, HUM, LOC, NUM)
+        is_correct = label.lower() in output
 
         if is_correct:
             correct += 1
@@ -167,24 +170,26 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--eval_every", type=int, default=400)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
+    parser.add_argument("--gpu", type=int, default=0, help="GPU device index")
     args = parser.parse_args()
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu"
     os.makedirs(args.output_dir, exist_ok=True)
 
     print("=" * 60)
-    print("TREC EXPERIMENT (50-class Question Type Classification)")
+    print("TREC EXPERIMENT (6-class Question Type Classification)")
     print("=" * 60)
-    print(f"Fine-grained classes: 50")
+    print(f"Coarse classes: 6 (ABBR, DESC, ENTY, HUM, LOC, NUM)")
     print(f"Soft tokens: {args.soft_tokens}")
     print(f"Steps: {args.steps}")
+    print(f"GPU: {device}")
     print("=" * 60)
 
     # Load dataset
     print("\nLoading TREC...")
     dataset = load_dataset("CogComp/trec", trust_remote_code=True)
-    labels = dataset['train'].features['fine_label'].names
-    print(f"Fine labels: {len(labels)}")
+    labels = dataset['train'].features['coarse_label'].names
+    print(f"Coarse labels: {len(labels)} - {labels}")
     print(f"Train: {len(dataset['train'])}, Test: {len(dataset['test'])}")
 
     # Load models
@@ -243,7 +248,7 @@ def main():
             batch = next(iter_loader)
 
         texts = batch['text']
-        label_indices = batch['fine_label']
+        label_indices = batch['coarse_label']
         target_strs = [labels[l] for l in label_indices]
 
         B = len(texts)
@@ -341,7 +346,7 @@ def main():
     # Latent Interpretability Analysis - sample different question types
     sample_indices = [0, 50, 100, 150]  # Different test samples
     sample_texts = [dataset['test'][i]['text'] for i in sample_indices]
-    sample_labels = [labels[dataset['test'][i]['fine_label']] for i in sample_indices]
+    sample_labels = [labels[dataset['test'][i]['coarse_label']] for i in sample_indices]
     analyze_latent_interpretability(
         bridge, src_model, tgt_model, src_tok, tgt_tok, device,
         sample_texts, sample_labels, args.soft_tokens
