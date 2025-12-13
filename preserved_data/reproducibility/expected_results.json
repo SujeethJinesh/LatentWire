@@ -19,6 +19,13 @@
       "tolerance": 2.0,
       "notes": "Bridge significantly beats Mistral text baseline (70.5%)"
     },
+    "trec_bridge": {
+      "task": "TREC 6-class Question Type Classification",
+      "method": "Bridge (16 soft tokens)",
+      "expected_accuracy": "TBD",
+      "tolerance": 3.0,
+      "notes": "First run - 6 coarse classes: ABBR, DESC, ENTY, HUM, LOC, NUM"
+    },
     "banking77_bridge_16tok": {
       "task": "Banking77 77-class Intent Classification",
       "method": "Bridge (16 soft tokens)",
