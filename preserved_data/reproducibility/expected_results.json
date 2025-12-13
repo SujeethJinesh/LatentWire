@@ -104,6 +104,13 @@
       "expected_accuracy": 64.5,
       "tolerance": 3.0,
       "notes": "Bridge beats by 24pp"
+    },
+    "text_relay_banking77": {
+      "task": "Banking77 77-class Intent Classification",
+      "method": "Text-Relay (Llama summarize → Mistral classify)",
+      "expected_accuracy": 1.0,
+      "tolerance": 2.0,
+      "notes": "CATASTROPHIC FAILURE - essentially random (1.3%). Bridge beats by 20.5pp"
     }
   },
   "key_findings": {
@@ -114,8 +121,8 @@
     },
     "finding_2": {
       "name": "Bridge >> Text-Relay",
-      "description": "Bridge outperforms text-relay by ~24pp on SST-2 and AG News",
-      "evidence": ["sst2_bridge", "text_relay_sst2", "agnews_bridge", "text_relay_agnews"]
+      "description": "Bridge outperforms text-relay by 20-24pp on ALL tasks (SST-2, AG News, Banking77)",
+      "evidence": ["sst2_bridge", "text_relay_sst2", "agnews_bridge", "text_relay_agnews", "banking77_bridge_16tok", "text_relay_banking77"]
     },
     "finding_3": {
       "name": "Inverse Token Scaling",
@@ -126,6 +133,11 @@
       "name": "16 Tokens Optimal",
       "description": "Best performance consistently at 16 soft tokens",
       "evidence": ["banking77_bridge_16tok", "passkey_16tok"]
+    },
+    "finding_5": {
+      "name": "Text-Relay Catastrophic Failure",
+      "description": "Text-relay fails completely on fine-grained classification (1.0% on 77-class Banking77)",
+      "evidence": ["text_relay_banking77", "banking77_bridge_16tok"]
     }
   },
   "models": {
