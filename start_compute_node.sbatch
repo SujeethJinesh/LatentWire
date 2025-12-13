@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=code-server
 #SBATCH --nodes=1
-#SBATCH --gpus=2
+#SBATCH --gpus=4
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
