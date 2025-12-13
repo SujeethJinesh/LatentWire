@@ -3905,3 +3905,176 @@ A: Would indicate fundamental bandwidth limit. Next step: Try with shared codebo
 A: Phase 19 proved reasoning fails. These experiments focus on classification/precision, not reasoning.
 
 ---
+
+## Section 64: Phase 20 Results - CRITICAL DISCOVERY: Inverse Token Scaling
+
+**Date**: 2025-12-13
+**Status**: COMPLETE - Major finding
+
+### Executive Summary
+
+**The most important finding: MORE TOKENS = WORSE PERFORMANCE**
+
+This is counter-intuitive and fundamentally changes our understanding of the bridge architecture.
+
+### Banking77 Token Ablation Results
+
+| Tokens | Final Accuracy | Random Baseline | vs Random |
+|--------|---------------|-----------------|-----------|
+| **16** | **21.5%** | 1.3% | **16.5×** |
+| 32 | 13.5% | 1.3% | 10.4× |
+| 64 | 7.5% | 1.3% | 5.8× |
+| 128 | 1.0% | 1.3% | **≈ random** |
+
+**Key Observation**: Performance degrades monotonically as tokens increase. 128 tokens performs at random chance level.
+
+### Passkey Token Ablation Results
+
+| Tokens | Exact Match | Digit Accuracy | Random (digit) |
+|--------|-------------|----------------|----------------|
+| **16** | 0% | **23.4%** | 10% |
+| 32 | 0% | 22.8% | 10% |
+| 64 | 0% | 18.4% | 10% |
+| 128 | 0% | **9.8%** | 10% |
+
+**Key Observation**: Same inverse pattern. 128 tokens = random digit accuracy. No exact match for any configuration.
+
+### Text-Relay Baseline Results
+
+| Task | Text-Relay | Bridge | Mistral Text | Bridge Advantage |
+|------|------------|--------|--------------|------------------|
+| SST-2 | 71.0% | 94.7% | 93.5% | **+23.7pp vs relay** |
+| AG News | 64.5% | 88.9% | 70.5% | **+24.4pp vs relay** |
+
+**Key Finding**: Bridge significantly outperforms text-relay. This proves the latent transfer has unique benefits beyond just Llama's encoding.
+
+### Root Cause Analysis: Why Inverse Scaling?
+
+Examining training logs reveals the mechanism:
+
+**16 Tokens Training**:
+- LM loss: 6.1 → 0.6 by step 200 (rapid convergence)
+- Diversity loss: 1.0 → 0.99 (some differentiation)
+
+**128 Tokens Training**:
+- LM loss: 7.1 → 2.5 by step 200 (slow convergence)
+- Diversity loss: **1.0 → 1.0** (stuck! no differentiation)
+
+**Diagnosis**: With more tokens:
+1. **Optimization difficulty scales**: More parameters = harder to train
+2. **Mode collapse**: All 128 tokens collapse to nearly identical representations
+3. **Diversity loss ineffective**: Cannot prevent collapse at scale
+4. **Insufficient gradient signal**: 3000 steps may be inadequate for 128 tokens
+
+### Theoretical Implications
+
+This finding has significant implications for soft prompt research:
+
+1. **More is not better**: Adding tokens does not linearly increase capacity
+2. **Optimization bottleneck**: The bridge is limited by trainability, not architecture
+3. **Diversity is crucial**: Token differentiation requires explicit mechanisms
+4. **Sweet spot exists**: 8-16 tokens appears optimal for current training regime
+
+### Comparison with Previous Results
+
+| Task | Best Config | Previous Best | Change |
+|------|-------------|---------------|--------|
+| SST-2 | 8 tokens | 8 tokens | — |
+| AG News | 8 tokens | 8 tokens | — |
+| Banking77 | **16 tokens** | N/A (new) | First result |
+| Passkey | 16 tokens | N/A (new) | First result |
+| GSM8K | Any | 8 tokens | Still 2% |
+
+### Key Insights for Paper
+
+1. **Bridge >> Text-Relay**: 24pp improvement on both SST-2 and AG News proves latent transfer has unique benefits
+2. **Classification scales to 77 classes**: Banking77 at 21.5% (16× random) shows bandwidth
+3. **Precision fails**: 0% exact match on 5-digit passkeys confirms high-entropy limitation
+4. **Inverse token scaling**: Critical finding - more tokens hurt performance
+
+### Runs Preserved
+
+```
+runs/banking77_16tok_20251213_092023/  # Best: 21.5%
+runs/banking77_32tok_20251213_092023/  # 13.5%
+runs/banking77_64tok_20251213_092023/  # 7.5%
+runs/banking77_128tok_20251213_092023/ # 1.0%
+runs/passkey_16tok_20251213_092023/    # Best digit: 23.4%
+runs/passkey_32tok_20251213_092023/    # 22.8%
+runs/passkey_64tok_20251213_092023/    # 18.4%
+runs/passkey_128tok_20251213_092023/   # 9.8%
+runs/text_relay_20251213_092023/       # SST-2: 71%, AG: 64.5%
+```
+
+---
+
+## Section 65: Phase 21 - Proposed Next Steps
+
+**Date**: 2025-12-13
+**Status**: PLANNING
+
+### The Core Question
+
+Given inverse token scaling, what should we investigate next?
+
+### Option A: Fix Multi-Token Training (HIGH PRIORITY)
+
+**Hypothesis**: The issue is trainability, not architecture. With better training, more tokens should help.
+
+**Experiments**:
+1. **Lower LR for larger tokens**: Try 1e-5 instead of 1e-4 for 64/128 tokens
+2. **Longer training**: 10k-20k steps for larger token counts
+3. **Progressive training**: Start with 16 tokens, gradually add more
+4. **Stronger diversity loss**: Weight 0.5 instead of 0.1
+
+**Success Criteria**: 64 or 128 tokens beats 16 tokens on Banking77
+
+**Self-Critique**:
+- Q: Is this worth the compute? A: Yes, understanding token scaling is fundamental
+- Q: Will lower LR just take longer to fail? A: Possibly, but worth testing
+- Q: Does this duplicate existing work? A: No, we've never tried these interventions
+
+### Option B: Improve 16-Token Config (MEDIUM PRIORITY)
+
+**Hypothesis**: 16 tokens is the sweet spot. Optimize within this constraint.
+
+**Experiments**:
+1. **Banking77 with 8 tokens**: Does fewer tokens help?
+2. **Banking77 baselines**: What does Mistral text-only achieve?
+3. **Longer training at 16 tokens**: 5k-10k steps
+4. **Better diversity loss**: Contrastive loss instead of pairwise similarity
+
+**Success Criteria**: Improve Banking77 from 21.5% to >40%
+
+**Self-Critique**:
+- Q: Is 21.5% actually good? A: It's 16× random, but far from usable
+- Q: What's the theoretical upper bound? A: Need Mistral text baseline to know
+
+### Option C: Architectural Changes (LOW PRIORITY FOR NOW)
+
+**Hypothesis**: The architecture needs changes for multi-token to work.
+
+**Experiments**:
+1. **Positional encodings for soft tokens**: Help model distinguish token positions
+2. **Per-token diversity**: Penalize each token independently
+3. **Hierarchical soft tokens**: 4 "coarse" + 12 "fine" tokens
+
+**Self-Critique**:
+- Q: Should we do this before understanding training dynamics? A: No
+- Q: Does this duplicate Phase 14-15 failures? A: Partially, need to be careful
+
+### Recommended Priority Order
+
+1. **Option B.2**: Run Banking77 Mistral text baseline (1 hour) - need to know ceiling
+2. **Option A.1**: Lower LR experiment for 64 tokens (2 hours)
+3. **Option B.3**: Longer training at 16 tokens (2 hours)
+4. **Option A.2**: Extended training for 128 tokens (4 hours)
+
+### Non-Duplication Check
+
+✓ Lower LR for large tokens: Never tested
+✓ Progressive training: Never tested
+✓ Banking77 text baseline: Never tested
+✓ 8-token Banking77: Never tested
+
+---
