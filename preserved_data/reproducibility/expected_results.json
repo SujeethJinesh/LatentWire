@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "last_updated": "2025-12-13",
+    "project": "LatentWire / Telepathy",
+    "description": "Expected results for reproducibility verification"
+  },
+  "experiments": {
+    "sst2_bridge": {
+      "task": "SST-2 Binary Sentiment Classification",
+      "method": "Bridge (8 soft tokens)",
+      "expected_accuracy": 94.7,
+      "tolerance": 2.0,
+      "notes": "Bridge beats Mistral text baseline (93.5%)"
+    },
+    "agnews_bridge": {
+      "task": "AG News 4-class Topic Classification",
+      "method": "Bridge (8 soft tokens)",
+      "expected_accuracy": 88.9,
+      "tolerance": 2.0,
+      "notes": "Bridge significantly beats Mistral text baseline (70.5%)"
+    },
+    "banking77_bridge_16tok": {
+      "task": "Banking77 77-class Intent Classification",
+      "method": "Bridge (16 soft tokens)",
+      "expected_accuracy": 21.5,
+      "tolerance": 3.0,
+      "notes": "Matches Llama text ceiling (22.0%)"
+    },
+    "banking77_bridge_32tok": {
+      "task": "Banking77 77-class Intent Classification",
+      "method": "Bridge (32 soft tokens)",
+      "expected_accuracy": 13.5,
+      "tolerance": 3.0,
+      "notes": "Mode collapse starting"
+    },
+    "banking77_bridge_64tok": {
+      "task": "Banking77 77-class Intent Classification",
+      "method": "Bridge (64 soft tokens)",
+      "expected_accuracy": 7.5,
+      "tolerance": 3.0,
+      "notes": "Severe mode collapse"
+    },
+    "banking77_bridge_128tok": {
+      "task": "Banking77 77-class Intent Classification",
+      "method": "Bridge (128 soft tokens)",
+      "expected_accuracy": 1.0,
+      "tolerance": 2.0,
+      "notes": "Complete collapse (random = 1.3%)"
+    },
+    "banking77_mistral_text": {
+      "task": "Banking77 77-class Intent Classification",
+      "method": "Mistral Direct Text",
+      "expected_accuracy": 19.5,
+      "tolerance": 3.0,
+      "notes": "Receiver model baseline"
+    },
+    "banking77_llama_text": {
+      "task": "Banking77 77-class Intent Classification",
+      "method": "Llama Direct Text",
+      "expected_accuracy": 22.0,
+      "tolerance": 3.0,
+      "notes": "Sender model ceiling"
+    },
+    "passkey_16tok": {
+      "task": "Passkey 5-digit Retrieval",
+      "method": "Bridge (16 soft tokens)",
+      "expected_exact_match": 0.0,
+      "expected_digit_accuracy": 23.4,
+      "tolerance": 5.0,
+      "notes": "Best digit accuracy at 16 tokens"
+    },
+    "passkey_32tok": {
+      "task": "Passkey 5-digit Retrieval",
+      "method": "Bridge (32 soft tokens)",
+      "expected_exact_match": 0.0,
+      "expected_digit_accuracy": 22.8,
+      "tolerance": 5.0
+    },
+    "passkey_64tok": {
+      "task": "Passkey 5-digit Retrieval",
+      "method": "Bridge (64 soft tokens)",
+      "expected_exact_match": 0.0,
+      "expected_digit_accuracy": 18.4,
+      "tolerance": 5.0
+    },
+    "passkey_128tok": {
+      "task": "Passkey 5-digit Retrieval",
+      "method": "Bridge (128 soft tokens)",
+      "expected_exact_match": 0.0,
+      "expected_digit_accuracy": 9.8,
+      "tolerance": 5.0,
+      "notes": "Random baseline (10% for 10 digits)"
+    },
+    "text_relay_sst2": {
+      "task": "SST-2 Binary Sentiment Classification",
+      "method": "Text-Relay (Llama summarize → Mistral classify)",
+      "expected_accuracy": 71.0,
+      "tolerance": 3.0,
+      "notes": "Bridge beats by 24pp"
+    },
+    "text_relay_agnews": {
+      "task": "AG News 4-class Topic Classification",
+      "method": "Text-Relay (Llama summarize → Mistral classify)",
+      "expected_accuracy": 64.5,
+      "tolerance": 3.0,
+      "notes": "Bridge beats by 24pp"
+    }
+  },
+  "key_findings": {
+    "finding_1": {
+      "name": "Text-Baseline Parity",
+      "description": "Bridge achieves sender model ceiling on Banking77 (21.5% vs 22.0%)",
+      "evidence": ["banking77_bridge_16tok", "banking77_llama_text"]
+    },
+    "finding_2": {
+      "name": "Bridge >> Text-Relay",
+      "description": "Bridge outperforms text-relay by ~24pp on SST-2 and AG News",
+      "evidence": ["sst2_bridge", "text_relay_sst2", "agnews_bridge", "text_relay_agnews"]
+    },
+    "finding_3": {
+      "name": "Inverse Token Scaling",
+      "description": "More soft tokens = worse performance due to mode collapse",
+      "evidence": ["banking77_bridge_16tok", "banking77_bridge_32tok", "banking77_bridge_64tok", "banking77_bridge_128tok"]
+    },
+    "finding_4": {
+      "name": "16 Tokens Optimal",
+      "description": "Best performance consistently at 16 soft tokens",
+      "evidence": ["banking77_bridge_16tok", "passkey_16tok"]
+    }
+  },
+  "models": {
+    "llama": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "mistral": "mistralai/Mistral-7B-Instruct-v0.3"
+  },
+  "hyperparameters": {
+    "default": {
+      "soft_tokens": 8,
+      "source_layer": 31,
+      "learning_rate": 1e-4,
+      "batch_size": 8,
+      "diversity_weight": 0.1,
+      "steps": 2000
+    },
+    "banking77": {
+      "soft_tokens": 16,
+      "steps": 3000
+    },
+    "passkey": {
+      "soft_tokens": 16,
+      "steps": 1000
+    }
+  }
+}
