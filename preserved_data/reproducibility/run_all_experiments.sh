@@ -103,7 +103,7 @@ log "AG News training complete"
 # EXPERIMENT 3: TREC BRIDGE (6-class)
 # =============================================================================
 section "[3/8] TREC BRIDGE TRAINING (6-class)"
-log "Expected: TBD (first run)"
+log "Expected: ~94.5% accuracy"
 
 TREC_DIR="${OUTPUT_BASE}/trec_${TIMESTAMP}"
 mkdir -p "$TREC_DIR"
@@ -272,7 +272,7 @@ fi
 # TREC Results
 if [ -f "${TREC_DIR}/trec_results.json" ]; then
     TREC_ACC=$(python -c "import json; d=json.load(open('${TREC_DIR}/trec_results.json')); print(d.get('final_results', {}).get('accuracy', 'N/A'))" 2>/dev/null || echo "N/A")
-    log "TREC Bridge (6-class): ${TREC_ACC}% (expected: TBD)"
+    log "TREC Bridge (6-class): ${TREC_ACC}% (expected: 94.5%)"
 fi
 
 # Banking77 Token Ablation

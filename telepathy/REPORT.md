@@ -4554,3 +4554,214 @@ python telepathy/train_telepathy_banking77.py \
 3. Training cost documentation
 
 ---
+
+## Section 71: Phase 23 Results - TREC SUCCESS (94.5%)
+
+**Date**: 2025-12-13
+**Status**: COMPLETE ✓
+
+### Experiment: TREC 6-class Question Type Classification
+
+**Configuration**:
+- Task: TREC coarse labels (6 classes)
+- Classes: ABBR, DESC, ENTY, HUM, LOC, NUM
+- Soft tokens: 16
+- Steps: 2000
+- Batch size: 8
+
+### Results
+
+**Final Accuracy: 94.5% (189/200)**
+
+Training progression:
+| Step | Accuracy |
+|------|----------|
+| 400 | 87.0% |
+| 800 | 95.0% |
+| 1200 | 95.0% |
+| 1600 | 95.0% |
+| 2000 | 94.0% |
+
+Final eval (200 samples): **94.5%**
+
+### Complete Classification Results Table
+
+| Task | Classes | Bridge | Training Time |
+|------|---------|--------|---------------|
+| SST-2 | 2 | 94.7% | ~30 min |
+| AG News | 4 | 88.9% | ~30 min |
+| **TREC** | **6** | **94.5%** | ~30 min |
+| Banking77 | 77 | 21.5% | ~45 min |
+
+**Key Finding**: Bridge achieves >88% accuracy on tasks with ≤6 classes.
+
+### Output Analysis
+
+The model outputs category names with repetition artifacts:
+```
+GT: NUM | Output: numumumumumumumumumum
+GT: LOC | Output: locccccccccccccc
+GT: HUM | Output: humumumumumumh
+GT: DESC | Output: desccrrrrrrrccrrr
+```
+
+Despite repetition, the FIRST characters correctly identify the class.
+
+### Latent Interpretability
+
+- Mean pairwise token similarity: 0.883 (high cohesion within samples)
+- Token RMS range: 0.0311 - 0.0314 (well-calibrated)
+- Nearest vocabulary tokens are generic (for, up, \n) - distributed representations
+
+### Data Location
+
+```
+runs/trec_20251213_153206/
+├── trec.log           # Full training log
+├── trec_results.json  # Structured results
+└── bridge_trec.pt     # Checkpoint (on HPC)
+```
+
+---
+
+## Section 72: Phase 24 - Next Steps (Post TREC Success)
+
+**Date**: 2025-12-13
+**Status**: PLANNING
+
+### What We Now Have (Publication-Ready Core)
+
+**Complete Task Coverage**:
+- Binary: SST-2 (94.7%)
+- 4-class: AG News (88.9%)
+- 6-class: TREC (94.5%)
+- 77-class: Banking77 (21.5% = Llama ceiling)
+
+**Complete Comparison Story** (3 tasks):
+- Bridge vs Text-Relay: +20-24pp consistently
+- Bridge vs Text-Baseline: Parity on Banking77
+- Inverse Token Scaling: 16 > 32 > 64 > 128
+
+### What's Still Missing?
+
+**TREC needs baselines for complete comparison table**:
+1. TREC Mistral direct text baseline
+2. TREC Llama direct text baseline
+3. TREC text-relay (Llama summarize → Mistral classify)
+
+Without these, we cannot claim "Bridge >> Text-Relay" for TREC.
+
+### Proposed Experiment: TREC Baselines
+
+**Why this matters**:
+- We have TREC bridge = 94.5%
+- We don't know TREC text baseline or text-relay
+- Paper table will have gaps without this data
+- ~30 min experiment, completes the story
+
+**Expected outcomes**:
+- Mistral direct: ~75-85% (6-class is easy)
+- Llama direct: ~80-90% (ceiling)
+- Text-relay: ~65-80% (degradation but not catastrophic)
+- Bridge: 94.5% (already have) → **Should beat all**
+
+**Implementation**: Modify `eval_text_relay_baseline.py` to add TREC support.
+
+---
+
+## Section 73: Self-Critique of Phase 24 Plan
+
+### Critique 1: Do we NEED TREC baselines?
+
+**Question**: We already showed Bridge >> Text-Relay on 3 tasks. Is TREC baseline necessary?
+
+**Counter-argument**:
+- Without baselines, the 94.5% number is meaningless
+- A reviewer WILL ask "what's the text baseline for TREC?"
+- We cannot claim Bridge beats text-relay on TREC without measuring text-relay
+- 30 min experiment vs incomplete paper table
+
+**Verdict**: YES, we need TREC baselines.
+
+### Critique 2: Will TREC text-relay fail like Banking77?
+
+**Analysis**:
+- Banking77: 77 classes, very fine-grained → TEXT-RELAY = 1% (CATASTROPHIC)
+- TREC: 6 classes, broad categories → TEXT-RELAY = ~70%? (likely works okay)
+
+**Prediction**: TREC text-relay WON'T fail catastrophically (6 classes is coarse enough)
+
+**Either result is valuable**:
+- If it fails: Another catastrophic failure = stronger paper
+- If it works: Shows text-relay degrades gracefully = nuanced finding
+
+**Verdict**: Run it anyway - completes the data.
+
+### Critique 3: Are we duplicating experiments?
+
+| Experiment | Done Before? | Notes |
+|------------|--------------|-------|
+| TREC bridge 16tok | ✅ Just completed | 94.5% |
+| TREC Mistral direct | ❌ Never | NEEDED |
+| TREC Llama direct | ❌ Never | NEEDED |
+| TREC text-relay | ❌ Never | NEEDED |
+
+**Verdict**: No duplication. All proposed experiments are NEW.
+
+### Critique 4: Is this scope creep?
+
+**Analysis**:
+- We have 4 bridge results (SST-2, AG News, TREC, Banking77)
+- We have 3 complete comparison tables (SST-2, AG News, Banking77)
+- TREC is missing baselines = incomplete table
+- 30 min experiment fills the gap
+
+**Verdict**: NOT scope creep. This is completing existing work.
+
+### Critique 5: Should we prioritize statistical rigor instead?
+
+**Question**: Should we run N=500 evaluations instead of TREC baselines?
+
+**Counter-argument**:
+- Statistical rigor is important but can wait
+- TREC baselines are BLOCKING for paper table completeness
+- Better to have complete data at N=200 than incomplete at N=500
+
+**Verdict**: TREC baselines first, then statistical rigor.
+
+---
+
+## Section 74: Final Recommendation
+
+### Execute This Next
+
+**TREC Text Baselines** (~30 min):
+1. Add TREC support to `eval_text_relay_baseline.py`
+2. Run: Mistral direct, Llama direct, Text-relay
+3. Complete the comparison table
+
+### After TREC Baselines
+
+The paper will have:
+- 4 tasks with complete bridge results
+- 4 tasks with complete comparison tables
+- Consistent Bridge >> Text-Relay finding across ALL domains
+
+Then we can:
+1. Optionally run larger N for statistical rigor
+2. Begin paper writing
+
+### Non-Duplication Verification
+
+| Experiment | Status | Notes |
+|------------|--------|-------|
+| SST-2 bridge | ✅ Done | 94.7% |
+| SST-2 baselines | ✅ Done | Mistral 93.5%, text-relay 71% |
+| AG News bridge | ✅ Done | 88.9% |
+| AG News baselines | ✅ Done | Mistral 70.5%, text-relay 64.5% |
+| TREC bridge | ✅ Done | 94.5% |
+| **TREC baselines** | ❌ **NEEDED** | Missing piece |
+| Banking77 bridge | ✅ Done | 21.5% (16tok) |
+| Banking77 baselines | ✅ Done | Mistral 19.5%, Llama 22%, text-relay 1% |
+
+---

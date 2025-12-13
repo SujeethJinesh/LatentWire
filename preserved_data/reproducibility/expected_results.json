@@ -22,9 +22,9 @@
     "trec_bridge": {
       "task": "TREC 6-class Question Type Classification",
       "method": "Bridge (16 soft tokens)",
-      "expected_accuracy": "TBD",
+      "expected_accuracy": 94.5,
       "tolerance": 3.0,
-      "notes": "First run - 6 coarse classes: ABBR, DESC, ENTY, HUM, LOC, NUM"
+      "notes": "6 coarse classes: ABBR, DESC, ENTY, HUM, LOC, NUM. Converges by step 800."
     },
     "banking77_bridge_16tok": {
       "task": "Banking77 77-class Intent Classification",
