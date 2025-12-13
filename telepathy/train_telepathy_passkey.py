@@ -85,7 +85,7 @@ def get_nearest_neighbors(latent_vector, embedding_matrix, tokenizer, k=5):
     return neighbors
 
 
-def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_device, sample_texts, num_tokens):
+def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, sample_texts, num_tokens):
     """Analyze what the soft tokens 'mean' by finding nearest vocabulary neighbors."""
     print("\n" + "=" * 70)
     print("LATENT INTERPRETABILITY ANALYSIS")
@@ -98,12 +98,12 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
     for text in sample_texts:
         print(f"\n--- Input: \"{text[:60]}...\" ---")
 
-        src_inputs = src_tok(text, return_tensors="pt").to(src_device)
+        src_inputs = src_tok(text, return_tensors="pt").to(device)
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]
             src_mask = src_inputs.attention_mask
-            latents, _, _, _ = bridge(src_hidden.to(tgt_device), src_mask.to(tgt_device))
+            latents, _, _, _ = bridge(src_hidden, src_mask)
 
         latents = latents[0]  # Remove batch dim
 
@@ -116,12 +116,12 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
     print("\n--- Latent Geometry (last sample) ---")
     latents_norm = F.normalize(latents.float(), dim=-1)
     sim_matrix = torch.matmul(latents_norm, latents_norm.t())
-    off_diag = sim_matrix[~torch.eye(num_tokens, dtype=torch.bool, device=tgt_device)]
+    off_diag = sim_matrix[~torch.eye(num_tokens, dtype=torch.bool, device=device)]
     print(f"  Mean pairwise similarity: {off_diag.mean().item():.3f}")
     print(f"  Token RMS range: {latents.float().pow(2).mean(dim=-1).sqrt().min().item():.4f} - {latents.float().pow(2).mean(dim=-1).sqrt().max().item():.4f}")
 
 
-def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_device, num_samples=100, verbose=True):
+def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, device, num_samples=100, verbose=True):
     """Run exact match evaluation."""
     bridge.eval()
     correct = 0
@@ -136,7 +136,7 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_dev
     test_set = PasskeyDataset(size=num_samples, seed=42)
 
     primer = "The code is "
-    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(tgt_device)
+    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
 
     # Pre-compute primer embeddings
     with torch.no_grad():
@@ -149,24 +149,24 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_dev
         src_text = item['source_text']
         target = item['target_label']
 
-        # 1. Source Forward (on src_device)
-        src_inputs = src_tok(src_text, return_tensors="pt").to(src_device)
+        # 1. Source Forward (on device)
+        src_inputs = src_tok(src_text, return_tensors="pt").to(device)
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]  # Layer 31
             src_mask = src_inputs.attention_mask
 
-        # 2. Bridge Forward (move hidden states to tgt_device)
+        # 2. Bridge Forward (move hidden states to device)
         with torch.no_grad():
             # Bridge returns (latents, aux_loss, diversity, z_variance)
-            latents, _, _, _ = bridge(src_hidden.to(tgt_device), src_mask.to(tgt_device))
+            latents, _, _, _ = bridge(src_hidden, src_mask)
 
         # 3. Target Generation
         # Input: [Primer] + [Latents]
         combined_embeds = torch.cat([primer_embeds, latents], dim=1)
 
         # Create attention mask (all ones - all tokens are valid)
-        attn_mask = torch.ones(1, combined_embeds.shape[1], device=tgt_device)
+        attn_mask = torch.ones(1, combined_embeds.shape[1], device=device)
 
         # Generate
         out_ids = tgt_model.generate(
@@ -230,13 +230,13 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--eval_every", type=int, default=200)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
     args = parser.parse_args()
 
-    # Multi-GPU: Llama on GPU 0, Mistral on GPU 1
+    # Single GPU mode - both models fit on one 80GB H100
     num_gpus = torch.cuda.device_count()
-    src_device = torch.device("cuda:0") if num_gpus > 0 else torch.device("cpu")
-    tgt_device = torch.device("cuda:1") if num_gpus > 1 else src_device
-    print(f"Using {num_gpus} GPUs: Llama on {src_device}, Mistral on {tgt_device}")
+    device = torch.device(f"cuda:{args.gpu}") if num_gpus > args.gpu else torch.device("cpu")
+    print(f"Using GPU {args.gpu} ({num_gpus} available): {device}")
     os.makedirs(args.output_dir, exist_ok=True)
 
     print("=" * 60)
@@ -255,7 +255,7 @@ def main():
     src_model = AutoModelForCausalLM.from_pretrained(
         "meta-llama/Meta-Llama-3.1-8B-Instruct",
         torch_dtype=torch.bfloat16
-    ).to(src_device)
+    ).to(device)
     src_model.eval()
 
     tgt_tok = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3")
@@ -264,7 +264,7 @@ def main():
     tgt_model = AutoModelForCausalLM.from_pretrained(
         "mistralai/Mistral-7B-Instruct-v0.3",
         torch_dtype=torch.bfloat16
-    ).to(tgt_device)
+    ).to(device)
     tgt_model.eval()
 
     # Freeze LLMs
@@ -285,7 +285,7 @@ def main():
         src_dim=4096,
         tgt_dim=4096,
         target_rms=0.03
-    ).to(tgt_device).to(torch.bfloat16)
+    ).to(device).to(torch.bfloat16)
 
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=args.lr)
 
@@ -295,7 +295,7 @@ def main():
 
     # Primer embeddings (on target device)
     primer = "The code is "
-    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(tgt_device)
+    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
     with torch.no_grad():
         primer_embeds_single = tgt_model.get_input_embeddings()(primer_tokens.input_ids)
         primer_embeds = primer_embeds_single.repeat(args.batch_size, 1, 1)
@@ -319,37 +319,37 @@ def main():
 
         B = len(src_texts)
 
-        # 1. Get Source Hidden (on src_device)
+        # 1. Get Source Hidden (on device)
         src_inputs = src_tok(
             list(src_texts),
             return_tensors="pt",
             padding=True,
             truncation=True
-        ).to(src_device)
+        ).to(device)
 
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]
             src_mask = src_inputs.attention_mask
 
-        # 2. Bridge Forward (move hidden states to tgt_device)
-        latents, aux_loss, diversity, z_var = bridge(src_hidden.to(tgt_device), src_mask.to(tgt_device))
+        # 2. Bridge Forward (move hidden states to device)
+        latents, aux_loss, diversity, z_var = bridge(src_hidden, src_mask)
 
         # 3. Compute Diversity Loss (prevent mode collapse)
         flat_tokens = latents.reshape(B, -1).float()
         flat_norm = F.normalize(flat_tokens, dim=1)
         sim_matrix = torch.mm(flat_norm, flat_norm.t())
-        mask = ~torch.eye(B, dtype=torch.bool, device=tgt_device)
+        mask = ~torch.eye(B, dtype=torch.bool, device=device)
         off_diag_sim = sim_matrix[mask].mean()
         div_loss = off_diag_sim
 
-        # 4. Target Forward - LM Loss (on tgt_device)
+        # 4. Target Forward - LM Loss (on device)
         target_inputs = tgt_tok(
             list(targets),
             return_tensors="pt",
             padding=True,
             add_special_tokens=False
-        ).to(tgt_device)
+        ).to(device)
         target_embeds = tgt_model.get_input_embeddings()(target_inputs.input_ids)
 
         # Adjust primer for actual batch size
@@ -358,13 +358,13 @@ def main():
         # Concat inputs: [Primer] + [Latents] + [Target]
         inputs_embeds = torch.cat([primer_batch, latents, target_embeds], dim=1)
 
-        # Create Labels: -100 for primer and latents, actual tokens for target (on tgt_device)
+        # Create Labels: -100 for primer and latents, actual tokens for target (on device)
         ignore_len = primer_batch.shape[1] + latents.shape[1]
-        labels = torch.full((B, inputs_embeds.shape[1]), -100, dtype=torch.long, device=tgt_device)
+        labels = torch.full((B, inputs_embeds.shape[1]), -100, dtype=torch.long, device=device)
         labels[:, ignore_len:] = target_inputs.input_ids
 
-        # Attention mask (on tgt_device)
-        attn_mask = torch.ones(B, inputs_embeds.shape[1], device=tgt_device)
+        # Attention mask (on device)
+        attn_mask = torch.ones(B, inputs_embeds.shape[1], device=device)
 
         # Mistral Forward
         outputs = tgt_model(
@@ -391,7 +391,7 @@ def main():
         # Periodic evaluation
         if (step + 1) % args.eval_every == 0:
             eval_results = evaluate(
-                bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_device,
+                bridge, src_model, tgt_model, src_tok, tgt_tok, device,
                 num_samples=50, verbose=True
             )
             metrics_log.append({
@@ -407,7 +407,7 @@ def main():
     print("FINAL EVALUATION (100 samples)")
     print("=" * 60)
     final_results = evaluate(
-        bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_device,
+        bridge, src_model, tgt_model, src_tok, tgt_tok, device,
         num_samples=100, verbose=True
     )
 
@@ -442,7 +442,7 @@ def main():
         "The secret access code is 54321. Remember it.",
     ]
     analyze_latent_interpretability(
-        bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_device,
+        bridge, src_model, tgt_model, src_tok, tgt_tok, device,
         sample_texts, args.soft_tokens
     )
 

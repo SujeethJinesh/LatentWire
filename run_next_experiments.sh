@@ -2,12 +2,13 @@
 # run_next_experiments.sh
 #
 # NEXT EXPERIMENTS: Token Ablations + Text-Relay Baseline
+# NOW WITH 4x PARALLELISM - one experiment per GPU!
 #
-# 1. Banking77 Token Ablation (16, 32, 64, 128 tokens)
-# 2. Passkey Token Ablation (16, 32, 64, 128 tokens)
+# 1. Banking77 Token Ablation (16, 32, 64, 128 tokens) - 4 GPUs in parallel
+# 2. Passkey Token Ablation (16, 32, 64, 128 tokens) - 4 GPUs in parallel
 # 3. Text-Relay Baseline (SST-2, AG News)
 #
-# Expected runtime: ~3-4 hours on 4xH100
+# Expected runtime: ~1 hour on 4xH100 (4x speedup from parallel execution)
 
 set -e
 
@@ -24,68 +25,121 @@ echo "============================================================" | tee -a "$L
 echo "Started: $(date)" | tee -a "$LOG_FILE"
 echo "Log: $LOG_FILE" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
+echo "PARALLEL EXECUTION MODE: 4 GPUs, 1 experiment each" | tee -a "$LOG_FILE"
+echo "" | tee -a "$LOG_FILE"
 echo "Experiments:" | tee -a "$LOG_FILE"
-echo "  1. Banking77 Token Ablation (16, 32, 64, 128)" | tee -a "$LOG_FILE"
-echo "  2. Passkey Token Ablation (16, 32, 64, 128)" | tee -a "$LOG_FILE"
+echo "  1. Banking77 Token Ablation (16, 32, 64, 128) - PARALLEL" | tee -a "$LOG_FILE"
+echo "  2. Passkey Token Ablation (16, 32, 64, 128) - PARALLEL" | tee -a "$LOG_FILE"
 echo "  3. Text-Relay Baseline (SST-2, AG News)" | tee -a "$LOG_FILE"
 echo "============================================================" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # ============================================================
-# EXPERIMENT 1: BANKING77 TOKEN ABLATION
+# EXPERIMENT 1: BANKING77 TOKEN ABLATION (4 GPUs in parallel)
 # ============================================================
-echo "[1/3] BANKING77 TOKEN ABLATION" | tee -a "$LOG_FILE"
+echo "[1/3] BANKING77 TOKEN ABLATION (PARALLEL)" | tee -a "$LOG_FILE"
 echo "Goal: Test if more tokens help with 77-class classification" | tee -a "$LOG_FILE"
+echo "Running 4 experiments in parallel across 4 GPUs..." | tee -a "$LOG_FILE"
 echo "------------------------------------------------------" | tee -a "$LOG_FILE"
 
-for TOKENS in 16 32 64 128; do
-    echo "" | tee -a "$LOG_FILE"
-    echo ">>> Banking77 with ${TOKENS} tokens" | tee -a "$LOG_FILE"
-
-    BANKING_DIR="${OUTPUT_BASE}/banking77_${TOKENS}tok_${TIMESTAMP}"
-    mkdir -p "$BANKING_DIR"
-
-    {
-        python telepathy/train_telepathy_banking77.py \
-            --output_dir "$BANKING_DIR" \
-            --soft_tokens $TOKENS \
-            --steps 3000 \
-            --batch_size 8 \
-            --eval_every 500
-    } 2>&1 | tee -a "$LOG_FILE" | tee "${BANKING_DIR}/banking77_${TOKENS}tok.log"
-
-    echo "Banking77 ${TOKENS} tokens complete: $(date)" | tee -a "$LOG_FILE"
+# Create output directories
+TOKENS_LIST=(16 32 64 128)
+for TOKENS in "${TOKENS_LIST[@]}"; do
+    mkdir -p "${OUTPUT_BASE}/banking77_${TOKENS}tok_${TIMESTAMP}"
 done
+
+# Launch all 4 in parallel, each on its own GPU
+echo "" | tee -a "$LOG_FILE"
+echo ">>> Launching Banking77 experiments on GPUs 0-3..." | tee -a "$LOG_FILE"
+
+python telepathy/train_telepathy_banking77.py \
+    --output_dir "${OUTPUT_BASE}/banking77_16tok_${TIMESTAMP}" \
+    --soft_tokens 16 --steps 3000 --batch_size 8 --eval_every 500 --gpu 0 \
+    > "${OUTPUT_BASE}/banking77_16tok_${TIMESTAMP}/banking77_16tok.log" 2>&1 &
+PID_B16=$!
+
+python telepathy/train_telepathy_banking77.py \
+    --output_dir "${OUTPUT_BASE}/banking77_32tok_${TIMESTAMP}" \
+    --soft_tokens 32 --steps 3000 --batch_size 8 --eval_every 500 --gpu 1 \
+    > "${OUTPUT_BASE}/banking77_32tok_${TIMESTAMP}/banking77_32tok.log" 2>&1 &
+PID_B32=$!
+
+python telepathy/train_telepathy_banking77.py \
+    --output_dir "${OUTPUT_BASE}/banking77_64tok_${TIMESTAMP}" \
+    --soft_tokens 64 --steps 3000 --batch_size 8 --eval_every 500 --gpu 2 \
+    > "${OUTPUT_BASE}/banking77_64tok_${TIMESTAMP}/banking77_64tok.log" 2>&1 &
+PID_B64=$!
+
+python telepathy/train_telepathy_banking77.py \
+    --output_dir "${OUTPUT_BASE}/banking77_128tok_${TIMESTAMP}" \
+    --soft_tokens 128 --steps 3000 --batch_size 8 --eval_every 500 --gpu 3 \
+    > "${OUTPUT_BASE}/banking77_128tok_${TIMESTAMP}/banking77_128tok.log" 2>&1 &
+PID_B128=$!
+
+echo "  GPU 0: Banking77 16 tokens (PID: $PID_B16)" | tee -a "$LOG_FILE"
+echo "  GPU 1: Banking77 32 tokens (PID: $PID_B32)" | tee -a "$LOG_FILE"
+echo "  GPU 2: Banking77 64 tokens (PID: $PID_B64)" | tee -a "$LOG_FILE"
+echo "  GPU 3: Banking77 128 tokens (PID: $PID_B128)" | tee -a "$LOG_FILE"
+
+# Wait for all to complete
+echo "" | tee -a "$LOG_FILE"
+echo "Waiting for Banking77 experiments to complete..." | tee -a "$LOG_FILE"
+wait $PID_B16 $PID_B32 $PID_B64 $PID_B128
 
 echo "" | tee -a "$LOG_FILE"
 echo "Banking77 Ablation Complete: $(date)" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # ============================================================
-# EXPERIMENT 2: PASSKEY TOKEN ABLATION
+# EXPERIMENT 2: PASSKEY TOKEN ABLATION (4 GPUs in parallel)
 # ============================================================
-echo "[2/3] PASSKEY TOKEN ABLATION" | tee -a "$LOG_FILE"
+echo "[2/3] PASSKEY TOKEN ABLATION (PARALLEL)" | tee -a "$LOG_FILE"
 echo "Goal: Test if more tokens enable precision (5-digit codes)" | tee -a "$LOG_FILE"
+echo "Running 4 experiments in parallel across 4 GPUs..." | tee -a "$LOG_FILE"
 echo "------------------------------------------------------" | tee -a "$LOG_FILE"
 
-for TOKENS in 16 32 64 128; do
-    echo "" | tee -a "$LOG_FILE"
-    echo ">>> Passkey with ${TOKENS} tokens" | tee -a "$LOG_FILE"
-
-    PASSKEY_DIR="${OUTPUT_BASE}/passkey_${TOKENS}tok_${TIMESTAMP}"
-    mkdir -p "$PASSKEY_DIR"
-
-    {
-        python telepathy/train_telepathy_passkey.py \
-            --output_dir "$PASSKEY_DIR" \
-            --soft_tokens $TOKENS \
-            --steps 1000 \
-            --batch_size 8 \
-            --eval_every 200
-    } 2>&1 | tee -a "$LOG_FILE" | tee "${PASSKEY_DIR}/passkey_${TOKENS}tok.log"
-
-    echo "Passkey ${TOKENS} tokens complete: $(date)" | tee -a "$LOG_FILE"
+# Create output directories
+for TOKENS in "${TOKENS_LIST[@]}"; do
+    mkdir -p "${OUTPUT_BASE}/passkey_${TOKENS}tok_${TIMESTAMP}"
 done
+
+# Launch all 4 in parallel, each on its own GPU
+echo "" | tee -a "$LOG_FILE"
+echo ">>> Launching Passkey experiments on GPUs 0-3..." | tee -a "$LOG_FILE"
+
+python telepathy/train_telepathy_passkey.py \
+    --output_dir "${OUTPUT_BASE}/passkey_16tok_${TIMESTAMP}" \
+    --soft_tokens 16 --steps 1000 --batch_size 8 --eval_every 200 --gpu 0 \
+    > "${OUTPUT_BASE}/passkey_16tok_${TIMESTAMP}/passkey_16tok.log" 2>&1 &
+PID_P16=$!
+
+python telepathy/train_telepathy_passkey.py \
+    --output_dir "${OUTPUT_BASE}/passkey_32tok_${TIMESTAMP}" \
+    --soft_tokens 32 --steps 1000 --batch_size 8 --eval_every 200 --gpu 1 \
+    > "${OUTPUT_BASE}/passkey_32tok_${TIMESTAMP}/passkey_32tok.log" 2>&1 &
+PID_P32=$!
+
+python telepathy/train_telepathy_passkey.py \
+    --output_dir "${OUTPUT_BASE}/passkey_64tok_${TIMESTAMP}" \
+    --soft_tokens 64 --steps 1000 --batch_size 8 --eval_every 200 --gpu 2 \
+    > "${OUTPUT_BASE}/passkey_64tok_${TIMESTAMP}/passkey_64tok.log" 2>&1 &
+PID_P64=$!
+
+python telepathy/train_telepathy_passkey.py \
+    --output_dir "${OUTPUT_BASE}/passkey_128tok_${TIMESTAMP}" \
+    --soft_tokens 128 --steps 1000 --batch_size 8 --eval_every 200 --gpu 3 \
+    > "${OUTPUT_BASE}/passkey_128tok_${TIMESTAMP}/passkey_128tok.log" 2>&1 &
+PID_P128=$!
+
+echo "  GPU 0: Passkey 16 tokens (PID: $PID_P16)" | tee -a "$LOG_FILE"
+echo "  GPU 1: Passkey 32 tokens (PID: $PID_P32)" | tee -a "$LOG_FILE"
+echo "  GPU 2: Passkey 64 tokens (PID: $PID_P64)" | tee -a "$LOG_FILE"
+echo "  GPU 3: Passkey 128 tokens (PID: $PID_P128)" | tee -a "$LOG_FILE"
+
+# Wait for all to complete
+echo "" | tee -a "$LOG_FILE"
+echo "Waiting for Passkey experiments to complete..." | tee -a "$LOG_FILE"
+wait $PID_P16 $PID_P32 $PID_P64 $PID_P128
 
 echo "" | tee -a "$LOG_FILE"
 echo "Passkey Ablation Complete: $(date)" | tee -a "$LOG_FILE"
@@ -104,7 +158,8 @@ mkdir -p "$TEXT_RELAY_DIR"
 {
     python telepathy/eval_text_relay_baseline.py \
         --output_dir "$TEXT_RELAY_DIR" \
-        --num_samples 200
+        --num_samples 200 \
+        --gpu 0
 } 2>&1 | tee -a "$LOG_FILE" | tee "${TEXT_RELAY_DIR}/text_relay.log"
 
 echo "" | tee -a "$LOG_FILE"

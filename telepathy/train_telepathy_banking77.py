@@ -57,7 +57,7 @@ def get_nearest_neighbors(latent_vector, embedding_matrix, tokenizer, k=5):
     return neighbors
 
 
-def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_device, sample_texts, labels_for_texts, num_tokens):
+def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, sample_texts, labels_for_texts, num_tokens):
     """Analyze what the soft tokens 'mean' by finding nearest vocabulary neighbors."""
     print("\n" + "=" * 70)
     print("LATENT INTERPRETABILITY ANALYSIS")
@@ -71,12 +71,12 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
         print(f"\n--- Label: {label} ---")
         print(f"    Input: \"{text[:50]}...\"")
 
-        src_inputs = src_tok(text, return_tensors="pt", truncation=True, max_length=256).to(src_device)
+        src_inputs = src_tok(text, return_tensors="pt", truncation=True, max_length=256).to(device)
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]
             src_mask = src_inputs.attention_mask
-            latents, _, _, _ = bridge(src_hidden.to(tgt_device), src_mask.to(tgt_device))
+            latents, _, _, _ = bridge(src_hidden, src_mask)
 
         latents = latents[0]  # Remove batch dim
 
@@ -89,19 +89,19 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
     print("\n--- Latent Geometry (last sample) ---")
     latents_norm = F.normalize(latents.float(), dim=-1)
     sim_matrix = torch.matmul(latents_norm, latents_norm.t())
-    off_diag = sim_matrix[~torch.eye(num_tokens, dtype=torch.bool, device=tgt_device)]
+    off_diag = sim_matrix[~torch.eye(num_tokens, dtype=torch.bool, device=device)]
     print(f"  Mean pairwise similarity: {off_diag.mean().item():.3f}")
     print(f"  Token RMS range: {latents.float().pow(2).mean(dim=-1).sqrt().min().item():.4f} - {latents.float().pow(2).mean(dim=-1).sqrt().max().item():.4f}")
 
 
-def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, src_device, tgt_device, num_samples=200):
+def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, device, num_samples=200):
     """Evaluate on test set."""
     bridge.eval()
     correct = 0
     total = 0
 
     primer = "Intent: "
-    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(tgt_device)
+    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
     with torch.no_grad():
         primer_embeds = tgt_model.get_input_embeddings()(primer_tokens.input_ids)
 
@@ -115,17 +115,17 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, 
         label_idx = item['label']
         label = labels[label_idx]
 
-        src_inputs = src_tok(text, return_tensors="pt", truncation=True, max_length=256).to(src_device)
+        src_inputs = src_tok(text, return_tensors="pt", truncation=True, max_length=256).to(device)
 
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]
             src_mask = src_inputs.attention_mask
 
-            latents, _, _, _ = bridge(src_hidden.to(tgt_device), src_mask.to(tgt_device))
+            latents, _, _, _ = bridge(src_hidden, src_mask)
 
             combined = torch.cat([primer_embeds, latents], dim=1)
-            attn_mask = torch.ones(1, combined.shape[1], device=tgt_device)
+            attn_mask = torch.ones(1, combined.shape[1], device=device)
 
             out_ids = tgt_model.generate(
                 inputs_embeds=combined,
@@ -170,13 +170,13 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--eval_every", type=int, default=500)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
     args = parser.parse_args()
 
-    # Multi-GPU: Llama on GPU 0, Mistral on GPU 1
+    # Single GPU mode - both models fit on one 80GB H100
     num_gpus = torch.cuda.device_count()
-    src_device = torch.device("cuda:0") if num_gpus > 0 else torch.device("cpu")
-    tgt_device = torch.device("cuda:1") if num_gpus > 1 else src_device
-    print(f"Using {num_gpus} GPUs: Llama on {src_device}, Mistral on {tgt_device}")
+    device = torch.device(f"cuda:{args.gpu}") if num_gpus > args.gpu else torch.device("cpu")
+    print(f"Using GPU {args.gpu} ({num_gpus} available): {device}")
     os.makedirs(args.output_dir, exist_ok=True)
 
     print("=" * 60)
@@ -194,7 +194,7 @@ def main():
     print(f"Classes: {len(labels)}")
     print(f"Train: {len(dataset['train'])}, Test: {len(dataset['test'])}")
 
-    # Load models on separate GPUs
+    # Load both models on same GPU
     print("\nLoading models...")
     src_tok = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
     if src_tok.pad_token is None:
@@ -202,7 +202,7 @@ def main():
     src_model = AutoModelForCausalLM.from_pretrained(
         "meta-llama/Meta-Llama-3.1-8B-Instruct",
         torch_dtype=torch.bfloat16
-    ).to(src_device)
+    ).to(device)
     src_model.eval()
 
     tgt_tok = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3")
@@ -211,7 +211,7 @@ def main():
     tgt_model = AutoModelForCausalLM.from_pretrained(
         "mistralai/Mistral-7B-Instruct-v0.3",
         torch_dtype=torch.bfloat16
-    ).to(tgt_device)
+    ).to(device)
     tgt_model.eval()
 
     # Freeze LLMs
@@ -220,16 +220,16 @@ def main():
     for p in tgt_model.parameters():
         p.requires_grad = False
 
-    # Init bridge (on target device for Mistral interface)
+    # Init bridge
     bridge_args = Args(soft_tokens=args.soft_tokens, heads=8, depth=2, use_fsq=False)
     bridge = LatentBridgeV15(bridge_args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
-    bridge = bridge.to(tgt_device).to(torch.bfloat16)
+    bridge = bridge.to(device).to(torch.bfloat16)
 
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=args.lr)
 
     # Primer (on target device)
     primer = "Intent: "
-    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(tgt_device)
+    primer_tokens = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
     with torch.no_grad():
         primer_embeds_single = tgt_model.get_input_embeddings()(primer_tokens.input_ids)
         primer_embeds = primer_embeds_single.repeat(args.batch_size, 1, 1)
@@ -255,48 +255,48 @@ def main():
 
         B = len(texts)
 
-        # Source (on src_device)
+        # Source (on device)
         src_inputs = src_tok(
             list(texts),
             return_tensors="pt",
             padding=True,
             truncation=True,
             max_length=256
-        ).to(src_device)
+        ).to(device)
 
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
             src_hidden = src_out.hidden_states[31]
             src_mask = src_inputs.attention_mask
 
-        # Bridge (move hidden states to tgt_device)
-        latents, aux_loss, _, _ = bridge(src_hidden.to(tgt_device), src_mask.to(tgt_device))
+        # Bridge forward
+        latents, aux_loss, _, _ = bridge(src_hidden, src_mask)
 
         # Diversity loss
         flat_tokens = latents.reshape(B, -1).float()
         flat_norm = F.normalize(flat_tokens, dim=1)
         sim_matrix = torch.mm(flat_norm, flat_norm.t())
-        mask = ~torch.eye(B, dtype=torch.bool, device=tgt_device)
+        mask = ~torch.eye(B, dtype=torch.bool, device=device)
         div_loss = sim_matrix[mask].mean()
 
-        # Target (on tgt_device)
+        # Target (on device)
         tgt_inputs = tgt_tok(
             target_strs,
             return_tensors="pt",
             padding=True,
             add_special_tokens=False
-        ).to(tgt_device)
+        ).to(device)
         tgt_embeds = tgt_model.get_input_embeddings()(tgt_inputs.input_ids)
 
         primer_batch = primer_embeds[:B]
         inputs_embeds = torch.cat([primer_batch, latents, tgt_embeds], dim=1)
 
-        # Labels (on tgt_device)
+        # Labels (on device)
         ignore_len = primer_batch.shape[1] + latents.shape[1]
-        labels_tensor = torch.full((B, inputs_embeds.shape[1]), -100, dtype=torch.long, device=tgt_device)
+        labels_tensor = torch.full((B, inputs_embeds.shape[1]), -100, dtype=torch.long, device=device)
         labels_tensor[:, ignore_len:] = tgt_inputs.input_ids
 
-        attn_mask = torch.ones(B, inputs_embeds.shape[1], device=tgt_device)
+        attn_mask = torch.ones(B, inputs_embeds.shape[1], device=device)
 
         outputs = tgt_model(inputs_embeds=inputs_embeds, attention_mask=attn_mask, labels=labels_tensor)
         lm_loss = outputs.loss
@@ -316,7 +316,7 @@ def main():
         if (step + 1) % args.eval_every == 0:
             eval_results = evaluate(
                 bridge, src_model, tgt_model, src_tok, tgt_tok,
-                labels, dataset['test'], src_device, tgt_device, num_samples=100
+                labels, dataset['test'], device, num_samples=100
             )
             metrics_log.append({"step": step + 1, **eval_results})
             bridge.train()
@@ -327,7 +327,7 @@ def main():
     print("=" * 60)
     final_results = evaluate(
         bridge, src_model, tgt_model, src_tok, tgt_tok,
-        labels, dataset['test'], src_device, tgt_device, num_samples=200
+        labels, dataset['test'], device, num_samples=200
     )
 
     # Save
@@ -350,7 +350,7 @@ def main():
     sample_texts = [dataset['test'][i]['text'] for i in sample_indices]
     sample_labels = [labels[dataset['test'][i]['label']] for i in sample_indices]
     analyze_latent_interpretability(
-        bridge, src_model, tgt_model, src_tok, tgt_tok, src_device, tgt_device,
+        bridge, src_model, tgt_model, src_tok, tgt_tok, device,
         sample_texts, sample_labels, args.soft_tokens
     )
 

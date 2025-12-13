@@ -152,6 +152,7 @@ def main():
     parser.add_argument("--num_samples", type=int, default=200)
     parser.add_argument("--llama_model", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
     parser.add_argument("--mistral_model", default="mistralai/Mistral-7B-Instruct-v0.3")
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to use (both models fit on one 80GB GPU)")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -164,30 +165,29 @@ def main():
     print(f"Mistral: {args.mistral_model}")
     print("=" * 60)
 
-    # Multi-GPU: Llama on GPU 0, Mistral on GPU 1
+    # Single GPU mode - both models fit on one 80GB H100
     num_gpus = torch.cuda.device_count()
-    llama_device = torch.device("cuda:0") if num_gpus > 0 else torch.device("cpu")
-    mistral_device = torch.device("cuda:1") if num_gpus > 1 else llama_device
-    print(f"Using {num_gpus} GPUs: Llama on {llama_device}, Mistral on {mistral_device}")
+    device = torch.device(f"cuda:{args.gpu}") if num_gpus > args.gpu else torch.device("cpu")
+    print(f"Using GPU {args.gpu} ({num_gpus} available): {device}")
 
-    # Load Llama on GPU 0
+    # Load Llama
     print("\nLoading Llama...")
     llama_tok = AutoTokenizer.from_pretrained(args.llama_model)
     llama_tok.pad_token = llama_tok.eos_token
     llama_model = AutoModelForCausalLM.from_pretrained(
         args.llama_model,
         torch_dtype=torch.bfloat16
-    ).to(llama_device)
+    ).to(device)
     llama_model.eval()
 
-    # Load Mistral on GPU 1
+    # Load Mistral
     print("Loading Mistral...")
     mistral_tok = AutoTokenizer.from_pretrained(args.mistral_model)
     mistral_tok.pad_token = mistral_tok.eos_token
     mistral_model = AutoModelForCausalLM.from_pretrained(
         args.mistral_model,
         torch_dtype=torch.bfloat16
-    ).to(mistral_device)
+    ).to(device)
     mistral_model.eval()
 
     results = {
