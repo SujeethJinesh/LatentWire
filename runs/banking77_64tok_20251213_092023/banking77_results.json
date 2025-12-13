@@ -1,10 +1,10 @@
 {
   "experiment": "banking77",
-  "timestamp": "2025-12-04T21:13:49.584539",
+  "timestamp": "2025-12-13T09:39:35.353834",
   "config": {
-    "output_dir": "runs/banking77_20251204_204106",
+    "output_dir": "runs/banking77_64tok_20251213_092023",
     "steps": 3000,
-    "soft_tokens": 16,
+    "soft_tokens": 64,
     "batch_size": 8,
     "lr": 0.0001,
     "eval_every": 500,
@@ -12,8 +12,8 @@
   },
   "num_classes": 77,
   "final_results": {
-    "accuracy": 17.5,
-    "correct": 35,
+    "accuracy": 7.5,
+    "correct": 15,
     "total": 200
   },
   "training_log": [

@@ -1,61 +1,61 @@
 {
   "experiment": "passkey_retrieval",
-  "timestamp": "2025-12-04T21:08:43.233207",
+  "timestamp": "2025-12-13T09:57:46.017943",
   "config": {
-    "soft_tokens": 16,
+    "soft_tokens": 64,
     "steps": 1000,
     "batch_size": 8,
     "diversity_weight": 0.1
   },
   "final_results": {
     "exact_match": 0.0,
-    "digit_accuracy": 22.0,
+    "digit_accuracy": 18.4,
     "correct": 0,
     "total": 100
   },
   "training_log": [
     {
       "step": 200,
-      "lm_loss": 1.9105974435806274,
-      "div_loss": 0.9999872446060181,
+      "lm_loss": 1.9099851846694946,
+      "div_loss": 0.9999873638153076,
       "exact_match": 0.0,
-      "digit_accuracy": 8.0,
+      "digit_accuracy": 10.4,
       "correct": 0,
       "total": 50
     },
     {
       "step": 400,
-      "lm_loss": 1.888789176940918,
-      "div_loss": 0.9999786615371704,
+      "lm_loss": 1.6973060369491577,
+      "div_loss": 0.9979832768440247,
       "exact_match": 0.0,
-      "digit_accuracy": 9.6,
+      "digit_accuracy": 14.399999999999999,
       "correct": 0,
       "total": 50
     },
     {
       "step": 600,
-      "lm_loss": 1.8347774744033813,
-      "div_loss": 0.9976578950881958,
+      "lm_loss": 1.600394368171692,
+      "div_loss": 0.9956976175308228,
       "exact_match": 0.0,
-      "digit_accuracy": 12.8,
+      "digit_accuracy": 19.6,
       "correct": 0,
       "total": 50
     },
     {
       "step": 800,
-      "lm_loss": 2.055150270462036,
-      "div_loss": 0.9935315251350403,
+      "lm_loss": 1.7438510656356812,
+      "div_loss": 0.994587779045105,
       "exact_match": 0.0,
-      "digit_accuracy": 13.600000000000001,
+      "digit_accuracy": 18.8,
       "correct": 0,
       "total": 50
     },
     {
       "step": 1000,
-      "lm_loss": 1.6557940244674683,
-      "div_loss": 0.9951249957084656,
+      "lm_loss": 1.6358428001403809,
+      "div_loss": 0.9944316744804382,
       "exact_match": 0.0,
-      "digit_accuracy": 22.0,
+      "digit_accuracy": 20.8,
       "correct": 0,
       "total": 50
     }
