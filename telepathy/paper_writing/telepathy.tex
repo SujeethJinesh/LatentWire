@@ -198,7 +198,7 @@ Llama Direct & 92.0 & 79.0 & 53.5 & 22.0 \\
 Mistral Direct & 88.5 & 79.0 & 43.0 & 19.5 \\
 Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 \midrule
-\textbf{Bridge (ours)} & \textbf{96.7}{\tiny$\pm$0.6} & \textbf{90.7}{\tiny$\pm$0.5} & \textbf{94.5} & \textbf{21.5} \\
+\textbf{Bridge (ours)} & \textbf{96.7}{\tiny$\pm$0.6} & \textbf{90.7}{\tiny$\pm$0.5} & \textbf{95.3}{\tiny$\pm$0.3} & \textbf{21.5} \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -210,9 +210,9 @@ Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 
 \paragraph{Super-Additive Performance} On SST-2 and AG News, the bridge exceeds both individual model baselines. On SST-2, the bridge achieves 96.7\% vs. Llama's 92.0\% (+4.7pp) and Mistral's 88.5\% (+8.2pp). On AG News, the bridge reaches 90.7\% vs. both models' 79.0\% (+11.7pp). This suggests that the bridge enables a form of ``collaborative inference'' that leverages complementary strengths.
 
-\paragraph{Bridge vs. Text-Relay} The bridge outperforms text-relay by large margins: +25.7pp on SST-2, +26.2pp on AG News, +36.5pp on TREC, and +20.5pp on Banking77. Text-relay catastrophically fails on Banking77 (1.0\%, essentially random), demonstrating that natural language is a lossy communication channel for fine-grained distinctions.
+\paragraph{Bridge vs. Text-Relay} The bridge outperforms text-relay by large margins: +25.7pp on SST-2, +26.2pp on AG News, +37.3pp on TREC, and +20.5pp on Banking77. Text-relay catastrophically fails on Banking77 (1.0\%, essentially random), demonstrating that natural language is a lossy communication channel for fine-grained distinctions.
 
-\paragraph{TREC Results} On TREC, the bridge achieves 94.5\%, dramatically exceeding Llama (53.5\%) and Mistral (43.0\%) by 41pp and 51.5pp respectively. This extreme super-additivity suggests that the bridge learns to communicate question-type signals that neither model can reliably extract from text alone.
+\paragraph{TREC Results} On TREC, the bridge achieves 95.3\% $\pm$ 0.3\%, dramatically exceeding Llama (53.5\%) and Mistral (43.0\%) by 41.8pp and 52.3pp respectively. This extreme super-additivity suggests that the bridge learns to communicate question-type signals that neither model can reliably extract from text alone.
 
 \subsection{Latency Analysis}
 
@@ -375,10 +375,12 @@ All experiments were run with 3 seeds (42, 123, 456) for statistical rigor. Resu
 \begin{itemize}
     \item SST-2 Bridge: 96.7\% $\pm$ 0.6\% (seeds: 96.5, 96.0, 97.5)
     \item AG News Bridge: 90.7\% $\pm$ 0.5\% (seeds: 90.0, 91.0, 91.0)
+    \item TREC Bridge: 95.3\% $\pm$ 0.3\% (seeds: 95.0, 95.5, 95.5)
     \item Prompt-Tuning SST-2: 49.5\% $\pm$ 0.0\% (all seeds identical)
     \item Prompt-Tuning AG News: 19.8\% $\pm$ 7.5\% (seeds: 30.5, 14.5, 14.5)
+    \item Prompt-Tuning TREC: 19.0\% $\pm$ 5.0\% (seeds: 14.5, 26.0, 16.5)
 \end{itemize}
-The low variance in Bridge results indicates stable training. The prompt-tuning baseline's variance on AG News reflects random guessing behavior.
+The low variance in Bridge results ($\leq$0.6\%) indicates stable training across all three classification tasks. The prompt-tuning baseline's high variance on AG News and TREC reflects random guessing behavior.
 
 \subsection{Hyperparameter Sensitivity}
 We found performance relatively robust to hyperparameters within reasonable ranges:

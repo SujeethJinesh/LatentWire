@@ -1,7 +1,7 @@
 # Experiment: Paper Final Results (exp008)
 
 **Date**: 2025-12-13 to 2025-12-14
-**Status**: IN PROGRESS (TREC multi-seed pending)
+**Status**: COMPLETE
 **Purpose**: Final experiments for MLSys 2025 paper submission
 
 ---
@@ -24,7 +24,7 @@ This experiment set provides the final results for the Telepathy paper. Key find
 |---------|-------|------------|-------------------|
 | SST-2 | 3/3 ✅ | **96.7% ± 0.6%** | 96.5, 96.0, 97.5 |
 | AG News | 3/3 ✅ | **90.7% ± 0.5%** | 90.0, 91.0, 91.0 |
-| TREC | 0/3 ⏳ | 94.5% (single) | Pending multi-seed |
+| TREC | 3/3 ✅ | **95.3% ± 0.3%** | 95.0, 95.5, 95.5 |
 | Banking77 | 1/1 | 21.5% | Single seed OK for inverse scaling demo |
 
 ### Prompt-Tuning Baseline (Mistral only, no Llama)
@@ -47,7 +47,7 @@ This experiment set provides the final results for the Telepathy paper. Key find
 ### 2. Super-Additive Performance
 - SST-2: Bridge 96.7% > Llama 92.0% > Mistral 88.5%
 - AG News: Bridge 90.7% > Llama 79.0% = Mistral 79.0%
-- TREC: Bridge 94.5% > Llama 53.5% > Mistral 43.0%
+- TREC: Bridge 95.3% > Llama 53.5% > Mistral 43.0% (+41.8pp over Llama!)
 
 ### 3. Layer Configuration
 - SST-2: Layer 16 works well (96.7%)
@@ -59,11 +59,9 @@ This experiment set provides the final results for the Telepathy paper. Key find
 ## Remaining Work
 
 ### Critical (Must Complete)
-- [ ] TREC Bridge multi-seed (3 seeds)
-  - Script: `run_trec_multiseed.sh`
-  - Est. time: ~15 min on H100
+- [x] TREC Bridge multi-seed (3 seeds) ✅ COMPLETE
 
-### Nice to Have (Not Required)
+### Nice to Have (Not Required for Paper)
 - [ ] Banking77 multi-seed (for completeness)
 - [ ] Layer ablation with 8 tokens (currently have 32-token ablation)
 - [ ] Reverse direction (Mistral → Llama)
@@ -101,7 +99,7 @@ paper_experiments_20251213_190318/
 ├── bridge_multiseed/
 │   ├── sst2_seed{42,123,456}/     ✅ Complete
 │   ├── agnews_seed{42,123,456}/   ✅ Complete
-│   └── trec_seed{42,123,456}/     ⏳ Pending
+│   └── trec_seed{42,123,456}/     ✅ Complete
 ├── prompt_tuning_baseline/
 │   ├── sst2_seed{42,123,456}/     ✅ Complete
 │   ├── agnews_seed{42,123,456}/   ✅ Complete
@@ -111,12 +109,12 @@ paper_experiments_20251213_190318/
 
 ---
 
-## Paper Updates Required After TREC
+## Paper Updates (COMPLETE)
 
-When TREC multi-seed completes:
-1. Update Table 1: TREC column with mean±std
-2. Update multi-seed appendix with TREC values
-3. Recompile paper
+TREC multi-seed completed. All updates applied:
+1. ✅ Table 1: TREC column updated to 95.3% ± 0.3%
+2. ✅ Multi-seed appendix updated with TREC values
+3. ✅ Paper recompiled (7 pages)
 
 ---
 
