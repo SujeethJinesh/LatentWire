@@ -5,6 +5,10 @@
 #
 # Usage: git pull && PYTHONPATH=. bash run_latency_benchmark.sh
 #
+# This script will:
+#   1. Train a quick SST-2 Bridge checkpoint (~3.5 min) if none exists
+#   2. Run latency benchmark with the checkpoint
+#
 # Expected output:
 #   - Bridge: ~50-100ms (8 soft tokens, no generation)
 #   - Text-Relay: ~500-1000ms (generation required)
@@ -18,11 +22,12 @@ OUTPUT_BASE="${OUTPUT_BASE:-runs}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_DIR="${OUTPUT_BASE}/latency_benchmark_${TIMESTAMP}"
 LOG_FILE="${OUTPUT_DIR}/latency_benchmark.log"
+TRAIN_DIR="${OUTPUT_DIR}/sst2_for_latency"
 
 mkdir -p "$OUTPUT_DIR"
 
 echo "=============================================="
-echo "LATENCY BENCHMARK"
+echo "LATENCY BENCHMARK (with Bridge Training)"
 echo "=============================================="
 echo "Output: $OUTPUT_DIR"
 echo "Log file: $LOG_FILE"
@@ -32,26 +37,53 @@ echo ""
     echo "[$(date)] Starting latency benchmark..."
     echo ""
 
-    # Find the SST-2 checkpoint (if available)
+    # Find existing SST-2 checkpoint (if available)
     SST2_CKPT=""
-    if [ -d "preserved_data/phase21_overnight_sst2_agnews_2025-12-12" ]; then
-        SST2_CKPT=$(find preserved_data/phase21_overnight_sst2_agnews_2025-12-12 -name "best_checkpoint.pt" | head -1)
+    for dir in "preserved_data/phase21_overnight_sst2_agnews_2025-12-12" "runs" "."; do
+        if [ -d "$dir" ]; then
+            FOUND=$(find "$dir" -name "best_checkpoint.pt" -path "*sst2*" 2>/dev/null | head -1)
+            if [ -n "$FOUND" ] && [ -f "$FOUND" ]; then
+                SST2_CKPT="$FOUND"
+                break
+            fi
+        fi
+    done
+
+    # If no checkpoint found, train one quickly
+    if [ -z "$SST2_CKPT" ] || [ ! -f "$SST2_CKPT" ]; then
+        echo "=============================================="
+        echo "PHASE 1: Training SST-2 Bridge (~3.5 min)"
+        echo "=============================================="
+        echo ""
+
+        python telepathy/train_telepathy_sst2.py \
+            --source_layer 31 \
+            --soft_tokens 8 \
+            --steps 2000 \
+            --batch_size 8 \
+            --lr 1e-4 \
+            --diversity_weight 0.1 \
+            --output_dir "$TRAIN_DIR" \
+            --gpu 0
+
+        SST2_CKPT="${TRAIN_DIR}/best_checkpoint.pt"
+        echo ""
+        echo "Training complete. Checkpoint: $SST2_CKPT"
+    else
+        echo "Found existing SST-2 checkpoint: $SST2_CKPT"
     fi
 
-    if [ -n "$SST2_CKPT" ] && [ -f "$SST2_CKPT" ]; then
-        echo "Found SST-2 checkpoint: $SST2_CKPT"
-        python telepathy/benchmark_latency.py \
-            --checkpoint "$SST2_CKPT" \
-            --num_trials 50 \
-            --output_dir "$OUTPUT_DIR" \
-            --gpu 0
-    else
-        echo "No checkpoint found, running without Bridge timing"
-        python telepathy/benchmark_latency.py \
-            --num_trials 50 \
-            --output_dir "$OUTPUT_DIR" \
-            --gpu 0
-    fi
+    echo ""
+    echo "=============================================="
+    echo "PHASE 2: Running Latency Benchmark"
+    echo "=============================================="
+    echo ""
+
+    python telepathy/benchmark_latency.py \
+        --checkpoint "$SST2_CKPT" \
+        --num_trials 50 \
+        --output_dir "$OUTPUT_DIR" \
+        --gpu 0
 
     echo ""
     echo "=============================================="
