@@ -171,23 +171,32 @@
     "latency_bridge": {
       "task": "Latency Benchmark",
       "method": "Bridge (8 soft tokens, no generation)",
-      "expected_ms": 75,
-      "tolerance_ms": 50,
-      "notes": "Llama encode + Bridge transform + Mistral forward (no autoregressive generation)"
+      "expected_ms": 37.3,
+      "tolerance_ms": 15,
+      "breakdown": {
+        "llama_encode_ms": 16.9,
+        "bridge_transform_ms": 1.2,
+        "mistral_decode_ms": 19.3
+      },
+      "notes": "MEASURED: 22.4x faster than Text-Relay. Llama encode + Bridge transform + Mistral forward (no generation)"
     },
     "latency_text_relay": {
       "task": "Latency Benchmark",
       "method": "Text-Relay (Llama generate → Mistral classify)",
-      "expected_ms": 750,
-      "tolerance_ms": 300,
-      "notes": "Requires autoregressive generation (~50 tokens)"
+      "expected_ms": 834.5,
+      "tolerance_ms": 100,
+      "breakdown": {
+        "llama_summarize_ms": 744.9,
+        "mistral_classify_ms": 89.7
+      },
+      "notes": "MEASURED: Autoregressive generation dominates (89% of time). ~51 tokens generated."
     },
     "latency_direct_text": {
       "task": "Latency Benchmark",
       "method": "Direct Text (Mistral only)",
-      "expected_ms": 150,
-      "tolerance_ms": 100,
-      "notes": "Single model, short generation"
+      "expected_ms": 98.8,
+      "tolerance_ms": 30,
+      "notes": "MEASURED: Single model with short generation. Bridge is 2.6x faster."
     }
   },
   "key_findings": {
@@ -223,7 +232,7 @@
     },
     "finding_7": {
       "name": "Latency Advantage",
-      "description": "Bridge is 5-10x faster than Text-Relay by avoiding autoregressive generation",
+      "description": "MEASURED: Bridge is 22.4x faster than Text-Relay (37ms vs 835ms) by avoiding autoregressive generation",
       "evidence": ["latency_bridge", "latency_text_relay"]
     }
   },
