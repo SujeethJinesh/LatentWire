@@ -20,3 +20,13 @@ experimental/learning/reproduce_coconut/coconut/data/*.txt
 venv_arm64/
 experimental/learning/reproduce_coconut/coconut/YOUR_PATH_TO_SAVE_THE_MODEL/*
 *.safetensors*
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
