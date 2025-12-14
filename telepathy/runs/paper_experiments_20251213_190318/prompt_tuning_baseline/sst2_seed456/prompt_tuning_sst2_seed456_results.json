@@ -1,6 +1,6 @@
 {
   "experiment": "prompt_tuning_baseline_sst2",
-  "timestamp": "2025-12-13T20:12:46.093638",
+  "timestamp": "2025-12-13T23:00:20.548435",
   "config": {
     "model": "mistralai/Mistral-7B-Instruct-v0.3",
     "dataset": "sst2",

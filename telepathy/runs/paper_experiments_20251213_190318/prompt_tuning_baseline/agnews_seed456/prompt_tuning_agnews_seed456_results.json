@@ -1,6 +1,6 @@
 {
   "experiment": "prompt_tuning_baseline_agnews",
-  "timestamp": "2025-12-13T20:30:52.605244",
+  "timestamp": "2025-12-13T23:17:22.159494",
   "config": {
     "model": "mistralai/Mistral-7B-Instruct-v0.3",
     "dataset": "agnews",

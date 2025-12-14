@@ -1,0 +1,82 @@
+{
+  "experiment": "agnews",
+  "timestamp": "2025-12-14T00:11:21.430701",
+  "config": {
+    "output_dir": "runs/paper_experiments_20251213_190318/bridge_multiseed/agnews_seed42",
+    "steps": 2000,
+    "soft_tokens": 8,
+    "batch_size": 16,
+    "lr": 0.0002,
+    "eval_every": 200,
+    "diversity_weight": 0.1,
+    "source_layer": 31
+  },
+  "num_classes": 4,
+  "final_results": {
+    "accuracy": 91.0,
+    "correct": 182,
+    "total": 200
+  },
+  "training_log": [
+    {
+      "step": 200,
+      "accuracy": 89.0,
+      "correct": 89,
+      "total": 100
+    },
+    {
+      "step": 400,
+      "accuracy": 90.0,
+      "correct": 90,
+      "total": 100
+    },
+    {
+      "step": 600,
+      "accuracy": 88.0,
+      "correct": 88,
+      "total": 100
+    },
+    {
+      "step": 800,
+      "accuracy": 83.0,
+      "correct": 83,
+      "total": 100
+    },
+    {
+      "step": 1000,
+      "accuracy": 89.0,
+      "correct": 89,
+      "total": 100
+    },
+    {
+      "step": 1200,
+      "accuracy": 84.0,
+      "correct": 84,
+      "total": 100
+    },
+    {
+      "step": 1400,
+      "accuracy": 82.0,
+      "correct": 82,
+      "total": 100
+    },
+    {
+      "step": 1600,
+      "accuracy": 86.0,
+      "correct": 86,
+      "total": 100
+    },
+    {
+      "step": 1800,
+      "accuracy": 91.0,
+      "correct": 91,
+      "total": 100
+    },
+    {
+      "step": 2000,
+      "accuracy": 92.0,
+      "correct": 92,
+      "total": 100
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "experiment": "sst2",
-  "timestamp": "2025-12-13T21:19:07.373482",
+  "timestamp": "2025-12-14T00:01:10.595100",
   "config": {
     "output_dir": "runs/paper_experiments_20251213_190318/bridge_multiseed/sst2_seed456",
     "steps": 2000,

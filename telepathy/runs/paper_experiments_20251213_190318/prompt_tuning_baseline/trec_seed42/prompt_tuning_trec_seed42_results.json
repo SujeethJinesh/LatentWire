@@ -1,6 +1,6 @@
 {
   "experiment": "prompt_tuning_baseline_trec",
-  "timestamp": "2025-12-13T20:37:14.059200",
+  "timestamp": "2025-12-13T23:23:21.366315",
   "config": {
     "model": "mistralai/Mistral-7B-Instruct-v0.3",
     "dataset": "trec",
