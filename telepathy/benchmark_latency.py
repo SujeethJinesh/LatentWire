@@ -62,11 +62,13 @@ def load_models(device):
 def load_bridge(checkpoint_path, device, soft_tokens=8):
     """Load a trained bridge checkpoint."""
     args = Args(soft_tokens=soft_tokens)
-    bridge = LatentBridgeV15(args, device=device)
+    # LatentBridgeV15 takes args, src_dim, tgt_dim, target_rms - NOT device
+    bridge = LatentBridgeV15(args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
 
     ckpt = torch.load(checkpoint_path, map_location=device)
     bridge.load_state_dict(ckpt['bridge_state_dict'])
     bridge.eval()
+    bridge.to(device)
 
     return bridge
 
