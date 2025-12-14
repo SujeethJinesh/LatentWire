@@ -175,7 +175,7 @@ Total latency: 37.3ms, compared to 834.5ms for text-relay.
     \item \textbf{Prompt-Tuning}: Learnable soft prompts on Mistral only (no Llama). This critical baseline tests whether the sender model actually contributes.
 \end{itemize}
 
-\paragraph{Hyperparameters} Default settings: $M=8$ soft tokens, $\ell=31$ (last layer), learning rate $10^{-4}$, batch size 8, diversity weight $\lambda=0.1$, 2000 training steps. For Banking77 and TREC, we use $M=16$ tokens and 3000 steps.
+\paragraph{Hyperparameters} Default settings: $M=8$ soft tokens, learning rate $10^{-4}$, batch size 8, diversity weight $\lambda=0.1$, 2000 training steps. We extract from layer $\ell=16$ for SST-2 and $\ell=31$ for AG News and TREC. For Banking77 and TREC, we use $M=16$ tokens and 3000 steps.
 
 \subsection{Main Results}
 
@@ -374,7 +374,10 @@ We found performance relatively robust to hyperparameters within reasonable rang
     \item Learning rate: $10^{-5}$ to $10^{-3}$ all work, $10^{-4}$ slightly best
     \item Batch size: 4-16 similar results
     \item Diversity weight: 0.05-0.2 prevents mode collapse
-    \item Source layer: Last layer (31) consistently best
+    \item Source layer: We use layer 16 for SST-2 and layer 31 for AG News/TREC. Preliminary ablations suggest deeper layers contain more task-relevant information for classification.
 \end{itemize}
+
+\subsection{Layer Selection}
+We extract hidden states from Llama's intermediate layers rather than the final output logits. For SST-2, we found layer 16 sufficient (96.7\% accuracy), while AG News and TREC benefited from the final layer (31). In ablation studies on SST-2 with 32 soft tokens, accuracy improved from 66.5\% (layer 0) to 88.0\% (layer 8) to 92.0\% (layer 16) to 94.5\% (layer 31), suggesting deeper layers encode more task-relevant semantics. The optimal layer may vary by task complexity.
 
 \end{document}
