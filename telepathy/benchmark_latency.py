@@ -73,6 +73,7 @@ def load_bridge(checkpoint_path, device, soft_tokens=8):
         bridge.load_state_dict(ckpt)
     bridge.eval()
     bridge.to(device)
+    bridge.to(torch.bfloat16)  # Match model dtype
 
     return bridge
 
