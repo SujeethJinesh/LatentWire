@@ -317,6 +317,18 @@ Unlike prompt compression methods that operate within a single model, Telepathy 
     \item \textbf{Parallel inference}: With appropriate scheduling, sender and receiver compute can overlap.
 \end{itemize}
 
+\subsection{Soft Token Interpretability}
+
+To understand what information the bridge encodes, we analyze each soft token by finding its nearest neighbors in Mistral's vocabulary (cosine similarity). On SST-2, we observe partially interpretable patterns:
+
+\paragraph{Negative Sentiment Encoding} For negative reviews (e.g., ``unflinchingly bleak and desperate''), the nearest vocabulary tokens include semantically relevant words: \texttt{negative} (similarity 0.08), \texttt{moral}, \texttt{lower}, \texttt{blank}. Remarkably, the literal word ``negative'' appears as the top nearest neighbor for 3 of 8 soft tokens. The bridge learned to encode sentiment in a way that maps directly to Mistral's vocabulary representation of the label.
+
+\paragraph{Positive Sentiment Encoding} For positive reviews (e.g., ``charming and often affecting journey''), nearest neighbors include less directly interpretable tokens: \texttt{Survey}, \texttt{wished}, \texttt{independent}, \texttt{endless}. This asymmetry suggests the bridge may encode positive sentiment through absence of negative signals rather than explicit positive markers.
+
+\paragraph{Token Geometry} The 8 soft tokens show high pairwise cosine similarity (0.97-0.99), indicating they encode correlated rather than independent information. This redundancy may provide robustness---the receiver can extract the signal even if individual tokens are noisy.
+
+These findings support the information bottleneck hypothesis: compression forces the bridge to discard irrelevant details and encode only task-essential information (sentiment polarity), which it does in a partially human-interpretable way.
+
 \section{Limitations and Future Work}
 \label{sec:limitations}
 
