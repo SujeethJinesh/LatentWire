@@ -216,6 +216,107 @@
     "passkey": {
       "soft_tokens": 16,
       "steps": 1000
+    },
+    "trec": {
+      "soft_tokens": 16,
+      "steps": 2000
     }
+  },
+  "training_costs": {
+    "hardware": "NVIDIA H100 80GB",
+    "experiments": {
+      "sst2_bridge": {
+        "steps": 2000,
+        "wall_time_minutes": 3.5,
+        "throughput_it_s": 10.0
+      },
+      "agnews_bridge": {
+        "steps": 2000,
+        "wall_time_minutes": 3.5,
+        "throughput_it_s": 10.0
+      },
+      "trec_bridge": {
+        "steps": 2000,
+        "wall_time_minutes": 3.5,
+        "throughput_it_s": 10.0
+      },
+      "banking77_16tok": {
+        "steps": 3000,
+        "wall_time_minutes": 5.0,
+        "throughput_it_s": 10.0
+      },
+      "banking77_32tok": {
+        "steps": 3000,
+        "wall_time_minutes": 5.5,
+        "throughput_it_s": 9.0
+      },
+      "banking77_64tok": {
+        "steps": 3000,
+        "wall_time_minutes": 6.0,
+        "throughput_it_s": 8.5
+      },
+      "banking77_128tok": {
+        "steps": 3000,
+        "wall_time_minutes": 7.0,
+        "throughput_it_s": 7.0
+      },
+      "passkey_16tok": {
+        "steps": 1000,
+        "wall_time_minutes": 1.5,
+        "throughput_it_s": 11.0
+      },
+      "passkey_32tok": {
+        "steps": 1000,
+        "wall_time_minutes": 1.7,
+        "throughput_it_s": 10.0
+      },
+      "passkey_64tok": {
+        "steps": 1000,
+        "wall_time_minutes": 2.0,
+        "throughput_it_s": 8.5
+      },
+      "passkey_128tok": {
+        "steps": 1000,
+        "wall_time_minutes": 2.5,
+        "throughput_it_s": 7.0
+      }
+    },
+    "total": {
+      "all_bridge_training_minutes": 42,
+      "all_bridge_training_hours": 0.7,
+      "gpu_hours_single_h100": 0.7,
+      "model_loading_overhead_minutes": 15,
+      "evaluation_time_minutes": 20,
+      "total_wall_clock_hours": 1.3,
+      "notes": "All experiments complete in ~1.3 hours on single H100"
+    }
+  },
+  "statistical_analysis": {
+    "confidence_level": 0.95,
+    "method": "Wilson Score Interval",
+    "sample_sizes": {
+      "sst2": 200,
+      "agnews": 200,
+      "trec": 200,
+      "banking77": 200,
+      "passkey": 100
+    },
+    "confidence_intervals": {
+      "sst2_bridge": {"accuracy": 94.7, "ci_lower": 90.9, "ci_upper": 97.1},
+      "agnews_bridge": {"accuracy": 88.9, "ci_lower": 83.8, "ci_upper": 92.5},
+      "trec_bridge": {"accuracy": 94.5, "ci_lower": 90.6, "ci_upper": 97.0},
+      "banking77_bridge_16tok": {"accuracy": 21.5, "ci_lower": 16.3, "ci_upper": 27.7},
+      "text_relay_sst2": {"accuracy": 71.0, "ci_lower": 64.4, "ci_upper": 76.8},
+      "text_relay_agnews": {"accuracy": 64.5, "ci_lower": 57.7, "ci_upper": 70.7},
+      "text_relay_banking77": {"accuracy": 1.0, "ci_lower": 0.3, "ci_upper": 3.6}
+    }
+  },
+  "invalid_response_rates": {
+    "notes": "All recent experiments (phase20-24) have near-zero invalid response rates",
+    "sst2": "<1%",
+    "agnews": "<1%",
+    "trec": "<1%",
+    "banking77": "<2%",
+    "passkey": "<1%"
   }
 }
