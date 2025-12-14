@@ -5486,3 +5486,286 @@ t3 = time.time()
 ```
 
 ---
+
+## Section 84: Paper-Ready Checklist & Execution Plan
+
+**Date**: 2025-12-13
+**Goal**: Define clear pass/fail criteria for each reviewer, consolidate into minimal batches
+
+---
+
+### Reviewer Pass/Fail Criteria
+
+#### Reviewer 1 (Soft Prompts/Stitching) - PASS CRITERIA
+
+| Requirement | Status | Pass Condition |
+|-------------|--------|----------------|
+| GIST comparison table | ❌ TODO | Table in related work differentiating our approach |
+| PromptBridge citation | ❌ TODO | Cited and explained why different |
+| Architecture justification | ⚠️ PARTIAL | Explain why Perceiver vs simpler options |
+
+**Pass when**: Related work section has comparison table showing GIST/PromptBridge/Stitching are different problems.
+
+**Verdict**: Can pass with **writing only** (no new experiments needed)
+
+---
+
+#### Reviewer 2 (NLP Benchmarks) - PASS CRITERIA
+
+| Requirement | Status | Pass Condition |
+|-------------|--------|----------------|
+| Dataset justification | ⚠️ PARTIAL | Explain why these 4 datasets |
+| Confidence intervals | ✅ COMPUTED | Include in all results tables |
+| Invalid response rate | ❌ TODO | Report % parse failures |
+| Multiple seeds | ❌ TODO | 3 runs, report mean ± std |
+
+**Pass when**:
+1. CIs in tables ✓ (already computed)
+2. Invalid response % documented
+3. OPTIONAL: Multiple seeds (nice to have but gaps are 20-37pp, single run is convincing)
+
+**Verdict**: Can pass with **1 small code check** (invalid responses from logs)
+
+---
+
+#### Reviewer 3 (Systems/Efficiency) - PASS CRITERIA
+
+| Requirement | Status | Pass Condition |
+|-------------|--------|----------------|
+| Training cost | ❌ TODO | GPU-hours per experiment |
+| Latency breakdown | ❌ TODO | ms per component |
+| Memory footprint | ❌ TODO | Peak GPU memory |
+| Throughput | ❌ TODO | Samples/second |
+
+**Pass when**:
+1. Training cost table (GPU-hours)
+2. At least latency comparison (Bridge vs Text-relay)
+
+**Verdict**: Needs **1 experiment batch** with timing instrumentation
+
+---
+
+#### Reviewer 4 (Statistical Rigor) - PASS CRITERIA
+
+| Requirement | Status | Pass Condition |
+|-------------|--------|----------------|
+| Confidence intervals | ✅ COMPUTED | Section 82 has all CIs |
+| Llama baselines SST-2/AG News | ❌ TODO | **BLOCKING** - need sender ceiling |
+| McNemar's test | ⚠️ OPTIONAL | Nice to have, CIs sufficient |
+| Hyperparameter count | ✅ KNOWN | <10 configs, no Bonferroni needed |
+
+**Pass when**:
+1. Llama text baselines for SST-2 and AG News completed
+2. CIs included in tables
+
+**Verdict**: Needs **1 experiment** (Llama baselines)
+
+---
+
+#### Reviewer 5 (Multimodal/Perceiver) - PASS CRITERIA
+
+| Requirement | Status | Pass Condition |
+|-------------|--------|----------------|
+| Architecture justification | ⚠️ PARTIAL | Cite Flamingo, explain choice |
+| Training curves | ❌ TODO | Show loss convergence |
+| Attention visualization | ❌ OPTIONAL | Nice for interpretability |
+
+**Pass when**:
+1. Flamingo citation and Perceiver justification in method section
+2. Training loss curves in appendix
+
+**Verdict**: Can pass with **writing + existing logs** (loss curves from training logs)
+
+---
+
+### Consolidated Execution Plan
+
+#### BATCH 0: Immediate (No New Experiments) ✅ CAN DO NOW
+
+**Tasks**:
+1. Extract training loss curves from existing logs
+2. Count invalid/parse-failure responses from eval logs
+3. Document hyperparameter configurations tried
+4. Calculate training time from logs (GPU-hours)
+
+**Effort**: ~1 hour of log parsing
+**Output**: Numbers for paper tables
+
+---
+
+#### BATCH 1: Llama Text Baselines (BLOCKING)
+
+**Script**: `run_sst2_agnews_llama_baselines.sh`
+
+```bash
+#!/bin/bash
+# Run Llama text baselines for SST-2 and AG News
+# This is BLOCKING for paper submission
+
+OUTPUT_DIR="${OUTPUT_BASE:-runs}/llama_baselines_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$OUTPUT_DIR"
+
+{
+    python telepathy/eval_text_relay_baseline.py \
+        --sst2_text \
+        --agnews_text \
+        --num_samples 200 \
+        --output_dir "$OUTPUT_DIR" \
+        --gpu 0
+} 2>&1 | tee "$OUTPUT_DIR/llama_baselines.log"
+```
+
+**Expected output**:
+- Llama SST-2 accuracy (expect ~93-95%)
+- Llama AG News accuracy (expect ~85-90%)
+
+**Effort**: ~30 min on HPC
+**Dependencies**: Need to add `--sst2_text` and `--agnews_text` flags to eval script
+
+---
+
+#### BATCH 2: Latency & Throughput Measurement (RECOMMENDED)
+
+**Script**: `run_latency_benchmark.sh`
+
+```bash
+#!/bin/bash
+# Measure latency breakdown for Bridge vs Text-relay
+
+OUTPUT_DIR="${OUTPUT_BASE:-runs}/latency_benchmark_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$OUTPUT_DIR"
+
+{
+    python telepathy/benchmark_latency.py \
+        --num_samples 50 \
+        --output_dir "$OUTPUT_DIR" \
+        --gpu 0
+} 2>&1 | tee "$OUTPUT_DIR/latency.log"
+```
+
+**Expected output**:
+- Llama encode: ~X ms
+- Bridge forward: ~Y ms
+- Mistral generate: ~Z ms
+- Total Bridge: ~A ms
+- Total Text-relay: ~B ms
+
+**Effort**: ~1 hour (write script + run)
+**Dependencies**: Need to create `benchmark_latency.py`
+
+---
+
+#### BATCH 3: Multiple Seeds (OPTIONAL - If Reviewers Push Back)
+
+**Script**: `run_multi_seed.sh`
+
+```bash
+#!/bin/bash
+# Run SST-2 and AG News with 3 different seeds
+
+for SEED in 42 123 456; do
+    python telepathy/train_telepathy_sst2.py --seed $SEED --output_dir runs/sst2_seed${SEED}
+    python telepathy/train_telepathy_agnews.py --seed $SEED --output_dir runs/agnews_seed${SEED}
+done
+```
+
+**Expected output**: mean ± std for SST-2 and AG News
+
+**Effort**: ~3 hours on HPC
+**Dependencies**: Add `--seed` argument to training scripts
+
+---
+
+### Decision Tree: Are We Paper-Ready?
+
+```
+START
+  │
+  ▼
+[Have Llama baselines for SST-2 & AG News?]
+  │
+  NO ──► RUN BATCH 1 (30 min) ──► Continue
+  │
+  YES
+  │
+  ▼
+[Have training cost (GPU-hours)?]
+  │
+  NO ──► PARSE LOGS (30 min) ──► Continue
+  │
+  YES
+  │
+  ▼
+[Have confidence intervals in tables?]
+  │
+  NO ──► COPY FROM SECTION 82 ──► Continue
+  │
+  YES
+  │
+  ▼
+[Have latency comparison?]
+  │
+  NO ──► RUN BATCH 2 (1 hour) OR skip for NeurIPS (not blocking)
+  │
+  YES
+  │
+  ▼
+✅ PAPER-READY - BEGIN WRITING
+```
+
+---
+
+### Minimum Viable Paper (MVP) Requirements
+
+| Item | Status | Blocking? |
+|------|--------|-----------|
+| 4 task results (SST-2, AG News, TREC, Banking77) | ✅ DONE | Yes |
+| Text-relay baselines (all 4 tasks) | ✅ DONE | Yes |
+| Mistral text baselines (TREC, Banking77) | ✅ DONE | Yes |
+| **Llama text baselines (SST-2, AG News)** | ❌ TODO | **YES** |
+| Llama text baselines (TREC, Banking77) | ✅ DONE | Yes |
+| Token ablation (16/32/64/128) | ✅ DONE | Yes |
+| Passkey results | ✅ DONE | Yes |
+| Confidence intervals | ✅ COMPUTED | Yes |
+| Training cost | ❌ TODO | Yes |
+| Latency breakdown | ❌ TODO | No (nice to have) |
+| Multiple seeds | ❌ TODO | No (gaps too large) |
+| Architecture ablation | ❌ TODO | No (future work) |
+
+**MVP Blockers**:
+1. Llama baselines for SST-2/AG News
+2. Training cost documentation
+
+---
+
+### Timeline to Paper-Ready
+
+| Phase | Tasks | Time | Cumulative |
+|-------|-------|------|------------|
+| Phase 1 | Parse logs for training cost, invalid responses | 1 hour | 1 hour |
+| Phase 2 | Add Llama baseline flags to eval script | 30 min | 1.5 hours |
+| Phase 3 | Run Llama baselines on HPC | 30 min | 2 hours |
+| Phase 4 | Update expected_results.json | 15 min | 2.25 hours |
+| Phase 5 | Verify all pass criteria met | 15 min | **2.5 hours** |
+
+**After 2.5 hours of work**: Paper-ready for NeurIPS submission
+
+**Optional additions** (can run parallel to writing):
+- Latency benchmark: +1 hour
+- Multiple seeds: +3 hours
+
+---
+
+### Final Checklist Before Paper Writing
+
+- [ ] Llama SST-2 baseline: ___% (expect ~93-95%)
+- [ ] Llama AG News baseline: ___% (expect ~85-90%)
+- [ ] Training cost: ___ GPU-hours per experiment
+- [ ] Invalid response rate: ___%
+- [ ] All CIs transferred to paper tables
+- [ ] Related work: GIST, PromptBridge, Stitching, Flamingo cited
+- [ ] Training curves extracted from logs
+
+**When all boxes checked**: BEGIN PAPER WRITING
+
+---
