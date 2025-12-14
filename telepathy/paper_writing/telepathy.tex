@@ -101,7 +101,14 @@ Methods like LLMLingua \cite{jiang2023llmlingua} compress prompts by removing to
 
 Given a sender model $\mathcal{S}$ (Llama 3.1 8B) and a receiver model $\mathcal{R}$ (Mistral 7B), we aim to transmit task-relevant information from $\mathcal{S}$ to $\mathcal{R}$ without generating text. Both models remain frozen; only the bridge is trained.
 
-Let $\mathbf{h}_\mathcal{S} \in \mathbb{R}^{L \times d_\mathcal{S}}$ denote the hidden states from layer $\ell$ of the sender, where $L$ is the sequence length and $d_\mathcal{S} = 4096$ is Llama's hidden dimension. We seek a function $f_\theta$ that maps $\mathbf{h}_\mathcal{S}$ to soft tokens $\mathbf{z} \in \mathbb{R}^{M \times d_\mathcal{R}}$ that can condition $\mathcal{R}$, where $M \ll L$ is the number of soft tokens and $d_\mathcal{R} = 4096$ is Mistral's embedding dimension.
+Let $\mathbf{h}_\mathcal{S} \in \mathbb{R}^{L \times d_\mathcal{S}}$ denote the hidden states from layer $\ell$ of the sender, where $L$ is the sequence length and $d_\mathcal{S} = 4096$ is Llama's hidden dimension. We seek a function $f_\theta$ that maps $\mathbf{h}_\mathcal{S}$ to soft tokens $\mathbf{z} \in \mathbb{R}^{M \times d_\mathcal{R}}$ that can condition $\mathcal{R}$, where $M \ll L$ is the number of soft tokens and $d_\mathcal{R} = 4096$ is Mistral's embedding dimension. Figure~\ref{fig:architecture} illustrates the overall pipeline.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/architecture.pdf}
+\caption{Telepathy architecture. Input text is processed by the frozen sender (Llama), whose hidden states are transformed by the lightweight bridge (188K params) into soft tokens that condition the frozen receiver (Mistral) for classification.}
+\label{fig:architecture}
+\end{figure}
 
 \subsection{Bridge Architecture}
 
@@ -206,7 +213,14 @@ Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 \vskip -0.1in
 \end{table}
 
-\paragraph{Sender Model is Essential} The prompt-tuning baseline provides critical evidence that Llama's hidden states genuinely contribute to performance. When we train learnable soft prompts on Mistral alone (same training budget, no Llama involvement), accuracy equals random chance: 49.5\% on SST-2 (vs. 50\% random), 19.8\% on AG News (vs. 25\% random), and 19.0\% on TREC (vs. 16.7\% random). In contrast, the bridge achieves 96.7\% on SST-2---a \textbf{+47.2pp improvement} solely from incorporating Llama's representations. This definitively shows that cross-model communication via hidden states, not merely training soft prompts, drives the performance gains.
+\paragraph{Sender Model is Essential} The prompt-tuning baseline provides critical evidence that Llama's hidden states genuinely contribute to performance. When we train learnable soft prompts on Mistral alone (same training budget, no Llama involvement), accuracy equals random chance: 49.5\% on SST-2 (vs. 50\% random), 19.8\% on AG News (vs. 25\% random), and 19.0\% on TREC (vs. 16.7\% random). In contrast, the bridge achieves 96.7\% on SST-2---a \textbf{+47.2pp improvement} solely from incorporating Llama's representations. This definitively shows that cross-model communication via hidden states, not merely training soft prompts, drives the performance gains. Figure~\ref{fig:sender_essential} visualizes this critical finding.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/sender_essential.pdf}
+\caption{Bridge vs.\ Prompt-Tuning: The sender model is essential. Without Llama's hidden states, prompt-tuning on Mistral alone achieves only random chance (red markers). The bridge's +47pp improvement on SST-2 comes entirely from cross-model communication.}
+\label{fig:sender_essential}
+\end{figure}
 
 \paragraph{Super-Additive Performance} On SST-2 and AG News, the bridge exceeds both individual model baselines. On SST-2, the bridge achieves 96.7\% vs. Llama's 92.0\% (+4.7pp) and Mistral's 88.5\% (+8.2pp). On AG News, the bridge reaches 90.7\% vs. both models' 79.0\% (+11.7pp). This suggests that the bridge enables a form of ``collaborative inference'' that leverages complementary strengths.
 
@@ -247,6 +261,15 @@ Bridge latency breakdown:
     \item Mistral decode: 19.3ms (52\%)
 \end{itemize}
 
+\noindent Figure~\ref{fig:latency} visualizes the latency comparison and breakdown.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/latency_comparison.pdf}
+\caption{Latency analysis. \textbf{Left:} Total inference time showing 22.4$\times$ speedup over text-relay. \textbf{Right:} Bridge latency breakdown---the bridge transform itself takes only 1.2ms (3\%).}
+\label{fig:latency}
+\end{figure}
+
 \subsection{Inverse Token Scaling}
 
 We investigate how the number of soft tokens affects performance on Banking77, a challenging 77-class task.
@@ -280,7 +303,14 @@ Table \ref{tab:token_scaling} shows a striking inverse relationship: increasing 
     \item \textbf{Optimization difficulty}: Higher-dimensional soft prompt spaces are harder to optimize.
 \end{enumerate}
 
-We observe similar patterns on passkey retrieval tasks, where 16 tokens achieve 23.4\% digit accuracy vs. 9.8\% for 128 tokens.
+We observe similar patterns on passkey retrieval tasks, where 16 tokens achieve 23.4\% digit accuracy vs. 9.8\% for 128 tokens. Figure~\ref{fig:token_scaling} visualizes this inverse relationship.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{figures/token_scaling.pdf}
+\caption{Inverse token scaling on Banking77. Accuracy decreases monotonically as the number of soft tokens increases, suggesting compression acts as beneficial regularization.}
+\label{fig:token_scaling}
+\end{figure}
 
 \section{Analysis}
 \label{sec:analysis}
