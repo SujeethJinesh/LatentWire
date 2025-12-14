@@ -36,7 +36,7 @@ echo ""
         echo ""
         echo ">>> Reverse Bridge: sst2 (seed=$SEED)"
 
-        python train_telepathy_sst2.py \
+        python telepathy/train_telepathy_sst2.py \
             --source_model "mistralai/Mistral-7B-Instruct-v0.3" \
             --target_model "meta-llama/Meta-Llama-3.1-8B-Instruct" \
             --source_layer 16 \
