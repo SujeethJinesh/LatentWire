@@ -317,6 +317,20 @@ Unlike prompt compression methods that operate within a single model, Telepathy 
     \item \textbf{Parallel inference}: With appropriate scheduling, sender and receiver compute can overlap.
 \end{itemize}
 
+\subsection{Handling Architectural Differences}
+
+A key advantage of operating on hidden states rather than tokens is that the bridge naturally handles architectural differences between models:
+
+\paragraph{Vocabulary Size} Llama 3.1 uses a 128K vocabulary while Mistral uses 32K tokens. Since we extract hidden states (not token IDs) from the sender and output soft tokens in the receiver's embedding space, vocabulary differences are irrelevant---the bridge learns a direct mapping between representation spaces.
+
+\paragraph{Positional Encoding} Llama and Mistral use different RoPE (Rotary Position Embedding) configurations with different base frequencies and scaling. The bridge bypasses this entirely: we extract hidden states \emph{after} the sender has applied its positional encoding, and the receiver applies its own RoPE to the soft tokens at their positions in the sequence. The bridge need not understand or translate positional information.
+
+\paragraph{Attention Mechanisms} Llama uses grouped-query attention while Mistral uses sliding window attention with different head configurations. These architectural choices affect how models process sequences internally, but the bridge only sees the resulting hidden state representations---a common ``lingua franca'' of high-dimensional vectors that abstracts away attention implementation details.
+
+\paragraph{Hidden Dimensions} Both Llama 3.1 8B and Mistral 7B use 4096-dimensional hidden states, but our bridge architecture includes input and output projection layers that can map between arbitrary dimensions. This enables future extensions to model pairs with different hidden sizes.
+
+This architectural agnosticism is why the same bridge design works for heterogeneous models without modification---we communicate through the universal language of dense representations rather than model-specific tokenization or attention patterns.
+
 \subsection{Soft Token Interpretability}
 
 To understand what information the bridge encodes, we analyze each soft token by finding its nearest neighbors in Mistral's vocabulary (cosine similarity). On SST-2, we observe partially interpretable patterns:
