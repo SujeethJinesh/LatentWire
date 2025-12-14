@@ -1,0 +1,23 @@
+{
+  "experiment": "trec_text_baselines",
+  "timestamp": "2025-12-13T15:56:40.283092",
+  "config": {
+    "llama_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "mistral_model": "mistralai/Mistral-7B-Instruct-v0.3",
+    "num_samples": 200
+  },
+  "results": {
+    "mistral": {
+      "accuracy": 43.0,
+      "correct": 86,
+      "total": 200,
+      "num_classes": 6
+    },
+    "llama": {
+      "accuracy": 53.5,
+      "correct": 107,
+      "total": 200,
+      "num_classes": 6
+    }
+  }
+}

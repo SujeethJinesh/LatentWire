@@ -253,7 +253,7 @@ log "Text-relay baselines complete"
 # EXPERIMENT 9: TREC BASELINES (Text + Text-Relay)
 # =============================================================================
 section "[9/9] TREC BASELINES (Text + Text-Relay)"
-log "Expected: Mistral text ~75-85%, Text-relay ~65-80%, Bridge 94.5%"
+log "Expected: Mistral 43%, Llama 53.5%, Text-relay 58%, Bridge 94.5%"
 
 TREC_BASELINE_DIR="${OUTPUT_BASE}/trec_baselines_${TIMESTAMP}"
 mkdir -p "$TREC_BASELINE_DIR"

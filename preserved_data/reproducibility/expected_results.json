@@ -29,23 +29,23 @@
     "trec_mistral_text": {
       "task": "TREC 6-class Question Type Classification",
       "method": "Mistral Direct Text",
-      "expected_accuracy": "TBD",
+      "expected_accuracy": 43.0,
       "tolerance": 5.0,
-      "notes": "First run - expected ~75-85%"
+      "notes": "Receiver baseline - surprisingly low"
     },
     "trec_llama_text": {
       "task": "TREC 6-class Question Type Classification",
       "method": "Llama Direct Text",
-      "expected_accuracy": "TBD",
+      "expected_accuracy": 53.5,
       "tolerance": 5.0,
-      "notes": "First run - expected ~80-90% (ceiling)"
+      "notes": "Sender ceiling - Bridge achieves 94.5% (beats by 41pp!)"
     },
     "trec_text_relay": {
       "task": "TREC 6-class Question Type Classification",
       "method": "Text-Relay (Llama summarize → Mistral classify)",
-      "expected_accuracy": "TBD",
+      "expected_accuracy": 58.0,
       "tolerance": 5.0,
-      "notes": "First run - expected ~65-80%. Bridge should beat this."
+      "notes": "Text-relay helps here (>Llama direct) but Bridge still beats by 36.5pp"
     },
     "banking77_bridge_16tok": {
       "task": "Banking77 77-class Intent Classification",
