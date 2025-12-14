@@ -56,15 +56,14 @@ echo ""
         echo "=============================================="
         echo ""
 
-        python telepathy/train_telepathy_sst2.py \
+        CUDA_VISIBLE_DEVICES=0 python telepathy/train_telepathy_sst2.py \
             --source_layer 31 \
             --soft_tokens 8 \
             --steps 2000 \
             --batch_size 8 \
             --lr 1e-4 \
             --diversity_weight 0.1 \
-            --output_dir "$TRAIN_DIR" \
-            --gpu 0
+            --output_dir "$TRAIN_DIR"
 
         SST2_CKPT="${TRAIN_DIR}/best_checkpoint.pt"
         echo ""
