@@ -171,7 +171,13 @@ def main():
     parser.add_argument("--eval_every", type=int, default=400)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
     parser.add_argument("--gpu", type=int, default=0, help="GPU device index")
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
+
+    # Set seeds for reproducibility
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
 
     device = f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu"
     os.makedirs(args.output_dir, exist_ok=True)

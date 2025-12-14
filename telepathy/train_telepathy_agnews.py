@@ -153,6 +153,7 @@ def parse_args():
     parser.add_argument("--diversity_weight", type=float, default=0.1)
     parser.add_argument("--bf16", action="store_true", default=True)
     parser.add_argument("--use_fsq", action="store_true", default=False)
+    parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
 
 
@@ -322,6 +323,12 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
 def main():
     setup_ddp()
     args = parse_args()
+
+    # Set seeds for reproducibility
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     device = torch.device(f"cuda:{local_rank}")
