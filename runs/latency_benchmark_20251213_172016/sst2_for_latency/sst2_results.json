@@ -1,0 +1,82 @@
+{
+  "experiment": "sst2",
+  "timestamp": "2025-12-13T17:28:38.161373",
+  "config": {
+    "output_dir": "runs/latency_benchmark_20251213_172016/sst2_for_latency",
+    "steps": 2000,
+    "soft_tokens": 8,
+    "batch_size": 8,
+    "lr": 0.0001,
+    "eval_every": 200,
+    "diversity_weight": 0.1,
+    "source_layer": 31
+  },
+  "num_classes": 2,
+  "final_results": {
+    "accuracy": 96.0,
+    "correct": 192,
+    "total": 200
+  },
+  "training_log": [
+    {
+      "step": 200,
+      "accuracy": 86.0,
+      "correct": 43,
+      "total": 50
+    },
+    {
+      "step": 400,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    },
+    {
+      "step": 600,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    },
+    {
+      "step": 800,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 1000,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    },
+    {
+      "step": 1200,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    },
+    {
+      "step": 1400,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    },
+    {
+      "step": 1600,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    },
+    {
+      "step": 1800,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    },
+    {
+      "step": 2000,
+      "accuracy": 98.0,
+      "correct": 49,
+      "total": 50
+    }
+  ]
+}
