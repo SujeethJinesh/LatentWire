@@ -62,7 +62,7 @@ def get_nearest_neighbors(latent_vector, embedding_matrix, tokenizer, k=5):
     return neighbors
 
 
-def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, sample_texts, labels_for_texts, num_tokens):
+def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_tok, device, sample_texts, labels_for_texts, num_tokens, source_layer=31):
     """Analyze what the soft tokens 'mean' by finding nearest vocabulary neighbors."""
     print("\n" + "=" * 70)
     print("LATENT INTERPRETABILITY ANALYSIS")
@@ -79,7 +79,7 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
         src_inputs = src_tok(text, return_tensors="pt", truncation=True, max_length=128).to(device)
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
-            src_hidden = src_out.hidden_states[31]
+            src_hidden = src_out.hidden_states[source_layer]
             src_mask = src_inputs.attention_mask
             latents, _, _, _ = bridge(src_hidden, src_mask)
 
@@ -99,7 +99,7 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
     print(f"  Token RMS range: {latents.float().pow(2).mean(dim=-1).sqrt().min().item():.4f} - {latents.float().pow(2).mean(dim=-1).sqrt().max().item():.4f}")
 
 
-def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, device, num_samples=200):
+def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, device, num_samples=200, source_layer=31):
     """Evaluate on test set."""
     bridge.eval()
     correct = 0
@@ -124,7 +124,7 @@ def evaluate(bridge, src_model, tgt_model, src_tok, tgt_tok, labels, test_data, 
 
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
-            src_hidden = src_out.hidden_states[31]
+            src_hidden = src_out.hidden_states[source_layer]
             src_mask = src_inputs.attention_mask
 
             latents, _, _, _ = bridge(src_hidden, src_mask)
@@ -169,6 +169,9 @@ def main():
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--eval_every", type=int, default=400)
+    parser.add_argument("--save_every", type=int, default=500)
+    parser.add_argument("--save_path", default="bridge_trec.pt")
+    parser.add_argument("--source_layer", type=int, default=31)
     parser.add_argument("--diversity_weight", type=float, default=0.1)
     parser.add_argument("--gpu", type=int, default=0, help="GPU device index")
     parser.add_argument("--seed", type=int, default=42)
@@ -270,7 +273,7 @@ def main():
 
         with torch.no_grad():
             src_out = src_model(**src_inputs, output_hidden_states=True)
-            src_hidden = src_out.hidden_states[31]
+            src_hidden = src_out.hidden_states[args.source_layer]
             src_mask = src_inputs.attention_mask
 
         # Bridge
@@ -320,10 +323,17 @@ def main():
         if (step + 1) % args.eval_every == 0:
             eval_results = evaluate(
                 bridge, src_model, tgt_model, src_tok, tgt_tok,
-                labels, dataset['test'], device, num_samples=100
+                labels, dataset['test'], device, num_samples=100,
+                source_layer=args.source_layer
             )
             metrics_log.append({"step": step + 1, **eval_results})
             bridge.train()
+
+        # Periodic checkpoint saving
+        if (step + 1) % args.save_every == 0:
+            ckpt_path = os.path.join(args.output_dir, f"checkpoint_step{step+1}.pt")
+            torch.save(bridge.state_dict(), ckpt_path)
+            print(f"Saved checkpoint: {ckpt_path}")
 
     # Final eval
     print("\n" + "=" * 60)
@@ -331,11 +341,14 @@ def main():
     print("=" * 60)
     final_results = evaluate(
         bridge, src_model, tgt_model, src_tok, tgt_tok,
-        labels, dataset['test'], device, num_samples=200
+        labels, dataset['test'], device, num_samples=200,
+        source_layer=args.source_layer
     )
 
-    # Save
-    torch.save(bridge.state_dict(), os.path.join(args.output_dir, "bridge_trec.pt"))
+    # Save final checkpoint
+    final_save_path = os.path.join(args.output_dir, args.save_path)
+    torch.save(bridge.state_dict(), final_save_path)
+    print(f"Saved final checkpoint: {final_save_path}")
 
     results = {
         "experiment": "trec",
@@ -355,7 +368,8 @@ def main():
     sample_labels = [labels[dataset['test'][i]['coarse_label']] for i in sample_indices]
     analyze_latent_interpretability(
         bridge, src_model, tgt_model, src_tok, tgt_tok, device,
-        sample_texts, sample_labels, args.soft_tokens
+        sample_texts, sample_labels, args.soft_tokens,
+        source_layer=args.source_layer
     )
 
     print(f"\nResults saved to {args.output_dir}")
