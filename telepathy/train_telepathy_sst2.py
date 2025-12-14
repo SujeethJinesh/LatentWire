@@ -131,6 +131,7 @@ def parse_args():
     parser.add_argument("--bf16", action="store_true", default=True)
     # Continuous mode (no VQ/FSQ)
     parser.add_argument("--use_fsq", action="store_true", default=False)
+    parser.add_argument("--seed", type=int, default=42)  # For reproducibility
     return parser.parse_args()
 
 
@@ -294,6 +295,12 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
 def main():
     setup_ddp()
     args = parse_args()
+
+    # Set seeds for reproducibility
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     device = torch.device(f"cuda:{local_rank}")
@@ -508,12 +515,13 @@ def main():
                 "eval_every": args.eval_every,
                 "diversity_weight": args.diversity_weight,
                 "source_layer": args.source_layer,
+                "seed": args.seed,
             },
             "num_classes": 2,
             "final_results": final_results,
             "training_log": training_log
         }
-        json_path = os.path.join(args.output_dir, "sst2_results.json")
+        json_path = os.path.join(args.output_dir, f"sst2_seed{args.seed}_results.json")
         with open(json_path, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Results saved to: {json_path}")
