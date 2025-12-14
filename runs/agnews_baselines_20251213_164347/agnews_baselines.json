@@ -1,0 +1,23 @@
+{
+  "experiment": "agnews_text_baselines",
+  "timestamp": "2025-12-13T16:45:16.377113",
+  "config": {
+    "llama_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "mistral_model": "mistralai/Mistral-7B-Instruct-v0.3",
+    "num_samples": 200
+  },
+  "results": {
+    "mistral": {
+      "accuracy": 79.0,
+      "correct": 158,
+      "total": 200,
+      "num_classes": 4
+    },
+    "llama": {
+      "accuracy": 79.0,
+      "correct": 158,
+      "total": 200,
+      "num_classes": 4
+    }
+  }
+}
