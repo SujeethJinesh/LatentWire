@@ -15,7 +15,8 @@ preserved_data/
 ├── exp004_agnews/                         # 4-class classification (old prompts)
 ├── exp005_sst2_corrected_prompts/         # SST-2 with fair comparison
 ├── exp006_agnews_corrected_prompts/       # AG News with fair comparison
-└── exp007_gsm8k_latent_cot/               # GSM8K negative result
+├── exp007_gsm8k_latent_cot/               # GSM8K negative result
+└── exp008_paper_final/                    # MLSys 2025 paper final results
 ```
 
 ---
@@ -31,6 +32,7 @@ preserved_data/
 | **exp005** | **SST-2 Corrected Prompts** | ✅ **Complete** | **94.72% (exceeds Mistral 93.5%)** |
 | **exp006** | **AG News Corrected Prompts** | ✅ **Complete** | **88.9% (+18.4pp vs Mistral text)** |
 | **exp007** | **GSM8K Latent CoT** | ✅ **Complete** | **2.0% - NEGATIVE RESULT** |
+| **exp008** | **Paper Final Results** | ⏳ **In Progress** | **SST-2: 96.7±0.6%, AG News: 90.7±0.5%** |
 
 ---
 
