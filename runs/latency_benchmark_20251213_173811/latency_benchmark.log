@@ -1,0 +1,48 @@
+[Sat Dec 13 17:38:11 PST 2025] Starting latency benchmark...
+
+Found existing SST-2 checkpoint: ./bridge_sst2.pt
+
+==============================================
+PHASE 2: Running Latency Benchmark
+==============================================
+
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Using device: cuda:0
+Loading Mistral...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3930.93it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:02,  1.20s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:02<00:01,  1.29s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.09s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.14s/it]
+Loading Llama...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 28.21it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 28.19it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.14s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.10s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.23s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.18it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.04it/s]
+
+Loading SST-2 dataset...
+
+============================================================
+DIRECT TEXT LATENCY MEASUREMENT
+============================================================
+Warming up (5 iterations)...
+Running 50 timed trials...
+Direct Text:   0%|          | 0/50 [00:00<?, ?it/s]Direct Text:   4%|▍         | 2/50 [00:00<00:03, 12.56it/s]Direct Text:   8%|▊         | 4/50 [00:00<00:03, 12.56it/s]Direct Text:  12%|█▏        | 6/50 [00:00<00:03, 12.55it/s]Direct Text:  16%|█▌        | 8/50 [00:00<00:03, 12.54it/s]Direct Text:  20%|██        | 10/50 [00:00<00:03, 11.85it/s]Direct Text:  24%|██▍       | 12/50 [00:00<00:03, 12.11it/s]Direct Text:  28%|██▊       | 14/50 [00:01<00:02, 12.28it/s]Direct Text:  32%|███▏      | 16/50 [00:01<00:02, 12.36it/s]Direct Text:  36%|███▌      | 18/50 [00:01<00:02, 12.43it/s]Direct Text:  40%|████      | 20/50 [00:01<00:02, 12.40it/s]Direct Text:  44%|████▍     | 22/50 [00:01<00:02, 12.44it/s]Direct Text:  48%|████▊     | 24/50 [00:01<00:02, 12.43it/s]Direct Text:  52%|█████▏    | 26/50 [00:02<00:02,  9.57it/s]Direct Text:  56%|█████▌    | 28/50 [00:02<00:02,  7.75it/s]Direct Text:  60%|██████    | 30/50 [00:02<00:02,  8.64it/s]Direct Text:  64%|██████▍   | 32/50 [00:02<00:01,  9.53it/s]Direct Text:  68%|██████▊   | 34/50 [00:03<00:01, 10.28it/s]Direct Text:  72%|███████▏  | 36/50 [00:03<00:01, 10.87it/s]Direct Text:  76%|███████▌  | 38/50 [00:03<00:01, 11.27it/s]Direct Text:  80%|████████  | 40/50 [00:03<00:00, 11.63it/s]Direct Text:  84%|████████▍ | 42/50 [00:03<00:00, 11.91it/s]Direct Text:  88%|████████▊ | 44/50 [00:03<00:00, 12.10it/s]Direct Text:  92%|█████████▏| 46/50 [00:04<00:00, 12.24it/s]Direct Text:  96%|█████████▌| 48/50 [00:04<00:00, 12.34it/s]Direct Text: 100%|██████████| 50/50 [00:04<00:00, 12.40it/s]Direct Text: 100%|██████████| 50/50 [00:04<00:00, 11.37it/s]
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+
+Direct Text: 87.5ms avg
+
+============================================================
+TEXT-RELAY LATENCY MEASUREMENT
+============================================================
+Warming up (5 iterations)...
+Running 50 timed trials...
+Text-Relay:   0%|          | 0/50 [00:00<?, ?it/s]Text-Relay:   2%|▏         | 1/50 [00:00<00:35,  1.39it/s]Text-Relay:   4%|▍         | 2/50 [00:01<00:34,  1.39it/s]Text-Relay:   6%|▌         | 3/50 [00:02<00:41,  1.12it/s]Text-Relay:   8%|▊         | 4/50 [00:03<00:37,  1.21it/s]Text-Relay:  10%|█         | 5/50 [00:03<00:35,  1.27it/s]Text-Relay:  12%|█▏        | 6/50 [00:04<00:37,  1.19it/s]Text-Relay:  14%|█▍        | 7/50 [00:05<00:36,  1.17it/s]Text-Relay:  16%|█▌        | 8/50 [00:06<00:34,  1.23it/s]Text-Relay:  18%|█▊        | 9/50 [00:07<00:32,  1.28it/s]Text-Relay:  20%|██        | 10/50 [00:08<00:35,  1.14it/s]Text-Relay:  22%|██▏       | 11/50 [00:09<00:33,  1.18it/s]Text-Relay:  24%|██▍       | 12/50 [00:09<00:30,  1.24it/s]Text-Relay:  26%|██▌       | 13/50 [00:10<00:33,  1.11it/s]Text-Relay:  28%|██▊       | 14/50 [00:11<00:30,  1.19it/s]Text-Relay:  30%|███       | 15/50 [00:12<00:28,  1.24it/s]Text-Relay:  32%|███▏      | 16/50 [00:13<00:29,  1.15it/s]Text-Relay:  34%|███▍      | 17/50 [00:14<00:28,  1.18it/s]Text-Relay:  36%|███▌      | 18/50 [00:14<00:25,  1.23it/s]Text-Relay:  38%|███▊      | 19/50 [00:15<00:24,  1.27it/s]Text-Relay:  40%|████      | 20/50 [00:16<00:26,  1.14it/s]Text-Relay:  42%|████▏     | 21/50 [00:17<00:24,  1.20it/s]Text-Relay:  44%|████▍     | 22/50 [00:18<00:23,  1.17it/s]Text-Relay:  46%|████▌     | 23/50 [00:19<00:25,  1.07it/s]Text-Relay:  48%|████▊     | 24/50 [00:20<00:22,  1.15it/s]Text-Relay:  50%|█████     | 25/50 [00:20<00:20,  1.21it/s]Text-Relay:  52%|█████▏    | 26/50 [00:21<00:21,  1.13it/s]Text-Relay:  54%|█████▍    | 27/50 [00:22<00:19,  1.16it/s]Text-Relay:  56%|█████▌    | 28/50 [00:23<00:17,  1.22it/s]Text-Relay:  58%|█████▊    | 29/50 [00:24<00:16,  1.27it/s]Text-Relay:  60%|██████    | 30/50 [00:25<00:17,  1.13it/s]Text-Relay:  62%|██████▏   | 31/50 [00:26<00:15,  1.20it/s]Text-Relay:  64%|██████▍   | 32/50 [00:26<00:14,  1.25it/s]Text-Relay:  66%|██████▌   | 33/50 [00:27<00:15,  1.12it/s]Text-Relay:  68%|██████▊   | 34/50 [00:28<00:13,  1.19it/s]Text-Relay:  70%|███████   | 35/50 [00:29<00:12,  1.24it/s]Text-Relay:  72%|███████▏  | 36/50 [00:30<00:11,  1.21it/s]Text-Relay:  74%|███████▍  | 37/50 [00:31<00:11,  1.16it/s]Text-Relay:  76%|███████▌  | 38/50 [00:31<00:09,  1.22it/s]Text-Relay:  78%|███████▊  | 39/50 [00:32<00:08,  1.27it/s]Text-Relay:  80%|████████  | 40/50 [00:33<00:08,  1.13it/s]Text-Relay:  82%|████████▏ | 41/50 [00:34<00:07,  1.20it/s]Text-Relay:  84%|████████▍ | 42/50 [00:35<00:06,  1.25it/s]Text-Relay:  86%|████████▌ | 43/50 [00:36<00:06,  1.13it/s]Text-Relay:  88%|████████▊ | 44/50 [00:36<00:05,  1.19it/s]Text-Relay:  90%|█████████ | 45/50 [00:37<00:04,  1.24it/s]Text-Relay:  92%|█████████▏| 46/50 [00:38<00:03,  1.24it/s]Text-Relay:  94%|█████████▍| 47/50 [00:39<00:02,  1.13it/s]Text-Relay:  96%|█████████▌| 48/50 [00:40<00:01,  1.20it/s]Text-Relay:  98%|█████████▊| 49/50 [00:40<00:00,  1.25it/s]Text-Relay: 100%|██████████| 50/50 [00:42<00:00,  1.12it/s]Text-Relay: 100%|██████████| 50/50 [00:42<00:00,  1.19it/s]
+Text-Relay: 839.4ms avg (51 summary tokens)
+Traceback (most recent call last):
+  File "/projects/m000066/sujinesh/LatentWire/telepathy/benchmark_latency.py", line 389, in <module>
+    main()
+  File "/projects/m000066/sujinesh/LatentWire/telepathy/benchmark_latency.py", line 358, in main
+    bridge = load_bridge(args.checkpoint, device)
+  File "/projects/m000066/sujinesh/LatentWire/telepathy/benchmark_latency.py", line 65, in load_bridge
+    bridge = LatentBridgeV15(args, device=device)
+TypeError: LatentBridgeV15.__init__() got an unexpected keyword argument 'device'
