@@ -167,6 +167,27 @@
       "expected_accuracy": 1.0,
       "tolerance": 2.0,
       "notes": "CATASTROPHIC FAILURE - essentially random (1.3%). Bridge beats by 20.5pp"
+    },
+    "latency_bridge": {
+      "task": "Latency Benchmark",
+      "method": "Bridge (8 soft tokens, no generation)",
+      "expected_ms": 75,
+      "tolerance_ms": 50,
+      "notes": "Llama encode + Bridge transform + Mistral forward (no autoregressive generation)"
+    },
+    "latency_text_relay": {
+      "task": "Latency Benchmark",
+      "method": "Text-Relay (Llama generate → Mistral classify)",
+      "expected_ms": 750,
+      "tolerance_ms": 300,
+      "notes": "Requires autoregressive generation (~50 tokens)"
+    },
+    "latency_direct_text": {
+      "task": "Latency Benchmark",
+      "method": "Direct Text (Mistral only)",
+      "expected_ms": 150,
+      "tolerance_ms": 100,
+      "notes": "Single model, short generation"
     }
   },
   "key_findings": {
@@ -194,6 +215,16 @@
       "name": "Text-Relay Catastrophic Failure",
       "description": "Text-relay fails completely on fine-grained classification (1.0% on 77-class Banking77)",
       "evidence": ["text_relay_banking77", "banking77_bridge_16tok"]
+    },
+    "finding_6": {
+      "name": "Super-Additive Performance",
+      "description": "Bridge exceeds BOTH sender and receiver model performance (SST-2: 94.7% vs 92%/88.5%, AG News: 88.9% vs 79%/79%)",
+      "evidence": ["sst2_bridge", "sst2_llama_text", "sst2_mistral_text", "agnews_bridge", "agnews_llama_text", "agnews_mistral_text"]
+    },
+    "finding_7": {
+      "name": "Latency Advantage",
+      "description": "Bridge is 5-10x faster than Text-Relay by avoiding autoregressive generation",
+      "evidence": ["latency_bridge", "latency_text_relay"]
     }
   },
   "models": {

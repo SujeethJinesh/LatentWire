@@ -7,7 +7,7 @@
 # Usage:
 #   git pull && rm -rf runs && PYTHONPATH=. bash preserved_data/reproducibility/run_all_experiments.sh
 #
-# Expected runtime: ~2.5 hours on 4xH100
+# Expected runtime: ~3 hours on 4xH100 (11 experiments)
 # Expected output: runs/ directory with all results
 
 set -e
@@ -53,6 +53,8 @@ log "  6. Banking77 Text-Relay"
 log "  7. Passkey Token Ablation (16, 32, 64, 128)"
 log "  8. Text-Relay Baselines (SST-2, AG News)"
 log "  9. TREC Baselines (Text + Text-Relay)"
+log "  10. SST-2/AG News Text Baselines (for super-additive comparison)"
+log "  11. Latency Benchmark (Bridge vs Text-Relay vs Direct)"
 
 # =============================================================================
 # EXPERIMENT 1: SST-2 BRIDGE
@@ -277,6 +279,63 @@ mkdir -p "$TREC_BASELINE_DIR"
 log "TREC baselines complete"
 
 # =============================================================================
+# EXPERIMENT 10: SST-2/AG NEWS TEXT BASELINES
+# =============================================================================
+section "[10/11] SST-2/AG NEWS TEXT BASELINES (Super-Additive)"
+log "Expected: SST-2 Llama=92%, Mistral=88.5%; AG News both=79%"
+
+SST2_AGNEWS_BASELINE_DIR="${OUTPUT_BASE}/sst2_agnews_baselines_${TIMESTAMP}"
+mkdir -p "$SST2_AGNEWS_BASELINE_DIR"
+
+{
+    python telepathy/eval_text_relay_baseline.py \
+        --sst2_text \
+        --num_samples 200 \
+        --output_dir "$SST2_AGNEWS_BASELINE_DIR" \
+        --gpu 0
+
+    python telepathy/eval_text_relay_baseline.py \
+        --agnews_text \
+        --num_samples 200 \
+        --output_dir "$SST2_AGNEWS_BASELINE_DIR" \
+        --gpu 0
+} 2>&1 | tee "${SST2_AGNEWS_BASELINE_DIR}/sst2_agnews_baselines.log"
+
+log "SST-2/AG News text baselines complete"
+
+# =============================================================================
+# EXPERIMENT 11: LATENCY BENCHMARK
+# =============================================================================
+section "[11/11] LATENCY BENCHMARK"
+log "Expected: Bridge 5-10x faster than Text-Relay"
+
+LATENCY_DIR="${OUTPUT_BASE}/latency_benchmark_${TIMESTAMP}"
+mkdir -p "$LATENCY_DIR"
+
+# Use SST-2 checkpoint for latency benchmark
+SST2_CKPT="${SST2_DIR}/best_checkpoint.pt"
+if [ -f "$SST2_CKPT" ]; then
+    log "Using SST-2 checkpoint: $SST2_CKPT"
+    {
+        python telepathy/benchmark_latency.py \
+            --checkpoint "$SST2_CKPT" \
+            --num_trials 50 \
+            --output_dir "$LATENCY_DIR" \
+            --gpu 0
+    } 2>&1 | tee "${LATENCY_DIR}/latency_benchmark.log"
+else
+    log "No SST-2 checkpoint found, running without Bridge timing"
+    {
+        python telepathy/benchmark_latency.py \
+            --num_trials 50 \
+            --output_dir "$LATENCY_DIR" \
+            --gpu 0
+    } 2>&1 | tee "${LATENCY_DIR}/latency_benchmark.log"
+fi
+
+log "Latency benchmark complete"
+
+# =============================================================================
 # SUMMARY
 # =============================================================================
 section "ALL EXPERIMENTS COMPLETE"
@@ -365,6 +424,40 @@ if [ -f "${TEXT_RELAY_DIR}/text_relay_results.json" ]; then
     log "Text-Relay Baselines:"
     log "  SST-2: ${SST2_RELAY}% (expected: 71.0%)"
     log "  AG News: ${AGNEWS_RELAY}% (expected: 64.5%)"
+fi
+
+log ""
+
+# SST-2/AG News Text Baselines
+if [ -f "${SST2_AGNEWS_BASELINE_DIR}/sst2_baselines.json" ]; then
+    SST2_LLAMA=$(python -c "import json; print(json.load(open('${SST2_AGNEWS_BASELINE_DIR}/sst2_baselines.json'))['results']['llama']['accuracy'])" 2>/dev/null || echo "N/A")
+    SST2_MISTRAL=$(python -c "import json; print(json.load(open('${SST2_AGNEWS_BASELINE_DIR}/sst2_baselines.json'))['results']['mistral']['accuracy'])" 2>/dev/null || echo "N/A")
+    log "SST-2 Text Baselines:"
+    log "  Llama: ${SST2_LLAMA}% (expected: 92.0%)"
+    log "  Mistral: ${SST2_MISTRAL}% (expected: 88.5%)"
+fi
+if [ -f "${SST2_AGNEWS_BASELINE_DIR}/agnews_baselines.json" ]; then
+    AGNEWS_LLAMA=$(python -c "import json; print(json.load(open('${SST2_AGNEWS_BASELINE_DIR}/agnews_baselines.json'))['results']['llama']['accuracy'])" 2>/dev/null || echo "N/A")
+    AGNEWS_MISTRAL=$(python -c "import json; print(json.load(open('${SST2_AGNEWS_BASELINE_DIR}/agnews_baselines.json'))['results']['mistral']['accuracy'])" 2>/dev/null || echo "N/A")
+    log ""
+    log "AG News Text Baselines:"
+    log "  Llama: ${AGNEWS_LLAMA}% (expected: 79.0%)"
+    log "  Mistral: ${AGNEWS_MISTRAL}% (expected: 79.0%)"
+fi
+
+# Latency Benchmark
+if [ -f "${LATENCY_DIR}/latency_benchmark.json" ]; then
+    DIRECT=$(python -c "import json; print(f\"{json.load(open('${LATENCY_DIR}/latency_benchmark.json'))['direct_text']['total_ms']:.1f}\")" 2>/dev/null || echo "N/A")
+    RELAY=$(python -c "import json; print(f\"{json.load(open('${LATENCY_DIR}/latency_benchmark.json'))['text_relay']['total_ms']:.1f}\")" 2>/dev/null || echo "N/A")
+    log ""
+    log "Latency Benchmark (50 trials):"
+    log "  Direct Text: ${DIRECT}ms"
+    log "  Text-Relay: ${RELAY}ms"
+    if [ -n "$(python -c "import json; d=json.load(open('${LATENCY_DIR}/latency_benchmark.json')); print('yes' if 'bridge' in d else '')" 2>/dev/null)" ]; then
+        BRIDGE=$(python -c "import json; print(f\"{json.load(open('${LATENCY_DIR}/latency_benchmark.json'))['bridge']['total_ms']:.1f}\")" 2>/dev/null || echo "N/A")
+        SPEEDUP=$(python -c "import json; d=json.load(open('${LATENCY_DIR}/latency_benchmark.json')); print(f\"{d['text_relay']['total_ms']/d['bridge']['total_ms']:.1f}x\")" 2>/dev/null || echo "N/A")
+        log "  Bridge: ${BRIDGE}ms (${SPEEDUP} faster than Text-Relay)"
+    fi
 fi
 
 log ""
