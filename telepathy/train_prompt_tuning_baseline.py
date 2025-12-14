@@ -310,9 +310,9 @@ def main():
     optimizer = torch.optim.AdamW(soft_prompt.parameters(), lr=args.lr, weight_decay=0.01)
 
     # Load dataset
-    train_ds = load_dataset(*config["load_args"], split="train")
+    train_ds = load_dataset(*config["load_args"], split="train", trust_remote_code=True)
     eval_split = "validation" if args.dataset in ["sst2", "rte"] else "test"
-    eval_ds = load_dataset(*config["load_args"], split=eval_split)
+    eval_ds = load_dataset(*config["load_args"], split=eval_split, trust_remote_code=True)
 
     dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
