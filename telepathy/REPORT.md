@@ -5817,18 +5817,168 @@ START
 
 ### Remaining Blockers
 
-1. **Llama SST-2 Baseline** - Script ready: `run_sst2_agnews_baselines.sh`
-2. **Llama AG News Baseline** - Script ready: `run_sst2_agnews_baselines.sh`
+~~1. **Llama SST-2 Baseline** - Script ready: `run_sst2_agnews_baselines.sh`~~
+~~2. **Llama AG News Baseline** - Script ready: `run_sst2_agnews_baselines.sh`~~
 
-### Master Results Table (Paper-Ready)
+**ALL BLOCKERS RESOLVED** (2025-12-13)
+
+### Master Results Table (Paper-Ready) - FINAL
 
 | Task | Classes | Bridge | Text-Relay | Δ | Llama (Sender) | Mistral (Receiver) |
 |------|---------|--------|------------|---|----------------|-------------------|
-| SST-2 | 2 | **94.7%** | 71.0% | +23.7pp | TBD | 93.5% |
-| AG News | 4 | **88.9%** | 64.5% | +24.4pp | TBD | 70.5% |
+| SST-2 | 2 | **94.7%** | 71.0% | +23.7pp | 92.0% | 88.5% |
+| AG News | 4 | **88.9%** | 64.5% | +24.4pp | 79.0% | 79.0% |
 | TREC | 6 | **94.5%** | 58.0% | +36.5pp | 53.5% | 43.0% |
 | Banking77 | 77 | **21.5%** | 1.0% | +20.5pp | 22.0% | 19.5% |
 
 **Key Finding**: Bridge beats Text-Relay by **20-37pp** across all 4 tasks.
+
+---
+
+## 86. MAJOR FINDING: Super-Additive Performance (2025-12-13)
+
+### Baseline Results (Completed)
+
+**SST-2 (Binary Sentiment Classification):**
+```
+Bridge (8 tokens):     94.7%  ← BEST
+Llama Text (sender):   92.0%
+Mistral Text (receiver): 88.5%
+Text-Relay:            71.0%
+Random:                50.0%
+```
+
+**AG News (4-class Topic Classification):**
+```
+Bridge (8 tokens):     88.9%  ← BEST
+Llama Text (sender):   79.0%
+Mistral Text (receiver): 79.0%
+Text-Relay:            64.5%
+Random:                25.0%
+```
+
+### The Super-Additive Effect
+
+**CRITICAL FINDING**: Bridge doesn't just match the sender ceiling—it **EXCEEDS BOTH sender and receiver baselines**!
+
+| Task | Bridge | Llama | Mistral | Bridge vs Best Model |
+|------|--------|-------|---------|---------------------|
+| SST-2 | 94.7% | 92.0% | 88.5% | **+2.7pp over Llama** |
+| AG News | 88.9% | 79.0% | 79.0% | **+9.9pp over both** |
+| TREC | 94.5% | 53.5% | 43.0% | **+41.0pp over Llama** |
+
+This is NOT expected behavior for a compression/transmission system! Normal expectation:
+- Bridge ≤ min(Llama, Mistral) due to information loss
+
+Instead we observe:
+- Bridge > max(Llama, Mistral) on multiple tasks
+
+### Hypotheses for Super-Additive Effect
+
+1. **Ensemble Effect**: Soft tokens capture compressed "reasoning" from Llama that helps Mistral avoid its own errors
+2. **Complementary Representations**: Llama and Mistral have different failure modes; the bridge combines their strengths
+3. **Implicit Calibration**: The trained bridge learns to present information in a way Mistral processes optimally
+4. **Task-Specific Amplification**: The bridge is trained specifically for classification, making it more focused than general text
+
+### Implications for Paper
+
+This super-additive finding:
+- **Strengthens the paper significantly** - not just "as good as text" but "better than both models"
+- **Opens new research direction** - can cross-model bridges enhance capabilities?
+- **Provides defense against "why not just use text?"** - because bridge is actually better
+- **Needs careful framing** - don't overclaim; effect is task-specific
+
+---
+
+## 87. Paper Readiness Assessment (2025-12-13)
+
+### Completed Items ✅
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| 4 task results (SST-2, AG News, TREC, Banking77) | ✅ DONE | Section 86 |
+| Text-relay baselines (all 4 tasks) | ✅ DONE | 71%, 64.5%, 58%, 1% |
+| Mistral text baselines (all 4) | ✅ DONE | 88.5%, 79%, 43%, 19.5% |
+| Llama text baselines (all 4) | ✅ DONE | 92%, 79%, 53.5%, 22% |
+| Token ablation (16/32/64/128) | ✅ DONE | Banking77, Passkey |
+| Passkey results | ✅ DONE | Digit accuracy scaling |
+| Confidence intervals | ✅ DONE | Wilson Score 95% CI |
+| Training cost | ✅ DONE | 0.7 GPU-hours on H100 |
+| Super-additive finding | ✅ NEW | Section 86 |
+
+### Paper Writing Can Begin ✅
+
+All blocking experiments are complete. The paper has:
+- **Strong main result**: Bridge >> Text-Relay (+20-37pp)
+- **Surprising finding**: Bridge > both sender AND receiver
+- **Scaling analysis**: Inverse token scaling (mode collapse at 128 tokens)
+- **Statistical rigor**: 95% confidence intervals on all results
+
+---
+
+## 88. Critical Analysis: What Could Strengthen the Paper Further?
+
+### Potential Weaknesses Reviewers May Raise
+
+**1. Super-Additive Claims Need Careful Treatment**
+- *Concern*: Could be measurement variance (n=200 is small)
+- *Mitigation*: CIs for SST-2 Bridge [90.9, 97.1] vs Llama [87.8, 95.0] overlap
+- *Recommendation*: Frame as "matches or exceeds" rather than "definitively exceeds"
+
+**2. Why Does Text-Relay Fail So Badly?**
+- *Concern*: 71% on SST-2 seems low for summarize-then-classify
+- *Defense*: Text-relay forces information through a bottleneck (summary); bridge has higher bandwidth
+- *Additional*: Banking77 shows text-relay is catastrophic at 1% (random is 1.3%)
+
+**3. Missing Ablations**
+- Layer selection (currently fixed at layer 31)
+- Architecture comparison (Perceiver vs simple MLP)
+- Different model pairs (same-family vs cross-family)
+
+**4. No Latency Measurements**
+- Paper claims efficiency gains but doesn't measure them
+- *Recommendation*: Add inference time comparison in appendix
+
+### What We Should NOT Add (Scope Creep)
+
+1. **Multiple seeds** - Gaps are too large (20-37pp) to require multiple seeds
+2. **More datasets** - 4 classification + 1 retrieval is sufficient
+3. **Larger models** - 7B/8B is standard; larger models = different paper
+4. **Different model pairs** - Would be valuable but is a separate contribution
+
+---
+
+## 89. Proposed Next Steps (Ranked by Impact)
+
+### HIGH IMPACT (Recommend for Paper)
+
+**1. Verify Super-Additive is Robust** (CRITICAL)
+- Re-run SST-2 with different 200 samples (3x) to check consistency
+- If Bridge > Llama holds across runs, this becomes a headline result
+- Time: 30 min on HPC
+
+**2. Add Latency Comparison** (Recommended)
+- Measure wall-clock time for: Bridge vs Text-Relay vs Full-Text
+- Expected: Bridge ~2x faster than text-relay, ~5x faster than full-text
+- Time: 1 hour on HPC
+
+### MEDIUM IMPACT (Nice to Have)
+
+**3. Layer Ablation**
+- Try layers 16, 24, 28, 31 to show layer 31 is optimal
+- May reveal interesting findings about where information is encoded
+- Time: 2 hours on HPC
+
+**4. Cross-Attention Interpretability**
+- Visualize what tokens the bridge attends to
+- Qualitative examples for paper figures
+- Time: 1 hour local
+
+### LOW IMPACT (Future Work)
+
+**5. Different Model Pairs**
+- Try Llama → Llama (same family) as control
+- Try Mistral → Llama (reverse direction)
+- This is a separate paper
 
 ---

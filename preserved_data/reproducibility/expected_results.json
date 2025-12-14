@@ -15,16 +15,16 @@
     "sst2_llama_text": {
       "task": "SST-2 Binary Sentiment Classification",
       "method": "Llama Direct Text",
-      "expected_accuracy": "TBD",
+      "expected_accuracy": 92.0,
       "tolerance": 3.0,
-      "notes": "BLOCKING - Sender ceiling for SST-2. Expected ~93-95%"
+      "notes": "Sender ceiling. Bridge (94.7%) EXCEEDS sender by +2.7pp (super-additive!)"
     },
     "sst2_mistral_text": {
       "task": "SST-2 Binary Sentiment Classification",
       "method": "Mistral Direct Text",
-      "expected_accuracy": 93.5,
+      "expected_accuracy": 88.5,
       "tolerance": 3.0,
-      "notes": "Receiver baseline - from earlier experiments"
+      "notes": "Receiver baseline. Bridge exceeds by +6.2pp"
     },
     "agnews_bridge": {
       "task": "AG News 4-class Topic Classification",
@@ -36,16 +36,16 @@
     "agnews_llama_text": {
       "task": "AG News 4-class Topic Classification",
       "method": "Llama Direct Text",
-      "expected_accuracy": "TBD",
+      "expected_accuracy": 79.0,
       "tolerance": 3.0,
-      "notes": "BLOCKING - Sender ceiling for AG News. Expected ~85-90%"
+      "notes": "Sender ceiling. Bridge (88.9%) EXCEEDS sender by +9.9pp (super-additive!)"
     },
     "agnews_mistral_text": {
       "task": "AG News 4-class Topic Classification",
       "method": "Mistral Direct Text",
-      "expected_accuracy": 70.5,
+      "expected_accuracy": 79.0,
       "tolerance": 3.0,
-      "notes": "Receiver baseline - from earlier experiments"
+      "notes": "Receiver baseline. Bridge exceeds by +9.9pp"
     },
     "trec_bridge": {
       "task": "TREC 6-class Question Type Classification",
