@@ -331,6 +331,34 @@ A key advantage of operating on hidden states rather than tokens is that the bri
 
 This architectural agnosticism is why the same bridge design works for heterogeneous models without modification---we communicate through the universal language of dense representations rather than model-specific tokenization or attention patterns.
 
+\subsection{Bidirectional Transfer}
+
+To verify that communication works in both directions, we train a reverse bridge (Mistral$\to$Llama) on SST-2 using identical hyperparameters. Table~\ref{tab:bidirectional} shows that both directions achieve strong performance:
+
+\begin{table}[h]
+\caption{Bidirectional transfer on SST-2. Both directions achieve super-additive performance, with Mistral$\to$Llama slightly outperforming the forward direction.}
+\label{tab:bidirectional}
+\vskip 0.1in
+\begin{center}
+\begin{small}
+\begin{tabular}{lcc}
+\toprule
+Direction & Accuracy (\%) & vs.\ Individual Models \\
+\midrule
+Llama$\to$Mistral & 96.7 $\pm$ 0.6 & +4.7pp over Llama \\
+Mistral$\to$Llama & \textbf{97.2 $\pm$ 0.6} & +5.2pp over Llama \\
+\midrule
+Llama Direct & 92.0 & --- \\
+Mistral Direct & 88.5 & --- \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+Both directions exhibit super-additive performance, exceeding either model operating independently. Interestingly, Mistral$\to$Llama (97.2\%) slightly outperforms Llama$\to$Mistral (96.7\%), suggesting that Llama may be a marginally better decoder for this task. The symmetric success demonstrates that the bridge architecture generalizes across sender-receiver configurations without modification.
+
 \subsection{Soft Token Interpretability}
 
 To understand what information the bridge encodes, we analyze each soft token by finding its nearest neighbors in Mistral's vocabulary (cosine similarity). On SST-2, we observe partially interpretable patterns:
@@ -350,7 +378,7 @@ These findings support the information bottleneck hypothesis: compression forces
 
 \paragraph{Generative Tasks} We focus on classification; extending to generation tasks (translation, summarization) requires additional investigation of how to condition decoder generation on soft tokens.
 
-\paragraph{More Model Pairs} We demonstrate Llama$\to$Mistral transfer; future work should validate across more model families and sizes.
+\paragraph{More Model Pairs} We demonstrate bidirectional Llama$\leftrightarrow$Mistral transfer; future work should validate across more model families (e.g., Gemma, Qwen) and sizes.
 
 \paragraph{Theoretical Understanding} Why does compression help? Why is performance super-additive? Deeper theoretical analysis could inform better architecture design.
 
@@ -363,6 +391,7 @@ We present Telepathy, a method for cross-model communication via learned soft to
     \item \textbf{22.4$\times$ lower latency} than text-relay (37ms vs. 835ms)
     \item \textbf{Sender model is essential}: Prompt-tuning alone achieves random chance (49.5\%), while Bridge achieves 96.7\% (+47pp from Llama's hidden states)
     \item \textbf{Super-additive performance} on SST-2 (96.7\% vs. 92\%/88.5\%) and AG News (90.7\% vs. 79\%/79\%)
+    \item \textbf{Bidirectional transfer}: Both Llama$\to$Mistral (96.7\%) and Mistral$\to$Llama (97.2\%) achieve strong performance
     \item \textbf{Inverse token scaling} where fewer soft tokens yield better performance
 \end{itemize}
 
@@ -387,14 +416,15 @@ Total training time for all bridge variants: approximately 42 minutes.
 \subsection{Multi-Seed Results}
 All experiments were run with 3 seeds (42, 123, 456) for statistical rigor. Results reported as mean $\pm$ std:
 \begin{itemize}
-    \item SST-2 Bridge: 96.7\% $\pm$ 0.6\% (seeds: 96.5, 96.0, 97.5)
+    \item SST-2 Bridge (Llama$\to$Mistral): 96.7\% $\pm$ 0.6\% (seeds: 96.5, 96.0, 97.5)
+    \item SST-2 Bridge (Mistral$\to$Llama): 97.2\% $\pm$ 0.6\% (seeds: 97.0, 98.0, 96.5)
     \item AG News Bridge: 90.7\% $\pm$ 0.5\% (seeds: 90.0, 91.0, 91.0)
     \item TREC Bridge: 95.3\% $\pm$ 0.3\% (seeds: 95.0, 95.5, 95.5)
     \item Prompt-Tuning SST-2: 49.5\% $\pm$ 0.0\% (all seeds identical)
     \item Prompt-Tuning AG News: 19.8\% $\pm$ 7.5\% (seeds: 30.5, 14.5, 14.5)
     \item Prompt-Tuning TREC: 19.0\% $\pm$ 5.0\% (seeds: 14.5, 26.0, 16.5)
 \end{itemize}
-The low variance in Bridge results ($\leq$0.6\%) indicates stable training across all three classification tasks. The prompt-tuning baseline's high variance on AG News and TREC reflects random guessing behavior.
+The low variance in Bridge results ($\leq$0.6\%) indicates stable training across all configurations, including bidirectional transfer. The prompt-tuning baseline's high variance on AG News and TREC reflects random guessing behavior.
 
 \subsection{Hyperparameter Sensitivity}
 We found performance relatively robust to hyperparameters within reasonable ranges:

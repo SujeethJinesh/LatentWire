@@ -27,6 +27,12 @@ This experiment set provides the final results for the Telepathy paper. Key find
 | TREC | 3/3 ✅ | **95.3% ± 0.3%** | 95.0, 95.5, 95.5 |
 | Banking77 | 1/1 | 21.5% | Single seed OK for inverse scaling demo |
 
+### Bridge (Mistral → Llama) - Reverse Direction
+
+| Dataset | Seeds | Mean ± Std | Individual Results |
+|---------|-------|------------|-------------------|
+| SST-2 | 3/3 ✅ | **97.2% ± 0.6%** | 97.0, 98.0, 96.5 |
+
 ### Prompt-Tuning Baseline (Mistral only, no Llama)
 
 | Dataset | Seeds | Mean ± Std | vs Random Chance |
@@ -49,7 +55,12 @@ This experiment set provides the final results for the Telepathy paper. Key find
 - AG News: Bridge 90.7% > Llama 79.0% = Mistral 79.0%
 - TREC: Bridge 95.3% > Llama 53.5% > Mistral 43.0% (+41.8pp over Llama!)
 
-### 3. Layer Configuration
+### 3. Bidirectional Transfer Works
+- Llama → Mistral: 96.7% ± 0.6%
+- Mistral → Llama: 97.2% ± 0.6% (slightly better!)
+- Both directions exhibit super-additive performance
+
+### 4. Layer Configuration
 - SST-2: Layer 16 works well (96.7%)
 - AG News/TREC: Layer 31 (final layer)
 - Ablation shows deeper layers generally better for classification
