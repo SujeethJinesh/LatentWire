@@ -38,10 +38,16 @@ echo ""
     echo ""
 
     # Find existing SST-2 checkpoint (if available)
+    # Note: train_telepathy_sst2.py saves as bridge_sst2.pt
     SST2_CKPT=""
     for dir in "preserved_data/phase21_overnight_sst2_agnews_2025-12-12" "runs" "."; do
         if [ -d "$dir" ]; then
-            FOUND=$(find "$dir" -name "best_checkpoint.pt" -path "*sst2*" 2>/dev/null | head -1)
+            # Try bridge_sst2.pt first (what train_telepathy_sst2.py creates)
+            FOUND=$(find "$dir" -name "bridge_sst2.pt" 2>/dev/null | head -1)
+            if [ -z "$FOUND" ]; then
+                # Fallback to best_checkpoint.pt
+                FOUND=$(find "$dir" -name "best_checkpoint.pt" -path "*sst2*" 2>/dev/null | head -1)
+            fi
             if [ -n "$FOUND" ] && [ -f "$FOUND" ]; then
                 SST2_CKPT="$FOUND"
                 break
@@ -65,7 +71,8 @@ echo ""
             --diversity_weight 0.1 \
             --output_dir "$TRAIN_DIR"
 
-        SST2_CKPT="${TRAIN_DIR}/best_checkpoint.pt"
+        # train_telepathy_sst2.py saves as bridge_sst2.pt, not best_checkpoint.pt
+        SST2_CKPT="${TRAIN_DIR}/bridge_sst2.pt"
         echo ""
         echo "Training complete. Checkpoint: $SST2_CKPT"
     else
