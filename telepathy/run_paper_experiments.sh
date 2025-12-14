@@ -24,13 +24,22 @@
 # 5. RTE DATASET
 #    - Additional GLUE task for broader coverage
 #
-# Usage:
-#   PYTHONPATH=. bash run_paper_experiments.sh
+# Usage (from LatentWire root):
+#   PYTHONPATH=. bash telepathy/run_paper_experiments.sh
 #
 # Expected runtime: ~4-6 hours on single H100
 # ==========================================
 
 set -e
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+echo "Working directory: $(pwd)"
+
+# Set PYTHONPATH to include parent directory (LatentWire root)
+export PYTHONPATH="${SCRIPT_DIR}/..:${PYTHONPATH}"
+echo "PYTHONPATH: $PYTHONPATH"
 
 # Configuration
 OUTPUT_BASE="${OUTPUT_BASE:-runs/paper_experiments_$(date +%Y%m%d_%H%M%S)}"
