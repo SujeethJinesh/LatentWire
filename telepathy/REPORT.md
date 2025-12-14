@@ -5001,3 +5001,488 @@ Optional follow-ups (can run in parallel with writing):
 **Verdict**: No blocking issues. Paper is ready to write.
 
 ---
+
+## Section 79: Comprehensive Critical Review - 5 Expert Perspectives
+
+**Date**: 2025-12-13
+**Purpose**: Simulate rigorous peer review from 5 distinct NeurIPS/MLSys reviewers before paper submission
+
+---
+
+### Reviewer 1: Soft Prompts & Model Stitching Expert
+
+**Background**: Published on GIST, PromptBridge, model stitching. Knows Bansal et al., FuLA, T-Stitch.
+
+#### Strengths Identified
+
+1. **Novel problem formulation**: Cross-model soft token transfer hasn't been explored. Most stitching work assumes same architecture.
+2. **Perceiver Resampler is architecturally appropriate**: Mirrors Flamingo's approach for cross-modal bridging.
+3. **Inverse token scaling is interesting finding**: Contradicts intuition that more capacity = better.
+
+#### Critical Questions
+
+**Q1: How does this compare to GIST (Mu et al. 2023)?**
+
+| Aspect | GIST | Bridge (This Work) |
+|--------|------|-------------------|
+| Setup | Same model, compress prompt | Different models, transfer semantics |
+| Tokens | 1-26 gist tokens | 8-128 soft tokens |
+| Training | Modified attention mask | Perceiver Resampler |
+| Compression | 26x | Not applicable (different goal) |
+
+**Answer**: GIST compresses within one model; we transfer across heterogeneous models. Different problems.
+
+**Gap Identified**: Paper should explicitly compare to GIST and explain why it's not applicable.
+
+**Q2: Is the stitching layer (Perceiver) too complex?**
+
+Model stitching literature shows simple affine transforms work (Bansal et al.). Why do you need a Perceiver?
+
+**Answer**: Affine transform assumes same architecture family. Llama→Mistral have different tokenizers, embedding spaces, and dimensions. Perceiver handles this heterogeneity.
+
+**Gap Identified**: Should ablate simpler bridges (linear projection, MLP) vs Perceiver to justify architectural choice.
+
+**Q3: What about PromptBridge (arXiv 2512.01420)?**
+
+Recent work on cross-model prompt transfer achieves 27-39% improvement on some benchmarks.
+
+**Answer**: PromptBridge transfers TEXT prompts between models. We transfer CONTINUOUS soft tokens. Different interface.
+
+**Gap Identified**: Should cite and differentiate from PromptBridge.
+
+#### Required Ablations from Reviewer 1
+
+1. **Bridge architecture ablation**: Linear → MLP → Perceiver
+2. **Comparison table** with GIST, PromptBridge (differentiate, not compete)
+3. **Stitching accuracy metric**: How close are bridge outputs to "ideal" Mistral embeddings?
+
+---
+
+### Reviewer 2: NLP Benchmark & Evaluation Expert
+
+**Background**: Published on GLUE, SuperGLUE, HELM. Knows evaluation pitfalls deeply.
+
+#### Strengths Identified
+
+1. **Diverse task selection**: 2, 4, 6, 77 classes spans wide difficulty range
+2. **Consistent pattern**: Bridge >> Text-relay on ALL tasks (not cherry-picked)
+3. **Catastrophic failure analysis**: Banking77 text-relay at 1% is illuminating
+
+#### Critical Questions
+
+**Q1: Why these specific datasets?**
+
+| Dataset | Classes | Domain | Size | Established? |
+|---------|---------|--------|------|--------------|
+| SST-2 | 2 | Sentiment | ~68K | GLUE staple |
+| AG News | 4 | News topic | ~120K | Standard |
+| TREC | 6 | Question type | ~6K | Less common |
+| Banking77 | 77 | Banking intent | ~13K | Specialized |
+
+**Gap Identified**:
+- Missing standard NLI (MNLI, RTE)
+- Missing NER or structured prediction
+- TREC is small (500 test) - may inflate variance
+
+**Q2: Why N=200 samples?**
+
+With 200 samples, 95% CI for 94.5% accuracy is ±3.1pp (binomial proportion CI).
+
+| Accuracy | N | 95% CI Width |
+|----------|---|--------------|
+| 94.5% | 200 | ±3.1pp |
+| 94.5% | 500 | ±2.0pp |
+| 21.5% | 200 | ±5.7pp |
+
+**Gap Identified**:
+- Banking77 at 21.5% has wider CI (±5.7pp)
+- Should report confidence intervals
+- N=500 would strengthen claims
+
+**Q3: What's the variance across random seeds?**
+
+Only single-run results reported. How stable is training?
+
+**Gap Identified**: Need 3-5 runs with different seeds, report mean ± std.
+
+**Q4: How are ties broken in classification?**
+
+Prompting Mistral for classification - what if it outputs invalid class?
+
+**Gap Identified**: Document:
+- Invalid response handling
+- Tie-breaking strategy
+- Exact prompt format used
+
+#### Required Additions from Reviewer 2
+
+1. **Confidence intervals** for all accuracy numbers
+2. **Multiple random seeds** (at least 3 runs)
+3. **Add 1-2 more standard benchmarks** (MNLI, RTE, or similar)
+4. **Invalid response statistics** - how often does Mistral refuse/fail?
+
+---
+
+### Reviewer 3: Systems & Efficiency Expert
+
+**Background**: Published on model serving, inference optimization. MLSys PC member.
+
+#### Strengths Identified
+
+1. **Frozen base models**: No expensive fine-tuning required
+2. **Small bridge**: ~50K parameters is negligible vs 7B+8B models
+3. **One-shot inference**: Bridge forward pass then Mistral generates
+
+#### Critical Questions
+
+**Q1: What's the actual latency breakdown?**
+
+| Component | Expected Latency |
+|-----------|-----------------|
+| Llama encode (context) | ? ms |
+| Bridge forward | ? ms |
+| Mistral generate (16 tokens) | ? ms |
+| **Total** | ? ms |
+
+vs Text-relay:
+| Component | Expected Latency |
+|-----------|-----------------|
+| Llama encode + generate summary | ? ms |
+| Mistral encode summary + classify | ? ms |
+| **Total** | ? ms |
+
+**Gap Identified**: No latency numbers reported. This is critical for MLSys venue.
+
+**Q2: What's the memory footprint?**
+
+- Llama 8B: ~16GB
+- Mistral 7B: ~14GB
+- Bridge: ~50KB
+- Running both simultaneously: ~30GB?
+
+**Gap Identified**: Need to report:
+- Peak GPU memory
+- Can it run on single GPU?
+- Memory vs quality tradeoff with quantization
+
+**Q3: What's the training cost?**
+
+| Metric | Value |
+|--------|-------|
+| Training steps | 2000-3000 |
+| Batch size | 8 |
+| Wall time | ? hours |
+| GPU type | H100 |
+| Total GPU-hours | ? |
+
+**Gap Identified**: Training cost not documented. Reviewers will ask.
+
+**Q4: Throughput?**
+
+Samples/second at inference time?
+
+**Gap Identified**: No throughput metrics.
+
+#### Required Additions from Reviewer 3
+
+1. **Latency breakdown** (ms per component)
+2. **Memory footprint** (peak GPU memory)
+3. **Training cost** (GPU-hours)
+4. **Throughput** (samples/second)
+5. **Comparison table**: Bridge latency vs text-relay latency
+
+---
+
+### Reviewer 4: Statistical Rigor Expert
+
+**Background**: Statistician who reviews ML papers. Demands proper hypothesis testing.
+
+#### Strengths Identified
+
+1. **Large effect sizes**: 20-37pp improvements are substantial
+2. **Consistent direction**: All tasks show same pattern
+3. **No p-hacking evident**: Results reported without selective emphasis
+
+#### Critical Questions
+
+**Q1: Is Bridge significantly better than Llama text ceiling?**
+
+| Task | Bridge | Llama (ceiling) | Δ |
+|------|--------|-----------------|---|
+| SST-2 | 94.7% | 93.5%* | +1.2pp |
+| AG News | 88.9% | ??? | ??? |
+| TREC | 94.5% | 53.5% | +41pp |
+| Banking77 | 21.5% | 22.0% | -0.5pp |
+
+*Need Llama text baselines for SST-2 and AG News
+
+**Gap Identified**:
+- For SST-2, Bridge (94.7%) vs Llama (?) - is this significant?
+- For Banking77, Bridge (21.5%) ≈ Llama (22.0%) - within noise?
+
+**Q2: McNemar's test or paired comparison?**
+
+For proper comparison, need:
+```
+McNemar test:
+- n_11: both correct
+- n_00: both wrong
+- n_01: Bridge correct, Baseline wrong
+- n_10: Bridge wrong, Baseline correct
+```
+
+**Gap Identified**: No paired statistical tests reported.
+
+**Q3: How many hyperparameter configurations tried?**
+
+If many configs tried, need correction for multiple comparisons.
+
+**Answer** (from data): Main configs are:
+- Soft tokens: 8 (SST-2, AG News), 16 (Banking77, TREC, Passkey)
+- Learning rate: 1e-4 (all)
+- Diversity weight: 0.1 (all)
+
+Appears to be <10 total configs, not extensive search.
+
+**Q4: Bonferroni correction needed?**
+
+Testing across 4 tasks - should we correct alpha?
+
+**Answer**: With 4 tests at α=0.05, Bonferroni α=0.0125. Given effect sizes (20-37pp), all would remain significant.
+
+#### Required Additions from Reviewer 4
+
+1. **Llama text baselines** for SST-2 and AG News
+2. **95% confidence intervals** using Wilson score interval
+3. **McNemar's test** or bootstrap paired comparison
+4. **Report number of hyperparameter configurations tried**
+
+---
+
+### Reviewer 5: Multimodal / Cross-Attention Expert
+
+**Background**: Published on Flamingo, BLIP, multimodal LLMs. Knows Perceiver architecture deeply.
+
+#### Strengths Identified
+
+1. **Perceiver Resampler is proven**: Used in Flamingo, PaLM2-VAdapter, PERSOMA
+2. **Cross-attention is principled**: Allows variable-length input compression
+3. **Gated architecture**: Helps training stability
+
+#### Critical Questions
+
+**Q1: Why Perceiver Resampler specifically?**
+
+Alternatives:
+- Q-Former (BLIP-2)
+- Adapter layers
+- Simple projection + pooling
+
+**Gap Identified**: Should ablate or justify choice over Q-Former.
+
+**Q2: Attention pattern analysis?**
+
+What are the learned cross-attention patterns? Do they show:
+- Position-agnostic patterns?
+- Entity-specific attention?
+- Task-specific specialization?
+
+**Gap Identified**: No interpretability analysis of bridge attention.
+
+**Q3: Does it learn position-invariant features?**
+
+Perceiver is supposed to learn position-invariant representations. Evidence?
+
+**Gap Identified**: No probing analysis of learned representations.
+
+**Q4: Training stability?**
+
+Perceiver + cross-attention can be unstable. What training tricks used?
+
+**Answer** (from code review):
+- Diversity weight (0.1)
+- AdamW optimizer
+- Cosine LR schedule
+
+**Gap Identified**: Should document training stability (loss curves, convergence analysis).
+
+#### Required Additions from Reviewer 5
+
+1. **Architecture ablation**: Perceiver vs Q-Former vs simple projection
+2. **Attention visualization**: What does the bridge attend to?
+3. **Training curves**: Show convergence stability
+4. **Probing analysis**: What semantic information is preserved?
+
+---
+
+## Section 80: Summary of Gaps and Required Ablations
+
+### Priority 1: BLOCKING (Must have before submission)
+
+| Gap | Reviewer | Effort | Impact |
+|-----|----------|--------|--------|
+| Confidence intervals | R2, R4 | Low | High |
+| Training cost (GPU-hours) | R3 | Low | Medium |
+| Llama baselines for SST-2, AG News | R4 | Medium | High |
+| Document invalid response handling | R2 | Low | Medium |
+
+### Priority 2: STRONGLY RECOMMENDED
+
+| Gap | Reviewer | Effort | Impact |
+|-----|----------|--------|--------|
+| Multiple random seeds (3 runs) | R2 | High | High |
+| Latency breakdown | R3 | Medium | High |
+| Memory footprint | R3 | Low | Medium |
+| McNemar's test | R4 | Medium | Medium |
+
+### Priority 3: NICE TO HAVE
+
+| Gap | Reviewer | Effort | Impact |
+|-----|----------|--------|--------|
+| Architecture ablation (Linear/MLP/Perceiver) | R1, R5 | High | Medium |
+| Attention visualization | R5 | Medium | Medium |
+| Additional datasets (MNLI, RTE) | R2 | High | Medium |
+| Training curves | R5 | Low | Low |
+
+### Priority 4: FUTURE WORK
+
+| Gap | Reviewer | Notes |
+|-----|----------|-------|
+| Q-Former comparison | R5 | Different architecture class |
+| Other model pairs | R1 | Generalization study |
+| Generation tasks beyond Passkey | R2 | Already show limitation |
+| Probing analysis | R5 | Interpretability deep dive |
+
+---
+
+## Section 81: Action Plan to Address Gaps
+
+### Immediate Actions (Before Paper Writing)
+
+1. **Add Llama text baselines** for SST-2 and AG News
+   - Already have infrastructure from TREC
+   - ~1 hour to run
+   - CRITICAL for claims about Bridge vs sender ceiling
+
+2. **Calculate confidence intervals** for all results
+   - Wilson score interval: CI = p ± z√(p(1-p)/n)
+   - Can compute from existing results
+   - ~30 minutes
+
+3. **Document training cost**
+   - Parse existing logs for wall time
+   - Compute GPU-hours
+   - ~30 minutes
+
+4. **Document invalid response rate**
+   - Check existing logs for parsing failures
+   - Report % of invalid outputs
+   - ~30 minutes
+
+### During Paper Writing (Parallel)
+
+5. **Run 3 seeds for key experiments**
+   - SST-2, AG News with 3 different seeds
+   - Report mean ± std
+   - ~3 hours on HPC
+
+6. **Measure latency**
+   - Add timing code to evaluation
+   - Report ms per component
+   - ~1 hour
+
+### Related Work Section Must Include
+
+1. **GIST** (Mu et al., 2023) - Different problem (same-model compression)
+2. **PromptBridge** (2024) - Different interface (text prompt transfer)
+3. **Model Stitching** (Bansal et al., 2021) - Simpler setting (same architecture)
+4. **Flamingo** (Alayrac et al., 2022) - Architecture inspiration (Perceiver Resampler)
+5. **In-Context Autoencoder** (Ge et al., 2023) - Different approach (autoencoder)
+
+### Key Differentiation Claims
+
+The paper should clearly state:
+
+1. **Not GIST**: We transfer across heterogeneous models, not compress within one model
+2. **Not PromptBridge**: We use continuous soft tokens, not text prompts
+3. **Not model stitching**: We handle different architectures and tokenizers
+4. **Inspired by Flamingo**: Perceiver Resampler for cross-space bridging
+
+---
+
+## Section 82: Statistical Analysis of Current Results
+
+### Confidence Intervals (Wilson Score, 95%)
+
+| Experiment | N | Accuracy | 95% CI |
+|------------|---|----------|--------|
+| SST-2 Bridge | 200 | 94.7% | [90.7%, 97.1%] |
+| AG News Bridge | 200 | 88.9% | [83.8%, 92.6%] |
+| TREC Bridge | 200 | 94.5% | [90.4%, 96.9%] |
+| Banking77 Bridge | 200 | 21.5% | [16.3%, 27.7%] |
+| SST-2 Text-Relay | 200 | 71.0% | [64.3%, 77.0%] |
+| AG News Text-Relay | 200 | 64.5% | [57.5%, 71.0%] |
+| TREC Text-Relay | 200 | 58.0% | [51.0%, 64.7%] |
+| Banking77 Text-Relay | 200 | 1.0% | [0.2%, 3.6%] |
+| TREC Mistral Text | 200 | 43.0% | [36.2%, 50.0%] |
+| TREC Llama Text | 200 | 53.5% | [46.5%, 60.4%] |
+| Banking77 Mistral Text | 200 | 19.5% | [14.5%, 25.5%] |
+| Banking77 Llama Text | 200 | 22.0% | [16.7%, 28.3%] |
+
+### Gap Significance Analysis
+
+| Comparison | Δ | Non-overlapping CIs? | Significant? |
+|------------|---|---------------------|--------------|
+| SST-2: Bridge vs Text-Relay | +23.7pp | YES | **SIGNIFICANT** |
+| AG News: Bridge vs Text-Relay | +24.4pp | YES | **SIGNIFICANT** |
+| TREC: Bridge vs Text-Relay | +36.5pp | YES | **SIGNIFICANT** |
+| Banking77: Bridge vs Text-Relay | +20.5pp | YES | **SIGNIFICANT** |
+| TREC: Bridge vs Llama Text | +41.0pp | YES | **SIGNIFICANT** |
+| Banking77: Bridge vs Llama Text | -0.5pp | NO (overlap) | NOT SIGNIFICANT |
+
+### Key Finding
+
+**Banking77 Bridge (21.5%) ≈ Llama Text (22.0%)**: The confidence intervals overlap [16.3%, 27.7%] vs [16.7%, 28.3%], meaning Bridge achieves PARITY with the sender model ceiling, not exceeding it. This is the correct claim to make.
+
+---
+
+## Section 83: Experiment Queue to Address Gaps
+
+### Batch 1: SST-2 + AG News Llama Baselines
+
+**Script**: Add to `eval_text_relay_baseline.py`
+
+```bash
+# Add --sst2_text and --agnews_text flags
+python telepathy/eval_text_relay_baseline.py \
+    --sst2_text \
+    --agnews_text \
+    --num_samples 200 \
+    --gpu 0
+```
+
+**Expected output**: Llama accuracy on SST-2 and AG News
+
+### Batch 2: Training Cost Documentation
+
+From existing logs:
+- Steps: 2000-3000
+- Time per step: ~X seconds
+- Total wall time: ~Y hours
+- GPU: H100
+
+### Batch 3: Latency Measurement
+
+Add timing to evaluation:
+```python
+import time
+t0 = time.time()
+# Llama encode
+t1 = time.time()
+# Bridge forward
+t2 = time.time()
+# Mistral generate
+t3 = time.time()
+```
+
+---
