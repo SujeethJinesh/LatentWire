@@ -1,8 +1,0 @@
-
-==============================================
-SECTION 1: PROMPT-TUNING BASELINE (CRITICAL)
-==============================================
-This proves whether Llama (sender) actually helps.
-
->>> Prompt-Tuning Baseline: sst2 (seed=42)
-python: can't open file '/projects/m000066/sujinesh/LatentWire/train_prompt_tuning_baseline.py': [Errno 2] No such file or directory

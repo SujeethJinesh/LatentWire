@@ -1,0 +1,162 @@
+{
+  "dataset": "agnews",
+  "timestamp": "2025-12-14T22:01:32.922119",
+  "random_chance": 25.0,
+  "num_classes": 4,
+  "models": {
+    "llama": {
+      "accuracy": 64.5,
+      "correct": 129,
+      "total": 200,
+      "sample_predictions": [
+        {
+          "text": "Fears for T N pension after talks Unions representing workers at Turner   Newall say they are 'disap...",
+          "true_label": "Business",
+          "predicted": "Business",
+          "response": "business.  the article is about a company in finan",
+          "correct": true
+        },
+        {
+          "text": "The Race is On: Second Private Team Sets Launch Date for Human Spaceflight (SPACE.com) SPACE.com - T...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech.  the article is about a spaceflight comp",
+          "correct": true
+        },
+        {
+          "text": "Ky. Company Wins Grant to Study Peptides (AP) AP - A company founded by a chemistry researcher at th...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech.  the article is about a company that won",
+          "correct": true
+        },
+        {
+          "text": "Prediction Unit Helps Forecast Wildfires (AP) AP - It's barely dawn when Mike Fitzpatrick starts his...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world\n\nreasoning skill: inductive reasoning\n\nexpla",
+          "correct": false
+        },
+        {
+          "text": "Calif. Aims to Limit Farm-Related Smog (AP) AP - Southern California's smog-fighting agency went aft...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech\nreasoning skill: inductive reasoning\nexpl",
+          "correct": true
+        },
+        {
+          "text": "Open Letter Against British Copyright Indoctrination in Schools The British Department for Education...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech\nreason: the article is about copyright an",
+          "correct": true
+        },
+        {
+          "text": "Loosing the War on Terrorism \\\\\"Sven Jaschan, self-confessed author of the Netsky and Sasser viruses...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world\n\nexplanation: the article is about a global ",
+          "correct": false
+        },
+        {
+          "text": "FOAFKey: FOAF, PGP, Key Distribution, and Bloom Filters \\\\FOAF/LOAF  and bloom filters have a lot of...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech.  the article is discussing the use of fo",
+          "correct": true
+        },
+        {
+          "text": "E-mail scam targets police chief Wiltshire Police warns about \"phishing\" after its fraud squad chief...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world\n\nexplanation: the article is about a police ",
+          "correct": false
+        },
+        {
+          "text": "Card fraud unit nets 36,000 cards In its first two years, the UK's dedicated card fraud unit, has re...",
+          "true_label": "Sci/Tech",
+          "predicted": "Business",
+          "response": "business. the article is about a unit that deals w",
+          "correct": false
+        }
+      ]
+    },
+    "mistral": {
+      "accuracy": 69.5,
+      "correct": 139,
+      "total": 200,
+      "sample_predictions": [
+        {
+          "text": "Fears for T N pension after talks Unions representing workers at Turner   Newall say they are 'disap...",
+          "true_label": "Business",
+          "predicted": "Business",
+          "response": "business\n\nexplanation: the article discusses negot",
+          "correct": true
+        },
+        {
+          "text": "The Race is On: Second Private Team Sets Launch Date for Human Spaceflight (SPACE.com) SPACE.com - T...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world (specifically, space)",
+          "correct": false
+        },
+        {
+          "text": "Ky. Company Wins Grant to Study Peptides (AP) AP - A company founded by a chemistry researcher at th...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech",
+          "correct": true
+        },
+        {
+          "text": "Prediction Unit Helps Forecast Wildfires (AP) AP - It's barely dawn when Mike Fitzpatrick starts his...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech\n\nexplanation: the article discusses a pre",
+          "correct": true
+        },
+        {
+          "text": "Calif. Aims to Limit Farm-Related Smog (AP) AP - Southern California's smog-fighting agency went aft...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world\n\nexplanation: the article discusses a new re",
+          "correct": false
+        },
+        {
+          "text": "Open Letter Against British Copyright Indoctrination in Schools The British Department for Education...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world (specifically, the british education system ",
+          "correct": false
+        },
+        {
+          "text": "Loosing the War on Terrorism \\\\\"Sven Jaschan, self-confessed author of the Netsky and Sasser viruses...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech",
+          "correct": true
+        },
+        {
+          "text": "FOAFKey: FOAF, PGP, Key Distribution, and Bloom Filters \\\\FOAF/LOAF  and bloom filters have a lot of...",
+          "true_label": "Sci/Tech",
+          "predicted": "Sci/Tech",
+          "response": "sci/tech",
+          "correct": true
+        },
+        {
+          "text": "E-mail scam targets police chief Wiltshire Police warns about \"phishing\" after its fraud squad chief...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world (specifically, the police department in wilt",
+          "correct": false
+        },
+        {
+          "text": "Card fraud unit nets 36,000 cards In its first two years, the UK's dedicated card fraud unit, has re...",
+          "true_label": "Sci/Tech",
+          "predicted": "World",
+          "response": "world (specifically, the uk)\n\nexplanation: the art",
+          "correct": false
+        }
+      ]
+    }
+  }
+}
