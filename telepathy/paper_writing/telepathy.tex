@@ -591,20 +591,24 @@ These findings support the information bottleneck hypothesis: compression forces
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{@{}lccccccc@{}}
+\begin{tabular}{@{}lcccccc@{}}
 \toprule
-\textbf{Benchmark} & \textbf{Type} & \textbf{Random} & \textbf{Llama} & \textbf{Mistral} & \textbf{Text-Relay} & \textbf{Bridge} \\
+\textbf{Benchmark} & \textbf{Random} & \textbf{Llama} & \textbf{Mistral} & \textbf{Text-Relay} & \textbf{Bridge} \\
 \midrule
-BoolQ & Yes/No & 50.0\% & TBD & TBD & TBD & 72.5\% \\
-PIQA & 2-way & 50.0\% & TBD & TBD & TBD & 60.4\% \\
-CommonsenseQA & 5-way & 20.0\% & TBD & TBD & TBD & 17.0\% \\
+BoolQ (Yes/No) & 50.0\% & 79.2\% & \textbf{83.2\%} & 80.8\% & 72.5\% \\
+PIQA (2-way) & 50.0\% & \textbf{61.0\%} & 57.4\% & 30.4\%$^\dagger$ & 60.4\% \\
+CommonsenseQA (5-way) & 20.0\% & \textbf{75.4\%} & 68.0\% & 75.4\% & 17.0\% \\
 \bottomrule
 \end{tabular}
-\caption{Reasoning benchmark results. Bridge succeeds on binary tasks (BoolQ, PIQA) but fails on multi-choice reasoning (CommonsenseQA). TBD values pending from baseline experiments.}
+\caption{Reasoning benchmark results. Unlike classification, the bridge underperforms direct model inference on all reasoning tasks. On CommonsenseQA, the bridge falls below random chance (17\% vs.\ 20\%), while Llama achieves 75.4\%. $^\dagger$Text-relay fails catastrophically on PIQA (30.4\%), suggesting summarization destroys physical intuition signals.}
 \label{tab:reasoning_limits}
 \end{table}
 
-Binary reasoning tasks show promising transfer: BoolQ (Yes/No reading comprehension) achieves 72.5\% and PIQA (physical intuition) achieves 60.4\%, both significantly above the 50\% random baseline. However, the 5-way CommonsenseQA benchmark falls \emph{below} random chance (17.0\% vs.\ 20\%), suggesting the bridge cannot compress multi-step commonsense reasoning into fixed-length soft tokens. This pattern---success on binary classification, failure on multi-choice reasoning---suggests that soft token compression preserves decision boundaries but loses the nuanced information needed for complex inference. Extending to generation and complex reasoning tasks remains important future work.
+Table~\ref{tab:reasoning_limits} reveals a stark contrast with classification results. While the bridge exceeds random chance on binary tasks (BoolQ: 72.5\%, PIQA: 60.4\%), it \emph{underperforms direct model inference} on all benchmarks. On BoolQ, Mistral alone achieves 83.2\%---10.7pp higher than the bridge. On CommonsenseQA, the gap is catastrophic: Llama achieves 75.4\% while the bridge falls \emph{below random chance} at 17.0\%.
+
+Interestingly, text-relay fails catastrophically on PIQA (30.4\%, below random), while the bridge achieves 60.4\%---suggesting the bridge preserves physical intuition signals that text summarization destroys. However, this is the exception: on BoolQ and CommonsenseQA, text-relay matches or exceeds the bridge.
+
+These results indicate that soft token compression is fundamentally limited for reasoning tasks. Classification requires compressing to a simple decision boundary (positive/negative, topic A/B/C/D), which the bridge handles well. Reasoning requires preserving multi-step inference chains and world knowledge, which cannot be compressed into 8-32 soft tokens without catastrophic information loss. Extending to reasoning tasks remains important future work requiring fundamentally different approaches.
 
 \paragraph{Task-Specific Training} Bridges must be trained per-task. We did not observe meaningful zero-shot transfer between tasks (e.g., SST-2$\to$AG News). Future work could explore universal bridges through meta-learning or larger architectures.
 
