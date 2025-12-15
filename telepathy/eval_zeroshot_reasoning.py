@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-Zero-Shot Reasoning Baseline Evaluation for Llama and Mistral.
+Zero-Shot and Text-Relay Reasoning Baseline Evaluation.
 
-Generates explicit JSON result files for zero-shot reasoning baselines.
-This provides proper baselines for the reasoning benchmarks table.
+Generates explicit JSON result files for all reasoning baselines:
+- Llama 0-shot: Direct Llama inference
+- Mistral 0-shot: Direct Mistral inference
+- Text-Relay: Llama generates summary -> Mistral classifies
 
 Benchmarks evaluated:
 - BoolQ: Yes/No reading comprehension (2-way)
@@ -12,6 +14,7 @@ Benchmarks evaluated:
 
 Usage:
     python eval_zeroshot_reasoning.py --output_dir runs/zeroshot_reasoning
+    python eval_zeroshot_reasoning.py --include_text_relay  # Also run text-relay
 """
 
 import argparse
@@ -161,12 +164,96 @@ def evaluate_zeroshot(model, tokenizer, dataset, config, device, max_samples=200
     }
 
 
+def evaluate_text_relay(llama, llama_tok, mistral, mistral_tok, dataset, config, device, max_samples=200):
+    """Evaluate text-relay: Llama summarizes -> Mistral classifies."""
+    labels = config["labels"]
+
+    correct = 0
+    total = 0
+    predictions = []
+
+    for i, item in enumerate(tqdm(dataset, total=min(max_samples, len(dataset)), desc="Text-Relay")):
+        if i >= max_samples:
+            break
+
+        text = config["get_text"](item)
+        true_label_id = config["get_label"](item)
+        true_label = labels[true_label_id]
+
+        # Step 1: Llama generates a summary/analysis
+        llama_prompt = f"Analyze this and provide a brief summary of the key information:\n\n{text}\n\nSummary:"
+        llama_inputs = llama_tok(llama_prompt, return_tensors="pt", truncation=True, max_length=1024).to(device)
+
+        with torch.no_grad():
+            llama_outputs = llama.generate(
+                **llama_inputs,
+                max_new_tokens=100,
+                do_sample=False,
+                pad_token_id=llama_tok.eos_token_id,
+            )
+
+        llama_summary = llama_tok.decode(llama_outputs[0][llama_inputs.input_ids.shape[1]:], skip_special_tokens=True)
+        llama_summary = llama_summary.strip()[:200]  # Truncate
+
+        # Step 2: Mistral classifies based on Llama's summary
+        mistral_prompt = config["prompt_template"].format(text=f"Context: {llama_summary}\n\n{text}")
+        mistral_inputs = mistral_tok(mistral_prompt, return_tensors="pt", truncation=True, max_length=1024).to(device)
+
+        with torch.no_grad():
+            mistral_outputs = mistral.generate(
+                **mistral_inputs,
+                max_new_tokens=10,
+                do_sample=False,
+                pad_token_id=mistral_tok.eos_token_id,
+            )
+
+        response = mistral_tok.decode(mistral_outputs[0][mistral_inputs.input_ids.shape[1]:], skip_special_tokens=True)
+        response = response.strip()
+
+        # Match prediction to label
+        pred_label = None
+        response_lower = response.lower()
+
+        for label in labels:
+            if label.lower() == response_lower or response_lower.startswith(label.lower()):
+                pred_label = label
+                break
+
+        if pred_label is None:
+            for label in labels:
+                if label.lower() in response_lower:
+                    pred_label = label
+                    break
+
+        is_correct = pred_label is not None and pred_label.lower() == true_label.lower()
+        if is_correct:
+            correct += 1
+        total += 1
+
+        predictions.append({
+            "true_label": true_label,
+            "predicted": pred_label,
+            "llama_summary": llama_summary[:50],
+            "response": response[:50],
+            "correct": is_correct,
+        })
+
+    accuracy = 100 * correct / total if total > 0 else 0
+    return {
+        "accuracy": accuracy,
+        "correct": correct,
+        "total": total,
+        "sample_predictions": predictions[:10],
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output_dir", default="runs/zeroshot_reasoning")
     parser.add_argument("--benchmarks", nargs="+", default=["boolq", "piqa", "commonsenseqa"])
     parser.add_argument("--max_samples", type=int, default=500)
     parser.add_argument("--gpu", type=int, default=0)
+    parser.add_argument("--include_text_relay", action="store_true", help="Also evaluate text-relay baseline")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -235,6 +322,21 @@ def main():
             benchmark_results["models"][model_name] = results
             print(f"Accuracy: {results['accuracy']:.1f}% ({results['correct']}/{results['total']})")
 
+        # Evaluate text-relay if requested
+        if args.include_text_relay:
+            print(f"\n--- TEXT-RELAY (Llama->Mistral) ---")
+            llama_model, llama_tokenizer = loaded_models["llama"]
+            mistral_model, mistral_tokenizer = loaded_models["mistral"]
+
+            text_relay_results = evaluate_text_relay(
+                llama_model, llama_tokenizer,
+                mistral_model, mistral_tokenizer,
+                eval_data, config, device, args.max_samples
+            )
+
+            benchmark_results["models"]["text_relay"] = text_relay_results
+            print(f"Accuracy: {text_relay_results['accuracy']:.1f}% ({text_relay_results['correct']}/{text_relay_results['total']})")
+
         all_results["results"][benchmark_name] = benchmark_results
 
         # Save per-benchmark results
@@ -254,11 +356,15 @@ def main():
 
     # Print summary
     print(f"\n{'='*60}")
-    print("ZERO-SHOT REASONING BASELINE SUMMARY")
+    print("REASONING BASELINE SUMMARY")
     print(f"{'='*60}")
 
-    print(f"\n{'Benchmark':<20} {'Llama':<12} {'Mistral':<12} {'Random':<10}")
-    print("-" * 54)
+    if args.include_text_relay:
+        print(f"\n{'Benchmark':<18} {'Llama':<10} {'Mistral':<10} {'Text-Relay':<12} {'Random':<8}")
+        print("-" * 68)
+    else:
+        print(f"\n{'Benchmark':<20} {'Llama':<12} {'Mistral':<12} {'Random':<10}")
+        print("-" * 54)
 
     for benchmark_name, results in all_results["results"].items():
         if "error" in results:
@@ -268,7 +374,12 @@ def main():
         llama_acc = results["models"].get("llama", {}).get("accuracy", 0)
         mistral_acc = results["models"].get("mistral", {}).get("accuracy", 0)
         random = results["random_chance"]
-        print(f"{benchmark_name:<20} {llama_acc:>6.1f}%     {mistral_acc:>6.1f}%     {random:>6.1f}%")
+
+        if args.include_text_relay:
+            text_relay_acc = results["models"].get("text_relay", {}).get("accuracy", 0)
+            print(f"{benchmark_name:<18} {llama_acc:>6.1f}%   {mistral_acc:>6.1f}%   {text_relay_acc:>6.1f}%     {random:>6.1f}%")
+        else:
+            print(f"{benchmark_name:<20} {llama_acc:>6.1f}%     {mistral_acc:>6.1f}%     {random:>6.1f}%")
 
     print(f"\nResults saved to: {args.output_dir}")
 

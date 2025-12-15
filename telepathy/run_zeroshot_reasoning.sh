@@ -33,13 +33,14 @@ echo "Starting zero-shot reasoning baseline evaluation at $(date)" | tee "$LOG_F
 echo "Output directory: $OUTPUT_DIR" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
-# Run zero-shot evaluation on all reasoning benchmarks
-echo "Evaluating Llama and Mistral zero-shot on reasoning benchmarks..." | tee -a "$LOG_FILE"
+# Run zero-shot and text-relay evaluation on all reasoning benchmarks
+echo "Evaluating Llama, Mistral, and Text-Relay on reasoning benchmarks..." | tee -a "$LOG_FILE"
 python eval_zeroshot_reasoning.py \
     --output_dir "$OUTPUT_DIR" \
     --benchmarks boolq piqa commonsenseqa \
     --max_samples 500 \
     --gpu 0 \
+    --include_text_relay \
     2>&1 | tee -a "$LOG_FILE"
 
 echo "" | tee -a "$LOG_FILE"
