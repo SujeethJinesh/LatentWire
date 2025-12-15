@@ -591,23 +591,20 @@ These findings support the information bottleneck hypothesis: compression forces
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}lccccccc@{}}
 \toprule
-\textbf{Benchmark} & \textbf{Type} & \textbf{Random} & \textbf{Bridge} & \textbf{$\Delta$} \\
+\textbf{Benchmark} & \textbf{Type} & \textbf{Random} & \textbf{Llama} & \textbf{Mistral} & \textbf{Text-Relay} & \textbf{Bridge} \\
 \midrule
-BoolQ & Yes/No QA & 50.0\% & \textbf{72.5\%} & +22.5 \\
-PIQA & Physical (2-way) & 50.0\% & 60.4\% & +10.4 \\
-WinoGrande & 2-way & 50.0\% & 54.5\% & +4.5 \\
-ARC-Challenge & 4-way & 25.0\% & 30.5\% & +5.5 \\
-CommonsenseQA & 5-way & 20.0\% & 17.0\% & -3.0 \\
-GSM8K & Math & -- & 1.5\% & -- \\
+BoolQ & Yes/No & 50.0\% & TBD & TBD & TBD & 72.5\% \\
+PIQA & 2-way & 50.0\% & TBD & TBD & TBD & 60.4\% \\
+CommonsenseQA & 5-way & 20.0\% & TBD & TBD & TBD & 17.0\% \\
 \bottomrule
 \end{tabular}
-\caption{Reasoning benchmark results. Transfer succeeds on binary tasks (BoolQ, PIQA) but fails on multi-choice reasoning (CommonsenseQA) and math (GSM8K).}
+\caption{Reasoning benchmark results. Bridge succeeds on binary tasks (BoolQ, PIQA) but fails on multi-choice reasoning (CommonsenseQA). TBD values pending from baseline experiments.}
 \label{tab:reasoning_limits}
 \end{table}
 
-Binary reasoning tasks show promising transfer: BoolQ (Yes/No reading comprehension) achieves 72.5\% and PIQA (physical intuition) achieves 60.4\%, both significantly above the 50\% random baseline. However, more complex reasoning tasks show limited or no transfer: WinoGrande barely exceeds random, ARC-Challenge is marginal, and CommonsenseQA falls \emph{below} random chance. GSM8K math reasoning failed completely (1.5\%), generating incoherent solutions. This suggests that the bridge successfully transfers \emph{binary classification signals} but cannot compress multi-step reasoning into fixed-length soft tokens. Extending to generation and complex reasoning tasks remains important future work.
+Binary reasoning tasks show promising transfer: BoolQ (Yes/No reading comprehension) achieves 72.5\% and PIQA (physical intuition) achieves 60.4\%, both significantly above the 50\% random baseline. However, the 5-way CommonsenseQA benchmark falls \emph{below} random chance (17.0\% vs.\ 20\%), suggesting the bridge cannot compress multi-step commonsense reasoning into fixed-length soft tokens. This pattern---success on binary classification, failure on multi-choice reasoning---suggests that soft token compression preserves decision boundaries but loses the nuanced information needed for complex inference. Extending to generation and complex reasoning tasks remains important future work.
 
 \paragraph{Task-Specific Training} Bridges must be trained per-task. We did not observe meaningful zero-shot transfer between tasks (e.g., SST-2$\to$AG News). Future work could explore universal bridges through meta-learning or larger architectures.
 
