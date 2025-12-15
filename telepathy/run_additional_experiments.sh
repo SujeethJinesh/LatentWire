@@ -12,12 +12,18 @@
 
 set -e
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+echo "Working directory: $(pwd)"
+
 # Configuration
 OUTPUT_BASE="runs/additional_experiments"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_DIR="${OUTPUT_BASE}_${TIMESTAMP}"
 
-export PYTHONPATH=.
+export PYTHONPATH=..
 
 mkdir -p "$OUTPUT_DIR"
 
