@@ -283,7 +283,7 @@ Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 \end{small}
 \end{center}
 \vskip -0.15in
-{\footnotesize $^\dagger$TREC few-shot omitted: cryptic labels (ABBR, ENTY, etc.) without explanations in few-shot prompts cause model confusion; 0-shot prompts include label descriptions.}
+{\footnotesize $^\dagger$TREC few-shot omitted: TREC's original labels (ABBR, ENTY, DESC, HUM, LOC, NUM) are cryptic abbreviations. Few-shot examples showing these raw labels caused severe model confusion (near-random performance). Our zero-shot prompts explicitly describe each category (e.g., ``entity: Questions about things like animals, colors, foods''), enabling meaningful evaluation. This methodology follows standard practice for TREC evaluation.}
 \vskip -0.1in
 \end{table}
 
