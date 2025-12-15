@@ -1,0 +1,114 @@
+{
+  "experiment": "batched_latency_benchmark",
+  "timestamp": "2025-12-14T14:57:06.503431",
+  "config": {
+    "batch_sizes": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "num_samples": 32,
+    "device": "cuda"
+  },
+  "results": {
+    "bridge": [
+      {
+        "batch_size": 1,
+        "avg_latency_s": 4.341130809020251,
+        "std_latency_s": 0.10304290877124204,
+        "throughput_samples_per_s": 7.371351246432971,
+        "latency_per_sample_ms": 135.66033778188284
+      },
+      {
+        "batch_size": 2,
+        "avg_latency_s": 2.2200095699168743,
+        "std_latency_s": 0.002374676941364459,
+        "throughput_samples_per_s": 14.414352277408517,
+        "latency_per_sample_ms": 69.37529905990232
+      },
+      {
+        "batch_size": 4,
+        "avg_latency_s": 1.1134978582616895,
+        "std_latency_s": 0.03789858626345878,
+        "throughput_samples_per_s": 28.738268118410247,
+        "latency_per_sample_ms": 34.7968080706778
+      },
+      {
+        "batch_size": 8,
+        "avg_latency_s": 0.5617468043696136,
+        "std_latency_s": 0.03017514195848402,
+        "throughput_samples_per_s": 56.9651660696318,
+        "latency_per_sample_ms": 17.554587636550423
+      },
+      {
+        "batch_size": 16,
+        "avg_latency_s": 0.3027526098303497,
+        "std_latency_s": 0.021550874921200655,
+        "throughput_samples_per_s": 105.69685928696538,
+        "latency_per_sample_ms": 9.461019057198428
+      }
+    ],
+    "direct_mistral": [
+      {
+        "batch_size": 1,
+        "avg_latency_s": 3.6275841356720777,
+        "std_latency_s": 0.08394018677797038,
+        "throughput_samples_per_s": 8.821297812317013,
+        "latency_per_sample_ms": 113.36200423975242
+      },
+      {
+        "batch_size": 2,
+        "avg_latency_s": 1.9562797791790216,
+        "std_latency_s": 0.020017040962605637,
+        "throughput_samples_per_s": 16.357578471433783,
+        "latency_per_sample_ms": 61.13374309934443
+      },
+      {
+        "batch_size": 4,
+        "avg_latency_s": 1.024438907345757,
+        "std_latency_s": 0.06333869983027167,
+        "throughput_samples_per_s": 31.23661134943572,
+        "latency_per_sample_ms": 32.0137158545549
+      },
+      {
+        "batch_size": 8,
+        "avg_latency_s": 0.5077686772681773,
+        "std_latency_s": 0.046179687105000845,
+        "throughput_samples_per_s": 63.02082312788909,
+        "latency_per_sample_ms": 15.867771164630541
+      },
+      {
+        "batch_size": 16,
+        "avg_latency_s": 0.2758989335503429,
+        "std_latency_s": 0.02712293185173607,
+        "throughput_samples_per_s": 115.98450051334108,
+        "latency_per_sample_ms": 8.621841673448216
+      }
+    ],
+    "text_relay": [
+      {
+        "batch_size": 1,
+        "avg_latency_s": 17.740540352556856,
+        "std_latency_s": 0.19281179025365416,
+        "throughput_samples_per_s": 0.9018891015737297,
+        "latency_per_sample_ms": 1108.7837720348034
+      },
+      {
+        "batch_size": 2,
+        "avg_latency_s": 16.911283243633807,
+        "std_latency_s": 0.12491322860587023,
+        "throughput_samples_per_s": 0.9461138915063197,
+        "latency_per_sample_ms": 1056.955202727113
+      },
+      {
+        "batch_size": 4,
+        "avg_latency_s": 16.445073803607375,
+        "std_latency_s": 0.06585810830550011,
+        "throughput_samples_per_s": 0.9729357369311566,
+        "latency_per_sample_ms": 1027.817112725461
+      }
+    ]
+  }
+}
