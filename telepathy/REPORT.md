@@ -6124,3 +6124,158 @@ All quantitative claims now have experimental evidence:
 5. ✅ Results are statistically significant (Wilson Score CIs)
 
 ---
+
+## 92. FUTURE WORK: POLISHING OPTIONS (2025-12-15)
+
+This section documents potential future experiments that were considered but deemed non-critical for the current paper submission. These are preserved for:
+- Camera-ready revisions if reviewers request them
+- Follow-up work on reasoning capabilities
+- Extended journal version
+
+### Option A: Full Reviewer Suite (Ablations, More Benchmarks)
+
+**What**: Run comprehensive ablations on all 4 datasets (not just SST-2)
+**Effort**: Medium (2-3 GPU days)
+**Value**: LOW PRIORITY
+
+**Self-Critique**:
+- Core claims already validated with current ablations
+- Additional ablations won't change the narrative
+- Diminishing returns on insight
+- Only run if specific reviewer requests it
+
+### Option B: More Model Pairs (Phi-3, Gemma, Qwen)
+
+**What**: Test generalization across more architectures beyond Llama→Mistral
+**Effort**: HIGH (significant engineering + GPU time)
+**Value**: LOW PRIORITY
+
+**Self-Critique**:
+- Paper already demonstrates cross-model transfer works
+- Adding more pairs is incremental, not fundamental
+- Engineering cost is high for marginal insight
+- Better suited for follow-up paper
+
+**Potential Pairs**:
+- Llama 3.1 8B → Phi-3 Medium (different architecture family)
+- Llama 3.1 8B → Gemma 2 9B (Google architecture)
+- Mistral 7B → Llama 3.1 8B (reverse direction - already have data)
+
+### Option C: Deeper Reasoning Failure Analysis
+
+**What**: Analyze WHY CommonsenseQA and GSM8K fail using existing data
+**Effort**: LOW (uses existing checkpoints)
+**Value**: MEDIUM - high value-to-effort ratio
+
+**Self-Critique**:
+- Uses no additional compute
+- Provides scientific insight into soft token limitations
+- Could strengthen limitations section
+- Paper already acknowledges limitations honestly
+
+**Analysis Ideas**:
+1. Attention pattern visualization on reasoning vs classification
+2. Soft token entropy comparison across task types
+3. Layer-wise probing to see where reasoning fails
+4. Error categorization (math errors vs comprehension vs inference)
+
+### Option D: Minimum Training Data Study
+
+**What**: How few training samples before bridge fails?
+**Effort**: LOW-MEDIUM (multiple short training runs)
+**Value**: LOW PRIORITY
+
+**Self-Critique**:
+- Interesting but tangential to main contribution
+- Could be added to appendix if space permits
+- Doesn't change core claims
+
+**Experiment Design**:
+- Train on 100, 500, 1000, 2000, 5000 samples
+- Measure accuracy degradation curve
+- Identify minimum viable training set
+
+### Option E: Interpretability Analysis
+
+**Status**: COMPLETE (already in experimental results)
+- PCA of soft tokens shows task-relevant clustering
+- SST-2 and AG News interpretability documented
+- Visualizations created
+
+### Recommendation Summary
+
+| Option | Priority | Effort | Run Now? |
+|--------|----------|--------|----------|
+| A: Full ablations | LOW | Medium | No |
+| B: More model pairs | LOW | High | No |
+| C: Reasoning failure analysis | MEDIUM | Low | Maybe (for journal) |
+| D: Minimum data study | LOW | Low-Med | No |
+| E: Interpretability | COMPLETE | N/A | Done |
+
+**Bottom Line**: The paper is scientifically complete. These options are preserved for future work but are not blocking submission.
+
+---
+
+## 93. REASONING: THE UNSOLVED CHALLENGE (2025-12-15)
+
+### Current State
+
+The bridge succeeds on **classification** but fails on **reasoning**:
+
+| Task Type | Example | Bridge Performance | Status |
+|-----------|---------|-------------------|--------|
+| Binary Classification | SST-2, BoolQ | 96.7%, 72.5% | ✅ Success |
+| Multi-class Classification | AG News, TREC | 90.7%, 95.2% | ✅ Success |
+| Many-class Classification | Banking77 | 79.7% | ✅ Success |
+| Physical Reasoning | PIQA | 60.4% | ⚠️ Marginal |
+| Commonsense Reasoning | CommonsenseQA | 23.6% (random=20%) | ❌ Failure |
+| Math Reasoning | GSM8K | 0% | ❌ Failure |
+
+### Why Reasoning Fails: Hypotheses
+
+1. **Compression vs. Complexity Tradeoff**
+   - Classification: compress to "positive/negative" signal
+   - Reasoning: requires preserving multi-step inference chain
+   - 8-32 soft tokens may lose intermediate reasoning steps
+
+2. **Training Signal Mismatch**
+   - Bridge learns to reconstruct classification-relevant features
+   - Reasoning requires preserving logical structure, not just answer
+   - Cross-entropy loss doesn't capture reasoning quality
+
+3. **Receiver Limitations**
+   - Mistral may need explicit chain-of-thought prompting
+   - Soft tokens don't provide "scratchpad" for intermediate steps
+   - Generation conditioned only on compressed representation
+
+### Future Directions for Reasoning
+
+**Direction 1: Chain-of-Thought Compression**
+- Train bridge to compress CoT, not just answer
+- Target: Llama generates CoT → Bridge compresses → Mistral reconstructs reasoning
+
+**Direction 2: Multi-Token Reasoning**
+- Use more soft tokens (64, 128) for reasoning tasks
+- Hypothesis: reasoning needs more capacity than classification
+
+**Direction 3: Reasoning-Specific Loss**
+- Add auxiliary loss for reasoning preservation
+- E.g., contrastive loss on reasoning steps, not just final answer
+
+**Direction 4: Iterative Bridge**
+- Multiple rounds of compression/expansion
+- Allow receiver to "query" sender for clarification
+
+### Publication Strategy
+
+**Paper 1 (Current - MLSys 2025)**: Classification Success
+- Focus: 22x speedup, super-additive accuracy on classification
+- Honestly acknowledge reasoning limitations
+- Strong contribution for efficient inference
+
+**Paper 2 (Future)**: Reasoning via Latent Communication
+- Focus: Extend bridge to reasoning tasks
+- Requires new training methodology
+- Longer timeline, higher risk
+
+---
