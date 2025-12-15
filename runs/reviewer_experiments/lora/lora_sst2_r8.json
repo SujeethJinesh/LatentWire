@@ -1,0 +1,50 @@
+{
+  "experiment": "lora_baseline_sst2",
+  "timestamp": "2025-12-14T15:05:46.610282",
+  "config": {
+    "dataset": "sst2",
+    "rank": 8,
+    "alpha": 16,
+    "epochs": 3,
+    "batch_size": 4,
+    "lr": 0.0001,
+    "max_train_samples": 2000,
+    "max_eval_samples": 200,
+    "seeds": [
+      42,
+      123,
+      456
+    ]
+  },
+  "results": {
+    "seed_42": {
+      "accuracy": 94.0,
+      "correct": 188,
+      "total": 200,
+      "train_time": 110.26749110221863,
+      "trainable_params": 3407872,
+      "avg_loss": 1.2748749651114146
+    },
+    "seed_123": {
+      "accuracy": 96.0,
+      "correct": 192,
+      "total": 200,
+      "train_time": 109.71359968185425,
+      "trainable_params": 3407872,
+      "avg_loss": 1.275131974975268
+    },
+    "seed_456": {
+      "accuracy": 96.0,
+      "correct": 192,
+      "total": 200,
+      "train_time": 109.9389533996582,
+      "trainable_params": 3407872,
+      "avg_loss": 1.2789451171159745
+    }
+  },
+  "summary": {
+    "mean_accuracy": 95.33333333333333,
+    "std_accuracy": 0.9428090415820634,
+    "trainable_params": 3407872
+  }
+}
