@@ -327,6 +327,51 @@ def fig6_prompt_tuning_comparison():
     plt.close()
 
 
+def fig7_cross_vs_same_model():
+    """
+    Figure 7: Cross-model vs Same-model transfer.
+    Key finding: heterogeneity helps!
+    """
+    fig, ax = plt.subplots(figsize=(6, 4))
+
+    # Data from experiments
+    configs = ['Llama→Llama\n(same)', 'Mistral→Mistral\n(same)', 'Llama→Mistral\n(cross)']
+    sst2_acc = [84.5, 95.5, 96.7]
+
+    colors = [COLORS['llama'], COLORS['mistral'], COLORS['bridge']]
+
+    bars = ax.bar(configs, sst2_acc, color=colors, edgecolor='black', linewidth=0.5)
+
+    # Highlight the cross-model bar
+    bars[2].set_hatch('//')
+
+    ax.set_ylabel('Accuracy (%)')
+    ax.set_title('Cross-Model vs Same-Model Transfer (SST-2)')
+    ax.set_ylim(80, 100)
+
+    # Add value labels
+    for bar, val in zip(bars, sst2_acc):
+        ax.annotate(f'{val}%', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
+                    xytext=(0, 3), textcoords='offset points', ha='center', va='bottom',
+                    fontsize=11, fontweight='bold')
+
+    # Add delta annotations
+    ax.annotate('', xy=(2, 96.7), xytext=(0, 84.5),
+                arrowprops=dict(arrowstyle='<->', color='darkgreen', lw=2))
+    ax.annotate('+12.2pp', xy=(1.0, 90.5), fontsize=10, fontweight='bold',
+                color='darkgreen', ha='center')
+
+    # Add insight annotation
+    ax.text(1, 82.5, 'Heterogeneity is a feature,\nnot a bug!',
+            ha='center', fontsize=9, style='italic', color='gray')
+
+    plt.tight_layout()
+    plt.savefig('cross_vs_same.pdf')
+    plt.savefig('cross_vs_same.png')
+    print("Saved: cross_vs_same.pdf")
+    plt.close()
+
+
 if __name__ == '__main__':
     print("Generating figures for Telepathy paper...")
     print("=" * 50)
@@ -337,6 +382,7 @@ if __name__ == '__main__':
     fig4_bidirectional()
     fig5_training_curves()
     fig6_prompt_tuning_comparison()
+    fig7_cross_vs_same_model()
 
     print("=" * 50)
     print("All figures generated!")

@@ -407,7 +407,14 @@ Bridge throughput scales nearly linearly with batch size (14$\times$ improvement
 
 \subsection{Cross-Model vs.\ Same-Model Transfer}
 
-A natural question is whether cross-model communication is necessary, or whether a same-model bridge (e.g., Llama$\to$Llama) would suffice. Table~\ref{tab:cross_vs_same} reveals a striking finding: \textbf{cross-model transfer outperforms same-model transfer}.
+A natural question is whether cross-model communication is necessary, or whether a same-model bridge (e.g., Llama$\to$Llama) would suffice. Table~\ref{tab:cross_vs_same} and Figure~\ref{fig:cross_vs_same} reveal a striking finding: \textbf{cross-model transfer outperforms same-model transfer}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\columnwidth]{figures/cross_vs_same.pdf}
+\caption{Cross-model vs.\ same-model transfer on SST-2. Surprisingly, Llama$\to$Mistral (96.7\%) outperforms Llama$\to$Llama (84.5\%) by 12.2pp, suggesting that representation incompatibility acts as beneficial regularization.}
+\label{fig:cross_vs_same}
+\end{figure}
 
 \begin{table}[t]
 \caption{Cross-model vs.\ same-model bridge comparison. Cross-model (Llama$\to$Mistral) significantly outperforms same-model (Llama$\to$Llama), suggesting heterogeneous models provide complementary information.}
@@ -432,14 +439,19 @@ Mistral$\to$Mistral (same) & 95.5\% & -- \\
 
 On SST-2, the cross-model bridge (Llama$\to$Mistral, 96.7\%) outperforms Llama$\to$Llama (84.5\%) by \textbf{12.2pp}. This is not simply because Mistral is a better decoder---Mistral$\to$Mistral achieves 95.5\%, still 1.2pp below the cross-model result.
 
-This finding has important implications:
+\paragraph{The Forced Abstraction Hypothesis} We hypothesize that representation incompatibility between heterogeneous models acts as beneficial regularization. When bridging within the same model (Llama$\to$Llama), the bridge can learn ``identity shortcuts''---attempting to reconstruct exact hidden states rather than extracting task-relevant features. This preserves noise and irrelevant information, leading to overfitting.
+
+When bridging across different models (Llama$\to$Mistral), such shortcuts are impossible because the representation spaces are fundamentally incompatible. The bridge is \emph{forced} to learn abstract, task-relevant features that can survive the cross-model translation. This aligns with our inverse token scaling finding (Section~\ref{sec:token_scaling}): compression to fewer tokens improves performance by discarding noise.
+
+\paragraph{Implications}
 \begin{enumerate}
-    \item \textbf{Heterogeneity helps}: Models trained on different data distributions encode complementary information. Cross-model transfer can access signals unavailable within a single model.
-    \item \textbf{Not just representation alignment}: If cross-model transfer merely aligned representations, same-model transfer should be optimal (no alignment needed). The opposite result suggests the bridge learns to extract and communicate genuinely novel information.
-    \item \textbf{Architectural diversity}: Different architectures (Llama's grouped-query attention vs.\ Mistral's sliding window) may capture different aspects of the input, enabling richer cross-model communication.
+    \item \textbf{Heterogeneity is a feature, not a bug}: The representation gap between models provides implicit regularization that improves generalization.
+    \item \textbf{Complementary knowledge}: Models trained on different data encode different ``perspectives'' on language. Cross-model transfer can access signals unavailable within a single model.
+    \item \textbf{Architectural diversity matters}: Llama's grouped-query attention and Mistral's sliding window attention capture different input aspects, enabling richer communication.
 \end{enumerate}
 
 \subsection{Inverse Token Scaling}
+\label{sec:token_scaling}
 
 We investigate how the number of soft tokens affects performance on Banking77, a challenging 77-class task.
 
