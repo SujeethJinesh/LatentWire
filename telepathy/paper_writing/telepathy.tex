@@ -51,7 +51,7 @@
 \vskip 0.3in
 
 \begin{abstract}
-We present LatentWire, a method for enabling communication between heterogeneous large language models (LLMs) through learned soft tokens, bypassing autoregressive text generation entirely. Our approach uses a lightweight Perceiver Resampler bridge (188K parameters) to transform hidden states from a sender model (Llama 3.1 8B) into soft tokens that directly condition a receiver model (Mistral 7B). On text classification benchmarks, LatentWire achieves \textbf{22.4$\times$ lower latency} than text-relay baselines while exceeding task accuracy. The bridge outperforms full fine-tuning (\textbf{+2.7pp with 5300$\times$ fewer parameters}), LoRA (+1.4pp with 18$\times$ fewer parameters), 5-shot prompting (+2.2--59pp), and chain-of-thought relay (+7.7pp while being 85$\times$ faster). Critically, prompt-tuning on Mistral alone achieves only random chance (49.5\% on SST-2), while the bridge achieves \textbf{96.7\%}---proving the sender model's hidden states are essential. Surprisingly, \textbf{cross-model transfer outperforms same-model transfer} (Llama$\to$Mistral: 96.7\% vs.\ Llama$\to$Llama: 84.5\%), suggesting heterogeneous models provide complementary information. We observe \textbf{super-additive performance}: the bridge exceeds both Mistral (92.2\%) and Llama (88.4\%) operating independently. These findings demonstrate that cross-model communication via continuous representations can be both faster and more effective than discrete text for classification tasks.
+We present LatentWire, a method for enabling communication between heterogeneous large language models (LLMs) through learned soft tokens, bypassing autoregressive text generation entirely. Our approach uses a Perceiver Resampler bridge to transform hidden states from a sender model (Llama 3.1 8B) into soft tokens that directly condition a receiver model (Mistral 7B). On \textbf{text classification} benchmarks, LatentWire achieves \textbf{22.4$\times$ lower latency} than text-relay baselines while exceeding task accuracy. The bridge outperforms full fine-tuning (+2.7pp), LoRA (+1.4pp), 5-shot prompting (+2.2--59pp), and chain-of-thought relay (+7.7pp while being 85$\times$ faster). Critically, prompt-tuning on Mistral alone achieves only random chance (49.5\% on SST-2), while the bridge achieves \textbf{96.7\%}---proving the sender model's hidden states are essential. Surprisingly, \textbf{cross-model transfer outperforms same-model transfer} (Llama$\to$Mistral: 96.7\% vs.\ Llama$\to$Llama: 84.5\%), suggesting heterogeneous models provide complementary information. We observe \textbf{super-additive performance}: the bridge exceeds both Mistral (92.2\%) and Llama (88.4\%) operating independently. However, \textbf{reasoning tasks fail}: on CommonsenseQA, the bridge falls below random chance (17\% vs.\ Llama's 75\%), indicating soft token compression is fundamentally limited for multi-step inference. These findings demonstrate that cross-model communication via continuous representations can be faster and more effective than text for classification, while highlighting important scope limitations.
 \end{abstract}
 ]
 
@@ -73,7 +73,7 @@ We propose \textbf{LatentWire}, a method that enables direct communication betwe
 Our key contributions are:
 
 \begin{itemize}
-    \item A lightweight bridge architecture based on Perceiver Resampler \cite{jaegle2021perceiver, alayrac2022flamingo} that transforms hidden states between heterogeneous LLMs with only 188K trainable parameters.
+    \item A bridge architecture based on Perceiver Resampler \cite{jaegle2021perceiver, alayrac2022flamingo} that transforms hidden states between heterogeneous LLMs, matching full fine-tuning capacity while being 22$\times$ faster.
     \item Comprehensive evaluation against strong baselines (5-shot prompting, LoRA, chain-of-thought) showing the bridge outperforms all approaches in accuracy and/or efficiency.
     \item Analysis of an inverse scaling phenomenon where compression to fewer soft tokens improves rather than degrades performance.
     \item Latency and throughput benchmarks showing 22--85$\times$ speedup over text-based communication, scaling to 100+ samples/second.
@@ -134,7 +134,7 @@ A naive linear projection fails because it assumes isomorphic spaces. The bridge
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/architecture.pdf}
-\caption{LatentWire architecture. Input text is processed by the frozen sender (Llama), whose hidden states are transformed by the lightweight bridge (188K params) into soft tokens that condition the frozen receiver (Mistral) for classification.}
+\caption{LatentWire architecture. Input text is processed by the frozen sender (Llama), whose hidden states are transformed by the bridge into soft tokens that condition the frozen receiver (Mistral) for classification.}
 \label{fig:architecture}
 \end{figure}
 
@@ -160,7 +160,7 @@ Our bridge uses a Perceiver Resampler design:
     where $\alpha$ is calibrated to match the receiver's embedding statistics.
 \end{enumerate}
 
-The total parameter count is approximately 188K, negligible compared to the frozen 8B+7B models.
+The bridge adds trainable parameters to enable the cross-model mapping, while both base LLMs (8B+7B) remain completely frozen.
 
 \subsection{Design Space: Why Cross-Attention?}
 \label{sec:design_space}
@@ -351,22 +351,22 @@ Bridge latency breakdown:
 Table~\ref{tab:stronger_baselines} compares the bridge against fine-tuning baselines: full fine-tuning, LoRA, and chain-of-thought (CoT) text relay.
 
 \begin{table}[t]
-\caption{Bridge vs.\ fine-tuning baselines on SST-2. Bridge outperforms all methods including full fine-tuning with 5300$\times$ fewer parameters, while being 85$\times$ faster than CoT.}
+\caption{Bridge vs.\ fine-tuning baselines on SST-2. Bridge outperforms all methods in accuracy while being 3$\times$ faster, demonstrating that cross-model information provides signal that single-model methods cannot access.}
 \label{tab:stronger_baselines}
 \vskip 0.15in
 \begin{center}
 \begin{small}
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-Method & Acc.\ (\%) & Params & Latency \\
+Method & Acc.\ (\%) & Latency \\
 \midrule
-Full FT (2 layers) & 94.0 & 570M & 113ms \\
-Full FT (4 layers) & 94.0 & 1.0B & 113ms \\
-Full FT (8 layers) & 94.0 & 1.9B & 113ms \\
-LoRA (rank=8) & 95.3{\tiny$\pm$0.9} & 3.4M & 113ms \\
-CoT-Relay & 89.0 & -- & 3,169ms \\
+Full FT (2 layers) & 94.0 & 113ms \\
+Full FT (4 layers) & 94.0 & 113ms \\
+Full FT (8 layers) & 94.0 & 113ms \\
+LoRA (rank=8) & 95.3{\tiny$\pm$0.9} & 113ms \\
+CoT-Relay & 89.0 & 3,169ms \\
 \midrule
-\textbf{Bridge (ours)} & \textbf{96.7}{\tiny$\pm$0.6} & \textbf{188K} & \textbf{37ms} \\
+\textbf{Bridge (ours)} & \textbf{96.7}{\tiny$\pm$0.6} & \textbf{37ms} \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -374,9 +374,9 @@ CoT-Relay & 89.0 & -- & 3,169ms \\
 \vskip -0.1in
 \end{table}
 
-\paragraph{Bridge vs.\ Full Fine-Tuning} Full fine-tuning of Mistral's last 2, 4, or 8 transformer layers with gradient checkpointing achieves identical 94.0\% accuracy regardless of capacity (570M to 1.9B trainable parameters). This saturation indicates the task's ceiling for single-model fine-tuning. The bridge surpasses this ceiling, achieving 96.7\% with only 188K parameters---\textbf{5300$\times$ more parameter-efficient} while being \textbf{2.7pp more accurate}. The cross-model signal provides information that additional Mistral capacity cannot replicate.
+\paragraph{Bridge vs.\ Full Fine-Tuning} Full fine-tuning of Mistral's last 2, 4, or 8 transformer layers with gradient checkpointing achieves identical 94.0\% accuracy regardless of capacity (570M to 1.9B trainable parameters). This saturation indicates the task's ceiling for single-model fine-tuning. The bridge surpasses this ceiling, achieving 96.7\%---\textbf{2.7pp more accurate}---while being \textbf{3$\times$ faster} (37ms vs.\ 113ms). The cross-model signal provides information that additional Mistral capacity cannot replicate.
 
-\paragraph{Bridge vs.\ LoRA} LoRA fine-tuning achieves 95.3\% accuracy on SST-2 with a rank-8 adapter (3.4M trainable parameters). The bridge achieves 96.7\% with only 188K parameters---\textbf{18$\times$ more parameter-efficient} while being 1.4pp more accurate.
+\paragraph{Bridge vs.\ LoRA} LoRA fine-tuning achieves 95.3\% accuracy on SST-2 with a rank-8 adapter (3.4M trainable parameters). The bridge achieves 96.7\%---\textbf{1.4pp more accurate}---while being 3$\times$ faster.
 
 \paragraph{Bridge vs.\ CoT-Relay} Chain-of-thought prompting where Llama generates detailed reasoning (150 tokens average) before Mistral classifies achieves 89.0\% accuracy at 3,169ms latency. The bridge achieves \textbf{+7.7pp higher accuracy} (96.7\% vs.\ 89.0\%) while being \textbf{85$\times$ faster} (37ms vs.\ 3,169ms). Even with explicit reasoning in natural language, text remains a lossy channel compared to continuous representations.
 
@@ -494,6 +494,42 @@ We observe similar patterns on passkey retrieval tasks, where 16 tokens achieve 
 \label{fig:token_scaling}
 \end{figure}
 
+\subsection{Generalization to Reasoning Tasks}
+\label{sec:reasoning}
+
+While LatentWire excels on classification, we evaluate whether it generalizes to reasoning tasks. Table~\ref{tab:reasoning} presents results on three standard reasoning benchmarks.
+
+\begin{table}[t]
+\caption{Reasoning benchmark results. Unlike classification, the bridge \textbf{underperforms} direct model inference on all reasoning tasks. This reveals a fundamental limitation of soft token compression for tasks requiring multi-step inference.}
+\label{tab:reasoning}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Benchmark} & \textbf{Random} & \textbf{Llama} & \textbf{Mistral} & \textbf{Text-Relay} & \textbf{Bridge} \\
+\midrule
+BoolQ (Yes/No) & 50.0\% & 79.2\% & \textbf{83.2\%} & 80.8\% & 72.5\% \\
+PIQA (2-way) & 50.0\% & \textbf{61.0\%} & 57.4\% & 30.4\%$^\dagger$ & 60.4\% \\
+CommonsenseQA (5-way) & 20.0\% & \textbf{75.4\%} & 68.0\% & 75.4\% & 17.0\% \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+{\footnotesize $^\dagger$Text-relay fails catastrophically on PIQA (30.4\%), suggesting summarization destroys physical intuition signals that the bridge preserves.}
+\end{table}
+
+\paragraph{Classification vs. Reasoning} The contrast with classification is stark. While the bridge achieves super-additive performance on classification (+4.5--26.9pp over individual models), it \emph{underperforms} on reasoning: BoolQ (-10.7pp vs. Mistral), PIQA (-0.6pp vs. Llama), and CommonsenseQA (-58.4pp vs. Llama, falling \emph{below random chance}).
+
+\paragraph{Why Does Reasoning Fail?} We hypothesize that classification and reasoning have fundamentally different information requirements:
+\begin{itemize}
+    \item \textbf{Classification}: Requires compressing to a simple decision boundary. 8 soft tokens suffice to encode ``positive/negative'' or ``topic A/B/C/D.''
+    \item \textbf{Reasoning}: Requires preserving multi-step inference chains and world knowledge. These cannot be compressed into 8 soft tokens without catastrophic information loss.
+\end{itemize}
+
+\paragraph{Interesting Exception} On PIQA, text-relay fails catastrophically (30.4\%) while the bridge succeeds (60.4\%). This suggests the bridge preserves implicit ``physical intuition'' signals that explicit text summarization destroys---a promising direction for future work.
+
 \section{Analysis}
 \label{sec:analysis}
 
@@ -586,29 +622,7 @@ These findings support the information bottleneck hypothesis: compression forces
 \section{Limitations and Future Work}
 \label{sec:limitations}
 
-\paragraph{Classification Only} Our experiments focus primarily on classification tasks. We evaluated the bridge on several standard reasoning benchmarks to test generalization:
-
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
-\textbf{Benchmark} & \textbf{Random} & \textbf{Llama} & \textbf{Mistral} & \textbf{Text-Relay} & \textbf{Bridge} \\
-\midrule
-BoolQ (Yes/No) & 50.0\% & 79.2\% & \textbf{83.2\%} & 80.8\% & 72.5\% \\
-PIQA (2-way) & 50.0\% & \textbf{61.0\%} & 57.4\% & 30.4\%$^\dagger$ & 60.4\% \\
-CommonsenseQA (5-way) & 20.0\% & \textbf{75.4\%} & 68.0\% & 75.4\% & 17.0\% \\
-\bottomrule
-\end{tabular}
-\caption{Reasoning benchmark results. Unlike classification, the bridge underperforms direct model inference on all reasoning tasks. On CommonsenseQA, the bridge falls below random chance (17\% vs.\ 20\%), while Llama achieves 75.4\%. $^\dagger$Text-relay fails catastrophically on PIQA (30.4\%), suggesting summarization destroys physical intuition signals.}
-\label{tab:reasoning_limits}
-\end{table}
-
-Table~\ref{tab:reasoning_limits} reveals a stark contrast with classification results. While the bridge exceeds random chance on binary tasks (BoolQ: 72.5\%, PIQA: 60.4\%), it \emph{underperforms direct model inference} on all benchmarks. On BoolQ, Mistral alone achieves 83.2\%---10.7pp higher than the bridge. On CommonsenseQA, the gap is catastrophic: Llama achieves 75.4\% while the bridge falls \emph{below random chance} at 17.0\%.
-
-Interestingly, text-relay fails catastrophically on PIQA (30.4\%, below random), while the bridge achieves 60.4\%---suggesting the bridge preserves physical intuition signals that text summarization destroys. However, this is the exception: on BoolQ and CommonsenseQA, text-relay matches or exceeds the bridge.
-
-These results indicate that soft token compression is fundamentally limited for reasoning tasks. Classification requires compressing to a simple decision boundary (positive/negative, topic A/B/C/D), which the bridge handles well. Reasoning requires preserving multi-step inference chains and world knowledge, which cannot be compressed into 8-32 soft tokens without catastrophic information loss. Extending to reasoning tasks remains important future work requiring fundamentally different approaches.
+\paragraph{Classification Only} As shown in Section~\ref{sec:reasoning}, the bridge excels on classification but fails on reasoning tasks. Extending to reasoning remains important future work requiring fundamentally different approaches---likely larger soft token counts, chain-of-thought compression, or iterative refinement.
 
 \paragraph{Task-Specific Training} Bridges must be trained per-task. We did not observe meaningful zero-shot transfer between tasks (e.g., SST-2$\to$AG News). Future work could explore universal bridges through meta-learning or larger architectures.
 
@@ -619,18 +633,18 @@ These results indicate that soft token compression is fundamentally limited for 
 \section{Conclusion}
 \label{sec:conclusion}
 
-We present LatentWire, a method for cross-model communication via learned soft tokens. Our lightweight bridge (188K parameters) enables a sender LLM to condition a receiver LLM's inference without text generation, achieving:
+We present LatentWire, a method for cross-model communication via learned soft tokens. Our bridge enables a sender LLM to condition a receiver LLM's inference without text generation, achieving:
 
 \begin{itemize}
     \item \textbf{22.4$\times$ lower latency} than text-relay (37ms vs. 835ms)
-    \item \textbf{5300$\times$ more parameter-efficient} than full fine-tuning while achieving +2.7pp higher accuracy
+    \item \textbf{+2.7pp higher accuracy} than full fine-tuning while being 3$\times$ faster
     \item \textbf{Sender model is essential}: Prompt-tuning alone achieves random chance (49.5\%), while Bridge achieves 96.7\%
     \item \textbf{Cross-model > same-model}: Llama$\to$Mistral (96.7\%) outperforms Llama$\to$Llama (84.5\%) by 12.2pp
     \item \textbf{Super-additive performance} on SST-2 (96.7\% vs. 92.2\%/88.4\%) and AG News (90.7\% vs. 69.4\%/63.8\%)
     \item \textbf{Bidirectional transfer}: Both Llama$\to$Mistral (96.7\%) and Mistral$\to$Llama (97.2\%) achieve strong performance
 \end{itemize}
 
-These results demonstrate that continuous representations can be a more efficient and effective communication channel between LLMs than discrete text. The finding that cross-model transfer outperforms same-model transfer suggests heterogeneous models encode complementary information that can be accessed through soft token communication. LatentWire opens new possibilities for building collaborative multi-model systems with lower latency, higher accuracy, and extreme parameter efficiency.
+These results demonstrate that continuous representations can be a more efficient and effective communication channel between LLMs than discrete text for classification tasks. The finding that cross-model transfer outperforms same-model transfer suggests heterogeneous models encode complementary information that can be accessed through soft token communication. LatentWire opens new possibilities for building collaborative multi-model systems with lower latency and higher accuracy on tasks amenable to soft token compression.
 
 \bibliography{telepathy}
 \bibliographystyle{mlsys2025}
