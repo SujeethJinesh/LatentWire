@@ -1,8 +1,8 @@
-// Telepathy Architecture Diagram
+// LatentWire Architecture Diagram
 // Compile: dot -Tpdf architecture.dot -o architecture.pdf
 // Or: dot -Tsvg architecture.dot -o architecture.svg
 
-digraph Telepathy {
+digraph LatentWire {
     rankdir=LR;
     node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11];
     edge [fontname="Helvetica", fontsize=10];

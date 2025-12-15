@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate figures for Telepathy paper.
+Generate figures for LatentWire paper.
 
 Usage:
     cd telepathy/paper_writing/figures
@@ -373,7 +373,7 @@ def fig7_cross_vs_same_model():
 
 
 if __name__ == '__main__':
-    print("Generating figures for Telepathy paper...")
+    print("Generating figures for LatentWire paper...")
     print("=" * 50)
 
     fig1_results_comparison()

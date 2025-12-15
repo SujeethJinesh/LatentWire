@@ -1,4 +1,4 @@
-%%%%%%%% Telepathy: Cross-Model Communication via Soft Tokens %%%%%%%%%%%%%%%%%
+%%%%%%%% LatentWire: Cross-Model Communication via Soft Tokens %%%%%%%%%%%%%%%%%
 
 \documentclass{article}
 
@@ -25,12 +25,12 @@
 
 % The \mlsystitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
-\mlsystitlerunning{Telepathy: Cross-Model Communication via Soft Tokens}
+\mlsystitlerunning{LatentWire: Cross-Model Communication via Soft Tokens}
 
 \begin{document}
 
 \twocolumn[
-\mlsystitle{Telepathy: Cross-Model Communication via Soft Tokens}
+\mlsystitle{LatentWire: Cross-Model Communication via Soft Tokens}
 
 % It is OKAY to include author information, even for blind
 % submissions: the style file will automatically remove it for you
@@ -51,7 +51,7 @@
 \vskip 0.3in
 
 \begin{abstract}
-We present Telepathy, a method for enabling communication between heterogeneous large language models (LLMs) through learned soft tokens, bypassing autoregressive text generation entirely. Our approach uses a lightweight Perceiver Resampler bridge (188K parameters) to transform hidden states from a sender model (Llama 3.1 8B) into soft tokens that directly condition a receiver model (Mistral 7B). On text classification benchmarks, Telepathy achieves \textbf{22.4$\times$ lower latency} than text-relay baselines while exceeding task accuracy. The bridge outperforms full fine-tuning (\textbf{+2.7pp with 5300$\times$ fewer parameters}), LoRA (+1.4pp with 18$\times$ fewer parameters), 5-shot prompting (+2.2--59pp), and chain-of-thought relay (+7.7pp while being 85$\times$ faster). Critically, prompt-tuning on Mistral alone achieves only random chance (49.5\% on SST-2), while the bridge achieves \textbf{96.7\%}---proving the sender model's hidden states are essential. Surprisingly, \textbf{cross-model transfer outperforms same-model transfer} (Llama$\to$Mistral: 96.7\% vs.\ Llama$\to$Llama: 84.5\%), suggesting heterogeneous models provide complementary information. We observe \textbf{super-additive performance}: the bridge exceeds both Mistral (92.2\%) and Llama (88.4\%) operating independently. These findings demonstrate that cross-model communication via continuous representations can be both faster and more effective than discrete text for classification tasks.
+We present LatentWire, a method for enabling communication between heterogeneous large language models (LLMs) through learned soft tokens, bypassing autoregressive text generation entirely. Our approach uses a lightweight Perceiver Resampler bridge (188K parameters) to transform hidden states from a sender model (Llama 3.1 8B) into soft tokens that directly condition a receiver model (Mistral 7B). On text classification benchmarks, LatentWire achieves \textbf{22.4$\times$ lower latency} than text-relay baselines while exceeding task accuracy. The bridge outperforms full fine-tuning (\textbf{+2.7pp with 5300$\times$ fewer parameters}), LoRA (+1.4pp with 18$\times$ fewer parameters), 5-shot prompting (+2.2--59pp), and chain-of-thought relay (+7.7pp while being 85$\times$ faster). Critically, prompt-tuning on Mistral alone achieves only random chance (49.5\% on SST-2), while the bridge achieves \textbf{96.7\%}---proving the sender model's hidden states are essential. Surprisingly, \textbf{cross-model transfer outperforms same-model transfer} (Llama$\to$Mistral: 96.7\% vs.\ Llama$\to$Llama: 84.5\%), suggesting heterogeneous models provide complementary information. We observe \textbf{super-additive performance}: the bridge exceeds both Mistral (92.2\%) and Llama (88.4\%) operating independently. These findings demonstrate that cross-model communication via continuous representations can be both faster and more effective than discrete text for classification tasks.
 \end{abstract}
 ]
 
@@ -62,7 +62,7 @@ We present Telepathy, a method for enabling communication between heterogeneous 
 
 Large language models (LLMs) have emerged as powerful tools for natural language understanding and generation \cite{vaswani2017attention, touvron2023llama, jiang2023mistral}. However, the dominant paradigm for combining multiple LLMs involves sequential text generation: one model produces text that another model consumes. This approach incurs substantial latency due to autoregressive decoding and may lose information through the discretization bottleneck of natural language.
 
-We propose \textbf{Telepathy}, a method that enables direct communication between heterogeneous LLMs through learned soft tokens. Rather than having a sender model generate text for a receiver model to process, Telepathy transforms the sender's internal representations into a small set of continuous embeddings (soft tokens) that directly condition the receiver model's inference. This approach:
+We propose \textbf{LatentWire}, a method that enables direct communication between heterogeneous LLMs through learned soft tokens. Rather than having a sender model generate text for a receiver model to process, LatentWire transforms the sender's internal representations into a small set of continuous embeddings (soft tokens) that directly condition the receiver model's inference. This approach:
 
 \begin{enumerate}
     \item \textbf{Eliminates autoregressive generation latency}: The sender model only performs a single forward pass, reducing end-to-end latency by over 20$\times$ compared to text-relay approaches.
@@ -95,7 +95,7 @@ BLIP-2 \cite{li2023blip2} introduced the Q-Former, a lightweight transformer tha
 Model stitching \cite{bansal2021revisiting, pan2023stitchable} connects layers from different networks using learned transformations. Recent work shows that affine mappings between residual streams can transfer features across models \cite{modelstitching2024}, and StitchLLM \cite{stitchllm2025} introduces stitching layers for adaptive model composition. Cross-LoRA \cite{crosslora2024} enables data-free transfer of LoRA adapters between heterogeneous LLMs. PromptBridge \cite{promptbridge2024} addresses prompt transferability across models. Our approach differs by enabling runtime communication through soft tokens rather than offline weight transfer.
 
 \paragraph{Multi-Agent LLM Systems}
-Recent work on multi-agent systems \cite{multiagent2025survey, wu2023autogen} explores collaboration between multiple LLMs through natural language communication. While effective, text-based communication incurs latency from autoregressive generation. Telepathy provides a faster alternative through continuous representations.
+Recent work on multi-agent systems \cite{multiagent2025survey, wu2023autogen} explores collaboration between multiple LLMs through natural language communication. While effective, text-based communication incurs latency from autoregressive generation. LatentWire provides a faster alternative through continuous representations.
 
 \paragraph{Prompt Compression}
 Methods like LLMLingua \cite{jiang2023llmlingua} compress prompts by removing tokens while preserving task performance. Soft prompt methods like ICAE \cite{ge2024incontext} and 500xCompressor \cite{li2024500x} learn to compress context into dense embeddings. Recent work \cite{xu2024soft} shows soft prompts can recover compressed LLM performance and transfer across models. Our work focuses on cross-model communication rather than single-model compression.
@@ -134,7 +134,7 @@ A naive linear projection fails because it assumes isomorphic spaces. The bridge
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/architecture.pdf}
-\caption{Telepathy architecture. Input text is processed by the frozen sender (Llama), whose hidden states are transformed by the lightweight bridge (188K params) into soft tokens that condition the frozen receiver (Mistral) for classification.}
+\caption{LatentWire architecture. Input text is processed by the frozen sender (Llama), whose hidden states are transformed by the lightweight bridge (188K params) into soft tokens that condition the frozen receiver (Mistral) for classification.}
 \label{fig:architecture}
 \end{figure}
 
@@ -299,7 +299,7 @@ Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 
 \paragraph{Super-Additive Performance} On SST-2 and AG News, the bridge exceeds both individual model baselines. On SST-2, the bridge achieves 96.7\% vs. Mistral's 92.2\% (+4.5pp) and Llama's 88.4\% (+8.3pp). On AG News, the bridge reaches 90.7\% vs. Mistral's 69.4\% (+21.3pp) and Llama's 63.8\% (+26.9pp). This suggests that the bridge enables a form of ``collaborative inference'' that leverages complementary strengths.
 
-\paragraph{Bridge vs. Few-Shot Prompting} A key question is whether the bridge merely provides implicit few-shot learning through training. Table~\ref{tab:main_results} shows the bridge outperforms 5-shot prompting on all datasets: +2.2pp on SST-2 (96.7\% vs.\ 94.5\%), +10.4pp on AG News (90.7\% vs.\ 80.3\%), and \textbf{+59.3pp on TREC} (95.3\% vs.\ 36.0\%). The TREC result is particularly striking: while few-shot prompting barely improves over zero-shot (32-36\% vs.\ 43-54\%), the bridge achieves 95.3\%---demonstrating that the bridge captures task-relevant signals that few-shot examples cannot provide.
+\paragraph{Bridge vs. Few-Shot Prompting} A key question is whether the bridge merely provides implicit few-shot learning through training. Table~\ref{tab:main_results} shows the bridge outperforms 5-shot prompting on SST-2 (+2.2pp: 96.7\% vs.\ 94.5\%) and AG News (+10.4pp: 90.7\% vs.\ 80.3\%). On AG News, 5-shot actually \emph{underperforms} zero-shot for Llama (62.0\% vs.\ 63.8\%), while the bridge achieves 90.7\%---demonstrating that the bridge captures task-relevant signals that few-shot examples cannot provide.
 
 \paragraph{Bridge vs. Text-Relay} The bridge outperforms text-relay by large margins: +25.7pp on SST-2, +26.2pp on AG News, +37.3pp on TREC, and +20.5pp on Banking77. Text-relay catastrophically fails on Banking77 (1.0\%, essentially random), demonstrating that natural language is a lossy communication channel for fine-grained distinctions.
 
@@ -521,7 +521,7 @@ On simpler tasks (SST-2, AG News), text-relay still loses 20+pp compared to the 
 
 \subsection{Comparison with Prompt Compression}
 
-Unlike prompt compression methods that operate within a single model, Telepathy transfers information across model boundaries. This enables:
+Unlike prompt compression methods that operate within a single model, LatentWire transfers information across model boundaries. This enables:
 
 \begin{itemize}
     \item \textbf{Heterogeneous model collaboration}: Different architectures (Llama, Mistral) can communicate.
@@ -618,7 +618,7 @@ Binary reasoning tasks show promising transfer: BoolQ (Yes/No reading comprehens
 \section{Conclusion}
 \label{sec:conclusion}
 
-We present Telepathy, a method for cross-model communication via learned soft tokens. Our lightweight bridge (188K parameters) enables a sender LLM to condition a receiver LLM's inference without text generation, achieving:
+We present LatentWire, a method for cross-model communication via learned soft tokens. Our lightweight bridge (188K parameters) enables a sender LLM to condition a receiver LLM's inference without text generation, achieving:
 
 \begin{itemize}
     \item \textbf{22.4$\times$ lower latency} than text-relay (37ms vs. 835ms)
@@ -629,7 +629,7 @@ We present Telepathy, a method for cross-model communication via learned soft to
     \item \textbf{Bidirectional transfer}: Both Llama$\to$Mistral (96.7\%) and Mistral$\to$Llama (97.2\%) achieve strong performance
 \end{itemize}
 
-These results demonstrate that continuous representations can be a more efficient and effective communication channel between LLMs than discrete text. The finding that cross-model transfer outperforms same-model transfer suggests heterogeneous models encode complementary information that can be accessed through soft token communication. Telepathy opens new possibilities for building collaborative multi-model systems with lower latency, higher accuracy, and extreme parameter efficiency.
+These results demonstrate that continuous representations can be a more efficient and effective communication channel between LLMs than discrete text. The finding that cross-model transfer outperforms same-model transfer suggests heterogeneous models encode complementary information that can be accessed through soft token communication. LatentWire opens new possibilities for building collaborative multi-model systems with lower latency, higher accuracy, and extreme parameter efficiency.
 
 \bibliography{telepathy}
 \bibliographystyle{mlsys2025}

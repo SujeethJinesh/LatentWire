@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Generate all figures for Telepathy paper
+# Generate all figures for LatentWire paper
 # Usage: bash generate_all.sh
 
 set -e
 
-echo "Generating Telepathy paper figures..."
+echo "Generating LatentWire paper figures..."
 echo ""
 
 # Generate matplotlib figures
