@@ -121,10 +121,10 @@ def fig2_latency_comparison():
     """
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3.5))
 
-    # Left: Total latency comparison
-    methods = ['Text-Relay', 'Mistral Direct', 'Bridge (Ours)']
-    latencies = [834.5, 98.8, 37.3]
-    colors = [COLORS['text_relay'], COLORS['mistral'], COLORS['bridge']]
+    # Left: Total latency comparison (Bridge vs Text-Relay only - fair comparison)
+    methods = ['Text-Relay', 'Bridge (Ours)']
+    latencies = [834.5, 37.3]
+    colors = [COLORS['text_relay'], COLORS['bridge']]
 
     bars = ax1.barh(methods, latencies, color=colors, edgecolor='black', linewidth=0.5)
     ax1.set_xlabel('Latency (ms)')
@@ -133,8 +133,7 @@ def fig2_latency_comparison():
 
     # Add speedup annotations
     ax1.annotate('1.0×', xy=(834.5 + 10, 0), va='center', fontsize=9)
-    ax1.annotate('8.4×', xy=(98.8 + 10, 1), va='center', fontsize=9)
-    ax1.annotate('22.4×', xy=(37.3 + 10, 2), va='center', fontsize=9, fontweight='bold')
+    ax1.annotate('22×', xy=(37.3 + 10, 1), va='center', fontsize=9, fontweight='bold')
 
     # Right: Bridge breakdown
     components = ['Llama\nEncode', 'Bridge\nTransform', 'Mistral\nDecode']

@@ -37,8 +37,13 @@
 % package.
 
 \begin{mlsysauthorlist}
-\mlsysauthor{Anonymous Authors}{}
+\mlsysauthor{Sujeeth Jinesh}{stan}
+\mlsysauthor{Thierry Tambe}{stan}
 \end{mlsysauthorlist}
+
+\mlsysaffiliation{stan}{Stanford University, Stanford, CA, USA}
+
+\mlsyscorrespondingauthor{Sujeeth Jinesh}{sujinesh@stanford.edu}
 
 \mlsyskeywords{Large Language Models, Soft Prompts, Cross-Model Communication, Latency Optimization}
 
@@ -86,13 +91,13 @@ The Perceiver \cite{jaegle2021perceiver} introduced cross-attention to map arbit
 BLIP-2 \cite{li2023blip2} introduced the Q-Former, a lightweight transformer that bridges frozen image encoders and frozen LLMs through learned query tokens. Flamingo \cite{alayrac2022flamingo} similarly used a Perceiver Resampler to map visual features to soft prompts for LLM conditioning. Our work applies similar architectural principles to bridge two language models rather than vision and language modalities.
 
 \paragraph{Model Stitching and Knowledge Transfer}
-Model stitching \cite{bansal2021revisiting, pan2023stitchable} connects layers from different networks using learned transformations. Cross-LoRA \cite{crosslora2024} enables transferring LoRA adapters between heterogeneous models. Knowledge distillation \cite{hinton2015distilling, gu2024minillm} transfers capabilities from large to small models. Our approach differs by enabling runtime communication between models rather than offline knowledge transfer.
+Model stitching \cite{bansal2021revisiting, pan2023stitchable} connects layers from different networks using learned transformations. Recent work shows that affine mappings between residual streams can transfer features across models \cite{modelstitching2024}, and StitchLLM \cite{stitchllm2025} introduces stitching layers for adaptive model composition. Cross-LoRA \cite{crosslora2024} enables data-free transfer of LoRA adapters between heterogeneous LLMs. PromptBridge \cite{promptbridge2024} addresses prompt transferability across models. Our approach differs by enabling runtime communication through soft tokens rather than offline weight transfer.
 
 \paragraph{Multi-Agent LLM Systems}
 Recent work on multi-agent systems \cite{multiagent2025survey, wu2023autogen} explores collaboration between multiple LLMs through natural language communication. While effective, text-based communication incurs latency from autoregressive generation. Telepathy provides a faster alternative through continuous representations.
 
 \paragraph{Prompt Compression}
-Methods like LLMLingua \cite{jiang2023llmlingua} compress prompts by removing tokens while preserving task performance. Soft prompt methods like ICAE \cite{ge2024incontext} and 500xCompressor \cite{li2024500x} learn to compress context into dense embeddings. Our work focuses on cross-model transfer rather than single-model compression.
+Methods like LLMLingua \cite{jiang2023llmlingua} compress prompts by removing tokens while preserving task performance. Soft prompt methods like ICAE \cite{ge2024incontext} and 500xCompressor \cite{li2024500x} learn to compress context into dense embeddings. Recent work \cite{xu2024soft} shows soft prompts can recover compressed LLM performance and transfer across models. Our work focuses on cross-model communication rather than single-model compression.
 
 \section{Method}
 \label{sec:method}
@@ -205,8 +210,8 @@ Prompt-Tuning & 49.5{\tiny$\pm$0.0} & 19.8{\tiny$\pm$7.5} & 19.0{\tiny$\pm$5.0} 
 \midrule
 Llama 0-shot & 92.0 & 79.0 & 53.5 & 22.0 \\
 Mistral 0-shot & 88.5 & 79.0 & 43.0 & 19.5 \\
-Llama 5-shot & 94.3{\tiny$\pm$0.2} & 62.0{\tiny$\pm$3.6} & 32.0{\tiny$\pm$0.0} & -- \\
-Mistral 5-shot & 94.5{\tiny$\pm$1.1} & 80.3{\tiny$\pm$1.7} & 36.0{\tiny$\pm$0.0} & -- \\
+Llama 5-shot & 94.3{\tiny$\pm$0.2} & 62.0{\tiny$\pm$3.6} & --$^\dagger$ & -- \\
+Mistral 5-shot & 94.5{\tiny$\pm$1.1} & 80.3{\tiny$\pm$1.7} & --$^\dagger$ & -- \\
 Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 \midrule
 \textbf{Bridge (ours)} & \textbf{96.7}{\tiny$\pm$0.6} & \textbf{90.7}{\tiny$\pm$0.5} & \textbf{95.3}{\tiny$\pm$0.3} & \textbf{21.5} \\
@@ -214,6 +219,8 @@ Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 \end{tabular}
 \end{small}
 \end{center}
+\vskip -0.15in
+{\footnotesize $^\dagger$TREC few-shot omitted: cryptic labels (ABBR, ENTY, etc.) without explanations in few-shot prompts cause model confusion; 0-shot prompts include label descriptions.}
 \vskip -0.1in
 \end{table}
 
@@ -236,10 +243,10 @@ Text-Relay & 71.0 & 64.5 & 58.0 & 1.0 \\
 
 \subsection{Latency Analysis}
 
-Table \ref{tab:latency} presents latency measurements on an NVIDIA H100 GPU.
+Table \ref{tab:latency} presents latency measurements on an NVIDIA H100 GPU. The primary comparison is Bridge vs.\ Text-Relay, as both represent cross-model communication paradigms.
 
 \begin{table}[t]
-\caption{Latency comparison (ms) on H100 GPU. Bridge achieves 22.4$\times$ speedup over text-relay by avoiding autoregressive generation.}
+\caption{Latency comparison (ms) on H100 GPU. Bridge achieves 22$\times$ speedup over text-relay by avoiding autoregressive generation in the sender model.}
 \label{tab:latency}
 \vskip 0.15in
 \begin{center}
@@ -249,7 +256,6 @@ Table \ref{tab:latency} presents latency measurements on an NVIDIA H100 GPU.
 Method & Latency (ms) & Speedup \\
 \midrule
 Text-Relay & 834.5 & 1.0$\times$ \\
-Mistral Direct & 98.8 & 8.4$\times$ \\
 \textbf{Bridge (ours)} & \textbf{37.3} & \textbf{22.4$\times$} \\
 \bottomrule
 \end{tabular}
@@ -258,13 +264,13 @@ Mistral Direct & 98.8 & 8.4$\times$ \\
 \vskip -0.1in
 \end{table}
 
-The bridge is 22.4$\times$ faster than text-relay and 2.6$\times$ faster than direct Mistral inference. The speedup comes from eliminating autoregressive generation in the sender (Llama generate: 745ms vs. Llama encode: 17ms). Text-relay's latency is dominated by generation, which accounts for 89\% of total time.
+The bridge is 22$\times$ faster than text-relay because it eliminates autoregressive generation in the sender model. Text-relay requires Llama to generate $\sim$50 tokens autoregressively (745ms), while the bridge only requires a single forward pass to extract hidden states (17ms). Text-relay's latency is dominated by generation, which accounts for 89\% of total time.
 
 Bridge latency breakdown:
 \begin{itemize}
-    \item Llama encode: 16.9ms (45\%)
-    \item Bridge transform: 1.2ms (3\%)
-    \item Mistral decode: 19.3ms (52\%)
+    \item Llama encode: 16.9ms (45\%)---single forward pass
+    \item Bridge transform: 1.2ms (3\%)---cross-attention over hidden states
+    \item Mistral forward: 19.3ms (52\%)---soft token conditioning
 \end{itemize}
 
 \noindent Figure~\ref{fig:latency} visualizes the latency comparison and breakdown.
@@ -272,7 +278,7 @@ Bridge latency breakdown:
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/latency_comparison.pdf}
-\caption{Latency analysis. \textbf{Left:} Total inference time showing 22.4$\times$ speedup over text-relay. \textbf{Right:} Bridge latency breakdown---the bridge transform itself takes only 1.2ms (3\%).}
+\caption{Latency analysis. \textbf{Left:} Total inference time showing 22$\times$ speedup over text-relay by eliminating autoregressive generation. \textbf{Right:} Bridge latency breakdown---the bridge transform itself takes only 1.2ms (3\%).}
 \label{fig:latency}
 \end{figure}
 
@@ -465,7 +471,7 @@ These findings support the information bottleneck hypothesis: compression forces
 \section{Limitations and Future Work}
 \label{sec:limitations}
 
-\paragraph{Classification Only} Our experiments focus exclusively on classification tasks. We evaluated the bridge on GSM8K math reasoning, where Llama and Mistral achieve 19.5\% and 18.5\% respectively with direct prompting. The bridge achieved only 1.5\%---a complete failure. The bridge generates incoherent solutions unrelated to the input problems, suggesting that reasoning transfer requires fundamentally different approaches than classification signal transfer. Extending to generation and reasoning tasks remains important future work.
+\paragraph{Classification Only} Our experiments focus exclusively on classification tasks. We conducted a preliminary evaluation on GSM8K math reasoning to test generalization beyond classification. While Llama 3.1 8B achieves 84.5\% on GSM8K with standard 8-shot chain-of-thought evaluation \cite{llama3}, the bridge achieved only 1.5\%---generating incoherent solutions unrelated to the input problems. This complete failure suggests that reasoning transfer requires fundamentally different approaches than classification signal transfer, likely because multi-step reasoning cannot be compressed into a fixed-length soft token representation the way classification signals can. Extending to generation and reasoning tasks remains important future work.
 
 \paragraph{Task-Specific Training} Bridges must be trained per-task. We did not observe meaningful zero-shot transfer between tasks (e.g., SST-2$\to$AG News). Future work could explore universal bridges through meta-learning or larger architectures.
 
