@@ -670,7 +670,7 @@ def main():
 
         # 1. BRIDGE
         print("\n[1/6] Training BRIDGE...")
-        bridge = UnifiedBridge(sender_dim, receiver_dim, args.soft_tokens).to(device)
+        bridge = UnifiedBridge(sender_dim, receiver_dim, args.soft_tokens).to(device=device, dtype=torch.bfloat16)
         train_info = train_bridge(
             bridge, sender, receiver, receiver_tok,
             train_ds, dataset_name, device,
@@ -689,7 +689,7 @@ def main():
 
         # 2. PROMPT-TUNING
         print("\n[2/6] Training PROMPT-TUNING (no sender)...")
-        prompt_module = SoftPromptTuning(args.soft_tokens, receiver_dim).to(device)
+        prompt_module = SoftPromptTuning(args.soft_tokens, receiver_dim).to(device=device, dtype=torch.bfloat16)
         train_info = train_prompt_tuning(
             prompt_module, receiver, receiver_tok,
             train_ds, dataset_name, device,
