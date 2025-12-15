@@ -110,9 +110,9 @@ def load_benchmark(name):
     config = BENCHMARK_CONFIGS[name]
 
     if config["hf_config"]:
-        dataset = load_dataset(config["hf_path"], config["hf_config"])
+        dataset = load_dataset(config["hf_path"], config["hf_config"], trust_remote_code=True)
     else:
-        dataset = load_dataset(config["hf_path"])
+        dataset = load_dataset(config["hf_path"], trust_remote_code=True)
 
     return dataset[config["eval_split"]], config
 
@@ -418,9 +418,9 @@ def main():
 
             # Use train split for training if available
             if config["hf_config"]:
-                train_dataset = load_dataset(config["hf_path"], config["hf_config"])
+                train_dataset = load_dataset(config["hf_path"], config["hf_config"], trust_remote_code=True)
             else:
-                train_dataset = load_dataset(config["hf_path"])
+                train_dataset = load_dataset(config["hf_path"], trust_remote_code=True)
 
             train_data = train_dataset.get("train", eval_data)
 
