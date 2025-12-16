@@ -160,13 +160,13 @@ echo ""
     echo ""
 
     # Create summary script inline to avoid new file creation
-    python - <<'SUMMARY_SCRIPT'
+    python - "$OUTPUT_DIR" <<'SUMMARY_SCRIPT'
 import json
 import numpy as np
 from pathlib import Path
 import sys
 
-output_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("$OUTPUT_DIR")
+output_dir = Path(sys.argv[1])
 
 # Collect results from all seeds
 seed_dirs = [
@@ -242,7 +242,7 @@ print()
 print("=" * 100)
 print(f"Summary saved to: {summary_file}")
 print("=" * 100)
-SUMMARY_SCRIPT "$OUTPUT_DIR"
+SUMMARY_SCRIPT
 
     echo ""
     echo "Phase 4 complete! Statistical summary saved."
