@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Unified Comparison Experiment Script
+Unified Comparison Experiment Script with Multi-Seed Support
 
 Runs ALL baselines needed for paper in ONE script:
 1. Bridge (Llama→Mistral) - Main method
@@ -9,10 +9,22 @@ Runs ALL baselines needed for paper in ONE script:
 4. Few-shot Prompting (5-shot) - In-context learning baseline
 5. Zero-shot baselines (Llama, Mistral direct)
 
-Output: Single JSON with all results for easy comparison
+Features:
+- Multi-seed experiments with automatic aggregation (mean, std, min, max)
+- Backward compatible with single-seed mode
+- Saves both per-seed and aggregated results to JSON
+
+Output: JSON files with per-seed results and aggregated statistics
 
 Usage:
+    # Multi-seed mode (default: seeds=[42, 123, 456])
     python telepathy/run_unified_comparison.py --datasets sst2 agnews trec --output_dir runs/unified
+
+    # Custom seeds
+    python telepathy/run_unified_comparison.py --seeds 42 100 200 --datasets sst2
+
+    # Single-seed mode (legacy)
+    python telepathy/run_unified_comparison.py --seed 42 --datasets sst2
 """
 
 import os
@@ -680,11 +692,27 @@ def main():
     parser.add_argument("--train_steps", type=int, default=2000)
     parser.add_argument("--eval_samples", type=int, default=200)
     parser.add_argument("--fewshot_shots", type=int, default=5)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=42, help="Single seed (legacy mode)")
+    parser.add_argument("--seeds", nargs="+", type=int, default=None,
+                        help="Multiple seeds for robust evaluation (default: [42, 123, 456])")
     parser.add_argument("--skip_text_relay", action="store_true", help="Skip slow text-relay baseline")
     args = parser.parse_args()
 
-    set_seed(args.seed)
+    # Handle seed/seeds argument compatibility
+    if args.seeds is None:
+        # If --seeds not specified, check if --seed was explicitly set
+        # Default to multi-seed unless user explicitly set --seed
+        import sys
+        if "--seed" in sys.argv:
+            # User explicitly set --seed, use single-seed mode
+            seeds = [args.seed]
+        else:
+            # Default multi-seed mode
+            seeds = [42, 123, 456]
+    else:
+        seeds = args.seeds
+
+    print(f"Running with seeds: {seeds}")
 
     os.makedirs(args.output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -693,6 +721,7 @@ def main():
     print("UNIFIED COMPARISON EXPERIMENT")
     print("=" * 70)
     print(f"Datasets: {args.datasets}")
+    print(f"Seeds: {seeds} ({len(seeds)} runs per experiment)")
     print(f"Soft tokens: {args.soft_tokens}")
     print(f"Train steps: {args.train_steps}")
     print(f"Eval samples: {args.eval_samples}")
@@ -718,8 +747,8 @@ def main():
     sender.eval()
     receiver.eval()
 
-    # Results container
-    all_results = {
+    # Results container for multi-seed runs
+    all_seeds_results = {
         "meta": {
             "timestamp": timestamp,
             "sender": args.sender,
@@ -727,9 +756,10 @@ def main():
             "soft_tokens": args.soft_tokens,
             "train_steps": args.train_steps,
             "eval_samples": args.eval_samples,
-            "seed": args.seed,
+            "seeds": seeds,
         },
-        "results": {},
+        "per_seed_results": {},  # Will store results for each seed
+        "aggregated_results": {},  # Will store mean and std across seeds
         "comparison_table": {},
     }
 
@@ -747,8 +777,15 @@ def main():
         train_ds = load_data(dataset_name, config["train_split"], max_samples=5000)
         eval_ds = load_data(dataset_name, config["eval_split"], max_samples=args.eval_samples)
 
-        dataset_results = {
-            "random_chance": config["random_chance"],
+        # Store results for each seed
+        all_seeds_results["per_seed_results"][dataset_name] = {}
+        seed_results_list = {
+            "bridge": [],
+            "prompt_tuning": [],
+            "text_relay": [],
+            "llama_zeroshot": [],
+            "mistral_zeroshot": [],
+            "mistral_fewshot": [],
         }
 
         # ADAPTIVE HYPERPARAMETERS for binary classification (SST-2 FIX)
@@ -766,122 +803,197 @@ def main():
             train_steps = args.train_steps
             source_layer = 16  # Default for multi-class
 
-        # 1. BRIDGE
-        print("\n[1/6] Training BRIDGE...")
-        bridge = UnifiedBridge(sender_dim, receiver_dim, soft_tokens).to(device=device, dtype=torch.bfloat16)
-        train_info = train_bridge(
-            bridge, sender, sender_tok, receiver, receiver_tok,
-            train_ds, dataset_name, device,
-            steps=train_steps, lr=train_lr, source_layer=source_layer
-        )
-        bridge_results = eval_bridge(
-            bridge, sender, sender_tok, receiver, receiver_tok,
-            eval_ds, dataset_name, device, source_layer=source_layer
-        )
-        bridge_results["train_info"] = train_info
-        dataset_results["bridge"] = bridge_results
-        print(f"  Bridge accuracy: {bridge_results['accuracy']:.1f}%")
+        # Run experiments for each seed
+        for seed_idx, seed in enumerate(seeds):
+            print(f"\n{'-'*70}")
+            print(f"SEED {seed} ({seed_idx + 1}/{len(seeds)})")
+            print(f"{'-'*70}")
 
-        # Save bridge checkpoint
-        torch.save(bridge.state_dict(), f"{args.output_dir}/bridge_{dataset_name}.pt")
+            set_seed(seed)
 
-        # 2. PROMPT-TUNING
-        print("\n[2/6] Training PROMPT-TUNING (no sender)...")
-        prompt_module = SoftPromptTuning(args.soft_tokens, receiver_dim).to(device=device, dtype=torch.bfloat16)
-        train_info = train_prompt_tuning(
-            prompt_module, receiver, receiver_tok,
-            train_ds, dataset_name, device,
-            steps=args.train_steps
-        )
-        pt_results = eval_prompt_tuning(
-            prompt_module, receiver, receiver_tok,
-            eval_ds, dataset_name, device
-        )
-        pt_results["train_info"] = train_info
-        dataset_results["prompt_tuning"] = pt_results
-        print(f"  Prompt-tuning accuracy: {pt_results['accuracy']:.1f}%")
+            dataset_results = {
+                "random_chance": config["random_chance"],
+            }
 
-        # 3. TEXT-RELAY
-        if not args.skip_text_relay:
-            print("\n[3/6] Evaluating TEXT-RELAY...")
-            relay_results = eval_text_relay(
-                sender, sender_tok, receiver, receiver_tok,
+            # 1. BRIDGE
+            print(f"\n[1/6] Training BRIDGE (seed={seed})...")
+            bridge = UnifiedBridge(sender_dim, receiver_dim, soft_tokens).to(device=device, dtype=torch.bfloat16)
+            train_info = train_bridge(
+                bridge, sender, sender_tok, receiver, receiver_tok,
+                train_ds, dataset_name, device,
+                steps=train_steps, lr=train_lr, source_layer=source_layer
+            )
+            bridge_results = eval_bridge(
+                bridge, sender, sender_tok, receiver, receiver_tok,
+                eval_ds, dataset_name, device, source_layer=source_layer
+            )
+            bridge_results["train_info"] = train_info
+            dataset_results["bridge"] = bridge_results
+            seed_results_list["bridge"].append(bridge_results)
+            print(f"  Bridge accuracy: {bridge_results['accuracy']:.1f}%")
+
+            # Save bridge checkpoint
+            torch.save(bridge.state_dict(), f"{args.output_dir}/bridge_{dataset_name}_seed{seed}.pt")
+
+            # 2. PROMPT-TUNING
+            print(f"\n[2/6] Training PROMPT-TUNING (no sender, seed={seed})...")
+            prompt_module = SoftPromptTuning(args.soft_tokens, receiver_dim).to(device=device, dtype=torch.bfloat16)
+            train_info = train_prompt_tuning(
+                prompt_module, receiver, receiver_tok,
+                train_ds, dataset_name, device,
+                steps=args.train_steps
+            )
+            pt_results = eval_prompt_tuning(
+                prompt_module, receiver, receiver_tok,
                 eval_ds, dataset_name, device
             )
-            dataset_results["text_relay"] = relay_results
-            print(f"  Text-relay accuracy: {relay_results['accuracy']:.1f}%, latency: {relay_results['latency_ms']:.0f}ms")
-        else:
-            dataset_results["text_relay"] = {"accuracy": None, "skipped": True}
+            pt_results["train_info"] = train_info
+            dataset_results["prompt_tuning"] = pt_results
+            seed_results_list["prompt_tuning"].append(pt_results)
+            print(f"  Prompt-tuning accuracy: {pt_results['accuracy']:.1f}%")
 
-        # 4. ZERO-SHOT LLAMA
-        print("\n[4/6] Evaluating LLAMA ZERO-SHOT...")
-        llama_zs = eval_zeroshot(sender, sender_tok, eval_ds, dataset_name, device, "Llama")
-        dataset_results["llama_zeroshot"] = llama_zs
-        print(f"  Llama zero-shot: {llama_zs['accuracy']:.1f}%")
+            # 3. TEXT-RELAY
+            if not args.skip_text_relay:
+                print(f"\n[3/6] Evaluating TEXT-RELAY (seed={seed})...")
+                relay_results = eval_text_relay(
+                    sender, sender_tok, receiver, receiver_tok,
+                    eval_ds, dataset_name, device
+                )
+                dataset_results["text_relay"] = relay_results
+                seed_results_list["text_relay"].append(relay_results)
+                print(f"  Text-relay accuracy: {relay_results['accuracy']:.1f}%, latency: {relay_results['latency_ms']:.0f}ms")
+            else:
+                dataset_results["text_relay"] = {"accuracy": None, "skipped": True}
 
-        # 5. ZERO-SHOT MISTRAL
-        print("\n[5/6] Evaluating MISTRAL ZERO-SHOT...")
-        mistral_zs = eval_zeroshot(receiver, receiver_tok, eval_ds, dataset_name, device, "Mistral")
-        dataset_results["mistral_zeroshot"] = mistral_zs
-        print(f"  Mistral zero-shot: {mistral_zs['accuracy']:.1f}%")
+            # 4. ZERO-SHOT LLAMA
+            print(f"\n[4/6] Evaluating LLAMA ZERO-SHOT (seed={seed})...")
+            llama_zs = eval_zeroshot(sender, sender_tok, eval_ds, dataset_name, device, "Llama")
+            dataset_results["llama_zeroshot"] = llama_zs
+            seed_results_list["llama_zeroshot"].append(llama_zs)
+            print(f"  Llama zero-shot: {llama_zs['accuracy']:.1f}%")
 
-        # 6. FEW-SHOT
-        print(f"\n[6/6] Evaluating {args.fewshot_shots}-SHOT...")
-        mistral_fs = eval_fewshot(
-            receiver, receiver_tok, train_ds, eval_ds,
-            dataset_name, device, args.fewshot_shots, "Mistral"
-        )
-        dataset_results["mistral_fewshot"] = mistral_fs
-        print(f"  Mistral {args.fewshot_shots}-shot: {mistral_fs['accuracy']:.1f}%")
+            # 5. ZERO-SHOT MISTRAL
+            print(f"\n[5/6] Evaluating MISTRAL ZERO-SHOT (seed={seed})...")
+            mistral_zs = eval_zeroshot(receiver, receiver_tok, eval_ds, dataset_name, device, "Mistral")
+            dataset_results["mistral_zeroshot"] = mistral_zs
+            seed_results_list["mistral_zeroshot"].append(mistral_zs)
+            print(f"  Mistral zero-shot: {mistral_zs['accuracy']:.1f}%")
 
-        all_results["results"][dataset_name] = dataset_results
+            # 6. FEW-SHOT
+            print(f"\n[6/6] Evaluating {args.fewshot_shots}-SHOT (seed={seed})...")
+            mistral_fs = eval_fewshot(
+                receiver, receiver_tok, train_ds, eval_ds,
+                dataset_name, device, args.fewshot_shots, "Mistral"
+            )
+            dataset_results["mistral_fewshot"] = mistral_fs
+            seed_results_list["mistral_fewshot"].append(mistral_fs)
+            print(f"  Mistral {args.fewshot_shots}-shot: {mistral_fs['accuracy']:.1f}%")
 
-        # Build comparison table for this dataset
-        all_results["comparison_table"][dataset_name] = {
+            # Save per-seed results
+            all_seeds_results["per_seed_results"][dataset_name][seed] = dataset_results
+
+        # Aggregate results across seeds
+        aggregated = {
+            "random_chance": config["random_chance"],
+        }
+
+        for method_name, method_results in seed_results_list.items():
+            if len(method_results) == 0 or (len(method_results) > 0 and method_results[0].get("skipped", False)):
+                aggregated[method_name] = {"accuracy": None, "skipped": True}
+                continue
+
+            # Extract accuracy values
+            accuracies = [r["accuracy"] for r in method_results]
+
+            # Compute statistics
+            aggregated[method_name] = {
+                "accuracy_mean": np.mean(accuracies),
+                "accuracy_std": np.std(accuracies, ddof=1) if len(accuracies) > 1 else 0.0,
+                "accuracy_min": np.min(accuracies),
+                "accuracy_max": np.max(accuracies),
+                "num_seeds": len(accuracies),
+            }
+
+            # Include latency if available
+            if "latency_ms" in method_results[0]:
+                latencies = [r["latency_ms"] for r in method_results]
+                aggregated[method_name]["latency_ms_mean"] = np.mean(latencies)
+                aggregated[method_name]["latency_ms_std"] = np.std(latencies, ddof=1) if len(latencies) > 1 else 0.0
+
+        all_seeds_results["aggregated_results"][dataset_name] = aggregated
+
+        # Build comparison table for this dataset (using aggregated results)
+        all_seeds_results["comparison_table"][dataset_name] = {
             "Method": ["Random", "Prompt-Tuning", "Llama 0-shot", "Mistral 0-shot",
                        f"Mistral {args.fewshot_shots}-shot", "Text-Relay", "Bridge (ours)"],
-            "Accuracy": [
+            "Accuracy (Mean)": [
                 config["random_chance"],
-                pt_results["accuracy"],
-                llama_zs["accuracy"],
-                mistral_zs["accuracy"],
-                mistral_fs["accuracy"],
-                dataset_results["text_relay"]["accuracy"] if not args.skip_text_relay else "N/A",
-                bridge_results["accuracy"],
+                aggregated["prompt_tuning"]["accuracy_mean"] if "accuracy_mean" in aggregated["prompt_tuning"] else "N/A",
+                aggregated["llama_zeroshot"]["accuracy_mean"] if "accuracy_mean" in aggregated["llama_zeroshot"] else "N/A",
+                aggregated["mistral_zeroshot"]["accuracy_mean"] if "accuracy_mean" in aggregated["mistral_zeroshot"] else "N/A",
+                aggregated["mistral_fewshot"]["accuracy_mean"] if "accuracy_mean" in aggregated["mistral_fewshot"] else "N/A",
+                aggregated["text_relay"]["accuracy_mean"] if "accuracy_mean" in aggregated.get("text_relay", {}) else "N/A",
+                aggregated["bridge"]["accuracy_mean"] if "accuracy_mean" in aggregated["bridge"] else "N/A",
+            ],
+            "Accuracy (Std)": [
+                0.0,
+                aggregated["prompt_tuning"]["accuracy_std"] if "accuracy_std" in aggregated["prompt_tuning"] else "N/A",
+                aggregated["llama_zeroshot"]["accuracy_std"] if "accuracy_std" in aggregated["llama_zeroshot"] else "N/A",
+                aggregated["mistral_zeroshot"]["accuracy_std"] if "accuracy_std" in aggregated["mistral_zeroshot"] else "N/A",
+                aggregated["mistral_fewshot"]["accuracy_std"] if "accuracy_std" in aggregated["mistral_fewshot"] else "N/A",
+                aggregated["text_relay"]["accuracy_std"] if "accuracy_std" in aggregated.get("text_relay", {}) else "N/A",
+                aggregated["bridge"]["accuracy_std"] if "accuracy_std" in aggregated["bridge"] else "N/A",
             ]
         }
 
-        # Summary for this dataset
-        print(f"\n{'='*50}")
-        print(f"SUMMARY: {dataset_name.upper()}")
-        print(f"{'='*50}")
+        # Summary for this dataset (aggregated across seeds)
+        print(f"\n{'='*70}")
+        print(f"AGGREGATED SUMMARY: {dataset_name.upper()} (across {len(seeds)} seeds)")
+        print(f"{'='*70}")
         print(f"  Random chance:    {config['random_chance']:.1f}%")
-        print(f"  Prompt-Tuning:    {pt_results['accuracy']:.1f}%")
-        print(f"  Llama 0-shot:     {llama_zs['accuracy']:.1f}%")
-        print(f"  Mistral 0-shot:   {mistral_zs['accuracy']:.1f}%")
-        print(f"  Mistral {args.fewshot_shots}-shot:    {mistral_fs['accuracy']:.1f}%")
-        if not args.skip_text_relay:
-            print(f"  Text-Relay:       {dataset_results['text_relay']['accuracy']:.1f}%")
-        print(f"  Bridge (ours):    {bridge_results['accuracy']:.1f}%")
-        print(f"  Bridge latency:   {bridge_results['latency_ms']:.1f}ms")
+        if "accuracy_mean" in aggregated["prompt_tuning"]:
+            print(f"  Prompt-Tuning:    {aggregated['prompt_tuning']['accuracy_mean']:.1f}% ± {aggregated['prompt_tuning']['accuracy_std']:.1f}")
+        if "accuracy_mean" in aggregated["llama_zeroshot"]:
+            print(f"  Llama 0-shot:     {aggregated['llama_zeroshot']['accuracy_mean']:.1f}% ± {aggregated['llama_zeroshot']['accuracy_std']:.1f}")
+        if "accuracy_mean" in aggregated["mistral_zeroshot"]:
+            print(f"  Mistral 0-shot:   {aggregated['mistral_zeroshot']['accuracy_mean']:.1f}% ± {aggregated['mistral_zeroshot']['accuracy_std']:.1f}")
+        if "accuracy_mean" in aggregated["mistral_fewshot"]:
+            print(f"  Mistral {args.fewshot_shots}-shot:    {aggregated['mistral_fewshot']['accuracy_mean']:.1f}% ± {aggregated['mistral_fewshot']['accuracy_std']:.1f}")
+        if not args.skip_text_relay and "accuracy_mean" in aggregated.get("text_relay", {}):
+            print(f"  Text-Relay:       {aggregated['text_relay']['accuracy_mean']:.1f}% ± {aggregated['text_relay']['accuracy_std']:.1f}")
+        if "accuracy_mean" in aggregated["bridge"]:
+            print(f"  Bridge (ours):    {aggregated['bridge']['accuracy_mean']:.1f}% ± {aggregated['bridge']['accuracy_std']:.1f}")
+            if "latency_ms_mean" in aggregated["bridge"]:
+                print(f"  Bridge latency:   {aggregated['bridge']['latency_ms_mean']:.1f}ms ± {aggregated['bridge']['latency_ms_std']:.1f}")
 
     # Save all results
     results_path = f"{args.output_dir}/unified_results_{timestamp}.json"
     with open(results_path, "w") as f:
-        json.dump(all_results, f, indent=2)
+        json.dump(all_seeds_results, f, indent=2)
+
+    # Also save a compact summary with just aggregated results
+    summary_path = f"{args.output_dir}/unified_summary_{timestamp}.json"
+    summary = {
+        "meta": all_seeds_results["meta"],
+        "aggregated_results": all_seeds_results["aggregated_results"],
+        "comparison_table": all_seeds_results["comparison_table"],
+    }
+    with open(summary_path, "w") as f:
+        json.dump(summary, f, indent=2)
 
     print(f"\n{'='*70}")
     print("EXPERIMENT COMPLETE")
     print(f"{'='*70}")
-    print(f"Results saved to: {results_path}")
+    print(f"Full results saved to: {results_path}")
+    print(f"Summary saved to: {summary_path}")
 
-    # Final summary table
+    # Final summary table with mean ± std
     print("\n" + "="*70)
-    print("FINAL COMPARISON TABLE")
+    print("FINAL COMPARISON TABLE (Mean ± Std across seeds)")
     print("="*70)
     print(f"{'Method':<25} ", end="")
     for ds in args.datasets:
-        print(f"{ds.upper():<12}", end="")
+        print(f"{ds.upper():<20}", end="")
     print()
     print("-"*70)
 
@@ -891,12 +1003,13 @@ def main():
     for method, name in zip(methods, method_names):
         print(f"{name:<25} ", end="")
         for ds in args.datasets:
-            result = all_results["results"][ds].get(method, {})
-            acc = result.get("accuracy")
-            if acc is not None:
-                print(f"{acc:<12.1f}", end="")
+            result = all_seeds_results["aggregated_results"][ds].get(method, {})
+            if "accuracy_mean" in result:
+                mean = result["accuracy_mean"]
+                std = result["accuracy_std"]
+                print(f"{mean:.1f}±{std:.1f}{'':>12}", end="")
             else:
-                print(f"{'N/A':<12}", end="")
+                print(f"{'N/A':<20}", end="")
         print()
 
 

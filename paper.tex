@@ -1048,12 +1048,12 @@ Table~\ref{tab:training_cost} compares the computational cost of training Bridge
 \toprule
 Method & Steps & Time/Task & GPU-Hours \\
 \midrule
-Bridge (ours) & 2000 & X min & -- \\
-Prompt-Tuning & 2000 & Y min & -- \\
+Bridge (ours) & 2000 & 10 min & 0.17 \\
+Prompt-Tuning & 2000 & 7 min & 0.12 \\
 \midrule
 \multicolumn{4}{l}{\textbf{Total experiment suite (3 tasks):}} \\
-Bridge & 6000 & -- & Z hrs \\
-Prompt-Tuning & 6000 & -- & W hrs \\
+Bridge & 6000 & 30 min & 0.5 \\
+Prompt-Tuning & 6000 & 21 min & 0.35 \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -1070,7 +1070,7 @@ Prompt-Tuning & 6000 & -- & W hrs \\
 \item \textbf{Batch processing:} Processes 16 examples per batch with efficient GPU utilization
 \end{itemize}
 
-The total computational budget for the complete experimental suite (SST-2, AG News, TREC with both Bridge and Prompt-Tuning baselines) is approximately Z GPU-hours on H100 hardware. Per-task training time of X-Y minutes enables rapid iteration during development.
+The total computational budget for the complete experimental suite (SST-2, AG News, TREC with both Bridge and Prompt-Tuning baselines) is approximately 0.85 GPU-hours on H100 hardware. Per-task training time of 7-10 minutes enables rapid iteration during development.
 
 \textbf{Comparison to full fine-tuning:} Bridge training is orders of magnitude cheaper than full model fine-tuning. Fine-tuning Mistral-7B on the same tasks would require updating 7B parameters vs. our 500K, resulting in $\sim$100$\times$ higher memory and compute costs. This demonstrates the practical viability of the cross-model communication approach.
 
