@@ -753,15 +753,18 @@ def main():
 
         # ADAPTIVE HYPERPARAMETERS for binary classification (SST-2 FIX)
         # Binary tasks need: fewer tokens (4 vs 8), higher LR (5e-4 vs 2e-4), more steps (4000 vs 2000)
+        # Also use layer 24 for sentiment (deeper layers capture abstract polarity better)
         if config["num_classes"] <= 2:
             soft_tokens = 4  # Fewer tokens for binary (inverse scaling)
             train_lr = 5e-4  # Higher LR for binary (weaker gradients need stronger updates)
             train_steps = min(args.train_steps * 2, 4000)  # More steps for binary
-            print(f"  [Binary task] Using adaptive hyperparams: tokens={soft_tokens}, lr={train_lr}, steps={train_steps}")
+            source_layer = 24  # Layer 24 captures sentiment better than 16 (+3pp in ablations)
+            print(f"  [Binary task] Using adaptive hyperparams: tokens={soft_tokens}, lr={train_lr}, steps={train_steps}, layer={source_layer}")
         else:
             soft_tokens = args.soft_tokens
             train_lr = 2e-4
             train_steps = args.train_steps
+            source_layer = 16  # Default for multi-class
 
         # 1. BRIDGE
         print("\n[1/6] Training BRIDGE...")
@@ -769,11 +772,11 @@ def main():
         train_info = train_bridge(
             bridge, sender, sender_tok, receiver, receiver_tok,
             train_ds, dataset_name, device,
-            steps=train_steps, lr=train_lr
+            steps=train_steps, lr=train_lr, source_layer=source_layer
         )
         bridge_results = eval_bridge(
             bridge, sender, sender_tok, receiver, receiver_tok,
-            eval_ds, dataset_name, device
+            eval_ds, dataset_name, device, source_layer=source_layer
         )
         bridge_results["train_info"] = train_info
         dataset_results["bridge"] = bridge_results
