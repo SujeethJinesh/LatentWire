@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "timestamp": "20251216_090224",
+    "sender": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "receiver": "mistralai/Mistral-7B-Instruct-v0.3",
+    "soft_tokens": 8,
+    "train_steps": 2000,
+    "eval_samples": 200,
+    "seed": 42
+  },
+  "results": {
+    "sst2": {
+      "random_chance": 50.0,
+      "bridge": {
+        "accuracy": 86.5,
+        "correct": 173,
+        "total": 200,
+        "latency_ms": 43.244959115982056,
+        "train_info": {
+          "final_loss": 0.15444732666015626
+        }
+      },
+      "prompt_tuning": {
+        "accuracy": 88.0,
+        "correct": 176,
+        "total": 200,
+        "train_info": {
+          "final_loss": 0.2213671875
+        }
+      },
+      "text_relay": {
+        "accuracy": 70.5,
+        "correct": 141,
+        "total": 200,
+        "latency_ms": 1180.6919872760773
+      },
+      "llama_zeroshot": {
+        "accuracy": 93.0,
+        "correct": 186,
+        "total": 200
+      },
+      "mistral_zeroshot": {
+        "accuracy": 91.5,
+        "correct": 183,
+        "total": 200
+      },
+      "mistral_fewshot": {
+        "accuracy": 96.5,
+        "correct": 193,
+        "total": 200
+      }
+    }
+  },
+  "comparison_table": {
+    "sst2": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy": [
+        50.0,
+        88.0,
+        93.0,
+        91.5,
+        96.5,
+        70.5,
+        86.5
+      ]
+    }
+  }
+}
