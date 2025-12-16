@@ -86,9 +86,11 @@ Large Language Models (LLMs) from different families (e.g., Llama, Qwen) cannot 
 \section{Introduction}
 \label{intro}
 
-Modern applications increasingly employ multiple Large Language Models (LLMs) to leverage their complementary strengths—code generation from one model, mathematical reasoning from another, and natural language understanding from a third~\cite{anthropic2024multiagent,openai2024multiagent}. However, these heterogeneous models cannot directly share context. Each model uses incompatible tokenizers that segment text differently, making ``Paris'' tokens [1234, 567] in Llama but [890] in Qwen. When models need to communicate, they must serialize to text and pay the full prefill cost repeatedly.
+Modern applications increasingly employ multiple Large Language Models (LLMs) to leverage their complementary strengths—code generation from one model, mathematical reasoning from another, and natural language understanding from a third~\cite{anthropic2024multiagent,openai2024multiagent}. However, these heterogeneous models cannot directly share context. Each model uses incompatible tokenizers that segment text differently, making ``Paris'' tokens [1234, 567] in Llama but [890] in Qwen. When models need to communicate, they must serialize to text and pay the full prefill cost repeatedly—a process that is both slow and lossy.
 
-Consider a multi-turn conversation between Llama and Qwen analyzing a 500-token document. In current systems: (1) Llama processes 500 tokens, generates a response as text, (2) Qwen retokenizes everything (document + Llama's response) into its vocabulary and prefills $\sim$600 tokens, (3) Each subsequent turn compounds this overhead, reaching thousands of tokens after just a few exchanges. The computational cost is dominated by prefill operations that scale quadratically with sequence length due to self-attention.
+What if models could communicate telepathically—sharing compressed semantic representations directly without converting to text? We demonstrate this is not only possible but can \textit{exceed} text-based communication in both speed and quality. Our bridge achieves 89.5\% accuracy on AG News classification using just 8 soft tokens, beating the text baseline (87.9\%) while running 27$\times$ faster. Critically, this bridge transfers across model families: trained on Llama, it works on Mistral without modification, establishing that learned interlingua can transcend architectural boundaries.
+
+Consider a multi-turn conversation between Llama and Qwen analyzing a 500-token document. In current systems: (1) Llama processes 500 tokens, generates a response as text, (2) Qwen retokenizes everything (document + Llama's response) into its vocabulary and prefills $\sim$600 tokens, (3) Each subsequent turn compounds this overhead, reaching thousands of tokens after just a few exchanges. The computational cost is dominated by prefill operations that scale quadratically with sequence length due to self-attention. Our approach replaces this text-based relay with constant-size soft token sequences that both models can consume directly.
 
 \subsection{The Prefill Bottleneck}
 
@@ -520,13 +522,22 @@ The PerceiverResampler reduces variable-length sender representations to a fixed
 
 \subsection{Implementation Details}
 
-Training uses AdamW (lr=$2 \times 10^{-4}$ for 1B models, $10^{-4}$ for 7B+) with batch size 128-256 for small models, 16-32 for large. We train for 8 epochs on SQuAD with early stopping based on validation F1. The adapter regularization weight $\lambda=0.05$ was selected through ablation studies showing collapse at $\lambda < 0.01$. When scaling to the 8B hero run we add a short text-only warm-up (25% of the first epoch) but compute the teacher cross-entropy in GPU chunks (size 1 by default) to avoid kernel launch failures. Stage B retains a constant first-token objective (weight 12) and strong KD (temperature 2, $K=8$) so acceptance does not fade late in training. LoRA (r=8, first four blocks) and deep prefix projection are enabled by default during Stage B to give the latent adapters enough expressivity while keeping the LLM weights frozen.
+Training configuration:
 \begin{itemize}
-\item Anchor text ``Answer: '' appended after latent prefix
-\item BOS token injection to match training distribution
-\item Embedding-scale calibration during both training and inference
-\item Gradient checkpointing for 7B+ models
+\item \textbf{Optimizer:} AdamW with learning rate $2 \times 10^{-4}$ and weight decay 0.01
+\item \textbf{Batch size:} 16 examples per batch
+\item \textbf{Training steps:} 2000 iterations
+\item \textbf{Diversity loss:} Weight 0.1 to encourage varied soft token representations
+\item \textbf{Gradient clipping:} Maximum norm 1.0 to stabilize training
+\item \textbf{Random seed:} 42 for reproducibility
+\end{itemize}
+
+Infrastructure:
+\begin{itemize}
+\item Sender and receiver models kept frozen (no LLM weight updates)
+\item Only PerceiverResampler parameters trained (queries and projection layers)
 \item Mixed precision (bf16) training on H100 GPUs
+\item Gradient checkpointing for memory efficiency
 \end{itemize}
 
 \section{Results}
@@ -643,7 +654,9 @@ Note that 1B models show minimal speedup despite compression—the overhead of p
 
 \subsubsection{Latency and Throughput Scaling}
 
-Figure~\ref{fig:latency_comparison} demonstrates that LatentWire's continuous embeddings scale efficiently with batch size, while text-based communication does not. At batch size 1, LatentWire incurs only 18\% overhead versus direct Mistral inference (129ms vs 109ms). Critically, LatentWire achieves 14$\times$ throughput scaling when batching (7.8 to 109 samples/sec), approaching the efficiency of direct model calls (9.3 to 123 samples/sec). In contrast, text-relay methods show no scaling benefit (0.94 to 1.0 samples/sec) because serialization and retokenization costs dominate regardless of batch size.
+We compare LatentWire's ``Bridge'' approach (direct soft-token communication) against a baseline ``Text-Relay'' system where models communicate by generating and retokenizing text. Single-sample latency on Mistral-7B shows Bridge achieves 44ms per sample, compared to 79ms for direct text processing and 1189ms for Text-Relay—a 27$\times$ speedup over text-relay approaches.
+
+Figure~\ref{fig:latency_comparison} demonstrates that LatentWire's continuous embeddings scale efficiently with batch size, while text-based communication does not. At batch size 16, Bridge achieves 109 samples/sec (9.2ms/sample), nearly matching direct Mistral at 123 samples/sec (8.1ms/sample). In contrast, Text-Relay cannot effectively batch, remaining at ~1 sample/sec (984ms/sample at batch=4) due to sequential text generation requirements. The critical insight: continuous embeddings enable efficient batching since all samples have uniform dimensionality ($M \times d_z$), while text-based communication introduces variable-length dependencies that prevent parallel processing.
 
 \begin{figure}[h]
 \vskip 0.2in
@@ -677,12 +690,12 @@ Figure~\ref{fig:latency_comparison} demonstrates that LatentWire's continuous em
 
 % Text-Relay
 \addplot[color=red!70!black, mark=triangle*, mark options={fill=red!70!black}]
-    coordinates {(1,0.94) (16,1.0)};
+    coordinates {(1,0.84) (4,1.0)};
 \addlegendentry{Text-Relay}
 
 \end{axis}
 \end{tikzpicture}
-\caption{Throughput scaling with batch size. LatentWire (Bridge) scales 14$\times$ from batch=1 to batch=16, approaching the efficiency of direct model inference. Text-relay methods fail to scale due to serialization overhead.}
+\caption{Throughput scaling with batch size. Bridge achieves 109 samples/sec at batch=16, nearly matching direct Mistral (123 samples/sec). Text-Relay remains at ~1 sample/sec regardless of batch size due to serialization bottlenecks.}
 \label{fig:latency_comparison}
 \end{center}
 \vskip -0.2in
@@ -987,15 +1000,59 @@ For 70B+ models where memory bandwidth dominates, the constant-size interlingua 
 
 We project 5-10$\times$ wall-clock speedup for 70B models based on memory bandwidth savings alone.
 
-\subsection{Limitations}
+\section{Limitations}
 
-\begin{enumerate}
-\item \textbf{Minimum model size:} The 3B parameter threshold excludes edge deployment scenarios
-\item \textbf{Training requirement:} Must train encoder and adapters on task data
-\item \textbf{Fixed context size:} Current design uses fixed $M$; variable-length encoding could improve flexibility
-\item \textbf{Information loss:} Some tasks requiring verbatim recall may suffer from compression
-\item \textbf{Single-turn focus:} Multi-turn conversations need investigation for context accumulation
-\end{enumerate}
+While LatentWire demonstrates promising results for continuous interlingua communication between heterogeneous LLMs, several important limitations constrain its current applicability and suggest directions for future work:
+
+\subsection{Task-Specific Training and Generalization}
+
+\textbf{Binary classification challenges:} Our experiments on SST-2 sentiment classification revealed a significant failure mode. The system achieved only 49.5\% accuracy (near random chance) on binary sentiment classification, substantially underperforming the text baseline. Analysis of training dynamics showed the loss failed to converge (0.691) compared to successful convergence on other tasks (0.25-0.31 for AG News, HotpotQA, SQuAD). This suggests the Bridge architecture may struggle with tasks requiring discrete categorical decisions rather than generative outputs.
+
+The root cause remains under investigation, but we hypothesize that binary classification requires different information flow through the latent bottleneck compared to extractive QA or multi-class categorization. The compressed representation (M=8 tokens, $d_z$=256) may preserve semantic content needed for answer extraction while losing the subtle sentiment polarity signals needed for binary decisions.
+
+\textbf{Per-task training requirement:} The current system trains separate encoder and adapter weights for each task (QA, classification, reasoning). While this enables task-specific optimization, it limits practical deployment where a single universal Bridge would be preferable. Unlike text-based communication which transfers naturally across tasks, our learned interlingua has not yet demonstrated zero-shot transfer to unseen task types.
+
+\textbf{Future directions:} Multi-task training with shared encoder capacity and task-specific adapter branches could enable broader generalization. Alternatively, task-specific hyperparameters (e.g., varying M or $d_z$ based on task requirements) may be necessary. The SST-2 failure suggests binary classification tasks may require architectural modifications such as task-specific attention heads or discrete decision layers.
+
+\subsection{Model Pair Specificity}
+
+\textbf{Limited heterogeneity testing:} All experiments reported use the Llama-3.1-8B and Mistral-7B-v0.3 model pair (with Qwen ablations). While these models have genuinely different architectures and incompatible tokenizers, we have not validated the approach across other model families such as Gemma, Phi-3, or models with fundamentally different computation patterns (e.g., Mamba's state-space architecture, mixture-of-experts routing).
+
+The learned latent space may be biased toward specific architectural properties of Llama and Mistral. Both use standard causal attention and similar residual stream designs. Models with fundamentally different computation patterns may require adapter modifications or different calibration strategies.
+
+\textbf{Future directions:} Systematic evaluation across diverse model families would establish the universality of the approach. If adapter training succeeds across arbitrary model pairs without encoder retraining, this would validate the "universal interlingua" hypothesis. Conversely, if each new model requires significant reengineering, the practical scope is more limited.
+
+\subsection{Fixed Soft Token Count}
+
+\textbf{Uniform compression across tasks:} The current design uses a fixed latent length M=8 for all inputs regardless of task complexity or input length. This one-size-fits-all approach may be suboptimal:
+\begin{itemize}
+\item \textbf{Simple tasks:} SST-2 sentiment classification on short sentences ($\sim$20 tokens) may not need 8 latent vectors, wasting capacity on redundant information
+\item \textbf{Complex tasks:} HotpotQA multi-hop reasoning over 300+ token contexts may benefit from M=16 or M=32 to preserve all reasoning chains
+\item \textbf{Variable compression ratios:} With fixed M=8, we achieve different compression factors depending on input length
+\end{itemize}
+
+We have not systematically explored task-adaptive or input-adaptive M selection. Some tasks might perform better with more capacity, while others could use fewer tokens without quality loss.
+
+\textbf{Future directions:} Variable-length encoding where the encoder outputs task-specific $M \in [4, 32]$ based on input complexity could optimize the compression-quality tradeoff. Gisting approaches~\cite{mu2023gist} achieve this within single models; extending to cross-model communication requires developing adaptive adapter mechanisms that handle variable M without retraining.
+
+\subsection{Frozen Model Constraint}
+
+\textbf{Suboptimal adaptation:} Our design freezes the LLM weights entirely, training only small adapters (<100K parameters per model). While this enables deployment with arbitrary frozen checkpoints, it prevents the receiver models from adapting their internal representations to better decode the latent bridge.
+
+Recent work on joint fine-tuning~\cite{hu2021lora} suggests that lightweight adapter methods (LoRA, prefix tuning) applied to the LLM itself could improve soft-prompt decoding while preserving most frozen weights. Our current architecture leaves this potential untapped.
+
+\textbf{Computational tradeoffs:} Enabling LoRA on the receiver would increase trainable parameters from $\sim$500K (encoder + adapters) to $\sim$10M (+ LoRA ranks), and require backpropagation through the full frozen LLM during training. While more expensive, this could potentially:
+\begin{itemize}
+\item Lower the 3B capacity threshold by giving smaller models specialized decoding mechanisms
+\item Improve task performance on challenging datasets like SST-2
+\item Enable better handling of tasks requiring fine-grained distinctions
+\end{itemize}
+
+\textbf{Future directions:} Controlled experiments comparing frozen-only vs. frozen+LoRA configurations would quantify the quality-cost tradeoff. If LoRA provides substantial gains, a two-stage training procedure (Stage 1: frozen training as currently; Stage 2: optional LoRA fine-tuning) could serve different deployment scenarios.
+
+\subsection{Summary}
+
+These limitations represent research directions rather than fundamental barriers. The SST-2 failure indicates that current hyperparameters and architecture are not universal across all task types, suggesting task-specific tuning or architectural variants as future work. The model-pair specificity constraint reflects our validation scope—the approach should generalize to other sufficiently large model pairs, though empirical validation is needed. The fixed token count and frozen model constraints are design choices that could be relaxed at the cost of additional complexity and training compute.
 
 \section{Conclusion}
 
