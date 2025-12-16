@@ -262,8 +262,9 @@ def train_bridge(
         B = len(texts)
 
         # Format sender prompts with task context (CRITICAL FIX)
+        # SST-2 prompt improved based on analysis - clearer directive format
         if dataset_name == "sst2":
-            src_texts = [f"Review: {t}\nSentiment (positive or negative):" for t in texts]
+            src_texts = [f"Review: {t}\n\nClassify sentiment as positive or negative:" for t in texts]
         elif dataset_name == "agnews":
             src_texts = [f"Article: {t[:256]}\nTopic:" for t in texts]
         else:
@@ -425,8 +426,9 @@ def eval_bridge(bridge, sender, sender_tok, receiver, receiver_tok, eval_ds, dat
             start = time.time()
 
             # Format sender prompt with task context
+            # SST-2 prompt improved - clearer directive format (matches train_bridge)
             if dataset_name == "sst2":
-                src_text = f"Review: {text}\nSentiment (positive or negative):"
+                src_text = f"Review: {text}\n\nClassify sentiment as positive or negative:"
             elif dataset_name == "agnews":
                 src_text = f"Article: {text[:256]}\nTopic:"
             else:
@@ -749,13 +751,25 @@ def main():
             "random_chance": config["random_chance"],
         }
 
+        # ADAPTIVE HYPERPARAMETERS for binary classification (SST-2 FIX)
+        # Binary tasks need: fewer tokens (4 vs 8), higher LR (5e-4 vs 2e-4), more steps (4000 vs 2000)
+        if config["num_classes"] <= 2:
+            soft_tokens = 4  # Fewer tokens for binary (inverse scaling)
+            train_lr = 5e-4  # Higher LR for binary (weaker gradients need stronger updates)
+            train_steps = min(args.train_steps * 2, 4000)  # More steps for binary
+            print(f"  [Binary task] Using adaptive hyperparams: tokens={soft_tokens}, lr={train_lr}, steps={train_steps}")
+        else:
+            soft_tokens = args.soft_tokens
+            train_lr = 2e-4
+            train_steps = args.train_steps
+
         # 1. BRIDGE
         print("\n[1/6] Training BRIDGE...")
-        bridge = UnifiedBridge(sender_dim, receiver_dim, args.soft_tokens).to(device=device, dtype=torch.bfloat16)
+        bridge = UnifiedBridge(sender_dim, receiver_dim, soft_tokens).to(device=device, dtype=torch.bfloat16)
         train_info = train_bridge(
             bridge, sender, sender_tok, receiver, receiver_tok,
             train_ds, dataset_name, device,
-            steps=args.train_steps
+            steps=train_steps, lr=train_lr
         )
         bridge_results = eval_bridge(
             bridge, sender, sender_tok, receiver, receiver_tok,
