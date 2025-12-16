@@ -193,20 +193,31 @@ def get_label_tokens(tokenizer, dataset_name):
 def train_bridge(
     bridge, sender, sender_tok, receiver, receiver_tok,
     train_ds, dataset_name, device,
-    steps=2000, batch_size=16, lr=2e-4, source_layer=16, diversity_weight=0.1
+    steps=2000, batch_size=16, lr=2e-4, source_layer=16, diversity_weight=None
 ):
     """Train bridge on classification task.
 
     FIXED BUGS:
     - Use sender_tok for sender (was using receiver_tok - CRITICAL BUG)
     - Proper batching with DataLoader (was batch_size=1 effectively)
-    - Added diversity loss to prevent mode collapse
+    - Added diversity loss to prevent mode collapse (DISABLED for binary classification)
     - Added gradient clipping for stability
     - Increased LR from 1e-4 to 2e-4
     - Added source prompt context
+
+    SST-2 FIX (Dec 2024):
+    - Diversity loss is COUNTERPRODUCTIVE for binary classification
+    - With only 2 output classes, forcing orthogonal soft tokens hurts learning
+    - Now: diversity_weight = 0.0 for num_classes <= 2, else 0.1
     """
     config = DATASET_CONFIGS[dataset_name]
     label_tokens = get_label_tokens(receiver_tok, dataset_name)
+
+    # CRITICAL FIX: Disable diversity loss for binary classification
+    # Binary tasks have low output dimensionality - diversity loss conflicts with learning
+    if diversity_weight is None:
+        diversity_weight = 0.0 if config["num_classes"] <= 2 else 0.1
+    print(f"  [train_bridge] num_classes={config['num_classes']}, diversity_weight={diversity_weight}")
 
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=lr, weight_decay=0.01)
     bridge.train()
@@ -217,8 +228,24 @@ def train_bridge(
         labels = [item[config["label_field"]] for item in batch]
         return texts, labels
 
-    dataloader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
-                           collate_fn=collate_fn, drop_last=True)
+    # CLASS-BALANCED SAMPLING for binary classification (SST-2 FIX)
+    # Ensures each batch has roughly equal class distribution
+    if config["num_classes"] == 2:
+        from torch.utils.data import WeightedRandomSampler
+        # Count labels
+        label_counts = {}
+        for item in train_ds:
+            lbl = item[config["label_field"]]
+            label_counts[lbl] = label_counts.get(lbl, 0) + 1
+        # Compute weights (inverse frequency)
+        weights = [1.0 / label_counts[item[config["label_field"]]] for item in train_ds]
+        sampler = WeightedRandomSampler(weights, num_samples=len(train_ds), replacement=True)
+        dataloader = DataLoader(train_ds, batch_size=batch_size, sampler=sampler,
+                               collate_fn=collate_fn, drop_last=True)
+        print(f"  [train_bridge] Using class-balanced sampling for binary classification")
+    else:
+        dataloader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
+                               collate_fn=collate_fn, drop_last=True)
     data_iter = iter(dataloader)
 
     losses = []
