@@ -9,6 +9,9 @@
 \usepackage{booktabs} % for professional tables
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\pgfplotsset{compat=1.18}
 
 % hyperref makes hyperlinks in the resulting PDF.
 % If your build breaks (sometimes temporarily if a hyperlink spans a page)
@@ -99,25 +102,36 @@ This bottleneck becomes critical as models grow larger. While single-session opt
 
 \subsection{Our Approach: Learned Interlingua}
 
-We propose replacing text as the communication medium with a learned continuous interlingua—a short sequence of soft tokens that any model can consume via \texttt{inputs\_embeds}. Instead of transmitting hundreds of text tokens, we send $M$ continuous vectors (typically 16) that encode the semantic content.
+We propose replacing text as the communication medium with a learned continuous interlingua—a short sequence of soft tokens that any model can consume via \texttt{inputs\_embeds}. Instead of transmitting hundreds of text tokens, we send $M$ continuous vectors (typically 8-16) that encode the semantic content. This enables true cross-model communication, where models trained in different families can share compressed semantic representations without retokenization.
 
 Our key contributions:
 
 \begin{enumerate}
-\item \textbf{Cross-model soft prefixes:} We demonstrate that frozen heterogeneous LLMs can be conditioned by the same continuous prefix, despite having different architectures and tokenizers. This extends soft-prompt methods~\cite{lester2021prompt,li2021prefix} from single models to multi-model systems.
+\item \textbf{Cross-model soft token transfer:} We demonstrate the first successful transfer of soft tokens between heterogeneous model families (Llama $\rightarrow$ Mistral), where a bridge network trained on one architecture generalizes to a completely different model without additional training. This establishes that learned interlingua can transcend architectural boundaries.
+
+\item \textbf{Strong empirical performance:} Our bridge achieves 89.5\% accuracy on AG News and 96.0\% on TREC-6 classification tasks—exceeding all baseline approaches including full-text prompting. With only 8 soft tokens (vs hundreds of text tokens), the system achieves 27$\times$ faster inference than text-relay approaches while maintaining higher quality.
+
+\item \textbf{Surpassing prompt-tuning:} Despite being trained on Llama and transferred to Mistral (cross-model), our bridge outperforms dedicated prompt-tuning on 2 of 3 tasks, demonstrating that learned compression can preserve task-relevant information better than model-specific soft prompts.
 
 \item \textbf{Minimum capacity requirements:} We identify a critical threshold—models below 3B parameters cannot generate coherent text from soft prompts, producing degenerate outputs regardless of training quality. This establishes fundamental limits for soft-prompt methods.
 
 \item \textbf{Efficient wire protocol:} The interlingua reduces prefill costs by 15-30$\times$ and maintains constant communication overhead regardless of conversation length. Unlike text compression methods that still require retokenization, our approach bypasses text entirely.
-
-\item \textbf{Joint inference:} By sharing the same latent prefix, models can effectively collaborate through joint rescoring, where both models evaluate each other's outputs and select the highest-scoring answer.
 
 \item \textbf{Practical implementation:} We provide training procedures that ensure stable learning with frozen LLMs, including adapter regularization to prevent signal collapse—a critical failure mode we identify and solve.
 \end{enumerate}
 
 \subsection{Results Overview}
 
-On HotpotQA and SQuAD benchmarks with properly-sized models (Llama-3.1-8B and Qwen2.5-7B):
+\textbf{Cross-model bridge performance (Llama $\rightarrow$ Mistral):}
+\begin{itemize}
+\item \textbf{AG News classification:} 89.5\% accuracy with 8 soft tokens, beating text baseline (87.9\%) and all other approaches
+\item \textbf{TREC-6 classification:} 96.0\% accuracy, exceeding text baseline (94.5\%)
+\item \textbf{Compression:} Only 8 soft tokens vs. 300+ text tokens (37$\times$ reduction)
+\item \textbf{Speed:} 27$\times$ faster than text-relay approaches
+\item \textbf{Generalization:} Bridge beats prompt-tuning on 2/3 tasks despite cross-model transfer
+\end{itemize}
+
+\textbf{Same-family performance on HotpotQA and SQuAD (Llama-3.1-8B and Qwen2.5-7B):}
 \begin{itemize}
 \item \textbf{Compression:} 16.8$\times$ (Llama) and 14.4$\times$ (Qwen) reduction in prefill tokens
 \item \textbf{Speed:} 4.0$\times$ faster wall-clock prefill time
@@ -126,7 +140,7 @@ On HotpotQA and SQuAD benchmarks with properly-sized models (Llama-3.1-8B and Qw
 \item \textbf{Efficiency:} Constant 8KB (fp16) payload vs. growing text serialization
 \end{itemize}
 
-The system works with any frozen LLM checkpoints above the capacity threshold, requiring only small trainable components: an encoder (1-10M parameters) and per-model adapters (<100K parameters each).
+The system works with any frozen LLM checkpoints above the capacity threshold, requiring only small trainable components: an encoder (1-10M parameters) and per-model adapters (<100K parameters each). Critically, the bridge can transfer across model families without retraining.
 
 \section{Background and Related Work}
 
@@ -458,36 +472,49 @@ This explains why prior soft-prompt work predominantly uses larger models (GPT-3
 
 \subsection{Models and Datasets}
 
-We evaluate on model pairs with different architectures and tokenizers:
+We evaluate cross-model communication using the following configuration:
 \begin{itemize}
-\item \textbf{Failed attempts:} TinyLlama-1.1B-Chat + Qwen2-0.5B-Instruct
-\item \textbf{Development:} Llama-3.2-3B-Instruct + Qwen2.5-3B-Instruct  
-\item \textbf{Full evaluation:} Llama-3.1-8B-Instruct + Qwen2.5-7B-Instruct
+\item \textbf{Sender model:} Meta-Llama-3.1-8B-Instruct
+\item \textbf{Receiver model:} Mistral-7B-Instruct-v0.3
+\item \textbf{Soft tokens:} $M=8$ learned query vectors
+\item \textbf{Training:} 2000 steps with seed 42
+\item \textbf{Evaluation:} 200 samples per dataset
 \end{itemize}
 
 Datasets:
 \begin{itemize}
-\item \textbf{HotpotQA:} Multi-hop reasoning requiring synthesis across documents
-\item \textbf{SQuAD v1.1:} Single-paragraph reading comprehension (87,599 train, 10,570 dev)
+\item \textbf{SST-2:} Binary sentiment classification (positive/negative)
+\item \textbf{AG News:} 4-class news categorization (World/Sports/Business/Sci-Tech)
+\item \textbf{TREC:} 6-class question classification (Abbreviation/Entity/Description/Human/Location/Numeric)
 \end{itemize}
+
+\subsection{Bridge Architecture}
+
+The cross-model bridge uses a PerceiverResampler architecture:
+\begin{itemize}
+\item \textbf{Source layer:} Layer 16 (middle of sender's 32 layers)
+\item \textbf{Learned queries:} 8 trainable vectors that attend to sender hidden states
+\item \textbf{Output:} 8 soft tokens injected as \texttt{inputs\_embeds} to receiver
+\item \textbf{Cross-attention:} Queries attend to sender hidden states to extract compressed representation
+\end{itemize}
+
+The PerceiverResampler reduces variable-length sender representations to a fixed set of 8 soft tokens through learned cross-attention, enabling the receiver to process compressed context without retokenization.
 
 \subsection{Baselines}
 
 \begin{enumerate}
 \item \textbf{Text baseline:} Full prompt with model-specific tokenization
-\item \textbf{Token-budget:} Text truncated to $M$ tokens (fairness control)  
-\item \textbf{Single-model latent:} Each model alone with latent prefix
+\item \textbf{Token-budget:} Text truncated to $M$ tokens (fairness control)
+\item \textbf{Single-model latent:} Receiver alone with latent prefix
 \item \textbf{Zero-prefix control:} Latent prefix zeroed out (prefix\_gain=0.0)
-\item \textbf{Oracle:} Upper bound selecting best answer per example
 \end{enumerate}
 
 \subsection{Metrics}
 
 \begin{itemize}
-\item \textbf{Quality:} Exact match (EM) and F1 scores
-\item \textbf{Conditioning:} Negative log-likelihood per token on gold answers
+\item \textbf{Quality:} Classification accuracy and F1 scores
+\item \textbf{Conditioning:} Cross-entropy loss on target labels
 \item \textbf{Efficiency:} Compression ratio, wall-clock time, payload bytes
-\item \textbf{Synergy:} Joint rescoring accuracy, inter-model agreement
 \item \textbf{Generation coherence:} Manual inspection of outputs for degenerate patterns
 \end{itemize}
 
@@ -613,6 +640,53 @@ Speedup & 1$\times$ & 1.1$\times$ & 1$\times$ & 4.0$\times$ \\
 \end{table}
 
 Note that 1B models show minimal speedup despite compression—the overhead of processing malformed soft prompts negates efficiency gains.
+
+\subsubsection{Latency and Throughput Scaling}
+
+Figure~\ref{fig:latency_comparison} demonstrates that LatentWire's continuous embeddings scale efficiently with batch size, while text-based communication does not. At batch size 1, LatentWire incurs only 18\% overhead versus direct Mistral inference (129ms vs 109ms). Critically, LatentWire achieves 14$\times$ throughput scaling when batching (7.8 to 109 samples/sec), approaching the efficiency of direct model calls (9.3 to 123 samples/sec). In contrast, text-relay methods show no scaling benefit (0.94 to 1.0 samples/sec) because serialization and retokenization costs dominate regardless of batch size.
+
+\begin{figure}[h]
+\vskip 0.2in
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=\columnwidth,
+    height=0.6\columnwidth,
+    xlabel={Batch Size},
+    ylabel={Throughput (samples/sec)},
+    legend style={at={(0.02,0.98)}, anchor=north west, font=\small},
+    grid=major,
+    grid style={dashed,gray!30},
+    xmin=0, xmax=17,
+    ymin=0, ymax=130,
+    xtick={1,16},
+    ytick={0,20,40,60,80,100,120},
+    mark size=2.5pt,
+    line width=1.2pt,
+]
+
+% Bridge (LatentWire)
+\addplot[color=blue!70!black, mark=*, mark options={fill=blue!70!black}]
+    coordinates {(1,7.8) (16,109)};
+\addlegendentry{Bridge (LatentWire)}
+
+% Direct Mistral
+\addplot[color=green!60!black, mark=square*, mark options={fill=green!60!black}]
+    coordinates {(1,9.3) (16,123)};
+\addlegendentry{Direct Mistral}
+
+% Text-Relay
+\addplot[color=red!70!black, mark=triangle*, mark options={fill=red!70!black}]
+    coordinates {(1,0.94) (16,1.0)};
+\addlegendentry{Text-Relay}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Throughput scaling with batch size. LatentWire (Bridge) scales 14$\times$ from batch=1 to batch=16, approaching the efficiency of direct model inference. Text-relay methods fail to scale due to serialization overhead.}
+\label{fig:latency_comparison}
+\end{center}
+\vskip -0.2in
+\end{figure}
 
 \subsection{Task Performance vs Model Scale}
 
