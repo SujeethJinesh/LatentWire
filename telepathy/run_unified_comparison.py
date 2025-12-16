@@ -191,79 +191,118 @@ def get_label_tokens(tokenizer, dataset_name):
 # =============================================================================
 
 def train_bridge(
-    bridge, sender, receiver, receiver_tok,
+    bridge, sender, sender_tok, receiver, receiver_tok,
     train_ds, dataset_name, device,
-    steps=2000, batch_size=8, lr=1e-4, source_layer=16
+    steps=2000, batch_size=16, lr=2e-4, source_layer=16, diversity_weight=0.1
 ):
-    """Train bridge on classification task."""
+    """Train bridge on classification task.
+
+    FIXED BUGS:
+    - Use sender_tok for sender (was using receiver_tok - CRITICAL BUG)
+    - Proper batching with DataLoader (was batch_size=1 effectively)
+    - Added diversity loss to prevent mode collapse
+    - Added gradient clipping for stability
+    - Increased LR from 1e-4 to 2e-4
+    - Added source prompt context
+    """
     config = DATASET_CONFIGS[dataset_name]
     label_tokens = get_label_tokens(receiver_tok, dataset_name)
 
-    optimizer = torch.optim.AdamW(bridge.parameters(), lr=lr)
+    optimizer = torch.optim.AdamW(bridge.parameters(), lr=lr, weight_decay=0.01)
     bridge.train()
 
-    # Create dataloader
-    indices = list(range(len(train_ds)))
-    random.shuffle(indices)
+    # Use DataLoader for proper batching
+    def collate_fn(batch):
+        texts = [item[config["text_field"]] for item in batch]
+        labels = [item[config["label_field"]] for item in batch]
+        return texts, labels
+
+    dataloader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
+                           collate_fn=collate_fn, drop_last=True)
+    data_iter = iter(dataloader)
 
     losses = []
     step = 0
     pbar = tqdm(total=steps, desc=f"Training Bridge on {dataset_name}")
 
     while step < steps:
-        for idx in indices:
-            if step >= steps:
-                break
+        try:
+            texts, labels = next(data_iter)
+        except StopIteration:
+            data_iter = iter(dataloader)
+            texts, labels = next(data_iter)
 
-            item = train_ds[idx]
-            text = item[config["text_field"]]
-            label = item[config["label_field"]]
+        B = len(texts)
 
-            # Get sender hidden states
-            sender_inputs = receiver_tok(text, return_tensors="pt", truncation=True, max_length=256)
-            sender_inputs = {k: v.to(device) for k, v in sender_inputs.items()}
+        # Format sender prompts with task context (CRITICAL FIX)
+        if dataset_name == "sst2":
+            src_texts = [f"Review: {t}\nSentiment (positive or negative):" for t in texts]
+        elif dataset_name == "agnews":
+            src_texts = [f"Article: {t[:256]}\nTopic:" for t in texts]
+        else:
+            src_texts = [f"Question: {t}\nType:" for t in texts]
 
-            with torch.no_grad():
-                sender_out = sender(
-                    input_ids=sender_inputs["input_ids"],
-                    attention_mask=sender_inputs["attention_mask"],
-                    output_hidden_states=True
-                )
-                sender_hidden = sender_out.hidden_states[source_layer]
+        # Use SENDER tokenizer for sender model (CRITICAL BUG FIX - was using receiver_tok)
+        sender_inputs = sender_tok(src_texts, return_tensors="pt", padding=True,
+                                   truncation=True, max_length=256)
+        sender_inputs = {k: v.to(device) for k, v in sender_inputs.items()}
 
-            # Get soft tokens
-            soft_tokens = bridge(sender_hidden, sender_inputs["attention_mask"])
+        with torch.no_grad():
+            sender_out = sender(
+                input_ids=sender_inputs["input_ids"],
+                attention_mask=sender_inputs["attention_mask"],
+                output_hidden_states=True
+            )
+            sender_hidden = sender_out.hidden_states[source_layer]
 
-            # Build receiver prompt
-            prompt = f"\n{config['task_prompt']}\nAnswer:"
-            prompt_inputs = receiver_tok(prompt, return_tensors="pt", add_special_tokens=False)
-            prompt_embeds = receiver.get_input_embeddings()(prompt_inputs["input_ids"].to(device))
+        # Get soft tokens for batch
+        soft_tokens = bridge(sender_hidden, sender_inputs["attention_mask"])  # [B, K, D]
 
-            # Concatenate soft tokens + prompt
-            inputs_embeds = torch.cat([soft_tokens, prompt_embeds], dim=1)
+        # Build receiver prompts
+        prompts = [f"\n{config['task_prompt']}\nAnswer:" for _ in range(B)]
+        prompt_inputs = receiver_tok(prompts, return_tensors="pt", padding=True,
+                                     add_special_tokens=False)
+        prompt_embeds = receiver.get_input_embeddings()(prompt_inputs["input_ids"].to(device))
 
-            # Forward through receiver
-            outputs = receiver(inputs_embeds=inputs_embeds)
-            logits = outputs.logits[0, -1]  # Last token logits
+        # Concatenate soft tokens + prompts
+        inputs_embeds = torch.cat([soft_tokens, prompt_embeds], dim=1)
 
-            # Get logits for label tokens
-            label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
-            target = torch.tensor([label], device=device)
+        # Create attention mask
+        soft_mask = torch.ones(B, soft_tokens.shape[1], device=device)
+        full_mask = torch.cat([soft_mask, prompt_inputs["attention_mask"].to(device)], dim=1)
 
-            loss = F.cross_entropy(label_logits.unsqueeze(0), target)
+        # Forward through receiver
+        outputs = receiver(inputs_embeds=inputs_embeds, attention_mask=full_mask)
+        logits = outputs.logits[:, -1, :]  # [B, vocab_size]
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        # Classification loss
+        label_logits = torch.stack([logits[:, label_tokens[i]] for i in range(len(label_tokens))], dim=1)
+        targets = torch.tensor(labels, device=device)
+        ce_loss = F.cross_entropy(label_logits, targets)
 
-            losses.append(loss.item())
-            step += 1
-            pbar.update(1)
+        # Diversity loss (CRITICAL FIX - prevents mode collapse)
+        div_loss = torch.tensor(0.0, device=device)
+        if diversity_weight > 0 and B > 1:
+            flat = soft_tokens.reshape(B, -1).float()
+            flat_norm = F.normalize(flat, dim=1)
+            sim = torch.mm(flat_norm, flat_norm.t())
+            mask = ~torch.eye(B, dtype=torch.bool, device=device)
+            div_loss = sim[mask].mean()
 
-            if step % 100 == 0:
-                pbar.set_postfix({"loss": np.mean(losses[-100:])})
+        loss = ce_loss + diversity_weight * div_loss
 
-        random.shuffle(indices)
+        optimizer.zero_grad()
+        loss.backward()
+        # Gradient clipping (CRITICAL FIX - prevents instability)
+        torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
+        optimizer.step()
+
+        losses.append(ce_loss.item())
+        step += 1
+        pbar.update(1)
+
+        if step % 100 == 0:
+            pbar.set_postfix({"loss": np.mean(losses[-100:]), "div": div_loss.item()})
 
     pbar.close()
     return {"final_loss": np.mean(losses[-100:])}
@@ -337,8 +376,11 @@ def train_prompt_tuning(
 # EVALUATION FUNCTIONS
 # =============================================================================
 
-def eval_bridge(bridge, sender, receiver, receiver_tok, eval_ds, dataset_name, device, source_layer=16):
-    """Evaluate trained bridge."""
+def eval_bridge(bridge, sender, sender_tok, receiver, receiver_tok, eval_ds, dataset_name, device, source_layer=16):
+    """Evaluate trained bridge.
+
+    FIXED: Use sender_tok for sender (was using receiver_tok - CRITICAL BUG)
+    """
     config = DATASET_CONFIGS[dataset_name]
     label_tokens = get_label_tokens(receiver_tok, dataset_name)
     inv_label_map = {v.lower(): k for k, v in config["label_map"].items()}
@@ -355,8 +397,16 @@ def eval_bridge(bridge, sender, receiver, receiver_tok, eval_ds, dataset_name, d
 
             start = time.time()
 
-            # Sender forward
-            sender_inputs = receiver_tok(text, return_tensors="pt", truncation=True, max_length=256)
+            # Format sender prompt with task context
+            if dataset_name == "sst2":
+                src_text = f"Review: {text}\nSentiment (positive or negative):"
+            elif dataset_name == "agnews":
+                src_text = f"Article: {text[:256]}\nTopic:"
+            else:
+                src_text = f"Question: {text}\nType:"
+
+            # Use SENDER tokenizer for sender model (CRITICAL BUG FIX)
+            sender_inputs = sender_tok(src_text, return_tensors="pt", truncation=True, max_length=256)
             sender_inputs = {k: v.to(device) for k, v in sender_inputs.items()}
             sender_out = sender(
                 input_ids=sender_inputs["input_ids"],
@@ -374,7 +424,11 @@ def eval_bridge(bridge, sender, receiver, receiver_tok, eval_ds, dataset_name, d
             prompt_embeds = receiver.get_input_embeddings()(prompt_inputs["input_ids"].to(device))
             inputs_embeds = torch.cat([soft_tokens, prompt_embeds], dim=1)
 
-            outputs = receiver(inputs_embeds=inputs_embeds)
+            # Create attention mask
+            soft_mask = torch.ones(1, soft_tokens.shape[1], device=device)
+            full_mask = torch.cat([soft_mask, prompt_inputs["attention_mask"].to(device)], dim=1)
+
+            outputs = receiver(inputs_embeds=inputs_embeds, attention_mask=full_mask)
             logits = outputs.logits[0, -1]
 
             latencies.append(time.time() - start)
@@ -672,12 +726,12 @@ def main():
         print("\n[1/6] Training BRIDGE...")
         bridge = UnifiedBridge(sender_dim, receiver_dim, args.soft_tokens).to(device=device, dtype=torch.bfloat16)
         train_info = train_bridge(
-            bridge, sender, receiver, receiver_tok,
+            bridge, sender, sender_tok, receiver, receiver_tok,
             train_ds, dataset_name, device,
             steps=args.train_steps
         )
         bridge_results = eval_bridge(
-            bridge, sender, receiver, receiver_tok,
+            bridge, sender, sender_tok, receiver, receiver_tok,
             eval_ds, dataset_name, device
         )
         bridge_results["train_info"] = train_info
