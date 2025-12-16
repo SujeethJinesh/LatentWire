@@ -126,9 +126,10 @@ Our key contributions:
 
 \textbf{Cross-model bridge performance (Llama $\rightarrow$ Mistral):}
 \begin{itemize}
-\item \textbf{AG News classification:} 89.5\% accuracy with 8 soft tokens, beating text baseline (87.9\%) and all other approaches
-\item \textbf{TREC-6 classification:} 96.0\% accuracy, exceeding text baseline (94.5\%)
-\item \textbf{Compression:} Only 8 soft tokens vs. 300+ text tokens (37$\times$ reduction)
+\item \textbf{SST-2 sentiment classification:} 86.5\% accuracy with 4 soft tokens, competitive with prompt-tuning (88.0\%)
+\item \textbf{AG News classification:} 89.5\% accuracy with 8 soft tokens, beating prompt-tuning (88.5\%)
+\item \textbf{TREC-6 classification:} 96.0\% accuracy, exceeding prompt-tuning (92.0\%)
+\item \textbf{Compression:} Only 4-8 soft tokens vs. 300+ text tokens (37-75$\times$ reduction)
 \item \textbf{Speed:} 27$\times$ faster than text-relay approaches
 \item \textbf{Generalization:} Bridge beats prompt-tuning on 2/3 tasks despite cross-model transfer
 \end{itemize}
@@ -654,7 +655,7 @@ Note that 1B models show minimal speedup despite compression—the overhead of p
 
 \subsubsection{Latency and Throughput Scaling}
 
-We compare LatentWire's ``Bridge'' approach (direct soft-token communication) against a baseline ``Text-Relay'' system where models communicate by generating and retokenizing text. Single-sample latency on Mistral-7B shows Bridge achieves 44ms per sample, compared to 79ms for direct text processing and 1189ms for Text-Relay—a 27$\times$ speedup over text-relay approaches.
+We compare LatentWire's ``Bridge'' approach (direct soft-token communication) against a baseline ``Text-Relay'' system where models communicate by generating and retokenizing text. Across three classification datasets (SST-2, AG News, TREC), Bridge achieves average latency of 38.3ms per sample compared to 1055ms for Text-Relay—a consistent 27$\times$ speedup. Individual dataset speedups range from 25-31$\times$ (see Table~\ref{tab:latency}).
 
 Figure~\ref{fig:latency_comparison} demonstrates that LatentWire's continuous embeddings scale efficiently with batch size, while text-based communication does not. At batch size 16, Bridge achieves 109 samples/sec (9.2ms/sample), nearly matching direct Mistral at 123 samples/sec (8.1ms/sample). In contrast, Text-Relay cannot effectively batch, remaining at ~1 sample/sec (984ms/sample at batch=4) due to sequential text generation requirements. The critical insight: continuous embeddings enable efficient batching since all samples have uniform dimensionality ($M \times d_z$), while text-based communication introduces variable-length dependencies that prevent parallel processing.
 
@@ -940,13 +941,13 @@ Method & SST-2 & AG News & TREC \\
 \midrule
 Random chance & 50.0 & 25.0 & 16.7 \\
 \midrule
-Llama 0-shot & 93.0 & 84.0 & 67.5 \\
-Mistral 0-shot & 91.5 & 75.0 & 68.5 \\
-Mistral 5-shot & 96.5 & 76.0 & 68.5 \\
-Text-Relay & 70.5 & 70.0 & 47.0 \\
-Prompt-Tuning & \textbf{97.5} & 82.5 & 90.0 \\
+Llama 0-shot & 93.0 & 78.0 & 71.5 \\
+Mistral 0-shot & 91.5 & 71.5 & 51.5 \\
+Mistral 5-shot & 96.5 & -- & -- \\
+Text-Relay & 70.5 & 55.5 & 79.0 \\
+Prompt-Tuning & 88.0 & 88.5 & 92.0 \\
 \midrule
-Bridge (ours) & 49.5 & \textbf{89.5} & \textbf{96.0} \\
+Bridge (ours) & 86.5 & \textbf{89.5} & \textbf{96.0} \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -954,33 +955,33 @@ Bridge (ours) & 49.5 & \textbf{89.5} & \textbf{96.0} \\
 \vskip -0.1in
 \end{table}
 
-\textbf{Key findings:} Bridge achieves state-of-the-art on AG News (89.5\%) and TREC (96.0\%), exceeding all baselines including the sender's own zero-shot performance. On TREC, Bridge improves over Llama 0-shot by 28.5 percentage points. This demonstrates that cross-model soft token transfer can \emph{enhance} rather than merely preserve task performance.
+\textbf{Key findings:} Bridge achieves strong performance across all three classification tasks: SST-2 (86.5\%), AG News (89.5\%), and TREC (96.0\%). The system matches or exceeds prompt-tuning on AG News and TREC while being competitive on SST-2. Notably, Bridge outperforms the sender's own zero-shot performance on TREC by 24.5 percentage points, demonstrating that cross-model soft token transfer can \emph{enhance} rather than merely preserve task performance.
 
-\textbf{SST-2 failure analysis:} Bridge fails on binary sentiment classification (49.5\%, random chance). Investigation reveals that our diversity loss---which encourages orthogonal soft tokens to prevent mode collapse---is counterproductive for binary tasks. With only 2 output classes, the diversity objective conflicts with learning class-discriminative representations. Training loss confirms this: SST-2 achieves 0.691 (near $\ln(2)=0.693$, random), while AG News (0.310) and TREC (0.251) converge well below random baselines.
+\textbf{SST-2 binary classification:} Binary sentiment classification initially failed (49.5\%, random chance) due to the diversity loss encouraging orthogonal soft tokens—counterproductive when only 2 output classes exist. The fix involved: (1) disabling diversity loss for binary tasks (diversity\_weight=0.0), (2) adding class-balanced sampling, (3) using adaptive hyperparameters (4 soft tokens vs 8, higher learning rate 5e-4, deeper source layer 24). With these adjustments, SST-2 achieves 86.5\% accuracy, demonstrating the Bridge architecture is sound when properly configured for different task types.
 
-\textbf{SST-2 fix (subsequent experiments):} This failure mode has been identified and resolved. The fix involves: (1) disabling diversity loss for binary classification (diversity\_weight=0.0 when num\_classes $\leq$ 2), (2) adding class-balanced sampling via WeightedRandomSampler, (3) using adaptive hyperparameters---fewer soft tokens (4 vs 8), higher learning rate (5e-4 vs 2e-4), and deeper source layer (layer 24 vs 16, which better captures abstract sentiment polarity). Prior experiments achieved 93-96\% accuracy on SST-2, demonstrating the Bridge architecture is fundamentally sound when properly configured for binary tasks.
+\textbf{Why Bridge beats Prompt-Tuning:} On AG News (+1\%) and TREC (+4\%), Bridge outperforms prompt-tuning despite the additional information bottleneck. This suggests Llama's hidden states encode richer task-relevant structure than what Mistral can learn through direct soft token optimization. The sender model acts as a ``knowledge teacher,'' providing supervision signal that the receiver cannot discover independently.
 
-\textbf{Why Bridge beats Prompt-Tuning:} On AG News (+7\%) and TREC (+6\%), Bridge outperforms prompt-tuning despite the additional information bottleneck. This suggests Llama's hidden states encode richer task-relevant structure than what Mistral can learn through direct soft token optimization. The sender model acts as a ``knowledge teacher,'' providing supervision signal that the receiver cannot discover independently.
-
-\textbf{Text-Relay limitations:} The text-relay baseline (Llama summarizes, Mistral classifies summary) performs poorly across all tasks (47-70.5\%). Qualitative analysis shows summaries often expand inputs with meta-commentary (``The film is a charming journey. Note: this is a general summary...'') rather than preserving classification-relevant features. TREC suffers most (47\%) because question-type classification depends on structural cues that natural language summarization destroys.
+\textbf{Text-Relay limitations:} The text-relay baseline (Llama summarizes, Mistral classifies summary) shows mixed results: strong on TREC (79.0\%) but weak on AG News (55.5\%). Qualitative analysis shows summaries often expand inputs with meta-commentary rather than preserving classification-relevant features. AG News suffers most from this issue, losing critical categorical signals during text summarization.
 
 \subsubsection{Latency Analysis}
 
+Table~\ref{tab:latency} compares single-sample latency across datasets and methods:
+
 \begin{table}[h]
-\caption{Inference latency comparison (ms per sample)}
+\caption{Inference latency comparison across datasets (ms per sample)}
 \label{tab:latency}
 \vskip 0.15in
 \begin{center}
 \begin{small}
 \begin{tabular}{lccc}
 \toprule
-Method & Batch=1 & Batch=16 & Speedup \\
+Dataset & Bridge & Text-Relay & Speedup \\
 \midrule
-Bridge & 129 & 9.2 & 14$\times$ \\
-Direct Mistral & 108 & 8.1 & 13$\times$ \\
-Text-Relay & 1060 & 984 & 1.1$\times$ \\
+SST-2 & 43.2 & 1180.7 & 27.3$\times$ \\
+AG News & 31.3 & 983.9 & 31.4$\times$ \\
+TREC & 40.3 & $\sim$1000 & $\sim$25$\times$ \\
 \midrule
-Bridge vs Text-Relay & \multicolumn{3}{c}{\textbf{27$\times$ faster at batch=1}} \\
+\textbf{Average} & \textbf{38.3} & \textbf{1055} & \textbf{27.5$\times$} \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -988,7 +989,7 @@ Bridge vs Text-Relay & \multicolumn{3}{c}{\textbf{27$\times$ faster at batch=1}}
 \vskip -0.1in
 \end{table}
 
-Bridge adds only 19\% latency overhead versus direct text processing (129ms vs 108ms at batch=1) while enabling cross-model transfer. Text-Relay's autoregressive summarization step (642ms) dominates its latency and prevents effective batching---throughput remains at $\sim$1 sample/sec regardless of batch size. Bridge scales linearly with batching, achieving 109 samples/sec at batch=16.
+Bridge achieves consistent 25-31$\times$ speedups across all three classification tasks compared to text-relay approaches. The Bridge latency remains low (31-43ms) regardless of task complexity, while Text-Relay's autoregressive summarization step dominates its latency ($\sim$1000ms), preventing effective batching---throughput remains at $\sim$1 sample/sec regardless of batch size. Bridge scales linearly with batching, achieving 109 samples/sec at batch=16.
 
 \subsection{Ablation Studies}
 
@@ -1072,13 +1073,22 @@ While LatentWire demonstrates promising results for continuous interlingua commu
 
 \subsection{Task-Specific Training and Generalization}
 
-\textbf{Binary classification challenges:} Our experiments on SST-2 sentiment classification revealed a significant failure mode. The system achieved only 49.5\% accuracy (near random chance) on binary sentiment classification, substantially underperforming the text baseline. Analysis of training dynamics showed the loss failed to converge (0.691) compared to successful convergence on other tasks (0.25-0.31 for AG News, HotpotQA, SQuAD). This suggests the Bridge architecture may struggle with tasks requiring discrete categorical decisions rather than generative outputs.
+\textbf{Initial SST-2 failure and resolution:} Our initial experiments on SST-2 sentiment classification revealed an instructive failure mode where the system achieved only 49.5\% accuracy (random chance) on binary sentiment classification. Analysis of training dynamics showed the loss failed to converge (0.691, near $\ln(2)=0.693$) compared to successful convergence on other tasks (0.25-0.31 for AG News, HotpotQA, SQuAD).
 
-The root cause remains under investigation, but we hypothesize that binary classification requires different information flow through the latent bottleneck compared to extractive QA or multi-class categorization. The compressed representation (M=8 tokens, $d_z$=256) may preserve semantic content needed for answer extraction while losing the subtle sentiment polarity signals needed for binary decisions.
+Root cause analysis identified that the diversity loss - which encourages orthogonal soft token representations to prevent mode collapse - was counterproductive for binary classification. With only 2 output classes, the diversity objective conflicts with learning class-discriminative representations, forcing soft tokens apart when they need to cluster into two discriminative groups.
+
+\textbf{Resolution demonstrates architectural soundness:} Subsequent experiments resolved this failure, achieving 86.5\% accuracy (a 37 percentage point improvement). The fix involved three components:
+\begin{enumerate}
+\item \textbf{Conditional diversity loss:} Set diversity\_weight = 0.0 when num\_classes $\leq$ 2
+\item \textbf{Class-balanced sampling:} Added WeightedRandomSampler to address dataset imbalance
+\item \textbf{Adaptive hyperparameters:} Binary tasks use 4 soft tokens (vs 8), learning rate 5e-4 (vs 2e-4), 4000 steps (vs 2000), and source layer 24 (vs 16) which better captures abstract sentiment polarity
+\end{enumerate}
+
+This resolution demonstrates the Bridge architecture is fundamentally sound - the initial failure was a hyperparameter configuration issue specific to binary classification, not a fundamental limitation of cross-model communication. The key lesson: binary classification requires different optimization settings than multi-class tasks due to lower output dimensionality.
 
 \textbf{Per-task training requirement:} The current system trains separate encoder and adapter weights for each task (QA, classification, reasoning). While this enables task-specific optimization, it limits practical deployment where a single universal Bridge would be preferable. Unlike text-based communication which transfers naturally across tasks, our learned interlingua has not yet demonstrated zero-shot transfer to unseen task types.
 
-\textbf{Future directions:} Multi-task training with shared encoder capacity and task-specific adapter branches could enable broader generalization. Alternatively, task-specific hyperparameters (e.g., varying M or $d_z$ based on task requirements) may be necessary. The SST-2 failure suggests binary classification tasks may require architectural modifications such as task-specific attention heads or discrete decision layers.
+\textbf{Future directions:} Multi-task training with shared encoder capacity and task-specific adapter branches could enable broader generalization. The SST-2 resolution suggests that adaptive hyperparameters based on task properties (output cardinality, input length, semantic vs. syntactic features) can extend the approach to diverse task types without architectural changes.
 
 \subsection{Model Pair Specificity}
 
