@@ -510,7 +510,23 @@ The PerceiverResampler reduces variable-length sender representations to a fixed
 \item \textbf{Token-budget:} Text truncated to $M$ tokens (fairness control)
 \item \textbf{Single-model latent:} Receiver alone with latent prefix
 \item \textbf{Zero-prefix control:} Latent prefix zeroed out (prefix\_gain=0.0)
+\item \textbf{Llama 3.1 8B zero-shot (sender ceiling):} Direct evaluation of the sender model without Bridge to establish upper bound performance
 \end{enumerate}
+
+\subsubsection{Zero-Shot Baseline Methodology}
+
+To establish the performance ceiling for the sender model (Llama-3.1-8B), we evaluate it directly on all classification tasks using zero-shot prompting. This baseline represents the maximum task performance available to the Bridge, since the Bridge cannot extract information that the sender doesn't already possess.
+
+\textbf{Prompt formatting per task:}
+\begin{itemize}
+\item \textbf{SST-2:} \texttt{"Review: \{text\}\textbackslash n\textbackslash nClassify sentiment as positive or negative:"}
+\item \textbf{AG News:} \texttt{"Article: \{text\}\textbackslash n\textbackslash nClassify topic as World, Sports, Business, or Sci-Tech:"}
+\item \textbf{TREC:} \texttt{"Question: \{text\}\textbackslash n\textbackslash nClassify question type as Abbreviation, Entity, Description, Human, Location, or Numeric:"}
+\end{itemize}
+
+Each prompt is formatted using Llama's chat template with the appropriate task-specific instruction. We evaluate on the same 200 test samples used for Bridge evaluation to ensure direct comparability. Generation uses greedy decoding (temperature=0.0) for deterministic results, extracting the first predicted class label from the model output.
+
+\textbf{Evaluation alignment with Bridge:} The zero-shot baseline uses identical evaluation samples, preprocessing, and scoring metrics as the Bridge experiments. This ensures that performance comparisons isolate the effect of cross-model soft token transfer rather than differences in test data or evaluation methodology.
 
 \subsection{Metrics}
 
