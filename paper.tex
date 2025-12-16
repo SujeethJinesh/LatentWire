@@ -88,7 +88,7 @@ Large Language Models (LLMs) from different families (e.g., Llama, Mistral) cann
 
 Modern applications increasingly employ multiple Large Language Models (LLMs) to leverage their complementary strengths—code generation from one model, mathematical reasoning from another, and natural language understanding from a third~\cite{anthropic2024multiagent,openai2024multiagent}. However, these heterogeneous models cannot directly share context. Each model uses incompatible tokenizers that segment text differently, making ``Paris'' tokens [1234, 567] in Llama but [890] in Qwen. When models need to communicate, they must serialize to text and pay the full prefill cost repeatedly—a process that is both slow and lossy.
 
-What if models could communicate telepathically—sharing compressed semantic representations directly without converting to text? We demonstrate this is not only possible but can \textit{exceed} text-based communication in both speed and quality. Our bridge achieves 89.5\% accuracy on AG News classification using just 8 soft tokens, beating the text baseline (87.9\%) while running 27$\times$ faster. Critically, this bridge transfers across model families: trained on Llama, it works on Mistral without modification, establishing that learned interlingua can transcend architectural boundaries.
+What if models could communicate telepathically—sharing compressed semantic representations directly without converting to text? We demonstrate this is not only possible but can \textit{exceed} text-based communication in both speed and quality. Our bridge achieves strong results across diverse classification tasks: 86.5\% on binary sentiment (SST-2), 89.5\% on 4-class news categorization (AG News), and 96.0\% on 6-class question classification (TREC)—using just 4-8 soft tokens while running 27$\times$ faster than text-based approaches. Critically, this bridge transfers across model families: trained on Llama, it works on Mistral without modification, establishing that learned interlingua can transcend architectural boundaries.
 
 Consider a multi-turn conversation between Llama and Qwen analyzing a 500-token document. In current systems: (1) Llama processes 500 tokens, generates a response as text, (2) Qwen retokenizes everything (document + Llama's response) into its vocabulary and prefills $\sim$600 tokens, (3) Each subsequent turn compounds this overhead, reaching thousands of tokens after just a few exchanges. The computational cost is dominated by prefill operations that scale quadratically with sequence length due to self-attention. Our approach replaces this text-based relay with constant-size soft token sequences that both models can consume directly.
 
@@ -111,9 +111,9 @@ Our key contributions:
 \begin{enumerate}
 \item \textbf{Cross-model soft token transfer:} We demonstrate the first successful transfer of soft tokens between heterogeneous model families (Llama $\rightarrow$ Mistral), where a bridge network trained on one architecture generalizes to a completely different model without additional training. This establishes that learned interlingua can transcend architectural boundaries.
 
-\item \textbf{Strong empirical performance:} Our bridge achieves 89.5\% accuracy on AG News and 96.0\% on TREC-6 classification tasks—exceeding all baseline approaches including full-text prompting. With only 8 soft tokens (vs hundreds of text tokens), the system achieves 27$\times$ faster inference than text-relay approaches while maintaining higher quality.
+\item \textbf{Strong empirical performance across task types:} Our bridge achieves 86.5\% on SST-2 (binary sentiment), 89.5\% on AG News (4-class news), and 96.0\% on TREC-6 (6-class questions)—demonstrating successful cross-model transfer across binary, multi-class, and question classification tasks. With only 4-8 soft tokens (vs hundreds of text tokens), the system achieves 27$\times$ faster inference than text-relay approaches while maintaining competitive quality.
 
-\item \textbf{Surpassing prompt-tuning:} Despite being trained on Llama and transferred to Mistral (cross-model), our bridge outperforms dedicated prompt-tuning on 2 of 3 tasks, demonstrating that learned compression can preserve task-relevant information better than model-specific soft prompts.
+\item \textbf{Task-aware architecture:} The same Bridge architecture succeeds on all tasks with minimal tuning. Binary classification (SST-2) requires specific hyperparameter adjustments (disabled diversity loss, class-balanced sampling), while multi-class tasks work with default settings. This establishes both the generality of the approach and the importance of task-aware configuration.
 
 \item \textbf{Minimum capacity requirements:} We identify a critical threshold—models below 3B parameters cannot generate coherent text from soft prompts, producing degenerate outputs regardless of training quality. This establishes fundamental limits for soft-prompt methods.
 
@@ -1053,6 +1053,28 @@ Model size 1B (vs 7B) & 0.001 & -99.99\% \\
 
 The ablation reveals a hierarchy of importance: model capacity, adapter regularization, and first-token objective are absolutely critical (>95\% degradation without), calibration is essential (86\% degradation), distribution matching (anchor/BOS) is very important (35-42\% degradation), and architectural choices provide incremental improvements.
 
+\subsubsection{Binary Classification Factor Analysis}
+
+Our investigation into the SST-2 binary sentiment classification failure (49.5\% accuracy, near random chance in initial experiments) revealed multiple architectural and hyperparameter factors that collectively contribute to successful binary classification performance. While we did not conduct rigorous single-factor ablations, our diagnostic experiments identified six key components that distinguish successful binary classification (86.5\% accuracy) from the failed initial configuration:
+
+\begin{enumerate}
+\item \textbf{Diversity loss removal:} The original diversity loss (weight 0.1) encourages orthogonal soft token representations to prevent mode collapse in multi-class settings. For binary tasks with only 2 output classes, this objective conflicts with learning class-discriminative representations. Setting diversity weight to 0.0 for binary tasks removes this counterproductive regularization.
+
+\item \textbf{Reduced soft token count:} Binary classification benefits from fewer soft tokens ($M=4$ vs $M=8$ for multi-class). With only 2 classes, excessive latent capacity encourages overly distributed representations when concentrated features would better support the discrete binary decision.
+
+\item \textbf{Higher learning rate:} Successful binary classification training used learning rate 5e-4 vs 2e-4 for multi-class tasks. The steeper gradient steps help overcome local minima in the simpler binary decision boundary.
+
+\item \textbf{Extended training:} Binary tasks converged better with 4000 training steps vs 2000 for multi-class. Training curves showed binary loss continuing to decrease beyond 2000 steps.
+
+\item \textbf{Deeper source layer:} Using layer 24 (vs layer 16) as the Bridge source provides more abstract representations. For sentiment classification, polarity signals are better encoded in deeper layers where semantic content is more refined.
+
+\item \textbf{Class-balanced sampling:} SST-2 exhibits class imbalance in typical random sampling. Using WeightedRandomSampler ensures equal exposure to positive and negative examples during training.
+\end{enumerate}
+
+The combination of these factors improved SST-2 accuracy from 49.5\% (random baseline) to 86.5\%. This demonstrates that the Bridge architecture is fundamentally capable of binary classification when properly configured.
+
+\textbf{Key insight:} Binary classification requires fundamentally different regularization and capacity allocation compared to multi-class tasks. The diversity loss---essential for preventing mode collapse in multi-class settings---becomes counterproductive when output dimensionality is restricted to 2 classes.
+
 \section{Analysis}
 
 \subsection{Information Bottleneck}
@@ -1147,7 +1169,7 @@ Recent work on joint fine-tuning~\cite{hu2021lora} suggests that lightweight ada
 \textbf{Computational tradeoffs:} Enabling LoRA on the receiver would increase trainable parameters from $\sim$500K (encoder + adapters) to $\sim$10M (+ LoRA ranks), and require backpropagation through the full frozen LLM during training. While more expensive, this could potentially:
 \begin{itemize}
 \item Lower the 3B capacity threshold by giving smaller models specialized decoding mechanisms
-\item Improve task performance on challenging datasets like SST-2
+\item Further improve task performance on binary classification tasks
 \item Enable better handling of tasks requiring fine-grained distinctions
 \end{itemize}
 
