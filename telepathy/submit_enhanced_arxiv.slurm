@@ -1,14 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=enhanced_arxiv
-#SBATCH --output=runs/slurm_%j.log
-#SBATCH --error=runs/slurm_%j.err
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --gres=gpu:4
-#SBATCH --mem=256G
+#SBATCH --gpus=4
+#SBATCH --account=marlowe-m000066
+#SBATCH --partition=preempt
 #SBATCH --time=12:00:00
-#SBATCH --partition=gpu
+#SBATCH --mem=256GB
+#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/slurm_%j.log
+#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/slurm_%j.err
 
 # =============================================================================
 # SLURM Submission Script for Enhanced ArXiv Experiments
@@ -18,6 +17,10 @@
 # Cancel with: scancel <job_id>
 # =============================================================================
 
+# Set working directory
+WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+cd "$WORK_DIR"
+
 echo "=============================================================="
 echo "SLURM Job Information"
 echo "=============================================================="
@@ -25,10 +28,8 @@ echo "Job ID: $SLURM_JOB_ID"
 echo "Node: $SLURMD_NODENAME"
 echo "GPUs: $CUDA_VISIBLE_DEVICES"
 echo "Start time: $(date)"
+echo "Working directory: $WORK_DIR"
 echo "=============================================================="
-
-# Navigate to project directory
-cd /Users/sujeethjinesh/Desktop/LatentWire
 
 # Set up environment
 export PYTHONPATH=.
@@ -40,9 +41,6 @@ mkdir -p runs
 # Pull latest code
 echo "Pulling latest code..."
 git pull
-
-# Clean previous runs (optional - comment out to keep)
-# rm -rf runs/*
 
 # Run the enhanced arxiv suite
 echo "Starting enhanced arxiv experiments..."
