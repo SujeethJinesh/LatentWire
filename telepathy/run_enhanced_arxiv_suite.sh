@@ -25,10 +25,13 @@ echo "Log file: $LOG_FILE"
 echo ""
 echo "Experiments:"
 echo "  Phase 1: Task Transfer (SST-2 → IMDB/Yelp)"
-echo "  Phase 2: Inverse Scaling Ablation (M=2,4,8,16,32,64)"
+echo "  Phase 2: Inverse Scaling Ablation (M=2,4,8,16,32)"
 echo "  Phase 3: Multi-seed Unified Comparison (3 seeds)"
+echo "  Phase 4: Reverse Direction (Mistral→Llama)"
+echo "  Phase 5: Ensemble Baseline"
+echo "  Phase 6: Cross-Model Transfer Failure Demo"
 echo ""
-echo "Estimated time: 5-7 hours on 4× H100"
+echo "Estimated time: 8-10 hours on 4× H100"
 echo "=============================================================="
 
 {
@@ -151,6 +154,105 @@ echo "=============================================================="
     echo ""
 
     # =========================================================================
+    # PHASE 4: REVERSE DIRECTION (Mistral → Llama)
+    # =========================================================================
+    echo "=========================================================================="
+    echo "PHASE 4: REVERSE DIRECTION (Mistral → Llama)"
+    echo "=========================================================================="
+    echo "Testing bidirectionality: Can Mistral send to Llama?"
+    echo "This addresses: 'Does it work in reverse?'"
+    echo ""
+
+    mkdir -p "$OUTPUT_DIR/phase4_reverse"
+
+    python telepathy/run_unified_comparison.py \
+        --datasets sst2 agnews trec \
+        --output_dir "$OUTPUT_DIR/phase4_reverse" \
+        --train_steps 2000 \
+        --eval_samples 200 \
+        --seed 42 \
+        --reverse \
+        --skip_text_relay \
+        --skip_fewshot
+
+    echo ""
+    echo "Phase 4 complete!"
+    echo ""
+
+    # =========================================================================
+    # PHASE 5: ENSEMBLE BASELINE
+    # =========================================================================
+    echo "=========================================================================="
+    echo "PHASE 5: ENSEMBLE BASELINE"
+    echo "=========================================================================="
+    echo "Running both models and combining predictions"
+    echo "This addresses: 'Why not just run both models?'"
+    echo ""
+
+    mkdir -p "$OUTPUT_DIR/phase5_ensemble"
+
+    python telepathy/run_unified_comparison.py \
+        --datasets sst2 agnews trec \
+        --output_dir "$OUTPUT_DIR/phase5_ensemble" \
+        --train_steps 2000 \
+        --eval_samples 200 \
+        --seed 42 \
+        --run_ensemble \
+        --skip_text_relay \
+        --skip_fewshot
+
+    echo ""
+    echo "Phase 5 complete!"
+    echo ""
+
+    # =========================================================================
+    # PHASE 6: CROSS-MODEL TRANSFER FAILURE DEMO
+    # =========================================================================
+    echo "=========================================================================="
+    echo "PHASE 6: CROSS-MODEL TRANSFER FAILURE DEMO"
+    echo "=========================================================================="
+    echo "Demonstrating that same-model soft tokens DON'T transfer"
+    echo "This shows why ICAE-style approaches fail for cross-model transfer"
+    echo ""
+    echo "Experiment: Train bridge on Llama→Llama, then try Llama→Mistral"
+    echo "(Soft tokens learned for same model fail on different model)"
+    echo ""
+
+    mkdir -p "$OUTPUT_DIR/phase6_transfer_failure"
+
+    # Train "self-bridge" (Llama → Llama) - this should work well
+    echo "[1/2] Training Llama → Llama (same model, should work)..."
+    python telepathy/run_unified_comparison.py \
+        --datasets sst2 \
+        --output_dir "$OUTPUT_DIR/phase6_transfer_failure/llama_to_llama" \
+        --sender "meta-llama/Meta-Llama-3.1-8B-Instruct" \
+        --receiver "meta-llama/Meta-Llama-3.1-8B-Instruct" \
+        --train_steps 2000 \
+        --eval_samples 200 \
+        --seed 42 \
+        --skip_text_relay \
+        --skip_fewshot
+
+    # For comparison, show the cross-model bridge works
+    echo "[2/2] Training Llama → Mistral (cross-model, our method)..."
+    python telepathy/run_unified_comparison.py \
+        --datasets sst2 \
+        --output_dir "$OUTPUT_DIR/phase6_transfer_failure/llama_to_mistral" \
+        --train_steps 2000 \
+        --eval_samples 200 \
+        --seed 42 \
+        --skip_text_relay \
+        --skip_fewshot
+
+    echo ""
+    echo "Phase 6 complete!"
+    echo "Compare: Llama→Llama (same-model) vs Llama→Mistral (cross-model)"
+    echo "Both should work since we train the bridge. The key insight is that"
+    echo "ICAE-style methods train on same-model and expect cross-model transfer,"
+    echo "which fails without our bridging approach."
+    echo ""
+
+    # =========================================================================
     # SUMMARY
     # =========================================================================
     echo "=========================================================================="
@@ -165,11 +267,11 @@ echo "=============================================================="
     echo "    │   ├── imdb_eval/          # Transfer to IMDB"
     echo "    │   ├── yelp_eval/          # Transfer to Yelp"
     echo "    │   └── fresh_training/     # Baselines: train on target"
-    echo "    ├── phase2_inverse_scaling/ # Token count ablation"
-    echo "    │   ├── sst2_M2/, sst2_M4/, ... sst2_M32/"
-    echo "    │   ├── agnews_M2/, ... agnews_M32/"
-    echo "    │   └── trec_M2/, ... trec_M32/"
-    echo "    └── phase3_multiseed/       # 3-seed unified comparison"
+    echo "    ├── phase2_inverse_scaling/ # Token count ablation (M=2,4,8,16,32)"
+    echo "    ├── phase3_multiseed/       # 3-seed unified comparison"
+    echo "    ├── phase4_reverse/         # Mistral→Llama (bidirectionality)"
+    echo "    ├── phase5_ensemble/        # Both models vote baseline"
+    echo "    └── phase6_transfer_failure/ # ICAE-style failure demo"
     echo ""
 
     # Generate summary if results exist
@@ -226,6 +328,45 @@ if multiseed_dir.exists():
             for ds, res in data.get("results", {}).items():
                 if "bridge" in res:
                     print(f"  {ds.upper()}: Bridge = {res['bridge']['accuracy']:.1f}%")
+
+print("\n=== REVERSE DIRECTION (Mistral→Llama) ===")
+reverse_dir = output_dir / "phase4_reverse"
+if reverse_dir.exists():
+    results_files = list(reverse_dir.glob("unified_results_*.json"))
+    if results_files:
+        with open(results_files[0]) as f:
+            data = json.load(f)
+        for ds, res in data.get("results", {}).items():
+            if "bridge" in res:
+                print(f"  {ds.upper()}: Bridge = {res['bridge']['accuracy']:.1f}%")
+
+print("\n=== ENSEMBLE BASELINE ===")
+ensemble_dir = output_dir / "phase5_ensemble"
+if ensemble_dir.exists():
+    results_files = list(ensemble_dir.glob("unified_results_*.json"))
+    if results_files:
+        with open(results_files[0]) as f:
+            data = json.load(f)
+        for ds, res in data.get("results", {}).items():
+            if "ensemble" in res:
+                e = res["ensemble"]
+                print(f"  {ds.upper()}:")
+                print(f"    Vote:   {e.get('vote_accuracy', 'N/A'):.1f}%")
+                print(f"    Avg:    {e.get('avg_accuracy', 'N/A'):.1f}%")
+                print(f"    Bridge: {res.get('bridge', {}).get('accuracy', 'N/A'):.1f}%")
+
+print("\n=== CROSS-MODEL TRANSFER DEMO ===")
+transfer_dir = output_dir / "phase6_transfer_failure"
+for subdir, label in [("llama_to_llama", "Llama→Llama"), ("llama_to_mistral", "Llama→Mistral")]:
+    dir_path = transfer_dir / subdir
+    if dir_path.exists():
+        results_files = list(dir_path.glob("unified_results_*.json"))
+        if results_files:
+            with open(results_files[0]) as f:
+                data = json.load(f)
+            for ds, res in data.get("results", {}).items():
+                if "bridge" in res:
+                    print(f"  {label}: Bridge = {res['bridge']['accuracy']:.1f}%")
 
 print("\nDone!")
 SUMMARY_EOF

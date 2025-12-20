@@ -701,6 +701,82 @@ def eval_fewshot(model, tokenizer, train_ds, eval_ds, dataset_name, device, shot
     }
 
 
+def eval_ensemble(model1, tok1, model2, tok2, eval_ds, dataset_name, device,
+                  model1_name="model1", model2_name="model2"):
+    """
+    Evaluate ensemble baseline: run both models and combine predictions.
+
+    This addresses the reviewer concern: "Why not just run both models and combine?"
+    If Bridge doesn't beat this trivial ensemble, the bridge is unnecessary.
+    """
+    config = DATASET_CONFIGS[dataset_name]
+    label_tokens1 = get_label_tokens(tok1, dataset_name)
+    label_tokens2 = get_label_tokens(tok2, dataset_name)
+
+    correct_m1 = 0
+    correct_m2 = 0
+    correct_vote = 0
+    correct_avg = 0
+    total = 0
+
+    with torch.no_grad():
+        for item in tqdm(eval_ds, desc=f"Eval Ensemble on {dataset_name}"):
+            text = item[config["text_field"]]
+            label = item[config["label_field"]]
+
+            prompt = f"Text: {text[:256]}\n\n{config['task_prompt']}\nAnswer:"
+
+            # Model 1 prediction
+            inputs1 = tok1(prompt, return_tensors="pt", truncation=True, max_length=300)
+            inputs1 = {k: v.to(device) for k, v in inputs1.items()}
+            outputs1 = model1(**inputs1)
+            logits1 = outputs1.logits[0, -1]
+            label_logits1 = torch.stack([logits1[label_tokens1[i]] for i in range(len(label_tokens1))])
+            probs1 = F.softmax(label_logits1, dim=0)
+            pred1 = label_logits1.argmax().item()
+
+            # Model 2 prediction
+            inputs2 = tok2(prompt, return_tensors="pt", truncation=True, max_length=300)
+            inputs2 = {k: v.to(device) for k, v in inputs2.items()}
+            outputs2 = model2(**inputs2)
+            logits2 = outputs2.logits[0, -1]
+            label_logits2 = torch.stack([logits2[label_tokens2[i]] for i in range(len(label_tokens2))])
+            probs2 = F.softmax(label_logits2, dim=0)
+            pred2 = label_logits2.argmax().item()
+
+            # Voting: majority vote (if tie, use model1)
+            if pred1 == pred2:
+                vote_pred = pred1
+            else:
+                # Use confidence to break tie
+                if probs1.max() >= probs2.max():
+                    vote_pred = pred1
+                else:
+                    vote_pred = pred2
+
+            # Average probabilities
+            avg_probs = (probs1 + probs2) / 2
+            avg_pred = avg_probs.argmax().item()
+
+            if pred1 == label:
+                correct_m1 += 1
+            if pred2 == label:
+                correct_m2 += 1
+            if vote_pred == label:
+                correct_vote += 1
+            if avg_pred == label:
+                correct_avg += 1
+            total += 1
+
+    return {
+        f"{model1_name}_accuracy": 100.0 * correct_m1 / total,
+        f"{model2_name}_accuracy": 100.0 * correct_m2 / total,
+        "vote_accuracy": 100.0 * correct_vote / total,
+        "avg_accuracy": 100.0 * correct_avg / total,
+        "total": total,
+    }
+
+
 # =============================================================================
 # MAIN
 # =============================================================================
@@ -719,6 +795,11 @@ def main():
     parser.add_argument("--seeds", nargs="+", type=int, default=None,
                         help="Multiple seeds for robust evaluation (default: [42, 123, 456])")
     parser.add_argument("--skip_text_relay", action="store_true", help="Skip slow text-relay baseline")
+    parser.add_argument("--skip_fewshot", action="store_true", help="Skip few-shot baseline")
+    parser.add_argument("--reverse", action="store_true",
+                        help="Reverse direction: use Mistral as sender, Llama as receiver")
+    parser.add_argument("--run_ensemble", action="store_true",
+                        help="Run ensemble baseline (both models vote)")
     args = parser.parse_args()
 
     # Handle seed/seeds argument compatibility
@@ -740,15 +821,30 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    # Handle reverse direction (swap sender and receiver)
+    if args.reverse:
+        sender_model_id = args.receiver  # Mistral becomes sender
+        receiver_model_id = args.sender  # Llama becomes receiver
+        direction_str = "REVERSE (Mistral→Llama)"
+    else:
+        sender_model_id = args.sender
+        receiver_model_id = args.receiver
+        direction_str = "FORWARD (Llama→Mistral)"
+
     print("=" * 70)
     print("UNIFIED COMPARISON EXPERIMENT")
     print("=" * 70)
+    print(f"Direction: {direction_str}")
+    print(f"Sender: {sender_model_id}")
+    print(f"Receiver: {receiver_model_id}")
     print(f"Datasets: {args.datasets}")
     print(f"Seeds: {seeds} ({len(seeds)} runs per experiment)")
     print(f"Soft tokens: {args.soft_tokens}")
     print(f"Train steps: {args.train_steps}")
     print(f"Eval samples: {args.eval_samples}")
     print(f"Output: {args.output_dir}")
+    if args.run_ensemble:
+        print("Ensemble baseline: ENABLED")
     print("=" * 70)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -756,15 +852,15 @@ def main():
     # Load models
     print("\nLoading models...")
     sender = AutoModelForCausalLM.from_pretrained(
-        args.sender, torch_dtype=torch.bfloat16, device_map="auto"
+        sender_model_id, torch_dtype=torch.bfloat16, device_map="auto"
     )
-    sender_tok = AutoTokenizer.from_pretrained(args.sender)
+    sender_tok = AutoTokenizer.from_pretrained(sender_model_id)
     sender_tok.pad_token = sender_tok.eos_token
 
     receiver = AutoModelForCausalLM.from_pretrained(
-        args.receiver, torch_dtype=torch.bfloat16, device_map="auto"
+        receiver_model_id, torch_dtype=torch.bfloat16, device_map="auto"
     )
-    receiver_tok = AutoTokenizer.from_pretrained(args.receiver)
+    receiver_tok = AutoTokenizer.from_pretrained(receiver_model_id)
     receiver_tok.pad_token = receiver_tok.eos_token
 
     sender.eval()
@@ -774,12 +870,14 @@ def main():
     all_seeds_results = {
         "meta": {
             "timestamp": timestamp,
-            "sender": args.sender,
-            "receiver": args.receiver,
+            "direction": direction_str,
+            "sender": sender_model_id,
+            "receiver": receiver_model_id,
             "soft_tokens": args.soft_tokens,
             "train_steps": args.train_steps,
             "eval_samples": args.eval_samples,
             "seeds": seeds,
+            "ensemble_enabled": args.run_ensemble,
         },
         "per_seed_results": {},  # Will store results for each seed
         "aggregated_results": {},  # Will store mean and std across seeds
@@ -809,6 +907,7 @@ def main():
             "llama_zeroshot": [],
             "mistral_zeroshot": [],
             "mistral_fewshot": [],
+            "ensemble": [],
         }
 
         # ADAPTIVE HYPERPARAMETERS for binary classification (SST-2 FIX)
@@ -903,14 +1002,30 @@ def main():
             print(f"  Mistral zero-shot: {mistral_zs['accuracy']:.1f}%")
 
             # 6. FEW-SHOT
-            print(f"\n[6/6] Evaluating {args.fewshot_shots}-SHOT (seed={seed})...")
-            mistral_fs = eval_fewshot(
-                receiver, receiver_tok, train_ds, eval_ds,
-                dataset_name, device, args.fewshot_shots, "Mistral"
-            )
-            dataset_results["mistral_fewshot"] = mistral_fs
-            seed_results_list["mistral_fewshot"].append(mistral_fs)
-            print(f"  Mistral {args.fewshot_shots}-shot: {mistral_fs['accuracy']:.1f}%")
+            if not args.skip_fewshot:
+                print(f"\n[6/7] Evaluating {args.fewshot_shots}-SHOT (seed={seed})...")
+                mistral_fs = eval_fewshot(
+                    receiver, receiver_tok, train_ds, eval_ds,
+                    dataset_name, device, args.fewshot_shots, "Mistral"
+                )
+                dataset_results["mistral_fewshot"] = mistral_fs
+                seed_results_list["mistral_fewshot"].append(mistral_fs)
+                print(f"  Mistral {args.fewshot_shots}-shot: {mistral_fs['accuracy']:.1f}%")
+            else:
+                dataset_results["mistral_fewshot"] = {"accuracy": None, "skipped": True}
+
+            # 7. ENSEMBLE (if enabled)
+            if args.run_ensemble:
+                print(f"\n[7/7] Evaluating ENSEMBLE baseline (seed={seed})...")
+                ensemble_results = eval_ensemble(
+                    sender, sender_tok, receiver, receiver_tok,
+                    eval_ds, dataset_name, device,
+                    "Sender", "Receiver"
+                )
+                dataset_results["ensemble"] = ensemble_results
+                seed_results_list["ensemble"].append(ensemble_results)
+                print(f"  Ensemble vote: {ensemble_results['vote_accuracy']:.1f}%")
+                print(f"  Ensemble avg:  {ensemble_results['avg_accuracy']:.1f}%")
 
             # Save per-seed results
             all_seeds_results["per_seed_results"][dataset_name][seed] = dataset_results
