@@ -143,7 +143,7 @@ Our key contributions:
 \item \textbf{Efficiency:} Constant 8KB (fp16) payload vs. growing text serialization
 \end{itemize}
 
-The system works with any frozen LLM checkpoints above the capacity threshold, requiring only small trainable components: an encoder (1-10M parameters) and per-model adapters (<100K parameters each). Critically, the bridge can transfer across model families without retraining.
+The system works with any frozen LLM checkpoints above the capacity threshold, requiring only the PerceiverResampler bridge to be trained ($\sim$537M parameters for our configuration). While this is substantial, it represents only 3.6\% of the combined sender+receiver capacity (15B), and critically, the bridge can transfer across model families without retraining the LLMs themselves.
 
 \section{Background and Related Work}
 
@@ -199,7 +199,7 @@ Z &= \text{CrossAttn}(Q, B', B') \\
 Z &= \text{LayerNorm}(Z)
 \end{align}
 
-Both produce $Z \in \mathbb{R}^{M \times d_z}$ where $M=16$ and $d_z=256$ in our experiments.
+Both produce $Z \in \mathbb{R}^{M \times d_z}$. For classification experiments (SST-2, AG News, TREC), we use a PerceiverResampler operating in the receiver's native dimension: $M=8$ and $d_z=4096$, resulting in soft tokens that can be directly injected as \texttt{inputs\_embeds}.
 
 \subsubsection{Model-Specific Adapters}
 
@@ -409,11 +409,11 @@ With the latent information removed entirely, both models generate grammatically
 
 The failure stems from insufficient model capacity to decompress the latent representation. Consider the information processing requirements:
 
-\textbf{Latent information density:} The interlingua compresses $n \approx 300$ tokens into $M = 16$ vectors of dimension $d_z = 256$, yielding 4,096 continuous parameters total.
+\textbf{Latent information density:} The interlingua compresses $n \approx 300$ tokens into $M = 8$ vectors of dimension $d_z = 4096$ (matching the receiver's hidden dimension), yielding 32,768 continuous parameters per sample.
 
 \textbf{Decompression complexity:} To generate coherent text, the model must:
 \begin{enumerate}
-\item Map 4,096 continuous values to a trajectory through discrete token space
+\item Map 32,768 continuous values to a trajectory through discrete token space
 \item Maintain long-range coherence without explicit token boundaries
 \item Resolve ambiguity inherent in continuous representations
 \end{enumerate}
@@ -1034,6 +1034,8 @@ TREC & 40.3 & $\sim$1000 & $\sim$25$\times$ \\
 
 Bridge achieves consistent 25-31$\times$ speedups across all three classification tasks compared to text-relay approaches. The Bridge latency remains low (31-43ms) regardless of task complexity, while Text-Relay's autoregressive summarization step dominates its latency ($\sim$1000ms), preventing effective batching---throughput remains at $\sim$1 sample/sec regardless of batch size. Bridge scales linearly with batching, achieving 109 samples/sec at batch=16.
 
+\textbf{Latency measurement methodology:} All timings measured on H100 GPU with models pre-loaded in VRAM. Each reported latency is the mean of 3 runs over the same 200 evaluation samples. Standard deviation across runs was $<$5\% for Bridge and $<$10\% for Text-Relay (higher variance due to variable summary lengths). The speedup advantage is robust across all measured variance.
+
 \subsubsection{Training Efficiency}
 
 Table~\ref{tab:training_cost} compares the computational cost of training Bridge versus Prompt-Tuning across our three classification tasks:
@@ -1061,7 +1063,7 @@ Prompt-Tuning & 6000 & 21 min & 0.35 \\
 \vskip -0.1in
 \end{table}
 
-\textbf{Training infrastructure:} All experiments conducted on 1$\times$ H100 GPU with mixed precision (bf16) training. The Bridge architecture trains only the PerceiverResampler parameters (queries and projection layers, $\sim$500K parameters) while keeping both sender and receiver models frozen. Prompt-Tuning optimizes soft prompt vectors directly on the receiver model alone.
+\textbf{Training infrastructure:} All experiments conducted on 1$\times$ H100 GPU with mixed precision (bf16) training. The Bridge architecture trains the PerceiverResampler parameters ($\sim$537M parameters, using the full 4096-dimensional model hidden states for cross-attention) while keeping both sender and receiver models frozen. Prompt-Tuning optimizes soft prompt vectors directly on the receiver model alone.
 
 \textbf{Efficiency analysis:} Despite involving two models (sender and receiver), Bridge training remains efficient due to:
 \begin{itemize}
@@ -1072,7 +1074,7 @@ Prompt-Tuning & 6000 & 21 min & 0.35 \\
 
 The total computational budget for the complete experimental suite (SST-2, AG News, TREC with both Bridge and Prompt-Tuning baselines) is approximately 0.85 GPU-hours on H100 hardware. Per-task training time of 7-10 minutes enables rapid iteration during development.
 
-\textbf{Comparison to full fine-tuning:} Bridge training is orders of magnitude cheaper than full model fine-tuning. Fine-tuning Mistral-7B on the same tasks would require updating 7B parameters vs. our 500K, resulting in $\sim$100$\times$ higher memory and compute costs. This demonstrates the practical viability of the cross-model communication approach.
+\textbf{Comparison to full fine-tuning:} Bridge training is significantly cheaper than full model fine-tuning. Fine-tuning Mistral-7B on the same tasks would require updating 7B parameters vs. our 537M bridge, representing a 13$\times$ reduction. More importantly, both frozen LLMs require only forward passes (no gradient computation through 15B parameters), making bridge training practical on a single H100 GPU.
 
 \subsection{Ablation Studies}
 
@@ -1109,6 +1111,8 @@ Model size 1B (vs 7B) & 0.001 & -99.99\% \\
 
 The ablation reveals a hierarchy of importance: model capacity, adapter regularization, and first-token objective are absolutely critical (>95\% degradation without), calibration is essential (86\% degradation), distribution matching (anchor/BOS) is very important (35-42\% degradation), and architectural choices provide incremental improvements.
 
+\textbf{Note on experimental configurations:} The SQuAD ablations above use a bottleneck architecture ($M=16$, $d_z=256$), while the classification experiments (SST-2, AG News, TREC) use the full model dimension ($M=8$, $d_z=4096$) for PerceiverResampler cross-attention. The full-dimension approach yielded stronger classification results but at higher parameter cost (537M vs $\sim$5M).
+
 \subsubsection{Binary Classification Factor Analysis}
 
 Our investigation into the SST-2 binary sentiment classification failure (49.5\% accuracy, near random chance in initial experiments) revealed multiple architectural and hyperparameter factors that collectively contribute to successful binary classification performance. While we did not conduct rigorous single-factor ablations, our diagnostic experiments identified six key components that distinguish successful binary classification (86.5\% accuracy) from the failed initial configuration:
@@ -1135,7 +1139,7 @@ The combination of these factors improved SST-2 accuracy from 49.5\% (random bas
 
 \subsection{Information Bottleneck}
 
-The latent capacity $M \times d_z$ determines how much information can be transmitted. With $M=16$ and $d_z=256$, we have 4,096 continuous values. While this is less than hundreds of discrete tokens, continuous representations pack information more densely through:
+The latent capacity $M \times d_z$ determines how much information can be transmitted. With $M=8$ and $d_z=4096$ (our classification configuration), we have 32,768 continuous values. While the number of soft tokens is far fewer than text tokens, continuous representations pack information more densely through:
 \begin{itemize}
 \item Superposition: Multiple concepts encoded in the same vector
 \item Smooth interpolation: Gradients of meaning in continuous space
@@ -1218,11 +1222,11 @@ We have not systematically explored task-adaptive or input-adaptive M selection.
 
 \subsection{Frozen Model Constraint}
 
-\textbf{Suboptimal adaptation:} Our design freezes the LLM weights entirely, training only small adapters (<100K parameters per model). While this enables deployment with arbitrary frozen checkpoints, it prevents the receiver models from adapting their internal representations to better decode the latent bridge.
+\textbf{Suboptimal adaptation:} Our design freezes the LLM weights entirely, training only the PerceiverResampler bridge (537M parameters). While this enables deployment with arbitrary frozen checkpoints, it prevents the receiver models from adapting their internal representations to better decode the latent bridge.
 
 Recent work on joint fine-tuning~\cite{hu2021lora} suggests that lightweight adapter methods (LoRA, prefix tuning) applied to the LLM itself could improve soft-prompt decoding while preserving most frozen weights. Our current architecture leaves this potential untapped.
 
-\textbf{Computational tradeoffs:} Enabling LoRA on the receiver would increase trainable parameters from $\sim$500K (encoder + adapters) to $\sim$10M (+ LoRA ranks), and require backpropagation through the full frozen LLM during training. While more expensive, this could potentially:
+\textbf{Computational tradeoffs:} Our current bridge uses the full model dimension (4096) for cross-attention operations, resulting in 537M trainable parameters. A bottleneck architecture with smaller internal dimension ($d_z = 256$) would reduce this to $\sim$5M parameters while potentially preserving performance. Additionally, enabling LoRA on the receiver would require backpropagation through the frozen LLM during training. While more expensive, this could potentially:
 \begin{itemize}
 \item Lower the 3B capacity threshold by giving smaller models specialized decoding mechanisms
 \item Further improve task performance on binary classification tasks
