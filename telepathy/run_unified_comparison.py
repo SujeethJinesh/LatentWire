@@ -98,6 +98,29 @@ DATASET_CONFIGS = {
         "task_prompt": "Classify the question type: abbreviation, entity, description, human, location, or number.",
         "random_chance": 16.7,
     },
+    # Task transfer datasets (same task as SST-2 for sentiment transfer experiments)
+    "imdb": {
+        "hf_name": ("imdb",),
+        "text_field": "text",
+        "label_field": "label",
+        "label_map": {0: "negative", 1: "positive"},
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "test",
+        "task_prompt": "Is the sentiment positive or negative?",
+        "random_chance": 50.0,
+    },
+    "yelp_polarity": {
+        "hf_name": ("yelp_polarity",),
+        "text_field": "text",
+        "label_field": "label",
+        "label_map": {0: "negative", 1: "positive"},
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "test",
+        "task_prompt": "Is the sentiment positive or negative?",
+        "random_chance": 50.0,
+    },
 }
 
 

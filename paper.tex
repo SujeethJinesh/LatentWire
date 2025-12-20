@@ -157,7 +157,7 @@ Current multi-agent frameworks (AutoGen~\cite{autogen}, CAMEL~\cite{camel}, Lang
 
 \subsection{Prompt Compression}
 
-Methods like LLMLingua~\cite{llmlingua2024} and AutoCompressors~\cite{chevalier2023autocompressors} reduce prompt length through selective token removal or learned compression. These still produce text that requires model-specific tokenization. ICAE~\cite{ge2024icae} learns compressed representations but only within single model families. LatentWire differs by learning a model-agnostic continuous representation that bypasses tokenization entirely.
+Methods like LLMLingua~\cite{llmlingua2024} and AutoCompressors~\cite{chevalier2023autocompressors} reduce prompt length through selective token removal or learned compression. These still produce text that requires model-specific tokenization. ICAE~\cite{ge2024icae} and 500xCompressor~\cite{li2024500x} learn to compress context into soft tokens for efficiency, achieving up to 500$\times$ compression within a single model. However, these methods use the \emph{same frozen LLM} as both encoder and decoder, avoiding the architectural incompatibilities (vocabulary mismatch, embedding scale differences, positional encoding) that arise in cross-model transfer. LatentWire solves the orthogonal problem of \emph{heterogeneous} LLM communication, learning to bridge models with different vocabularies (128K vs 32K tokens), embedding scales (Llama $\pm$20 vs Mistral $\pm$100), and architectures.
 
 \subsection{Multi-Model Ensembles}
 
