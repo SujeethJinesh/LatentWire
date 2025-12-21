@@ -1,0 +1,257 @@
+{
+  "meta": {
+    "timestamp": "20251219_204202",
+    "direction": "FORWARD (Llama\u2192Mistral)",
+    "sender": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "receiver": "mistralai/Mistral-7B-Instruct-v0.3",
+    "soft_tokens": 8,
+    "train_steps": 4000,
+    "eval_samples": 500,
+    "seeds": [
+      42
+    ],
+    "ensemble_enabled": false
+  },
+  "per_seed_results": {
+    "imdb": {
+      "42": {
+        "random_chance": 50.0,
+        "bridge": {
+          "accuracy": 100.0,
+          "correct": 500,
+          "total": 500,
+          "latency_ms": 45.171149253845215,
+          "train_info": {
+            "final_loss": 7.168948650360107e-07
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 100.0,
+          "correct": 500,
+          "total": 500,
+          "train_info": {
+            "final_loss": 0.00019174575805664063
+          }
+        },
+        "text_relay": {
+          "accuracy": null,
+          "skipped": true
+        },
+        "llama_zeroshot": {
+          "accuracy": 86.2,
+          "correct": 431,
+          "total": 500
+        },
+        "mistral_zeroshot": {
+          "accuracy": 89.6,
+          "correct": 448,
+          "total": 500
+        },
+        "mistral_fewshot": {
+          "accuracy": 84.2,
+          "correct": 421,
+          "total": 500
+        }
+      }
+    },
+    "yelp_polarity": {
+      "42": {
+        "random_chance": 50.0,
+        "bridge": {
+          "accuracy": 95.4,
+          "correct": 477,
+          "total": 500,
+          "latency_ms": 44.43942308425903,
+          "train_info": {
+            "final_loss": 0.16801544189453124
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 93.0,
+          "correct": 465,
+          "total": 500,
+          "train_info": {
+            "final_loss": 0.301583251953125
+          }
+        },
+        "text_relay": {
+          "accuracy": null,
+          "skipped": true
+        },
+        "llama_zeroshot": {
+          "accuracy": 92.6,
+          "correct": 463,
+          "total": 500
+        },
+        "mistral_zeroshot": {
+          "accuracy": 91.0,
+          "correct": 455,
+          "total": 500
+        },
+        "mistral_fewshot": {
+          "accuracy": 91.6,
+          "correct": 458,
+          "total": 500
+        }
+      }
+    }
+  },
+  "aggregated_results": {
+    "imdb": {
+      "random_chance": 50.0,
+      "bridge": {
+        "accuracy_mean": 100.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 100.0,
+        "accuracy_max": 100.0,
+        "num_seeds": 1,
+        "latency_ms_mean": 45.171149253845215,
+        "latency_ms_std": 0.0
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 100.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 100.0,
+        "accuracy_max": 100.0,
+        "num_seeds": 1
+      },
+      "text_relay": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 86.2,
+        "accuracy_std": 0.0,
+        "accuracy_min": 86.2,
+        "accuracy_max": 86.2,
+        "num_seeds": 1
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 89.6,
+        "accuracy_std": 0.0,
+        "accuracy_min": 89.6,
+        "accuracy_max": 89.6,
+        "num_seeds": 1
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 84.2,
+        "accuracy_std": 0.0,
+        "accuracy_min": 84.2,
+        "accuracy_max": 84.2,
+        "num_seeds": 1
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    },
+    "yelp_polarity": {
+      "random_chance": 50.0,
+      "bridge": {
+        "accuracy_mean": 95.4,
+        "accuracy_std": 0.0,
+        "accuracy_min": 95.4,
+        "accuracy_max": 95.4,
+        "num_seeds": 1,
+        "latency_ms_mean": 44.43942308425903,
+        "latency_ms_std": 0.0
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 93.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 93.0,
+        "accuracy_max": 93.0,
+        "num_seeds": 1
+      },
+      "text_relay": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 92.6,
+        "accuracy_std": 0.0,
+        "accuracy_min": 92.6,
+        "accuracy_max": 92.6,
+        "num_seeds": 1
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 91.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 91.0,
+        "accuracy_max": 91.0,
+        "num_seeds": 1
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 91.6,
+        "accuracy_std": 0.0,
+        "accuracy_min": 91.6,
+        "accuracy_max": 91.6,
+        "num_seeds": 1
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    }
+  },
+  "comparison_table": {
+    "imdb": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        50.0,
+        100.0,
+        86.2,
+        89.6,
+        84.2,
+        "N/A",
+        100.0
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "N/A",
+        0.0
+      ]
+    },
+    "yelp_polarity": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        50.0,
+        93.0,
+        92.6,
+        91.0,
+        91.6,
+        "N/A",
+        95.4
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "N/A",
+        0.0
+      ]
+    }
+  }
+}

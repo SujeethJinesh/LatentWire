@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "timestamp": "20251220_133928",
+    "direction": "FORWARD (Llama\u2192Mistral)",
+    "sender": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "receiver": "mistralai/Mistral-7B-Instruct-v0.3",
+    "soft_tokens": 8,
+    "train_steps": 2000,
+    "eval_samples": 200,
+    "seeds": [
+      42
+    ],
+    "ensemble_enabled": false
+  },
+  "per_seed_results": {
+    "trec": {
+      "42": {
+        "random_chance": 16.7,
+        "bridge": {
+          "accuracy": 97.5,
+          "correct": 195,
+          "total": 200,
+          "latency_ms": 43.74131917953491,
+          "train_info": {
+            "final_loss": 0.21234188079833985
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 86.0,
+          "correct": 172,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.6971510314941406
+          }
+        },
+        "text_relay": {
+          "accuracy": null,
+          "skipped": true
+        },
+        "llama_zeroshot": {
+          "accuracy": 67.5,
+          "correct": 135,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 68.5,
+          "correct": 137,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": null,
+          "skipped": true
+        }
+      }
+    }
+  },
+  "aggregated_results": {
+    "trec": {
+      "random_chance": 16.7,
+      "bridge": {
+        "accuracy_mean": 97.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 97.5,
+        "accuracy_max": 97.5,
+        "num_seeds": 1,
+        "latency_ms_mean": 43.74131917953491,
+        "latency_ms_std": 0.0
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 86.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 86.0,
+        "accuracy_max": 86.0,
+        "num_seeds": 1
+      },
+      "text_relay": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 67.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 67.5,
+        "accuracy_max": 67.5,
+        "num_seeds": 1
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 68.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 68.5,
+        "accuracy_max": 68.5,
+        "num_seeds": 1
+      },
+      "mistral_fewshot": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    }
+  },
+  "comparison_table": {
+    "trec": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        16.7,
+        86.0,
+        67.5,
+        68.5,
+        "N/A",
+        "N/A",
+        97.5
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "N/A",
+        "N/A",
+        0.0
+      ]
+    }
+  }
+}
