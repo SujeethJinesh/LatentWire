@@ -1,0 +1,267 @@
+{
+  "meta": {
+    "timestamp": "20251221_025230",
+    "direction": "FORWARD (Llama\u2192Mistral)",
+    "sender": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "receiver": "mistralai/Mistral-7B-Instruct-v0.3",
+    "soft_tokens": 8,
+    "train_steps": 2000,
+    "eval_samples": 200,
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "ensemble_enabled": false
+  },
+  "aggregated_results": {
+    "sst2": {
+      "random_chance": 50.0,
+      "bridge": {
+        "accuracy_mean": 91.5,
+        "accuracy_std": 5.0,
+        "accuracy_min": 86.5,
+        "accuracy_max": 96.5,
+        "num_seeds": 3,
+        "latency_ms_mean": 43.81702979405721,
+        "latency_ms_std": 0.12969549300388616
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 93.16666666666667,
+        "accuracy_std": 4.645786621588784,
+        "accuracy_min": 88.0,
+        "accuracy_max": 97.0,
+        "num_seeds": 3
+      },
+      "text_relay": {
+        "accuracy_mean": 70.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 70.5,
+        "accuracy_max": 70.5,
+        "num_seeds": 3,
+        "latency_ms_mean": 1187.9569216569264,
+        "latency_ms_std": 6.860077057975101
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 93.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 93.0,
+        "accuracy_max": 93.0,
+        "num_seeds": 3
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 91.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 91.5,
+        "accuracy_max": 91.5,
+        "num_seeds": 3
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 96.33333333333333,
+        "accuracy_std": 0.2886751345948129,
+        "accuracy_min": 96.0,
+        "accuracy_max": 96.5,
+        "num_seeds": 3
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    },
+    "agnews": {
+      "random_chance": 25.0,
+      "bridge": {
+        "accuracy_mean": 90.33333333333333,
+        "accuracy_std": 4.041451884327381,
+        "accuracy_min": 86.0,
+        "accuracy_max": 94.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 44.174452225367226,
+        "latency_ms_std": 0.14228886056298745
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 84.16666666666667,
+        "accuracy_std": 4.536885862938733,
+        "accuracy_min": 79.0,
+        "accuracy_max": 87.5,
+        "num_seeds": 3
+      },
+      "text_relay": {
+        "accuracy_mean": 70.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 70.0,
+        "accuracy_max": 70.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 1177.8236480553944,
+        "latency_ms_std": 3.368661822237528
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 84.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 84.0,
+        "accuracy_max": 84.0,
+        "num_seeds": 3
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 75.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 75.0,
+        "accuracy_max": 75.0,
+        "num_seeds": 3
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 81.83333333333333,
+        "accuracy_std": 0.7637626158259733,
+        "accuracy_min": 81.0,
+        "accuracy_max": 82.5,
+        "num_seeds": 3
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    },
+    "trec": {
+      "random_chance": 16.7,
+      "bridge": {
+        "accuracy_mean": 94.5,
+        "accuracy_std": 5.634713834792322,
+        "accuracy_min": 88.0,
+        "accuracy_max": 98.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 43.992489178975426,
+        "latency_ms_std": 0.21484424963722357
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 84.66666666666667,
+        "accuracy_std": 9.569918146637063,
+        "accuracy_min": 74.5,
+        "accuracy_max": 93.5,
+        "num_seeds": 3
+      },
+      "text_relay": {
+        "accuracy_mean": 47.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 47.0,
+        "accuracy_max": 47.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 1194.2646499474843,
+        "latency_ms_std": 2.370044199095745
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 67.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 67.5,
+        "accuracy_max": 67.5,
+        "num_seeds": 3
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 68.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 68.5,
+        "accuracy_max": 68.5,
+        "num_seeds": 3
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 68.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 68.5,
+        "accuracy_max": 68.5,
+        "num_seeds": 3
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    }
+  },
+  "comparison_table": {
+    "sst2": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        50.0,
+        93.16666666666667,
+        93.0,
+        91.5,
+        96.33333333333333,
+        70.5,
+        91.5
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        4.645786621588784,
+        0.0,
+        0.0,
+        0.2886751345948129,
+        0.0,
+        5.0
+      ]
+    },
+    "agnews": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        25.0,
+        84.16666666666667,
+        84.0,
+        75.0,
+        81.83333333333333,
+        70.0,
+        90.33333333333333
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        4.536885862938733,
+        0.0,
+        0.0,
+        0.7637626158259733,
+        0.0,
+        4.041451884327381
+      ]
+    },
+    "trec": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        16.7,
+        84.66666666666667,
+        67.5,
+        68.5,
+        68.5,
+        47.0,
+        94.5
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        9.569918146637063,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        5.634713834792322
+      ]
+    }
+  }
+}

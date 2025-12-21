@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "timestamp": "20251221_022304",
+    "direction": "FORWARD (Llama\u2192Mistral)",
+    "sender": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "receiver": "mistralai/Mistral-7B-Instruct-v0.3",
+    "soft_tokens": 32,
+    "train_steps": 2000,
+    "eval_samples": 200,
+    "seeds": [
+      42
+    ],
+    "ensemble_enabled": false
+  },
+  "aggregated_results": {
+    "sst2": {
+      "random_chance": 50.0,
+      "bridge": {
+        "accuracy_mean": 86.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 86.5,
+        "accuracy_max": 86.5,
+        "num_seeds": 1,
+        "latency_ms_mean": 44.57646608352661,
+        "latency_ms_std": 0.0
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 95.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 95.5,
+        "accuracy_max": 95.5,
+        "num_seeds": 1
+      },
+      "text_relay": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 93.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 93.0,
+        "accuracy_max": 93.0,
+        "num_seeds": 1
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 91.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 91.5,
+        "accuracy_max": 91.5,
+        "num_seeds": 1
+      },
+      "mistral_fewshot": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    }
+  },
+  "comparison_table": {
+    "sst2": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        50.0,
+        95.5,
+        93.0,
+        91.5,
+        "N/A",
+        "N/A",
+        86.5
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "N/A",
+        "N/A",
+        0.0
+      ]
+    }
+  }
+}

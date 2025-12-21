@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "timestamp": "20251221_011056",
+    "direction": "FORWARD (Llama\u2192Mistral)",
+    "sender": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "receiver": "mistralai/Mistral-7B-Instruct-v0.3",
+    "soft_tokens": 4,
+    "train_steps": 2000,
+    "eval_samples": 200,
+    "seeds": [
+      42
+    ],
+    "ensemble_enabled": false
+  },
+  "per_seed_results": {
+    "agnews": {
+      "42": {
+        "random_chance": 25.0,
+        "bridge": {
+          "accuracy": 89.5,
+          "correct": 179,
+          "total": 200,
+          "latency_ms": 44.11808371543884,
+          "train_info": {
+            "final_loss": 0.335341796875
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 91.0,
+          "correct": 182,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.4238104248046875
+          }
+        },
+        "text_relay": {
+          "accuracy": null,
+          "skipped": true
+        },
+        "llama_zeroshot": {
+          "accuracy": 84.0,
+          "correct": 168,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 75.0,
+          "correct": 150,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": null,
+          "skipped": true
+        }
+      }
+    }
+  },
+  "aggregated_results": {
+    "agnews": {
+      "random_chance": 25.0,
+      "bridge": {
+        "accuracy_mean": 89.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 89.5,
+        "accuracy_max": 89.5,
+        "num_seeds": 1,
+        "latency_ms_mean": 44.11808371543884,
+        "latency_ms_std": 0.0
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 91.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 91.0,
+        "accuracy_max": 91.0,
+        "num_seeds": 1
+      },
+      "text_relay": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 84.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 84.0,
+        "accuracy_max": 84.0,
+        "num_seeds": 1
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 75.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 75.0,
+        "accuracy_max": 75.0,
+        "num_seeds": 1
+      },
+      "mistral_fewshot": {
+        "accuracy": null,
+        "skipped": true
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    }
+  },
+  "comparison_table": {
+    "agnews": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        25.0,
+        91.0,
+        84.0,
+        75.0,
+        "N/A",
+        "N/A",
+        89.5
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "N/A",
+        "N/A",
+        0.0
+      ]
+    }
+  }
+}
