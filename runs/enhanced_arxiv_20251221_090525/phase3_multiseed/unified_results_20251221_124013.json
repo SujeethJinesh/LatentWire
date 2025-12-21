@@ -1,0 +1,644 @@
+{
+  "meta": {
+    "timestamp": "20251221_124013",
+    "direction": "FORWARD (Llama\u2192Mistral)",
+    "sender": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "receiver": "mistralai/Mistral-7B-Instruct-v0.3",
+    "soft_tokens": 8,
+    "train_steps": 2000,
+    "eval_samples": 200,
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "ensemble_enabled": false
+  },
+  "per_seed_results": {
+    "sst2": {
+      "42": {
+        "random_chance": 50.0,
+        "bridge": {
+          "accuracy": 86.5,
+          "correct": 173,
+          "total": 200,
+          "latency_ms": 52.03086853027344,
+          "train_info": {
+            "final_loss": 0.15444732666015626
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 88.0,
+          "correct": 176,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.2213671875
+          }
+        },
+        "text_relay": {
+          "accuracy": 70.5,
+          "correct": 141,
+          "total": 200,
+          "latency_ms": 1280.6959295272827
+        },
+        "llama_zeroshot": {
+          "accuracy": 93.0,
+          "correct": 186,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 91.5,
+          "correct": 183,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 96.5,
+          "correct": 193,
+          "total": 200
+        }
+      },
+      "123": {
+        "random_chance": 50.0,
+        "bridge": {
+          "accuracy": 91.5,
+          "correct": 183,
+          "total": 200,
+          "latency_ms": 46.00195527076721,
+          "train_info": {
+            "final_loss": 0.13748046875
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 97.0,
+          "correct": 194,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.24789573669433593
+          }
+        },
+        "text_relay": {
+          "accuracy": 70.5,
+          "correct": 141,
+          "total": 200,
+          "latency_ms": 1235.0645995140076
+        },
+        "llama_zeroshot": {
+          "accuracy": 93.0,
+          "correct": 186,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 91.5,
+          "correct": 183,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 96.5,
+          "correct": 193,
+          "total": 200
+        }
+      },
+      "456": {
+        "random_chance": 50.0,
+        "bridge": {
+          "accuracy": 96.5,
+          "correct": 193,
+          "total": 200,
+          "latency_ms": 45.41936635971069,
+          "train_info": {
+            "final_loss": 0.2018701171875
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 94.5,
+          "correct": 189,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.20221412658691407
+          }
+        },
+        "text_relay": {
+          "accuracy": 70.5,
+          "correct": 141,
+          "total": 200,
+          "latency_ms": 1243.378564119339
+        },
+        "llama_zeroshot": {
+          "accuracy": 93.0,
+          "correct": 186,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 91.5,
+          "correct": 183,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 96.0,
+          "correct": 192,
+          "total": 200
+        }
+      }
+    },
+    "agnews": {
+      "42": {
+        "random_chance": 25.0,
+        "bridge": {
+          "accuracy": 94.0,
+          "correct": 188,
+          "total": 200,
+          "latency_ms": 45.79400658607483,
+          "train_info": {
+            "final_loss": 0.234384765625
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 79.0,
+          "correct": 158,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.6078448486328125
+          }
+        },
+        "text_relay": {
+          "accuracy": 70.0,
+          "correct": 140,
+          "total": 200,
+          "latency_ms": 1225.5601215362549
+        },
+        "llama_zeroshot": {
+          "accuracy": 84.0,
+          "correct": 168,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 75.0,
+          "correct": 150,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 81.0,
+          "correct": 162,
+          "total": 200
+        }
+      },
+      "123": {
+        "random_chance": 25.0,
+        "bridge": {
+          "accuracy": 91.0,
+          "correct": 182,
+          "total": 200,
+          "latency_ms": 46.865553855895996,
+          "train_info": {
+            "final_loss": 0.2512188720703125
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 87.5,
+          "correct": 175,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.502623291015625
+          }
+        },
+        "text_relay": {
+          "accuracy": 70.0,
+          "correct": 140,
+          "total": 200,
+          "latency_ms": 1246.5376126766205
+        },
+        "llama_zeroshot": {
+          "accuracy": 84.0,
+          "correct": 168,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 75.0,
+          "correct": 150,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 82.0,
+          "correct": 164,
+          "total": 200
+        }
+      },
+      "456": {
+        "random_chance": 25.0,
+        "bridge": {
+          "accuracy": 86.0,
+          "correct": 172,
+          "total": 200,
+          "latency_ms": 50.82713007926941,
+          "train_info": {
+            "final_loss": 0.34313232421875
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 86.0,
+          "correct": 172,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.49978546142578123
+          }
+        },
+        "text_relay": {
+          "accuracy": 70.0,
+          "correct": 140,
+          "total": 200,
+          "latency_ms": 1283.0222463607788
+        },
+        "llama_zeroshot": {
+          "accuracy": 84.0,
+          "correct": 168,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 75.0,
+          "correct": 150,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 82.5,
+          "correct": 165,
+          "total": 200
+        }
+      }
+    },
+    "trec": {
+      "42": {
+        "random_chance": 16.7,
+        "bridge": {
+          "accuracy": 97.5,
+          "correct": 195,
+          "total": 200,
+          "latency_ms": 47.683433294296265,
+          "train_info": {
+            "final_loss": 0.21234188079833985
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 86.0,
+          "correct": 172,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.6971510314941406
+          }
+        },
+        "text_relay": {
+          "accuracy": 47.0,
+          "correct": 94,
+          "total": 200,
+          "latency_ms": 1347.6665592193604
+        },
+        "llama_zeroshot": {
+          "accuracy": 67.5,
+          "correct": 135,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 68.5,
+          "correct": 137,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 68.5,
+          "correct": 137,
+          "total": 200
+        }
+      },
+      "123": {
+        "random_chance": 16.7,
+        "bridge": {
+          "accuracy": 98.0,
+          "correct": 196,
+          "total": 200,
+          "latency_ms": 55.45098423957825,
+          "train_info": {
+            "final_loss": 0.1507476043701172
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 93.5,
+          "correct": 187,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.3758733367919922
+          }
+        },
+        "text_relay": {
+          "accuracy": 47.0,
+          "correct": 94,
+          "total": 200,
+          "latency_ms": 1325.0606989860535
+        },
+        "llama_zeroshot": {
+          "accuracy": 67.5,
+          "correct": 135,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 68.5,
+          "correct": 137,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 68.5,
+          "correct": 137,
+          "total": 200
+        }
+      },
+      "456": {
+        "random_chance": 16.7,
+        "bridge": {
+          "accuracy": 88.0,
+          "correct": 176,
+          "total": 200,
+          "latency_ms": 46.35489344596863,
+          "train_info": {
+            "final_loss": 0.34839111328125
+          }
+        },
+        "prompt_tuning": {
+          "accuracy": 74.5,
+          "correct": 149,
+          "total": 200,
+          "train_info": {
+            "final_loss": 0.8715432739257812
+          }
+        },
+        "text_relay": {
+          "accuracy": 47.0,
+          "correct": 94,
+          "total": 200,
+          "latency_ms": 1304.543056488037
+        },
+        "llama_zeroshot": {
+          "accuracy": 67.5,
+          "correct": 135,
+          "total": 200
+        },
+        "mistral_zeroshot": {
+          "accuracy": 68.5,
+          "correct": 137,
+          "total": 200
+        },
+        "mistral_fewshot": {
+          "accuracy": 68.5,
+          "correct": 137,
+          "total": 200
+        }
+      }
+    }
+  },
+  "aggregated_results": {
+    "sst2": {
+      "random_chance": 50.0,
+      "bridge": {
+        "accuracy_mean": 91.5,
+        "accuracy_std": 5.0,
+        "accuracy_min": 86.5,
+        "accuracy_max": 96.5,
+        "num_seeds": 3,
+        "latency_ms_mean": 47.81739672025045,
+        "latency_ms_std": 3.660582054839819
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 93.16666666666667,
+        "accuracy_std": 4.645786621588784,
+        "accuracy_min": 88.0,
+        "accuracy_max": 97.0,
+        "num_seeds": 3
+      },
+      "text_relay": {
+        "accuracy_mean": 70.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 70.5,
+        "accuracy_max": 70.5,
+        "num_seeds": 3,
+        "latency_ms_mean": 1253.0463643868763,
+        "latency_ms_std": 24.30338127102593
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 93.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 93.0,
+        "accuracy_max": 93.0,
+        "num_seeds": 3
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 91.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 91.5,
+        "accuracy_max": 91.5,
+        "num_seeds": 3
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 96.33333333333333,
+        "accuracy_std": 0.2886751345948129,
+        "accuracy_min": 96.0,
+        "accuracy_max": 96.5,
+        "num_seeds": 3
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    },
+    "agnews": {
+      "random_chance": 25.0,
+      "bridge": {
+        "accuracy_mean": 90.33333333333333,
+        "accuracy_std": 4.041451884327381,
+        "accuracy_min": 86.0,
+        "accuracy_max": 94.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 47.828896840413414,
+        "latency_ms_std": 2.6512459908128094
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 84.16666666666667,
+        "accuracy_std": 4.536885862938733,
+        "accuracy_min": 79.0,
+        "accuracy_max": 87.5,
+        "num_seeds": 3
+      },
+      "text_relay": {
+        "accuracy_mean": 70.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 70.0,
+        "accuracy_max": 70.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 1251.7066601912181,
+        "latency_ms_std": 29.077710303485343
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 84.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 84.0,
+        "accuracy_max": 84.0,
+        "num_seeds": 3
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 75.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 75.0,
+        "accuracy_max": 75.0,
+        "num_seeds": 3
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 81.83333333333333,
+        "accuracy_std": 0.7637626158259733,
+        "accuracy_min": 81.0,
+        "accuracy_max": 82.5,
+        "num_seeds": 3
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    },
+    "trec": {
+      "random_chance": 16.7,
+      "bridge": {
+        "accuracy_mean": 94.5,
+        "accuracy_std": 5.634713834792322,
+        "accuracy_min": 88.0,
+        "accuracy_max": 98.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 49.82977032661438,
+        "latency_ms_std": 4.913225918235647
+      },
+      "prompt_tuning": {
+        "accuracy_mean": 84.66666666666667,
+        "accuracy_std": 9.569918146637063,
+        "accuracy_min": 74.5,
+        "accuracy_max": 93.5,
+        "num_seeds": 3
+      },
+      "text_relay": {
+        "accuracy_mean": 47.0,
+        "accuracy_std": 0.0,
+        "accuracy_min": 47.0,
+        "accuracy_max": 47.0,
+        "num_seeds": 3,
+        "latency_ms_mean": 1325.7567715644836,
+        "latency_ms_std": 21.57017639544106
+      },
+      "llama_zeroshot": {
+        "accuracy_mean": 67.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 67.5,
+        "accuracy_max": 67.5,
+        "num_seeds": 3
+      },
+      "mistral_zeroshot": {
+        "accuracy_mean": 68.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 68.5,
+        "accuracy_max": 68.5,
+        "num_seeds": 3
+      },
+      "mistral_fewshot": {
+        "accuracy_mean": 68.5,
+        "accuracy_std": 0.0,
+        "accuracy_min": 68.5,
+        "accuracy_max": 68.5,
+        "num_seeds": 3
+      },
+      "ensemble": {
+        "accuracy": null,
+        "skipped": true
+      }
+    }
+  },
+  "comparison_table": {
+    "sst2": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        50.0,
+        93.16666666666667,
+        93.0,
+        91.5,
+        96.33333333333333,
+        70.5,
+        91.5
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        4.645786621588784,
+        0.0,
+        0.0,
+        0.2886751345948129,
+        0.0,
+        5.0
+      ]
+    },
+    "agnews": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        25.0,
+        84.16666666666667,
+        84.0,
+        75.0,
+        81.83333333333333,
+        70.0,
+        90.33333333333333
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        4.536885862938733,
+        0.0,
+        0.0,
+        0.7637626158259733,
+        0.0,
+        4.041451884327381
+      ]
+    },
+    "trec": {
+      "Method": [
+        "Random",
+        "Prompt-Tuning",
+        "Llama 0-shot",
+        "Mistral 0-shot",
+        "Mistral 5-shot",
+        "Text-Relay",
+        "Bridge (ours)"
+      ],
+      "Accuracy (Mean)": [
+        16.7,
+        84.66666666666667,
+        67.5,
+        68.5,
+        68.5,
+        47.0,
+        94.5
+      ],
+      "Accuracy (Std)": [
+        0.0,
+        9.569918146637063,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        5.634713834792322
+      ]
+    }
+  }
+}
