@@ -1,0 +1,76 @@
+#!/bin/bash
+#SBATCH --job-name=tsne_viz
+#SBATCH --output=logs/tsne_%j.out
+#SBATCH --error=logs/tsne_%j.err
+#SBATCH --time=01:00:00
+#SBATCH --partition=gpu
+#SBATCH --account=marlowe
+#SBATCH --gres=gpu:1
+#SBATCH --mem=64G
+#SBATCH --cpus-per-task=8
+
+# t-SNE Visualization for AG News Latent Space
+# Generates figure showing category separation in Bridge latents
+
+set -e
+
+echo "=========================================="
+echo "SLURM Job ID: $SLURM_JOB_ID"
+echo "Running on: $(hostname)"
+echo "Started at: $(date)"
+echo "=========================================="
+
+# Navigate to project directory
+cd /home/sjinesh/LatentWire
+export PYTHONPATH=.
+
+# Create directories
+mkdir -p logs figures
+
+# Pull latest code
+echo "Pulling latest code..."
+git pull
+
+# Find AG News checkpoint
+CHECKPOINT=$(find runs -name "bridge.pt" -path "*agnews*" 2>/dev/null | head -1)
+
+if [ -z "$CHECKPOINT" ]; then
+    echo "ERROR: No AG News checkpoint found. Run training first."
+    exit 1
+fi
+
+echo "Using checkpoint: $CHECKPOINT"
+
+# Activate conda environment if needed
+# source ~/miniconda3/bin/activate latentwire
+
+# Run t-SNE visualization
+echo ""
+echo "Generating t-SNE visualization..."
+python telepathy/generate_tsne_visualization.py \
+    --checkpoint "$CHECKPOINT" \
+    --output figures/agnews_tsne.pdf \
+    --samples_per_class 100
+
+echo ""
+echo "Generated files:"
+ls -la figures/agnews_tsne.*
+
+# Push results to git
+echo ""
+echo "Pushing results to git..."
+git add figures/*.pdf figures/*.png logs/tsne_*.out logs/tsne_*.err 2>/dev/null || true
+git commit -m "figures: AG News t-SNE visualization (SLURM job $SLURM_JOB_ID)
+
+Shows semantic category separation in Bridge latent space.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>" 2>/dev/null || echo "No changes to commit"
+
+git push 2>/dev/null || echo "Push failed - may need manual push"
+
+echo ""
+echo "=========================================="
+echo "Completed at: $(date)"
+echo "=========================================="
