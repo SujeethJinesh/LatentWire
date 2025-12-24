@@ -143,6 +143,119 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## SLURM Job Submission (MANDATORY FOR HPC EXPERIMENTS)
+
+**When creating experiments that run on HPC, ALWAYS create a proper SLURM script.**
+
+### SLURM Script Template
+
+All SLURM scripts MUST follow this pattern (based on `telepathy/submit_enhanced_arxiv.slurm`):
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=experiment_name
+#SBATCH --nodes=1
+#SBATCH --gpus=4                                    # Use 4 for full experiments, 1 for small jobs
+#SBATCH --account=marlowe-m000066                   # REQUIRED - correct account
+#SBATCH --partition=preempt                         # REQUIRED - correct partition
+#SBATCH --time=12:00:00                             # Adjust based on expected runtime
+#SBATCH --mem=256GB                                 # Adjust based on needs (64GB for small, 256GB for large)
+#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/experiment_%j.log
+#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/experiment_%j.err
+
+# =============================================================================
+# Description of what this script does
+# =============================================================================
+# Submit with: sbatch telepathy/script_name.slurm
+# Monitor with: squeue -u $USER
+# Cancel with: scancel <job_id>
+# =============================================================================
+
+# Set working directory - MUST use /projects path
+WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+cd "$WORK_DIR"
+
+echo "=============================================================="
+echo "SLURM Job Information"
+echo "=============================================================="
+echo "Job ID: $SLURM_JOB_ID"
+echo "Node: $SLURMD_NODENAME"
+echo "GPUs: $CUDA_VISIBLE_DEVICES"
+echo "Start time: $(date)"
+echo "Working directory: $WORK_DIR"
+echo "=============================================================="
+
+# Set up environment
+export PYTHONPATH=.
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+# Create runs directory if needed
+mkdir -p runs figures
+
+# Pull latest code
+echo "Pulling latest code..."
+git pull
+
+# Run the experiment
+echo "Starting experiment..."
+# YOUR EXPERIMENT COMMAND HERE
+
+# Push results back to git
+echo "Pushing results to git..."
+git add -A
+git commit -m "results: experiment description (SLURM job $SLURM_JOB_ID)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>" || true
+git push || true
+
+echo "=============================================================="
+echo "Job completed at $(date)"
+echo "=============================================================="
+```
+
+### CRITICAL SLURM Settings
+
+These settings are **NON-NEGOTIABLE** for Marlowe HPC:
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| `--account` | `marlowe-m000066` | NOT just `marlowe` |
+| `--partition` | `preempt` | NOT `gpu` or other |
+| Working dir | `/projects/m000066/sujinesh/LatentWire` | NOT `/home/sjinesh/...` |
+| Log paths | `/projects/m000066/sujinesh/LatentWire/runs/` | Use `runs/` for consistency |
+
+### User Commands After Script Creation
+
+**Always provide these commands to the user:**
+
+```bash
+# On HPC:
+cd /projects/m000066/sujinesh/LatentWire
+git pull
+sbatch telepathy/your_script.slurm
+
+# Monitor:
+squeue -u $USER              # Check job status
+tail -f runs/experiment_*.log # Watch output
+scancel <job_id>             # Cancel if needed
+```
+
+### Checklist for SLURM Scripts
+
+Before committing a SLURM script, verify:
+- [ ] `--account=marlowe-m000066` (not just `marlowe`)
+- [ ] `--partition=preempt`
+- [ ] Working directory is `/projects/m000066/sujinesh/LatentWire`
+- [ ] Log/error paths use `/projects/...` not `/home/...`
+- [ ] Script pulls latest code with `git pull`
+- [ ] Script pushes results with `git add -A && git commit && git push`
+- [ ] Clear comments explaining what the script does
+- [ ] Provided user with `sbatch` command and monitoring instructions
+
+---
+
 ## Core Development Principles
 
 ### 0. FIX ROOT CAUSES - DON'T SKIP OR WORKAROUND

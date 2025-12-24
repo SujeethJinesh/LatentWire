@@ -6,8 +6,8 @@
 #SBATCH --partition=preempt
 #SBATCH --time=01:00:00
 #SBATCH --mem=64G
-#SBATCH --output=/projects/m000066/sujinesh/LatentWire/logs/tsne_%j.out
-#SBATCH --error=/projects/m000066/sujinesh/LatentWire/logs/tsne_%j.err
+#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.log
+#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.err
 
 # t-SNE Visualization for AG News Latent Space
 # Generates figure showing category separation in Bridge latents
@@ -28,7 +28,7 @@ echo "=========================================="
 export PYTHONPATH=.
 
 # Create directories
-mkdir -p logs figures
+mkdir -p runs figures
 
 # Pull latest code
 echo "Pulling latest code..."
