@@ -1,27 +1,30 @@
 #!/bin/bash
 #SBATCH --job-name=tsne_viz
-#SBATCH --output=logs/tsne_%j.out
-#SBATCH --error=logs/tsne_%j.err
+#SBATCH --nodes=1
+#SBATCH --gpus=1
+#SBATCH --account=marlowe-m000066
+#SBATCH --partition=preempt
 #SBATCH --time=01:00:00
-#SBATCH --partition=gpu
-#SBATCH --account=marlowe
-#SBATCH --gres=gpu:1
 #SBATCH --mem=64G
-#SBATCH --cpus-per-task=8
+#SBATCH --output=/projects/m000066/sujinesh/LatentWire/logs/tsne_%j.out
+#SBATCH --error=/projects/m000066/sujinesh/LatentWire/logs/tsne_%j.err
 
 # t-SNE Visualization for AG News Latent Space
 # Generates figure showing category separation in Bridge latents
 
 set -e
 
+# Set working directory
+WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+cd "$WORK_DIR"
+
 echo "=========================================="
 echo "SLURM Job ID: $SLURM_JOB_ID"
 echo "Running on: $(hostname)"
 echo "Started at: $(date)"
+echo "Working dir: $WORK_DIR"
 echo "=========================================="
 
-# Navigate to project directory
-cd /home/sjinesh/LatentWire
 export PYTHONPATH=.
 
 # Create directories
