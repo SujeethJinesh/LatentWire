@@ -157,7 +157,9 @@ Current multi-agent frameworks (AutoGen~\cite{autogen}, CAMEL~\cite{camel}, Lang
 
 \subsection{Prompt Compression}
 
-Methods like LLMLingua~\cite{llmlingua2024} and AutoCompressors~\cite{chevalier2023autocompressors} reduce prompt length through selective token removal or learned compression. These still produce text that requires model-specific tokenization. ICAE~\cite{ge2024icae} and 500xCompressor~\cite{li2024500x} learn to compress context into soft tokens for efficiency, achieving up to 500$\times$ compression within a single model. However, these methods use the \emph{same frozen LLM} as both encoder and decoder, avoiding the architectural incompatibilities (vocabulary mismatch, embedding scale differences, positional encoding) that arise in cross-model transfer. LatentWire solves the orthogonal problem of \emph{heterogeneous} LLM communication, learning to bridge models with different vocabularies (128K vs 32K tokens), embedding scales (Llama $\pm$20 vs Mistral $\pm$100), and architectures.
+Methods like LLMLingua~\cite{llmlingua2024} and AutoCompressors~\cite{chevalier2023autocompressors} reduce prompt length through selective token removal or learned compression. These still produce text that requires model-specific tokenization. Critically, discrete token selection (keeping only ``important'' keywords) loses syntax and contextual relationships that continuous compression preserves. For example, retaining tokens ``movie, terrible, waste'' loses the semantic structure that distinguishes ``a waste of a terrible movie's potential'' from ``a terrible waste of time.'' LatentWire compresses the \emph{entire semantic state} into continuous vectors, capturing nuances that discrete selection cannot.
+
+ICAE~\cite{ge2024icae} and 500xCompressor~\cite{li2024500x} learn to compress context into soft tokens for efficiency, achieving up to 500$\times$ compression within a single model. However, these methods use the \emph{same frozen LLM} as both encoder and decoder, avoiding the architectural incompatibilities (vocabulary mismatch, embedding scale differences, positional encoding) that arise in cross-model transfer. LatentWire solves the orthogonal problem of \emph{heterogeneous} LLM communication, learning to bridge models with different vocabularies (128K vs 32K tokens), embedding scales (Llama $\pm$20 vs Mistral $\pm$100), and architectures.
 
 \subsection{Multi-Model Ensembles}
 
@@ -200,6 +202,8 @@ Z &= \text{LayerNorm}(Z)
 \end{align}
 
 Both produce $Z \in \mathbb{R}^{M \times d_z}$. For classification experiments (SST-2, AG News, TREC), we use a PerceiverResampler operating in the receiver's native dimension: $M=8$ and $d_z=4096$, resulting in soft tokens that can be directly injected as \texttt{inputs\_embeds}.
+
+\textbf{Why continuous representations:} We evaluated discrete bottlenecks (VQ-VAE, Finite Scalar Quantization) and diffusion-based decoders before settling on continuous soft tokens. VQ-VAE suffered from codebook collapse ($<$5\% codebook utilization) and gradient instability from the straight-through estimator, shattering the high-dimensional manifold alignment needed for fine-grained semantic transfer. Diffusion added stochastic noise that destroyed subtle category boundaries (e.g., ``Science'' vs. ``Business'' in AG News). Deterministic continuous mapping via PerceiverResampler preserved the exact geometric relationships required for accurate cross-model transfer.
 
 \subsubsection{Model-Specific Adapters}
 
@@ -1273,6 +1277,20 @@ We have not systematically explored task-adaptive or input-adaptive M selection.
 
 \textbf{Future directions:} Variable-length encoding where the encoder outputs task-specific $M \in [4, 32]$ based on input complexity could optimize the compression-quality tradeoff. Gisting approaches~\cite{mu2023gist} achieve this within single models; extending to cross-model communication requires developing adaptive adapter mechanisms that handle variable M without retraining.
 
+\subsection{Semantic Compression vs. Precision Tasks}
+
+\textbf{The Bridge as a semantic lossy compressor:} LatentWire functions analogously to JPEG compression for images: highly effective for recognizing semantic content (topic, sentiment, question type) but lossy for exact reconstruction. This design choice has fundamental implications:
+
+\begin{itemize}
+\item \textbf{Semantic tasks succeed:} Classification tasks requiring holistic understanding (``Is this positive or negative?'', ``What category is this news?'') transfer effectively because the Bridge preserves the geometric structure of semantic concepts in latent space.
+
+\item \textbf{Precision tasks fail:} Tasks requiring exact value preservation (passkey retrieval, arithmetic reasoning) cannot succeed through lossy compression. Just as JPEG cannot perfectly preserve individual pixel values, the Bridge cannot preserve arbitrary numeric strings or precise logical chains.
+\end{itemize}
+
+This is not a bug but a fundamental characteristic: continuous soft tokens encode \emph{semantic intent} rather than \emph{symbolic content}. The Bridge effectively ``denoises'' the input, extracting meaning while discarding surface-level details. This explains why AG News classification \emph{improves} through the Bridge (90.3\% vs. 84.0\% Llama 0-shot)---Llama's verbatim text includes distracting surface features that the semantic compression removes.
+
+\textbf{Implications:} Applications requiring both semantic understanding and exact data transfer should use hybrid approaches: LatentWire for semantic context, supplemented by explicit symbolic channels for values that must be preserved exactly.
+
 \subsection{Frozen Model Constraint}
 
 \textbf{Suboptimal adaptation:} Our design freezes the LLM weights entirely, training only the PerceiverResampler bridge (537M parameters). While this enables deployment with arbitrary frozen checkpoints, it prevents the receiver models from adapting their internal representations to better decode the latent bridge.
@@ -1294,14 +1312,16 @@ These limitations represent research directions rather than fundamental barriers
 
 \section{Conclusion}
 
-LatentWire demonstrates that sufficiently large heterogeneous LLMs can communicate through learned continuous embeddings rather than text. Our cross-model Bridge (Llama-8B $\rightarrow$ Mistral-7B) achieves strong results across all three classification benchmarks: 86.5\% on SST-2 (binary sentiment), 89.5\% on AG News (4-class news categorization), and 96.0\% on TREC (6-class question classification)---while being 27$\times$ faster than text-based alternatives. Key findings:
+LatentWire demonstrates that sufficiently large heterogeneous LLMs can communicate through learned continuous embeddings rather than text. Our cross-model Bridge (Llama-8B $\rightarrow$ Mistral-7B) achieves strong results across all three classification benchmarks with multi-seed evaluation: 91.5\% on SST-2 (binary sentiment), 90.3\% on AG News (4-class news categorization), and 94.5\% on TREC (6-class question classification)---\textbf{exceeding} prompt-tuning baselines on AG News (+6.1\%) and TREC (+9.8\%) while being 27$\times$ faster than text-based alternatives. The Bridge is bidirectional: reverse transfer (Mistral$\rightarrow$Llama) achieves 97.0\% on SST-2, demonstrating that the learned interlingua captures universal semantic structure rather than model-specific artifacts. Key findings:
 
 \begin{enumerate}
 \item \textbf{Cross-model knowledge transfer works across task types:} The Bridge successfully transfers task-relevant information across sentiment analysis, topic classification, and question categorization. The architecture generalizes across different output cardinalities and semantic domains with minimal task-specific tuning.
 
 \item \textbf{Capacity threshold:} Models require minimum 3B parameters to decode soft prompts into coherent outputs. Below this threshold, outputs are degenerate regardless of training quality.
 
-\item \textbf{Binary classification requires specific tuning:} SST-2 initially failed with our default diversity loss, which was counterproductive for binary tasks. Disabling diversity loss and using class-balanced sampling resolved this issue, achieving 86.5\% accuracy. This demonstrates the importance of task-aware hyperparameter selection.
+\item \textbf{Binary classification requires specific tuning:} SST-2 initially failed with our default diversity loss, which was counterproductive for binary tasks. Disabling diversity loss and using class-balanced sampling resolved this issue, achieving 91.5\% accuracy (multi-seed mean). This demonstrates the importance of task-aware hyperparameter selection.
+
+\item \textbf{Semantic compression, not precision transfer:} The Bridge functions as a semantic lossy compressor---highly effective for holistic understanding (topic, sentiment) but lossy for exact value preservation (arithmetic, passkeys). This is a feature, not a bug: semantic compression ``denoises'' surface-level distractors, explaining why Bridge \emph{exceeds} text-based transfer on AG News.
 
 \item \textbf{General architecture with task-specific tuning:} The same Bridge architecture succeeds on all tasks with minimal modifications: adjusting diversity loss, sampling strategy, and layer selection based on task characteristics. This establishes the universality of the approach while acknowledging the need for task-aware configuration.
 
