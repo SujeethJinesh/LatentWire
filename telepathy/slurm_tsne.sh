@@ -62,7 +62,7 @@ ls -la figures/agnews_tsne.*
 # Push results to git
 echo ""
 echo "Pushing results to git..."
-git add figures/*.pdf figures/*.png logs/tsne_*.out logs/tsne_*.err 2>/dev/null || true
+git add figures/*.pdf figures/*.png runs/tsne_*.log runs/tsne_*.err 2>/dev/null || true
 git commit -m "figures: AG News t-SNE visualization (SLURM job $SLURM_JOB_ID)
 
 Shows semantic category separation in Bridge latent space.
