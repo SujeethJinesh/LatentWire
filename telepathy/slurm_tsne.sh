@@ -4,13 +4,17 @@
 #SBATCH --gpus=1
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
-#SBATCH --time=01:00:00
-#SBATCH --mem=64G
+#SBATCH --time=00:30:00
+#SBATCH --mem=32G
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.err
 
 # t-SNE Visualization for AG News Latent Space
 # Generates figure showing category separation in Bridge latents
+#
+# Submit with: sbatch telepathy/slurm_tsne.sh
+# Monitor with: squeue -u $USER
+# Cancel with: scancel <job_id>
 
 set -e
 
@@ -25,7 +29,15 @@ echo "Started at: $(date)"
 echo "Working dir: $WORK_DIR"
 echo "=========================================="
 
+# Load conda and activate environment
+source ~/.bashrc
+conda activate latentwire 2>/dev/null || echo "No conda env, using system Python"
+
 export PYTHONPATH=.
+
+# Show Python info
+echo "Python: $(which python)"
+echo "Python version: $(python --version)"
 
 # Create directories
 mkdir -p runs figures
@@ -35,17 +47,17 @@ echo "Pulling latest code..."
 git pull
 
 # Find AG News checkpoint
+echo "Searching for AG News checkpoint..."
 CHECKPOINT=$(find runs -name "bridge.pt" -path "*agnews*" 2>/dev/null | head -1)
 
 if [ -z "$CHECKPOINT" ]; then
-    echo "ERROR: No AG News checkpoint found. Run training first."
+    echo "ERROR: No AG News checkpoint found in runs/"
+    echo "Available checkpoints:"
+    find runs -name "bridge.pt" 2>/dev/null || echo "  (none found)"
     exit 1
 fi
 
 echo "Using checkpoint: $CHECKPOINT"
-
-# Activate conda environment if needed
-# source ~/miniconda3/bin/activate latentwire
 
 # Run t-SNE visualization
 echo ""
