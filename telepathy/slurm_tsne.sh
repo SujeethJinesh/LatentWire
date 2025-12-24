@@ -5,7 +5,7 @@
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
-#SBATCH --mem=32G
+#SBATCH --mem=64G
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.err
 
@@ -18,6 +18,10 @@
 
 # Force unbuffered output
 export PYTHONUNBUFFERED=1
+
+# Write immediately to a marker file to confirm job started
+date > /projects/m000066/sujinesh/LatentWire/runs/tsne_started_$SLURM_JOB_ID.txt
+echo "Job $SLURM_JOB_ID started" >> /projects/m000066/sujinesh/LatentWire/runs/tsne_started_$SLURM_JOB_ID.txt
 
 # Don't use set -e - handle errors explicitly so we can see what fails
 
