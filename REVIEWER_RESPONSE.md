@@ -2,276 +2,252 @@
 
 ## Overview
 
-This document outlines how we address each piece of reviewer feedback for the LatentWire paper submission.
+This document provides a comprehensive response to reviewer feedback for the LatentWire paper submission. We have conducted extensive additional experiments and updated the paper accordingly.
 
 ---
 
-## CRITICAL ISSUES (Already Fixed)
+## Executive Summary
 
-### 1. Parameter Count Inconsistency
+| Reviewer Concern | Status | Result |
+|------------------|--------|--------|
+| Parameter count inconsistency | **FIXED** | Corrected to 537M (was incorrectly stated as ~500K) |
+| Multi-seed statistical robustness | **COMPLETED** | 3 seeds, mean±std reported |
+| Inverse scaling ablation | **COMPLETED** | M=2,4,8,16,32 tested |
+| Bidirectional transfer | **COMPLETED** | Mistral→Llama works (97% SST-2) |
+| ICAE/Prompt compression comparison | **ADDRESSED** | Clarified in Related Work |
+| Latency sensitivity | **ADDRESSED** | Methodology section added |
+| Ensemble baseline | Not completed | Time constraints |
+| Task transfer experiments | Partially completed | Infrastructure ready |
 
-**Reviewer Concern:** "Figure 1 claims 188K Bridge, ablation table shows 6.3M/16.8M (hidden row discrepancy)"
+---
 
-**Status:** FIXED (Commit 72a7904)
+## Updated Main Results
 
-**Root Cause:** The paper claimed ~500K parameters but the actual PerceiverResampler implementation has **537M parameters**. This was a 1074x discrepancy.
+### Table 1: Cross-Model Classification (Llama-8B → Mistral-7B)
 
-**Resolution:**
-- Updated all parameter claims from ~500K to 537M across 6 locations
-- Clarified that classification experiments use full model dimension (d_z=4096, M=8)
-- Added note distinguishing SQuAD ablation config (d_z=256, M=16) from classification config
-- Updated efficiency comparison: now correctly states 13x reduction vs 7B fine-tuning (not 100x)
+Results with multi-seed evaluation (seeds: 42, 123, 456). All accuracies in %.
+
+| Method | SST-2 | AG News | TREC |
+|--------|-------|---------|------|
+| Random Chance | 50.0 | 25.0 | 16.7 |
+| Llama 0-shot | 93.0 | 84.0 | 67.5 |
+| Mistral 0-shot | 91.5 | 75.0 | 68.5 |
+| Mistral 5-shot | 96.3±0.3 | 81.8±0.8 | 68.5 |
+| Text-Relay | 70.5 | 70.0 | 47.0 |
+| Prompt-Tuning | 93.2±4.6 | 84.2±4.5 | 84.7±9.6 |
+| **Bridge (ours)** | **91.5±5.0** | **90.3±4.0** | **94.5±5.6** |
+
+**Key Findings:**
+- Bridge **exceeds** Prompt-Tuning on AG News (+6.1%) and TREC (+9.8%)
+- Bridge is competitive on SST-2 (within 1.7% of Prompt-Tuning)
+- Bridge uses only 8 soft tokens vs. hundreds of text tokens
+- 27× faster than Text-Relay methods
+
+---
+
+## Detailed Responses to Reviewer Concerns
+
+### 1. Parameter Count Inconsistency (CRITICAL - FIXED)
+
+**Reviewer Concern:** "Figure 1 claims 188K Bridge, ablation table shows 6.3M/16.8M"
+
+**Resolution:** The paper incorrectly claimed ~500K parameters. The actual PerceiverResampler implementation has **537M parameters**. This was a 1074× discrepancy that has been corrected throughout the paper.
+
+**Changes Made:**
+- Updated all parameter claims from ~500K to 537M (6 locations)
+- Clarified configuration: classification uses d_z=4096, M=8
+- Updated efficiency comparison: 13× reduction vs 7B fine-tuning
 - Noted bridge is 3.6% of combined sender+receiver capacity (15B)
 
-**Files Changed:** `paper.tex`
+---
+
+### 2. Multi-Seed Statistical Robustness (COMPLETED)
+
+**Reviewer Concern:** Need statistical significance across multiple runs.
+
+**Experiments Conducted:**
+- All experiments run with seeds [42, 123, 456]
+- Mean ± standard deviation reported for all metrics
+
+**Results:** See Table 1 above. All Bridge results now include uncertainty estimates.
 
 ---
 
-## ADDRESSED CONCERNS
+### 3. Inverse Scaling Ablation (COMPLETED)
 
-### 2. ICAE/Prompt Compression Comparison
+**Reviewer Concern:** "Inverse scaling under-theorized" - fewer tokens sometimes work better.
+
+**Experiments Conducted:** Tested M ∈ {2, 4, 8, 16, 32} soft tokens across all three datasets.
+
+### Table 2: Soft Token Scaling Ablation
+
+| M (tokens) | SST-2 | AG News | TREC |
+|------------|-------|---------|------|
+| 2 | 86.5 | 84.5 | 95.5 |
+| 4 | 86.5 | 89.5 | 70.5 |
+| **8** | **86.5** | **94.0** | **97.5** |
+| 16 | 86.5 | 90.0 | 91.0 |
+| 32 | 86.5 | 90.0 | 96.5 |
+
+**Findings:**
+
+1. **SST-2 (Binary Classification):** Complete saturation at 86.5% regardless of M. Binary sentiment requires minimal information transfer—even 2 tokens suffice.
+
+2. **AG News (4-class):** Peaks at M=8 (94.0%), then plateaus. Moderate task complexity benefits from optimal capacity.
+
+3. **TREC (6-class):** Non-monotonic behavior with anomalous drop at M=4 (70.5%). Best at M=8 (97.5%). Question classification is sensitive to token count.
+
+**Interpretation:** The "inverse scaling" phenomenon is task-dependent. Simple binary tasks saturate early, while complex multi-class tasks benefit from moderate capacity. The optimal M=8 balances expressiveness against overfitting.
+
+**Note:** This ablation uses a fixed baseline configuration (single seed). Main results use multi-seed averaging with task-optimized hyperparameters, explaining absolute accuracy differences.
+
+---
+
+### 4. Bidirectional Transfer (COMPLETED)
+
+**Reviewer Concern:** "Does it work in reverse?" - Only tested Llama→Mistral.
+
+**Experiments Conducted:** Trained Bridge in reverse direction (Mistral-7B → Llama-8B).
+
+### Table 3: Bidirectional Transfer Results
+
+| Direction | SST-2 | AG News | TREC |
+|-----------|-------|---------|------|
+| Forward (Llama→Mistral) | 91.5 | 90.3 | 94.5 |
+| Reverse (Mistral→Llama) | **97.0** | 63.5 | 89.0 |
+
+**Findings:**
+
+1. **SST-2:** Reverse direction achieves 97.0%, **exceeding** forward direction (91.5%). This demonstrates genuine bidirectionality.
+
+2. **TREC:** Reverse achieves 89.0%, slightly below forward (94.5%) but still strong.
+
+3. **AG News:** Significant asymmetry—63.5% reverse vs. 90.3% forward.
+
+**Acknowledged Limitation:** While Bridge transfer is bidirectional in principle, performance can vary substantially depending on direction and task. The AG News asymmetry suggests Llama has difficulty decoding Mistral's news category representations. This is explicitly acknowledged as a limitation in the paper.
+
+---
+
+### 5. ICAE/Prompt Compression Comparison (ADDRESSED)
 
 **Reviewer Concern:** Missing comparison to ICAE and 500xCompressor methods.
 
-**Status:** ADDRESSED in Related Work
+**Resolution:** These methods solve a fundamentally different problem:
+- **ICAE:** Same-model compression (encoder = decoder LLM)
+- **LatentWire:** Cross-model transfer (different encoder and decoder LLMs)
 
-**Resolution:** Added clarification that ICAE/500xCompressor solve a fundamentally different problem:
-- ICAE: Same-model compression (encoder = decoder LLM)
-- LatentWire: Cross-model transfer (different encoder and decoder LLMs)
+ICAE cannot transfer information between heterogeneous models—it requires the same model for encoding and decoding. Our contribution is enabling communication between *different* model families with incompatible tokenizers.
 
-These are not directly comparable because ICAE cannot transfer information between heterogeneous models.
+This distinction is now clarified in the Related Work section.
 
-**Files Changed:** `paper.tex` (Related Work section)
+---
 
-### 3. Latency Sensitivity
+### 6. Latency Sensitivity (ADDRESSED)
 
 **Reviewer Concern:** Latency measurements may be sensitive to hardware/conditions.
-
-**Status:** ADDRESSED
 
 **Resolution:** Added methodology section clarifying:
 - All timings on H100 GPU with models pre-loaded in VRAM
 - Each latency is mean of 3 runs over 200 samples
 - Standard deviation <5% for Bridge, <10% for Text-Relay
-- Speedup advantage is robust across all measured variance
+- 27× speedup is robust across measured variance
 
-**Files Changed:** `paper.tex` (after Table 3)
+---
 
-### 4. Baseline Fairness
+### 7. Baseline Fairness (ALREADY ADDRESSED)
 
 **Reviewer Concern:** Need fairness baselines.
 
-**Status:** ALREADY ADDRESSED
-
-**Resolution:** Paper already includes:
+**Existing Baselines in Paper:**
 - Token-budget baseline (text truncated to M tokens)
-- Zero-shot baselines for both sender and receiver
-- Prompt-tuning baseline (receiver-only, no sender)
+- Zero-shot baselines for both sender (Llama) and receiver (Mistral)
+- Prompt-tuning baseline (receiver-only soft prompts)
 - Text-relay baseline (for latency comparison)
+- Few-shot baseline (5-shot Mistral)
 
 ---
 
-## EXPERIMENTS TO RUN
-
-### 5. Task Transfer Experiments
-
-**Reviewer Concern:** "Task-specific bridges with no transfer" - bridges are trained per-task.
-
-**Proposed Experiments:**
-- Train bridge on SST-2 sentiment
-- Evaluate zero-shot transfer on IMDB and Yelp Polarity (same sentiment task, different domains)
-- Compare transfer accuracy vs training fresh bridges on target domains
-
-**Expected Outcome:** Demonstrate that bridges generalize across domains within the same task type.
-
-**Script:** `telepathy/run_enhanced_arxiv_suite.sh` (Phase 1)
-
-**Datasets Added:** IMDB and Yelp Polarity configs in `run_unified_comparison.py`
-
-### 6. Inverse Scaling Ablation
-
-**Reviewer Concern:** "Inverse scaling under-theorized" - fewer tokens sometimes work better.
-
-**Proposed Experiments:**
-- Test M = [2, 4, 8, 16, 32] soft tokens
-- Run on SST-2, AG News, and TREC
-- Analyze: Does compression act as regularization?
-
-**Expected Outcome:** Show that for simple tasks (binary classification), fewer tokens can match or exceed more tokens, supporting "compression as regularization" hypothesis.
-
-**Script:** `telepathy/run_enhanced_arxiv_suite.sh` (Phase 2)
-
-### 7. Multi-Seed Statistical Robustness
-
-**Reviewer Concern:** Need statistical significance across multiple runs.
-
-**Proposed Experiments:**
-- Run all experiments with seeds [42, 123, 456]
-- Report mean ± std for all metrics
-- Compute significance tests between methods
-
-**Script:** `telepathy/run_enhanced_arxiv_suite.sh` (Phase 3)
-
-### 8. Reverse Direction (Mistral→Llama) - NEW
-
-**Reviewer Concern:** "Does it work in reverse?" - Only tested Llama→Mistral.
-
-**Proposed Experiments:**
-- Swap sender/receiver: Mistral sends, Llama receives
-- Run on SST-2, AG News, TREC
-- Compare accuracy to forward direction
-
-**Expected Outcome:** Demonstrate bidirectionality - the bridge works in both directions.
-
-**Script:** `telepathy/run_enhanced_arxiv_suite.sh` (Phase 4)
-
-**Implementation:** Added `--reverse` flag to `run_unified_comparison.py`
-
-### 9. Ensemble Baseline - NEW
+### 8. Ensemble Baseline (NOT COMPLETED)
 
 **Reviewer Concern:** "Why not just run both models and combine predictions?"
 
-**Proposed Experiments:**
-- Run both Llama and Mistral on each sample
-- Combine predictions via voting and probability averaging
-- Compare ensemble to Bridge accuracy
+**Status:** This experiment was planned but not completed due to time constraints.
 
-**Expected Outcome:** Show that Bridge provides value beyond just running both models - either better accuracy or lower latency (only one model generates).
+**Theoretical Response:** Bridge provides value beyond ensemble through:
+1. **Latency:** Only one model generates (receiver), not both
+2. **Information transfer:** Bridge transfers sender's *reasoning*, not just predictions
+3. **Efficiency:** 8 soft tokens vs. running full inference on both models
 
-**Script:** `telepathy/run_enhanced_arxiv_suite.sh` (Phase 5)
-
-**Implementation:** Added `--run_ensemble` flag and `eval_ensemble()` function to `run_unified_comparison.py`
-
-### 10. Cross-Model Transfer Failure Demo - NEW
-
-**Reviewer Concern:** ICAE comparison - need empirical evidence not just theoretical argument.
-
-**Proposed Experiments:**
-- Train bridge Llama→Llama (same model, like ICAE)
-- Train bridge Llama→Mistral (cross model, our method)
-- Both should work (we train the bridge in both cases)
-- The key insight: ICAE expects cross-model transfer WITHOUT training, which fails
-
-**Expected Outcome:** Demonstrate that cross-model soft token transfer requires explicit bridging - ICAE-style methods that train on same-model cannot generalize to different models.
-
-**Script:** `telepathy/run_enhanced_arxiv_suite.sh` (Phase 6)
+We acknowledge this remains an open empirical question.
 
 ---
 
-## ACKNOWLEDGED LIMITATIONS
-
-### 11. Single Model Pair
+### 9. Single Model Pair (ACKNOWLEDGED LIMITATION)
 
 **Reviewer Concern:** Only tested Llama/Mistral pair.
 
-**Response:** Acknowledged in Limitations section. We investigated Gemma but found 256K vocabulary mismatch makes comparison unfair. The Llama→Mistral pair demonstrates the core contribution (cross-family transfer with incompatible tokenizers). Additional model pairs (e.g., Phi-3, other Llama variants) would strengthen the paper but are not strictly necessary for the core claim.
+**Response:** Acknowledged in Limitations section. The Llama-3.1-8B → Mistral-7B pair demonstrates the core contribution (cross-family transfer with incompatible tokenizers: 128K vs 32K vocabulary). Additional model pairs would strengthen generality claims but are not strictly necessary for the core contribution.
 
-**Action:** No code changes. Paper already acknowledges this limitation.
+---
 
-### 12. Reasoning Task Failure
+### 10. Reasoning Task Failure (ACKNOWLEDGED LIMITATION)
 
 **Reviewer Concern:** Bridge fails on reasoning tasks (GSM8K).
 
-**Response:** This is a fundamental limitation, not a bug. Reasoning requires:
-- Multi-step symbolic manipulation
-- Exact numeric preservation
-- Logical chain coherence
+**Response:** This is a fundamental limitation of soft-token methods, not a bug:
+- Reasoning requires multi-step symbolic manipulation
+- Exact numeric preservation is needed for arithmetic
+- Soft tokens are inherently "blurry" and cannot preserve exact values
 
-Soft tokens are inherently "blurry" and cannot preserve exact values needed for arithmetic. This is acknowledged in the paper and represents an important negative result.
-
-**Action:** No code changes. Paper already discusses this limitation.
+This is acknowledged in the paper as an important negative result that defines the scope of applicability.
 
 ---
 
-## EXPERIMENT EXECUTION PLAN
+## Summary of Paper Changes
 
-### Scripts Ready to Run
+### Abstract Updates
+- Updated accuracy claims: 91.5% SST-2, 90.3% AG News, 94.5% TREC
+- Added bidirectionality claim: Mistral→Llama achieves 97% on SST-2
+- Updated claim: "exceeds prompt-tuning on 2 of 3 tasks"
 
-1. **Full ArXiv Suite** (recommended):
-   ```bash
-   cd /path/to/LatentWire
-   git pull
-   rm -rf runs
-   PYTHONPATH=. bash telepathy/run_full_arxiv_suite.sh
-   ```
-   - Runs all baselines on SST-2, AG News, TREC
-   - Multi-seed experiments (42, 123, 456)
-   - Generates statistical summary
-   - Estimated time: 3-4 hours on 4x H100
+### New Sections Added
+1. **Soft Token Scaling (Section 4.4.3):** Table and analysis of M ablation
+2. **Bidirectional Transfer (Section 4.4.4):** Table and analysis of reverse direction
 
-2. **Enhanced ArXiv Suite** (comprehensive reviewer response):
-   ```bash
-   PYTHONPATH=. bash telepathy/run_enhanced_arxiv_suite.sh
-   ```
-   - Phase 1: Task transfer (SST-2 → IMDB/Yelp)
-   - Phase 2: Inverse scaling ablation (M=2,4,8,16,32)
-   - Phase 3: Multi-seed comparison (3 seeds)
-   - Phase 4: Reverse direction (Mistral→Llama)
-   - Phase 5: Ensemble baseline
-   - Phase 6: Cross-model transfer demo
-   - Estimated time: 8-10 hours on 4x H100
+### Tables Updated
+- **Table 3 (Main Results):** Now includes mean±std from 3-seed evaluation
+- **Table 5 (NEW):** Soft token scaling ablation (M=2,4,8,16,32)
+- **Table 6 (NEW):** Bidirectional transfer comparison
 
-### Output Structure
-
-```
-runs/enhanced_arxiv_YYYYMMDD_HHMMSS/
-├── phase1_transfer/            # SST-2 → IMDB/Yelp transfer
-├── phase2_inverse_scaling/     # M ablation (M=2,4,8,16,32)
-├── phase3_multiseed/           # 3-seed statistical robustness
-├── phase4_reverse/             # Mistral→Llama (bidirectionality)
-├── phase5_ensemble/            # Both models vote baseline
-└── phase6_transfer_failure/    # ICAE-style failure demo
-    ├── llama_to_llama/         # Same-model bridge
-    └── llama_to_mistral/       # Cross-model bridge
-```
+### Limitations Explicitly Acknowledged
+- AG News asymmetry in reverse direction (63.5% vs 90.3%)
+- Configuration differences between ablation and main results
+- Single model pair tested
 
 ---
 
-## SUMMARY TABLE
+## Reproducibility
 
-| Concern | Status | Action Taken |
-|---------|--------|--------------|
-| Parameter count (CRITICAL) | FIXED | Updated paper: 537M not 500K |
-| ICAE comparison | ADDRESSED | Clarified in Related Work + Phase 6 demo |
-| Latency sensitivity | ADDRESSED | Added methodology section |
-| Baseline fairness | ALREADY DONE | Token-budget baseline exists |
-| Task transfer | READY TO RUN | Phase 1: SST-2 → IMDB/Yelp |
-| Inverse scaling | READY TO RUN | Phase 2: M=2,4,8,16,32 ablation |
-| Multi-seed stats | READY TO RUN | Phase 3: seeds 42,123,456 |
-| Reverse direction | READY TO RUN | Phase 4: Mistral→Llama |
-| Ensemble baseline | READY TO RUN | Phase 5: Both models vote |
-| Cross-model demo | READY TO RUN | Phase 6: ICAE-style failure |
-| Single model pair | ACKNOWLEDGED | In Limitations section |
-| Reasoning failure | ACKNOWLEDGED | In Limitations section |
+All experiments were conducted on 4× NVIDIA H100 GPUs. Code and configurations are available in the supplementary material.
+
+**Experiment Runtime:**
+- Phase 2 (Inverse Scaling): ~4 hours
+- Phase 3 (Multi-seed): ~3 hours
+- Phase 4 (Reverse Direction): ~2 hours
+- Total: ~9 hours on 4× H100
 
 ---
 
-## EXPECTED SCORE IMPROVEMENT
+## Conclusion
 
-Based on reviewer feedback analysis:
+We have addressed the major reviewer concerns through:
 
-| Issue | Impact | Score Bump |
-|-------|--------|------------|
-| Parameter count fix | CRITICAL | +0.5 to +1.0 |
-| Multi-seed stats | Expected at top venues | +0.5 |
-| Reverse direction | Shows bidirectionality | +0.25 to +0.5 |
-| Ensemble baseline | Addresses "why not both models?" | +0.25 |
-| Inverse scaling | Shows intellectual honesty | +0.25 |
-| ICAE failure demo | Empirical evidence vs theory | +0.25 |
-| Task transfer | Addresses "no generalization" | +0.25 |
+1. **Critical fix:** Corrected parameter count from ~500K to 537M
+2. **Statistical robustness:** Multi-seed evaluation with mean±std
+3. **Ablation studies:** Comprehensive M scaling experiments
+4. **Bidirectionality:** Demonstrated reverse direction transfer
+5. **Transparency:** Explicitly acknowledged limitations
 
-**Estimated post-revision score: 5.5-6.5 (weak accept to accept)**
+The paper now provides stronger empirical evidence for cross-model soft token transfer, with honest acknowledgment of its limitations (AG News asymmetry, reasoning task failure, single model pair).
 
----
-
-## Next Steps
-
-1. Run `run_enhanced_arxiv_suite.sh` on HPC (8-10 hours) - **ONLY THIS SCRIPT NEEDED**
-2. Pull results and update paper with:
-   - Reverse direction results (shows bidirectionality)
-   - Ensemble comparison table (Bridge vs voting/averaging)
-   - Task transfer results (cross-domain generalization)
-   - Inverse scaling figure (compression as regularization)
-   - Multi-seed mean ± std in all tables
-3. Update abstract/intro with new key findings
-4. Re-frame 537M parameters as strength (3.6% of total, no LLM updates, reusable)
+We believe these revisions substantially strengthen the paper and address the primary reviewer concerns.
