@@ -38,10 +38,17 @@ echo "Changing to: $WORK_DIR"
 cd "$WORK_DIR" || { echo "FATAL: Cannot cd to $WORK_DIR"; exit 1; }
 echo "Current directory: $(pwd)"
 
-# Load conda and activate environment
+# Load conda properly for non-interactive shell
 echo "Loading conda..."
-if [ -f ~/.bashrc ]; then
-    source ~/.bashrc
+if [ -f ~/miniconda3/etc/profile.d/conda.sh ]; then
+    source ~/miniconda3/etc/profile.d/conda.sh
+elif [ -f ~/anaconda3/etc/profile.d/conda.sh ]; then
+    source ~/anaconda3/etc/profile.d/conda.sh
+elif [ -f /opt/conda/etc/profile.d/conda.sh ]; then
+    source /opt/conda/etc/profile.d/conda.sh
+else
+    echo "WARNING: Could not find conda.sh, trying module load..."
+    module load anaconda3 2>/dev/null || module load conda 2>/dev/null || true
 fi
 
 echo "Activating latentwire environment..."
