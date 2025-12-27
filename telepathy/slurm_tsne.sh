@@ -1,20 +1,21 @@
 #!/bin/bash
 #SBATCH --job-name=tsne_viz
 #SBATCH --nodes=1
-#SBATCH --gpus=1
+#SBATCH --gpus=4
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
-#SBATCH --mem=64G
-#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.log
-#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.err
+#SBATCH --mem=40GB
+#SBATCH --output=/projects/m000066/sujinesh/LatentWire/tsne-%j.log
+#SBATCH --error=/projects/m000066/sujinesh/LatentWire/tsne-%j.err
+#SBATCH --signal=B:TERM@30
 
 # t-SNE Visualization for AG News Latent Space
 #
 # Submit with: sbatch telepathy/slurm_tsne.sh
 
 WORK_DIR="/projects/m000066/sujinesh/LatentWire"
-LOG_FILE="$WORK_DIR/runs/tsne_debug_$SLURM_JOB_ID.log"
+LOG_FILE="$WORK_DIR/tsne_debug_$SLURM_JOB_ID.log"
 
 # Function to log with immediate flush
 log() {
@@ -51,7 +52,7 @@ if [ -z "$CHECKPOINT" ]; then
     ls -la runs/ 2>&1 | tee -a "$LOG_FILE" || log "ls failed"
 
     # Push debug log
-    git add "$LOG_FILE" runs/tsne_*.err 2>/dev/null || true
+    git add "$LOG_FILE" tsne-*.err 2>/dev/null || true
     git commit -m "logs: t-SNE failed - no checkpoint (job $SLURM_JOB_ID)" 2>/dev/null || true
     git push 2>/dev/null || true
     exit 1
@@ -78,7 +79,7 @@ else
 fi
 
 log "Pushing to git..."
-git add figures/*.pdf figures/*.png "$LOG_FILE" runs/tsne_*.log runs/tsne_*.err 2>/dev/null || true
+git add figures/*.pdf figures/*.png "$LOG_FILE" tsne-*.log tsne-*.err 2>/dev/null || true
 git commit -m "$COMMIT_MSG
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
