@@ -10,112 +10,80 @@
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/tsne_%j.err
 
 # t-SNE Visualization for AG News Latent Space
-# Generates figure showing category separation in Bridge latents
 #
 # Submit with: sbatch telepathy/slurm_tsne.sh
-# Monitor with: squeue -u $USER
-# Cancel with: scancel <job_id>
 
-# Force unbuffered output
+WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+LOG_FILE="$WORK_DIR/runs/tsne_debug_$SLURM_JOB_ID.log"
+
+# Function to log with immediate flush
+log() {
+    echo "[$(date '+%H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+# Start logging immediately
+mkdir -p "$WORK_DIR/runs"
+log "=== Job $SLURM_JOB_ID starting on $(hostname) ==="
+
+cd "$WORK_DIR" || { log "FATAL: Cannot cd to $WORK_DIR"; exit 1; }
+log "Working directory: $(pwd)"
+
+export PYTHONPATH=.
 export PYTHONUNBUFFERED=1
 
-# Write immediately to a marker file to confirm job started
-date > /projects/m000066/sujinesh/LatentWire/runs/tsne_started_$SLURM_JOB_ID.txt
-echo "Job $SLURM_JOB_ID started" >> /projects/m000066/sujinesh/LatentWire/runs/tsne_started_$SLURM_JOB_ID.txt
+log "Python: $(which python)"
+log "Python version: $(python --version 2>&1)"
 
-# Don't use set -e - handle errors explicitly so we can see what fails
+log "GPU check..."
+nvidia-smi --query-gpu=name,memory.total --format=csv 2>&1 | tee -a "$LOG_FILE" || log "nvidia-smi failed"
 
-# Set working directory
-WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+log "Git pull..."
+git pull 2>&1 | tee -a "$LOG_FILE" || log "git pull failed"
 
-echo "=========================================="
-echo "SLURM Job ID: $SLURM_JOB_ID"
-echo "Running on: $(hostname)"
-echo "Started at: $(date)"
-echo "=========================================="
-
-echo "Changing to: $WORK_DIR"
-cd "$WORK_DIR" || { echo "FATAL: Cannot cd to $WORK_DIR"; exit 1; }
-echo "Current directory: $(pwd)"
-
-# Use system Python (same as submit_enhanced_arxiv.slurm which works)
-export PYTHONPATH=.
-export PYTORCH_ENABLE_MPS_FALLBACK=1
-
-# Show Python info
-echo "Python: $(which python)"
-python --version
-
-# Show GPU info
-echo "GPU info:"
-nvidia-smi --query-gpu=name,memory.total --format=csv 2>/dev/null || echo "nvidia-smi failed"
-
-# Create directories
-mkdir -p runs figures
-
-# Pull latest code
-echo ""
-echo "Pulling latest code..."
-git pull || echo "WARNING: git pull failed"
-
-# Find AG News checkpoint
-echo ""
-echo "Searching for AG News checkpoint..."
-echo "Looking for: runs/*agnews*/bridge.pt"
-
-# Show all bridge.pt files
-echo "All bridge.pt files found:"
-find runs -name "bridge.pt" 2>/dev/null || echo "  (none)"
+log "Searching for checkpoint..."
+find runs -name "bridge.pt" 2>/dev/null | tee -a "$LOG_FILE"
 
 CHECKPOINT=$(find runs -name "bridge.pt" -path "*agnews*" 2>/dev/null | head -1)
 
 if [ -z "$CHECKPOINT" ]; then
-    echo ""
-    echo "ERROR: No AG News checkpoint found in runs/"
-    echo ""
-    echo "Directory structure:"
-    ls -la runs/ 2>/dev/null || echo "runs/ does not exist"
-    echo ""
-    # Still push logs so we can see what happened
-    git add runs/tsne_*.log runs/tsne_*.err 2>/dev/null || true
-    git commit -m "logs: t-SNE failed - no checkpoint (SLURM job $SLURM_JOB_ID)" 2>/dev/null || true
+    log "ERROR: No AG News checkpoint found"
+    log "Directory listing:"
+    ls -la runs/ 2>&1 | tee -a "$LOG_FILE" || log "ls failed"
+
+    # Push debug log
+    git add "$LOG_FILE" runs/tsne_*.err 2>/dev/null || true
+    git commit -m "logs: t-SNE failed - no checkpoint (job $SLURM_JOB_ID)" 2>/dev/null || true
     git push 2>/dev/null || true
     exit 1
 fi
 
-echo "Using checkpoint: $CHECKPOINT"
+log "Using checkpoint: $CHECKPOINT"
+log "Starting Python t-SNE script..."
 
-# Run t-SNE visualization
-echo ""
-echo "Generating t-SNE visualization..."
-if python telepathy/generate_tsne_visualization.py \
+python telepathy/generate_tsne_visualization.py \
     --checkpoint "$CHECKPOINT" \
     --output figures/agnews_tsne.pdf \
-    --samples_per_class 100; then
-    echo "Python script succeeded!"
-    echo ""
-    echo "Generated files:"
-    ls -la figures/agnews_tsne.* 2>/dev/null || echo "No output files found"
-    COMMIT_MSG="figures: AG News t-SNE visualization (SLURM job $SLURM_JOB_ID)
+    --samples_per_class 100 2>&1 | tee -a "$LOG_FILE"
 
-Shows semantic category separation in Bridge latent space.
+PYTHON_EXIT=$?
+log "Python exit code: $PYTHON_EXIT"
+
+if [ $PYTHON_EXIT -eq 0 ]; then
+    log "Success! Generated files:"
+    ls -la figures/agnews_tsne.* 2>&1 | tee -a "$LOG_FILE"
+    COMMIT_MSG="figures: AG News t-SNE (job $SLURM_JOB_ID)"
+else
+    log "Python script FAILED"
+    COMMIT_MSG="logs: t-SNE failed (job $SLURM_JOB_ID)"
+fi
+
+log "Pushing to git..."
+git add figures/*.pdf figures/*.png "$LOG_FILE" runs/tsne_*.log runs/tsne_*.err 2>/dev/null || true
+git commit -m "$COMMIT_MSG
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
-else
-    echo "Python script FAILED with exit code $?"
-    COMMIT_MSG="logs: t-SNE visualization failed (SLURM job $SLURM_JOB_ID)"
-fi
+Co-Authored-By: Claude <noreply@anthropic.com>" 2>/dev/null || log "Nothing to commit"
+git push 2>/dev/null || log "Push failed"
 
-# Push results to git (always, even on failure)
-echo ""
-echo "Pushing results to git..."
-git add figures/*.pdf figures/*.png runs/tsne_*.log runs/tsne_*.err 2>/dev/null || true
-git commit -m "$COMMIT_MSG" 2>/dev/null || echo "No changes to commit"
-git push 2>/dev/null || echo "Push failed - may need manual push"
-
-echo ""
-echo "=========================================="
-echo "Completed at: $(date)"
-echo "=========================================="
+log "=== Job complete ==="
