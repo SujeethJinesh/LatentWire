@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=tsne_viz
 #SBATCH --nodes=1
-#SBATCH --gpus=4
+#SBATCH --gpus=1
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
