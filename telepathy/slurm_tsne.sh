@@ -57,9 +57,15 @@ log "Git pull..."
 git pull 2>&1 | tee -a "$LOG_FILE" || log "git pull failed"
 
 log "Searching for checkpoint..."
-find runs -name "bridge.pt" 2>/dev/null | tee -a "$LOG_FILE"
+find runs -name "bridge_agnews*.pt" 2>/dev/null | tee -a "$LOG_FILE"
 
-CHECKPOINT=$(find runs -name "bridge.pt" -path "*agnews*" 2>/dev/null | head -1)
+# Use the most recent agnews checkpoint (from phase3_multiseed)
+CHECKPOINT=$(find runs -name "bridge_agnews_seed42.pt" 2>/dev/null | grep "phase3_multiseed" | sort -r | head -1)
+
+# Fallback to any agnews checkpoint
+if [ -z "$CHECKPOINT" ]; then
+    CHECKPOINT=$(find runs -name "bridge_agnews*.pt" 2>/dev/null | sort -r | head -1)
+fi
 
 if [ -z "$CHECKPOINT" ]; then
     log "ERROR: No AG News checkpoint found"
