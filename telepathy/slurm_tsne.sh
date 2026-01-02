@@ -10,19 +10,34 @@
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/tsne-%j.err
 #SBATCH --signal=B:TERM@30
 
-# t-SNE Visualization for AG News Latent Space
-#
-# Submit with: sbatch telepathy/slurm_tsne.sh
-
+# IMMEDIATE file write - before anything else
 WORK_DIR="/projects/m000066/sujinesh/LatentWire"
 LOG_FILE="$WORK_DIR/tsne_debug_$SLURM_JOB_ID.log"
 
+# Write directly to file FIRST (bypasses buffering)
+echo "=== SLURM JOB $SLURM_JOB_ID ===" > "$LOG_FILE"
+echo "Started: $(date)" >> "$LOG_FILE"
+echo "Host: $(hostname)" >> "$LOG_FILE"
+echo "PWD: $(pwd)" >> "$LOG_FILE"
+sync  # Force flush to disk
+
 # Function to log with immediate flush
 log() {
-    echo "[$(date '+%H:%M:%S')] $1" | tee -a "$LOG_FILE"
+    echo "[$(date '+%H:%M:%S')] $1" >> "$LOG_FILE"
+    echo "[$(date '+%H:%M:%S')] $1"
+    sync
 }
 
-# Start logging immediately
+# Trap to push logs on ANY exit (including preemption)
+cleanup() {
+    log "=== CLEANUP TRIGGERED ==="
+    cd "$WORK_DIR" 2>/dev/null || true
+    git add "$LOG_FILE" tsne-*.log tsne-*.err 2>/dev/null || true
+    git commit -m "logs: t-SNE job $SLURM_JOB_ID (cleanup)" 2>/dev/null || true
+    git push 2>/dev/null || true
+}
+trap cleanup EXIT TERM INT
+
 mkdir -p "$WORK_DIR/runs"
 log "=== Job $SLURM_JOB_ID starting on $(hostname) ==="
 
