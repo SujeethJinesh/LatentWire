@@ -95,11 +95,7 @@ fi
 
 log "Pushing to git..."
 git add figures/*.pdf figures/*.png "$LOG_FILE" tsne-*.log tsne-*.err 2>/dev/null || true
-git commit -m "$COMMIT_MSG
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>" 2>/dev/null || log "Nothing to commit"
+git commit -m "$COMMIT_MSG" 2>/dev/null || log "Nothing to commit"
 git push 2>/dev/null || log "Push failed"
 
 log "=== Job complete ==="
