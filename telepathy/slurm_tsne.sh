@@ -87,7 +87,8 @@ python telepathy/generate_tsne_visualization.py \
     --output figures/agnews_tsne.pdf \
     --samples_per_class 100 2>&1 | tee -a "$LOG_FILE"
 
-PYTHON_EXIT=$?
+# Get exit code properly (pipefail)
+PYTHON_EXIT=${PIPESTATUS[0]}
 log "Python exit code: $PYTHON_EXIT"
 
 if [ $PYTHON_EXIT -eq 0 ]; then
