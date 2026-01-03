@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=ablation
 #SBATCH --nodes=1
-#SBATCH --gpus=4
+#SBATCH --gpus=1
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
@@ -54,7 +54,7 @@ log "Working directory: $(pwd)"
 
 export PYTHONPATH=.
 export PYTHONUNBUFFERED=1
-export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_VISIBLE_DEVICES=0
 
 log "Python: $(which python)"
 log "Python version: $(python --version 2>&1)"
