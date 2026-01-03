@@ -195,13 +195,13 @@ class LinearProjectionBaseline(nn.Module):
         """Pool sender hidden states and project to receiver space."""
         # Mean pool over sequence (simple but effective)
         if attention_mask is not None:
-            mask = attention_mask.unsqueeze(-1).float()
+            mask = attention_mask.unsqueeze(-1).to(sender_hidden.dtype)
             pooled = (sender_hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
         else:
             pooled = sender_hidden.mean(dim=1)
 
-        # Project to receiver dimension
-        projected = self.projection(pooled)  # [B, receiver_dim]
+        # Project to receiver dimension (ensure same dtype)
+        projected = self.projection(pooled.to(self.projection.weight.dtype))  # [B, receiver_dim]
 
         # Expand to num_tokens (replicate the same vector)
         soft_tokens = projected.unsqueeze(1).expand(-1, self.num_tokens, -1)
