@@ -1196,6 +1196,40 @@ Reverse (Mistral$\rightarrow$Llama) & 97.0 & 63.5 & 89.0 \\
 
 \textbf{Findings:} The reverse direction achieves strong results on SST-2 (97.0\%, exceeding forward) and TREC (89.0\%), demonstrating that Bridge transfer is genuinely bidirectional. However, AG News shows significant asymmetric behavior (63.5\% reverse vs. 90.3\% forward). This is a \textbf{limitation}: while Bridge transfer is bidirectional in principle, performance can vary substantially depending on the direction and task. We hypothesize this reflects differences in how Llama and Mistral encode news category features---Mistral's representations may be less compatible with Llama's decoding pathways for this specific task.
 
+\subsubsection{Training-Free Baseline}
+
+To establish that learning is necessary for cross-model transfer, we evaluate a training-free baseline: random orthogonal linear projection from sender hidden states to receiver embedding space. This baseline pools sender hidden states (mean pooling), projects through a randomly initialized orthogonal matrix, and replicates to 8 soft tokens with RMS normalization---identical to our Bridge pipeline but without any learned parameters.
+
+\begin{table}[h]
+\caption{Training-free baseline accuracy (\%). Random projection performs at or below chance, proving learned compression is essential.}
+\label{tab:training_free}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Method & SST-2 & AG News & TREC \\
+\midrule
+Random chance & 50.0 & 25.0 & 16.7 \\
+Training-free (random projection) & 48.5 & 25.0 & 0.0 \\
+\midrule
+Bridge (learned) & \textbf{91.5} & \textbf{90.3} & \textbf{94.5} \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+\textbf{Findings:} The training-free baseline performs at or below random chance across all datasets: SST-2 (48.5\% vs 50\% chance), AG News (25.0\% = chance), and TREC (0.0\% vs 16.7\% chance). This demonstrates that:
+\begin{enumerate}
+\item \textbf{Learning is essential:} Random linear projection cannot transfer meaningful information across model families
+\item \textbf{Architectural alignment is insufficient:} Even with matched dimensionality and RMS normalization, the receiver cannot interpret unlearned soft tokens
+\item \textbf{Bridge improvement is genuine:} The 40-95 percentage point gap between training-free and learned Bridge proves that our optimization discovers meaningful cross-model mappings
+\end{enumerate}
+
+This negative result strengthens our contribution: cross-model soft token transfer requires learned compression, not just dimensional alignment.
+
 \subsubsection{Latent Space Visualization}
 
 To verify that the Bridge learns semantically meaningful representations rather than arbitrary mappings, we visualize the latent space using t-SNE dimensionality reduction on AG News test samples.
