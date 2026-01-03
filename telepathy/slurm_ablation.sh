@@ -18,10 +18,15 @@
 WORK_DIR="/projects/m000066/sujinesh/LatentWire"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_DIR="$WORK_DIR/runs/ablation_$TIMESTAMP"
-LOG_FILE="$WORK_DIR/ablation_debug_$SLURM_JOB_ID.log"
+
+# Create output dir FIRST so we can log there
+mkdir -p "$OUTPUT_DIR"
+
+# Log file goes IN the output directory so it gets pushed with results
+LOG_FILE="$OUTPUT_DIR/experiment.log"
 
 # Write directly to file FIRST (bypasses buffering)
-echo "=== SLURM JOB $SLURM_JOB_ID ===" > "$LOG_FILE"
+echo "=== SLURM JOB ${SLURM_JOB_ID:-interactive} ===" > "$LOG_FILE"
 echo "Started: $(date)" >> "$LOG_FILE"
 echo "Host: $(hostname)" >> "$LOG_FILE"
 echo "Output dir: $OUTPUT_DIR" >> "$LOG_FILE"
@@ -39,15 +44,14 @@ cleanup() {
     log "=== CLEANUP TRIGGERED ==="
     cd "$WORK_DIR" 2>/dev/null || true
 
-    # Add all results and logs
-    git add "$OUTPUT_DIR" "$LOG_FILE" ablation-*.log ablation-*.err 2>/dev/null || true
-    git commit -m "results: ablation experiments (job $SLURM_JOB_ID, cleanup)" 2>/dev/null || true
+    # Add all results and logs (log file is inside OUTPUT_DIR)
+    git add "$OUTPUT_DIR" 2>/dev/null || true
+    git commit -m "results: ablation experiments (job ${SLURM_JOB_ID:-interactive}, cleanup)" 2>/dev/null || true
     git push 2>/dev/null || true
 }
 trap cleanup EXIT TERM INT
 
-mkdir -p "$OUTPUT_DIR"
-log "=== Job $SLURM_JOB_ID starting on $(hostname) ==="
+log "=== Job ${SLURM_JOB_ID:-interactive} starting on $(hostname) ==="
 
 cd "$WORK_DIR" || { log "FATAL: Cannot cd to $WORK_DIR"; exit 1; }
 log "Working directory: $(pwd)"
@@ -83,11 +87,15 @@ log "Layer ablation exit code: $LAYER_EXIT"
 if [ $LAYER_EXIT -eq 0 ]; then
     log "Layer ablation SUCCESS"
     # Push intermediate results
-    git add "$OUTPUT_DIR" "$LOG_FILE" 2>/dev/null || true
-    git commit -m "results: layer ablation complete (job $SLURM_JOB_ID)" 2>/dev/null || true
+    git add "$OUTPUT_DIR" 2>/dev/null || true
+    git commit -m "results: layer ablation complete (job ${SLURM_JOB_ID:-interactive})" 2>/dev/null || true
     git push 2>/dev/null || true
 else
     log "Layer ablation FAILED"
+    # Still push logs on failure
+    git add "$OUTPUT_DIR" 2>/dev/null || true
+    git commit -m "results: layer ablation FAILED (job ${SLURM_JOB_ID:-interactive})" 2>/dev/null || true
+    git push 2>/dev/null || true
 fi
 
 # =============================================================================
@@ -109,11 +117,15 @@ log "Model pairs exit code: $PAIRS_EXIT"
 if [ $PAIRS_EXIT -eq 0 ]; then
     log "Model pairs SUCCESS"
     # Push intermediate results
-    git add "$OUTPUT_DIR" "$LOG_FILE" 2>/dev/null || true
-    git commit -m "results: model pairs complete (job $SLURM_JOB_ID)" 2>/dev/null || true
+    git add "$OUTPUT_DIR" 2>/dev/null || true
+    git commit -m "results: model pairs complete (job ${SLURM_JOB_ID:-interactive})" 2>/dev/null || true
     git push 2>/dev/null || true
 else
     log "Model pairs FAILED"
+    # Still push logs on failure
+    git add "$OUTPUT_DIR" 2>/dev/null || true
+    git commit -m "results: model pairs FAILED (job ${SLURM_JOB_ID:-interactive})" 2>/dev/null || true
+    git push 2>/dev/null || true
 fi
 
 # =============================================================================
@@ -132,8 +144,14 @@ log "Training-free exit code: $FREE_EXIT"
 
 if [ $FREE_EXIT -eq 0 ]; then
     log "Training-free SUCCESS"
+    git add "$OUTPUT_DIR" 2>/dev/null || true
+    git commit -m "results: training-free complete (job ${SLURM_JOB_ID:-interactive})" 2>/dev/null || true
+    git push 2>/dev/null || true
 else
     log "Training-free FAILED"
+    git add "$OUTPUT_DIR" 2>/dev/null || true
+    git commit -m "results: training-free FAILED (job ${SLURM_JOB_ID:-interactive})" 2>/dev/null || true
+    git push 2>/dev/null || true
 fi
 
 # =============================================================================
@@ -150,8 +168,9 @@ find "$OUTPUT_DIR" -name "*.json" -exec echo {} \; -exec cat {} \; 2>&1 | tee -a
 
 # Final push
 log "Pushing all results..."
-git add "$OUTPUT_DIR" "$LOG_FILE" ablation-*.log ablation-*.err 2>/dev/null || true
-git commit -m "results: ablation experiments complete (job $SLURM_JOB_ID)" 2>/dev/null || true
+git add "$OUTPUT_DIR" 2>/dev/null || true
+git commit -m "results: ablation experiments complete (job ${SLURM_JOB_ID:-interactive})" 2>/dev/null || true
 git push 2>/dev/null || true
 
 log "=== Job complete ==="
+log "Log file saved to: $LOG_FILE"
