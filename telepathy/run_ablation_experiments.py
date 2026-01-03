@@ -317,9 +317,11 @@ def train_bridge(
                                      add_special_tokens=False)
         prompt_embeds = receiver.get_input_embeddings()(prompt_inputs["input_ids"].to(device))
 
+        # Ensure dtype consistency
+        soft_tokens = soft_tokens.to(prompt_embeds.dtype)
         inputs_embeds = torch.cat([soft_tokens, prompt_embeds], dim=1)
-        soft_mask = torch.ones(B, soft_tokens.shape[1], device=device)
-        full_mask = torch.cat([soft_mask, prompt_inputs["attention_mask"].to(device)], dim=1)
+        soft_mask = torch.ones(B, soft_tokens.shape[1], device=device, dtype=inputs_embeds.dtype)
+        full_mask = torch.cat([soft_mask, prompt_inputs["attention_mask"].to(device=device, dtype=inputs_embeds.dtype)], dim=1)
 
         outputs = receiver(inputs_embeds=inputs_embeds, attention_mask=full_mask)
         logits = outputs.logits[:, -1, :]
@@ -330,10 +332,10 @@ def train_bridge(
 
         # Diversity loss (optional)
         if diversity_weight > 0:
-            flat = soft_tokens.view(B, -1)
+            flat = soft_tokens.view(B, -1).float()  # Use float32 for stability
             flat_norm = F.normalize(flat, dim=1)
             similarity = (flat_norm @ flat_norm.T)
-            off_diag = similarity - torch.eye(B, device=device)
+            off_diag = similarity - torch.eye(B, device=device, dtype=flat.dtype)
             div_loss = (off_diag ** 2).mean()
             loss = ce_loss + diversity_weight * div_loss
         else:
@@ -394,9 +396,11 @@ def evaluate_bridge(
             prompt_inputs = receiver_tok(prompt, return_tensors="pt", add_special_tokens=False)
             prompt_embeds = receiver.get_input_embeddings()(prompt_inputs["input_ids"].to(device))
 
+            # Ensure dtype consistency
+            soft_tokens = soft_tokens.to(prompt_embeds.dtype)
             inputs_embeds = torch.cat([soft_tokens, prompt_embeds], dim=1)
-            soft_mask = torch.ones(1, soft_tokens.shape[1], device=device)
-            full_mask = torch.cat([soft_mask, prompt_inputs["attention_mask"].to(device)], dim=1)
+            soft_mask = torch.ones(1, soft_tokens.shape[1], device=device, dtype=inputs_embeds.dtype)
+            full_mask = torch.cat([soft_mask, prompt_inputs["attention_mask"].to(device=device, dtype=inputs_embeds.dtype)], dim=1)
 
             outputs = receiver(inputs_embeds=inputs_embeds, attention_mask=full_mask)
             logits = outputs.logits[:, -1, :]
@@ -423,6 +427,10 @@ def run_layer_ablation(args):
 
     source_layers = [8, 12, 16, 20, 24, 28]
     datasets = args.datasets if args.datasets else ["agnews"]
+
+    # Create output directory
+    output_dir = f"{args.output_dir}/layer_ablation"
+    os.makedirs(output_dir, exist_ok=True)
 
     results = {}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -478,7 +486,7 @@ def run_layer_ablation(args):
             print(f"  Layer {source_layer}: {accuracy:.1f}%")
 
             # Save intermediate results
-            with open(f"{args.output_dir}/layer_ablation_results.json", "w") as f:
+            with open(f"{output_dir}/layer_ablation_results.json", "w") as f:
                 json.dump(results, f, indent=2)
 
     # Print summary table
@@ -507,6 +515,10 @@ def run_model_pairs(args):
 
     pairs_to_test = args.model_pairs if args.model_pairs else ["llama_mistral", "qwen_mistral"]
     datasets = args.datasets if args.datasets else ["agnews"]
+
+    # Create output directory
+    output_dir = f"{args.output_dir}/model_pairs"
+    os.makedirs(output_dir, exist_ok=True)
 
     results = {}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -569,7 +581,7 @@ def run_model_pairs(args):
         torch.cuda.empty_cache()
 
         # Save intermediate results
-        with open(f"{args.output_dir}/model_pairs_results.json", "w") as f:
+        with open(f"{output_dir}/model_pairs_results.json", "w") as f:
             json.dump(results, f, indent=2)
 
     return results
@@ -582,6 +594,10 @@ def run_training_free(args):
     print("="*60)
 
     datasets = args.datasets if args.datasets else ["agnews"]
+
+    # Create output directory
+    output_dir = f"{args.output_dir}/training_free"
+    os.makedirs(output_dir, exist_ok=True)
 
     results = {}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -630,7 +646,7 @@ def run_training_free(args):
         print(f"  Training-free: {accuracy:.1f}% (random chance: {DATASET_CONFIGS[dataset_name]['random_chance']:.1f}%)")
 
     # Save results
-    with open(f"{args.output_dir}/training_free_results.json", "w") as f:
+    with open(f"{output_dir}/training_free_results.json", "w") as f:
         json.dump(results, f, indent=2)
 
     return results
