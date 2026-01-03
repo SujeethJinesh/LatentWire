@@ -75,7 +75,7 @@ python telepathy/run_ablation_experiments.py \
     --datasets agnews sst2 trec \
     --steps 1500 \
     --seed 42 \
-    --output_dir "$OUTPUT_DIR/layer_ablation" 2>&1 | tee -a "$LOG_FILE"
+    --output_dir "$OUTPUT_DIR" 2>&1 | tee -a "$LOG_FILE"
 
 LAYER_EXIT=${PIPESTATUS[0]}
 log "Layer ablation exit code: $LAYER_EXIT"
@@ -101,7 +101,7 @@ python telepathy/run_ablation_experiments.py \
     --datasets agnews sst2 trec \
     --steps 1500 \
     --seed 42 \
-    --output_dir "$OUTPUT_DIR/model_pairs" 2>&1 | tee -a "$LOG_FILE"
+    --output_dir "$OUTPUT_DIR" 2>&1 | tee -a "$LOG_FILE"
 
 PAIRS_EXIT=${PIPESTATUS[0]}
 log "Model pairs exit code: $PAIRS_EXIT"
@@ -125,7 +125,7 @@ python telepathy/run_ablation_experiments.py \
     --experiment training_free \
     --datasets agnews sst2 trec \
     --seed 42 \
-    --output_dir "$OUTPUT_DIR/training_free" 2>&1 | tee -a "$LOG_FILE"
+    --output_dir "$OUTPUT_DIR" 2>&1 | tee -a "$LOG_FILE"
 
 FREE_EXIT=${PIPESTATUS[0]}
 log "Training-free exit code: $FREE_EXIT"
