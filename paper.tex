@@ -1194,6 +1194,26 @@ Reverse (Mistral$\rightarrow$Llama) & 97.0 & 63.5 & 89.0 \\
 
 \textbf{Findings:} The reverse direction achieves strong results on SST-2 (97.0\%, exceeding forward) and TREC (89.0\%), demonstrating that Bridge transfer is genuinely bidirectional. However, AG News shows significant asymmetric behavior (63.5\% reverse vs. 90.3\% forward). This is a \textbf{limitation}: while Bridge transfer is bidirectional in principle, performance can vary substantially depending on the direction and task. We hypothesize this reflects differences in how Llama and Mistral encode news category features---Mistral's representations may be less compatible with Llama's decoding pathways for this specific task.
 
+\subsubsection{Latent Space Visualization}
+
+To verify that the Bridge learns semantically meaningful representations rather than arbitrary mappings, we visualize the latent space using t-SNE dimensionality reduction on AG News test samples.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/agnews_tsne.pdf}
+\caption{t-SNE visualization of Bridge latent space on AG News (400 samples, 100 per class). The four news categories form distinct clusters, demonstrating that the learned soft tokens encode semantically meaningful structure.}
+\label{fig:tsne}
+\end{figure}
+
+Figure~\ref{fig:tsne} shows that the four AG News categories (World, Sports, Business, Science/Tech) form clearly separable clusters in the 8-dimensional soft token space. This provides strong evidence that:
+\begin{enumerate}
+\item The Bridge learns task-relevant semantic structure, not arbitrary mappings
+\item News categories are geometrically separable in the compressed representation
+\item The soft tokens capture meaningful distinctions that enable accurate classification
+\end{enumerate}
+
+Notably, Sports articles form the tightest cluster (bottom-left), consistent with their distinctive vocabulary and topics. World and Business news show some overlap, reflecting semantic similarity between political and economic reporting. This visualization supports our claim that the Bridge functions as a \textit{semantic compressor} that preserves task-relevant information while discarding irrelevant details.
+
 \section{Analysis}
 
 \subsection{Information Bottleneck}
