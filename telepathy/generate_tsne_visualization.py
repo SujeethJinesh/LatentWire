@@ -120,7 +120,7 @@ def create_tsne_plot(latents, labels, label_names, output_path):
     print(f"Running t-SNE on {len(latents)} samples...")
 
     # Run t-SNE
-    tsne = TSNE(n_components=2, perplexity=30, n_iter=1000, random_state=42)
+    tsne = TSNE(n_components=2, perplexity=30, max_iter=1000, random_state=42)
     embeddings_2d = tsne.fit_transform(latents)
 
     # Create plot
