@@ -109,7 +109,7 @@ We propose replacing text as the communication medium with a learned continuous 
 Our key contributions:
 
 \begin{enumerate}
-\item \textbf{Cross-model soft token transfer:} We demonstrate the first successful transfer of soft tokens between heterogeneous model families (Llama $\rightarrow$ Mistral), where a bridge network trained on one architecture generalizes to a completely different model without additional training. This establishes that learned interlingua can transcend architectural boundaries.
+\item \textbf{Cross-model soft token transfer via embedding injection:} We demonstrate direct transfer of learned soft tokens between heterogeneous model families (Llama $\rightarrow$ Mistral) via \texttt{inputs\_embeds}, without requiring KV-cache fusion~\cite{c2c2025}, same-family constraints~\cite{latentmas2025}, or adapter weight transfer~\cite{crosslora2025}. Our PerceiverResampler-based approach operates in embedding space rather than attention space, establishing a distinct communication channel for cross-family transfer.
 
 \item \textbf{Strong empirical performance across task types:} Our bridge achieves 91.5\% on SST-2 (binary sentiment), 90.3\% on AG News (4-class news), and 94.5\% on TREC-6 (6-class questions)—demonstrating successful cross-model transfer across binary, multi-class, and question classification tasks. With only 8 soft tokens (vs hundreds of text tokens), the system achieves 27$\times$ faster inference than text-relay approaches while \textit{exceeding} prompt-tuning baselines on 2 of 3 tasks.
 
@@ -164,6 +164,18 @@ ICAE~\cite{ge2024icae} and 500xCompressor~\cite{li2024500x} learn to compress co
 \subsection{Multi-Model Ensembles}
 
 Prior work on LLM collaboration focuses on output-level combination~\cite{april2024deepen,june2024moa} or requires LoRA adapters~\cite{hu2021lora}. Our method enables embedding-level cooperation without modifying model weights, using only small external adapters to bridge embedding spaces.
+
+\subsection{Latent Multi-Model Communication}
+
+Recent work has explored direct latent communication between LLMs, bypassing text serialization.
+
+\textbf{Same-family approaches:} Su et al.~\cite{su2022transferability} demonstrated soft prompt transfer within model families (e.g., RoBERTa-base $\rightarrow$ RoBERTa-large) using learned projectors, but required same-architecture constraints. LatentMAS~\cite{latentmas2025} enables training-free latent collaboration via shared KV-cache memory, achieving 14.6\% accuracy gains---but is limited to same-family models (Qwen3 variants). These approaches validate latent communication but do not address cross-family transfer.
+
+\textbf{Heterogeneous approaches:} Cache-to-Cache (C2C)~\cite{c2c2025} achieves heterogeneous LLM communication across Qwen, Llama, and Gemma families by projecting and fusing KV-caches layer-by-layer. Cross-LoRA~\cite{crosslora2025} transfers LoRA adapter weights between heterogeneous LLMs via SVD-based subspace alignment. Both demonstrate that cross-family transfer is achievable.
+
+\textbf{Our differentiation:} LatentWire operates in a distinct architectural space. Unlike C2C which fuses attention-layer KV-caches, we inject soft tokens directly via \texttt{inputs\_embeds} in the embedding space. Unlike Cross-LoRA which transfers static adapter parameters, we transfer dynamic runtime representations. Our PerceiverResampler compresses variable-length sender contexts into fixed-size soft tokens that the receiver processes as if they were text embeddings---a fundamentally different communication channel.
+
+\textbf{Theoretical foundations:} The Platonic Representation Hypothesis~\cite{huh2024platonic} suggests that as models scale, their representations converge toward a shared statistical model of reality. Moschella et al.~\cite{moschella2023relative} showed that relative representations enable zero-shot model stitching across architectures. These findings provide theoretical justification for why cross-model mapping should succeed---and may explain our observed 3B parameter threshold: smaller models may not have converged sufficiently toward the ``platonic'' representation.
 
 \section{Method}
 
