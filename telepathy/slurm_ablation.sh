@@ -4,7 +4,7 @@
 #SBATCH --gpus=4
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
-#SBATCH --time=24:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mem=160GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/ablation-%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/ablation-%j.err
@@ -73,7 +73,7 @@ log "=== EXPERIMENT 1: Source Layer Ablation ==="
 python telepathy/run_ablation_experiments.py \
     --experiment layer_ablation \
     --datasets agnews sst2 trec \
-    --steps 2000 \
+    --steps 1500 \
     --seed 42 \
     --output_dir "$OUTPUT_DIR/layer_ablation" 2>&1 | tee -a "$LOG_FILE"
 
@@ -99,7 +99,7 @@ python telepathy/run_ablation_experiments.py \
     --experiment model_pairs \
     --model_pairs llama_mistral qwen_mistral \
     --datasets agnews sst2 trec \
-    --steps 2000 \
+    --steps 1500 \
     --seed 42 \
     --output_dir "$OUTPUT_DIR/model_pairs" 2>&1 | tee -a "$LOG_FILE"
 
