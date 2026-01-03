@@ -193,6 +193,19 @@ This is acknowledged in the paper as an important negative result that defines t
 - **Section 4.4.4:** Bidirectional Transfer (Table 6)
 - **Section 4.4.5:** Latent Space Visualization (Figure 4)
 
+### New Appendix Sections
+- **Appendix A.4:** Alternative Architecture Analysis
+  - VQ-VAE failure analysis (codebook collapse, gradient mismatch)
+  - Diffusion-based decoder failure analysis (stochastic boundary destruction)
+- **Appendix A.5:** Baseline Methodology
+  - Exact prompt templates for all tasks
+  - Model versions documented
+  - Evaluation sample consistency
+- **Appendix A.6:** Efficiency Analysis: Amortized Costs
+  - One-time vs. recurring cost distinction
+  - Comparison to fine-tuning, text relay, and task-specific probes
+  - Break-even analysis for 537M bridge
+
 ### Updated Content
 - **Abstract:** Updated accuracy claims and added bidirectionality
 - **Table 3:** Now includes mean±std from 3-seed evaluation

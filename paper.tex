@@ -1420,4 +1420,62 @@ Model Scale & GPU Memory & Training Time & Cost \\
 
 Despite higher training costs, 7B+ models are necessary for viable deployment. The 1B experiments, while computationally cheap, produce unusable outputs even after all fixes are applied.
 
+\subsection{Alternative Architecture Analysis}
+
+Before settling on continuous soft tokens via PerceiverResampler, we evaluated several alternative architectures. Understanding why these failed provides insight into the requirements for cross-model communication.
+
+\subsubsection{Discrete Bottleneck Approaches (VQ-VAE)}
+
+We attempted discrete quantization using Vector-Quantized VAE (VQ-VAE) with codebook sizes ranging from 256 to 8192 entries.
+
+\textbf{Failure mode: Codebook collapse.} Despite extensive tuning of commitment loss ($\beta \in [0.1, 2.0]$) and codebook initialization strategies, we observed severe codebook underutilization ($<$5\% of entries used). The high-dimensional semantic manifold could not be effectively discretized without shattering fine-grained category boundaries.
+
+\textbf{Root cause: Gradient mismatch.} The straight-through estimator required for discrete bottlenecks introduces gradient noise that prevents stable alignment between heterogeneous model embedding spaces. Cross-model transfer requires preserving subtle geometric relationships (e.g., ``Science'' vs. ``Business'' proximity in AG News), which discrete quantization destroys.
+
+\textbf{Conclusion:} Cross-model ``telepathy'' requires a continuous, differentiable channel to preserve manifold geometry. Discrete tokens are fundamentally incompatible with the fine-grained semantic transfer we achieve.
+
+\subsubsection{Diffusion-Based Decoders}
+
+We also evaluated diffusion-based decoding, where the bridge outputs a noised latent that is iteratively denoised before injection.
+
+\textbf{Failure mode: Stochastic boundary destruction.} The sampling noise inherent in diffusion processes destroyed the subtle decision boundaries between semantically similar categories. While diffusion excels at generating diverse outputs, cross-model transfer requires \emph{deterministic} preservation of the sender's semantic intent.
+
+\textbf{Conclusion:} Deterministic continuous mapping (PerceiverResampler) outperforms stochastic approaches for classification transfer, where exact boundary preservation matters more than generation diversity.
+
+\subsection{Baseline Methodology}
+
+To ensure fair comparison, we document the exact methodology for all baselines:
+
+\textbf{Zero-shot prompts:} Each task uses a consistent prompt template:
+\begin{itemize}
+\item \textbf{SST-2:} ``Review: \{text\}\textbackslash n\textbackslash nClassify sentiment as positive or negative:''
+\item \textbf{AG News:} ``Article: \{text\}\textbackslash n\textbackslash nClassify topic as World, Sports, Business, or Sci-Tech:''
+\item \textbf{TREC:} ``Question: \{text\}\textbackslash n\textbackslash nClassify question type as Abbreviation, Entity, Description, Human, Location, or Numeric:''
+\end{itemize}
+
+\textbf{Model versions:}
+\begin{itemize}
+\item Sender: \texttt{meta-llama/Meta-Llama-3.1-8B-Instruct}
+\item Receiver: \texttt{mistralai/Mistral-7B-Instruct-v0.3}
+\end{itemize}
+
+\textbf{Evaluation samples:} All methods evaluated on the same 200 test samples per dataset, ensuring direct comparability. Baseline accuracies are deterministic (temperature=0.0, greedy decoding).
+
+\textbf{Prompt-tuning baseline:} Trained on receiver model only (no sender involvement), using the same training data and steps as Bridge. This isolates the contribution of cross-model transfer from soft-prompt optimization.
+
+\subsection{Efficiency Analysis: Amortized Costs}
+
+A potential concern is the 537M parameter bridge. We clarify the efficiency argument:
+
+\textbf{One-time vs. recurring costs:} The 537M bridge is a \emph{one-time training cost}. Once trained, inference uses only forward passes through the frozen bridge, which is negligible compared to LLM inference. The recurring benefit is eliminating quadratic prefill costs for every multi-model interaction.
+
+\textbf{Comparison to alternatives:}
+\begin{itemize}
+\item \textbf{vs. Fine-tuning:} Bridge (537M) is 13$\times$ smaller than fine-tuning Mistral-7B
+\item \textbf{vs. Text relay:} Each text relay requires $O(n^2)$ prefill; Bridge requires $O(M^2)$ where $M \ll n$
+\item \textbf{vs. Task-specific probes:} A linear probe (4K params) can classify, but cannot transfer context for generation. Bridge preserves the receiver's generative capabilities.
+\end{itemize}
+
+\textbf{Break-even analysis:} For a 500-token prompt compressed to 8 tokens, the prefill cost reduction is $(500/8)^2 \approx 3900\times$ per interaction. The 537M training cost is amortized across all subsequent uses, making Bridge economical for any system with repeated multi-model communication.
+
 \end{document}
