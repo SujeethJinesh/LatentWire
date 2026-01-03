@@ -5,7 +5,7 @@
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
-#SBATCH --mem=64GB
+#SBATCH --mem=40GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/ablation-%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/ablation-%j.err
 #SBATCH --signal=B:TERM@30
