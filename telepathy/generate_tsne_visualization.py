@@ -107,7 +107,8 @@ def extract_latents(bridge, sender_model, tokenizer, texts, labels, device, sour
             soft_tokens = bridge(sender_hidden, inputs["attention_mask"])
 
             # Flatten to single vector (8 tokens × 4096 dim → 32768 dim)
-            latent = soft_tokens.flatten().cpu().numpy()
+            # Convert to float32 since numpy doesn't support bfloat16
+            latent = soft_tokens.flatten().cpu().float().numpy()
             latents.append(latent)
             label_list.append(label)
 
