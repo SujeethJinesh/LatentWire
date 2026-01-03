@@ -836,33 +836,23 @@ The progression from ``token loops'' to ``corrupted garbage'' after calibration 
 
 \subsection{Training Dynamics}
 
-Figure~\ref{fig:training_curves} illustrates the divergent training behavior:
+Training dynamics reveal a striking dissociation in small models:
 
-\begin{figure}[h]
-\vskip 0.2in
-\begin{center}
-\centerline{\includegraphics[width=\columnwidth]{figures/training_curves.pdf}}
-\caption{Training loss (top) and validation F1 (bottom) across epochs. While 1B models achieve low loss, their F1 remains near zero. 7B+ models show correlated loss reduction and F1 improvement.}
-\label{fig:training_curves}
-\end{center}
-\vskip -0.2in
-\end{figure}
+\begin{itemize}
+\item \textbf{1B models:} Loss decreases normally (4.3$\rightarrow$1.3) but validation F1 remains near zero throughout training. The model learns the answer distribution but cannot sample from it coherently.
+\item \textbf{7B+ models:} Loss reduction correlates with F1 improvement. Generation quality emerges around epoch 3-4, coinciding with adapter alignment.
+\end{itemize}
 
-This dissociation between loss and generation quality in small models indicates they learn the answer distribution but cannot sample from it coherently.
+This dissociation between loss and generation quality in small models is the key diagnostic for insufficient capacity—low loss alone does not guarantee generation capability.
 
 \subsection{Adapter Scale Dynamics}
 
-Figure~\ref{fig:scale} illustrates the critical importance of regularization across all model sizes:
+Adapter scale regularization is critical for preventing signal collapse:
 
-\begin{figure}[h]
-\vskip 0.2in
-\begin{center}
-\centerline{\includegraphics[width=\columnwidth]{figures/adapter_scale.pdf}}
-\caption{Adapter scale evolution during training. Without regularization (left), scale collapses to near-zero, suppressing the signal. With regularization (right), scale stays near 1.0. This occurs regardless of model size.}
-\label{fig:scale}
-\end{center}
-\vskip -0.2in
-\end{figure}
+\begin{itemize}
+\item \textbf{Without regularization:} The learned scale parameter $s_i$ collapses to near-zero during training, effectively suppressing the soft token signal. This occurs regardless of model size and leads to degenerate outputs.
+\item \textbf{With regularization} ($\lambda(s_i - 1)^2$, $\lambda=0.05$): Scale stays near 1.0 throughout training, preserving signal amplitude. This simple regularization term is essential for stable training.
+\end{itemize}
 
 \subsection{Validation of inputs\_embeds Interface}
 
@@ -1388,13 +1378,13 @@ Smaller models prefer lower-dimensional latents, likely because they cannot proc
 
 Typical training progression for successful (7B+) models:
 \begin{enumerate}
-\item Epochs 1-2: Encoder learns text summarization, loss drops from 4.3→2.5
-\item Epochs 3-4: Adapters align to model embedding spaces, loss 2.5→1.5
-\item Epochs 5-8: Fine-tuning for task-specific patterns, loss 1.5→1.1
+\item Epochs 1-2: Encoder learns text summarization, loss drops from 4.3$\rightarrow$2.5
+\item Epochs 3-4: Adapters align to model embedding spaces, loss 2.5$\rightarrow$1.5
+\item Epochs 5-8: Fine-tuning for task-specific patterns, loss 1.5$\rightarrow$1.1
 \item Generation quality emerges around epoch 3-4, coinciding with adapter alignment
 \end{enumerate}
 
-For failed (1B) models, loss decreases similarly (4.3→1.3) but generation never becomes coherent, confirming that low loss alone doesn't guarantee generation capability. The dissociation between training loss and generation quality is the key indicator of insufficient model capacity.
+For failed (1B) models, loss decreases similarly (4.3$\rightarrow$1.3) but generation never becomes coherent, confirming that low loss alone doesn't guarantee generation capability. The dissociation between training loss and generation quality is the key indicator of insufficient model capacity.
 
 \subsection{Computational Requirements}
 
