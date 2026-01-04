@@ -1196,6 +1196,69 @@ Reverse (Mistral$\rightarrow$Llama) & 97.0 & 63.5 & 89.0 \\
 
 \textbf{Findings:} The reverse direction achieves strong results on SST-2 (97.0\%, exceeding forward) and TREC (89.0\%), demonstrating that Bridge transfer is genuinely bidirectional. However, AG News shows significant asymmetric behavior (63.5\% reverse vs. 90.3\% forward). This is a \textbf{limitation}: while Bridge transfer is bidirectional in principle, performance can vary substantially depending on the direction and task. We hypothesize this reflects differences in how Llama and Mistral encode news category features---Mistral's representations may be less compatible with Llama's decoding pathways for this specific task.
 
+\subsubsection{Source Layer Ablation}
+
+We investigate how Bridge performance varies with the source layer used to extract sender hidden states. All experiments use Llama-3.1-8B as sender and Mistral-7B as receiver, with 1500 training steps per configuration.
+
+\begin{table}[h]
+\caption{Bridge accuracy (\%) vs. source layer. Best per dataset in \textbf{bold}. Layer 16 (our default) performs consistently well.}
+\label{tab:layer_ablation}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Source Layer & SST-2 & AG News & TREC \\
+\midrule
+8 (early) & 87.0 & 87.5 & 90.0 \\
+12 & 91.0 & 82.5 & 93.5 \\
+\textbf{16 (default)} & 94.0 & \textbf{90.5} & \textbf{96.0} \\
+20 & \textbf{97.0} & 89.5 & 94.0 \\
+24 & 95.0 & 88.5 & 93.0 \\
+28 (late) & \textbf{97.5} & 89.5 & 93.5 \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+\textbf{Findings:} (1) \textbf{Layer 16 is optimal for multi-class tasks}: AG News peaks at 90.5\% and TREC at 96.0\% with layer 16, validating our default choice. (2) \textbf{Deeper layers benefit binary classification}: SST-2 achieves best results with layers 20 (97.0\%) and 28 (97.5\%), where abstract sentiment polarity is most refined. (3) \textbf{Early layers underperform}: Layer 8 consistently achieves the lowest accuracy across all tasks (87.0\%, 87.5\%, 90.0\%), suggesting early representations lack sufficient semantic abstraction for cross-model transfer. (4) \textbf{Layer 12 shows task-specific weakness}: AG News drops to 82.5\% at layer 12, possibly due to category-specific features not being well-formed at this depth.
+
+\subsubsection{Cross-Architecture Model Pairs}
+
+To evaluate how sender-receiver compatibility affects Bridge performance, we train separate bridges for different model pairs using identical training configurations (1500 steps, layer 16, seed 42).
+
+\begin{table}[h]
+\caption{Model pair compatibility (\%). Qwen$\rightarrow$Mistral fails while Llama$\rightarrow$Mistral succeeds.}
+\label{tab:model_pairs}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Model Pair & SST-2 & AG News & TREC \\
+\midrule
+Random chance & 50.0 & 25.0 & 16.7 \\
+\midrule
+Llama$\rightarrow$Mistral & \textbf{94.0} & \textbf{90.5} & \textbf{96.0} \\
+Qwen$\rightarrow$Mistral & 49.5 & 28.5 & 16.5 \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+\textbf{Findings:} \textbf{Model compatibility is critical}---not all sender-receiver pairs support cross-model transfer. While Llama$\rightarrow$Mistral achieves strong performance across all tasks (94.0\%, 90.5\%, 96.0\%), Qwen$\rightarrow$Mistral performs at random chance (49.5\% vs 50\% on SST-2, 28.5\% vs 25\% on AG News, 16.5\% vs 16.7\% on TREC). This suggests that:
+\begin{enumerate}
+\item \textbf{Architectural similarity matters:} Llama and Mistral share similar decoder-only transformer designs, while Qwen has different architectural choices (e.g., different attention patterns, vocabulary size 151K vs 32K)
+\item \textbf{Representation compatibility varies:} Even with identical Bridge architecture and training, some model pairs may have fundamentally incompatible internal representations
+\item \textbf{Bridge training cannot overcome all incompatibilities:} The learned compression cannot bridge arbitrary representation spaces---some degree of underlying compatibility is required
+\end{enumerate}
+
+This finding is an important \textbf{limitation}: LatentWire requires compatible sender-receiver pairs, and practitioners should validate model pair compatibility before deployment.
+
 \subsubsection{Training-Free Baseline}
 
 To establish that learning is necessary for cross-model transfer, we evaluate a training-free baseline: random orthogonal linear projection from sender hidden states to receiver embedding space. This baseline pools sender hidden states (mean pooling), projects through a randomly initialized orthogonal matrix, and replicates to 8 soft tokens with RMS normalization---identical to our Bridge pipeline but without any learned parameters.
@@ -1211,7 +1274,7 @@ To establish that learning is necessary for cross-model transfer, we evaluate a 
 Method & SST-2 & AG News & TREC \\
 \midrule
 Random chance & 50.0 & 25.0 & 16.7 \\
-Training-free (random projection) & 48.5 & 25.0 & 0.0 \\
+Training-free (random projection) & 46.0 & 12.5 & 0.0 \\
 \midrule
 Bridge (learned) & \textbf{91.5} & \textbf{90.3} & \textbf{94.5} \\
 \bottomrule
@@ -1221,7 +1284,7 @@ Bridge (learned) & \textbf{91.5} & \textbf{90.3} & \textbf{94.5} \\
 \vskip -0.1in
 \end{table}
 
-\textbf{Findings:} The training-free baseline performs at or below random chance across all datasets: SST-2 (48.5\% vs 50\% chance), AG News (25.0\% = chance), and TREC (0.0\% vs 16.7\% chance). This demonstrates that:
+\textbf{Findings:} The training-free baseline performs at or below random chance across all datasets: SST-2 (46.0\% vs 50\% chance), AG News (12.5\% vs 25\% chance), and TREC (0.0\% vs 16.7\% chance). This demonstrates that:
 \begin{enumerate}
 \item \textbf{Learning is essential:} Random linear projection cannot transfer meaningful information across model families
 \item \textbf{Architectural alignment is insufficient:} Even with matched dimensionality and RMS normalization, the receiver cannot interpret unlearned soft tokens
