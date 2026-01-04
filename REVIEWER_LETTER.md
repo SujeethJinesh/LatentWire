@@ -44,7 +44,7 @@ We thank the reviewers for their thorough and constructive feedback. We have add
 
 **Response:** We have re-run all experiments with 3 seeds (42, 123, 456) and now report mean ± standard deviation.
 
-**Updated Main Results (Table 3):**
+**Updated Main Results (Table 13):**
 
 | Method | SST-2 | AG News | TREC |
 |--------|-------|---------|------|
@@ -63,7 +63,7 @@ Bridge exceeds Prompt-Tuning on AG News (+6.1%) and TREC (+9.8%), and matches on
 
 **Response:** We conducted comprehensive ablation across M ∈ {2, 4, 8, 16, 32} soft tokens.
 
-**New Table 5: Soft Token Scaling Ablation**
+**Table 17: Soft Token Scaling Ablation**
 
 | M (tokens) | SST-2 | AG News | TREC |
 |------------|-------|---------|------|
@@ -88,7 +88,7 @@ Bridge exceeds Prompt-Tuning on AG News (+6.1%) and TREC (+9.8%), and matches on
 
 **Response:** We trained Bridge in the reverse direction (Mistral-7B → Llama-3.1-8B).
 
-**New Table 6: Bidirectional Transfer**
+**Table 18: Bidirectional Transfer**
 
 | Direction | SST-2 | AG News | TREC |
 |-----------|-------|---------|------|
@@ -133,9 +133,9 @@ ICAE cannot transfer information between heterogeneous models—it requires the 
 
 **Concern:** "Visualization of the learned latent space would strengthen claims."
 
-**Response:** We have added a t-SNE visualization (new Figure 4) showing the Bridge latent space on AG News.
+**Response:** We have added a t-SNE visualization (Figure 2) showing the Bridge latent space on AG News.
 
-**New Section 4.4.5: Latent Space Visualization**
+**Section 6.12.7: Latent Space Visualization (Figure 2)**
 
 The visualization shows clear separation of all 4 AG News categories:
 - **Sports:** Tight cluster (bottom-left)
@@ -189,9 +189,9 @@ This is acknowledged in the paper as an important negative result that defines t
 ## Summary of Paper Changes
 
 ### New Sections
-- **Section 4.4.3:** Soft Token Scaling Ablation (Table 5)
-- **Section 4.4.4:** Bidirectional Transfer (Table 6)
-- **Section 4.4.5:** Latent Space Visualization (Figure 4)
+- **Section 6.12.2:** Soft Token Scaling Ablation (Table 17)
+- **Section 6.12.3:** Bidirectional Transfer (Table 18)
+- **Section 6.12.7:** Latent Space Visualization (Figure 2)
 
 ### New Appendix Sections
 - **Appendix A.4:** Alternative Architecture Analysis
