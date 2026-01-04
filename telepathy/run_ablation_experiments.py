@@ -332,7 +332,7 @@ def train_bridge(
 
         # Diversity loss (optional)
         if diversity_weight > 0:
-            flat = soft_tokens.view(B, -1).float()  # Use float32 for stability
+            flat = soft_tokens.reshape(B, -1).float()  # Use float32 for stability
             flat_norm = F.normalize(flat, dim=1)
             similarity = (flat_norm @ flat_norm.T)
             off_diag = similarity - torch.eye(B, device=device, dtype=flat.dtype)
