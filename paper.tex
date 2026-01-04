@@ -23,10 +23,10 @@
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
 % Use the following line for the initial blind version submitted for review:
-\usepackage{mlsys2025}
+% \usepackage{mlsys2025}
 
 % If accepted, instead use the following line for the camera-ready submission:
-% \usepackage[accepted]{mlsys2025}
+\usepackage[accepted]{mlsys2025}
 
 % The \mlsystitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
@@ -53,12 +53,13 @@
 \mlsyssetsymbol{equal}{*}
 
 \begin{mlsysauthorlist}
-\mlsysauthor{Anonymous Author(s)}{inst1}
+\mlsysauthor{Sujeeth Jinesh}{stanford}
+\mlsysauthor{Thierry Tambe}{stanford}
 \end{mlsysauthorlist}
 
-\mlsysaffiliation{inst1}{Institution1}
+\mlsysaffiliation{stanford}{Stanford University, Stanford, CA, USA}
 
-\mlsyscorrespondingauthor{Anonymous}{anon@example.com}
+\mlsyscorrespondingauthor{Sujeeth Jinesh}{sujinesh@stanford.edu}
 
 % You may provide any keywords that you
 % find helpful for describing your paper; these are used to populate
@@ -232,6 +233,7 @@ Where:
 \end{itemize}
 
 \subsection{Training}
+\label{sec:training}
 
 We train the encoder and adapters jointly while keeping LLMs frozen. Given text $x$ and answer $y$:
 
