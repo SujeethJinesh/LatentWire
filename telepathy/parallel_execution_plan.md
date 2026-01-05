@@ -59,7 +59,7 @@ for gpu in 0 1 2 3; do
         bash -c "
             for layer in 8 16 24 31; do
                 python telepathy/linear_probe_baseline.py \
-                    --model meta-llama/Llama-3.2-1B-Instruct \
+                    --model meta-llama/Llama-3.1-1B-Instruct \
                     --layer \$layer \
                     --task sst2 \
                     --output probe_llama_L\${layer}_sst2
@@ -262,7 +262,7 @@ run_phase1_parallel() {
 
 # Phase 2: Linear Probe (4 hours)
 run_phase2_parallel() {
-    local models=("meta-llama/Llama-3.2-1B-Instruct" "mistralai/Mistral-7B-Instruct-v0.3")
+    local models=("meta-llama/Llama-3.1-1B-Instruct" "mistralai/Mistral-7B-Instruct-v0.3")
     local layers=(8 16 24 31)
     local tasks=(sst2 agnews)
 
@@ -369,7 +369,7 @@ run_phase5_parallel() {
     # Baseline XSUM on GPU 2-3
     srun --exclusive -N1 -n1 --gpus=1 --gpu-bind=map_gpu:2 \
         python telepathy/eval_xsum_bridge.py \
-        --model meta-llama/Llama-3.2-1B-Instruct \
+        --model meta-llama/Llama-3.1-1B-Instruct \
         --test_samples 500 \
         --output_dir "$OUTPUT_BASE/phase5/xsum_llama" \
         > "$OUTPUT_BASE/phase5/xsum_llama.log" 2>&1 &

@@ -2437,8 +2437,8 @@ def main():
                 shared_latents = encoded_latents["shared"]
                 private_latents = encoded_latents["private"]
 
-            # Detailed memory profiling for first few steps
-            if batch_index < 3:
+                # Move memory profiling inside autocast for consistency
+                if batch_index < 3:
                 mem_stats = get_gpu_memory_stats()
                 if mem_stats:
                     print(f"    [Memory after encoder] {mem_stats['total_allocated_gb']:.1f}GB allocated")
