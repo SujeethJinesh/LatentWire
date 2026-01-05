@@ -612,6 +612,7 @@ def load_checkpoint(
     coprocessors: Optional[Dict[str, LatentCoprocessor]] = None,
     gist_heads: Optional[Dict[str, GistReconstructionHead]] = None,
     optimizer: Optional[optim.Optimizer] = None,
+    lr_scheduler: Optional[Any] = None,
     strict: bool = True,
     device: str = "cpu",
     wrappers: Optional[Dict[str, LMWrapper]] = None,
@@ -843,6 +844,15 @@ def load_checkpoint(
             _align_optimizer_state_to_param_devices(optimizer)
             _debug_print_optimizer_state_devices(optimizer)
             print("   -> restored optimizer state")
+
+    if lr_scheduler is not None and isinstance(state, dict):
+        scheduler_state = state.get("lr_scheduler", None)
+        if scheduler_state is not None:
+            try:
+                lr_scheduler.load_state_dict(scheduler_state)
+                print("   -> restored lr_scheduler state")
+            except Exception as exc:
+                print(f"[WARN] LR scheduler state incompatible; continuing with fresh scheduler ({exc})")
 
     if isinstance(state, dict) and "rng" in state:
         try:
@@ -2137,6 +2147,7 @@ def main():
             coprocessors=coprocessors,
             gist_heads=gist_heads,
             optimizer=None if args.no_load_optimizer else optimizer,
+            lr_scheduler=None if args.no_load_lr_scheduler else lr_scheduler,
             strict=True,
             device=device,
             wrappers=wrappers_dict,
@@ -3669,6 +3680,7 @@ def main():
             "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
         },
         "optimizer": optimizer.state_dict(),
+        "lr_scheduler": lr_scheduler.state_dict(),
         "adapter_scale": {
             name: float(adapter.scale.detach().cpu().item())
             for name, adapter in adapters.items()
