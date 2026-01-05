@@ -661,8 +661,10 @@ def main():
     # Setup
     setup_environment()
 
+    # Always define timestamp (needed for metadata and logging)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
     # Create base output directory
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Always define timestamp
     if args.resume_from:
         base_output_dir = args.resume_from
         log_message(f"Resuming from: {base_output_dir}")
@@ -697,7 +699,8 @@ def main():
     # Master results container
     all_results = {
         "metadata": {
-            "timestamp": timestamp if not args.resume_from else "resumed",
+            "timestamp": timestamp,  # Always use current timestamp (for resume tracking)
+            "resumed": args.resume_from is not None,
             "seeds": args.seeds,
             "datasets": args.datasets,
             "model_size": args.model_size,
@@ -774,7 +777,7 @@ def main():
     log_message("="*70, master_log)
 
     # Create comparison table
-    if 1 in all_results["phases"]:
+    if 1 in all_results.get("phases", {}):
         phase1_results = all_results["phases"][1]
         # Check if we have dataset results in phase 1
         has_results = any(dataset in phase1_results for dataset in args.datasets)
@@ -791,18 +794,24 @@ def main():
                     dataset_results = phase1_results[dataset]
 
                     for method in methods:
-                        if method in dataset_results and "accuracy_mean" in dataset_results[method]:
-                            mean = dataset_results[method]["accuracy_mean"]
-                            std = dataset_results[method]["accuracy_std"]
-                            log_message(f"  {method:15}: {mean:5.1f}% ± {std:4.1f}", master_log)
+                        if isinstance(dataset_results, dict) and method in dataset_results:
+                            method_results = dataset_results[method]
+                            if isinstance(method_results, dict) and "accuracy_mean" in method_results:
+                                mean = method_results["accuracy_mean"]
+                                std = method_results.get("accuracy_std", 0)  # Default to 0 if missing
+                                log_message(f"  {method:15}: {mean:5.1f}% ± {std:4.1f}", master_log)
 
     # Statistical significance tests
-    if 1 in all_results["phases"]:
+    if 1 in all_results.get("phases", {}):
         phase1_results = all_results["phases"][1]
-        has_stats = any(dataset in phase1_results and
-                        "bridge" in phase1_results.get(dataset, {}) and
-                        "bootstrap_ci" in phase1_results[dataset]["bridge"]
-                        for dataset in args.datasets)
+        has_stats = any(
+            dataset in phase1_results and
+            isinstance(phase1_results.get(dataset), dict) and
+            "bridge" in phase1_results[dataset] and
+            isinstance(phase1_results[dataset].get("bridge"), dict) and
+            "bootstrap_ci" in phase1_results[dataset]["bridge"]
+            for dataset in args.datasets
+        )
 
         if has_stats:
             log_message("\n" + "="*70, master_log)
@@ -810,16 +819,19 @@ def main():
             log_message("="*70, master_log)
 
             for dataset in args.datasets:
-                if dataset in phase1_results:
+                if dataset in phase1_results and isinstance(phase1_results[dataset], dict):
                     log_message(f"\n{dataset.upper()}:", master_log)
 
                     # Compare Bridge vs baselines
                     dataset_results = phase1_results[dataset]
 
-                    if "bridge" in dataset_results and "bootstrap_ci" in dataset_results["bridge"]:
+                    if (isinstance(dataset_results, dict) and
+                        "bridge" in dataset_results and
+                        isinstance(dataset_results["bridge"], dict) and
+                        "bootstrap_ci" in dataset_results["bridge"]):
                         ci = dataset_results["bridge"]["bootstrap_ci"]
                         log_message(
-                            f"  Bridge 95% CI: [{ci['ci_lower']:.1f}, {ci['ci_upper']:.1f}]",
+                            f"  Bridge 95% CI: [{ci.get('ci_lower', 0):.1f}, {ci.get('ci_upper', 0):.1f}]",
                             master_log
                         )
 

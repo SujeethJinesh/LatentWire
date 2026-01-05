@@ -44,6 +44,9 @@ from datetime import datetime
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Any, Optional
 
+# Import Linear Probe baseline modules
+from telepathy.linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
+
 
 def set_seed(seed=42):
     """Set seed for reproducibility."""
@@ -903,6 +906,7 @@ def main():
         seed_results_list = {
             "bridge": [],
             "prompt_tuning": [],
+            "linear_probe": [],  # Added Linear Probe baseline
             "text_relay": [],
             "llama_zeroshot": [],
             "mistral_zeroshot": [],
@@ -938,7 +942,7 @@ def main():
             }
 
             # 1. BRIDGE
-            print(f"\n[1/6] Training BRIDGE (seed={seed})...")
+            print(f"\n[1/8] Training BRIDGE (seed={seed})...")
             bridge = UnifiedBridge(sender_dim, receiver_dim, soft_tokens).to(device=device, dtype=torch.bfloat16)
             train_info = train_bridge(
                 bridge, sender, sender_tok, receiver, receiver_tok,
@@ -958,7 +962,7 @@ def main():
             torch.save(bridge.state_dict(), f"{args.output_dir}/bridge_{dataset_name}_seed{seed}.pt")
 
             # 2. PROMPT-TUNING
-            print(f"\n[2/6] Training PROMPT-TUNING (no sender, seed={seed})...")
+            print(f"\n[2/7] Training PROMPT-TUNING (no sender, seed={seed})...")
             prompt_module = SoftPromptTuning(args.soft_tokens, receiver_dim).to(device=device, dtype=torch.bfloat16)
             train_info = train_prompt_tuning(
                 prompt_module, receiver, receiver_tok,
@@ -974,9 +978,65 @@ def main():
             seed_results_list["prompt_tuning"].append(pt_results)
             print(f"  Prompt-tuning accuracy: {pt_results['accuracy']:.1f}%")
 
-            # 3. TEXT-RELAY
+            # 3. LINEAR PROBE BASELINE
+            print(f"\n[3/8] Training LINEAR PROBE (sklearn LogisticRegression, seed={seed})...")
+
+            # Use adaptive layer selection based on task
+            probe_layer = 24 if config["num_classes"] <= 2 else 16
+
+            linear_probe = LinearProbeBaseline(
+                hidden_dim=sender_dim,  # e.g., 4096 for Llama-8B
+                num_classes=config["num_classes"],
+                layer_idx=probe_layer,  # Layer 24 for binary, 16 for multi-class
+                pooling="mean",  # Mean pooling over sequence
+                normalize=True,  # Standardize features
+                C=1.0,  # Regularization strength
+                max_iter=1000,
+                n_jobs=-1,  # Use all CPU cores
+                random_state=seed,
+            )
+
+            # Train with cross-validation
+            lp_train_info = train_linear_probe(
+                probe=linear_probe,
+                model=sender,
+                tokenizer=sender_tok,
+                train_ds=train_ds,
+                dataset_name=dataset_name,
+                device=device,
+                dataset_config=config,
+                batch_size=4,  # Small batch to avoid OOM
+                cv_folds=5,  # 5-fold cross-validation
+            )
+
+            # Evaluate
+            lp_results = eval_linear_probe(
+                probe=linear_probe,
+                model=sender,
+                tokenizer=sender_tok,
+                eval_ds=eval_ds,
+                dataset_name=dataset_name,
+                device=device,
+                dataset_config=config,
+                batch_size=4,
+            )
+
+            # Add training info to results
+            lp_results["train_info"] = lp_train_info
+            dataset_results["linear_probe"] = lp_results
+            seed_results_list["linear_probe"].append(lp_results)
+
+            # Save probe weights for reproducibility
+            probe_path = f"{args.output_dir}/linear_probe_{dataset_name}_seed{seed}"
+            linear_probe.save(probe_path)
+
+            print(f"  Linear probe accuracy: {lp_results['accuracy']:.1f}%")
+            if "cv_mean" in lp_train_info:
+                print(f"  CV accuracy: {lp_train_info['cv_mean']:.1f}% ± {lp_train_info['cv_std']:.1f}%")
+
+            # 4. TEXT-RELAY
             if not args.skip_text_relay:
-                print(f"\n[3/6] Evaluating TEXT-RELAY (seed={seed})...")
+                print(f"\n[4/8] Evaluating TEXT-RELAY (seed={seed})...")
                 relay_results = eval_text_relay(
                     sender, sender_tok, receiver, receiver_tok,
                     eval_ds, dataset_name, device
@@ -987,23 +1047,23 @@ def main():
             else:
                 dataset_results["text_relay"] = {"accuracy": None, "skipped": True}
 
-            # 4. ZERO-SHOT LLAMA
-            print(f"\n[4/6] Evaluating LLAMA ZERO-SHOT (seed={seed})...")
+            # 5. ZERO-SHOT LLAMA
+            print(f"\n[5/8] Evaluating LLAMA ZERO-SHOT (seed={seed})...")
             llama_zs = eval_zeroshot(sender, sender_tok, eval_ds, dataset_name, device, "Llama")
             dataset_results["llama_zeroshot"] = llama_zs
             seed_results_list["llama_zeroshot"].append(llama_zs)
             print(f"  Llama zero-shot: {llama_zs['accuracy']:.1f}%")
 
-            # 5. ZERO-SHOT MISTRAL
-            print(f"\n[5/6] Evaluating MISTRAL ZERO-SHOT (seed={seed})...")
+            # 6. ZERO-SHOT MISTRAL
+            print(f"\n[6/8] Evaluating MISTRAL ZERO-SHOT (seed={seed})...")
             mistral_zs = eval_zeroshot(receiver, receiver_tok, eval_ds, dataset_name, device, "Mistral")
             dataset_results["mistral_zeroshot"] = mistral_zs
             seed_results_list["mistral_zeroshot"].append(mistral_zs)
             print(f"  Mistral zero-shot: {mistral_zs['accuracy']:.1f}%")
 
-            # 6. FEW-SHOT
+            # 7. FEW-SHOT
             if not args.skip_fewshot:
-                print(f"\n[6/7] Evaluating {args.fewshot_shots}-SHOT (seed={seed})...")
+                print(f"\n[7/8] Evaluating {args.fewshot_shots}-SHOT (seed={seed})...")
                 mistral_fs = eval_fewshot(
                     receiver, receiver_tok, train_ds, eval_ds,
                     dataset_name, device, args.fewshot_shots, "Mistral"
@@ -1014,9 +1074,9 @@ def main():
             else:
                 dataset_results["mistral_fewshot"] = {"accuracy": None, "skipped": True}
 
-            # 7. ENSEMBLE (if enabled)
+            # 8. ENSEMBLE (if enabled)
             if args.run_ensemble:
-                print(f"\n[7/7] Evaluating ENSEMBLE baseline (seed={seed})...")
+                print(f"\n[8/8] Evaluating ENSEMBLE baseline (seed={seed})...")
                 ensemble_results = eval_ensemble(
                     sender, sender_tok, receiver, receiver_tok,
                     eval_ds, dataset_name, device,
@@ -1062,10 +1122,11 @@ def main():
 
         # Build comparison table for this dataset (using aggregated results)
         all_seeds_results["comparison_table"][dataset_name] = {
-            "Method": ["Random", "Prompt-Tuning", "Llama 0-shot", "Mistral 0-shot",
+            "Method": ["Random", "Linear Probe", "Prompt-Tuning", "Llama 0-shot", "Mistral 0-shot",
                        f"Mistral {args.fewshot_shots}-shot", "Text-Relay", "Bridge (ours)"],
             "Accuracy (Mean)": [
                 config["random_chance"],
+                aggregated["linear_probe"]["accuracy_mean"] if "accuracy_mean" in aggregated["linear_probe"] else "N/A",
                 aggregated["prompt_tuning"]["accuracy_mean"] if "accuracy_mean" in aggregated["prompt_tuning"] else "N/A",
                 aggregated["llama_zeroshot"]["accuracy_mean"] if "accuracy_mean" in aggregated["llama_zeroshot"] else "N/A",
                 aggregated["mistral_zeroshot"]["accuracy_mean"] if "accuracy_mean" in aggregated["mistral_zeroshot"] else "N/A",
@@ -1075,6 +1136,7 @@ def main():
             ],
             "Accuracy (Std)": [
                 0.0,
+                aggregated["linear_probe"]["accuracy_std"] if "accuracy_std" in aggregated["linear_probe"] else "N/A",
                 aggregated["prompt_tuning"]["accuracy_std"] if "accuracy_std" in aggregated["prompt_tuning"] else "N/A",
                 aggregated["llama_zeroshot"]["accuracy_std"] if "accuracy_std" in aggregated["llama_zeroshot"] else "N/A",
                 aggregated["mistral_zeroshot"]["accuracy_std"] if "accuracy_std" in aggregated["mistral_zeroshot"] else "N/A",

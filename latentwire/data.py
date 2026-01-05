@@ -334,7 +334,7 @@ def load_agnews_subset(split: str = "test", samples: int = None, seed: int = 0, 
     out = []
     for i in idxs:
         ex = ds[i]
-        text = ex["text"]
+        text = _normalize_space(ex["text"])
         label_id = ex["label"]
         label_name = LABEL_NAMES[label_id]
 
@@ -345,9 +345,105 @@ def load_agnews_subset(split: str = "test", samples: int = None, seed: int = 0, 
 
     return out
 
+def load_sst2_subset(split: str = "validation", samples: int = None, seed: int = 0) -> List[Dict[str, Any]]:
+    """
+    Load SST-2 (Stanford Sentiment Treebank v2) classification dataset.
+
+    Dataset: SST-2 from GLUE benchmark
+    Task: Binary sentiment classification
+
+    Splits:
+        - train: 67,349 examples
+        - validation: 872 examples
+        - test: 1,821 examples (labels not available)
+
+    Labels (2 classes):
+        0: negative
+        1: positive
+
+    Returns examples with:
+        - source: "Classify sentiment as 'positive' or 'negative': {sentence}\nSentiment:"
+        - answer: label name (e.g., "positive", "negative")
+
+    Standard evaluation uses the full validation set (872 examples) with accuracy metric.
+    """
+    # Load from GLUE benchmark
+    ds = load_dataset("glue", "sst2", split=split)
+
+    # Define label mapping
+    LABEL_NAMES = {
+        0: "negative",
+        1: "positive"
+    }
+
+    # For SST-2, standard evaluation uses the full validation set
+    # If samples is None or >= dataset size, use all examples
+    if samples is None or samples >= len(ds):
+        idxs = list(range(len(ds)))
+    else:
+        rng = random.Random(seed)
+        idxs = list(range(len(ds)))
+        rng.shuffle(idxs)
+        idxs = idxs[:samples]
+
+    out = []
+    for i in idxs:
+        ex = ds[i]
+        sentence = _normalize_space(ex["sentence"])
+        label_id = ex["label"]
+        label_name = LABEL_NAMES[label_id]
+
+        source = f"Classify sentiment as 'positive' or 'negative': {sentence}\nSentiment:"
+        out.append({"source": source, "answer": label_name})
+
+    return out
+
+def load_xsum_subset(split: str = "test", samples: int = None, seed: int = 0, max_chars: int = 512) -> List[Dict[str, Any]]:
+    """
+    Load XSUM abstractive summarization dataset.
+
+    Dataset: XSUM (BBC articles)
+    Task: Single-sentence abstractive summarization
+
+    Splits:
+        - train: 204,045 examples
+        - validation: 11,332 examples
+        - test: 11,334 examples
+
+    Returns examples with:
+        - source: "Article: {document[:max_chars]}\nSummary:"
+        - answer: summary (single sentence)
+
+    Standard evaluation uses ROUGE scores on the test set.
+    """
+    # Load XSUM dataset - use EdinburghNLP/xsum for consistent access
+    ds = load_dataset("EdinburghNLP/xsum", split=split)
+
+    # If samples is None or >= dataset size, use all examples
+    if samples is None or samples >= len(ds):
+        idxs = list(range(len(ds)))
+    else:
+        rng = random.Random(seed)
+        idxs = list(range(len(ds)))
+        rng.shuffle(idxs)
+        idxs = idxs[:samples]
+
+    out = []
+    for i in idxs:
+        ex = ds[i]
+        document = _normalize_space(ex["document"])
+        summary = _normalize_space(ex["summary"])
+
+        # Truncate document to max_chars
+        truncated_doc = document[:max_chars]
+        source = f"Article: {truncated_doc}\nSummary:"
+        out.append({"source": source, "answer": summary})
+
+    return out
+
 def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
     """
-    Unified front: dataset ∈ {"hotpot","squad","squad_v2","gsm8k","trec","agnews"}
+    Unified front: dataset ∈ {"hotpot","squad","squad_v2","gsm8k","trec","agnews","sst2","xsum"}
     kwargs forwarded to the underlying loader (split, samples, seed, config, ...)
     """
     ds = dataset.lower()
@@ -363,5 +459,9 @@ def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
         return load_trec_subset(**{k:v for k,v in kwargs.items() if k!="config"})
     elif ds in ("agnews", "ag_news"):
         return load_agnews_subset(**{k:v for k,v in kwargs.items() if k!="config"})
+    elif ds in ("sst2", "sst-2"):
+        return load_sst2_subset(**{k:v for k,v in kwargs.items() if k!="config"})
+    elif ds == "xsum":
+        return load_xsum_subset(**{k:v for k,v in kwargs.items() if k!="config"})
     else:
-        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k|trec|agnews")
+        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k|trec|agnews|sst2|xsum")

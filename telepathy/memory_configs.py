@@ -153,7 +153,7 @@ def get_memory_safe_config(
     soft_tokens=128,
     depth=4,
     gpu_memory_gb=80.0,
-    safety_margin=0.2,
+    safety_margin=0.25,  # Increased from 0.2 to 0.25 for more safety
     force_single_model=False,
 ):
     """
@@ -166,7 +166,7 @@ def get_memory_safe_config(
         soft_tokens: Number of soft tokens for bridge
         depth: Number of Perceiver layers in bridge
         gpu_memory_gb: Available GPU memory in GB
-        safety_margin: Safety margin (0.2 = 20% buffer)
+        safety_margin: Safety margin (0.25 = 25% buffer)
         force_single_model: Force single-model mode even if target provided
 
     Returns:
@@ -201,6 +201,12 @@ def get_memory_safe_config(
     source_mem_gb = source_params_b * 2  # bfloat16 = 2 bytes/param
     target_mem_gb = target_params_b * 2 if dual_model else 0
 
+    # Add optimizer memory for any trainable parameters in the main models
+    # Even if models are mostly frozen, adapter layers may exist
+    # Assume ~1% of model params might be trainable (adapters/LoRA)
+    source_optimizer_gb = source_params_b * 0.01 * 8  # 8 bytes per trainable param
+    target_optimizer_gb = target_params_b * 0.01 * 8 if dual_model else 0
+
     # Estimate bridge memory
     bridge_info = estimate_bridge_memory_gb(
         source_dim=source_dim,
@@ -211,49 +217,82 @@ def get_memory_safe_config(
     )
     bridge_mem_gb = bridge_info["total_gb"]
 
-    # Base memory (models + bridge with optimizer)
-    base_memory_gb = source_mem_gb + target_mem_gb + bridge_mem_gb
+    # Base memory (models + bridge with optimizer + model optimizer states)
+    base_memory_gb = (source_mem_gb + target_mem_gb + bridge_mem_gb +
+                      source_optimizer_gb + target_optimizer_gb)
 
-    # Activation memory calculation (more accurate)
-    # Based on: batch_size * seq_len * hidden_dim * num_layers * bytes_per_activation
-    # Approximation for transformers: ~12-16 bytes per token per layer during training
+    # Activation memory calculation (more comprehensive)
+    # Account for:
+    # 1. Hidden states at each layer (forward + backward)
+    # 2. Attention matrices (Q*K^T) which scale with seq_len^2
+    # 3. Gradient accumulation for activations
+    # 4. Temporary buffers and workspace
 
     # Calculate total model layers (approximate)
     # Llama/Mistral/Qwen at different sizes have different layer counts
     if source_params_b >= 7:
         source_layers = 32  # 7-8B models
+        source_heads = 32   # Attention heads
     elif source_params_b >= 3:
         source_layers = 28  # 3B models
+        source_heads = 24
     else:
         source_layers = 16  # 1B models
+        source_heads = 16
 
     if dual_model:
         if target_params_b >= 7:
             target_layers = 32
+            target_heads = 32
         elif target_params_b >= 3:
             target_layers = 28
+            target_heads = 28
         else:
             target_layers = 16
+            target_heads = 16
     else:
         target_layers = 0
+        target_heads = 0
 
-    # Calculate activation memory per batch
-    # Formula: batch_size * seq_len * hidden_dim * layers * bytes_per_activation / 1GB
-    bytes_per_activation = 16  # Conservative estimate for training (includes gradients)
+    # Calculate activation memory per batch more accurately
 
-    source_activation_gb = (max_length * source_dim * source_layers * bytes_per_activation) / (1024**3)
+    # 1. Hidden states memory (forward + backward pass)
+    # Each layer stores: input, output, and gradients
+    # Formula: seq_len * hidden_dim * layers * 3 (input/output/grad) * 2 bytes
+    source_hidden_gb = (max_length * source_dim * source_layers * 3 * 2) / (1024**3)
+
+    # 2. Attention memory (Q*K^T matrices are seq_len x seq_len)
+    # Formula: layers * heads * seq_len^2 * 2 bytes
+    # Note: This is a major memory consumer for long sequences
+    source_attention_gb = (source_layers * source_heads * max_length * max_length * 2) / (1024**3)
+
+    # 3. FFN intermediate activations (typically 4x hidden_dim)
+    # Formula: seq_len * (4 * hidden_dim) * layers * 2 * 2 bytes
+    source_ffn_gb = (max_length * (4 * source_dim) * source_layers * 2 * 2) / (1024**3)
+
+    # Total for source model
+    source_activation_gb = source_hidden_gb + source_attention_gb + source_ffn_gb
+
+    # Same calculation for target model if dual
     target_activation_gb = 0
     if dual_model:
-        target_activation_gb = (max_length * target_dim * target_layers * bytes_per_activation) / (1024**3)
+        target_hidden_gb = (max_length * target_dim * target_layers * 3 * 2) / (1024**3)
+        target_attention_gb = (target_layers * target_heads * max_length * max_length * 2) / (1024**3)
+        target_ffn_gb = (max_length * (4 * target_dim) * target_layers * 2 * 2) / (1024**3)
+        target_activation_gb = target_hidden_gb + target_attention_gb + target_ffn_gb
 
-    # Add bridge activation memory (Perceiver layers)
-    bridge_activation_gb = (max_length * source_dim * depth * bytes_per_activation) / (1024**3)
+    # Bridge activation memory (Perceiver layers with cross-attention)
+    # Perceiver has both self-attention and cross-attention
+    bridge_hidden_gb = (max_length * source_dim * depth * 3 * 2) / (1024**3)
+    bridge_attention_gb = (depth * 8 * soft_tokens * soft_tokens * 2) / (1024**3)  # Self-attention on soft tokens
+    bridge_cross_attention_gb = (depth * 8 * soft_tokens * max_length * 2) / (1024**3)  # Cross-attention
+    bridge_activation_gb = bridge_hidden_gb + bridge_attention_gb + bridge_cross_attention_gb
 
     # Total activation memory per batch
     activation_gb_per_batch = source_activation_gb + target_activation_gb + bridge_activation_gb
 
-    # Add 20% overhead for temporary tensors, attention matrices, etc.
-    activation_gb_per_batch *= 1.2
+    # Add 30% overhead for temporary tensors, optimizer workspace, memory fragmentation
+    activation_gb_per_batch *= 1.3
 
     # Available memory after base requirements and safety margin
     available_memory_gb = gpu_memory_gb * (1 - safety_margin)

@@ -21,13 +21,13 @@ from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from rouge_score import rouge_scorer
 
 # Import necessary components
 import sys
 sys.path.append('.')
 from telepathy.run_unified_comparison import UnifiedBridge
-from telepathy.train_xsum_bridge import load_xsum_data, compute_rouge_scores
+from telepathy.train_xsum_bridge import load_xsum_data
+from telepathy.rouge_metrics import compute_rouge, RougeResults, save_rouge_results
 
 
 def evaluate_checkpoint(
@@ -132,8 +132,16 @@ def evaluate_checkpoint(
                     "prediction": prediction
                 })
 
-    # Compute ROUGE scores
-    rouge_scores = compute_rouge_scores(predictions, references)
+    # Compute ROUGE scores with confidence intervals
+    print("\nComputing ROUGE scores with confidence intervals...")
+    rouge_results = compute_rouge(
+        predictions,
+        references,
+        compute_confidence_intervals=True,
+        n_bootstrap=1000,
+        return_per_sample=False,  # Set to True if you want per-sample scores
+        show_progress=True
+    )
 
     # Also compute baseline scores (zero-shot)
     print("\nComputing zero-shot baseline...")
@@ -161,11 +169,20 @@ def evaluate_checkpoint(
                                             skip_special_tokens=True)
             baseline_predictions.append(prediction)
 
-    baseline_rouge = compute_rouge_scores(baseline_predictions, references)
+    # Compute baseline ROUGE scores with confidence intervals
+    print("\nComputing baseline ROUGE scores with confidence intervals...")
+    baseline_rouge_results = compute_rouge(
+        baseline_predictions,
+        references,
+        compute_confidence_intervals=True,
+        n_bootstrap=1000,
+        return_per_sample=False,
+        show_progress=True
+    )
 
     return {
-        "rouge_scores": rouge_scores,
-        "baseline_rouge": baseline_rouge,
+        "rouge_results": rouge_results,
+        "baseline_rouge_results": baseline_rouge_results,
         "num_samples": len(predictions),
         "detailed_results": detailed_results
     }
@@ -210,24 +227,71 @@ def main():
     print("RESULTS")
     print("="*70)
 
-    print("\nBridge ROUGE Scores:")
-    for metric, score in results["rouge_scores"].items():
-        print(f"  {metric}: {score:.2f}")
+    # Print Bridge ROUGE scores with confidence intervals
+    print("\n" + results["rouge_results"].summary_string())
 
-    print("\nZero-shot Baseline ROUGE Scores:")
-    for metric, score in results["baseline_rouge"].items():
-        print(f"  {metric}: {score:.2f}")
+    # Print baseline ROUGE scores with confidence intervals
+    print("\nZero-shot Baseline:")
+    print(results["baseline_rouge_results"].summary_string())
 
+    # Calculate and print improvements
     print("\nImprovement over baseline:")
-    for metric in results["rouge_scores"]:
-        improvement = results["rouge_scores"][metric] - results["baseline_rouge"][metric]
-        print(f"  {metric}: {improvement:+.2f}")
+    rouge_results = results["rouge_results"]
+    baseline_results = results["baseline_rouge_results"]
 
-    # Save results
+    improvements = {
+        "ROUGE-1 F1": rouge_results.rouge1_f1_mean - baseline_results.rouge1_f1_mean,
+        "ROUGE-2 F1": rouge_results.rouge2_f1_mean - baseline_results.rouge2_f1_mean,
+        "ROUGE-L F1": rouge_results.rougeL_f1_mean - baseline_results.rougeL_f1_mean
+    }
+
+    for metric, improvement in improvements.items():
+        print(f"  {metric}: {improvement:+.4f}")
+
+    # Save comprehensive results
     results_file = f"{args.output_dir}/evaluation_results.json"
+
+    # Convert RougeResults objects to dictionaries for JSON serialization
+    comprehensive_results = {
+        "metadata": {
+            "checkpoint": args.checkpoint,
+            "num_samples": results["num_samples"],
+            "sender_model": args.sender,
+            "receiver_model": args.receiver,
+            "num_tokens": args.num_tokens,
+            "timestamp": datetime.now().isoformat()
+        },
+        "bridge_rouge": results["rouge_results"].to_dict(),
+        "baseline_rouge": results["baseline_rouge_results"].to_dict(),
+        "improvements": improvements,
+        "detailed_results": results["detailed_results"]
+    }
+
     with open(results_file, "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump(comprehensive_results, f, indent=2)
     print(f"\nResults saved to: {results_file}")
+
+    # Also save ROUGE results using the dedicated function
+    save_rouge_results(
+        results["rouge_results"],
+        f"{args.output_dir}/bridge_rouge_detailed.json",
+        metadata={
+            "model": "bridge",
+            "checkpoint": args.checkpoint,
+            "dataset": "xsum",
+            "num_samples": results["num_samples"]
+        }
+    )
+
+    save_rouge_results(
+        results["baseline_rouge_results"],
+        f"{args.output_dir}/baseline_rouge_detailed.json",
+        metadata={
+            "model": "zero-shot baseline",
+            "dataset": "xsum",
+            "num_samples": results["num_samples"]
+        }
+    )
 
     # Save sample predictions
     samples_file = f"{args.output_dir}/sample_predictions.txt"
