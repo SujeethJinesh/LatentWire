@@ -5,6 +5,83 @@
 
 ---
 
+## 🔔 PLAN REVIEW STATUS (Round 2)
+
+| Reviewer | Verdict | Key Condition |
+|----------|---------|---------------|
+| Claude | ✅ APPROVED | Add decision point after linear probe |
+| ChatGPT | ✅ APPROVED WITH CHANGES | Re-scope CRITICAL, add execution gates |
+| Kimi | ✅ CONDITIONALLY APPROVED | Add fallback strategies, fix resource estimates |
+| Gemini | ✅ APPROVED | Prioritize Generation task as "existential insurance" |
+| Grok | ✅ APPROVED | Gate Major tasks behind Critical completion |
+
+**Consensus**: Plan is approved. Key amendments incorporated below.
+
+---
+
+## ⚠️ EXECUTION GATES (Decision Points)
+
+Execute experiments in order. Stop and reassess at each gate.
+
+### Gate 1: After Statistical Rigor (Week 1)
+- Run full test sets + 10 seeds on SST-2, AG News, TREC
+- **Pass**: Headline accuracy preserved within ±3 points → Proceed
+- **Fail**: Revise performance claims, debug training stability
+
+### Gate 2: After Linear Probe Baseline (Week 1-2)
+- Run logistic regression on Llama layer-16 hidden states
+- **If linear probe < Bridge - 5%**: Proceed with current narrative
+- **If linear probe ≈ Bridge**: PIVOT narrative to:
+  1. Latency/efficiency advantages (constant-size protocol)
+  2. Cross-model capability (probe is same-model only)
+  3. Generative transfer potential (probe can't generate)
+
+### Gate 3: After Generation Task (Week 2)
+- Run Llama→Mistral summarization (XSUM or CNN/DailyMail)
+- **Pass**: ROUGE ≥80% of text baseline → "Communication" claim validated
+- **Fail**: Scope paper to "classification and label-relevant compression" only
+- **CRITICAL**: If Generation fails AND Linear Probe works → Paper contribution is dead
+
+### Gate 4: After Latency Measurement (Week 2-3)
+- Measure wall-clock Bridge vs. optimized Text-Relay vs. Direct Mistral
+- **If speedup ≥10×**: Keep systems framing
+- **If speedup 5-10×**: Rewrite claims with exact measured numbers
+- **If speedup <5×**: Pivot away from systems contribution
+
+---
+
+## 🛡️ FALLBACK STRATEGIES (Negative Result Plans)
+
+### If Linear Probe Matches Bridge Accuracy
+**Defense** (per ChatGPT): Linear probe is NOT equivalent because:
+1. It's not a communication protocol (no portable message)
+2. Doesn't produce fixed-size representation across varying contexts
+3. Doesn't support same batching/serving story
+4. Can't enable generative transfer
+
+**Pivot**: Reframe as "Efficient Cross-Model Adapter" emphasizing:
+- Latency gains (M tokens vs. full text)
+- Bidirectional transfer capability
+- Constant-size protocol for serving
+
+### If Gist Tokens Work Cross-Model
+- Emphasize Bridge's bidirectional capability (Gist is unidirectional)
+- Highlight wider model family support
+- Focus on 3B threshold discovery (novel regardless)
+
+### If Multi-Turn Fails
+- Scope paper to "single-turn cross-model transfer"
+- Document information bottleneck as limitation
+- Propose future work: context-aware latent accumulation
+
+### If Qwen→Mistral Still Fails After Investigation
+- **Drop "Interlingua" terminology completely** (per Gemini)
+- Use "Learned Semantic Compression" or "Neural Bridge" instead
+- Define explicit compatibility criteria (similar architecture, comparable size)
+- Report compatibility matrix for tested pairs
+
+---
+
 ## Executive Summary
 
 ### What Reviewers Agree Is GOOD
@@ -56,7 +133,12 @@
 
 ## CRITICAL Tasks (Must Fix for Acceptance)
 
-### 1. Statistical Rigor & Sample Size (45+ reviewers)
+**⚡ EXECUTION ORDER** (per reviewer consensus):
+1. Statistical Rigor → 2. Linear Probe → 3. Latency → 4. Generation → 5. Code Release
+
+---
+
+### 1. Statistical Rigor & Sample Size (45+ reviewers) — FIRST
 
 **Problem**: Current 200-sample evaluation with +/-4-6% variance undermines all performance claims.
 
@@ -64,44 +146,63 @@
 - [ ] Run full test sets: SST-2 (872), AG News (7,600), TREC (500)
 - [ ] Increase seeds from 3 to 10+
 - [ ] Compute 95% confidence intervals
-- [ ] Run paired t-tests with Bonferroni correction for multiple comparisons
+- [ ] Use paired bootstrap CI or McNemar test (per ChatGPT: more appropriate than t-tests)
 - [ ] Report p-values for all baseline comparisons
+- [ ] Apply Bonferroni correction for multiple comparisons (α/K for K≥30 comparisons)
 - [ ] Update Table 13 with significance tests
 
 **What to Report**:
 - Full test set accuracies with mean +/- 95% CI over 10 seeds
-- Statistical significance (p-values) for all method comparisons
+- Statistical significance (p-values, corrected) for all method comparisons
 
 ---
 
-### 2. Fair Baseline Comparisons (30+ reviewers)
+### 2. Linear Probe Baseline (18+ reviewers) — SECOND (Kill Switch #1)
 
-**Problem**: Text-Relay baseline uses expensive summarization step, inflating 27x speedup claim.
+**Problem**: If simple logistic regression on Llama hidden states matches Bridge, core contribution collapses.
 
-#### 2A. Direct Classification Baseline
+**Protocol**:
+- [ ] Extract Llama layer-16 hidden states (4096-dim) for all datasets
+- [ ] Train logistic regression classifiers (sklearn default)
+- [ ] Evaluate with 10 seeds on SST-2, AG News, TREC
+- [ ] Compare accuracy to Bridge
+
+**Decision Point** (see Gate 2):
+- If Bridge > Linear Probe + 5%: Proceed with "enabling cross-model transfer" narrative
+- If Bridge ≈ Linear Probe: Pivot to efficiency/latency/generative narrative
+
+**Defense if Linear Probe Works** (per ChatGPT):
+- Probe is NOT a communication protocol
+- Probe doesn't produce portable fixed-size message
+- Probe can't enable generative transfer
+- Probe doesn't support batching/serving benefits
+
+---
+
+### 3. Fair Baseline Comparisons (30+ reviewers) — THIRD
+
+**Problem**: Text-Relay baseline uses summarization step; the critique is **baseline fairness**, not "missing measurements."
+
+#### 3A. Direct Classification Baseline
 - [ ] Implement Mistral direct classification on full text (no relay)
 - [ ] Implement Mistral on truncated text (token-budget matched to M=8)
 - [ ] Run both with 10 seeds on all tasks
 - [ ] Compare latency and accuracy
 
-#### 2B. Linear Probe Baseline (18+ reviewers)
-- [ ] Extract Llama layer-16 hidden states for all datasets
-- [ ] Train logistic regression classifiers
-- [ ] Evaluate with 10 seeds
-- [ ] Compare to Bridge accuracy
-- **Critical**: If linear probe matches Bridge, contribution collapses
+#### 3B. Optimized Text-Relay Variants (per ChatGPT)
+- [ ] Text-Relay with label-preserving compression prompt (not generic summarization)
+- [ ] Text-Relay with strict summary token budget matched to M
+- [ ] Document fair comparison with matched constraints
 
-#### 2C. Gist Tokens + Projection Baseline (18+ reviewers)
-- [ ] Reproduce Gist Tokens training on Llama
-- [ ] Train linear projection to Mistral embedding space
-- [ ] Evaluate cross-model transfer
-- [ ] Document comparison in related work
+#### 3C. LLMLingua Comparison (compression baseline)
+- [ ] Implement LLMLingua at 15-30x compression ratio
+- [ ] Compare quality and speedup at matched compression
 
 ---
 
-### 3. Measured End-to-End Latency (35+ reviewers)
+### 4. Measured End-to-End Latency (35+ reviewers) — FOURTH
 
-**Problem**: 27x speedup is theoretical operation count, ignores encoder cost and memory bandwidth.
+**Problem**: 27x speedup is measured wall-clock, but baseline design (summarization) inflates the number. Need fair comparison.
 
 **Tasks**:
 - [ ] Add timing instrumentation to all pipeline stages
@@ -116,30 +217,66 @@
 
 ---
 
-### 4. Broader Task Evaluation (35+ reviewers)
+### 5. Generation Task (35+ reviewers) — FIFTH (Kill Switch #2 / Existential)
 
 **Problem**: All current tasks are classification. "Communication" claims require generation validation.
 
-#### 4A. Generation Task (35+ reviewers)
-- [ ] Adapt Bridge for generation task
-- [ ] Train Llama->Mistral bridge on CNN/DailyMail or XSUM
-- [ ] Evaluate ROUGE-1/2/L scores
-- [ ] Compare to text baseline
+**Why Existential** (per Gemini): This is your insurance against the Linear Probe trap. A linear probe can classify, but it CANNOT transfer context for generation. If Bridge enables generative transfer, you have a strong contribution regardless of classification performance.
 
-#### 4B. Reasoning Benchmark (25+ reviewers)
-- [ ] Adapt for chain-of-thought transfer
-- [ ] Train bridge on GSM8K or MATH
-- [ ] Evaluate accuracy on test set
-- [ ] Compare to LatentMAS results
+**Protocol**:
+- [ ] Adapt Bridge architecture for generation (soft tokens → Mistral generates summary)
+- [ ] Train Llama→Mistral bridge on XSUM (extreme compression) or CNN/DailyMail
+- [ ] Minimum 10K training examples for stable training
+- [ ] Evaluate ROUGE-1, ROUGE-2, ROUGE-L (report all three)
+- [ ] Compare to text baseline (Mistral with full text)
 
-#### 4C. Cross-Model QA
-- [ ] Report SQuAD Llama->Mistral F1 (currently missing from Table 13)
-- [ ] Add HotpotQA cross-model results
-- [ ] Update Table 13 with QA tasks
+**Success Criterion**: Bridge achieves ≥80% of text baseline ROUGE score
+
+**Pivot Narrative if Successful**:
+> "While simple probes suffice for classification, LatentWire is the only method that enables **generative transfer** (summarization, QA) without text decoding."
 
 ---
 
-### 5. Attention Analysis - Prove Soft Tokens Are Used (15+ reviewers)
+### 6. Code Release (30+ reviewers) — SIXTH (Parallelize)
+
+**Non-negotiable for final acceptance at any venue.**
+
+- [ ] Clean up training scripts
+- [ ] Add evaluation scripts
+- [ ] Document hyperparameters (all random seeds used)
+- [ ] Provide exact reproduction command: `python train.py --config config.yaml`
+- [ ] Prepare model checkpoints for release (or upload plan)
+- [ ] Write exact prompts and decoding parameters
+- [ ] Create README with reproduction instructions
+- [ ] Add inference script: `python inference.py --bridge_ckpt [PATH] --text [PROMPT]`
+- [ ] Add reproduction time estimates (e.g., "full SST-2 10-seed run: 24 GPU-hours on H100")
+- [ ] Add reproducibility checklist
+
+---
+
+## MOVED TO MAJOR (Previously CRITICAL)
+
+### Reasoning Benchmark — Now MAJOR (per ChatGPT: focus on ONE non-classification task)
+- [ ] Train bridge on GSM8K (chain-of-thought transfer)
+- [ ] Evaluate accuracy on test set
+- [ ] Compare to LatentMAS results
+- **Note**: Do this AFTER Generation task succeeds. One task is sufficient.
+
+### Gist Tokens Reproduction — Now MAJOR (per ChatGPT: too expensive, failure-prone)
+- [ ] Attempt Gist Tokens training on Llama
+- [ ] Train linear projection to Mistral embedding space
+- [ ] If reproduction fails, compare to reported numbers from paper
+- **Note**: LLMLingua comparison (in 3C) is more practical
+
+### Cross-Model QA — Now MAJOR
+- [ ] Report SQuAD Llama→Mistral F1
+- [ ] Add HotpotQA cross-model results
+
+---
+
+## MAJOR Tasks (Significantly Strengthens Paper)
+
+### 7. Attention Analysis - Prove Soft Tokens Are Used (15+ reviewers)
 
 **Problem**: Zero-prefix control shows coherent generation without prefix. Need proof soft tokens contribute.
 
@@ -149,24 +286,9 @@
 - [ ] Counterfactual: Shuffle soft tokens, measure degradation
 - [ ] Train linear probes on soft tokens to verify semantic content
 - [ ] Visualize what soft tokens encode
+- [ ] Add quantitative cluster quality metric (silhouette score or Davies-Bouldin) to Figure 2
 
 ---
-
-### 6. Code Release (30+ reviewers)
-
-**Non-negotiable for final acceptance at any venue.**
-
-- [ ] Clean up training scripts
-- [ ] Add evaluation scripts
-- [ ] Document hyperparameters
-- [ ] Prepare model checkpoints for release
-- [ ] Write exact prompts and decoding parameters
-- [ ] Create README with reproduction instructions
-- [ ] Add reproducibility checklist
-
----
-
-## MAJOR Tasks (Significantly Strengthens Paper)
 
 ### 7. Representation Analysis (20+ reviewers)
 
@@ -380,16 +502,30 @@
 
 ## WRITING & PRESENTATION Tasks
 
+### Paper Restructuring (per Claude)
+- [ ] Move SQuAD/HotpotQA results to appendix (classification is primary contribution)
+- [ ] Restructure paper around cross-model classification as primary contribution
+- [ ] Add "Key Differentiators" section before related work with architectural diagrams
+
 ### Terminology Changes (Must Do)
 
 | Current Term | Problem | Fix | Reviewers |
 |--------------|---------|-----|-----------|
-| "Telepathically" | Informal, hyperbolic | Remove entirely, use "via latent representations" | 15+ |
-| "Interlingua" | Implies universality (Qwen fails) | "learned semantic compressor" or "cross-model adapter" | 20+ |
-| "Wire protocol" | Implies standardization | "communication mechanism" | 12+ |
-| "27x speedup" | Misleading baseline | "27x vs. summarization-based text relay" | 25+ |
+| "Telepathically" | Informal, hyperbolic | **Remove entirely** | 15+ |
+| "Interlingua" | Implies universality (Qwen fails) | **Drop completely** (per Gemini). Use "Learned Semantic Compression" or "Neural Bridge" | 20+ |
+| "Wire protocol" | Implies standardization | "learned message format" or "fixed-size representation interface" | 12+ |
+| "27x speedup" | Misleading baseline | "≤27× vs. summarization-based relay; [X]× vs. optimized relay" (fill X with measured) | 25+ |
 | "First" (various) | Fragile claims | Remove or narrowly scope | 15+ |
-| "3B threshold" | Seems like restatement | Contextualize vs. Lester et al. 1B finding | 10+ |
+| "3B threshold" | Seems like restatement | Reframe: "Cross-model transfer requires **3× larger models** than single-model prompt tuning (Lester et al. 2021)" | 10+ |
+| "Universal/compatible" | Qwen fails | Narrow to "tested pairs" or add explicit compatibility criteria | 10+ |
+
+### Key Differentiators to Emphasize (per Kimi)
+- [ ] Add section comparing Bridge to alternatives:
+  1. **Bidirectional transfer** (Gist is unidirectional)
+  2. **Model-agnostic protocol** (same soft tokens for multiple receivers)
+  3. **Constant-size communication** (independent of context length)
+  4. **Training-free inference on new tasks** (plug and play)
+- [ ] Side-by-side architectural diagram: Text-Relay vs. Linear-Probe vs. Bridge vs. Gist
 
 ### Content to Add
 
@@ -419,18 +555,18 @@
 | MAJOR | 9 categories | 10-25 each |
 | NICE TO HAVE | 8 categories | 5-15 each |
 
-### Top 10 Most Requested (by reviewer count)
+### Top 10 Most Requested (by reviewer count) — REVISED PRIORITY
 
-1. **Full test sets + statistical rigor** (45+ reviewers) - CRITICAL
-2. **End-to-end latency measurements** (35+ reviewers) - CRITICAL
-3. **Generation task (summarization/QA)** (35+ reviewers) - CRITICAL
-4. **Fair baseline (direct classification)** (30+ reviewers) - CRITICAL
-5. **Code release** (30+ reviewers) - CRITICAL
-6. **Reasoning benchmark (GSM8K/MATH)** (25+ reviewers) - CRITICAL
-7. **Multi-turn experiment** (25+ reviewers) - MAJOR
-8. **Quantization analysis** (25+ reviewers) - MAJOR
-9. **More model pairs** (20+ reviewers) - MAJOR
-10. **Linear probe baseline** (18+ reviewers) - CRITICAL
+1. **Full test sets + statistical rigor** (45+ reviewers) — CRITICAL #1
+2. **Linear probe baseline** (18+ reviewers) — CRITICAL #2 (Kill Switch)
+3. **End-to-end latency measurements** (35+ reviewers) — CRITICAL #4
+4. **Generation task (summarization/QA)** (35+ reviewers) — CRITICAL #5 (Existential Insurance)
+5. **Fair baseline (direct classification)** (30+ reviewers) — CRITICAL #3
+6. **Code release** (30+ reviewers) — CRITICAL #6
+7. **Multi-turn experiment** (25+ reviewers) — MAJOR (can cut if constrained)
+8. **More model pairs** (20+ reviewers) — MAJOR (prove ONE other pair works)
+9. **Qwen→Mistral investigation** (20+ reviewers) — MAJOR (fix or scope claims)
+10. **Reasoning benchmark (GSM8K/MATH)** (25+ reviewers) — MAJOR (do AFTER generation)
 
 ---
 
@@ -482,18 +618,43 @@
 
 ## Resource Requirements
 
-### Compute (assuming H100 access)
-- Full test set evaluation: ~20 GPU-hours
-- 10 seeds x 3 tasks: ~50 GPU-hours
-- New baselines (3): ~30 GPU-hours
-- New tasks (2): ~40 GPU-hours
-- Model pairs (3): ~150 GPU-hours
-- 70B scaling: ~100 GPU-hours
-- Multi-seed ablations: ~80 GPU-hours
-- **Total**: ~470 GPU-hours
+### Compute (REVISED per Kimi - add 100% buffer)
+
+| Experiment | Optimistic | Realistic (with debugging) |
+|------------|------------|---------------------------|
+| Full test set evaluation | 20h | 30h |
+| 10 seeds × 3 tasks | 50h | 80h |
+| Linear probe baseline | 10h | 15h |
+| New baselines (LLMLingua, Text-Relay variants) | 30h | 50h |
+| Generation task (XSUM) | 40h | 80h |
+| Model pairs (2-3 additional) | 100h | 150h |
+| Multi-seed ablations | 80h | 120h |
+| Qwen→Mistral investigation | 30h | 50h |
+| Buffer for failed runs | — | 150h |
+| **Total** | ~360h | **~725h** |
+
+**Recommended budget**: **800-1000 GPU-hours** (per Kimi)
+
+### Minimum Viable Paper (If Resource-Constrained)
+
+**Cannot cut** (jeopardizes acceptance):
+- Statistical rigor (50h) — non-negotiable
+- Linear probe baseline (15h) — existential threat
+- Fair latency measurement (30h) — claim-critical
+- Generation task (80h) — validates "communication"
+- Code release (5h) — venue requirement
+
+**Minimum viable total**: ~180 GPU-hours
+
+**Can cut without losing core contribution**:
+- ❌ 70B model scaling (saves 200-300h) — theoretical roofline analysis sufficient
+- ❌ Multi-node distributed (saves 50h) — single-node multi-GPU is enough
+- ❌ Full multi-agent benchmark suite (saves 80h) — one 3-turn dialogue demo sufficient
+- ❌ Additional model pairs beyond 1-2 (saves 100h) — prove one other pair works
+- ❌ Some ablations (adapter architecture, full layer sweep) — keep most impactful only
 
 ### Infrastructure
-- H100 or A100 GPUs (4x recommended)
+- H100 or A100 GPUs (4× recommended)
 - Storage for checkpoints (~500GB)
 - Experiment tracking (Weights & Biases recommended)
 
@@ -559,4 +720,16 @@
 
 ---
 
-**Bottom Line**: The 3B threshold finding is publication-worthy. The paper needs proper evaluation and honest framing to achieve acceptance.
+## Venue Reassessment Strategy (per Grok)
+
+**After experiments complete**, reassess venue based on results:
+
+| If This Works Best | Target Venue | Narrative |
+|--------------------|--------------|-----------|
+| Latency/serving metrics strong | **MLSys** | "Constant-size protocol saves HBM bandwidth" |
+| Representation analysis (CKA) strong | **ICLR/NeurIPS** | "Meaning transfers without words" |
+| Generation task strong | **ACL/EMNLP** | "Cross-model generative transfer" |
+
+---
+
+**Bottom Line**: The 3B threshold finding is publication-worthy. All 5 AI reviewers approved the plan with amendments (now incorporated). Execute the gates in order—Linear Probe and Generation Task are the kill switches that determine paper viability.
