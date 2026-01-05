@@ -387,7 +387,7 @@ run_phase6_parallel() {
     # Small models on GPU 0
     srun --exclusive -N1 -n1 --gpus=1 --gpu-bind=map_gpu:0 \
         python telepathy/run_ablation_experiments.py \
-        --sender meta-llama/Llama-3.2-1B-Instruct \
+        --sender meta-llama/Llama-3.1-1B-Instruct \
         --receiver Qwen/Qwen2.5-1.5B-Instruct \
         --task sst2 \
         --batch_size 4 \

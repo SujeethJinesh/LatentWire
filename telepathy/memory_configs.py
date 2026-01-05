@@ -27,11 +27,11 @@ from typing import Dict, Tuple
 
 # Model parameter counts (in billions)
 MODEL_PARAMS = {
-    # Llama models
-    "meta-llama/Llama-3.1-1B": 1.24,
-    "meta-llama/Llama-3.1-1B-Instruct": 1.24,
-    "meta-llama/Llama-3.1-3B": 3.21,
-    "meta-llama/Llama-3.1-3B-Instruct": 3.21,
+    # Llama models (Note: 1B and 3B only exist in Llama 3.2)
+    "meta-llama/Llama-3.2-1B": 1.24,
+    "meta-llama/Llama-3.2-1B-Instruct": 1.24,
+    "meta-llama/Llama-3.2-3B": 3.21,
+    "meta-llama/Llama-3.2-3B-Instruct": 3.21,
     "meta-llama/Meta-Llama-3.1-8B": 8.03,
     "meta-llama/Meta-Llama-3.1-8B-Instruct": 8.03,
 
@@ -50,11 +50,11 @@ MODEL_PARAMS = {
 
 # Hidden dimensions for models (needed for bridge sizing)
 MODEL_HIDDEN_DIM = {
-    # Llama models
-    "meta-llama/Llama-3.1-1B": 2048,
-    "meta-llama/Llama-3.1-1B-Instruct": 2048,
-    "meta-llama/Llama-3.1-3B": 3072,
-    "meta-llama/Llama-3.1-3B-Instruct": 3072,
+    # Llama models (Note: 1B and 3B only exist in Llama 3.2)
+    "meta-llama/Llama-3.2-1B": 2048,
+    "meta-llama/Llama-3.2-1B-Instruct": 2048,
+    "meta-llama/Llama-3.2-3B": 3072,
+    "meta-llama/Llama-3.2-3B-Instruct": 3072,
     "meta-llama/Meta-Llama-3.1-8B": 4096,
     "meta-llama/Meta-Llama-3.1-8B-Instruct": 4096,
 
@@ -438,16 +438,16 @@ def main():
     test_configs = [
         # Dual-model configs (cross-model bridge)
         ("meta-llama/Meta-Llama-3.1-8B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3"),
-        ("meta-llama/Llama-3.1-3B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3"),
-        ("meta-llama/Llama-3.1-3B-Instruct", "Qwen/Qwen2.5-3B-Instruct"),
-        ("meta-llama/Llama-3.1-1B-Instruct", "Qwen/Qwen2.5-1.5B-Instruct"),
-        ("meta-llama/Llama-3.1-1B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3"),
+        ("meta-llama/Llama-3.2-3B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3"),
+        ("meta-llama/Llama-3.2-3B-Instruct", "Qwen/Qwen2.5-3B-Instruct"),
+        ("meta-llama/Llama-3.2-1B-Instruct", "Qwen/Qwen2.5-1.5B-Instruct"),
+        ("meta-llama/Llama-3.2-1B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3"),
 
         # Single-model configs (same-model bridge)
         ("meta-llama/Meta-Llama-3.1-8B-Instruct", None),
         ("mistralai/Mistral-7B-Instruct-v0.3", None),
-        ("meta-llama/Llama-3.1-3B-Instruct", None),
-        ("meta-llama/Llama-3.1-1B-Instruct", None),
+        ("meta-llama/Llama-3.2-3B-Instruct", None),
+        ("meta-llama/Llama-3.2-1B-Instruct", None),
     ]
 
     configs = {}
@@ -466,7 +466,7 @@ from telepathy.memory_configs import get_memory_safe_config
 
 # Get safe config for your model pair
 config = get_memory_safe_config(
-    source_model="meta-llama/Llama-3.1-3B-Instruct",
+    source_model="meta-llama/Llama-3.2-3B-Instruct",
     target_model="mistralai/Mistral-7B-Instruct-v0.3",
     max_length=1536,
     soft_tokens=128,
