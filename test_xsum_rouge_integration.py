@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Comprehensive test script for XSUM + ROUGE integration.
 
@@ -32,7 +33,7 @@ def test_xsum_data_loading():
     try:
         # Try loading a small sample
         examples = load_examples("xsum", split="test", samples=5, seed=42)
-        print(f"✅ Successfully loaded {len(examples)} XSUM examples")
+        print(f"[OK] Successfully loaded {len(examples)} XSUM examples")
 
         # Check data format
         for i, ex in enumerate(examples[:2]):
@@ -45,7 +46,7 @@ def test_xsum_data_loading():
         return True
 
     except Exception as e:
-        print(f"⚠️  XSUM loading failed: {e}")
+        print(f"[WARNING] XSUM loading failed: {e}")
         print("Note: XSUM may require special handling. Using synthetic data for testing.")
         return False
 
@@ -98,7 +99,7 @@ def test_rouge_computation():
     # Verify results are reasonable for XSUM
     assert 0.10 <= results.rouge1_f1 <= 0.80, f"ROUGE-1 out of expected range: {results.rouge1_f1}"
     assert 0.00 <= results.rouge2_f1 <= 0.60, f"ROUGE-2 out of expected range: {results.rouge2_f1}"
-    print("✅ Basic ROUGE computation passed")
+    print("[OK] Basic ROUGE computation passed")
 
     # Test with confidence intervals
     print("\nTesting with confidence intervals...")
@@ -114,12 +115,12 @@ def test_rouge_computation():
     if results_ci.rouge1_f1_ci:
         print(f"  ROUGE-1 95% CI: [{results_ci.rouge1_f1_ci[0]:.4f}, {results_ci.rouge1_f1_ci[1]:.4f}]")
         print(f"  ROUGE-2 95% CI: [{results_ci.rouge2_f1_ci[0]:.4f}, {results_ci.rouge2_f1_ci[1]:.4f}]")
-        print("✅ Confidence interval computation passed")
+        print("[OK] Confidence interval computation passed")
 
     # Check per-sample scores
     if results_ci.per_sample_scores:
         print(f"\n  Retrieved {len(results_ci.per_sample_scores)} per-sample scores")
-        print("✅ Per-sample scoring passed")
+        print("[OK] Per-sample scoring passed")
 
     return results_ci
 
@@ -173,11 +174,11 @@ def test_edge_cases():
                 compute_confidence_intervals=False,
                 return_per_sample=False
             )
-            print(f"  ✅ {case['name']}: R1={result.rouge1_f1:.3f}, R2={result.rouge2_f1:.3f}")
+            print(f"  [OK] {case['name']}: R1={result.rouge1_f1:.3f}, R2={result.rouge2_f1:.3f}")
         except Exception as e:
-            print(f"  ❌ {case['name']}: {e}")
+            print(f"  [ERROR] {case['name']}: {e}")
 
-    print("✅ Edge case handling completed")
+    print("[OK] Edge case handling completed")
 
 
 def test_model_comparison():
@@ -233,7 +234,7 @@ def test_model_comparison():
     low_score = results["Low-Quality"].rouge1_f1
 
     assert high_score >= medium_score >= low_score, "Model quality ordering incorrect"
-    print("✅ Model comparison completed successfully")
+    print("[OK] Model comparison completed successfully")
 
     return results
 
@@ -272,11 +273,11 @@ def test_real_xsum_integration():
             save_results=True
         )
 
-        print("✅ Real XSUM integration test passed")
+        print("[OK] Real XSUM integration test passed")
         return results
 
     except Exception as e:
-        print(f"⚠️  Could not test with real XSUM data: {e}")
+        print(f"[WARNING] Could not test with real XSUM data: {e}")
         print("This is expected if XSUM dataset is not available.")
         return None
 
@@ -315,7 +316,7 @@ def run_all_tests():
     print("="*70)
 
     for test_name, passed in test_results.items():
-        status = "✅ PASSED" if passed else "⚠️  SKIPPED/FAILED"
+        status = "[OK] PASSED" if passed else "[WARNING] SKIPPED/FAILED"
         print(f"  {test_name:<20} {status}")
 
     print("="*70)
@@ -337,9 +338,9 @@ def run_all_tests():
     all_essential_passed = all(test_results.get(t, False) for t in essential_tests)
 
     if all_essential_passed:
-        print("\n🎉 All essential tests passed! ROUGE+XSUM integration is working correctly.")
+        print("\n[SUCCESS] All essential tests passed! ROUGE+XSUM integration is working correctly.")
     else:
-        print("\n⚠️  Some essential tests failed. Please review the output above.")
+        print("\n[WARNING] Some essential tests failed. Please review the output above.")
 
     return all_essential_passed
 
