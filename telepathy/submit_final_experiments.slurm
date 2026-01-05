@@ -247,7 +247,7 @@ if report_path.exists():
 
 ### Configuration
 - 3 seeds: 42, 123, 456
-- Model families: Llama-3.1 (1B/3B/8B), Mistral-7B, Qwen2.5 (1.5B)
+- Model families: Llama-3.2 (1B/3B), Llama-3.1 (8B), Mistral-7B, Qwen2.5 (1.5B)
 - Tasks: SST-2, AG News, TREC, XSUM
 - Baselines: Random, Majority, Linear Probe, LLMLingua, Direct Prompting
 - Compression factors: 4, 8, 16, 32

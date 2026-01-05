@@ -318,7 +318,7 @@ run_phase3_baselines() {
                     run_with_log \
                         "python telepathy/direct_prompting_baseline.py \
                             --task $task \
-                            --model meta-llama/Llama-3.1-1B-Instruct \
+                            --model meta-llama/Llama-3.2-1B-Instruct \
                             --test_samples 500 \
                             --output_dir $exp_dir" \
                         "$OUTPUT_DIR/logs/${exp_name}.log" \
@@ -396,7 +396,7 @@ run_phase5_generation() {
             --train_samples 1000 \
             --batch_size 2 \
             --max_length 128 \
-            --sender_model meta-llama/Llama-3.1-1B-Instruct \
+            --sender_model meta-llama/Llama-3.2-1B-Instruct \
             --receiver_model Qwen/Qwen2.5-1.5B-Instruct \
             --output_dir $exp_dir \
             --compute_rouge \
@@ -412,13 +412,13 @@ run_phase6_ablations() {
     log_message "=== PHASE 6: MODEL SIZE ABLATIONS ==="
 
     local model_configs=(
-        "meta-llama/Llama-3.1-1B-Instruct,Qwen/Qwen2.5-1.5B-Instruct,small"
-        "meta-llama/Llama-3.1-3B-Instruct,Qwen/Qwen2.5-3B-Instruct,medium"
+        "meta-llama/Llama-3.2-1B-Instruct,Qwen/Qwen2.5-1.5B-Instruct,small"
+        "meta-llama/Llama-3.2-3B-Instruct,Qwen/Qwen2.5-3B-Instruct,medium"
         "meta-llama/Meta-Llama-3.1-8B-Instruct,mistralai/Mistral-7B-Instruct-v0.3,large"
     )
 
     if [ "$TEST_MODE" = true ]; then
-        model_configs=("meta-llama/Llama-3.1-1B-Instruct,Qwen/Qwen2.5-1.5B-Instruct,small")
+        model_configs=("meta-llama/Llama-3.2-1B-Instruct,Qwen/Qwen2.5-1.5B-Instruct,small")
     fi
 
     for config in "${model_configs[@]}"; do

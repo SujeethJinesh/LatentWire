@@ -2968,6 +2968,12 @@ def main():
                 # BF16 or no AMP - direct backward
                 loss_backward.backward()
 
+            # Log mixed precision statistics
+            if grad_scaler is not None and batch_index % 100 == 0:
+                scale = grad_scaler.get_scale()
+                growth_tracker = grad_scaler._get_growth_tracker()
+                print(f"[AMP Stats] Scale: {scale:.1f}, Growth tracker: {growth_tracker}")
+
             # On first step, verify latent adapters are receiving gradients
             if global_step == 0 and latent_adapter_params:
                 adapter_grads_exist = sum(1 for p in latent_adapter_params if p.grad is not None)

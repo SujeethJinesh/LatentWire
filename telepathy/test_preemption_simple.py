@@ -12,15 +12,16 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add telepathy directory directly to path to avoid __init__.py
+telepathy_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, telepathy_dir)
 
-from telepathy.training_signals import (
-    install_signal_handlers,
-    should_save_checkpoint,
-    mark_checkpoint_saved,
-    should_exit_training
-)
+# Now import training_signals directly
+import training_signals
+install_signal_handlers = training_signals.install_signal_handlers
+should_save_checkpoint = training_signals.should_save_checkpoint
+mark_checkpoint_saved = training_signals.mark_checkpoint_saved
+should_exit_training = training_signals.should_exit_training
 
 
 def test_basic_signals():
