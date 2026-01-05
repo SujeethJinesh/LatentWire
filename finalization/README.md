@@ -32,6 +32,17 @@ git pull
 mkdir -p runs figures
 ```
 
+### Pre-flight Testing (Recommended)
+```bash
+# 1. Check environment (local or HPC)
+python3 finalization/check_environment.py
+
+# 2. Run system tests (<5 minutes)
+bash finalization/run_tests.sh
+
+# 3. If all tests pass, proceed to experiments
+```
+
 ## Configuration Options
 
 ### Main Experiment Parameters
