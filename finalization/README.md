@@ -1,19 +1,41 @@
-# LatentWire Finalization Pipeline
+# LatentWire Finalization Suite
 
-Complete guide for running experiments and generating paper results.
+This directory contains the complete, production-ready infrastructure for running LatentWire experiments on preemptible HPC systems with 4× H100 GPUs.
+
+## Directory Structure
+
+```
+finalization/
+├── core/                     # Core training and model code
+│   └── train_optimized.py    # Optimized training script
+├── training/                 # Training infrastructure
+│   ├── preemptible_trainer.py    # Preemption-safe trainer
+│   ├── checkpoint_manager.py     # Robust checkpoint management
+│   ├── logging_utils.py          # Enhanced logging
+│   └── gpu_monitor.py            # GPU monitoring & optimization
+├── evaluation/              # Evaluation scripts
+│   └── comprehensive_eval.py     # Complete evaluation suite
+├── analysis/                # Result analysis
+│   └── aggregate_results.py      # Result aggregation & statistics
+├── slurm/                   # SLURM submission scripts
+│   ├── submit_preemptible.slurm  # Preemptible job submission
+│   └── submit_full_experiment.slurm  # Full experiment suite
+├── run_experiments.py       # Unified experiment runner
+└── README.md               # This file
+```
 
 ## Quick Start (3 Commands)
 
 ```bash
 # 1. Submit the main experiment
 cd /projects/m000066/sujinesh/LatentWire
-sbatch finalization/run_all_experiments.slurm
+sbatch finalization/slurm/submit_preemptible.slurm
 
 # 2. Monitor progress (job ID from step 1)
-tail -f runs/finalization_JOBID.log
+tail -f runs/preempt_JOBID.log
 
-# 3. Generate paper after completion
-sbatch finalization/generate_paper_results.slurm
+# 3. Aggregate results after completion
+python finalization/analysis/aggregate_results.py --experiment_dirs runs/preemptible
 ```
 
 ## Prerequisites
