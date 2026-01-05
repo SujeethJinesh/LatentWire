@@ -32,8 +32,8 @@ def test_conservative_batch_sizes():
     """Test that all configs are conservative enough."""
     test_cases = [
         ("meta-llama/Meta-Llama-3.1-8B-Instruct", None),  # Single 8B
-        ("meta-llama/Llama-3.2-3B-Instruct", "Qwen/Qwen2.5-3B-Instruct"),  # 3B + 3B
-        ("meta-llama/Llama-3.2-1B-Instruct", "Qwen/Qwen2.5-1.5B-Instruct"),  # Small models
+        ("meta-llama/Llama-3.1-3B-Instruct", "Qwen/Qwen2.5-3B-Instruct"),  # 3B + 3B
+        ("meta-llama/Llama-3.1-1B-Instruct", "Qwen/Qwen2.5-1.5B-Instruct"),  # Small models
     ]
 
     for source, target in test_cases:

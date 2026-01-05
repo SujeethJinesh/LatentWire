@@ -15,7 +15,7 @@ def parse_args():
 
     # Model selection
     parser.add_argument("--source_model",
-                        default="meta-llama/Llama-3.2-3B-Instruct",
+                        default="meta-llama/Llama-3.1-3B-Instruct",
                         help="Source model name/path")
     parser.add_argument("--target_model",
                         default="mistralai/Mistral-7B-Instruct-v0.3",

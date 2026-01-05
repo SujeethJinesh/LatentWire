@@ -18,7 +18,7 @@ echo ""
 echo "1. Small Models: Llama-1B + Qwen-1.5B"
 echo "--------------------------------------------------------------"
 python telepathy/optimize_batch_size.py \
-    --source-model "meta-llama/Llama-3.2-1B-Instruct" \
+    --source-model "meta-llama/Llama-3.1-1B-Instruct" \
     --target-model "Qwen/Qwen2.5-1.5B-Instruct" \
     --verbose
 echo ""
@@ -27,7 +27,7 @@ echo ""
 echo "2. Medium Models: Llama-3B + Mistral-7B"
 echo "--------------------------------------------------------------"
 python telepathy/optimize_batch_size.py \
-    --source-model "meta-llama/Llama-3.2-3B-Instruct" \
+    --source-model "meta-llama/Llama-3.1-3B-Instruct" \
     --target-model "mistralai/Mistral-7B-Instruct-v0.3" \
     --verbose
 echo ""

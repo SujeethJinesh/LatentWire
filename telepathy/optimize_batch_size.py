@@ -14,8 +14,8 @@ import sys
 # These include model weights + typical activation memory per batch item
 MODEL_BASE_MEMORY = {
     # Llama family
-    "meta-llama/Llama-3.2-1B-Instruct": 2.5,
-    "meta-llama/Llama-3.2-3B-Instruct": 7.0,
+    "meta-llama/Llama-3.1-1B-Instruct": 2.5,
+    "meta-llama/Llama-3.1-3B-Instruct": 7.0,
     "meta-llama/Meta-Llama-3.1-8B-Instruct": 16.0,
     "meta-llama/Meta-Llama-3-8B-Instruct": 16.0,
 
@@ -37,11 +37,11 @@ MODEL_BASE_MEMORY = {
 # Memory per batch item (in GB) - includes activations, gradients, optimizer states
 MEMORY_PER_BATCH_ITEM = {
     # Smaller models (< 2B params)
-    "meta-llama/Llama-3.2-1B-Instruct": 0.25,
+    "meta-llama/Llama-3.1-1B-Instruct": 0.25,
     "Qwen/Qwen2.5-0.5B-Instruct": 0.15,
 
     # Medium models (2-5B params)
-    "meta-llama/Llama-3.2-3B-Instruct": 0.4,
+    "meta-llama/Llama-3.1-3B-Instruct": 0.4,
     "Qwen/Qwen2.5-1.5B-Instruct": 0.3,
     "Qwen/Qwen2.5-3B-Instruct": 0.4,
     "microsoft/phi-2": 0.35,

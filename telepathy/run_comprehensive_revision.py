@@ -63,7 +63,7 @@ from scripts.statistical_testing import (
 # Model configurations for experiments
 MODEL_CONFIGS = {
     "small": {
-        "sender": "meta-llama/Llama-3.2-1B-Instruct",
+        "sender": "meta-llama/Llama-3.1-1B-Instruct",
         "receiver": "Qwen/Qwen2.5-1.5B-Instruct",
         "batch_size": 4,  # Can handle larger batches
         "description": "Small models (1B params)"
@@ -576,8 +576,8 @@ def run_phase6_size_ablations(args, output_dir: str, log_file: str) -> Dict:
 
     # Test different model sizes
     size_configs = [
-        ("1B", "meta-llama/Llama-3.2-1B-Instruct", "Qwen/Qwen2.5-1.5B-Instruct", 8),
-        ("3B", "meta-llama/Llama-3.2-3B-Instruct", "Qwen/Qwen2.5-3B-Instruct", 4),
+        ("1B", "meta-llama/Llama-3.1-1B-Instruct", "Qwen/Qwen2.5-1.5B-Instruct", 8),
+        ("3B", "meta-llama/Llama-3.1-3B-Instruct", "Qwen/Qwen2.5-3B-Instruct", 4),
         ("7B", "meta-llama/Meta-Llama-3.1-8B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3", 2),
     ]
 

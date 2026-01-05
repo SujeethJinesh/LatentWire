@@ -80,14 +80,14 @@ def test_model_configs():
         },
         {
             "name": "Llama-1B + Qwen-1.5B",
-            "source": "meta-llama/Llama-3.2-1B-Instruct",
+            "source": "meta-llama/Llama-3.1-1B-Instruct",
             "target": "Qwen/Qwen2.5-1.5B-Instruct",
             "expected_batch_size": 12,  # More conservative now
             "expected_valid": True
         },
         {
             "name": "Llama-3B + Mistral-7B",
-            "source": "meta-llama/Llama-3.2-3B-Instruct",
+            "source": "meta-llama/Llama-3.1-3B-Instruct",
             "target": "mistralai/Mistral-7B-Instruct-v0.3",
             "expected_batch_size": 3,
             "expected_valid": True
@@ -159,7 +159,7 @@ def test_edge_cases():
     # Test with very deep bridge
     print("\nTest: Deep bridge (8 layers)")
     config = get_memory_safe_config(
-        "meta-llama/Llama-3.2-3B-Instruct",
+        "meta-llama/Llama-3.1-3B-Instruct",
         "Qwen/Qwen2.5-3B-Instruct",
         max_length=1536,
         soft_tokens=128,
@@ -173,7 +173,7 @@ def test_edge_cases():
     # Test with many soft tokens
     print("\nTest: Many soft tokens (256)")
     config = get_memory_safe_config(
-        "meta-llama/Llama-3.2-1B-Instruct",
+        "meta-llama/Llama-3.1-1B-Instruct",
         "Qwen/Qwen2.5-1.5B-Instruct",
         max_length=1536,
         soft_tokens=256

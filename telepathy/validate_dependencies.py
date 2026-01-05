@@ -92,7 +92,7 @@ def check_models():
     from transformers import AutoTokenizer
 
     models_to_check = [
-        "meta-llama/Llama-3.2-1B",
+        "meta-llama/Llama-3.1-1B",
         "Qwen/Qwen2.5-0.5B",
     ]
 

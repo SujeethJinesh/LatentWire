@@ -62,6 +62,306 @@ from latentwire.loss_bundles import (
 )
 
 
+class ElasticGPUConfig:
+    """Elastic GPU configuration that adapts to available hardware.
+
+    Automatically detects GPU count and configures optimal settings for:
+    - Batch size (per-GPU and effective)
+    - Gradient accumulation steps
+    - Model parallelism strategy
+    - Memory allocation
+    """
+
+    def __init__(self, base_batch_size=64, model_size_gb=14.0, target_util=0.75):
+        """Initialize elastic GPU configuration.
+
+        Args:
+            base_batch_size: Base batch size for single GPU
+            model_size_gb: Estimated model size in GB (Llama-8B ≈ 14GB, Qwen-7B ≈ 13GB)
+            target_util: Target GPU memory utilization (0.75 = conservative)
+        """
+        self.base_batch_size = base_batch_size
+        self.model_size_gb = model_size_gb
+        self.target_util = target_util
+        self.gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
+
+        # Detect GPU specifications
+        self.gpu_specs = self._detect_gpu_specs()
+
+        # Configure based on GPU count
+        self.config = self._configure_for_gpus()
+
+    def _detect_gpu_specs(self):
+        """Detect GPU specifications (memory, type, etc.)."""
+        if self.gpu_count == 0:
+            return None
+
+        specs = []
+        for i in range(self.gpu_count):
+            props = torch.cuda.get_device_properties(i)
+            specs.append({
+                'id': i,
+                'name': props.name,
+                'memory_gb': props.total_memory / 1e9,
+                'compute_capability': (props.major, props.minor),
+                'is_h100': 'H100' in props.name or 'h100' in props.name.lower(),
+                'is_a100': 'A100' in props.name or 'a100' in props.name.lower(),
+            })
+        return specs
+
+    def _configure_for_gpus(self):
+        """Configure optimal settings based on GPU count and specs."""
+        if self.gpu_count == 0:
+            # CPU-only fallback
+            return {
+                'batch_size': 1,
+                'effective_batch_size': 1,
+                'grad_accum_steps': 1,
+                'device': 'cpu',
+                'device_map': None,
+                'strategy': 'single_device',
+                'ddp': False,
+                'model_parallel': False,
+                'notes': 'CPU-only mode (very slow)',
+            }
+
+        # Get total and per-GPU memory
+        total_memory = sum(g['memory_gb'] for g in self.gpu_specs)
+        min_gpu_memory = min(g['memory_gb'] for g in self.gpu_specs)
+
+        # Detect GPU type for optimizations
+        is_h100_cluster = all(g.get('is_h100', False) for g in self.gpu_specs)
+        is_a100_cluster = all(g.get('is_a100', False) for g in self.gpu_specs)
+
+        # Memory calculations
+        # Model needs ~14GB for Llama-8B, ~13GB for Qwen-7B
+        # Activations need ~0.5-1GB per batch item for seq_len=256
+        activation_gb_per_item = 0.75  # Conservative estimate
+        available_per_gpu = min_gpu_memory * self.target_util
+        model_per_gpu = self.model_size_gb / max(1, self.gpu_count // 2)  # Assume model splitting if >2 GPUs
+
+        # Configurations based on GPU count
+        configs = {
+            1: self._config_single_gpu(available_per_gpu, activation_gb_per_item),
+            2: self._config_dual_gpu(available_per_gpu, activation_gb_per_item, is_h100_cluster),
+            3: self._config_three_gpu(available_per_gpu, activation_gb_per_item, is_h100_cluster),
+            4: self._config_four_gpu(available_per_gpu, activation_gb_per_item, is_h100_cluster),
+        }
+
+        config = configs.get(self.gpu_count, self._config_multi_gpu(
+            self.gpu_count, available_per_gpu, activation_gb_per_item, is_h100_cluster
+        ))
+
+        # Add GPU info to config
+        config['gpu_count'] = self.gpu_count
+        config['gpu_specs'] = self.gpu_specs
+        config['total_memory_gb'] = total_memory
+
+        return config
+
+    def _config_single_gpu(self, available_gb, activation_gb_per_item):
+        """Configuration for single GPU."""
+        # Need to fit model + activations + optimizer states
+        usable_for_activations = max(1, available_gb - self.model_size_gb - 4)  # 4GB for optimizer
+        batch_size = min(self.base_batch_size, int(usable_for_activations / activation_gb_per_item))
+        batch_size = max(1, batch_size)
+
+        # Use gradient accumulation to reach effective batch size
+        target_effective = self.base_batch_size
+        grad_accum = max(1, target_effective // batch_size)
+
+        return {
+            'batch_size': batch_size,
+            'effective_batch_size': batch_size * grad_accum,
+            'grad_accum_steps': grad_accum,
+            'device': 'cuda:0',
+            'device_map': None,
+            'strategy': 'single_gpu',
+            'ddp': False,
+            'model_parallel': False,
+            'llama_devices': '0',
+            'qwen_devices': '0',
+            'notes': f'Single GPU mode with gradient accumulation ({grad_accum} steps)',
+        }
+
+    def _config_dual_gpu(self, available_gb, activation_gb_per_item, is_h100):
+        """Configuration for 2 GPUs."""
+        if is_h100:
+            # H100s have 80GB - can fit both models easily
+            batch_per_gpu = self.base_batch_size
+            return {
+                'batch_size': batch_per_gpu * 2,  # DDP with 2 GPUs
+                'effective_batch_size': batch_per_gpu * 2,
+                'grad_accum_steps': 1,
+                'device': 'cuda',
+                'device_map': 'auto',
+                'strategy': 'ddp',
+                'ddp': True,
+                'model_parallel': False,
+                'llama_devices': '0,1',
+                'qwen_devices': '0,1',
+                'notes': 'DDP on 2 H100 GPUs (data parallel)',
+            }
+        else:
+            # Split models across GPUs for memory efficiency
+            batch_size = min(self.base_batch_size, int((available_gb - self.model_size_gb) / activation_gb_per_item))
+            return {
+                'batch_size': batch_size,
+                'effective_batch_size': batch_size,
+                'grad_accum_steps': 1,
+                'device': 'cuda',
+                'device_map': 'auto',
+                'strategy': 'model_split',
+                'ddp': False,
+                'model_parallel': True,
+                'llama_devices': '0',
+                'qwen_devices': '1',
+                'notes': 'Model splitting: Llama on GPU0, Qwen on GPU1',
+            }
+
+    def _config_three_gpu(self, available_gb, activation_gb_per_item, is_h100):
+        """Configuration for 3 GPUs."""
+        # Use 2 for models, 1 for encoder/adapters
+        batch_per_gpu = min(self.base_batch_size, int((available_gb - self.model_size_gb/2) / activation_gb_per_item))
+
+        return {
+            'batch_size': batch_per_gpu,
+            'effective_batch_size': batch_per_gpu,
+            'grad_accum_steps': 1,
+            'device': 'cuda',
+            'device_map': 'auto',
+            'strategy': 'hybrid_3gpu',
+            'ddp': False,
+            'model_parallel': True,
+            'llama_devices': '0,1',  # Llama split across 2 GPUs
+            'qwen_devices': '2',      # Qwen on dedicated GPU
+            'encoder_device': 'cuda:0',  # Encoder shares with Llama
+            'notes': 'Hybrid: Llama on GPU0-1, Qwen on GPU2',
+        }
+
+    def _config_four_gpu(self, available_gb, activation_gb_per_item, is_h100):
+        """Configuration for 4 GPUs (common HPC setup)."""
+        if is_h100:
+            # 4x H100 (80GB each) - maximum parallelism
+            batch_per_gpu = self.base_batch_size
+            return {
+                'batch_size': batch_per_gpu * 4,  # Full DDP
+                'effective_batch_size': batch_per_gpu * 4,
+                'grad_accum_steps': 1,
+                'device': 'cuda',
+                'device_map': 'auto',
+                'strategy': 'ddp_4gpu',
+                'ddp': True,
+                'model_parallel': False,
+                'llama_devices': '0,1,2,3',
+                'qwen_devices': '0,1,2,3',
+                'notes': 'Full DDP on 4x H100 GPUs (maximum throughput)',
+            }
+        else:
+            # 4x A100 or similar - balanced model/data parallelism
+            batch_per_gpu = min(self.base_batch_size, int((available_gb - self.model_size_gb/2) / activation_gb_per_item))
+            return {
+                'batch_size': batch_per_gpu * 2,  # 2-way data parallel
+                'effective_batch_size': batch_per_gpu * 2,
+                'grad_accum_steps': 1,
+                'device': 'cuda',
+                'device_map': 'auto',
+                'strategy': 'hybrid_4gpu',
+                'ddp': True,
+                'model_parallel': True,
+                'llama_devices': '0,1',  # 2 GPUs for Llama
+                'qwen_devices': '2,3',    # 2 GPUs for Qwen
+                'notes': 'Hybrid: 2-way model parallel + 2-way data parallel',
+            }
+
+    def _config_multi_gpu(self, n_gpus, available_gb, activation_gb_per_item, is_h100):
+        """Configuration for >4 GPUs."""
+        # Scale up data parallelism
+        batch_per_gpu = min(self.base_batch_size, int((available_gb - self.model_size_gb/4) / activation_gb_per_item))
+
+        return {
+            'batch_size': batch_per_gpu * n_gpus,
+            'effective_batch_size': batch_per_gpu * n_gpus,
+            'grad_accum_steps': 1,
+            'device': 'cuda',
+            'device_map': 'auto',
+            'strategy': f'ddp_{n_gpus}gpu',
+            'ddp': True,
+            'model_parallel': n_gpus > 8,  # Use model parallelism for very large clusters
+            'notes': f'Scaled DDP on {n_gpus} GPUs',
+        }
+
+    def get_optimal_config(self, dataset_size=None, target_steps=None):
+        """Get optimal configuration with optional dataset-aware adjustments.
+
+        Args:
+            dataset_size: Size of training dataset
+            target_steps: Target number of optimization steps per epoch
+
+        Returns:
+            Configuration dict with all settings
+        """
+        config = self.config.copy()
+
+        # Adjust for dataset size if provided
+        if dataset_size and target_steps:
+            min_batch = max(1, dataset_size // target_steps)
+            if config['effective_batch_size'] < min_batch:
+                # Need more gradient accumulation
+                extra_accum = min_batch // config['effective_batch_size']
+                config['grad_accum_steps'] *= extra_accum
+                config['effective_batch_size'] *= extra_accum
+                config['notes'] += f' (adjusted for {target_steps} steps/epoch)'
+
+        return config
+
+    def print_config(self):
+        """Print the current configuration in a readable format."""
+        print("=" * 70)
+        print("ELASTIC GPU CONFIGURATION")
+        print("=" * 70)
+
+        if self.gpu_count == 0:
+            print("WARNING: No GPUs detected, using CPU (training will be very slow)")
+        else:
+            print(f"Detected {self.gpu_count} GPU(s):")
+            for gpu in self.gpu_specs:
+                print(f"  GPU {gpu['id']}: {gpu['name']} ({gpu['memory_gb']:.1f} GB)")
+
+        print("\nOptimal Configuration:")
+        print(f"  Strategy: {self.config['strategy']}")
+        print(f"  Batch size per step: {self.config['batch_size']}")
+        print(f"  Gradient accumulation: {self.config['grad_accum_steps']}")
+        print(f"  Effective batch size: {self.config['effective_batch_size']}")
+
+        if self.config.get('ddp'):
+            print("  Data Parallel: Yes (DDP)")
+        if self.config.get('model_parallel'):
+            print("  Model Parallel: Yes")
+
+        if self.config.get('llama_devices'):
+            print(f"  Llama GPUs: {self.config.get('llama_devices')}")
+        if self.config.get('qwen_devices'):
+            print(f"  Qwen GPUs: {self.config.get('qwen_devices')}")
+
+        print(f"\nNotes: {self.config['notes']}")
+        print("=" * 70)
+
+    def to_args(self):
+        """Convert configuration to command-line arguments."""
+        args = [
+            f"--batch_size {self.config['batch_size']}",
+            f"--grad_accum_steps {self.config['grad_accum_steps']}",
+        ]
+
+        if self.config.get('llama_devices'):
+            args.append(f"--llama_devices {self.config['llama_devices']}")
+        if self.config.get('qwen_devices'):
+            args.append(f"--qwen_devices {self.config['qwen_devices']}")
+
+        return ' '.join(args)
+
+
 def get_gpu_memory_stats():
     """Get current GPU memory usage across all visible GPUs.
 
@@ -699,10 +999,28 @@ def main():
     ap.add_argument("--batch_size", type=int, default=1)
     ap.add_argument("--grad_accum_steps", type=int, default=1,
                     help="Number of micro-batches to accumulate before an optimizer step.")
+    ap.add_argument("--elastic_gpu", action="store_true",
+                    help="Enable elastic GPU configuration that adapts to available hardware.")
+    ap.add_argument("--elastic_base_batch", type=int, default=64,
+                    help="Base batch size for elastic GPU mode (default: 64).")
+    ap.add_argument("--elastic_target_util", type=float, default=0.75,
+                    help="Target GPU memory utilization for elastic mode (default: 0.75).")
 
     # Repro / randomness
     ap.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Global seed for RNGs & epoch permutations.")
     ap.add_argument("--data_seed", type=int, default=DEFAULT_SEED, help="Seed for picking dataset subset.")
+
+    # Optimized DataLoader settings
+    ap.add_argument("--use_optimized_dataloader", action="store_true",
+                    help="Use optimized multi-worker DataLoader with caching and prefetching.")
+    ap.add_argument("--num_dataloader_workers", type=int, default=4,
+                    help="Number of worker processes for DataLoader (0 for main thread, -1 for auto).")
+    ap.add_argument("--dataloader_prefetch_factor", type=int, default=2,
+                    help="Number of batches to prefetch per worker.")
+    ap.add_argument("--dataloader_cache_tokenization", action="store_true",
+                    help="Cache tokenized samples to disk for faster subsequent epochs.")
+    ap.add_argument("--dataloader_pin_memory", action="store_true",
+                    help="Use pinned memory for faster GPU transfers.")
 
     # Interlingua / encoder
     ap.add_argument("--latent_len", type=int, default=8)
@@ -895,6 +1213,21 @@ def main():
                     help="Per-GPU memory budget (GiB) when constraining auto device maps.")
     ap.add_argument("--grad_ckpt", action="store_true")
     ap.add_argument("--fp16_mps", action="store_true")
+
+    # Mixed Precision Training
+    ap.add_argument("--mixed_precision", type=str, default="no",
+                    choices=["no", "fp16", "bf16", "fp8"],
+                    help="Enable mixed precision training. bf16 recommended for H100 (better range, no overflow).")
+    ap.add_argument("--grad_scaler_init", type=float, default=2**16,
+                    help="Initial scale factor for GradScaler (fp16 only). Lower if seeing infs.")
+    ap.add_argument("--grad_scaler_growth_interval", type=int, default=2000,
+                    help="Number of iterations between scale factor increases.")
+    ap.add_argument("--grad_scaler_backoff", type=float, default=0.5,
+                    help="Scale factor multiplier when overflow detected (fp16 only).")
+    ap.add_argument("--amp_opt_level", type=str, default="O1",
+                    choices=["O0", "O1", "O2"],
+                    help="AMP optimization level. O1=mixed, O2=almost everything fp16/bf16.")
+
     ap.add_argument("--warm_anchor_text", type=str, default="",
                     help="Optional anchor tokens AFTER latent prefix during training (text mode).")
     ap.add_argument(
@@ -1000,6 +1333,59 @@ def main():
             except Exception as exc:
                 print("  nvidia-smi not runnable:", exc)
             raise SystemExit(2)
+
+    # Elastic GPU configuration
+    if args.elastic_gpu and device == "cuda":
+        print("\n" + "="*70)
+        print("ELASTIC GPU MODE ENABLED")
+        print("="*70)
+
+        # Detect model size based on which models we're using
+        model_size_gb = 14.0  # Default for Llama-8B
+        if "qwen" in args.enabled_models.lower() and "llama" not in args.enabled_models.lower():
+            model_size_gb = 13.0  # Qwen-7B only
+        elif "qwen" in args.enabled_models.lower() and "llama" in args.enabled_models.lower():
+            model_size_gb = 27.0  # Both models
+
+        # Initialize elastic configuration
+        elastic_config = ElasticGPUConfig(
+            base_batch_size=args.elastic_base_batch,
+            model_size_gb=model_size_gb,
+            target_util=args.elastic_target_util
+        )
+
+        # Print configuration
+        elastic_config.print_config()
+
+        # Get optimal settings
+        optimal = elastic_config.get_optimal_config(
+            dataset_size=args.samples,
+            target_steps=100  # Target ~100 steps per epoch for good convergence
+        )
+
+        # Override args with elastic settings
+        print("\nApplying elastic configuration...")
+        original_batch = args.batch_size
+        original_accum = args.grad_accum_steps
+
+        args.batch_size = optimal['batch_size']
+        args.grad_accum_steps = optimal['grad_accum_steps']
+
+        if optimal.get('llama_devices') and not args.llama_devices:
+            args.llama_devices = optimal['llama_devices']
+        if optimal.get('qwen_devices') and not args.qwen_devices:
+            args.qwen_devices = optimal['qwen_devices']
+
+        print(f"  Batch size: {original_batch} → {args.batch_size}")
+        print(f"  Grad accum: {original_accum} → {args.grad_accum_steps}")
+        print(f"  Effective batch: {args.batch_size * args.grad_accum_steps}")
+
+        if optimal.get('ddp'):
+            print("\nNOTE: DDP mode suggested but not yet implemented.")
+            print("      Using model-parallel configuration instead.")
+
+        print("="*70 + "\n")
+
     env_dtype = os.environ.get("TORCH_DTYPE")
     if env_dtype:
         dtype_lookup = {
@@ -1601,6 +1987,61 @@ def main():
     optimizer = optim.AdamW(optim_groups, lr=args.lr, fused=use_fused, foreach=False)
     if use_fused:
         print("[Optimization] Using fused AdamW optimizer")
+
+    # ===== Mixed Precision Training Setup =====
+    grad_scaler = None
+    amp_dtype = None
+    amp_enabled = False
+
+    if args.mixed_precision != "no" and device == "cuda":
+        if args.mixed_precision == "bf16":
+            amp_dtype = torch.bfloat16
+            amp_enabled = True
+            print("[AMP] Using BF16 mixed precision (recommended for H100)")
+            print("      - Better numerical stability than FP16")
+            print("      - No GradScaler needed (native hardware support)")
+            print(f"      - Optimization level: {args.amp_opt_level}")
+        elif args.mixed_precision == "fp16":
+            amp_dtype = torch.float16
+            amp_enabled = True
+            # GradScaler is only needed for FP16, not BF16
+            from torch.cuda.amp import GradScaler
+            grad_scaler = GradScaler(
+                init_scale=args.grad_scaler_init,
+                growth_interval=args.grad_scaler_growth_interval,
+                backoff_factor=args.grad_scaler_backoff,
+                growth_factor=2.0,
+                enabled=True
+            )
+            print("[AMP] Using FP16 mixed precision")
+            print(f"      - GradScaler initialized (init_scale={args.grad_scaler_init})")
+            print(f"      - Growth interval: {args.grad_scaler_growth_interval} steps")
+            print(f"      - Optimization level: {args.amp_opt_level}")
+        elif args.mixed_precision == "fp8":
+            # FP8 support for H100 (experimental, requires transformer_engine)
+            try:
+                import transformer_engine.pytorch as te
+                amp_dtype = torch.float8_e4m3fn  # H100 native FP8
+                amp_enabled = True
+                print("[AMP] Using FP8 mixed precision (H100 native)")
+                print("      - Maximum performance on H100 Tensor Cores")
+                print("      - Requires transformer_engine library")
+            except ImportError:
+                print("[WARNING] FP8 requested but transformer_engine not available")
+                print("         Falling back to BF16")
+                amp_dtype = torch.bfloat16
+                amp_enabled = True
+    elif args.mixed_precision != "no":
+        print(f"[WARNING] Mixed precision requested but device is {device}, not cuda. Disabled.")
+
+    # Log memory and performance expectations
+    if amp_enabled:
+        expected_speedup = 2.0 if args.mixed_precision == "fp16" else 2.5
+        expected_memory_savings = 0.5 if args.amp_opt_level == "O2" else 0.3
+        print(f"[AMP] Expected benefits:")
+        print(f"      - Training speedup: ~{expected_speedup:.1f}x")
+        print(f"      - Memory savings: ~{expected_memory_savings*100:.0f}%")
+        print(f"      - Larger effective batch size possible")
 
     # Log optimizer groups for debugging
     print(f"[Optimizer] Created {len(optim_groups)} parameter groups:")

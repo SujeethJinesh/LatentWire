@@ -48,7 +48,7 @@ git pull
 # ============================================================
 # Configuration: Modify these to test different model pairs
 # ============================================================
-SOURCE_MODEL="meta-llama/Llama-3.2-3B-Instruct"
+SOURCE_MODEL="meta-llama/Llama-3.1-3B-Instruct"
 TARGET_MODEL="mistralai/Mistral-7B-Instruct-v0.3"
 SOFT_TOKENS=128
 DEPTH=4
