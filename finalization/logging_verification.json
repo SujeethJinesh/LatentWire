@@ -1,0 +1,163 @@
+{
+  "timestamp": "2026-01-05T11:54:38.482622",
+  "shell_scripts": {
+    "total": 13,
+    "passed": 13,
+    "details": [
+      {
+        "script": "RUN_THIS.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "test_everything.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": false,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "run_validation.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "monitor_experiment.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "run_experiment.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "test_memory_calculations.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "compile_paper.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "run_tests.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "quick_start.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "test_orchestrator.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "launch_ddp_training.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "run_finalization.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      },
+      {
+        "script": "test_resume_e2e.sh",
+        "checks": {
+          "has_tee": true,
+          "has_log_file": true,
+          "has_timestamp": true,
+          "has_stderr_redirect": true,
+          "has_proper_tee_pattern": true
+        },
+        "passed": true
+      }
+    ]
+  },
+  "python_scripts": {
+    "total": 30,
+    "critical_issues": 1,
+    "critical_details": [
+      {
+        "script": "preemptible_train.py",
+        "without_flush": 1,
+        "with_flush": 3
+      }
+    ]
+  }
+}

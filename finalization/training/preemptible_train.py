@@ -65,10 +65,10 @@ TRAINING_STATE = {}
 def handle_preemption_signal(signum, frame):
     """Handle SIGTERM signal for graceful preemption."""
     global PREEMPTION_REQUESTED
-    print("\n" + "="*80)
-    print("PREEMPTION SIGNAL RECEIVED!")
+    print("\n" + "="*80, flush=True)
+    print("PREEMPTION SIGNAL RECEIVED!", flush=True)
     print("Saving checkpoint immediately...", flush=True)
-    print("="*80)
+    print("="*80, flush=True)
     PREEMPTION_REQUESTED = True
 
     # If we have access to the current training state, save it immediately
@@ -266,19 +266,19 @@ def preemptible_main():
     TRAINING_STATE['save_dir'] = args.save_dir
 
     # Run training (this would be the modified training loop)
-    print("\n" + "="*80)
+    print("\n" + "="*80, flush=True)
     print("Starting preemptible training", flush=True)
-    print("="*80)
-    print(f"Configuration:")
-    print(f"  Model: {args.llama_id}")
-    print(f"  Dataset: {args.dataset}")
-    print(f"  Samples: {args.samples}")
+    print("="*80, flush=True)
+    print(f"Configuration:", flush=True)
+    print(f"  Model: {args.llama_id}", flush=True)
+    print(f"  Dataset: {args.dataset}", flush=True)
+    print(f"  Samples: {args.samples}", flush=True)
     print(f"  Epochs: {args.epochs}", flush=True)
     print(f"  Batch size: {args.batch_size}", flush=True)
-    print(f"  Save directory: {args.save_dir}")
+    print(f"  Save directory: {args.save_dir}", flush=True)
     print(f"  Preemption checkpoint interval: {CHECKPOINT_INTERVAL}s", flush=True)
-    print(f"  Auto-resume: {args.auto_resume}")
-    print("="*80 + "\n")
+    print(f"  Auto-resume: {args.auto_resume}", flush=True)
+    print("="*80 + "\n", flush=True)
 
     # Call original main with monkey-patched components
     # In a real implementation, we would copy and modify the training loop
