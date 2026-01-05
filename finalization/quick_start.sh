@@ -12,6 +12,9 @@
 
 set -e
 
+# Set environment for any Python commands
+export PYTHONUNBUFFERED=1  # Critical: Immediate output flushing
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'

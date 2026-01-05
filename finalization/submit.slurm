@@ -45,6 +45,7 @@ echo "Working directory: $WORK_DIR"
 echo "=============================================================="
 
 # Set up environment
+export PYTHONUNBUFFERED=1  # Critical: Immediate output flushing to prevent log loss
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 export HF_HOME="/projects/m000066/sujinesh/.cache/huggingface"

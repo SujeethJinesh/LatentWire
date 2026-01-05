@@ -13,6 +13,9 @@
 
 set -e
 
+# Critical environment variable
+export PYTHONUNBUFFERED=1  # Immediate output flushing
+
 # Configuration
 EXP_NAME="${1:-}"
 WORK_DIR="${WORK_DIR:-/projects/m000066/sujinesh/LatentWire}"

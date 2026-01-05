@@ -17,6 +17,7 @@ echo "=================================="
 echo ""
 
 # Set required environment variables
+export PYTHONUNBUFFERED=1  # Critical: Immediate output flushing to prevent log loss
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 export TOKENIZERS_PARALLELISM=false

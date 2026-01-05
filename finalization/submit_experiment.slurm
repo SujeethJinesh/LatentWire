@@ -60,6 +60,9 @@ if ! git pull; then
     git stash pop 2>/dev/null || true
 fi
 
+# Critical environment variable for Python output buffering
+export PYTHONUNBUFFERED=1  # Critical: Immediate output flushing to prevent log loss
+
 # Set experiment name based on SLURM job
 export EXP_NAME="${EXP_NAME:-slurm_job_${SLURM_JOB_ID}_$(date +%Y%m%d_%H%M%S)}"
 export WORK_DIR="$WORK_DIR"

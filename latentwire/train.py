@@ -2121,7 +2121,7 @@ def main():
         ckpt_path = find_latest_checkpoint(args.save_dir)
 
     if ckpt_path:
-        print(f"⏪ Resuming from: {ckpt_path}")
+        print(f"⏪ Resuming from: {ckpt_path}", flush=True)
         # Build wrappers dict for latent adapter loading
         wrappers_dict = {}
         if llama is not None:
@@ -2146,8 +2146,8 @@ def main():
         if args.reset_epoch:
             start_epoch = 0
             global_step = 0
-            print("   -> reset epoch/global_step to zero as requested")
-        print(f"   -> start_epoch={start_epoch}, global_step={global_step}")
+            print("   -> reset epoch/global_step to zero as requested", flush=True)
+        print(f"   -> start_epoch={start_epoch}, global_step={global_step}", flush=True)
         if args.adapter_colorize:
             try:
                 for name, adapter in adapters.items():
@@ -2158,7 +2158,7 @@ def main():
             except Exception as exc:
                 print(f"[WARN] Adapter colorizer re-install skipped after resume: {exc}")
     else:
-        print("⚠️  No valid checkpoint found to resume; starting fresh.")
+        print("⚠️  No valid checkpoint found to resume; starting fresh.", flush=True)
 
     # ===== Training stats trackers =====
     class _RunningMean:
@@ -2327,7 +2327,7 @@ def main():
         print(f"  Pin memory: {args.dataloader_pin_memory}")
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
-        print(f"Epoch {epoch+1}/{args.epochs}")
+        print(f"Epoch {epoch+1}/{args.epochs}", flush=True)
 
         # Log GPU memory at epoch start, reset peak stats
         log_gpu_memory(prefix=f"[Epoch {epoch+1} Start] ", reset_peak=True)
@@ -3334,6 +3334,7 @@ def main():
                             "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
                         },
                         "optimizer": optimizer.state_dict(),
+                        "lr_scheduler": lr_scheduler.state_dict(),
                         "adapter_scale": {
                             name: float(adapter.scale.detach().cpu().item())
                             for name, adapter in adapters.items()
@@ -3389,7 +3390,7 @@ def main():
                     except ImportError:
                         pass
 
-                    print(f"  🌟 NEW PEAK: first_acc_ema={best_first_acc:.1%} (raw_batch={current_first_acc_raw:.1%}) at step {global_step} → saved to {best_save_dir}")
+                    print(f"  🌟 NEW PEAK: first_acc_ema={best_first_acc:.1%} (raw_batch={current_first_acc_raw:.1%}) at step {global_step} → saved to {best_save_dir}", flush=True)
 
                     # Log sample predictions to verify quality (not just lucky guesses)
                     ctx_name = model_contexts[0].name
@@ -3530,6 +3531,7 @@ def main():
                         "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
                     },
                     "optimizer": optimizer.state_dict(),
+                    "lr_scheduler": lr_scheduler.state_dict(),
                     "adapter_scale": {
                         name: float(adapter.scale.detach().cpu().item())
                         for name, adapter in adapters.items()
@@ -3559,7 +3561,7 @@ def main():
                 if latent_refiner is not None:
                     artifacts["refiner.pt"] = latent_refiner.state_dict()
                 save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
-                print(f"  ✅ Saved (and pruned to) latest at step {global_step}")
+                print(f"  ✅ Saved (and pruned to) latest at step {global_step}", flush=True)
 
     # ===== Final save =====
     os.makedirs(args.save_dir, exist_ok=True)
@@ -3701,7 +3703,7 @@ def main():
     for name, head in gist_heads.items():
         artifacts[f"gist_{name}.pt"] = head.state_dict()
     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
-    print(f"✅ Saved latest checkpoint to {args.save_dir}")
+    print(f"✅ Saved latest checkpoint to {args.save_dir}", flush=True)
 
     # Persist PEFT adapters (LoRA) if present
     try:

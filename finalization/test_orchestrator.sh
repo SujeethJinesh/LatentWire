@@ -11,6 +11,9 @@
 
 set -e
 
+# Critical environment variable
+export PYTHONUNBUFFERED=1  # Immediate output flushing
+
 echo "=============================================================="
 echo "TESTING EXPERIMENT ORCHESTRATOR"
 echo "=============================================================="

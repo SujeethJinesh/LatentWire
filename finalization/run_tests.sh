@@ -23,6 +23,7 @@ echo "=========================================="
 echo ""
 
 # Set up environment
+export PYTHONUNBUFFERED=1  # Critical: Immediate output flushing
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 

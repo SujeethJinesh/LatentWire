@@ -36,6 +36,7 @@ echo "Preemption signal configured: TERM@120"
 echo "=============================================================="
 
 # Set up environment
+export PYTHONUNBUFFERED=1  # Critical: Immediate output flushing to prevent log loss
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 export TORCH_CUDA_ARCH_LIST="8.0;8.6;9.0"  # H100 support

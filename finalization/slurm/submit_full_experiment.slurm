@@ -30,6 +30,7 @@ echo "Start time: $(date)"
 echo "=============================================================="
 
 # Set up environment
+export PYTHONUNBUFFERED=1  # Critical: Immediate output flushing to prevent log loss
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 export CUDA_VISIBLE_DEVICES=0,1,2,3
