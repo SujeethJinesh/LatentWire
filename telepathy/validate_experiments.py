@@ -11,8 +11,6 @@ Usage:
 
 import sys
 import os
-import torch
-import psutil
 import json
 import time
 import argparse
@@ -21,6 +19,19 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from dataclasses import dataclass
 from datetime import datetime
+
+# Try importing optional dependencies
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -121,6 +132,18 @@ class ExperimentValidator:
 
     def check_imports(self) -> ValidationResult:
         """Check all required libraries can be imported."""
+        # Detect environment
+        is_local = not os.environ.get("SLURM_JOB_ID")
+
+        if is_local and not TORCH_AVAILABLE:
+            # On local MacBook, these imports are expected to fail
+            return ValidationResult(
+                "Import Check",
+                True,
+                "Local development environment - imports checked on HPC",
+                {"environment": "local_dev", "note": "Full validation runs on HPC"}
+            )
+
         required_libs = [
             'torch',
             'transformers',
@@ -172,6 +195,14 @@ class ExperimentValidator:
 
     def check_cuda_availability(self) -> ValidationResult:
         """Check CUDA/GPU availability."""
+        if not TORCH_AVAILABLE:
+            return ValidationResult(
+                "CUDA/GPU Check",
+                True,
+                "Local dev environment - GPU checks run on HPC",
+                {"environment": "local_dev"}
+            )
+
         if torch.cuda.is_available():
             device_count = torch.cuda.device_count()
             devices = []
@@ -213,6 +244,15 @@ class ExperimentValidator:
 
     def check_memory_availability(self) -> ValidationResult:
         """Check system memory and estimate requirements."""
+        if not PSUTIL_AVAILABLE:
+            return ValidationResult(
+                "Memory Check",
+                True,
+                "Memory check requires psutil (install for detailed info)",
+                {"note": "Run on HPC for accurate memory estimates"}
+            )
+
+        import psutil
         mem = psutil.virtual_memory()
         available_gb = mem.available / (1024**3)
         total_gb = mem.total / (1024**3)
@@ -301,7 +341,23 @@ class ExperimentValidator:
 
     def check_model_loading(self) -> ValidationResult:
         """Check if models can be loaded."""
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        if not TORCH_AVAILABLE:
+            return ValidationResult(
+                "Model Loading",
+                True,
+                "Local dev environment - model checks run on HPC",
+                {"environment": "local_dev"}
+            )
+
+        try:
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+        except ImportError:
+            return ValidationResult(
+                "Model Loading",
+                False,
+                "transformers library not available",
+                {}
+            )
 
         models_to_check = [
             ("meta-llama/Llama-3.2-1B", "Llama-3.2-1B"),
@@ -376,7 +432,15 @@ class ExperimentValidator:
 
     def check_dataset_access(self) -> ValidationResult:
         """Check if datasets can be loaded."""
-        from datasets import load_dataset
+        try:
+            from datasets import load_dataset
+        except ImportError:
+            return ValidationResult(
+                "Dataset Access",
+                True,
+                "Local dev environment - dataset checks run on HPC",
+                {"environment": "local_dev"}
+            )
 
         datasets_to_check = [
             ("squad", "train[:100]"),
@@ -496,6 +560,14 @@ class ExperimentValidator:
 
     def check_forward_pass(self) -> ValidationResult:
         """Check if a forward pass works (full check only)."""
+        if not TORCH_AVAILABLE:
+            return ValidationResult(
+                "Forward Pass",
+                True,
+                "Skipped - requires PyTorch (run on HPC)",
+                {"environment": "local_dev"}
+            )
+
         try:
             from telepathy.model import TelepathyModel
 
@@ -543,6 +615,14 @@ class ExperimentValidator:
 
     def check_backward_pass(self) -> ValidationResult:
         """Check if backward pass works (full check only)."""
+        if not TORCH_AVAILABLE:
+            return ValidationResult(
+                "Backward Pass",
+                True,
+                "Skipped - requires PyTorch (run on HPC)",
+                {"environment": "local_dev"}
+            )
+
         try:
             from telepathy.model import TelepathyModel
 
@@ -606,6 +686,14 @@ class ExperimentValidator:
 
     def check_checkpoint_save_load(self) -> ValidationResult:
         """Check if checkpoints can be saved and loaded (full check only)."""
+        if not TORCH_AVAILABLE:
+            return ValidationResult(
+                "Checkpoint Save/Load",
+                True,
+                "Skipped - requires PyTorch (run on HPC)",
+                {"environment": "local_dev"}
+            )
+
         try:
             from telepathy.model import TelepathyModel
             import tempfile

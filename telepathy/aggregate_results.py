@@ -20,7 +20,14 @@ from scipy import stats
 from pathlib import Path
 import argparse
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional
+try:
+    from typing import Dict, List, Tuple, Optional
+except ImportError:
+    # Python 3.5 compatibility
+    Dict = dict
+    List = list
+    Tuple = tuple
+    Optional = None
 import pandas as pd
 from collections import defaultdict
 import warnings
@@ -30,7 +37,7 @@ warnings.filterwarnings('ignore')
 class ResultsAggregator:
     """Main class for aggregating experimental results."""
 
-    def __init__(self, base_dir: Path, output_dir: Path):
+    def __init__(self, base_dir, output_dir):
         self.base_dir = base_dir
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -63,7 +70,7 @@ class ResultsAggregator:
         self.aggregated_results = {}
         self.significance_tests = {}
 
-    def collect_results(self) -> None:
+    def collect_results(self):
         """Collect all JSON results from runs directory."""
         print("=" * 80)
         print("COLLECTING EXPERIMENTAL RESULTS")
@@ -81,7 +88,7 @@ class ResultsAggregator:
         for pattern in patterns:
             result_files.extend(self.base_dir.glob(pattern))
 
-        print(f"Found {len(result_files)} result files")
+        print("Found {} result files".format(len(result_files)))
 
         for result_file in result_files:
             try:
@@ -101,11 +108,11 @@ class ResultsAggregator:
                     self.raw_results[key]["compression_ratio"].append(exp_info.get("compression_ratio", 1.0))
 
             except Exception as e:
-                print(f"  Warning: Could not parse {result_file}: {e}")
+                print("  Warning: Could not parse {result_file}: {}".format(e))
 
-        print(f"\nCollected results for {len(self.raw_results)} experimental conditions")
+        print("\nCollected results for {} experimental conditions".format(len(self.raw_results)))
 
-    def _parse_experiment_info(self, filepath: Path, data: dict) -> Optional[dict]:
+    def _parse_experiment_info(self, filepath, data):
         """Extract experiment information from filepath and data."""
         info = {}
 
@@ -154,7 +161,7 @@ class ResultsAggregator:
 
         return info if "exp_type" in info and "dataset" in info else None
 
-    def aggregate_across_seeds(self) -> None:
+    def aggregate_across_seeds(self):
         """Compute mean and std across seeds."""
         print("\n" + "=" * 80)
         print("AGGREGATING ACROSS SEEDS")
@@ -163,7 +170,7 @@ class ResultsAggregator:
         for key, metrics in self.raw_results.items():
             exp_type, dataset, model = key
 
-            agg_key = f"{exp_type}_{dataset}_{model}"
+            agg_key = "{}_{}_{}".format(exp_type, dataset).format(model)
             self.aggregated_results[agg_key] = {}
 
             for metric_name, values in metrics.items():
@@ -173,19 +180,19 @@ class ResultsAggregator:
                 values = np.array([v for v in values if v is not None and v > 0])
 
                 if len(values) > 0:
-                    self.aggregated_results[agg_key][f"{metric_name}_mean"] = float(np.mean(values))
-                    self.aggregated_results[agg_key][f"{metric_name}_std"] = float(np.std(values))
-                    self.aggregated_results[agg_key][f"{metric_name}_n"] = int(len(values))
+                    self.aggregated_results[agg_key]["{}_mean".format(metric_name)] = float(np.mean(values))
+                    self.aggregated_results[agg_key]["{}_std".format(metric_name)] = float(np.std(values))
+                    self.aggregated_results[agg_key]["{}_n".format(metric_name)] = int(len(values))
 
                     # Compute confidence intervals
                     if len(values) >= 2:
                         ci = self._compute_confidence_interval(values)
-                        self.aggregated_results[agg_key][f"{metric_name}_ci_low"] = float(ci[0])
-                        self.aggregated_results[agg_key][f"{metric_name}_ci_high"] = float(ci[1])
+                        self.aggregated_results[agg_key]["{}_ci_low".format(metric_name)] = float(ci[0])
+                        self.aggregated_results[agg_key]["{}_ci_high".format(metric_name)] = float(ci[1])
 
-        print(f"Aggregated {len(self.aggregated_results)} experimental conditions")
+        print("Aggregated {} experimental conditions".format(len(self.aggregated_results)))
 
-    def _compute_confidence_interval(self, data: np.ndarray, confidence: float = 0.95) -> Tuple[float, float]:
+    def _compute_confidence_interval(self, data, confidence=0.95):
         """Compute confidence interval using bootstrap."""
         n_bootstrap = 10000
         bootstrap_means = []
@@ -200,7 +207,7 @@ class ResultsAggregator:
 
         return lower, upper
 
-    def compute_statistical_significance(self) -> None:
+    def compute_statistical_significance(self):
         """Compute statistical significance between key comparisons."""
         print("\n" + "=" * 80)
         print("COMPUTING STATISTICAL SIGNIFICANCE")
@@ -225,8 +232,8 @@ class ResultsAggregator:
 
         for exp1, exp2, name in comparisons:
             for dataset in self.datasets:
-                key1_pattern = f"{exp1}_{dataset}_"
-                key2_pattern = f"{exp2}_{dataset}_"
+                key1_pattern = "{exp1}_{}_".format(dataset)
+                key2_pattern = "{exp2}_{}_".format(dataset)
 
                 # Find matching keys
                 keys1 = [k for k in self.aggregated_results if k.startswith(key1_pattern)]
@@ -249,8 +256,11 @@ class ResultsAggregator:
                         # Perform t-test
                         t_stat, p_value = stats.ttest_ind(acc1, acc2)
 
-                        test_key = f"{name}_{dataset}"
-                        self.significance_tests[test_key] = {
+                        test_key = "{name}_{}".format(dataset)
+                        self.significance_tests[test_key] = {: p_value < 0.001
+                        }
+
+        print(".format(
                             "mean1": float(np.mean(acc1)),
                             "std1": float(np.std(acc1)),
                             "mean2": float(np.mean(acc2)),
@@ -259,73 +269,70 @@ class ResultsAggregator:
                             "p_value": float(p_value),
                             "significant_0.05": p_value < 0.05,
                             "significant_0.01": p_value < 0.01,
-                            "significant_0.001": p_value < 0.001
-                        }
+                            "significant_0.001")Computed {} significance tests".format(len(self.significance_tests)))
 
-        print(f"Computed {len(self.significance_tests)} significance tests")
-
-    def generate_execution_gates(self) -> Dict[str, dict]:
+    def generate_execution_gates(self):
         """Generate execution gate decisions based on results."""
         gates = {}
 
         # Gate 1: Bridge significantly beats prompt-tuning baseline
         gate1_pass = True
         for dataset in ["sst2", "agnews", "trec"]:
-            test_key = f"Bridge vs Prompt-Tuning_{dataset}"
+            test_key = "Bridge vs Prompt-Tuning_{}".format(dataset)
             if test_key in self.significance_tests:
                 if not self.significance_tests[test_key]["significant_0.05"]:
                     gate1_pass = False
 
-        gates["gate1_sender_necessary"] = {
-            "passed": gate1_pass,
-            "description": "Bridge must significantly outperform prompt-tuning baseline",
-            "recommendation": "PROCEED" if gate1_pass else "INVESTIGATE"
+        gates["gate1_sender_necessary"] = {: "PROCEED" if gate1_pass else "INVESTIGATE"
         }
 
         # Gate 2: Cross-model transfer works
         gate2_pass = False
         for dataset in self.datasets:
-            bridge_key = f"bridge_{dataset}_default"
+            bridge_key = ".format(
+            "passed": gate1_pass,
+            "description": "Bridge must significantly outperform prompt-tuning baseline",
+            "recommendation")bridge_{}_default".format(dataset)
             if bridge_key in self.aggregated_results:
                 acc = self.aggregated_results[bridge_key].get("accuracy_mean", 0)
                 if acc > 80:  # 80% threshold for cross-model success
                     gate2_pass = True
                     break
 
-        gates["gate2_cross_model_transfer"] = {
-            "passed": gate2_pass,
-            "description": "Cross-model transfer achieves >80% accuracy on at least one dataset",
-            "recommendation": "PROCEED" if gate2_pass else "REFINE"
+        gates["gate2_cross_model_transfer"] = {: "PROCEED" if gate2_pass else "REFINE"
         }
 
         # Gate 3: Compression is meaningful
         gate3_pass = False
         compression_ratios = []
         for key in self.aggregated_results:
-            if "compression_ratio_mean" in self.aggregated_results[key]:
+            if ".format(
+            "passed": gate2_pass,
+            "description": "Cross-model transfer achieves >80% accuracy on at least one dataset",
+            "recommendation")compression_ratio_mean" in self.aggregated_results[key]:
                 compression_ratios.append(self.aggregated_results[key]["compression_ratio_mean"])
 
         if compression_ratios:
             avg_compression = np.mean(compression_ratios)
             gate3_pass = avg_compression >= 4.0  # 4x compression target
 
-        gates["gate3_compression_achieved"] = {
-            "passed": gate3_pass,
-            "description": "Average compression ratio ≥ 4x",
-            "recommendation": "PROCEED" if gate3_pass else "OPTIMIZE",
-            "current_ratio": avg_compression if compression_ratios else 1.0
+        gates["gate3_compression_achieved"] = {: avg_compression if compression_ratios else 1.0
         }
 
         # Gate 4: Latency improvement
         gate4_pass = False
         latency_improvements = []
         for dataset in self.datasets:
-            bridge_key = f"bridge_{dataset}_default"
-            baseline_key = f"zeroshot_{dataset}_default"
+            bridge_key = ".format(
+            "passed": gate3_pass,
+            "description": "Average compression ratio ≥ 4x",
+            "recommendation": "PROCEED" if gate3_pass else "OPTIMIZE",
+            "current_ratio")bridge_{}_default".format(dataset)
+            baseline_key = "zeroshot_{}_default".format(dataset)
 
             if bridge_key in self.aggregated_results and baseline_key in self.aggregated_results:
                 bridge_latency = self.aggregated_results[bridge_key].get("latency_ms_mean", float('inf'))
-                baseline_latency = self.aggregated_results[baseline_key].get("latency_ms_mean", float('inf'))
+                baseline_latency = self.aggregated_results[baseline_key].get("latency_ms_mean", float('in'))
 
                 if baseline_latency > 0:
                     improvement = (baseline_latency - bridge_latency) / baseline_latency
@@ -335,16 +342,16 @@ class ResultsAggregator:
             avg_improvement = np.mean(latency_improvements)
             gate4_pass = avg_improvement > 0.2  # 20% latency reduction
 
-        gates["gate4_latency_improved"] = {
-            "passed": gate4_pass,
-            "description": "Average latency reduction > 20%",
-            "recommendation": "PROCEED" if gate4_pass else "ACCEPTABLE",
-            "current_improvement": avg_improvement if latency_improvements else 0
+        gates["gate4_latency_improved"] = {: avg_improvement if latency_improvements else 0
         }
 
         return gates
 
-    def create_markdown_table(self, subset: str = "main") -> str:
+    def create_markdown_table(self, subset=".format(
+            "passed": gate4_pass,
+            "description": "Average latency reduction > 20%",
+            "recommendation": "PROCEED" if gate4_pass else "ACCEPTABLE",
+            "current_improvement")main"):
         """Create markdown table for results."""
         rows = []
 
@@ -377,7 +384,7 @@ class ResultsAggregator:
             accuracies = []
 
             for dataset in datasets:
-                key = f"{method_key}_{dataset}_default"
+                key = "{method_key}_{}_default".format(dataset)
 
                 if key in self.aggregated_results:
                     acc_mean = self.aggregated_results[key].get("accuracy_mean", 0)
@@ -386,7 +393,7 @@ class ResultsAggregator:
 
                     # Add significance markers
                     sig_marker = ""
-                    test_key = f"Bridge vs {method_name.replace(' ', '-')}_{dataset}"
+                    test_key = "Bridge vs {}_{}".format(dataset)
                     if test_key in self.significance_tests:
                         if self.significance_tests[test_key]["significant_0.001"]:
                             sig_marker = "***"
@@ -396,9 +403,9 @@ class ResultsAggregator:
                             sig_marker = "*"
 
                     if n >= 3:
-                        row.append(f"{acc_mean:.1f}±{acc_std:.1f}{sig_marker}")
+                        row.append("{}±{}{}".format(acc_mean:.1f, acc_std:.1f).format(sig_marker))
                     else:
-                        row.append(f"{acc_mean:.1f}{sig_marker}")
+                        row.append("{:.1f}{}".format(acc_mean).format(sig_marker))
 
                     accuracies.append(acc_mean)
                 else:
@@ -407,15 +414,15 @@ class ResultsAggregator:
             # Average
             if accuracies:
                 avg = np.mean(accuracies)
-                row.append(f"{avg:.1f}")
+                row.append("{}".format(avg:.1f))
             else:
                 row.append("-")
 
-            rows.append(f"| {' | '.join(row)} |")
+            rows.append("| {} |".format('.format(method_name.replace(' ', '-')) | '.join(row)))
 
         return "\n".join(rows)
 
-    def create_latex_table(self, subset: str = "main") -> str:
+    def create_latex_table(self, subset="main"):
         """Create LaTeX table for paper."""
         lines = []
 
@@ -425,12 +432,12 @@ class ResultsAggregator:
         lines.append("\\small")
 
         if subset == "main":
-            lines.append("\\begin{tabular}{lccccc}")
+            lines.append("\\begin{}{}".format(tabular, lccccc))
             lines.append("\\toprule")
             lines.append("Method & SST-2 & AG News & TREC & GSM8K & Avg \\\\")
             datasets = ["sst2", "agnews", "trec", "gsm8k"]
         else:
-            lines.append("\\begin{tabular}{lcccccc}")
+            lines.append("\\begin{}{}".format(tabular, lcccccc))
             lines.append("\\toprule")
             lines.append("Method & Banking77 & PassKey & SST-2 & AG News & TREC \\\\")
             datasets = ["banking77", "passkey", "sst2", "agnews", "trec"]
@@ -449,12 +456,12 @@ class ResultsAggregator:
             ("fewshot", "Few-Shot (3)")
         ]
 
-        best_per_dataset = {dataset: 0 for dataset in datasets}
+        best_per_dataset = {: 0 for dataset in datasets}
 
         # First pass to find best scores
         for method_key, _ in methods:
             for dataset in datasets:
-                key = f"{method_key}_{dataset}_default"
+                key = ".format(dataset){method_key}_{}_default".format(dataset)
                 if key in self.aggregated_results:
                     acc = self.aggregated_results[key].get("accuracy_mean", 0)
                     best_per_dataset[dataset] = max(best_per_dataset[dataset], acc)
@@ -465,7 +472,7 @@ class ResultsAggregator:
             accuracies = []
 
             for dataset in datasets:
-                key = f"{method_key}_{dataset}_default"
+                key = "{method_key}_{}_default".format(dataset)
 
                 if key in self.aggregated_results:
                     acc_mean = self.aggregated_results[key].get("accuracy_mean", 0)
@@ -478,7 +485,7 @@ class ResultsAggregator:
                     # Significance markers
                     sig_marker = ""
                     if method_key != "bridge":
-                        test_key = f"Bridge vs {method_name.replace('\\textbf{', '').replace('}', '')}_{dataset}"
+                        test_key = "Bridge vs {method_name.replace('\\textbf{', '').replace('}', '')}_{}".format(dataset)
                         if test_key in self.significance_tests:
                             p = self.significance_tests[test_key]["p_value"]
                             if p < 0.001:
@@ -489,12 +496,12 @@ class ResultsAggregator:
                                 sig_marker = "^{*}"
 
                     if n >= 3:
-                        val = f"{acc_mean:.1f}$\\pm${acc_std:.1f}{sig_marker}"
+                        val = "{}$\\pm${}{}".format(acc_mean:.1f, acc_std:.1f).format(sig_marker)
                     else:
-                        val = f"{acc_mean:.1f}{sig_marker}"
+                        val = "{:.1f}{}".format(acc_mean).format(sig_marker)
 
                     if is_best:
-                        val = f"\\textbf{{{val}}}"
+                        val = "\\textbf{{{}}}".format(val)
 
                     row.append(val)
                     accuracies.append(acc_mean)
@@ -504,7 +511,7 @@ class ResultsAggregator:
             # Average
             if accuracies:
                 avg = np.mean(accuracies)
-                row.append(f"{avg:.1f}")
+                row.append("{}".format(avg:.1f))
             else:
                 row.append("-")
 
@@ -514,18 +521,18 @@ class ResultsAggregator:
         lines.append("\\end{tabular}")
         lines.append("\\caption{Performance comparison across methods and datasets. ")
         lines.append("* p<0.05, ** p<0.01, *** p<0.001 vs Telepathy Bridge.}")
-        lines.append("\\label{tab:main_results}")
+        lines.append("\\label{:main_results}".format(tab))
         lines.append("\\end{table}")
 
         return "\n".join(lines)
 
-    def create_summary_report(self) -> str:
+    def create_summary_report(self):
         """Create comprehensive summary report."""
         report = []
 
         # Header
         report.append("# TELEPATHY BRIDGE - RESULTS SUMMARY")
-        report.append(f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report.append("\nGenerated: {}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         report.append("\n" + "=" * 80)
 
         # Executive Summary
@@ -539,8 +546,8 @@ class ResultsAggregator:
                 best_acc = results["accuracy_mean"]
                 best_config = key
 
-        report.append(f"**Best Configuration**: {best_config}")
-        report.append(f"**Best Accuracy**: {best_acc:.1f}%")
+        report.append("**Best Configuration**: {}".format(best_config))
+        report.append("**Best Accuracy**: {}%".format(best_acc:.1f))
 
         # Execution Gates
         report.append("\n## Execution Gate Decisions\n")
@@ -548,14 +555,14 @@ class ResultsAggregator:
 
         for gate_name, gate_info in gates.items():
             status = "✅ PASSED" if gate_info["passed"] else "❌ FAILED"
-            report.append(f"\n### {gate_name.replace('_', ' ').title()}")
-            report.append(f"- **Status**: {status}")
-            report.append(f"- **Description**: {gate_info['description']}")
-            report.append(f"- **Recommendation**: {gate_info['recommendation']}")
+            report.append("\n### {}".format(gate_name.replace('_', ' ').title()))
+            report.append("- **Status**: {}".format(status))
+            report.append("- **Description**: {}".format(gate_info['description']))
+            report.append("- **Recommendation**: {}".format(gate_info['recommendation']))
             if "current_ratio" in gate_info:
-                report.append(f"- **Current Value**: {gate_info['current_ratio']:.2f}x")
+                report.append("- **Current Value**: {}x".format(gate_info['current_ratio']:.2f))
             if "current_improvement" in gate_info:
-                report.append(f"- **Current Improvement**: {gate_info['current_improvement']:.1%}")
+                report.append("- **Current Improvement**: {}".format(gate_info['current_improvement']:.1%))
 
         # Main Results Table
         report.append("\n## Main Results\n")
@@ -565,11 +572,11 @@ class ResultsAggregator:
         report.append("\n## Statistical Significance Tests\n")
 
         for test_name, test_results in sorted(self.significance_tests.items()):
-            report.append(f"\n### {test_name}")
-            report.append(f"- Mean 1: {test_results['mean1']:.1f}% ± {test_results['std1']:.1f}%")
-            report.append(f"- Mean 2: {test_results['mean2']:.1f}% ± {test_results['std2']:.1f}%")
-            report.append(f"- t-statistic: {test_results['t_statistic']:.2f}")
-            report.append(f"- p-value: {test_results['p_value']:.2e}")
+            report.append("\n### {}".format(test_name))
+            report.append("- Mean 1: {:.1f}% ± {}%".format(test_results['mean1']).format(test_results['std1']:.1f))
+            report.append("- Mean 2: {:.1f}% ± {}%".format(test_results['mean2']).format(test_results['std2']:.1f))
+            report.append("- t-statistic: {}".format(test_results['t_statistic']:.2f))
+            report.append("- p-value: {}".format(test_results['p_value']:.2e))
 
             sig = ""
             if test_results['significant_0.001']:
@@ -580,7 +587,7 @@ class ResultsAggregator:
                 sig = "* (p < 0.05)"
             else:
                 sig = "n.s."
-            report.append(f"- **Significance**: {sig}")
+            report.append("- **Significance**: {}".format(sig))
 
         # Performance Metrics
         report.append("\n## Performance Metrics\n")
@@ -595,7 +602,7 @@ class ResultsAggregator:
         if compression_data:
             compression_data.sort(key=lambda x: x[1], reverse=True)
             for config, ratio in compression_data[:5]:
-                report.append(f"- {config}: {ratio:.2f}x")
+                report.append("- {config}: {}x".format(ratio:.2f))
 
         # Latency
         report.append("\n### Inference Latency (ms)")
@@ -607,7 +614,7 @@ class ResultsAggregator:
         if latency_data:
             latency_data.sort(key=lambda x: x[1])
             for config, latency in latency_data[:5]:
-                report.append(f"- {config}: {latency:.1f}ms")
+                report.append("- {config}: {}ms".format(latency:.1f))
 
         # Memory usage
         report.append("\n### Peak Memory Usage (MB)")
@@ -619,7 +626,7 @@ class ResultsAggregator:
         if memory_data:
             memory_data.sort(key=lambda x: x[1])
             for config, memory in memory_data[:5]:
-                report.append(f"- {config}: {memory:.0f}MB")
+                report.append("- {config}: {}MB".format(memory:.0f))
 
         # Recommendations
         report.append("\n## Recommendations\n")
@@ -666,65 +673,65 @@ class ResultsAggregator:
 
         return "\n".join(report)
 
-    def save_all_outputs(self) -> None:
+    def save_all_outputs(self):
         """Save all aggregated outputs."""
         print("\n" + "=" * 80)
         print("SAVING OUTPUTS")
         print("=" * 80)
 
         # Save raw JSON data
-        json_output = {
-            "metadata": {
+        json_output = {: self.models
+            },
+            ".format(
+            "metadata": {: self.generate_execution_gates()
+        }
+
+        json_path = self.output_dir / ".format(
                 "generated": datetime.now().isoformat(),
                 "n_experiments": len(self.raw_results),
                 "n_aggregated": len(self.aggregated_results),
                 "seeds": self.seeds,
                 "datasets": self.datasets,
-                "models": self.models
-            },
-            "raw_results": dict(self.raw_results),
+                "models")raw_results": dict(self.raw_results),
             "aggregated_results": self.aggregated_results,
             "significance_tests": self.significance_tests,
-            "execution_gates": self.generate_execution_gates()
-        }
-
-        json_path = self.output_dir / "aggregated_results.json"
+            "execution_gates")aggregated_results.json"
         with open(json_path, "w") as f:
             json.dump(json_output, f, indent=2, default=str)
-        print(f"  ✓ Saved JSON: {json_path}")
+        print("  ✓ Saved JSON: {}".format(json_path))
 
         # Save summary report
         report = self.create_summary_report()
         report_path = self.output_dir / "RESULTS_SUMMARY.md"
         with open(report_path, "w") as f:
             f.write(report)
-        print(f"  ✓ Saved Report: {report_path}")
+        print("  ✓ Saved Report: {}".format(report_path))
 
         # Save LaTeX tables
         latex_main = self.create_latex_table("main")
         latex_path = self.output_dir / "results_table_main.tex"
         with open(latex_path, "w") as f:
             f.write(latex_main)
-        print(f"  ✓ Saved LaTeX: {latex_path}")
+        print("  ✓ Saved LaTeX: {}".format(latex_path))
 
         # Save significance tests separately
         sig_path = self.output_dir / "significance_tests.json"
         with open(sig_path, "w") as f:
             json.dump(self.significance_tests, f, indent=2)
-        print(f"  ✓ Saved Significance: {sig_path}")
+        print("  ✓ Saved Significance: {}".format(sig_path))
 
         # Create CSV for easy analysis
         if self.aggregated_results:
             rows = []
             for key, metrics in self.aggregated_results.items():
-                row = {"configuration": key}
+                row = {: key}
                 row.update(metrics)
                 rows.append(row)
 
             df = pd.DataFrame(rows)
-            csv_path = self.output_dir / "results_table.csv"
+            csv_path = self.output_dir / ".format("configuration")results_table.csv"
             df.to_csv(csv_path, index=False)
-            print(f"  ✓ Saved CSV: {csv_path}")
+            print("  ✓ Saved CSV: {}".format(csv_path))
 
 
 def main():
@@ -772,7 +779,7 @@ def main():
     print("\n" + "=" * 80)
     print("AGGREGATION COMPLETE!")
     print("=" * 80)
-    print(f"\nResults saved to: {args.output_dir}")
+    print("\nResults saved to: {}".format(args.output_dir))
     print(f"  - RESULTS_SUMMARY.md : Main summary report")
     print(f"  - aggregated_results.json : Complete JSON data")
     print(f"  - results_table_main.tex : LaTeX table for paper")
@@ -787,7 +794,7 @@ def main():
 
     for gate_name, gate_info in gates.items():
         status = "✅" if gate_info["passed"] else "❌"
-        print(f"{status} {gate_name}: {gate_info['recommendation']}")
+        print("{} {}: {}".format(status, gate_name).format(gate_info['recommendation']))
 
     all_passed = all(g["passed"] for g in gates.values())
     if all_passed:
