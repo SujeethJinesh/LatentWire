@@ -2,16 +2,21 @@
 Statistical Testing Utilities for Machine Learning Experiments
 
 Implements rigorous statistical methods for comparing ML models:
-- Bootstrap confidence intervals (95% CI)
+- Bootstrap confidence intervals (95% CI with BCa method)
+- Paired and independent t-tests with proper ddof=1 for sample std
 - Paired bootstrap test for comparing methods
 - McNemar's test for classification comparison
-- Multiple comparison corrections (Bonferroni, Benjamini-Hochberg FDR)
+- Multiple comparison corrections (Bonferroni, Holm, FDR)
+- Cohen's d effect size (pooled and paired variants)
 - Power analysis for determining required sample sizes
+- Multi-seed aggregation with low-sample warnings
+- Summary table generation with significance stars
 
 References:
 - Dietterich (1998): "Approximate Statistical Tests for Comparing Supervised Classification Learning Algorithms"
 - Colas et al. (2018): "How Many Random Seeds? Statistical Power Analysis in Deep RL Experiments"
 - Efron & Tibshirani (1993): "An Introduction to the Bootstrap"
+- Hedges & Olkin (1985): "Statistical Methods for Meta-Analysis"
 """
 
 import numpy as np
@@ -19,8 +24,9 @@ from scipy import stats
 from scipy.stats import bootstrap as scipy_bootstrap
 from statsmodels.stats.contingency_tables import mcnemar
 from statsmodels.stats.multitest import multipletests
-from typing import List, Tuple, Dict, Optional, Callable
+from typing import List, Tuple, Dict, Optional, Callable, Union
 import warnings
+import pandas as pd
 
 
 # =============================================================================
@@ -123,7 +129,613 @@ def bootstrap_ci_multiple_metrics(
 
 
 # =============================================================================
-# 2. PAIRED BOOTSTRAP TEST
+# 2. T-TESTS (PAIRED AND INDEPENDENT)
+# =============================================================================
+
+def paired_ttest(
+    scores_a: np.ndarray,
+    scores_b: np.ndarray,
+    alternative: str = 'two-sided'
+) -> Tuple[float, float, Dict[str, float]]:
+    """
+    Paired t-test for within-subject comparisons (same test set, different methods).
+
+    Use when comparing two methods evaluated on the same test examples or same random seeds.
+    Accounts for correlation between measurements.
+
+    Args:
+        scores_a: Scores for method A (shape: [n_examples])
+        scores_b: Scores for method B (shape: [n_examples])
+        alternative: 'two-sided', 'greater' (A > B), or 'less' (A < B)
+
+    Returns:
+        observed_diff: Mean difference (mean_a - mean_b)
+        p_value: p-value from paired t-test
+        stats: Dictionary with additional statistics
+
+    Notes:
+        - Uses ddof=1 (Bessel's correction) for unbiased sample std
+        - Paired t-test is more powerful than independent when measurements are correlated
+        - For n=3 seeds: t-distribution has 2 degrees of freedom → wide intervals, low power
+
+    Example:
+        >>> # Same 3 random seeds evaluated with two methods
+        >>> method_a = np.array([0.75, 0.77, 0.73])  # 3 seeds
+        >>> method_b = np.array([0.70, 0.72, 0.68])
+        >>> diff, p_val, stats = paired_ttest(method_a, method_b)
+        >>> print(f"Difference: {diff:.4f}, p={p_val:.4f}")
+    """
+    scores_a = np.asarray(scores_a)
+    scores_b = np.asarray(scores_b)
+
+    if len(scores_a) != len(scores_b):
+        raise ValueError("Score arrays must have the same length for paired t-test")
+
+    n = len(scores_a)
+
+    # Warning for low sample sizes
+    if n < 5:
+        warnings.warn(
+            f"Only {n} paired samples. Paired t-test has very low power with n<5. "
+            "Results should be interpreted with extreme caution."
+        )
+
+    # Observed difference
+    observed_diff = np.mean(scores_a) - np.mean(scores_b)
+
+    # Paired t-test using scipy (uses ddof=1 internally)
+    t_stat, p_value = stats.ttest_rel(scores_a, scores_b, alternative=alternative)
+
+    # Additional statistics
+    diffs = scores_a - scores_b
+    stats_dict = {
+        'mean_a': np.mean(scores_a),
+        'mean_b': np.mean(scores_b),
+        'std_a': np.std(scores_a, ddof=1),
+        'std_b': np.std(scores_b, ddof=1),
+        'std_diff': np.std(diffs, ddof=1),
+        't_statistic': t_stat,
+        'degrees_of_freedom': n - 1,
+        'n': n
+    }
+
+    return observed_diff, p_value, stats_dict
+
+
+def independent_ttest(
+    scores_a: np.ndarray,
+    scores_b: np.ndarray,
+    equal_var: bool = True,
+    alternative: str = 'two-sided'
+) -> Tuple[float, float, Dict[str, float]]:
+    """
+    Independent t-test for between-condition comparisons.
+
+    Use when comparing two methods on different test sets or different samples
+    (no pairing between measurements).
+
+    Args:
+        scores_a: Scores for method A (shape: [n_a])
+        scores_b: Scores for method B (shape: [n_b])
+        equal_var: Assume equal variances? If False, uses Welch's t-test
+        alternative: 'two-sided', 'greater' (A > B), or 'less' (A < B)
+
+    Returns:
+        observed_diff: Mean difference (mean_a - mean_b)
+        p_value: p-value from independent t-test
+        stats: Dictionary with additional statistics
+
+    Notes:
+        - Uses ddof=1 for unbiased sample std
+        - Welch's t-test (equal_var=False) is more robust when variances differ
+        - For small samples (n<10 per group), consider bootstrap test instead
+
+    Example:
+        >>> # Different test sets for two methods
+        >>> method_a = np.array([0.75, 0.77, 0.73, 0.76, 0.74])
+        >>> method_b = np.array([0.70, 0.72, 0.68, 0.71])
+        >>> diff, p_val, stats = independent_ttest(method_a, method_b, equal_var=False)
+        >>> print(f"Difference: {diff:.4f}, p={p_val:.4f}")
+    """
+    scores_a = np.asarray(scores_a)
+    scores_b = np.asarray(scores_b)
+
+    n_a = len(scores_a)
+    n_b = len(scores_b)
+
+    # Warning for low sample sizes
+    if n_a < 5 or n_b < 5:
+        warnings.warn(
+            f"Small sample size (n_a={n_a}, n_b={n_b}). "
+            "Independent t-test may have low power. Consider bootstrap test."
+        )
+
+    # Observed difference
+    observed_diff = np.mean(scores_a) - np.mean(scores_b)
+
+    # Independent t-test using scipy (uses ddof=1 internally)
+    t_stat, p_value = stats.ttest_ind(
+        scores_a, scores_b,
+        equal_var=equal_var,
+        alternative=alternative
+    )
+
+    # Additional statistics
+    std_a = np.std(scores_a, ddof=1)
+    std_b = np.std(scores_b, ddof=1)
+
+    # Degrees of freedom calculation
+    if equal_var:
+        # Pooled variance t-test
+        df = n_a + n_b - 2
+        pooled_std = np.sqrt(((n_a - 1) * std_a**2 + (n_b - 1) * std_b**2) / df)
+    else:
+        # Welch's t-test (unequal variances)
+        df = (std_a**2 / n_a + std_b**2 / n_b)**2 / (
+            (std_a**2 / n_a)**2 / (n_a - 1) + (std_b**2 / n_b)**2 / (n_b - 1)
+        )
+        pooled_std = np.sqrt((std_a**2 + std_b**2) / 2)
+
+    stats_dict = {
+        'mean_a': np.mean(scores_a),
+        'mean_b': np.mean(scores_b),
+        'std_a': std_a,
+        'std_b': std_b,
+        'pooled_std': pooled_std,
+        't_statistic': t_stat,
+        'degrees_of_freedom': df,
+        'n_a': n_a,
+        'n_b': n_b,
+        'equal_var': equal_var
+    }
+
+    return observed_diff, p_value, stats_dict
+
+
+# =============================================================================
+# 3. EFFECT SIZES (COHEN'S D)
+# =============================================================================
+
+def cohens_d_pooled(
+    scores_a: np.ndarray,
+    scores_b: np.ndarray
+) -> float:
+    """
+    Cohen's d effect size for independent samples (pooled standard deviation).
+
+    Measures standardized difference between two independent groups.
+    Interpretation (Cohen, 1988):
+        |d| < 0.2: negligible
+        |d| < 0.5: small
+        |d| < 0.8: medium
+        |d| ≥ 0.8: large
+
+    Args:
+        scores_a: Scores for group A
+        scores_b: Scores for group B
+
+    Returns:
+        Cohen's d using pooled standard deviation
+
+    Example:
+        >>> method_a = np.array([0.75, 0.77, 0.73, 0.76, 0.74])
+        >>> method_b = np.array([0.70, 0.72, 0.68, 0.71, 0.69])
+        >>> d = cohens_d_pooled(method_a, method_b)
+        >>> print(f"Cohen's d = {d:.3f}")
+    """
+    scores_a = np.asarray(scores_a)
+    scores_b = np.asarray(scores_b)
+
+    n_a = len(scores_a)
+    n_b = len(scores_b)
+
+    mean_diff = np.mean(scores_a) - np.mean(scores_b)
+
+    # Pooled standard deviation (uses ddof=1)
+    var_a = np.var(scores_a, ddof=1)
+    var_b = np.var(scores_b, ddof=1)
+    pooled_std = np.sqrt(((n_a - 1) * var_a + (n_b - 1) * var_b) / (n_a + n_b - 2))
+
+    if pooled_std == 0:
+        return float('inf') if mean_diff != 0 else 0.0
+
+    return mean_diff / pooled_std
+
+
+def cohens_d_paired(
+    scores_a: np.ndarray,
+    scores_b: np.ndarray
+) -> float:
+    """
+    Cohen's d effect size for paired samples.
+
+    Measures standardized difference for within-subject comparisons.
+    Uses the standard deviation of the differences (more appropriate for paired data).
+
+    Args:
+        scores_a: Scores for condition A
+        scores_b: Scores for condition B
+
+    Returns:
+        Cohen's d using standard deviation of differences
+
+    Example:
+        >>> method_a = np.array([0.75, 0.77, 0.73])  # 3 seeds
+        >>> method_b = np.array([0.70, 0.72, 0.68])
+        >>> d = cohens_d_paired(method_a, method_b)
+        >>> print(f"Cohen's d (paired) = {d:.3f}")
+    """
+    scores_a = np.asarray(scores_a)
+    scores_b = np.asarray(scores_b)
+
+    if len(scores_a) != len(scores_b):
+        raise ValueError("Arrays must have same length for paired Cohen's d")
+
+    diffs = scores_a - scores_b
+    mean_diff = np.mean(diffs)
+    std_diff = np.std(diffs, ddof=1)
+
+    if std_diff == 0:
+        return float('inf') if mean_diff != 0 else 0.0
+
+    return mean_diff / std_diff
+
+
+# =============================================================================
+# 4. SIGNIFICANCE STARS AND FORMATTING
+# =============================================================================
+
+def p_value_to_stars(p_value: float) -> str:
+    """
+    Convert p-value to significance stars.
+
+    Convention:
+        p < 0.001: ***
+        p < 0.01:  **
+        p < 0.05:  *
+        p ≥ 0.05:  (empty string)
+
+    Args:
+        p_value: p-value from statistical test
+
+    Returns:
+        String with stars ('***', '**', '*', or '')
+
+    Example:
+        >>> print(f"p = {0.0001:.4f} {p_value_to_stars(0.0001)}")
+        p = 0.0001 ***
+    """
+    if p_value < 0.001:
+        return '***'
+    elif p_value < 0.01:
+        return '**'
+    elif p_value < 0.05:
+        return '*'
+    else:
+        return ''
+
+
+def format_mean_ci(
+    data: np.ndarray,
+    confidence_level: float = 0.95,
+    n_resamples: int = 10000,
+    method: str = 'BCa',
+    random_state: Optional[int] = None,
+    decimals: int = 3
+) -> str:
+    """
+    Format mean with confidence interval as a string.
+
+    Args:
+        data: Array of scores
+        confidence_level: Confidence level (default: 0.95)
+        n_resamples: Bootstrap resamples
+        method: Bootstrap method
+        random_state: Random seed
+        decimals: Number of decimal places
+
+    Returns:
+        Formatted string: "mean [lower, upper]"
+
+    Example:
+        >>> scores = np.array([0.75, 0.77, 0.73])
+        >>> print(format_mean_ci(scores))
+        0.750 [0.730, 0.770]
+    """
+    mean_val, (lower, upper) = bootstrap_ci(
+        data,
+        confidence_level=confidence_level,
+        n_resamples=n_resamples,
+        method=method,
+        random_state=random_state
+    )
+
+    fmt = f"{{:.{decimals}f}}"
+    return f"{fmt.format(mean_val)} [{fmt.format(lower)}, {fmt.format(upper)}]"
+
+
+# =============================================================================
+# 5. MULTI-SEED AGGREGATION
+# =============================================================================
+
+def aggregate_multiseed_results(
+    seed_scores: Dict[int, float],
+    metric_name: str = "metric"
+) -> Dict[str, Union[float, int]]:
+    """
+    Aggregate results across multiple random seeds with proper statistics.
+
+    Handles the common case of n=3 seeds with appropriate warnings about
+    statistical power and wide confidence intervals.
+
+    Args:
+        seed_scores: Dictionary mapping seed ID to score
+        metric_name: Name of metric for warning messages
+
+    Returns:
+        Dictionary with mean, std (ddof=1), CI, and sample size
+
+    Notes:
+        - Uses ddof=1 (Bessel's correction) for unbiased sample std
+        - For n=3: very wide CIs, interpret with caution
+        - For n<3: Cannot compute meaningful statistics
+
+    Example:
+        >>> seeds = {42: 0.75, 123: 0.77, 456: 0.73}
+        >>> stats = aggregate_multiseed_results(seeds, metric_name="F1")
+        >>> print(f"F1: {stats['mean']:.3f} ± {stats['std']:.3f} (n={stats['n']})")
+    """
+    scores = np.array(list(seed_scores.values()))
+    n = len(scores)
+
+    if n < 2:
+        warnings.warn(
+            f"Only {n} seed(s) for {metric_name}. Cannot compute meaningful statistics. "
+            "Need at least 2 seeds for standard deviation."
+        )
+        return {
+            'mean': float(np.mean(scores)),
+            'std': float('nan'),
+            'ci_lower': float('nan'),
+            'ci_upper': float('nan'),
+            'n': n,
+            'seeds': list(seed_scores.keys())
+        }
+
+    if n == 3:
+        warnings.warn(
+            f"Only {n} seeds for {metric_name}. "
+            "With n=3, confidence intervals are very wide (t-dist has 2 df). "
+            "Results have low statistical power. Consider using 5-10 seeds for robust comparisons."
+        )
+
+    mean_val = np.mean(scores)
+    std_val = np.std(scores, ddof=1)  # Unbiased sample std
+
+    # Bootstrap CI
+    if n >= 3:
+        _, (ci_lower, ci_upper) = bootstrap_ci(
+            scores,
+            confidence_level=0.95,
+            n_resamples=10000,
+            method='percentile',  # Use percentile for small n (BCa can fail)
+            random_state=42
+        )
+    else:
+        ci_lower = ci_upper = float('nan')
+
+    return {
+        'mean': float(mean_val),
+        'std': float(std_val),
+        'ci_lower': float(ci_lower),
+        'ci_upper': float(ci_upper),
+        'n': n,
+        'seeds': list(seed_scores.keys())
+    }
+
+
+# =============================================================================
+# 6. SUMMARY TABLE GENERATION
+# =============================================================================
+
+def generate_comparison_table(
+    results: Dict[str, Dict[str, np.ndarray]],
+    baseline_name: str,
+    metric_names: List[str],
+    correction: str = 'bonferroni',
+    alpha: float = 0.05,
+    n_bootstrap: int = 10000,
+    random_state: Optional[int] = None,
+    output_format: str = 'markdown'
+) -> Union[pd.DataFrame, str]:
+    """
+    Generate a formatted comparison table with statistical tests.
+
+    Compares multiple methods across multiple metrics with proper significance testing
+    and multiple comparison correction.
+
+    Args:
+        results: Nested dict {method_name: {metric_name: scores_array}}
+        baseline_name: Name of baseline method (must be in results)
+        metric_names: List of metrics to include in table
+        correction: Multiple comparison correction method
+        alpha: Significance level
+        n_bootstrap: Bootstrap resamples
+        random_state: Random seed
+        output_format: 'markdown', 'latex', or 'dataframe'
+
+    Returns:
+        Formatted table as string (markdown/latex) or pandas DataFrame
+
+    Example:
+        >>> results = {
+        ...     'Baseline': {'F1': np.array([0.70, 0.72, 0.68]), 'EM': np.array([0.50, 0.52, 0.48])},
+        ...     'Method A': {'F1': np.array([0.75, 0.77, 0.73]), 'EM': np.array([0.55, 0.57, 0.53])},
+        ...     'Method B': {'F1': np.array([0.72, 0.74, 0.70]), 'EM': np.array([0.52, 0.54, 0.50])}
+        ... }
+        >>> table = generate_comparison_table(results, 'Baseline', ['F1', 'EM'])
+        >>> print(table)
+    """
+    if baseline_name not in results:
+        raise ValueError(f"Baseline '{baseline_name}' not found in results")
+
+    # Build rows for table
+    rows = []
+
+    for method_name in sorted(results.keys()):
+        row = {'Method': method_name}
+
+        for metric_name in metric_names:
+            if metric_name not in results[method_name]:
+                row[metric_name] = 'N/A'
+                continue
+
+            scores = results[method_name][metric_name]
+            mean_val, (ci_lower, ci_upper) = bootstrap_ci(
+                scores,
+                confidence_level=1-alpha,
+                n_resamples=n_bootstrap,
+                method='BCa',
+                random_state=random_state
+            )
+
+            # Format: mean ± std
+            std_val = np.std(scores, ddof=1)
+            cell = f"{mean_val:.3f} ± {std_val:.3f}"
+
+            # Add significance test if not baseline
+            if method_name != baseline_name:
+                baseline_scores = results[baseline_name][metric_name]
+
+                # Paired t-test
+                _, p_val, _ = paired_ttest(scores, baseline_scores)
+
+                # Apply Bonferroni correction manually (per metric)
+                n_comparisons = len([m for m in results.keys() if m != baseline_name])
+                if correction == 'bonferroni':
+                    p_val_corrected = min(p_val * n_comparisons, 1.0)
+                else:
+                    p_val_corrected = p_val
+
+                stars = p_value_to_stars(p_val_corrected)
+                if stars:
+                    cell += f" {stars}"
+
+            row[metric_name] = cell
+
+        rows.append(row)
+
+    # Create DataFrame
+    df = pd.DataFrame(rows)
+
+    if output_format == 'dataframe':
+        return df
+    elif output_format == 'latex':
+        return df.to_latex(index=False, escape=False)
+    else:  # markdown
+        return df.to_markdown(index=False)
+
+
+def generate_detailed_comparison_table(
+    baseline_scores: np.ndarray,
+    method_scores: Dict[str, np.ndarray],
+    baseline_name: str = 'Baseline',
+    correction: str = 'bonferroni',
+    alpha: float = 0.05,
+    n_bootstrap: int = 10000,
+    random_state: Optional[int] = None,
+    output_format: str = 'markdown'
+) -> Union[pd.DataFrame, str]:
+    """
+    Generate a detailed comparison table for a single metric.
+
+    Includes mean, CI, difference from baseline, p-value, and significance stars.
+
+    Args:
+        baseline_scores: Scores for baseline method
+        method_scores: Dictionary mapping method names to score arrays
+        baseline_name: Name of baseline
+        correction: Multiple comparison correction
+        alpha: Significance level
+        n_bootstrap: Bootstrap resamples
+        random_state: Random seed
+        output_format: 'markdown', 'latex', or 'dataframe'
+
+    Returns:
+        Formatted table as string or DataFrame
+
+    Example:
+        >>> baseline = np.array([0.70, 0.72, 0.68, 0.75, 0.71])
+        >>> methods = {
+        ...     'Method A': np.array([0.75, 0.77, 0.73, 0.80, 0.76]),
+        ...     'Method B': np.array([0.72, 0.74, 0.70, 0.77, 0.73])
+        ... }
+        >>> table = generate_detailed_comparison_table(baseline, methods)
+        >>> print(table)
+    """
+    rows = []
+
+    # Baseline row
+    baseline_mean, baseline_ci = bootstrap_ci(
+        baseline_scores,
+        confidence_level=1-alpha,
+        n_resamples=n_bootstrap,
+        method='BCa',
+        random_state=random_state
+    )
+
+    rows.append({
+        'Method': baseline_name,
+        'Mean': f"{baseline_mean:.4f}",
+        '95% CI': f"[{baseline_ci[0]:.4f}, {baseline_ci[1]:.4f}]",
+        'Δ': '—',
+        'p-value': '—',
+        'Sig': ''
+    })
+
+    # Compare each method to baseline
+    comparison_results = compare_multiple_methods_to_baseline(
+        baseline_scores,
+        method_scores,
+        correction=correction,
+        alpha=alpha,
+        n_resamples=n_bootstrap,
+        random_state=random_state
+    )
+
+    for method_name in sorted(method_scores.keys()):
+        scores = method_scores[method_name]
+        res = comparison_results[method_name]
+
+        method_mean, method_ci = bootstrap_ci(
+            scores,
+            confidence_level=1-alpha,
+            n_resamples=n_bootstrap,
+            method='BCa',
+            random_state=random_state
+        )
+
+        rows.append({
+            'Method': method_name,
+            'Mean': f"{method_mean:.4f}",
+            '95% CI': f"[{method_ci[0]:.4f}, {method_ci[1]:.4f}]",
+            'Δ': f"{res['difference']:+.4f}",
+            'p-value': f"{res['corrected_p_value']:.4f}",
+            'Sig': p_value_to_stars(res['corrected_p_value'])
+        })
+
+    df = pd.DataFrame(rows)
+
+    if output_format == 'dataframe':
+        return df
+    elif output_format == 'latex':
+        return df.to_latex(index=False, escape=False)
+    else:  # markdown
+        return df.to_markdown(index=False)
+
+
+# =============================================================================
+# 7. PAIRED BOOTSTRAP TEST
 # =============================================================================
 
 def paired_bootstrap_test(

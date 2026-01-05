@@ -288,9 +288,66 @@ def load_trec_subset(split: str = "test", samples: int = None, seed: int = 0) ->
 
     return out
 
+def load_agnews_subset(split: str = "test", samples: int = None, seed: int = 0, max_chars: int = 256) -> List[Dict[str, Any]]:
+    """
+    Load AG News topic classification dataset.
+
+    Dataset: ag_news
+    Task: Topic classification into 4 categories
+
+    Splits:
+        - train: 120,000 examples
+        - test: 7,600 examples (1,900 per class)
+
+    Labels (4 classes):
+        0: World
+        1: Sports
+        2: Business
+        3: Sci/Tech (Science and Technology)
+
+    Returns examples with:
+        - source: "Article: {text[:max_chars]}\nTopic (world, sports, business, or science):"
+        - answer: label name (e.g., "world", "sports", etc.)
+
+    Standard evaluation uses the full test set (7,600 examples) with accuracy metric.
+    """
+    ds = load_dataset("ag_news", split=split)
+
+    # Define label mapping
+    LABEL_NAMES = {
+        0: "world",
+        1: "sports",
+        2: "business",
+        3: "science"  # AG News uses "Sci/Tech", we normalize to "science"
+    }
+
+    # For AG News, standard evaluation uses the full test set
+    # If samples is None or >= dataset size, use all examples
+    if samples is None or samples >= len(ds):
+        idxs = list(range(len(ds)))
+    else:
+        rng = random.Random(seed)
+        idxs = list(range(len(ds)))
+        rng.shuffle(idxs)
+        idxs = idxs[:samples]
+
+    out = []
+    for i in idxs:
+        ex = ds[i]
+        text = ex["text"]
+        label_id = ex["label"]
+        label_name = LABEL_NAMES[label_id]
+
+        # Truncate article to max_chars
+        truncated_text = text[:max_chars]
+        source = f"Article: {truncated_text}\nTopic (world, sports, business, or science):"
+        out.append({"source": source, "answer": label_name})
+
+    return out
+
 def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
     """
-    Unified front: dataset ∈ {"hotpot","squad","squad_v2","gsm8k","trec"}
+    Unified front: dataset ∈ {"hotpot","squad","squad_v2","gsm8k","trec","agnews"}
     kwargs forwarded to the underlying loader (split, samples, seed, config, ...)
     """
     ds = dataset.lower()
@@ -304,5 +361,7 @@ def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
         return load_gsm8k_subset(**{k:v for k,v in kwargs.items() if k!="config"})
     elif ds == "trec":
         return load_trec_subset(**{k:v for k,v in kwargs.items() if k!="config"})
+    elif ds in ("agnews", "ag_news"):
+        return load_agnews_subset(**{k:v for k,v in kwargs.items() if k!="config"})
     else:
-        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k|trec")
+        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k|trec|agnews")
