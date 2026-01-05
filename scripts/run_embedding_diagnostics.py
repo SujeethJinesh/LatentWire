@@ -266,6 +266,8 @@ def main():
     print(f"Output: {output_dir}\n")
 
     # Load model
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     t0 = time.time()
     print(f"Loading model: {args.model_id}...")
     model = AutoModelForCausalLM.from_pretrained(
@@ -281,14 +283,20 @@ def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     model_load_time = time.time() - t0
     print(f"Model loaded! ({model_load_time:.2f}s)")
     experiment_log['model_load_time_sec'] = model_load_time
 
     # Cache vocab stats
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     t0 = time.time()
     print("\nCaching vocabulary statistics...")
     vocab_stats = get_vocab_embedding_stats(model)
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     vocab_cache_time = time.time() - t0
     print(f"  Vocab RMS: {vocab_stats['rms']:.4f}")
     print(f"  Vocab mean: {vocab_stats['mean']:.6f}")
@@ -309,9 +317,13 @@ def main():
     print(f"  Saved vocab stats to {output_dir / 'vocab_stats.json'}")
 
     # Load data
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     t0 = time.time()
     print(f"\nLoading {args.samples} examples from {args.dataset}...")
     examples = load_examples(dataset=args.dataset, split='validation', samples=args.samples, seed=42)
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     data_load_time = time.time() - t0
     print(f"  Loaded {len(examples)} examples ({data_load_time:.2f}s)")
     experiment_log['data_load_time_sec'] = data_load_time
@@ -322,6 +334,8 @@ def main():
     print("ANALYZING TEXT EMBEDDINGS (Ground Truth)")
     print("="*80)
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     t0 = time.time()
     text_embeddings_list = []
     total_tokens = 0
@@ -371,6 +385,8 @@ def main():
     # Add batch dimension back for analysis functions
     text_embeddings = text_embeddings.unsqueeze(0)  # [1, total_tokens, d_model] on CPU
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     text_collect_time = time.time() - t0
     print(f"\nCollected text embeddings: {text_embeddings.shape}")
     print(f"  Total tokens: {total_tokens}")
@@ -387,8 +403,12 @@ def main():
     text_embeddings = text_embeddings.to(device)
 
     # Analyze text embeddings
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     t0 = time.time()
     text_stats = analyze_embeddings(text_embeddings, "text_embeddings", vocab_stats, device)
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     text_analysis_time = time.time() - t0
 
     print("\nText Embedding Statistics:")
@@ -408,8 +428,12 @@ def main():
 
     # Test transforms on text embeddings
     print("\nTesting transforms on text embeddings...")
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     t0 = time.time()
     text_transform_results = test_transforms(text_embeddings, "text_embeddings", vocab_stats, device)
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     text_transform_time = time.time() - t0
     print(f"  Transform testing time: {text_transform_time:.2f}s")
     experiment_log['text_transform_time_sec'] = text_transform_time
@@ -493,6 +517,8 @@ def main():
 
         # Generate learned embeddings from same texts
         print(f"\nGenerating learned embeddings for {len(examples)} examples...")
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         t0 = time.time()
         learned_embeddings_list = []
 
@@ -536,6 +562,8 @@ def main():
         learned_embeddings = torch.cat(learned_embeddings_list, dim=0)  # [total_latent_tokens, d_model]
         learned_embeddings = learned_embeddings.unsqueeze(0)  # [1, total_latent_tokens, d_model]
 
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         learned_gen_time = time.time() - t0
         num_latent_tokens = learned_embeddings.shape[1]
         print(f"\nGenerated learned embeddings: {learned_embeddings.shape}")
@@ -550,8 +578,12 @@ def main():
         learned_embeddings = learned_embeddings.to(device)
 
         # Analyze learned embeddings
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         t0 = time.time()
         learned_stats = analyze_embeddings(learned_embeddings, f"checkpoint_{model_name}", vocab_stats, device)
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         learned_analysis_time = time.time() - t0
 
         print("\nLearned Embedding Statistics:")
@@ -571,8 +603,12 @@ def main():
 
         # Test transforms
         print("\nTesting transforms on learned embeddings...")
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         t0 = time.time()
         learned_transform_results = test_transforms(learned_embeddings, f"checkpoint_{model_name}", vocab_stats, device)
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         learned_transform_time = time.time() - t0
         print(f"  Transform testing time: {learned_transform_time:.2f}s")
         experiment_log['learned_transform_time_sec'] = learned_transform_time

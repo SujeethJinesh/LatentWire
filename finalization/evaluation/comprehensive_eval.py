@@ -157,6 +157,8 @@ class ComprehensiveEvaluator:
                     break
 
                 # Time inference
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
                 start_time = time.time()
 
                 # Get predictions based on method
@@ -167,6 +169,8 @@ class ComprehensiveEvaluator:
                 else:  # token_budget
                     preds = self._predict_token_budget(batch)
 
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
                 batch_time = time.time() - start_time
                 total_time += batch_time
 

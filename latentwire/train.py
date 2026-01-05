@@ -2729,6 +2729,9 @@ def main():
             rank_steps_per_epoch = steps_per_epoch
 
         for step in range(rank_steps_per_epoch):
+            # Synchronize before timing for accurate GPU measurements
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]
@@ -3467,6 +3470,9 @@ def main():
 
             # Grad norm (monitor) – encoder only as a proxy
             global_step += 1
+            # Synchronize after operations for accurate timing
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             dt = time.time() - t0
             ema_step_time = dt if (locals().get("ema_step_time", None) is None) else (0.9 * locals()["ema_step_time"] + 0.1 * dt)
 
@@ -3786,7 +3792,9 @@ def main():
                         if wrapper.use_latent_adapters:
                             wrapper_name = "llama" if wrapper is llama else "qwen"
                             artifacts[f"latent_adapters_{wrapper_name}.pt"] = wrapper.latent_adapters.state_dict()
-                    save_latest_checkpoint(best_save_dir, artifacts, pre_prune=False, post_prune=False, verbose=False)
+                    # Only save from main process in DDP
+                    if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_save:
+                        save_latest_checkpoint(best_save_dir, artifacts, pre_prune=False, post_prune=False, verbose=False)
 
                     # Save LoRA weights (critical for proper evaluation)
                     try:
@@ -3970,8 +3978,10 @@ def main():
                     artifacts[f"coprocessor_{name}.pt"] = module.state_dict()
                 if latent_refiner is not None:
                     artifacts["refiner.pt"] = latent_refiner.state_dict()
-                save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
-                print(f"  ✅ Saved (and pruned to) latest at step {global_step}", flush=True)
+                # Only save from main process in DDP
+                if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_save:
+                    save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
+                    print(f"  ✅ Saved (and pruned to) latest at step {global_step}", flush=True)
 
     # ===== Final save =====
     os.makedirs(args.save_dir, exist_ok=True)
@@ -4113,8 +4123,10 @@ def main():
         artifacts["refiner.pt"] = latent_refiner.state_dict()
     for name, head in gist_heads.items():
         artifacts[f"gist_{name}.pt"] = head.state_dict()
-    save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
-    print(f"✅ Saved latest checkpoint to {args.save_dir}", flush=True)
+    # Only save from main process in DDP
+    if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_save:
+        save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
+        print(f"✅ Saved latest checkpoint to {args.save_dir}", flush=True)
 
     # Persist PEFT adapters (LoRA) if present
     try:
@@ -4136,18 +4148,32 @@ def main():
         print(f"[WARN] Skipped PEFT adapter save: {exc}")
 
     if args.save_training_stats:
-        stats = {
-            name: {
-                "rms_mean_raw": tracker["rms_raw"].mean,
-                "rms_mean_cal": tracker["rms_cal"].mean,
-                "embed_rms": tracker["embed_rms"],
-                "count": tracker["rms_cal"].n,
+        # Only save from main process in DDP
+        if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_save:
+            stats = {
+                name: {
+                    "rms_mean_raw": tracker["rms_raw"].mean,
+                    "rms_mean_cal": tracker["rms_cal"].mean,
+                    "embed_rms": tracker["embed_rms"],
+                    "count": tracker["rms_cal"].n,
+                }
+                for name, tracker in stats_trackers.items()
             }
-            for name, tracker in stats_trackers.items()
-        }
-        with open(os.path.join(args.save_dir, "training_stats.json"), "w") as f:
-            json.dump(stats, f, indent=2)
-        print(f"📝 Saved training_stats.json: {stats}")
+            with open(os.path.join(args.save_dir, "training_stats.json"), "w") as f:
+                json.dump(stats, f, indent=2)
+            print(f"📝 Saved training_stats.json: {stats}")
+
+    # Clean up DDP if initialized
+    if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
+        ddp_manager.print("\nCleaning up DDP...")
+        ddp_manager.cleanup()
+        ddp_manager.print("DDP cleanup complete.")
+
+    # Final success message (only from main process if using DDP)
+    if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_log:
+        print("\n" + "="*60)
+        print("Training Complete!")
+        print("="*60)
 
 
 if __name__ == "__main__":

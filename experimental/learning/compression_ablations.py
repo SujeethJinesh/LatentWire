@@ -18,6 +18,7 @@ from torch.optim import AdamW
 from transformers import get_cosine_schedule_with_warmup
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from collections import Counter
 from datasets import load_dataset
 try:
     from peft import LoraConfig, TaskType, get_peft_model
@@ -831,13 +832,18 @@ class CompressionTrainer:
             pred_tokens = pred.lower().split()
             ref_tokens = ref.lower().split()
 
-            common = set(pred_tokens) & set(ref_tokens)
+            # Use Counter for proper token-level F1
+            pred_counter = Counter(pred_tokens)
+            ref_counter = Counter(ref_tokens)
 
-            if len(common) == 0:
+            # Count overlapping tokens (minimum of counts for each token)
+            common_count = sum((pred_counter & ref_counter).values())
+
+            if common_count == 0:
                 f1 = 0.0
             else:
-                precision = len(common) / len(pred_tokens) if pred_tokens else 0
-                recall = len(common) / len(ref_tokens) if ref_tokens else 0
+                precision = common_count / len(pred_tokens) if pred_tokens else 0
+                recall = common_count / len(ref_tokens) if ref_tokens else 0
                 f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
             f1_scores.append(f1)
@@ -888,13 +894,18 @@ class CompressionTrainer:
             pred_tokens = pred.lower().split()
             ref_tokens = ref.lower().split()
 
-            common = set(pred_tokens) & set(ref_tokens)
+            # Use Counter for proper token-level F1
+            pred_counter = Counter(pred_tokens)
+            ref_counter = Counter(ref_tokens)
 
-            if len(common) == 0:
+            # Count overlapping tokens (minimum of counts for each token)
+            common_count = sum((pred_counter & ref_counter).values())
+
+            if common_count == 0:
                 f1 = 0.0
             else:
-                precision = len(common) / len(pred_tokens) if pred_tokens else 0
-                recall = len(common) / len(ref_tokens) if ref_tokens else 0
+                precision = common_count / len(pred_tokens) if pred_tokens else 0
+                recall = common_count / len(ref_tokens) if ref_tokens else 0
                 f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
             f1_scores.append(f1)

@@ -39,6 +39,8 @@ def main():
     parser.add_argument('--save_dir', type=str, required=True)
     args = parser.parse_args()
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     start_time = time.time()
     save_dir = Path(args.save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)

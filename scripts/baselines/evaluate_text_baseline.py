@@ -37,6 +37,8 @@ def main():
     parser.add_argument('--save_dir', type=str, required=True)
     args = parser.parse_args()
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     start_time = time.time()
     save_dir = Path(args.save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -134,15 +136,18 @@ def main():
         'num_examples': len(examples),
         'n_examples': len(examples),           # Alias
         'timestamp': datetime.now().isoformat(),
-        'total_time_sec': time.time() - start_time,
+        'total_time_sec': (torch.cuda.synchronize() or time.time() if torch.cuda.is_available() else time.time()) - start_time,
     }
 
     results_path = save_dir / 'results.json'
     with open(results_path, 'w') as f:
         json.dump(results_dict, f, indent=2)
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    total_time = time.time() - start_time
     print(f"\nResults saved to {results_path}")
-    print(f"Total time: {time.time() - start_time:.1f}s\n")
+    print(f"Total time: {total_time:.1f}s\n")
 
 
 if __name__ == '__main__':
