@@ -1,0 +1,330 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LatentWire Experimental Results Schema",
+  "description": "Standardized JSON schema for all experimental result outputs in the LatentWire/Telepathy project",
+  "type": "object",
+  "definitions": {
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{8}_\\d{6}$|^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}",
+      "description": "Timestamp in format YYYYMMDD_HHMMSS or ISO 8601"
+    },
+    "percentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Percentage value (0-100)"
+    },
+    "accuracy_metric": {
+      "type": "object",
+      "required": ["accuracy", "correct", "total"],
+      "properties": {
+        "accuracy": {"$ref": "#/definitions/percentage"},
+        "correct": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 1}
+      }
+    },
+    "confidence_interval": {
+      "type": "object",
+      "required": ["mean", "ci_lower", "ci_upper"],
+      "properties": {
+        "mean": {"type": "number"},
+        "ci_lower": {"type": "number"},
+        "ci_upper": {"type": "number"},
+        "std": {"type": "number"},
+        "n_samples": {"type": "integer"}
+      }
+    },
+    "statistical_test": {
+      "type": "object",
+      "required": ["p_value", "significant"],
+      "properties": {
+        "p_value": {"type": "number", "minimum": 0, "maximum": 1},
+        "significant": {"type": "boolean"},
+        "test_type": {"type": "string", "enum": ["mcnemar", "paired_t", "bootstrap", "wilcoxon"]},
+        "effect_size": {"type": "number"},
+        "confidence_level": {"type": "number", "default": 0.95}
+      }
+    },
+    "training_info": {
+      "type": "object",
+      "properties": {
+        "final_loss": {"type": "number"},
+        "best_loss": {"type": "number"},
+        "total_steps": {"type": "integer"},
+        "learning_rate": {"type": "number"},
+        "batch_size": {"type": "integer"},
+        "convergence_step": {"type": "integer"}
+      }
+    },
+    "method_result": {
+      "type": "object",
+      "required": ["accuracy"],
+      "properties": {
+        "accuracy": {"$ref": "#/definitions/percentage"},
+        "correct": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 1},
+        "f1": {"type": "number", "minimum": 0, "maximum": 1},
+        "precision": {"type": "number", "minimum": 0, "maximum": 1},
+        "recall": {"type": "number", "minimum": 0, "maximum": 1},
+        "latency_ms": {"type": "number", "minimum": 0},
+        "memory_mb": {"type": "number", "minimum": 0},
+        "compression_ratio": {"type": "number", "minimum": 0},
+        "train_info": {"$ref": "#/definitions/training_info"}
+      }
+    },
+    "dataset_results": {
+      "type": "object",
+      "properties": {
+        "random_chance": {"$ref": "#/definitions/percentage"},
+        "bridge": {"$ref": "#/definitions/method_result"},
+        "prompt_tuning": {"$ref": "#/definitions/method_result"},
+        "text_relay": {"$ref": "#/definitions/method_result"},
+        "llama_zeroshot": {"$ref": "#/definitions/method_result"},
+        "mistral_zeroshot": {"$ref": "#/definitions/method_result"},
+        "mistral_fewshot": {"$ref": "#/definitions/method_result"},
+        "ensemble": {"$ref": "#/definitions/method_result"},
+        "linear_probe": {"$ref": "#/definitions/method_result"},
+        "lora": {"$ref": "#/definitions/method_result"},
+        "full_finetune": {"$ref": "#/definitions/method_result"}
+      },
+      "additionalProperties": false
+    },
+    "aggregated_method_result": {
+      "type": "object",
+      "required": ["accuracy_mean", "accuracy_std"],
+      "properties": {
+        "accuracy_mean": {"type": "number"},
+        "accuracy_std": {"type": "number"},
+        "accuracy_ci": {"$ref": "#/definitions/confidence_interval"},
+        "f1_mean": {"type": "number"},
+        "f1_std": {"type": "number"},
+        "latency_ms_mean": {"type": "number"},
+        "latency_ms_std": {"type": "number"},
+        "memory_mb_mean": {"type": "number"},
+        "memory_mb_std": {"type": "number"},
+        "compression_ratio_mean": {"type": "number"},
+        "compression_ratio_std": {"type": "number"},
+        "vs_baseline": {"$ref": "#/definitions/statistical_test"}
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "title": "Unified Comparison Results (run_unified_comparison.py)",
+      "type": "object",
+      "required": ["meta", "per_seed_results", "aggregated_results"],
+      "properties": {
+        "meta": {
+          "type": "object",
+          "required": ["timestamp", "direction", "sender", "receiver", "soft_tokens", "seeds"],
+          "properties": {
+            "timestamp": {"$ref": "#/definitions/timestamp"},
+            "direction": {"type": "string"},
+            "sender": {"type": "string"},
+            "receiver": {"type": "string"},
+            "soft_tokens": {"type": "integer", "minimum": 1},
+            "train_steps": {"type": "integer", "minimum": 1},
+            "eval_samples": {"type": "integer", "minimum": 1},
+            "seeds": {"type": "array", "items": {"type": "integer"}},
+            "ensemble_enabled": {"type": "boolean"}
+          }
+        },
+        "per_seed_results": {
+          "type": "object",
+          "patternProperties": {
+            "^(sst2|agnews|trec|xsum|gsm8k|banking77|passkey)$": {
+              "type": "object",
+              "patternProperties": {
+                "^\\d+$": {"$ref": "#/definitions/dataset_results"}
+              }
+            }
+          }
+        },
+        "aggregated_results": {
+          "type": "object",
+          "patternProperties": {
+            "^(sst2|agnews|trec|xsum|gsm8k|banking77|passkey)$": {
+              "type": "object",
+              "properties": {
+                "bridge": {"$ref": "#/definitions/aggregated_method_result"},
+                "prompt_tuning": {"$ref": "#/definitions/aggregated_method_result"},
+                "text_relay": {"$ref": "#/definitions/aggregated_method_result"},
+                "llama_zeroshot": {"$ref": "#/definitions/aggregated_method_result"},
+                "mistral_zeroshot": {"$ref": "#/definitions/aggregated_method_result"},
+                "mistral_fewshot": {"$ref": "#/definitions/aggregated_method_result"},
+                "ensemble": {"$ref": "#/definitions/aggregated_method_result"}
+              }
+            }
+          }
+        },
+        "comparison_table": {
+          "type": "object",
+          "description": "Human-readable comparison table"
+        }
+      }
+    },
+    {
+      "title": "Comprehensive Revision Results (run_comprehensive_revision.py)",
+      "type": "object",
+      "required": ["metadata", "phases"],
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "required": ["timestamp", "seeds", "datasets", "model_size"],
+          "properties": {
+            "timestamp": {"$ref": "#/definitions/timestamp"},
+            "seeds": {"type": "array", "items": {"type": "integer"}},
+            "datasets": {"type": "array", "items": {"type": "string"}},
+            "model_size": {"type": "string", "enum": ["small", "medium", "large"]},
+            "model_config": {
+              "type": "object",
+              "properties": {
+                "sender": {"type": "string"},
+                "receiver": {"type": "string"},
+                "batch_size": {"type": "integer"},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        },
+        "phases": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-6]$": {
+              "type": "object",
+              "required": ["phase", "description"],
+              "properties": {
+                "phase": {"type": "integer", "minimum": 1, "maximum": 6},
+                "description": {"type": "string"},
+                "datasets": {"type": "array", "items": {"type": "string"}},
+                "seeds": {"type": "array", "items": {"type": "integer"}},
+                "results": {"type": "object"},
+                "error": {"type": "string"},
+                "traceback": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Aggregated Results (aggregate_results.py)",
+      "type": "object",
+      "required": ["metadata", "raw_results", "aggregated_results"],
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "required": ["generated", "n_experiments", "n_aggregated"],
+          "properties": {
+            "generated": {"type": "string"},
+            "n_experiments": {"type": "integer"},
+            "n_aggregated": {"type": "integer"},
+            "seeds": {"type": "array", "items": {"type": "integer"}},
+            "datasets": {"type": "array", "items": {"type": "string"}},
+            "models": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "raw_results": {
+          "type": "object",
+          "description": "Raw results indexed by (method, dataset, config) tuple",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "seed": {"type": "array", "items": {"type": "integer"}},
+                "accuracy": {"type": "array", "items": {"type": "number"}},
+                "f1": {"type": "array", "items": {"type": "number"}},
+                "latency_ms": {"type": "array", "items": {"type": "number"}},
+                "memory_mb": {"type": "array", "items": {"type": "number"}},
+                "compression_ratio": {"type": "array", "items": {"type": "number"}}
+              }
+            }
+          }
+        },
+        "aggregated_results": {
+          "type": "object",
+          "description": "Aggregated statistics across seeds",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "accuracy": {"$ref": "#/definitions/confidence_interval"},
+                "f1": {"$ref": "#/definitions/confidence_interval"},
+                "latency_ms": {"$ref": "#/definitions/confidence_interval"},
+                "memory_mb": {"$ref": "#/definitions/confidence_interval"},
+                "compression_ratio": {"$ref": "#/definitions/confidence_interval"}
+              }
+            }
+          }
+        },
+        "significance_tests": {
+          "type": "object",
+          "description": "Statistical significance tests between methods",
+          "patternProperties": {
+            ".*": {"$ref": "#/definitions/statistical_test"}
+          }
+        },
+        "execution_gates": {
+          "type": "object",
+          "description": "Decision gates for continuing experiments",
+          "properties": {
+            "continue": {"type": "boolean"},
+            "reasons": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    {
+      "title": "Phase-specific Results",
+      "type": "object",
+      "required": ["phase", "description"],
+      "properties": {
+        "phase": {"type": "integer", "minimum": 1, "maximum": 6},
+        "description": {"type": "string"},
+        "datasets": {"type": "array", "items": {"type": "string"}},
+        "seeds": {"type": "array", "items": {"type": "integer"}},
+        "linear_probe_results": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "layer_16": {"$ref": "#/definitions/confidence_interval"},
+                "layer_24": {"$ref": "#/definitions/confidence_interval"},
+                "best_layer": {"type": "integer"},
+                "best_accuracy": {"type": "number"}
+              }
+            }
+          }
+        },
+        "latency_results": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "avg_latency_ms": {"type": "number"},
+                "std_latency_ms": {"type": "number"},
+                "throughput_samples_per_sec": {"type": "number"}
+              }
+            }
+          }
+        },
+        "model_sizes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "size": {"type": "string"},
+              "sender": {"type": "string"},
+              "receiver": {"type": "string"},
+              "batch_size": {"type": "integer"},
+              "results": {"type": "object"}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -32,13 +32,11 @@ import argparse
 import numpy as np
 from datetime import datetime
 from pathlib import Path
-import rouge_score
-from rouge_score import rouge_scorer
-
 # Import Bridge architecture from unified comparison
 import sys
 sys.path.append('.')
 from telepathy.run_unified_comparison import PerceiverResampler, UnifiedBridge
+from telepathy.rouge_metrics import compute_rouge, RougeResults
 
 
 def load_xsum_data(split="train", max_samples=None):
@@ -52,24 +50,26 @@ def load_xsum_data(split="train", max_samples=None):
 
 
 def compute_rouge_scores(predictions, references):
-    """Compute ROUGE scores for evaluation."""
-    scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
+    """
+    Compute ROUGE scores for evaluation using the validated rouge_metrics module.
 
-    scores = {
-        'rouge1': [],
-        'rouge2': [],
-        'rougeL': []
+    Returns a dictionary with percentage scores for compatibility with existing code.
+    """
+    # Use the validated rouge_metrics implementation
+    results = compute_rouge(
+        predictions,
+        references,
+        use_stemmer=True,  # XSUM standard
+        compute_confidence_intervals=False,  # Skip for speed during training
+        show_progress=False
+    )
+
+    # Convert to percentage format for backward compatibility
+    avg_scores = {
+        'rouge1': results.rouge1_f1_mean * 100,
+        'rouge2': results.rouge2_f1_mean * 100,
+        'rougeL': results.rougeL_f1_mean * 100
     }
-
-    for pred, ref in zip(predictions, references):
-        score = scorer.score(ref, pred)
-        for key in scores:
-            scores[key].append(score[key].fmeasure)
-
-    # Average scores
-    avg_scores = {}
-    for key in scores:
-        avg_scores[key] = np.mean(scores[key]) * 100  # Convert to percentage
 
     return avg_scores
 

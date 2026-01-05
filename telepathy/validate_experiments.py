@@ -78,6 +78,8 @@ class ExperimentValidator:
             self.check_dataset_access,
             self.check_config_validity,
             self.check_slurm_environment,
+            self.check_telepathy_modules,
+            self.check_experiment_scripts,
         ]
 
         if self.full_check:
@@ -85,6 +87,7 @@ class ExperimentValidator:
                 self.check_forward_pass,
                 self.check_backward_pass,
                 self.check_checkpoint_save_load,
+                self.check_multimodel_compatibility,
             ])
 
         for check_func in checks:
@@ -134,6 +137,7 @@ class ExperimentValidator:
         """Check all required libraries can be imported."""
         # Detect environment
         is_local = not os.environ.get("SLURM_JOB_ID")
+        is_hpc = os.environ.get("SLURM_JOB_ID") is not None
 
         if is_local and not TORCH_AVAILABLE:
             # On local MacBook, these imports are expected to fail
@@ -569,13 +573,14 @@ class ExperimentValidator:
             )
 
         try:
-            from telepathy.model import TelepathyModel
+            from telepathy.latent_bridge import LatentBridge
 
-            # Create tiny model for testing
-            model = TelepathyModel(
-                model_names=["meta-llama/Llama-3.2-1B"],
+            # Create tiny bridge for testing
+            model = LatentBridge(
+                model_a_name="meta-llama/Llama-3.2-1B",
+                model_b_name="meta-llama/Llama-3.2-1B",
                 latent_dim=128,
-                num_latent_tokens=8,
+                num_latents=8,
             )
 
             # Create dummy input
@@ -624,13 +629,14 @@ class ExperimentValidator:
             )
 
         try:
-            from telepathy.model import TelepathyModel
+            from telepathy.latent_bridge import LatentBridge
 
-            # Create tiny model
-            model = TelepathyModel(
-                model_names=["meta-llama/Llama-3.2-1B"],
+            # Create tiny bridge
+            model = LatentBridge(
+                model_a_name="meta-llama/Llama-3.2-1B",
+                model_b_name="meta-llama/Llama-3.2-1B",
                 latent_dim=128,
-                num_latent_tokens=8,
+                num_latents=8,
             )
 
             device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -684,6 +690,178 @@ class ExperimentValidator:
                 {"error": str(e)}
             )
 
+    def check_telepathy_modules(self) -> ValidationResult:
+        """Check telepathy-specific modules and classes."""
+        issues = []
+        modules_checked = []
+
+        # Check if we're on HPC or local
+        is_local = not os.environ.get("SLURM_JOB_ID")
+
+        if is_local:
+            # Basic file existence checks only
+            telepathy_dir = Path(__file__).parent
+            required_files = [
+                'latent_bridge.py',
+                'train_telepathy_sst2.py',
+                'train_telepathy_agnews.py',
+                'train_telepathy_trec.py',
+                'eval_telepathy_sst2.py',
+                'eval_telepathy_agnews.py',
+                'eval_telepathy_trec.py',
+                'run_comprehensive_revision.py',
+                'aggregate_results.py',
+            ]
+
+            missing = []
+            for file in required_files:
+                file_path = telepathy_dir / file
+                if not file_path.exists():
+                    missing.append(file)
+                else:
+                    modules_checked.append(file)
+
+            if missing:
+                return ValidationResult(
+                    "Telepathy Modules",
+                    False,
+                    f"Missing files: {', '.join(missing)}",
+                    {"missing": missing, "found": modules_checked}
+                )
+            else:
+                return ValidationResult(
+                    "Telepathy Modules",
+                    True,
+                    f"All {len(required_files)} telepathy files exist",
+                    {"modules": modules_checked}
+                )
+        else:
+            # On HPC, actually try importing key modules
+            try:
+                # Import the latent bridge module
+                import telepathy.latent_bridge as lb
+                modules_checked.append("latent_bridge")
+
+                # Check if we can import train modules
+                import telepathy.train_telepathy_sst2 as train_sst2
+                modules_checked.append("train_telepathy_sst2")
+
+                # Check if we can import eval modules
+                import telepathy.eval_telepathy_sst2 as eval_sst2
+                modules_checked.append("eval_telepathy_sst2")
+
+                # Check key dependencies
+                import torch
+                import transformers
+                modules_checked.extend(["torch", "transformers"])
+
+                return ValidationResult(
+                    "Telepathy Modules",
+                    True,
+                    f"All telepathy modules working",
+                    {"modules_tested": modules_checked}
+                )
+            except Exception as e:
+                return ValidationResult(
+                    "Telepathy Modules",
+                    False,
+                    f"Module import failed: {str(e)}",
+                    {"error": str(e), "modules_checked": modules_checked}
+                )
+
+    def check_experiment_scripts(self) -> ValidationResult:
+        """Check that experiment scripts exist and are executable."""
+        base_dir = Path(__file__).parent.parent
+        telepathy_dir = Path(__file__).parent
+
+        required_scripts = [
+            telepathy_dir / "run_comprehensive_revision.py",
+            telepathy_dir / "aggregate_results.py",
+            telepathy_dir / "submit_enhanced_arxiv.slurm",
+            telepathy_dir / "submit_comprehensive_revision.slurm",
+            telepathy_dir / "submit_validation.slurm",
+        ]
+
+        missing = []
+        not_executable = []
+        found = []
+
+        for script in required_scripts:
+            if not script.exists():
+                missing.append(script.name)
+            else:
+                found.append(script.name)
+                # Check if Python scripts have proper shebang
+                if script.suffix == '.py':
+                    with open(script, 'r') as f:
+                        first_line = f.readline()
+                        if not first_line.startswith('#!'):
+                            not_executable.append(f"{script.name} (no shebang)")
+
+        if missing:
+            return ValidationResult(
+                "Experiment Scripts",
+                False,
+                f"Missing scripts: {', '.join(missing)}",
+                {"missing": missing, "found": found}
+            )
+        elif not_executable:
+            return ValidationResult(
+                "Experiment Scripts",
+                False,
+                f"Scripts missing shebang: {', '.join(not_executable)}",
+                {"not_executable": not_executable, "found": found}
+            )
+        else:
+            return ValidationResult(
+                "Experiment Scripts",
+                True,
+                f"All {len(required_scripts)} experiment scripts found",
+                {"scripts": found}
+            )
+
+    def check_multimodel_compatibility(self) -> ValidationResult:
+        """Check if multiple models can be loaded together (full check only)."""
+        if not TORCH_AVAILABLE:
+            return ValidationResult(
+                "Multi-Model Compatibility",
+                True,
+                "Skipped - requires PyTorch (run on HPC)",
+                {"environment": "local_dev"}
+            )
+
+        try:
+            from telepathy.latent_bridge import LatentBridge
+
+            # Try loading different models
+            model = LatentBridge(
+                model_a_name="meta-llama/Llama-3.2-1B",
+                model_b_name="meta-llama/Llama-3.2-3B",
+                latent_dim=256,
+                num_latents=16,
+            )
+
+            # Check memory usage
+            if torch.cuda.is_available():
+                memory_used = torch.cuda.max_memory_allocated() / (1024**3)
+                memory_info = f"GPU memory used: {memory_used:.2f}GB"
+            else:
+                memory_info = "CPU mode"
+
+            return ValidationResult(
+                "Multi-Model Compatibility",
+                True,
+                f"Multi-model loading successful ({memory_info})",
+                {"models": ["Llama-3.2-1B", "Llama-3.2-3B"], "memory": memory_info}
+            )
+        except Exception as e:
+            return ValidationResult(
+                "Multi-Model Compatibility",
+                False,
+                f"Multi-model loading failed: {str(e)}",
+                {"error": str(e)}
+            )
+
     def check_checkpoint_save_load(self) -> ValidationResult:
         """Check if checkpoints can be saved and loaded (full check only)."""
         if not TORCH_AVAILABLE:
@@ -695,14 +873,15 @@ class ExperimentValidator:
             )
 
         try:
-            from telepathy.model import TelepathyModel
+            from telepathy.latent_bridge import LatentBridge
             import tempfile
 
-            # Create model
-            model = TelepathyModel(
-                model_names=["meta-llama/Llama-3.2-1B"],
+            # Create bridge
+            model = LatentBridge(
+                model_a_name="meta-llama/Llama-3.2-1B",
+                model_b_name="meta-llama/Llama-3.2-1B",
                 latent_dim=128,
-                num_latent_tokens=8,
+                num_latents=8,
             )
 
             # Save checkpoint
