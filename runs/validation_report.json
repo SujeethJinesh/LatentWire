@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-01-04T21:48:08.058263",
+  "duration": 1.024535894393921,
+  "environment": {
+    "torch_available": false,
+    "cuda_available": false,
+    "gpu_count": 0,
+    "python_version": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]"
+  },
+  "tests": {
+    "checkpoint_atomicity": {
+      "passed": false,
+      "details": "PyTorch not available",
+      "duration": 0,
+      "timestamp": "2026-01-04T21:48:07.033739"
+    },
+    "checkpoint_pruning": {
+      "passed": true,
+      "details": "Freed 45 bytes in 0.003s",
+      "duration": 0.002639293670654297,
+      "timestamp": "2026-01-04T21:48:07.036560"
+    },
+    "signal_handling": {
+      "passed": true,
+      "details": "SIGTERM handled, exit code 99",
+      "duration": 1.0210208892822266,
+      "timestamp": "2026-01-04T21:48:08.057772"
+    },
+    "resume_functionality": {
+      "passed": false,
+      "details": "PyTorch not available",
+      "duration": 0,
+      "timestamp": "2026-01-04T21:48:08.058092"
+    },
+    "gpu_metrics": {
+      "passed": true,
+      "details": "No GPU available (skipped)",
+      "duration": 0,
+      "timestamp": "2026-01-04T21:48:08.058108"
+    },
+    "performance": {
+      "passed": false,
+      "details": "PyTorch not available",
+      "duration": 0,
+      "timestamp": "2026-01-04T21:48:08.058117"
+    },
+    "distributed": {
+      "passed": false,
+      "details": "PyTorch not available",
+      "duration": 0,
+      "timestamp": "2026-01-04T21:48:08.058125"
+    }
+  }
+}
