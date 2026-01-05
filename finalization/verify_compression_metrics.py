@@ -7,11 +7,11 @@ from typing import Dict, Optional, Tuple
 
 
 def calculate_honest_wire_bytes(
-    latent_shape: Tuple[int, int, int],  # (B, M, D)
-    bits: int,
-    group_size: int = 32,
-    scale_bits: int = 16
-) -> Dict[str, int]:
+    latent_shape,  # (B, M, D)
+    bits,
+    group_size=32,
+    scale_bits=16
+):
     """Calculate actual wire bytes including quantization overhead.
 
     Args:
@@ -52,15 +52,12 @@ def calculate_honest_wire_bytes(
     }
 
 
-def calculate_text_bytes(text: str) -> int:
+def calculate_text_bytes(text):
     """Calculate UTF-8 bytes for text."""
     return len(text.encode("utf-8"))
 
 
-def calculate_compression_ratio(
-    text_bytes: int,
-    latent_bytes: int
-) -> float:
+def calculate_compression_ratio(text_bytes, latent_bytes):
     """Calculate compression ratio."""
     if latent_bytes == 0:
         return float('inf')

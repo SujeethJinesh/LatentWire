@@ -107,6 +107,8 @@ def integrate_with_training_loop(args):
         perm = torch.randperm(N, generator=g)
 
         for step in range(min(args.num_steps, steps_per_epoch)):
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             start_time = time.time()
 
             # Manual batch indexing (SLOW)
@@ -131,6 +133,8 @@ def integrate_with_training_loop(args):
 
             # (Training logic would go here)
 
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             load_time = time.time() - start_time
             original_times.append(load_time)
 
@@ -172,6 +176,8 @@ def integrate_with_training_loop(args):
         if step >= args.num_steps:
             break
 
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         start_time = time.time()
 
         # Unpack batch (ALREADY TOKENIZED AND ON GPU!)
@@ -186,6 +192,8 @@ def integrate_with_training_loop(args):
         # (Training logic would go here)
         # Note: scaffolds are already on GPU with non-blocking transfer
 
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         load_time = time.time() - start_time
         optimized_times.append(load_time)
 
