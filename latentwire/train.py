@@ -2439,12 +2439,12 @@ def main():
 
                 # Move memory profiling inside autocast for consistency
                 if batch_index < 3:
-                mem_stats = get_gpu_memory_stats()
-                if mem_stats:
-                    print(f"    [Memory after encoder] {mem_stats['total_allocated_gb']:.1f}GB allocated")
+                    mem_stats = get_gpu_memory_stats()
+                    if mem_stats:
+                        print(f"    [Memory after encoder] {mem_stats['total_allocated_gb']:.1f}GB allocated")
 
-            dropout_keep = keep_prob if training_mode == "latent" else 1.0
-            if shared_latents.size(1) > 0 and dropout_keep < 1.0:
+                dropout_keep = keep_prob if training_mode == "latent" else 1.0
+                if shared_latents.size(1) > 0 and dropout_keep < 1.0:
                 mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < dropout_keep).float()
                 need_fix = mask.sum(dim=1) == 0
                 if need_fix.any():
@@ -2924,6 +2924,9 @@ def main():
                 if training_mode == "text":
                     per_model_losses[ctx.name]["mode"] = "text"
 
+            # End of autocast context - loss aggregation happens outside
+            # This ensures proper dtype handling for backward pass
+
             # Skip batch if NaN detected early in prefix
             if skip_batch_due_to_nan:
                 if bad_latent_sources:
@@ -2956,7 +2959,14 @@ def main():
                 continue
 
             loss_backward = loss / float(grad_accum_steps)
-            loss_backward.backward()
+
+            # Handle backward pass with mixed precision
+            if grad_scaler is not None:
+                # FP16 requires GradScaler
+                grad_scaler.scale(loss_backward).backward()
+            else:
+                # BF16 or no AMP - direct backward
+                loss_backward.backward()
 
             # On first step, verify latent adapters are receiving gradients
             if global_step == 0 and latent_adapter_params:
@@ -3014,11 +3024,29 @@ def main():
 
             should_step = ((step + 1) % grad_accum_steps == 0) or ((step + 1) == steps_per_epoch)
             if should_step:
-                if args.max_grad_norm and args.max_grad_norm > 0:
-                    torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
-                _align_optimizer_state_to_param_devices(optimizer)
-                optimizer.step()
-                lr_scheduler.step()  # Update learning rate after optimizer step
+                if grad_scaler is not None:
+                    # FP16 path with GradScaler
+                    # Unscale gradients before clipping
+                    grad_scaler.unscale_(optimizer)
+
+                    if args.max_grad_norm and args.max_grad_norm > 0:
+                        torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
+
+                    _align_optimizer_state_to_param_devices(optimizer)
+
+                    # Step with scaled gradients
+                    grad_scaler.step(optimizer)
+                    grad_scaler.update()
+
+                    lr_scheduler.step()  # Update learning rate after optimizer step
+                else:
+                    # BF16 or no AMP - direct optimizer step
+                    if args.max_grad_norm and args.max_grad_norm > 0:
+                        torch.nn.utils.clip_grad_norm_(params_for_clip, max_norm=float(args.max_grad_norm))
+                    _align_optimizer_state_to_param_devices(optimizer)
+                    optimizer.step()
+                    lr_scheduler.step()  # Update learning rate after optimizer step
+
                 optimizer.zero_grad(set_to_none=True)
 
                 # Detailed memory profiling for first few steps

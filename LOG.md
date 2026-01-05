@@ -3,6 +3,77 @@
 ---
 
 ## ═══════════════════════════════════════════════════════════════════════════
+## ⚡ OPTIMIZED DATA LOADING PIPELINE (2026-01-04)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Implementation: High-Performance DataLoader for Zero GPU Idle Time
+
+Created comprehensive data loading optimization in `latentwire/optimized_dataloader.py` to eliminate GPU idle time during training.
+
+**Key Optimizations Implemented**:
+
+1. **Multi-Worker Parallel Loading**
+   - Configurable worker processes (0-8 workers)
+   - Persistent workers across epochs to avoid startup overhead
+   - Automatic worker count optimization based on dataset size
+
+2. **Tokenization Caching System**
+   - Disk-based cache for tokenized samples
+   - In-memory LRU cache for hot data
+   - SHA256-based cache keys for consistency
+   - Eliminates redundant tokenization across epochs
+
+3. **GPU Memory Optimizations**
+   - Pinned memory for 2-3x faster CPU→GPU transfers
+   - Non-blocking async transfers with CUDA streams
+   - GPU prefetcher that loads next batch while current processes
+
+4. **Efficient Batching**
+   - Custom collate function with padding optimization
+   - Pre-tokenization for small datasets (<5000 samples)
+   - Attention mask generation alongside tokenization
+
+**Performance Improvements (Expected)**:
+- **4-10x speedup** in data loading throughput
+- **70-90% reduction** in GPU idle time
+- **2-3x faster** CPU→GPU memory transfers with pinned memory
+- **Zero tokenization overhead** after first epoch with caching
+
+**Integration with train.py**:
+- Added `--use_optimized_dataloader` flag
+- Added `--num_dataloader_workers` (default: 4)
+- Added `--dataloader_prefetch_factor` (default: 2)
+- Added `--dataloader_cache_tokenization` flag
+- Added `--dataloader_pin_memory` flag
+
+**Benchmarking Tools**:
+- `scripts/benchmark_dataloader.py`: Compare original vs optimized
+- `scripts/integrate_optimized_dataloader.py`: Integration example
+- `telepathy/submit_dataloader_benchmark.slurm`: HPC benchmark script
+
+**Usage**:
+```bash
+# Enable all optimizations
+python latentwire/train.py \
+    --use_optimized_dataloader \
+    --num_dataloader_workers 4 \
+    --dataloader_prefetch_factor 2 \
+    --dataloader_cache_tokenization \
+    --dataloader_pin_memory \
+    ... other args ...
+
+# Run benchmark
+python scripts/benchmark_dataloader.py --compare_original
+```
+
+**Next Steps**:
+- Run benchmark on HPC to measure actual speedup
+- Tune worker count and prefetch factor for H100 GPUs
+- Consider adding mixed precision loading for further speedup
+
+---
+
+## ═══════════════════════════════════════════════════════════════════════════
 ## 📊 STATISTICAL TESTING INFRASTRUCTURE (2026-01-05)
 ## ═══════════════════════════════════════════════════════════════════════════
 
