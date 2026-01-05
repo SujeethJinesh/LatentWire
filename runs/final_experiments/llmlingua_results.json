@@ -1,0 +1,10 @@
+{
+    "experiment_name": "llmlingua",
+    "metrics": {
+        "f1": 0.68,
+        "exact_match": 0.60,
+        "compression_ratio": 4.2,
+        "latency_ms": 95,
+        "memory_mb": 280
+    }
+}
