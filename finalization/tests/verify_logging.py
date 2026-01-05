@@ -39,13 +39,32 @@ def verify_python_script(file_path):
         r'print\s*\([^)]*["\'](?:Starting|Error|Warning|Complete|Training|Epoch|Loss|Checkpoint)',
     ]
 
-    for line in lines:
+    # Handle multi-line print statements
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # Check if this is a print statement that continues on next line
+        if 'print(' in line and line.strip() and not line.strip().endswith(')'):
+            # Collect the full print statement
+            full_statement = line
+            j = i + 1
+            while j < len(lines) and ')' not in lines[j - 1]:
+                full_statement += ' ' + lines[j].strip()
+                j += 1
+                if j - i > 5:  # Safety limit
+                    break
+            if j < len(lines):
+                full_statement += ' ' + lines[j].strip()
+            line = full_statement
+            i = j
+
         for pattern in critical_patterns:
             if re.search(pattern, line, re.IGNORECASE):
                 if 'flush=True' in line:
                     critical_prints_with_flush += 1
                 else:
                     critical_prints_without_flush += 1
+        i += 1
 
     checks = {
         'has_logging_import': 'import logging' in content,

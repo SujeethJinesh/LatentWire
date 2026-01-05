@@ -168,7 +168,7 @@ def load_preemption_checkpoint(save_dir: str):
             with open(metadata_path, "r") as f:
                 metadata = json.load(f)
             print(f"\nFound preemption checkpoint from epoch {metadata['epoch']}, "
-                  f"step {metadata['step_in_epoch']}")
+                  f"step {metadata['step_in_epoch']}", flush=True)
 
         checkpoint = torch.load(state_path, map_location='cpu')
         return checkpoint
@@ -284,9 +284,9 @@ def preemptible_main():
     # In a real implementation, we would copy and modify the training loop
     # For now, we'll indicate what would need to be done
 
-    print("Note: This is a template implementation.")
+    print("Note: This is a template implementation.", flush=True)
     print("To make this fully functional, the entire training loop from", flush=True)
-    print("latentwire/train.py needs to be copied here and modified to:")
+    print("latentwire/train.py needs to be copied here and modified to:", flush=True)
     print("1. Check PREEMPTION_REQUESTED flag in each batch", flush=True)
     print("2. Update TRAINING_STATE with current epoch/step/models", flush=True)
     print("3. Save periodic checkpoints based on time interval", flush=True)

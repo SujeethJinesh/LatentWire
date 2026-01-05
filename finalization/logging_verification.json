@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-05T11:54:38.482622",
+  "timestamp": "2026-01-05T11:57:04.597320",
   "shell_scripts": {
     "total": 13,
     "passed": 13,
@@ -151,13 +151,7 @@
   },
   "python_scripts": {
     "total": 30,
-    "critical_issues": 1,
-    "critical_details": [
-      {
-        "script": "preemptible_train.py",
-        "without_flush": 1,
-        "with_flush": 3
-      }
-    ]
+    "critical_issues": 0,
+    "critical_details": []
   }
 }
