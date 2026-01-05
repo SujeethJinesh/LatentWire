@@ -190,10 +190,10 @@ def suggest_gradient_accumulation(
         return 1
 
     # Find accumulation steps that give us close to desired batch size
-    accumulation = math.ceil(desired_batch_size / actual_batch_size)
+    accumulation = int(math.ceil(float(desired_batch_size) / float(actual_batch_size)))
 
     # Try to use powers of 2 when possible
-    power_of_2 = 2 ** math.ceil(math.log(accumulation) / math.log(2))
+    power_of_2 = int(2 ** math.ceil(math.log(accumulation) / math.log(2)))
     if power_of_2 * actual_batch_size <= desired_batch_size * 1.5:
         return power_of_2
 
