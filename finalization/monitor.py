@@ -349,22 +349,22 @@ class SLURMMonitor:
                 # Training Progress
                 progress = self.parse_training_progress()
                 if progress:
-                    print(f"{Colors.BOLD}Training Progress:{Colors.END}")
+                    print(f"{Colors.BOLD}Training Progress:{Colors.END}", flush=True)
 
                     if 'current_epoch' in progress:
                         epoch_bar = self.make_progress_bar(progress['current_epoch'], progress['total_epochs'], width=30)
-                        print(f"  Epoch: {progress['current_epoch']}/{progress['total_epochs']} {epoch_bar}")
+                        print(f"  Epoch: {progress['current_epoch']}/{progress['total_epochs']} {epoch_bar}", flush=True)
 
                     if 'current_step' in progress:
                         if 'total_steps' in progress:
                             step_bar = self.make_progress_bar(progress['current_step'], progress['total_steps'], width=30)
-                            print(f"  Step: {progress['current_step']}/{progress['total_steps']} {step_bar} ({progress.get('progress_pct', 0):.1f}%)")
+                            print(f"  Step: {progress['current_step']}/{progress['total_steps']} {step_bar} ({progress.get('progress_pct', 0):.1f}%)", flush=True)
                         else:
-                            print(f"  Step: {progress['current_step']}")
+                            print(f"  Step: {progress['current_step']}", flush=True)
 
                     if 'latest_loss' in progress:
                         trend_icon = "↓" if progress.get('loss_trend') == 'decreasing' else "→"
-                        print(f"  Loss: {progress['latest_loss']:.4f} {trend_icon} (avg: {progress.get('avg_loss', 0):.4f})")
+                        print(f"  Loss: {progress['latest_loss']:.4f} {trend_icon} (avg: {progress.get('avg_loss', 0):.4f})", flush=True)
 
                     if 'learning_rate' in progress:
                         print(f"  Learning Rate: {progress['learning_rate']:.2e}")
@@ -385,7 +385,7 @@ class SLURMMonitor:
                 # Checkpoints
                 checkpoints = self.get_checkpoint_info()
                 if checkpoints:
-                    print(f"{Colors.BOLD}Checkpoints:{Colors.END}")
+                    print(f"{Colors.BOLD}Checkpoints:{Colors.END}", flush=True)
                     for name, info in sorted(checkpoints.items())[:5]:  # Show last 5
                         print(f"  {name}: {info['size_mb']:.1f} MB")
                     print()
@@ -394,7 +394,7 @@ class SLURMMonitor:
                 if self.err_file.exists():
                     err_size = self.err_file.stat().st_size
                     if err_size > 0:
-                        print(f"{Colors.BOLD}{Colors.RED}Errors Detected:{Colors.END}")
+                        print(f"{Colors.BOLD}{Colors.RED}Errors Detected:{Colors.END}", flush=True)
                         # Show last few error lines
                         cmd = f"tail -n 5 {self.err_file}"
                         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -462,7 +462,7 @@ def list_all_jobs():
         else:
             print(f"{Colors.RED}Failed to list jobs{Colors.END}")
     except Exception as e:
-        print(f"{Colors.RED}Error: {e}{Colors.END}")
+        print(f"{Colors.RED}Error: {e}{Colors.END}", flush=True)
 
 
 def main():

@@ -164,6 +164,30 @@ def _calibrate_prefix(prefix: torch.Tensor, wrapper: LMWrapper, mode: str, fixed
     return prefix, pre_scalar, float(tgt)
 
 
+def _calculate_byte_compression(model_outputs, wire):
+    """Calculate actual byte-level compression ratio including quantization overhead."""
+    compressions = {}
+
+    # Get latent wire bytes (with quantization overhead)
+    latent_bytes = wire.get("selected_latent_bytes")
+    if latent_bytes is None:
+        # Fallback to fp16 if no quantization
+        latent_bytes = wire["latent_bytes"].get("fp16", wire["latent_bytes"]["fp32"])
+
+    # Calculate for each model
+    for name in ["llama", "qwen"]:
+        if name in model_outputs:
+            prompts = model_outputs[name].get("chat_prompts", [])
+            if prompts:
+                # Calculate average text bytes
+                text_bytes = sum(len(p.encode("utf-8")) for p in prompts) / len(prompts)
+                compressions[name] = text_bytes / latent_bytes if latent_bytes > 0 else 0
+            else:
+                compressions[name] = 0
+
+    return compressions
+
+
 def _slice_deep_prefix(
     cache: Optional[Sequence[Tuple[torch.Tensor, torch.Tensor]]],
     start: int,
@@ -1569,11 +1593,13 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         "device": device,
         "dtype": str(dtype),
         "avg_prompt_tokens": {name: text_results[name]["avg_prompt_tokens"] for name in model_contexts},
-        "compression": {name: text_results[name]["avg_prompt_tokens"] / max(latent_len, 1) for name in model_contexts},
+        "token_compression": {name: text_results[name]["avg_prompt_tokens"] / max(latent_len, 1) for name in model_contexts},
+        "byte_compression": _calculate_byte_compression(model_outputs, wire) if wire else {},
+        "compression": {name: text_results[name]["avg_prompt_tokens"] / max(latent_len, 1) for name in model_contexts},  # Keep for backward compat
         "payload_bytes": bytes_per_latent,
         "payload_bytes_detail": {
-            "fp32": wire["latent_bytes"]["fp32"],
-            "fp16": wire["latent_bytes"]["fp16"],
+            "fp32": wire["latent_bytes"]["fp32"] if "latent_bytes" in wire else 0,
+            "fp16": wire["latent_bytes"]["fp16"] if "latent_bytes" in wire else 0,
             "selected": selected_bytes,
         },
         "wire": wire,

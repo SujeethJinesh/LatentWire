@@ -294,28 +294,28 @@ Examples:
         print(json.dumps(config, indent=2))
     else:
         if 'error' in config:
-            print(f"❌ Error: {config['error']}")
+            print(f"❌ Error: {config['error']}", flush=True)
             print(f"   {config['suggestion']}")
             print("\nMemory Breakdown:")
             for key, value in config['memory_breakdown'].items():
                 print(f"  {key:20s}: {value:8.2f} GB")
         else:
             print(f"{'=' * 60}")
-            print("Memory-Safe Batch Configuration")
+            print("Memory-Safe Batch Configuration", flush=True)
             print(f"{'=' * 60}")
             print(f"Model: {args.model_size_gb:.1f}GB, GPU: {args.gpu_memory_gb}GB x {args.num_gpus}")
             print(f"Optimizer: {args.optimizer}")
             print(f"{'=' * 60}")
             print("\n📊 Recommended Configuration:")
-            print(f"  Batch size per GPU:        {config['batch_size_per_gpu']}")
-            print(f"  Gradient accumulation:     {config['gradient_accumulation_steps']}")
-            print(f"  Effective batch size:      {config['effective_batch_size']}")
+            print(f"  Batch size per GPU:        {config['batch_size_per_gpu']}", flush=True)
+            print(f"  Gradient accumulation:     {config['gradient_accumulation_steps']}", flush=True)
+            print(f"  Effective batch size:      {config['effective_batch_size']}", flush=True)
             print(f"  Number of GPUs:           {config['num_gpus']}")
 
             print("\n💾 Memory Usage:")
             usage = config['memory_usage']
             print(f"  Fixed memory:             {usage['fixed_memory_gb']:.2f} GB")
-            print(f"  Available for batch:      {usage['available_for_batch_gb']:.2f} GB")
+            print(f"  Available for batch:      {usage['available_for_batch_gb']:.2f} GB", flush=True)
             print(f"  Estimated total usage:    {usage['estimated_usage_gb']:.2f} GB")
             print(f"  GPU utilization:          {usage['utilization_pct']:.1f}%")
 
@@ -325,11 +325,11 @@ Examples:
                 print(f"  {label:25s}: {value:8.2f} GB")
 
             if config['warnings']:
-                print("\n⚠️  Warnings:")
+                print("\n⚠️  Warnings:", flush=True)
                 for warning in config['warnings']:
-                    print(f"  - {warning}")
+                    print(f"  - {warning}", flush=True)
 
-            print("\n✅ This configuration should train without OOM errors.")
+            print("\n✅ This configuration should train without OOM errors.", flush=True)
 
 
 if __name__ == '__main__':

@@ -427,7 +427,7 @@ def main():
                 print(f"\n❌ {test_name} FAILED")
         except Exception as e:
             all_passed = False
-            print(f"\n❌ {test_name} FAILED with error: {e}")
+            print(f"\n❌ {test_name} FAILED with error: {e}", flush=True)
 
     # Summary
     print("\n" + "="*80)

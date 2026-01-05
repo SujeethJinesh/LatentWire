@@ -11,6 +11,30 @@
 # If EXP_NAME is not provided, monitors the most recent experiment.
 # =============================================================================
 
+
+# =============================================================================
+# LOGGING SETUP
+# =============================================================================
+
+# Ensure output directory exists
+OUTPUT_DIR="${OUTPUT_DIR:-runs/monitor_experiment}"
+mkdir -p "$OUTPUT_DIR"
+
+# Create timestamped log file
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="$OUTPUT_DIR/monitor_experiment_${TIMESTAMP}.log"
+
+echo "Starting monitor_experiment at $(date)" | tee "$LOG_FILE"
+echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
+echo "" | tee -a "$LOG_FILE"
+
+# Wrapper function for logging commands
+run_with_logging() {
+    echo "Running: $*" | tee -a "$LOG_FILE"
+    { "$@"; } 2>&1 | tee -a "$LOG_FILE"
+    return ${PIPESTATUS[0]}
+}
+
 set -e
 
 # Critical environment variable

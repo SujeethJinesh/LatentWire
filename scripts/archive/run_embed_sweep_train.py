@@ -327,6 +327,8 @@ def run_experiment(experiment_name, experiment_config, args, device):
 
     # Training
     print(f"\nTraining for {args.epochs} epoch(s)...")
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     start_time = time.time()
 
     for epoch in range(args.epochs):
@@ -342,15 +344,21 @@ def run_experiment(experiment_name, experiment_config, args, device):
         with open(output_dir / 'diagnostics.jsonl', 'a') as f:
             f.write(json.dumps({**train_metrics, 'type': 'train'}) + '\n')
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     train_time = time.time() - start_time
 
     # Evaluation
     print("\nEvaluating...")
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     eval_start = time.time()
     eval_metrics = evaluate(
         encoder, adapters, models, dataloader,
         experiment_config, device
     )
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     eval_time = time.time() - eval_start
 
     print(f"  Eval metrics: {eval_metrics}")

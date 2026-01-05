@@ -49,7 +49,7 @@ def handle_sigterm(signum, frame):
     # Save checkpoint
     save_checkpoint("preemption")
 
-    print("\nCheckpoint saved successfully!")
+    print("\nCheckpoint saved successfully!", flush=True)
     print("Exiting gracefully...")
     sys.exit(0)
 
@@ -76,9 +76,9 @@ def save_checkpoint(reason="periodic"):
         with open(checkpoint_path, "w") as f:
             json.dump(checkpoint, f, indent=2)
 
-        print(f"\n[{timestamp}] Checkpoint saved: {checkpoint_path}")
+        print(f"\n[{timestamp}] Checkpoint saved: {checkpoint_path}", flush=True)
         print(f"  Reason: {reason}")
-        print(f"  Epoch: {state.epoch}, Step: {state.step}, Loss: {state.loss:.4f}")
+        print(f"  Epoch: {state.epoch}, Step: {state.step}, Loss: {state.loss:.4f}", flush=True)
 
         return checkpoint_path
 
@@ -87,7 +87,7 @@ def simulate_training():
     """Simulate a training loop."""
     global state, preemption_requested
 
-    print("Starting simulated training...")
+    print("Starting simulated training...", flush=True)
     print(f"Process ID: {os.getpid()}")
     print("Send SIGTERM to this process to test preemption handling")
     print("e.g., in another terminal: kill -TERM", os.getpid())
@@ -106,14 +106,14 @@ def simulate_training():
     for epoch in range(num_epochs):
         state.epoch = epoch
 
-        print(f"Epoch {epoch + 1}/{num_epochs}")
+        print(f"Epoch {epoch + 1}/{num_epochs}", flush=True)
 
         for step in range(steps_per_epoch):
             state.step = step
 
             # Check for preemption
             if preemption_requested:
-                print("\nPreemption requested - stopping training")
+                print("\nPreemption requested - stopping training", flush=True)
                 return
 
             # Simulate training step
@@ -122,7 +122,7 @@ def simulate_training():
 
             # Print progress occasionally
             if step % 20 == 0:
-                print(f"  Step {step}/{steps_per_epoch}, Loss: {state.loss:.6f}")
+                print(f"  Step {step}/{steps_per_epoch}, Loss: {state.loss:.6f}", flush=True)
 
             # Periodic checkpoint
             current_time = time.time()
@@ -133,7 +133,7 @@ def simulate_training():
         # End of epoch checkpoint
         save_checkpoint(f"epoch_{epoch + 1}")
 
-    print("\nTraining completed!")
+    print("\nTraining completed!", flush=True)
     save_checkpoint("final")
 
 
@@ -143,7 +143,7 @@ def cleanup_test_checkpoints():
     if checkpoint_dir.exists():
         import shutil
         shutil.rmtree(checkpoint_dir)
-        print(f"Cleaned up {checkpoint_dir}")
+        print(f"Cleaned up {checkpoint_dir}", flush=True)
 
 
 def main():
@@ -162,7 +162,7 @@ def main():
         print("\n\nKeyboard interrupt received")
         save_checkpoint("interrupt")
     except Exception as e:
-        print(f"\nError during training: {e}")
+        print(f"\nError during training: {e}", flush=True)
         save_checkpoint("error")
         raise
 
@@ -170,17 +170,17 @@ def main():
     checkpoint_dir = Path("test_checkpoints")
     if checkpoint_dir.exists():
         print("\n" + "="*60)
-        print("SAVED CHECKPOINTS:")
+        print("SAVED CHECKPOINTS:", flush=True)
         print("="*60)
 
         for checkpoint_file in sorted(checkpoint_dir.glob("*.json")):
             with open(checkpoint_file, "r") as f:
                 data = json.load(f)
-            print(f"\n{checkpoint_file.name}:")
+            print(f"\n{checkpoint_file.name}:", flush=True)
             print(f"  Timestamp: {data['timestamp']}")
             print(f"  Reason: {data['reason']}")
-            print(f"  Epoch: {data['epoch']}, Step: {data['step']}")
-            print(f"  Loss: {data['loss']:.6f}")
+            print(f"  Epoch: {data['epoch']}, Step: {data['step']}", flush=True)
+            print(f"  Loss: {data['loss']:.6f}", flush=True)
 
 
 if __name__ == "__main__":

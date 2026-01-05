@@ -79,7 +79,7 @@ class ResultAggregator:
                 results_by_experiment[exp_name].append(data)
 
             except Exception as e:
-                print(f"Warning: Failed to load {json_file}: {e}")
+                print(f"Warning: Failed to load {json_file}: {e}", flush=True)
                 continue
 
         print(f"\nCollected results for {len(results_by_experiment)} experiments:")
@@ -634,7 +634,7 @@ class ResultAggregator:
                                     ax.grid(True, alpha=0.3)
 
                 except Exception as e:
-                    print(f"Warning: Could not plot {log_file}: {e}")
+                    print(f"Warning: Could not plot {log_file}: {e}", flush=True)
 
         plt.tight_layout()
         plt.savefig(self.figures_dir / 'learning_curves.pdf', dpi=300, bbox_inches='tight')
@@ -838,11 +838,11 @@ class ResultAggregator:
         # Recommendations
         print("\nRecommendations:")
         if not gates['phase_1_complete']:
-            print("  - Debug training pipeline and loss functions")
-            print("  - Verify data loading and preprocessing")
+            print("  - Debug training pipeline and loss functions", flush=True)
+            print("  - Verify data loading and preprocessing", flush=True)
         elif not gates['phase_2_ready']:
             print("  - Tune hyperparameters (learning rate, K, latent_len)")
-            print("  - Add more training data or epochs")
+            print("  - Add more training data or epochs", flush=True)
         elif not gates['phase_3_ready']:
             print("  - Implement advanced techniques (better calibration, distillation)")
             print("  - Experiment with different architectures")
@@ -858,7 +858,7 @@ class ResultAggregator:
     def save_final_report(self):
         """Save comprehensive final report."""
         print("\n" + "=" * 80)
-        print("SAVING FINAL REPORT")
+        print("SAVING FINAL REPORT", flush=True)
         print("=" * 80)
 
         report = {
@@ -964,7 +964,7 @@ def main():
     )
 
     # Run full analysis pipeline
-    print("Starting result aggregation and analysis...")
+    print("Starting result aggregation and analysis...", flush=True)
     print("=" * 80)
 
     # Collect results
@@ -985,11 +985,11 @@ def main():
     aggregator.save_final_report()
 
     print("\n" + "=" * 80)
-    print("ANALYSIS COMPLETE")
+    print("ANALYSIS COMPLETE", flush=True)
     print("=" * 80)
     print(f"Results saved to: {args.output_dir}")
     print("\nKey outputs:")
-    print(f"  - FINAL_RESULTS.json: Complete results data")
+    print(f"  - FINAL_RESULTS.json: Complete results data", flush=True)
     print(f"  - paper_tables.tex: LaTeX tables for paper")
     print(f"  - paper_figures/: Publication-ready plots")
     print(f"  - statistical_report.txt: Human-readable summary")

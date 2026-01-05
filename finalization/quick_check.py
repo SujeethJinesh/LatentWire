@@ -47,7 +47,7 @@ def check_memory():
             for i in range(torch.cuda.device_count()):
                 props = torch.cuda.get_device_properties(i)
                 if props.total_memory < 8 * (1024**3):  # Less than 8GB
-                    print(f"Warning: GPU {i} has only {props.total_memory/(1024**3):.1f}GB",
+                    print(f"Warning: GPU {i} has only {props.total_memory/(1024**3):.1f}GB", flush=True)
                           file=sys.stderr)
                     return False
         return True
@@ -63,7 +63,7 @@ def check_working_dir():
 
     for item in expected:
         if not (cwd / item).exists():
-            print(f"Error: Not in LatentWire root (missing {item})", file=sys.stderr)
+            print(f"Error: Not in LatentWire root (missing {item})", file=sys.stderr, flush=True)
             return False
     return True
 

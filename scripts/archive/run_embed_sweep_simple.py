@@ -65,10 +65,14 @@ def run_experiment(experiment_name, transform_config, model, tokenizer, examples
     predictions = []
     references = []
     empty_count = 0
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     start_time = time.time()
 
     for idx, example in enumerate(examples[:max_samples]):
         if idx > 0 and idx % 25 == 0:
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             elapsed = time.time() - start_time
             rate = elapsed / idx
             remaining = rate * (max_samples - idx)
@@ -147,6 +151,8 @@ def run_experiment(experiment_name, transform_config, model, tokenizer, examples
         predictions.append(generated_text)
         references.append(answer)
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     elapsed = time.time() - start_time
 
     # Compute metrics using core_utils

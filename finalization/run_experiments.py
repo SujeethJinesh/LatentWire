@@ -167,7 +167,7 @@ class ExperimentRunner:
 
         try:
             # Phase 1: Training
-            print(f"Phase 1: Training")
+            print(f"Phase 1: Training", flush=True)
             train_output_dir = exp_dir / "checkpoints"
 
             if self.dry_run:
@@ -183,7 +183,7 @@ class ExperimentRunner:
             eval_output_dir = exp_dir / "evaluation"
 
             if self.dry_run:
-                print(f"  [DRY RUN] Would evaluate checkpoint: {checkpoint_path}")
+                print(f"  [DRY RUN] Would evaluate checkpoint: {checkpoint_path}", flush=True)
                 eval_result = {'status': 'dry_run'}
             else:
                 eval_result = self._run_evaluation(config, checkpoint_path, eval_output_dir)
@@ -192,7 +192,7 @@ class ExperimentRunner:
             result['status'] = 'completed'
 
         except Exception as e:
-            print(f"Error in experiment {config.name}: {e}")
+            print(f"Error in experiment {config.name}: {e}", flush=True)
             result['status'] = 'failed'
             result['error'] = str(e)
 
@@ -375,7 +375,7 @@ def main():
             if matching:
                 experiments.append(matching[0])
             else:
-                print(f"Warning: Unknown experiment '{name}'")
+                print(f"Warning: Unknown experiment '{name}'", flush=True)
     else:
         experiments = runner.get_default_experiments()
 

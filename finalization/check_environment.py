@@ -16,7 +16,7 @@ def check_python():
     version = sys.version_info
     print(f"Python version: {version.major}.{version.minor}.{version.micro}")
     if version.major < 3 or (version.major == 3 and version.minor < 7):
-        print("  [WARNING] Python 3.7+ recommended")
+        print("  [WARNING] Python 3.7+ recommended", flush=True)
         return False
     print("  [OK] Python version meets requirements")
     return True
@@ -41,7 +41,7 @@ def check_pytorch():
         return True
     except ImportError:
         print("PyTorch: NOT INSTALLED")
-        print("  [WARNING] PyTorch required for training/evaluation")
+        print("  [WARNING] PyTorch required for training/evaluation", flush=True)
         return False
 
 def check_transformers():
@@ -53,7 +53,7 @@ def check_transformers():
         return True
     except ImportError:
         print("Transformers: NOT INSTALLED")
-        print("  [WARNING] Transformers required for LLM loading")
+        print("  [WARNING] Transformers required for LLM loading", flush=True)
         return False
 
 def check_datasets():
@@ -65,7 +65,7 @@ def check_datasets():
         return True
     except ImportError:
         print("Datasets: NOT INSTALLED")
-        print("  [WARNING] Datasets required for data loading")
+        print("  [WARNING] Datasets required for data loading", flush=True)
         return False
 
 def check_git():
@@ -98,14 +98,14 @@ def check_git():
                 if result.returncode == 0:
                     print(f"  [OK] Current branch: {result.stdout.strip()}")
             else:
-                print("  [WARNING] Not in git repository")
+                print("  [WARNING] Not in git repository", flush=True)
 
             return True
     except:
         pass
 
     print("Git: NOT INSTALLED or not accessible")
-    print("  [WARNING] Git required for version control")
+    print("  [WARNING] Git required for version control", flush=True)
     return False
 
 def check_disk_space():
@@ -122,7 +122,7 @@ def check_disk_space():
     print(f"Disk space: {free_gb:.1f}GB free / {total_gb:.1f}GB total")
 
     if free_gb < 10:
-        print("  [WARNING] Less than 10GB free space")
+        print("  [WARNING] Less than 10GB free space", flush=True)
         return False
     else:
         print("  [OK] Sufficient disk space")
@@ -139,7 +139,7 @@ def check_memory():
         print(f"Memory: {available_gb:.1f}GB available / {total_gb:.1f}GB total")
 
         if total_gb < 16:
-            print("  [WARNING] Less than 16GB RAM may cause issues")
+            print("  [WARNING] Less than 16GB RAM may cause issues", flush=True)
             return False
         else:
             print("  [OK] Sufficient memory")
@@ -224,7 +224,7 @@ def main():
         try:
             results[name] = check_func()
         except Exception as e:
-            print(f"  [ERROR] Check failed: {e}")
+            print(f"  [ERROR] Check failed: {e}", flush=True)
             results[name] = False
 
     # Summary
@@ -242,7 +242,7 @@ def main():
         print("System is ready for LatentWire experiments.")
         return 0
     else:
-        print("\n[WARNING] Some environment checks failed.")
+        print("\n[WARNING] Some environment checks failed.", flush=True)
         print("The system may still work, but some features may be limited.")
         print("\nFailed checks:")
         for name, result in results.items():

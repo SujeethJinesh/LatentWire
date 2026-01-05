@@ -79,7 +79,7 @@ class ComprehensiveEvaluator:
 
     def _load_checkpoint(self) -> Dict:
         """Load checkpoint from disk."""
-        print(f"Loading checkpoint from {self.checkpoint_path}")
+        print(f"Loading checkpoint from {self.checkpoint_path}", flush=True)
         checkpoint = torch.load(self.checkpoint_path, map_location=self.device)
         return checkpoint
 

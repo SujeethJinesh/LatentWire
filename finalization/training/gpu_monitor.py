@@ -103,7 +103,7 @@ class GPUMonitor:
                 time.sleep(self.sample_interval)
 
             except Exception as e:
-                print(f"Error in GPU monitoring: {e}")
+                print(f"Error in GPU monitoring: {e}", flush=True)
                 time.sleep(self.sample_interval)
 
     def _collect_stats(self) -> Dict[str, Any]:

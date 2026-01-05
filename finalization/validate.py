@@ -659,13 +659,13 @@ def run_validation(fix: bool = False) -> bool:
     if failed == 0:
         print(f"{GREEN}✓ All {len(results)} checks PASSED{RESET}")
         if warnings > 0:
-            print(f"{YELLOW}  ({warnings} warning(s) - see above for details){RESET}")
+            print(f"{YELLOW}  ({warnings} warning(s) - see above for details){RESET}", flush=True)
         print(f"\n{GREEN}System is ready for experiments!{RESET}")
         return True
     else:
         print(f"{RED}✗ {failed}/{len(results)} checks FAILED{RESET}")
-        print(f"\n{RED}Please fix the errors above before running experiments.{RESET}")
-        print(f"Review the {RED}→ Fix:{RESET} suggestions for each error.")
+        print(f"\n{RED}Please fix the errors above before running experiments.{RESET}", flush=True)
+        print(f"Review the {RED}→ Fix:{RESET} suggestions for each error.", flush=True)
 
         if fix:
             print(f"\n{YELLOW}Auto-fix mode enabled - attempting fixes...{RESET}")

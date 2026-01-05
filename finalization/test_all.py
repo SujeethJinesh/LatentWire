@@ -30,7 +30,7 @@ try:
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
-    print("Warning: PyTorch not available locally. Skipping torch-dependent tests.")
+    print("Warning: PyTorch not available locally. Skipping torch-dependent tests.", flush=True)
     print("Note: These tests will work on HPC where PyTorch is installed.")
 
 # Try importing project modules - only if torch is available
@@ -43,7 +43,7 @@ if TORCH_AVAILABLE:
         MODULES_AVAILABLE = True
     except ImportError as e:
         MODULES_AVAILABLE = False
-        print(f"Warning: Project modules not available: {e}")
+        print(f"Warning: Project modules not available: {e}", flush=True)
 else:
     MODULES_AVAILABLE = False
 
@@ -105,7 +105,7 @@ results = TestResults()
 def test_checkpoint_save_load():
     """Test 1: Checkpoint save/load cycle."""
     print("\n" + "="*60)
-    print("TEST 1: Checkpoint Save/Load Cycle")
+    print("TEST 1: Checkpoint Save/Load Cycle", flush=True)
     print("="*60)
 
     if not TORCH_AVAILABLE or not MODULES_AVAILABLE:
@@ -206,10 +206,10 @@ import sys
 import time
 
 def handle_sigterm(signum, frame):
-    print("SIGTERM received, saving checkpoint...")
+    print("SIGTERM received, saving checkpoint...", flush=True)
     with open("checkpoint_saved.txt", "w") as f:
                 f.write("checkpoint")
-    print("Checkpoint saved, exiting gracefully")
+    print("Checkpoint saved, exiting gracefully", flush=True)
     sys.exit(0)
 
 signal.signal(signal.SIGTERM, handle_sigterm)
@@ -249,7 +249,7 @@ print("Timeout - no signal received")
 def test_resume_from_checkpoint():
     """Test 3: Resume from checkpoint."""
     print("\n" + "="*60)
-    print("TEST 3: Resume from Checkpoint")
+    print("TEST 3: Resume from Checkpoint", flush=True)
     print("="*60)
 
     if not TORCH_AVAILABLE:
@@ -335,7 +335,7 @@ def test_elastic_gpu_configuration():
                             # In real scenario, this would use DDP
                             assert effective_batch == TEST_CONFIG["batch_size"] * n_gpus
 
-                        print(f"  [OK] Tested with {n_gpus} GPU(s), effective batch size: {effective_batch}")
+                        print(f"  [OK] Tested with {n_gpus} GPU(s), effective batch size: {effective_batch}", flush=True)
 
         results.add_test("Elastic GPU Configuration", True)
 
@@ -345,7 +345,7 @@ def test_elastic_gpu_configuration():
 def test_data_loading_performance():
     """Test 5: Data loading performance."""
     print("\n" + "="*60)
-    print("TEST 5: Data Loading Performance")
+    print("TEST 5: Data Loading Performance", flush=True)
     print("="*60)
 
     if not MODULES_AVAILABLE:
@@ -380,8 +380,8 @@ def test_data_loading_performance():
         iter_time = time.time() - start_time
         assert iter_time < 5, f"Data iteration too slow: {iter_time:.2f}s"
 
-        print(f"  Data loading: {load_time:.2f}s for 100 samples")
-        print(f"  Iteration: {iter_time:.2f}s for 10 samples")
+        print(f"  Data loading: {load_time:.2f}s for 100 samples", flush=True)
+        print(f"  Iteration: {iter_time:.2f}s for 10 samples", flush=True)
 
         results.add_test("Data Loading Performance", True)
 
@@ -541,7 +541,7 @@ def test_git_operations():
         )
         uncommitted_files = result.stdout.strip()
         if uncommitted_files:
-            print(f"  Warning: Uncommitted changes detected")
+            print(f"  Warning: Uncommitted changes detected", flush=True)
 
         # Test git log parsing
         result = subprocess.run(
@@ -562,7 +562,7 @@ def test_git_operations():
         )
         # Don't fail if network is unavailable, just warn
         if result.returncode != 0:
-            print("  Warning: Cannot connect to git remote")
+            print("  Warning: Cannot connect to git remote", flush=True)
         else:
             print("  [OK] Git remote accessible")
 
@@ -576,7 +576,7 @@ def test_git_operations():
 def test_minimal_training_loop():
     """Bonus: Test minimal training loop integration."""
     print("\n" + "="*60)
-    print("BONUS: Minimal Training Loop")
+    print("BONUS: Minimal Training Loop", flush=True)
     print("="*60)
 
     if not TORCH_AVAILABLE or not MODULES_AVAILABLE:
@@ -623,7 +623,7 @@ def test_minimal_training_loop():
 
             print("  [OK] Forward pass successful")
             print("  [OK] Backward pass successful")
-            print("  [OK] Optimizer step successful")
+            print("  [OK] Optimizer step successful", flush=True)
 
             results.add_test("Minimal Training Loop", True)
 

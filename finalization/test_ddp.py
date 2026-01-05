@@ -69,7 +69,7 @@ def test_ddp():
 
     # Check if CUDA is available
     if not torch.cuda.is_available():
-        print("WARNING: CUDA not available, testing CPU mode only")
+        print("WARNING: CUDA not available, testing CPU mode only", flush=True)
         device = 'cpu'
     else:
         device = 'cuda'
@@ -128,7 +128,7 @@ def test_ddp():
     criterion = nn.CrossEntropyLoss()
 
     # Training loop (just 1 epoch for testing)
-    ddp_manager.print("\nStarting training loop...")
+    ddp_manager.print("\nStarting training loop...", flush=True)
 
     model.train()
     for epoch in range(2):
@@ -158,7 +158,7 @@ def test_ddp():
 
             # Print progress (only from main process)
             if batch_idx % 5 == 0:
-                ddp_manager.print(f"  Epoch {epoch+1}, Batch {batch_idx}/{len(dataloader)}, Loss: {loss.item():.4f}")
+                ddp_manager.print(f"  Epoch {epoch+1}, Batch {batch_idx}/{len(dataloader)}, Loss: {loss.item():.4f}", flush=True)
 
         # Calculate average loss
         avg_loss = total_loss / num_batches
@@ -170,7 +170,7 @@ def test_ddp():
             loss_tensor /= ddp_manager.world_size
             avg_loss = loss_tensor.item()
 
-        ddp_manager.print(f"Epoch {epoch+1} complete. Average loss: {avg_loss:.4f}")
+        ddp_manager.print(f"Epoch {epoch+1} complete. Average loss: {avg_loss:.4f}", flush=True)
 
         # Synchronize all processes
         ddp_manager.barrier()
@@ -192,7 +192,7 @@ def test_ddp():
             ddp_manager.print("Run with torchrun to enable DDP")
 
     # Cleanup
-    ddp_manager.print("\n✅ Test completed successfully!")
+    ddp_manager.print("\n✅ Test completed successfully!", flush=True)
     ddp_manager.cleanup()
 
 

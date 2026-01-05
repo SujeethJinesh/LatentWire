@@ -31,13 +31,13 @@ from latentwire.data import (
 def verify_sst2():
     """Verify SST-2 validation set loading."""
     print("\n" + "="*60)
-    print("Testing SST-2 Dataset Loading")
+    print("Testing SST-2 Dataset Loading", flush=True)
     print("="*60)
 
     try:
         # Test with default (should use full validation set)
         samples_default = load_sst2_subset(split="validation", samples=None)
-        print(f"✓ Default loading: {len(samples_default)} samples")
+        print(f"✓ Default loading: {len(samples_default)} samples", flush=True)
 
         # Test explicit full set request
         samples_full = load_sst2_subset(split="validation", samples=872)
@@ -66,20 +66,20 @@ def verify_sst2():
             return False
 
     except Exception as e:
-        print(f"❌ SST-2: ERROR - {e}")
+        print(f"❌ SST-2: ERROR - {e}", flush=True)
         return False
 
 
 def verify_agnews():
     """Verify AG News test set loading."""
     print("\n" + "="*60)
-    print("Testing AG News Dataset Loading")
+    print("Testing AG News Dataset Loading", flush=True)
     print("="*60)
 
     try:
         # Test with default (should use full test set)
         samples_default = load_agnews_subset(split="test", samples=None)
-        print(f"✓ Default loading: {len(samples_default)} samples")
+        print(f"✓ Default loading: {len(samples_default)} samples", flush=True)
 
         # Test explicit full set request
         samples_full = load_agnews_subset(split="test", samples=7600)
@@ -115,20 +115,20 @@ def verify_agnews():
             return False
 
     except Exception as e:
-        print(f"❌ AG News: ERROR - {e}")
+        print(f"❌ AG News: ERROR - {e}", flush=True)
         return False
 
 
 def verify_trec():
     """Verify TREC test set loading."""
     print("\n" + "="*60)
-    print("Testing TREC Dataset Loading")
+    print("Testing TREC Dataset Loading", flush=True)
     print("="*60)
 
     try:
         # Test with default (should use full test set)
         samples_default = load_trec_subset(split="test", samples=None)
-        print(f"✓ Default loading: {len(samples_default)} samples")
+        print(f"✓ Default loading: {len(samples_default)} samples", flush=True)
 
         # Test explicit full set request
         samples_full = load_trec_subset(split="test", samples=500)
@@ -164,25 +164,25 @@ def verify_trec():
             return False
 
     except Exception as e:
-        print(f"❌ TREC: ERROR - {e}")
+        print(f"❌ TREC: ERROR - {e}", flush=True)
         return False
 
 
 def verify_xsum():
     """Verify XSUM test set loading."""
     print("\n" + "="*60)
-    print("Testing XSUM Dataset Loading")
+    print("Testing XSUM Dataset Loading", flush=True)
     print("="*60)
 
     try:
         # Test with default (should use full test set)
         try:
             samples_default = load_xsum_subset(split="test", samples=None)
-            print(f"✓ Default loading: {len(samples_default)} samples")
+            print(f"✓ Default loading: {len(samples_default)} samples", flush=True)
             loaded = True
         except RuntimeError as e:
             if "Dataset scripts are no longer supported" in str(e):
-                print(f"⚠️ XSUM loading issue (known compatibility problem with newer datasets library):")
+                print(f"⚠️ XSUM loading issue (known compatibility problem with newer datasets library):", flush=True)
                 print(f"  {e}")
                 loaded = False
             else:
@@ -213,12 +213,12 @@ def verify_xsum():
                 print(f"❌ XSUM: FAIL - Expected 11,334 samples, got {len(samples_default)}")
                 return False
         else:
-            print("⚠️ XSUM: PARTIAL - Dataset loading requires special handling")
+            print("⚠️ XSUM: PARTIAL - Dataset loading requires special handling", flush=True)
             print("  See docstring in data.py for solutions")
             return None  # Partial pass
 
     except Exception as e:
-        print(f"❌ XSUM: ERROR - {e}")
+        print(f"❌ XSUM: ERROR - {e}", flush=True)
         return False
 
 
@@ -268,7 +268,7 @@ def main():
         else:
             print("\n✅ All datasets load correctly with full test sets as required!")
     else:
-        print("\n❌ Some datasets are not loading the full test sets as required")
+        print("\n❌ Some datasets are not loading the full test sets as required", flush=True)
         print("   Please review the data.py implementation")
 
     return failed == 0

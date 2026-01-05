@@ -96,15 +96,15 @@ class CheckpointManager:
                 if self.validate_on_load:
                     if self._validate_checkpoint(checkpoint_path, metadata):
                         self.checkpoint_history.append(checkpoint_path)
-                        print(f"Found valid checkpoint: {checkpoint_path}")
+                        print(f"Found valid checkpoint: {checkpoint_path}", flush=True)
                     else:
-                        print(f"Warning: Current checkpoint corrupted, will check alternatives")
+                        print(f"Warning: Current checkpoint corrupted, will check alternatives", flush=True)
                         self._check_alternative_checkpoints()
                 else:
                     self.checkpoint_history.append(checkpoint_path)
-                    print(f"Found checkpoint: {checkpoint_path}")
+                    print(f"Found checkpoint: {checkpoint_path}", flush=True)
             except Exception as e:
-                print(f"Warning: Failed to read checkpoint metadata: {e}")
+                print(f"Warning: Failed to read checkpoint metadata: {e}", flush=True)
                 self._check_alternative_checkpoints()
         else:
             # No current checkpoint, check alternatives
@@ -135,7 +135,7 @@ class CheckpointManager:
                             self.checkpoint_history.append(current_path)
                             return
                     except Exception as e:
-                        print(f"Warning: Failed to restore {alt_path}: {e}")
+                        print(f"Warning: Failed to restore {alt_path}: {e}", flush=True)
 
     def _check_backup_checkpoint(self, backup_path: Path) -> None:
         """Check and potentially restore backup checkpoint."""
@@ -145,14 +145,14 @@ class CheckpointManager:
                 with open(backup_meta, 'r') as f:
                     backup_metadata = json.load(f)
                 if not self.validate_on_load or self._validate_checkpoint(backup_path, backup_metadata):
-                    print(f"Found valid backup checkpoint, restoring...")
+                    print(f"Found valid backup checkpoint, restoring...", flush=True)
                     # Restore backup as current
                     current_path = self.checkpoint_dir / "checkpoint_current.pt"
                     backup_path.rename(current_path)
                     backup_meta.rename(current_path.with_suffix(".json"))
                     self.checkpoint_history.append(current_path)
             except Exception as e:
-                print(f"Warning: Failed to restore backup: {e}")
+                print(f"Warning: Failed to restore backup: {e}", flush=True)
 
     def _validate_checkpoint(self, checkpoint_path: Path, metadata: Dict) -> bool:
         """Validate checkpoint integrity using checksum."""
@@ -169,7 +169,7 @@ class CheckpointManager:
             computed_checksum = hasher.hexdigest()
             return computed_checksum == metadata['checksum']
         except Exception as e:
-            print(f"Validation error for {checkpoint_path}: {e}")
+            print(f"Validation error for {checkpoint_path}: {e}", flush=True)
             return False
 
     def _compute_checksum(self, checkpoint_path: Path) -> str:
@@ -279,11 +279,11 @@ class CheckpointManager:
             self.checkpoint_history.append(checkpoint_path)
             self.last_save_time = time.time()
 
-            print(f"Checkpoint saved: {checkpoint_path}")
+            print(f"Checkpoint saved: {checkpoint_path}", flush=True)
             return checkpoint_path
 
         except Exception as e:
-            print(f"Error saving checkpoint: {e}")
+            print(f"Error saving checkpoint: {e}", flush=True)
 
             # Attempt to restore backup
             if backup_path.exists():
@@ -300,7 +300,7 @@ class CheckpointManager:
                         backup_meta.rename(checkpoint_path.with_suffix(".json"))
                     print("Backup restored successfully")
                 except Exception as restore_error:
-                    print(f"Failed to restore backup: {restore_error}")
+                    print(f"Failed to restore backup: {restore_error}", flush=True)
 
             raise
 
@@ -321,9 +321,9 @@ class CheckpointManager:
                         meta_path = old_ckpt.with_suffix(".json")
                         if meta_path.exists():
                             meta_path.unlink()
-                        print(f"Cleaned up old checkpoint: {old_ckpt.name}")
+                        print(f"Cleaned up old checkpoint: {old_ckpt.name}", flush=True)
                     except Exception as e:
-                        print(f"Error removing {old_ckpt}: {e}")
+                        print(f"Error removing {old_ckpt}: {e}", flush=True)
 
     def load_checkpoint(
         self,
@@ -362,7 +362,7 @@ class CheckpointManager:
         # Load state
         state = torch.load(checkpoint_path, map_location=map_location)
 
-        print(f"Loaded checkpoint: {checkpoint_path}")
+        print(f"Loaded checkpoint: {checkpoint_path}", flush=True)
         if metadata:
             print(f"  Saved at: {metadata.get('datetime', 'unknown')}")
             print(f"  Tag: {metadata.get('tag', 'none')}")
@@ -383,7 +383,7 @@ class CheckpointManager:
                     if self._validate_checkpoint(checkpoint_path, metadata):
                         return checkpoint_path
                     else:
-                        print(f"Warning: Current checkpoint failed validation")
+                        print(f"Warning: Current checkpoint failed validation", flush=True)
                         # Try backup
                         backup_path = self.checkpoint_dir / "checkpoint_backup.pt"
                         if backup_path.exists():
@@ -392,10 +392,10 @@ class CheckpointManager:
                                 with open(backup_meta, 'r') as f:
                                     backup_metadata = json.load(f)
                                 if self._validate_checkpoint(backup_path, backup_metadata):
-                                    print("Using backup checkpoint")
+                                    print("Using backup checkpoint", flush=True)
                                     return backup_path
                 except Exception as e:
-                    print(f"Error reading checkpoint metadata: {e}")
+                    print(f"Error reading checkpoint metadata: {e}", flush=True)
                     return None
             else:
                 return checkpoint_path
@@ -403,7 +403,7 @@ class CheckpointManager:
         # Check for backup if main doesn't exist
         backup_path = self.checkpoint_dir / "checkpoint_backup.pt"
         if backup_path.exists():
-            print("Warning: No current checkpoint found, checking backup...")
+            print("Warning: No current checkpoint found, checking backup...", flush=True)
             backup_meta = backup_path.with_suffix(".json")
             if backup_meta.exists():
                 return backup_path
@@ -427,7 +427,7 @@ class CheckpointManager:
             True if save succeeded, False otherwise
         """
         try:
-            print("EMERGENCY SAVE: Starting rapid checkpoint save...")
+            print("EMERGENCY SAVE: Starting rapid checkpoint save...", flush=True)
             emergency_path = self.checkpoint_dir / "checkpoint_emergency.pt"
 
             # Save directly without validation for speed
@@ -453,9 +453,9 @@ class CheckpointManager:
                     current_path.with_suffix(".json").unlink()
                 emergency_path.rename(current_path)
                 meta_path.rename(current_path.with_suffix(".json"))
-                print("EMERGENCY SAVE: Checkpoint saved as current")
+                print("EMERGENCY SAVE: Checkpoint saved as current", flush=True)
             except:
-                print("EMERGENCY SAVE: Saved as emergency checkpoint")
+                print("EMERGENCY SAVE: Saved as emergency checkpoint", flush=True)
 
             return True
 

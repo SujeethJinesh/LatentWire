@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
 # Test memory calculations for various GPU configurations
 
+
+# =============================================================================
+# LOGGING SETUP
+# =============================================================================
+
+# Ensure output directory exists
+OUTPUT_DIR="${OUTPUT_DIR:-runs/test_memory_calculations}"
+mkdir -p "$OUTPUT_DIR"
+
+# Create timestamped log file
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="$OUTPUT_DIR/test_memory_calculations_${TIMESTAMP}.log"
+
+echo "Starting test_memory_calculations at $(date)" | tee "$LOG_FILE"
+echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
+echo "" | tee -a "$LOG_FILE"
+
+# Wrapper function for logging commands
+run_with_logging() {
+    echo "Running: $*" | tee -a "$LOG_FILE"
+    { "$@"; } 2>&1 | tee -a "$LOG_FILE"
+    return ${PIPESTATUS[0]}
+}
+
 set -e
 
 echo "=============================================================="

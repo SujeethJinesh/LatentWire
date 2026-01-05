@@ -715,6 +715,8 @@ def main():
     print()
 
     # Run evaluation
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     start_time = time.time()
 
     if config.mode == "text":
@@ -774,6 +776,8 @@ def main():
 
         results = eval_noise_baseline(wrapper, samples, config)
 
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     elapsed = time.time() - start_time
 
     # Compute confidence intervals

@@ -85,7 +85,7 @@ class PaperGenerator:
     def _load_results(self):
         """Load and validate results."""
         if not self.results_path.exists():
-            print(f"Warning: Results file not found at {self.results_path}")
+            print(f"Warning: Results file not found at {self.results_path}", flush=True)
             return self._get_demo_results()
 
         with open(self.results_path) as f:
@@ -689,7 +689,7 @@ Dataset & Comparison & t-stat & p-value & Cohen's d \\
             self.generate_latency_memory_figure()
             self.generate_compression_figure()
         except Exception as e:
-            print(f"Warning: Could not generate some figures: {e}")
+            print(f"Warning: Could not generate some figures: {e}", flush=True)
 
         # Generate master file with all includes
         master = self._generate_master_file()

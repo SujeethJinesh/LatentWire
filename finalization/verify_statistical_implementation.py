@@ -77,7 +77,7 @@ def main():
     stat_file = Path(__file__).parent.parent / 'scripts' / 'statistical_testing.py'
 
     if not stat_file.exists():
-        print(f"\n❌ ERROR: {stat_file} not found!")
+        print(f"\n❌ ERROR: {stat_file} not found!", flush=True)
         return False
 
     print(f"\nAnalyzing: {stat_file}")
@@ -219,7 +219,7 @@ def main():
         print("  • Uses scipy.stats.bootstrap for robust CI computation")
         print("  • Supports exact binomial test for small samples in McNemar's")
         print("  • Includes BCa (bias-corrected and accelerated) bootstrap method")
-        print("  • Provides multiple testing corrections to control error rates")
+        print("  • Provides multiple testing corrections to control error rates", flush=True)
         print("  • Includes comprehensive docstrings and examples")
     else:
         print("\n⚠️  PARTIAL IMPLEMENTATION")

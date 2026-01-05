@@ -67,7 +67,7 @@ def handle_preemption_signal(signum, frame):
     global PREEMPTION_REQUESTED
     print("\n" + "="*80)
     print("PREEMPTION SIGNAL RECEIVED!")
-    print("Saving checkpoint immediately...")
+    print("Saving checkpoint immediately...", flush=True)
     print("="*80)
     PREEMPTION_REQUESTED = True
 
@@ -136,10 +136,10 @@ def save_preemption_checkpoint(state: Dict[str, Any]):
         with open(preempt_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
-        print(f"\nPreemption checkpoint saved to: {preempt_dir}")
-        print(f"  Epoch: {checkpoint['epoch']}")
-        print(f"  Step in epoch: {checkpoint['step_in_epoch']}")
-        print(f"  Global step: {checkpoint['global_step']}")
+        print(f"\nPreemption checkpoint saved to: {preempt_dir}", flush=True)
+        print(f"  Epoch: {checkpoint['epoch']}", flush=True)
+        print(f"  Step in epoch: {checkpoint['step_in_epoch']}", flush=True)
+        print(f"  Global step: {checkpoint['global_step']}", flush=True)
 
 
 def should_save_periodic_checkpoint():
@@ -173,7 +173,7 @@ def load_preemption_checkpoint(save_dir: str):
         checkpoint = torch.load(state_path, map_location='cpu')
         return checkpoint
     except Exception as e:
-        print(f"Warning: Failed to load preemption checkpoint: {e}")
+        print(f"Warning: Failed to load preemption checkpoint: {e}", flush=True)
         return None
 
 
@@ -230,7 +230,7 @@ def preemptible_main():
     # Register signal handler for preemption
     if args.enable_preemption_handler:
         signal.signal(signal.SIGTERM, handle_preemption_signal)
-        print(f"Preemption handler registered (checkpoint interval: {CHECKPOINT_INTERVAL}s)")
+        print(f"Preemption handler registered (checkpoint interval: {CHECKPOINT_INTERVAL}s)", flush=True)
 
     # Check for preemption checkpoint to resume from
     start_epoch = 0
@@ -250,9 +250,9 @@ def preemptible_main():
                 if torch.cuda.is_available() and preempt_checkpoint['rng']['cuda']:
                     torch.cuda.set_rng_state_all(preempt_checkpoint['rng']['cuda'])
 
-            print(f"\nResuming from preemption checkpoint:")
-            print(f"  Starting at epoch {start_epoch}, step {start_step}")
-            print(f"  Global step: {global_step}")
+            print(f"\nResuming from preemption checkpoint:", flush=True)
+            print(f"  Starting at epoch {start_epoch}, step {start_step}", flush=True)
+            print(f"  Global step: {global_step}", flush=True)
 
             # Set resume_from to load model weights
             args.resume_from = str(Path(args.save_dir) / "preempt_checkpoint")
@@ -267,16 +267,16 @@ def preemptible_main():
 
     # Run training (this would be the modified training loop)
     print("\n" + "="*80)
-    print("Starting preemptible training")
+    print("Starting preemptible training", flush=True)
     print("="*80)
     print(f"Configuration:")
     print(f"  Model: {args.llama_id}")
     print(f"  Dataset: {args.dataset}")
     print(f"  Samples: {args.samples}")
-    print(f"  Epochs: {args.epochs}")
-    print(f"  Batch size: {args.batch_size}")
+    print(f"  Epochs: {args.epochs}", flush=True)
+    print(f"  Batch size: {args.batch_size}", flush=True)
     print(f"  Save directory: {args.save_dir}")
-    print(f"  Preemption checkpoint interval: {CHECKPOINT_INTERVAL}s")
+    print(f"  Preemption checkpoint interval: {CHECKPOINT_INTERVAL}s", flush=True)
     print(f"  Auto-resume: {args.auto_resume}")
     print("="*80 + "\n")
 
@@ -285,12 +285,12 @@ def preemptible_main():
     # For now, we'll indicate what would need to be done
 
     print("Note: This is a template implementation.")
-    print("To make this fully functional, the entire training loop from")
+    print("To make this fully functional, the entire training loop from", flush=True)
     print("latentwire/train.py needs to be copied here and modified to:")
-    print("1. Check PREEMPTION_REQUESTED flag in each batch")
-    print("2. Update TRAINING_STATE with current epoch/step/models")
-    print("3. Save periodic checkpoints based on time interval")
-    print("4. Handle resumption from exact batch within an epoch")
+    print("1. Check PREEMPTION_REQUESTED flag in each batch", flush=True)
+    print("2. Update TRAINING_STATE with current epoch/step/models", flush=True)
+    print("3. Save periodic checkpoints based on time interval", flush=True)
+    print("4. Handle resumption from exact batch within an epoch", flush=True)
 
     # Placeholder for the actual training loop
     # original_train.main()

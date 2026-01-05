@@ -57,7 +57,7 @@ class PaperWriter:
                     results['gates'] = data.get('execution_gates', {})
                     results['summary'] = data.get('summary', {})
             except Exception as e:
-                print(f"Warning: Could not load {final_results_file}: {e}")
+                print(f"Warning: Could not load {final_results_file}: {e}", flush=True)
 
         return results
 
@@ -855,9 +855,9 @@ def main():
     writer.generate_paper()
 
     print("\n" + "=" * 80)
-    print("PAPER GENERATION COMPLETE")
+    print("PAPER GENERATION COMPLETE", flush=True)
     print("=" * 80)
-    print("\nNext steps:")
+    print("\nNext steps:", flush=True)
     print("1. Review and edit the generated paper")
     print("2. Add actual result numbers from experiments")
     print("3. Include generated figures from results directory")

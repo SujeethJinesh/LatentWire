@@ -3,6 +3,30 @@
 # Run comprehensive validation before experiments
 # This prevents wasted GPU time from missing dependencies
 
+
+# =============================================================================
+# LOGGING SETUP
+# =============================================================================
+
+# Ensure output directory exists
+OUTPUT_DIR="${OUTPUT_DIR:-runs/run_validation}"
+mkdir -p "$OUTPUT_DIR"
+
+# Create timestamped log file
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="$OUTPUT_DIR/run_validation_${TIMESTAMP}.log"
+
+echo "Starting run_validation at $(date)" | tee "$LOG_FILE"
+echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
+echo "" | tee -a "$LOG_FILE"
+
+# Wrapper function for logging commands
+run_with_logging() {
+    echo "Running: $*" | tee -a "$LOG_FILE"
+    { "$@"; } 2>&1 | tee -a "$LOG_FILE"
+    return ${PIPESTATUS[0]}
+}
+
 set -e
 
 # Colors for output

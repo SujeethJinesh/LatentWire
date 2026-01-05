@@ -79,7 +79,7 @@ def test_linear_probe_core():
         y_pred = probe.predict(X_scaled)
         accuracy = accuracy_score(y, y_pred)
         print(f"  ✓ Predictions computed")
-        print(f"  Training accuracy: {accuracy*100:.1f}%")
+        print(f"  Training accuracy: {accuracy*100:.1f}%", flush=True)
 
         if accuracy > 0.9:
             print("  ✓ Core logic works correctly (high accuracy on separable data)")

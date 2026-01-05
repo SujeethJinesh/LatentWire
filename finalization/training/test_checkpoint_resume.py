@@ -35,6 +35,11 @@ import argparse
 import threading
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
+try:
+    from typing import get_type_hints
+except ImportError:
+    # Python < 3.5 compatibility
+    pass
 from unittest.mock import Mock, patch, MagicMock
 import signal
 
@@ -135,7 +140,7 @@ class TestCheckpointResume(unittest.TestCase):
         if self.test_dir.exists():
             shutil.rmtree(self.test_dir)
 
-    def _create_checkpoint(self) -> Dict[str, Any]:
+    def _create_checkpoint(self):
         """Create a checkpoint dictionary."""
         return {
             'epoch': self.training_state.epoch,
@@ -153,7 +158,7 @@ class TestCheckpointResume(unittest.TestCase):
             }
         }
 
-    def _load_checkpoint(self, checkpoint: Dict[str, Any]):
+    def _load_checkpoint(self, checkpoint):
         """Load checkpoint into current state."""
         self.training_state.from_dict(checkpoint['training_state'])
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -541,7 +546,7 @@ class TestCheckpointResume(unittest.TestCase):
             self.training_state.epoch = i
             self.training_state.global_step = i * 25
             checkpoint = self._create_checkpoint()
-            self.ckpt_manager.save_checkpoint(checkpoint, tag=f"ckpt_{i}")
+            self.ckpt_manager.save_checkpoint(checkpoint, tag="ckpt_{}".format(i))
             time.sleep(0.1)  # Small delay to ensure different timestamps
 
         # List checkpoints
@@ -681,7 +686,7 @@ class TestPreemptionScenarios(unittest.TestCase):
         # Launch concurrent saves
         threads = []
         for i in range(5):
-            t = threading.Thread(target=save_checkpoint, args=(f"concurrent_{i}",))
+            t = threading.Thread(target=save_checkpoint, args=("concurrent_{}".format(i),))
             threads.append(t)
             t.start()
 
@@ -704,7 +709,7 @@ class TestPreemptionScenarios(unittest.TestCase):
 def run_integration_test():
     """Run a full integration test simulating real training with interruption."""
     print("\n" + "="*70)
-    print("INTEGRATION TEST: Simulating training with interruption and resume")
+    print("INTEGRATION TEST: Simulating training with interruption and resume", flush=True)
     print("="*70 + "\n")
 
     test_dir = Path(tempfile.mkdtemp(prefix="integration_test_"))
@@ -712,7 +717,7 @@ def run_integration_test():
 
     try:
         # Phase 1: Initial training
-        print("Phase 1: Initial training...")
+        print("Phase 1: Initial training...", flush=True)
         manager = CheckpointManager(checkpoint_dir=str(checkpoint_dir))
 
         model = DummyModel()
@@ -731,7 +736,7 @@ def run_integration_test():
             for batch_idx in range(num_batches):
                 # Simulate interruption mid-epoch
                 if epoch == 2 and batch_idx == 5:
-                    print(f"\n*** SIMULATING PREEMPTION at epoch {epoch}, batch {batch_idx} ***\n")
+                    print("\n*** SIMULATING PREEMPTION at epoch {epoch}, batch {} ***\n".format(batch_idx), flush=True)
 
                     # Save emergency checkpoint
                     checkpoint = {
@@ -745,7 +750,7 @@ def run_integration_test():
                     }
 
                     save_path = manager.save_checkpoint(checkpoint, tag="preemption")
-                    print(f"Emergency checkpoint saved: {save_path}")
+                    print("Emergency checkpoint saved: {}".format(save_path), flush=True)
                     break
 
                 # Training step
@@ -762,17 +767,17 @@ def run_integration_test():
                 global_step += 1
 
                 if batch_idx % 3 == 0:
-                    print(f"  Epoch {epoch}, Batch {batch_idx}/{num_batches}, "
-                          f"Step {global_step}, Loss: {loss.item():.4f}")
+                    print("  Epoch {epoch}, Batch {batch_idx}/{}, ".format(num_batches, flush=True)
+                          "Step {global_step}, Loss: {}".format(loss.item():.4f))
 
             if epoch == 2 and batch_idx == 5:
                 break  # Simulated interruption
 
-        print(f"\nTraining interrupted at epoch {epoch}, batch {batch_idx}, step {global_step}")
+        print("\nTraining interrupted at epoch {epoch}, batch {batch_idx}, step {}".format(global_step), flush=True)
 
         # Phase 2: Resume training
         print("\n" + "-"*50)
-        print("Phase 2: Resuming training from checkpoint...")
+        print("Phase 2: Resuming training from checkpoint...", flush=True)
         print("-"*50 + "\n")
 
         # Create new model and optimizer (simulating fresh start)
@@ -790,7 +795,7 @@ def run_integration_test():
         resumed_step = checkpoint['global_step']
         resumed_perm = checkpoint['permutation']
 
-        print(f"Resumed from: epoch {resumed_epoch}, batch {resumed_batch}, step {resumed_step}")
+        print("Resumed from: epoch {resumed_epoch}, batch {resumed_batch}, step {}".format(resumed_step), flush=True)
 
         # Continue training from where we left off
         for epoch in range(resumed_epoch, 5):  # Train to epoch 5
@@ -819,11 +824,11 @@ def run_integration_test():
                 resumed_step += 1
 
                 if batch_idx % 3 == 0:
-                    print(f"  Epoch {epoch}, Batch {batch_idx}/{num_batches}, "
-                          f"Step {resumed_step}, Loss: {loss.item():.4f}")
+                    print("  Epoch {epoch}, Batch {batch_idx}/{}, ".format(num_batches, flush=True)
+                          "Step {resumed_step}, Loss: {}".format(loss.item():.4f))
 
-        print(f"\nTraining completed! Final step: {resumed_step}")
-        print("\n✅ Integration test passed - training successfully resumed from interruption")
+        print("\nTraining completed! Final step: {}".format(resumed_step), flush=True)
+        print("\n✅ Integration test passed - training successfully resumed from interruption", flush=True)
 
     finally:
         # Cleanup
@@ -864,12 +869,12 @@ def main():
     print("\n" + "="*70)
     if result.wasSuccessful():
         print("✅ ALL TESTS PASSED")
-        print(f"   Tests run: {result.testsRun}")
+        print("   Tests run: {}".format(result.testsRun))
     else:
         print("❌ SOME TESTS FAILED")
-        print(f"   Tests run: {result.testsRun}")
-        print(f"   Failures: {len(result.failures)}")
-        print(f"   Errors: {len(result.errors)}")
+        print("   Tests run: {}".format(result.testsRun))
+        print("   Failures: {}".format(len(result.failures)))
+        print("   Errors: {}".format(len(result.errors)), flush=True)
     print("="*70)
 
     return 0 if result.wasSuccessful() else 1

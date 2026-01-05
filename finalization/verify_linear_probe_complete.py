@@ -149,7 +149,7 @@ def verify_class_structure():
         return all_found
 
     except Exception as e:
-        print(f"✗ Error verifying class structure: {e}")
+        print(f"✗ Error verifying class structure: {e}", flush=True)
         return False
 
 
@@ -180,10 +180,10 @@ def generate_summary_report():
     print("\n" + "="*70)
 
     if all_passed:
-        print("✓ LINEAR PROBE BASELINE IS COMPLETE AND READY FOR REVIEWERS")
+        print("✓ LINEAR PROBE BASELINE IS COMPLETE AND READY FOR REVIEWERS", flush=True)
         print("\nThe implementation includes:")
         print("1. sklearn-based LogisticRegression (scientifically rigorous)")
-        print("2. Memory-efficient batch processing")
+        print("2. Memory-efficient batch processing", flush=True)
         print("3. Cross-validation support")
         print("4. Full integration with unified comparison script")
         print("5. Comprehensive documentation")
@@ -239,7 +239,7 @@ def main():
     print("LINEAR PROBE BASELINE VERIFICATION FOR REVIEWERS")
     print("="*70)
     print("This script verifies that the LinearProbeBaseline implementation")
-    print("is complete and ready for paper reviewers.")
+    print("is complete and ready for paper reviewers.", flush=True)
     print()
 
     # Change to repo root
