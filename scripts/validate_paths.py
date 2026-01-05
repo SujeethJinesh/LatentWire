@@ -146,7 +146,12 @@ def main():
     # Filter out unwanted directories
     all_files = []
     for f in py_files + sh_files + slurm_files:
-        if not any(skip in str(f) for skip in ['.git', 'runs/', '__pycache__', '.pytest_cache']):
+        # Skip validator script itself
+        if 'validate_paths.py' in str(f):
+            continue
+        if not any(skip in str(f) for skip in ['.git', 'runs/', '__pycache__', '.pytest_cache',
+                                                'venv', 'site-packages', '.venv', 'env/',
+                                                'build/', 'dist/', '.eggs', '.tox']):
             all_files.append(f)
 
     print("Checking {} files...".format(len(all_files)))
