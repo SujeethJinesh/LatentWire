@@ -263,8 +263,8 @@ class ExperimentValidator:
 
         # Estimate memory requirements for different configs
         estimates = {
-            "Llama-3.2-1B": {"model": 4, "training": 8, "total": 12},
-            "Llama-3.2-3B": {"model": 12, "training": 20, "total": 32},
+            "Llama-3.1-1B": {"model": 4, "training": 8, "total": 12},
+            "Llama-3.1-3B": {"model": 12, "training": 20, "total": 32},
             "Llama-3.1-8B": {"model": 32, "training": 48, "total": 80},
             "All 3 models": {"model": 48, "training": 76, "total": 124},
         }
@@ -364,8 +364,8 @@ class ExperimentValidator:
             )
 
         models_to_check = [
-            ("meta-llama/Llama-3.2-1B", "Llama-3.2-1B"),
-            ("meta-llama/Llama-3.2-3B", "Llama-3.2-3B"),
+            ("meta-llama/Llama-3.1-1B", "Llama-3.1-1B"),
+            ("meta-llama/Llama-3.1-3B", "Llama-3.1-3B"),
             ("meta-llama/Meta-Llama-3.1-8B-Instruct", "Llama-3.1-8B"),
         ]
 
@@ -577,8 +577,8 @@ class ExperimentValidator:
 
             # Create tiny bridge for testing
             model = LatentBridge(
-                model_a_name="meta-llama/Llama-3.2-1B",
-                model_b_name="meta-llama/Llama-3.2-1B",
+                model_a_name="meta-llama/Llama-3.1-1B",
+                model_b_name="meta-llama/Llama-3.1-1B",
                 latent_dim=128,
                 num_latents=8,
             )
@@ -633,8 +633,8 @@ class ExperimentValidator:
 
             # Create tiny bridge
             model = LatentBridge(
-                model_a_name="meta-llama/Llama-3.2-1B",
-                model_b_name="meta-llama/Llama-3.2-1B",
+                model_a_name="meta-llama/Llama-3.1-1B",
+                model_b_name="meta-llama/Llama-3.1-1B",
                 latent_dim=128,
                 num_latents=8,
             )
@@ -835,8 +835,8 @@ class ExperimentValidator:
 
             # Try loading different models
             model = LatentBridge(
-                model_a_name="meta-llama/Llama-3.2-1B",
-                model_b_name="meta-llama/Llama-3.2-3B",
+                model_a_name="meta-llama/Llama-3.1-1B",
+                model_b_name="meta-llama/Llama-3.1-3B",
                 latent_dim=256,
                 num_latents=16,
             )
@@ -852,7 +852,7 @@ class ExperimentValidator:
                 "Multi-Model Compatibility",
                 True,
                 f"Multi-model loading successful ({memory_info})",
-                {"models": ["Llama-3.2-1B", "Llama-3.2-3B"], "memory": memory_info}
+                {"models": ["Llama-3.1-1B", "Llama-3.1-3B"], "memory": memory_info}
             )
         except Exception as e:
             return ValidationResult(
@@ -878,8 +878,8 @@ class ExperimentValidator:
 
             # Create bridge
             model = LatentBridge(
-                model_a_name="meta-llama/Llama-3.2-1B",
-                model_b_name="meta-llama/Llama-3.2-1B",
+                model_a_name="meta-llama/Llama-3.1-1B",
+                model_b_name="meta-llama/Llama-3.1-1B",
                 latent_dim=128,
                 num_latents=8,
             )

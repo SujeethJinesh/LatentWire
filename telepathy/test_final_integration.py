@@ -46,7 +46,7 @@ def test_linear_probe(temp_dir):
     output_dir.mkdir(exist_ok=True)
 
     config = {
-        "model_name": "meta-llama/Llama-3.2-1B",
+        "model_name": "meta-llama/Llama-3.1-1B",
         "dataset_name": "xsum",
         "num_samples": 10,
         "num_epochs": 1,
@@ -94,8 +94,8 @@ def test_bridge_training(temp_dir):
     output_dir.mkdir(exist_ok=True)
 
     config = {
-        "encoder_model": "meta-llama/Llama-3.2-1B",
-        "decoder_models": ["meta-llama/Llama-3.2-1B", "Qwen/Qwen2.5-0.5B"],
+        "encoder_model": "meta-llama/Llama-3.1-1B",
+        "decoder_models": ["meta-llama/Llama-3.1-1B", "Qwen/Qwen2.5-0.5B"],
         "dataset_name": "xsum",
         "num_samples": 10,
         "num_epochs": 1,

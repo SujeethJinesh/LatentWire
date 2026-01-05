@@ -10,7 +10,7 @@ import ast
 import subprocess
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, List, Union, Any, Sequence
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 
 try:
     import torch
@@ -2299,6 +2299,33 @@ def main():
     first_acc_ema = 0.0  # Exponential moving average of first_acc
     ema_alpha = 0.1      # Smoothing factor (0.1 = 10% current, 90% history)
 
+    # Setup optimized dataloader if requested
+    optimized_dataloader = None
+    if args.use_optimized_dataloader:
+        print("Setting up optimized DataLoader...")
+        from latentwire.optimized_dataloader import create_optimized_dataloader
+
+        optimized_dataloader = create_optimized_dataloader(
+            texts=texts,
+            answers=answers,
+            model_contexts=model_contexts,
+            batch_size=args.batch_size,
+            num_workers=args.num_dataloader_workers,
+            use_chat_template=args.use_chat_template,
+            strip_anchor_literal=strip_anchor_literal,
+            device=device,
+            shuffle=False,  # We'll shuffle per epoch
+            pin_memory=args.dataloader_pin_memory,
+            prefetch_factor=args.dataloader_prefetch_factor,
+            persistent_workers=(args.num_dataloader_workers > 0),
+            cache_tokenization=args.dataloader_cache_tokenization,
+            use_prefetcher=torch.cuda.is_available(),
+        )
+        print(f"  Workers: {args.num_dataloader_workers}")
+        print(f"  Prefetch factor: {args.dataloader_prefetch_factor}")
+        print(f"  Cache tokenization: {args.dataloader_cache_tokenization}")
+        print(f"  Pin memory: {args.dataloader_pin_memory}")
+
     for epoch in range(start_epoch, start_epoch + args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
 
@@ -2401,9 +2428,14 @@ def main():
             rms_pen = torch.zeros((), device=device)
             feature_grad_norms: Dict[str, float] = {}
 
-            encoded_latents = encode_fn(effective_texts)
-            shared_latents = encoded_latents["shared"]
-            private_latents = encoded_latents["private"]
+            # Start autocast context for mixed precision forward pass
+            # The entire forward pass should be in autocast scope for maximum benefit
+            autocast_ctx = torch.cuda.amp.autocast(enabled=amp_enabled, dtype=amp_dtype) if amp_enabled else nullcontext()
+
+            with autocast_ctx:
+                encoded_latents = encode_fn(effective_texts)
+                shared_latents = encoded_latents["shared"]
+                private_latents = encoded_latents["private"]
 
             # Detailed memory profiling for first few steps
             if batch_index < 3:
