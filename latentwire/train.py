@@ -3343,8 +3343,18 @@ def main():
                 + args.adapter_rms_l2 * rms_pen
             )
 
+            # Synchronize loss across DDP processes for logging
+            if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
+                # All-reduce the loss for consistent logging across processes
+                loss_tensor = loss.clone().detach()
+                ddp_manager.all_reduce(loss_tensor, op=dist.ReduceOp.AVG if 'dist' in dir() else None)
+                loss_for_logging = loss_tensor.item()
+            else:
+                loss_for_logging = loss.item()
+
             if not torch.isfinite(loss):
-                print("NaN/Inf loss; skipping step")
+                if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_log:
+                    print("NaN/Inf loss; skipping step")
                 # Clean up gradients and memory before skipping
                 optimizer.zero_grad(set_to_none=True)
                 torch.cuda.empty_cache()
@@ -3460,16 +3470,24 @@ def main():
             dt = time.time() - t0
             ema_step_time = dt if (locals().get("ema_step_time", None) is None) else (0.9 * locals()["ema_step_time"] + 0.1 * dt)
 
-            if (step+1) % 10 == 0 or (step+1) == steps_per_epoch:
-                current_lr = lr_scheduler.get_last_lr()[0]
-                parts = [
-                    f"  step  {step+1}/{steps_per_epoch}",
-                    f"grad_norm={total_norm:.2f}",
-                    f"sec/step~{dt:.2f}",
-                    f"lr={current_lr:.2e}",
-                    f"keep={keep_prob:.2f}",
-                    f"K={current_K}",
-                ]
+            # Synchronize all processes at the end of each step if using DDP
+            if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
+                ddp_manager.barrier()
+
+            if (step+1) % 10 == 0 or (step+1) == rank_steps_per_epoch:
+                # Only print from main process in DDP mode
+                should_print = ('ddp_manager' not in locals() or ddp_manager is None or
+                               ddp_manager.should_log)
+                if should_print:
+                    current_lr = lr_scheduler.get_last_lr()[0]
+                    parts = [
+                        f"  step  {step+1}/{rank_steps_per_epoch}",
+                        f"grad_norm={total_norm:.2f}",
+                        f"sec/step~{dt:.2f}",
+                        f"lr={current_lr:.2e}",
+                        f"keep={keep_prob:.2f}",
+                        f"K={current_K}",
+                    ]
                 if first_ce_schedule != "none":
                     parts.append(f"first_w={current_first_weight:.2f}")
                 for ctx in model_contexts:
