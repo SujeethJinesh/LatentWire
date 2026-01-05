@@ -388,7 +388,7 @@ def check_datasets() -> ValidationResult:
             try:
                 # Try loading a tiny subset to check accessibility
                 if dataset_name == "hotpot_qa":
-                    ds = load_dataset(dataset_name, "distractor", split="train[:1]", trust_remote_code=True)
+                    ds = load_dataset(dataset_name, "distractor", split="train[:1]")
                 elif dataset_name == "sst2":
                     ds = load_dataset("glue", "sst2", split="train[:1]")
                 else:
@@ -432,8 +432,9 @@ def check_previous_checkpoints() -> ValidationResult:
             result.info(f"Found {len(checkpoints)} checkpoint(s) in runs/")
 
             # Show most recent
-            recent = sorted(checkpoints, key=lambda p: p.stat().st_mtime)[-1]
-            result.info(f"Most recent: {recent}")
+            if checkpoints:
+                recent = sorted(checkpoints, key=lambda p: p.stat().st_mtime)[-1]
+                result.info(f"Most recent: {recent}")
         else:
             result.info("No checkpoints in runs/ (will train from scratch)")
     else:

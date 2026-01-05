@@ -163,7 +163,7 @@ LatentWire achieves Pareto-optimal performance, providing the best accuracy-effi
 """
         return section
 
-    def _generate_performance_analysis(self) -> str:
+    def _generate_performance_analysis(self):
         """Generate performance analysis text."""
         analysis = ""
 
@@ -178,7 +178,7 @@ LatentWire achieves Pareto-optimal performance, providing the best accuracy-effi
 
         return analysis
 
-    def generate_main_results_table(self) -> str:
+    def generate_main_results_table(self):
         """Generate main results table in LaTeX format."""
         table = r"""
 \begin{table*}[t]
@@ -236,7 +236,7 @@ Statistical significance: $^*$p<0.05, $^{**}$p<0.01, $^{***}$p<0.001}
 """
         return table
 
-    def generate_ablation_table(self) -> str:
+    def generate_ablation_table(self):
         """Generate ablation study table."""
         table = r"""
 \begin{table}[t]
@@ -259,7 +259,7 @@ Full Model & 96.5 & - \\
 """
         return table
 
-    def generate_statistical_section(self) -> str:
+    def generate_statistical_section(self):
         """Generate statistical analysis section."""
         section = r"""
 \section{Statistical Analysis}
@@ -454,13 +454,13 @@ different random seeds and data splits.
         print(f"Generated figure: {output_path}")
 
     # Helper methods
-    def _compute_stats(self, values: List[float]) -> Tuple[float, float]:
+    def _compute_stats(self, values):
         """Compute mean and standard deviation."""
         if not values:
             return 0.0, 0.0
         return np.mean(values), np.std(values)
 
-    def _compute_key_statistics(self) -> Dict:
+    def _compute_key_statistics(self):
         """Compute key statistics for abstract."""
         stats = {
             'best_accuracy': 0,
