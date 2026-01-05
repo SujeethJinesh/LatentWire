@@ -193,7 +193,7 @@ def suggest_gradient_accumulation(
     accumulation = math.ceil(desired_batch_size / actual_batch_size)
 
     # Try to use powers of 2 when possible
-    power_of_2 = 2 ** math.ceil(math.log2(accumulation))
+    power_of_2 = 2 ** math.ceil(math.log(accumulation) / math.log(2))
     if power_of_2 * actual_batch_size <= desired_batch_size * 1.5:
         return power_of_2
 
@@ -303,41 +303,43 @@ def main():
     if args.json:
         print(json.dumps(result, indent=2))
     else:
-        print(f"\n{'='*60}")
-        print(f"Batch Size Optimization Results")
-        print(f"{'='*60}")
-        print(f"Model Pair: {args.source_model} -> {args.target_model}")
-        print(f"GPU Memory: {args.gpu_memory:.1f} GB (safety margin: {args.safety_margin*100:.0f}%)")
-        print(f"{'='*60}")
-        print(f"Maximum Batch Size: {max_batch_size}")
-        print(f"Gradient Accumulation: {grad_accum} steps")
-        print(f"Effective Batch Size: {effective_batch_size}")
-        print(f"Estimated Memory Usage: {memory_breakdown['total']:.1f} GB ({memory_breakdown['total']/args.gpu_memory*100:.0f}%)")
+        print("\n" + "="*60)
+        print("Batch Size Optimization Results")
+        print("="*60)
+        print("Model Pair: {} -> {}".format(args.source_model, args.target_model))
+        print("GPU Memory: {:.1f} GB (safety margin: {:.0f}%)".format(
+            args.gpu_memory, args.safety_margin*100))
+        print("="*60)
+        print("Maximum Batch Size: {}".format(max_batch_size))
+        print("Gradient Accumulation: {} steps".format(grad_accum))
+        print("Effective Batch Size: {}".format(effective_batch_size))
+        print("Estimated Memory Usage: {:.1f} GB ({:.0f}%)".format(
+            memory_breakdown['total'], memory_breakdown['total']/args.gpu_memory*100))
 
         if args.verbose:
-            print(f"\nMemory Breakdown:")
-            print(f"  Source Model Base: {memory_breakdown['source_base']:.1f} GB")
-            print(f"  Target Model Base: {memory_breakdown['target_base']:.1f} GB")
-            print(f"  Source Batch Memory: {memory_breakdown['source_batch']:.1f} GB")
-            print(f"  Target Batch Memory: {memory_breakdown['target_batch']:.1f} GB")
-            print(f"  Latent Memory: {memory_breakdown['latent']:.1f} GB")
-            print(f"  Encoder: {memory_breakdown['encoder']:.1f} GB")
-            print(f"  Adapters: {memory_breakdown['adapters']:.1f} GB")
-            print(f"  Buffers: {memory_breakdown['buffers']:.1f} GB")
-            print(f"  PyTorch Overhead: {memory_breakdown['pytorch']:.1f} GB")
+            print("\nMemory Breakdown:")
+            print("  Source Model Base: {:.1f} GB".format(memory_breakdown['source_base']))
+            print("  Target Model Base: {:.1f} GB".format(memory_breakdown['target_base']))
+            print("  Source Batch Memory: {:.1f} GB".format(memory_breakdown['source_batch']))
+            print("  Target Batch Memory: {:.1f} GB".format(memory_breakdown['target_batch']))
+            print("  Latent Memory: {:.1f} GB".format(memory_breakdown['latent']))
+            print("  Encoder: {:.1f} GB".format(memory_breakdown['encoder']))
+            print("  Adapters: {:.1f} GB".format(memory_breakdown['adapters']))
+            print("  Buffers: {:.1f} GB".format(memory_breakdown['buffers']))
+            print("  PyTorch Overhead: {:.1f} GB".format(memory_breakdown['pytorch']))
 
-        print(f"{'='*60}")
-        print(f"\nRecommended training command additions:")
-        print(f"  --batch_size {max_batch_size}")
+        print("="*60)
+        print("\nRecommended training command additions:")
+        print("  --batch_size {}".format(max_batch_size))
         if grad_accum > 1:
-            print(f"  --gradient_accumulation_steps {grad_accum}")
+            print("  --gradient_accumulation_steps {}".format(grad_accum))
         print("")
 
     # Exit with error code if batch size is too small
     if max_batch_size < 1:
-        print("ERROR: Cannot fit even batch_size=1 in memory!", file=sys.stderr)
-        print(f"Memory required: {memory_breakdown['total']:.1f} GB", file=sys.stderr)
-        print(f"Memory available: {args.gpu_memory * (1-args.safety_margin):.1f} GB", file=sys.stderr)
+        sys.stderr.write("ERROR: Cannot fit even batch_size=1 in memory!\n")
+        sys.stderr.write("Memory required: {:.1f} GB\n".format(memory_breakdown['total']))
+        sys.stderr.write("Memory available: {:.1f} GB\n".format(args.gpu_memory * (1-args.safety_margin)))
         sys.exit(1)
 
     return result

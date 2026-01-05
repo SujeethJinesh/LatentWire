@@ -415,9 +415,29 @@ def load_xsum_subset(split: str = "test", samples: int = None, seed: int = 0, ma
         - answer: summary (single sentence)
 
     Standard evaluation uses ROUGE scores on the test set.
+
+    Note: XSUM may require manual download or special handling with newer versions of datasets library.
+    If loading fails, consider using:
+    - Older version of datasets library (< 2.15)
+    - Manual download from https://huggingface.co/datasets/xsum
     """
-    # Load XSUM dataset - use the standard xsum repository
-    ds = load_dataset("xsum", split=split)
+    # Try different loading methods for XSUM compatibility
+    try:
+        # Try standard loading first
+        ds = load_dataset("xsum", split=split)
+    except RuntimeError as e:
+        if "Dataset scripts are no longer supported" in str(e):
+            # Fallback for newer datasets library versions
+            # This is a known issue with XSUM dataset format
+            raise RuntimeError(
+                "XSUM dataset requires special handling. "
+                "Please either: 1) Use datasets library < 2.15, or "
+                "2) Load from a parquet version if available, or "
+                "3) Download and convert the dataset manually. "
+                "See: https://github.com/huggingface/datasets/issues/5892"
+            )
+        else:
+            raise
 
     # If samples is None or >= dataset size, use all examples
     if samples is None or samples >= len(ds):
