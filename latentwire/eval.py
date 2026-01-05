@@ -2019,12 +2019,19 @@ def main():
 
     llama_tokens = _fmt_float(summary['avg_prompt_tokens'].get('llama')) if isinstance(summary.get('avg_prompt_tokens'), dict) else "-"
     qwen_tokens = _fmt_float(summary['avg_prompt_tokens'].get('qwen')) if isinstance(summary.get('avg_prompt_tokens'), dict) else "-"
-    llama_comp = summary.get('compression', {})
-    llama_comp_val = _fmt_float(llama_comp.get('llama')) if isinstance(llama_comp, dict) else "-"
-    qwen_comp_val = _fmt_float(llama_comp.get('qwen')) if isinstance(llama_comp, dict) else "-"
+    # Token compression (backward compat)
+    token_comp = summary.get('token_compression', summary.get('compression', {}))
+    token_comp_llama = _fmt_float(token_comp.get('llama')) if isinstance(token_comp, dict) else "-"
+    token_comp_qwen = _fmt_float(token_comp.get('qwen')) if isinstance(token_comp, dict) else "-"
+
+    # Byte compression (new, honest metric)
+    byte_comp = summary.get('byte_compression', {})
+    byte_comp_llama = _fmt_float(byte_comp.get('llama')) if isinstance(byte_comp, dict) else "-"
+    byte_comp_qwen = _fmt_float(byte_comp.get('qwen')) if isinstance(byte_comp, dict) else "-"
 
     print(f"Avg prompt tokens (Llama): {llama_tokens} | (Qwen): {qwen_tokens} | Latent length M: {summary['latent_len']}")
-    print(f"Compression ratio (Llama): {llama_comp_val}x | (Qwen): {qwen_comp_val}x")
+    print(f"Token compression (Llama): {token_comp_llama}x | (Qwen): {token_comp_qwen}x")
+    print(f"Byte compression (Llama): {byte_comp_llama}x | (Qwen): {byte_comp_qwen}x (honest metric including quantization overhead)")
     payload_detail = summary.get('payload_bytes_detail', {})
     selected_bytes = payload_detail.get('selected')
     base_bytes = summary['wire'].get('base_latent_bytes', summary['payload_bytes'])
