@@ -125,4 +125,4 @@ echo "Exit code: $TRAINING_EXIT_CODE"
 echo "=============================================================="
 
 # Exit with original code to trigger requeue if needed
-exit $TRAINING_EXIT_CODE
+exit $TRAINING_EXIT_CODEexport PYTHONUNBUFFERED=1

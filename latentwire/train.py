@@ -16,6 +16,9 @@ try:
     import torch
     import torch.nn as nn
     import torch.optim as optim
+    import torch.distributed as dist
+    from torch.nn.parallel import DistributedDataParallel as DDP
+    from torch.utils.data.distributed import DistributedSampler
     PYTORCH_AVAILABLE = True
 except ImportError as e:
     PYTORCH_AVAILABLE = False
@@ -439,6 +442,269 @@ def log_gpu_memory(prefix="", reset_peak=False):
             torch.cuda.reset_peak_memory_stats(device_id)
 
     return stats
+
+
+class DDPManager:
+    """Manages Distributed Data Parallel training setup and cleanup."""
+
+    def __init__(self):
+        self.initialized = False
+        self.rank = 0
+        self.local_rank = 0
+        self.world_size = 1
+        self.device = None
+        self.is_main_process = True
+
+    def initialize(self, backend='nccl', timeout_mins=30):
+        """Initialize distributed training environment.
+
+        Args:
+            backend: Communication backend ('nccl' for GPUs, 'gloo' for CPUs)
+            timeout_mins: Timeout for collective operations in minutes
+
+        Returns:
+            True if successfully initialized, False otherwise
+        """
+        # Check if we're in a distributed environment
+        if 'WORLD_SIZE' not in os.environ:
+            print("DDP: Not in distributed environment (WORLD_SIZE not set)")
+            return False
+
+        if not torch.cuda.is_available() and backend == 'nccl':
+            print("DDP: CUDA not available, falling back to gloo backend")
+            backend = 'gloo'
+
+        try:
+            # Get distributed training parameters
+            self.world_size = int(os.environ.get('WORLD_SIZE', 1))
+            self.rank = int(os.environ.get('RANK', 0))
+            self.local_rank = int(os.environ.get('LOCAL_RANK', 0))
+
+            # Set device for this process
+            if torch.cuda.is_available():
+                torch.cuda.set_device(self.local_rank)
+                self.device = torch.device(f'cuda:{self.local_rank}')
+            else:
+                self.device = torch.device('cpu')
+
+            # Initialize process group
+            if self.world_size > 1:
+                import datetime
+                timeout = datetime.timedelta(minutes=timeout_mins)
+                dist.init_process_group(
+                    backend=backend,
+                    init_method='env://',
+                    world_size=self.world_size,
+                    rank=self.rank,
+                    timeout=timeout
+                )
+                self.initialized = True
+                self.is_main_process = (self.rank == 0)
+
+                if self.is_main_process:
+                    print(f"DDP: Initialized with {self.world_size} processes")
+                    print(f"DDP: Current process - Rank: {self.rank}, Local Rank: {self.local_rank}")
+                    print(f"DDP: Device: {self.device}")
+
+                # Synchronize all processes
+                self.barrier()
+                return True
+            else:
+                print("DDP: Single process mode (WORLD_SIZE=1)")
+                return False
+
+        except Exception as e:
+            print(f"DDP: Initialization failed: {e}")
+            return False
+
+    def wrap_model(self, model, device_ids=None, output_device=None, find_unused_parameters=False):
+        """Wrap a model with DistributedDataParallel.
+
+        Args:
+            model: The model to wrap
+            device_ids: CUDA devices for this process (default: [local_rank])
+            output_device: Device for output (default: local_rank)
+            find_unused_parameters: Whether to find unused parameters in backward pass
+
+        Returns:
+            DDP-wrapped model or original model if not distributed
+        """
+        if not self.initialized:
+            return model
+
+        if device_ids is None and torch.cuda.is_available():
+            device_ids = [self.local_rank]
+        if output_device is None and torch.cuda.is_available():
+            output_device = self.local_rank
+
+        # Move model to device first
+        model = model.to(self.device)
+
+        # Wrap with DDP
+        model = DDP(
+            model,
+            device_ids=device_ids,
+            output_device=output_device,
+            find_unused_parameters=find_unused_parameters
+        )
+
+        if self.is_main_process:
+            print(f"DDP: Model wrapped for distributed training")
+
+        return model
+
+    def get_dataloader(self, dataset, batch_size, shuffle=True, num_workers=4, **kwargs):
+        """Create a DataLoader with DistributedSampler if in distributed mode.
+
+        Args:
+            dataset: The dataset to load
+            batch_size: Batch size PER GPU
+            shuffle: Whether to shuffle (only used if not distributed)
+            num_workers: Number of data loading workers
+            **kwargs: Additional arguments for DataLoader
+
+        Returns:
+            DataLoader configured for distributed training
+        """
+        if self.initialized:
+            # Use DistributedSampler for DDP
+            sampler = DistributedSampler(
+                dataset,
+                num_replicas=self.world_size,
+                rank=self.rank,
+                shuffle=shuffle
+            )
+            # Don't shuffle in DataLoader when using DistributedSampler
+            shuffle = False
+        else:
+            sampler = None
+
+        from torch.utils.data import DataLoader
+        dataloader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            sampler=sampler,
+            num_workers=num_workers,
+            pin_memory=torch.cuda.is_available(),
+            **kwargs
+        )
+
+        return dataloader
+
+    def set_epoch(self, epoch):
+        """Set epoch for DistributedSampler to ensure different shuffling each epoch.
+
+        Args:
+            epoch: Current epoch number
+        """
+        if self.initialized and hasattr(self, 'dataloader') and hasattr(self.dataloader.sampler, 'set_epoch'):
+            self.dataloader.sampler.set_epoch(epoch)
+
+    def all_reduce(self, tensor, op=dist.ReduceOp.SUM):
+        """All-reduce a tensor across all processes.
+
+        Args:
+            tensor: Tensor to reduce
+            op: Reduction operation (SUM, PRODUCT, MIN, MAX)
+
+        Returns:
+            Reduced tensor
+        """
+        if self.initialized:
+            dist.all_reduce(tensor, op=op)
+        return tensor
+
+    def all_gather(self, tensor_list, tensor):
+        """All-gather tensors from all processes.
+
+        Args:
+            tensor_list: List to store gathered tensors
+            tensor: Tensor to gather
+
+        Returns:
+            List of gathered tensors
+        """
+        if self.initialized:
+            dist.all_gather(tensor_list, tensor)
+        else:
+            tensor_list[0] = tensor
+        return tensor_list
+
+    def barrier(self):
+        """Synchronize all processes."""
+        if self.initialized:
+            dist.barrier()
+
+    def cleanup(self):
+        """Clean up distributed training."""
+        if self.initialized:
+            dist.destroy_process_group()
+            self.initialized = False
+
+    @property
+    def should_save(self):
+        """Whether this process should save checkpoints (only main process)."""
+        return self.is_main_process
+
+    @property
+    def should_log(self):
+        """Whether this process should log to console (only main process)."""
+        return self.is_main_process
+
+    def get_world_size(self):
+        """Get total number of processes."""
+        return self.world_size
+
+    def get_rank(self):
+        """Get rank of current process."""
+        return self.rank
+
+    def scale_loss(self, loss):
+        """Scale loss by world size for correct gradient averaging.
+
+        Args:
+            loss: The loss tensor
+
+        Returns:
+            Scaled loss
+        """
+        if self.initialized and self.world_size > 1:
+            return loss / self.world_size
+        return loss
+
+    def print(self, *args, **kwargs):
+        """Print only from main process."""
+        if self.should_log:
+            print(*args, **kwargs)
+
+
+def initialize_ddp_from_elastic_config(elastic_config):
+    """Initialize DDP based on ElasticGPUConfig settings.
+
+    Args:
+        elastic_config: ElasticGPUConfig instance
+
+    Returns:
+        DDPManager instance (initialized if DDP is enabled)
+    """
+    ddp_manager = DDPManager()
+
+    config = elastic_config.config
+    if config.get('ddp', False) and config.get('gpu_count', 0) > 1:
+        # Set up environment variables if not already set
+        if 'WORLD_SIZE' not in os.environ:
+            os.environ['WORLD_SIZE'] = str(config['gpu_count'])
+            os.environ['RANK'] = os.environ.get('RANK', '0')
+            os.environ['LOCAL_RANK'] = os.environ.get('LOCAL_RANK', '0')
+
+        # Initialize DDP
+        if ddp_manager.initialize():
+            print(f"DDP successfully initialized with {ddp_manager.world_size} GPUs")
+        else:
+            print("DDP initialization failed, falling back to single GPU")
+
+    return ddp_manager
 
 
 def suggest_batch_size_adjustment(current_batch_size, peak_allocated_gb, after_forward_pass=False, target_utilization=0.75):
@@ -1390,11 +1656,29 @@ def main():
         print(f"  Grad accum: {original_accum} → {args.grad_accum_steps}")
         print(f"  Effective batch: {args.batch_size * args.grad_accum_steps}")
 
+        # Initialize DDP if suggested
+        ddp_manager = None
         if optimal.get('ddp'):
-            print("\nNOTE: DDP mode suggested but not yet implemented.")
-            print("      Using model-parallel configuration instead.")
+            print("\nInitializing DDP support...")
+            ddp_manager = initialize_ddp_from_elastic_config(elastic_config)
+            if ddp_manager.initialized:
+                print(f"  DDP enabled with {ddp_manager.world_size} processes")
+                # Adjust batch size for DDP (batch_size is per-GPU)
+                args.batch_size = args.batch_size // ddp_manager.world_size
+                print(f"  Adjusted batch size per GPU: {args.batch_size}")
+            else:
+                print("  DDP initialization failed, using single GPU mode")
 
         print("="*70 + "\n")
+    else:
+        # No elastic GPU mode, but still check for manual DDP setup
+        ddp_manager = DDPManager()
+        if 'WORLD_SIZE' in os.environ and device == "cuda":
+            if ddp_manager.initialize():
+                print(f"DDP manually initialized with {ddp_manager.world_size} processes")
+                device = ddp_manager.device
+            else:
+                print("Manual DDP initialization failed, using single GPU mode")
 
     env_dtype = os.environ.get("TORCH_DTYPE")
     if env_dtype:
@@ -1894,6 +2178,69 @@ def main():
             ).to(_primary_device(wrapper))
             gist_heads[name] = head
 
+    # ===== DDP Model Wrapping =====
+    if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
+        print("\n" + "="*60)
+        print("Wrapping models with DistributedDataParallel")
+        print("="*60)
+
+        # Move and wrap encoder
+        encoder = encoder.to(ddp_manager.device)
+        encoder = ddp_manager.wrap_model(encoder, find_unused_parameters=True)
+        print("  ✓ Encoder wrapped with DDP")
+
+        # Wrap adapters
+        for name, adapter in adapters.items():
+            adapters[name] = adapter.to(ddp_manager.device)
+            adapters[name] = ddp_manager.wrap_model(adapters[name], find_unused_parameters=True)
+            print(f"  ✓ Adapter '{name}' wrapped with DDP")
+
+        # Update references to wrapped adapters
+        if 'adp_llama' in locals() and adp_llama is not None:
+            adp_llama = adapters.get('llama', adp_llama)
+        if 'adp_qwen' in locals() and adp_qwen is not None:
+            adp_qwen = adapters.get('qwen', adp_qwen)
+
+        # Wrap deep prefix generators
+        for name, gen in deep_prefix_generators.items():
+            deep_prefix_generators[name] = gen.to(ddp_manager.device)
+            deep_prefix_generators[name] = ddp_manager.wrap_model(deep_prefix_generators[name], find_unused_parameters=True)
+        if deep_prefix_generators:
+            print(f"  ✓ {len(deep_prefix_generators)} deep prefix generators wrapped with DDP")
+
+        # Wrap latent refiner if present
+        if latent_refiner is not None:
+            latent_refiner = latent_refiner.to(ddp_manager.device)
+            latent_refiner = ddp_manager.wrap_model(latent_refiner, find_unused_parameters=True)
+            print("  ✓ Latent refiner wrapped with DDP")
+
+        # Wrap gist heads
+        for name, head in gist_heads.items():
+            gist_heads[name] = head.to(ddp_manager.device)
+            gist_heads[name] = ddp_manager.wrap_model(gist_heads[name], find_unused_parameters=True)
+        if gist_heads:
+            print(f"  ✓ {len(gist_heads)} gist heads wrapped with DDP")
+
+        # Wrap coprocessors if present
+        for name, coprocessor in coprocessors.items():
+            coprocessors[name] = coprocessor.to(ddp_manager.device)
+            coprocessors[name] = ddp_manager.wrap_model(coprocessors[name], find_unused_parameters=True)
+        if coprocessors:
+            print(f"  ✓ {len(coprocessors)} coprocessors wrapped with DDP")
+
+        # Move LLMs to proper device (but don't wrap - they're frozen)
+        if llama is not None:
+            # For frozen models, just ensure they're on the right device
+            if not hasattr(llama.model, 'hf_device_map') or llama.model.hf_device_map is None:
+                llama.model = llama.model.to(ddp_manager.device)
+                print(f"  ✓ Llama model moved to {ddp_manager.device}")
+        if qwen is not None:
+            if not hasattr(qwen.model, 'hf_device_map') or qwen.model.hf_device_map is None:
+                qwen.model = qwen.model.to(ddp_manager.device)
+                print(f"  ✓ Qwen model moved to {ddp_manager.device}")
+
+        print("="*60 + "\n")
+
     # ===== torch.compile Optimization =====
     # DISABLED: torch.compile causes symbolic_shapes warnings and slow first steps
     # Compile encoder and adapters for ~20-30% speedup on forward/backward
@@ -2338,16 +2685,50 @@ def main():
         print(f"  Pin memory: {args.dataloader_pin_memory}")
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
-        print(f"Epoch {epoch+1}/{args.epochs}", flush=True)
+        # Set epoch for distributed sampler if using DDP
+        if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
+            ddp_manager.set_epoch(epoch)
+            if ddp_manager.should_log:
+                print(f"Epoch {epoch+1}/{args.epochs}", flush=True)
+                # Log GPU memory at epoch start, reset peak stats
+                log_gpu_memory(prefix=f"[Epoch {epoch+1} Start] ", reset_peak=True)
+        else:
+            print(f"Epoch {epoch+1}/{args.epochs}", flush=True)
+            # Log GPU memory at epoch start, reset peak stats
+            log_gpu_memory(prefix=f"[Epoch {epoch+1} Start] ", reset_peak=True)
 
-        # Log GPU memory at epoch start, reset peak stats
-        log_gpu_memory(prefix=f"[Epoch {epoch+1} Start] ", reset_peak=True)
+        # For DDP, we need to ensure each process gets different data
+        if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
+            # Create a distributed sampler for the epoch
+            g = torch.Generator(device="cpu")
+            g.manual_seed(int(args.seed) + int(epoch) + ddp_manager.rank * 1000)
 
-        g = torch.Generator(device="cpu")
-        g.manual_seed(int(args.seed) + int(epoch))
-        perm = torch.randperm(N, generator=g)
+            # Calculate which samples this rank should process
+            samples_per_rank = N // ddp_manager.world_size
+            extra_samples = N % ddp_manager.world_size
 
-        for step in range(steps_per_epoch):
+            # Distribute extra samples to first few ranks
+            if ddp_manager.rank < extra_samples:
+                rank_start = ddp_manager.rank * (samples_per_rank + 1)
+                rank_end = rank_start + samples_per_rank + 1
+            else:
+                rank_start = ddp_manager.rank * samples_per_rank + extra_samples
+                rank_end = rank_start + samples_per_rank
+
+            # Create permutation for this rank's samples
+            all_perm = torch.randperm(N, generator=g)
+            rank_indices = all_perm[rank_start:rank_end]
+            perm = rank_indices[torch.randperm(len(rank_indices), generator=g)]
+
+            # Adjust steps per epoch for this rank
+            rank_steps_per_epoch = len(perm) // args.batch_size
+        else:
+            g = torch.Generator(device="cpu")
+            g.manual_seed(int(args.seed) + int(epoch))
+            perm = torch.randperm(N, generator=g)
+            rank_steps_per_epoch = steps_per_epoch
+
+        for step in range(rank_steps_per_epoch):
             t0 = time.time()
             idx = perm[step*args.batch_size : (step+1)*args.batch_size]
             batch_texts = [texts[i] for i in idx.tolist()]

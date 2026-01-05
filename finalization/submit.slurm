@@ -129,13 +129,13 @@ trap handle_preemption TERM
 # Final attempts (7-9): Try with 1 GPU
 if [ $SLURM_ARRAY_TASK_ID -lt 4 ]; then
     REQUESTED_GPUS=4
-    BATCH_SIZE=64
+    BATCH_SIZE=20  # Memory-safe: H100 80GB has ~20GB after model+optimizer (60GB)
 elif [ $SLURM_ARRAY_TASK_ID -lt 7 ]; then
     REQUESTED_GPUS=2
-    BATCH_SIZE=32
+    BATCH_SIZE=20  # Memory-safe: H100 80GB per GPU
 else
     REQUESTED_GPUS=1
-    BATCH_SIZE=16
+    BATCH_SIZE=20  # Memory-safe: H100 80GB
 fi
 
 echo "Array task $SLURM_ARRAY_TASK_ID requesting $REQUESTED_GPUS GPUs with batch size $BATCH_SIZE"

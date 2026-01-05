@@ -50,32 +50,51 @@ models:
 # ==============================================================================
 training:
   # Batch size configuration (adapt based on GPU count)
+  # UPDATED: Accounts for Adam optimizer state (~6GB for 8B model)
+  # Memory breakdown for Llama-8B:
+  #   Model params: 14GB
+  #   Adam state: 28GB (2x model for momentum + variance)
+  #   Gradients: 14GB
+  #   CUDA overhead: 2GB
+  #   Safety margin: 2GB
+  #   Total fixed: ~60GB
   batch_sizes:
-    # For different GPU configurations
+    # For different GPU configurations (conservative, OOM-safe)
     single_gpu:
-      batch_size: 2
-      gradient_accumulation_steps: 16
+      batch_size: 1  # 40GB GPU: 40-60 = -20GB (need grad accumulation)
+      gradient_accumulation_steps: 32
       effective_batch_size: 32
 
     dual_gpu:
-      batch_size: 4
-      gradient_accumulation_steps: 8
+      batch_size: 1  # 40GB GPUs
+      gradient_accumulation_steps: 16
       effective_batch_size: 32
 
     quad_gpu:
-      batch_size: 8
+      batch_size: 2  # 40GB GPUs with data parallel
       gradient_accumulation_steps: 4
       effective_batch_size: 32
 
     h100_single:
-      batch_size: 4
-      gradient_accumulation_steps: 8
-      effective_batch_size: 32
+      batch_size: 20  # 80GB GPU: 80-60 = 20GB available
+      gradient_accumulation_steps: 2
+      effective_batch_size: 40
 
     h100_quad:
-      batch_size: 16
-      gradient_accumulation_steps: 2
+      batch_size: 20  # 80GB GPUs with data parallel
+      gradient_accumulation_steps: 1
+      effective_batch_size: 80
+
+    a100_40gb_single:
+      batch_size: 1  # 40GB GPU: Cannot fit full model+optimizer
+      gradient_accumulation_steps: 32
       effective_batch_size: 32
+      note: "Consider gradient checkpointing or model parallelism"
+
+    a100_80gb_single:
+      batch_size: 20  # 80GB GPU: Similar to H100
+      gradient_accumulation_steps: 2
+      effective_batch_size: 40
 
   # Learning rate and optimization
   optimizer:

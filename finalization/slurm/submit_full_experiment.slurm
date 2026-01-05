@@ -164,4 +164,4 @@ git push || true
 echo "=============================================================="
 echo "Experiment completed at $(date)"
 echo "Results directory: $EXP_DIR"
-echo "=============================================================="
+echo "=============================================================="export PYTHONUNBUFFERED=1

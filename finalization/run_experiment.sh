@@ -111,18 +111,38 @@ calculate_optimal_batch_size() {
     local gpu_memory_gb=$2
     local model_size_gb=14  # Llama-8B ≈ 14GB
 
-    # Available memory after model loading (conservative estimate)
-    local available_gb=$((gpu_memory_gb - model_size_gb - 4))  # 4GB safety margin
+    # CRITICAL FIX: Account for optimizer state memory
+    # Adam/AdamW optimizer needs 2x model params for momentum and variance
+    local optimizer_state_gb=$((model_size_gb * 2))  # ~28GB for Adam
+    local gradients_gb=$model_size_gb  # ~14GB for gradients
+    local cuda_overhead_gb=2  # CUDA context and workspace
+    local safety_margin_gb=2  # Additional safety buffer
 
-    # Estimate batch size based on available memory
-    # ~0.5GB per batch item for typical sequence lengths
-    local batch_per_gpu=$((available_gb * 2))
+    # Total fixed memory requirement
+    local fixed_memory_gb=$((model_size_gb + optimizer_state_gb + gradients_gb + cuda_overhead_gb + safety_margin_gb))
+    # Total: 14 + 28 + 14 + 2 + 2 = 60GB fixed overhead
 
-    # Clamp to reasonable range
-    if [[ $batch_per_gpu -lt 4 ]]; then
-        batch_per_gpu=4
-    elif [[ $batch_per_gpu -gt 128 ]]; then
-        batch_per_gpu=128
+    # Available memory for batch processing
+    local available_gb=$((gpu_memory_gb - fixed_memory_gb))
+
+    # If available memory is negative or very small, use minimum batch size
+    if [[ $available_gb -lt 1 ]]; then
+        log_message "WARN" "Very limited memory available. Using minimum batch size."
+        batch_per_gpu=1
+    else
+        # Estimate batch size based on available memory
+        # ~0.5-1GB per batch item for typical sequence lengths with activations
+        batch_per_gpu=$((available_gb))  # Conservative: 1GB per sample
+
+        # For very high memory GPUs, don't go too crazy
+        if [[ $batch_per_gpu -gt 64 ]]; then
+            batch_per_gpu=64
+        fi
+    fi
+
+    # Ensure minimum batch size
+    if [[ $batch_per_gpu -lt 1 ]]; then
+        batch_per_gpu=1
     fi
 
     # Calculate gradient accumulation to reach effective batch size
@@ -135,6 +155,10 @@ calculate_optimal_batch_size() {
             grad_accum=1
         fi
     fi
+
+    # Log memory calculation details
+    log_message "INFO" "Memory calculation: GPU=${gpu_memory_gb}GB, Fixed=${fixed_memory_gb}GB, Available=${available_gb}GB"
+    log_message "INFO" "Breakdown: Model=${model_size_gb}GB, Optimizer=${optimizer_state_gb}GB, Gradients=${gradients_gb}GB"
 
     echo "$batch_per_gpu:$grad_accum:$effective_batch"
 }
