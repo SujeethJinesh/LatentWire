@@ -11,6 +11,7 @@ import platform
 import re
 import string
 import sys
+from collections import Counter
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
@@ -537,11 +538,19 @@ def f1(pred: str, truth: str) -> float:
     truth_tokens = _normalize(truth).split()
     if not pred_tokens or not truth_tokens:
         return float(pred_tokens == truth_tokens)
-    common = set(pred_tokens) & set(truth_tokens)
-    if not common:
+
+    # Use Counter to properly handle token frequencies
+    pred_counter = Counter(pred_tokens)
+    truth_counter = Counter(truth_tokens)
+
+    # Count overlapping tokens (minimum of counts for each token)
+    common_count = sum((pred_counter & truth_counter).values())
+
+    if common_count == 0:
         return 0.0
-    precision = len(common) / len(pred_tokens)
-    recall = len(common) / len(truth_tokens)
+
+    precision = common_count / len(pred_tokens)
+    recall = common_count / len(truth_tokens)
     return 2 * precision * recall / (precision + recall + 1e-8)
 
 

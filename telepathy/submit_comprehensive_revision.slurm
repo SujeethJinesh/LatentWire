@@ -55,7 +55,12 @@ echo "=============================================================="
 echo "Git Operations"
 echo "=============================================================="
 echo "Pulling latest code..."
-git pull
+if ! git pull; then
+    echo "ERROR: Failed to pull latest code from git"
+    echo "Attempting to continue with current code..."
+else
+    echo "Successfully pulled latest code"
+fi
 echo "Current commit: $(git rev-parse HEAD)"
 echo "Branch: $(git branch --show-current)"
 echo "=============================================================="
@@ -65,7 +70,19 @@ echo ""
 echo "=============================================================="
 echo "GPU Verification"
 echo "=============================================================="
-nvidia-smi
+if ! nvidia-smi; then
+    echo "ERROR: nvidia-smi failed - GPUs may not be available"
+    echo "Exiting to prevent wasted compute time"
+    exit 1
+fi
+
+# Count available GPUs
+GPU_COUNT=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
+echo "GPUs detected: $GPU_COUNT"
+if [ "$GPU_COUNT" -lt 4 ]; then
+    echo "WARNING: Expected 4 GPUs but found $GPU_COUNT"
+    echo "Job may not utilize all requested resources"
+fi
 echo "=============================================================="
 
 # Run the comprehensive revision experiments
@@ -88,8 +105,9 @@ export NUM_EVAL_SAMPLES=500
 export BATCH_SIZE=32
 export EPOCHS=12
 
-# Run the comprehensive experiment suite
-python telepathy/run_comprehensive_revision.py \
+# Run the comprehensive experiment suite with srun for proper GPU allocation
+# srun ensures proper GPU binding and parallel execution across 4 GPUs
+srun --ntasks=1 --gpus=4 python telepathy/run_comprehensive_revision.py \
     --experiment_name "$EXPERIMENT_NAME" \
     --output_dir "$OUTPUT_BASE_DIR" \
     --max_samples $MAX_SAMPLES \
@@ -112,12 +130,20 @@ if [ $? -eq 0 ]; then
     echo "Experiment completed successfully!"
     echo "=============================================================="
 
-    # Archive results
+    # Archive results (excluding large checkpoint files)
     echo "Archiving results..."
-    tar -czf "${OUTPUT_BASE_DIR}/${EXPERIMENT_NAME}_results.tar.gz" \
-        "${OUTPUT_BASE_DIR}/${EXPERIMENT_NAME}" \
-        --exclude="*.pth" \
-        --exclude="*.safetensors"
+    if [ -d "${OUTPUT_BASE_DIR}/${EXPERIMENT_NAME}" ]; then
+        tar -czf "${OUTPUT_BASE_DIR}/${EXPERIMENT_NAME}_results.tar.gz" \
+            "${OUTPUT_BASE_DIR}/${EXPERIMENT_NAME}" \
+            --exclude="*.pth" \
+            --exclude="*.safetensors" \
+            --exclude="*.bin" \
+            --exclude="checkpoint-*" \
+            2>/dev/null || echo "Warning: Some files could not be archived"
+        echo "Results archived to ${OUTPUT_BASE_DIR}/${EXPERIMENT_NAME}_results.tar.gz"
+    else
+        echo "Warning: Results directory not found, skipping archive"
+    fi
 
     # Generate summary report
     echo "Generating summary report..."
@@ -202,13 +228,30 @@ Results archived at: $OUTPUT_BASE_DIR/$EXPERIMENT_NAME
     print('Updated REPORT.md with experiment details')
 "
 
-# Push results back to git
+# Push results back to git (selective add to avoid large checkpoints)
 echo ""
 echo "=============================================================="
-echo "Pushing Results to Git"
+echo "Pushing Results to Git (Selective)"
 echo "=============================================================="
-git add -A
-git commit -m "results: comprehensive revision experiments (SLURM job $SLURM_JOB_ID)
+
+# Only add specific file types to avoid large checkpoint files
+echo "Adding log files, JSON results, and documentation..."
+git add telepathy/REPORT.md 2>/dev/null || true
+git add "*.log" 2>/dev/null || true
+git add "*.json" 2>/dev/null || true
+git add "*.txt" 2>/dev/null || true
+git add "*.png" 2>/dev/null || true
+git add "*.pdf" 2>/dev/null || true
+git add runs/revision_suite/*.log 2>/dev/null || true
+git add runs/revision_suite/*/*.json 2>/dev/null || true
+git add runs/revision_suite/*/figures/* 2>/dev/null || true
+
+# Check if there are any changes to commit
+if git diff --cached --quiet; then
+    echo "No changes to commit (logs/results may not have changed)"
+else
+    echo "Committing changes..."
+    git commit -m "results: comprehensive revision experiments (SLURM job $SLURM_JOB_ID)
 
 Ran comprehensive suite testing:
 - Multiple compression levels (8-128 tokens)
@@ -222,7 +265,26 @@ Results saved to: $OUTPUT_BASE_DIR/$EXPERIMENT_NAME
 
 Co-Authored-By: Claude Opus 4.1 <noreply@anthropic.com>" || true
 
-git push || true
+    # Push with retry logic
+    echo "Pushing to remote repository..."
+    MAX_RETRIES=3
+    RETRY_COUNT=0
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        if git push; then
+            echo "Successfully pushed results to git"
+            break
+        else
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "Push failed, retrying in 10 seconds (attempt $RETRY_COUNT/$MAX_RETRIES)..."
+                sleep 10
+            else
+                echo "WARNING: Failed to push results after $MAX_RETRIES attempts"
+                echo "Results are saved locally but not pushed to remote"
+            fi
+        fi
+    done
+fi
 
 echo ""
 echo "=============================================================="
