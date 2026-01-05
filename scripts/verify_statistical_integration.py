@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Verify Statistical Testing Integration for LatentWire Paper
 
@@ -126,7 +127,7 @@ def verify_statistical_tests():
         if isinstance(p_val, float) and 0 <= p_val <= 1:
             results['paired_ttest_works'] = True
     except Exception as e:
-        results['issues'].append(f"Paired t-test failed: {e}")
+        results['issues'].append("Paired t-test failed: {}".format(e))
 
     # Test Cohen's d
     try:
@@ -134,7 +135,7 @@ def verify_statistical_tests():
         if isinstance(d, float):
             results['cohens_d_works'] = True
     except Exception as e:
-        results['issues'].append(f"Cohen's d failed: {e}")
+        results['issues'].append("Cohen's d failed: {}".format(e))
 
     # Test McNemar's test
     try:
@@ -145,7 +146,7 @@ def verify_statistical_tests():
         if isinstance(p_val, float) and 0 <= p_val <= 1:
             results['mcnemar_works'] = True
     except Exception as e:
-        results['issues'].append(f"McNemar test failed: {e}")
+        results['issues'].append("McNemar test failed: {}".format(e))
 
     # Test Bonferroni correction
     try:
@@ -156,7 +157,7 @@ def verify_statistical_tests():
         if len(corrected_p) == len(p_values):
             results['bonferroni_works'] = True
     except Exception as e:
-        results['issues'].append(f"Bonferroni correction failed: {e}")
+        results['issues'].append("Bonferroni correction failed: {}".format(e))
 
     return results
 
@@ -303,9 +304,9 @@ def generate_verification_report():
         script_path = Path(script)
         results = verify_seed_usage(script_path)
         status = "✅" if results['uses_correct_seeds'] else "❌"
-        print(f"{status} {script}: Seeds found: {results['seeds_found']}")
+        print("{} {}: Seeds found: {}".format(status, script, results['seeds_found']))
         if results['issues']:
-            print(f"   Issues: {', '.join(results['issues'])}")
+            print("   Issues: {}".format(', '.join(results['issues'])))
             all_checks_passed = False
 
     # 2. Verify bootstrap CI configuration
@@ -316,7 +317,7 @@ def generate_verification_report():
     for key, value in bootstrap_results.items():
         if key != 'issues':
             status = "✅" if value else "❌"
-            print(f"{status} {key.replace('_', ' ').title()}: {value}")
+            print("{} {}: {}".format(status, key.replace('_', ' ').title(), value))
             if not value:
                 all_checks_passed = False
 
@@ -328,7 +329,7 @@ def generate_verification_report():
     for key, value in test_results.items():
         if key != 'issues':
             status = "✅" if value else "❌"
-            print(f"{status} {key.replace('_', ' ').title()}: {value}")
+            print("{} {}: {}".format(status, key.replace('_', ' ').title(), value))
             if not value:
                 all_checks_passed = False
 
@@ -340,7 +341,7 @@ def generate_verification_report():
     for key, value in agg_results.items():
         if key != 'issues':
             status = "✅" if value else "❌"
-            print(f"{status} {key.replace('_', ' ').title()}: {value}")
+            print("{} {}: {}".format(status, key.replace('_', ' ').title(), value))
             if not value and key != 'imports_statistical_testing':  # This one is optional
                 all_checks_passed = False
 
@@ -352,7 +353,7 @@ def generate_verification_report():
     for key, value in table_results.items():
         if key != 'issues':
             status = "✅" if value else "❌"
-            print(f"{status} {key.replace('_', ' ').title()}: {value}")
+            print("{} {}: {}".format(status, key.replace('_', ' ').title(), value))
             if not value:
                 all_checks_passed = False
 
@@ -364,7 +365,7 @@ def generate_verification_report():
         run_example_comparison()
         print("✅ Example comparison completed successfully")
     except Exception as e:
-        print(f"❌ Example comparison failed: {e}")
+        print("❌ Example comparison failed: {}".format(e))
         all_checks_passed = False
 
     # Final summary
