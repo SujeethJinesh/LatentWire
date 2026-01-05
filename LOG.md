@@ -1,6 +1,93 @@
 # LatentWire — Experiment Log
 
 ---
+
+## ═══════════════════════════════════════════════════════════════════════════
+## 📊 STATISTICAL TESTING INFRASTRUCTURE (2026-01-05)
+## ═══════════════════════════════════════════════════════════════════════════
+
+### Addition: Rigorous Statistical Testing Tools
+
+Added comprehensive statistical testing infrastructure in `scripts/statistical_testing.py` with complete documentation in `scripts/STATISTICAL_TESTING_GUIDE.md`.
+
+**Implemented Methods**:
+
+1. **Bootstrap Confidence Intervals (95% CI)**
+   - BCa (Bias-Corrected and Accelerated) method
+   - For reporting uncertainty on any metric (F1, EM, NLL, etc.)
+   - Minimum 20+ samples recommended
+
+2. **Paired Bootstrap Test**
+   - For comparing two methods on the same test set
+   - More powerful than t-test, no normality assumptions
+   - Returns p-value and effect size statistics
+
+3. **McNemar's Test**
+   - For comparing classifiers when only one evaluation is feasible
+   - Recommended by Dietterich (1998) for expensive models
+   - Uses 2×2 contingency table of correct/incorrect predictions
+
+4. **Multiple Comparison Corrections**
+   - Bonferroni: Most conservative, controls FWER
+   - Holm-Bonferroni: Less conservative than Bonferroni
+   - FDR (Benjamini-Hochberg): More powerful for many comparisons
+   - Integrated with statsmodels.stats.multitest
+
+5. **Power Analysis & Sample Size Calculation**
+   - Estimate required test examples for detecting effect sizes
+   - Estimate required random seeds based on pilot data
+   - Based on Colas et al. (2018) recommendations
+
+**Key Features**:
+
+- `comprehensive_comparison_report()`: Generates publication-ready statistical reports
+- `compare_multiple_methods_to_baseline()`: Automated comparison with corrections
+- All functions include detailed docstrings with examples
+- Follows best practices from ML statistics literature
+
+**Usage Example**:
+
+```python
+from scripts.statistical_testing import (
+    bootstrap_ci,
+    paired_bootstrap_test,
+    comprehensive_comparison_report
+)
+
+# Compute 95% CI for F1 scores
+mean_f1, (lower, upper) = bootstrap_ci(f1_scores, n_resamples=10000)
+
+# Compare latent vs text baseline
+diff, p_val, stats = paired_bootstrap_test(latent_scores, text_scores)
+
+# Generate full report
+report = comprehensive_comparison_report(
+    'Text Baseline',
+    text_scores,
+    {'Latent M=32': latent_scores, 'Token-budget': budget_scores},
+    correction='fdr_bh'
+)
+```
+
+**Statistical Guidelines**:
+
+- Minimum 20 test examples for bootstrap (50+ recommended)
+- Minimum 20 random seeds for cross-seed comparisons
+- Always use multiple comparison correction when comparing 3+ methods
+- Report both point estimates AND confidence intervals
+- Report both raw and corrected p-values
+
+**References**:
+- Dietterich (1998): Statistical tests for comparing classifiers
+- Colas et al. (2018): How many random seeds for statistical power
+- Efron & Tibshirani (1993): Introduction to the Bootstrap
+
+**Next Steps**:
+- Integrate into eval.py for automatic statistical reporting
+- Add to experiment pipelines for publication-quality results
+- Use for comparing Phase A improvements systematically
+
+---
 ## ═══════════════════════════════════════════════════════════════════════════
 ## 🔍 GIST TOKENS ROOT CAUSE ANALYSIS (2025-11-02)
 ## ═══════════════════════════════════════════════════════════════════════════
