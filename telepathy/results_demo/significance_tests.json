@@ -1,0 +1,79 @@
+{
+  "Bridge vs Prompt-Tuning_sst2": {
+    "mean1": 96.66666666666667,
+    "std1": 0.0,
+    "mean2": 49.5,
+    "std2": 0.0,
+    "t_statistic": NaN,
+    "p_value": NaN,
+    "significant_0.05": false,
+    "significant_0.01": false,
+    "significant_0.001": false
+  },
+  "Bridge vs Prompt-Tuning_agnews": {
+    "mean1": 90.66666666666667,
+    "std1": 0.0,
+    "mean2": 19.833333333333332,
+    "std2": 0.0,
+    "t_statistic": NaN,
+    "p_value": NaN,
+    "significant_0.05": false,
+    "significant_0.01": false,
+    "significant_0.001": false
+  },
+  "Bridge vs LoRA_sst2": {
+    "mean1": 96.66666666666667,
+    "std1": 0.0,
+    "mean2": 92.0,
+    "std2": 0.0,
+    "t_statistic": NaN,
+    "p_value": NaN,
+    "significant_0.05": false,
+    "significant_0.01": false,
+    "significant_0.001": false
+  },
+  "Bridge vs Linear Probe_sst2": {
+    "mean1": 96.66666666666667,
+    "std1": 0.0,
+    "mean2": 84.5,
+    "std2": 0.0,
+    "t_statistic": NaN,
+    "p_value": NaN,
+    "significant_0.05": false,
+    "significant_0.01": false,
+    "significant_0.001": false
+  },
+  "Few-Shot vs Zero-Shot_sst2": {
+    "mean1": 91.0,
+    "std1": 0.0,
+    "mean2": 88.0,
+    "std2": 0.0,
+    "t_statistic": NaN,
+    "p_value": NaN,
+    "significant_0.05": false,
+    "significant_0.01": false,
+    "significant_0.001": false
+  },
+  "Few-Shot vs Zero-Shot_agnews": {
+    "mean1": 82.0,
+    "std1": 0.0,
+    "mean2": 75.0,
+    "std2": 0.0,
+    "t_statistic": NaN,
+    "p_value": NaN,
+    "significant_0.05": false,
+    "significant_0.01": false,
+    "significant_0.001": false
+  },
+  "Few-Shot vs Zero-Shot_trec": {
+    "mean1": 88.0,
+    "std1": 0.0,
+    "mean2": 82.0,
+    "std2": 0.0,
+    "t_statistic": NaN,
+    "p_value": NaN,
+    "significant_0.05": false,
+    "significant_0.01": false,
+    "significant_0.001": false
+  }
+}

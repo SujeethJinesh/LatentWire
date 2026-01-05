@@ -1,0 +1,768 @@
+{
+  "metadata": {
+    "generated": "2026-01-04T20:46:16.136825",
+    "n_experiments": 13,
+    "n_aggregated": 13,
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "datasets": [
+      "sst2",
+      "agnews",
+      "trec",
+      "gsm8k",
+      "banking77",
+      "passkey"
+    ],
+    "models": [
+      "llama3.1-8b",
+      "mistral-7b",
+      "qwen2.5-7b",
+      "gemma-2b"
+    ]
+  },
+  "raw_results": {
+    "('bridge', 'sst2', 'default')": {
+      "seed": [
+        42,
+        123,
+        456
+      ],
+      "accuracy": [
+        96.5,
+        96.0,
+        97.5
+      ],
+      "f1": [
+        0.95,
+        0.94,
+        0.96
+      ],
+      "latency_ms": [
+        45,
+        46,
+        44
+      ],
+      "memory_mb": [
+        1200,
+        1210,
+        1195
+      ],
+      "compression_ratio": [
+        4.2,
+        4.1,
+        4.3
+      ]
+    },
+    "('bridge', 'agnews', 'default')": {
+      "seed": [
+        42,
+        123,
+        456
+      ],
+      "accuracy": [
+        90.0,
+        91.0,
+        91.0
+      ],
+      "f1": [
+        0.89,
+        0.9,
+        0.9
+      ],
+      "latency_ms": [
+        52,
+        51,
+        53
+      ],
+      "memory_mb": [
+        1400,
+        1390,
+        1410
+      ],
+      "compression_ratio": [
+        3.8,
+        3.9,
+        3.7
+      ]
+    },
+    "('bridge', 'trec', 'default')": {
+      "seed": [
+        42,
+        123,
+        456
+      ],
+      "accuracy": [
+        95.0,
+        95.5,
+        95.5
+      ],
+      "f1": [
+        0.94,
+        0.95,
+        0.95
+      ],
+      "latency_ms": [
+        38,
+        37,
+        39
+      ],
+      "memory_mb": [
+        1100,
+        1090,
+        1110
+      ],
+      "compression_ratio": [
+        4.5,
+        4.6,
+        4.4
+      ]
+    },
+    "('prompt_tuning', 'sst2', 'default')": {
+      "seed": [
+        42,
+        123,
+        456
+      ],
+      "accuracy": [
+        49.5,
+        49.5,
+        49.5
+      ],
+      "f1": [
+        0.48,
+        0.48,
+        0.48
+      ],
+      "latency_ms": [
+        55,
+        56,
+        54
+      ],
+      "memory_mb": [
+        1500,
+        1510,
+        1490
+      ],
+      "compression_ratio": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "('prompt_tuning', 'agnews', 'default')": {
+      "seed": [
+        42,
+        123,
+        456
+      ],
+      "accuracy": [
+        30.5,
+        14.5,
+        14.5
+      ],
+      "f1": [
+        0.29,
+        0.13,
+        0.13
+      ],
+      "latency_ms": [
+        62,
+        63,
+        61
+      ],
+      "memory_mb": [
+        1700,
+        1710,
+        1690
+      ],
+      "compression_ratio": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "('lora', 'sst2', 'default')": {
+      "seed": [
+        42,
+        123,
+        456
+      ],
+      "accuracy": [
+        92.0,
+        91.5,
+        92.5
+      ],
+      "f1": [
+        0.91,
+        0.9,
+        0.91
+      ],
+      "latency_ms": [
+        48,
+        49,
+        47
+      ],
+      "memory_mb": [
+        1300,
+        1310,
+        1290
+      ],
+      "compression_ratio": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "('linear_probe', 'sst2', 'default')": {
+      "seed": [
+        42,
+        123,
+        456
+      ],
+      "accuracy": [
+        84.5,
+        85.0,
+        84.0
+      ],
+      "f1": [
+        0.83,
+        0.84,
+        0.82
+      ],
+      "latency_ms": [
+        35,
+        34,
+        36
+      ],
+      "memory_mb": [
+        900,
+        890,
+        910
+      ],
+      "compression_ratio": [
+        6.0,
+        6.1,
+        5.9
+      ]
+    },
+    "('zeroshot', 'sst2', 'default')": {
+      "seed": [
+        42
+      ],
+      "accuracy": [
+        88.0
+      ],
+      "f1": [
+        0.87
+      ],
+      "latency_ms": [
+        65
+      ],
+      "memory_mb": [
+        1800
+      ],
+      "compression_ratio": [
+        1.0
+      ]
+    },
+    "('zeroshot', 'agnews', 'default')": {
+      "seed": [
+        42
+      ],
+      "accuracy": [
+        75.0
+      ],
+      "f1": [
+        0.74
+      ],
+      "latency_ms": [
+        72
+      ],
+      "memory_mb": [
+        2000
+      ],
+      "compression_ratio": [
+        1.0
+      ]
+    },
+    "('zeroshot', 'trec', 'default')": {
+      "seed": [
+        42
+      ],
+      "accuracy": [
+        82.0
+      ],
+      "f1": [
+        0.81
+      ],
+      "latency_ms": [
+        58
+      ],
+      "memory_mb": [
+        1600
+      ],
+      "compression_ratio": [
+        1.0
+      ]
+    },
+    "('fewshot', 'sst2', 'default')": {
+      "seed": [
+        42
+      ],
+      "accuracy": [
+        91.0
+      ],
+      "f1": [
+        0.9
+      ],
+      "latency_ms": [
+        85
+      ],
+      "memory_mb": [
+        2200
+      ],
+      "compression_ratio": [
+        1.0
+      ]
+    },
+    "('fewshot', 'agnews', 'default')": {
+      "seed": [
+        42
+      ],
+      "accuracy": [
+        82.0
+      ],
+      "f1": [
+        0.81
+      ],
+      "latency_ms": [
+        92
+      ],
+      "memory_mb": [
+        2400
+      ],
+      "compression_ratio": [
+        1.0
+      ]
+    },
+    "('fewshot', 'trec', 'default')": {
+      "seed": [
+        42
+      ],
+      "accuracy": [
+        88.0
+      ],
+      "f1": [
+        0.87
+      ],
+      "latency_ms": [
+        78
+      ],
+      "memory_mb": [
+        2000
+      ],
+      "compression_ratio": [
+        1.0
+      ]
+    }
+  },
+  "aggregated_results": {
+    "bridge__sst2_default": {
+      "accuracy_mean": 96.66666666666667,
+      "accuracy_std": 0.6236095644623235,
+      "accuracy_n": 3,
+      "accuracy_ci_low": 96.0,
+      "accuracy_ci_high": 97.5,
+      "f1_mean": 0.9499999999999998,
+      "f1_std": 0.008164965809277268,
+      "f1_n": 3,
+      "f1_ci_low": 0.94,
+      "f1_ci_high": 0.96,
+      "latency_ms_mean": 45.0,
+      "latency_ms_std": 0.816496580927726,
+      "latency_ms_n": 3,
+      "latency_ms_ci_low": 44.0,
+      "latency_ms_ci_high": 46.0,
+      "memory_mb_mean": 1201.6666666666667,
+      "memory_mb_std": 6.236095644623235,
+      "memory_mb_n": 3,
+      "memory_mb_ci_low": 1195.0,
+      "memory_mb_ci_high": 1210.0,
+      "compression_ratio_mean": 4.2,
+      "compression_ratio_std": 0.08164965809277268,
+      "compression_ratio_n": 3,
+      "compression_ratio_ci_low": 4.1,
+      "compression_ratio_ci_high": 4.3
+    },
+    "bridge__agnews_default": {
+      "accuracy_mean": 90.66666666666667,
+      "accuracy_std": 0.4714045207910317,
+      "accuracy_n": 3,
+      "accuracy_ci_low": 90.0,
+      "accuracy_ci_high": 91.0,
+      "f1_mean": 0.8966666666666666,
+      "f1_std": 0.004714045207910321,
+      "f1_n": 3,
+      "f1_ci_low": 0.89,
+      "f1_ci_high": 0.9,
+      "latency_ms_mean": 52.0,
+      "latency_ms_std": 0.816496580927726,
+      "latency_ms_n": 3,
+      "latency_ms_ci_low": 51.0,
+      "latency_ms_ci_high": 53.0,
+      "memory_mb_mean": 1400.0,
+      "memory_mb_std": 8.16496580927726,
+      "memory_mb_n": 3,
+      "memory_mb_ci_low": 1390.0,
+      "memory_mb_ci_high": 1410.0,
+      "compression_ratio_mean": 3.7999999999999994,
+      "compression_ratio_std": 0.0816496580927725,
+      "compression_ratio_n": 3,
+      "compression_ratio_ci_low": 3.7000000000000006,
+      "compression_ratio_ci_high": 3.9
+    },
+    "bridge__trec_default": {
+      "accuracy_mean": 95.33333333333333,
+      "accuracy_std": 0.23570226039551584,
+      "accuracy_n": 3,
+      "accuracy_ci_low": 95.0,
+      "accuracy_ci_high": 95.5,
+      "f1_mean": 0.9466666666666667,
+      "f1_std": 0.004714045207910321,
+      "f1_n": 3,
+      "f1_ci_low": 0.94,
+      "f1_ci_high": 0.9499999999999998,
+      "latency_ms_mean": 38.0,
+      "latency_ms_std": 0.816496580927726,
+      "latency_ms_n": 3,
+      "latency_ms_ci_low": 37.0,
+      "latency_ms_ci_high": 39.0,
+      "memory_mb_mean": 1100.0,
+      "memory_mb_std": 8.16496580927726,
+      "memory_mb_n": 3,
+      "memory_mb_ci_low": 1090.0,
+      "memory_mb_ci_high": 1110.0,
+      "compression_ratio_mean": 4.5,
+      "compression_ratio_std": 0.08164965809277232,
+      "compression_ratio_n": 3,
+      "compression_ratio_ci_low": 4.4,
+      "compression_ratio_ci_high": 4.6
+    },
+    "prompt_tuning__sst2_default": {
+      "accuracy_mean": 49.5,
+      "accuracy_std": 0.0,
+      "accuracy_n": 3,
+      "accuracy_ci_low": 49.5,
+      "accuracy_ci_high": 49.5,
+      "f1_mean": 0.48,
+      "f1_std": 0.0,
+      "f1_n": 3,
+      "f1_ci_low": 0.48,
+      "f1_ci_high": 0.48,
+      "latency_ms_mean": 55.0,
+      "latency_ms_std": 0.816496580927726,
+      "latency_ms_n": 3,
+      "latency_ms_ci_low": 54.0,
+      "latency_ms_ci_high": 56.0,
+      "memory_mb_mean": 1500.0,
+      "memory_mb_std": 8.16496580927726,
+      "memory_mb_n": 3,
+      "memory_mb_ci_low": 1490.0,
+      "memory_mb_ci_high": 1510.0,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 3,
+      "compression_ratio_ci_low": 1.0,
+      "compression_ratio_ci_high": 1.0
+    },
+    "prompt_tuning__agnews_default": {
+      "accuracy_mean": 19.833333333333332,
+      "accuracy_std": 7.542472332656507,
+      "accuracy_n": 3,
+      "accuracy_ci_low": 14.5,
+      "accuracy_ci_high": 30.5,
+      "f1_mean": 0.18333333333333335,
+      "f1_std": 0.07542472332656505,
+      "f1_n": 3,
+      "f1_ci_low": 0.13,
+      "f1_ci_high": 0.29,
+      "latency_ms_mean": 62.0,
+      "latency_ms_std": 0.816496580927726,
+      "latency_ms_n": 3,
+      "latency_ms_ci_low": 61.0,
+      "latency_ms_ci_high": 63.0,
+      "memory_mb_mean": 1700.0,
+      "memory_mb_std": 8.16496580927726,
+      "memory_mb_n": 3,
+      "memory_mb_ci_low": 1690.0,
+      "memory_mb_ci_high": 1710.0,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 3,
+      "compression_ratio_ci_low": 1.0,
+      "compression_ratio_ci_high": 1.0
+    },
+    "lora__sst2_default": {
+      "accuracy_mean": 92.0,
+      "accuracy_std": 0.408248290463863,
+      "accuracy_n": 3,
+      "accuracy_ci_low": 91.5,
+      "accuracy_ci_high": 92.5,
+      "f1_mean": 0.9066666666666667,
+      "f1_std": 0.004714045207910321,
+      "f1_n": 3,
+      "f1_ci_low": 0.9,
+      "f1_ci_high": 0.91,
+      "latency_ms_mean": 48.0,
+      "latency_ms_std": 0.816496580927726,
+      "latency_ms_n": 3,
+      "latency_ms_ci_low": 47.0,
+      "latency_ms_ci_high": 49.0,
+      "memory_mb_mean": 1300.0,
+      "memory_mb_std": 8.16496580927726,
+      "memory_mb_n": 3,
+      "memory_mb_ci_low": 1290.0,
+      "memory_mb_ci_high": 1310.0,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 3,
+      "compression_ratio_ci_low": 1.0,
+      "compression_ratio_ci_high": 1.0
+    },
+    "linear_probe__sst2_default": {
+      "accuracy_mean": 84.5,
+      "accuracy_std": 0.408248290463863,
+      "accuracy_n": 3,
+      "accuracy_ci_low": 84.0,
+      "accuracy_ci_high": 85.0,
+      "f1_mean": 0.83,
+      "f1_std": 0.008164965809277268,
+      "f1_n": 3,
+      "f1_ci_low": 0.82,
+      "f1_ci_high": 0.84,
+      "latency_ms_mean": 35.0,
+      "latency_ms_std": 0.816496580927726,
+      "latency_ms_n": 3,
+      "latency_ms_ci_low": 34.0,
+      "latency_ms_ci_high": 36.0,
+      "memory_mb_mean": 900.0,
+      "memory_mb_std": 8.16496580927726,
+      "memory_mb_n": 3,
+      "memory_mb_ci_low": 890.0,
+      "memory_mb_ci_high": 910.0,
+      "compression_ratio_mean": 6.0,
+      "compression_ratio_std": 0.08164965809277232,
+      "compression_ratio_n": 3,
+      "compression_ratio_ci_low": 5.900000000000001,
+      "compression_ratio_ci_high": 6.099999999999999
+    },
+    "zeroshot__sst2_default": {
+      "accuracy_mean": 88.0,
+      "accuracy_std": 0.0,
+      "accuracy_n": 1,
+      "f1_mean": 0.87,
+      "f1_std": 0.0,
+      "f1_n": 1,
+      "latency_ms_mean": 65.0,
+      "latency_ms_std": 0.0,
+      "latency_ms_n": 1,
+      "memory_mb_mean": 1800.0,
+      "memory_mb_std": 0.0,
+      "memory_mb_n": 1,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 1
+    },
+    "zeroshot__agnews_default": {
+      "accuracy_mean": 75.0,
+      "accuracy_std": 0.0,
+      "accuracy_n": 1,
+      "f1_mean": 0.74,
+      "f1_std": 0.0,
+      "f1_n": 1,
+      "latency_ms_mean": 72.0,
+      "latency_ms_std": 0.0,
+      "latency_ms_n": 1,
+      "memory_mb_mean": 2000.0,
+      "memory_mb_std": 0.0,
+      "memory_mb_n": 1,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 1
+    },
+    "zeroshot__trec_default": {
+      "accuracy_mean": 82.0,
+      "accuracy_std": 0.0,
+      "accuracy_n": 1,
+      "f1_mean": 0.81,
+      "f1_std": 0.0,
+      "f1_n": 1,
+      "latency_ms_mean": 58.0,
+      "latency_ms_std": 0.0,
+      "latency_ms_n": 1,
+      "memory_mb_mean": 1600.0,
+      "memory_mb_std": 0.0,
+      "memory_mb_n": 1,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 1
+    },
+    "fewshot__sst2_default": {
+      "accuracy_mean": 91.0,
+      "accuracy_std": 0.0,
+      "accuracy_n": 1,
+      "f1_mean": 0.9,
+      "f1_std": 0.0,
+      "f1_n": 1,
+      "latency_ms_mean": 85.0,
+      "latency_ms_std": 0.0,
+      "latency_ms_n": 1,
+      "memory_mb_mean": 2200.0,
+      "memory_mb_std": 0.0,
+      "memory_mb_n": 1,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 1
+    },
+    "fewshot__agnews_default": {
+      "accuracy_mean": 82.0,
+      "accuracy_std": 0.0,
+      "accuracy_n": 1,
+      "f1_mean": 0.81,
+      "f1_std": 0.0,
+      "f1_n": 1,
+      "latency_ms_mean": 92.0,
+      "latency_ms_std": 0.0,
+      "latency_ms_n": 1,
+      "memory_mb_mean": 2400.0,
+      "memory_mb_std": 0.0,
+      "memory_mb_n": 1,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 1
+    },
+    "fewshot__trec_default": {
+      "accuracy_mean": 88.0,
+      "accuracy_std": 0.0,
+      "accuracy_n": 1,
+      "f1_mean": 0.87,
+      "f1_std": 0.0,
+      "f1_n": 1,
+      "latency_ms_mean": 78.0,
+      "latency_ms_std": 0.0,
+      "latency_ms_n": 1,
+      "memory_mb_mean": 2000.0,
+      "memory_mb_std": 0.0,
+      "memory_mb_n": 1,
+      "compression_ratio_mean": 1.0,
+      "compression_ratio_std": 0.0,
+      "compression_ratio_n": 1
+    }
+  },
+  "significance_tests": {
+    "Bridge vs Prompt-Tuning_sst2": {
+      "mean1": 96.66666666666667,
+      "std1": 0.0,
+      "mean2": 49.5,
+      "std2": 0.0,
+      "t_statistic": NaN,
+      "p_value": NaN,
+      "significant_0.05": false,
+      "significant_0.01": false,
+      "significant_0.001": false
+    },
+    "Bridge vs Prompt-Tuning_agnews": {
+      "mean1": 90.66666666666667,
+      "std1": 0.0,
+      "mean2": 19.833333333333332,
+      "std2": 0.0,
+      "t_statistic": NaN,
+      "p_value": NaN,
+      "significant_0.05": false,
+      "significant_0.01": false,
+      "significant_0.001": false
+    },
+    "Bridge vs LoRA_sst2": {
+      "mean1": 96.66666666666667,
+      "std1": 0.0,
+      "mean2": 92.0,
+      "std2": 0.0,
+      "t_statistic": NaN,
+      "p_value": NaN,
+      "significant_0.05": false,
+      "significant_0.01": false,
+      "significant_0.001": false
+    },
+    "Bridge vs Linear Probe_sst2": {
+      "mean1": 96.66666666666667,
+      "std1": 0.0,
+      "mean2": 84.5,
+      "std2": 0.0,
+      "t_statistic": NaN,
+      "p_value": NaN,
+      "significant_0.05": false,
+      "significant_0.01": false,
+      "significant_0.001": false
+    },
+    "Few-Shot vs Zero-Shot_sst2": {
+      "mean1": 91.0,
+      "std1": 0.0,
+      "mean2": 88.0,
+      "std2": 0.0,
+      "t_statistic": NaN,
+      "p_value": NaN,
+      "significant_0.05": false,
+      "significant_0.01": false,
+      "significant_0.001": false
+    },
+    "Few-Shot vs Zero-Shot_agnews": {
+      "mean1": 82.0,
+      "std1": 0.0,
+      "mean2": 75.0,
+      "std2": 0.0,
+      "t_statistic": NaN,
+      "p_value": NaN,
+      "significant_0.05": false,
+      "significant_0.01": false,
+      "significant_0.001": false
+    },
+    "Few-Shot vs Zero-Shot_trec": {
+      "mean1": 88.0,
+      "std1": 0.0,
+      "mean2": 82.0,
+      "std2": 0.0,
+      "t_statistic": NaN,
+      "p_value": NaN,
+      "significant_0.05": false,
+      "significant_0.01": false,
+      "significant_0.001": false
+    }
+  },
+  "execution_gates": {
+    "gate1_sender_necessary": {
+      "passed": false,
+      "description": "Bridge must significantly outperform prompt-tuning baseline",
+      "recommendation": "INVESTIGATE"
+    },
+    "gate2_cross_model_transfer": {
+      "passed": true,
+      "description": "Cross-model transfer achieves >80% accuracy on at least one dataset",
+      "recommendation": "PROCEED"
+    },
+    "gate3_compression_achieved": {
+      "passed": "False",
+      "description": "Average compression ratio >= 4x",
+      "recommendation": "OPTIMIZE",
+      "current_ratio": 2.1153846153846154
+    },
+    "gate4_latency_improved": {
+      "passed": "True",
+      "description": "Average latency reduction > 20%",
+      "recommendation": "PROCEED",
+      "current_improvement": 0.31009922389232736
+    }
+  }
+}
