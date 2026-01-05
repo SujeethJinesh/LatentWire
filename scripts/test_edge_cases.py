@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Comprehensive Edge Case Testing for LatentWire
 
@@ -42,7 +43,7 @@ test_results = {
 
 def log_test(test_name, status, message=""):
     """Log test result with consistent formatting."""
-    symbol = {"pass": "✓", "fail": "✗", "warn": "⚠", "error": "💥"}.get(status, "?")
+    symbol = {"pass": "[PASS]", "fail": "[FAIL]", "warn": "[WARN]", "error": "[ERROR]"}.get(status, "?")
     print(f"\n{symbol} {test_name}: {status.upper()}")
     if message:
         print(f"  → {message}")
@@ -575,10 +576,10 @@ def run_all_tests():
     print("\n" + "="*60)
     print("TEST SUMMARY")
     print("="*60)
-    print(f"✓ Passed: {len(test_results['passed'])}")
-    print(f"✗ Failed: {len(test_results['failed'])}")
-    print(f"⚠ Warnings: {len(test_results['warnings'])}")
-    print(f"💥 Errors: {len(test_results['errors'])}")
+    print(f"[PASS] Passed: {len(test_results['passed'])}")
+    print(f"[FAIL] Failed: {len(test_results['failed'])}")
+    print(f"[WARN] Warnings: {len(test_results['warnings'])}")
+    print(f"[ERROR] Errors: {len(test_results['errors'])}")
 
     if test_results['failed']:
         print("\nFailed Tests:")
