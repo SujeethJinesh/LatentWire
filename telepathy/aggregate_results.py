@@ -138,11 +138,15 @@ class ResultsAggregator:
         else:
             results = data
 
-        info["accuracy"] = results.get("accuracy", results.get("acc", 0))
-        info["f1"] = results.get("f1_score", results.get("f1", 0))
-        info["latency_ms"] = results.get("latency_ms", results.get("inference_time_ms", 0))
-        info["memory_mb"] = results.get("memory_mb", results.get("peak_memory_mb", 0))
-        info["compression_ratio"] = results.get("compression_ratio", 1.0)
+        # Handle None/null results gracefully
+        if results is None:
+            results = {}
+
+        info["accuracy"] = results.get("accuracy", results.get("acc", 0)) if results else 0
+        info["f1"] = results.get("f1_score", results.get("f1", 0)) if results else 0
+        info["latency_ms"] = results.get("latency_ms", results.get("inference_time_ms", 0)) if results else 0
+        info["memory_mb"] = results.get("memory_mb", results.get("peak_memory_mb", 0)) if results else 0
+        info["compression_ratio"] = results.get("compression_ratio", 1.0) if results else 1.0
 
         # Extract model information
         for model in self.models:
