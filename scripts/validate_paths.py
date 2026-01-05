@@ -87,7 +87,7 @@ def check_file_for_path_issues(filepath):
         issues.append({
             'file': str(filepath),
             'line': 0,
-            'issue': f'Error reading file: {e}',
+            'issue': 'Error reading file: {}'.format(e),
             'content': ''
         })
 
