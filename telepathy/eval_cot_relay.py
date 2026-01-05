@@ -178,6 +178,9 @@ def main():
         text = item[config["text_field"]]
         true_label = label_map[item[config["label_field"]]]
 
+        # Synchronize before starting timing
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         start_time = time.time()
 
         # Step 1: Llama generates CoT reasoning
@@ -188,6 +191,9 @@ def main():
         # Step 2: Mistral classifies based on CoT
         response = classify_with_cot(mistral, mistral_tok, cot_analysis, config, device)
 
+        # Synchronize before ending timing
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         latency_ms = (time.time() - start_time) * 1000
         total_latency_ms += latency_ms
 

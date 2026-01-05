@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Test script to verify dataset loading works correctly."""
 
 from latentwire.data import load_examples
@@ -22,18 +23,18 @@ def test_dataset_loading():
 
     for dataset_name, kwargs in datasets_to_test:
         try:
-            print(f"\nTesting {dataset_name}...")
+            print("\nTesting {}...".format(dataset_name))
             examples = load_examples(dataset_name, **kwargs)
 
             if len(examples) > 0:
-                print(f"✓ {dataset_name}: Loaded {len(examples)} examples")
-                print(f"  Sample source: {examples[0]['source'][:100]}...")
-                print(f"  Sample answer: {examples[0]['answer'][:50]}...")
+                print("[PASS] {}: Loaded {} examples".format(dataset_name, len(examples)))
+                print("  Sample source: {}...".format(examples[0]['source'][:100]))
+                print("  Sample answer: {}...".format(examples[0]['answer'][:50] if examples[0]['answer'] else "None"))
             else:
-                print(f"✗ {dataset_name}: No examples loaded")
+                print("[FAIL] {}: No examples loaded".format(dataset_name))
 
         except Exception as e:
-            print(f"✗ {dataset_name}: Error - {e}")
+            print("[FAIL] {}: Error - {}".format(dataset_name, e))
 
     print("\n" + "=" * 60)
     print("Testing complete!")

@@ -446,6 +446,7 @@ def eval_bridge(bridge, sender, sender_tok, receiver, receiver_tok, eval_ds, dat
     """Evaluate trained bridge.
 
     FIXED: Use sender_tok for sender (was using receiver_tok - CRITICAL BUG)
+    FIXED: Add proper CUDA synchronization for accurate GPU latency measurement
     """
     config = DATASET_CONFIGS[dataset_name]
     label_tokens = get_label_tokens(receiver_tok, dataset_name)
@@ -461,6 +462,9 @@ def eval_bridge(bridge, sender, sender_tok, receiver, receiver_tok, eval_ds, dat
             text = item[config["text_field"]]
             label = item[config["label_field"]]
 
+            # Synchronize before starting timing
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             start = time.time()
 
             # Format sender prompt with task context
@@ -498,6 +502,9 @@ def eval_bridge(bridge, sender, sender_tok, receiver, receiver_tok, eval_ds, dat
             outputs = receiver(inputs_embeds=inputs_embeds, attention_mask=full_mask)
             logits = outputs.logits[0, -1]
 
+            # Synchronize before ending timing
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             latencies.append(time.time() - start)
 
             # Predict
@@ -555,7 +562,10 @@ def eval_prompt_tuning(prompt_module, receiver, receiver_tok, eval_ds, dataset_n
 
 
 def eval_text_relay(sender, sender_tok, receiver, receiver_tok, eval_ds, dataset_name, device):
-    """Evaluate text-relay baseline: Llama summarizes → text → Mistral classifies."""
+    """Evaluate text-relay baseline: Llama summarizes → text → Mistral classifies.
+
+    FIXED: Add proper CUDA synchronization for accurate GPU latency measurement
+    """
     config = DATASET_CONFIGS[dataset_name]
     inv_label_map = {v.lower(): k for k, v in config["label_map"].items()}
 
@@ -568,6 +578,9 @@ def eval_text_relay(sender, sender_tok, receiver, receiver_tok, eval_ds, dataset
             text = item[config["text_field"]]
             label = item[config["label_field"]]
 
+            # Synchronize before starting timing
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             start = time.time()
 
             # Sender generates summary
@@ -596,6 +609,9 @@ def eval_text_relay(sender, sender_tok, receiver, receiver_tok, eval_ds, dataset
             )
             response = receiver_tok.decode(outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True).strip().lower()
 
+            # Synchronize before ending timing
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             latencies.append(time.time() - start)
 
             # Parse prediction
@@ -1126,7 +1142,7 @@ def main():
                        f"Mistral {args.fewshot_shots}-shot", "Text-Relay", "Bridge (ours)"],
             "Accuracy (Mean)": [
                 config["random_chance"],
-                aggregated["linear_probe"]["accuracy_mean"] if "accuracy_mean" in aggregated["linear_probe"] else "N/A",
+                aggregated["linear_probe"]["accuracy_mean"] if "accuracy_mean" in aggregated.get("linear_probe", {}) else "N/A",
                 aggregated["prompt_tuning"]["accuracy_mean"] if "accuracy_mean" in aggregated["prompt_tuning"] else "N/A",
                 aggregated["llama_zeroshot"]["accuracy_mean"] if "accuracy_mean" in aggregated["llama_zeroshot"] else "N/A",
                 aggregated["mistral_zeroshot"]["accuracy_mean"] if "accuracy_mean" in aggregated["mistral_zeroshot"] else "N/A",
@@ -1136,7 +1152,7 @@ def main():
             ],
             "Accuracy (Std)": [
                 0.0,
-                aggregated["linear_probe"]["accuracy_std"] if "accuracy_std" in aggregated["linear_probe"] else "N/A",
+                aggregated["linear_probe"]["accuracy_std"] if "accuracy_std" in aggregated.get("linear_probe", {}) else "N/A",
                 aggregated["prompt_tuning"]["accuracy_std"] if "accuracy_std" in aggregated["prompt_tuning"] else "N/A",
                 aggregated["llama_zeroshot"]["accuracy_std"] if "accuracy_std" in aggregated["llama_zeroshot"] else "N/A",
                 aggregated["mistral_zeroshot"]["accuracy_std"] if "accuracy_std" in aggregated["mistral_zeroshot"] else "N/A",
@@ -1151,6 +1167,8 @@ def main():
         print(f"AGGREGATED SUMMARY: {dataset_name.upper()} (across {len(seeds)} seeds)")
         print(f"{'='*70}")
         print(f"  Random chance:    {config['random_chance']:.1f}%")
+        if "accuracy_mean" in aggregated.get("linear_probe", {}):
+            print(f"  Linear Probe:     {aggregated['linear_probe']['accuracy_mean']:.1f}% ± {aggregated['linear_probe']['accuracy_std']:.1f}")
         if "accuracy_mean" in aggregated["prompt_tuning"]:
             print(f"  Prompt-Tuning:    {aggregated['prompt_tuning']['accuracy_mean']:.1f}% ± {aggregated['prompt_tuning']['accuracy_std']:.1f}")
         if "accuracy_mean" in aggregated["llama_zeroshot"]:
@@ -1197,8 +1215,8 @@ def main():
     print()
     print("-"*70)
 
-    methods = ["prompt_tuning", "llama_zeroshot", "mistral_zeroshot", "mistral_fewshot", "text_relay", "bridge"]
-    method_names = ["Prompt-Tuning", "Llama 0-shot", "Mistral 0-shot", f"Mistral {args.fewshot_shots}-shot", "Text-Relay", "Bridge (ours)"]
+    methods = ["linear_probe", "prompt_tuning", "llama_zeroshot", "mistral_zeroshot", "mistral_fewshot", "text_relay", "bridge"]
+    method_names = ["Linear Probe", "Prompt-Tuning", "Llama 0-shot", "Mistral 0-shot", f"Mistral {args.fewshot_shots}-shot", "Text-Relay", "Bridge (ours)"]
 
     for method, name in zip(methods, method_names):
         print(f"{name:<25} ", end="")

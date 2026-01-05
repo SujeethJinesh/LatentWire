@@ -539,6 +539,8 @@ def evaluate_model_chunked_text(
         chunk_size = len(prompts) if len(prompts) > 0 else 1
 
     preds = []
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()  # Synchronize before starting timing
     t0 = time.time()
     for i in range(0, len(prompts), chunk_size):
         batch = prompts[i:i + chunk_size]
@@ -579,6 +581,8 @@ def evaluate_model_chunked_latent(
         chunk_size = N if N > 0 else 1
 
     preds = []
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()  # Synchronize before starting timing
     t0 = time.time()
     for start_idx in range(0, N, chunk_size):
         end_idx = min(N, start_idx + chunk_size)
@@ -782,6 +786,8 @@ def _run_embedding_baselines(
         latent_tensors: List[torch.Tensor] = []
         preds: List[str] = []
 
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()  # Synchronize before starting timing
         start = time.time()
         for idx, base_prompt in enumerate(prompts):
             prompt_text = base_prompt

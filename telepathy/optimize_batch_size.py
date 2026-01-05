@@ -1,0 +1,383 @@
+#!/usr/bin/env python3
+"""
+Automatic batch size optimizer for cross-model telepathy training.
+Calculates maximum safe batch sizes based on model combinations and available GPU memory.
+"""
+
+import argparse
+import json
+import math
+from typing import Dict, Tuple, Optional
+import sys
+
+# Model memory estimates (in GB) based on empirical measurements
+# These include model weights + typical activation memory per batch item
+MODEL_BASE_MEMORY = {
+    # Llama family
+    "meta-llama/Llama-3.2-1B-Instruct": 2.5,
+    "meta-llama/Llama-3.2-3B-Instruct": 7.0,
+    "meta-llama/Meta-Llama-3.1-8B-Instruct": 16.0,
+    "meta-llama/Meta-Llama-3-8B-Instruct": 16.0,
+
+    # Qwen family
+    "Qwen/Qwen2.5-0.5B-Instruct": 1.2,
+    "Qwen/Qwen2.5-1.5B-Instruct": 3.5,
+    "Qwen/Qwen2.5-3B-Instruct": 7.0,
+    "Qwen/Qwen2.5-7B-Instruct": 14.0,
+
+    # Mistral family
+    "mistralai/Mistral-7B-Instruct-v0.3": 14.0,
+    "mistralai/Ministral-8B-Instruct-2410": 16.5,
+
+    # Phi family
+    "microsoft/phi-2": 5.5,
+    "microsoft/Phi-3.5-mini-instruct": 7.5,
+}
+
+# Memory per batch item (in GB) - includes activations, gradients, optimizer states
+MEMORY_PER_BATCH_ITEM = {
+    # Smaller models (< 2B params)
+    "meta-llama/Llama-3.2-1B-Instruct": 0.25,
+    "Qwen/Qwen2.5-0.5B-Instruct": 0.15,
+
+    # Medium models (2-5B params)
+    "meta-llama/Llama-3.2-3B-Instruct": 0.4,
+    "Qwen/Qwen2.5-1.5B-Instruct": 0.3,
+    "Qwen/Qwen2.5-3B-Instruct": 0.4,
+    "microsoft/phi-2": 0.35,
+
+    # Larger models (7-8B params)
+    "meta-llama/Meta-Llama-3.1-8B-Instruct": 0.6,
+    "meta-llama/Meta-Llama-3-8B-Instruct": 0.6,
+    "Qwen/Qwen2.5-7B-Instruct": 0.55,
+    "mistralai/Mistral-7B-Instruct-v0.3": 0.55,
+    "mistralai/Ministral-8B-Instruct-2410": 0.65,
+    "microsoft/Phi-3.5-mini-instruct": 0.5,
+}
+
+# Additional memory for telepathy components
+TELEPATHY_OVERHEAD = {
+    "encoder": 0.5,  # Encoder network
+    "adapters": 0.3,  # Per-model adapters
+    "buffers": 1.0,  # Intermediate buffers
+    "pytorch": 2.0,  # PyTorch framework overhead
+}
+
+
+def get_model_memory_requirements(
+    source_model: str,
+    target_model: str,
+    batch_size: int,
+    sequence_length: int = 512,
+    latent_len: int = 128,
+    d_z: int = 768,
+) -> Dict[str, float]:
+    """
+    Calculate memory requirements for a given model pair and batch size.
+
+    Args:
+        source_model: Source model name/ID
+        target_model: Target model name/ID
+        batch_size: Batch size to evaluate
+        sequence_length: Maximum sequence length
+        latent_len: Number of latent tokens
+        d_z: Latent dimension
+
+    Returns:
+        Dict with memory breakdown in GB
+    """
+    # Get base memory for models
+    source_base = MODEL_BASE_MEMORY.get(source_model, 16.0)  # Default to 8B size
+    target_base = MODEL_BASE_MEMORY.get(target_model, 16.0)
+
+    # Get per-batch memory
+    source_per_batch = MEMORY_PER_BATCH_ITEM.get(source_model, 0.6)
+    target_per_batch = MEMORY_PER_BATCH_ITEM.get(target_model, 0.6)
+
+    # Calculate batch memory
+    source_batch_mem = source_per_batch * batch_size
+    target_batch_mem = target_per_batch * batch_size
+
+    # Latent memory (encoder output + gradients)
+    latent_memory = (batch_size * latent_len * d_z * 4 * 3) / (1024**3)  # fp32, x3 for grad+optimizer
+
+    # Total memory breakdown
+    memory = {
+        "source_base": source_base,
+        "target_base": target_base,
+        "source_batch": source_batch_mem,
+        "target_batch": target_batch_mem,
+        "latent": latent_memory,
+        "encoder": TELEPATHY_OVERHEAD["encoder"],
+        "adapters": TELEPATHY_OVERHEAD["adapters"],
+        "buffers": TELEPATHY_OVERHEAD["buffers"],
+        "pytorch": TELEPATHY_OVERHEAD["pytorch"],
+    }
+
+    memory["total"] = sum(memory.values())
+
+    return memory
+
+
+def calculate_max_batch_size(
+    source_model: str,
+    target_model: str,
+    gpu_memory: float = 80.0,
+    safety_margin: float = 0.2,
+    sequence_length: int = 512,
+    latent_len: int = 128,
+    d_z: int = 768,
+    min_batch_size: int = 1,
+    max_batch_size: int = 256,
+) -> Tuple[int, Dict[str, float]]:
+    """
+    Calculate maximum safe batch size for a model pair.
+
+    Args:
+        source_model: Source model name/ID
+        target_model: Target model name/ID
+        gpu_memory: Available GPU memory in GB
+        safety_margin: Safety margin (0.2 = 20%)
+        sequence_length: Maximum sequence length
+        latent_len: Number of latent tokens
+        d_z: Latent dimension
+        min_batch_size: Minimum batch size to consider
+        max_batch_size: Maximum batch size to consider
+
+    Returns:
+        Tuple of (max_batch_size, memory_breakdown)
+    """
+    # Available memory after safety margin
+    available_memory = gpu_memory * (1 - safety_margin)
+
+    # Binary search for maximum batch size
+    left, right = min_batch_size, max_batch_size
+    best_batch_size = min_batch_size
+    best_memory = {}
+
+    while left <= right:
+        mid = (left + right) // 2
+        memory = get_model_memory_requirements(
+            source_model, target_model, mid,
+            sequence_length, latent_len, d_z
+        )
+
+        if memory["total"] <= available_memory:
+            best_batch_size = mid
+            best_memory = memory
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return best_batch_size, best_memory
+
+
+def suggest_gradient_accumulation(
+    actual_batch_size: int,
+    desired_batch_size: int = 64,
+) -> int:
+    """
+    Suggest gradient accumulation steps to reach desired effective batch size.
+
+    Args:
+        actual_batch_size: Maximum batch size that fits in memory
+        desired_batch_size: Desired effective batch size
+
+    Returns:
+        Gradient accumulation steps
+    """
+    if actual_batch_size >= desired_batch_size:
+        return 1
+
+    # Find accumulation steps that give us close to desired batch size
+    accumulation = math.ceil(desired_batch_size / actual_batch_size)
+
+    # Try to use powers of 2 when possible
+    power_of_2 = 2 ** math.ceil(math.log2(accumulation))
+    if power_of_2 * actual_batch_size <= desired_batch_size * 1.5:
+        return power_of_2
+
+    return accumulation
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Calculate optimal batch size for telepathy training"
+    )
+    parser.add_argument(
+        "--source-model",
+        type=str,
+        required=True,
+        help="Source model name/ID"
+    )
+    parser.add_argument(
+        "--target-model",
+        type=str,
+        required=True,
+        help="Target model name/ID"
+    )
+    parser.add_argument(
+        "--gpu-memory",
+        type=float,
+        default=80.0,
+        help="GPU memory in GB (default: 80 for H100)"
+    )
+    parser.add_argument(
+        "--safety-margin",
+        type=float,
+        default=0.2,
+        help="Safety margin as fraction (default: 0.2 = 20%%)"
+    )
+    parser.add_argument(
+        "--sequence-length",
+        type=int,
+        default=512,
+        help="Maximum sequence length (default: 512)"
+    )
+    parser.add_argument(
+        "--latent-len",
+        type=int,
+        default=128,
+        help="Number of latent tokens (default: 128)"
+    )
+    parser.add_argument(
+        "--d-z",
+        type=int,
+        default=768,
+        help="Latent dimension (default: 768)"
+    )
+    parser.add_argument(
+        "--desired-batch-size",
+        type=int,
+        default=64,
+        help="Desired effective batch size for gradient accumulation (default: 64)"
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output in JSON format"
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show detailed memory breakdown"
+    )
+
+    args = parser.parse_args()
+
+    # Calculate maximum batch size
+    max_batch_size, memory_breakdown = calculate_max_batch_size(
+        args.source_model,
+        args.target_model,
+        args.gpu_memory,
+        args.safety_margin,
+        args.sequence_length,
+        args.latent_len,
+        args.d_z,
+    )
+
+    # Calculate gradient accumulation
+    grad_accum = suggest_gradient_accumulation(
+        max_batch_size,
+        args.desired_batch_size
+    )
+
+    effective_batch_size = max_batch_size * grad_accum
+
+    # Prepare output
+    result = {
+        "source_model": args.source_model,
+        "target_model": args.target_model,
+        "max_batch_size": max_batch_size,
+        "gradient_accumulation_steps": grad_accum,
+        "effective_batch_size": effective_batch_size,
+        "gpu_memory_gb": args.gpu_memory,
+        "safety_margin": args.safety_margin,
+        "estimated_memory_usage_gb": memory_breakdown["total"],
+        "memory_utilization": memory_breakdown["total"] / args.gpu_memory,
+    }
+
+    if args.verbose:
+        result["memory_breakdown"] = memory_breakdown
+
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        print(f"\n{'='*60}")
+        print(f"Batch Size Optimization Results")
+        print(f"{'='*60}")
+        print(f"Model Pair: {args.source_model} -> {args.target_model}")
+        print(f"GPU Memory: {args.gpu_memory:.1f} GB (safety margin: {args.safety_margin*100:.0f}%)")
+        print(f"{'='*60}")
+        print(f"Maximum Batch Size: {max_batch_size}")
+        print(f"Gradient Accumulation: {grad_accum} steps")
+        print(f"Effective Batch Size: {effective_batch_size}")
+        print(f"Estimated Memory Usage: {memory_breakdown['total']:.1f} GB ({memory_breakdown['total']/args.gpu_memory*100:.0f}%)")
+
+        if args.verbose:
+            print(f"\nMemory Breakdown:")
+            print(f"  Source Model Base: {memory_breakdown['source_base']:.1f} GB")
+            print(f"  Target Model Base: {memory_breakdown['target_base']:.1f} GB")
+            print(f"  Source Batch Memory: {memory_breakdown['source_batch']:.1f} GB")
+            print(f"  Target Batch Memory: {memory_breakdown['target_batch']:.1f} GB")
+            print(f"  Latent Memory: {memory_breakdown['latent']:.1f} GB")
+            print(f"  Encoder: {memory_breakdown['encoder']:.1f} GB")
+            print(f"  Adapters: {memory_breakdown['adapters']:.1f} GB")
+            print(f"  Buffers: {memory_breakdown['buffers']:.1f} GB")
+            print(f"  PyTorch Overhead: {memory_breakdown['pytorch']:.1f} GB")
+
+        print(f"{'='*60}")
+        print(f"\nRecommended training command additions:")
+        print(f"  --batch_size {max_batch_size}")
+        if grad_accum > 1:
+            print(f"  --gradient_accumulation_steps {grad_accum}")
+        print("")
+
+    # Exit with error code if batch size is too small
+    if max_batch_size < 1:
+        print("ERROR: Cannot fit even batch_size=1 in memory!", file=sys.stderr)
+        print(f"Memory required: {memory_breakdown['total']:.1f} GB", file=sys.stderr)
+        print(f"Memory available: {args.gpu_memory * (1-args.safety_margin):.1f} GB", file=sys.stderr)
+        sys.exit(1)
+
+    return result
+
+
+def get_batch_size_for_models(
+    source_model: str,
+    target_model: str,
+    gpu_memory: float = 80.0,
+    safety_margin: float = 0.2,
+    **kwargs
+) -> Dict:
+    """
+    Convenience function for use in other scripts.
+
+    Example:
+        from optimize_batch_size import get_batch_size_for_models
+        config = get_batch_size_for_models(
+            "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            "Qwen/Qwen2.5-7B-Instruct"
+        )
+        batch_size = config["max_batch_size"]
+    """
+    max_batch_size, memory_breakdown = calculate_max_batch_size(
+        source_model,
+        target_model,
+        gpu_memory,
+        safety_margin,
+        **kwargs
+    )
+
+    return {
+        "max_batch_size": max_batch_size,
+        "memory_breakdown": memory_breakdown,
+        "gradient_accumulation_steps": suggest_gradient_accumulation(
+            max_batch_size,
+            kwargs.get("desired_batch_size", 64)
+        )
+    }
+
+
+if __name__ == "__main__":
+    main()
