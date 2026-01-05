@@ -505,7 +505,7 @@ different random seeds and data splits.
 
         return stats
 
-    def _get_dataset_results(self, dataset: str) -> Dict:
+    def _get_dataset_results(self, dataset):
         """Get all results for a specific dataset."""
         results = {}
         for key, data in self.results.get('raw_results', {}).items():
@@ -517,7 +517,7 @@ different random seeds and data splits.
                     results[method] = data
         return results
 
-    def _find_best_method(self, dataset_results: Dict) -> Tuple[str, float]:
+    def _find_best_method(self, dataset_results):
         """Find best method for a dataset."""
         best_method = ''
         best_acc = 0
@@ -532,7 +532,7 @@ different random seeds and data splits.
 
         return best_method, best_acc
 
-    def _get_significance_marker(self, method: str, dataset: str) -> str:
+    def _get_significance_marker(self, method, dataset):
         """Get significance marker for a result."""
         # Simplified significance determination
         if method == 'bridge':
@@ -557,13 +557,13 @@ different random seeds and data splits.
                             return "$^{*}$"
         return ""
 
-    def _is_best_accuracy(self, method: str, dataset: str) -> bool:
+    def _is_best_accuracy(self, method, dataset):
         """Check if this method has best accuracy for dataset."""
         dataset_results = self._get_dataset_results(dataset)
         best_method, _ = self._find_best_method(dataset_results)
         return method == best_method
 
-    def _run_statistical_tests(self) -> Dict:
+    def _run_statistical_tests(self):
         """Run comprehensive statistical tests."""
         results = {
             'ttest_results': [],
@@ -600,7 +600,7 @@ different random seeds and data splits.
 
         return results
 
-    def _format_statistical_results(self, stats_results: Dict) -> str:
+    def _format_statistical_results(self, stats_results):
         """Format statistical results as LaTeX."""
         output = r"""
 \begin{table}[h]
@@ -705,7 +705,7 @@ Dataset & Comparison & t-stat & p-value & Cohen's d \\
         print("  pdflatex paper_master.tex")
         print("  pdflatex paper_master.tex")
 
-    def _generate_master_file(self) -> str:
+    def _generate_master_file(self):
         """Generate master LaTeX file with all includes."""
         return r"""
 \documentclass[10pt,twocolumn]{article}

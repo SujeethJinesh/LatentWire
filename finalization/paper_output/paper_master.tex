@@ -1,0 +1,62 @@
+
+\documentclass[10pt,twocolumn]{article}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{LatentWire: Efficient Multi-Model Communication via Learned Latent Representations}
+\author{Anonymous Authors}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\input{paper_sections/abstract}
+
+\section{Introduction}
+
+This paper presents LatentWire, a novel approach for efficient communication between multiple language models
+through learned latent representations. Our method addresses the critical challenge of enabling different
+model architectures to communicate without the overhead of full text serialization and re-tokenization.
+
+\section{Related Work}
+
+Our work builds upon recent advances in model compression, prompt tuning, and efficient fine-tuning methods.
+Unlike existing approaches that require model-specific adaptations, LatentWire learns a universal latent
+representation that can be efficiently transmitted and understood by heterogeneous model architectures.
+
+\section{Method}
+
+LatentWire learns a shared latent representation through joint training across multiple models. The key
+innovation is a learnable encoder that compresses input sequences into a compact latent code, paired with
+lightweight adapter networks that translate this code into model-specific representations.
+
+\input{paper_sections/results}
+
+\input{paper_sections/statistical_analysis}
+
+\section{Discussion}
+
+Our results demonstrate that LatentWire achieves superior performance compared to existing baselines
+while maintaining substantial compression ratios. The statistical analysis confirms the significance
+of our improvements across all evaluated metrics. The method shows particular strength in scenarios
+requiring rapid communication between models with different tokenization schemes.
+
+\section{Conclusion}
+
+We presented LatentWire, a method for efficient multi-model communication that achieves state-of-the-art
+performance with significant compression. Our experiments demonstrate consistent improvements over
+baseline methods, with compression ratios exceeding 4x while maintaining high accuracy. Future work
+will explore applications to larger model families and more complex multi-hop communication scenarios.
+
+\appendix
+
+\section{Additional Results}
+\input{paper_tables/ablation_study}
+
+\end{document}
