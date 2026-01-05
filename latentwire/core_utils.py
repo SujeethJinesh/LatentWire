@@ -481,7 +481,7 @@ def capture_stats(
     lm_embed_weight: torch.Tensor,
     adapter_out: torch.Tensor,
     z: torch.Tensor,
-    extra: Dict | None = None,
+    extra: Optional[Dict] = None,
 ):
     stats = {
         "model": model_name,

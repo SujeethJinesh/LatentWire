@@ -17,7 +17,7 @@ import argparse
 import traceback
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 # Try importing optional dependencies
@@ -42,7 +42,7 @@ class ValidationResult:
     name: str
     passed: bool
     message: str
-    details: Dict[str, Any] = None
+    details: Dict[str, Any] = field(default_factory=dict)
 
     def __str__(self):
         icon = "✅" if self.passed else "❌"

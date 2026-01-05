@@ -480,9 +480,7 @@ def run_phase4_latency(args, output_dir: str, log_file: str) -> Dict:
     }
 
     cmd = f"""python telepathy/benchmark_batched_latency.py \
-        --methods bridge text_relay ensemble zeroshot \
-        --batch_sizes 1 4 8 16 \
-        --datasets {' '.join(args.datasets)} \
+        --batch_sizes 1 2 4 8 16 \
         --output_dir {output_dir}/latency \
         --num_samples 100
     """
@@ -491,7 +489,7 @@ def run_phase4_latency(args, output_dir: str, log_file: str) -> Dict:
     run_result = run_command(cmd, log_file, check=False)
 
     # Parse latency results
-    latency_file = f"{output_dir}/latency/latency_results.json"
+    latency_file = f"{output_dir}/latency/batched_latency.json"
     if os.path.exists(latency_file):
         latency_results = load_results(latency_file)
         if latency_results:
@@ -535,7 +533,7 @@ def run_phase5_generation(args, output_dir: str, log_file: str) -> Dict:
         --eval_samples 100 \
         --output_dir {output_dir}/xsum \
         --seeds {' '.join(map(str, args.seeds))} \
-        --max_length 512 \
+        --max_input_length 512 \
         --num_tokens 32
     """
 
@@ -544,7 +542,7 @@ def run_phase5_generation(args, output_dir: str, log_file: str) -> Dict:
 
     # Evaluate with ROUGE scores
     cmd = f"""python telepathy/eval_xsum_bridge.py \
-        --checkpoint {output_dir}/xsum/best_checkpoint.pt \
+        --checkpoint {output_dir}/xsum/final_checkpoint.pt \
         --output_dir {output_dir}/xsum_eval \
         --num_samples 100
     """
@@ -664,11 +662,11 @@ def main():
     setup_environment()
 
     # Create base output directory
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Always define timestamp
     if args.resume_from:
         base_output_dir = args.resume_from
         log_message(f"Resuming from: {base_output_dir}")
     else:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         base_output_dir = f"{args.output_dir}_{timestamp}"
         os.makedirs(base_output_dir, exist_ok=True)
 
@@ -776,42 +774,54 @@ def main():
     log_message("="*70, master_log)
 
     # Create comparison table
-    if 1 in all_results["phases"] and "aggregated_results" in all_results["phases"][1]:
-        log_message("\nAccuracy Comparison (Mean ± Std):", master_log)
-        log_message("-"*50, master_log)
+    if 1 in all_results["phases"]:
+        phase1_results = all_results["phases"][1]
+        # Check if we have dataset results in phase 1
+        has_results = any(dataset in phase1_results for dataset in args.datasets)
 
-        methods = ["bridge", "prompt_tuning", "linear_probe", "text_relay", "ensemble"]
+        if has_results:
+            log_message("\nAccuracy Comparison (Mean ± Std):", master_log)
+            log_message("-"*50, master_log)
 
-        for dataset in args.datasets:
-            if dataset in all_results["phases"][1]:
-                log_message(f"\n{dataset.upper()}:", master_log)
-                dataset_results = all_results["phases"][1][dataset]
+            methods = ["bridge", "prompt_tuning", "linear_probe", "text_relay", "ensemble"]
 
-                for method in methods:
-                    if method in dataset_results and "accuracy_mean" in dataset_results[method]:
-                        mean = dataset_results[method]["accuracy_mean"]
-                        std = dataset_results[method]["accuracy_std"]
-                        log_message(f"  {method:15}: {mean:5.1f}% ± {std:4.1f}", master_log)
+            for dataset in args.datasets:
+                if dataset in phase1_results:
+                    log_message(f"\n{dataset.upper()}:", master_log)
+                    dataset_results = phase1_results[dataset]
+
+                    for method in methods:
+                        if method in dataset_results and "accuracy_mean" in dataset_results[method]:
+                            mean = dataset_results[method]["accuracy_mean"]
+                            std = dataset_results[method]["accuracy_std"]
+                            log_message(f"  {method:15}: {mean:5.1f}% ± {std:4.1f}", master_log)
 
     # Statistical significance tests
     if 1 in all_results["phases"]:
-        log_message("\n" + "="*70, master_log)
-        log_message("STATISTICAL TESTS", master_log)
-        log_message("="*70, master_log)
+        phase1_results = all_results["phases"][1]
+        has_stats = any(dataset in phase1_results and
+                        "bridge" in phase1_results.get(dataset, {}) and
+                        "bootstrap_ci" in phase1_results[dataset]["bridge"]
+                        for dataset in args.datasets)
 
-        for dataset in args.datasets:
-            if dataset in all_results["phases"][1]:
-                log_message(f"\n{dataset.upper()}:", master_log)
+        if has_stats:
+            log_message("\n" + "="*70, master_log)
+            log_message("STATISTICAL TESTS", master_log)
+            log_message("="*70, master_log)
 
-                # Compare Bridge vs baselines
-                dataset_results = all_results["phases"][1][dataset]
+            for dataset in args.datasets:
+                if dataset in phase1_results:
+                    log_message(f"\n{dataset.upper()}:", master_log)
 
-                if "bridge" in dataset_results and "bootstrap_ci" in dataset_results["bridge"]:
-                    ci = dataset_results["bridge"]["bootstrap_ci"]
-                    log_message(
-                        f"  Bridge 95% CI: [{ci['ci_lower']:.1f}, {ci['ci_upper']:.1f}]",
-                        master_log
-                    )
+                    # Compare Bridge vs baselines
+                    dataset_results = phase1_results[dataset]
+
+                    if "bridge" in dataset_results and "bootstrap_ci" in dataset_results["bridge"]:
+                        ci = dataset_results["bridge"]["bootstrap_ci"]
+                        log_message(
+                            f"  Bridge 95% CI: [{ci['ci_lower']:.1f}, {ci['ci_upper']:.1f}]",
+                            master_log
+                        )
 
     log_message("\n" + "="*70, master_log)
     log_message("ALL EXPERIMENTS COMPLETE", master_log)

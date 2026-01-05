@@ -73,6 +73,7 @@ def estimate_bridge_memory_gb(
     heads=8,
     fsq_levels=8,
     fsq_dims=8,
+    include_optimizer=True,
 ):
     """
     Estimate memory usage for the bridge architecture.
@@ -85,9 +86,10 @@ def estimate_bridge_memory_gb(
         heads: Number of attention heads
         fsq_levels: Quantization levels per FSQ dimension
         fsq_dims: Number of FSQ dimensions
+        include_optimizer: Whether to include Adam optimizer states
 
     Returns:
-        Estimated memory in GB for bridge components
+        Dictionary with detailed memory breakdown in GB
     """
     params = 0
 
@@ -114,14 +116,34 @@ def estimate_bridge_memory_gb(
     params += source_dim * target_dim  # Linear projection
     params += target_dim  # LayerNorm
 
-    # Convert to GB (bfloat16 = 2 bytes per param)
-    bridge_gb = (params * 2) / (1024**3)
+    # Memory calculations
+    # 1. Parameter memory (bfloat16 = 2 bytes per param)
+    params_gb = (params * 2) / (1024**3)
 
-    # Add activation memory overhead (roughly 2-3x params during training)
-    activation_overhead = 2.5
-    total_bridge_gb = bridge_gb * activation_overhead
+    # 2. Gradient memory (same as params for trainable parameters)
+    gradient_gb = params_gb  # All bridge params are trainable
 
-    return total_bridge_gb
+    # 3. Optimizer states (Adam: momentum + variance in fp32)
+    # Each state is 4 bytes per param, 2 states = 8 bytes total
+    optimizer_gb = 0
+    if include_optimizer:
+        optimizer_gb = (params * 8) / (1024**3)
+
+    # 4. Activation memory (scales with batch size, accounted separately)
+    # Here we only account for the persistent activation overhead
+    activation_overhead_gb = params_gb * 1.5  # Persistent buffers, workspace
+
+    # Total bridge memory (without batch-dependent activations)
+    total_bridge_gb = params_gb + gradient_gb + optimizer_gb + activation_overhead_gb
+
+    return {
+        "params_gb": params_gb,
+        "gradient_gb": gradient_gb,
+        "optimizer_gb": optimizer_gb,
+        "activation_overhead_gb": activation_overhead_gb,
+        "total_gb": total_bridge_gb,
+        "param_count": params
+    }
 
 
 def get_memory_safe_config(
@@ -180,29 +202,58 @@ def get_memory_safe_config(
     target_mem_gb = target_params_b * 2 if dual_model else 0
 
     # Estimate bridge memory
-    bridge_mem_gb = estimate_bridge_memory_gb(
+    bridge_info = estimate_bridge_memory_gb(
         source_dim=source_dim,
         target_dim=target_dim,
         soft_tokens=soft_tokens,
         depth=depth,
+        include_optimizer=True,
     )
+    bridge_mem_gb = bridge_info["total_gb"]
 
-    # Base memory (models + bridge)
+    # Base memory (models + bridge with optimizer)
     base_memory_gb = source_mem_gb + target_mem_gb + bridge_mem_gb
 
-    # Activation memory scales with batch size and sequence length
-    # Rough estimate: ~4-6 GB per batch for 8B model at 1.5K length
-    if source_params_b + target_params_b > 12:
-        activation_gb_per_batch = 6.0
-    elif source_params_b + target_params_b > 8:
-        activation_gb_per_batch = 5.0
-    elif source_params_b + target_params_b > 4:
-        activation_gb_per_batch = 4.0
-    else:
-        activation_gb_per_batch = 3.0
+    # Activation memory calculation (more accurate)
+    # Based on: batch_size * seq_len * hidden_dim * num_layers * bytes_per_activation
+    # Approximation for transformers: ~12-16 bytes per token per layer during training
 
-    # Scale by sequence length
-    activation_gb_per_batch *= (max_length / 1536)
+    # Calculate total model layers (approximate)
+    # Llama/Mistral/Qwen at different sizes have different layer counts
+    if source_params_b >= 7:
+        source_layers = 32  # 7-8B models
+    elif source_params_b >= 3:
+        source_layers = 28  # 3B models
+    else:
+        source_layers = 16  # 1B models
+
+    if dual_model:
+        if target_params_b >= 7:
+            target_layers = 32
+        elif target_params_b >= 3:
+            target_layers = 28
+        else:
+            target_layers = 16
+    else:
+        target_layers = 0
+
+    # Calculate activation memory per batch
+    # Formula: batch_size * seq_len * hidden_dim * layers * bytes_per_activation / 1GB
+    bytes_per_activation = 16  # Conservative estimate for training (includes gradients)
+
+    source_activation_gb = (max_length * source_dim * source_layers * bytes_per_activation) / (1024**3)
+    target_activation_gb = 0
+    if dual_model:
+        target_activation_gb = (max_length * target_dim * target_layers * bytes_per_activation) / (1024**3)
+
+    # Add bridge activation memory (Perceiver layers)
+    bridge_activation_gb = (max_length * source_dim * depth * bytes_per_activation) / (1024**3)
+
+    # Total activation memory per batch
+    activation_gb_per_batch = source_activation_gb + target_activation_gb + bridge_activation_gb
+
+    # Add 20% overhead for temporary tensors, attention matrices, etc.
+    activation_gb_per_batch *= 1.2
 
     # Available memory after base requirements and safety margin
     available_memory_gb = gpu_memory_gb * (1 - safety_margin)
@@ -230,31 +281,33 @@ def get_memory_safe_config(
     # Calculate maximum batch size
     max_batch_size = int(remaining_gb / activation_gb_per_batch)
 
-    # Apply heuristics based on known working configs
+    # Apply conservative heuristics based on known working configs
+    # Be extra conservative for larger models to prevent OOM
     if dual_model:
-        # Dual-model configs
+        # Dual-model configs (more conservative due to two models)
         if source_params_b + target_params_b >= 15:  # e.g., 8B + 7B
+            # Known working: batch_size=2 for Llama-8B + Mistral-7B
             batch_size = min(max_batch_size, 2)
             grad_accum = 4
         elif source_params_b + target_params_b >= 10:  # e.g., 7B + 3B
-            batch_size = min(max_batch_size, 4)
-            grad_accum = 2
+            batch_size = min(max_batch_size, 3)  # Reduced from 4 to 3 for safety
+            grad_accum = 3
         elif source_params_b + target_params_b >= 5:  # e.g., 3B + 3B
-            batch_size = min(max_batch_size, 8)
-            grad_accum = 1
-        else:  # Small models
-            batch_size = min(max_batch_size, 16)
+            batch_size = min(max_batch_size, 6)  # Reduced from 8 to 6 for safety
+            grad_accum = 2
+        else:  # Small models (<5B total)
+            batch_size = min(max_batch_size, 12)  # Reduced from 16 to 12 for safety
             grad_accum = 1
     else:
-        # Single-model configs (more memory available)
+        # Single-model configs (more memory available but still be conservative)
         if source_params_b >= 7:
-            batch_size = min(max_batch_size, 8)
+            batch_size = min(max_batch_size, 6)  # Reduced from 8 to 6 for safety
             grad_accum = 2
         elif source_params_b >= 3:
-            batch_size = min(max_batch_size, 16)
+            batch_size = min(max_batch_size, 12)  # Reduced from 16 to 12 for safety
             grad_accum = 1
         else:
-            batch_size = min(max_batch_size, 32)
+            batch_size = min(max_batch_size, 24)  # Reduced from 32 to 24 for safety
             grad_accum = 1
 
     # Ensure at least batch_size=1
@@ -275,6 +328,10 @@ def get_memory_safe_config(
             "source_model_gb": source_mem_gb,
             "target_model_gb": target_mem_gb,
             "bridge_gb": bridge_mem_gb,
+            "bridge_params_gb": bridge_info["params_gb"],
+            "bridge_optimizer_gb": bridge_info["optimizer_gb"],
+            "bridge_gradients_gb": bridge_info["gradient_gb"],
+            "bridge_param_count": bridge_info["param_count"],
             "activation_per_batch_gb": activation_gb_per_batch,
             "total_activation_gb": batch_size * activation_gb_per_batch,
             "total_base_gb": base_memory_gb,
@@ -312,8 +369,12 @@ def print_config_table(configs):
             print(f"    - Source Model: {breakdown['source_model_gb']:.1f} GB")
             if breakdown['target_model_gb'] > 0:
                 print(f"    - Target Model: {breakdown['target_model_gb']:.1f} GB")
-            print(f"    - Bridge: {breakdown['bridge_gb']:.1f} GB")
-            print(f"    - Activations: {breakdown['total_activation_gb']:.1f} GB")
+            print(f"    - Bridge Total: {breakdown['bridge_gb']:.1f} GB")
+            print(f"      • Params: {breakdown['bridge_params_gb']:.2f} GB ({breakdown['bridge_param_count']/1e6:.1f}M params)")
+            print(f"      • Gradients: {breakdown['bridge_gradients_gb']:.2f} GB")
+            print(f"      • Optimizer: {breakdown['bridge_optimizer_gb']:.2f} GB")
+            print(f"    - Activations/batch: {breakdown['activation_per_batch_gb']:.1f} GB")
+            print(f"    - Total Activations: {breakdown['total_activation_gb']:.1f} GB")
 
 
 def main():
