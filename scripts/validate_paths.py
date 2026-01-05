@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Validate all file paths in the LatentWire codebase.
 Ensures paths work on both local Mac and HPC cluster environments.
@@ -148,7 +149,7 @@ def main():
         if not any(skip in str(f) for skip in ['.git', 'runs/', '__pycache__', '.pytest_cache']):
             all_files.append(f)
 
-    print(f"Checking {len(all_files)} files...")
+    print("Checking {} files...".format(len(all_files)))
     print()
 
     all_issues = []
@@ -173,24 +174,24 @@ def main():
         print("🔴 CRITICAL ISSUES (will cause failures):")
         print("-" * 40)
         for issue in critical_issues[:10]:  # Show first 10
-            print(f"  File: {issue['file']}:{issue['line']}")
-            print(f"  Issue: {issue['issue']}")
+            print("  File: {}:{}".format(issue['file'], issue['line']))
+            print("  Issue: {}".format(issue['issue']))
             if issue['content']:
-                print(f"  Line: {issue['content'][:80]}")
+                print("  Line: {}".format(issue['content'][:80]))
             print()
         if len(critical_issues) > 10:
-            print(f"  ... and {len(critical_issues) - 10} more critical issues")
+            print("  ... and {} more critical issues".format(len(critical_issues) - 10))
         print()
 
     if warnings:
         print("⚠️  WARNINGS (potential issues):")
         print("-" * 40)
         for issue in warnings[:5]:  # Show first 5
-            print(f"  File: {issue['file']}:{issue['line']}")
-            print(f"  Issue: {issue['issue']}")
+            print("  File: {}:{}".format(issue['file'], issue['line']))
+            print("  Issue: {}".format(issue['issue']))
             print()
         if len(warnings) > 5:
-            print(f"  ... and {len(warnings) - 5} more warnings")
+            print("  ... and {} more warnings".format(len(warnings) - 5))
         print()
 
     # Check specific important patterns
@@ -212,8 +213,8 @@ def main():
         except:
             pass
 
-    print(f"  Python files using pathlib.Path: {path_usage_count}")
-    print(f"  Python files using os.path: {os_path_usage_count}")
+    print("  Python files using pathlib.Path: {}".format(path_usage_count))
+    print("  Python files using os.path: {}".format(os_path_usage_count))
     print()
 
     # Check for proper runs/ directory usage
@@ -226,13 +227,13 @@ def main():
         except:
             pass
 
-    print(f"  Files referencing 'runs/' directory: {len(runs_usage)}")
+    print("  Files referencing 'runs/' directory: {}".format(len(runs_usage)))
     print()
 
     # Final summary
     print("=" * 80)
     if critical_issues:
-        print(f"❌ FAILED: Found {len(critical_issues)} critical path issues that must be fixed!")
+        print("❌ FAILED: Found {} critical path issues that must be fixed!".format(len(critical_issues)))
         print("   These will cause failures when running on HPC.")
 
         # Save report
@@ -250,12 +251,12 @@ def main():
         report_path.parent.mkdir(parents=True, exist_ok=True)
         with open(report_path, 'w') as f:
             json.dump(report, f, indent=2)
-        print(f"\n   Full report saved to: {report_path}")
+        print("\n   Full report saved to: {}".format(report_path))
 
         return 1
     else:
         print("✅ PASSED: No critical path issues found!")
-        print(f"   Found {len(warnings)} minor warnings that should be reviewed.")
+        print("   Found {} minor warnings that should be reviewed.".format(len(warnings)))
         return 0
 
 if __name__ == '__main__':
