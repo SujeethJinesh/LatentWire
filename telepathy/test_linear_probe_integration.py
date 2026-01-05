@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Test script to verify Linear Probe integration with run_unified_comparison.py
 """
 
 import sys
-import torch
 
 def test_imports():
     """Test that all required modules can be imported."""

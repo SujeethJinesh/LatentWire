@@ -416,8 +416,8 @@ def load_xsum_subset(split: str = "test", samples: int = None, seed: int = 0, ma
 
     Standard evaluation uses ROUGE scores on the test set.
     """
-    # Load XSUM dataset - use EdinburghNLP/xsum for consistent access
-    ds = load_dataset("EdinburghNLP/xsum", split=split)
+    # Load XSUM dataset - use the standard xsum repository
+    ds = load_dataset("xsum", split=split)
 
     # If samples is None or >= dataset size, use all examples
     if samples is None or samples >= len(ds):

@@ -7,7 +7,7 @@ Calculates maximum safe batch sizes based on model combinations and available GP
 import argparse
 import json
 import math
-from typing import Dict, Tuple, Optional
+# Removed type hints for Python 3 compatibility
 import sys
 
 # Model memory estimates (in GB) based on empirical measurements
@@ -65,13 +65,13 @@ TELEPATHY_OVERHEAD = {
 
 
 def get_model_memory_requirements(
-    source_model: str,
-    target_model: str,
-    batch_size: int,
-    sequence_length: int = 512,
-    latent_len: int = 128,
-    d_z: int = 768,
-) -> Dict[str, float]:
+    source_model,
+    target_model,
+    batch_size,
+    sequence_length=512,
+    latent_len=128,
+    d_z=768,
+):
     """
     Calculate memory requirements for a given model pair and batch size.
 
@@ -120,16 +120,16 @@ def get_model_memory_requirements(
 
 
 def calculate_max_batch_size(
-    source_model: str,
-    target_model: str,
-    gpu_memory: float = 80.0,
-    safety_margin: float = 0.2,
-    sequence_length: int = 512,
-    latent_len: int = 128,
-    d_z: int = 768,
-    min_batch_size: int = 1,
-    max_batch_size: int = 256,
-) -> Tuple[int, Dict[str, float]]:
+    source_model,
+    target_model,
+    gpu_memory=80.0,
+    safety_margin=0.2,
+    sequence_length=512,
+    latent_len=128,
+    d_z=768,
+    min_batch_size=1,
+    max_batch_size=256,
+):
     """
     Calculate maximum safe batch size for a model pair.
 
@@ -173,9 +173,9 @@ def calculate_max_batch_size(
 
 
 def suggest_gradient_accumulation(
-    actual_batch_size: int,
-    desired_batch_size: int = 64,
-) -> int:
+    actual_batch_size,
+    desired_batch_size=64,
+):
     """
     Suggest gradient accumulation steps to reach desired effective batch size.
 
@@ -344,12 +344,12 @@ def main():
 
 
 def get_batch_size_for_models(
-    source_model: str,
-    target_model: str,
-    gpu_memory: float = 80.0,
-    safety_margin: float = 0.2,
+    source_model,
+    target_model,
+    gpu_memory=80.0,
+    safety_margin=0.2,
     **kwargs
-) -> Dict:
+):
     """
     Convenience function for use in other scripts.
 
