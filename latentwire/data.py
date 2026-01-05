@@ -227,9 +227,70 @@ def load_gsm8k_subset(split: str = "train", samples: int = 512, seed: int = 0) -
         out.append({"source": source, "answer": answer})
     return out
 
+def load_trec_subset(split: str = "test", samples: int = None, seed: int = 0) -> List[Dict[str, Any]]:
+    """
+    Load TREC Question Classification dataset.
+
+    Dataset: SetFit/TREC-QC (modern parquet format)
+    Task: Question classification into 6 coarse categories
+
+    Splits:
+        - train: 5,452 examples
+        - test: 500 examples
+
+    Coarse labels (6 classes):
+        0: ABBR - Abbreviation
+        1: ENTY - Entity
+        2: DESC - Description and abstract concepts
+        3: HUM  - Human being
+        4: LOC  - Location
+        5: NUM  - Numeric value
+
+    Returns examples with:
+        - source: "Question: {question}\n"
+        - answer: label name (e.g., "ABBR", "ENTY", etc.)
+
+    Standard evaluation uses the full test set (500 examples) with accuracy metric.
+    """
+    # Load from SetFit (modern parquet format, no loading scripts)
+    ds = load_dataset("SetFit/TREC-QC", split=split)
+
+    # Define label mapping
+    LABEL_NAMES = {
+        0: "ABBR",  # Abbreviation
+        1: "ENTY",  # Entity
+        2: "DESC",  # Description
+        3: "HUM",   # Human
+        4: "LOC",   # Location
+        5: "NUM"    # Numeric
+    }
+
+    # For TREC, standard evaluation uses the full test set
+    # If samples is None or >= dataset size, use all examples
+    if samples is None or samples >= len(ds):
+        idxs = list(range(len(ds)))
+    else:
+        rng = random.Random(seed)
+        idxs = list(range(len(ds)))
+        rng.shuffle(idxs)
+        idxs = idxs[:samples]
+
+    out = []
+    for i in idxs:
+        ex = ds[i]
+        question = ex["text"]
+        # Use coarse label for classification
+        label_id = ex["label_coarse"]
+        label_name = LABEL_NAMES[label_id]
+
+        source = f"Question: {question}\n"
+        out.append({"source": source, "answer": label_name})
+
+    return out
+
 def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
     """
-    Unified front: dataset ∈ {"hotpot","squad","squad_v2","gsm8k"}
+    Unified front: dataset ∈ {"hotpot","squad","squad_v2","gsm8k","trec"}
     kwargs forwarded to the underlying loader (split, samples, seed, config, ...)
     """
     ds = dataset.lower()
@@ -241,5 +302,7 @@ def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
         return load_squad_subset(v2=True, **{k:v for k,v in kwargs.items() if k!="config"})
     elif ds == "gsm8k":
         return load_gsm8k_subset(**{k:v for k,v in kwargs.items() if k!="config"})
+    elif ds == "trec":
+        return load_trec_subset(**{k:v for k,v in kwargs.items() if k!="config"})
     else:
-        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k")
+        raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k|trec")
