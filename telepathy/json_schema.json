@@ -92,10 +92,12 @@
     },
     "aggregated_method_result": {
       "type": "object",
-      "required": ["accuracy_mean", "accuracy_std"],
       "properties": {
         "accuracy_mean": {"type": "number"},
         "accuracy_std": {"type": "number"},
+        "accuracy_min": {"type": "number"},
+        "accuracy_max": {"type": "number"},
+        "num_seeds": {"type": "integer"},
         "accuracy_ci": {"$ref": "#/definitions/confidence_interval"},
         "f1_mean": {"type": "number"},
         "f1_std": {"type": "number"},
@@ -105,7 +107,8 @@
         "memory_mb_std": {"type": "number"},
         "compression_ratio_mean": {"type": "number"},
         "compression_ratio_std": {"type": "number"},
-        "vs_baseline": {"$ref": "#/definitions/statistical_test"}
+        "vs_baseline": {"$ref": "#/definitions/statistical_test"},
+        "skipped": {"type": "boolean"}
       }
     }
   },
@@ -143,20 +146,7 @@
         },
         "aggregated_results": {
           "type": "object",
-          "patternProperties": {
-            "^(sst2|agnews|trec|xsum|gsm8k|banking77|passkey)$": {
-              "type": "object",
-              "properties": {
-                "bridge": {"$ref": "#/definitions/aggregated_method_result"},
-                "prompt_tuning": {"$ref": "#/definitions/aggregated_method_result"},
-                "text_relay": {"$ref": "#/definitions/aggregated_method_result"},
-                "llama_zeroshot": {"$ref": "#/definitions/aggregated_method_result"},
-                "mistral_zeroshot": {"$ref": "#/definitions/aggregated_method_result"},
-                "mistral_fewshot": {"$ref": "#/definitions/aggregated_method_result"},
-                "ensemble": {"$ref": "#/definitions/aggregated_method_result"}
-              }
-            }
-          }
+          "description": "Aggregated results across seeds"
         },
         "comparison_table": {
           "type": "object",

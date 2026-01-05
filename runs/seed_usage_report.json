@@ -1,0 +1,268 @@
+{
+  "files_checked": 0,
+  "issues": [
+    "data.py:load_squad_subset: Has seed parameter but doesn't use it properly for shuffling",
+    "data.py:load_trec_subset: Has seed parameter but doesn't use it properly for shuffling"
+  ],
+  "warnings": [
+    "latentwire/train.py: Not using transformers.set_seed() - some HF operations may be non-deterministic",
+    "latentwire/train.py: Uses cudnn.benchmark=True which can cause non-deterministic behavior",
+    "scripts/check_seed_usage.py: Uses cudnn.benchmark=True which can cause non-deterministic behavior"
+  ],
+  "good_practices": [
+    "telepathy/run_unified_comparison.py: Uses standard seeds [42, 123, 456]",
+    "telepathy/aggregate_results.py: Uses standard seeds [42, 123, 456]",
+    "scripts/statistical_testing.py: Uses standard seeds [42, 123, 456]",
+    "telepathy/run_paper_experiments.sh: Uses standard seeds [42, 123, 456]",
+    "telepathy/run_enhanced_arxiv_suite.sh: Uses standard seeds [42, 123, 456]",
+    "data.py:load_gsm8k_subset: Properly uses seed for deterministic shuffling"
+  ],
+  "seed_patterns": {},
+  "summary": {
+    "total_issues": 2,
+    "total_warnings": 3,
+    "total_good_practices": 6,
+    "uses_expected_seeds": false
+  },
+  "training_scripts": {
+    "latentwire/train.py": {
+      "has_torch_manual_seed": true,
+      "has_numpy_seed": true,
+      "has_random_seed": true,
+      "has_cuda_seed": true,
+      "has_transformers_seed": false,
+      "has_deterministic_settings": true,
+      "uses_expected_seeds": true,
+      "seed_values": "{42}"
+    },
+    "latentwire/eval.py": {
+      "has_torch_manual_seed": true,
+      "has_numpy_seed": false,
+      "has_random_seed": false,
+      "has_cuda_seed": true,
+      "has_transformers_seed": false,
+      "has_deterministic_settings": false,
+      "uses_expected_seeds": true,
+      "seed_values": "{12345, 42}"
+    },
+    "telepathy/train_telepathy_sst2.py": {
+      "has_torch_manual_seed": true,
+      "has_numpy_seed": false,
+      "has_random_seed": false,
+      "has_cuda_seed": true,
+      "has_transformers_seed": false,
+      "has_deterministic_settings": false,
+      "uses_expected_seeds": true,
+      "seed_values": "set()"
+    },
+    "telepathy/train_telepathy_agnews.py": {
+      "has_torch_manual_seed": true,
+      "has_numpy_seed": false,
+      "has_random_seed": false,
+      "has_cuda_seed": true,
+      "has_transformers_seed": false,
+      "has_deterministic_settings": false,
+      "uses_expected_seeds": true,
+      "seed_values": "set()"
+    },
+    "telepathy/train_telepathy_trec.py": {
+      "has_torch_manual_seed": true,
+      "has_numpy_seed": false,
+      "has_random_seed": false,
+      "has_cuda_seed": true,
+      "has_transformers_seed": false,
+      "has_deterministic_settings": false,
+      "uses_expected_seeds": true,
+      "seed_values": "set()"
+    }
+  },
+  "experiment_scripts": {
+    "telepathy/run_unified_comparison.py": {
+      "has_all_expected_seeds": true,
+      "has_seed_list": true
+    },
+    "telepathy/aggregate_results.py": {
+      "has_all_expected_seeds": true,
+      "has_seed_list": true
+    },
+    "scripts/statistical_testing.py": {
+      "has_all_expected_seeds": true,
+      "has_seed_list": false
+    },
+    "telepathy/run_paper_experiments.sh": {
+      "has_all_expected_seeds": true,
+      "has_seed_list": true
+    },
+    "telepathy/run_enhanced_arxiv_suite.sh": {
+      "has_all_expected_seeds": true,
+      "has_seed_list": true
+    }
+  },
+  "data_loading": {
+    "load_squad_subset": {
+      "has_seed_param": true,
+      "uses_random_with_seed": false,
+      "uses_shuffle": false
+    },
+    "load_gsm8k_subset": {
+      "has_seed_param": true,
+      "uses_random_with_seed": true,
+      "uses_shuffle": true
+    },
+    "load_trec_subset": {
+      "has_seed_param": true,
+      "uses_random_with_seed": false,
+      "uses_shuffle": false
+    }
+  },
+  "deterministic_files": [
+    [
+      "experimental/learning/compression_ablations.py",
+      "CUDNN deterministic mode"
+    ],
+    [
+      "experimental/learning/compression_ablations.py",
+      "CUDNN benchmark disabled"
+    ],
+    [
+      "experimental/learning/reproduce_coconut/coconut/utils.py",
+      "CUDNN deterministic mode"
+    ],
+    [
+      "experimental/learning/reproduce_coconut/coconut/utils.py",
+      "CUDNN benchmark disabled"
+    ],
+    [
+      "latentwire/train.py",
+      "CUDNN benchmark enabled (non-deterministic!)"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/accelerate/utils/random.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_torch_docs.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_torch_docs.py",
+      "CUDNN deterministic mode"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_tensor_docs.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/__init__.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/overrides.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/runtime_wrappers.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/schemas.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/autograd/gradcheck.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_prims_common/__init__.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_inductor/fx_passes/numeric_utils.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/utils/deterministic.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/testing/_internal/common_methods_invocations.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/testing/_internal/common_utils.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_dynamo/trace_rules.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_dynamo/variables/torch.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/torch/_dynamo/variables/ctx_manager.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/transformers/trainer_utils.py",
+      "Full determinism enabled"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/transformers/trainer_utils.py",
+      "CUDNN deterministic mode"
+    ],
+    [
+      "venv_arm64/lib/python3.11/site-packages/transformers/trainer_utils.py",
+      "CUDNN benchmark disabled"
+    ],
+    [
+      "paper_writing/cross_attention.py",
+      "Full determinism enabled"
+    ],
+    [
+      "paper_writing/cross_attention.py",
+      "CUDNN deterministic mode"
+    ],
+    [
+      "paper_writing/cross_attention.py",
+      "CUDNN benchmark disabled"
+    ],
+    [
+      "scripts/verify_seed_reproducibility.py",
+      "Full determinism enabled"
+    ],
+    [
+      "scripts/verify_seed_reproducibility.py",
+      "CUDNN benchmark disabled"
+    ],
+    [
+      "scripts/check_seed_usage.py",
+      "Full determinism enabled"
+    ],
+    [
+      "scripts/check_seed_usage.py",
+      "CUDNN deterministic mode"
+    ],
+    [
+      "scripts/check_seed_usage.py",
+      "CUDNN benchmark disabled"
+    ],
+    [
+      "scripts/check_seed_usage.py",
+      "CUDNN benchmark enabled (non-deterministic!)"
+    ],
+    [
+      "telepathy/comprehensive_experiments.py",
+      "CUDNN deterministic mode"
+    ],
+    [
+      "telepathy/comprehensive_experiments.py",
+      "CUDNN benchmark disabled"
+    ]
+  ]
+}

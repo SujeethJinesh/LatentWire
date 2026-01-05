@@ -16,17 +16,21 @@ import sys
 import argparse
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import jsonschema
-from jsonschema import validate, ValidationError, Draft7Validator
+try:
+    import jsonschema
+    from jsonschema import validate, ValidationError, Draft7Validator
+except ImportError:
+    print("jsonschema package not installed. Install with: pip install jsonschema")
+    sys.exit(1)
 
 
-def load_schema(schema_path: str = "telepathy/json_schema.json") -> Dict:
+def load_schema(schema_path="telepathy/json_schema.json"):
     """Load the JSON schema from file."""
     with open(schema_path, 'r') as f:
         return json.load(f)
 
 
-def validate_json_file(file_path: Path, schema: Dict) -> Tuple[bool, Optional[str]]:
+def validate_json_file(file_path, schema):
     """
     Validate a single JSON file against the schema.
 
@@ -57,7 +61,7 @@ def validate_json_file(file_path: Path, schema: Dict) -> Tuple[bool, Optional[st
         return False, f"Unexpected error: {e}"
 
 
-def find_json_files(directory: Path, patterns: List[str] = None) -> List[Path]:
+def find_json_files(directory, patterns=None):
     """Find all JSON result files in a directory."""
     if patterns is None:
         patterns = [
@@ -77,7 +81,7 @@ def find_json_files(directory: Path, patterns: List[str] = None) -> List[Path]:
     return sorted(set(json_files))
 
 
-def check_consistency(json_files: List[Path]) -> Dict[str, List[str]]:
+def check_consistency(json_files):
     """
     Check for consistency issues across JSON files.
 
@@ -177,11 +181,16 @@ def main():
     for file_path in json_files:
         is_valid, error = validate_json_file(file_path, schema)
 
+        try:
+            display_path = file_path.relative_to(Path.cwd())
+        except ValueError:
+            display_path = file_path
+
         if is_valid:
-            print(f"✓ {file_path.relative_to(Path.cwd())}")
+            print(f"✓ {display_path}")
             valid_count += 1
         else:
-            print(f"✗ {file_path.relative_to(Path.cwd())}")
+            print(f"✗ {display_path}")
             print(f"  Error: {error}")
             invalid_count += 1
             errors.append((file_path, error))
