@@ -1,0 +1,418 @@
+# finalization/config.yaml
+# Comprehensive experiment configuration for LatentWire finalization
+# All hyperparameters and settings in one place for easy adjustment
+
+# ==============================================================================
+# MODEL CONFIGURATION
+# ==============================================================================
+models:
+  # Primary model for experiments
+  primary:
+    id: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    type: "llama"
+    param_count: 8.03B
+    hidden_dim: 4096
+    vocab_size: 128256
+
+  # Target models for cross-model experiments
+  targets:
+    mistral:
+      id: "mistralai/Mistral-7B-Instruct-v0.3"
+      type: "mistral"
+      param_count: 7.24B
+      hidden_dim: 4096
+      vocab_size: 32000
+
+    qwen:
+      id: "Qwen/Qwen2.5-7B-Instruct"
+      type: "qwen"
+      param_count: 7.62B
+      hidden_dim: 3584
+      vocab_size: 152064
+
+    # Smaller models for ablation studies
+    llama_small:
+      id: "meta-llama/Llama-3.2-3B-Instruct"
+      param_count: 3.21B
+      hidden_dim: 3072
+      vocab_size: 128256
+
+  # Model loading settings
+  load_settings:
+    device_map: "auto"  # auto, balanced, sequential
+    load_in_4bit: false
+    load_in_8bit: false
+    torch_dtype: "bfloat16"  # bfloat16, float16, float32
+    trust_remote_code: true
+
+# ==============================================================================
+# TRAINING HYPERPARAMETERS
+# ==============================================================================
+training:
+  # Batch size configuration (adapt based on GPU count)
+  batch_sizes:
+    # For different GPU configurations
+    single_gpu:
+      batch_size: 2
+      gradient_accumulation_steps: 16
+      effective_batch_size: 32
+
+    dual_gpu:
+      batch_size: 4
+      gradient_accumulation_steps: 8
+      effective_batch_size: 32
+
+    quad_gpu:
+      batch_size: 8
+      gradient_accumulation_steps: 4
+      effective_batch_size: 32
+
+    h100_single:
+      batch_size: 4
+      gradient_accumulation_steps: 8
+      effective_batch_size: 32
+
+    h100_quad:
+      batch_size: 16
+      gradient_accumulation_steps: 2
+      effective_batch_size: 32
+
+  # Learning rate and optimization
+  optimizer:
+    type: "adamw"
+    learning_rate: 1e-4
+    weight_decay: 0.01
+    betas: [0.9, 0.999]
+    eps: 1e-8
+
+  scheduler:
+    type: "cosine"  # constant, linear, cosine, cosine_with_restarts
+    warmup_steps: 500
+    warmup_ratio: 0.1
+    num_cycles: 1
+
+  # Training duration
+  epochs: 3
+  max_steps: -1  # -1 for no limit
+  early_stopping_patience: 5
+  early_stopping_metric: "validation_loss"
+
+  # Gradient settings
+  max_grad_norm: 1.0
+  gradient_checkpointing: true
+  fp16: false
+  bf16: true
+  tf32: true  # Enable TF32 on Ampere GPUs
+
+  # Mixed precision
+  mixed_precision:
+    enabled: true
+    opt_level: "O2"  # O0, O1, O2, O3
+    loss_scale: "dynamic"
+    initial_loss_scale: 2048
+
+# ==============================================================================
+# CHECKPOINT SETTINGS
+# ==============================================================================
+checkpointing:
+  save_strategy: "steps"  # steps, epoch, best
+  save_interval_seconds: 300  # Save every 5 minutes
+  save_steps: 500
+  save_total_limit: 3  # Keep only 3 most recent checkpoints
+
+  validation:
+    eval_steps: 100
+    eval_strategy: "steps"  # steps, epoch
+    metric_for_best_model: "eval_loss"
+    greater_is_better: false
+
+  resume:
+    auto_resume: true
+    resume_from_checkpoint: null  # Path or "latest"
+    ignore_data_skip: false
+
+  backup:
+    enabled: true
+    backup_dir: "runs/backup"
+    compress: true  # Compress old checkpoints
+
+# ==============================================================================
+# DATA SETTINGS
+# ==============================================================================
+data:
+  # Datasets for experiments
+  datasets:
+    sst2:
+      name: "sst2"
+      type: "classification"
+      num_classes: 2
+      max_length: 512
+      train_samples: 67349
+      eval_samples: 872
+
+    agnews:
+      name: "ag_news"
+      type: "classification"
+      num_classes: 4
+      max_length: 512
+      train_samples: 120000
+      eval_samples: 7600
+
+    trec:
+      name: "trec"
+      type: "classification"
+      num_classes: 6
+      max_length: 512
+      train_samples: 5452
+      eval_samples: 500
+
+    xsum:
+      name: "xsum"
+      type: "summarization"
+      max_source_length: 1024
+      max_target_length: 128
+      train_samples: 204045
+      eval_samples: 11332
+
+    gsm8k:
+      name: "gsm8k"
+      type: "reasoning"
+      max_length: 2048
+      train_samples: 7473
+      eval_samples: 1319
+
+  # Sample sizes for different experiment types
+  sample_sizes:
+    quick_test: 100
+    ablation: 1000
+    small: 5000
+    medium: 10000
+    large: 50000
+    full: -1  # Use all available samples
+
+  # Seeds for reproducibility
+  seeds:
+    primary: 42
+    ablation_1: 123
+    ablation_2: 456
+    data_seed: 42
+
+  # Data processing
+  preprocessing:
+    max_length: 1024
+    truncation: true
+    padding: "max_length"
+    return_tensors: "pt"
+
+# ==============================================================================
+# OPTIMIZATION SETTINGS
+# ==============================================================================
+optimization:
+  # DataLoader settings
+  dataloader:
+    num_workers: 4  # Parallel data loading threads
+    prefetch_factor: 2  # Prefetch batches per worker
+    pin_memory: true  # Pin memory for faster GPU transfer
+    persistent_workers: true  # Keep workers alive between epochs
+    drop_last: false
+
+  # Memory optimization
+  memory:
+    empty_cache_interval: 100  # Clear GPU cache every N steps
+    gradient_accumulation_dtype: "bfloat16"
+    optimizer_dtype: "float32"
+
+  # Compilation and optimization
+  compile:
+    enabled: false  # torch.compile (PyTorch 2.0+)
+    mode: "default"  # default, reduce-overhead, max-autotune
+    backend: "inductor"  # inductor, aot_eager, cudagraphs
+
+  # Distributed training
+  distributed:
+    enabled: false
+    backend: "nccl"  # nccl, gloo
+    init_method: "env://"
+    world_size: -1  # Auto-detect
+    find_unused_parameters: false
+
+# ==============================================================================
+# EXPERIMENT CONFIGURATIONS
+# ==============================================================================
+experiments:
+  # Baseline experiments
+  baseline:
+    encoder_type: "byte"
+    latent_len: 32
+    d_z: 256
+    use_advanced_features: false
+
+  # Ablation studies
+  ablations:
+    latent_sizes: [8, 16, 32, 48, 64, 128]
+    d_z_sizes: [128, 256, 512]
+    encoder_types: ["byte", "simple-st", "stq"]
+
+  # Cross-model experiments
+  cross_model:
+    source_model: "llama"
+    target_models: ["mistral", "qwen"]
+    adapter_types: ["linear", "lora", "affine"]
+    alignment_layers: [8, 16, 24]
+
+  # Compression experiments
+  compression:
+    quantization_bits: [16, 8, 6, 4]
+    group_size: 128
+    compression_targets: [2, 4, 8, 16]  # Target compression ratios
+
+# ==============================================================================
+# LOGGING AND MONITORING
+# ==============================================================================
+logging:
+  # Logging configuration
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  # TensorBoard
+  tensorboard:
+    enabled: true
+    log_dir: "runs/tensorboard"
+    flush_secs: 30
+
+  # Weights & Biases
+  wandb:
+    enabled: false
+    project: "latentwire-finalization"
+    entity: null
+    tags: ["finalization", "experiments"]
+
+  # Metrics logging
+  metrics:
+    log_interval: 10  # Log every N steps
+    log_grad_norm: true
+    log_learning_rate: true
+    log_throughput: true
+
+  # Diagnostic logging
+  diagnostics:
+    save_gradients: false
+    save_activations: false
+    profile_memory: false
+    profile_time: true
+
+# ==============================================================================
+# HARDWARE SETTINGS
+# ==============================================================================
+hardware:
+  # GPU configuration
+  gpu:
+    cuda_visible_devices: null  # null for all, or "0,1,2,3"
+    cuda_deterministic: false
+    cuda_benchmark: true  # Enable cuDNN autotuner
+
+  # CPU configuration
+  cpu:
+    num_threads: null  # null for auto
+    use_mkldnn: true
+
+  # Memory limits
+  memory_limits:
+    max_memory_mb: null  # null for no limit
+    reserve_memory_mb: 2048  # Reserve for system
+
+# ==============================================================================
+# EVALUATION SETTINGS
+# ==============================================================================
+evaluation:
+  # Metrics to compute
+  metrics:
+    classification: ["accuracy", "f1", "precision", "recall"]
+    generation: ["bleu", "rouge", "meteor", "perplexity"]
+    compression: ["compression_ratio", "reconstruction_loss"]
+
+  # Evaluation settings
+  settings:
+    batch_size: 16
+    max_new_tokens: 128
+    temperature: 0.0  # Deterministic generation
+    top_p: 1.0
+    top_k: 50
+    do_sample: false
+
+  # Baselines to compare against
+  baselines:
+    text_prompt: true
+    token_budget: true
+    llmlingua: true
+    linear_probe: true
+
+# ==============================================================================
+# PATHS AND DIRECTORIES
+# ==============================================================================
+paths:
+  # Base directories
+  base_dir: "."
+  output_dir: "runs/finalization"
+  checkpoint_dir: "checkpoints"
+  log_dir: "logs"
+  cache_dir: "~/.cache/huggingface"
+
+  # Data paths
+  data_dir: "data"
+  preprocessed_dir: "data/preprocessed"
+
+  # Result paths
+  results_dir: "results"
+  figures_dir: "figures"
+  tables_dir: "tables"
+
+# ==============================================================================
+# REPRODUCIBILITY
+# ==============================================================================
+reproducibility:
+  deterministic: true
+  seed: 42
+  numpy_seed: 42
+  torch_seed: 42
+  random_seed: 42
+  cuda_seed: 42
+
+  # Environment capture
+  capture_env: true
+  capture_git_info: true
+  capture_pip_freeze: true
+
+# ==============================================================================
+# SLURM CONFIGURATION (for HPC)
+# ==============================================================================
+slurm:
+  account: "marlowe-m000066"
+  partition: "preempt"
+  nodes: 1
+  gpus: 4
+  time: "12:00:00"
+  mem: "256GB"
+  output: "/projects/m000066/sujinesh/LatentWire/runs/%x_%j.log"
+  error: "/projects/m000066/sujinesh/LatentWire/runs/%x_%j.err"
+  work_dir: "/projects/m000066/sujinesh/LatentWire"
+
+# ==============================================================================
+# EXPERIMENTAL FLAGS
+# ==============================================================================
+experimental:
+  # Advanced features (normally disabled)
+  use_flash_attention: false
+  use_xformers: false
+  use_deepspeed: false
+  use_fsdp: false
+
+  # Experimental optimizations
+  use_kv_cache: true
+  use_torch_compile: false
+  use_triton_kernels: false
+
+  # Debug flags
+  debug_mode: false
+  verbose_logging: false
+  save_intermediate_results: false
