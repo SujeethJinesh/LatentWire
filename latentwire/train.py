@@ -2840,12 +2840,12 @@ def main():
 
                 dropout_keep = keep_prob if training_mode == "latent" else 1.0
                 if shared_latents.size(1) > 0 and dropout_keep < 1.0:
-                mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < dropout_keep).float()
-                need_fix = mask.sum(dim=1) == 0
-                if need_fix.any():
-                    mask[need_fix, 0] = 1.0
-                mask = mask.unsqueeze(-1)
-                shared_latents = shared_latents * mask / max(dropout_keep, 1e-3)
+                    mask = (torch.rand(shared_latents.shape[:2], device=shared_latents.device) < dropout_keep).float()
+                    need_fix = mask.sum(dim=1) == 0
+                    if need_fix.any():
+                        mask[need_fix, 0] = 1.0
+                    mask = mask.unsqueeze(-1)
+                    shared_latents = shared_latents * mask / max(dropout_keep, 1e-3)
             model_latents = {
                 name: torch.cat([shared_latents, private_latents[name]], dim=1)
                 for name in model_keys

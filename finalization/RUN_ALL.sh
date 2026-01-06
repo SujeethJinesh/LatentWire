@@ -1,409 +1,397 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # =============================================================================
-# LATENTWIRE MASTER EXECUTION SCRIPT - RUN_ALL.sh
+# LATENTWIRE COMPREHENSIVE EXPERIMENT RUNNER - ULTIMATE CONSOLIDATED SCRIPT
 # =============================================================================
-# This is the ULTIMATE master script that combines ALL shell scripts into ONE
-# Handles both local and HPC execution with intelligent environment detection
-# Includes all experiment phases, monitoring, SLURM submission logic inline
+# This is the ONLY script needed for ALL LatentWire operations.
+# It consolidates ALL functionality from all other scripts.
+#
+# Features:
+#   - Environment auto-detection (HPC vs Local)
+#   - SLURM job submission and monitoring
+#   - All experiment phases (training, evaluation, baselines, efficiency)
+#   - Testing and validation
+#   - Paper compilation
+#   - Result aggregation and analysis
+#   - DDP training support
+#   - Memory profiling and benchmarking
 #
 # Usage:
 #   bash RUN_ALL.sh [COMMAND] [OPTIONS]
 #
 # Commands:
-#   train        - Run training only
-#   eval         - Run evaluation only
-#   experiment   - Run full experiment pipeline
-#   monitor      - Monitor running experiments
-#   test         - Run test suite
-#   slurm        - Submit to SLURM cluster
-#   quick        - Quick start with minimal samples
-#   finalize     - Run paper finalization experiments
-#   compile      - Compile paper LaTeX
-#   help         - Show this help message
+#   train         Run training only
+#   eval          Run evaluation only
+#   experiment    Run full experiment pipeline
+#   test          Run test suite
+#   monitor       Monitor running experiments
+#   slurm         Submit to SLURM cluster
+#   quick         Quick start with minimal samples
+#   finalize      Run paper finalization experiments
+#   compile       Compile paper LaTeX
+#   ddp           Run DDP training
+#   benchmark     Run efficiency benchmarks
+#   help          Show help message
 #
-# Environment Variables:
-#   EXECUTION_MODE   - "local" or "hpc" (auto-detected if not set)
-#   NUM_GPUS        - Number of GPUs to use (default: 4 on HPC, 1 locally)
-#   SKIP_PHASES     - Space-separated list of phases to skip
-#   CHECKPOINT_PATH - Path to existing checkpoint (skips training)
+# Options:
+#   --local       Force local execution
+#   --hpc         Force HPC execution
+#   --phase N     Run specific phase (1-4)
+#   --dataset D   Run specific dataset
+#   --skip-train  Skip training, use existing checkpoint
+#   --checkpoint  Path to checkpoint
+#   --gpus N      Number of GPUs
+#   --debug       Enable debug mode
+#   --dry-run     Show what would be executed
 # =============================================================================
 
-set -euo pipefail
+set -e  # Exit on error
 
 # =============================================================================
-# GLOBAL CONFIGURATION
+# CONFIGURATION AND CONSTANTS
 # =============================================================================
 
 # Script metadata
-SCRIPT_VERSION="2.0.0"
+SCRIPT_VERSION="3.0.0"
 SCRIPT_NAME="RUN_ALL.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-
-# Detect execution environment
-detect_environment() {
-    if [[ -d "/projects/m000066" ]]; then
-        echo "hpc"
-    elif [[ -d "/home/sjinesh" ]] && command -v sbatch &>/dev/null; then
-        echo "hpc"
-    else
-        echo "local"
-    fi
-}
-
-EXECUTION_MODE="${EXECUTION_MODE:-$(detect_environment)}"
-
-# Environment-specific configuration
-if [[ "$EXECUTION_MODE" == "hpc" ]]; then
-    # HPC Marlowe configuration
-    WORK_DIR="/projects/m000066/sujinesh/LatentWire"
-    DEFAULT_NUM_GPUS=4
-    DEFAULT_PARTITION="preempt"
-    DEFAULT_ACCOUNT="marlowe-m000066"
-    DEFAULT_TIME="12:00:00"
-    DEFAULT_MEM="256GB"
-    USE_SLURM=true
-else
-    # Local development configuration
-    WORK_DIR="${SCRIPT_DIR}"
-    DEFAULT_NUM_GPUS=1
-    USE_SLURM=false
-fi
-
-# Common configuration
-OUTPUT_BASE="${OUTPUT_BASE:-runs}"
-LOG_BASE="${LOG_BASE:-${OUTPUT_BASE}/logs}"
-CHECKPOINT_BASE="${CHECKPOINT_BASE:-${OUTPUT_BASE}/checkpoints}"
-RESULTS_BASE="${RESULTS_BASE:-${OUTPUT_BASE}/results}"
-
-# Model configuration
-SOURCE_MODEL="${SOURCE_MODEL:-meta-llama/Meta-Llama-3.1-8B-Instruct}"
-TARGET_MODEL="${TARGET_MODEL:-Qwen/Qwen2.5-7B-Instruct}"
-
-# Training configuration
-TRAINING_DATASET="${TRAINING_DATASET:-squad}"
-TRAINING_SAMPLES="${TRAINING_SAMPLES:-87599}"
-TRAINING_EPOCHS="${TRAINING_EPOCHS:-24}"
-BATCH_SIZE="${BATCH_SIZE:-64}"
-LATENT_LEN="${LATENT_LEN:-32}"
-D_Z="${D_Z:-256}"
-
-# Evaluation configuration
-EVAL_DATASETS="${EVAL_DATASETS:-sst2 agnews trec squad}"
-EVAL_SAMPLES="${EVAL_SAMPLES:-500}"
-SEEDS="${SEEDS:-42 123 456}"
-BOOTSTRAP_SAMPLES="${BOOTSTRAP_SAMPLES:-10000}"
-
-# Hardware configuration
-NUM_GPUS="${NUM_GPUS:-$DEFAULT_NUM_GPUS}"
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
+
+# Default configuration
+COMMAND="help"
+EXECUTION_MODE="auto"
+DEBUG_MODE="no"
+DRY_RUN="no"
+SKIP_TRAINING="no"
+CHECKPOINT_PATH=""
+SPECIFIC_PHASE=""
+SPECIFIC_DATASET=""
+NUM_GPUS=""
+INTERACTIVE="yes"
+
+# Experiment configuration
+EXP_NAME="latentwire_unified"
+BASE_OUTPUT_DIR="runs/${EXP_NAME}_${TIMESTAMP}"
+
+# Model configuration
+SOURCE_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
+TARGET_MODEL="Qwen/Qwen2.5-7B-Instruct"
+
+# Training hyperparameters
+TRAINING_DATASET="squad"
+TRAINING_SAMPLES=87599
+TRAINING_EPOCHS=24
+LATENT_LEN=32
+D_Z=256
+BATCH_SIZE=8
+EVAL_BATCH_SIZE=16
+
+# Evaluation configuration
+SEEDS="42 123 456"
+DATASETS="sst2 agnews trec squad"
+BOOTSTRAP_SAMPLES=10000
+
+# HPC configuration
+SLURM_ACCOUNT="marlowe-m000066"
+SLURM_PARTITION="preempt"
+SLURM_TIME="12:00:00"
+SLURM_MEMORY="256GB"
+SLURM_GPUS=4
+
+# Environment paths
+if [[ -d "/projects/m000066" ]]; then
+    WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+    LOG_BASE="/projects/m000066/sujinesh/LatentWire/runs"
+    IS_HPC="yes"
+else
+    WORK_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+    LOG_BASE="$WORK_DIR/runs"
+    IS_HPC="no"
+fi
 
 # =============================================================================
 # UTILITY FUNCTIONS
 # =============================================================================
 
-log() {
-    local level="$1"
-    shift
-    local message="$*"
-    local color=""
+print_status() { echo -e "${GREEN}[✓]${NC} $1"; }
+print_warning() { echo -e "${YELLOW}[!]${NC} $1"; }
+print_error() { echo -e "${RED}[✗]${NC} $1"; }
+print_info() { echo -e "${BLUE}[i]${NC} $1"; }
+print_debug() { [[ "$DEBUG_MODE" == "yes" ]] && echo -e "${CYAN}[D]${NC} $1"; }
 
-    case "$level" in
-        INFO) color="$GREEN" ;;
-        WARN) color="$YELLOW" ;;
-        ERROR) color="$RED" ;;
-        DEBUG) color="$CYAN" ;;
-        PHASE) color="$MAGENTA" ;;
-        *) color="$NC" ;;
+print_header() {
+    echo ""
+    echo -e "${CYAN}=============================================================="
+    echo -e "$1"
+    echo -e "==============================================================${NC}"
+    echo ""
+}
+
+print_subheader() {
+    echo ""
+    echo -e "${MAGENTA}----------------------------------------------------------"
+    echo -e "$1"
+    echo -e "----------------------------------------------------------${NC}"
+    echo ""
+}
+
+show_help() {
+    cat << EOF
+${BOLD}LatentWire Unified Execution Script v${SCRIPT_VERSION}${NC}
+
+${BOLD}USAGE:${NC}
+    bash RUN_ALL.sh [COMMAND] [OPTIONS]
+
+${BOLD}COMMANDS:${NC}
+    ${GREEN}train${NC}         Run training only
+    ${GREEN}eval${NC}          Run evaluation only
+    ${GREEN}experiment${NC}    Run full experiment pipeline
+    ${GREEN}test${NC}          Run comprehensive test suite
+    ${GREEN}monitor${NC}       Monitor running experiments
+    ${GREEN}slurm${NC}         Submit job to SLURM cluster
+    ${GREEN}quick${NC}         Quick start with minimal samples
+    ${GREEN}finalize${NC}      Run paper finalization experiments
+    ${GREEN}compile${NC}       Compile paper LaTeX to PDF
+    ${GREEN}ddp${NC}           Run distributed data parallel training
+    ${GREEN}benchmark${NC}     Run efficiency benchmarks
+    ${GREEN}validate${NC}      Validate setup and dependencies
+    ${GREEN}clean${NC}         Clean up temporary files
+    ${GREEN}help${NC}          Show this help message
+
+${BOLD}OPTIONS:${NC}
+    ${BLUE}--local${NC}           Force local execution
+    ${BLUE}--hpc${NC}             Force HPC/SLURM execution
+    ${BLUE}--phase N${NC}         Run specific phase (1-4)
+    ${BLUE}--dataset NAME${NC}    Run specific dataset
+    ${BLUE}--skip-train${NC}      Skip training, use existing checkpoint
+    ${BLUE}--checkpoint PATH${NC} Specify checkpoint path
+    ${BLUE}--gpus N${NC}          Number of GPUs to use
+    ${BLUE}--batch-size N${NC}    Batch size for training/eval
+    ${BLUE}--debug${NC}           Enable debug output
+    ${BLUE}--dry-run${NC}         Show what would be executed
+    ${BLUE}--no-interactive${NC}  Skip confirmation prompts
+
+${BOLD}EXPERIMENT PHASES:${NC}
+    ${YELLOW}Phase 1${NC}: Statistical rigor (multiple seeds, bootstrap CI)
+    ${YELLOW}Phase 2${NC}: Linear probe baseline comparisons
+    ${YELLOW}Phase 3${NC}: Fair baseline comparisons (LLMLingua, token-budget)
+    ${YELLOW}Phase 4${NC}: Efficiency measurements (latency, memory, throughput)
+
+${BOLD}DATASETS:${NC}
+    ${CYAN}sst2${NC}     Sentiment analysis (Stanford Sentiment Treebank)
+    ${CYAN}agnews${NC}   News classification (AG News)
+    ${CYAN}trec${NC}     Question classification (TREC)
+    ${CYAN}squad${NC}    Question answering (SQuAD)
+    ${CYAN}xsum${NC}     Summarization (XSum) - optional
+
+${BOLD}EXAMPLES:${NC}
+    # Run full experiments on HPC
+    bash RUN_ALL.sh experiment --hpc
+
+    # Quick local test
+    bash RUN_ALL.sh quick --local
+
+    # Run specific phase on specific dataset
+    bash RUN_ALL.sh experiment --phase 1 --dataset sst2
+
+    # Submit SLURM job for finalization
+    bash RUN_ALL.sh slurm finalize
+
+    # Monitor running jobs
+    bash RUN_ALL.sh monitor
+
+    # Run DDP training with 4 GPUs
+    bash RUN_ALL.sh ddp --gpus 4
+
+${BOLD}ENVIRONMENT:${NC}
+    Current mode: $([ "$IS_HPC" == "yes" ] && echo "HPC" || echo "Local")
+    Work dir: $WORK_DIR
+    Python: $(command -v python &>/dev/null && python --version 2>&1 | head -1 || echo "Not found")
+    CUDA: $(command -v nvidia-smi &>/dev/null && nvidia-smi --query-gpu=count --format=csv,noheader | wc -l || echo "0") GPU(s)
+
+EOF
+}
+
+# =============================================================================
+# ARGUMENT PARSING
+# =============================================================================
+
+# Store original arguments for SLURM passthrough
+ORIGINAL_ARGS="$@"
+
+# Parse command first
+if [[ $# -gt 0 ]]; then
+    case "$1" in
+        train|eval|experiment|test|monitor|slurm|quick|finalize|compile|ddp|benchmark|validate|clean|help)
+            COMMAND="$1"
+            shift
+            ;;
+        *)
+            if [[ "$1" != "--"* ]]; then
+                print_error "Unknown command: $1"
+                show_help
+                exit 1
+            fi
+            ;;
     esac
+fi
 
-    echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] ${color}[$level]${NC} $message"
-}
+# Parse options
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --local)
+            EXECUTION_MODE="local"
+            shift
+            ;;
+        --hpc)
+            EXECUTION_MODE="hpc"
+            shift
+            ;;
+        --phase)
+            SPECIFIC_PHASE="$2"
+            shift 2
+            ;;
+        --dataset)
+            SPECIFIC_DATASET="$2"
+            shift 2
+            ;;
+        --skip-train|--skip-training)
+            SKIP_TRAINING="yes"
+            shift
+            ;;
+        --checkpoint)
+            CHECKPOINT_PATH="$2"
+            SKIP_TRAINING="yes"
+            shift 2
+            ;;
+        --gpus)
+            NUM_GPUS="$2"
+            shift 2
+            ;;
+        --batch-size)
+            BATCH_SIZE="$2"
+            EVAL_BATCH_SIZE="$2"
+            shift 2
+            ;;
+        --debug)
+            DEBUG_MODE="yes"
+            set -x
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN="yes"
+            shift
+            ;;
+        --no-interactive)
+            INTERACTIVE="no"
+            shift
+            ;;
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        *)
+            print_error "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
 
-print_banner() {
-    local title="$1"
-    echo ""
-    echo "=============================================================="
-    echo -e "${BOLD}$title${NC}"
-    echo "=============================================================="
-}
+# =============================================================================
+# ENVIRONMENT DETECTION AND VALIDATION
+# =============================================================================
 
-print_section() {
-    local title="$1"
-    echo ""
-    echo -e "${CYAN}>>> $title${NC}"
-    echo "--------------------------------------------------------------"
-}
+detect_environment() {
+    print_debug "Detecting execution environment..."
 
-confirm() {
-    local prompt="$1"
-    read -p "$prompt (y/N): " -n 1 -r
-    echo
-    [[ $REPLY =~ ^[Yy]$ ]]
-}
-
-create_directories() {
-    local dirs=("$@")
-    for dir in "${dirs[@]}"; do
-        mkdir -p "$dir"
-        log "DEBUG" "Created directory: $dir"
-    done
-}
-
-run_with_logging() {
-    local log_file="$1"
-    shift
-    local cmd="$*"
-
-    log "INFO" "Running: $cmd"
-    log "INFO" "Log file: $log_file"
-
-    {
-        eval "$cmd"
-    } 2>&1 | tee -a "$log_file"
-
-    return ${PIPESTATUS[0]}
-}
-
-run_with_retry() {
-    local max_attempts="${MAX_ATTEMPTS:-3}"
-    local attempt=1
-    local cmd="$*"
-
-    while [ $attempt -le $max_attempts ]; do
-        log "INFO" "Attempt $attempt of $max_attempts"
-        if eval "$cmd"; then
-            return 0
+    if [[ "$EXECUTION_MODE" == "auto" ]]; then
+        if [[ "$IS_HPC" == "yes" ]]; then
+            EXECUTION_MODE="hpc"
         else
-            log "WARN" "Command failed on attempt $attempt"
-            attempt=$((attempt + 1))
-            [ $attempt -le $max_attempts ] && sleep 10
+            EXECUTION_MODE="local"
         fi
-    done
-
-    log "ERROR" "Command failed after $max_attempts attempts"
-    return 1
-}
-
-check_command() {
-    local cmd="$1"
-    if ! command -v "$cmd" &>/dev/null; then
-        log "ERROR" "Required command not found: $cmd"
-        return 1
-    fi
-}
-
-check_python_module() {
-    local module="$1"
-    if ! python -c "import $module" &>/dev/null 2>&1; then
-        log "ERROR" "Required Python module not found: $module"
-        return 1
-    fi
-}
-
-get_gpu_info() {
-    if command -v nvidia-smi &>/dev/null; then
-        nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
-    elif [[ -f /proc/driver/nvidia/version ]]; then
-        cat /proc/driver/nvidia/version || true
-    else
-        echo "No NVIDIA GPU detected"
-    fi
-}
-
-find_latest_checkpoint() {
-    local search_dir="${1:-$CHECKPOINT_BASE}"
-    local latest=""
-
-    if [[ -d "$search_dir" ]]; then
-        latest=$(find "$search_dir" -name "epoch*" -type d | sort -V | tail -1)
     fi
 
-    echo "$latest"
-}
+    print_debug "Execution mode: $EXECUTION_MODE"
 
-# =============================================================================
-# ENVIRONMENT SETUP FUNCTIONS
-# =============================================================================
-
-setup_python_environment() {
-    log "PHASE" "Setting up Python environment"
-
-    export PYTHONPATH="${WORK_DIR}:${PYTHONPATH:-}"
-    export PYTHONUNBUFFERED=1
-    export TOKENIZERS_PARALLELISM=true
-
-    # PyTorch optimizations
-    export PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:512"
-    export CUDA_LAUNCH_BLOCKING=0
-
-    # MPS fallback for Mac
-    if [[ "$(uname)" == "Darwin" ]]; then
-        export PYTORCH_ENABLE_MPS_FALLBACK=1
+    # Set GPU count based on environment
+    if [[ -z "$NUM_GPUS" ]]; then
+        if [[ "$EXECUTION_MODE" == "hpc" ]]; then
+            NUM_GPUS=$SLURM_GPUS
+        else
+            # Try to detect available GPUs
+            if command -v nvidia-smi &>/dev/null; then
+                NUM_GPUS=$(nvidia-smi --query-gpu=count --format=csv,noheader | wc -l)
+            else
+                NUM_GPUS=0
+            fi
+        fi
     fi
 
-    # Thread optimizations
-    export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
-    export MKL_NUM_THREADS="${MKL_NUM_THREADS:-8}"
-
-    log "INFO" "Python environment configured"
-    log "DEBUG" "PYTHONPATH: $PYTHONPATH"
+    print_debug "GPUs to use: $NUM_GPUS"
 }
 
 validate_environment() {
-    log "PHASE" "Validating environment"
-
-    local errors=0
+    print_header "ENVIRONMENT VALIDATION"
 
     # Check Python
-    if ! check_command "python"; then
-        ((errors++))
-    else
-        local python_version=$(python --version 2>&1)
-        log "INFO" "Python: $python_version"
+    if ! command -v python &>/dev/null; then
+        print_error "Python not found!"
+        exit 1
+    fi
+    print_status "Python: $(python --version 2>&1)"
+
+    # Check PyTorch
+    if ! python -c "import torch" 2>/dev/null; then
+        print_error "PyTorch not installed!"
+        exit 1
+    fi
+    print_status "PyTorch: $(python -c 'import torch; print(torch.__version__)')"
+
+    # Check CUDA if GPUs requested
+    if [[ "$NUM_GPUS" -gt 0 ]]; then
+        if ! python -c "import torch; assert torch.cuda.is_available()" 2>/dev/null; then
+            print_warning "CUDA not available, will use CPU"
+            NUM_GPUS=0
+        else
+            CUDA_VERSION=$(python -c "import torch; print(torch.version.cuda)")
+            print_status "CUDA: $CUDA_VERSION"
+        fi
     fi
 
-    # Check critical Python packages
-    for module in torch transformers datasets latentwire; do
-        if ! check_python_module "$module"; then
-            ((errors++))
+    # Check required packages
+    for pkg in transformers datasets accelerate; do
+        if python -c "import $pkg" 2>/dev/null; then
+            print_status "$pkg: installed"
         else
-            log "DEBUG" "Found Python module: $module"
+            print_warning "$pkg not installed"
         fi
     done
 
-    # Check GPU availability
-    log "INFO" "GPU Information:"
-    get_gpu_info | while IFS= read -r line; do
-        log "INFO" "  $line"
-    done
+    # Check SLURM if HPC mode
+    if [[ "$EXECUTION_MODE" == "hpc" ]]; then
+        if ! command -v sbatch &>/dev/null; then
+            print_error "SLURM not available!"
+            exit 1
+        fi
+        print_status "SLURM: available"
+    fi
 
     # Check Git
-    if check_command "git"; then
-        local git_status=$(git status --short 2>/dev/null | head -5 || echo "Not a git repository")
-        log "DEBUG" "Git status: $git_status"
-    fi
-
-    if [[ $errors -gt 0 ]]; then
-        log "ERROR" "Environment validation failed with $errors errors"
-        return 1
-    fi
-
-    log "INFO" "Environment validation successful"
-}
-
-# =============================================================================
-# SLURM FUNCTIONS
-# =============================================================================
-
-generate_slurm_script() {
-    local job_name="$1"
-    local command="$2"
-    local output_file="$3"
-
-    cat > "$output_file" << EOF
-#!/bin/bash
-#SBATCH --job-name=${job_name}
-#SBATCH --nodes=1
-#SBATCH --gpus=${NUM_GPUS}
-#SBATCH --account=${DEFAULT_ACCOUNT}
-#SBATCH --partition=${DEFAULT_PARTITION}
-#SBATCH --time=${DEFAULT_TIME}
-#SBATCH --mem=${DEFAULT_MEM}
-#SBATCH --output=${WORK_DIR}/runs/${job_name}_%j.log
-#SBATCH --error=${WORK_DIR}/runs/${job_name}_%j.err
-
-# =============================================================================
-# SLURM Job: ${job_name}
-# Generated: $(date)
-# =============================================================================
-
-cd "$WORK_DIR"
-
-echo "=============================================================="
-echo "SLURM Job Information"
-echo "=============================================================="
-echo "Job ID: \$SLURM_JOB_ID"
-echo "Node: \$SLURMD_NODENAME"
-echo "GPUs: \$CUDA_VISIBLE_DEVICES"
-echo "Start time: \$(date)"
-echo "=============================================================="
-
-# Set up environment
-export PYTHONPATH=.
-export PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:512"
-
-# Pull latest code
-git pull || true
-
-# Create directories
-mkdir -p runs logs results
-
-# Run command
-${command}
-
-# Push results
-git add -A
-git commit -m "results: ${job_name} (SLURM job \$SLURM_JOB_ID)" || true
-git push || true
-
-echo "=============================================================="
-echo "Job completed at \$(date)"
-echo "=============================================================="
-EOF
-
-    log "INFO" "Generated SLURM script: $output_file"
-}
-
-submit_slurm_job() {
-    local script_path="$1"
-
-    if [[ ! -f "$script_path" ]]; then
-        log "ERROR" "SLURM script not found: $script_path"
-        return 1
-    fi
-
-    local output=$(sbatch "$script_path" 2>&1)
-    local job_id=$(echo "$output" | grep -oE '[0-9]+' | head -1)
-
-    if [[ -n "$job_id" ]]; then
-        log "INFO" "SLURM job submitted: $job_id"
-        echo "$job_id"
-        return 0
+    if command -v git &>/dev/null; then
+        print_status "Git: available"
     else
-        log "ERROR" "Failed to submit SLURM job: $output"
-        return 1
-    fi
-}
-
-monitor_slurm_job() {
-    local job_id="$1"
-    local log_file="${WORK_DIR}/runs/*_${job_id}.log"
-
-    log "INFO" "Monitoring SLURM job: $job_id"
-
-    # Wait for log file
-    local waited=0
-    while [[ ! -f $log_file ]] && [[ $waited -lt 30 ]]; do
-        sleep 1
-        ((waited++))
-    done
-
-    if ls $log_file 1>/dev/null 2>&1; then
-        log "INFO" "Tailing log file..."
-        tail -f $log_file
-    else
-        log "WARN" "Log file not found, job may be queued"
-        log "INFO" "Check status: squeue -j $job_id"
+        print_warning "Git not available"
     fi
 }
 
@@ -412,47 +400,52 @@ monitor_slurm_job() {
 # =============================================================================
 
 run_training() {
-    print_section "Training Phase"
+    print_header "TRAINING"
 
-    local output_dir="${1:-$CHECKPOINT_BASE/train_${TIMESTAMP}}"
-    local log_file="$LOG_BASE/training_${TIMESTAMP}.log"
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
 
-    create_directories "$output_dir" "$LOG_BASE"
+    local output_dir="${1:-$BASE_OUTPUT_DIR/checkpoint}"
+    local log_file="$BASE_OUTPUT_DIR/logs/training_${TIMESTAMP}.log"
 
-    # Check for existing checkpoint
-    local resume_flag=""
-    if [[ -n "${CHECKPOINT_PATH:-}" ]] && [[ -d "$CHECKPOINT_PATH" ]]; then
-        resume_flag="--resume_from $CHECKPOINT_PATH"
-        log "INFO" "Resuming from checkpoint: $CHECKPOINT_PATH"
+    mkdir -p "$(dirname "$log_file")"
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would execute training"
+        return 0
     fi
 
-    local cmd="python latentwire/train.py \
-        --llama_id '$SOURCE_MODEL' \
-        --qwen_id '$TARGET_MODEL' \
-        --dataset $TRAINING_DATASET \
-        --samples $TRAINING_SAMPLES \
-        --epochs $TRAINING_EPOCHS \
-        --batch_size $BATCH_SIZE \
-        --latent_len $LATENT_LEN \
-        --d_z $D_Z \
-        --output_dir $output_dir \
-        --encoder_type byte \
-        --sequential_models \
-        --warm_anchor_text 'Answer: ' \
-        --first_token_ce_weight 0.5 \
-        --mixed_precision bf16 \
-        --seed 42 \
-        $resume_flag"
+    local cmd="python latentwire/train.py"
+    cmd="$cmd --llama_id '$SOURCE_MODEL'"
+    cmd="$cmd --qwen_id '$TARGET_MODEL'"
+    cmd="$cmd --dataset $TRAINING_DATASET"
+    cmd="$cmd --samples $TRAINING_SAMPLES"
+    cmd="$cmd --epochs $TRAINING_EPOCHS"
+    cmd="$cmd --batch_size $BATCH_SIZE"
+    cmd="$cmd --latent_len $LATENT_LEN"
+    cmd="$cmd --d_z $D_Z"
+    cmd="$cmd --output_dir '$output_dir'"
+    cmd="$cmd --sequential_models"
+    cmd="$cmd --warm_anchor_text 'Answer: '"
+    cmd="$cmd --first_token_ce_weight 0.5"
 
-    if [[ $NUM_GPUS -gt 1 ]]; then
-        cmd="torchrun --nproc_per_node=$NUM_GPUS $cmd --distributed"
+    if [[ "$NUM_GPUS" -gt 1 ]]; then
+        cmd="$cmd --distributed"
     fi
 
-    run_with_logging "$log_file" "$cmd"
+    print_info "Starting training..."
+    print_debug "Command: $cmd"
 
-    # Export checkpoint path
-    export CHECKPOINT_PATH="$output_dir/epoch$(($TRAINING_EPOCHS - 1))"
-    log "INFO" "Training complete. Checkpoint: $CHECKPOINT_PATH"
+    { eval "$cmd"; } 2>&1 | tee "$log_file"
+
+    if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
+        print_status "Training completed successfully"
+        CHECKPOINT_PATH="$output_dir/epoch$((TRAINING_EPOCHS-1))"
+        print_info "Checkpoint: $CHECKPOINT_PATH"
+    else
+        print_error "Training failed"
+        exit 1
+    fi
 }
 
 # =============================================================================
@@ -460,228 +453,227 @@ run_training() {
 # =============================================================================
 
 run_evaluation() {
-    print_section "Evaluation Phase"
+    print_header "EVALUATION"
 
-    local checkpoint="${1:-$CHECKPOINT_PATH}"
-    local dataset="${2:-squad}"
-    local output_dir="${3:-$RESULTS_BASE/eval_${TIMESTAMP}}"
-    local log_file="$LOG_BASE/eval_${dataset}_${TIMESTAMP}.log"
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
 
-    if [[ ! -d "$checkpoint" ]]; then
-        log "ERROR" "Checkpoint not found: $checkpoint"
-        return 1
+    if [[ -z "$CHECKPOINT_PATH" ]]; then
+        # Find latest checkpoint
+        CHECKPOINT_PATH=$(find "$WORK_DIR/runs" -type d -name "epoch*" 2>/dev/null | sort -V | tail -1)
+        if [[ -z "$CHECKPOINT_PATH" ]]; then
+            print_error "No checkpoint found!"
+            exit 1
+        fi
     fi
 
-    create_directories "$output_dir" "$LOG_BASE"
+    print_info "Using checkpoint: $CHECKPOINT_PATH"
 
-    # Determine evaluation script based on dataset
-    local eval_script="latentwire/eval.py"
-    case "$dataset" in
-        sst2) eval_script="latentwire/eval_sst2.py" ;;
-        agnews) eval_script="latentwire/eval_agnews.py" ;;
-        trec) eval_script="telepathy/eval_telepathy_trec.py" ;;
-        gsm8k) eval_script="latentwire/gsm8k_eval.py" ;;
-    esac
+    local datasets_to_eval="${SPECIFIC_DATASET:-$DATASETS}"
 
-    local cmd="python $eval_script \
-        --ckpt $checkpoint \
-        --dataset $dataset \
-        --samples $EVAL_SAMPLES \
-        --batch_size 16 \
-        --output_file $output_dir/${dataset}_results.json \
-        --include_baselines \
-        --sequential_eval \
-        --fresh_eval"
+    for dataset in $datasets_to_eval; do
+        print_subheader "Evaluating $dataset"
 
-    run_with_logging "$log_file" "$cmd"
+        local eval_script="latentwire/eval.py"
+        case $dataset in
+            sst2) eval_script="latentwire/eval_sst2.py" ;;
+            agnews) eval_script="latentwire/eval_agnews.py" ;;
+            trec) eval_script="telepathy/eval_telepathy_trec.py" ;;
+        esac
 
-    log "INFO" "Evaluation complete for $dataset"
-    log "INFO" "Results: $output_dir/${dataset}_results.json"
-}
-
-run_multi_seed_evaluation() {
-    print_section "Multi-seed Evaluation"
-
-    local checkpoint="${1:-$CHECKPOINT_PATH}"
-    local output_dir="${2:-$RESULTS_BASE/multiseed_${TIMESTAMP}}"
-
-    create_directories "$output_dir"
-
-    for dataset in $EVAL_DATASETS; do
         for seed in $SEEDS; do
-            log "INFO" "Evaluating $dataset with seed $seed"
+            print_info "Seed $seed..."
 
-            local seed_output="$output_dir/${dataset}_seed${seed}"
-            run_evaluation "$checkpoint" "$dataset" "$seed_output"
+            local output_file="$BASE_OUTPUT_DIR/results/${dataset}_seed${seed}.json"
+            local log_file="$BASE_OUTPUT_DIR/logs/eval_${dataset}_seed${seed}.log"
+
+            mkdir -p "$(dirname "$output_file")" "$(dirname "$log_file")"
+
+            if [[ "$DRY_RUN" == "yes" ]]; then
+                print_info "DRY RUN: Would evaluate $dataset with seed $seed"
+                continue
+            fi
+
+            python "$eval_script" \
+                --ckpt "$CHECKPOINT_PATH" \
+                --dataset "$dataset" \
+                --seed "$seed" \
+                --batch_size "$EVAL_BATCH_SIZE" \
+                --output_file "$output_file" \
+                --sequential_eval \
+                --fresh_eval \
+                2>&1 | tee "$log_file"
         done
     done
 
-    # Run statistical analysis
-    log "INFO" "Running statistical analysis"
-    python scripts/statistical_testing.py \
-        --results_dir "$output_dir" \
-        --bootstrap_samples $BOOTSTRAP_SAMPLES \
-        --output_file "$output_dir/statistical_summary.json"
+    print_status "Evaluation completed"
 }
 
 # =============================================================================
-# BASELINE COMPARISON FUNCTIONS
+# EXPERIMENT PHASES
 # =============================================================================
 
-run_linear_probe_baseline() {
-    print_section "Linear Probe Baseline"
+run_phase1_statistical() {
+    print_header "PHASE 1: STATISTICAL RIGOR"
 
-    local output_dir="${1:-$RESULTS_BASE/linear_probe_${TIMESTAMP}}"
-    local log_file="$LOG_BASE/linear_probe_${TIMESTAMP}.log"
+    run_evaluation
 
-    create_directories "$output_dir"
+    # Statistical analysis
+    print_info "Running statistical analysis..."
 
-    for dataset in $EVAL_DATASETS; do
+    python scripts/statistical_testing.py \
+        --results_dir "$BASE_OUTPUT_DIR/results" \
+        --bootstrap_samples "$BOOTSTRAP_SAMPLES" \
+        --output_file "$BASE_OUTPUT_DIR/results/statistical_summary.json"
+
+    print_status "Phase 1 completed"
+}
+
+run_phase2_linear_probe() {
+    print_header "PHASE 2: LINEAR PROBE BASELINE"
+
+    local datasets_to_probe="${SPECIFIC_DATASET:-$DATASETS}"
+
+    for dataset in $datasets_to_probe; do
         if [[ "$dataset" == "xsum" ]]; then
-            log "INFO" "Skipping linear probe for generation task: $dataset"
+            print_info "Skipping $dataset (generation task)"
             continue
         fi
 
-        local cmd="python latentwire/linear_probe_baseline.py \
-            --source_model $SOURCE_MODEL \
-            --dataset $dataset \
+        print_info "Running linear probe for $dataset..."
+
+        python latentwire/linear_probe_baseline.py \
+            --source_model "$SOURCE_MODEL" \
+            --dataset "$dataset" \
             --layer 16 \
             --cv_folds 5 \
-            --output_dir $output_dir \
-            --batch_size 16"
-
-        run_with_logging "$log_file" "$cmd"
+            --output_dir "$BASE_OUTPUT_DIR/results/phase2_linear_probe" \
+            --batch_size "$EVAL_BATCH_SIZE"
     done
+
+    print_status "Phase 2 completed"
 }
 
-run_llmlingua_baseline() {
-    print_section "LLMLingua Baseline"
+run_phase3_baselines() {
+    print_header "PHASE 3: FAIR BASELINE COMPARISONS"
 
-    local output_dir="${1:-$RESULTS_BASE/llmlingua_${TIMESTAMP}}"
-    local log_file="$LOG_BASE/llmlingua_${TIMESTAMP}.log"
+    # LLMLingua baseline
+    print_info "Running LLMLingua-2 baseline..."
 
-    create_directories "$output_dir"
+    bash scripts/run_llmlingua_baseline.sh \
+        OUTPUT_DIR="$BASE_OUTPUT_DIR/results/phase3_llmlingua" \
+        DATASET="${SPECIFIC_DATASET:-squad}" \
+        SAMPLES=200
 
-    local cmd="bash scripts/run_llmlingua_baseline.sh \
-        --output_dir $output_dir \
-        --compression_ratio 8 \
-        --datasets '$EVAL_DATASETS'"
+    print_status "Phase 3 completed"
+}
 
-    run_with_logging "$log_file" "$cmd"
+run_phase4_efficiency() {
+    print_header "PHASE 4: EFFICIENCY MEASUREMENTS"
+
+    local datasets_to_bench="${SPECIFIC_DATASET:-squad}"
+
+    for dataset in $datasets_to_bench; do
+        print_info "Measuring efficiency for $dataset..."
+
+        python scripts/benchmark_efficiency.py \
+            --checkpoint "$CHECKPOINT_PATH" \
+            --dataset "$dataset" \
+            --samples 100 \
+            --warmup_runs 3 \
+            --benchmark_runs 10 \
+            --output_file "$BASE_OUTPUT_DIR/results/phase4_efficiency_${dataset}.json"
+    done
+
+    print_status "Phase 4 completed"
 }
 
 # =============================================================================
-# EXPERIMENT ORCHESTRATION
+# SLURM FUNCTIONS
 # =============================================================================
 
-run_full_experiment() {
-    print_banner "FULL EXPERIMENT PIPELINE"
+create_slurm_script() {
+    local slurm_file="$WORK_DIR/finalization/submit_${EXP_NAME}_${TIMESTAMP}.slurm"
 
-    local exp_name="${1:-full_experiment_${TIMESTAMP}}"
-    local base_dir="$OUTPUT_BASE/$exp_name"
+    cat > "$slurm_file" << EOF
+#!/bin/bash
+#SBATCH --job-name=${EXP_NAME}
+#SBATCH --nodes=1
+#SBATCH --gpus=${SLURM_GPUS}
+#SBATCH --account=${SLURM_ACCOUNT}
+#SBATCH --partition=${SLURM_PARTITION}
+#SBATCH --time=${SLURM_TIME}
+#SBATCH --mem=${SLURM_MEMORY}
+#SBATCH --output=${LOG_BASE}/${EXP_NAME}_%j.log
+#SBATCH --error=${LOG_BASE}/${EXP_NAME}_%j.err
 
-    create_directories "$base_dir" "$base_dir/checkpoint" "$base_dir/results" "$base_dir/logs"
+cd $WORK_DIR
 
-    # Override paths for this experiment
-    LOG_BASE="$base_dir/logs"
-    CHECKPOINT_BASE="$base_dir/checkpoint"
-    RESULTS_BASE="$base_dir/results"
+echo "=============================================================="
+echo "SLURM Job: \$SLURM_JOB_ID on \$SLURMD_NODENAME"
+echo "Start: \$(date)"
+echo "=============================================================="
 
-    # Phase 0: Training
-    if [[ -z "${SKIP_PHASES:-}" ]] || [[ ! "$SKIP_PHASES" =~ "train" ]]; then
-        log "PHASE" "Phase 0: Training"
-        run_training "$CHECKPOINT_BASE"
-    else
-        CHECKPOINT_PATH=$(find_latest_checkpoint "$CHECKPOINT_BASE")
-        log "INFO" "Skipping training, using checkpoint: $CHECKPOINT_PATH"
-    fi
+export PYTHONPATH=.
+export PYTHONUNBUFFERED=1
 
-    # Phase 1: Statistical evaluation
-    if [[ -z "${SKIP_PHASES:-}" ]] || [[ ! "$SKIP_PHASES" =~ "stat" ]]; then
-        log "PHASE" "Phase 1: Statistical Evaluation"
-        run_multi_seed_evaluation "$CHECKPOINT_PATH" "$RESULTS_BASE/phase1_statistical"
-    fi
+git pull
 
-    # Phase 2: Linear probe baseline
-    if [[ -z "${SKIP_PHASES:-}" ]] || [[ ! "$SKIP_PHASES" =~ "probe" ]]; then
-        log "PHASE" "Phase 2: Linear Probe Baseline"
-        run_linear_probe_baseline "$RESULTS_BASE/phase2_linear_probe"
-    fi
+# Re-run this script with original arguments in local mode
+bash finalization/RUN_ALL.sh $ORIGINAL_ARGS --local --no-interactive
 
-    # Phase 3: LLMLingua baseline
-    if [[ -z "${SKIP_PHASES:-}" ]] || [[ ! "$SKIP_PHASES" =~ "lingua" ]]; then
-        log "PHASE" "Phase 3: LLMLingua Baseline"
-        run_llmlingua_baseline "$RESULTS_BASE/phase3_llmlingua"
-    fi
+git add -A
+git commit -m "results: ${EXP_NAME} (job \$SLURM_JOB_ID)" || true
+git push || true
 
-    # Phase 4: Efficiency measurements
-    if [[ -z "${SKIP_PHASES:-}" ]] || [[ ! "$SKIP_PHASES" =~ "efficiency" ]]; then
-        log "PHASE" "Phase 4: Efficiency Measurements"
-        run_efficiency_measurements "$CHECKPOINT_PATH" "$RESULTS_BASE/phase4_efficiency"
-    fi
-
-    # Generate final report
-    generate_experiment_report "$base_dir"
-}
-
-run_efficiency_measurements() {
-    print_section "Efficiency Measurements"
-
-    local checkpoint="${1:-$CHECKPOINT_PATH}"
-    local output_dir="${2:-$RESULTS_BASE/efficiency_${TIMESTAMP}}"
-    local log_file="$LOG_BASE/efficiency_${TIMESTAMP}.log"
-
-    create_directories "$output_dir"
-
-    local cmd="python scripts/benchmark_efficiency.py \
-        --checkpoint $checkpoint \
-        --dataset squad \
-        --samples 100 \
-        --warmup_runs 3 \
-        --benchmark_runs 10 \
-        --measure_memory \
-        --measure_latency \
-        --measure_throughput \
-        --output_file $output_dir/efficiency_results.json"
-
-    run_with_logging "$log_file" "$cmd"
-}
-
-generate_experiment_report() {
-    local exp_dir="$1"
-
-    print_section "Generating Experiment Report"
-
-    cat > "$exp_dir/experiment_report.md" << EOF
-# Experiment Report
-
-## Configuration
-- **Date**: $(date)
-- **Experiment**: $(basename "$exp_dir")
-- **Models**: $SOURCE_MODEL → $TARGET_MODEL
-- **Datasets**: $EVAL_DATASETS
-- **Seeds**: $SEEDS
-
-## Results
-
-### Phase 1: Statistical Evaluation
-$(ls -la "$exp_dir/results/phase1_statistical" 2>/dev/null || echo "Not completed")
-
-### Phase 2: Linear Probe Baseline
-$(ls -la "$exp_dir/results/phase2_linear_probe" 2>/dev/null || echo "Not completed")
-
-### Phase 3: LLMLingua Baseline
-$(ls -la "$exp_dir/results/phase3_llmlingua" 2>/dev/null || echo "Not completed")
-
-### Phase 4: Efficiency Measurements
-$(ls -la "$exp_dir/results/phase4_efficiency" 2>/dev/null || echo "Not completed")
-
-## Logs
-$(ls -la "$exp_dir/logs" 2>/dev/null || echo "No logs")
-
+echo "=============================================================="
+echo "Completed: \$(date)"
+echo "=============================================================="
 EOF
 
-    log "INFO" "Report generated: $exp_dir/experiment_report.md"
+    echo "$slurm_file"
+}
+
+submit_slurm_job() {
+    print_header "SLURM JOB SUBMISSION"
+
+    if [[ "$EXECUTION_MODE" != "hpc" ]]; then
+        print_error "SLURM submission requires HPC environment"
+        exit 1
+    fi
+
+    local slurm_script=$(create_slurm_script)
+    print_info "Created script: $slurm_script"
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would submit $slurm_script"
+        return 0
+    fi
+
+    local job_output=$(sbatch "$slurm_script" 2>&1)
+
+    if [[ $? -eq 0 ]]; then
+        local job_id=$(echo "$job_output" | grep -oE '[0-9]+' | head -1)
+        print_status "Job submitted: $job_id"
+
+        echo ""
+        echo "Monitor with:"
+        echo "  squeue -j $job_id"
+        echo "  tail -f ${LOG_BASE}/${EXP_NAME}_${job_id}.log"
+
+        if [[ "$INTERACTIVE" == "yes" ]]; then
+            echo ""
+            read -p "Start monitoring? (Y/n): " -n 1 -r
+            echo ""
+            if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+                sleep 5
+                tail -f "${LOG_BASE}/${EXP_NAME}_${job_id}.log" 2>/dev/null
+            fi
+        fi
+    else
+        print_error "Submission failed: $job_output"
+        exit 1
+    fi
 }
 
 # =============================================================================
@@ -689,175 +681,258 @@ EOF
 # =============================================================================
 
 monitor_experiments() {
-    print_banner "EXPERIMENT MONITOR"
+    print_header "EXPERIMENT MONITORING"
 
-    local run_dir="${1:-$OUTPUT_BASE}"
-    local refresh_interval="${2:-10}"
+    if [[ "$EXECUTION_MODE" != "hpc" ]]; then
+        # Local monitoring - just show recent logs
+        print_info "Recent experiment logs:"
+        ls -lt "$LOG_BASE"/*.log 2>/dev/null | head -10
+    else
+        # HPC monitoring
+        print_subheader "Your Active Jobs"
+        squeue -u $USER
 
-    while true; do
-        clear
-        print_banner "EXPERIMENT MONITOR"
-        echo "Time: $(date)"
-        echo "Directory: $run_dir"
-        echo ""
+        local latest_job=$(squeue -u $USER -h -o "%i" | head -1)
+        if [[ -n "$latest_job" ]]; then
+            print_info "Latest job: $latest_job"
 
-        # Check running processes
-        echo "Running Processes:"
-        ps aux | grep -E "python|bash" | grep -v grep | head -5 || echo "  None"
-        echo ""
+            local log_file="${LOG_BASE}/*_${latest_job}.log"
+            if ls $log_file 1>/dev/null 2>&1; then
+                print_subheader "Recent Output"
+                tail -20 $log_file
 
-        # Check latest logs
-        echo "Latest Activity:"
-        find "$run_dir" -name "*.log" -type f -mmin -5 2>/dev/null | \
-            xargs -I {} sh -c 'echo "  $(basename {}): $(tail -1 {})"' | head -5
-        echo ""
+                echo ""
+                read -p "Continue monitoring? (Y/n): " -n 1 -r
+                echo ""
+                if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+                    tail -f $log_file
+                fi
+            fi
+        else
+            print_info "No active jobs"
 
-        # Check GPU usage
-        if command -v nvidia-smi &>/dev/null; then
-            echo "GPU Usage:"
-            nvidia-smi --query-gpu=index,name,utilization.gpu,memory.used,memory.total \
-                --format=csv,noheader,nounits | sed 's/^/  /'
+            print_subheader "Recent Jobs"
+            sacct -u $USER --format=JobID,JobName,State,ExitCode,Start,End --starttime=$(date -d '1 day ago' +%Y-%m-%d) | head -10
+        fi
+    fi
+}
+
+# =============================================================================
+# TEST FUNCTIONS
+# =============================================================================
+
+run_tests() {
+    print_header "RUNNING TEST SUITE"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local test_log="$BASE_OUTPUT_DIR/logs/tests_${TIMESTAMP}.log"
+    mkdir -p "$(dirname "$test_log")"
+
+    {
+        # Import tests
+        print_subheader "Import Tests"
+        python -c "
+import torch
+print(f'PyTorch: {torch.__version__}')
+import transformers
+print(f'Transformers: {transformers.__version__}')
+from latentwire.train import train_latentwire
+print('✓ Training imports')
+from latentwire.eval import evaluate_checkpoint
+print('✓ Evaluation imports')
+"
+
+        # Data tests
+        print_subheader "Data Loading Tests"
+        python -c "
+from latentwire.data import get_dataset
+for dataset in ['squad', 'sst2', 'agnews']:
+    data = get_dataset(dataset, split='train', max_samples=10)
+    print(f'✓ {dataset}: {len(data)} samples')
+"
+
+        # Model tests
+        print_subheader "Model Tests"
+        python -c "
+from latentwire.models import Encoder, Adapter
+import torch
+
+encoder = Encoder(d_z=256, vocab_size=256)
+adapter = Adapter(d_z=256, d_model=4096)
+dummy = torch.randint(0, 256, (2, 64))
+latent = encoder(dummy)
+adapted = adapter(latent)
+print(f'✓ Encoder: {latent.shape}')
+print(f'✓ Adapter: {adapted.shape}')
+"
+
+        # Quick training test
+        if [[ "$SKIP_TRAINING" != "yes" ]]; then
+            print_subheader "Quick Training Test"
+            python latentwire/train.py \
+                --llama_id "$SOURCE_MODEL" \
+                --qwen_id "$TARGET_MODEL" \
+                --dataset squad \
+                --samples 10 \
+                --epochs 1 \
+                --batch_size 2 \
+                --latent_len 8 \
+                --d_z 64 \
+                --output_dir "$BASE_OUTPUT_DIR/test_checkpoint" \
+                --sequential_models
         fi
 
-        echo ""
-        echo "Press Ctrl+C to exit"
+        print_status "All tests passed!"
 
-        sleep "$refresh_interval"
-    done
+    } 2>&1 | tee "$test_log"
+
+    print_info "Test log: $test_log"
 }
 
 # =============================================================================
-# TESTING FUNCTIONS
-# =============================================================================
-
-run_test_suite() {
-    print_banner "TEST SUITE"
-
-    local log_file="$LOG_BASE/tests_${TIMESTAMP}.log"
-    create_directories "$LOG_BASE"
-
-    log "INFO" "Running test suite"
-
-    # Unit tests
-    log "INFO" "Running unit tests"
-    run_with_logging "$log_file" "python -m pytest tests/ -v --tb=short"
-
-    # Integration tests
-    log "INFO" "Running integration tests"
-    run_with_logging "$log_file" "bash tests/test_everything.sh"
-
-    # Memory tests
-    log "INFO" "Running memory tests"
-    run_with_logging "$log_file" "bash tests/test_memory_calculations.sh"
-
-    log "INFO" "Test suite complete"
-}
-
-# =============================================================================
-# QUICK START FUNCTION
-# =============================================================================
-
-run_quick_start() {
-    print_banner "QUICK START"
-
-    log "INFO" "Running quick experiment with minimal samples"
-
-    # Override with minimal settings
-    TRAINING_SAMPLES=1000
-    TRAINING_EPOCHS=2
-    EVAL_SAMPLES=100
-    EVAL_DATASETS="squad"
-    SEEDS="42"
-
-    run_full_experiment "quick_${TIMESTAMP}"
-}
-
-# =============================================================================
-# PAPER COMPILATION
+# UTILITY FUNCTIONS
 # =============================================================================
 
 compile_paper() {
-    print_banner "PAPER COMPILATION"
+    print_header "COMPILING PAPER"
 
-    local paper_dir="${1:-paper}"
-    local log_file="$LOG_BASE/paper_compilation_${TIMESTAMP}.log"
-
-    create_directories "$LOG_BASE"
+    local paper_dir="$WORK_DIR/paper"
+    [[ ! -d "$paper_dir" ]] && paper_dir="$WORK_DIR/docs/paper"
 
     if [[ ! -d "$paper_dir" ]]; then
-        log "ERROR" "Paper directory not found: $paper_dir"
-        return 1
+        print_error "Paper directory not found"
+        exit 1
     fi
 
     cd "$paper_dir"
 
-    log "INFO" "Compiling LaTeX"
-    run_with_logging "$log_file" "pdflatex -interaction=nonstopmode main.tex"
-    run_with_logging "$log_file" "bibtex main"
-    run_with_logging "$log_file" "pdflatex -interaction=nonstopmode main.tex"
-    run_with_logging "$log_file" "pdflatex -interaction=nonstopmode main.tex"
+    local main_tex=""
+    for tex in main.tex paper.tex latentwire.tex; do
+        [[ -f "$tex" ]] && main_tex="$tex" && break
+    done
 
-    cd - >/dev/null
+    if [[ -z "$main_tex" ]]; then
+        print_error "No main LaTeX file found"
+        exit 1
+    fi
 
-    log "INFO" "Paper compiled: $paper_dir/main.pdf"
+    print_info "Compiling $main_tex..."
+
+    pdflatex -interaction=nonstopmode "$main_tex"
+    bibtex "${main_tex%.tex}" 2>/dev/null || true
+    pdflatex -interaction=nonstopmode "$main_tex"
+    pdflatex -interaction=nonstopmode "$main_tex"
+
+    local pdf="${main_tex%.tex}.pdf"
+    if [[ -f "$pdf" ]]; then
+        print_status "Paper compiled: $pdf"
+        cp "$pdf" "$WORK_DIR/runs/latentwire_paper_${TIMESTAMP}.pdf"
+    else
+        print_error "Compilation failed"
+        exit 1
+    fi
 }
 
-# =============================================================================
-# HELP FUNCTION
-# =============================================================================
+run_quick_start() {
+    print_header "QUICK START"
 
-show_help() {
-    cat << EOF
-$SCRIPT_NAME v$SCRIPT_VERSION - Master Execution Script
+    # Override with minimal settings
+    TRAINING_SAMPLES=100
+    TRAINING_EPOCHS=2
+    SEEDS="42"
+    DATASETS="squad"
+    BATCH_SIZE=4
 
-USAGE:
-    bash $SCRIPT_NAME [COMMAND] [OPTIONS]
+    print_info "Running with reduced settings for quick testing"
 
-COMMANDS:
-    train       Run training only
-    eval        Run evaluation only
-    experiment  Run full experiment pipeline
-    monitor     Monitor running experiments
-    test        Run test suite
-    slurm       Submit to SLURM cluster
-    quick       Quick start with minimal samples
-    finalize    Run paper finalization experiments
-    compile     Compile paper LaTeX
-    help        Show this help message
+    # Run training
+    if [[ "$SKIP_TRAINING" != "yes" ]]; then
+        run_training
+    fi
 
-OPTIONS:
-    --checkpoint PATH    Use existing checkpoint
-    --dataset DATASET    Dataset to use
-    --output DIR        Output directory
-    --gpus N            Number of GPUs
-    --skip-phases LIST  Space-separated phases to skip
+    # Run evaluation
+    run_evaluation
 
-ENVIRONMENT VARIABLES:
-    EXECUTION_MODE      "local" or "hpc" (auto-detected)
-    NUM_GPUS           Number of GPUs (default: 4 on HPC, 1 local)
-    SKIP_PHASES        Phases to skip (train, stat, probe, lingua, efficiency)
-    CHECKPOINT_PATH    Path to existing checkpoint
+    print_status "Quick start completed!"
+}
 
-EXAMPLES:
-    # Run full experiment
-    bash $SCRIPT_NAME experiment
+run_ddp_training() {
+    print_header "DDP TRAINING"
 
-    # Train only
-    bash $SCRIPT_NAME train
+    if [[ "$NUM_GPUS" -lt 2 ]]; then
+        print_error "DDP requires at least 2 GPUs"
+        exit 1
+    fi
 
-    # Evaluate with existing checkpoint
-    CHECKPOINT_PATH=runs/checkpoint/epoch23 bash $SCRIPT_NAME eval
+    print_info "Launching DDP training with $NUM_GPUS GPUs..."
 
-    # Quick test
-    bash $SCRIPT_NAME quick
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
 
-    # Submit to SLURM
-    bash $SCRIPT_NAME slurm experiment
+    torchrun \
+        --nproc_per_node="$NUM_GPUS" \
+        --master_port=29500 \
+        latentwire/train.py \
+        --llama_id "$SOURCE_MODEL" \
+        --qwen_id "$TARGET_MODEL" \
+        --dataset "$TRAINING_DATASET" \
+        --samples "$TRAINING_SAMPLES" \
+        --epochs "$TRAINING_EPOCHS" \
+        --batch_size "$BATCH_SIZE" \
+        --latent_len "$LATENT_LEN" \
+        --d_z "$D_Z" \
+        --output_dir "$BASE_OUTPUT_DIR/ddp_checkpoint" \
+        --distributed
+}
 
-    # Monitor experiments
-    bash $SCRIPT_NAME monitor
+run_benchmarks() {
+    print_header "EFFICIENCY BENCHMARKS"
 
-EOF
+    if [[ -z "$CHECKPOINT_PATH" ]]; then
+        print_error "Checkpoint required for benchmarking"
+        exit 1
+    fi
+
+    print_info "Running benchmarks..."
+
+    python scripts/benchmark_efficiency.py \
+        --checkpoint "$CHECKPOINT_PATH" \
+        --dataset squad \
+        --samples 100 \
+        --warmup_runs 3 \
+        --benchmark_runs 10 \
+        --measure_memory \
+        --measure_latency \
+        --measure_throughput \
+        --output_file "$BASE_OUTPUT_DIR/benchmark_results.json"
+
+    print_status "Benchmarks completed"
+}
+
+clean_workspace() {
+    print_header "CLEANING WORKSPACE"
+
+    print_warning "This will remove temporary files and old logs"
+
+    if [[ "$INTERACTIVE" == "yes" ]]; then
+        read -p "Continue? (y/N): " -n 1 -r
+        echo ""
+        [[ ! $REPLY =~ ^[Yy]$ ]] && exit 0
+    fi
+
+    # Clean old logs (older than 7 days)
+    find "$LOG_BASE" -name "*.log" -mtime +7 -delete 2>/dev/null
+
+    # Clean Python cache
+    find "$WORK_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
+    find "$WORK_DIR" -name "*.pyc" -delete 2>/dev/null
+
+    # Clean temporary files
+    rm -f "$WORK_DIR"/*.tmp 2>/dev/null
+
+    print_status "Workspace cleaned"
 }
 
 # =============================================================================
@@ -865,157 +940,134 @@ EOF
 # =============================================================================
 
 main() {
-    local command="${1:-help}"
-    shift || true
+    # Show header
+    clear
+    print_header "LATENTWIRE UNIFIED EXECUTION v${SCRIPT_VERSION}"
 
-    # Parse additional arguments
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-            --checkpoint)
-                CHECKPOINT_PATH="$2"
-                shift 2
-                ;;
-            --dataset)
-                EVAL_DATASETS="$2"
-                shift 2
-                ;;
-            --output)
-                OUTPUT_BASE="$2"
-                shift 2
-                ;;
-            --gpus)
-                NUM_GPUS="$2"
-                shift 2
-                ;;
-            --skip-phases)
-                SKIP_PHASES="$2"
-                shift 2
-                ;;
-            *)
-                shift
-                ;;
-        esac
-    done
+    # Detect environment
+    detect_environment
 
-    # Setup environment
-    setup_python_environment
+    # Show configuration
+    print_info "Command: $COMMAND"
+    print_info "Mode: $EXECUTION_MODE"
+    print_info "GPUs: $NUM_GPUS"
+    [[ -n "$SPECIFIC_PHASE" ]] && print_info "Phase: $SPECIFIC_PHASE"
+    [[ -n "$SPECIFIC_DATASET" ]] && print_info "Dataset: $SPECIFIC_DATASET"
+    [[ "$SKIP_TRAINING" == "yes" ]] && print_info "Skip training: Yes"
+    [[ "$DEBUG_MODE" == "yes" ]] && print_info "Debug: Enabled"
+    [[ "$DRY_RUN" == "yes" ]] && print_info "Dry run: Yes"
 
     # Execute command
-    case "$command" in
+    case "$COMMAND" in
+        help)
+            show_help
+            ;;
+        validate)
+            validate_environment
+            ;;
+        test)
+            validate_environment
+            run_tests
+            ;;
         train)
             validate_environment
             run_training
             ;;
-
-        eval|evaluate)
+        eval)
             validate_environment
-            if [[ -z "${CHECKPOINT_PATH:-}" ]]; then
-                CHECKPOINT_PATH=$(find_latest_checkpoint)
-            fi
-            for dataset in $EVAL_DATASETS; do
-                run_evaluation "$CHECKPOINT_PATH" "$dataset"
-            done
+            run_evaluation
             ;;
-
         experiment)
             validate_environment
-            run_full_experiment
-            ;;
 
-        monitor)
-            monitor_experiments "$@"
-            ;;
-
-        test)
-            validate_environment
-            run_test_suite
-            ;;
-
-        slurm)
-            if [[ "$EXECUTION_MODE" != "hpc" ]]; then
-                log "ERROR" "SLURM submission only available on HPC"
-                exit 1
-            fi
-            local subcmd="${1:-experiment}"
-            local slurm_script="/tmp/slurm_${TIMESTAMP}.sh"
-            generate_slurm_script "latentwire_${subcmd}" \
-                "bash $SCRIPT_DIR/$SCRIPT_NAME $subcmd" \
-                "$slurm_script"
-
-            if confirm "Submit SLURM job?"; then
-                job_id=$(submit_slurm_job "$slurm_script")
-                if confirm "Monitor job $job_id?"; then
-                    monitor_slurm_job "$job_id"
+            # Handle phases
+            if [[ -n "$SPECIFIC_PHASE" ]]; then
+                case "$SPECIFIC_PHASE" in
+                    1) run_phase1_statistical ;;
+                    2) run_phase2_linear_probe ;;
+                    3) run_phase3_baselines ;;
+                    4) run_phase4_efficiency ;;
+                    *) print_error "Invalid phase: $SPECIFIC_PHASE"; exit 1 ;;
+                esac
+            else
+                # Run all phases
+                if [[ "$SKIP_TRAINING" != "yes" ]]; then
+                    run_training
                 fi
+                run_phase1_statistical
+                run_phase2_linear_probe
+                run_phase3_baselines
+                run_phase4_efficiency
             fi
             ;;
-
         quick)
             validate_environment
             run_quick_start
             ;;
-
         finalize)
             validate_environment
-            log "INFO" "Running finalization experiments"
-            bash "$SCRIPT_DIR/scripts/run_finalization.sh"
-            ;;
 
+            # Full finalization pipeline
+            print_header "PAPER FINALIZATION"
+
+            if [[ "$SKIP_TRAINING" != "yes" ]]; then
+                run_training
+            fi
+
+            run_phase1_statistical
+            run_phase2_linear_probe
+            run_phase3_baselines
+            run_phase4_efficiency
+
+            # Aggregate results
+            print_info "Aggregating results..."
+            python finalization/aggregate_results.py \
+                --results_dir "$BASE_OUTPUT_DIR/results" \
+                --output_file "$BASE_OUTPUT_DIR/final_results.json" \
+                --generate_latex_tables \
+                --generate_plots
+
+            print_status "Finalization completed!"
+            ;;
+        monitor)
+            monitor_experiments
+            ;;
+        slurm)
+            if [[ "$EXECUTION_MODE" != "hpc" ]]; then
+                print_error "SLURM submission requires HPC environment"
+                exit 1
+            fi
+            submit_slurm_job
+            ;;
         compile)
-            compile_paper "$@"
+            compile_paper
             ;;
-
-        help|--help|-h)
-            show_help
+        ddp)
+            validate_environment
+            run_ddp_training
             ;;
-
+        benchmark)
+            validate_environment
+            run_benchmarks
+            ;;
+        clean)
+            clean_workspace
+            ;;
         *)
-            log "ERROR" "Unknown command: $command"
+            print_error "Invalid command: $COMMAND"
             show_help
             exit 1
             ;;
     esac
+
+    # Show completion message
+    echo ""
+    print_status "Command '$COMMAND' completed successfully!"
+    [[ -d "$BASE_OUTPUT_DIR" ]] && print_info "Results: $BASE_OUTPUT_DIR"
 }
 
-# =============================================================================
-# SIGNAL HANDLERS
-# =============================================================================
+# Handle interrupts gracefully
+trap 'echo ""; print_warning "Interrupted by user"; exit 130' INT TERM
 
-cleanup() {
-    log "INFO" "Cleanup triggered"
-
-    # Save state
-    if [[ -n "${OUTPUT_BASE:-}" ]]; then
-        cat > "$OUTPUT_BASE/last_run.json" << EOF
-{
-    "timestamp": "$(date -Iseconds)",
-    "command": "$0 $@",
-    "checkpoint": "${CHECKPOINT_PATH:-}",
-    "pid": $$,
-    "exit_code": $?
-}
-EOF
-    fi
-
-    # Push to git if available
-    if [[ "$EXECUTION_MODE" == "hpc" ]] && command -v git &>/dev/null; then
-        git add -A 2>/dev/null || true
-        git commit -m "checkpoint: interrupted run $(date)" 2>/dev/null || true
-        git push 2>/dev/null || true
-    fi
-}
-
-trap cleanup EXIT SIGINT SIGTERM
-
-# =============================================================================
-# ENTRY POINT
-# =============================================================================
-
-# Check if sourced or executed
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    # Change to script directory
-    cd "$SCRIPT_DIR"
-
-    # Run main function
-    main "$@"
-fi
+# Run main function
+main

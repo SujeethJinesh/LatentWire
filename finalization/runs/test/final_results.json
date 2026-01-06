@@ -1,0 +1,113 @@
+{
+  "compression": {
+    "compression_results": [
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_0"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_1"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_2"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_3"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_4"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_5"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_6"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_7"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_8"
+      },
+      {
+        "original_size": 43,
+        "compressed_size": 10,
+        "compression_ratio": 4.3,
+        "method": "telepathy",
+        "latent_dim": 256,
+        "latent_len": 32,
+        "latent_bytes": 16384,
+        "sample_id": "sample_9"
+      }
+    ],
+    "avg_compression_ratio": 4.299999999999999
+  },
+  "evaluation": {
+    "loss": 0.5470055738207003,
+    "accuracy": 0.9022393654973884,
+    "perplexity": 1.7280706825878798,
+    "num_samples": 5
+  }
+}
