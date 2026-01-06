@@ -2172,5 +2172,11 @@ def main():
                 f.write(json.dumps(rec) + "\n")
         print(f"Wrote per-example predictions to {dump_path}")
 
+# Wrapper function for RUN_ALL.sh compatibility
+def evaluate_checkpoint(*args, **kwargs):
+    """Wrapper function to provide evaluate_checkpoint interface."""
+    return main()
+
+
 if __name__ == "__main__":
     main()

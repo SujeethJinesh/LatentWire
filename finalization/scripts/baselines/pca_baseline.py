@@ -1,0 +1,260 @@
+"""
+PCA Baseline - Linear Compression
+
+Tests if linear compression (PCA) of text embeddings can achieve similar
+performance to learned non-linear compression.
+
+This answers: Do we need the learned encoder, or is PCA enough?
+
+Usage:
+  PYTHONPATH=. python scripts/baselines/pca_baseline.py \
+    --llama_id meta-llama/Meta-Llama-3.1-8B-Instruct \
+    --samples 1000 \
+    --latent_len 32 \
+    --dataset squad
+"""
+
+import argparse
+import json
+import sys
+import time
+from pathlib import Path
+from datetime import datetime
+
+import torch
+import torch.nn as nn
+from sklearn.decomposition import IncrementalPCA
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from latentwire.data import load_examples
+from latentwire.models import LMWrapper
+from latentwire.core_utils import batch_metrics
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+
+@torch.no_grad()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--llama_id', type=str, default='meta-llama/Meta-Llama-3.1-8B-Instruct')
+    parser.add_argument('--dataset', type=str, default='squad')
+    parser.add_argument('--samples', type=int, default=1000)
+    parser.add_argument('--latent_len', type=int, default=32, help='M: number of compressed tokens')
+    parser.add_argument('--max_new_tokens', type=int, default=12)
+    parser.add_argument('--save_dir', type=str, default='runs/baselines/pca')
+    args = parser.parse_args()
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    start_time = time.time()
+    save_dir = Path(args.save_dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Using device: {device}")
+    print(f"GPUs: {torch.cuda.device_count()}\n")
+
+    # Load model
+    print(f"Loading {args.llama_id}...")
+    model = AutoModelForCausalLM.from_pretrained(
+        args.llama_id,
+        torch_dtype=torch.float16 if device.type == 'cuda' else torch.float32,
+        device_map='auto' if torch.cuda.device_count() > 1 else None,
+    )
+    if torch.cuda.device_count() <= 1:
+        model = model.to(device)
+    model.eval()
+
+    tokenizer = AutoTokenizer.from_pretrained(args.llama_id)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    # Use left padding for batched embedding extraction
+    tokenizer.padding_side = 'left'
+
+    print(f"Model loaded!\n")
+
+    # Load data
+    print(f"Loading {args.samples} examples from {args.dataset}...")
+    examples = load_examples(dataset=args.dataset, split='validation', samples=args.samples, seed=42)
+    print(f"Loaded {len(examples)} examples\n")
+
+    # Fit IncrementalPCA in batches to avoid OOM
+    print("Fitting IncrementalPCA (batched GPU extraction)...")
+
+    # Initialize IncrementalPCA
+    pca = IncrementalPCA(n_components=args.latent_len, batch_size=1000)
+
+    # Get device from embedding layer (important for device_map='auto')
+    embed_device = model.get_input_embeddings().weight.device
+    print(f"Embedding layer device: {embed_device}")
+
+    # GPU batch size for embedding extraction
+    gpu_batch_size = 128  # Process 128 examples per GPU forward pass (use more GPU memory)
+    pca_fit_every = 500  # Fit PCA every 500 examples worth of embeddings
+
+    total_tokens = 0
+    embedding_dim = None
+    accumulated_embeddings = []
+
+    for batch_start in range(0, len(examples), gpu_batch_size):
+        batch_end = min(batch_start + gpu_batch_size, len(examples))
+        batch = examples[batch_start:batch_end]
+
+        if batch_start % 500 == 0:
+            print(f"  Processing examples {batch_start}/{len(examples)}...", flush=True)
+
+        # Batch tokenize for GPU efficiency
+        sources = [ex['source'] for ex in batch]
+        encoded = tokenizer(
+            sources,
+            return_tensors='pt',
+            truncation=True,
+            max_length=256,
+            padding=True
+        )
+
+        # Move to GPU and extract embeddings
+        input_ids = encoded['input_ids'].to(embed_device)  # Use embedding layer's device
+
+        # Extract embeddings in a single batched forward pass (GPU work here!)
+        with torch.no_grad():
+            embeddings = model.get_input_embeddings()(input_ids)  # [batch_size, seq_len, d_model]
+
+            # Move to CPU and flatten
+            embeddings_np = embeddings.cpu().float().numpy()  # [batch_size, seq_len, d_model]
+
+            # Flatten batch and sequence dimensions
+            for i in range(embeddings_np.shape[0]):
+                # Only keep non-padding tokens
+                seq_len = (input_ids[i] != tokenizer.pad_token_id).sum().item()
+                accumulated_embeddings.append(embeddings_np[i, :seq_len, :])
+
+            embedding_dim = embeddings_np.shape[2]
+
+        # Periodically fit PCA to avoid accumulating too much in memory
+        if len(accumulated_embeddings) >= pca_fit_every or batch_end == len(examples):
+            # Concatenate accumulated embeddings
+            batch_embeddings_np = np.concatenate(accumulated_embeddings, axis=0)  # [tokens, d_model]
+            total_tokens += batch_embeddings_np.shape[0]
+
+            # Partial fit on this chunk
+            print(f"    Fitting PCA on {batch_embeddings_np.shape[0]} tokens (batch {batch_start}-{batch_end})...", flush=True)
+            pca.partial_fit(batch_embeddings_np)
+            print(f"    PCA fit complete", flush=True)
+
+            # Clear accumulated embeddings
+            accumulated_embeddings = []
+            del batch_embeddings_np
+
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+    print(f"  Collected {total_tokens} token embeddings")
+    print(f"  Embedding dim: {embedding_dim}\n")
+
+    # Compute explained variance
+    print(f"IncrementalPCA fitted: {embedding_dim}D → {args.latent_len}D")
+    explained_var = np.sum(pca.explained_variance_ratio_)
+    print(f"  Explained variance: {explained_var:.2%}")
+    print(f"  First 5 components: {pca.explained_variance_ratio_[:5]}\n")
+
+    # Save PCA
+    pca_path = save_dir / f'pca_M{args.latent_len}.pkl'
+    import pickle
+    with open(pca_path, 'wb') as f:
+        pickle.dump(pca, f)
+    print(f"Saved PCA to {pca_path}\n")
+
+    # Evaluate with PCA-compressed embeddings
+    print("="*80)
+    print("EVALUATION: Generating answers with PCA-compressed embeddings")
+    print("="*80)
+    print()
+
+    predictions = []
+    references = []
+
+    for i, ex in enumerate(examples):
+        if i % 100 == 0:
+            print(f"  Example {i}/{len(examples)}...")
+
+        # Tokenize source
+        encoded = tokenizer(ex['source'], return_tensors='pt', truncation=True, max_length=256)
+        input_ids = encoded['input_ids'].to(embed_device)  # Use embedding layer's device
+
+        # Get text embeddings
+        with torch.no_grad():
+            text_embeds = model.get_input_embeddings()(input_ids)  # [1, seq_len, d_model]
+
+            # Compress with PCA
+            text_embeds_np = text_embeds[0].cpu().float().numpy()  # [seq_len, d_model]
+            compressed = pca.transform(text_embeds_np)  # [seq_len, M]
+
+            # Decompress back
+            reconstructed = pca.inverse_transform(compressed)  # [seq_len, d_model]
+
+            # Convert back to torch and to embedding device
+            pca_embeds = torch.from_numpy(reconstructed).to(embed_device).to(text_embeds.dtype)
+            pca_embeds = pca_embeds.unsqueeze(0)  # [1, seq_len, d_model]
+
+            # Generate with reconstructed embeddings
+            outputs = model.generate(
+                inputs_embeds=pca_embeds,
+                max_new_tokens=args.max_new_tokens,
+                do_sample=False,
+                pad_token_id=tokenizer.pad_token_id,
+            )
+
+            # Decode prediction
+            pred_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            predictions.append(pred_text)
+            references.append(ex['answer'])
+
+    # Compute metrics
+    print("\nComputing metrics...")
+    em_score, f1_score = batch_metrics(predictions, references)
+
+    print("\n" + "="*80)
+    print("RESULTS")
+    print("="*80)
+    print(f"  Samples: {len(examples)}")
+    print(f"  Latent dim (M): {args.latent_len}")
+    print(f"  PCA explained variance: {explained_var:.2%}")
+    print(f"  EM: {em_score:.2%}")
+    print(f"  F1: {f1_score:.2%}")
+    print("="*80)
+
+    # Save results
+    results_dict = {
+        'config': vars(args),
+        'pca_explained_variance': float(explained_var),
+        'pca_first_5_components': pca.explained_variance_ratio_[:5].tolist(),
+        'em': float(em_score),
+        'f1': float(f1_score),
+        'exact_match': float(em_score),
+        'f1_score': float(f1_score),
+        'num_examples': len(examples),
+        'n_examples': len(examples),
+        'timestamp': datetime.now().isoformat(),
+        'total_time_sec': (torch.cuda.synchronize() or time.time() if torch.cuda.is_available() else time.time()) - start_time,
+    }
+
+    results_path = save_dir / 'results.json'
+    with open(results_path, 'w') as f:
+        json.dump(results_dict, f, indent=2)
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    total_time = time.time() - start_time
+    print(f"\nResults saved to {results_path}")
+    print(f"Total time: {total_time:.1f}s\n")
+
+    print("INTERPRETATION:")
+    print("  If PCA F1 ≈ Text baseline → Linear compression is sufficient")
+    print("  If PCA F1 << Text baseline → Need learned non-linear encoder")
+    print()
+
+
+if __name__ == '__main__':
+    main()
