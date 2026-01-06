@@ -588,7 +588,7 @@ def main():
                         help="Dataset: squad, hotpotqa")
     parser.add_argument("--split", type=str, default="validation",
                         help="Dataset split")
-    parser.add_argument("--samples", type=int, default=200,
+    parser.add_argument("--samples", type=int, default=100,
                         help="Number of examples to evaluate")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed")

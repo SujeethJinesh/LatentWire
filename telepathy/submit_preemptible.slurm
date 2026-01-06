@@ -79,8 +79,8 @@ python telepathy/preemptible_training.py \
     --save_dir "$SAVE_DIR" \
     --llama_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
     --qwen_id "Qwen/Qwen2.5-7B-Instruct" \
-    --samples 87599 \
-    --epochs 24 \
+    --samples 5000 \
+    --epochs 3 \
     --batch_size 64 \
     --latent_len 32 \
     --d_z 256 \

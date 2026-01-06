@@ -5,7 +5,7 @@ set -e
 # Configuration
 OUTPUT_DIR="${OUTPUT_DIR:-runs/llmlingua_baseline}"
 DATASET="${DATASET:-squad}"
-SAMPLES="${SAMPLES:-200}"
+SAMPLES="${SAMPLES:-100}"
 
 # Set up environment
 export PYTHONPATH=.

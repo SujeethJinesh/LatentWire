@@ -1291,8 +1291,8 @@ def main():
     ap.add_argument("--models", type=str, default="llama,qwen",
                     help="Comma-separated subset of models to train (subset of llama,qwen).")
     ap.add_argument("--hotpot_config", type=str, default="fullwiki")
-    ap.add_argument("--samples", type=int, default=128)
-    ap.add_argument("--epochs", type=int, default=1)
+    ap.add_argument("--samples", type=int, default=5000)
+    ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--batch_size", type=int, default=1)
     ap.add_argument("--grad_accum_steps", type=int, default=1,
                     help="Number of micro-batches to accumulate before an optimizer step.")
