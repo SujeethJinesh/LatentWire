@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Test script to verify all 4 experiment phases can be invoked correctly.
 This ensures the consolidated system is working properly.

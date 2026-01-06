@@ -1,0 +1,72 @@
+# Core dependencies for LatentWire experiments
+# Python 3.8+ required
+
+# Deep Learning Framework
+torch>=2.2.0,<2.7.0  # Upper bound for compatibility with transformers
+transformers==4.45.2  # Critical: supports Llama-3.2 and Qwen models
+accelerate>=1.10.0
+datasets>=4.0.0
+
+# Essential Scientific Computing
+numpy>=1.21.0,<2.0  # Avoid numpy 2.0 breaking changes
+scipy>=1.7.0
+scikit-learn>=1.0.0
+
+# Statistical Analysis and Visualization
+pandas>=1.3.0  # For data analysis and reporting
+matplotlib>=3.5.0  # For visualization and plotting
+seaborn>=0.11.0  # For statistical plots and heatmaps
+statsmodels>=0.13.0  # For McNemar test, multiple testing correction
+
+# Natural Language Processing
+tokenizers>=0.13.0
+sentencepiece>=0.1.99
+protobuf>=3.20.0
+sentence-transformers>=2.2.0
+
+# Evaluation Metrics
+rouge-score>=0.1.2  # For ROUGE metrics
+nltk>=3.8  # For BLEU and other NLP metrics
+bert-score>=0.3.13  # For BERTScore evaluation (optional)
+
+# Model Enhancement and Compression
+peft>=0.5.0  # For LoRA, prefix tuning, prompt tuning
+llmlingua>=0.2.0  # For LLMLingua baseline comparison (optional)
+
+# System Monitoring and Utilities
+psutil>=5.9.0  # For system resource monitoring
+tqdm>=4.60.0  # For progress bars
+rich>=13.0.0  # For rich terminal output (optional)
+
+# Experiment Tracking (Optional)
+# wandb>=0.15.0  # Weights & Biases integration
+# tensorboard>=2.11.0  # TensorBoard logging
+
+# File Handling and Serialization
+pyyaml>=6.0  # For YAML configuration files
+jsonlines>=3.1.0  # For JSONL log files
+
+# Development and Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.0  # For parallel test execution
+pytest-timeout>=2.1.0
+
+# Platform-specific dependencies
+# bitsandbytes is Linux/CUDA specific; safely ignored on macOS
+bitsandbytes>=0.43.0 ; platform_system == "Linux"
+
+# Optional: Code Quality Tools (for development)
+# black>=23.0.0
+# isort>=5.12.0
+# ruff>=0.1.0
+# mypy>=1.5.0
+# pylint>=3.0.0
+
+# Optional: Jupyter support
+# jupyter>=1.0.0
+# ipykernel>=6.25.0
+# notebook>=7.0.0
+
+# Note: Some additional dependencies may be installed automatically
+# as dependencies of the above packages

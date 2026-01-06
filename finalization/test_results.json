@@ -1,0 +1,31 @@
+{
+  "imports": false,
+  "scripts": false,
+  "help": false,
+  "phases": {
+    "phase_1": {
+      "name": "Statistical Rigor",
+      "success": false,
+      "returncode": 1,
+      "command": "bash RUN_ALL.sh experiment --phase 1 --dry-run --skip-train --local 2>&1"
+    },
+    "phase_2": {
+      "name": "Linear Probe Baseline",
+      "success": false,
+      "returncode": 1,
+      "command": "bash RUN_ALL.sh experiment --phase 2 --dry-run --skip-train --local 2>&1"
+    },
+    "phase_3": {
+      "name": "Fair Baseline Comparisons",
+      "success": false,
+      "returncode": 1,
+      "command": "bash RUN_ALL.sh experiment --phase 3 --dry-run --skip-train --local 2>&1"
+    },
+    "phase_4": {
+      "name": "Efficiency Measurements",
+      "success": false,
+      "returncode": 1,
+      "command": "bash RUN_ALL.sh experiment --phase 4 --dry-run --skip-train --local 2>&1"
+    }
+  }
+}

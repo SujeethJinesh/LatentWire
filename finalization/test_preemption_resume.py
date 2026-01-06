@@ -50,14 +50,12 @@ class PreemptionSimulator:
         """Create dummy encoder and adapters for testing."""
         encoder = InterlinguaEncoder(
             d_z=d_z,
-            latent_len=latent_len,
-            max_bytes=1024,
-            encoder_type='byte'
+            latent_len=latent_len
         )
 
         adapters = {
-            'llama': Adapter(d_z=d_z, d_model=4096),
-            'qwen': Adapter(d_z=d_z, d_model=4096)
+            'llama': Adapter(d_z=d_z, d_model=4096, latent_length=latent_len),
+            'qwen': Adapter(d_z=d_z, d_model=4096, latent_length=latent_len)
         }
 
         return encoder, adapters
@@ -89,7 +87,7 @@ class PreemptionSimulator:
             },
             'config.json': {
                 'd_z': encoder.d_z,
-                'latent_len': encoder.M,
+                'latent_len': encoder.latent_len,
                 'encoder_type': 'byte',
                 'test_mode': True
             }
