@@ -1999,6 +1999,149 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         "embedding_baseline_modes": args.embedding_baseline_modes,
     }
 
+    # Add comprehensive statistical analysis if available
+    if STATISTICAL_EVAL_AVAILABLE:
+        statistical_results = {}
+
+        # Perform pairwise statistical tests for each model
+        for name in model_contexts:
+            model_stats = {}
+
+            # Compare latent to text baseline (paired test)
+            text_em = text_em_scores[name]
+            text_f1 = text_f1_scores[name]
+            latent_em = latent_em_scores[name]
+            latent_f1 = latent_f1_scores[name]
+            trunc_em = token_budget_em_scores[name]
+            trunc_f1 = token_budget_f1_scores[name]
+
+            # Enhanced bootstrap CI with BCa correction
+            model_stats['text'] = {
+                'em': enhanced_bootstrap_ci(np.array(text_em), method='BCa', random_state=12345),
+                'f1': enhanced_bootstrap_ci(np.array(text_f1), method='BCa', random_state=12345),
+            }
+
+            model_stats['latent'] = {
+                'em': enhanced_bootstrap_ci(np.array(latent_em), method='BCa', random_state=12345),
+                'f1': enhanced_bootstrap_ci(np.array(latent_f1), method='BCa', random_state=12345),
+            }
+
+            model_stats['token_budget'] = {
+                'em': enhanced_bootstrap_ci(np.array(trunc_em), method='BCa', random_state=12345),
+                'f1': enhanced_bootstrap_ci(np.array(trunc_f1), method='BCa', random_state=12345),
+            }
+
+            # Paired bootstrap test: latent vs text
+            model_stats['latent_vs_text'] = {
+                'em': paired_bootstrap_test(
+                    np.array(latent_em),
+                    np.array(text_em),
+                    n_resamples=10000,
+                    random_state=12345
+                ),
+                'f1': paired_bootstrap_test(
+                    np.array(latent_f1),
+                    np.array(text_f1),
+                    n_resamples=10000,
+                    random_state=12345
+                ),
+            }
+
+            # Paired bootstrap test: token_budget vs text
+            model_stats['token_budget_vs_text'] = {
+                'em': paired_bootstrap_test(
+                    np.array(trunc_em),
+                    np.array(text_em),
+                    n_resamples=10000,
+                    random_state=12345
+                ),
+                'f1': paired_bootstrap_test(
+                    np.array(trunc_f1),
+                    np.array(text_f1),
+                    n_resamples=10000,
+                    random_state=12345
+                ),
+            }
+
+            # McNemar test for EM (binary outcome)
+            model_stats['mcnemar'] = {
+                'latent_vs_text_em': mcnemar_test_binary(
+                    np.array(latent_em) > 0.5,  # Convert to binary
+                    np.array(text_em) > 0.5,
+                ),
+                'token_budget_vs_text_em': mcnemar_test_binary(
+                    np.array(trunc_em) > 0.5,
+                    np.array(text_em) > 0.5,
+                ),
+            }
+
+            # Effect sizes (Cohen's d)
+            model_stats['effect_sizes'] = {
+                'latent_vs_text': {
+                    'em': cohens_d(np.array(latent_em), np.array(text_em), paired=True),
+                    'f1': cohens_d(np.array(latent_f1), np.array(text_f1), paired=True),
+                },
+                'token_budget_vs_text': {
+                    'em': cohens_d(np.array(trunc_em), np.array(text_em), paired=True),
+                    'f1': cohens_d(np.array(trunc_f1), np.array(text_f1), paired=True),
+                },
+            }
+
+            statistical_results[name] = model_stats
+
+        # Add statistical analysis to summary
+        summary['statistical_analysis'] = statistical_results
+
+        # Add metadata about statistical methods
+        summary['statistical_methods'] = {
+            'bootstrap': {
+                'n_resamples': 10000,
+                'confidence_level': 0.95,
+                'method': 'BCa (bias-corrected and accelerated)',
+            },
+            'tests': {
+                'paired_bootstrap': 'Non-parametric test for paired samples',
+                'mcnemar': 'Test for binary classification outcomes',
+                'cohens_d': 'Standardized effect size measure',
+            },
+            'interpretation': {
+                'p_value': 'p < 0.05 indicates statistical significance',
+                'cohens_d': '|d| < 0.2: negligible, |d| < 0.5: small, |d| < 0.8: medium, |d| >= 0.8: large',
+                'ci': '95% confidence intervals show uncertainty in estimates',
+                'mcnemar': 'Tests if models make different types of errors',
+            }
+        }
+
+        # Add significance summary for easy reading
+        significance_summary = {}
+        for name in model_contexts:
+            sig = {}
+            stats = statistical_results[name]
+
+            # Check latent vs text significance
+            latent_em_p = stats['latent_vs_text']['em']['p_value']
+            latent_f1_p = stats['latent_vs_text']['f1']['p_value']
+            sig['latent_vs_text'] = {
+                'em_significant': latent_em_p < 0.05,
+                'em_p_value': latent_em_p,
+                'f1_significant': latent_f1_p < 0.05,
+                'f1_p_value': latent_f1_p,
+            }
+
+            # Check token budget vs text significance
+            trunc_em_p = stats['token_budget_vs_text']['em']['p_value']
+            trunc_f1_p = stats['token_budget_vs_text']['f1']['p_value']
+            sig['token_budget_vs_text'] = {
+                'em_significant': trunc_em_p < 0.05,
+                'em_p_value': trunc_em_p,
+                'f1_significant': trunc_f1_p < 0.05,
+                'f1_p_value': trunc_f1_p,
+            }
+
+            significance_summary[name] = sig
+
+        summary['significance_summary'] = significance_summary
+
     preds_dump = []
     for i in range(len(prompts_raw)):
         entry = {
@@ -2457,6 +2600,39 @@ def main():
         print(f"Oracle upper bound:  EM {summary['oracle']['em']:.3f}  F1 {summary['oracle']['f1']:.3f}")
     else:
         print("Joint metrics unavailable (single-model evaluation).")
+
+    # Display performance metrics
+    if summary.get('inference_metrics'):
+        print("\n— Performance Metrics")
+        for baseline_type, metrics in summary['inference_metrics'].items():
+            print(f"  {baseline_type.capitalize()}:")
+            print(f"    Throughput: {metrics['throughput_samples_per_sec']:.2f} samples/sec")
+            print(f"    Latency: {metrics['latency_ms_per_sample']:.2f} ms/sample")
+
+    # Display memory usage
+    if summary.get('memory_usage'):
+        print("\n— Memory Usage")
+        mem = summary['memory_usage']
+        print(f"  Process RSS: {mem['process_rss_gb']:.2f} GB")
+        print(f"  System Available: {mem['system_available_gb']:.2f} GB ({100-mem['system_percent_used']:.1f}% free)")
+        for key, value in mem.items():
+            if 'gpu' in key:
+                print(f"  {key}: {value:.2f} GB")
+
+    # Display ROUGE scores if available
+    if summary.get('rouge_scores'):
+        print("\n— ROUGE Scores (for summarization tasks)")
+        for model_name, baselines in summary['rouge_scores'].items():
+            print(f"  {model_name}:")
+            for baseline_type, scores in baselines.items():
+                if scores:
+                    r1 = scores.get('rouge1', {})
+                    r2 = scores.get('rouge2', {})
+                    rl = scores.get('rougeL', {})
+                    print(f"    {baseline_type}: "
+                          f"R1={r1.get('mean', 0):.3f} [{r1.get('ci_lower', 0):.3f}, {r1.get('ci_upper', 0):.3f}]  "
+                          f"R2={r2.get('mean', 0):.3f} [{r2.get('ci_lower', 0):.3f}, {r2.get('ci_upper', 0):.3f}]  "
+                          f"RL={rl.get('mean', 0):.3f} [{rl.get('ci_lower', 0):.3f}, {rl.get('ci_upper', 0):.3f}]")
 
     print("\n==== METRICS_JSON ====")
     print(json.dumps(summary, indent=2))
