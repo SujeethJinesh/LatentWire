@@ -46,7 +46,6 @@
 
 # Note: We use trap ERR instead of set -e for better failure recovery
 set +e  # Don't exit on error (we handle errors with trap)
-set -E  # ERR trap is inherited by shell functions
 set -o pipefail  # Pipe failures are detected
 
 # =============================================================================
@@ -354,20 +353,26 @@ handle_error() {
     local bash_lineno=$2
     local last_command=$3
 
-    if [[ $exit_code -ne 0 ]]; then
-        print_error "Error on line $line_no: Command '$last_command' exited with code $exit_code"
-
-        # Try to determine which phase failed
-        local current_phase="unknown"
-        if [[ -n "$CURRENT_PHASE" ]]; then
-            current_phase="$CURRENT_PHASE"
-            mark_phase_failed "$current_phase" "Exit code $exit_code on line $line_no"
-        fi
-
-        show_recovery_instructions
-
-        exit $exit_code
+    # Skip if exit code is 0 or 1 (conditionals)
+    if [[ $exit_code -eq 0 || $exit_code -eq 1 ]]; then
+        return 0
     fi
+
+    print_error "Error on line $line_no: Command '$last_command' exited with code $exit_code"
+
+    # Try to determine which phase failed
+    local current_phase="unknown"
+    if [[ -n "$CURRENT_PHASE" ]]; then
+        current_phase="$CURRENT_PHASE"
+        mark_phase_failed "$current_phase" "Exit code $exit_code on line $line_no"
+    fi
+
+    # Only show recovery if state file exists
+    if [[ -n "$STATE_FILE" ]]; then
+        show_recovery_instructions
+    fi
+
+    exit $exit_code
 }
 
 show_recovery_instructions() {

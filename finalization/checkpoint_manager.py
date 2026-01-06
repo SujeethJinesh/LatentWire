@@ -196,12 +196,12 @@ class CheckpointManager:
                         continue
 
                     artifact_path = checkpoint_dir / name
-                    if isinstance(artifact, dict) and not isinstance(artifact, torch.nn.Module):
-                        self._atomic_save_json(artifact, artifact_path)
-                    elif TORCH_AVAILABLE and torch.is_tensor(artifact):
+                    if TORCH_AVAILABLE and hasattr(torch, 'is_tensor') and torch.is_tensor(artifact):
                         self._atomic_save(artifact, artifact_path)
-                    elif TORCH_AVAILABLE and isinstance(artifact, nn.Module):
+                    elif TORCH_AVAILABLE and hasattr(nn, 'Module') and isinstance(artifact, nn.Module):
                         self._atomic_save(artifact.state_dict(), artifact_path)
+                    elif isinstance(artifact, dict):
+                        self._atomic_save_json(artifact, artifact_path)
                     else:
                         # Try to save as JSON
                         try:

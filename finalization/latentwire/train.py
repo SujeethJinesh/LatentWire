@@ -4234,5 +4234,11 @@ def main():
         print("="*60)
 
 
+# Wrapper function for RUN_ALL.sh compatibility
+def train_latentwire(*args, **kwargs):
+    """Wrapper function to provide train_latentwire interface."""
+    return main()
+
+
 if __name__ == "__main__":
     main()
