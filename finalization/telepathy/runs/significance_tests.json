@@ -1,0 +1,65 @@
+{
+  "summary": {
+    "bridge_sst2": {
+      "mean": 96.66666666666667,
+      "std": 0.6236095644623235,
+      "n": 3,
+      "values": [
+        96.5,
+        96.0,
+        97.5
+      ]
+    },
+    "prompt_tuning_agnews": {
+      "mean": 19.833333333333332,
+      "std": 7.542472332656507,
+      "n": 6,
+      "values": [
+        30.5,
+        14.5,
+        14.5,
+        30.5,
+        14.5,
+        14.5
+      ]
+    },
+    "prompt_tuning_trec": {
+      "mean": 19.0,
+      "std": 5.01663898109747,
+      "n": 3,
+      "values": [
+        26.0,
+        16.5,
+        14.5
+      ]
+    },
+    "prompt_tuning_sst2": {
+      "mean": 49.5,
+      "std": 0.0,
+      "n": 6,
+      "values": [
+        49.5,
+        49.5,
+        49.5,
+        49.5,
+        49.5,
+        49.5
+      ]
+    }
+  },
+  "significance_tests": {
+    "bridge_vs_prompt_tuning_sst2": {
+      "bridge_mean": 96.66666666666667,
+      "bridge_std": 0.6236095644623235,
+      "prompt_tuning_mean": 49.5,
+      "prompt_tuning_std": 0.0,
+      "t_statistic": 163.3901261806641,
+      "p_value": 8.488682889031241e-14,
+      "cohens_d": 106.96394586161134,
+      "significant_at_0.05": true,
+      "significant_at_0.01": true,
+      "n_bridge": 3,
+      "n_prompt_tuning": 6
+    }
+  }
+}

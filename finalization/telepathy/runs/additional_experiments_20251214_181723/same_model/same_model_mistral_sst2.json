@@ -1,0 +1,54 @@
+{
+  "experiment": "same_model_bridge_mistral_sst2",
+  "timestamp": "2025-12-14T18:49:25.088698",
+  "config": {
+    "model": "mistral",
+    "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+    "dataset": "sst2",
+    "soft_tokens": 16,
+    "steps": 2000,
+    "batch_size": 8,
+    "lr": 0.0001,
+    "source_layer": 31,
+    "diversity_weight": 0.1,
+    "seed": 42,
+    "bridge_params": 537092097
+  },
+  "final_results": {
+    "accuracy": 95.5,
+    "correct": 191,
+    "total": 200
+  },
+  "training_log": [
+    {
+      "step": 400,
+      "accuracy": 100.0,
+      "correct": 100,
+      "total": 100
+    },
+    {
+      "step": 800,
+      "accuracy": 98.0,
+      "correct": 98,
+      "total": 100
+    },
+    {
+      "step": 1200,
+      "accuracy": 97.0,
+      "correct": 97,
+      "total": 100
+    },
+    {
+      "step": 1600,
+      "accuracy": 96.0,
+      "correct": 96,
+      "total": 100
+    },
+    {
+      "step": 2000,
+      "accuracy": 97.0,
+      "correct": 97,
+      "total": 100
+    }
+  ]
+}

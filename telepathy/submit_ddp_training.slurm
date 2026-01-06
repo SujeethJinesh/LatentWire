@@ -65,14 +65,15 @@ git pull
 # Configuration for training
 SAMPLES=87599          # Full SQuAD dataset
 EPOCHS=24              # Full training
-BATCH_SIZE=64          # Will be divided by number of GPUs
+BATCH_SIZE=64          # Per-GPU batch size (torchrun handles distribution)
 OUTPUT_DIR="runs/ddp_h100_$(date +%Y%m%d_%H%M%S)"
 
 echo ""
 echo "Training configuration:"
 echo "  Dataset samples: $SAMPLES"
 echo "  Epochs: $EPOCHS"
-echo "  Base batch size: $BATCH_SIZE"
+echo "  Batch size per GPU: $BATCH_SIZE"
+echo "  Total batch size: $((BATCH_SIZE * SLURM_GPUS))"
 echo "  Output directory: $OUTPUT_DIR"
 echo ""
 
@@ -80,9 +81,12 @@ echo ""
 echo "Starting DDP training on $SLURM_GPUS GPUs..."
 echo "=============================================================="
 
+# Note: When using torchrun, batch_size is PER GPU
+# The elastic_gpu mode will detect we're running under torchrun and configure accordingly
 torchrun \
     --nproc_per_node=$SLURM_GPUS \
     --master_port=$MASTER_PORT \
+    --master_addr=$MASTER_ADDR \
     --nnodes=1 \
     --node_rank=0 \
     latentwire/train.py \
@@ -99,7 +103,7 @@ torchrun \
     --warm_anchor_text "Answer: " \
     --first_token_ce_weight 0.5 \
     --elastic_gpu \
-    --elastic_base_batch 64 \
+    --elastic_base_batch $BATCH_SIZE \
     --elastic_target_util 0.85 \
     --save_dir "$OUTPUT_DIR" \
     --save_every 500 \
@@ -107,7 +111,10 @@ torchrun \
     --save_training_stats \
     --use_lora \
     --lora_r 16 \
-    --lora_alpha 32
+    --lora_alpha 32 \
+    --num_dataloader_workers 4 \
+    --dataloader_pin_memory \
+    --dataloader_prefetch_factor 2
 
 echo "=============================================================="
 echo "Training complete!"

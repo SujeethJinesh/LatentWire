@@ -1,0 +1,74 @@
+// LatentWire Architecture Diagram
+// Compile: dot -Tpdf architecture.dot -o architecture.pdf
+// Or: dot -Tsvg architecture.dot -o architecture.svg
+
+digraph LatentWire {
+    rankdir=LR;
+    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11];
+    edge [fontname="Helvetica", fontsize=10];
+
+    // Color scheme
+    // Frozen models: light blue
+    // Trainable: light green
+    // Data flow: gray
+
+    // Input
+    input [label="Input Text\n\"Review: great movie...\"", shape=note, fillcolor="#f5f5f5"];
+
+    // Sender Model
+    subgraph cluster_sender {
+        label="Sender (Frozen)";
+        style="rounded,dashed";
+        color="#4a90d9";
+        bgcolor="#e8f4fc";
+
+        llama [label="Llama 3.1 8B\n(8B params)", fillcolor="#a8d4f0"];
+        llama_hidden [label="Hidden States\n[L × 4096]", shape=parallelogram, fillcolor="#d4e8f7"];
+    }
+
+    // Bridge
+    subgraph cluster_bridge {
+        label="Bridge (Trainable)";
+        style="rounded";
+        color="#50b050";
+        bgcolor="#e8f8e8";
+
+        queries [label="Learned Queries\n[M × 512]", fillcolor="#90d090"];
+        cross_attn [label="Cross-Attention\n(2 layers)", fillcolor="#a8e0a8"];
+        proj_out [label="Output Projection\n+ RMS Norm", fillcolor="#a8e0a8"];
+        soft_tokens [label="Soft Tokens\n[M × 4096]", shape=parallelogram, fillcolor="#c8f0c8"];
+    }
+
+    // Receiver Model
+    subgraph cluster_receiver {
+        label="Receiver (Frozen)";
+        style="rounded,dashed";
+        color="#4a90d9";
+        bgcolor="#e8f4fc";
+
+        mistral [label="Mistral 7B\n(7B params)", fillcolor="#a8d4f0"];
+    }
+
+    // Output
+    output [label="Classification\n\"positive\"", shape=note, fillcolor="#f5f5f5"];
+
+    // Edges
+    input -> llama [label="tokenize"];
+    llama -> llama_hidden [label="layer ℓ"];
+    llama_hidden -> cross_attn [label="K, V"];
+    queries -> cross_attn [label="Q"];
+    cross_attn -> proj_out;
+    proj_out -> soft_tokens;
+    soft_tokens -> mistral [label="prepend to\nembeddings"];
+    mistral -> output [label="generate"];
+
+    // Parameter counts
+    params [shape=none, label=<
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+        <TR><TD><B>Parameters:</B></TD></TR>
+        <TR><TD>Llama: 8B (frozen)</TD></TR>
+        <TR><TD>Mistral: 7B (frozen)</TD></TR>
+        <TR><TD>Bridge: 188K (trained)</TD></TR>
+        </TABLE>
+    >, fontsize=9];
+}

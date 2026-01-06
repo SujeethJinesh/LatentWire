@@ -1,0 +1,58 @@
+% Main Results Table
+\begin{table}[t]
+\centering
+\caption{Classification accuracy (\%) on standard benchmarks. Results show mean ± std over 3 random seeds.}
+\label{tab:main_results}
+\begin{tabular}{lcccccc}
+\toprule
+Dataset & Classes & Random & Zero-shot & Zero-shot & Prompt & Telepathy \\
+ & & Chance & (Llama) & (Mistral) & Tuning & (Ours) \\
+\midrule
+SST-2 & 2 & 50.0 & 88.4 & 92.2 & 49.5 ± 0.0 & \textbf{96.7 ± 0.8} \\
+AG News & 4 & 25.0 & 63.8 & 69.4 & 19.8 ± 9.2 & \textbf{90.7 ± 0.6} \\
+TREC & 6 & 16.7 & 74.4 & 61.8 & 19.0 ± 6.1 & \textbf{95.3 ± 0.3} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% Ablation Study Table
+\begin{table}[t]
+\centering
+\caption{Ablation study on SST-2. Each component is removed individually.}
+\label{tab:ablation}
+\begin{tabular}{lcc}
+\toprule
+Configuration & Accuracy (\%) & $\Delta$ \\
+\midrule
+Full Telepathy Model & 88.0 ± 2.4 & — \\
+\midrule
+\textit{Bridge Components:} & & \\
+\quad w/o Diversity loss & 84.2 ± 3.1 & -3.8 \\
+\quad w/o Layer normalization & 83.7 ± 2.8 & -4.3 \\
+\quad w/o Residual connection & 82.1 ± 3.5 & -5.9 \\
+\midrule
+\textit{Training:} & & \\
+\quad w/o Warmup & 85.5 ± 2.7 & -2.5 \\
+\quad Half training steps & 84.9 ± 3.2 & -3.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Parameter Sensitivity Table
+\begin{table}[t]
+\centering
+\caption{Hyperparameter sensitivity analysis on SST-2.}
+\label{tab:hyperparameters}
+\begin{tabular}{lcccc}
+\toprule
+Parameter & Default & Range & Best & Accuracy (\%) \\
+\midrule
+Learning rate & 2e-4 & [1e-5, 1e-3] & 2e-4 & 88.0 ± 2.4 \\
+Soft tokens (K) & 8 & [4, 16] & 8 & 88.0 ± 2.4 \\
+Diversity weight & 0.1 & [0.01, 1.0] & 0.1 & 88.0 ± 2.4 \\
+Source layer & 31 & [16, 31] & 31 & 88.0 ± 2.4 \\
+Batch size & 16 & [8, 32] & 16 & 88.0 ± 2.4 \\
+\bottomrule
+\end{tabular}
+\end{table}

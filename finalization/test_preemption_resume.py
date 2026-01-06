@@ -52,6 +52,9 @@ class PreemptionSimulator:
             d_z=d_z,
             latent_len=latent_len
         )
+        # Store params for later use
+        encoder.d_z = d_z
+        encoder.latent_len = latent_len
 
         adapters = {
             'llama': Adapter(d_z=d_z, d_model=4096, latent_length=latent_len),

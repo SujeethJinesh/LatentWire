@@ -1,0 +1,117 @@
+{
+  "experiment": "gsm8k_bridge",
+  "timestamp": "2025-12-14T16:03:09.000720",
+  "config": {
+    "num_train_samples": 2000,
+    "num_eval_samples": 200,
+    "epochs": 5,
+    "batch_size": 4,
+    "lr": 0.0001,
+    "num_soft_tokens": 32,
+    "seed": 42,
+    "bridge_params": 5265920
+  },
+  "baseline_results": {
+    "llama_direct": {
+      "accuracy": 19.5,
+      "correct": 39,
+      "total": 200
+    },
+    "mistral_direct": {
+      "accuracy": 18.5,
+      "correct": 37,
+      "total": 200
+    }
+  },
+  "bridge_results": {
+    "accuracy": 1.5,
+    "correct": 3,
+    "total": 200
+  },
+  "training_losses": [
+    1.0053916033506394,
+    0.8752793134450912,
+    0.8504228236675262,
+    0.8267800190448761,
+    0.8004255653619766
+  ],
+  "eval_accuracies": [
+    0.0,
+    0.0,
+    2.0,
+    0.0,
+    0.0
+  ],
+  "sample_predictions": [
+    {
+      "question": "Janet\u2019s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for ",
+      "true_answer": "18",
+      "pred_answer": "100",
+      "response": "Solution: In total, she has 10 + 10 + 10 + 10 + 10 + 10 + 10 + 10 + 10 + 10 = 100 bananas.\nShe has 100 bananas and she eats 10 bananas every day, so s",
+      "correct": false
+    },
+    {
+      "question": "A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it ",
+      "true_answer": "3",
+      "pred_answer": "80",
+      "response": "Solution: The total number of square feet of the floor is 1000 square feet * 2 = <<1000*2=2000>>2000 square feet.\nThe total number of square feet of t",
+      "correct": false
+    },
+    {
+      "question": "Josh decides to try flipping a house.  He buys a house for $80,000 and then puts in $50,000 in repai",
+      "true_answer": "70000",
+      "pred_answer": "61",
+      "response": "Solution: The car is worth 10000*0.8 = <<10000*0.8=8000>>8000\nThe car is worth 8000*0.9 = <<8000*0.9=7200>>7200\nThe car is worth 7200*0.95 = <<7200*0.",
+      "correct": false
+    },
+    {
+      "question": "James decides to run 3 sprints 3 times a week.  He runs 60 meters each sprint.  How many total meter",
+      "true_answer": "540",
+      "pred_answer": "320",
+      "response": "Solution: He runs 1000*2=<<1000*2=2000>>2000 feet\nHe runs 2000*2=<<2000*2=4000>>4000 feet\nHe runs 4000*2=<<4000*2=8000>>8000 feet\nHe runs 8000*2=<<800",
+      "correct": false
+    },
+    {
+      "question": "Every day, Wendi feeds each of her chickens three cups of mixed chicken feed, containing seeds, meal",
+      "true_answer": "20",
+      "pred_answer": "100",
+      "response": "Solution: First, find the number of eggs that the chickens eat: 1000 eggs / 100 eggs per day = <<1000/100=10>>10 days\n10 days * 100 eggs per day = <<1",
+      "correct": false
+    },
+    {
+      "question": "Kylar went to the store to buy glasses for his new apartment. One glass costs $5, but every second g",
+      "true_answer": "64",
+      "pred_answer": "100",
+      "response": "Solution: The total cost of the 1000 pieces of paper is 1000 * $0.05 = $<<1000*0.05=50>>50.\nThe total cost of the 500 pieces of paper is 500 * $0.05 =",
+      "correct": false
+    },
+    {
+      "question": "Toulouse has twice as many sheep as Charleston. Charleston has 4 times as many sheep as Seattle. How",
+      "true_answer": "260",
+      "pred_answer": "1",
+      "response": "Solution: There are 1000 - 200 = <<1000-200=800>>800 monkeys in the forest.\nThere are 800/2 = <<800/2=400>>400 monkeys in the forest that are not blac",
+      "correct": false
+    },
+    {
+      "question": "Carla is downloading a 200 GB file. Normally she can download 2 GB/minute, but 40% of the way throug",
+      "true_answer": "160",
+      "pred_answer": "1",
+      "response": "Solution: First, let's calculate the total amount of time it takes to complete the project: 10 hours + 15 hours = <<10+15=25>>25 hours\nThen, let's cal",
+      "correct": false
+    },
+    {
+      "question": "John drives for 3 hours at a speed of 60 mph and then turns around because he realizes he forgot som",
+      "true_answer": "45",
+      "pred_answer": "11",
+      "response": "Solution: First, find the speed of the car when it was 10 miles away from the accident: 100 - 10 = <<100-10=90>>90 mph\nThen, find the time it took for",
+      "correct": false
+    },
+    {
+      "question": "Eliza's rate per hour for the first 40 hours she works each week is $10. She also receives an overti",
+      "true_answer": "460",
+      "pred_answer": "50000",
+      "response": "Solution: First, let's find out how much money the company made from the sale of the 1000 units of the product.\n1000 units * $100/unit = $<<1000*100=1",
+      "correct": false
+    }
+  ]
+}

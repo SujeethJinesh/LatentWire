@@ -1,0 +1,341 @@
+{
+  "experiment": "ablation_study",
+  "timestamp": "2025-12-14T18:53:57.130209",
+  "dataset": "sst2",
+  "steps": 1000,
+  "ablations": {
+    "internal_dim": [
+      {
+        "accuracy": 82.0,
+        "correct": 164,
+        "total": 200,
+        "bridge_params": 2631936,
+        "final_loss": 0.35102409510407595,
+        "name": "dim_256",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 256,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 85.0,
+        "correct": 170,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.3314467717707157,
+        "name": "dim_512",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 92.0,
+        "correct": 184,
+        "total": 200,
+        "bridge_params": 16806912,
+        "final_loss": 0.3039719465747476,
+        "name": "dim_1024",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 1024,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      }
+    ],
+    "num_heads": [
+      {
+        "accuracy": 91.0,
+        "correct": 182,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.3803370065242052,
+        "name": "heads_4",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 4,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 84.5,
+        "correct": 169,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.38543485070578754,
+        "name": "heads_8",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 84.5,
+        "correct": 169,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.432049860144034,
+        "name": "heads_16",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 16,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      }
+    ],
+    "source_layer": [
+      {
+        "accuracy": 89.5,
+        "correct": 179,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.4032316311681643,
+        "name": "layer_16",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 16,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 92.5,
+        "correct": 185,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.37630323397461324,
+        "name": "layer_24",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 24,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 89.5,
+        "correct": 179,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.3473071338329464,
+        "name": "layer_28",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 28,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 94.5,
+        "correct": 189,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.29866961400955916,
+        "name": "layer_31",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      }
+    ],
+    "depth": [
+      {
+        "accuracy": 87.0,
+        "correct": 174,
+        "total": 200,
+        "bridge_params": 5257728,
+        "final_loss": 0.3483696165704168,
+        "name": "depth_1",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 1,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 90.5,
+        "correct": 181,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.4282258108444512,
+        "name": "depth_2",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 83.0,
+        "correct": 166,
+        "total": 200,
+        "bridge_params": 8409600,
+        "final_loss": 0.3290261163562536,
+        "name": "depth_4",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 4,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      }
+    ],
+    "diversity_weight": [
+      {
+        "accuracy": 91.0,
+        "correct": 182,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.31882879824377597,
+        "name": "div_0.0",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.0
+        }
+      },
+      {
+        "accuracy": 86.5,
+        "correct": 173,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.3186765635572374,
+        "name": "div_0.05",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.05
+        }
+      },
+      {
+        "accuracy": 90.0,
+        "correct": 180,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.40411575105041264,
+        "name": "div_0.1",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.1
+        }
+      },
+      {
+        "accuracy": 85.5,
+        "correct": 171,
+        "total": 200,
+        "bridge_params": 6308352,
+        "final_loss": 0.31103096092585475,
+        "name": "div_0.2",
+        "config": {
+          "src_dim": 4096,
+          "tgt_dim": 4096,
+          "internal_dim": 512,
+          "num_soft_tokens": 16,
+          "num_heads": 8,
+          "depth": 2,
+          "target_rms": 0.03,
+          "source_layer": 31,
+          "diversity_weight": 0.2
+        }
+      }
+    ]
+  }
+}

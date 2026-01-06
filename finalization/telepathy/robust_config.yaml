@@ -1,0 +1,43 @@
+# Robust Training Configuration
+# =============================
+# This file configures the robust training wrapper for production experiments
+
+# Base training arguments passed to latentwire/train.py
+base_args:
+  llama_id: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  qwen_id: "Qwen/Qwen2.5-7B-Instruct"
+  samples: 87599
+  epochs: 24
+  batch_size: 64
+  latent_len: 32
+  d_z: 256
+  encoder_type: byte
+  dataset: squad
+  sequential_models: true
+  warm_anchor_text: "Answer: "
+  first_token_ce_weight: 0.5
+  k_token_ce_from_prefix: 4
+  kd_first_k_prefix_vs_text: 4
+
+# Recovery settings
+max_retries: 3                    # Maximum number of full retries
+max_oom_retries: 5                # Maximum OOM recovery attempts
+batch_size_reduction_factor: 0.5  # Reduce batch size by this factor on OOM
+min_batch_size: 4                 # Never go below this batch size
+
+# Memory management
+memory_threshold_gb: 70.0         # Warn if GPU memory exceeds this
+gradient_clip_threshold: 10.0     # Clip gradients above this value
+
+# Checkpoint management
+backup_checkpoints: true          # Create checkpoint backups
+keep_n_backups: 3                # Number of backups to keep
+
+# Network recovery
+network_retry_delay: 5.0          # Initial retry delay in seconds
+network_max_delay: 300.0          # Maximum retry delay
+network_backoff_factor: 2.0       # Exponential backoff multiplier
+
+# Logging
+verbose: true                     # Print detailed progress
+log_file: "robust_training.log"   # Log file name (in checkpoint_dir)

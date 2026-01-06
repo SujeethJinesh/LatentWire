@@ -1,0 +1,34 @@
+{
+  "experiment": "fewshot_baseline_agnews",
+  "timestamp": "2025-12-14T14:41:55.129356",
+  "config": {
+    "dataset": "agnews",
+    "shots": 5,
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200
+  },
+  "results": {
+    "Llama": {
+      "mean": 62.0,
+      "std": 3.559026084010437,
+      "seeds": [
+        65.0,
+        64.0,
+        57.0
+      ]
+    },
+    "Mistral": {
+      "mean": 80.33333333333333,
+      "std": 1.699673171197595,
+      "seeds": [
+        81.0,
+        82.0,
+        78.0
+      ]
+    }
+  }
+}

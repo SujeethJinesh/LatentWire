@@ -1,0 +1,88 @@
+{
+  "experiment": "prompt_tuning_baseline_sst2",
+  "timestamp": "2025-12-13T23:00:20.548435",
+  "config": {
+    "model": "mistralai/Mistral-7B-Instruct-v0.3",
+    "dataset": "sst2",
+    "soft_tokens": 8,
+    "lr": 0.0002,
+    "batch_size": 16,
+    "grad_accum": 2,
+    "steps": 2000,
+    "warmup_steps": 100,
+    "output_dir": "runs/paper_experiments_20251213_190318/prompt_tuning_baseline/sst2_seed456",
+    "save_every": 500,
+    "eval_every": 200,
+    "seed": 456,
+    "bf16": true
+  },
+  "num_classes": 2,
+  "final_results": {
+    "accuracy": 49.5,
+    "correct": 99,
+    "total": 200
+  },
+  "training_log": [
+    {
+      "step": 200,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 400,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 600,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 800,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 1000,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 1200,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 1400,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 1600,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 1800,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    },
+    {
+      "step": 2000,
+      "accuracy": 48.0,
+      "correct": 24,
+      "total": 50
+    }
+  ],
+  "baseline_type": "prompt_tuning_no_sender"
+}

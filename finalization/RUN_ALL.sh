@@ -44,14 +44,17 @@
 #   --dry-run     Show what would be executed
 # =============================================================================
 
-set -e  # Exit on error
+# Note: We use trap ERR instead of set -e for better failure recovery
+set +e  # Don't exit on error (we handle errors with trap)
+set -E  # ERR trap is inherited by shell functions
+set -o pipefail  # Pipe failures are detected
 
 # =============================================================================
 # CONFIGURATION AND CONSTANTS
 # =============================================================================
 
 # Script metadata
-SCRIPT_VERSION="3.0.0"
+SCRIPT_VERSION="3.1.0"
 SCRIPT_NAME="RUN_ALL.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
@@ -81,6 +84,12 @@ INTERACTIVE="yes"
 # Experiment configuration
 EXP_NAME="latentwire_unified"
 BASE_OUTPUT_DIR="runs/${EXP_NAME}_${TIMESTAMP}"
+
+# State file for failure recovery
+STATE_FILE=""  # Will be set after BASE_OUTPUT_DIR is created
+RESUME_FROM_STATE="no"
+PREVIOUS_STATE_FILE=""
+CURRENT_PHASE=""  # Track current phase for error handling
 
 # Model configuration
 SOURCE_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
@@ -144,6 +153,253 @@ print_subheader() {
     echo ""
 }
 
+# =============================================================================
+# STATE MANAGEMENT FOR FAILURE RECOVERY
+# =============================================================================
+
+init_state_file() {
+    # Initialize state file path
+    STATE_FILE="$BASE_OUTPUT_DIR/.experiment_state"
+
+    # Check if resuming from previous run
+    if [[ -n "$PREVIOUS_STATE_FILE" && -f "$PREVIOUS_STATE_FILE" ]]; then
+        print_info "Resuming from previous state: $PREVIOUS_STATE_FILE"
+        cp "$PREVIOUS_STATE_FILE" "$STATE_FILE"
+        RESUME_FROM_STATE="yes"
+
+        # Load checkpoint path from state
+        local saved_checkpoint=$(get_state "checkpoint_path")
+        if [[ -n "$saved_checkpoint" ]]; then
+            CHECKPOINT_PATH="$saved_checkpoint"
+            SKIP_TRAINING="yes"
+            print_info "Using saved checkpoint: $CHECKPOINT_PATH"
+        fi
+    else
+        # Create new state file
+        cat > "$STATE_FILE" << EOF
+# LatentWire Experiment State File
+# Created: $(date)
+# Experiment: $EXP_NAME
+# Timestamp: $TIMESTAMP
+
+[metadata]
+version=$SCRIPT_VERSION
+start_time=$(date +%s)
+base_output_dir=$BASE_OUTPUT_DIR
+
+[phases]
+training=pending
+phase1_statistical=pending
+phase2_linear_probe=pending
+phase3_baselines=pending
+phase4_efficiency=pending
+aggregation=pending
+
+[datasets]
+EOF
+        for dataset in $DATASETS; do
+            echo "${dataset}_eval=pending" >> "$STATE_FILE"
+        done
+
+        cat >> "$STATE_FILE" << EOF
+
+[checkpoints]
+checkpoint_path=
+final_epoch=
+
+[failures]
+failure_count=0
+last_failure=
+last_failure_time=
+EOF
+    fi
+}
+
+save_state() {
+    local key="$1"
+    local value="$2"
+    local section="${3:-phases}"
+
+    if [[ ! -f "$STATE_FILE" ]]; then
+        print_warning "State file not initialized"
+        return 1
+    fi
+
+    # Update or add the key-value pair
+    if grep -q "^${key}=" "$STATE_FILE"; then
+        # Key exists, update it
+        sed -i.bak "s|^${key}=.*|${key}=${value}|" "$STATE_FILE"
+    else
+        # Key doesn't exist, add it to the section
+        # Find the section and append
+        awk -v section="[$section]" -v key="$key" -v value="$value" '
+            /^\[.*\]$/ { in_section = ($0 == section) }
+            { print }
+            in_section && /^$/ { print key "=" value; in_section = 0 }
+        ' "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    fi
+
+    # Also save timestamp for the state change
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - Updated: ${key}=${value}" >> "$STATE_FILE.log"
+}
+
+get_state() {
+    local key="$1"
+
+    if [[ ! -f "$STATE_FILE" ]]; then
+        return 1
+    fi
+
+    grep "^${key}=" "$STATE_FILE" 2>/dev/null | cut -d'=' -f2-
+}
+
+check_phase_completed() {
+    local phase="$1"
+    local state=$(get_state "$phase")
+    [[ "$state" == "completed" ]]
+}
+
+check_phase_failed() {
+    local phase="$1"
+    local state=$(get_state "$phase")
+    [[ "$state" == "failed" ]]
+}
+
+mark_phase_started() {
+    local phase="$1"
+    print_info "Starting phase: $phase"
+    save_state "$phase" "in_progress"
+    save_state "last_phase_start" "$(date +%s)" "metadata"
+}
+
+mark_phase_completed() {
+    local phase="$1"
+    print_status "Completed phase: $phase"
+    save_state "$phase" "completed"
+    save_state "last_phase_complete" "$(date +%s)" "metadata"
+}
+
+mark_phase_failed() {
+    local phase="$1"
+    local error="${2:-Unknown error}"
+
+    print_error "Failed phase: $phase - $error"
+    save_state "$phase" "failed"
+
+    # Update failure tracking
+    local failure_count=$(get_state "failure_count")
+    failure_count=$((failure_count + 1))
+    save_state "failure_count" "$failure_count" "failures"
+    save_state "last_failure" "$phase" "failures"
+    save_state "last_failure_time" "$(date)" "failures"
+    save_state "last_failure_error" "$error" "failures"
+}
+
+should_skip_phase() {
+    local phase="$1"
+
+    if [[ "$RESUME_FROM_STATE" != "yes" ]]; then
+        return 1  # Don't skip if not resuming
+    fi
+
+    if check_phase_completed "$phase"; then
+        print_info "Skipping completed phase: $phase"
+        return 0  # Skip completed phases
+    fi
+
+    if check_phase_failed "$phase"; then
+        print_warning "Re-attempting failed phase: $phase"
+        return 1  # Don't skip failed phases
+    fi
+
+    return 1  # Don't skip pending phases
+}
+
+print_state_summary() {
+    if [[ ! -f "$STATE_FILE" ]]; then
+        return
+    fi
+
+    print_header "EXPERIMENT STATE SUMMARY"
+
+    echo "State file: $STATE_FILE"
+    echo ""
+    echo "Phase Status:"
+    for phase in training phase1_statistical phase2_linear_probe phase3_baselines phase4_efficiency aggregation; do
+        local state=$(get_state "$phase")
+        local color=""
+        case "$state" in
+            completed) color="$GREEN" ;;
+            in_progress) color="$YELLOW" ;;
+            failed) color="$RED" ;;
+            *) color="$NC" ;;
+        esac
+        printf "  %-25s: ${color}%s${NC}\n" "$phase" "${state:-pending}"
+    done
+
+    local failure_count=$(get_state "failure_count")
+    if [[ "$failure_count" -gt 0 ]]; then
+        echo ""
+        echo "Failures: $failure_count"
+        echo "Last failure: $(get_state last_failure) at $(get_state last_failure_time)"
+    fi
+
+    echo ""
+}
+
+# Error handler that saves state on failure
+handle_error() {
+    local exit_code=$?
+    local line_no=$1
+    local bash_lineno=$2
+    local last_command=$3
+
+    if [[ $exit_code -ne 0 ]]; then
+        print_error "Error on line $line_no: Command '$last_command' exited with code $exit_code"
+
+        # Try to determine which phase failed
+        local current_phase="unknown"
+        if [[ -n "$CURRENT_PHASE" ]]; then
+            current_phase="$CURRENT_PHASE"
+            mark_phase_failed "$current_phase" "Exit code $exit_code on line $line_no"
+        fi
+
+        show_recovery_instructions
+
+        exit $exit_code
+    fi
+}
+
+show_recovery_instructions() {
+    echo ""
+    print_header "FAILURE RECOVERY INSTRUCTIONS"
+
+    print_warning "The experiment has failed but state has been saved."
+    echo ""
+    echo "To resume from where it failed, run:"
+    echo ""
+    echo -e "  ${GREEN}bash RUN_ALL.sh $COMMAND --resume $STATE_FILE${NC}"
+    echo ""
+    echo "This will:"
+    echo "  1. Skip already completed phases"
+    echo "  2. Re-attempt the failed phase"
+    echo "  3. Continue with remaining phases"
+    echo ""
+
+    if [[ -n "$CHECKPOINT_PATH" ]]; then
+        echo "Checkpoint saved at: $CHECKPOINT_PATH"
+        echo "Training will be skipped on resume."
+        echo ""
+    fi
+
+    echo "To see the current state:"
+    echo -e "  ${BLUE}cat $STATE_FILE${NC}"
+    echo ""
+    echo "To manually edit state (advanced):"
+    echo -e "  ${BLUE}vi $STATE_FILE${NC}"
+    echo ""
+}
+
 show_help() {
     cat << EOF
 ${BOLD}LatentWire Unified Execution Script v${SCRIPT_VERSION}${NC}
@@ -179,6 +435,7 @@ ${BOLD}OPTIONS:${NC}
     ${BLUE}--debug${NC}           Enable debug output
     ${BLUE}--dry-run${NC}         Show what would be executed
     ${BLUE}--no-interactive${NC}  Skip confirmation prompts
+    ${BLUE}--resume PATH${NC}     Resume from saved state file
 
 ${BOLD}EXPERIMENT PHASES:${NC}
     ${YELLOW}Phase 1${NC}: Statistical rigor (multiple seeds, bootstrap CI)
@@ -211,6 +468,9 @@ ${BOLD}EXAMPLES:${NC}
 
     # Run DDP training with 4 GPUs
     bash RUN_ALL.sh ddp --gpus 4
+
+    # Resume failed experiment from state file
+    bash RUN_ALL.sh experiment --resume runs/latentwire_unified_20240115_143022/.experiment_state
 
 ${BOLD}ENVIRONMENT:${NC}
     Current mode: $([ "$IS_HPC" == "yes" ] && echo "HPC" || echo "Local")
@@ -294,6 +554,20 @@ while [[ $# -gt 0 ]]; do
         --no-interactive)
             INTERACTIVE="no"
             shift
+            ;;
+        --resume)
+            PREVIOUS_STATE_FILE="$2"
+            if [[ ! -f "$PREVIOUS_STATE_FILE" ]]; then
+                print_error "State file not found: $PREVIOUS_STATE_FILE"
+                exit 1
+            fi
+            # Extract the base output dir from state file
+            BASE_OUTPUT_DIR=$(grep "^base_output_dir=" "$PREVIOUS_STATE_FILE" | cut -d'=' -f2-)
+            if [[ -z "$BASE_OUTPUT_DIR" ]]; then
+                print_error "Could not determine output directory from state file"
+                exit 1
+            fi
+            shift 2
             ;;
         --help|-h)
             show_help
@@ -402,6 +676,16 @@ validate_environment() {
 run_training() {
     print_header "TRAINING"
 
+    # Check if should skip
+    if should_skip_phase "training"; then
+        # Load saved checkpoint
+        CHECKPOINT_PATH=$(get_state "checkpoint_path")
+        return 0
+    fi
+
+    CURRENT_PHASE="training"
+    mark_phase_started "training"
+
     cd "$WORK_DIR"
     export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
 
@@ -412,6 +696,7 @@ run_training() {
 
     if [[ "$DRY_RUN" == "yes" ]]; then
         print_info "DRY RUN: Would execute training"
+        mark_phase_completed "training"
         return 0
     fi
 
@@ -442,7 +727,13 @@ run_training() {
         print_status "Training completed successfully"
         CHECKPOINT_PATH="$output_dir/epoch$((TRAINING_EPOCHS-1))"
         print_info "Checkpoint: $CHECKPOINT_PATH"
+
+        # Save checkpoint to state
+        save_state "checkpoint_path" "$CHECKPOINT_PATH" "checkpoints"
+        save_state "final_epoch" "$((TRAINING_EPOCHS-1))" "checkpoints"
+        mark_phase_completed "training"
     else
+        mark_phase_failed "training" "Training command failed"
         print_error "Training failed"
         exit 1
     fi
@@ -516,6 +807,13 @@ run_evaluation() {
 run_phase1_statistical() {
     print_header "PHASE 1: STATISTICAL RIGOR"
 
+    if should_skip_phase "phase1_statistical"; then
+        return 0
+    fi
+
+    CURRENT_PHASE="phase1_statistical"
+    mark_phase_started "phase1_statistical"
+
     run_evaluation
 
     # Statistical analysis
@@ -526,11 +824,19 @@ run_phase1_statistical() {
         --bootstrap_samples "$BOOTSTRAP_SAMPLES" \
         --output_file "$BASE_OUTPUT_DIR/results/statistical_summary.json"
 
+    mark_phase_completed "phase1_statistical"
     print_status "Phase 1 completed"
 }
 
 run_phase2_linear_probe() {
     print_header "PHASE 2: LINEAR PROBE BASELINE"
+
+    if should_skip_phase "phase2_linear_probe"; then
+        return 0
+    fi
+
+    CURRENT_PHASE="phase2_linear_probe"
+    mark_phase_started "phase2_linear_probe"
 
     local datasets_to_probe="${SPECIFIC_DATASET:-$DATASETS}"
 
@@ -551,11 +857,19 @@ run_phase2_linear_probe() {
             --batch_size "$EVAL_BATCH_SIZE"
     done
 
+    mark_phase_completed "phase2_linear_probe"
     print_status "Phase 2 completed"
 }
 
 run_phase3_baselines() {
     print_header "PHASE 3: FAIR BASELINE COMPARISONS"
+
+    if should_skip_phase "phase3_baselines"; then
+        return 0
+    fi
+
+    CURRENT_PHASE="phase3_baselines"
+    mark_phase_started "phase3_baselines"
 
     # LLMLingua baseline
     print_info "Running LLMLingua-2 baseline..."
@@ -565,11 +879,19 @@ run_phase3_baselines() {
         DATASET="${SPECIFIC_DATASET:-squad}" \
         SAMPLES=200
 
+    mark_phase_completed "phase3_baselines"
     print_status "Phase 3 completed"
 }
 
 run_phase4_efficiency() {
     print_header "PHASE 4: EFFICIENCY MEASUREMENTS"
+
+    if should_skip_phase "phase4_efficiency"; then
+        return 0
+    fi
+
+    CURRENT_PHASE="phase4_efficiency"
+    mark_phase_started "phase4_efficiency"
 
     local datasets_to_bench="${SPECIFIC_DATASET:-squad}"
 
@@ -585,6 +907,7 @@ run_phase4_efficiency() {
             --output_file "$BASE_OUTPUT_DIR/results/phase4_efficiency_${dataset}.json"
     done
 
+    mark_phase_completed "phase4_efficiency"
     print_status "Phase 4 completed"
 }
 
@@ -947,6 +1270,17 @@ main() {
     # Detect environment
     detect_environment
 
+    # Create output directory
+    mkdir -p "$BASE_OUTPUT_DIR"
+
+    # Initialize state file
+    init_state_file
+
+    # Show state summary if resuming
+    if [[ "$RESUME_FROM_STATE" == "yes" ]]; then
+        print_state_summary
+    fi
+
     # Show configuration
     print_info "Command: $COMMAND"
     print_info "Mode: $EXECUTION_MODE"
@@ -954,6 +1288,7 @@ main() {
     [[ -n "$SPECIFIC_PHASE" ]] && print_info "Phase: $SPECIFIC_PHASE"
     [[ -n "$SPECIFIC_DATASET" ]] && print_info "Dataset: $SPECIFIC_DATASET"
     [[ "$SKIP_TRAINING" == "yes" ]] && print_info "Skip training: Yes"
+    [[ "$RESUME_FROM_STATE" == "yes" ]] && print_info "Resuming from state: Yes"
     [[ "$DEBUG_MODE" == "yes" ]] && print_info "Debug: Enabled"
     [[ "$DRY_RUN" == "yes" ]] && print_info "Dry run: Yes"
 
@@ -1020,12 +1355,19 @@ main() {
             run_phase4_efficiency
 
             # Aggregate results
-            print_info "Aggregating results..."
-            python finalization/aggregate_results.py \
-                --results_dir "$BASE_OUTPUT_DIR/results" \
-                --output_file "$BASE_OUTPUT_DIR/final_results.json" \
-                --generate_latex_tables \
-                --generate_plots
+            if ! should_skip_phase "aggregation"; then
+                CURRENT_PHASE="aggregation"
+                mark_phase_started "aggregation"
+
+                print_info "Aggregating results..."
+                python finalization/aggregate_results.py \
+                    --results_dir "$BASE_OUTPUT_DIR/results" \
+                    --output_file "$BASE_OUTPUT_DIR/final_results.json" \
+                    --generate_latex_tables \
+                    --generate_plots
+
+                mark_phase_completed "aggregation"
+            fi
 
             print_status "Finalization completed!"
             ;;
@@ -1065,6 +1407,9 @@ main() {
     print_status "Command '$COMMAND' completed successfully!"
     [[ -d "$BASE_OUTPUT_DIR" ]] && print_info "Results: $BASE_OUTPUT_DIR"
 }
+
+# Set up error trap for failure recovery
+trap 'handle_error $LINENO $BASH_LINENO "$BASH_COMMAND"' ERR
 
 # Handle interrupts gracefully
 trap 'echo ""; print_warning "Interrupted by user"; exit 130' INT TERM

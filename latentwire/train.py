@@ -247,19 +247,40 @@ class ElasticGPUConfig:
         if is_h100:
             # 4x H100 (80GB each) - maximum parallelism
             batch_per_gpu = self.base_batch_size
-            return {
-                'batch_size': batch_per_gpu * 4,  # Full DDP
-                'effective_batch_size': batch_per_gpu * 4,
-                'grad_accum_steps': 1,
-                'device': 'cuda',
-                'device_map': 'auto',
-                'strategy': 'ddp_4gpu',
-                'ddp': True,
-                'model_parallel': False,
-                'llama_devices': '0,1,2,3',
-                'qwen_devices': '0,1,2,3',
-                'notes': 'Full DDP on 4x H100 GPUs (maximum throughput)',
-            }
+
+            # Check if we're running under torchrun (DDP mode)
+            is_torchrun = 'WORLD_SIZE' in os.environ and int(os.environ.get('WORLD_SIZE', 1)) > 1
+
+            if is_torchrun:
+                # When using torchrun, batch_size is PER GPU
+                # torchrun will handle the distribution
+                return {
+                    'batch_size': batch_per_gpu,  # Per-GPU batch size
+                    'effective_batch_size': batch_per_gpu * 4,
+                    'grad_accum_steps': 1,
+                    'device': 'cuda',
+                    'device_map': 'auto',
+                    'strategy': 'ddp_torchrun_4gpu',
+                    'ddp': True,
+                    'model_parallel': False,
+                    'llama_devices': '0,1,2,3',
+                    'qwen_devices': '0,1,2,3',
+                    'notes': 'Full DDP on 4x H100 GPUs via torchrun (per-GPU batch size)',
+                }
+            else:
+                return {
+                    'batch_size': batch_per_gpu * 4,  # Total batch size (legacy mode)
+                    'effective_batch_size': batch_per_gpu * 4,
+                    'grad_accum_steps': 1,
+                    'device': 'cuda',
+                    'device_map': 'auto',
+                    'strategy': 'ddp_4gpu',
+                    'ddp': True,
+                    'model_parallel': False,
+                    'llama_devices': '0,1,2,3',
+                    'qwen_devices': '0,1,2,3',
+                    'notes': 'Full DDP on 4x H100 GPUs (maximum throughput)',
+                }
         else:
             # 4x A100 or similar - balanced model/data parallelism
             batch_per_gpu = min(self.base_batch_size, int((available_gb - self.model_size_gb/2) / activation_gb_per_item))
@@ -2659,35 +2680,72 @@ def main():
 
     # Setup optimized dataloader if requested
     optimized_dataloader = None
+    distributed_sampler = None  # Track sampler for epoch setting
     if args.use_optimized_dataloader:
         print("Setting up optimized DataLoader...")
         from latentwire.optimized_dataloader import create_optimized_dataloader
+        from torch.utils.data import Dataset, DataLoader
+        from torch.utils.data.distributed import DistributedSampler
 
-        optimized_dataloader = create_optimized_dataloader(
-            texts=texts,
-            answers=answers,
-            model_contexts=model_contexts,
-            batch_size=args.batch_size,
-            num_workers=args.num_dataloader_workers,
-            use_chat_template=args.use_chat_template,
-            strip_anchor_literal=strip_anchor_literal,
-            device=device,
-            shuffle=False,  # We'll shuffle per epoch
-            pin_memory=args.dataloader_pin_memory,
-            prefetch_factor=args.dataloader_prefetch_factor,
-            persistent_workers=(args.num_dataloader_workers > 0),
-            cache_tokenization=args.dataloader_cache_tokenization,
-            use_prefetcher=torch.cuda.is_available(),
-        )
-        print(f"  Workers: {args.num_dataloader_workers}")
-        print(f"  Prefetch factor: {args.dataloader_prefetch_factor}")
-        print(f"  Cache tokenization: {args.dataloader_cache_tokenization}")
-        print(f"  Pin memory: {args.dataloader_pin_memory}")
+        # Create a simple dataset wrapper for DDP compatibility
+        class SimpleDataset(Dataset):
+            def __init__(self, texts, answers):
+                self.texts = texts
+                self.answers = answers
+
+            def __len__(self):
+                return len(self.texts)
+
+            def __getitem__(self, idx):
+                return self.texts[idx], self.answers[idx]
+
+        # Check if we're using DDP
+        if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
+            # Create dataset and distributed sampler
+            dataset = SimpleDataset(texts, answers)
+            distributed_sampler = DistributedSampler(
+                dataset,
+                num_replicas=ddp_manager.world_size,
+                rank=ddp_manager.rank,
+                shuffle=True,
+                drop_last=False
+            )
+
+            # Note: When using DistributedSampler, shuffle must be False in DataLoader
+            # and we need to use the sampler instead
+            print(f"  Using DistributedSampler (rank {ddp_manager.rank}/{ddp_manager.world_size})")
+
+            # For now, we'll still use the manual approach but prepare for future improvement
+            optimized_dataloader = None  # Disabled for DDP until properly integrated
+        else:
+            optimized_dataloader = create_optimized_dataloader(
+                texts=texts,
+                answers=answers,
+                model_contexts=model_contexts,
+                batch_size=args.batch_size,
+                num_workers=args.num_dataloader_workers,
+                use_chat_template=args.use_chat_template,
+                strip_anchor_literal=strip_anchor_literal,
+                device=device,
+                shuffle=False,  # We'll shuffle per epoch
+                pin_memory=args.dataloader_pin_memory,
+                prefetch_factor=args.dataloader_prefetch_factor,
+                persistent_workers=(args.num_dataloader_workers > 0),
+                cache_tokenization=args.dataloader_cache_tokenization,
+                use_prefetcher=torch.cuda.is_available(),
+            )
+            print(f"  Workers: {args.num_dataloader_workers}")
+            print(f"  Prefetch factor: {args.dataloader_prefetch_factor}")
+            print(f"  Cache tokenization: {args.dataloader_cache_tokenization}")
+            print(f"  Pin memory: {args.dataloader_pin_memory}")
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
         # Set epoch for distributed sampler if using DDP
         if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
             ddp_manager.set_epoch(epoch)
+            # Also set epoch for our distributed sampler if it exists
+            if distributed_sampler is not None:
+                distributed_sampler.set_epoch(epoch)
             if ddp_manager.should_log:
                 print(f"Epoch {epoch+1}/{args.epochs}", flush=True)
                 # Log GPU memory at epoch start, reset peak stats
@@ -3433,7 +3491,17 @@ def main():
                 optimizer.zero_grad(set_to_none=True)
                 continue
 
-            should_step = ((step + 1) % grad_accum_steps == 0) or ((step + 1) == steps_per_epoch)
+            # Determine if we should take an optimizer step
+            should_step = ((step + 1) % grad_accum_steps == 0) or ((step + 1) == rank_steps_per_epoch)
+
+            # In DDP mode with gradient accumulation, we need to control gradient sync
+            # Only sync gradients on the last accumulation step to avoid unnecessary communication
+            if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized and grad_accum_steps > 1:
+                # This is an advanced DDP optimization - disable gradient sync except on step
+                for model in [encoder] + list(adapters.values()):
+                    if hasattr(model, 'require_backward_grad_sync'):
+                        model.require_backward_grad_sync = should_step
+
             if should_step:
                 if grad_scaler is not None:
                     # FP16 path with GradScaler
