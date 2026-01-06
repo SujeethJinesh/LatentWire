@@ -1,8 +1,0 @@
-[metadata]
-version=1.0.0
-
-[phases]
-test_phase=in_progress
-
-[data]
-key1=value1

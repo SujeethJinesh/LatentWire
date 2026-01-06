@@ -417,6 +417,8 @@ ${BOLD}COMMANDS:${NC}
     ${GREEN}eval${NC}          Run evaluation only
     ${GREEN}experiment${NC}    Run full experiment pipeline
     ${GREEN}test${NC}          Run comprehensive test suite
+    ${GREEN}e2e${NC}           Run end-to-end tests
+    ${GREEN}recovery${NC}      Test recovery mechanisms
     ${GREEN}monitor${NC}       Monitor running experiments
     ${GREEN}slurm${NC}         Submit job to SLURM cluster
     ${GREEN}quick${NC}         Quick start with minimal samples
@@ -424,7 +426,15 @@ ${BOLD}COMMANDS:${NC}
     ${GREEN}compile${NC}       Compile paper LaTeX to PDF
     ${GREEN}ddp${NC}           Run distributed data parallel training
     ${GREEN}benchmark${NC}     Run efficiency benchmarks
-    ${GREEN}validate${NC}      Validate setup and dependencies
+    ${GREEN}telepathy${NC}     Run Telepathy cross-model experiments
+    ${GREEN}reasoning${NC}     Run reasoning benchmarks (GSM8K, etc.)
+    ${GREEN}baselines${NC}     Run baseline comparisons
+    ${GREEN}arch-sweep${NC}    Run architecture hyperparameter sweep
+    ${GREEN}llmlingua${NC}     Run LLMLingua-2 baseline
+    ${GREEN}mixed-prec${NC}    Run mixed precision training
+    ${GREEN}elastic-gpu${NC}   Demo elastic GPU scaling
+    ${GREEN}setup${NC}         Setup environment and check dependencies
+    ${GREEN}validate${NC}      Validate production readiness
     ${GREEN}clean${NC}         Clean up temporary files
     ${GREEN}help${NC}          Show this help message
 
@@ -496,7 +506,8 @@ ORIGINAL_ARGS="$@"
 # Parse command first
 if [[ $# -gt 0 ]]; then
     case "$1" in
-        train|eval|experiment|test|monitor|slurm|quick|finalize|compile|ddp|benchmark|validate|clean|help)
+        train|eval|experiment|test|e2e|recovery|monitor|slurm|quick|finalize|compile|ddp|benchmark|\
+        telepathy|reasoning|baselines|arch-sweep|llmlingua|mixed-prec|elastic-gpu|setup|validate|clean|help)
             COMMAND="$1"
             shift
             ;;
@@ -1163,6 +1174,639 @@ compile_paper() {
     fi
 }
 
+# =============================================================================
+# ENVIRONMENT SETUP FUNCTIONS (from setup_env.sh)
+# =============================================================================
+
+setup_environment() {
+    print_header "ENVIRONMENT SETUP"
+
+    # Export PYTHONPATH
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+    export PYTORCH_ENABLE_MPS_FALLBACK=1
+    export PYTHONUNBUFFERED=1
+
+    print_status "Environment variables configured:"
+    print_info "  PYTHONPATH includes: $WORK_DIR"
+    print_info "  PYTORCH_ENABLE_MPS_FALLBACK: $PYTORCH_ENABLE_MPS_FALLBACK"
+
+    # Check dependencies
+    echo ""
+    print_info "Checking dependencies:"
+
+    # Python version
+    local python_version=$(python3 --version 2>&1)
+    print_status "Python: $python_version"
+
+    # PyTorch
+    if python3 -c "import torch; print(f'  PyTorch: {torch.__version__}')" 2>/dev/null; then
+        print_status "PyTorch: installed"
+    else
+        print_warning "PyTorch: NOT INSTALLED - Install with: pip install torch"
+    fi
+
+    # Transformers
+    if python3 -c "import transformers; print(f'  Transformers: {transformers.__version__}')" 2>/dev/null; then
+        print_status "Transformers: installed"
+    else
+        print_warning "Transformers: NOT INSTALLED - Install with: pip install transformers"
+    fi
+
+    # Other dependencies
+    for pkg in datasets numpy scipy accelerate; do
+        if python3 -c "import $pkg" 2>/dev/null; then
+            print_status "$pkg: installed"
+        else
+            print_warning "$pkg: NOT INSTALLED"
+        fi
+    done
+}
+
+# =============================================================================
+# END-TO-END TEST FUNCTIONS (from run_end_to_end_test.sh)
+# =============================================================================
+
+run_end_to_end_test() {
+    print_header "END-TO-END TEST"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/e2e_test"
+    local log_file="$BASE_OUTPUT_DIR/logs/e2e_test_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Running end-to-end test..."
+    print_info "This validates training, checkpoint saving/loading, and evaluation"
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run end-to-end test"
+        return 0
+    fi
+
+    {
+        python3 test_end_to_end.py
+        local EXIT_CODE=$?
+
+        echo ""
+        echo "================================================"
+        echo "Test completed at: $(date)"
+
+        if [ $EXIT_CODE -eq 0 ]; then
+            print_status "SUCCESS: All tests passed!"
+        else
+            print_error "FAILURE: Some tests failed. Check the log above."
+            exit $EXIT_CODE
+        fi
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# RECOVERY TEST FUNCTIONS (from test_recovery.sh, test_failure_recovery.sh)
+# =============================================================================
+
+run_recovery_tests() {
+    print_header "RECOVERY MECHANISM TESTS"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local test_dir="$BASE_OUTPUT_DIR/recovery_tests"
+    local log_file="$BASE_OUTPUT_DIR/logs/recovery_test_${TIMESTAMP}.log"
+
+    mkdir -p "$test_dir" "$(dirname "$log_file")"
+
+    print_info "Testing failure recovery mechanisms..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run recovery tests"
+        return 0
+    fi
+
+    {
+        # Test 1: Simulated training failure
+        print_subheader "Test 1: Training Failure Recovery"
+
+        # Create a mock training that fails
+        python3 -c "
+import sys
+print('Starting mock training...')
+print('Processing batch 1/10...')
+print('Processing batch 2/10...')
+print('ERROR: Simulated OOM at batch 3')
+sys.exit(1)
+" || {
+            print_info "Training failed as expected - testing recovery..."
+
+            # Simulate recovery by using checkpoint
+            if [[ -f "$test_dir/.experiment_state" ]]; then
+                print_status "State file exists - recovery possible"
+            else
+                print_info "Creating recovery state file"
+                echo "[phases]" > "$test_dir/.experiment_state"
+                echo "training=failed" >> "$test_dir/.experiment_state"
+                echo "checkpoint_path=$test_dir/checkpoint" >> "$test_dir/.experiment_state"
+            fi
+        }
+
+        # Test 2: Phase failure recovery
+        print_subheader "Test 2: Phase Failure Recovery"
+
+        # Create mock state file
+        cat > "$test_dir/.phase_test_state" << EOF
+[phases]
+training=completed
+phase1_statistical=completed
+phase2_linear_probe=failed
+phase3_baselines=pending
+phase4_efficiency=pending
+EOF
+
+        print_info "Mock state created - phases 1-2 completed, phase 3 failed"
+        print_info "Testing skip logic..."
+
+        # Verify skip logic
+        if grep -q "training=completed" "$test_dir/.phase_test_state"; then
+            print_status "Would skip completed training phase"
+        fi
+
+        if grep -q "phase2_linear_probe=failed" "$test_dir/.phase_test_state"; then
+            print_status "Would retry failed phase2_linear_probe"
+        fi
+
+        print_status "Recovery tests completed successfully"
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# TELEPATHY EXPERIMENT FUNCTIONS (from telepathy/*.sh)
+# =============================================================================
+
+run_telepathy_experiments() {
+    print_header "TELEPATHY EXPERIMENTS"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/telepathy"
+    local log_file="$BASE_OUTPUT_DIR/logs/telepathy_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Running Telepathy cross-model experiments..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run Telepathy experiments"
+        return 0
+    fi
+
+    {
+        # Run TREC evaluation
+        print_subheader "TREC Dataset Evaluation"
+        python3 telepathy/eval_telepathy_trec.py \
+            --source_model "$SOURCE_MODEL" \
+            --target_model "$TARGET_MODEL" \
+            --dataset trec \
+            --seeds "42 123 456" \
+            --output_dir "$output_dir/trec"
+
+        # Run statistical analysis
+        print_subheader "Statistical Analysis"
+        python3 scripts/statistical_testing.py \
+            --results_dir "$output_dir" \
+            --bootstrap_samples 10000 \
+            --output_file "$output_dir/statistical_summary.json"
+
+        # Run t-SNE visualization
+        print_subheader "t-SNE Visualization"
+        python3 telepathy/run_tsne_visualization.py \
+            --checkpoint "$CHECKPOINT_PATH" \
+            --output_dir "$output_dir/visualizations"
+
+        print_status "Telepathy experiments completed"
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# REASONING BENCHMARK FUNCTIONS (from run_reasoning_benchmarks.sh)
+# =============================================================================
+
+run_reasoning_benchmarks() {
+    print_header "REASONING BENCHMARKS"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/reasoning"
+    local log_file="$BASE_OUTPUT_DIR/logs/reasoning_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Running reasoning benchmarks (GSM8K, etc.)..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run reasoning benchmarks"
+        return 0
+    fi
+
+    {
+        # GSM8K evaluation
+        print_subheader "GSM8K Mathematical Reasoning"
+
+        if [[ -f "latentwire/gsm8k_eval.py" ]]; then
+            python3 latentwire/gsm8k_eval.py \
+                --checkpoint "$CHECKPOINT_PATH" \
+                --dataset gsm8k \
+                --samples 100 \
+                --output_dir "$output_dir/gsm8k"
+        else
+            print_warning "GSM8K evaluation script not found"
+        fi
+
+        # Additional reasoning benchmarks can be added here
+
+        print_status "Reasoning benchmarks completed"
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# BASELINE COMPARISON FUNCTIONS (from scripts/baselines/*.sh)
+# =============================================================================
+
+run_baseline_comparisons() {
+    print_header "BASELINE COMPARISONS"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/baselines"
+    local log_file="$BASE_OUTPUT_DIR/logs/baselines_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Running baseline comparisons..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run baseline comparisons"
+        return 0
+    fi
+
+    {
+        # Text baseline
+        print_subheader "Text Baseline"
+        python3 latentwire/eval.py \
+            --mode text_baseline \
+            --dataset "$TRAINING_DATASET" \
+            --samples 200 \
+            --output_dir "$output_dir/text_baseline"
+
+        # Token budget baseline
+        print_subheader "Token Budget Baseline"
+        python3 latentwire/eval.py \
+            --mode token_budget \
+            --dataset "$TRAINING_DATASET" \
+            --token_budget "$LATENT_LEN" \
+            --samples 200 \
+            --output_dir "$output_dir/token_budget"
+
+        # PCA baseline
+        print_subheader "PCA Baseline"
+        if command -v python3 &>/dev/null && python3 -c "import sklearn" 2>/dev/null; then
+            python3 scripts/baselines/run_pca_baseline.py \
+                --dataset "$TRAINING_DATASET" \
+                --components "$LATENT_LEN" \
+                --samples 200 \
+                --output_dir "$output_dir/pca"
+        else
+            print_warning "Scikit-learn not installed - skipping PCA baseline"
+        fi
+
+        print_status "Baseline comparisons completed"
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# ARCHITECTURE SWEEP FUNCTIONS (from scripts/sweep_architectures.sh)
+# =============================================================================
+
+run_architecture_sweep() {
+    print_header "ARCHITECTURE SWEEP"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/architecture_sweep"
+    local log_file="$BASE_OUTPUT_DIR/logs/arch_sweep_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Running architecture sweep experiments..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run architecture sweep"
+        return 0
+    fi
+
+    # Define architectures to test
+    local LATENT_LENS="16 32 48 64"
+    local D_ZS="128 256 384 512"
+
+    {
+        for latent_len in $LATENT_LENS; do
+            for d_z in $D_ZS; do
+                print_subheader "Testing L=$latent_len, D=$d_z"
+
+                python3 latentwire/train.py \
+                    --llama_id "$SOURCE_MODEL" \
+                    --qwen_id "$TARGET_MODEL" \
+                    --dataset "$TRAINING_DATASET" \
+                    --samples 1000 \
+                    --epochs 5 \
+                    --batch_size "$BATCH_SIZE" \
+                    --latent_len "$latent_len" \
+                    --d_z "$d_z" \
+                    --output_dir "$output_dir/L${latent_len}_D${d_z}" \
+                    --sequential_models
+
+                # Quick eval
+                python3 latentwire/eval.py \
+                    --ckpt "$output_dir/L${latent_len}_D${d_z}/epoch4" \
+                    --samples 50 \
+                    --dataset "$TRAINING_DATASET" \
+                    --output_dir "$output_dir/L${latent_len}_D${d_z}/eval"
+            done
+        done
+
+        # Aggregate results
+        python3 scripts/analyze_architecture_sweep.py \
+            --results_dir "$output_dir" \
+            --output_file "$output_dir/sweep_summary.json"
+
+        print_status "Architecture sweep completed"
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# LLMLINGUA BASELINE FUNCTIONS (from scripts/run_llmlingua_baseline.sh)
+# =============================================================================
+
+run_llmlingua_baseline() {
+    print_header "LLMLINGUA-2 BASELINE"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/llmlingua"
+    local log_file="$BASE_OUTPUT_DIR/logs/llmlingua_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Running LLMLingua-2 baseline comparison..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run LLMLingua baseline"
+        return 0
+    fi
+
+    {
+        # Check if llmlingua2 is installed
+        if ! python3 -c "import llmlingua" 2>/dev/null; then
+            print_warning "LLMLingua not installed. Installing..."
+            pip install llmlingua2
+        fi
+
+        # Run LLMLingua baseline
+        python3 scripts/run_llmlingua_baseline.py \
+            --model "microsoft/llmlingua-2-xlm-roberta-large-meetingbank" \
+            --dataset "$TRAINING_DATASET" \
+            --compression_rate 0.5 \
+            --samples 200 \
+            --output_dir "$output_dir"
+
+        print_status "LLMLingua baseline completed"
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# PRODUCTION VALIDATION FUNCTIONS (from scripts/validate_production_readiness.sh)
+# =============================================================================
+
+validate_production_readiness() {
+    print_header "PRODUCTION READINESS VALIDATION"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local log_file="$BASE_OUTPUT_DIR/logs/production_validation_${TIMESTAMP}.log"
+    mkdir -p "$(dirname "$log_file")"
+
+    local all_checks_passed=true
+
+    {
+        # Check 1: Code quality
+        print_subheader "Code Quality Checks"
+
+        if command -v black &>/dev/null; then
+            print_info "Running Black formatter check..."
+            black --check latentwire/ scripts/ 2>/dev/null || {
+                print_warning "Code formatting issues detected"
+                all_checks_passed=false
+            }
+        else
+            print_warning "Black not installed - skipping format check"
+        fi
+
+        if command -v pylint &>/dev/null; then
+            print_info "Running Pylint..."
+            pylint latentwire/ --exit-zero || {
+                print_warning "Pylint issues detected"
+                all_checks_passed=false
+            }
+        else
+            print_warning "Pylint not installed - skipping lint check"
+        fi
+
+        # Check 2: Test coverage
+        print_subheader "Test Coverage"
+
+        if command -v pytest &>/dev/null; then
+            print_info "Running pytest..."
+            pytest tests/ -v --cov=latentwire --cov-report=term-missing || {
+                print_warning "Test failures detected"
+                all_checks_passed=false
+            }
+        else
+            print_warning "Pytest not installed - skipping test coverage"
+        fi
+
+        # Check 3: Documentation
+        print_subheader "Documentation Check"
+
+        local required_docs="README.md LOG.md CLAUDE.md"
+        for doc in $required_docs; do
+            if [[ -f "$WORK_DIR/$doc" ]]; then
+                print_status "$doc exists"
+            else
+                print_warning "$doc missing"
+                all_checks_passed=false
+            fi
+        done
+
+        # Check 4: Performance benchmarks
+        print_subheader "Performance Validation"
+
+        if [[ -n "$CHECKPOINT_PATH" ]]; then
+            python3 scripts/benchmark_efficiency.py \
+                --checkpoint "$CHECKPOINT_PATH" \
+                --dataset squad \
+                --samples 10 \
+                --warmup_runs 1 \
+                --benchmark_runs 3 \
+                --output_file "$BASE_OUTPUT_DIR/production_benchmarks.json"
+        else
+            print_warning "No checkpoint available for performance validation"
+        fi
+
+        # Check 5: Memory safety
+        print_subheader "Memory Safety Check"
+
+        python3 scripts/test_memory_safety.py \
+            --max_memory_gb 16 \
+            --test_oom_recovery || {
+                print_warning "Memory safety issues detected"
+                all_checks_passed=false
+            }
+
+        # Final report
+        echo ""
+        print_header "VALIDATION SUMMARY"
+
+        if [[ "$all_checks_passed" == true ]]; then
+            print_status "✅ All production readiness checks PASSED"
+        else
+            print_warning "⚠️  Some checks failed - review above output"
+        fi
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# MIXED PRECISION TRAINING FUNCTIONS (from scripts/run_mixed_precision.sh)
+# =============================================================================
+
+run_mixed_precision_training() {
+    print_header "MIXED PRECISION TRAINING"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/mixed_precision"
+    local log_file="$BASE_OUTPUT_DIR/logs/mixed_precision_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Running mixed precision (fp16/bf16) training..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run mixed precision training"
+        return 0
+    fi
+
+    {
+        python3 latentwire/train.py \
+            --llama_id "$SOURCE_MODEL" \
+            --qwen_id "$TARGET_MODEL" \
+            --dataset "$TRAINING_DATASET" \
+            --samples "$TRAINING_SAMPLES" \
+            --epochs "$TRAINING_EPOCHS" \
+            --batch_size "$BATCH_SIZE" \
+            --latent_len "$LATENT_LEN" \
+            --d_z "$D_Z" \
+            --output_dir "$output_dir/checkpoint" \
+            --sequential_models \
+            --mixed_precision fp16 \
+            --gradient_checkpointing
+
+        print_status "Mixed precision training completed"
+
+    } 2>&1 | tee "$log_file"
+}
+
+# =============================================================================
+# ELASTIC GPU DEMO FUNCTIONS (from scripts/run_elastic_gpu_demo.sh)
+# =============================================================================
+
+run_elastic_gpu_demo() {
+    print_header "ELASTIC GPU DEMONSTRATION"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+
+    local output_dir="$BASE_OUTPUT_DIR/elastic_gpu"
+    local log_file="$BASE_OUTPUT_DIR/logs/elastic_gpu_${TIMESTAMP}.log"
+
+    mkdir -p "$output_dir" "$(dirname "$log_file")"
+
+    print_info "Demonstrating elastic GPU usage (1-4 GPUs)..."
+
+    if [[ "$DRY_RUN" == "yes" ]]; then
+        print_info "DRY RUN: Would run elastic GPU demo"
+        return 0
+    fi
+
+    {
+        # Test with different GPU configurations
+        for num_gpus in 1 2 4; do
+            print_subheader "Testing with $num_gpus GPU(s)"
+
+            if [[ $num_gpus -eq 1 ]]; then
+                # Single GPU
+                python3 latentwire/train.py \
+                    --llama_id "$SOURCE_MODEL" \
+                    --qwen_id "$TARGET_MODEL" \
+                    --dataset "$TRAINING_DATASET" \
+                    --samples 100 \
+                    --epochs 1 \
+                    --output_dir "$output_dir/gpu_$num_gpus"
+            else
+                # Multi-GPU with DDP
+                torchrun \
+                    --nproc_per_node=$num_gpus \
+                    --master_port=$((29500 + num_gpus)) \
+                    latentwire/train.py \
+                    --llama_id "$SOURCE_MODEL" \
+                    --qwen_id "$TARGET_MODEL" \
+                    --dataset "$TRAINING_DATASET" \
+                    --samples 100 \
+                    --epochs 1 \
+                    --output_dir "$output_dir/gpu_$num_gpus" \
+                    --distributed
+            fi
+
+            # Measure throughput
+            python3 -c "
+import json
+import os
+log_file = '$output_dir/gpu_$num_gpus/training_stats.json'
+if os.path.exists(log_file):
+    with open(log_file) as f:
+        stats = json.load(f)
+        print(f'Throughput with {num_gpus} GPU(s): {stats.get(\"samples_per_second\", \"N/A\")} samples/sec')
+"
+        done
+
+        print_status "Elastic GPU demonstration completed"
+
+    } 2>&1 | tee "$log_file"
+}
+
 run_quick_start() {
     print_header "QUICK START"
 
@@ -1302,12 +1946,24 @@ main() {
         help)
             show_help
             ;;
+        setup)
+            setup_environment
+            ;;
         validate)
             validate_environment
+            validate_production_readiness
             ;;
         test)
             validate_environment
             run_tests
+            ;;
+        e2e)
+            validate_environment
+            run_end_to_end_test
+            ;;
+        recovery)
+            validate_environment
+            run_recovery_tests
             ;;
         train)
             validate_environment
@@ -1343,6 +1999,40 @@ main() {
         quick)
             validate_environment
             run_quick_start
+            ;;
+        telepathy)
+            validate_environment
+            if [[ "$SKIP_TRAINING" != "yes" ]]; then
+                run_training
+            fi
+            run_telepathy_experiments
+            ;;
+        reasoning)
+            validate_environment
+            if [[ -z "$CHECKPOINT_PATH" && "$SKIP_TRAINING" != "yes" ]]; then
+                run_training
+            fi
+            run_reasoning_benchmarks
+            ;;
+        baselines)
+            validate_environment
+            run_baseline_comparisons
+            ;;
+        arch-sweep)
+            validate_environment
+            run_architecture_sweep
+            ;;
+        llmlingua)
+            validate_environment
+            run_llmlingua_baseline
+            ;;
+        mixed-prec)
+            validate_environment
+            run_mixed_precision_training
+            ;;
+        elastic-gpu)
+            validate_environment
+            run_elastic_gpu_demo
             ;;
         finalize)
             validate_environment

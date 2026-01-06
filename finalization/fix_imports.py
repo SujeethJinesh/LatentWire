@@ -14,8 +14,9 @@ IMPORT_FIXES = {
     # Models module fixes
     'from latentwire.models import InterlinguaInterlinguaEncoder': 'from latentwire.models import InterlinguaEncoder',
     'from latentwire.data import load_examples': 'from latentwire.data import load_examples',
-    '# from latentwire.prefix_utils  # Module doesn't exist': '# # from latentwire.prefix_utils  # Module doesn't exist  # Module doesn\'t exist',
-    '# import latentwire.prefix_utils  # Module doesn't exist': '# # import latentwire.prefix_utils  # Module doesn't exist  # Module doesn\'t exist',
+    # Commented entries (removed due to syntax errors)
+    # '# from latentwire.prefix_utils  # Module doesn't exist': '# from latentwire.prefix_utils',
+    # '# import latentwire.prefix_utils  # Module doesn't exist': '# import latentwire.prefix_utils',
 
     # For files in finalization root that import from telepathy
     'from linear_probe_baseline import': 'from linear_probe_baseline import',
