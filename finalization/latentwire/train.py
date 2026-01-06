@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # latentwire/train.py
 import os
 import re
@@ -3547,11 +3548,45 @@ def main():
             if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
                 ddp_manager.barrier()
 
+            # Update progress bar with current metrics
+            if hasattr(pbar, 'set_postfix'):
+                current_lr = lr_scheduler.get_last_lr()[0]
+
+                # Collect key metrics for progress bar
+                postfix_dict = {
+                    'loss': f"{_to_float(total_model_loss):.4f}",
+                    'lr': f"{current_lr:.2e}",
+                    'grad': f"{total_norm:.2f}",
+                    's/step': f"{dt:.2f}",
+                }
+
+                # Add first token accuracy if in latent mode
+                if training_mode == "latent":
+                    avg_acc = sum(_to_float(per_model_losses[ctx.name].get('first_acc', 0.0))
+                                 for ctx in model_contexts) / len(model_contexts)
+                    postfix_dict['acc'] = f"{avg_acc:.3f}"
+
+                # Add training mode indicator
+                postfix_dict['mode'] = 'T' if training_mode == "text" else 'L'
+                postfix_dict['K'] = current_K
+
+                # Update progress bar
+                pbar.set_postfix(postfix_dict, refresh=False)
+
+                # Calculate ETA based on moving average
+                if ema_step_time is not None:
+                    remaining_steps = rank_steps_per_epoch - (step + 1)
+                    eta_seconds = remaining_steps * ema_step_time
+                    if eta_seconds > 0:
+                        eta = str(timedelta(seconds=int(eta_seconds)))
+                        pbar.set_description(f"Epoch {epoch+1}/{args.epochs} | ETA: {eta}")
+
+            # Print detailed metrics every 10 steps (keep original detailed logging)
             if (step+1) % 10 == 0 or (step+1) == rank_steps_per_epoch:
                 # Only print from main process in DDP mode
                 should_print = ('ddp_manager' not in locals() or ddp_manager is None or
                                ddp_manager.should_log)
-                if should_print:
+                if should_print and args.debug:  # Only print detailed logs in debug mode
                     current_lr = lr_scheduler.get_last_lr()[0]
                     parts = [
                         f"  step  {step+1}/{rank_steps_per_epoch}",

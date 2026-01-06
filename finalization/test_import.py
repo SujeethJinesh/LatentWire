@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Test that the training module can be imported successfully."""
 
 import sys
@@ -42,7 +43,7 @@ def test_imports():
         return True
         
     except ImportError as e:
-        print(f"✗ Import failed: {e}")
+        print("✗ Import failed: {}".format(e))
         print("\nPlease install required dependencies:")
         print("  pip install -r requirements.txt")
         return False
