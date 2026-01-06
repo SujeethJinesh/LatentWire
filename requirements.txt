@@ -13,6 +13,7 @@ sentencepiece>=0.1.99
 protobuf>=3.20.0
 tokenizers>=0.13.0
 rouge-score>=0.1.2
+psutil>=5.9.0  # For memory and system resource tracking
 
 # Statistical analysis and visualization
 statsmodels>=0.13.0  # For McNemar test, multiple testing correction
