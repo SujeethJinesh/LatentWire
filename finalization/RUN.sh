@@ -340,7 +340,7 @@ export PYTHONUNBUFFERED=1
 git pull
 
 # Run the command
-bash finalization/RUN_ALL.sh $cmd
+bash finalization/RUN.sh $cmd
 
 # Push results
 git add -A
@@ -387,7 +387,7 @@ show_help() {
 LatentWire Experiment Runner v${SCRIPT_VERSION}
 
 USAGE:
-    bash RUN_ALL.sh [COMMAND] [OPTIONS]
+    bash RUN.sh [COMMAND] [OPTIONS]
 
 COMMANDS:
     train       Run training only
@@ -404,19 +404,19 @@ OPTIONS:
 
 EXAMPLES:
     # Run training
-    bash RUN_ALL.sh train
+    bash RUN.sh train
 
     # Run evaluation on existing checkpoint
-    bash RUN_ALL.sh eval runs/exp_20240115/checkpoint/epoch23
+    bash RUN.sh eval runs/exp_20240115/checkpoint/epoch23
 
     # Run full experiment pipeline
-    bash RUN_ALL.sh experiment
+    bash RUN.sh experiment
 
     # Submit experiment to SLURM
-    bash RUN_ALL.sh slurm experiment
+    bash RUN.sh slurm experiment
 
     # Run tests
-    bash RUN_ALL.sh test
+    bash RUN.sh test
 
 ENVIRONMENT:
     Mode: $([ "$IS_HPC" == "yes" ] && echo "HPC" || echo "Local")
