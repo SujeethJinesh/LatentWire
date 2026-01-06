@@ -2365,9 +2365,19 @@ def main():
 
     print("\n— Baseline: Text prompting")
     if summary['text'].get('llama') is not None:
-        print(f"Llama  EM: {summary['text']['llama']['em']:.3f}  F1: {summary['text']['llama']['f1']:.3f}  |  NLL/token (gold): {summary['text']['llama']['nll_token']}")
+        llama_text = summary['text']['llama']
+        em_ci = llama_text.get('em_with_ci', {})
+        f1_ci = llama_text.get('f1_with_ci', {})
+        print(f"Llama  EM: {llama_text['em']:.3f} [{em_ci.get('ci_lower', 0):.3f}, {em_ci.get('ci_upper', 0):.3f}]  "
+              f"F1: {llama_text['f1']:.3f} [{f1_ci.get('ci_lower', 0):.3f}, {f1_ci.get('ci_upper', 0):.3f}]  |  "
+              f"NLL/token (gold): {llama_text['nll_token']}")
     if summary['text'].get('qwen') is not None:
-        print(f"Qwen   EM: {summary['text']['qwen']['em']:.3f}   F1: {summary['text']['qwen']['f1']:.3f}   |  NLL/token (gold): {summary['text']['qwen']['nll_token']}")
+        qwen_text = summary['text']['qwen']
+        em_ci = qwen_text.get('em_with_ci', {})
+        f1_ci = qwen_text.get('f1_with_ci', {})
+        print(f"Qwen   EM: {qwen_text['em']:.3f} [{em_ci.get('ci_lower', 0):.3f}, {em_ci.get('ci_upper', 0):.3f}]   "
+              f"F1: {qwen_text['f1']:.3f} [{f1_ci.get('ci_lower', 0):.3f}, {f1_ci.get('ci_upper', 0):.3f}]   |  "
+              f"NLL/token (gold): {qwen_text['nll_token']}")
     print(f"Wall clock: {summary['text']['wall_clock_sec']:.2f}s")
     if summary.get("text_embed"):
         print("\n— Text embedding replay (inputs_embeds)")
@@ -2379,13 +2389,23 @@ def main():
 
     print("\n— Latent prompting (shared interlingua)")
     if summary['latent'].get('llama') is not None:
-        print(f"Llama  EM: {summary['latent']['llama']['em']:.3f}  F1: {summary['latent']['llama']['f1']:.3f}  |  NLL/token (gold): {summary['latent']['llama']['nll_token']}")
-        if "first_token_top1" in summary['latent']['llama']:
-            print(f"       First-token acc: top1={summary['latent']['llama']['first_token_top1']:.3f}  top5={summary['latent']['llama']['first_token_top5']:.3f}")
+        llama_latent = summary['latent']['llama']
+        em_ci = llama_latent.get('em_with_ci', {})
+        f1_ci = llama_latent.get('f1_with_ci', {})
+        print(f"Llama  EM: {llama_latent['em']:.3f} [{em_ci.get('ci_lower', 0):.3f}, {em_ci.get('ci_upper', 0):.3f}]  "
+              f"F1: {llama_latent['f1']:.3f} [{f1_ci.get('ci_lower', 0):.3f}, {f1_ci.get('ci_upper', 0):.3f}]  |  "
+              f"NLL/token (gold): {llama_latent['nll_token']}")
+        if "first_token_top1" in llama_latent:
+            print(f"       First-token acc: top1={llama_latent['first_token_top1']:.3f}  top5={llama_latent['first_token_top5']:.3f}")
     if summary['latent'].get('qwen') is not None:
-        print(f"Qwen   EM: {summary['latent']['qwen']['em']:.3f}   F1: {summary['latent']['qwen']['f1']:.3f}  |  NLL/token (gold): {summary['latent']['qwen']['nll_token']}")
-        if "first_token_top1" in summary['latent']['qwen']:
-            print(f"       First-token acc: top1={summary['latent']['qwen']['first_token_top1']:.3f}  top5={summary['latent']['qwen']['first_token_top5']:.3f}")
+        qwen_latent = summary['latent']['qwen']
+        em_ci = qwen_latent.get('em_with_ci', {})
+        f1_ci = qwen_latent.get('f1_with_ci', {})
+        print(f"Qwen   EM: {qwen_latent['em']:.3f} [{em_ci.get('ci_lower', 0):.3f}, {em_ci.get('ci_upper', 0):.3f}]   "
+              f"F1: {qwen_latent['f1']:.3f} [{f1_ci.get('ci_lower', 0):.3f}, {f1_ci.get('ci_upper', 0):.3f}]   |  "
+              f"NLL/token (gold): {qwen_latent['nll_token']}")
+        if "first_token_top1" in qwen_latent:
+            print(f"       First-token acc: top1={qwen_latent['first_token_top1']:.3f}  top5={qwen_latent['first_token_top5']:.3f}")
     print(f"Wall clock: {summary['latent']['wall_clock_sec']:.2f}s")
 
     if summary.get('embedding_baselines'):
