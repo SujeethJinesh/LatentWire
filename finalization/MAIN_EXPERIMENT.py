@@ -90,7 +90,7 @@ class ExperimentConfig:
     # Compression settings
     latent_dim: int = 256
     latent_len: int = 32
-    compression_type: str = "telepathy"  # telepathy, llmlingua, baseline
+    compression_type: str = "telepathy"  # telepathy, llmlingua, baseline, linear_probe
 
     # Training settings
     batch_size: int = 32
@@ -267,6 +267,182 @@ class TelepathyCompressor(CompressionModule):
         return result
 
 
+class LinearProbeBaseline:
+    """
+    Linear Probe baseline integration for MAIN_EXPERIMENT.py.
+
+    This provides integration with the Linear Probe baseline from telepathy.linear_probe_baseline,
+    which uses sklearn's LogisticRegression for a scientifically rigorous baseline comparison.
+    This is a CRITICAL baseline demanded by reviewers for comparing against the Bridge method.
+    """
+
+    def __init__(self, config: ExperimentConfig):
+        self.config = config
+        self.probe = None
+        self.initialized = False
+        self.LinearProbeClass = None
+        self.train_func = None
+        self.eval_func = None
+
+        # Try to import the actual LinearProbeBaseline
+        try:
+            import sys
+            import os
+            # Add parent directory to path to import telepathy module
+            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if parent_dir not in sys.path:
+                sys.path.insert(0, parent_dir)
+
+            from telepathy.linear_probe_baseline import (
+                LinearProbeBaseline as LPB,
+                train_linear_probe,
+                eval_linear_probe
+            )
+            self.LinearProbeClass = LPB
+            self.train_func = train_linear_probe
+            self.eval_func = eval_linear_probe
+            self.has_implementation = True
+            print("LinearProbeBaseline successfully imported from telepathy module")
+        except ImportError as e:
+            print(f"Warning: LinearProbeBaseline not available: {e}")
+            self.has_implementation = False
+
+    def initialize(self, hidden_dim: int = 4096, num_classes: int = 2, layer_idx: int = 24):
+        """
+        Initialize the linear probe baseline.
+
+        Args:
+            hidden_dim: Dimension of hidden states (e.g., 4096 for Llama-8B)
+            num_classes: Number of output classes for classification
+            layer_idx: Which layer to extract from (24 often works well)
+        """
+        if not self.has_implementation:
+            print("Cannot initialize: LinearProbeBaseline implementation not available")
+            return False
+
+        self.probe = self.LinearProbeClass(
+            hidden_dim=hidden_dim,
+            num_classes=num_classes,
+            layer_idx=layer_idx,
+            pooling="mean",  # Mean pooling over sequence
+            normalize=True,  # Standardize features
+            C=1.0,  # Regularization strength
+            max_iter=1000,
+            n_jobs=-1,  # Use all CPU cores
+            random_state=42,
+        )
+        self.initialized = True
+        print(f"LinearProbe initialized: layer={layer_idx}, dim={hidden_dim}, classes={num_classes}")
+        return True
+
+    def train_and_evaluate(self, model, tokenizer, train_data, test_data,
+                          dataset_name: str = "test", device: str = "cuda",
+                          dataset_config: Optional[Dict] = None) -> Dict[str, Any]:
+        """
+        Train and evaluate the linear probe baseline.
+
+        Args:
+            model: Frozen LLM to extract hidden states from
+            tokenizer: Tokenizer for the model
+            train_data: Training dataset
+            test_data: Test/evaluation dataset
+            dataset_name: Name of the dataset for logging
+            device: Device to run on
+            dataset_config: Configuration for the dataset
+
+        Returns:
+            Dictionary with evaluation metrics
+        """
+        if not self.initialized or not self.has_implementation:
+            return {
+                "error": "LinearProbeBaseline not initialized or not available",
+                "accuracy": 0.0,
+                "f1_score": 0.0,
+                "status": "failed",
+            }
+
+        # Default dataset config if not provided
+        if dataset_config is None:
+            dataset_config = {
+                "text_field": "text",
+                "label_field": "label",
+                "num_classes": 2,
+            }
+
+        try:
+            # Train the linear probe with cross-validation
+            print(f"\nTraining LinearProbeBaseline on {dataset_name}...")
+            train_results = self.train_func(
+                probe=self.probe,
+                model=model,
+                tokenizer=tokenizer,
+                train_ds=train_data,
+                dataset_name=dataset_name,
+                device=device,
+                dataset_config=dataset_config,
+                batch_size=4,  # Small batch to avoid OOM
+                cv_folds=5,  # 5-fold cross-validation
+            )
+
+            # Evaluate on test set
+            print(f"Evaluating LinearProbeBaseline on {dataset_name}...")
+            eval_results = self.eval_func(
+                probe=self.probe,
+                model=model,
+                tokenizer=tokenizer,
+                eval_ds=test_data,
+                dataset_name=dataset_name,
+                device=device,
+                dataset_config=dataset_config,
+                batch_size=4,
+            )
+
+            # Combine results
+            results = {
+                **eval_results,
+                "train_info": train_results,
+                "method": "linear_probe_baseline",
+                "layer_idx": self.probe.layer_idx,
+                "pooling": self.probe.pooling,
+                "status": "success",
+            }
+
+            print(f"LinearProbe Results: Accuracy={results['accuracy']:.1f}%, F1={results['f1_score']:.1f}%")
+            if 'cv_mean' in train_results:
+                print(f"  Cross-validation: {train_results['cv_mean']:.1f}% ± {train_results['cv_std']:.1f}%")
+
+            return results
+
+        except Exception as e:
+            print(f"Error in LinearProbeBaseline: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "error": str(e),
+                "accuracy": 0.0,
+                "f1_score": 0.0,
+                "status": "failed",
+            }
+
+    def save_probe(self, filepath: str):
+        """Save the trained probe for reproducibility."""
+        if self.initialized and self.probe is not None:
+            self.probe.save(filepath)
+            print(f"Saved LinearProbe to {filepath}")
+
+    def get_mock_results(self) -> Dict[str, Any]:
+        """Return mock results for testing when implementation not available."""
+        return {
+            "accuracy": np.random.uniform(70, 90) if np else 80,
+            "f1_score": np.random.uniform(65, 85) if np else 75,
+            "method": "linear_probe_baseline",
+            "layer_idx": 24,
+            "pooling": "mean",
+            "status": "mock",
+            "note": "Mock results - actual implementation not available"
+        }
+
+
 class ModelEvaluator:
     """Evaluate model performance."""
 
@@ -309,10 +485,12 @@ class ExperimentRunner:
         self.evaluator = ModelEvaluator(config)
         self.results = {}
 
-    def _create_compressor(self) -> CompressionModule:
-        """Create appropriate compressor based on config."""
+    def _create_compressor(self):
+        """Create appropriate compressor or baseline based on config."""
         if self.config.compression_type == "telepathy":
             return TelepathyCompressor(self.config)
+        elif self.config.compression_type == "linear_probe":
+            return LinearProbeBaseline(self.config)
         else:
             return CompressionModule(self.config)
 
@@ -496,7 +674,7 @@ def main():
     parser.add_argument(
         "--compression-type",
         type=str,
-        choices=["telepathy", "llmlingua", "baseline"],
+        choices=["telepathy", "llmlingua", "baseline", "linear_probe"],
         default="telepathy",
         help="Compression method to use"
     )
