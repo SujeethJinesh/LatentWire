@@ -124,23 +124,51 @@ architecture:
 # =====================================================================================
 # 3. TRAINING HYPERPARAMETERS
 # =====================================================================================
+# Memory Budget Calculations for H100 (80GB):
+# - Frozen Models: ~32GB (Llama-8B: 16GB, Qwen-7B: 14GB in bf16)
+# - Trainable Components: ~0.2GB (encoder + adapters ~100M params)
+# - Optimizer States (AdamW): ~1.2GB (12 bytes per trainable param)
+# - Gradients: ~0.2GB (2 bytes per trainable param in bf16)
+# - Overhead: ~6.4GB (8% of 80GB for CUDA kernels, buffers)
+# - Available for Activations: ~40GB
+# - With gradient checkpointing: ~1.5x memory multiplier for activations
+# - Max batch size @ 80% utilization: ~64-69 per GPU
+# =====================================================================================
 training:
   # Batch size configurations for different hardware
   batch_config:
-    # H100 (80GB) configurations
+    # H100 (80GB) configurations - OPTIMIZED for LatentWire (frozen LLMs + trainable encoder)
     h100_single:
-      batch_size: 20
-      gradient_accumulation_steps: 2
-      effective_batch_size: 40
+      batch_size: 64  # Conservative from calculated max of 69
+      gradient_accumulation_steps: 1
+      effective_batch_size: 64
       elastic_batch_size: true
-      elastic_target_util: 0.75
+      elastic_target_util: 0.80  # 80% for safety margin
+      notes: 'Single H100 with frozen Llama+Qwen, trainable encoder/adapters'
+
+    h100_dual:
+      batch_size: 64  # Per-GPU batch size in DDP
+      gradient_accumulation_steps: 1
+      effective_batch_size: 128  # 64 * 2 GPUs
+      elastic_batch_size: true
+      elastic_target_util: 0.80
+      notes: 'DDP on 2x H100 GPUs, frozen models + trainable components'
+
+    h100_triple:
+      batch_size: 64  # Per-GPU batch size in DDP
+      gradient_accumulation_steps: 1
+      effective_batch_size: 192  # 64 * 3 GPUs
+      elastic_batch_size: true
+      elastic_target_util: 0.80
+      notes: 'DDP on 3x H100 GPUs, frozen models + trainable components'
 
     h100_quad:
-      batch_size: 20
+      batch_size: 64  # Per-GPU batch size in DDP
       gradient_accumulation_steps: 1
-      effective_batch_size: 80
+      effective_batch_size: 256  # 64 * 4 GPUs
       elastic_batch_size: true
-      elastic_target_util: 0.75
+      elastic_target_util: 0.80
+      notes: 'DDP on 4x H100 GPUs (HPC standard), frozen models + trainable components'
 
     # A100 (40GB/80GB) configurations
     a100_40gb:

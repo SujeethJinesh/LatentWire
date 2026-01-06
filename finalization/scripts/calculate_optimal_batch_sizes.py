@@ -46,10 +46,11 @@ class TrainingConfig:
 class BatchSizeCalculator:
     """Calculate optimal batch sizes for different GPU configurations."""
 
-    def __init__(self, gpu, model, training):
+    def __init__(self, gpu, model, training, frozen_model_gb=32.0):
         self.gpu = gpu
-        self.model = model
+        self.model = model  # Trainable model parts
         self.training = training
+        self.frozen_model_gb = frozen_model_gb  # Memory for frozen LLMs (Llama + Qwen)
 
     def calculate_model_memory_gb(self):
         """Calculate memory needed for model weights."""
@@ -125,13 +126,13 @@ class BatchSizeCalculator:
             Dictionary with batch size and memory breakdown
         """
         # Calculate fixed memory costs
-        model_mem = self.calculate_model_memory_gb()
-        optimizer_mem = self.calculate_optimizer_memory_gb()
-        gradient_mem = self.calculate_gradient_memory_gb()
+        trainable_model_mem = self.calculate_model_memory_gb()  # Encoder + adapters
+        optimizer_mem = self.calculate_optimizer_memory_gb()  # Only for trainable params
+        gradient_mem = self.calculate_gradient_memory_gb()  # Only for trainable params
         overhead_mem = self.calculate_misc_overhead_gb()
 
-        # Total fixed memory
-        fixed_memory = model_mem + optimizer_mem + gradient_mem + overhead_mem
+        # Total fixed memory (including frozen models)
+        fixed_memory = self.frozen_model_gb + trainable_model_mem + optimizer_mem + gradient_mem + overhead_mem
 
         # Available memory for activations
         total_available = self.gpu.memory_gb * self.gpu.num_gpus * target_utilization
@@ -172,7 +173,8 @@ class BatchSizeCalculator:
         return {
             'batch_size': optimal_batch,
             'memory_breakdown': {
-                'model_gb': model_mem,
+                'frozen_models_gb': self.frozen_model_gb,
+                'trainable_model_gb': trainable_model_mem,
                 'optimizer_gb': optimizer_mem,
                 'gradients_gb': gradient_mem,
                 'activations_gb': actual_activation_mem,
@@ -192,9 +194,20 @@ def main():
     # H100 GPU configuration
     h100 = GPUConfig(name="H100 80GB", memory_gb=80.0, num_gpus=1)
 
-    # Llama-3.1-8B model configuration
-    llama_8b = ModelConfig(
-        name="Llama-3.1-8B",
+    # For LatentWire, we only train encoder + adapters, not the full models
+    # The Llama and Qwen models are frozen
+    # Encoder + Adapters are much smaller (~100M params typically)
+    encoder_and_adapters = ModelConfig(
+        name="Encoder + Adapters",
+        param_count_b=0.1,  # ~100M parameters for encoder and adapters
+        hidden_dim=4096,
+        num_layers=32,
+        vocab_size=128256,
+    )
+
+    # The frozen models still need to be loaded but don't need optimizer states
+    frozen_llama_8b = ModelConfig(
+        name="Llama-3.1-8B (Frozen)",
         param_count_b=8.03,
         hidden_dim=4096,
         num_layers=32,
@@ -211,9 +224,11 @@ def main():
     )
 
     print("="*80)
-    print("OPTIMAL BATCH SIZE CALCULATIONS FOR H100 GPUs WITH LLAMA-8B")
+    print("OPTIMAL BATCH SIZE CALCULATIONS FOR H100 GPUs")
+    print("LatentWire Setup: Frozen Llama-8B + Frozen Qwen-7B + Trainable Encoder/Adapters")
     print("="*80)
-    print(f"\nModel: {llama_8b.name} ({llama_8b.param_count_b}B parameters)")
+    print(f"\nFrozen Models: Llama-8B + Qwen-7B (~32GB total in bf16)")
+    print(f"Trainable: {encoder_and_adapters.name} ({encoder_and_adapters.param_count_b}B parameters)")
     print(f"Training: seq_len={training.seq_length}, dtype=bf16, optimizer={training.optimizer}")
     print(f"Gradient Checkpointing: {training.gradient_checkpointing}")
     print(f"Mixed Precision: {training.mixed_precision}")
@@ -229,9 +244,12 @@ def main():
 
     results = {}
 
+    # Frozen models take ~32GB (16GB Llama + 14GB Qwen in bf16)
+    frozen_memory_gb = 32.0
+
     for num_gpus, target_util in configs:
         gpu_config = GPUConfig(name=f"{num_gpus}x H100", memory_gb=80.0, num_gpus=num_gpus)
-        calculator = BatchSizeCalculator(gpu_config, llama_8b, training)
+        calculator = BatchSizeCalculator(gpu_config, encoder_and_adapters, training, frozen_memory_gb)
         result = calculator.calculate_max_batch_size(target_util)
         results[num_gpus] = result
 
@@ -244,14 +262,19 @@ def main():
         print(f"\n  Memory Breakdown (per GPU):")
         breakdown = result['memory_breakdown']
         if num_gpus > 1:
-            print(f"    - Model Weights: {breakdown['model_gb']:.1f} GB")
+            print(f"    - Frozen Models (Llama+Qwen): {breakdown['frozen_models_gb']:.1f} GB")
+            print(f"    - Trainable Weights: {breakdown['trainable_model_gb']:.1f} GB")
             print(f"    - Optimizer States: {breakdown['optimizer_gb']:.1f} GB")
             print(f"    - Gradients: {breakdown['gradients_gb']:.1f} GB")
             print(f"    - Activations: {breakdown['activations_gb']/num_gpus:.1f} GB")
             print(f"    - Overhead: {breakdown['overhead_gb']:.1f} GB")
-            print(f"    - Total per GPU: {breakdown['model_gb'] + breakdown['optimizer_gb'] + breakdown['gradients_gb'] + breakdown['activations_gb']/num_gpus + breakdown['overhead_gb']:.1f} GB")
+            total_per_gpu = (breakdown['frozen_models_gb'] + breakdown['trainable_model_gb'] +
+                           breakdown['optimizer_gb'] + breakdown['gradients_gb'] +
+                           breakdown['activations_gb']/num_gpus + breakdown['overhead_gb'])
+            print(f"    - Total per GPU: {total_per_gpu:.1f} GB")
         else:
-            print(f"    - Model Weights: {breakdown['model_gb']:.1f} GB")
+            print(f"    - Frozen Models (Llama+Qwen): {breakdown['frozen_models_gb']:.1f} GB")
+            print(f"    - Trainable Weights: {breakdown['trainable_model_gb']:.1f} GB")
             print(f"    - Optimizer States: {breakdown['optimizer_gb']:.1f} GB")
             print(f"    - Gradients: {breakdown['gradients_gb']:.1f} GB")
             print(f"    - Activations: {breakdown['activations_gb']:.1f} GB")
