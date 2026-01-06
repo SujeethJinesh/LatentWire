@@ -1,0 +1,13 @@
+[metadata]
+version=3.1.0
+base_output_dir=runs/multi_fail_1767683847
+
+[phases]
+training=completed
+phase1_statistical=failed
+phase2_linear_probe=failed
+phase3_baselines=pending
+
+[failures]
+failure_count=3
+last_failure=phase2_linear_probe

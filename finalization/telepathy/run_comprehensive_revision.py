@@ -324,7 +324,7 @@ def run_phase2_linear_probe(args, output_dir: str, log_file: str) -> Dict:
 import sys
 sys.path.append('.')
 
-from telepathy.linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
+from linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
 from telepathy.run_unified_comparison import load_data, DATASET_CONFIGS
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch

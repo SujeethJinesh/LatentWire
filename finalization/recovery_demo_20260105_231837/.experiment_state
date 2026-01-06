@@ -1,0 +1,14 @@
+# Experiment State
+experiment_name=mock_experiment
+start_time=$(date)
+
+# Phases
+phase1_training=completed
+phase2_evaluation=completed
+phase3_analysis=completed
+
+# Checkpoints
+checkpoint_path=checkpoints/final.pt
+failure_count=1
+last_failure=phase2_evaluation
+last_failure_time=Mon Jan  5 23:18:40 PST 2026

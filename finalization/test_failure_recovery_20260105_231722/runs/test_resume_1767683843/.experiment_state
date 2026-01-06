@@ -1,0 +1,32 @@
+# LatentWire Experiment State File
+# Created: Mon Jan  5 23:17:23 PST 2026
+# Experiment: test_resume
+# Timestamp: test
+
+[metadata]
+version=3.1.0
+start_time=1767683843
+base_output_dir=runs/test_resume_1767683843
+
+[phases]
+training=completed
+phase1_statistical=completed
+phase2_linear_probe=failed
+phase3_baselines=pending
+phase4_efficiency=pending
+aggregation=pending
+
+[datasets]
+sst2_eval=completed
+agnews_eval=pending
+trec_eval=pending
+squad_eval=pending
+
+[checkpoints]
+checkpoint_path=runs/test_resume_1767683843/checkpoint/epoch10
+final_epoch=10
+
+[failures]
+failure_count=1
+last_failure=phase2_linear_probe
+last_failure_time=Mon Jan  5 23:17:23 PST 2026

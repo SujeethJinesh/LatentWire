@@ -45,7 +45,7 @@ from dataclasses import dataclass, asdict
 from typing import List, Dict, Any, Optional
 
 # Import Linear Probe baseline modules
-from telepathy.linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
+from linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
 
 
 def set_seed(seed=42):

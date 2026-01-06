@@ -38,10 +38,7 @@ from tqdm import tqdm
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from latentwire.eval import load_model_and_data, run_eval_batch
-from latentwire.models import load_checkpoint
-from latentwire.data import get_dataset
-from latentwire.metrics import compute_wire_bytes, compute_compression_ratio
+from latentwire.data import load_examples
 
 
 def get_memory_usage():
@@ -280,12 +277,31 @@ def main():
 
     # Load dataset
     print(f"Loading {args.dataset} dataset...")
-    dataset = get_dataset(args.dataset, split='validation', max_samples=args.samples)
+    # Load examples using the correct function from latentwire.data
+    examples = load_examples(
+        dataset=args.dataset,
+        split='validation' if args.dataset in ['sst2', 'squad'] else 'test',
+        samples=args.samples
+    )
+
+    # Create a simple dataset wrapper for DataLoader
+    class SimpleDataset(torch.utils.data.Dataset):
+        def __init__(self, examples):
+            self.examples = examples
+
+        def __len__(self):
+            return len(self.examples)
+
+        def __getitem__(self, idx):
+            return self.examples[idx]
+
+    dataset = SimpleDataset(examples)
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=0
+        num_workers=0,
+        collate_fn=lambda x: x  # Return list as-is
     )
 
     # Benchmark each method

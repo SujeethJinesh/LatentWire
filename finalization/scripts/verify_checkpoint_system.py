@@ -28,7 +28,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir, _human_bytes
-from latentwire.models import InterlinguaEncoder, Adapter
+from latentwire.models import InterlinguaInterlinguaEncoder, Adapter
 from latentwire.train import find_latest_checkpoint, load_checkpoint
 
 

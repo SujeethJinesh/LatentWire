@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Integration test for checkpoint resume in train.py.
 
@@ -280,7 +281,7 @@ def test_checkpoint_loading():
     print("="*60)
 
     from latentwire.train import load_checkpoint
-    from latentwire.models import InterlinguaEncoder, Adapter
+    from latentwire.models import InterlinguaInterlinguaEncoder, Adapter
 
     with tempfile.TemporaryDirectory() as tmpdir:
         save_dir = Path(tmpdir)

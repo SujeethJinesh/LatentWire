@@ -230,7 +230,7 @@ def test_gpu_unavailable():
 
         # Mock CUDA as unavailable
         with patch('torch.cuda.is_available', return_value=False):
-            from latentwire.models import InterlinguaEncoder
+            from latentwire.models import InterlinguaInterlinguaEncoder
 
             # Try to create model
             encoder = InterlinguaEncoder(
@@ -276,7 +276,7 @@ def test_invalid_config():
     test_name = "Invalid Configuration"
 
     try:
-        from latentwire.models import InterlinguaEncoder
+        from latentwire.models import InterlinguaInterlinguaEncoder
 
         invalid_configs = [
             {"latent_len": -1, "d_z": 256, "encoder_type": "byte"},  # Negative latent_len

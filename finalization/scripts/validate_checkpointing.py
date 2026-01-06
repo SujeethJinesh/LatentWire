@@ -30,7 +30,7 @@ import numpy as np
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from latentwire.models import InterlinguaEncoder, Adapter
+from latentwire.models import InterlinguaInterlinguaEncoder, Adapter
 from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir, CANONICAL_FILES
 from latentwire.train import load_checkpoint, find_latest_checkpoint
 
@@ -87,10 +87,12 @@ def estimate_checkpoint_size(
     # Size calculations (float32 = 4 bytes per param)
     model_size_mb = (total_params * 4) / (1024 * 1024)
 
-    # Optimizer state (Adam has 2 momentum buffers)
+    # Optimizer state (Adam has 2 momentum buffers, each in float32)
     optimizer_size_mb = 0
     if include_optimizer:
-        optimizer_size_mb = model_size_mb * 2  # 2x for momentum buffers
+        # Adam stores 2 momentum buffers (mean and variance), each same size as params
+        # Each buffer is float32 (4 bytes per param)
+        optimizer_size_mb = (total_params * 4 * 2) / (1024 * 1024)  # 2 buffers @ 4 bytes each
 
     # Additional state (RNG, config, etc.)
     misc_size_mb = 1  # ~1MB for misc state

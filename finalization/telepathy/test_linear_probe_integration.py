@@ -11,7 +11,7 @@ def test_imports():
     print("Testing imports...")
 
     try:
-        from telepathy.linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
+        from linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
         print("✓ Linear probe modules imported successfully")
     except ImportError as e:
         print(f"✗ Failed to import linear probe modules: {e}")
@@ -31,7 +31,7 @@ def test_linear_probe_instantiation():
     print("\nTesting LinearProbeBaseline instantiation...")
 
     try:
-        from telepathy.linear_probe_baseline import LinearProbeBaseline
+        from linear_probe_baseline import LinearProbeBaseline
 
         probe = LinearProbeBaseline(
             hidden_dim=4096,

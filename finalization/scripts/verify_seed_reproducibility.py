@@ -198,7 +198,7 @@ class SeedVerifier:
         results = {}
 
         try:
-            from latentwire.models import InterlinguaEncoder, Adapter
+            from latentwire.models import InterlinguaInterlinguaEncoder, Adapter
 
             # Test encoder initialization
             self.set_seed(42)

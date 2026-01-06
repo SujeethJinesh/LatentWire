@@ -463,7 +463,7 @@ def main():
             ckpt_config = json.load(f)
 
         # Import encoder and adapter classes
-        from latentwire.models import ByteEncoder, SimpleEncoder, InterlinguaEncoder
+        from latentwire.models import ByteInterlinguaEncoder, SimpleEncoder, InterlinguaEncoder
         from latentwire.config import EncoderConfig, AdapterConfig, make_adapter
 
         # Build encoder from config

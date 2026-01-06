@@ -30,7 +30,7 @@ def test_with_latentwire_model():
     print("=" * 60)
 
     try:
-        from latentwire.models import InterlinguaEncoder, Adapter
+        from latentwire.models import InterlinguaInterlinguaEncoder, Adapter
 
         # Test configuration
         latent_len = 32

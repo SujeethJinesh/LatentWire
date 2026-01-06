@@ -9,7 +9,7 @@ import torch.nn as nn
 import json
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from latentwire.models import ByteEncoder, Adapter, LMWrapper
+from latentwire.models import ByteInterlinguaEncoder, Adapter, LMWrapper
 from latentwire.eval import evaluate_on_squad
 from latentwire.data import load_squad_dataset
 import argparse

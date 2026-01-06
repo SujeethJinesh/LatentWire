@@ -168,11 +168,11 @@ def check_gpu_availability():
 def estimate_memory_requirements() -> Dict[str, float]:
     """Estimate memory requirements for typical configurations."""
     # Model sizes (in billions of parameters)
-    llama_8b = 8e9
-    qwen_7b = 7e9
-    encoder = 50e6  # ~50M for encoder + adapters
+    llama_8b = 8e9  # Frozen model
+    qwen_7b = 7e9   # Frozen model
+    encoder = 50e6  # ~50M for encoder + adapters (TRAINABLE)
 
-    # Bytes per parameter (fp16)
+    # Bytes per parameter (fp16/bf16)
     bytes_per_param = 2
 
     # Typical batch size
@@ -181,14 +181,22 @@ def estimate_memory_requirements() -> Dict[str, float]:
     hidden_dim = 4096
 
     # Calculate memory requirements (in GB)
-    model_memory = (llama_8b + qwen_7b + encoder) * bytes_per_param / 1e9
-    activation_memory = batch_size * seq_len * hidden_dim * 4 / 1e9
-    optimizer_memory = model_memory * 2  # Adam optimizer states
+    # Frozen models just need model weights
+    frozen_model_memory = (llama_8b + qwen_7b) * bytes_per_param / 1e9
+    # Trainable encoder needs weights + gradients
+    trainable_model_memory = encoder * bytes_per_param / 1e9
 
-    total_memory = model_memory + activation_memory + optimizer_memory
+    activation_memory = batch_size * seq_len * hidden_dim * 4 / 1e9
+
+    # Adam optimizer states ONLY for trainable parameters (encoder)
+    # Adam needs 8 bytes per param (2x fp32 momentum buffers)
+    optimizer_memory = encoder * 8 / 1e9  # Only for trainable encoder params
+
+    total_memory = frozen_model_memory + trainable_model_memory + activation_memory + optimizer_memory
 
     return {
-        'model_memory_gb': round(model_memory, 1),
+        'frozen_model_memory_gb': round(frozen_model_memory, 1),
+        'trainable_model_memory_gb': round(trainable_model_memory, 1),
         'activation_memory_gb': round(activation_memory, 1),
         'optimizer_memory_gb': round(optimizer_memory, 1),
         'total_memory_gb': round(total_memory, 1),
@@ -349,6 +357,10 @@ def main():
     # Memory
     print("\n💾 MEMORY REQUIREMENTS")
     mem = report['memory_estimate']
+    print(f"  Frozen models (Llama+Qwen): {mem['frozen_model_memory_gb']} GB")
+    print(f"  Trainable encoder/adapters: {mem['trainable_model_memory_gb']} GB")
+    print(f"  Activations: {mem['activation_memory_gb']} GB")
+    print(f"  Optimizer states (Adam): {mem['optimizer_memory_gb']} GB")
     print(f"  Total estimated: {mem['total_memory_gb']} GB")
     print(f"  Recommended SLURM memory: {mem['recommended_slurm_memory_gb']} GB")
     print(f"  Recommended GPUs: {mem['recommended_gpus']}")

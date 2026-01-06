@@ -27,7 +27,7 @@ import os
 import numpy as np
 from scipy import stats
 
-from latent_bridge_v15 import LatentBridgeV15
+from models import LatentBridgeV15
 
 # TREC class labels
 TREC_LABELS = ["ABBR", "ENTY", "DESC", "HUM", "LOC", "NUM"]

@@ -21,7 +21,7 @@ from pathlib import Path
 import json
 
 # Import our sklearn-based linear probe
-from telepathy.linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
+from linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
 
 
 def main():

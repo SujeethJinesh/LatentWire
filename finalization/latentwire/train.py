@@ -26,6 +26,19 @@ try:
 except ImportError as e:
     PYTORCH_AVAILABLE = False
     PYTORCH_IMPORT_ERROR = str(e)
+
+# Import comprehensive error handling utilities
+from latentwire.error_handling import (
+    ErrorTracker,
+    retry_on_oom,
+    handle_missing_files,
+    timeout_handler,
+    RobustCheckpointer,
+    DistributedErrorHandler,
+    safe_json_dump,
+    MemoryMonitor,
+    log_system_info,
+)
 from latentwire.core_utils import (
     capture_env_snapshot,
     patch_dataloader_defaults,

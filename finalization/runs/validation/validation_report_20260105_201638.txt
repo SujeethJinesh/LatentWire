@@ -1,0 +1,24 @@
+
+Project directory: /Users/sujeethjinesh/Desktop/LatentWire/finalization
+Report file: runs/validation/validation_report_20260105_201638.txt
+
+1. PYTHON ENVIRONMENT CHECK
+----------------------------
+Python version: Python 3.11.6
+⚠️  Warning: Not in a virtual environment
+
+2. DEPENDENCY CHECK
+-------------------
+❌ torch                MISSING
+❌ transformers         MISSING
+✅ datasets             4.0.0
+❌ accelerate           MISSING
+✅ numpy                2.3.1
+❌ scipy                MISSING
+❌ sklearn              MISSING
+✅ rouge_score          (version unknown)
+❌ statsmodels          MISSING
+✅ pandas               2.3.1
+
+❌ Missing modules: ['torch', 'transformers', 'accelerate', 'scipy', 'sklearn', 'statsmodels']
+Install with: pip install -r requirements.txt

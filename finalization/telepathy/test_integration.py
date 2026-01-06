@@ -51,7 +51,7 @@ except ImportError:
             return self.decoder(self.encoder(x))
 
 try:
-    from telepathy.linear_probe_baseline import LinearProbeBaseline
+    from linear_probe_baseline import LinearProbeBaseline
 except ImportError:
     # Simplified linear probe for testing
     from sklearn.linear_model import LogisticRegression

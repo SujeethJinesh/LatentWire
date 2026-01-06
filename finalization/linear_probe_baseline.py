@@ -474,7 +474,7 @@ def integration_example():
     code = '''
     # In run_unified_comparison.py, add after loading models:
 
-    from telepathy.linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
+    from linear_probe_baseline import LinearProbeBaseline, train_linear_probe, eval_linear_probe
 
     # Initialize results tracking
     seed_results_list = {
@@ -591,7 +591,7 @@ if __name__ == "__main__":
     print("""
     # Quick test to verify it works:
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    from telepathy.linear_probe_baseline import LinearProbeBaseline
+    from linear_probe_baseline import LinearProbeBaseline
 
     # Load model
     model = AutoModelForCausalLM.from_pretrained(

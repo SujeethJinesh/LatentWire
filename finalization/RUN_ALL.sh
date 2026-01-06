@@ -480,7 +480,7 @@ ${BOLD}EXAMPLES:${NC}
 ${BOLD}ENVIRONMENT:${NC}
     Current mode: $([ "$IS_HPC" == "yes" ] && echo "HPC" || echo "Local")
     Work dir: $WORK_DIR
-    Python: $(command -v python &>/dev/null && python --version 2>&1 | head -1 || echo "Not found")
+    Python: $(command -v python3 &>/dev/null && python3 --version 2>&1 | head -1 || echo "Not found")
     CUDA: $(command -v nvidia-smi &>/dev/null && nvidia-smi --query-gpu=count --format=csv,noheader | wc -l || echo "0") GPU(s)
 
 EOF
@@ -624,33 +624,33 @@ validate_environment() {
     print_header "ENVIRONMENT VALIDATION"
 
     # Check Python
-    if ! command -v python &>/dev/null; then
-        print_error "Python not found!"
+    if ! command -v python3 &>/dev/null; then
+        print_error "Python3 not found!"
         exit 1
     fi
-    print_status "Python: $(python --version 2>&1)"
+    print_status "Python: $(python3 --version 2>&1)"
 
     # Check PyTorch
-    if ! python -c "import torch" 2>/dev/null; then
+    if ! python3 -c "import torch" 2>/dev/null; then
         print_error "PyTorch not installed!"
         exit 1
     fi
-    print_status "PyTorch: $(python -c 'import torch; print(torch.__version__)')"
+    print_status "PyTorch: $(python3 -c 'import torch; print(torch.__version__)')"
 
     # Check CUDA if GPUs requested
     if [[ "$NUM_GPUS" -gt 0 ]]; then
-        if ! python -c "import torch; assert torch.cuda.is_available()" 2>/dev/null; then
+        if ! python3 -c "import torch; assert torch.cuda.is_available()" 2>/dev/null; then
             print_warning "CUDA not available, will use CPU"
             NUM_GPUS=0
         else
-            CUDA_VERSION=$(python -c "import torch; print(torch.version.cuda)")
+            CUDA_VERSION=$(python3 -c "import torch; print(torch.version.cuda)")
             print_status "CUDA: $CUDA_VERSION"
         fi
     fi
 
     # Check required packages
     for pkg in transformers datasets accelerate; do
-        if python -c "import $pkg" 2>/dev/null; then
+        if python3 -c "import $pkg" 2>/dev/null; then
             print_status "$pkg: installed"
         else
             print_warning "$pkg not installed"
@@ -705,7 +705,7 @@ run_training() {
         return 0
     fi
 
-    local cmd="python latentwire/train.py"
+    local cmd="python3 latentwire/train.py"
     cmd="$cmd --llama_id '$SOURCE_MODEL'"
     cmd="$cmd --qwen_id '$TARGET_MODEL'"
     cmd="$cmd --dataset $TRAINING_DATASET"
@@ -790,7 +790,7 @@ run_evaluation() {
                 continue
             fi
 
-            python "$eval_script" \
+            python3 "$eval_script" \
                 --ckpt "$CHECKPOINT_PATH" \
                 --dataset "$dataset" \
                 --seed "$seed" \
@@ -824,7 +824,7 @@ run_phase1_statistical() {
     # Statistical analysis
     print_info "Running statistical analysis..."
 
-    python scripts/statistical_testing.py \
+    python3 scripts/statistical_testing.py \
         --results_dir "$BASE_OUTPUT_DIR/results" \
         --bootstrap_samples "$BOOTSTRAP_SAMPLES" \
         --output_file "$BASE_OUTPUT_DIR/results/statistical_summary.json"
@@ -853,7 +853,7 @@ run_phase2_linear_probe() {
 
         print_info "Running linear probe for $dataset..."
 
-        python latentwire/linear_probe_baseline.py \
+        python3 latentwire/linear_probe_baseline.py \
             --source_model "$SOURCE_MODEL" \
             --dataset "$dataset" \
             --layer 16 \
@@ -903,7 +903,7 @@ run_phase4_efficiency() {
     for dataset in $datasets_to_bench; do
         print_info "Measuring efficiency for $dataset..."
 
-        python scripts/benchmark_efficiency.py \
+        python3 scripts/benchmark_efficiency.py \
             --checkpoint "$CHECKPOINT_PATH" \
             --dataset "$dataset" \
             --samples 100 \
@@ -1061,12 +1061,12 @@ run_tests() {
     {
         # Import tests
         print_subheader "Import Tests"
-        python -c "
+        python3 -c "
 import torch
 print(f'PyTorch: {torch.__version__}')
 import transformers
 print(f'Transformers: {transformers.__version__}')
-from latentwire.train import train_latentwire
+from latentwire.train import main
 print('✓ Training imports')
 from latentwire.eval import evaluate_checkpoint
 print('✓ Evaluation imports')
@@ -1074,7 +1074,7 @@ print('✓ Evaluation imports')
 
         # Data tests
         print_subheader "Data Loading Tests"
-        python -c "
+        python3 -c "
 from latentwire.data import get_dataset
 for dataset in ['squad', 'sst2', 'agnews']:
     data = get_dataset(dataset, split='train', max_samples=10)
@@ -1083,7 +1083,7 @@ for dataset in ['squad', 'sst2', 'agnews']:
 
         # Model tests
         print_subheader "Model Tests"
-        python -c "
+        python3 -c "
 from latentwire.models import Encoder, Adapter
 import torch
 
@@ -1099,7 +1099,7 @@ print(f'✓ Adapter: {adapted.shape}')
         # Quick training test
         if [[ "$SKIP_TRAINING" != "yes" ]]; then
             print_subheader "Quick Training Test"
-            python latentwire/train.py \
+            python3 latentwire/train.py \
                 --llama_id "$SOURCE_MODEL" \
                 --qwen_id "$TARGET_MODEL" \
                 --dataset squad \
@@ -1225,7 +1225,7 @@ run_benchmarks() {
 
     print_info "Running benchmarks..."
 
-    python scripts/benchmark_efficiency.py \
+    python3 scripts/benchmark_efficiency.py \
         --checkpoint "$CHECKPOINT_PATH" \
         --dataset squad \
         --samples 100 \
@@ -1365,11 +1365,9 @@ main() {
                 mark_phase_started "aggregation"
 
                 print_info "Aggregating results..."
-                python finalization/aggregate_results.py \
+                python3 scripts/analyze_all_results.py \
                     --results_dir "$BASE_OUTPUT_DIR/results" \
-                    --output_file "$BASE_OUTPUT_DIR/final_results.json" \
-                    --generate_latex_tables \
-                    --generate_plots
+                    --output_file "$BASE_OUTPUT_DIR/final_results.json"
 
                 mark_phase_completed "aggregation"
             fi

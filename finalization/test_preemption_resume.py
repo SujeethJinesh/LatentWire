@@ -26,7 +26,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from latentwire.checkpointing import save_latest_checkpoint, prune_save_dir
-from latentwire.models import InterlinguaEncoder, Adapter
+from latentwire.models import InterlinguaInterlinguaEncoder, Adapter
 from latentwire.train import load_checkpoint, find_latest_checkpoint
 
 

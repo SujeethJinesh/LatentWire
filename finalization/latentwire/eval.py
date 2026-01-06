@@ -9,6 +9,8 @@ import argparse
 import gc
 import ast
 from typing import List, Dict, Any, Tuple, Optional, Sequence
+from tqdm import tqdm
+from datetime import timedelta
 
 try:
     import torch
@@ -19,6 +21,16 @@ except ImportError as e:
     PYTORCH_IMPORT_ERROR = str(e)
 
 import math
+
+# Import comprehensive error handling utilities
+from latentwire.error_handling import (
+    ErrorTracker,
+    retry_on_oom,
+    handle_missing_files,
+    safe_json_dump,
+    MemoryMonitor,
+    log_system_info,
+)
 
 from latentwire.models import (
     InterlinguaEncoder,
@@ -566,18 +578,33 @@ def evaluate_model_chunked_text(
     if torch.cuda.is_available():
         torch.cuda.synchronize()  # Synchronize before starting timing
     t0 = time.time()
-    for i in range(0, len(prompts), chunk_size):
+
+    # Create progress bar for text generation
+    num_chunks = (len(prompts) + chunk_size - 1) // chunk_size
+    pbar = tqdm(range(0, len(prompts), chunk_size),
+                total=num_chunks,
+                desc=f"Text generation{' (' + tag + ')' if tag else ''}",
+                unit="batch",
+                dynamic_ncols=True)
+
+    for i in pbar:
         batch = prompts[i:i + chunk_size]
         cap = max_new_tokens
         if lengths is not None and lengths.numel() > 0:
             chunk_len = lengths[i:i + chunk_size]
             if chunk_len.numel() > 0:
                 cap = max(1, min(max_new_tokens, int(chunk_len.max().item())))
+
+        # Update progress bar with current batch info
+        pbar.set_postfix({'samples': f"{min(i+chunk_size, len(prompts))}/{len(prompts)}",
+                         'max_tokens': cap}, refresh=False)
+
         if use_embeddings:
             out_ids = wrapper.generate_from_text_embeddings(batch, max_new_tokens=cap, temperature=0.0)
         else:
             out_ids = wrapper.generate_from_text(batch, max_new_tokens=cap, temperature=0.0)
         preds.extend(wrapper.decode_batch_then_clean(out_ids))
+
     if torch.cuda.is_available():
         torch.cuda.synchronize()
     t_total = time.time() - t0

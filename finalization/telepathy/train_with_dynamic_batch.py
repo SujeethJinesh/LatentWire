@@ -32,7 +32,7 @@ def integrate_with_latentwire_training(args):
         args: Training arguments
     """
     from latentwire.train import main as train_main
-    from latentwire.models import InterlinguaEncoder, Adapter, LMWrapper
+    from latentwire.models import InterlinguaInterlinguaEncoder, Adapter, LMWrapper
     from transformers import AutoModelForCausalLM
 
     print("=" * 60)

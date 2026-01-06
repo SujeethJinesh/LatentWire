@@ -33,7 +33,7 @@ def test_imports():
         print("✓ latentwire.checkpointing imported successfully")
         
         # Test that key classes are available
-        from latentwire.models import InterlinguaEncoder, Adapter, LMWrapper
+        from latentwire.models import InterlinguaInterlinguaEncoder, Adapter, LMWrapper
         print("✓ Key model classes available")
         
         from latentwire.losses import k_token_ce_from_prefix, kd_first_k_prefix_vs_text

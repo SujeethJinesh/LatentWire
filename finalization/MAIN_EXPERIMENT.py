@@ -310,7 +310,7 @@ class LinearProbeBaseline:
                 if parent_dir not in sys.path:
                     sys.path.insert(0, parent_dir)
 
-                from telepathy.linear_probe_baseline import (
+                from linear_probe_baseline import (
                     LinearProbeBaseline as LPB,
                     train_linear_probe,
                     eval_linear_probe

@@ -20,8 +20,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # Add parent dir to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from latentwire.data import get_dataset
-from latentwire.models import InterlinguaEncoder, Adapter, LMWrapper, apply_lora_if_requested
+from latentwire.data import load_examples
+from latentwire.models import InterlinguaInterlinguaEncoder, Adapter, LMWrapper, apply_lora_if_requested
 from latentwire.embed_experiments import (
     get_vocab_embedding_stats,
     StatisticalMatcher,
@@ -31,7 +31,7 @@ from latentwire.embed_experiments import (
     RandomInterpolationBaseline,
 )
 from latentwire.metrics import compute_f1, compute_em
-from latentwire.prefix_utils import calibrate_latent_scale
+# from latentwire.prefix_utils  # Module doesn't exist import calibrate_latent_scale
 
 
 def train_one_epoch(encoder, adapters, models, dataloader, optimizer, experiment_config, device, epoch):

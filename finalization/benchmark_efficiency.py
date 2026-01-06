@@ -23,10 +23,11 @@ import os
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from latentwire.models import Encoder, Adapter, LMWrapper
-from latentwire.data import get_dataset
+from latentwire.models import InterlinguaEncoder as Encoder, Adapter, LMWrapper
+from latentwire.data import load_examples as get_dataset
 from latentwire.eval import load_checkpoint_for_eval
-from latentwire.prefix_utils import PrefixConfig
+# Note: PrefixConfig doesn't exist, commenting out for now
+# # from latentwire.prefix_utils  # Module doesn't exist import PrefixConfig
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 

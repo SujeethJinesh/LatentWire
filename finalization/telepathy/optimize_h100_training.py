@@ -30,7 +30,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 
 # Import from existing modules
 try:
-    from latentwire.models import InterlinguaEncoder, Adapter, LMWrapper, LMConfig
+    from latentwire.models import InterlinguaInterlinguaEncoder, Adapter, LMWrapper, LMConfig
     from latentwire.data import load_examples
 except ImportError:
     print("Warning: Could not import latentwire modules")
