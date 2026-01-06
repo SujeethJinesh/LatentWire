@@ -1,0 +1,16 @@
+# LatentWire SRUN Commands for Marlowe HPC
+
+## Quick Training (2 hours, 1 GPU)
+srun --job-name=train --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=2:00:00 --mem=64GB --pty bash RUN.sh train
+
+## Evaluation (1 hour, 1 GPU)
+srun --job-name=eval --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=1:00:00 --mem=64GB --pty bash RUN.sh eval
+
+## Full Experiment (4 hours, 4 GPUs)
+srun --job-name=experiment --nodes=1 --gpus=4 --account=marlowe-m000066 --partition=preempt --time=4:00:00 --mem=256GB --pty bash RUN.sh experiment
+
+## Test Suite (30 minutes, 1 GPU)
+srun --job-name=test --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=0:30:00 --mem=64GB --pty bash RUN.sh test
+
+Note: Based on experiments, we use 5000 samples and 3 epochs (not 88k samples and 24 epochs).
+This converges properly and runs in reasonable time.
