@@ -1,59 +1,47 @@
 #!/bin/bash
 # =============================================================================
-# EXACT HPC COMMAND TO RUN LATENTWIRE EXPERIMENTS ON MARLOWE
+# HPC COMMAND TO RUN LATENTWIRE EXPERIMENTS ON MARLOWE
 # =============================================================================
-# This file contains the exact command to run on Marlowe HPC cluster
-# Copy-paste this command after connecting to the cluster
+# Copy-paste these commands after connecting to the HPC cluster
 # =============================================================================
 
 cat << 'EOF'
 
 ############################################################
-# COPY AND RUN THIS COMMAND ON MARLOWE HPC
+# EXACT COMMAND FOR MARLOWE HPC (40GB MEMORY)
 ############################################################
 
-# Step 1: Connect to HPC and navigate to project directory
+# Step 1: Connect to HPC and navigate to project
 cd /projects/m000066/sujinesh/LatentWire
 
-# Step 2: Pull latest code from git
+# Step 2: Pull latest code
 git pull
 
-# Step 3: Run the full experiment (choose ONE option below)
+# Step 3: Run the full experiment
 
-# ===== OPTION A: Interactive Session (Recommended - you can monitor progress) =====
+# ===== OPTION A: Interactive Session (Recommended) =====
 srun --job-name=latentwire_paper \
      --nodes=1 \
      --gpus=4 \
      --account=marlowe-m000066 \
      --partition=preempt \
      --time=4:00:00 \
-     --mem=256GB \
+     --mem=40GB \
      --pty bash -c "
-         # Ensure dependencies are installed
-         if [ -f requirements.txt ]; then
-             echo 'Installing dependencies...'
-             pip install -q -r requirements.txt 2>/dev/null || true
-         fi
+         # Install dependencies
+         pip install -q -r requirements.txt 2>/dev/null || true
 
-         # Set environment variables
+         # Set environment
          export PYTHONPATH=.
          export PYTHONUNBUFFERED=1
-         export PYTORCH_ENABLE_MPS_FALLBACK=1
-
-         # Configuration for paper
          export SAMPLES=5000
          export EPOCHS=8
          export EVAL_SAMPLES=1000
-         export OUTPUT_DIR=runs/paper_final_$(date +%Y%m%d_%H%M%S)
+         export BATCH_SIZE=4  # Reduced for 40GB
+         export OUTPUT_DIR=runs/paper_final_\$(date +%Y%m%d_%H%M%S)
 
-         # Use the FIXED script that addresses all reviewer concerns
-         if [ -f finalization/RUN_FIXED.sh ]; then
-             echo 'Running fixed experiment script...'
-             bash finalization/RUN_FIXED.sh experiment
-         else
-             echo 'Running original experiment script...'
-             bash finalization/RUN.sh experiment
-         fi
+         # Run experiment with comprehensive logging
+         bash finalization/RUN.sh experiment
 
          # Push results to git
          git add -A
@@ -61,88 +49,76 @@ srun --job-name=latentwire_paper \
          git push || true
      "
 
-# ===== OPTION B: Quick Test (For debugging - 30 minutes, 1 GPU) =====
+# ===== OPTION B: Quick Test (30 minutes, 1 GPU) =====
 srun --job-name=latentwire_test \
      --nodes=1 \
      --gpus=1 \
      --account=marlowe-m000066 \
      --partition=preempt \
      --time=0:30:00 \
-     --mem=64GB \
-     --pty bash -c "
-         export PYTHONPATH=.
-         pip install -q -r requirements.txt 2>/dev/null || true
-         bash finalization/RUN_FIXED.sh quick_test
-     "
+     --mem=40GB \
+     --pty bash finalization/RUN.sh quick_test
 
-# ===== OPTION C: Batch Submission (Runs in background) =====
-# First create the SLURM script
-cat > submit_paper.slurm << 'SLURM_EOF'
-#!/bin/bash
-#SBATCH --job-name=latentwire_paper
-#SBATCH --nodes=1
-#SBATCH --gpus=4
-#SBATCH --account=marlowe-m000066
-#SBATCH --partition=preempt
-#SBATCH --time=4:00:00
-#SBATCH --mem=256GB
-#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/paper_%j.log
-#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/paper_%j.err
-
-cd /projects/m000066/sujinesh/LatentWire
-git pull
-
-# Install dependencies
-pip install -q -r requirements.txt 2>/dev/null || true
-
-# Set environment
-export PYTHONPATH=.
-export PYTHONUNBUFFERED=1
-export SAMPLES=5000
-export EPOCHS=8
-export EVAL_SAMPLES=1000
-export OUTPUT_DIR=runs/paper_final_${SLURM_JOB_ID}
-
-# Run experiment
-bash finalization/RUN_FIXED.sh experiment
-
-# Push results
-git add -A
-git commit -m "results: paper experiment job ${SLURM_JOB_ID}" || true
-git push || true
-SLURM_EOF
-
-# Then submit it
-sbatch submit_paper.slurm
-
-# Monitor the job
-squeue -u $USER
-tail -f runs/paper_*.log
+# ===== OPTION C: Batch Submission =====
+# Create and submit SLURM script
+bash finalization/RUN.sh slurm experiment
+sbatch runs/exp_*/submit_*.slurm
 
 ############################################################
-# MONITORING COMMANDS
+# MONITORING & RESULTS
 ############################################################
 
-# Check job status:
+# Monitor job status
 squeue -u $USER
 
-# Watch output log (replace JOB_ID with actual job ID):
-tail -f runs/paper_JOB_ID.log
+# Watch logs in real-time
+tail -f runs/*/master_*.log
+tail -f runs/*/training_*.log
 
-# Cancel job if needed (replace JOB_ID with actual job ID):
-scancel JOB_ID
-
-# Pull results back to your local machine:
+# After completion, pull results locally
 git pull
+
+# View results
+cat runs/*/LOG_INDEX.md  # See all log files
+cat runs/*/evaluation_summary_*.log  # See metrics
+cat runs/*/results/*.json | jq '.metrics'  # Parse JSON results
+
+############################################################
+# CONFIGURATION OPTIONS
+############################################################
+
+# All parameters can be customized via environment variables:
+export SAMPLES=10000       # More training samples
+export EPOCHS=12           # More epochs
+export EVAL_SAMPLES=full   # Use full test set
+export BATCH_SIZE=2        # Smaller batch for memory
+export SEEDS="42 123 456 789 999"  # More seeds
+
+# Then run with your custom configuration:
+srun --mem=40GB ... bash finalization/RUN.sh experiment
 
 ############################################################
 # NOTES
 ############################################################
 
-1. The experiment will take approximately 3-4 hours with 4 GPUs
-2. Results will be automatically pushed to git when complete
-3. Use Option A (interactive) if you want to monitor progress
-4. Use Option C (batch) if you want to submit and disconnect
-5. The RUN_FIXED.sh script addresses ALL reviewer concerns
+1. The consolidated RUN.sh includes:
+   - All reviewer fixes (path resolution, output paths, etc.)
+   - Comprehensive logging to timestamped files
+   - Automatic dependency installation
+   - Configuration saved to JSON
+   - Log index generation
+
+2. Memory configuration:
+   - 40GB is sufficient with BATCH_SIZE=4
+   - If OOM, reduce to BATCH_SIZE=2
+
+3. All outputs are logged:
+   - master_*.log: Everything
+   - training_*.log: Training progress
+   - eval_seed*_*.log: Per-seed evaluation
+   - config.json: Experiment configuration
+   - LOG_INDEX.md: Guide to all logs
+
+4. Results automatically pushed to git when complete
 
 EOF

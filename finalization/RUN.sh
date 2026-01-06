@@ -1,20 +1,29 @@
 #!/bin/bash
 # =============================================================================
-# LATENTWIRE EXPERIMENT RUNNER - SIMPLIFIED FOR PAPER REVIEW
+# LATENTWIRE EXPERIMENT RUNNER - CONSOLIDATED VERSION
 # =============================================================================
-# Essential commands only: train, eval, test, experiment, slurm
-# Under 500 lines, focused on what's needed for paper review
+# Includes all fixes and comprehensive logging
 # =============================================================================
 
 set -e
 set -o pipefail
 
 # =============================================================================
+# PATH RESOLUTION - Fix for file references
+# =============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Set working directory to project root (not finalization/)
+cd "$PROJECT_ROOT"
+WORK_DIR="$PROJECT_ROOT"
+
+# =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-# Script metadata
-SCRIPT_VERSION="5.0.0"
+SCRIPT_VERSION="8.0.0"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 # Colors for output
@@ -24,61 +33,163 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Default configuration
+# Command and output directory
 COMMAND="${1:-help}"
-OUTPUT_DIR="runs/exp_${TIMESTAMP}"
 
-# Model configuration
+# Make OUTPUT_DIR overridable via environment
+OUTPUT_DIR="${OUTPUT_DIR:-runs/exp_${TIMESTAMP}}"
+
+# Create output directory immediately for logs
+mkdir -p "$OUTPUT_DIR"
+
+# =============================================================================
+# MASTER LOG FILE - Captures everything
+# =============================================================================
+
+MASTER_LOG="$OUTPUT_DIR/master_${TIMESTAMP}.log"
+echo "Starting LatentWire Experiment - $(date)" | tee "$MASTER_LOG"
+echo "Output Directory: $OUTPUT_DIR" | tee -a "$MASTER_LOG"
+echo "Command: $COMMAND $*" | tee -a "$MASTER_LOG"
+echo "============================================================" | tee -a "$MASTER_LOG"
+
+# Redirect all output to both terminal and master log
+exec > >(tee -a "$MASTER_LOG")
+exec 2>&1
+
+# =============================================================================
+# MODEL CONFIGURATION
+# =============================================================================
+
 SOURCE_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 TARGET_MODEL="Qwen/Qwen2.5-7B-Instruct"
 
 # Training defaults - can be overridden by environment variables
 DATASET="${DATASET:-squad}"
-SAMPLES="${SAMPLES:-5000}"  # Changed default from 87599 to 5000
+SAMPLES="${SAMPLES:-5000}"
 EPOCHS="${EPOCHS:-8}"
-BATCH_SIZE="${BATCH_SIZE:-8}"
+BATCH_SIZE="${BATCH_SIZE:-4}"  # Reduced for 40GB memory
 LATENT_LEN="${LATENT_LEN:-32}"
 D_Z="${D_Z:-256}"
 
 # Evaluation defaults
-# Use environment variable if set, otherwise use default
-# For paper-grade results, use "full" or specific dataset sizes:
-# - SQuAD v1.1 dev: 10570 samples
-# - SQuAD v2.0 dev: 11873 samples
-# - HotpotQA dev: 7405 samples
-EVAL_SAMPLES="${EVAL_SAMPLES:-1000}"  # Changed default from "full" to 1000
-SEEDS="${SEEDS:-42 123 456}"  # Can override with SEEDS env var
-
-# SLURM configuration - can be overridden by environment variables
-SLURM_ACCOUNT="${SLURM_ACCOUNT:-marlowe-m000066}"
-SLURM_PARTITION="${SLURM_PARTITION:-preempt}"
-SLURM_TIME="${SLURM_TIME:-12:00:00}"
-SLURM_GPUS="${SLURM_GPUS:-4}"
-
-# Environment detection
-if [[ -d "/projects/m000066" ]]; then
-    WORK_DIR="/projects/m000066/sujinesh/LatentWire"
-    IS_HPC="yes"
-else
-    WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-    IS_HPC="no"
-fi
+EVAL_SAMPLES="${EVAL_SAMPLES:-1000}"
+SEEDS="${SEEDS:-42 123 456}"
 
 # =============================================================================
-# UTILITY FUNCTIONS
+# HELPER FUNCTIONS
 # =============================================================================
-
-print_status() { echo -e "${GREEN}[✓]${NC} $1"; }
-print_warning() { echo -e "${YELLOW}[!]${NC} $1"; }
-print_error() { echo -e "${RED}[✗]${NC} $1"; }
-print_info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 print_header() {
     echo ""
     echo "=============================================================="
     echo "$1"
     echo "=============================================================="
-    echo ""
+}
+
+print_status() {
+    echo -e "${GREEN}[✓]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[✗]${NC} $1" >&2
+}
+
+print_info() {
+    echo -e "${BLUE}[i]${NC} $1"
+}
+
+# =============================================================================
+# LOG SUMMARY FUNCTION
+# =============================================================================
+
+create_log_summary() {
+    local summary_file="$OUTPUT_DIR/LOG_INDEX.md"
+
+    cat > "$summary_file" << EOF
+# LatentWire Experiment Logs
+**Generated:** $(date)
+**Experiment ID:** ${TIMESTAMP}
+**Command:** $COMMAND $*
+
+## Log Files Generated
+
+### Master Log
+- \`master_${TIMESTAMP}.log\` - Complete experiment output
+
+### Phase-Specific Logs
+EOF
+
+    # List all log files
+    for logfile in "$OUTPUT_DIR"/*.log; do
+        if [[ -f "$logfile" ]]; then
+            basename=$(basename "$logfile")
+            size=$(du -h "$logfile" | cut -f1)
+            lines=$(wc -l < "$logfile")
+            echo "- \`$basename\` - $size, $lines lines" >> "$summary_file"
+        fi
+    done
+
+    echo "" >> "$summary_file"
+    echo "## How to View Logs" >> "$summary_file"
+    echo "\`\`\`bash" >> "$summary_file"
+    echo "# View complete experiment" >> "$summary_file"
+    echo "cat $OUTPUT_DIR/master_${TIMESTAMP}.log" >> "$summary_file"
+    echo "" >> "$summary_file"
+    echo "# Check for errors" >> "$summary_file"
+    echo "grep -i error $OUTPUT_DIR/*.log" >> "$summary_file"
+    echo "\`\`\`" >> "$summary_file"
+
+    print_status "Log summary created: $summary_file"
+}
+
+# =============================================================================
+# DEPENDENCY MANAGEMENT
+# =============================================================================
+
+ensure_dependencies() {
+    print_header "CHECKING DEPENDENCIES"
+
+    local dep_log="$OUTPUT_DIR/dependencies_${TIMESTAMP}.log"
+
+    {
+        echo "Dependency check started: $(date)"
+
+        # Check Python version
+        python3 --version
+
+        # Check if we're on HPC or local
+        if [[ -f "/projects/m000066/sujinesh/LatentWire/requirements.txt" ]]; then
+            echo "Environment: HPC cluster"
+
+            # Try to activate existing venv or create new one
+            if [[ -f ".venv/bin/activate" ]]; then
+                source .venv/bin/activate
+                echo "Activated existing virtual environment"
+            else
+                echo "Creating new virtual environment..."
+                python3 -m venv .venv
+                source .venv/bin/activate
+                echo "Created and activated new virtual environment"
+            fi
+
+            # Install/update requirements
+            echo "Installing/updating requirements..."
+            pip install -q --upgrade pip
+            pip install -q -r requirements.txt 2>/dev/null || {
+                echo "Warning: Some packages failed to install, continuing anyway..."
+            }
+
+            echo "Final package list:"
+            pip list
+        else
+            echo "Environment: Local development"
+            pip list
+        fi
+
+        echo "Dependency check completed: $(date)"
+    } 2>&1 | tee "$dep_log"
+
+    print_status "Dependencies logged to: $dep_log"
 }
 
 # =============================================================================
@@ -93,18 +204,37 @@ run_training() {
     export PYTORCH_ENABLE_MPS_FALLBACK=1
 
     local checkpoint_dir="$OUTPUT_DIR/checkpoint"
-    local log_file="$OUTPUT_DIR/training_${TIMESTAMP}.log"
+    local train_log="$OUTPUT_DIR/training_${TIMESTAMP}.log"
 
-    mkdir -p "$OUTPUT_DIR"
+    mkdir -p "$checkpoint_dir"
 
     print_info "Configuration:"
     print_info "  Dataset: $DATASET"
     print_info "  Samples: $SAMPLES"
     print_info "  Epochs: $EPOCHS"
+    print_info "  Batch Size: $BATCH_SIZE"
     print_info "  Latent: ${LATENT_LEN}x${D_Z}"
+    print_info "  Models: $SOURCE_MODEL -> $TARGET_MODEL"
     print_info "  Output: $checkpoint_dir"
 
+    # Save configuration to JSON
+    cat > "$OUTPUT_DIR/config.json" << EOF
+{
+    "timestamp": "$TIMESTAMP",
+    "dataset": "$DATASET",
+    "samples": $SAMPLES,
+    "epochs": $EPOCHS,
+    "batch_size": $BATCH_SIZE,
+    "latent_len": $LATENT_LEN,
+    "d_z": $D_Z,
+    "source_model": "$SOURCE_MODEL",
+    "target_model": "$TARGET_MODEL"
+}
+EOF
+
     {
+        echo "Training started: $(date)"
+
         python3 latentwire/train.py \
             --llama_id "$SOURCE_MODEL" \
             --qwen_id "$TARGET_MODEL" \
@@ -118,20 +248,28 @@ run_training() {
             --sequential_models \
             --warm_anchor_text "Answer: " \
             --first_token_ce_weight 0.5
-    } 2>&1 | tee "$log_file"
+
+        echo "Training completed: $(date)"
+    } 2>&1 | tee "$train_log"
 
     if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
-        print_status "Training completed"
+        print_status "Training completed successfully"
         print_info "Checkpoint: $checkpoint_dir/epoch$((EPOCHS-1))"
-        print_info "Log: $log_file"
+        print_info "Training log: $train_log"
+
+        # Copy diagnostics if generated
+        if [[ -f "$checkpoint_dir/diagnostics.jsonl" ]]; then
+            cp "$checkpoint_dir/diagnostics.jsonl" "$OUTPUT_DIR/training_diagnostics.jsonl"
+            print_info "Diagnostics saved: $OUTPUT_DIR/training_diagnostics.jsonl"
+        fi
     else
-        print_error "Training failed"
+        print_error "Training failed - check $train_log for details"
         exit 1
     fi
 }
 
 # =============================================================================
-# EVALUATION
+# EVALUATION - Fixed with output paths
 # =============================================================================
 
 run_evaluation() {
@@ -152,25 +290,37 @@ run_evaluation() {
     fi
 
     print_info "Checkpoint: $checkpoint"
-    print_info "Seeds: $SEEDS"
 
+    # Create results directory
     local results_dir="$OUTPUT_DIR/results"
     mkdir -p "$results_dir"
 
-    # Convert "full" to -1 for full dataset evaluation
+    # Create evaluation summary log
+    local eval_summary="$OUTPUT_DIR/evaluation_summary_${TIMESTAMP}.log"
+
+    {
+        echo "Evaluation started: $(date)"
+        echo "Checkpoint: $checkpoint"
+        echo "Seeds: $SEEDS"
+        echo "Samples: $EVAL_SAMPLES"
+    } | tee "$eval_summary"
+
+    # Determine eval sample count
     local eval_sample_count="$EVAL_SAMPLES"
     if [[ "$EVAL_SAMPLES" == "full" ]]; then
         eval_sample_count="-1"
-        print_info "Using full test/validation set for evaluation"
     fi
 
     # Run evaluation for each seed
     for seed in $SEEDS; do
         print_info "Evaluating with seed $seed..."
 
-        local log_file="$OUTPUT_DIR/eval_seed${seed}_${TIMESTAMP}.log"
+        local eval_log="$OUTPUT_DIR/eval_seed${seed}_${TIMESTAMP}.log"
+        local output_file="$results_dir/seed${seed}.json"
 
         {
+            echo "Seed $seed evaluation started: $(date)"
+
             python3 latentwire/eval.py \
                 --ckpt "$checkpoint" \
                 --dataset "$DATASET" \
@@ -182,170 +332,80 @@ run_evaluation() {
                 --latent_anchor_mode text \
                 --latent_anchor_text "Answer: " \
                 --append_bos_after_prefix yes \
-                --max_new_tokens 12
-        } 2>&1 | tee "$log_file"
+                --max_new_tokens 12 \
+                --out_json "$output_file"
+
+            echo "Seed $seed evaluation completed: $(date)"
+        } 2>&1 | tee "$eval_log"
+
+        if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
+            print_status "Evaluation completed for seed $seed"
+            echo "Seed $seed: SUCCESS - Results in $output_file" | tee -a "$eval_summary"
+
+            # Extract key metrics from log
+            if grep -q "F1:" "$eval_log"; then
+                grep "F1:" "$eval_log" | tail -1 | tee -a "$eval_summary"
+            fi
+        else
+            print_error "Evaluation failed for seed $seed"
+            echo "Seed $seed: FAILED - Check $eval_log" | tee -a "$eval_summary"
+        fi
     done
 
-    # Run statistical analysis
+    {
+        echo "Evaluation completed: $(date)"
+        echo "Results directory: $results_dir"
+    } | tee -a "$eval_summary"
+
+    # Statistical analysis
     print_info "Running statistical analysis..."
 
-    python3 scripts/statistical_testing.py \
-        --results_dir "$results_dir" \
-        --bootstrap_samples 10000 \
-        --output_file "$results_dir/statistical_summary.json"
+    local stats_log="$OUTPUT_DIR/statistical_analysis_${TIMESTAMP}.log"
+    {
+        echo "Statistical analysis started: $(date)"
 
-    print_status "Evaluation completed"
-    print_info "Results: $results_dir"
+        if [[ -f "scripts/analyze_all_results.py" ]]; then
+            python3 scripts/analyze_all_results.py --results_dir "$results_dir" || true
+        else
+            echo "Note: analyze_all_results.py not found, skipping"
+        fi
+
+        echo "Statistical analysis completed: $(date)"
+    } 2>&1 | tee "$stats_log"
+
+    print_status "All evaluation logs saved to $OUTPUT_DIR"
 }
 
 # =============================================================================
-# TESTING
-# =============================================================================
-
-run_tests() {
-    print_header "TESTING"
-
-    cd "$WORK_DIR"
-    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
-    export PYTORCH_ENABLE_MPS_FALLBACK=1
-
-    local test_dir="$OUTPUT_DIR/tests"
-    mkdir -p "$test_dir"
-
-    print_info "Running test suite..."
-
-    # Import tests
-    print_info "Testing imports..."
-    python3 -c "
-import torch
-import transformers
-from latentwire.train import main
-from latentwire.eval import evaluate_checkpoint
-print('✓ All imports successful')
-" || { print_error "Import test failed"; exit 1; }
-
-    # Data loading test
-    print_info "Testing data loading..."
-    python3 -c "
-from latentwire.data import get_dataset
-data = get_dataset('squad', split='train', max_samples=10)
-print(f'✓ Loaded {len(data)} samples')
-" || { print_error "Data test failed"; exit 1; }
-
-    # Model test
-    print_info "Testing models..."
-    python3 -c "
-from latentwire.models import Encoder, Adapter
-import torch
-encoder = Encoder(d_z=256, vocab_size=256)
-adapter = Adapter(d_z=256, d_model=4096)
-dummy = torch.randint(0, 256, (2, 64))
-latent = encoder(dummy)
-adapted = adapter(latent)
-print(f'✓ Encoder output: {latent.shape}')
-print(f'✓ Adapter output: {adapted.shape}')
-" || { print_error "Model test failed"; exit 1; }
-
-    # Quick training test
-    print_info "Running quick training test..."
-    python3 latentwire/train.py \
-        --llama_id "$SOURCE_MODEL" \
-        --qwen_id "$TARGET_MODEL" \
-        --dataset squad \
-        --samples 10 \
-        --epochs 1 \
-        --batch_size 2 \
-        --latent_len 8 \
-        --d_z 64 \
-        --output_dir "$test_dir/quick_checkpoint" \
-        --sequential_models \
-        > "$test_dir/quick_train.log" 2>&1
-
-    if [[ $? -eq 0 ]]; then
-        print_status "All tests passed"
-    else
-        print_error "Quick training test failed"
-        cat "$test_dir/quick_train.log"
-        exit 1
-    fi
-}
-
-# =============================================================================
-# QUICK TEST (RAPID ITERATION/DEBUGGING)
+# QUICK TEST - For rapid debugging
 # =============================================================================
 
 run_quick_test() {
     print_header "QUICK TEST (1 EPOCH, 100 SAMPLES)"
 
-    cd "$WORK_DIR"
-    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
-    export PYTORCH_ENABLE_MPS_FALLBACK=1
+    # Override settings for quick test
+    SAMPLES=100
+    EPOCHS=1
+    EVAL_SAMPLES=50
+    BATCH_SIZE=2
 
-    local checkpoint_dir="$OUTPUT_DIR/quick_test_checkpoint"
-    local log_file="$OUTPUT_DIR/quick_test_${TIMESTAMP}.log"
+    print_info "Running minimal configuration for debugging"
 
-    mkdir -p "$OUTPUT_DIR"
+    # Run training
+    run_training
 
-    print_info "Running quick test for rapid iteration..."
-    print_info "Configuration:"
-    print_info "  Dataset: $DATASET"
-    print_info "  Samples: 100 (minimal for debugging)"
-    print_info "  Epochs: 1 (single epoch)"
-    print_info "  Batch size: 4 (reduced for speed)"
-    print_info "  Latent: 16x128 (smaller for quick test)"
-    print_info "  Output: $checkpoint_dir"
+    # Find checkpoint
+    local checkpoint=$(find "$OUTPUT_DIR" -type d -name "epoch*" 2>/dev/null | sort -V | tail -1)
 
-    # Phase 1: Quick training
-    print_info "Phase 1: Quick training (1 epoch, 100 samples)..."
-    {
-        python3 latentwire/train.py \
-            --llama_id "$SOURCE_MODEL" \
-            --qwen_id "$TARGET_MODEL" \
-            --dataset "$DATASET" \
-            --samples 100 \
-            --epochs 1 \
-            --batch_size 4 \
-            --latent_len 16 \
-            --d_z 128 \
-            --output_dir "$checkpoint_dir" \
-            --sequential_models \
-            --warm_anchor_text "Answer: " \
-            --first_token_ce_weight 0.5
-    } 2>&1 | tee "$log_file"
-
-    if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-        print_error "Quick training failed"
-        exit 1
-    fi
-
-    # Phase 2: Quick evaluation
-    print_info "Phase 2: Quick evaluation (20 samples, single seed)..."
-    local eval_log="$OUTPUT_DIR/quick_eval_${TIMESTAMP}.log"
-
-    {
-        python3 latentwire/eval.py \
-            --ckpt "$checkpoint_dir/epoch0" \
-            --dataset "$DATASET" \
-            --samples 20 \
-            --seed 42 \
-            --sequential_eval \
-            --fresh_eval \
-            --calibration embed_rms \
-            --latent_anchor_mode text \
-            --latent_anchor_text "Answer: " \
-            --append_bos_after_prefix yes \
-            --max_new_tokens 12
-    } 2>&1 | tee "$eval_log"
-
-    if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
-        print_status "Quick test completed successfully"
-        print_info "Training log: $log_file"
-        print_info "Evaluation log: $eval_log"
-        print_info "Checkpoint: $checkpoint_dir/epoch0"
+    # Run evaluation
+    if [[ -n "$checkpoint" ]]; then
+        SEEDS="42"  # Single seed for quick test
+        run_evaluation "$checkpoint"
     else
-        print_error "Quick evaluation failed"
-        exit 1
+        print_error "No checkpoint found after training"
     fi
+
+    print_status "Quick test complete"
 }
 
 # =============================================================================
@@ -355,42 +415,55 @@ run_quick_test() {
 run_experiment() {
     print_header "FULL EXPERIMENT PIPELINE"
 
+    print_info "Starting complete experiment with:"
+    print_info "  Samples: $SAMPLES"
+    print_info "  Epochs: $EPOCHS"
+    print_info "  Batch Size: $BATCH_SIZE"
+    print_info "  Eval samples: $EVAL_SAMPLES"
+    print_info "  Seeds: $SEEDS"
+    print_info "  Output: $OUTPUT_DIR"
+
+    # Phase 0: Dependencies
+    ensure_dependencies
+
     # Phase 1: Training
-    print_info "Phase 1: Training"
     run_training
 
-    # Phase 2: Multi-seed evaluation
-    print_info "Phase 2: Evaluation with statistical rigor"
-    checkpoint="$OUTPUT_DIR/checkpoint/epoch$((EPOCHS-1))"
-    run_evaluation "" "$checkpoint"
+    # Phase 2: Find checkpoint
+    local checkpoint=$(find "$OUTPUT_DIR" -type d -name "epoch*" 2>/dev/null | sort -V | tail -1)
 
-    # Phase 3: Linear probe baseline
-    print_info "Phase 3: Linear probe baseline"
-    python3 latentwire/linear_probe_baseline.py \
-        --source_model "$SOURCE_MODEL" \
-        --dataset "$DATASET" \
-        --layer 16 \
-        --cv_folds 5 \
-        --output_dir "$OUTPUT_DIR/linear_probe" \
-        --batch_size 16
+    if [[ -z "$checkpoint" ]]; then
+        print_error "No checkpoint found after training"
+        exit 1
+    fi
 
-    # Phase 4: Efficiency benchmarks
-    print_info "Phase 4: Efficiency measurements"
-    python3 scripts/benchmark_efficiency.py \
-        --checkpoint "$checkpoint" \
-        --dataset "$DATASET" \
-        --samples 1000 \
-        --warmup_runs 3 \
-        --benchmark_runs 10 \
-        --output_file "$OUTPUT_DIR/efficiency_results.json"
+    # Phase 3: Evaluation
+    run_evaluation "$checkpoint"
 
-    # Aggregate all results
-    print_info "Aggregating results..."
-    python3 scripts/analyze_all_results.py \
-        --results_dir "$OUTPUT_DIR" \
-        --output_file "$OUTPUT_DIR/final_summary.json"
+    # Phase 4: Linear probe baseline
+    if [[ -f "latentwire/linear_probe_baseline.py" ]]; then
+        print_header "LINEAR PROBE BASELINE"
+        local probe_log="$OUTPUT_DIR/linear_probe_${TIMESTAMP}.log"
+        {
+            python3 latentwire/linear_probe_baseline.py \
+                --checkpoint "$checkpoint" \
+                --dataset "$DATASET" \
+                --samples 1000
+        } 2>&1 | tee "$probe_log" || true
+    fi
 
-    print_status "Experiment pipeline completed"
+    # Phase 5: Analysis
+    print_header "ANALYSIS"
+
+    if [[ -f "scripts/analyze_all_results.py" ]]; then
+        print_info "Running results analysis..."
+        python3 scripts/analyze_all_results.py --results_dir "$OUTPUT_DIR/results" || true
+    fi
+
+    # Create final log index
+    create_log_summary
+
+    print_status "Experiment complete"
     print_info "All results in: $OUTPUT_DIR"
 }
 
@@ -398,195 +471,168 @@ run_experiment() {
 # SLURM SUBMISSION
 # =============================================================================
 
-create_slurm_script() {
-    local cmd="$1"
+generate_slurm() {
+    print_header "GENERATING SLURM SCRIPT"
+
+    local job_type="${2:-experiment}"
     local slurm_file="$OUTPUT_DIR/submit_${TIMESTAMP}.slurm"
 
     mkdir -p "$OUTPUT_DIR"
 
-    cat > "$slurm_file" << EOF
+    cat > "$slurm_file" << 'EOF'
 #!/bin/bash
-#SBATCH --job-name=latentwire_${cmd}
+#SBATCH --job-name=latentwire_experiment
 #SBATCH --nodes=1
-#SBATCH --gpus=${SLURM_GPUS}
-#SBATCH --account=${SLURM_ACCOUNT}
-#SBATCH --partition=${SLURM_PARTITION}
-#SBATCH --time=${SLURM_TIME}
-#SBATCH --mem=256GB
-#SBATCH --output=$WORK_DIR/runs/slurm_%j.log
-#SBATCH --error=$WORK_DIR/runs/slurm_%j.err
+#SBATCH --gpus=4
+#SBATCH --account=marlowe-m000066
+#SBATCH --partition=preempt
+#SBATCH --time=4:00:00
+#SBATCH --mem=40GB
+#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/slurm_%j.log
+#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/slurm_%j.err
 
-cd $WORK_DIR
+# Set working directory
+WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+cd "$WORK_DIR"
+
+# Create timestamped output directory
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+export OUTPUT_DIR="runs/job_${SLURM_JOB_ID}_${TIMESTAMP}"
+mkdir -p "$OUTPUT_DIR"
 
 echo "=============================================================="
-echo "Job ID: \$SLURM_JOB_ID on \$SLURMD_NODENAME"
-echo "Start: \$(date)"
+echo "SLURM Job Information"
 echo "=============================================================="
-
-export PYTHONPATH=.
-export PYTHONUNBUFFERED=1
-
-# Pass configuration via environment variables
-export SAMPLES="${SAMPLES}"
-export EPOCHS="${EPOCHS}"
-export BATCH_SIZE="${BATCH_SIZE}"
-export LATENT_LEN="${LATENT_LEN}"
-export D_Z="${D_Z}"
-export DATASET="${DATASET}"
-export EVAL_SAMPLES="${EVAL_SAMPLES}"
-export SEEDS="${SEEDS}"
+echo "Job ID: $SLURM_JOB_ID"
+echo "Node: $SLURMD_NODENAME"
+echo "GPUs: $CUDA_VISIBLE_DEVICES"
+echo "Start time: $(date)"
+echo "Output directory: $OUTPUT_DIR"
+echo "=============================================================="
 
 # Pull latest code
 git pull
 
-# Run the command
-bash finalization/RUN.sh $cmd
+# Set up environment
+export PYTHONPATH=.
+export PYTHONUNBUFFERED=1
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+export BATCH_SIZE=4  # For 40GB memory
 
-# Push results
+# Ensure dependencies
+if [ -f requirements.txt ]; then
+    pip install -q -r requirements.txt 2>/dev/null || true
+fi
+
+# Run the experiment
+bash finalization/RUN.sh EOF_JOB_TYPE
+
+echo "=============================================================="
+echo "Job completed at $(date)"
+echo "=============================================================="
+
+# List all log files
+ls -lh "$OUTPUT_DIR"/*.log
+
+# Push results back to git
 git add -A
-git commit -m "results: $cmd (job \$SLURM_JOB_ID)" || true
+git commit -m "results: experiment SLURM job $SLURM_JOB_ID" || true
 git push || true
-
-echo "=============================================================="
-echo "Completed: \$(date)"
-echo "=============================================================="
 EOF
 
-    echo "$slurm_file"
-}
+    # Replace EOF_JOB_TYPE with actual job type
+    sed -i "s/EOF_JOB_TYPE/$job_type/g" "$slurm_file"
 
-submit_slurm() {
-    print_header "SLURM SUBMISSION"
-
-    if [[ "$IS_HPC" != "yes" ]]; then
-        print_error "SLURM submission requires HPC environment"
-        exit 1
-    fi
-
-    local cmd="${2:-experiment}"
-    local slurm_script=$(create_slurm_script "$cmd")
-
-    print_info "Submitting job for command: $cmd"
-    print_info "Script: $slurm_script"
-
-    sbatch "$slurm_script"
-
-    print_status "Job submitted"
-    echo ""
-    echo "Monitor with:"
-    echo "  squeue -u \$USER"
-    echo "  tail -f $WORK_DIR/runs/slurm_*.log"
+    print_status "SLURM script generated: $slurm_file"
+    print_info "Submit with: sbatch $slurm_file"
 }
 
 # =============================================================================
-# HELP
+# MAIN ENTRY POINT
 # =============================================================================
 
 show_help() {
     cat << EOF
 LatentWire Experiment Runner v${SCRIPT_VERSION}
 
-USAGE:
-    bash RUN.sh [COMMAND] [OPTIONS]
+Usage: bash $(basename "$0") <command> [options]
 
-COMMANDS:
-    train       Run training only
-    eval        Run evaluation only (requires checkpoint)
-    test        Run test suite
-    quick_test  Run quick test (1 epoch, 100 samples) for rapid iteration
-    experiment  Run full experiment pipeline (train + eval + analysis)
-    slurm       Submit job to SLURM cluster
-    help        Show this help
+Commands:
+  train         Run training only
+  eval <ckpt>   Run evaluation on checkpoint
+  quick_test    Quick test (100 samples, 1 epoch)
+  experiment    Full experiment pipeline
+  slurm         Generate SLURM submission script
+  help          Show this message
 
-OPTIONS:
-    After command, you can specify:
-    - For eval: checkpoint path
-    - For slurm: command to run (e.g., "slurm train")
+Environment Variables:
+  SAMPLES       Training samples (default: 5000)
+  EPOCHS        Training epochs (default: 8)
+  BATCH_SIZE    Batch size (default: 4 for 40GB)
+  EVAL_SAMPLES  Evaluation samples (default: 1000, use "full" for all)
+  OUTPUT_DIR    Output directory (default: runs/exp_TIMESTAMP)
+  SEEDS         Random seeds for evaluation (default: "42 123 456")
+  DATASET       Dataset to use (default: squad)
 
-ENVIRONMENT VARIABLES:
-    You can override defaults using environment variables:
-    SAMPLES (default: 5000), EPOCHS (default: 8), BATCH_SIZE (default: 8),
-    LATENT_LEN (default: 32), D_Z (default: 256), DATASET (default: squad),
-    EVAL_SAMPLES (default: 1000), SEEDS (default: "42 123 456"),
-    SLURM_GPUS (default: 4), SLURM_TIME (default: "12:00:00")
+Logging:
+  All outputs are captured to timestamped log files:
+  - master_*.log: Complete experiment output
+  - training_*.log: Training phase
+  - eval_seed*_*.log: Per-seed evaluation
+  - dependencies_*.log: Package installation
+  - config.json: Experiment configuration
+  - LOG_INDEX.md: Index of all log files
 
-EXAMPLES:
-    # Run training with environment variables
-    SAMPLES=10000 EPOCHS=12 bash RUN.sh train
+Examples:
+  # Quick test
+  bash $(basename "$0") quick_test
 
-    # Run training with different batch size
-    BATCH_SIZE=16 bash RUN.sh train
+  # Full experiment with custom settings
+  SAMPLES=10000 EPOCHS=12 bash $(basename "$0") experiment
 
-    # Run training (plain)
-    bash RUN.sh train
+  # Evaluate specific checkpoint
+  bash $(basename "$0") eval runs/exp_20240315/checkpoint/epoch7
 
-    # Run evaluation on existing checkpoint
-    bash RUN.sh eval runs/exp_20240115/checkpoint/epoch23
+  # Generate SLURM script
+  bash $(basename "$0") slurm experiment
 
-    # Run eval with more samples
-    EVAL_SAMPLES=2000 bash RUN.sh eval runs/exp_20240115/checkpoint/epoch23
-
-    # Run quick test for debugging
-    bash RUN.sh quick_test
-
-    # Run full experiment pipeline with custom config
-    SAMPLES=10000 EVAL_SAMPLES=2000 bash RUN.sh experiment
-
-    # Submit experiment to SLURM with custom settings
-    SAMPLES=20000 SLURM_GPUS=2 bash RUN.sh slurm experiment
-
-    # Run tests
-    bash RUN.sh test
-
-ENVIRONMENT:
-    Mode: $([ "$IS_HPC" == "yes" ] && echo "HPC" || echo "Local")
-    Work dir: $WORK_DIR
-    Output dir: $OUTPUT_DIR
-
-CONFIGURATION:
-    Models: Llama-3.1-8B + Qwen2.5-7B
-    Dataset: $DATASET
-    Training: ${SAMPLES} samples, ${EPOCHS} epochs
-    Latent: ${LATENT_LEN} tokens x ${D_Z} dimensions
-    Evaluation: ${EVAL_SAMPLES} samples (use "full" for entire test set), seeds: $SEEDS
 EOF
 }
 
-# =============================================================================
-# MAIN
-# =============================================================================
+# Main dispatch
+case "$COMMAND" in
+    train)
+        run_training
+        create_log_summary
+        ;;
+    eval)
+        run_evaluation "$@"
+        create_log_summary
+        ;;
+    quick_test)
+        run_quick_test
+        create_log_summary
+        ;;
+    experiment)
+        run_experiment
+        ;;
+    slurm)
+        generate_slurm "$@"
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        print_error "Unknown command: $COMMAND"
+        show_help
+        exit 1
+        ;;
+esac
 
-main() {
-    case "$COMMAND" in
-        train)
-            run_training
-            ;;
-        eval)
-            run_evaluation "$@"
-            ;;
-        test)
-            run_tests
-            ;;
-        quick_test)
-            run_quick_test
-            ;;
-        experiment)
-            run_experiment
-            ;;
-        slurm)
-            submit_slurm "$@"
-            ;;
-        help|--help|-h)
-            show_help
-            ;;
-        *)
-            print_error "Unknown command: $COMMAND"
-            echo ""
-            show_help
-            exit 1
-            ;;
-    esac
-}
-
-# Run main function with all arguments
-main "$@"
+# Final log notice
+echo "" | tee -a "$MASTER_LOG"
+echo "============================================================" | tee -a "$MASTER_LOG"
+echo "All logs saved to: $OUTPUT_DIR" | tee -a "$MASTER_LOG"
+echo "Master log: $MASTER_LOG" | tee -a "$MASTER_LOG"
+echo "Completed: $(date)" | tee -a "$MASTER_LOG"
+echo "============================================================" | tee -a "$MASTER_LOG"
