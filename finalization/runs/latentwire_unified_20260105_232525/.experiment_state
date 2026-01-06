@@ -1,0 +1,32 @@
+# LatentWire Experiment State File
+# Created: Mon Jan  5 23:25:25 PST 2026
+# Experiment: latentwire_unified
+# Timestamp: 20260105_232525
+
+[metadata]
+version=3.1.0
+start_time=1767684325
+base_output_dir=runs/latentwire_unified_20260105_232525
+
+[phases]
+training=pending
+phase1_statistical=pending
+phase2_linear_probe=pending
+phase3_baselines=pending
+phase4_efficiency=pending
+aggregation=pending
+
+[datasets]
+sst2_eval=pending
+agnews_eval=pending
+trec_eval=pending
+squad_eval=pending
+
+[checkpoints]
+checkpoint_path=
+final_epoch=
+
+[failures]
+failure_count=0
+last_failure=
+last_failure_time=
