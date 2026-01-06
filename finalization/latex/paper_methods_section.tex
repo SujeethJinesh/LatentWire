@@ -1,0 +1,331 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Problem Formulation}
+
+Given a text prompt $\X = [x_1, ..., x_N]$ with $N$ tokens, our goal is to learn a compressed representation $\Z \in \R^{\latentlen \times \dz}$ where $\latentlen \ll N$ that can condition multiple frozen LLMs $\{M_1, M_2, ...\}$ to generate appropriate continuations. Unlike discrete token selection methods, we learn a continuous latent space that enables cross-model transfer without retokenization.
+
+Formally, we seek to learn:
+\begin{itemize}
+    \item An encoder $f_\theta: \X \mapsto \Z$ that compresses text into latents
+    \item Adapters $\{A_1, A_2, ...\}$ that project latents into model-specific embedding spaces
+    \item A training objective that balances compression, task performance, and cross-model compatibility
+\end{itemize}
+
+\subsection{Architecture Overview}
+
+Figure \ref{fig:architecture} illustrates the LatentWire architecture consisting of three main components: (1) a shared encoder that compresses text into continuous latents, (2) lightweight model-specific adapters that project latents into each model's embedding space, and (3) frozen target LLMs that consume the adapted embeddings through their standard input interfaces.
+
+% Placeholder for architecture diagram
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=\textwidth]{figures/architecture.pdf}
+    \caption{LatentWire architecture. The encoder $f_\theta$ compresses variable-length text into fixed-size latents $\Z$. Model-specific adapters $A_i$ project these into embedding spaces compatible with frozen LLMs $M_i$. Anchor text ensures proper tokenization alignment at the generation boundary.}
+    \label{fig:architecture}
+\end{figure}
+
+\subsection{Encoder Architecture}
+
+\subsubsection{Design Considerations}
+
+The encoder $f_\theta: \X \mapsto \Z$ must handle variable-length inputs while producing fixed-size outputs suitable for soft prompting. We explored several architectures:
+
+\begin{itemize}
+    \item \textbf{Bidirectional LSTM}: Processes sequences naturally with implicit position encoding
+    \item \textbf{Transformer Encoder}: Parallel processing with self-attention
+    \item \textbf{Byte-level Models}: Character/byte-level processing for tokenization-agnostic encoding
+\end{itemize}
+
+Our primary encoder uses a 2-layer bidirectional LSTM with hidden dimension 512:
+\begin{equation}
+    h_t^{\rightarrow}, c_t^{\rightarrow} = \text{LSTM}_{\rightarrow}(x_t, h_{t-1}^{\rightarrow}, c_{t-1}^{\rightarrow})
+\end{equation}
+\begin{equation}
+    h_t^{\leftarrow}, c_t^{\leftarrow} = \text{LSTM}_{\leftarrow}(x_t, h_{t+1}^{\leftarrow}, c_{t+1}^{\leftarrow})
+\end{equation}
+\begin{equation}
+    h_t = [h_t^{\rightarrow}; h_t^{\leftarrow}]
+\end{equation}
+
+The final hidden states are projected and reshaped to produce $\latentlen$ latent tokens:
+\begin{equation}
+    \Z = \text{Reshape}(\text{Linear}(\text{Pool}(h_1, ..., h_N))) \in \R^{\latentlen \times \dz}
+\end{equation}
+
+where Pool performs learned weighted averaging over sequence positions.
+
+\subsubsection{Byte-Level Encoding}
+
+For true tokenization independence, we also implement byte-level encoding where text is processed as raw UTF-8 bytes:
+\begin{equation}
+    \X_{bytes} = \text{UTF8}(\text{text}) \in \{0, ..., 255\}^{L}
+\end{equation}
+This enables the encoder to learn sub-word patterns without committing to any particular tokenization scheme, facilitating cross-model transfer.
+
+\subsection{Model-Specific Adaptation}
+
+\subsubsection{Linear Adapters}
+
+Each target model $M_i$ requires embeddings in its specific dimensional space. We use lightweight linear adapters:
+\begin{equation}
+    A_i: \R^{\dz} \rightarrow \R^{d_{embed}^i}
+\end{equation}
+
+For our primary models:
+\begin{itemize}
+    \item Llama-3.1-8B: $d_{embed}^{Llama} = 4096$, adapter size $\approx 1.05M$ parameters
+    \item Qwen2.5-7B: $d_{embed}^{Qwen} = 3584$, adapter size $\approx 0.92M$ parameters
+\end{itemize}
+
+These adapters are trained while the base LLMs remain completely frozen, enabling deployment without modifying the original models.
+
+\subsubsection{Statistical Calibration}
+
+Direct projection often produces embeddings with incorrect statistical properties, causing training instability and poor generation quality. We apply per-example calibration to match the root-mean-square (RMS) statistics of text embeddings:
+
+\begin{equation}
+    \text{RMS}(E) = \sqrt{\frac{1}{n \cdot d} \sum_{i=1}^{n} \sum_{j=1}^{d} E_{i,j}^2}
+\end{equation}
+
+\begin{equation}
+    \tilde{E}_i = \alpha_i \cdot \frac{A_i(\Z)}{||A_i(\Z)||_{RMS}} \cdot ||E_{text}^i||_{RMS}
+    \label{eq:calibration}
+\end{equation}
+
+where $E_{text}^i$ are reference text embeddings from model $i$, and $\alpha_i \in \R$ is a learnable global scale parameter initialized to 1.0.
+
+\subsection{Training Objectives}
+
+\subsubsection{K-Token Teacher-Forced Cross-Entropy}
+
+Standard next-token prediction supervises only the immediate next token, providing limited gradient signal. We extend this to K tokens for richer supervision:
+
+\begin{equation}
+    \loss_{CE}^K = -\sum_{k=1}^{K} w_k \sum_{b=1}^{B} \log P_{\theta}(y_{b,k} | \Z_b, y_{b,<k})
+    \label{eq:ktoken_ce}
+\end{equation}
+
+where $B$ is batch size, $y_{b,k}$ is the $k$-th gold token for example $b$, and weights $w_k$ control relative importance. We use exponentially decaying weights:
+\begin{equation}
+    w_k = w_1 \cdot \exp(-\lambda (k-1)), \quad w_1 = 0.5, \lambda = 0.2
+\end{equation}
+
+This emphasizes first-token accuracy (critical for generation quality) while still providing gradient signal from subsequent tokens.
+
+\subsubsection{Knowledge Distillation from Text Teacher}
+
+To preserve the original model's behavior, we distill from a teacher conditioned on full text:
+
+\begin{equation}
+    \loss_{KD} = \tau^2 \sum_{k=1}^{K} \text{KL}\left( P_{\tau}^{teacher}(y_k | \X_{text}) \,||\, P_{\tau}^{student}(y_k | \Z) \right)
+    \label{eq:kd}
+\end{equation}
+
+where temperature $\tau$ controls distribution smoothness:
+\begin{equation}
+    P_{\tau}(y) = \frac{\exp(z_y / \tau)}{\sum_{y'} \exp(z_{y'} / \tau)}
+\end{equation}
+
+We use $\tau = 1.0$ in our experiments, finding higher temperatures lead to training instability.
+
+\subsubsection{Multi-Model Joint Training}
+
+When training for multiple target models simultaneously, we alternate batches between models:
+\begin{equation}
+    \loss_{total} = \sum_{i \in \{Llama, Qwen\}} \lambda_i \left( \loss_{CE}^{K,i} + \beta \loss_{KD}^i \right) + \gamma ||\Z||_2^2
+    \label{eq:total_loss}
+\end{equation}
+
+where $\lambda_i$ are model-specific weights (typically equal), $\beta = 0.1$ controls KD strength, and $\gamma = 0.01$ provides L2 regularization on latents to prevent unbounded growth.
+
+\subsection{Critical Implementation Details}
+
+\subsubsection{Anchor Text for Alignment}
+
+Tokenization boundaries pose a critical challenge for soft prompting. The model must know exactly where the soft prompt ends and text generation begins. We insert anchor text (e.g., "Answer: ") as a hard prompt between soft embeddings and generation:
+
+\begin{equation}
+    \text{Input} = [\underbrace{E_1, ..., E_{\latentlen}}_{\text{soft embeddings}}] \oplus [\underbrace{e_{a_1}, ..., e_{a_m}}_{\text{anchor embeddings}}] \oplus [\underbrace{e_{y_1}, ..., e_{y_n}}_{\text{gold continuation}}]
+\end{equation}
+
+This hybrid approach ensures proper tokenization alignment at the generation boundary, significantly improving first-token accuracy.
+
+\subsubsection{PAD Token Masking}
+
+Left-padding for batch processing can contaminate gradients if not properly masked. We ensure PAD tokens are:
+\begin{enumerate}
+    \item Masked in attention: $\text{mask}[i] = 0$ for PAD positions
+    \item Excluded from loss: \texttt{ignore\_index=pad\_id} in cross-entropy
+    \item Zeroed in embeddings: $e_{PAD} = \mathbf{0}$
+\end{enumerate}
+
+This prevents the model from learning spurious patterns from padding tokens.
+
+\subsubsection{BOS Token Policy}
+
+Different models have varying BOS (beginning-of-sequence) token requirements:
+\begin{itemize}
+    \item Llama models expect BOS tokens for proper generation
+    \item Qwen models often perform better without explicit BOS
+\end{itemize}
+
+We implement a configurable policy (\texttt{append\_bos\_after\_prefix}) tuned per model during validation.
+
+\subsection{Baseline Methods}
+
+We compare against two categories of baselines: simple projection methods and state-of-the-art compression techniques.
+
+\subsubsection{Linear Probe Baseline}
+
+As a simple baseline, we extract frozen representations from intermediate layers and train a linear classifier:
+
+\begin{equation}
+    h = \text{LLM.layer}[l](\X) \in \R^{N \times d_{hidden}}
+\end{equation}
+\begin{equation}
+    z = \text{Pool}(h) \in \R^{d_{hidden}}
+\end{equation}
+\begin{equation}
+    \hat{y} = \text{softmax}(W \cdot z + b)
+\end{equation}
+
+We use scikit-learn's LogisticRegression with L2 regularization, selecting the optimal layer $l \in \{8, 16, 24, 32\}$ through validation. This baseline tests whether simple linear projections of frozen features suffice for the task.
+
+\subsubsection{LLMLingua Baseline}
+
+LLMLingua \cite{llmlingua} represents state-of-the-art discrete token selection. It computes token importance using perplexity:
+
+\begin{equation}
+    s_i = \frac{1}{\text{PPL}(x_i | x_{<i})} = P(x_i | x_{<i})
+\end{equation}
+
+Tokens are selected to maximize cumulative importance under compression budget:
+\begin{equation}
+    \X_{compressed} = \arg\max_{\X' \subset \X, |\X'| \leq \latentlen} \sum_{x_i \in \X'} s_i
+\end{equation}
+
+We use LLMLingua-2 with BERT-based scoring, setting compression rate to match our latent length for fair comparison.
+
+\subsection{Training Configuration}
+
+\subsubsection{Optimization}
+
+We use AdamW optimizer with:
+\begin{itemize}
+    \item Learning rate: $1 \times 10^{-3}$ with cosine annealing
+    \item Weight decay: 0.01
+    \item Gradient clipping: 1.0
+    \item Warmup steps: 1000
+    \item Batch size: 64
+    \item Training epochs: 24
+\end{itemize}
+
+\subsubsection{Data Augmentation}
+
+To improve robustness, we apply:
+\begin{itemize}
+    \item Random text truncation (90-100\% of original length)
+    \item Dropout in encoder (p=0.1)
+    \item Latent noise injection ($\sigma = 0.01$) during training
+\end{itemize}
+
+\subsection{Datasets}
+
+We evaluate on diverse NLP tasks to test generalization:
+
+\subsubsection{Question Answering}
+\begin{itemize}
+    \item \textbf{SQuAD v2}: 130k+ extractive QA pairs from Wikipedia
+    \item \textbf{HotpotQA}: Multi-hop reasoning requiring evidence synthesis
+    \item \textbf{Natural Questions}: Real Google queries with long-form answers
+\end{itemize}
+
+\subsubsection{Text Classification}
+\begin{itemize}
+    \item \textbf{AG News}: 4-class news categorization (120k train, 7.6k test)
+    \item \textbf{SST-2}: Binary sentiment analysis (67k train, 1.8k test)
+    \item \textbf{TREC}: 6-class question type classification (5.5k train, 500 test)
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+
+\subsubsection{Task Performance}
+\begin{itemize}
+    \item \textbf{F1 Score}: Token-level overlap for QA tasks
+    \item \textbf{Exact Match (EM)}: Exact string match for QA
+    \item \textbf{Accuracy}: Correct predictions for classification
+    \item \textbf{First Token Accuracy}: Crucial for generation quality
+\end{itemize}
+
+\subsubsection{Compression Metrics}
+\begin{itemize}
+    \item \textbf{Compression Ratio}: $\frac{N \times \text{bytes\_per\_token}}{\latentlen \times \text{bytes\_per\_latent}}$
+    \item \textbf{Wire Bytes}: Actual bytes transmitted (including quantization)
+    \item \textbf{Effective Throughput}: Tokens processed per second
+\end{itemize}
+
+\subsection{Inference and Deployment}
+
+\subsubsection{Inference Pipeline}
+
+The complete inference process is:
+
+\begin{algorithm}
+\caption{LatentWire Inference}
+\begin{algorithmic}
+\STATE \textbf{Input:} Text prompt $\X$, Target model $M_i$, Generation config
+\STATE \textbf{Output:} Generated text $\Y$
+\STATE
+\STATE // Encoding Phase
+\STATE $\Z \leftarrow f_\theta(\X)$ \COMMENT{Compress to latent}
+\STATE
+\STATE // Adaptation Phase
+\STATE $E_i \leftarrow A_i(\Z)$ \COMMENT{Project to embedding space}
+\STATE $\tilde{E}_i \leftarrow \text{Calibrate}(E_i)$ \COMMENT{Match statistics}
+\STATE
+\STATE // Generation Phase
+\STATE $\text{anchor} \leftarrow \text{tokenizer}_i(\text{"Answer: "})$
+\STATE $\text{prompt} \leftarrow \text{concat}([\tilde{E}_i, \text{embed}(\text{anchor})])$
+\STATE $\Y \leftarrow M_i.\text{generate}(\text{inputs\_embeds}=\text{prompt})$
+\STATE \textbf{return} $\Y$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Quantization for Wire Compression}
+
+The latent representation $\Z \in \R^{\latentlen \times \dz}$ can be quantized for efficient transmission:
+
+\begin{itemize}
+    \item \textbf{FP16}: Direct half-precision
+    \begin{equation}
+        \text{bytes} = \latentlen \times \dz \times 2
+    \end{equation}
+
+    \item \textbf{INT8}: Symmetric quantization with global scale
+    \begin{equation}
+        z_{int8} = \text{round}\left(\frac{z}{\max(|z|)} \times 127\right)
+    \end{equation}
+    \begin{equation}
+        \text{bytes} = \latentlen \times \dz \times 1 + 4 \text{ (scale)}
+    \end{equation}
+
+    \item \textbf{INT4}: Group-wise quantization (group size = 32)
+    \begin{equation}
+        z_{int4}^g = \text{round}\left(\frac{z^g}{\max(|z^g|)} \times 7\right)
+    \end{equation}
+    \begin{equation}
+        \text{bytes} = \latentlen \times \dz \times 0.5 + \frac{\latentlen \times \dz}{32} \times 2 \text{ (scales)}
+    \end{equation}
+\end{itemize}
+
+\subsubsection{Cross-Model Transfer Protocol}
+
+For cross-model communication:
+\begin{enumerate}
+    \item Source encodes text once: $\Z = f_\theta(\X)$
+    \item Latent is quantized and transmitted
+    \item Each target model applies its adapter: $E_i = A_i(\Z)$
+    \item Models generate independently with their native tokenizers
+\end{enumerate}
+
+This enables "encode once, decode many" scenarios with heterogeneous model deployments.
