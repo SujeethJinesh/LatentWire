@@ -11,6 +11,8 @@ import subprocess
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, List, Union, Any, Sequence
 from contextlib import contextmanager, nullcontext
+from datetime import timedelta
+from tqdm import tqdm
 
 try:
     import torch
@@ -2786,7 +2788,14 @@ def main():
             perm = torch.randperm(N, generator=g)
             rank_steps_per_epoch = steps_per_epoch
 
-        for step in range(rank_steps_per_epoch):
+        # Create progress bar for training steps
+        pbar = tqdm(range(rank_steps_per_epoch),
+                    desc=f"Epoch {epoch+1}/{args.epochs}",
+                    unit="batch",
+                    disable=not ('ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_log),
+                    dynamic_ncols=True)
+
+        for step in pbar:
             # Synchronize before timing for accurate GPU measurements
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
