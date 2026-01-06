@@ -14,7 +14,7 @@ set -o pipefail
 # =============================================================================
 
 # Script metadata
-SCRIPT_VERSION="4.0.0"
+SCRIPT_VERSION="5.0.0"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 # Colors for output
@@ -32,13 +32,13 @@ OUTPUT_DIR="runs/exp_${TIMESTAMP}"
 SOURCE_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct"
 TARGET_MODEL="Qwen/Qwen2.5-7B-Instruct"
 
-# Training defaults
-DATASET="squad"
-SAMPLES=87599
-EPOCHS=8
-BATCH_SIZE=8
-LATENT_LEN=32
-D_Z=256
+# Training defaults - can be overridden by environment variables
+DATASET="${DATASET:-squad}"
+SAMPLES="${SAMPLES:-5000}"  # Changed default from 87599 to 5000
+EPOCHS="${EPOCHS:-8}"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+LATENT_LEN="${LATENT_LEN:-32}"
+D_Z="${D_Z:-256}"
 
 # Evaluation defaults
 # Use environment variable if set, otherwise use default
@@ -46,14 +46,14 @@ D_Z=256
 # - SQuAD v1.1 dev: 10570 samples
 # - SQuAD v2.0 dev: 11873 samples
 # - HotpotQA dev: 7405 samples
-EVAL_SAMPLES="${EVAL_SAMPLES:-full}"  # Use full test set by default for paper-grade results
+EVAL_SAMPLES="${EVAL_SAMPLES:-1000}"  # Changed default from "full" to 1000
 SEEDS="${SEEDS:-42 123 456}"  # Can override with SEEDS env var
 
-# SLURM configuration
-SLURM_ACCOUNT="marlowe-m000066"
-SLURM_PARTITION="preempt"
-SLURM_TIME="12:00:00"
-SLURM_GPUS=4
+# SLURM configuration - can be overridden by environment variables
+SLURM_ACCOUNT="${SLURM_ACCOUNT:-marlowe-m000066}"
+SLURM_PARTITION="${SLURM_PARTITION:-preempt}"
+SLURM_TIME="${SLURM_TIME:-12:00:00}"
+SLURM_GPUS="${SLURM_GPUS:-4}"
 
 # Environment detection
 if [[ -d "/projects/m000066" ]]; then
@@ -426,6 +426,16 @@ echo "=============================================================="
 export PYTHONPATH=.
 export PYTHONUNBUFFERED=1
 
+# Pass configuration via environment variables
+export SAMPLES="${SAMPLES}"
+export EPOCHS="${EPOCHS}"
+export BATCH_SIZE="${BATCH_SIZE}"
+export LATENT_LEN="${LATENT_LEN}"
+export D_Z="${D_Z}"
+export DATASET="${DATASET}"
+export EVAL_SAMPLES="${EVAL_SAMPLES}"
+export SEEDS="${SEEDS}"
+
 # Pull latest code
 git pull
 
@@ -493,21 +503,37 @@ OPTIONS:
     - For eval: checkpoint path
     - For slurm: command to run (e.g., "slurm train")
 
+ENVIRONMENT VARIABLES:
+    You can override defaults using environment variables:
+    SAMPLES (default: 5000), EPOCHS (default: 8), BATCH_SIZE (default: 8),
+    LATENT_LEN (default: 32), D_Z (default: 256), DATASET (default: squad),
+    EVAL_SAMPLES (default: 1000), SEEDS (default: "42 123 456"),
+    SLURM_GPUS (default: 4), SLURM_TIME (default: "12:00:00")
+
 EXAMPLES:
-    # Run training
+    # Run training with environment variables
+    SAMPLES=10000 EPOCHS=12 bash RUN.sh train
+
+    # Run training with different batch size
+    BATCH_SIZE=16 bash RUN.sh train
+
+    # Run training (plain)
     bash RUN.sh train
 
     # Run evaluation on existing checkpoint
     bash RUN.sh eval runs/exp_20240115/checkpoint/epoch23
 
+    # Run eval with more samples
+    EVAL_SAMPLES=2000 bash RUN.sh eval runs/exp_20240115/checkpoint/epoch23
+
     # Run quick test for debugging
     bash RUN.sh quick_test
 
-    # Run full experiment pipeline
-    bash RUN.sh experiment
+    # Run full experiment pipeline with custom config
+    SAMPLES=10000 EVAL_SAMPLES=2000 bash RUN.sh experiment
 
-    # Submit experiment to SLURM
-    bash RUN.sh slurm experiment
+    # Submit experiment to SLURM with custom settings
+    SAMPLES=20000 SLURM_GPUS=2 bash RUN.sh slurm experiment
 
     # Run tests
     bash RUN.sh test
