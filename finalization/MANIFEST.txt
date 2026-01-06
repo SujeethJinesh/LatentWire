@@ -1,0 +1,17 @@
+MANIFEST - Key Files for LatentWire Cross-Model Compression System
+===================================================================
+
+CORE TRAINING & EVALUATION
+latentwire/train.py          - Main training loop with K-token objectives and cross-model alignment
+latentwire/eval.py           - Evaluation pipeline with text/latent/token-budget baselines
+latentwire/models.py         - Encoder, Adapter, and LMWrapper model definitions
+latentwire/losses.py         - K-token CE and knowledge distillation loss functions
+
+DATA & EXPERIMENTS
+latentwire/data.py           - Dataset loading and preprocessing (SQuAD, HotpotQA, AG News, SST-2)
+telepathy/unified_cross_model_experiments.py - Comprehensive cross-model experiment runner
+scripts/run_pipeline.sh      - Main training and evaluation pipeline script
+
+DOCUMENTATION & CONFIG
+README.md                    - Project overview, requirements, and quick start guide
+CLAUDE.md                    - Development guidelines and workflow requirements
