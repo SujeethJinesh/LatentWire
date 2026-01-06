@@ -5,7 +5,9 @@ set -e
 # Configuration
 OUTPUT_DIR="${OUTPUT_DIR:-runs/llmlingua_baseline}"
 DATASET="${DATASET:-squad}"
-SAMPLES="${SAMPLES:-100}"
+# Use environment variable if set, otherwise use 1000 for paper-grade results
+# For full dataset evaluation, use -1
+SAMPLES="${SAMPLES:-1000}"
 
 # Set up environment
 export PYTHONPATH=.

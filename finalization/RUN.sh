@@ -41,8 +41,13 @@ LATENT_LEN=32
 D_Z=256
 
 # Evaluation defaults
-EVAL_SAMPLES=200
-SEEDS="42 123 456"
+# Use environment variable if set, otherwise use default
+# For paper-grade results, use "full" or specific dataset sizes:
+# - SQuAD v1.1 dev: 10570 samples
+# - SQuAD v2.0 dev: 11873 samples
+# - HotpotQA dev: 7405 samples
+EVAL_SAMPLES="${EVAL_SAMPLES:-full}"  # Use full test set by default for paper-grade results
+SEEDS="${SEEDS:-42 123 456}"  # Can override with SEEDS env var
 
 # SLURM configuration
 SLURM_ACCOUNT="marlowe-m000066"
@@ -152,6 +157,13 @@ run_evaluation() {
     local results_dir="$OUTPUT_DIR/results"
     mkdir -p "$results_dir"
 
+    # Convert "full" to -1 for full dataset evaluation
+    local eval_sample_count="$EVAL_SAMPLES"
+    if [[ "$EVAL_SAMPLES" == "full" ]]; then
+        eval_sample_count="-1"
+        print_info "Using full test/validation set for evaluation"
+    fi
+
     # Run evaluation for each seed
     for seed in $SEEDS; do
         print_info "Evaluating with seed $seed..."
@@ -162,7 +174,7 @@ run_evaluation() {
             python3 latentwire/eval.py \
                 --ckpt "$checkpoint" \
                 --dataset "$DATASET" \
-                --samples "$EVAL_SAMPLES" \
+                --samples "$eval_sample_count" \
                 --seed "$seed" \
                 --sequential_eval \
                 --fresh_eval \
@@ -259,6 +271,84 @@ print(f'✓ Adapter output: {adapted.shape}')
 }
 
 # =============================================================================
+# QUICK TEST (RAPID ITERATION/DEBUGGING)
+# =============================================================================
+
+run_quick_test() {
+    print_header "QUICK TEST (1 EPOCH, 100 SAMPLES)"
+
+    cd "$WORK_DIR"
+    export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
+    export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+    local checkpoint_dir="$OUTPUT_DIR/quick_test_checkpoint"
+    local log_file="$OUTPUT_DIR/quick_test_${TIMESTAMP}.log"
+
+    mkdir -p "$OUTPUT_DIR"
+
+    print_info "Running quick test for rapid iteration..."
+    print_info "Configuration:"
+    print_info "  Dataset: $DATASET"
+    print_info "  Samples: 100 (minimal for debugging)"
+    print_info "  Epochs: 1 (single epoch)"
+    print_info "  Batch size: 4 (reduced for speed)"
+    print_info "  Latent: 16x128 (smaller for quick test)"
+    print_info "  Output: $checkpoint_dir"
+
+    # Phase 1: Quick training
+    print_info "Phase 1: Quick training (1 epoch, 100 samples)..."
+    {
+        python3 latentwire/train.py \
+            --llama_id "$SOURCE_MODEL" \
+            --qwen_id "$TARGET_MODEL" \
+            --dataset "$DATASET" \
+            --samples 100 \
+            --epochs 1 \
+            --batch_size 4 \
+            --latent_len 16 \
+            --d_z 128 \
+            --output_dir "$checkpoint_dir" \
+            --sequential_models \
+            --warm_anchor_text "Answer: " \
+            --first_token_ce_weight 0.5
+    } 2>&1 | tee "$log_file"
+
+    if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+        print_error "Quick training failed"
+        exit 1
+    fi
+
+    # Phase 2: Quick evaluation
+    print_info "Phase 2: Quick evaluation (20 samples, single seed)..."
+    local eval_log="$OUTPUT_DIR/quick_eval_${TIMESTAMP}.log"
+
+    {
+        python3 latentwire/eval.py \
+            --ckpt "$checkpoint_dir/epoch0" \
+            --dataset "$DATASET" \
+            --samples 20 \
+            --seed 42 \
+            --sequential_eval \
+            --fresh_eval \
+            --calibration embed_rms \
+            --latent_anchor_mode text \
+            --latent_anchor_text "Answer: " \
+            --append_bos_after_prefix yes \
+            --max_new_tokens 12
+    } 2>&1 | tee "$eval_log"
+
+    if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
+        print_status "Quick test completed successfully"
+        print_info "Training log: $log_file"
+        print_info "Evaluation log: $eval_log"
+        print_info "Checkpoint: $checkpoint_dir/epoch0"
+    else
+        print_error "Quick evaluation failed"
+        exit 1
+    fi
+}
+
+# =============================================================================
 # FULL EXPERIMENT PIPELINE
 # =============================================================================
 
@@ -289,7 +379,7 @@ run_experiment() {
     python3 scripts/benchmark_efficiency.py \
         --checkpoint "$checkpoint" \
         --dataset "$DATASET" \
-        --samples 100 \
+        --samples 1000 \
         --warmup_runs 3 \
         --benchmark_runs 10 \
         --output_file "$OUTPUT_DIR/efficiency_results.json"
@@ -393,6 +483,7 @@ COMMANDS:
     train       Run training only
     eval        Run evaluation only (requires checkpoint)
     test        Run test suite
+    quick_test  Run quick test (1 epoch, 100 samples) for rapid iteration
     experiment  Run full experiment pipeline (train + eval + analysis)
     slurm       Submit job to SLURM cluster
     help        Show this help
@@ -408,6 +499,9 @@ EXAMPLES:
 
     # Run evaluation on existing checkpoint
     bash RUN.sh eval runs/exp_20240115/checkpoint/epoch23
+
+    # Run quick test for debugging
+    bash RUN.sh quick_test
 
     # Run full experiment pipeline
     bash RUN.sh experiment
@@ -428,7 +522,7 @@ CONFIGURATION:
     Dataset: $DATASET
     Training: ${SAMPLES} samples, ${EPOCHS} epochs
     Latent: ${LATENT_LEN} tokens x ${D_Z} dimensions
-    Evaluation: ${EVAL_SAMPLES} samples, seeds: $SEEDS
+    Evaluation: ${EVAL_SAMPLES} samples (use "full" for entire test set), seeds: $SEEDS
 EOF
 }
 
@@ -446,6 +540,9 @@ main() {
             ;;
         test)
             run_tests
+            ;;
+        quick_test)
+            run_quick_test
             ;;
         experiment)
             run_experiment

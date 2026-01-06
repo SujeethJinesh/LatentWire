@@ -2202,7 +2202,8 @@ def main():
     ap.add_argument("--qwen_device_map", type=str, default=None,
                     help="Device map for the Qwen wrapper during eval (e.g., 1, 'auto', or JSON dict).")
     ap.add_argument("--dataset", type=str, default="hotpot", choices=["hotpot","squad","squad_v2"])
-    ap.add_argument("--samples", type=int, default=100)
+    ap.add_argument("--samples", type=int, default=-1,
+                    help="Number of samples to evaluate (-1 for full dataset, default: -1)")
     ap.add_argument("--max_new_tokens", type=int, default=6)
     ap.add_argument("--load_4bit", action="store_true")
     ap.add_argument("--device", type=str, default=None)

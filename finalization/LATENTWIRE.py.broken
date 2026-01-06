@@ -6957,8 +6957,7 @@ def main_training_loop():
     # Data
     parser.add_argument('--dataset', type=str, default='squad', choices=['squad', 'hotpot', 'nq', 'xsum'])
     parser.add_argument('--samples', type=int, default=8192)
-    parser.add_argument('--val_samples', type=int, default=-1,
-                       help='Number of validation samples (-1 for full dataset, default: -1)')
+    parser.add_argument('--val_samples', type=int, default=200)
     
     # Architecture
     parser.add_argument('--latent_len', type=int, default=32)
@@ -7405,8 +7404,7 @@ def main_evaluation_loop():
     
     # Data
     parser.add_argument('--dataset', type=str, default='squad')
-    parser.add_argument('--samples', type=int, default=-1,
-                       help='Number of evaluation samples (-1 for full dataset, default: -1)')
+    parser.add_argument('--samples', type=int, default=200)
     parser.add_argument('--max_new_tokens', type=int, default=128)
     
     # Generation
