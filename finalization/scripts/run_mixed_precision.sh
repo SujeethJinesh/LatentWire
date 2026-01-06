@@ -8,8 +8,8 @@ set -e
 # Configuration
 OUTPUT_DIR="${OUTPUT_DIR:-runs/mixed_precision_experiment}"
 MIXED_PRECISION="${MIXED_PRECISION:-bf16}"  # bf16 recommended for H100
-BATCH_SIZE="${BATCH_SIZE:-128}"  # Can increase with memory savings
-GRAD_ACCUM="${GRAD_ACCUM:-2}"
+BATCH_SIZE="${BATCH_SIZE:-64}"  # Safe for single GPU or per-GPU in DDP (81.3% memory)
+GRAD_ACCUM="${GRAD_ACCUM:-1}"  # Use 4 for effective batch=256 on single GPU
 
 # Set up environment
 export PYTHONPATH=.

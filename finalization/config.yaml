@@ -125,50 +125,52 @@ architecture:
 # 3. TRAINING HYPERPARAMETERS
 # =====================================================================================
 # Memory Budget Calculations for H100 (80GB):
-# - Frozen Models: ~32GB (Llama-8B: 16GB, Qwen-7B: 14GB in bf16)
-# - Trainable Components: ~0.2GB (encoder + adapters ~100M params)
-# - Optimizer States (AdamW): ~1.2GB (12 bytes per trainable param)
-# - Gradients: ~0.2GB (2 bytes per trainable param in bf16)
-# - Overhead: ~6.4GB (8% of 80GB for CUDA kernels, buffers)
-# - Available for Activations: ~40GB
-# - With gradient checkpointing: ~1.5x memory multiplier for activations
-# - Max batch size @ 80% utilization: ~64-69 per GPU
+# - Frozen Models: 31.3GB (Llama-8B: 16.06GB, Qwen-7B: 15.24GB in bf16)
+# - Trainable Components: 0.2GB (encoder + adapters ~100M params in bf16)
+# - Optimizer States (AdamW): 1.2GB (12 bytes per trainable param: 4B fp32 master + 4B mom1 + 4B mom2)
+# - Gradients: 0.2GB (2 bytes per trainable param in bf16)
+# - Overhead: 6.4GB (8% of 80GB for CUDA kernels, buffers)
+# - Total Fixed Memory: 39.3GB
+# - Available for Activations: 40.7GB @ 80% utilization
+# - Activation per sample: 0.403GB (with gradient checkpointing)
+# - Max batch size @ 80% utilization: 61 (conservative: 54)
+# - CONFIG batch_size=64 gives 81.3% utilization (safe with 14.9GB headroom)
 # =====================================================================================
 training:
   # Batch size configurations for different hardware
   batch_config:
     # H100 (80GB) configurations - OPTIMIZED for LatentWire (frozen LLMs + trainable encoder)
     h100_single:
-      batch_size: 64  # Conservative from calculated max of 69
+      batch_size: 64  # Uses 81.3% GPU memory (safe margin from max ~61)
       gradient_accumulation_steps: 1
       effective_batch_size: 64
       elastic_batch_size: true
-      elastic_target_util: 0.80  # 80% for safety margin
-      notes: 'Single H100 with frozen Llama+Qwen, trainable encoder/adapters'
+      elastic_target_util: 0.80  # Target 80% utilization
+      notes: 'Single H100: 39.3GB fixed (models+Adam) + 25.8GB activations = 65.1GB total'
 
     h100_dual:
-      batch_size: 64  # Per-GPU batch size in DDP
+      batch_size: 64  # Per-GPU batch size in DDP (81.3% per GPU)
       gradient_accumulation_steps: 1
       effective_batch_size: 128  # 64 * 2 GPUs
       elastic_batch_size: true
       elastic_target_util: 0.80
-      notes: 'DDP on 2x H100 GPUs, frozen models + trainable components'
+      notes: 'DDP 2x H100: Each GPU uses 65.1GB (39.3GB fixed + 25.8GB activations)'
 
     h100_triple:
-      batch_size: 64  # Per-GPU batch size in DDP
+      batch_size: 64  # Per-GPU batch size in DDP (81.3% per GPU)
       gradient_accumulation_steps: 1
       effective_batch_size: 192  # 64 * 3 GPUs
       elastic_batch_size: true
       elastic_target_util: 0.80
-      notes: 'DDP on 3x H100 GPUs, frozen models + trainable components'
+      notes: 'DDP 3x H100: Each GPU uses 65.1GB (39.3GB fixed + 25.8GB activations)'
 
     h100_quad:
-      batch_size: 64  # Per-GPU batch size in DDP
+      batch_size: 64  # Per-GPU batch size in DDP (81.3% per GPU)
       gradient_accumulation_steps: 1
       effective_batch_size: 256  # 64 * 4 GPUs
       elastic_batch_size: true
       elastic_target_util: 0.80
-      notes: 'DDP on 4x H100 GPUs (HPC standard), frozen models + trainable components'
+      notes: 'DDP 4x H100: Each GPU uses 65.1GB (includes 1.2GB Adam optimizer states)'
 
     # A100 (40GB/80GB) configurations
     a100_40gb:

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-export PYTHONUNBUFFERED=1
 #
 # run_with_resume.sh - Unified training launcher with automatic checkpoint resume
 #

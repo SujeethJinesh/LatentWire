@@ -1,5 +1,4 @@
 #!/bin/bash
-export PYTHONUNBUFFERED=1
 # Example script showing how to run evaluation scripts standalone
 
 set -e

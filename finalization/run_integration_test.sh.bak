@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-export PYTHONUNBUFFERED=1
 # Full pipeline integration test for LatentWire
 #
 # This script runs a comprehensive end-to-end test that validates:

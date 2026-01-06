@@ -418,7 +418,10 @@ def load_xsum_subset(split: str = "test", samples: int = None, seed: int = 0, ma
 
     Note: Due to datasets library compatibility issues with XSUM,
     this function uses CNN/DailyMail as a fallback when XSUM cannot be loaded.
-    CNN/DailyMail is a similar abstractive summarization dataset.
+    CNN/DailyMail is a similar abstractive summarization dataset with:
+        - train: 287,113 examples
+        - validation: 13,368 examples
+        - test: 11,490 examples
     """
     # Try different loading methods for XSUM compatibility
     try:
