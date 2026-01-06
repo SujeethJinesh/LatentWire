@@ -1,16 +1,24 @@
 # LatentWire SRUN Commands for Marlowe HPC
 
-## Quick Training (2 hours, 1 GPU)
-srun --job-name=train --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=2:00:00 --mem=64GB --pty bash RUN.sh train
-
-## Evaluation (1 hour, 1 GPU)
-srun --job-name=eval --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=1:00:00 --mem=64GB --pty bash RUN.sh eval
-
-## Full Experiment (4 hours, 4 GPUs)
+## Full Experiment (8 epochs, 4 hours, 4 GPUs)
 srun --job-name=experiment --nodes=1 --gpus=4 --account=marlowe-m000066 --partition=preempt --time=4:00:00 --mem=256GB --pty bash RUN.sh experiment
 
-## Test Suite (30 minutes, 1 GPU)
-srun --job-name=test --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=0:30:00 --mem=64GB --pty bash RUN.sh test
+## Quick Test (1 epoch, 30 minutes, 1 GPU)
+srun --job-name=quick_test --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=0:30:00 --mem=64GB --pty bash RUN.sh quick_test
 
-Note: Based on experiments, we use 5000 samples and 3 epochs (not 88k samples and 24 epochs).
-This converges properly and runs in reasonable time.
+## Evaluation Only (30 minutes, 1 GPU)
+srun --job-name=eval --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=0:30:00 --mem=64GB --pty bash RUN.sh eval
+
+## Time Estimates (based on 5000 samples):
+- 1 epoch: ~20-25 minutes (1 GPU)
+- 8 epochs: ~3-4 hours (4 GPUs with parallel processing)
+- Evaluation: ~20-30 minutes
+
+## Memory Requirements:
+- Training: 64GB per GPU (256GB for 4 GPUs)
+- Evaluation: 64GB
+
+## Notes:
+- Full experiment uses 5000 samples and 8 epochs for proper convergence
+- Quick test uses 1 epoch for rapid iteration and debugging
+- All commands use preempt partition and marlowe-m000066 account

@@ -9,6 +9,9 @@ import argparse
 import gc
 import ast
 from typing import List, Dict, Any, Tuple, Optional, Sequence
+import psutil  # For memory tracking
+import numpy as np
+from scipy import stats
 
 try:
     import torch
@@ -19,6 +22,13 @@ except ImportError as e:
     PYTORCH_IMPORT_ERROR = str(e)
 
 import math
+
+# Try to import ROUGE for summarization metrics
+try:
+    from rouge_score import rouge_scorer
+    ROUGE_AVAILABLE = True
+except ImportError:
+    ROUGE_AVAILABLE = False
 
 from latentwire.models import (
     InterlinguaEncoder,
@@ -186,6 +196,236 @@ def _calculate_byte_compression(model_outputs, wire):
                 compressions[name] = 0
 
     return compressions
+
+
+def compute_bootstrap_confidence_intervals(
+    scores: List[float],
+    confidence_level: float = 0.95,
+    n_resamples: int = 10000,
+    random_state: Optional[int] = None
+) -> Dict[str, float]:
+    """
+    Compute bootstrap confidence intervals for a list of scores.
+
+    Args:
+        scores: List of metric values
+        confidence_level: Confidence level (default: 0.95 for 95% CI)
+        n_resamples: Number of bootstrap resamples
+        random_state: Random seed for reproducibility
+
+    Returns:
+        Dictionary with 'mean', 'std', 'ci_lower', 'ci_upper'
+    """
+    if not scores or len(scores) == 0:
+        return {'mean': 0.0, 'std': 0.0, 'ci_lower': 0.0, 'ci_upper': 0.0}
+
+    scores_array = np.array(scores)
+    mean_val = float(np.mean(scores_array))
+    std_val = float(np.std(scores_array, ddof=1)) if len(scores_array) > 1 else 0.0
+
+    # Bootstrap for confidence intervals
+    if len(scores_array) > 1:
+        rng = np.random.default_rng(random_state)
+        bootstrap_means = []
+
+        for _ in range(n_resamples):
+            resample = rng.choice(scores_array, size=len(scores_array), replace=True)
+            bootstrap_means.append(np.mean(resample))
+
+        bootstrap_means = np.array(bootstrap_means)
+        alpha = 1 - confidence_level
+        ci_lower = float(np.percentile(bootstrap_means, 100 * alpha / 2))
+        ci_upper = float(np.percentile(bootstrap_means, 100 * (1 - alpha / 2)))
+    else:
+        ci_lower = mean_val
+        ci_upper = mean_val
+
+    return {
+        'mean': mean_val,
+        'std': std_val,
+        'ci_lower': ci_lower,
+        'ci_upper': ci_upper,
+        'n_samples': len(scores_array)
+    }
+
+
+def compute_rouge_scores(predictions: List[str], references: List[str]) -> Dict[str, Dict[str, float]]:
+    """
+    Compute ROUGE scores for summarization tasks.
+
+    Args:
+        predictions: List of predicted summaries
+        references: List of reference summaries
+
+    Returns:
+        Dictionary with ROUGE-1, ROUGE-2, and ROUGE-L scores with confidence intervals
+    """
+    if not ROUGE_AVAILABLE:
+        return {}
+
+    scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
+
+    rouge1_scores = []
+    rouge2_scores = []
+    rougeL_scores = []
+
+    for pred, ref in zip(predictions, references):
+        scores = scorer.score(ref, pred)
+        rouge1_scores.append(scores['rouge1'].fmeasure)
+        rouge2_scores.append(scores['rouge2'].fmeasure)
+        rougeL_scores.append(scores['rougeL'].fmeasure)
+
+    return {
+        'rouge1': compute_bootstrap_confidence_intervals(rouge1_scores),
+        'rouge2': compute_bootstrap_confidence_intervals(rouge2_scores),
+        'rougeL': compute_bootstrap_confidence_intervals(rougeL_scores)
+    }
+
+
+def track_memory_usage() -> Dict[str, float]:
+    """
+    Track current memory usage of the process.
+
+    Returns:
+        Dictionary with memory metrics in GB
+    """
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+
+    # Get system memory info
+    virtual_memory = psutil.virtual_memory()
+
+    # Get GPU memory if available
+    gpu_memory = {}
+    if PYTORCH_AVAILABLE and torch.cuda.is_available():
+        for i in range(torch.cuda.device_count()):
+            allocated = torch.cuda.memory_allocated(i) / (1024 ** 3)  # Convert to GB
+            reserved = torch.cuda.memory_reserved(i) / (1024 ** 3)
+            gpu_memory[f'gpu_{i}_allocated_gb'] = allocated
+            gpu_memory[f'gpu_{i}_reserved_gb'] = reserved
+
+    return {
+        'process_rss_gb': mem_info.rss / (1024 ** 3),  # Resident Set Size in GB
+        'process_vms_gb': mem_info.vms / (1024 ** 3),  # Virtual Memory Size in GB
+        'system_available_gb': virtual_memory.available / (1024 ** 3),
+        'system_percent_used': virtual_memory.percent,
+        **gpu_memory
+    }
+
+
+def compute_inference_metrics(
+    start_times: List[float],
+    end_times: List[float],
+    num_tokens_generated: List[int],
+    batch_size: int = 1
+) -> Dict[str, float]:
+    """
+    Compute inference performance metrics.
+
+    Args:
+        start_times: List of start timestamps
+        end_times: List of end timestamps
+        num_tokens_generated: List of number of tokens generated per sample
+        batch_size: Batch size used for inference
+
+    Returns:
+        Dictionary with latency and throughput metrics
+    """
+    if not start_times or not end_times:
+        return {}
+
+    latencies = [end - start for start, end in zip(start_times, end_times)]
+
+    # Per-sample metrics
+    latency_stats = compute_bootstrap_confidence_intervals(latencies)
+
+    # Throughput metrics
+    total_time = sum(latencies)
+    num_samples = len(latencies)
+    samples_per_second = num_samples / total_time if total_time > 0 else 0
+
+    # Token generation metrics
+    if num_tokens_generated:
+        tokens_per_sample = compute_bootstrap_confidence_intervals(num_tokens_generated)
+        total_tokens = sum(num_tokens_generated)
+        tokens_per_second = total_tokens / total_time if total_time > 0 else 0
+    else:
+        tokens_per_sample = {}
+        tokens_per_second = 0
+
+    return {
+        'latency_ms_per_sample': {k: v * 1000 for k, v in latency_stats.items()},  # Convert to ms
+        'throughput_samples_per_sec': samples_per_second,
+        'throughput_tokens_per_sec': tokens_per_second,
+        'tokens_per_sample': tokens_per_sample,
+        'batch_size': batch_size,
+        'total_time_sec': total_time,
+        'num_samples': num_samples
+    }
+
+
+def compute_per_dataset_metrics(
+    predictions: List[str],
+    references: List[str],
+    dataset_labels: Optional[List[str]] = None
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Compute metrics broken down by dataset or category.
+
+    Args:
+        predictions: List of predictions
+        references: List of references
+        dataset_labels: Optional list of dataset/category labels for each sample
+
+    Returns:
+        Dictionary with per-dataset metrics
+    """
+    if dataset_labels is None:
+        # If no labels provided, treat as single dataset
+        em_scores = [em(pred, ref) for pred, ref in zip(predictions, references)]
+        f1_scores = [f1(pred, ref) for pred, ref in zip(predictions, references)]
+
+        return {
+            'overall': {
+                'exact_match': compute_bootstrap_confidence_intervals(em_scores),
+                'f1': compute_bootstrap_confidence_intervals(f1_scores),
+                'n_samples': len(predictions)
+            }
+        }
+
+    # Group by dataset
+    from collections import defaultdict
+    dataset_groups = defaultdict(lambda: {'predictions': [], 'references': []})
+
+    for pred, ref, label in zip(predictions, references, dataset_labels):
+        dataset_groups[label]['predictions'].append(pred)
+        dataset_groups[label]['references'].append(ref)
+
+    results = {}
+    for dataset_name, data in dataset_groups.items():
+        preds = data['predictions']
+        refs = data['references']
+
+        em_scores = [em(pred, ref) for pred, ref in zip(preds, refs)]
+        f1_scores = [f1(pred, ref) for pred, ref in zip(preds, refs)]
+
+        results[dataset_name] = {
+            'exact_match': compute_bootstrap_confidence_intervals(em_scores),
+            'f1': compute_bootstrap_confidence_intervals(f1_scores),
+            'n_samples': len(preds)
+        }
+
+    # Also compute overall metrics
+    all_em = [em(pred, ref) for pred, ref in zip(predictions, references)]
+    all_f1 = [f1(pred, ref) for pred, ref in zip(predictions, references)]
+
+    results['overall'] = {
+        'exact_match': compute_bootstrap_confidence_intervals(all_em),
+        'f1': compute_bootstrap_confidence_intervals(all_f1),
+        'n_samples': len(predictions)
+    }
+
+    return results
 
 
 def _slice_deep_prefix(
@@ -1586,6 +1826,65 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "oracle": {"em": oracle_em, "f1": oracle_f1},
         }
 
+    # Collect per-sample metrics for bootstrap confidence intervals
+    text_em_scores = {}
+    text_f1_scores = {}
+    latent_em_scores = {}
+    latent_f1_scores = {}
+    token_budget_em_scores = {}
+    token_budget_f1_scores = {}
+
+    for name in model_contexts:
+        # Collect per-sample scores for text baseline
+        text_preds = text_results[name]["preds"]
+        text_em_scores[name] = [em(pred, gold) for pred, gold in zip(text_preds, golds)]
+        text_f1_scores[name] = [f1(pred, gold) for pred, gold in zip(text_preds, golds)]
+
+        # Collect per-sample scores for latent
+        latent_preds = latent_results[name]["latent"]["preds"]
+        latent_em_scores[name] = [em(pred, gold) for pred, gold in zip(latent_preds, golds)]
+        latent_f1_scores[name] = [f1(pred, gold) for pred, gold in zip(latent_preds, golds)]
+
+        # Collect per-sample scores for token budget
+        trunc_preds = latent_results[name]["trunc"]["preds"]
+        token_budget_em_scores[name] = [em(pred, gold) for pred, gold in zip(trunc_preds, golds)]
+        token_budget_f1_scores[name] = [f1(pred, gold) for pred, gold in zip(trunc_preds, golds)]
+
+    # Track memory usage
+    memory_stats = track_memory_usage()
+
+    # Compute inference metrics (latency, throughput)
+    inference_metrics = {}
+    for baseline_type in ["text", "latent", "token_budget"]:
+        total_samples = len(prompts_raw)
+
+        if baseline_type == "text":
+            total_time = text_wall
+        elif baseline_type == "latent":
+            total_time = latent_wall
+        else:  # token_budget
+            total_time = trunc_wall
+
+        inference_metrics[baseline_type] = {
+            "throughput_samples_per_sec": total_samples / total_time if total_time > 0 else 0,
+            "latency_ms_per_sample": (total_time / total_samples * 1000) if total_samples > 0 else 0,
+            "total_time_sec": total_time,
+            "num_samples": total_samples
+        }
+
+    # Compute ROUGE scores if applicable (for summarization datasets)
+    rouge_metrics = {}
+    if args.dataset in ["xsum", "cnndm", "samsum"]:  # Add summarization datasets
+        for name in model_contexts:
+            text_preds = text_results[name]["preds"]
+            latent_preds = latent_results[name]["latent"]["preds"]
+            trunc_preds = latent_results[name]["trunc"]["preds"]
+            rouge_metrics[name] = {
+                "text": compute_rouge_scores(text_preds, golds),
+                "latent": compute_rouge_scores(latent_preds, golds),
+                "token_budget": compute_rouge_scores(trunc_preds, golds)
+            }
+
     summary = {
         "samples": len(prompts_raw),
         "max_new_tokens": args.max_new_tokens,
@@ -1595,7 +1894,10 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         "avg_prompt_tokens": {name: text_results[name]["avg_prompt_tokens"] for name in model_contexts},
         "token_compression": {name: text_results[name]["avg_prompt_tokens"] / max(latent_len, 1) for name in model_contexts},
         "byte_compression": _calculate_byte_compression(model_outputs, wire) if wire else {},
-        "compression": {name: text_results[name]["avg_prompt_tokens"] / max(latent_len, 1) for name in model_contexts},  # Keep for backward compat
+        "compression_ratio": {  # More comprehensive compression metrics
+            "token_ratio": {name: text_results[name]["avg_prompt_tokens"] / max(latent_len, 1) for name in model_contexts},
+            "byte_ratio": _calculate_byte_compression(model_outputs, wire) if wire else {},
+        },
         "payload_bytes": bytes_per_latent,
         "payload_bytes_detail": {
             "fp32": wire["latent_bytes"]["fp32"] if "latent_bytes" in wire else 0,
@@ -1603,11 +1905,15 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "selected": selected_bytes,
         },
         "wire": wire,
+        "memory_usage": memory_stats,
+        "inference_metrics": inference_metrics,
         "text": {
             name: {
                 "em": text_results[name]["metrics"]["em"],
                 "f1": text_results[name]["metrics"]["f1"],
                 "nll_token": text_results[name]["metrics"]["nll"],
+                "em_with_ci": compute_bootstrap_confidence_intervals(text_em_scores[name]),
+                "f1_with_ci": compute_bootstrap_confidence_intervals(text_f1_scores[name]),
             }
             for name in model_contexts
         },
@@ -1615,17 +1921,26 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             name: {
                 **latent_results[name]["latent"]["metrics"],
                 "nll_token": latent_results[name]["latent"]["metrics"].get("nll"),
+                "em_with_ci": compute_bootstrap_confidence_intervals(latent_em_scores[name]),
+                "f1_with_ci": compute_bootstrap_confidence_intervals(latent_f1_scores[name]),
             }
             for name in model_contexts
         },
         "token_budget": {
             "mode": args.token_budget_mode,
             "k": args.token_budget_k or latent_len,
-            **{name: latent_results[name]["trunc"]["metrics"] for name in model_contexts},
+            **{name: {
+                **latent_results[name]["trunc"]["metrics"],
+                "em_with_ci": compute_bootstrap_confidence_intervals(token_budget_em_scores[name]),
+                "f1_with_ci": compute_bootstrap_confidence_intervals(token_budget_f1_scores[name]),
+            } for name in model_contexts},
         },
+        "rouge_scores": rouge_metrics if rouge_metrics else None,
         "joint": joint_summary,
         "debug": {name: model_outputs[name]["debug"] for name in model_contexts},
         "oracle": {"em": oracle_em, "f1": oracle_f1},
+        "dataset": args.dataset,  # Track dataset name
+        "dataset_config": getattr(args, "hotpot_config", None) if args.dataset == "hotpot" else None,
     }
     summary["text"]["wall_clock_sec"] = text_wall
     if embed_replay_enabled:

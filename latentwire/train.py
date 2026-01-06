@@ -1292,7 +1292,7 @@ def main():
                     help="Comma-separated subset of models to train (subset of llama,qwen).")
     ap.add_argument("--hotpot_config", type=str, default="fullwiki")
     ap.add_argument("--samples", type=int, default=5000)
-    ap.add_argument("--epochs", type=int, default=3)
+    ap.add_argument("--epochs", type=int, default=8)
     ap.add_argument("--batch_size", type=int, default=1)
     ap.add_argument("--grad_accum_steps", type=int, default=1,
                     help="Number of micro-batches to accumulate before an optimizer step.")
@@ -2740,6 +2740,9 @@ def main():
             print(f"  Pin memory: {args.dataloader_pin_memory}")
 
     for epoch in range(start_epoch, start_epoch + args.epochs):
+        # Initialize epoch loss tracking
+        epoch_losses = []
+
         # Set epoch for distributed sampler if using DDP
         if 'ddp_manager' in locals() and ddp_manager is not None and ddp_manager.initialized:
             ddp_manager.set_epoch(epoch)
@@ -3413,6 +3416,10 @@ def main():
             else:
                 loss_for_logging = loss.item()
 
+            # Track loss for epoch averaging
+            if torch.isfinite(loss):
+                epoch_losses.append(loss_for_logging)
+
             if not torch.isfinite(loss):
                 if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_log:
                     print("NaN/Inf loss; skipping step")
@@ -4050,6 +4057,108 @@ def main():
                 if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_save:
                     save_latest_checkpoint(args.save_dir, artifacts, pre_prune=True, post_prune=True, verbose=True)
                     print(f"  ✅ Saved (and pruned to) latest at step {global_step}", flush=True)
+
+        # ===== End-of-epoch evaluation and metrics saving =====
+        # Compute and save comprehensive metrics after each epoch
+        if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_log:
+            epoch_metrics = {}
+            epoch_metrics['epoch'] = epoch + 1
+            epoch_metrics['global_step'] = global_step
+            epoch_metrics['timestamp'] = time.time()
+
+            # Calculate average training loss for this epoch
+            if 'epoch_losses' in locals() and epoch_losses:
+                avg_train_loss = sum(epoch_losses) / len(epoch_losses)
+                epoch_metrics['train_loss'] = float(avg_train_loss)
+
+            # Calculate perplexity from cross-entropy loss
+            if 'avg_train_loss' in locals():
+                epoch_metrics['train_perplexity'] = float(math.exp(min(avg_train_loss, 100)))  # Cap to avoid overflow
+
+            # Collect model-specific metrics if available
+            for model_name in ['llama', 'qwen']:
+                if model_name in stats_trackers:
+                    tracker = stats_trackers[model_name]
+                    model_metrics = {}
+
+                    # RMS statistics
+                    if "rms_raw" in tracker and hasattr(tracker["rms_raw"], 'mean'):
+                        model_metrics['rms_raw_mean'] = float(tracker["rms_raw"].mean)
+                        if hasattr(tracker["rms_raw"], 'std'):
+                            model_metrics['rms_raw_std'] = float(tracker["rms_raw"].std)
+
+                    if "rms_cal" in tracker and hasattr(tracker["rms_cal"], 'mean'):
+                        model_metrics['rms_cal_mean'] = float(tracker["rms_cal"].mean)
+                        if hasattr(tracker["rms_cal"], 'std'):
+                            model_metrics['rms_cal_std'] = float(tracker["rms_cal"].std)
+
+                    # First token accuracy (important metric for evaluation)
+                    if "first_acc" in tracker and hasattr(tracker["first_acc"], 'mean'):
+                        model_metrics['first_token_accuracy'] = float(tracker["first_acc"].mean)
+                        if hasattr(tracker["first_acc"], 'max'):
+                            model_metrics['first_token_accuracy_max'] = float(tracker["first_acc"].max)
+
+                    # Add any other tracked metrics
+                    for metric_name in ['loss_tf', 'loss_first', 'loss_kce', 'loss_kd']:
+                        if metric_name in tracker and hasattr(tracker[metric_name], 'mean'):
+                            model_metrics[metric_name] = float(tracker[metric_name].mean)
+
+                    epoch_metrics[f'{model_name}_metrics'] = model_metrics
+
+            # Track best first token accuracy
+            if 'first_acc_ema' in locals():
+                epoch_metrics['first_acc_ema'] = float(first_acc_ema)
+            if 'best_first_acc' in locals():
+                epoch_metrics['best_first_acc'] = float(best_first_acc)
+
+            # Validation metrics (if validation data available)
+            # Note: Full evaluation would require running eval.py logic
+            # For production use, integrate with eval.py functions
+
+            # Compute simple validation metrics from training data
+            # These serve as proxies until full evaluation is implemented
+            if epoch_losses:
+                # Use last 10% of epoch as validation proxy
+                val_split = max(1, len(epoch_losses) // 10)
+                val_losses = epoch_losses[-val_split:]
+                epoch_metrics['validation_loss_proxy'] = float(sum(val_losses) / len(val_losses))
+                epoch_metrics['validation_perplexity_proxy'] = float(math.exp(min(epoch_metrics['validation_loss_proxy'], 100)))
+
+            # Placeholder for full evaluation metrics
+            # To enable: run eval.py functions here with validation dataset
+            epoch_metrics['f1_score'] = None  # Requires eval.py integration
+            epoch_metrics['exact_match'] = None  # Requires eval.py integration
+            epoch_metrics['bleu_score'] = None  # Requires eval.py integration
+
+            # Add configuration info for reproducibility
+            epoch_metrics['config'] = {
+                'batch_size': args.batch_size,
+                'learning_rate': args.lr,
+                'latent_len': args.latent_len,
+                'd_z': args.d_z,
+                'dataset': args.dataset if hasattr(args, 'dataset') else 'unknown'
+            }
+
+            # Save metrics to JSON file
+            metrics_filename = os.path.join(args.save_dir, f'results_epoch_{epoch + 1}.json')
+            os.makedirs(args.save_dir, exist_ok=True)
+            with open(metrics_filename, 'w') as f:
+                json.dump(epoch_metrics, f, indent=2)
+            print(f"  📊 Saved epoch {epoch + 1} metrics to {metrics_filename}")
+
+            # Also append to a consolidated metrics file for easy graphing
+            all_metrics_file = os.path.join(args.save_dir, 'training_metrics.jsonl')
+            with open(all_metrics_file, 'a') as f:
+                f.write(json.dumps(epoch_metrics) + '\n')
+
+            # Print summary metrics
+            print(f"\n=== Epoch {epoch + 1} Summary ===")
+            if 'avg_train_loss' in locals():
+                print(f"  Average training loss: {avg_train_loss:.4f}")
+                print(f"  Training perplexity: {epoch_metrics.get('train_perplexity', 'N/A'):.2f}")
+            if 'first_acc_ema' in locals():
+                print(f"  First token accuracy (EMA): {first_acc_ema:.4f}")
+            print(f"================================\n")
 
     # ===== Final save =====
     os.makedirs(args.save_dir, exist_ok=True)

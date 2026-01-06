@@ -35,7 +35,7 @@ TARGET_MODEL="Qwen/Qwen2.5-7B-Instruct"
 # Training defaults
 DATASET="squad"
 SAMPLES=87599
-EPOCHS=24
+EPOCHS=8
 BATCH_SIZE=8
 LATENT_LEN=32
 D_Z=256
