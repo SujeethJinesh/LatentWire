@@ -5,15 +5,39 @@
 # This is the ONLY script needed for ALL LatentWire operations.
 # It consolidates ALL functionality from all other scripts.
 #
+# CONSOLIDATION COMPLETE: All shell scripts have been merged into this file.
+# Previous scripts consolidated:
+#   - QUICK_START.sh (quick start testing)
+#   - setup_env.sh (environment setup)
+#   - run_end_to_end_test.sh (e2e testing)
+#   - test_recovery.sh, test_failure_recovery.sh (recovery testing)
+#   - run_training.sh (training pipeline)
+#   - run_reasoning_benchmarks.sh (GSM8K etc.)
+#   - scripts/run_pipeline.sh (main pipeline)
+#   - scripts/run_llmlingua_baseline.sh (LLMLingua comparison)
+#   - scripts/validate_production_readiness.sh (production validation)
+#   - scripts/sweep_architectures.sh (hyperparameter sweep)
+#   - scripts/run_mixed_precision.sh (fp16/bf16 training)
+#   - scripts/run_elastic_gpu_demo.sh (GPU scaling demo)
+#   - telepathy/*.sh (cross-model experiments)
+#   - All other test and utility scripts
+#
 # Features:
 #   - Environment auto-detection (HPC vs Local)
 #   - SLURM job submission and monitoring
 #   - All experiment phases (training, evaluation, baselines, efficiency)
-#   - Testing and validation
+#   - Testing and validation (e2e, recovery, production readiness)
 #   - Paper compilation
 #   - Result aggregation and analysis
 #   - DDP training support
 #   - Memory profiling and benchmarking
+#   - Telepathy cross-model experiments
+#   - Reasoning benchmarks (GSM8K)
+#   - Architecture hyperparameter sweeps
+#   - Mixed precision training
+#   - Elastic GPU demonstrations
+#   - LLMLingua-2 baseline comparisons
+#   - Failure recovery with state persistence
 #
 # Usage:
 #   bash RUN_ALL.sh [COMMAND] [OPTIONS]

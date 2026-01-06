@@ -1,0 +1,31 @@
+FINALIZATION MANIFEST
+===================
+
+Root Directory Files (10 or fewer):
+-----------------------------------
+1. README.md           - Main project documentation
+2. requirements.txt    - Python dependencies
+3. config.yaml        - System configuration
+4. main.py            - Main entry point
+5. RUN_ALL.sh         - Complete pipeline script
+6. MANIFEST.txt       - This file (structure documentation)
+7. __init__.py        - Package initialization
+
+Consolidated Directories:
+------------------------
+- consolidated_core/   - Core model and utility files
+- consolidated_eval/   - Evaluation scripts
+- consolidated_tests/  - Test files
+- consolidated_docs/   - Documentation
+- consolidated_scripts/ - Shell scripts
+- consolidated_slurm/  - SLURM job files
+
+Original Directories (preserved):
+--------------------------------
+- latentwire/         - Original source code
+- telepathy/          - Telepathy experiments
+- scripts/            - Original scripts
+- features/           - Feature implementations
+- logs/               - Execution logs
+- runs/               - Training runs
+- latex/              - LaTeX documentation

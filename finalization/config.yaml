@@ -1,0 +1,33 @@
+# LatentWire Configuration
+# Main configuration file for the finalized system
+
+system:
+  name: "LatentWire"
+  version: "1.0.0"
+
+paths:
+  core: "consolidated_core"
+  tests: "consolidated_tests"
+  eval: "consolidated_eval"
+  docs: "consolidated_docs"
+  scripts: "consolidated_scripts"
+
+model:
+  latent_len: 32
+  d_z: 256
+  encoder_type: "byte"
+
+training:
+  batch_size: 64
+  epochs: 24
+  samples: 87599
+  first_token_ce_weight: 0.5
+
+evaluation:
+  samples: 200
+  max_new_tokens: 12
+  calibration: "embed_rms"
+
+models:
+  llama_id: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  qwen_id: "Qwen/Qwen2.5-7B-Instruct"
