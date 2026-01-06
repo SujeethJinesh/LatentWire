@@ -18,6 +18,14 @@ from typing import Dict, List, Any, Optional, Tuple, Union
 from dataclasses import dataclass, field, asdict
 import warnings
 
+# Import checkpoint manager for resume capability
+try:
+    from checkpoint_manager import CheckpointManager, ExperimentCheckpointer
+    HAS_CHECKPOINT_MANAGER = True
+except ImportError:
+    print("Warning: checkpoint_manager not available. Resume functionality disabled.")
+    HAS_CHECKPOINT_MANAGER = False
+
 # Try importing scientific packages with fallbacks
 try:
     import numpy as np
@@ -287,17 +295,27 @@ class LinearProbeBaseline:
         # Try to import the actual LinearProbeBaseline
         try:
             import sys
-            import os
-            # Add parent directory to path to import telepathy module
-            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            if parent_dir not in sys.path:
-                sys.path.insert(0, parent_dir)
+            # Try to import from local copy first, then fall back to telepathy module
+            try:
+                from linear_probe_baseline import (
+                    LinearProbeBaseline as LPB,
+                    train_linear_probe,
+                    eval_linear_probe
+                )
+                print("LinearProbeBaseline imported from local finalization directory")
+            except ImportError:
+                import os
+                # Add parent directory to path to import telepathy module
+                parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                if parent_dir not in sys.path:
+                    sys.path.insert(0, parent_dir)
 
-            from telepathy.linear_probe_baseline import (
-                LinearProbeBaseline as LPB,
-                train_linear_probe,
-                eval_linear_probe
-            )
+                from telepathy.linear_probe_baseline import (
+                    LinearProbeBaseline as LPB,
+                    train_linear_probe,
+                    eval_linear_probe
+                )
+                print("LinearProbeBaseline imported from telepathy module")
             self.LinearProbeClass = LPB
             self.train_func = train_linear_probe
             self.eval_func = eval_linear_probe
@@ -484,6 +502,12 @@ class ExperimentRunner:
         self.compressor = self._create_compressor()
         self.evaluator = ModelEvaluator(config)
         self.results = {}
+
+        # Initialize checkpoint manager if available
+        self.checkpointer = None
+        if HAS_CHECKPOINT_MANAGER and config.save_checkpoints:
+            self.checkpointer = ExperimentCheckpointer(config.to_dict())
+            self.logger.log("Checkpoint manager initialized")
 
     def _create_compressor(self):
         """Create appropriate compressor or baseline based on config."""
@@ -687,6 +711,29 @@ def main():
         "--validate",
         action="store_true",
         help="Only validate environment"
+    )
+
+    # Add checkpoint/resume arguments
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from latest checkpoint in output directory"
+    )
+    parser.add_argument(
+        "--resume-from",
+        type=str,
+        help="Path to specific checkpoint to resume from"
+    )
+    parser.add_argument(
+        "--save-interval",
+        type=int,
+        default=100,
+        help="Save checkpoint every N steps"
+    )
+    parser.add_argument(
+        "--no-checkpoints",
+        action="store_true",
+        help="Disable checkpoint saving"
     )
 
     args = parser.parse_args()

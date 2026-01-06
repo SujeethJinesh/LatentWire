@@ -12,6 +12,10 @@ latentwire/data.py           - Dataset loading and preprocessing (SQuAD, HotpotQ
 telepathy/unified_cross_model_experiments.py - Comprehensive cross-model experiment runner
 scripts/run_pipeline.sh      - Main training and evaluation pipeline script
 
+BASELINES & COMPARISONS
+linear_probe_baseline.py     - LinearProbeBaseline using sklearn LogisticRegression (reviewer requirement)
+MAIN_EXPERIMENT.py          - Unified experiment framework with all compression methods
+
 DOCUMENTATION & CONFIG
 README.md                    - Project overview, requirements, and quick start guide
 CLAUDE.md                    - Development guidelines and workflow requirements

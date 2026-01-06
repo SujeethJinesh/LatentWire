@@ -45,7 +45,11 @@ def test_phase2_imports():
     try:
         # Check if we have LinearProbeBaseline in latentwire
         try:
-            from latentwire.linear_probe_baseline import LinearProbeBaseline
+            # Try local import first, then fall back to latentwire module
+            try:
+                from linear_probe_baseline import LinearProbeBaseline
+            except ImportError:
+                from latentwire.linear_probe_baseline import LinearProbeBaseline
             print("  ✓ LinearProbeBaseline class available")
             return True
         except ImportError as e:
