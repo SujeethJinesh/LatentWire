@@ -198,6 +198,13 @@ export PYTHONPATH=.
 bash RUN_ALL.sh experiment
 ```
 
+For quick interactive training session:
+
+```bash
+# Interactive GPU session for development/debugging
+srun --job-name=latentwire --nodes=1 --gpus=1 --account=marlowe-m000066 --partition=preempt --time=2:00:00 --mem=64GB --pty bash RUN.sh train
+```
+
 ## Memory Requirements
 
 ### H100 (80GB) Budget
