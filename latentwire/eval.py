@@ -30,6 +30,19 @@ try:
 except ImportError:
     ROUGE_AVAILABLE = False
 
+# Import enhanced statistical testing module
+try:
+    from latentwire.statistical_eval import (
+        enhanced_bootstrap_ci,
+        mcnemar_test_binary,
+        cohens_d,
+        paired_bootstrap_test,
+        compute_pairwise_statistics
+    )
+    STATISTICAL_EVAL_AVAILABLE = True
+except ImportError:
+    STATISTICAL_EVAL_AVAILABLE = False
+
 from latentwire.models import (
     InterlinguaEncoder,
     Adapter,

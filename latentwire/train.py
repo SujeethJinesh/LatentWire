@@ -4160,6 +4160,47 @@ def main():
                 print(f"  First token accuracy (EMA): {first_acc_ema:.4f}")
             print(f"================================\n")
 
+        # Save epoch-specific checkpoint for learning curve analysis
+        if 'ddp_manager' not in locals() or ddp_manager is None or ddp_manager.should_save:
+            epoch_checkpoint_dir = os.path.join(args.save_dir, f"epoch{epoch}")
+            os.makedirs(epoch_checkpoint_dir, exist_ok=True)
+
+            # Create checkpoint artifacts
+            epoch_artifacts = {
+                "encoder.pt": encoder.state_dict(),
+                "state.pt": {
+                    "epoch": epoch + 1,
+                    "global_step": global_step,
+                    "optimizer": optimizer.state_dict() if optimizer is not None else None,
+                    "lr_scheduler": lr_scheduler.state_dict() if lr_scheduler is not None else None,
+                    "train_stats": train_stats,
+                },
+            }
+
+            # Add adapter states
+            for name, adapter in adapters.items():
+                epoch_artifacts[f"adapter_{name}.pt"] = adapter.state_dict()
+
+            # Add other components if they exist
+            if latent_refiner is not None:
+                epoch_artifacts["refiner.pt"] = latent_refiner.state_dict()
+            for name, dpg in deep_prefix_generators.items():
+                epoch_artifacts[f"deep_prefix_{name}.pt"] = dpg.state_dict()
+            for name, module in coprocessors.items():
+                epoch_artifacts[f"coprocessor_{name}.pt"] = module.state_dict()
+            for name, head in gist_heads.items():
+                epoch_artifacts[f"gist_{name}.pt"] = head.state_dict()
+
+            # Save latent adapters if they exist
+            for wrapper in [llama, qwen]:
+                if wrapper is not None and wrapper.use_latent_adapters:
+                    wrapper_name = "llama" if wrapper is llama else "qwen"
+                    epoch_artifacts[f"latent_adapters_{wrapper_name}.pt"] = wrapper.latent_adapters.state_dict()
+
+            # Save checkpoint
+            save_latest_checkpoint(epoch_checkpoint_dir, epoch_artifacts, pre_prune=False, post_prune=False, verbose=False)
+            print(f"  💾 Saved epoch {epoch} checkpoint to {epoch_checkpoint_dir}")
+
     # ===== Final save =====
     os.makedirs(args.save_dir, exist_ok=True)
     cfg = {
