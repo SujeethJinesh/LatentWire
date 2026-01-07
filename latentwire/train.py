@@ -1776,7 +1776,7 @@ def main():
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
     random.seed(args.seed)
-    np.random.seed(args.seed)
+    # numpy seeding already handled above as _np
 
     # Try to set transformers seed if available
     try:
