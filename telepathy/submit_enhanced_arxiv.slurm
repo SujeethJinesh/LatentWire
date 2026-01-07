@@ -68,8 +68,15 @@ echo ""
 echo "Saving results to git..."
 
 # Only add log files and JSON results (not large checkpoints)
-git add runs/*.log runs/*.err runs/*.json runs/**/*.log runs/**/*.json 2>/dev/null || true
+# Use find to ensure we get all log files recursively
+find runs -name "*.log" -o -name "*.err" -o -name "*.json" | xargs git add 2>/dev/null || true
 git add figures/*.png figures/*.pdf 2>/dev/null || true
+
+# Also explicitly check for the enhanced arxiv log
+if [ -f "runs/*/enhanced_arxiv.log" ]; then
+    git add runs/*/enhanced_arxiv.log
+    echo "Found and added enhanced_arxiv.log"
+fi
 
 # Commit with proper message format
 COMMIT_MSG="results: enhanced arxiv experiments (SLURM job $SLURM_JOB_ID)

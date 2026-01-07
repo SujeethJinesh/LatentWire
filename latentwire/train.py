@@ -1722,7 +1722,10 @@ def main():
     # Enable kernel optimizations for better GPU utilization
     if device == "cuda":
         # Enable cuDNN autotuner to select best algorithms for your hardware
-        torch.backends.cudnn.benchmark = True
+        # Set to False for deterministic training (reproducibility)
+        # Set to True for faster training (non-deterministic)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
         # Enable FlashAttention-2 and memory-efficient attention kernels
         try:
             torch.backends.cuda.enable_flash_sdp(True)
@@ -1768,9 +1771,19 @@ def main():
         _np.random.seed(args.seed)
     except Exception:
         pass
+    # Set all random seeds for reproducibility
     torch.manual_seed(args.seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
+    # Try to set transformers seed if available
+    try:
+        import transformers
+        transformers.set_seed(args.seed)
+    except ImportError:
+        pass
 
     # ===== Data =====
     texts, answers = prepare_training_data(

@@ -44,6 +44,12 @@ log "=== Job $SLURM_JOB_ID starting on $(hostname) ==="
 cd "$WORK_DIR" || { log "FATAL: Cannot cd to $WORK_DIR"; exit 1; }
 log "Working directory: $(pwd)"
 
+# Prevent conda activation issues
+export CONDA_SHLVL=0
+unset CONDA_PREFIX
+unset CONDA_DEFAULT_ENV
+unset CONDA_PROMPT_MODIFIER
+
 export PYTHONPATH=.
 export PYTHONUNBUFFERED=1
 

@@ -183,6 +183,19 @@ ensure_dependencies() {
             pip list
         else
             echo "Environment: Local development"
+
+            # Check for and activate local virtual environment
+            if [[ -f ".venv/bin/activate" ]]; then
+                source .venv/bin/activate
+                echo "Activated local virtual environment"
+            elif [[ -f "venv/bin/activate" ]]; then
+                source venv/bin/activate
+                echo "Activated local virtual environment"
+            else
+                echo "Warning: No virtual environment found. PyTorch may not be available."
+                echo "To create one: python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt"
+            fi
+
             pip list
         fi
 
