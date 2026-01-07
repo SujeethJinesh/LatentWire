@@ -257,7 +257,7 @@ EOF
             --batch_size "$BATCH_SIZE" \
             --latent_len "$LATENT_LEN" \
             --d_z "$D_Z" \
-            --output_dir "$checkpoint_dir" \
+            --save_dir "$checkpoint_dir" \
             --sequential_models \
             --warm_anchor_text "Answer: " \
             --first_token_ce_weight 0.5
@@ -329,7 +329,11 @@ run_evaluation() {
         print_info "Evaluating with seed $seed..."
 
         local eval_log="$OUTPUT_DIR/eval_seed${seed}_${TIMESTAMP}.log"
+        local seed_dir="$results_dir/seed${seed}"
         local output_file="$results_dir/seed${seed}.json"
+
+        # Create seed-specific output directory
+        mkdir -p "$seed_dir"
 
         {
             echo "Seed $seed evaluation started: $(date)"
@@ -346,14 +350,21 @@ run_evaluation() {
                 --latent_anchor_text "Answer: " \
                 --append_bos_after_prefix yes \
                 --max_new_tokens 12 \
-                --out_json "$output_file"
+                --out_dir "$seed_dir"
 
             echo "Seed $seed evaluation completed: $(date)"
         } 2>&1 | tee "$eval_log"
 
         if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
             print_status "Evaluation completed for seed $seed"
-            echo "Seed $seed: SUCCESS - Results in $output_file" | tee -a "$eval_summary"
+
+            # Copy metrics.json to expected location
+            if [[ -f "$seed_dir/metrics.json" ]]; then
+                cp "$seed_dir/metrics.json" "$output_file"
+                echo "Seed $seed: SUCCESS - Results in $output_file" | tee -a "$eval_summary"
+            else
+                echo "Seed $seed: WARNING - metrics.json not found" | tee -a "$eval_summary"
+            fi
 
             # Extract key metrics from log
             if grep -q "F1:" "$eval_log"; then
