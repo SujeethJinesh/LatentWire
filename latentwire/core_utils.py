@@ -419,7 +419,15 @@ def patch_dataloader_defaults() -> None:  # pragma: no cover - compatibility shi
 
 
 def load_squad_split(split: str = "train", samples: Optional[int] = None):
-    ds = load_dataset("squad", split=split)
+    # Use rajpurkar/squad for better compatibility with Python 3.11
+    try:
+        ds = load_dataset("squad", split=split)
+    except (ValueError, TypeError) as e:
+        # Fallback to alternative path if dataclass error occurs
+        if "mutable default" in str(e) or "dataclasses.fields" in str(e):
+            ds = load_dataset("rajpurkar/squad", split=split)
+        else:
+            raise
     if samples is not None:
         ds = ds.select(range(min(len(ds), samples)))
     return ds
