@@ -5,7 +5,7 @@
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=08:00:00
-#SBATCH --mem=80GB
+#SBATCH --mem=32GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/experiment_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/experiment_%j.err
 #SBATCH --signal=B:TERM@30
@@ -142,7 +142,7 @@ python3 -c "import transformers; print(f'Transformers: {transformers.__version__
 export DATASET="squad"
 export SAMPLES="${SAMPLES:-2000}"      # Reduced from 5000
 export EPOCHS="${EPOCHS:-6}"           # Reduced from 8
-export BATCH_SIZE="${BATCH_SIZE:-16}"  # Larger batch for single GPU
+export BATCH_SIZE="${BATCH_SIZE:-2}"   # Reduced for 32GB memory
 export LATENT_LEN="${LATENT_LEN:-32}"
 export D_Z="${D_Z:-256}"
 
@@ -151,7 +151,7 @@ export EVAL_SAMPLES="${EVAL_SAMPLES:-1000}"
 export SEEDS="${SEEDS:-42 123 456}"
 
 # Use gradient accumulation for effective larger batch
-GRAD_ACCUM=8  # Effective batch = 16 * 8 = 128
+GRAD_ACCUM=16  # Effective batch = 2 * 16 = 32
 
 log_msg "Configuration:"
 log_msg "  Dataset: $DATASET"
