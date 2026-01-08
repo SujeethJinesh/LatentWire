@@ -175,12 +175,36 @@ def load_hotpot_subset(
 
 def load_squad_subset(split: str = "train", samples: int = 512, seed: int = 0, v2: bool = False) -> List[Dict[str, Any]]:
     name = "squad_v2" if v2 else "squad"
-    # Load dataset - explicitly specify plain_text=False for older datasets library
+
+    # Try multiple loading strategies in order of preference
+    # Strategy 1: Direct loading without any special parameters (works with datasets 4.0+)
     try:
         ds = load_dataset(f"rajpurkar/{name}", split=split)
-    except TypeError:
-        # Fallback for older datasets library that requires trust_remote_code
-        ds = load_dataset(f"rajpurkar/{name}", split=split, trust_remote_code=True)
+    except Exception as e1:
+        # Strategy 2: Try with trust_remote_code (for older datasets library)
+        try:
+            ds = load_dataset(f"rajpurkar/{name}", split=split, trust_remote_code=True)
+        except Exception as e2:
+            # Strategy 3: Try without the rajpurkar prefix (legacy identifier)
+            try:
+                ds = load_dataset(name, split=split)
+            except Exception as e3:
+                # Strategy 4: Load from remote JSON files directly (most reliable fallback)
+                print(f"Warning: Loading SQuAD from remote JSON files as fallback")
+                if v2:
+                    base_url = "https://rajpurkar.github.io/SQuAD-explorer/dataset/"
+                    file_name = "train-v2.0.json" if split == "train" else "dev-v2.0.json"
+                else:
+                    base_url = "https://rajpurkar.github.io/SQuAD-explorer/dataset/"
+                    file_name = "train-v1.1.json" if split == "train" else "dev-v1.1.json"
+
+                # Load single file directly for the requested split
+                # Map 'validation' split to 'dev' file in SQuAD naming convention
+                mapped_split = "validation" if split in ["validation", "dev"] else split
+                ds = load_dataset("json",
+                                data_files={mapped_split: base_url + file_name},
+                                field="data",
+                                split=mapped_split)
 
     rng = random.Random(seed)
     idxs = list(range(len(ds)))
