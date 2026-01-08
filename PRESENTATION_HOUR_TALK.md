@@ -321,55 +321,71 @@ COMPRESSION & LATENCY:
 
 ## Part 4: Related Works and Our Unique Position (10 minutes)
 
-### The Landscape of Prompt Compression
+### The Landscape of Cross-Model Communication
 
 ```
 COMPARISON WITH RELATED WORKS:
-┌──────────────────┬────────────┬────────────┬─────────┬──────────────┐
-│ Method           │ Compression│ Cross-Model│ Frozen  │ Heterogeneous│
-├──────────────────┼────────────┼────────────┼─────────┼──────────────┤
-│ LLMLingua        │ ✅ 20×     │ ❌         │ ✅      │ ❌           │
-│ (Token pruning)  │            │            │         │              │
-├──────────────────┼────────────┼────────────┼─────────┼──────────────┤
-│ Prompt Tuning    │ ❌         │ ❌         │ ❌      │ ❌           │
-│ (Learned soft)   │            │            │         │              │
-├──────────────────┼────────────┼────────────┼─────────┼──────────────┤
-│ Model Merging    │ ✅         │ ✅         │ ❌      │ ❌           │
-│ (Weight average) │            │            │         │              │
-├──────────────────┼────────────┼────────────┼─────────┼──────────────┤
-│ Knowledge Distil │ ✅         │ ✅         │ ❌      │ ✅           │
-│ (Teacher-Student)│            │            │         │              │
-├──────────────────┼────────────┼────────────┼─────────┼──────────────┤
-│ OURS:LatentWire  │ ✅ 4×      │ ✅         │ ✅      │ ✅           │
-│ (Learned bridge) │            │            │         │              │
-└──────────────────┴────────────┴────────────┴─────────┴──────────────┘
+┌──────────────────┬────────────┬────────────┬─────────┬──────────────┬─────────────┐
+│ Method           │ Compression│ Cross-Model│ Frozen  │ Heterogeneous│ Approach    │
+├──────────────────┼────────────┼────────────┼─────────┼──────────────┼─────────────┤
+│ LLMLingua        │ ✅ 20×     │ ❌         │ ✅      │ ❌           │ Token prune │
+├──────────────────┼────────────┼────────────┼─────────┼──────────────┼─────────────┤
+│ Cache-to-Cache   │ ❌         │ ✅         │ ✅      │ ✅           │ KV fusion   │
+│ (C2C, 2024)      │            │            │         │              │             │
+├──────────────────┼────────────┼────────────┼─────────┼──────────────┼─────────────┤
+│ LatentMAS        │ ❌         │ ✅         │ ✅      │ ❌*          │ KV sharing  │
+│ (2025)           │            │            │         │ (*same arch) │             │
+├──────────────────┼────────────┼────────────┼─────────┼──────────────┼─────────────┤
+│ Prompt Tuning    │ ❌         │ ❌         │ ❌      │ ❌           │ Soft prompt │
+├──────────────────┼────────────┼────────────┼─────────┼──────────────┼─────────────┤
+│ Model Merging    │ ✅         │ ✅         │ ❌      │ ❌           │ Weight avg  │
+├──────────────────┼────────────┼────────────┼─────────┼──────────────┼─────────────┤
+│ OURS:LatentWire  │ ✅ 4×      │ ✅         │ ✅      │ ✅           │ Learned     │
+│                  │            │            │         │              │ interlingua │
+└──────────────────┴────────────┴────────────┴─────────┴──────────────┴─────────────┘
 ```
 
-### What Makes Us Unique
+### Critical Distinctions from Concurrent Work
 
-**We are the FIRST to demonstrate:**
+**Cache-to-Cache (C2C) [Fu et al., 2024]**
+- **Approach**: Projects and fuses KV-caches layer-by-layer between models
+- **Strengths**: Works across Qwen, Llama, Gemma families; 8.5-10.5% accuracy gains
+- **Differences from ours**:
+  - C2C focuses on runtime collaboration (no compression)
+  - We target efficient conditioning with 4× compression
+  - C2C operates at attention layers; we inject at embedding layer
 
-1. **Frozen heterogeneous LLM communication** - Llama↔Qwen without modifying either
-2. **Learned continuous interlingua** - Not text, not tokens, but learned representations
-3. **Super-additive ensemble behavior** - Bridge outperforms both individual models
-4. **22× latency reduction** while maintaining classification accuracy
+**LatentMAS [Zou et al., 2025]**
+- **Approach**: Training-free latent collaboration via shared KV-cache memory
+- **Strengths**: 70.8-83.7% token reduction, 4× faster inference for multi-agent systems
+- **Limitations**: Requires homogeneous models (same architecture)
+- **Differences from ours**:
+  - LatentMAS needs identical transformer shapes
+  - We enable truly heterogeneous models (Llama + Qwen)
+  - They focus on multi-agent collaboration; we focus on interlingua
 
-### Closest Competing Approaches
+### What Makes LatentWire Unique
 
-**LLMLingua (Microsoft, NeurIPS 2023)**
-- Achieves 20× compression via token pruning
-- Requires same tokenizer, same model family
-- We enable different model families entirely
+**We are the first to demonstrate:**
 
-**MiniPLM (ICLR 2025)**
-- Cross-family knowledge distillation
-- Creates new student models, not peer communication
-- We enable peer-to-peer without retraining
+1. **Learned continuous interlingua for heterogeneous frozen LLMs** - A compressed representation that both Llama and Qwen can consume via `inputs_embeds`
 
-**Prompt Tuning (Lester et al., 2021)**
-- Learns soft prompts for single models
-- Cannot transfer between architectures
-- We bridge completely different architectures
+2. **Compression-focused cross-model communication** - 4× compression while maintaining quality, unlike C2C/LatentMAS which don't compress
+
+3. **Embedding-level injection** - Operating at the embedding space rather than KV-cache manipulation
+
+4. **Super-additive classification** - Bridge outperforms both individual models on classification tasks
+
+### Key Differentiators
+
+| Aspect | C2C | LatentMAS | LatentWire (Ours) |
+|--------|-----|-----------|-------------------|
+| **Goal** | Collaboration | Multi-agent | Compression + Interoperability |
+| **Mechanism** | KV-cache fusion | KV-cache sharing | Learned soft tokens |
+| **Compression** | No | No | Yes (4×) |
+| **Heterogeneous** | Yes | No (same arch) | Yes |
+| **Training** | Fusion module | None | Encoder + adapters |
+| **Injection Point** | Attention layers | Attention layers | Embedding layer |
 
 ---
 
@@ -596,6 +612,104 @@ Speedup:   ────────────────       22×
 1. **API compression service** - Reduce token costs by 75%
 2. **Edge deployment toolkit** - Run large models on small devices
 3. **Federation protocol licensing** - Enable secure multi-org AI
+
+---
+
+## Part 9: Current Experiment & Remaining Work (5 minutes)
+
+### Live Experiment Status
+
+**Currently Running: Optimized Single-GPU Validation**
+
+```
+SLURM JOB: latentwire_experiment.sbatch
+┌────────────────────┬─────────────────────────────┐
+│ Configuration      │ Details                     │
+├────────────────────┼─────────────────────────────┤
+│ Hardware           │ 1× H100 GPU, 32GB RAM       │
+│ Runtime            │ 8 hours allocated           │
+│                    │ (4-6 hours expected)        │
+│ Training           │ 2,000 samples × 6 epochs    │
+│ Batch Size         │ 2 with 16× grad accum = 32  │
+│ Models             │ Llama-3.1-8B + Qwen-2.5-7B  │
+│ Status             │ Phase 1/3: Training         │
+└────────────────────┴─────────────────────────────┘
+
+Expected Timeline:
+├─ Hours 0-4: Training encoder + adapters
+├─ Hours 4-5: Evaluation (3 seeds: 42, 123, 456)
+└─ Hour 5-6: Analysis + Git push results
+```
+
+**Why This Experiment Matters:**
+- Tests all recent bug fixes (PAD masking, BOS alignment, scale normalization)
+- Validates 32GB memory configuration (down from initial 256GB)
+- Provides reproducible baseline for paper submission
+- Automatic result synchronization via git
+
+### What Remains After This Experiment
+
+```
+CRITICAL PATH TO PUBLICATION:
+Week 1: Analyze Current Results
+├── Review training diagnostics.jsonl
+├── Compare seed variance (42, 123, 456)
+├── Identify failure modes in first-token generation
+└── Decision: Continue current approach or pivot?
+
+Week 2-3: Final Push on Classification
+├── Expand to all 8 classification datasets
+├── Hyperparameter sweep on best performers
+├── Ablation studies (adapter types, calibration methods)
+└── Target: Match text baseline on 5/8 datasets
+
+Week 4: Paper Writing
+├── Complete experimental section with final results
+├── Add statistical significance tests
+├── Create camera-ready figures
+└── Submit to MLSys 2025 (or pivot to ICML workshop)
+
+Post-Submission: Open Problems
+├── Hybrid architecture for reasoning
+├── Int4/Int8 quantization experiments
+├── New model pairs (Claude, GPT-4)
+└── Production deployment toolkit
+```
+
+### Critical Decisions Pending
+
+Based on tonight's results, we need to decide:
+
+1. **Continue vs Pivot**: If F1 remains <0.05, should we:
+   - Focus purely on classification (where we have success)
+   - Pivot to hybrid text/latent approach
+   - Explore completely different compression method
+
+2. **Publication Strategy**:
+   - **Option A**: MLSys 2025 - Focus on systems efficiency (22× speedup)
+   - **Option B**: ICML Workshop - Focus on negative results and lessons
+   - **Option C**: Extend 3 months for reasoning breakthrough
+
+3. **Resource Allocation**:
+   - Continue with 1 GPU experiments (faster iteration)
+   - Scale to 4 GPUs for final runs (better convergence)
+   - Request additional compute for hyperparameter sweep
+
+### Honest Assessment of Gaps
+
+**What we have:**
+- ✅ Classification working (89-94% accuracy)
+- ✅ 22× speedup demonstrated
+- ✅ Super-additive behavior proven
+- ✅ Comprehensive failure analysis
+
+**What we need:**
+- ❌ Reasoning tasks still at 0-2%
+- ❌ First-token accuracy only 5-7% (need 15%+)
+- ❌ Compression at 4× (target was 10×)
+- ❌ Production-ready implementation
+
+**The path forward depends on tonight's results.**
 
 ---
 
