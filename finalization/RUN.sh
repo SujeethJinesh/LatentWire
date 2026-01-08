@@ -161,22 +161,36 @@ ensure_dependencies() {
         if [[ -f "/projects/m000066/sujinesh/LatentWire/requirements.txt" ]]; then
             echo "Environment: HPC cluster"
 
+            # CRITICAL FIX: Clean up conflicting user packages
+            echo "Cleaning up conflicting user packages..."
+            export PYTHONNOUSERSITE=1  # Ignore user site-packages
+
             # Try to activate existing venv or create new one
             if [[ -f ".venv/bin/activate" ]]; then
-                source .venv/bin/activate
-                echo "Activated existing virtual environment"
-            else
-                echo "Creating new virtual environment..."
-                python3 -m venv .venv
-                source .venv/bin/activate
-                echo "Created and activated new virtual environment"
+                # Remove and recreate venv to avoid conflicts
+                echo "Removing existing virtual environment to avoid conflicts..."
+                rm -rf .venv
             fi
 
-            # Install/update requirements
+            echo "Creating fresh virtual environment..."
+            python3 -m venv .venv --system-site-packages
+            source .venv/bin/activate
+            echo "Created and activated new virtual environment"
+
+            # Ensure we're using venv pip, not user pip
+            which python3
+            which pip
+
+            # Install/update requirements with explicit no-user flag
             echo "Installing/updating requirements..."
-            pip install -q --upgrade pip
-            pip install -q -r requirements.txt 2>/dev/null || {
-                echo "Warning: Some packages failed to install, continuing anyway..."
+            python3 -m pip install --upgrade pip --no-user
+            python3 -m pip install -r requirements.txt --no-user 2>&1 | tee -a "$dep_log" || {
+                echo "Warning: Some packages failed to install, attempting individual installs..."
+                # Try installing packages individually if batch fails
+                python3 -m pip install torch --no-user || true
+                python3 -m pip install transformers==4.45.2 --no-user || true
+                python3 -m pip install datasets --no-user || true
+                python3 -m pip install accelerate --no-user || true
             }
 
             echo "Final package list:"
@@ -215,6 +229,7 @@ run_training() {
     cd "$WORK_DIR"
     export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
     export PYTORCH_ENABLE_MPS_FALLBACK=1
+    export PYTHONNOUSERSITE=1  # Prevent user site-packages conflicts
 
     local checkpoint_dir="$OUTPUT_DIR/checkpoint"
     local train_log="$OUTPUT_DIR/training_${TIMESTAMP}.log"
@@ -291,6 +306,7 @@ run_evaluation() {
     cd "$WORK_DIR"
     export PYTHONPATH="$WORK_DIR:$PYTHONPATH"
     export PYTORCH_ENABLE_MPS_FALLBACK=1
+    export PYTHONNOUSERSITE=1  # Prevent user site-packages conflicts
 
     # Find checkpoint
     local checkpoint="${2:-}"
@@ -541,11 +557,26 @@ git pull
 export PYTHONPATH=.
 export PYTHONUNBUFFERED=1
 export PYTORCH_ENABLE_MPS_FALLBACK=1
+export PYTHONNOUSERSITE=1  # CRITICAL: Prevent user site-packages conflicts
 export BATCH_SIZE=4  # For 40GB memory
 
-# Ensure dependencies
+# Clean up and ensure proper dependencies
+echo "Setting up clean Python environment..."
+if [ -f .venv/bin/activate ]; then
+    rm -rf .venv  # Remove old venv to avoid conflicts
+fi
+
+# Create fresh virtual environment
+python3 -m venv .venv --system-site-packages
+source .venv/bin/activate
+
+# Install dependencies in venv
 if [ -f requirements.txt ]; then
-    pip install -q -r requirements.txt 2>/dev/null || true
+    python3 -m pip install --upgrade pip --no-user
+    python3 -m pip install -r requirements.txt --no-user 2>/dev/null || {
+        echo "Some packages failed, trying core packages individually..."
+        python3 -m pip install torch transformers==4.45.2 datasets accelerate --no-user || true
+    }
 fi
 
 # Run the experiment
