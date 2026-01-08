@@ -341,7 +341,7 @@ COMMIT_MSG="results: latentwire experiment (SLURM job $SLURM_JOB_ID)
 Configuration:
 - Samples: $SAMPLES
 - Epochs: $EPOCHS
-- Batch Size: ${BATCH_SIZE}×${GRAD_ACCUM}=$((BATCH_SIZE * GRAD_ACCUM))
+- Batch Size: ${BATCH_SIZE}×${GRAD_ACCUM}=$(($BATCH_SIZE * $GRAD_ACCUM))
 - GPUs: 1×H100
 - Runtime: $((SECONDS / 3600))h $((SECONDS % 3600 / 60))m
 
