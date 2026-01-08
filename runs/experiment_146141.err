@@ -1,0 +1,19 @@
+From github.com:SujeethJinesh/LatentWire
+   ee79a16..d39a721  main       -> origin/main
+/projects/m000066/sujinesh/LatentWire/.venv/lib/python3.9/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The cache for model files in Transformers v4.22.0 has been updated. Migrating your old cache. This is a one-time only operation. You can interrupt this and resume the migration later on by calling `transformers.utils.move_cache()`.
+0it [00:00, ?it/s]0it [00:00, ?it/s]
+/cm/local/apps/slurm/var/spool/job146141/slurm_script: line 350: results: latentwire experiment (SLURM job $SLURM_JOB_ID)
+
+Configuration:
+- Samples: $SAMPLES
+- Epochs: $EPOCHS
+- Batch Size: ${BATCH_SIZE}×${GRAD_ACCUM}=${$((BATCH_SIZE * GRAD_ACCUM))}
+- GPUs: 1×H100
+- Runtime: $((SECONDS / 3600))h $((SECONDS % 3600 / 60))m
+
+Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude Opus 4.1 <noreply@anthropic.com>: bad substitution
+Everything up-to-date
