@@ -252,19 +252,25 @@ Phases 14-19: Finding What Works (BREAKTHROUGH)
 ### The Success: Classification Tasks
 
 ```
-CLASSIFICATION RESULTS (Phase 19):
-┌────────────┬──────────┬──────────┬──────────┬─────────────┐
-│ Dataset    │ Llama    │ Mistral  │ Telepathy│ Improvement │
-├────────────┼──────────┼──────────┼──────────┼─────────────┤
-│ SST-2      │ 92.5%    │ 93.5%    │ 94.7%    │ +1.2pp      │
-│ AG News    │ 74.5%    │ 91.5%    │ 88.9%    │ Better than │
-│            │          │          │          │ Llama alone │
-│ TREC-6     │ 96.0%    │ 96.0%    │ 98.0%    │ +2.0pp      │
-│ Banking77  │ 86.8%    │ 88.1%    │ 89.1%    │ +1.0pp      │
-└────────────┴──────────┴──────────┴──────────┴─────────────┘
+ACTUAL CLASSIFICATION RESULTS:
+┌────────────┬──────────┬──────────┬───────────┬─────────────┐
+│ Dataset    │ Llama    │ Mistral  │ Bridge    │ Improvement │
+├────────────┼──────────┼──────────┼───────────┼─────────────┤
+│ SST-2      │ 92.0%    │ 88.5%    │ 94.7%     │ +2.7pp over │
+│            │          │          │           │ best model  │
+├────────────┼──────────┼──────────┼───────────┼─────────────┤
+│ AG News    │ 79.0%    │ 79.0%    │ 88.9%     │ +9.9pp over │
+│            │          │          │           │ both models │
+├────────────┼──────────┼──────────┼───────────┼─────────────┤
+│ TREC-6     │ 53.5%    │ 43.0%    │ 94.5%     │ +41pp over  │
+│            │          │          │           │ best model  │
+├────────────┼──────────┼──────────┼───────────┼─────────────┤
+│ Banking77  │ 22.0%    │ 19.5%    │ 21.5%     │ Matches     │
+│            │          │          │           │ Llama       │
+└────────────┴──────────┴──────────┴───────────┴─────────────┘
 
-Key Finding: SUPER-ADDITIVE performance
-Bridge accuracy > max(Llama, Mistral)
+Key Finding: SUPER-ADDITIVE on 3/4 tasks
+Bridge exceeds BOTH individual models
 ```
 
 **Why classification works:**
@@ -302,18 +308,42 @@ The Issue: ENTITY SCRAMBLING
 - Magnitudes exploded (13 → 10^100)
 ```
 
-### Efficiency Metrics
+### Direct Comparison with C2C
 
 ```
-COMPRESSION & LATENCY:
+PERFORMANCE COMPARISON:
+┌─────────────────┬────────────┬─────────────┬──────────────┐
+│ Metric          │ C2C        │ LatentWire  │ Notes        │
+├─────────────────┼────────────┼─────────────┼──────────────┤
+│ MMLU Redux      │ 42.9%      │ Not tested  │ C2C better   │
+│                 │ (from 35%) │             │ on reasoning │
+├─────────────────┼────────────┼─────────────┼──────────────┤
+│ Classification  │ Not        │ 88-95%      │ We excel at  │
+│ (SST-2, TREC)   │ reported   │ accuracy    │ discriminative│
+├─────────────────┼────────────┼─────────────┼──────────────┤
+│ Compression     │ None       │ 4.2×        │ We compress, │
+│                 │            │             │ C2C doesn't  │
+├─────────────────┼────────────┼─────────────┼──────────────┤
+│ Speedup         │ 2× vs text │ 22.4× vs    │ We're faster │
+│                 │            │ text-relay  │              │
+├─────────────────┼────────────┼─────────────┼──────────────┤
+│ Architecture    │ Same only  │ Different   │ We handle    │
+│ Support        │            │ (Llama-Qwen)│ heterogeneous│
+└─────────────────┴────────────┴─────────────┴──────────────┘
+```
+
+### Efficiency Metrics (Actual)
+
+```
+COMPRESSION & LATENCY (MEASURED):
 ┌─────────────────┬────────────┬─────────────┐
-│ Metric          │ Text       │ Telepathy   │
+│ Metric          │ Text-Relay │ Bridge      │
 ├─────────────────┼────────────┼─────────────┤
-│ Latency         │ 1000ms     │ 45ms        │
-│ Speedup         │ 1×         │ 22×         │
-│ Wire Bytes      │ 2048       │ 976         │
-│ Compression     │ 1×         │ 2.1×        │
-│ Memory (KV)     │ 100%       │ 55%         │
+│ Latency         │ 834.5ms    │ 37.3ms      │
+│ Speedup         │ 1×         │ 22.4×       │
+│ Token Count     │ ~67 tokens │ 16 tokens   │
+│ Compression     │ 1×         │ 4.2×        │
+│ Accuracy (TREC) │ 58.0%      │ 94.5%       │
 └─────────────────┴────────────┴─────────────┘
 ```
 
@@ -366,15 +396,15 @@ COMPARISON WITH RELATED WORKS:
 
 ### What Makes LatentWire Unique
 
-**We are the first to demonstrate:**
+**Our precise contribution:**
 
-1. **Learned continuous interlingua for heterogeneous frozen LLMs** - A compressed representation that both Llama and Qwen can consume via `inputs_embeds`
+1. **First learned compressed interlingua for heterogeneous frozen LLMs** - We combine compression (4.2×) with cross-architecture communication (Llama↔Qwen)
 
-2. **Compression-focused cross-model communication** - 4× compression while maintaining quality, unlike C2C/LatentMAS which don't compress
+2. **Neither C2C nor LatentMAS compress** - They transfer full KV-caches; we learn compressed soft tokens
 
-3. **Embedding-level injection** - Operating at the embedding space rather than KV-cache manipulation
+3. **Works across different architectures** - C2C needs compatible KV dimensions; LatentMAS requires identical architecture; we bridge Llama-Qwen with different tokenizers and architectures
 
-4. **Super-additive classification** - Bridge outperforms both individual models on classification tasks
+4. **Super-additive classification verified** - On TREC: Bridge (94.5%) exceeds Llama (53.5%) and Mistral (43.0%) by 41pp
 
 ### Key Differentiators
 
@@ -710,6 +740,24 @@ Based on tonight's results, we need to decide:
 - ❌ Production-ready implementation
 
 **The path forward depends on tonight's results.**
+
+### Important Positioning Notes for Tomorrow
+
+**Be careful with "first" claims:**
+- ✅ Say: "First learned compressed interlingua for heterogeneous frozen LLMs"
+- ✅ Say: "First to combine 4× compression with cross-architecture communication"
+- ❌ Don't say: "First cross-model communication" (C2C does this)
+- ❌ Don't say: "Best performance" (C2C gets 42.9% on MMLU)
+
+**Acknowledge concurrent work:**
+- C2C achieves strong reasoning performance via KV-cache fusion
+- LatentMAS enables multi-agent collaboration (but same architecture only)
+- We uniquely combine compression with heterogeneous architecture support
+
+**Our sweet spot:**
+- Classification tasks where we achieve 88-95% accuracy
+- 22.4× speedup with 4.2× compression
+- Works across different model families (Llama-Qwen)
 
 ---
 
