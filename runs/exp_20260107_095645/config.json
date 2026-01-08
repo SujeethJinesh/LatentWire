@@ -1,0 +1,11 @@
+{
+    "timestamp": "20260107_095645",
+    "dataset": "squad",
+    "samples": 5000,
+    "epochs": 8,
+    "batch_size": 4,
+    "latent_len": 32,
+    "d_z": 256,
+    "source_model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "target_model": "Qwen/Qwen2.5-7B-Instruct"
+}
