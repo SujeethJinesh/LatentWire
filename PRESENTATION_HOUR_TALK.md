@@ -23,7 +23,7 @@ Our Vision (Telepathy):
 [Llama] → [Neural Bridge] → [Mistral] → [Output]
          ↑________________↑
          Direct Hidden State Transfer
-              ~37ms (22.4× faster)
+              ~37ms (22× faster)
 ```
 
 ### The Research Question
@@ -259,13 +259,13 @@ TELEPATHY CLASSIFICATION RESULTS:
 ┌────────────┬──────────┬──────────┬───────────┬─────────────────┐
 │ Dataset    │ Llama    │ Mistral  │ Telepathy │ Achievement     │
 ├────────────┼──────────┼──────────┼───────────┼─────────────────┤
-│ SST-2      │ 88.4%    │ 92.2%    │ 96.7%     │ +4.5pp over     │
+│ SST-2      │ 88.4%    │ 92.2%    │ 94.7%     │ +2.5pp over     │
 │ (Sentiment)│          │          │           │ best model ✨   │
 ├────────────┼──────────┼──────────┼───────────┼─────────────────┤
-│ AG News    │ 63.8%    │ 69.4%    │ 90.7%     │ +21.3pp over    │
+│ AG News    │ 63.8%    │ 69.4%    │ 88.9%     │ +19.5pp over    │
 │ (Topics)   │          │          │           │ best model ✨   │
 ├────────────┼──────────┼──────────┼───────────┼─────────────────┤
-│ TREC-6     │ 74.4%    │ 61.8%    │ 95.3%     │ +20.9pp over    │
+│ TREC-6     │ 74.4%    │ 61.8%    │ 94.5%     │ +20.1pp over    │
 │ (Questions)│          │          │           │ best model ✨   │
 ├────────────┼──────────┼──────────┼───────────┼─────────────────┤
 │ Banking77  │ N/A      │ N/A      │ 21.5%     │ 16.5× better    │
@@ -341,8 +341,8 @@ COMPRESSION & LATENCY (MEASURED):
 ┌─────────────────┬────────────┬─────────────┐
 │ Metric          │ Text-Relay │ Bridge      │
 ├─────────────────┼────────────┼─────────────┤
-│ Latency         │ 834.5ms    │ 37.3ms      │
-│ Speedup         │ 1×         │ 22.4×       │
+│ Latency         │ 835ms      │ 37ms        │
+│ Speedup         │ 1×         │ 22×         │
 │ Token Count     │ ~67 tokens │ 16 tokens   │
 │ Compression     │ 1×         │ 4.2×        │
 │ Accuracy (TREC) │ 58.0%      │ 94.5%       │
@@ -552,7 +552,7 @@ MARKET APPLICATIONS:
 ┌────────────────────┬──────────────────────────────┐
 │ Application        │ Value Proposition            │
 ├────────────────────┼──────────────────────────────┤
-│ API Cost Reduction │ 4× fewer tokens = 75% savings│
+│ API Cost Reduction │ 4.2× fewer tokens = 76% savings│
 │ Edge AI            │ Run large models on phones   │
 │ Privacy ML         │ Non-interpretable latents    │
 │ Model Marketplace  │ Standard interface protocol  │
@@ -575,11 +575,11 @@ Baseline (Text-Relay):
          Text generation step
 
 Telepathy Path:
-[Llama Layer 20] → [8 soft tokens] → [Mistral] → "negative" (96.7% accuracy!)
+[Llama Layer 20] → [8 soft tokens] → [Mistral] → "negative" (94.7% accuracy!)
                  ↑______________↑
                  Direct neural bridge
 
-SUPER-ADDITIVE: Bridge (96.7%) exceeds both Llama (88.4%) and Mistral (92.2%)!
+SUPER-ADDITIVE: Bridge (94.7%) exceeds both Llama (88.4%) and Mistral (92.2%)!
 ```
 
 ### The Inverse Token Scaling Discovery
@@ -662,9 +662,9 @@ FINAL TELEPATHY RESULTS:
 ┌────────────────────┬─────────────────────────────┐
 │ Achievement       │ Details                     │
 ├────────────────────┼─────────────────────────────┤
-│ Classification    │ ✅ 90-96% accuracy          │
+│ Classification    │ ✅ 88-95% accuracy          │
 │ Super-additivity  │ ✅ Exceeds both models      │
-│ Speedup           │ ✅ 22.4× faster than text   │
+│ Speedup           │ ✅ 22× faster than text     │
 │ Compression       │ ✅ 4.2× token reduction     │
 │ Reasoning         │ ❌ Fundamental limitation   │
 │ Production Ready  │ ⚠️  Research prototype      │
@@ -750,7 +750,7 @@ Based on tonight's results, we need to decide:
 
 **Be careful with "first" claims:**
 - ✅ Say: "First learned compressed interlingua for heterogeneous frozen LLMs"
-- ✅ Say: "First to combine 4× compression with cross-architecture communication"
+- ✅ Say: "First to combine 4.2× compression with cross-architecture communication"
 - ❌ Don't say: "First cross-model communication" (C2C does this)
 - ❌ Don't say: "Best performance" (C2C gets 42.9% on MMLU)
 
@@ -761,8 +761,8 @@ Based on tonight's results, we need to decide:
 
 **Our sweet spot:**
 - Classification tasks where we achieve 88-95% accuracy
-- 22.4× speedup with 4.2× compression
-- Works across different model families (Llama-Qwen)
+- 22× speedup with 4.2× compression
+- Works across different model families (Llama-Mistral)
 
 ---
 
@@ -771,8 +771,8 @@ Based on tonight's results, we need to decide:
 ### What Telepathy Achieved
 
 1. **First neural bridge between heterogeneous frozen LLMs** - Direct Llama→Mistral communication
-2. **96.7% classification accuracy** - Exceeding both individual models (super-additivity)
-3. **22.4× speedup** - From 834ms to 37ms by eliminating text generation
+2. **94.7% classification accuracy** - Exceeding both individual models (super-additivity)
+3. **22× speedup** - From 835ms to 37ms by eliminating text generation
 4. **Solved the Four Boss Battles** - Technical innovations enabling cross-model transfer
 
 ### The Bigger Picture
@@ -835,8 +835,8 @@ LatentWire/
 ├── latentwire/                   # Initial failed approach
 │   └── (deprecated soft prompt code)
 └── runs/                         # Preserved experiment results
-    ├── sst2_20251203_*/         # 96.7% accuracy
-    ├── agnews_20251203_*/       # 90.7% accuracy
+    ├── sst2_20251203_*/         # 94.7% accuracy
+    ├── agnews_20251203_*/       # 88.9% accuracy
     └── banking77_*/             # Token ablation studies
 ```
 
