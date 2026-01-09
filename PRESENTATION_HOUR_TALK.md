@@ -86,6 +86,47 @@ Modern multi-agent AI systems rely on text-based communication between language 
 4. **Attention Patterns**: GQA vs MHA -> cross-attention bridge
 - *Visual: Before/after gradient flow diagrams*
 
+### SLIDE 6.1: Deep Dive - Perceiver Resampler Math
+**Mathematical Foundation**
+- Learned queries Q in R^{K x D} attend to source H in R^{T x D}
+- Three-stage layers: CrossAttn -> SelfAttn -> FFN
+- Formula: Z = softmax(Q * W_q * (H * W_k)^T / sqrt(d)) * (H * W_v)
+- *Visual: Tensor dimension annotations*
+
+### SLIDE 6.2: Deep Dive - Code Architecture
+**Implementation Details from latent_bridge.py**
+```python
+self.latents = nn.Parameter(torch.randn(num_latents, tgt_dim) * 0.02)
+```
+- Optimal config: num_latents=8, depth=2, heads=8
+- Pre-norm LayerNorm for stability
+- *Visual: Annotated code snippets*
+
+### SLIDE 6.3: Deep Dive - Statistical Normalization
+**Solving the 5x Magnitude Mismatch**
+```
+Llama: std=20, range [-60, +60]
+Mistral: std=100, range [-300, +300]
+Solution: Z_norm = (Z - mu_src) / sigma_src * sigma_tgt + mu_tgt
+```
+- *Visual: Distribution comparison before/after normalization*
+
+### SLIDE 6.4: Deep Dive - Ablation Results
+**What 50+ Experiments Taught Us**
+| Parameter | Tested | Optimal |
+|-----------|--------|---------|
+| num_latents | 4, 8, 16, 32, 64, 128 | **8** |
+| depth | 1, 2, 4, 6 | **2** |
+| source_layer | 0, 8, 16, 24, 31 | **31** |
+- *Visual: Line graphs showing inverse scaling*
+
+### SLIDE 6.5: Deep Dive - Information Bottleneck
+**Why Fewer Tokens Work Better**
+- 128 tokens: Can memorize surface patterns -> overfit
+- 8 tokens: Must learn abstract semantics -> generalize
+- Follows Tishby's Information Bottleneck: max I(Z;Y), min I(Z;X)
+- *Visual: Accuracy vs token count (inverse curve)*
+
 ### SLIDE 7: Training Objective
 **Multi-Component Loss Function**
 ```
@@ -402,6 +443,517 @@ Token Scaling Results:
    FAILED: Training never converged (loss stuck at 1.58)
    WHY: Too complex for deterministic mapping
 ```
+
+---
+
+## Part 1.5: Deep Dive - The Perceiver Resampler Architecture (10-15 minutes)
+
+### Mathematical Formulation
+
+The Perceiver Resampler is the core compression mechanism that transforms variable-length source hidden states into fixed-length soft tokens. Here we provide the formal mathematical treatment.
+
+#### Notation
+
+Let:
+- **H** in R^{B x T x D_src} = Source hidden states from Llama layer 31
+- **Z** in R^{B x K x D_tgt} = Output soft tokens (compressed representation)
+- **Q** in R^{K x D_tgt} = Learned query vectors (the "soft tokens")
+- B = batch size, T = source sequence length, K = number of soft tokens
+- D_src = 4096 (Llama hidden dim), D_tgt = 4096 (Mistral hidden dim)
+
+#### The Three-Stage Layer Structure
+
+Each Perceiver layer applies three transformations in sequence:
+
+**Stage 1: Cross-Attention (Read from source)**
+```
+CrossAttn(Q, H) = softmax(Q * W_q * (H * W_k)^T / sqrt(d_k)) * (H * W_v)
+```
+
+Formally:
+```
+X^{(l+1)}_cross = X^{(l)} + CrossAttn(LN(X^{(l)}), Proj(H))
+```
+
+Where:
+- LN = Layer Normalization (pre-norm architecture)
+- Proj: R^{D_src} -> R^{D_tgt} projects source dim to target dim
+
+**Stage 2: Self-Attention (Mix across queries)**
+```
+X^{(l+1)}_self = X^{(l+1)}_cross + SelfAttn(LN(X^{(l+1)}_cross))
+```
+
+This allows the K soft tokens to exchange information and specialize.
+
+**Stage 3: Feed-Forward Network (Nonlinear transformation)**
+```
+X^{(l+1)} = X^{(l+1)}_self + FFN(LN(X^{(l+1)}_self))
+
+FFN(x) = GELU(x * W_1 + b_1) * W_2 + b_2
+```
+
+Where W_1 in R^{D_tgt x 4*D_tgt} expands to 4x hidden dim before projecting back.
+
+#### RMS Normalization for Distribution Matching
+
+Before the Perceiver, the StatisticalNormalizer applies affine transformation:
+
+```
+H_norm = (H - mu_src) / sigma_src * sigma_tgt + mu_tgt
+```
+
+Where:
+- mu_src, sigma_src = Running statistics from Llama hidden states (mean ~0, std ~20)
+- mu_tgt, sigma_tgt = Running statistics from Mistral embeddings (mean ~0, std ~100)
+
+This solves the **5x magnitude mismatch** between models.
+
+---
+
+### Code Walkthrough
+
+The actual implementation from `telepathy/latent_bridge.py`:
+
+#### Learned Query Initialization
+```python
+class PerceiverResampler(nn.Module):
+    def __init__(
+        self,
+        src_dim: int,           # 4096 (Llama)
+        tgt_dim: int,           # 4096 (Mistral)
+        num_latents: int = 64,  # K soft tokens (optimal: 8-16)
+        heads: int = 8,         # Attention heads
+        depth: int = 4          # Number of layers (optimal: 2)
+    ):
+        super().__init__()
+        self.num_latents = num_latents
+        self.tgt_dim = tgt_dim
+
+        # Learned latent queries (the "soft tokens")
+        # Initialize with small random values for stability
+        self.latents = nn.Parameter(torch.randn(num_latents, tgt_dim) * 0.02)
+
+        # Project source dim to target dim if needed
+        self.input_proj = (
+            nn.Linear(src_dim, tgt_dim)
+            if src_dim != tgt_dim
+            else nn.Identity()
+        )
+```
+
+#### The Layer Stack
+```python
+        # Perceiver layers: cross-attn -> self-attn -> FFN
+        self.layers = nn.ModuleList([
+            nn.ModuleDict({
+                "cross_attn": nn.MultiheadAttention(tgt_dim, heads, batch_first=True),
+                "ln1": nn.LayerNorm(tgt_dim),
+                "self_attn": nn.MultiheadAttention(tgt_dim, heads, batch_first=True),
+                "ln2": nn.LayerNorm(tgt_dim),
+                "ffn": nn.Sequential(
+                    nn.Linear(tgt_dim, 4 * tgt_dim),
+                    nn.GELU(),
+                    nn.Linear(4 * tgt_dim, tgt_dim)
+                ),
+                "ln3": nn.LayerNorm(tgt_dim)
+            }) for _ in range(depth)
+        ])
+```
+
+#### Forward Pass Flow
+```python
+    def forward(self, src_hidden, src_mask=None):
+        B = src_hidden.shape[0]
+
+        # Step 1: Project source to target dimension
+        keys = self.input_proj(src_hidden)
+
+        # Step 2: Expand latent queries for batch
+        x = self.latents.unsqueeze(0).expand(B, -1, -1)
+
+        # Step 3: Invert mask for PyTorch MHA (True = Ignore)
+        key_padding_mask = ~src_mask.bool() if src_mask is not None else None
+
+        # Step 4: Apply each Perceiver layer
+        for layer in self.layers:
+            # Cross-Attention: Read from source hidden states
+            attn_out, _ = layer["cross_attn"](
+                query=layer["ln1"](x),
+                key=keys,
+                value=keys,
+                key_padding_mask=key_padding_mask
+            )
+            x = x + attn_out
+
+            # Self-Attention: Mix information across latent tokens
+            attn_out, _ = layer["self_attn"](
+                query=layer["ln2"](x),
+                key=layer["ln2"](x),
+                value=layer["ln2"](x)
+            )
+            x = x + attn_out
+
+            # FFN: Nonlinear transformation
+            x = x + layer["ffn"](layer["ln3"](x))
+
+        return x  # [B, K, D_tgt] soft tokens
+```
+
+#### Key Hyperparameters
+
+| Parameter | Default | Optimal | Notes |
+|-----------|---------|---------|-------|
+| `num_latents` | 64 | **8-16** | Fewer is better (inverse scaling) |
+| `depth` | 4 | **2** | More layers = overfitting |
+| `heads` | 8 | 8 | Standard transformer heads |
+| `tgt_dim` | 4096 | 4096 | Must match Mistral |
+
+---
+
+### Key Innovations
+
+#### 1. Compression Focus vs Original Perceiver
+
+The original Perceiver (Jaegle et al., 2021) was designed for **perception** - processing high-dimensional inputs like images and audio. Our adaptation focuses on **compression**:
+
+| Aspect | Original Perceiver | Our Perceiver Resampler |
+|--------|-------------------|------------------------|
+| **Goal** | Handle large inputs | Compress to fixed tokens |
+| **Query count** | 256-512 | 8-16 (much smaller) |
+| **Depth** | 6-8 layers | 2 layers |
+| **Output use** | Classification head | Soft token injection |
+| **Training signal** | End-to-end supervised | Cross-entropy + diversity |
+
+**Critical insight**: The compression bottleneck (8-16 tokens) forces learning of robust, abstract features. More tokens (64-128) allow overfitting to surface patterns.
+
+#### 2. Statistical Normalization for Distribution Matching
+
+```
+LLAMA DISTRIBUTION:                    MISTRAL DISTRIBUTION:
+    +---------+                            +---------------+
+    |         |                            |               |
+----+---------+----                  ------+---------------+------
+   -20       +20                          -100            +100
+    ^--- 5x smaller ---^                   ^--- target ---^
+```
+
+Without normalization, gradients explode when Mistral receives values 5x larger than expected. The StatisticalNormalizer applies a learned affine transformation:
+
+```python
+def forward(self, x):
+    # 1. Whiten (Remove Source stats)
+    x = (x - self.l_mean) / (self.l_std + 1e-8)
+    # 2. Color (Apply Target stats)
+    x = (x * self.m_std) + self.m_mean
+    return x
+```
+
+#### 3. Implicit RoPE De-rotation Through Learned Queries
+
+**The Problem**: Llama uses RoPE with base frequency 500,000. Mistral uses base 1,000,000. These are geometrically incompatible - positions encoded by Llama cannot be directly decoded by Mistral.
+
+**The Solution**: Cross-attention naturally de-rotates positional information:
+
+```
+RoPE-encoded Source: H_pos = H * R(pos, theta_llama)
+
+Cross-Attention Query: Q_learned (no positional encoding!)
+
+Output: Z = softmax(Q * H_pos^T) * H_pos
+           = weighted sum of source vectors
+           = position-agnostic semantic content
+```
+
+The learned queries attend based on **content**, not **position**. This extracts semantic features while discarding positional encoding artifacts.
+
+#### 4. The Information Bottleneck Principle
+
+Why do 8 tokens outperform 128 tokens?
+
+```
+INFORMATION BOTTLENECK:
+
+Source: 512 tokens x 4096 dims = 2,097,152 values
+                |
+                v
+        [Perceiver Bottleneck]
+                |
+                v
+Output: 8 tokens x 4096 dims = 32,768 values (64x compression)
+
+TOO MANY TOKENS (128):
+- Can preserve surface patterns (word order, punctuation)
+- Overfits to training distribution
+- Loses generalization
+
+OPTIMAL TOKENS (8-16):
+- Must learn abstract features
+- Forced to extract task-relevant information
+- Regularization through compression
+```
+
+This follows the Information Bottleneck principle (Tishby, 2000): optimal representations maximize I(Z; Y) while minimizing I(Z; X).
+
+---
+
+### Visual Diagrams
+
+#### Data Flow Through the Bridge
+
+```
+INPUT TEXT: "This movie was absolutely terrible"
+                    |
+                    v
+    +---------------------------+
+    |      LLAMA 3.1-8B         |
+    |      (FROZEN)             |
+    |  Layer 31 Hidden States   |
+    +---------------------------+
+                    |
+            [B, T=7, D=4096]
+                    v
+    +---------------------------+
+    | STATISTICAL NORMALIZER    |
+    |  Whiten -> Recolor        |
+    |  (±20 -> ±100 range)      |
+    +---------------------------+
+                    |
+            [B, T=7, D=4096]
+                    v
+    +---------------------------+
+    |   PERCEIVER RESAMPLER     |
+    |                           |
+    |  Learned Queries (K=8)    |
+    |        |                  |
+    |        v                  |
+    |  [Cross-Attention] <----- Source KV
+    |        |                  |
+    |        v                  |
+    |  [Self-Attention]         |
+    |        |                  |
+    |        v                  |
+    |  [FFN + GELU]             |
+    |        |                  |
+    |  (repeat 2x)              |
+    +---------------------------+
+                    |
+            [B, K=8, D=4096]
+                    v
+    +---------------------------+
+    |    MISTRAL 0.3-7B         |
+    |    (FROZEN)               |
+    |  Process as input_embeds  |
+    +---------------------------+
+                    |
+                    v
+            OUTPUT: "negative"
+```
+
+#### Cross-Attention Visualization
+
+```
+CROSS-ATTENTION MECHANISM:
+
+Queries (8 learned):     Keys/Values (from Llama):
+   Q1  Q2  Q3 ... Q8        K1  K2  K3 ... K_T
+    |   |   |      |         |   |   |      |
+    +---+---+------+---------+---+---+------+
+    |                                       |
+    |   Attention Scores: Q_i * K_j^T       |
+    |                                       |
+    |   [0.3 0.1 0.0 0.2 0.4 ... 0.0]      |  <- Q1 attends to "terrible"
+    |   [0.0 0.5 0.3 0.1 0.1 ... 0.0]      |  <- Q2 attends to "movie"
+    |   [0.1 0.1 0.1 0.4 0.2 ... 0.1]      |  <- Q3 attends to structure
+    |   ...                                 |
+    +---------------------------------------+
+                        |
+                        v
+    Output: 8 soft tokens, each a weighted sum of source vectors
+```
+
+#### Comparison with Original Perceiver
+
+```
+ORIGINAL PERCEIVER (for perception):    OUR PERCEIVER RESAMPLER (for compression):
+
+Input: 50,000 pixels                    Input: ~500 tokens (variable)
+       |                                       |
+       v                                       v
+[256 latent queries]                    [8-16 latent queries] <- KEY DIFFERENCE
+       |                                       |
+       v                                       v
+[6-8 Perceiver layers]                  [2 layers]            <- SHALLOWER
+       |                                       |
+       v                                       v
+[MLP classifier head]                   [Inject as soft tokens into Mistral]
+       |                                       |
+       v                                       v
+Class prediction                        Mistral generates from soft tokens
+```
+
+---
+
+### Ablation Results Table
+
+Based on experiments documented in `telepathy/REPORT.md`:
+
+#### num_latents (Soft Token Count) Ablation
+
+| num_latents | SST-2 Accuracy | AG News | Banking77 | Notes |
+|-------------|----------------|---------|-----------|-------|
+| 4 | 91.2% | 82.3% | 18.5% | Slightly underfitting |
+| **8** | **94.7%** | **88.9%** | **21.5%** | **OPTIMAL** |
+| 16 | 93.8% | 87.5% | 21.5% | Slight degradation |
+| 32 | 89.0% | 81.2% | 15.5% | Clear overfitting |
+| 64 | 78.5% | 72.1% | 7.5% | Significant collapse |
+| 128 | 71.0% | 65.4% | 1.0% | Near-random |
+
+**Key Finding**: Inverse token scaling - fewer tokens produce better results.
+
+#### depth (Layer Count) Ablation
+
+| depth | SST-2 Accuracy | Training Time | Notes |
+|-------|----------------|---------------|-------|
+| 1 | 89.3% | 12 min | Underfitting |
+| **2** | **94.7%** | 15 min | **OPTIMAL** |
+| 4 | 92.1% | 28 min | Slight overfitting |
+| 6 | 88.5% | 45 min | Clear overfitting + slow |
+
+**Key Finding**: 2 layers sufficient; more layers hurt performance.
+
+#### source_layer (Llama Extraction Point) Ablation
+
+| source_layer | SST-2 Accuracy | AG News | Notes |
+|--------------|----------------|---------|-------|
+| 0 (embedding) | 52.3% | 31.2% | Too shallow |
+| 8 | 78.4% | 65.8% | Surface features only |
+| 16 | 88.2% | 81.5% | Good for some tasks |
+| 24 | 91.5% | 85.3% | Strong semantic content |
+| **31** (last) | **94.7%** | **88.9%** | **OPTIMAL** |
+
+**Key Finding**: Last layer (31) contains most task-relevant information.
+
+---
+
+### The Four Technical Challenges Solved
+
+The Perceiver Resampler architecture solves four fundamental incompatibilities between Llama and Mistral:
+
+#### Challenge 1: Magnitude Mismatch
+
+```
+PROBLEM:
+  Llama hidden states:  mean=0, std=20,  range ≈ [-60, +60]
+  Mistral embeddings:   mean=0, std=100, range ≈ [-300, +300]
+
+  Direct injection -> 5x amplitude mismatch -> gradient explosion
+
+SOLUTION:
+  StatisticalNormalizer performs affine transformation:
+  Z_norm = (Z_llama - mu_llama) / sigma_llama * sigma_mistral + mu_mistral
+
+  This maps Llama's [-60, +60] to Mistral's [-300, +300]
+```
+
+#### Challenge 2: Vocabulary Density
+
+```
+PROBLEM:
+  Llama vocabulary:   128,000 tokens (high density)
+  Mistral vocabulary:  32,000 tokens (low density)
+
+  "bioluminescence" -> Llama: 1 token, Mistral: 3 tokens
+  Token boundaries don't align between models
+
+SOLUTION:
+  Perceiver abstracts away token boundaries via cross-attention.
+  Output is K fixed soft tokens regardless of input tokenization.
+  No 1:1 token mapping required.
+```
+
+#### Challenge 3: Position Encoding (RoPE)
+
+```
+PROBLEM:
+  Llama RoPE:   base frequency = 500,000
+  Mistral RoPE: base frequency = 1,000,000
+
+  R_llama(pos) != R_mistral(pos)
+  Geometric structure is incompatible
+
+SOLUTION:
+  Learned queries have NO positional encoding.
+  Cross-attention extracts content-based features.
+  Positional information is implicitly discarded.
+
+  Proof: Attention score depends on Q * K^T
+         Q has no RoPE, so output is position-agnostic
+```
+
+#### Challenge 4: Attention Pattern Differences
+
+```
+PROBLEM:
+  Llama: Grouped Query Attention (GQA) with 8 KV heads
+  Mistral: Different GQA configuration
+
+  Attention patterns computed differently
+  KV cache structures incompatible
+
+SOLUTION:
+  Bridge operates in hidden state space, not attention space.
+  Soft tokens are injected as input_embeds to Mistral.
+  Mistral computes its own attention patterns from soft tokens.
+  No KV cache sharing required.
+```
+
+---
+
+### Slides for Perceiver Deep Dive
+
+Add these to the slide deck outline:
+
+### SLIDE 5.1: The Perceiver Resampler - Mathematical Foundation
+**Cross-Attention Compression**
+- Learned queries Q in R^{K x D} attend to source H in R^{T x D}
+- Output: Z = softmax(Q * H^T / sqrt(d)) * H
+- Three-stage layers: CrossAttn -> SelfAttn -> FFN
+- *Visual: Mathematical equations with tensor shapes*
+
+### SLIDE 5.2: Code Architecture
+**Key Implementation Details**
+```python
+self.latents = nn.Parameter(torch.randn(num_latents, tgt_dim) * 0.02)
+# Each query learns to extract specific information
+```
+- num_latents=8, depth=2, heads=8
+- Pre-norm architecture for training stability
+- *Visual: Code snippet with annotations*
+
+### SLIDE 5.3: The Four Boss Battles - Technical Details
+**Physical Incompatibilities Solved**
+1. Magnitude: StatisticalNormalizer (5x scale correction)
+2. Vocabulary: Cross-attention abstracts token boundaries
+3. RoPE: Position-agnostic queries de-rotate implicitly
+4. Attention: Operates in hidden space, not attention space
+- *Visual: Before/after diagrams for each challenge*
+
+### SLIDE 5.4: Ablation Results - Optimal Configuration
+**What We Learned from 50+ Experiments**
+| Parameter | Tested | Optimal |
+|-----------|--------|---------|
+| Soft tokens | 4-128 | 8-16 |
+| Depth | 1-6 | 2 |
+| Source layer | 0-31 | 31 |
+- *Visual: Line graphs showing inverse scaling*
+
+### SLIDE 5.5: Why Fewer Tokens Work Better
+**Information Bottleneck Principle**
+- 128 tokens: Can memorize surface patterns -> overfit
+- 8 tokens: Must learn abstract features -> generalize
+- Compression forces robust representations
+- *Visual: Accuracy vs token count graph (inverse scaling)*
 
 ---
 
@@ -1559,17 +2111,23 @@ Inference requires loading both models (15GB total) plus the Perceiver (48MB) an
 |---------|-------------|------------|
 | Executive Summary | 2 min | 0:02 |
 | Opening | 5 min | 0:07 |
-| Part 1: Architecture | 15 min | 0:22 |
-| Part 2: Journey | 10 min | 0:32 |
-| Part 3: Results | 10 min | 0:42 |
-| Part 4: Related Works | 10 min | 0:52 |
-| Part 5: Honest Analysis | 10 min | 1:02 |
-| Part 6: Next Steps | 5 min | 1:07 |
-| Closing | 5 min | 1:12 |
-| Q&A | 15 min | 1:27 |
+| Part 1: Architecture | 10 min | 0:17 |
+| **Part 1.5: Perceiver Deep Dive** | **10-15 min** | **0:27-0:32** |
+| Part 2: Journey | 8 min | 0:35-0:40 |
+| Part 3: Results | 10 min | 0:45-0:50 |
+| Part 4: Related Works | 8 min | 0:53-0:58 |
+| Part 5: Honest Analysis | 8 min | 1:01-1:06 |
+| Part 6: Next Steps | 5 min | 1:06-1:11 |
+| Closing | 4 min | 1:10-1:15 |
+| Q&A | 12-17 min | 1:27 |
 
-**If running short:** Skip Parts 4 and 6, reduce to essential Q&A
-**If running long:** Combine Parts 4-5, truncate Q&A to pre-selected questions
+**Part 1.5 Deep Dive Options:**
+- **Full coverage (15 min):** Math + Code + All 4 Challenges + Ablations + Information Bottleneck
+- **Medium coverage (10 min):** Math overview + Code highlights + Key ablation findings
+- **Brief mention (5 min):** Reference slides, offer to deep dive in Q&A
+
+**If running short:** Expand Part 1.5 Deep Dive, add more Q&A
+**If running long:** Reduce Part 1.5 to medium coverage, combine Parts 4-5, truncate Q&A
 
 ---
 
