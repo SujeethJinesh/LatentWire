@@ -6344,3 +6344,80 @@ On PIQA, Text-Relay catastrophically fails (30.4%) while Bridge succeeds (60.4%)
 This is the ONE reasoning benchmark where Bridge shows promise.
 
 ---
+
+## 95. PAPER EVALUATION SUITE (2025-01-09)
+
+### Comprehensive Evaluation for MLSys 2025
+
+Created complete evaluation suite (`telepathy/run_complete_evaluation.py`) implementing all reviewer-requested improvements:
+
+#### Experimental Configuration (Optimized for 12-hour HPC)
+
+**Final Setup (51 experiments total)**:
+- **Datasets**: SST-2, AG News, TREC (3 classification tasks)
+- **Seeds**: 42, 456 (2 seeds for statistical validity)
+- **Token Configs**: 8, 32 (endpoints only to show inverse scaling)
+- **Runtime**: ~8-9 hours on single H100
+
+**Methods Evaluated**:
+1. **Zero-shot Llama**: Individual model baseline
+2. **Zero-shot Mistral**: Individual model baseline  
+3. **Text-Relay**: Llama summarizes → text → Mistral classifies
+4. **Prompt Tuning**: 8 learnable soft prompts for Mistral
+5. **LoRA**: Rank-8 adapter fine-tuning on Mistral
+6. **Linear Probe**: Logistic regression on Llama layer-16 hidden states
+7. **Telepathy Bridge**: Perceiver Resampler with token ablation
+
+#### Critical Fixes Implemented
+
+1. **Fair Speedup Comparison** (`measure_fair_latency()`)
+   - Both methods perform same classification task
+   - Previous 22× claim was text generation vs classification (unfair)
+   - New measurement: classification-to-classification
+
+2. **Compression Ratio Calculation** (`calculate_compression_ratio()`)
+   - Text bytes (UTF-8) vs soft token bytes (fp16/int8)
+   - Accounts for quantization overhead
+   - Target: 4-8× compression at 16-32 tokens
+
+3. **Token Count Ablation**
+   - Tests 8 vs 32 tokens (endpoints of scaling curve)
+   - Demonstrates inverse scaling (fewer = better)
+   - Critical for MLSys efficiency narrative
+
+4. **Individual Model Baselines**
+   - Tests Llama-alone and Mistral-alone
+   - Enables super-additivity claim (bridge > both individuals)
+   - Shows 1+1 > 2 phenomenon
+
+5. **Full Test Sets**
+   - No truncation to 500 samples
+   - Uses complete test sets for all datasets
+   - More robust statistical validity
+
+#### Statistical Testing Framework
+
+**`scripts/statistical_testing.py` Integration**:
+- Bootstrap CI with 1000 samples
+- Paired t-tests across seeds
+- Bonferroni correction (α/n_comparisons)
+- McNemar's test for binary predictions
+- Effect size calculation (Cohen's d)
+
+#### SLURM Configuration
+
+```bash
+#SBATCH --time=12:00:00   # 12-hour limit
+#SBATCH --mem=32GB        # Sufficient for both models
+#SBATCH --gpus=1          # Single H100
+```
+
+#### Expected Outcomes
+
+**Primary Claims to Verify**:
+1. **Inverse Scaling**: 8 tokens > 32 tokens on at least one dataset
+2. **Super-Additivity**: Bridge > max(Llama, Mistral) on TREC
+3. **Fair Speedup**: ~2-5× when comparing same task
+4. **Compression Ratio**: 4-8× at 16-32 tokens
+
+---

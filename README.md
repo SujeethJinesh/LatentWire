@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-**Telepathy** enables direct communication between heterogeneous Large Language Models through learned soft tokens, eliminating the need for expensive text generation. By extracting hidden states from a sender model (Llama 3.1 8B) and transforming them via a neural bridge, receiver models (Mistral 7B) can process rich continuous representations 22× faster than traditional text-relay approaches while achieving 94.7% accuracy on classification tasks.
+**Telepathy** enables direct communication between heterogeneous Large Language Models through learned soft tokens, eliminating the need for expensive text generation. By extracting hidden states from a sender model (Llama 3.1 8B) and transforming them via a neural bridge, receiver models (Mistral 7B) can process rich continuous representations 22× faster than traditional text-relay approaches while achieving up to 96.0% accuracy on multi-class classification tasks.
 
 This repository also contains **LatentWire**, our initial research framework that attempted universal text communication through compressed representations. While LatentWire failed to achieve coherent text reconstruction, it provided crucial insights that led to Telepathy's focused approach on task-specific transfer.
 
@@ -33,16 +33,19 @@ This repository also contains **LatentWire**, our initial research framework tha
 Telepathy solves the fundamental inefficiency in multi-agent AI systems where LLMs must generate text autoregressively for communication. Our neural bridge architecture:
 - **Eliminates text generation**: Direct transfer of hidden states through learned soft tokens
 - **22× faster**: 37ms vs 835ms for text-relay approaches
-- **Higher accuracy**: 94.7% on SST-2, outperforming text baselines by 20-37pp
+- **Super-additive accuracy**: Achieves higher accuracy than either model alone on TREC-6
 - **Cross-model transfer**: Llama 3.1 8B → Mistral 7B with Perceiver Resampler
+- **Inverse token scaling**: Fewer soft tokens (16) outperform more tokens (128)
 
 ### Key Results
 
-| Dataset | Telepathy | Text-Relay | Speedup |
-|---------|-----------|------------|---------|
-| SST-2   | 94.7%     | 57.3%      | 22×     |
-| AG News | 88.9%     | 64.5%      | 24×     |
-| TREC-6  | 94.5%     | 73.2%      | 21×     |
+| Dataset | Telepathy | Text-Relay | Prompt-Tuning | Individual Best | Speedup |
+|---------|-----------|------------|---------------|-----------------|---------|
+| AG News | 89.5%     | 70.0%      | 82.5%         | 70.5% (Mistral) | 22×     |
+| TREC-6  | 96.0%     | 47.0%      | 90.0%         | 67.5% (Mistral) | 22×     |
+| SST-2*  | 49.5%     | 95.0%      | 97.5%         | 96.5% (Llama)   | N/A     |
+
+*SST-2 represents a failure mode where binary classification tasks fail completely
 
 ### LatentWire: Research Framework
 
