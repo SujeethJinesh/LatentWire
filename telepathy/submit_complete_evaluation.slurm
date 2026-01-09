@@ -4,8 +4,8 @@
 #SBATCH --gpus=1
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
-#SBATCH --time=12:00:00
-#SBATCH --mem=32GB
+#SBATCH --time=16:00:00
+#SBATCH --mem=64GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/complete_eval_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/complete_eval_%j.err
 
@@ -13,13 +13,13 @@
 # Complete Telepathy Paper Evaluation
 # =============================================================================
 # This script runs all experiments needed for the Telepathy paper:
-# 1. Telepathy bridge evaluation on 7 datasets with 5 seeds
+# 1. Telepathy bridge evaluation on 3 datasets with 3 seeds
 # 2. Linear probe baseline on all datasets
 # 3. Production metrics (throughput, latency, memory)
 # 4. Statistical tests comparing all methods
 # 5. Paper-ready LaTeX tables
 #
-# Estimated runtime: ~10-12 hours on single H100 GPU
+# Estimated runtime: ~13-14 hours on single H100 GPU (using 16h for safety)
 #
 # Submit with: sbatch telepathy/submit_complete_evaluation.slurm
 # Monitor with: squeue -u $USER
@@ -87,6 +87,9 @@ echo ""
 echo "GPU Information:"
 nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv
 echo ""
+echo "Initial GPU Memory Usage:"
+nvidia-smi --query-gpu=memory.used,memory.free,memory.total --format=csv
+echo ""
 
 # =========================================================================
 # Run Complete Evaluation
@@ -99,20 +102,22 @@ echo ""
 # - LaTeX table generation
 
 echo "Starting complete evaluation..."
-echo "Datasets: sst2, agnews, trec"
-echo "Seeds: 42, 123, 456"
-echo "Token ablation: 8, 16, 32"
-echo "Baselines: zeroshot, text-relay, prompt-tuning, lora, linear-probe, bridge"
+echo "Datasets: sst2, agnews, trec (3 datasets)"
+echo "Seeds: 42, 123, 456 (3 seeds)"
+echo "Token ablation: 8, 16, 32 (3 configs)"
+echo "Baselines: zeroshot-llama, zeroshot-mistral, text-relay, prompt-tuning, lora, linear-probe"
+echo "Main method: bridge (with token ablation)"
+echo "Total experiments: 84"
 echo ""
 
-# Run with configured datasets and seeds for 12 hour runtime
+# Run with configured datasets and seeds for 16 hour runtime
 # Use GPU 0 for main computation (script handles memory management)
+# Note: --skip_existing flag is defined but not implemented in the script
 python telepathy/run_complete_evaluation.py \
     --output_dir "$OUTPUT_DIR" \
     --datasets sst2 agnews trec \
     --seeds 42 123 456 \
     --gpu 0 \
-    --skip_existing \
     2>&1 | tee "${OUTPUT_DIR}/evaluation.log"
 
 EVAL_STATUS=$?
@@ -164,14 +169,19 @@ git add figures/*.png figures/*.pdf 2>/dev/null || true
 # Commit with detailed message
 COMMIT_MSG="results: complete telepathy paper evaluation (SLURM job $SLURM_JOB_ID)
 
-Datasets: sst2, agnews, trec, imdb, mnli, 20newsgroups, banking77
-Seeds: 42, 123, 456, 789, 2024
+Datasets: sst2, agnews, trec (3 datasets)
+Seeds: 42, 123, 456 (3 seeds)
+Token configs: 8, 16, 32 (3 ablations)
 
-Generated:
-- Bridge evaluation results (35 runs)
-- Linear probe baseline results (35 runs)
-- Production metrics (memory, latency, throughput)
-- Statistical significance tests
+Generated (84 total experiments):
+- Bridge evaluation: 27 runs (3 datasets × 3 seeds × 3 token configs)
+- Zero-shot baselines: 18 runs (3 datasets × 3 seeds × 2 models)
+- Text-relay baseline: 9 runs (3 datasets × 3 seeds)
+- Prompt tuning baseline: 9 runs (3 datasets × 3 seeds)
+- LoRA baseline: 9 runs (3 datasets × 3 seeds)
+- Linear probe baseline: 9 runs (3 datasets × 3 seeds)
+- Latency measurements: 3 runs (1 per dataset)
+- Statistical significance tests with Bonferroni correction
 - LaTeX tables for paper
 
 Generated with [Claude Code](https://claude.com/claude-code)
