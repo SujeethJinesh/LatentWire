@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=telepathy_eval
+#SBATCH --job-name=telepathy_paper
 #SBATCH --nodes=1
-#SBATCH --gpus=4
+#SBATCH --gpus=1
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
-#SBATCH --time=24:00:00
-#SBATCH --mem=256GB
+#SBATCH --time=12:00:00
+#SBATCH --mem=80GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/complete_eval_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/complete_eval_%j.err
 
@@ -19,7 +19,7 @@
 # 4. Statistical tests comparing all methods
 # 5. Paper-ready LaTeX tables
 #
-# Estimated runtime: ~12-24 hours depending on GPU speed
+# Estimated runtime: ~10-12 hours on single H100 GPU
 #
 # Submit with: sbatch telepathy/submit_complete_evaluation.slurm
 # Monitor with: squeue -u $USER
@@ -99,16 +99,18 @@ echo ""
 # - LaTeX table generation
 
 echo "Starting complete evaluation..."
-echo "Datasets: sst2, agnews, trec, imdb, mnli, 20newsgroups, banking77"
-echo "Seeds: 42, 123, 456, 789, 2024"
+echo "Datasets: sst2, agnews, trec"
+echo "Seeds: 42, 123, 456"
+echo "Token ablation: 8, 16, 32"
+echo "Baselines: zeroshot, text-relay, prompt-tuning, lora, linear-probe, bridge"
 echo ""
 
-# Run with all datasets and seeds
+# Run with configured datasets and seeds for 12 hour runtime
 # Use GPU 0 for main computation (script handles memory management)
 python telepathy/run_complete_evaluation.py \
     --output_dir "$OUTPUT_DIR" \
-    --datasets sst2 agnews trec imdb mnli 20newsgroups banking77 \
-    --seeds 42 123 456 789 2024 \
+    --datasets sst2 agnews trec \
+    --seeds 42 123 456 \
     --gpu 0 \
     --skip_existing \
     2>&1 | tee "${OUTPUT_DIR}/evaluation.log"
