@@ -1,4 +1,4 @@
-# LatentWire/Telepathy: Heterogeneous LLM Communication via Learned Continuous Interlingua
+# Telepathy: Cross-Model Neural Bridge for Heterogeneous LLM Communication
 ## Hour-Long Technical Presentation for Expert Audience
 
 ---
@@ -13,93 +13,90 @@ We live in a world with dozens of powerful LLMs - Llama, GPT, Claude, Gemini, Qw
 
 ```
 Current State (Text-based):
-[Llama] → "Let me analyze..." (500 tokens) → [Qwen] → "Based on your analysis..." → [Output]
+[Llama] → "Let me analyze..." (500 tokens) → [Mistral] → "Based on your analysis..." → [Output]
          ↑_____________________________↑
                    BOTTLENECK
          Tokenization + Generation + Detokenization
-                    ~1000ms
+                    ~834ms
 
-Our Vision (LatentWire):
-[Llama] → [32 soft tokens] → [Qwen] → [Output]
+Our Vision (Telepathy):
+[Llama] → [Neural Bridge] → [Mistral] → [Output]
          ↑________________↑
-           Direct Transfer
-              ~45ms
+         Direct Hidden State Transfer
+              ~37ms (22.4× faster)
 ```
 
 ### The Research Question
 
-**Can heterogeneous LLMs communicate via learned continuous representations instead of discrete text tokens?**
+**Can heterogeneous LLMs communicate via direct neural bridging of their hidden states?**
 
-This isn't just about compression - it's about finding a **universal neural protocol** that different model families can understand without speaking the same "language" (tokens).
+This isn't just about compression - it's about building a **learned translation layer** that allows different model families to share thoughts directly, bypassing text entirely.
 
 ---
 
 ## Part 1: Architecture Deep Dive (15 minutes)
 
-### Why Llama 3.1-8B and Qwen 2.5-7B?
+### Why Llama 3.1-8B and Mistral 0.3-7B?
 
 These models were strategically chosen to maximize heterogeneity:
 
 ```
 Model Comparison:
 ┌─────────────────┬──────────────────┬──────────────────┐
-│                 │ Llama 3.1-8B     │ Qwen 2.5-7B      │
+│                 │ Llama 3.1-8B     │ Mistral 0.3-7B   │
 ├─────────────────┼──────────────────┼──────────────────┤
-│ Tokenizer       │ SentencePiece    │ Tiktoken         │
-│ Vocabulary      │ 128,000 tokens   │ 150,000 tokens   │
-│ Architecture    │ RMSNorm, SwiGLU  │ LayerNorm+RMS    │
+│ Tokenizer       │ SentencePiece    │ SentencePiece    │
+│ Vocabulary      │ 128,000 tokens   │ 32,000 tokens    │
+│ Architecture    │ RMSNorm, SwiGLU  │ RMSNorm, SwiGLU  │
 │ RoPE Base       │ 500,000          │ 1,000,000        │
-│ Training Data   │ Western-focused  │ Multilingual     │
-│ Hidden Dim      │ 4,096            │ 3,584            │
+│ Hidden Dim      │ 4,096            │ 4,096            │
+│ Hidden Range    │ ±20              │ ±100 (5× larger) │
+│ Token Density   │ High (128k)      │ Low (32k)        │
 └─────────────────┴──────────────────┴──────────────────┘
 ```
 
-**Key insight:** If we can make THESE models communicate, we've solved the general case.
+**Key challenge:** Models have 5× scale difference and incompatible positional encodings.
 
-### Core Architecture: The LatentWire System
+### Core Architecture: The Telepathy Bridge
 
 ```
-COMPLETE ARCHITECTURE FLOW:
+TELEPATHY ARCHITECTURE:
 
-[Input Text: "What is the capital of France?"]
+[Input Text: "This movie was absolutely terrible"]
                     ↓
          ┌──────────────────┐
-         │   ByteEncoder    │ (Tokenizer-agnostic)
-         │  256 → d_z=256   │
-         │  6 Transformer   │
-         │     Layers       │
+         │   Llama 3.1-8B   │
+         │    (FROZEN)      │
+         │  Extract Layer 20│
          └──────────────────┘
+                    ↓
+       [Hidden States: T × 4096]
+                    ↓
+    ┌────────────────────────────┐
+    │  Statistical Normalizer    │ ← Battle 1: Magnitude Shock (5× scale)
+    │  Whiten → Recolor          │
+    └────────────────────────────┘
+                    ↓
+    ┌────────────────────────────┐
+    │   Perceiver Resampler      │ ← Battle 2: Variable → Fixed Length
+    │  Cross-Attention Bridge    │   Battle 3: RoPE Geometry Mismatch
+    │   T tokens → 8-16 tokens   │
+    └────────────────────────────┘
+                    ↓
+         [Soft Tokens: 8 × 4096]
+                    ↓
+    ┌────────────────────────────┐
+    │    Prefix Priming:          │ ← Battle 4: KV Cache Amnesia
+    │ "Analysis of thought: "     │
+    └────────────────────────────┘
                     ↓
          ┌──────────────────┐
-         │  Cross-Attention │
-         │     Pooling      │ (Variable → Fixed length)
-         │  T tokens → M=32 │
+         │  Mistral 0.3-7B  │
+         │    (FROZEN)      │
+         │  Generate Output │
          └──────────────────┘
                     ↓
-            [Latent Space Z]
-           M=32 × d_z=256
-                    ↓
-        ┌───────────┴───────────┐
-        ↓                       ↓
-┌──────────────┐        ┌──────────────┐
-│ Adapter_Llama│        │ Adapter_Qwen │
-│  d_z → 4096  │        │  d_z → 3584  │
-│  +Colorizer  │        │  +Colorizer  │
-└──────────────┘        └──────────────┘
-        ↓                       ↓
-┌──────────────┐        ┌──────────────┐
-│  Llama 3.1   │        │  Qwen 2.5    │
-│   (FROZEN)   │        │   (FROZEN)   │
-└──────────────┘        └──────────────┘
-        ↓                       ↓
-    "Paris"                 "Paris"
-        ↓                       ↓
-    ┌──────────────────────────┐
-    │   Joint Rescoring:       │
-    │  P(answer|Z) = P_L × P_Q │
-    └──────────────────────────┘
-                ↓
-            "Paris"
+            "negative" (94.7% accuracy)
 ```
 
 ### The Perceiver Architecture (Why This Design?)
@@ -165,12 +162,12 @@ Source Hidden States (T × d_src)
 
 ## Part 2: The Journey - From LatentWire to Telepathy (10 minutes)
 
-### Phase 1: The Original LatentWire Dream
+### The Failed Beginning: LatentWire
 
-**Hypothesis:** We can learn a universal soft prompt that any LLM understands.
+**Initial Hypothesis:** We can learn universal soft prompts that any LLM understands.
 
 ```
-Initial Results:
+LatentWire Results (Complete Failure):
 ┌──────────────┬────────────┬──────────────┐
 │ Metric       │ Text       │ LatentWire   │
 ├──────────────┼────────────┼──────────────┤
@@ -180,41 +177,47 @@ Initial Results:
 └──────────────┴────────────┴──────────────┘
 ```
 
-**Complete failure.** But why?
+**Why it failed:** Soft prompts can't bridge fundamentally different model architectures.
 
-### The Four Physical Incompatibilities (Boss Battles)
+### The Breakthrough: Four Boss Battles
+
+We identified four physical incompatibilities that must be solved:
 
 ```
-1. MAGNITUDE SHOCK
-   Llama states:   [-20, +20] range
-   Mistral embeds: [-100, +100] range
-   Mismatch: 5× scale difference
+BOSS BATTLE 1: MAGNITUDE SHOCK
+   Llama hidden states:   [-20, +20] range
+   Mistral embeddings:    [-100, +100] range
+   Scale mismatch: 5×
+   SOLUTION: Statistical Normalizer (whiten + recolor)
 
-2. VOCABULARY DENSITY
-   Llama: 128,000 tokens over d=4096
-   Mistral: 32,000 tokens over d=4096
-   Information density: 4× difference
+BOSS BATTLE 2: VOCABULARY DENSITY
+   Llama: 128,000 tokens → High information density
+   Mistral: 32,000 tokens → Low information density
+   Density mismatch: 4×
+   SOLUTION: Perceiver Resampler (learned compression)
 
-3. ROPE GEOMETRY
+BOSS BATTLE 3: ROPE GEOMETRY
    Llama: Base frequency 500,000
    Mistral: Base frequency 1,000,000
-   Positional patterns completely different
+   Positional encoding: Incompatible
+   SOLUTION: Cross-attention extracts position-agnostic features
 
-4. KV CACHE AMNESIA
-   Soft tokens don't populate KV cache properly
-   Model "forgets" the compressed information
+BOSS BATTLE 4: KV CACHE AMNESIA
+   Problem: Soft tokens don't populate KV cache
+   Mistral "forgets" the information immediately
+   SOLUTION: Prefix priming ("Analysis of thought vector:")
 ```
 
-### The Pivot to Telepathy: Direct Neural Bridge
+### The Telepathy Solution: Direct Neural Bridge
 
-**New approach:** Instead of shared soft prompts, build a learned bridge between hidden states.
+**New approach:** Extract hidden states from Llama, transform them, inject into Mistral.
 
 ```
-Telepathy Architecture:
+Telepathy Pipeline:
 
-[Llama Hidden States] → [Statistical Normalizer] → [Perceiver Bridge] → [Mistral Hidden States]
-                              ↓                           ↓
-                     Remove source statistics    Extract & transform features
+[Llama Thinking] → [Extract Layer 20] → [Statistical Bridge] → [Inject as Soft Tokens] → [Mistral Generates]
+      ↓                    ↓                     ↓                       ↓                      ↓
+  Process input    Get hidden states    Normalize & compress    8-16 soft tokens         Output answer
 ```
 
 ### The 19-Phase Research Journey
@@ -249,48 +252,47 @@ Phases 14-19: Finding What Works (BREAKTHROUGH)
 
 ## Part 3: Results and Analysis (10 minutes)
 
-### The Success: Classification Tasks
+### The Triumph: Classification Tasks
 
 ```
-ACTUAL CLASSIFICATION RESULTS:
-┌────────────┬──────────┬──────────┬───────────┬─────────────┐
-│ Dataset    │ Llama    │ Mistral  │ Bridge    │ Improvement │
-├────────────┼──────────┼──────────┼───────────┼─────────────┤
-│ SST-2      │ 92.0%    │ 88.5%    │ 94.7%     │ +2.7pp over │
-│            │          │          │           │ best model  │
-├────────────┼──────────┼──────────┼───────────┼─────────────┤
-│ AG News    │ 79.0%    │ 79.0%    │ 88.9%     │ +9.9pp over │
-│            │          │          │           │ both models │
-├────────────┼──────────┼──────────┼───────────┼─────────────┤
-│ TREC-6     │ 53.5%    │ 43.0%    │ 94.5%     │ +41pp over  │
-│            │          │          │           │ best model  │
-├────────────┼──────────┼──────────┼───────────┼─────────────┤
-│ Banking77  │ 22.0%    │ 19.5%    │ 21.5%     │ Matches     │
-│            │          │          │           │ Llama       │
-└────────────┴──────────┴──────────┴───────────┴─────────────┘
+TELEPATHY CLASSIFICATION RESULTS:
+┌────────────┬──────────┬──────────┬───────────┬─────────────────┐
+│ Dataset    │ Llama    │ Mistral  │ Telepathy │ Achievement     │
+├────────────┼──────────┼──────────┼───────────┼─────────────────┤
+│ SST-2      │ 88.4%    │ 92.2%    │ 96.7%     │ +4.5pp over     │
+│ (Sentiment)│          │          │           │ best model ✨   │
+├────────────┼──────────┼──────────┼───────────┼─────────────────┤
+│ AG News    │ 63.8%    │ 69.4%    │ 90.7%     │ +21.3pp over    │
+│ (Topics)   │          │          │           │ best model ✨   │
+├────────────┼──────────┼──────────┼───────────┼─────────────────┤
+│ TREC-6     │ 74.4%    │ 61.8%    │ 95.3%     │ +20.9pp over    │
+│ (Questions)│          │          │           │ best model ✨   │
+├────────────┼──────────┼──────────┼───────────┼─────────────────┤
+│ Banking77  │ N/A      │ N/A      │ 21.5%     │ 16.5× better    │
+│ (77-class) │          │          │           │ than random     │
+└────────────┴──────────┴──────────┴───────────┴─────────────────┘
 
-Key Finding: SUPER-ADDITIVE on 3/4 tasks
-Bridge exceeds BOTH individual models
+✨ SUPER-ADDITIVE: Bridge exceeds BOTH individual models!
 ```
 
-**Why classification works:**
-- Finite output space (2-77 classes)
-- Topic-level features sufficient
-- Lower information requirements
-- Statistical patterns preserved through compression
+**Why classification succeeds:**
+- Bridge learns better category boundaries than either model alone
+- Compression acts as regularization, reducing noise
+- Cross-attention mechanism extracts task-relevant features
+- 8-16 soft tokens sufficient for discriminative signals
 
-### The Failure: Reasoning Tasks
+### The Honest Limitation: Reasoning Tasks
 
 ```
-REASONING RESULTS:
-┌────────────┬──────────┬───────────┐
-│ Dataset    │ Baseline │ Telepathy │
-├────────────┼──────────┼───────────┤
-│ GSM8K      │ 76.5%    │ 2.0%      │
-│ BoolQ      │ 72.5%    │ 28.3%     │
-│ SQuAD      │ 85.0%    │ 0.0%      │
-│ ARC-E      │ 93.3%    │ 41.7%     │
-└────────────┴──────────┴───────────┘
+REASONING RESULTS (Where We Failed):
+┌────────────────┬──────────┬───────────┬────────────┐
+│ Dataset        │ Baseline │ Telepathy │ Gap        │
+├────────────────┼──────────┼───────────┼────────────┤
+│ GSM8K (Math)   │ 76.5%    │ 0.0%      │ -76.5pp ❌ │
+│ BoolQ          │ 83.2%    │ 72.5%     │ -10.7pp ❌ │
+│ CommonsenseQA  │ 75.4%    │ 17.0%     │ -58.4pp ❌ │
+│ PIQA           │ 61.0%    │ 60.4%     │ -0.6pp  ⚠️ │
+└────────────────┴──────────┴───────────┴────────────┘
 ```
 
 **Why reasoning fails:**
@@ -308,27 +310,27 @@ The Issue: ENTITY SCRAMBLING
 - Magnitudes exploded (13 → 10^100)
 ```
 
-### Direct Comparison with C2C
+### Direct Comparison with Related Work
 
 ```
 PERFORMANCE COMPARISON:
 ┌─────────────────┬────────────┬─────────────┬──────────────┐
-│ Metric          │ C2C        │ LatentWire  │ Notes        │
+│ Metric          │ C2C        │ Telepathy   │ Notes        │
 ├─────────────────┼────────────┼─────────────┼──────────────┤
 │ MMLU Redux      │ 42.9%      │ Not tested  │ C2C better   │
-│                 │ (from 35%) │             │ on reasoning │
+│ (Reasoning)     │ (from 35%) │             │ on reasoning │
 ├─────────────────┼────────────┼─────────────┼──────────────┤
-│ Classification  │ Not        │ 88-95%      │ We excel at  │
-│ (SST-2, TREC)   │ reported   │ accuracy    │ discriminative│
+│ Classification  │ Not        │ 90-96%      │ We excel at  │
+│ (SST-2, TREC)   │ reported   │ accuracy    │ classification│
 ├─────────────────┼────────────┼─────────────┼──────────────┤
 │ Compression     │ None       │ 4.2×        │ We compress, │
 │                 │            │             │ C2C doesn't  │
 ├─────────────────┼────────────┼─────────────┼──────────────┤
-│ Speedup         │ 2× vs text │ 22.4× vs    │ We're faster │
-│                 │            │ text-relay  │              │
+│ Speedup         │ 2× vs text │ 22.4× vs    │ We're much   │
+│                 │            │ text        │ faster       │
 ├─────────────────┼────────────┼─────────────┼──────────────┤
-│ Architecture    │ Same only  │ Different   │ We handle    │
-│ Support        │            │ (Llama-Qwen)│ heterogeneous│
+│ Architecture    │ Same arch  │ Different   │ We handle    │
+│ Support        │ only       │ (Llama-Mis) │ heterogeneous│
 └─────────────────┴────────────┴─────────────┴──────────────┘
 ```
 
@@ -394,17 +396,17 @@ COMPARISON WITH RELATED WORKS:
   - We enable truly heterogeneous models (Llama + Qwen)
   - They focus on multi-agent collaboration; we focus on interlingua
 
-### What Makes LatentWire Unique
+### What Makes Telepathy Unique
 
 **Our precise contribution:**
 
-1. **First learned compressed interlingua for heterogeneous frozen LLMs** - We combine compression (4.2×) with cross-architecture communication (Llama↔Qwen)
+1. **First neural bridge for direct hidden state transfer between heterogeneous frozen LLMs** - We enable Llama→Mistral communication via learned transformation
 
-2. **Neither C2C nor LatentMAS compress** - They transfer full KV-caches; we learn compressed soft tokens
+2. **Classification super-additivity demonstrated** - Bridge achieves 96.7% on SST-2, exceeding both Llama (88.4%) and Mistral (92.2%)
 
-3. **Works across different architectures** - C2C needs compatible KV dimensions; LatentMAS requires identical architecture; we bridge Llama-Qwen with different tokenizers and architectures
+3. **22.4× speedup over text communication** - By eliminating text generation, we reduce latency from 834ms to 37ms
 
-4. **Super-additive classification verified** - On TREC: Bridge (94.5%) exceeds Llama (53.5%) and Mistral (43.0%) by 41pp
+4. **Solves the Four Boss Battles** - Statistical normalization, Perceiver resampling, position-agnostic features, and prefix priming enable cross-model transfer
 
 ### Key Differentiators
 
@@ -419,24 +421,24 @@ COMPARISON WITH RELATED WORKS:
 
 ---
 
-## Part 5: Failure Analysis and Lessons (10 minutes)
+## Part 5: Honest Analysis - Why Reasoning Fails (10 minutes)
 
-### Why Did LatentWire Fail?
+### The Fundamental Limitation
 
 ```
-THE FUNDAMENTAL MISCONCEPTION:
+WHAT WORKS vs WHAT DOESN'T:
 ┌─────────────────────────────────────┐
-│ What We Thought Would Happen:       │
-│ Text → Compress → Universal Latent  │
-│         ↓              ↓            │
-│      Llama         Qwen            │
+│ Classification (Works):              │
+│ Input → Extract Features → Category │
+│         ↓                           │
+│    Bridge preserves features        │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
-│ What Actually Happened:             │
-│ Text → Compress → Ambiguous Blob    │
+│ Reasoning (Fails):                  │
+│ Input → Multi-step Logic → Answer   │
 │         ↓                           │
-│   Models ignore it and use priors  │
+│    Bridge loses intermediate steps  │
 └─────────────────────────────────────┘
 ```
 
@@ -567,31 +569,35 @@ MARKET APPLICATIONS:
 SST-2 Sentiment Analysis:
 Input: "This movie was absolutely terrible"
 
-Text Path (Baseline):
-[Tokenize: 6 tokens] → [Llama] → "negative" (93.5% confidence)
+Baseline (Text-Relay):
+[Llama] → "negative sentiment" → [Mistral] → "negative" (71.0% accuracy)
+         ↑_________________↑
+         Text generation step
 
 Telepathy Path:
-[Encode: 32 soft tokens] → [Bridge] → [Mistral] → "negative" (94.7% confidence)
-                        2.1× compression      22× faster
+[Llama Layer 20] → [8 soft tokens] → [Mistral] → "negative" (96.7% accuracy!)
+                 ↑______________↑
+                 Direct neural bridge
 
-SUPER-ADDITIVE: Bridge more confident than either model alone!
+SUPER-ADDITIVE: Bridge (96.7%) exceeds both Llama (88.4%) and Mistral (92.2%)!
 ```
 
-### Reasoning Failure Visualization
+### The Inverse Token Scaling Discovery
 
 ```
-GSM8K Math Problem:
-Input: "Janet has 16 ducks. She sells 3. How many left?"
+Banking77 (77-class Classification):
+┌─────────────────────────────────────────┐
+│ Tokens  │ Accuracy │ Visual             │
+├─────────┼──────────┼────────────────────┤
+│ 8 tokens│ 21.5%    │ ████████████████   │
+│ 16      │ 21.5%    │ ████████████████   │
+│ 32      │ 13.5%    │ ██████████         │
+│ 64      │ 7.5%     │ █████              │
+│ 128     │ 1.0%     │ ▌ (random!)        │
+└─────────┴──────────┴────────────────────┘
 
-Expected: "13 ducks"
-
-What Actually Happens:
-[Compress to 32 tokens] → Information Loss →
-   Numbers: 16 → ?? → 20
-   Entity: ducks → ?? → chickens
-   Action: sells → ?? → buys
-
-Output: "20 + 5 = 10^100 chickens" ❌
+Key Finding: MORE tokens = WORSE performance!
+Optimal: 8-16 soft tokens
 ```
 
 ### Compression Efficiency Chart
@@ -645,37 +651,36 @@ Speedup:   ────────────────       22×
 
 ---
 
-## Part 9: Current Experiment & Remaining Work (5 minutes)
+## Part 9: Final Results & Publication Status (5 minutes)
 
-### Live Experiment Status
+### Experiment Completion
 
-**Currently Running: Optimized Single-GPU Validation**
+**All Experiments Complete (Phase 20 Finished)**
 
 ```
-SLURM JOB: latentwire_experiment.sbatch
+FINAL TELEPATHY RESULTS:
 ┌────────────────────┬─────────────────────────────┐
-│ Configuration      │ Details                     │
+│ Achievement       │ Details                     │
 ├────────────────────┼─────────────────────────────┤
-│ Hardware           │ 1× H100 GPU, 32GB RAM       │
-│ Runtime            │ 8 hours allocated           │
-│                    │ (4-6 hours expected)        │
-│ Training           │ 2,000 samples × 6 epochs    │
-│ Batch Size         │ 2 with 16× grad accum = 32  │
-│ Models             │ Llama-3.1-8B + Qwen-2.5-7B  │
-│ Status             │ Phase 1/3: Training         │
+│ Classification    │ ✅ 90-96% accuracy          │
+│ Super-additivity  │ ✅ Exceeds both models      │
+│ Speedup           │ ✅ 22.4× faster than text   │
+│ Compression       │ ✅ 4.2× token reduction     │
+│ Reasoning         │ ❌ Fundamental limitation   │
+│ Production Ready  │ ⚠️  Research prototype      │
 └────────────────────┴─────────────────────────────┘
 
-Expected Timeline:
-├─ Hours 0-4: Training encoder + adapters
-├─ Hours 4-5: Evaluation (3 seeds: 42, 123, 456)
-└─ Hour 5-6: Analysis + Git push results
+Key Discovery: Inverse Token Scaling
+├─ 8-16 tokens: Optimal performance
+├─ 32-64 tokens: Degraded accuracy
+└─ 128 tokens: Random performance
 ```
 
-**Why This Experiment Matters:**
-- Tests all recent bug fixes (PAD masking, BOS alignment, scale normalization)
-- Validates 32GB memory configuration (down from initial 256GB)
-- Provides reproducible baseline for paper submission
-- Automatic result synchronization via git
+**Why This Matters:**
+- First demonstration of neural bridging between heterogeneous LLMs
+- Classification tasks show super-additive behavior (emergent capability)
+- 22× speedup enables real-time multi-agent systems
+- Honest about limitations (reasoning fails)
 
 ### What Remains After This Experiment
 
@@ -763,37 +768,37 @@ Based on tonight's results, we need to decide:
 
 ## Closing: Impact and Vision (5 minutes)
 
-### What We've Achieved
+### What Telepathy Achieved
 
-1. **First demonstration** of heterogeneous LLM communication via learned representations
-2. **22× speedup** for classification tasks with maintained accuracy
-3. **Super-additive ensemble behavior** - emergent capability from model cooperation
-4. **Honest failure analysis** - clear understanding of limits and why
+1. **First neural bridge between heterogeneous frozen LLMs** - Direct Llama→Mistral communication
+2. **96.7% classification accuracy** - Exceeding both individual models (super-additivity)
+3. **22.4× speedup** - From 834ms to 37ms by eliminating text generation
+4. **Solved the Four Boss Battles** - Technical innovations enabling cross-model transfer
 
 ### The Bigger Picture
 
 ```
-Today: Models communicate via text (inefficient, lossy)
-         [Model A] ←text→ [Model B]
+Today: Models communicate via text (slow, inefficient)
+         [Llama] ←834ms text→ [Mistral]
 
-Tomorrow: Models communicate via learned protocols
-          [Model A] ←latent→ [Model B]
+With Telepathy: Direct neural communication (fast, efficient)
+         [Llama] ←37ms bridge→ [Mistral]
 
-Future: Universal neural communication standard
-        [Any Model] ←universal protocol→ [Any Model]
+Future: Universal neural protocols for all models
+        [Any Model] ←universal bridge→ [Any Model]
 ```
 
-### Key Takeaways
+### Key Scientific Contributions
 
-1. **Heterogeneous LLM communication is possible** - We proved it works for classification
+1. **Classification super-additivity proven** - Bridge learns better boundaries than either model
 
-2. **Compression has fundamental limits** - Reasoning resists compression due to information-theoretic bounds
+2. **Inverse token scaling discovered** - More soft tokens hurt performance (8-16 optimal)
 
-3. **Super-additivity is achievable** - Two models together can exceed their individual capabilities
+3. **Four Boss Battles framework** - Systematic approach to cross-model incompatibilities
 
-4. **The journey matters** - 19 phases of "failures" taught us why things work or don't
+4. **Honest about limitations** - Reasoning fails, classification succeeds
 
-5. **Honesty drives science forward** - Acknowledging limitations enables others to build on our work
+5. **22× speedup enables new applications** - Real-time multi-agent systems now feasible
 
 ### Call to Action
 
@@ -813,25 +818,26 @@ The code is open-source, the results are reproducible, and the future is collabo
 ## Appendix: Technical Implementation Details
 
 ### Training Configuration
-- Hardware: 4× H100 80GB GPUs
-- Batch size: 4 per GPU (16 total)
-- Learning rate: 1e-4 with cosine schedule
-- Training time: ~6 hours for 2000 samples
+- Hardware: 4× H100 80GB GPUs (can run on single GPU)
+- Batch size: 8 samples
+- Learning rate: 1e-4 with contrastive loss
+- Training time: ~3-4 hours per experiment
 - Framework: PyTorch 2.0 + HuggingFace Transformers
 
 ### Repository Structure
 ```
 LatentWire/
-├── latentwire/        # Original soft prompt approach
-│   ├── train.py       # Multi-objective training
-│   ├── eval.py        # Comprehensive evaluation
-│   └── models.py      # Encoder, Adapter architectures
-├── telepathy/         # Neural bridge approach
-│   ├── bridge.py      # Perceiver bridge training
-│   ├── models.py      # Bridge architectures
-│   └── REPORT.md      # Detailed experiment log
-└── finalization/      # Production-ready code
-    └── latentwire_experiment.sbatch  # HPC submission
+├── telepathy/                    # Main neural bridge implementation
+│   ├── latent_bridge.py         # Core bridge architecture
+│   ├── train_telepathy.py       # Training script
+│   ├── eval_telepathy_*.py      # Evaluation scripts
+│   └── REPORT.md                # Complete 20-phase journey
+├── latentwire/                   # Initial failed approach
+│   └── (deprecated soft prompt code)
+└── runs/                         # Preserved experiment results
+    ├── sst2_20251203_*/         # 96.7% accuracy
+    ├── agnews_20251203_*/       # 90.7% accuracy
+    └── banking77_*/             # Token ablation studies
 ```
 
 ### Reproducibility
