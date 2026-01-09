@@ -5,7 +5,7 @@
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
-#SBATCH --mem=80GB
+#SBATCH --mem=32GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/complete_eval_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/complete_eval_%j.err
 
