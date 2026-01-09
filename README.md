@@ -1,4 +1,4 @@
-# LatentWire
+# Telepathy: Neural Bridges for Cross-Model LLM Communication
 
 [![CI](https://github.com/SujeethJinesh/LatentWire/actions/workflows/ci.yml/badge.svg)](https://github.com/SujeethJinesh/LatentWire/actions/workflows/ci.yml)
 [![Tests](https://github.com/SujeethJinesh/LatentWire/actions/workflows/tests.yml/badge.svg)](https://github.com/SujeethJinesh/LatentWire/actions/workflows/tests.yml)
@@ -7,7 +7,9 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-**LatentWire** is a research framework for creating shared continuous representations (soft prompts) that enable heterogeneous Large Language Models (LLMs) to communicate through a compressed latent "wire". This project implements a novel approach to LLM interoperability, allowing models like Llama and Qwen to decode the same compressed representation while achieving significant compression ratios.
+**Telepathy** enables direct communication between heterogeneous Large Language Models through learned soft tokens, eliminating the need for expensive text generation. By extracting hidden states from a sender model (Llama 3.1 8B) and transforming them via a neural bridge, receiver models (Mistral 7B) can process rich continuous representations 22× faster than traditional text-relay approaches while achieving 94.7% accuracy on classification tasks.
+
+This repository also contains **LatentWire**, our initial research framework that attempted universal text communication through compressed representations. While LatentWire failed to achieve coherent text reconstruction, it provided crucial insights that led to Telepathy's focused approach on task-specific transfer.
 
 ## 📋 Table of Contents
 
@@ -26,17 +28,29 @@
 
 ## 🎯 Overview
 
-LatentWire addresses the challenge of efficient communication between different LLMs by learning a shared latent representation that:
-- **Compresses** text prompts by ≥4× while maintaining task performance
-- **Generalizes** across model architectures (Llama-3.1, Qwen-2.5)
-- **Preserves** semantic information through multiple training objectives
+### Telepathy: Production-Ready Neural Bridges
 
-### Research Goals
+Telepathy solves the fundamental inefficiency in multi-agent AI systems where LLMs must generate text autoregressively for communication. Our neural bridge architecture:
+- **Eliminates text generation**: Direct transfer of hidden states through learned soft tokens
+- **22× faster**: 37ms vs 835ms for text-relay approaches
+- **Higher accuracy**: 94.7% on SST-2, outperforming text baselines by 20-37pp
+- **Cross-model transfer**: Llama 3.1 8B → Mistral 7B with Perceiver Resampler
 
-1. **Compression**: Achieve ≥4× reduction in prompt size
-2. **Performance**: Maintain >60% of text baseline F1 score
-3. **Interoperability**: Enable cross-model communication
-4. **Efficiency**: Reduce inference latency and memory usage
+### Key Results
+
+| Dataset | Telepathy | Text-Relay | Speedup |
+|---------|-----------|------------|---------|
+| SST-2   | 94.7%     | 57.3%      | 22×     |
+| AG News | 88.9%     | 64.5%      | 24×     |
+| TREC-6  | 94.5%     | 73.2%      | 21×     |
+
+### LatentWire: Research Framework
+
+The repository also includes LatentWire, our initial research attempting universal text communication:
+- **Goal**: Compress arbitrary text into soft tokens for cross-model communication
+- **Result**: Failed to achieve coherent text reconstruction (BLEU < 0.05)
+- **Learning**: High-level semantic transfer succeeds even when exact reconstruction fails
+- **Impact**: Motivated Telepathy's focused approach on task-specific transfer
 
 ## ✨ Key Features
 
