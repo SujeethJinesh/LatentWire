@@ -1354,3 +1354,911 @@ if __name__ == '__main__':
         print("  ✓ Adequate sample size")
     else:
         print(f"  ✗ Need {n_required - n_samples} more samples")
+
+
+# =============================================================================
+# 8. MULTI-SEED EXPERIMENT FRAMEWORK
+# =============================================================================
+
+# Standard seeds for reproducibility across all experiments
+STANDARD_SEEDS = [42, 123, 456, 789, 2024]
+
+
+class MultiSeedExperiment:
+    """
+    Framework for running experiments across multiple random seeds with
+    comprehensive statistical validation.
+
+    This class manages:
+    - Running experiments across 5 standard seeds
+    - Collecting per-seed and per-example results
+    - Computing aggregate statistics with proper CIs
+    - Performing significance tests between methods
+    - Generating paper-ready tables and reports
+
+    Example:
+        >>> experiment = MultiSeedExperiment(
+        ...     name="bridge_vs_baselines",
+        ...     datasets=["sst2", "agnews", "trec"],
+        ...     methods=["bridge", "prompt_tuning", "zeroshot"],
+        ...     output_dir="runs/statistical_validation"
+        ... )
+        >>> # Add results for each seed
+        >>> experiment.add_result("sst2", "bridge", seed=42, accuracy=96.5, predictions=[...], labels=[...])
+        >>> # Generate analysis
+        >>> experiment.compute_all_statistics()
+        >>> experiment.save_results()
+    """
+
+    def __init__(
+        self,
+        name: str,
+        datasets: List[str],
+        methods: List[str],
+        seeds: List[int] = None,
+        output_dir: str = "runs/statistical_validation",
+        baseline_method: str = None
+    ):
+        """
+        Initialize multi-seed experiment.
+
+        Args:
+            name: Experiment name for file naming
+            datasets: List of dataset names (e.g., ["sst2", "agnews", "trec"])
+            methods: List of method names (e.g., ["bridge", "prompt_tuning"])
+            seeds: List of random seeds (default: [42, 123, 456, 789, 2024])
+            output_dir: Directory to save results
+            baseline_method: Method to use as baseline for comparisons (default: first method)
+        """
+        self.name = name
+        self.datasets = datasets
+        self.methods = methods
+        self.seeds = seeds or STANDARD_SEEDS
+        self.output_dir = output_dir
+        self.baseline_method = baseline_method or methods[0]
+
+        # Results storage
+        # Structure: {dataset: {method: {seed: {metrics}}}}
+        self.per_seed_results: Dict[str, Dict[str, Dict[int, Dict]]] = {
+            ds: {m: {} for m in methods} for ds in datasets
+        }
+
+        # Per-example predictions for McNemar's test
+        # Structure: {dataset: {method: {seed: {"predictions": [], "labels": []}}}}
+        self.per_example_results: Dict[str, Dict[str, Dict[int, Dict]]] = {
+            ds: {m: {} for m in methods} for ds in datasets
+        }
+
+        # Aggregated statistics (computed after all seeds complete)
+        self.aggregated_results: Dict[str, Dict[str, Dict]] = {}
+
+        # Statistical test results
+        self.significance_tests: Dict[str, Dict] = {}
+
+        # Paper tables (generated on demand)
+        self.paper_tables: Dict[str, str] = {}
+
+    def add_result(
+        self,
+        dataset: str,
+        method: str,
+        seed: int,
+        accuracy: float,
+        predictions: Optional[List] = None,
+        labels: Optional[List] = None,
+        f1: Optional[float] = None,
+        latency_ms: Optional[float] = None,
+        memory_mb: Optional[float] = None,
+        extra_metrics: Optional[Dict] = None
+    ) -> None:
+        """
+        Add result for a single seed run.
+
+        Args:
+            dataset: Dataset name
+            method: Method name
+            seed: Random seed used
+            accuracy: Accuracy score (0-100)
+            predictions: Per-example predictions (for McNemar's test)
+            labels: Ground truth labels (for McNemar's test)
+            f1: Optional F1 score
+            latency_ms: Optional latency in milliseconds
+            memory_mb: Optional memory usage in MB
+            extra_metrics: Any additional metrics to store
+        """
+        if dataset not in self.datasets:
+            raise ValueError(f"Unknown dataset: {dataset}. Valid: {self.datasets}")
+        if method not in self.methods:
+            raise ValueError(f"Unknown method: {method}. Valid: {self.methods}")
+        if seed not in self.seeds:
+            warnings.warn(f"Seed {seed} not in standard seeds {self.seeds}")
+
+        # Store metrics
+        metrics = {
+            "accuracy": accuracy,
+            "seed": seed
+        }
+        if f1 is not None:
+            metrics["f1"] = f1
+        if latency_ms is not None:
+            metrics["latency_ms"] = latency_ms
+        if memory_mb is not None:
+            metrics["memory_mb"] = memory_mb
+        if extra_metrics:
+            metrics.update(extra_metrics)
+
+        self.per_seed_results[dataset][method][seed] = metrics
+
+        # Store per-example results for McNemar's test
+        if predictions is not None and labels is not None:
+            self.per_example_results[dataset][method][seed] = {
+                "predictions": list(predictions),
+                "labels": list(labels)
+            }
+
+    def get_completion_status(self) -> Dict[str, Dict[str, List[int]]]:
+        """
+        Get which seeds have been completed for each dataset/method.
+
+        Returns:
+            Dictionary showing completed seeds for each condition
+        """
+        status = {}
+        for dataset in self.datasets:
+            status[dataset] = {}
+            for method in self.methods:
+                completed = list(self.per_seed_results[dataset][method].keys())
+                status[dataset][method] = sorted(completed)
+        return status
+
+    def is_complete(self) -> bool:
+        """Check if all seeds have been run for all conditions."""
+        for dataset in self.datasets:
+            for method in self.methods:
+                if len(self.per_seed_results[dataset][method]) < len(self.seeds):
+                    return False
+        return True
+
+    def compute_aggregate_statistics(self, n_bootstrap: int = 10000) -> None:
+        """
+        Compute mean, std, and 95% CI across seeds for all conditions.
+
+        Args:
+            n_bootstrap: Number of bootstrap resamples for CI
+        """
+        self.aggregated_results = {}
+
+        for dataset in self.datasets:
+            self.aggregated_results[dataset] = {}
+
+            for method in self.methods:
+                seed_results = self.per_seed_results[dataset][method]
+
+                if not seed_results:
+                    continue
+
+                # Collect accuracy values across seeds
+                accuracies = [r["accuracy"] for r in seed_results.values()]
+                accuracies = np.array(accuracies)
+
+                n = len(accuracies)
+
+                # Compute statistics
+                agg = {
+                    "n_seeds": n,
+                    "seeds": list(seed_results.keys()),
+                    "accuracy_mean": float(np.mean(accuracies)),
+                    "accuracy_std": float(np.std(accuracies, ddof=1)) if n > 1 else 0.0,
+                    "accuracy_min": float(np.min(accuracies)),
+                    "accuracy_max": float(np.max(accuracies)),
+                    "accuracy_values": accuracies.tolist()
+                }
+
+                # Bootstrap CI (need at least 3 samples)
+                if n >= 3:
+                    _, (ci_lower, ci_upper) = bootstrap_ci(
+                        accuracies,
+                        confidence_level=0.95,
+                        n_resamples=n_bootstrap,
+                        method='percentile',  # Use percentile for small n
+                        random_state=42
+                    )
+                    agg["accuracy_ci_lower"] = float(ci_lower)
+                    agg["accuracy_ci_upper"] = float(ci_upper)
+                    agg["ci_method"] = "bootstrap_percentile"
+                elif n == 2:
+                    # Use t-distribution CI for n=2
+                    se = agg["accuracy_std"] / np.sqrt(n)
+                    t_val = stats.t.ppf(0.975, df=n-1)
+                    agg["accuracy_ci_lower"] = float(agg["accuracy_mean"] - t_val * se)
+                    agg["accuracy_ci_upper"] = float(agg["accuracy_mean"] + t_val * se)
+                    agg["ci_method"] = "t_distribution"
+                else:
+                    agg["accuracy_ci_lower"] = agg["accuracy_mean"]
+                    agg["accuracy_ci_upper"] = agg["accuracy_mean"]
+                    agg["ci_method"] = "none"
+
+                # Also aggregate other metrics if present
+                for metric in ["f1", "latency_ms", "memory_mb"]:
+                    values = [r.get(metric) for r in seed_results.values() if r.get(metric) is not None]
+                    if values:
+                        agg[f"{metric}_mean"] = float(np.mean(values))
+                        agg[f"{metric}_std"] = float(np.std(values, ddof=1)) if len(values) > 1 else 0.0
+
+                self.aggregated_results[dataset][method] = agg
+
+                # Warn about low seed count
+                if n < 5:
+                    warnings.warn(
+                        f"{dataset}/{method}: Only {n} seeds. "
+                        f"Recommend 5 seeds for robust statistics."
+                    )
+
+    def compute_significance_tests(self, correction: str = "bonferroni", alpha: float = 0.05) -> None:
+        """
+        Compute statistical significance between baseline and other methods.
+
+        Performs:
+        1. Paired t-tests across seeds (method vs baseline)
+        2. McNemar's test on per-example predictions (when available)
+        3. Multiple comparison correction
+        4. Cohen's d effect sizes
+
+        Args:
+            correction: Multiple testing correction ("bonferroni", "holm", "fdr_bh")
+            alpha: Significance level
+        """
+        self.significance_tests = {}
+
+        for dataset in self.datasets:
+            self.significance_tests[dataset] = {}
+
+            # Get baseline results
+            baseline_seeds = self.per_seed_results[dataset].get(self.baseline_method, {})
+            if not baseline_seeds:
+                continue
+
+            baseline_accuracies = np.array([r["accuracy"] for r in baseline_seeds.values()])
+
+            # Compare each method to baseline
+            p_values = []
+            method_names = []
+
+            for method in self.methods:
+                if method == self.baseline_method:
+                    continue
+
+                method_seeds = self.per_seed_results[dataset][method]
+                if not method_seeds:
+                    continue
+
+                method_accuracies = np.array([r["accuracy"] for r in method_seeds.values()])
+
+                test_result = {
+                    "method": method,
+                    "baseline": self.baseline_method,
+                    "n_seeds_method": len(method_accuracies),
+                    "n_seeds_baseline": len(baseline_accuracies),
+                }
+
+                # Paired t-test (if same seeds available)
+                common_seeds = set(baseline_seeds.keys()) & set(method_seeds.keys())
+                if len(common_seeds) >= 2:
+                    # Get paired values
+                    paired_baseline = [baseline_seeds[s]["accuracy"] for s in sorted(common_seeds)]
+                    paired_method = [method_seeds[s]["accuracy"] for s in sorted(common_seeds)]
+
+                    _, p_val, t_stats = paired_ttest(
+                        np.array(paired_method),
+                        np.array(paired_baseline)
+                    )
+
+                    test_result["paired_t_test"] = {
+                        "t_statistic": t_stats["t_statistic"],
+                        "p_value": p_val,
+                        "degrees_of_freedom": t_stats["degrees_of_freedom"],
+                        "mean_difference": t_stats["mean_a"] - t_stats["mean_b"],
+                        "n_pairs": len(common_seeds)
+                    }
+
+                    # Cohen's d (paired)
+                    test_result["cohens_d"] = cohens_d_paired(
+                        np.array(paired_method),
+                        np.array(paired_baseline)
+                    )
+
+                    p_values.append(p_val)
+                    method_names.append(method)
+                else:
+                    # Independent t-test fallback
+                    _, p_val, t_stats = independent_ttest(
+                        method_accuracies,
+                        baseline_accuracies,
+                        equal_var=False  # Welch's t-test
+                    )
+
+                    test_result["independent_t_test"] = {
+                        "t_statistic": t_stats["t_statistic"],
+                        "p_value": p_val,
+                        "degrees_of_freedom": t_stats["degrees_of_freedom"],
+                        "mean_difference": t_stats["mean_a"] - t_stats["mean_b"]
+                    }
+
+                    # Cohen's d (pooled)
+                    test_result["cohens_d"] = cohens_d_pooled(
+                        method_accuracies,
+                        baseline_accuracies
+                    )
+
+                    p_values.append(p_val)
+                    method_names.append(method)
+
+                # McNemar's test (if per-example predictions available)
+                baseline_examples = self.per_example_results[dataset].get(self.baseline_method, {})
+                method_examples = self.per_example_results[dataset].get(method, {})
+
+                # Use first seed with both predictions available
+                for seed in common_seeds if len(common_seeds) > 0 else []:
+                    if seed in baseline_examples and seed in method_examples:
+                        b_preds = np.array(baseline_examples[seed]["predictions"])
+                        m_preds = np.array(method_examples[seed]["predictions"])
+                        labels = np.array(baseline_examples[seed]["labels"])
+
+                        if len(b_preds) == len(m_preds) == len(labels):
+                            stat, mcn_p_val, table = mcnemar_test(
+                                m_preds, b_preds, labels
+                            )
+                            test_result["mcnemar_test"] = {
+                                "statistic": float(stat),
+                                "p_value": float(mcn_p_val),
+                                "contingency_table": table.tolist(),
+                                "seed_used": seed,
+                                "n_examples": len(labels)
+                            }
+                            break
+
+                self.significance_tests[dataset][method] = test_result
+
+            # Apply multiple comparison correction
+            if p_values:
+                reject, corrected_p, _, _ = multiple_comparison_correction(
+                    p_values, alpha=alpha, method=correction
+                )
+
+                for i, method in enumerate(method_names):
+                    self.significance_tests[dataset][method]["corrected_p_value"] = float(corrected_p[i])
+                    self.significance_tests[dataset][method]["significant"] = bool(reject[i])
+                    self.significance_tests[dataset][method]["correction_method"] = correction
+                    self.significance_tests[dataset][method]["alpha"] = alpha
+
+    def compute_all_statistics(self, n_bootstrap: int = 10000, correction: str = "bonferroni") -> None:
+        """Compute all aggregate statistics and significance tests."""
+        self.compute_aggregate_statistics(n_bootstrap=n_bootstrap)
+        self.compute_significance_tests(correction=correction)
+
+    def generate_paper_table(
+        self,
+        format: str = "markdown",
+        metrics: List[str] = None,
+        include_ci: bool = True,
+        include_significance: bool = True
+    ) -> str:
+        """
+        Generate publication-ready comparison table.
+
+        Args:
+            format: Output format ("markdown", "latex", "csv")
+            metrics: Metrics to include (default: ["accuracy"])
+            include_ci: Include 95% CI in output
+            include_significance: Include significance stars
+
+        Returns:
+            Formatted table string
+        """
+        if not self.aggregated_results:
+            self.compute_aggregate_statistics()
+
+        metrics = metrics or ["accuracy"]
+
+        # Build table data
+        rows = []
+
+        # Header
+        header = ["Method"] + [ds.upper() for ds in self.datasets]
+        if len(self.datasets) > 1:
+            header.append("Average")
+
+        rows.append(header)
+
+        # Data rows for each method
+        for method in self.methods:
+            row = [method.replace("_", " ").title()]
+            dataset_means = []
+
+            for dataset in self.datasets:
+                agg = self.aggregated_results.get(dataset, {}).get(method, {})
+
+                if not agg:
+                    row.append("--")
+                    continue
+
+                mean = agg.get("accuracy_mean", 0)
+                std = agg.get("accuracy_std", 0)
+                n = agg.get("n_seeds", 0)
+                dataset_means.append(mean)
+
+                # Format cell
+                if include_ci and "accuracy_ci_lower" in agg:
+                    ci_low = agg["accuracy_ci_lower"]
+                    ci_high = agg["accuracy_ci_upper"]
+                    cell = f"{mean:.1f} [{ci_low:.1f}, {ci_high:.1f}]"
+                elif n > 1:
+                    cell = f"{mean:.1f} +/- {std:.1f}"
+                else:
+                    cell = f"{mean:.1f}"
+
+                # Add significance stars
+                if include_significance and method != self.baseline_method:
+                    sig_test = self.significance_tests.get(dataset, {}).get(method, {})
+                    if sig_test.get("significant", False):
+                        # Get raw p-value for star level
+                        p_val = sig_test.get("corrected_p_value", 1.0)
+                        cell += " " + p_value_to_stars(p_val)
+
+                row.append(cell)
+
+            # Average across datasets
+            if len(self.datasets) > 1 and dataset_means:
+                avg = np.mean(dataset_means)
+                row.append(f"{avg:.1f}")
+
+            rows.append(row)
+
+        # Format output
+        if format == "latex":
+            return self._format_latex_table(rows, include_significance)
+        elif format == "csv":
+            return self._format_csv_table(rows)
+        else:  # markdown
+            return self._format_markdown_table(rows)
+
+    def _format_markdown_table(self, rows: List[List[str]]) -> str:
+        """Format as markdown table."""
+        lines = []
+
+        # Header
+        lines.append("| " + " | ".join(rows[0]) + " |")
+        lines.append("|" + "|".join(["---"] * len(rows[0])) + "|")
+
+        # Data rows
+        for row in rows[1:]:
+            lines.append("| " + " | ".join(row) + " |")
+
+        # Footer
+        lines.append("")
+        lines.append("*Note: Values show mean and 95% CI across seeds. ")
+        lines.append("Significance: *** p<0.001, ** p<0.01, * p<0.05 vs baseline.*")
+
+        return "\n".join(lines)
+
+    def _format_latex_table(self, rows: List[List[str]], include_significance: bool) -> str:
+        """Format as LaTeX table."""
+        n_cols = len(rows[0])
+
+        lines = []
+        lines.append("\\begin{table}[h]")
+        lines.append("\\centering")
+        lines.append("\\caption{Performance comparison across datasets}")
+        lines.append("\\label{tab:results}")
+        lines.append("\\begin{tabular}{l" + "c" * (n_cols - 1) + "}")
+        lines.append("\\toprule")
+
+        # Header
+        header = " & ".join(rows[0]) + " \\\\"
+        lines.append(header)
+        lines.append("\\midrule")
+
+        # Data rows
+        for row in rows[1:]:
+            # Escape special LaTeX characters
+            escaped = [cell.replace("+/-", "$\\pm$").replace("_", "\\_") for cell in row]
+            lines.append(" & ".join(escaped) + " \\\\")
+
+        lines.append("\\bottomrule")
+        lines.append("\\end{tabular}")
+
+        if include_significance:
+            lines.append("\\begin{tablenotes}")
+            lines.append("\\small")
+            lines.append("\\item Significance: $^{***}$ p<0.001, $^{**}$ p<0.01, $^{*}$ p<0.05")
+            lines.append("\\end{tablenotes}")
+
+        lines.append("\\end{table}")
+
+        return "\n".join(lines)
+
+    def _format_csv_table(self, rows: List[List[str]]) -> str:
+        """Format as CSV."""
+        lines = []
+        for row in rows:
+            # Clean up for CSV
+            cleaned = [cell.replace(",", ";") for cell in row]
+            lines.append(",".join(cleaned))
+        return "\n".join(lines)
+
+    def generate_significance_report(self) -> str:
+        """Generate detailed significance test report."""
+        lines = []
+        lines.append("=" * 80)
+        lines.append("STATISTICAL SIGNIFICANCE REPORT")
+        lines.append("=" * 80)
+        lines.append(f"\nExperiment: {self.name}")
+        lines.append(f"Seeds: {self.seeds}")
+        lines.append(f"Baseline: {self.baseline_method}")
+        lines.append("")
+
+        for dataset in self.datasets:
+            lines.append("-" * 80)
+            lines.append(f"DATASET: {dataset.upper()}")
+            lines.append("-" * 80)
+
+            # Baseline stats
+            baseline_agg = self.aggregated_results.get(dataset, {}).get(self.baseline_method, {})
+            if baseline_agg:
+                lines.append(f"\nBaseline ({self.baseline_method}):")
+                lines.append(f"  Mean: {baseline_agg.get('accuracy_mean', 0):.2f}%")
+                lines.append(f"  Std: {baseline_agg.get('accuracy_std', 0):.2f}%")
+                if "accuracy_ci_lower" in baseline_agg:
+                    lines.append(f"  95% CI: [{baseline_agg['accuracy_ci_lower']:.2f}, {baseline_agg['accuracy_ci_upper']:.2f}]")
+                lines.append(f"  Seeds: {baseline_agg.get('n_seeds', 0)}")
+
+            # Comparisons
+            lines.append("\nComparisons to baseline:")
+
+            for method in self.methods:
+                if method == self.baseline_method:
+                    continue
+
+                test = self.significance_tests.get(dataset, {}).get(method, {})
+                agg = self.aggregated_results.get(dataset, {}).get(method, {})
+
+                if not test or not agg:
+                    continue
+
+                lines.append(f"\n  {method}:")
+                lines.append(f"    Mean: {agg.get('accuracy_mean', 0):.2f}%")
+                lines.append(f"    Std: {agg.get('accuracy_std', 0):.2f}%")
+
+                # Effect size interpretation
+                d = test.get("cohens_d", 0)
+                if abs(d) >= 0.8:
+                    d_interp = "large"
+                elif abs(d) >= 0.5:
+                    d_interp = "medium"
+                elif abs(d) >= 0.2:
+                    d_interp = "small"
+                else:
+                    d_interp = "negligible"
+                lines.append(f"    Cohen's d: {d:.3f} ({d_interp})")
+
+                # T-test results
+                if "paired_t_test" in test:
+                    t_test = test["paired_t_test"]
+                    lines.append(f"    Paired t-test:")
+                    lines.append(f"      t = {t_test['t_statistic']:.3f}, df = {t_test['degrees_of_freedom']}")
+                    lines.append(f"      p = {t_test['p_value']:.4f}")
+                elif "independent_t_test" in test:
+                    t_test = test["independent_t_test"]
+                    lines.append(f"    Independent t-test (Welch's):")
+                    lines.append(f"      t = {t_test['t_statistic']:.3f}, df = {t_test['degrees_of_freedom']:.1f}")
+                    lines.append(f"      p = {t_test['p_value']:.4f}")
+
+                # Corrected p-value
+                if "corrected_p_value" in test:
+                    lines.append(f"    Corrected p ({test.get('correction_method', 'unknown')}): {test['corrected_p_value']:.4f}")
+
+                # Significance
+                if test.get("significant", False):
+                    lines.append(f"    --> SIGNIFICANT at alpha={test.get('alpha', 0.05)}")
+                else:
+                    lines.append(f"    --> NOT significant")
+
+                # McNemar's test
+                if "mcnemar_test" in test:
+                    mcn = test["mcnemar_test"]
+                    lines.append(f"    McNemar's test (seed {mcn['seed_used']}, n={mcn['n_examples']}):")
+                    lines.append(f"      statistic = {mcn['statistic']:.3f}, p = {mcn['p_value']:.4f}")
+
+            lines.append("")
+
+        # Power analysis
+        lines.append("=" * 80)
+        lines.append("POWER ANALYSIS")
+        lines.append("=" * 80)
+
+        # Estimate pooled std from all conditions
+        all_stds = []
+        for ds in self.datasets:
+            for method in self.methods:
+                agg = self.aggregated_results.get(ds, {}).get(method, {})
+                if "accuracy_std" in agg and agg["accuracy_std"] > 0:
+                    all_stds.append(agg["accuracy_std"])
+
+        if all_stds:
+            pooled_std = np.mean(all_stds)
+            lines.append(f"\nPooled standard deviation: {pooled_std:.2f}%")
+            lines.append("\nSample sizes needed for 80% power at alpha=0.05:")
+
+            for effect_pct in [2, 5, 10]:
+                effect_d = effect_pct / pooled_std
+                n_required = estimate_required_samples(
+                    effect_size=effect_pct,
+                    alpha=0.05,
+                    power=0.80,
+                    std_dev=pooled_std
+                )
+                lines.append(f"  {effect_pct}% effect (d={effect_d:.2f}): {n_required} seeds")
+
+            current_n = len(self.seeds)
+            lines.append(f"\nCurrent seeds: {current_n}")
+            if current_n >= 5:
+                lines.append("  Status: ADEQUATE for detecting medium effects")
+            else:
+                lines.append("  Status: MAY BE INSUFFICIENT - consider more seeds")
+
+        return "\n".join(lines)
+
+    def to_dict(self) -> Dict:
+        """Export all results as a dictionary (for JSON serialization)."""
+        return {
+            "experiment_name": self.name,
+            "config": {
+                "datasets": self.datasets,
+                "methods": self.methods,
+                "seeds": self.seeds,
+                "baseline_method": self.baseline_method
+            },
+            "per_seed_results": self.per_seed_results,
+            "aggregated_results": self.aggregated_results,
+            "significance_tests": self.significance_tests,
+            "completion_status": self.get_completion_status(),
+            "is_complete": self.is_complete()
+        }
+
+    def save_results(self, filename: str = None) -> str:
+        """
+        Save all results to JSON file.
+
+        Args:
+            filename: Output filename (default: {name}_results.json)
+
+        Returns:
+            Path to saved file
+        """
+        import os
+        import json
+
+        os.makedirs(self.output_dir, exist_ok=True)
+
+        if filename is None:
+            filename = f"{self.name}_results.json"
+
+        filepath = os.path.join(self.output_dir, filename)
+
+        with open(filepath, 'w') as f:
+            json.dump(self.to_dict(), f, indent=2)
+
+        # Also save tables and report
+        tables_path = os.path.join(self.output_dir, f"{self.name}_tables.md")
+        with open(tables_path, 'w') as f:
+            f.write("# Results Tables\n\n")
+            f.write("## Main Results (Markdown)\n\n")
+            f.write(self.generate_paper_table(format="markdown"))
+            f.write("\n\n## LaTeX Table\n\n```latex\n")
+            f.write(self.generate_paper_table(format="latex"))
+            f.write("\n```\n")
+
+        report_path = os.path.join(self.output_dir, f"{self.name}_significance_report.txt")
+        with open(report_path, 'w') as f:
+            f.write(self.generate_significance_report())
+
+        print(f"Results saved to:")
+        print(f"  - {filepath}")
+        print(f"  - {tables_path}")
+        print(f"  - {report_path}")
+
+        return filepath
+
+    @classmethod
+    def load_results(cls, filepath: str) -> 'MultiSeedExperiment':
+        """
+        Load experiment from saved JSON file.
+
+        Args:
+            filepath: Path to JSON file
+
+        Returns:
+            MultiSeedExperiment instance with loaded data
+        """
+        import json
+        import os
+
+        with open(filepath, 'r') as f:
+            data = json.load(f)
+
+        config = data["config"]
+        experiment = cls(
+            name=data["experiment_name"],
+            datasets=config["datasets"],
+            methods=config["methods"],
+            seeds=config["seeds"],
+            output_dir=os.path.dirname(filepath),
+            baseline_method=config["baseline_method"]
+        )
+
+        experiment.per_seed_results = data["per_seed_results"]
+        experiment.aggregated_results = data.get("aggregated_results", {})
+        experiment.significance_tests = data.get("significance_tests", {})
+
+        return experiment
+
+
+# =============================================================================
+# 9. WILSON SCORE CONFIDENCE INTERVAL
+# =============================================================================
+
+def wilson_score_ci(
+    successes: int,
+    total: int,
+    confidence_level: float = 0.95
+) -> Tuple[float, float]:
+    """
+    Wilson score confidence interval for binomial proportion.
+
+    Better than normal approximation for small samples or extreme proportions.
+    Recommended when accuracy is close to 0 or 1, or when sample size < 30.
+
+    Args:
+        successes: Number of correct predictions
+        total: Total number of predictions
+        confidence_level: Confidence level (default: 0.95)
+
+    Returns:
+        (lower_bound, upper_bound) as proportions
+
+    Example:
+        >>> # 85 correct out of 100 samples
+        >>> lower, upper = wilson_score_ci(85, 100)
+        >>> print(f"Accuracy: 85% [{lower*100:.1f}%, {upper*100:.1f}%]")
+    """
+    from scipy.stats import norm
+
+    if total == 0:
+        return (0.0, 0.0)
+
+    p_hat = successes / total
+    z = norm.ppf(1 - (1 - confidence_level) / 2)
+
+    denominator = 1 + z**2 / total
+    center = (p_hat + z**2 / (2 * total)) / denominator
+    margin = z * np.sqrt(p_hat * (1 - p_hat) / total + z**2 / (4 * total**2)) / denominator
+
+    lower = max(0, center - margin)
+    upper = min(1, center + margin)
+
+    return (lower, upper)
+
+
+# =============================================================================
+# 10. CONVENIENCE FUNCTIONS FOR TELEPATHY EXPERIMENTS
+# =============================================================================
+
+def run_telepathy_statistical_validation(
+    results_json_path: str,
+    output_dir: str = "runs/statistical_validation",
+    baseline_method: str = "prompt_tuning",
+    correction: str = "bonferroni"
+) -> MultiSeedExperiment:
+    """
+    Convenience function to run full statistical validation on Telepathy results.
+
+    Args:
+        results_json_path: Path to unified_results JSON from run_unified_comparison.py
+        output_dir: Output directory for validation results
+        baseline_method: Method to use as baseline for comparisons
+        correction: Multiple testing correction method
+
+    Returns:
+        MultiSeedExperiment with all statistics computed
+
+    Example:
+        >>> experiment = run_telepathy_statistical_validation(
+        ...     "runs/unified/unified_results_20250104.json",
+        ...     baseline_method="mistral_zeroshot"
+        ... )
+        >>> print(experiment.generate_paper_table())
+    """
+    import json
+
+    with open(results_json_path, 'r') as f:
+        data = json.load(f)
+
+    meta = data.get("meta", {})
+    per_seed = data.get("per_seed_results", {})
+
+    # Extract datasets and methods
+    datasets = list(per_seed.keys())
+    if not datasets:
+        raise ValueError("No per-seed results found in JSON")
+
+    # Get methods from first dataset/seed
+    first_dataset = datasets[0]
+    first_seed = list(per_seed[first_dataset].keys())[0]
+    methods = [m for m in per_seed[first_dataset][first_seed].keys()
+               if m not in ["random_chance"] and isinstance(per_seed[first_dataset][first_seed][m], dict)]
+
+    seeds = meta.get("seeds", [42, 123, 456])
+
+    # Create experiment
+    experiment = MultiSeedExperiment(
+        name="telepathy_validation",
+        datasets=datasets,
+        methods=methods,
+        seeds=seeds,
+        output_dir=output_dir,
+        baseline_method=baseline_method
+    )
+
+    # Add results
+    for dataset in datasets:
+        for seed_str, seed_results in per_seed[dataset].items():
+            seed = int(seed_str)
+
+            for method, method_results in seed_results.items():
+                if method in ["random_chance"] or not isinstance(method_results, dict):
+                    continue
+
+                if "accuracy" in method_results:
+                    experiment.add_result(
+                        dataset=dataset,
+                        method=method,
+                        seed=seed,
+                        accuracy=method_results["accuracy"],
+                        latency_ms=method_results.get("latency_ms"),
+                        f1=method_results.get("f1")
+                    )
+
+    # Compute statistics
+    experiment.compute_all_statistics(correction=correction)
+    experiment.save_results()
+
+    return experiment
+
+
+def generate_paper_tables_from_json(
+    results_json_path: str,
+    output_dir: str = "paper_tables"
+) -> Dict[str, str]:
+    """
+    Generate all paper-ready tables from unified results JSON.
+
+    Args:
+        results_json_path: Path to results JSON
+        output_dir: Directory to save tables
+
+    Returns:
+        Dictionary of table names to table strings
+    """
+    experiment = run_telepathy_statistical_validation(
+        results_json_path,
+        output_dir=output_dir
+    )
+
+    tables = {
+        "main_results_markdown": experiment.generate_paper_table(format="markdown"),
+        "main_results_latex": experiment.generate_paper_table(format="latex"),
+        "main_results_csv": experiment.generate_paper_table(format="csv"),
+        "significance_report": experiment.generate_significance_report()
+    }
+
+    return tables
