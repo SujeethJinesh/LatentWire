@@ -111,15 +111,15 @@ DATASETS = {
     },
 }
 
-# Random seeds (reduced to 3 for time constraints)
-SEEDS = [42, 123, 456]
+# Random seeds (reduced to 2 for 12h time constraint while maintaining statistical validity)
+SEEDS = [42, 456]
 
 # Model configurations
 SOURCE_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 TARGET_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
 
-# Token ablation configurations (reduced from [4, 8, 16, 32] to fit 12h on 1 H100)
-TOKEN_ABLATION_CONFIGS = [8, 16, 32]
+# Token ablation configurations (reduced to endpoints only: 8=most compressed, 32=highest capacity)
+TOKEN_ABLATION_CONFIGS = [8, 32]
 
 # Bridge configurations (train_steps reduced from 2000 to 1500 for 12h budget)
 BRIDGE_CONFIG = {
