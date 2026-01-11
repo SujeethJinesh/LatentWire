@@ -1924,6 +1924,195 @@ def count_total_experiments(datasets: List[str], seeds: List[int]) -> int:
 
 
 # =============================================================================
+# RESUME CAPABILITY - Check for existing results
+# =============================================================================
+
+def get_result_file_path(run_dir: Path, method: str, dataset_key: str, seed: int,
+                         num_tokens: Optional[int] = None, model_name: Optional[str] = None) -> Path:
+    """Get the expected result file path for a given experiment configuration."""
+    if method == "zeroshot":
+        return run_dir / "zeroshot" / f"zeroshot_{model_name}_{dataset_key}_seed{seed}.json"
+    elif method == "text_relay":
+        return run_dir / "text_relay" / f"text_relay_{dataset_key}_seed{seed}.json"
+    elif method == "prompt_tuning":
+        return run_dir / "prompt_tuning" / f"prompt_tuning_{dataset_key}_seed{seed}.json"
+    elif method == "lora":
+        return run_dir / "lora" / f"lora_{dataset_key}_seed{seed}.json"
+    elif method == "linear_probe":
+        return run_dir / "linear_probe" / f"linear_probe_{dataset_key}_seed{seed}.json"
+    elif method == "bridge":
+        return run_dir / "bridge" / f"{dataset_key}_seed{seed}_tokens{num_tokens}_results.json"
+    elif method == "latency":
+        return run_dir / "latency" / "latency_results.json"
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+
+def check_existing_result(result_path: Path) -> Optional[Dict[str, Any]]:
+    """Check if a result file exists and load its contents if valid."""
+    if not result_path.exists():
+        return None
+
+    try:
+        with open(result_path, "r") as f:
+            result = json.load(f)
+
+        # Validate that result has required fields
+        if "accuracy" in result or "latency_mean_ms" in result or "bridge_mean_ms" in result:
+            return result
+
+        return None
+    except (json.JSONDecodeError, IOError) as e:
+        print(f"  Warning: Could not load existing result from {result_path}: {e}")
+        return None
+
+
+def count_completed_experiments(run_dir: Path, datasets: List[str], seeds: List[int]) -> Tuple[int, int, List[str]]:
+    """
+    Count completed vs remaining experiments and return details.
+
+    Returns:
+        Tuple of (completed_count, total_count, list_of_completed_experiment_names)
+    """
+    completed = 0
+    completed_names = []
+    total = count_total_experiments(datasets, seeds)
+
+    # Check zero-shot results
+    for dataset_key in datasets:
+        for seed in seeds:
+            for model_name in ["llama", "mistral"]:
+                result_path = get_result_file_path(run_dir, "zeroshot", dataset_key, seed, model_name=model_name)
+                if check_existing_result(result_path) is not None:
+                    completed += 1
+                    completed_names.append(f"zeroshot_{model_name}_{dataset_key}_seed{seed}")
+
+    # Check text_relay results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "text_relay", dataset_key, seed)
+            if check_existing_result(result_path) is not None:
+                completed += 1
+                completed_names.append(f"text_relay_{dataset_key}_seed{seed}")
+
+    # Check prompt_tuning results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "prompt_tuning", dataset_key, seed)
+            if check_existing_result(result_path) is not None:
+                completed += 1
+                completed_names.append(f"prompt_tuning_{dataset_key}_seed{seed}")
+
+    # Check lora results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "lora", dataset_key, seed)
+            if check_existing_result(result_path) is not None:
+                completed += 1
+                completed_names.append(f"lora_{dataset_key}_seed{seed}")
+
+    # Check linear_probe results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "linear_probe", dataset_key, seed)
+            if check_existing_result(result_path) is not None:
+                completed += 1
+                completed_names.append(f"linear_probe_{dataset_key}_seed{seed}")
+
+    # Check bridge results
+    for num_tokens in TOKEN_ABLATION_CONFIGS:
+        for dataset_key in datasets:
+            for seed in seeds:
+                result_path = get_result_file_path(run_dir, "bridge", dataset_key, seed, num_tokens=num_tokens)
+                if check_existing_result(result_path) is not None:
+                    completed += 1
+                    completed_names.append(f"bridge_{num_tokens}_{dataset_key}_seed{seed}")
+
+    # Check latency results (one per dataset)
+    latency_path = get_result_file_path(run_dir, "latency", "", 0)
+    if latency_path.exists():
+        try:
+            with open(latency_path, "r") as f:
+                latency_data = json.load(f)
+            for dataset_key in datasets:
+                if dataset_key in latency_data:
+                    completed += 1
+                    completed_names.append(f"latency_{dataset_key}")
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    return completed, total, completed_names
+
+
+def load_existing_results(run_dir: Path, datasets: List[str], seeds: List[int]) -> Dict[str, List[Dict]]:
+    """Load all existing results from a previous run for resume capability."""
+    all_results = {
+        "zeroshot_llama": [],
+        "zeroshot_mistral": [],
+        "text_relay": [],
+        "prompt_tuning": [],
+        "lora": [],
+        "linear_probe": [],
+    }
+
+    # Add bridge results for each token config
+    for num_tokens in TOKEN_ABLATION_CONFIGS:
+        all_results[f"bridge_{num_tokens}"] = []
+
+    # Load zero-shot results
+    for dataset_key in datasets:
+        for seed in seeds:
+            for model_name in ["llama", "mistral"]:
+                result_path = get_result_file_path(run_dir, "zeroshot", dataset_key, seed, model_name=model_name)
+                result = check_existing_result(result_path)
+                if result is not None:
+                    all_results[f"zeroshot_{model_name}"].append(result)
+
+    # Load text_relay results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "text_relay", dataset_key, seed)
+            result = check_existing_result(result_path)
+            if result is not None:
+                all_results["text_relay"].append(result)
+
+    # Load prompt_tuning results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "prompt_tuning", dataset_key, seed)
+            result = check_existing_result(result_path)
+            if result is not None:
+                all_results["prompt_tuning"].append(result)
+
+    # Load lora results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "lora", dataset_key, seed)
+            result = check_existing_result(result_path)
+            if result is not None:
+                all_results["lora"].append(result)
+
+    # Load linear_probe results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "linear_probe", dataset_key, seed)
+            result = check_existing_result(result_path)
+            if result is not None:
+                all_results["linear_probe"].append(result)
+
+    # Load bridge results
+    for num_tokens in TOKEN_ABLATION_CONFIGS:
+        for dataset_key in datasets:
+            for seed in seeds:
+                result_path = get_result_file_path(run_dir, "bridge", dataset_key, seed, num_tokens=num_tokens)
+                result = check_existing_result(result_path)
+                if result is not None:
+                    all_results[f"bridge_{num_tokens}"].append(result)
+
+    return all_results
+
+
+# =============================================================================
 # MAIN ORCHESTRATION
 # =============================================================================
 
@@ -1945,6 +2134,9 @@ def parse_args():
     parser.add_argument("--gpu", type=int, default=0, help="GPU to use")
     parser.add_argument("--skip_existing", action="store_true",
                        help="Skip experiments that already have results")
+    parser.add_argument("--resume_dir", type=str, default=None,
+                       help="Resume from a specific run directory (e.g., runs/paper_results/run_20250111_120000). "
+                            "If set, --skip_existing is automatically enabled.")
 
     return parser.parse_args()
 
@@ -1956,15 +2148,53 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_dir = output_dir / f"run_{timestamp}"
-    run_dir.mkdir(parents=True, exist_ok=True)
+    # Handle resume mode
+    if args.resume_dir:
+        # Resume from existing run directory
+        run_dir = Path(args.resume_dir)
+        if not run_dir.exists():
+            print(f"ERROR: Resume directory does not exist: {run_dir}")
+            sys.exit(1)
+        args.skip_existing = True  # Automatically enable skip_existing when resuming
+        timestamp = run_dir.name.replace("run_", "") if run_dir.name.startswith("run_") else datetime.now().strftime("%Y%m%d_%H%M%S")
+        print(f"RESUMING from: {run_dir}")
+    else:
+        # Create new run directory
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        run_dir = output_dir / f"run_{timestamp}"
+        run_dir.mkdir(parents=True, exist_ok=True)
 
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu")
 
     # Count total experiments for progress tracking
     total_experiments = count_total_experiments(args.datasets, args.seeds)
-    tracker = ProgressTracker(total_experiments)
+
+    # Check for existing results if skip_existing is enabled
+    skipped_experiments = []
+    if args.skip_existing or args.resume_dir:
+        completed_count, total_count, completed_names = count_completed_experiments(
+            run_dir, args.datasets, args.seeds
+        )
+        skipped_experiments = completed_names
+        remaining_experiments = total_experiments - completed_count
+
+        print("="*70)
+        print("RESUME MODE - Checking for existing results")
+        print("="*70)
+        print(f"Completed experiments: {completed_count}/{total_count}")
+        print(f"Remaining experiments: {remaining_experiments}")
+
+        if completed_names:
+            print(f"\nSkipping {len(completed_names)} completed experiments:")
+            for name in completed_names[:10]:  # Show first 10
+                print(f"  - {name}")
+            if len(completed_names) > 10:
+                print(f"  ... and {len(completed_names) - 10} more")
+        print("="*70)
+    else:
+        remaining_experiments = total_experiments
+
+    tracker = ProgressTracker(remaining_experiments if remaining_experiments > 0 else total_experiments)
 
     print("="*70)
     print("TELEPATHY COMPLETE PAPER EVALUATION (REVISED)")
@@ -1975,6 +2205,9 @@ def main():
     print(f"Seeds: {args.seeds}")
     print(f"Token ablation configs: {TOKEN_ABLATION_CONFIGS}")
     print(f"Total experiments: {total_experiments}")
+    if args.skip_existing:
+        print(f"Skip existing: ENABLED")
+        print(f"Experiments to run: {remaining_experiments}")
     print(f"Estimated time: ~12 hours on 1 H100")
     print("="*70)
 
@@ -1994,22 +2227,35 @@ def main():
     with open(run_dir / "config.json", "w") as f:
         json.dump(config, f, indent=2)
 
-    # Results storage
-    all_results = {
-        "zeroshot_llama": [],
-        "zeroshot_mistral": [],
-        "text_relay": [],
-        "prompt_tuning": [],
-        "lora": [],
-        "linear_probe": [],
-    }
+    # Results storage - load existing results if resuming
+    if args.skip_existing or args.resume_dir:
+        print("\nLoading existing results...")
+        all_results = load_existing_results(run_dir, args.datasets, args.seeds)
+        print(f"  Loaded {sum(len(v) for v in all_results.values())} existing results")
+    else:
+        all_results = {
+            "zeroshot_llama": [],
+            "zeroshot_mistral": [],
+            "text_relay": [],
+            "prompt_tuning": [],
+            "lora": [],
+            "linear_probe": [],
+        }
+        # Add bridge results for each token config
+        for num_tokens in TOKEN_ABLATION_CONFIGS:
+            all_results[f"bridge_{num_tokens}"] = []
 
-    # Add bridge results for each token config
-    for num_tokens in TOKEN_ABLATION_CONFIGS:
-        all_results[f"bridge_{num_tokens}"] = []
-
-    # Latency results storage
+    # Latency results storage - load existing if available
     latency_results = {}
+    if args.skip_existing or args.resume_dir:
+        latency_path = run_dir / "latency" / "latency_results.json"
+        if latency_path.exists():
+            try:
+                with open(latency_path, "r") as f:
+                    latency_results = json.load(f)
+                print(f"  Loaded existing latency results for {len(latency_results)} datasets")
+            except (json.JSONDecodeError, IOError):
+                pass
 
     try:
         # 1. Zero-shot baselines (individual models for super-additivity)
@@ -2020,28 +2266,36 @@ def main():
             for dataset_key in args.datasets:
                 for seed in args.seeds:
                     # Llama zero-shot
-                    exp_start = time.time()
-                    try:
-                        results = run_zeroshot_baseline(
-                            dataset_key, "llama", SOURCE_MODEL, seed, zeroshot_dir, device
-                        )
-                        all_results["zeroshot_llama"].append(results)
-                        tracker.update(f"zeroshot_llama_{dataset_key}_seed{seed}", time.time() - exp_start)
-                    except Exception as e:
-                        print(f"ERROR in zeroshot llama {dataset_key} seed={seed}: {e}")
-                        traceback.print_exc()
+                    exp_name = f"zeroshot_llama_{dataset_key}_seed{seed}"
+                    if args.skip_existing and exp_name in skipped_experiments:
+                        print(f"[SKIP] {exp_name} - result already exists")
+                    else:
+                        exp_start = time.time()
+                        try:
+                            results = run_zeroshot_baseline(
+                                dataset_key, "llama", SOURCE_MODEL, seed, zeroshot_dir, device
+                            )
+                            all_results["zeroshot_llama"].append(results)
+                            tracker.update(exp_name, time.time() - exp_start)
+                        except Exception as e:
+                            print(f"ERROR in zeroshot llama {dataset_key} seed={seed}: {e}")
+                            traceback.print_exc()
 
                     # Mistral zero-shot
-                    exp_start = time.time()
-                    try:
-                        results = run_zeroshot_baseline(
-                            dataset_key, "mistral", TARGET_MODEL, seed, zeroshot_dir, device
-                        )
-                        all_results["zeroshot_mistral"].append(results)
-                        tracker.update(f"zeroshot_mistral_{dataset_key}_seed{seed}", time.time() - exp_start)
-                    except Exception as e:
-                        print(f"ERROR in zeroshot mistral {dataset_key} seed={seed}: {e}")
-                        traceback.print_exc()
+                    exp_name = f"zeroshot_mistral_{dataset_key}_seed{seed}"
+                    if args.skip_existing and exp_name in skipped_experiments:
+                        print(f"[SKIP] {exp_name} - result already exists")
+                    else:
+                        exp_start = time.time()
+                        try:
+                            results = run_zeroshot_baseline(
+                                dataset_key, "mistral", TARGET_MODEL, seed, zeroshot_dir, device
+                            )
+                            all_results["zeroshot_mistral"].append(results)
+                            tracker.update(exp_name, time.time() - exp_start)
+                        except Exception as e:
+                            print(f"ERROR in zeroshot mistral {dataset_key} seed={seed}: {e}")
+                            traceback.print_exc()
 
         # 2. Text-relay baseline (with accuracy)
         if args.only is None or args.only == "text_relay":
@@ -2050,14 +2304,18 @@ def main():
 
             for dataset_key in args.datasets:
                 for seed in args.seeds:
-                    exp_start = time.time()
-                    try:
-                        results = run_text_relay_baseline(dataset_key, seed, relay_dir, device)
-                        all_results["text_relay"].append(results)
-                        tracker.update(f"text_relay_{dataset_key}_seed{seed}", time.time() - exp_start)
-                    except Exception as e:
-                        print(f"ERROR in text_relay {dataset_key} seed={seed}: {e}")
-                        traceback.print_exc()
+                    exp_name = f"text_relay_{dataset_key}_seed{seed}"
+                    if args.skip_existing and exp_name in skipped_experiments:
+                        print(f"[SKIP] {exp_name} - result already exists")
+                    else:
+                        exp_start = time.time()
+                        try:
+                            results = run_text_relay_baseline(dataset_key, seed, relay_dir, device)
+                            all_results["text_relay"].append(results)
+                            tracker.update(exp_name, time.time() - exp_start)
+                        except Exception as e:
+                            print(f"ERROR in text_relay {dataset_key} seed={seed}: {e}")
+                            traceback.print_exc()
 
         # 3. Prompt tuning baseline
         if args.only is None or args.only == "prompt_tuning":
@@ -2066,16 +2324,20 @@ def main():
 
             for dataset_key in args.datasets:
                 for seed in args.seeds:
-                    exp_start = time.time()
-                    try:
-                        results = train_prompt_tuning_baseline(
-                            dataset_key, seed, pt_dir, device, PROMPT_TUNING_CONFIG
-                        )
-                        all_results["prompt_tuning"].append(results)
-                        tracker.update(f"prompt_tuning_{dataset_key}_seed{seed}", time.time() - exp_start)
-                    except Exception as e:
-                        print(f"ERROR in prompt_tuning {dataset_key} seed={seed}: {e}")
-                        traceback.print_exc()
+                    exp_name = f"prompt_tuning_{dataset_key}_seed{seed}"
+                    if args.skip_existing and exp_name in skipped_experiments:
+                        print(f"[SKIP] {exp_name} - result already exists")
+                    else:
+                        exp_start = time.time()
+                        try:
+                            results = train_prompt_tuning_baseline(
+                                dataset_key, seed, pt_dir, device, PROMPT_TUNING_CONFIG
+                            )
+                            all_results["prompt_tuning"].append(results)
+                            tracker.update(exp_name, time.time() - exp_start)
+                        except Exception as e:
+                            print(f"ERROR in prompt_tuning {dataset_key} seed={seed}: {e}")
+                            traceback.print_exc()
 
         # 4. LoRA baseline
         if args.only is None or args.only == "lora":
@@ -2084,16 +2346,20 @@ def main():
 
             for dataset_key in args.datasets:
                 for seed in args.seeds:
-                    exp_start = time.time()
-                    try:
-                        results = train_lora_baseline(
-                            dataset_key, seed, lora_dir, device, LORA_CONFIG
-                        )
-                        all_results["lora"].append(results)
-                        tracker.update(f"lora_{dataset_key}_seed{seed}", time.time() - exp_start)
-                    except Exception as e:
-                        print(f"ERROR in lora {dataset_key} seed={seed}: {e}")
-                        traceback.print_exc()
+                    exp_name = f"lora_{dataset_key}_seed{seed}"
+                    if args.skip_existing and exp_name in skipped_experiments:
+                        print(f"[SKIP] {exp_name} - result already exists")
+                    else:
+                        exp_start = time.time()
+                        try:
+                            results = train_lora_baseline(
+                                dataset_key, seed, lora_dir, device, LORA_CONFIG
+                            )
+                            all_results["lora"].append(results)
+                            tracker.update(exp_name, time.time() - exp_start)
+                        except Exception as e:
+                            print(f"ERROR in lora {dataset_key} seed={seed}: {e}")
+                            traceback.print_exc()
 
         # 5. Linear probe baseline
         if args.only is None or args.only == "linear_probe":
@@ -2102,16 +2368,20 @@ def main():
 
             for dataset_key in args.datasets:
                 for seed in args.seeds:
-                    exp_start = time.time()
-                    try:
-                        results = run_linear_probe(
-                            dataset_key, seed, probe_dir, device, LINEAR_PROBE_CONFIG
-                        )
-                        all_results["linear_probe"].append(results)
-                        tracker.update(f"linear_probe_{dataset_key}_seed{seed}", time.time() - exp_start)
-                    except Exception as e:
-                        print(f"ERROR in linear_probe {dataset_key} seed={seed}: {e}")
-                        traceback.print_exc()
+                    exp_name = f"linear_probe_{dataset_key}_seed{seed}"
+                    if args.skip_existing and exp_name in skipped_experiments:
+                        print(f"[SKIP] {exp_name} - result already exists")
+                    else:
+                        exp_start = time.time()
+                        try:
+                            results = run_linear_probe(
+                                dataset_key, seed, probe_dir, device, LINEAR_PROBE_CONFIG
+                            )
+                            all_results["linear_probe"].append(results)
+                            tracker.update(exp_name, time.time() - exp_start)
+                        except Exception as e:
+                            print(f"ERROR in linear_probe {dataset_key} seed={seed}: {e}")
+                            traceback.print_exc()
 
         # 6. Bridge with token ablation
         if args.only is None or args.only == "bridge" or args.only == "ablation":
@@ -2121,17 +2391,21 @@ def main():
             for num_tokens in TOKEN_ABLATION_CONFIGS:
                 for dataset_key in args.datasets:
                     for seed in args.seeds:
-                        exp_start = time.time()
-                        try:
-                            results = train_bridge_for_dataset(
-                                dataset_key, seed, bridge_dir, device, BRIDGE_CONFIG,
-                                num_soft_tokens=num_tokens
-                            )
-                            all_results[f"bridge_{num_tokens}"].append(results)
-                            tracker.update(f"bridge_{num_tokens}_{dataset_key}_seed{seed}", time.time() - exp_start)
-                        except Exception as e:
-                            print(f"ERROR in bridge {dataset_key} seed={seed} tokens={num_tokens}: {e}")
-                            traceback.print_exc()
+                        exp_name = f"bridge_{num_tokens}_{dataset_key}_seed{seed}"
+                        if args.skip_existing and exp_name in skipped_experiments:
+                            print(f"[SKIP] {exp_name} - result already exists")
+                        else:
+                            exp_start = time.time()
+                            try:
+                                results = train_bridge_for_dataset(
+                                    dataset_key, seed, bridge_dir, device, BRIDGE_CONFIG,
+                                    num_soft_tokens=num_tokens
+                                )
+                                all_results[f"bridge_{num_tokens}"].append(results)
+                                tracker.update(exp_name, time.time() - exp_start)
+                            except Exception as e:
+                                print(f"ERROR in bridge {dataset_key} seed={seed} tokens={num_tokens}: {e}")
+                                traceback.print_exc()
 
         # 7. Latency measurement (after bridge training is complete)
         if args.only is None or args.only == "bridge" or args.only == "ablation":
@@ -2142,88 +2416,100 @@ def main():
             latency_dir = run_dir / "latency"
             latency_dir.mkdir(exist_ok=True)
 
-            # Load models once for latency measurement
-            print("Loading models for latency measurement...")
-            src_model = AutoModelForCausalLM.from_pretrained(
-                SOURCE_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
-            ).eval()
-            tgt_model = AutoModelForCausalLM.from_pretrained(
-                TARGET_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
-            ).eval()
-
-            src_tok = AutoTokenizer.from_pretrained(SOURCE_MODEL)
-            src_tok.pad_token = src_tok.eos_token
-            tgt_tok = AutoTokenizer.from_pretrained(TARGET_MODEL)
-            tgt_tok.pad_token = tgt_tok.eos_token
-
-            # Compute target RMS for bridge
-            with torch.no_grad():
-                tgt_embeds = tgt_model.get_input_embeddings().weight.float()
-                target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
-
-            # Create a fresh bridge for latency measurement
-            bridge = TelepathyBridge(
-                src_dim=src_model.config.hidden_size,
-                tgt_dim=tgt_model.config.hidden_size,
-                num_soft_tokens=8,
-                heads=BRIDGE_CONFIG["heads"],
-                depth=BRIDGE_CONFIG["depth"],
-                target_rms=target_rms
-            ).to(device).to(torch.bfloat16).eval()
-
-            # Measure latency for one example per dataset
+            # Check which latency measurements need to be done
+            datasets_to_measure = []
             for dataset_key in args.datasets:
-                exp_start = time.time()
-                try:
-                    dataset_config = DATASETS[dataset_key]
-                    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"], max_samples=1)
+                exp_name = f"latency_{dataset_key}"
+                if args.skip_existing and exp_name in skipped_experiments:
+                    print(f"[SKIP] {exp_name} - result already exists")
+                else:
+                    datasets_to_measure.append(dataset_key)
 
-                    if test_data:
-                        text = test_data[0]["text"]
-                        print(f"\nMeasuring latency for {dataset_config['name']}...")
+            if datasets_to_measure:
+                # Load models once for latency measurement
+                print("Loading models for latency measurement...")
+                src_model = AutoModelForCausalLM.from_pretrained(
+                    SOURCE_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
+                ).eval()
+                tgt_model = AutoModelForCausalLM.from_pretrained(
+                    TARGET_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
+                ).eval()
 
-                        lat_result = measure_fair_latency(
-                            text=text,
-                            dataset_config=dataset_config,
-                            src_model=src_model,
-                            tgt_model=tgt_model,
-                            src_tok=src_tok,
-                            tgt_tok=tgt_tok,
-                            bridge=bridge,
-                            device=device,
-                            num_warmup=3,
-                            num_runs=10,  # Reduced for faster execution
-                        )
+                src_tok = AutoTokenizer.from_pretrained(SOURCE_MODEL)
+                src_tok.pad_token = src_tok.eos_token
+                tgt_tok = AutoTokenizer.from_pretrained(TARGET_MODEL)
+                tgt_tok.pad_token = tgt_tok.eos_token
 
-                        latency_results[dataset_key] = lat_result
+                # Compute target RMS for bridge
+                with torch.no_grad():
+                    tgt_embeds = tgt_model.get_input_embeddings().weight.float()
+                    target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
 
-                        print(f"  Bridge: {lat_result['bridge_mean_ms']:.1f}ms")
-                        print(f"  Text-Relay: {lat_result['text_relay_mean_ms']:.1f}ms")
-                        print(f"  Mistral Direct: {lat_result['mistral_direct_mean_ms']:.1f}ms")
-                        print(f"  Speedup vs Text-Relay: {lat_result['speedup_vs_text_relay']:.2f}x")
+                # Create a fresh bridge for latency measurement
+                bridge = TelepathyBridge(
+                    src_dim=src_model.config.hidden_size,
+                    tgt_dim=tgt_model.config.hidden_size,
+                    num_soft_tokens=8,
+                    heads=BRIDGE_CONFIG["heads"],
+                    depth=BRIDGE_CONFIG["depth"],
+                    target_rms=target_rms
+                ).to(device).to(torch.bfloat16).eval()
 
-                        tracker.update(f"latency_{dataset_key}", time.time() - exp_start)
+                # Measure latency for one example per dataset
+                for dataset_key in datasets_to_measure:
+                    exp_start = time.time()
+                    try:
+                        dataset_config = DATASETS[dataset_key]
+                        test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"], max_samples=1)
 
-                except Exception as e:
-                    print(f"ERROR in latency measurement {dataset_key}: {e}")
-                    traceback.print_exc()
+                        if test_data:
+                            text = test_data[0]["text"]
+                            print(f"\nMeasuring latency for {dataset_config['name']}...")
 
-            # Clean up latency models
-            del src_model, tgt_model, bridge
-            gc.collect()
-            torch.cuda.empty_cache()
+                            lat_result = measure_fair_latency(
+                                text=text,
+                                dataset_config=dataset_config,
+                                src_model=src_model,
+                                tgt_model=tgt_model,
+                                src_tok=src_tok,
+                                tgt_tok=tgt_tok,
+                                bridge=bridge,
+                                device=device,
+                                num_warmup=3,
+                                num_runs=10,  # Reduced for faster execution
+                            )
 
-            # Save latency results
-            with open(latency_dir / "latency_results.json", "w") as f:
-                json.dump(latency_results, f, indent=2)
+                            latency_results[dataset_key] = lat_result
 
-            # Compute average latency across datasets
-            if latency_results:
+                            print(f"  Bridge: {lat_result['bridge_mean_ms']:.1f}ms")
+                            print(f"  Text-Relay: {lat_result['text_relay_mean_ms']:.1f}ms")
+                            print(f"  Mistral Direct: {lat_result['mistral_direct_mean_ms']:.1f}ms")
+                            print(f"  Speedup vs Text-Relay: {lat_result['speedup_vs_text_relay']:.2f}x")
+
+                            tracker.update(f"latency_{dataset_key}", time.time() - exp_start)
+
+                    except Exception as e:
+                        print(f"ERROR in latency measurement {dataset_key}: {e}")
+                        traceback.print_exc()
+
+                # Clean up latency models
+                del src_model, tgt_model, bridge
+                gc.collect()
+                torch.cuda.empty_cache()
+
+                # Save latency results
+                with open(latency_dir / "latency_results.json", "w") as f:
+                    json.dump(latency_results, f, indent=2)
+
+            # Compute average latency across datasets (including any loaded results)
+            # Filter out 'average' key if present from previous runs
+            dataset_latencies = {k: v for k, v in latency_results.items() if k != "average" and isinstance(v, dict) and "bridge_mean_ms" in v}
+            if dataset_latencies:
                 avg_latency = {
-                    "bridge_mean_ms": np.mean([r["bridge_mean_ms"] for r in latency_results.values()]),
-                    "text_relay_mean_ms": np.mean([r["text_relay_mean_ms"] for r in latency_results.values()]),
-                    "mistral_direct_mean_ms": np.mean([r["mistral_direct_mean_ms"] for r in latency_results.values()]),
-                    "speedup_vs_text_relay": np.mean([r["speedup_vs_text_relay"] for r in latency_results.values()]),
+                    "bridge_mean_ms": np.mean([r["bridge_mean_ms"] for r in dataset_latencies.values()]),
+                    "text_relay_mean_ms": np.mean([r["text_relay_mean_ms"] for r in dataset_latencies.values()]),
+                    "mistral_direct_mean_ms": np.mean([r["mistral_direct_mean_ms"] for r in dataset_latencies.values()]),
+                    "speedup_vs_text_relay": np.mean([r["speedup_vs_text_relay"] for r in dataset_latencies.values()]),
                 }
                 latency_results["average"] = avg_latency
 
