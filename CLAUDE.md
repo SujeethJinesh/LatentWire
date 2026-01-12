@@ -284,6 +284,30 @@ Before committing a SLURM script, verify:
 - Skipping Qwen to focus on Llama first = valid optimization choice
 - Skipping PCA because it OOMs = bug that needs fixing
 
+### 1. SUBAGENT MODEL SELECTION (USER PREFERENCE)
+
+**ALWAYS prefer Claude Opus 4.5 for subagent tasks:**
+
+When using the Task tool to spawn subagents for analysis, exploration, or multi-step reasoning:
+
+- **STRONGLY prefer `claude-opus-4-5` model** - This is a direct user preference
+- Opus provides better reasoning for complex research tasks
+- Only use Sonnet subagents if explicitly requested or for simple tasks
+- The Task tool allows model selection - always specify Opus when spawning subagents
+
+**Why this matters:**
+- Research tasks require deep reasoning and careful analysis
+- Opus excels at multi-step planning and self-critique
+- Code exploration and architectural decisions benefit from Opus capabilities
+- This is not about cost - it's about research quality
+
+**Examples:**
+- ✅ Task(model="claude-opus-4-5") for analysis, planning, code exploration
+- ✅ Task(model="claude-opus-4-5") for experiment design and validation
+- ⚠️ Task(model="sonnet") only if user explicitly requests it or task is trivial
+
+**Remember**: The user has specifically requested Opus subagents. This is a strong preference that should be honored unless there's a compelling reason otherwise.
+
 ## Critical Workflow Requirements
 
 **ALWAYS follow these requirements when working on this codebase:**
