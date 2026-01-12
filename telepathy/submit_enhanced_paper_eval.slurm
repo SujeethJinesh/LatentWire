@@ -4,7 +4,7 @@
 #SBATCH --gpus=1
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
-#SBATCH --time=18:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mem=128GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/enhanced_eval_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/enhanced_eval_%j.err
@@ -14,10 +14,10 @@
 # =============================================================================
 # This script runs the enhanced evaluation with:
 #
-# 1. 5 seeds (42, 123, 456, 789, 1011) for robust statistical analysis
-# 2. 4 token configs (8, 16, 24, 32) for comprehensive ablation
-# 3. 3 classification datasets: SST-2, AG News, TREC
-# 4. 3 reasoning benchmarks: BoolQ, ARC-Easy, GSM8K
+# 1. 3 seeds (42, 123, 456) for statistical analysis
+# 2. 2 token configs (8, 24) for ablation
+# 3. 2 classification datasets: SST-2, AG News
+# 4. 2 reasoning benchmarks: BoolQ, GSM8K
 # 5. Improved text-relay baseline with task-specific prompting
 # 6. Enhanced resume capability with atomic checkpointing
 # 7. Comprehensive memory management for 12-hour H100 execution
@@ -28,7 +28,7 @@
 # - Comprehensive error handling and logging
 # - 128GB memory allocation for stability
 #
-# Estimated runtime: ~10-12 hours on single H100 GPU
+# Estimated runtime: ~10-11 hours on single H100 GPU (fast mode)
 #
 # Submit with: sbatch telepathy/submit_enhanced_paper_eval.slurm
 # Monitor with: squeue -u $USER
@@ -136,17 +136,19 @@ echo ""
 # - Reasoning failure diagnostics (--run_diagnostics)
 
 echo "Starting enhanced evaluation..."
-echo "Datasets: sst2, agnews, trec, boolq, arc_easy, gsm8k (6 datasets)"
-echo "Seeds: 42, 123, 456, 789, 1011 (5 seeds)"
-echo "Token ablation: 8, 16, 24, 32 (4 configs)"
+echo "Datasets: sst2, agnews, boolq, gsm8k (4 datasets)"
+echo "Seeds: 42, 123, 456 (3 seeds)"
+echo "Token ablation: 8, 24 (2 configs)"
 echo ""
 
 # Build the command with optional resume
+# Using --fast_mode and reduced configuration to fit within 12-hour limit
 PYTHON_CMD="python telepathy/run_enhanced_paper_evaluation.py \
     --output_dir $OUTPUT_DIR \
     --gpu 0 \
     --run_diagnostics \
-    --log_level INFO"
+    --log_level INFO \
+    --fast_mode"
 
 # Add resume flag if we have an incomplete run to resume from
 if [ -n "$RESUME_DIR" ]; then
@@ -268,18 +270,19 @@ git status --short
 # Commit with detailed message
 COMMIT_MSG="results: enhanced telepathy paper evaluation (SLURM job $SLURM_JOB_ID)
 
-Datasets: sst2, agnews, trec, boolq, arc_easy, gsm8k (6 datasets)
-Seeds: 42, 123, 456, 789, 1011 (5 seeds)
-Token configs: 8, 16, 24, 32 (4 ablations)
+Datasets: sst2, agnews, boolq, gsm8k (4 datasets)
+Seeds: 42, 123, 456 (3 seeds)
+Token configs: 8, 24 (2 ablations)
 Exit status: $EVAL_STATUS
 
 Features:
-- 5 seeds for robust statistical analysis
-- 4 token configs for comprehensive ablation
-- 6 datasets (3 classification + 3 reasoning)
+- 3 seeds for statistical analysis
+- 2 token configs for ablation
+- 4 datasets (2 classification + 2 reasoning)
 - Reasoning failure diagnostics included
 - Enhanced resume capability with atomic checkpointing
 - Comprehensive memory management (128GB allocation)
+- Fast mode enabled (500 train steps)
 
 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -326,10 +329,11 @@ echo "  - ${OUTPUT_DIR}/enhanced_evaluation_${SLURM_JOB_ID}.log"
 echo "  - runs/enhanced_eval_${SLURM_JOB_ID}.log (SLURM output)"
 echo ""
 echo "Configuration:"
-echo "  - Datasets: 6 (sst2, agnews, trec, boolq, arc_easy, gsm8k)"
-echo "  - Seeds: 5 (42, 123, 456, 789, 1011)"
-echo "  - Token configs: 4 (8, 16, 24, 32)"
+echo "  - Datasets: 4 (sst2, agnews, boolq, gsm8k)"
+echo "  - Seeds: 3 (42, 123, 456)"
+echo "  - Token configs: 2 (8, 24)"
 echo "  - Memory allocation: 128GB"
+echo "  - Fast mode: enabled (500 train steps)"
 if [ -n "$RESUME_DIR" ]; then
     echo "  - Resumed from: $RESUME_DIR"
 fi

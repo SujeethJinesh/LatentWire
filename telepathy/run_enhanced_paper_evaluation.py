@@ -3,25 +3,29 @@
 Enhanced Telepathy Paper Evaluation Script
 
 Builds on run_complete_evaluation.py with these enhancements:
-1. 5 seeds (42, 123, 456, 789, 1011) for robust statistical analysis
-2. 4 token configs (8, 16, 24, 32) for comprehensive ablation
-3. 3 classification datasets: SST-2, AG News, TREC
-4. 3 reasoning benchmarks: BoolQ, ARC-Easy, GSM8K
+1. 3 seeds (42, 123, 456) for statistical analysis
+2. 2 token configs (8, 24) for ablation
+3. 2 classification datasets: SST-2, AG News
+4. 2 reasoning benchmarks: BoolQ, GSM8K
 5. Improved text-relay baseline with task-specific prompting
 6. Enhanced resume capability with atomic checkpointing
 7. Comprehensive memory management for 12-hour H100 execution
 8. Optional reasoning failure diagnostics (--run_diagnostics)
+9. --fast_mode option to reduce training steps (500 steps)
 
 Constraints:
-- Runs on 1 H100 GPU in ~12 hours
-- Uses 5 seeds [42, 123, 456, 789, 1011]
-- Tests on 6 datasets: SST-2, AG News, TREC, BoolQ, ARC-Easy, GSM8K
+- Runs on 1 H100 GPU in ~10-11 hours
+- Uses 3 seeds [42, 123, 456]
+- Tests on 4 datasets: SST-2, AG News, BoolQ, GSM8K
 
 Usage:
     python telepathy/run_enhanced_paper_evaluation.py --output_dir runs/enhanced_results
 
     # With reasoning failure diagnostics:
     python telepathy/run_enhanced_paper_evaluation.py --output_dir runs/enhanced_results --run_diagnostics
+
+    # Fast mode (500 train steps):
+    python telepathy/run_enhanced_paper_evaluation.py --output_dir runs/enhanced_results --fast_mode
 
 Author: Telepathy Project
 Date: January 2025
@@ -462,23 +466,23 @@ REASONING_DATASETS = {
 # Combined datasets
 DATASETS = {**CLASSIFICATION_DATASETS, **REASONING_DATASETS}
 
-# Random seeds - 5 for robust statistical analysis
-SEEDS = [42, 123, 456, 789, 1011]
+# Random seeds - 3 for statistical analysis (reduced for 12-hour budget)
+SEEDS = [42, 123, 456]
 
 # Model configurations
 SOURCE_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 TARGET_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
 
-# Token ablation configurations - 4 levels
-TOKEN_ABLATION_CONFIGS = [8, 16, 24, 32]
+# Token ablation configurations - 2 levels (reduced for 12-hour budget)
+TOKEN_ABLATION_CONFIGS = [8, 24]
 
-# Bridge configurations (optimized for 12-hour budget with 5 seeds x 4 tokens x 6 datasets)
+# Bridge configurations (optimized for 12-hour budget with 3 seeds x 2 tokens x 4 datasets)
 BRIDGE_CONFIG = {
     "soft_tokens": 8,
     "depth": 2,
     "heads": 8,
     "source_layer": 31,
-    "train_steps": 1000,  # Reduced from 1500 for time budget
+    "train_steps": 500,  # Reduced from 1000 for 12-hour budget
     "batch_size": 16,
     "lr": 2e-4,
     "diversity_weight": 0.1,
@@ -3180,8 +3184,8 @@ def parse_args():
     parser.add_argument("--output_dir", type=str, default="runs/enhanced_results",
                        help="Output directory for all results")
     parser.add_argument("--datasets", type=str, nargs="+",
-                       default=["sst2", "agnews", "trec", "boolq", "arc_easy", "gsm8k"],
-                       help="Datasets to evaluate")
+                       default=["sst2", "agnews", "boolq", "gsm8k"],
+                       help="Datasets to evaluate (default excludes trec, arc_easy for 12-hour budget)")
     parser.add_argument("--seeds", type=int, nargs="+", default=SEEDS,
                        help="Random seeds to use")
     parser.add_argument("--gpu", type=int, default=0, help="GPU to use")
