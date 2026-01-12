@@ -556,3 +556,52 @@ def load_examples(dataset: str = "hotpot", **kwargs) -> List[Dict[str, Any]]:
         return load_xsum_subset(**{k:v for k,v in kwargs.items() if k!="config"})
     else:
         raise ValueError(f"Unknown dataset '{dataset}'. Choose hotpot|squad|squad_v2|gsm8k|trec|agnews|sst2|xsum")
+
+
+# ---- Training Data Preparation (inlined from data_pipeline.py) ----
+
+def prepare_training_data(
+    dataset: str,
+    samples: int,
+    data_seed: int,
+    hotpot_config: str = "fullwiki",
+) -> Tuple[List[str], List[str]]:
+    """
+    Load and assemble the (text, answer) pairs for the training loop.
+
+    Args:
+        dataset: Name of the dataset ("squad", "squad_v2", or "hotpot").
+        samples: Number of samples to draw.
+        data_seed: Seed used for sampling.
+        hotpot_config: HotpotQA configuration (defaults to "fullwiki").
+
+    Returns:
+        texts: List of prompt strings.
+        answers: List of answer strings aligned with `texts`.
+    """
+    print("Loading dataset subset...")
+
+    if dataset.startswith("squad"):
+        print("Loading SQuAD subset...")
+        examples = load_examples(
+            dataset=dataset,
+            split="train",
+            samples=samples,
+            seed=data_seed,
+        )
+    else:
+        print("Loading HotpotQA subset...")
+        examples = load_examples(
+            dataset="hotpot",
+            split="train",
+            samples=samples,
+            seed=data_seed,
+            config=hotpot_config,
+        )
+
+    if not examples:
+        raise RuntimeError("No training examples loaded.")
+
+    texts = [ex["source"] for ex in examples]
+    answers = [ex["answer"] for ex in examples]
+    return texts, answers

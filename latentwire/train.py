@@ -54,9 +54,9 @@ from latentwire.models import (
     apply_prefix_if_requested,
 )
 from latentwire.checkpointing import save_latest_checkpoint
-from latentwire.data_pipeline import prepare_training_data
+from latentwire.data import prepare_training_data
 from latentwire.feature_registry import FeatureRegistry
-from latentwire.loss_bundles import (
+from latentwire.losses import (
     loss_with_text_prompt_chunked,
     alignment_mse,
     manifold_stat_loss,

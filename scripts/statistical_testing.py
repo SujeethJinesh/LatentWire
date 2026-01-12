@@ -2262,3 +2262,533 @@ def generate_paper_tables_from_json(
     }
 
     return tables
+
+
+# =============================================================================
+# 11. CLASSIFICATION METRICS (consolidated from enhanced_classification_metrics.py)
+# =============================================================================
+
+from dataclasses import dataclass
+from collections import Counter
+import re
+
+
+@dataclass
+class ClassificationMetrics:
+    """Container for comprehensive classification metrics."""
+
+    # Basic metrics
+    accuracy: float
+    macro_f1: float
+    weighted_f1: float
+
+    # Per-class metrics
+    per_class_precision: Dict[str, float]
+    per_class_recall: Dict[str, float]
+    per_class_f1: Dict[str, float]
+    per_class_support: Dict[str, int]
+
+    # Confusion matrix
+    confusion_matrix: np.ndarray
+    normalized_confusion_matrix: np.ndarray
+
+    # Additional metrics
+    cohen_kappa: float
+    matthews_corrcoef: float
+
+    # For binary classification
+    roc_auc: Optional[float] = None
+    roc_curve_data: Optional[Dict] = None
+
+    # Statistical measures
+    confidence_interval_95: Optional[Tuple[float, float]] = None
+
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for JSON serialization."""
+        result = {
+            'accuracy': float(self.accuracy),
+            'macro_f1': float(self.macro_f1),
+            'weighted_f1': float(self.weighted_f1),
+            'cohen_kappa': float(self.cohen_kappa),
+            'matthews_corrcoef': float(self.matthews_corrcoef),
+            'per_class': {
+                'precision': {k: float(v) for k, v in self.per_class_precision.items()},
+                'recall': {k: float(v) for k, v in self.per_class_recall.items()},
+                'f1': {k: float(v) for k, v in self.per_class_f1.items()},
+                'support': self.per_class_support
+            },
+            'confusion_matrix': self.confusion_matrix.tolist(),
+            'normalized_confusion_matrix': self.normalized_confusion_matrix.tolist()
+        }
+
+        if self.roc_auc is not None:
+            result['roc_auc'] = float(self.roc_auc)
+        if self.roc_curve_data is not None:
+            result['roc_curve'] = self.roc_curve_data
+        if self.confidence_interval_95 is not None:
+            result['confidence_interval_95'] = list(self.confidence_interval_95)
+
+        return result
+
+    def summary_string(self) -> str:
+        """Generate human-readable summary."""
+        lines = [
+            "Classification Metrics Summary:",
+            f"  Accuracy: {self.accuracy:.4f}",
+            f"  Macro F1: {self.macro_f1:.4f}",
+            f"  Weighted F1: {self.weighted_f1:.4f}",
+            f"  Cohen's Kappa: {self.cohen_kappa:.4f}",
+            f"  Matthews Correlation: {self.matthews_corrcoef:.4f}"
+        ]
+
+        if self.roc_auc is not None:
+            lines.append(f"  ROC-AUC: {self.roc_auc:.4f}")
+
+        if self.confidence_interval_95 is not None:
+            lines.append(f"  95% CI: [{self.confidence_interval_95[0]:.4f}, {self.confidence_interval_95[1]:.4f}]")
+
+        lines.append("\nPer-Class Metrics:")
+        for class_name in self.per_class_precision.keys():
+            lines.append(
+                f"  {class_name}: "
+                f"P={self.per_class_precision[class_name]:.3f} "
+                f"R={self.per_class_recall[class_name]:.3f} "
+                f"F1={self.per_class_f1[class_name]:.3f} "
+                f"N={self.per_class_support[class_name]}"
+            )
+
+        return "\n".join(lines)
+
+
+def compute_classification_metrics(
+    y_true: Union[List, np.ndarray],
+    y_pred: Union[List, np.ndarray],
+    labels: Optional[List[str]] = None,
+    y_proba: Optional[np.ndarray] = None,
+    compute_confidence_interval: bool = True,
+    n_bootstrap: int = 1000
+) -> ClassificationMetrics:
+    """
+    Compute comprehensive classification metrics.
+
+    Args:
+        y_true: True labels
+        y_pred: Predicted labels
+        labels: Class labels for display (if None, inferred from data)
+        y_proba: Probability predictions for ROC-AUC (binary only)
+        compute_confidence_interval: Whether to compute bootstrap CI
+        n_bootstrap: Number of bootstrap iterations
+
+    Returns:
+        ClassificationMetrics object with all computed metrics
+    """
+    from sklearn.metrics import (
+        confusion_matrix as sklearn_confusion_matrix,
+        accuracy_score,
+        precision_recall_fscore_support,
+        roc_auc_score,
+        roc_curve,
+        cohen_kappa_score,
+        matthews_corrcoef as sklearn_mcc
+    )
+
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    # Infer labels if not provided
+    if labels is None:
+        labels = sorted(list(set(y_true) | set(y_pred)))
+
+    # Basic metrics
+    accuracy = accuracy_score(y_true, y_pred)
+
+    # Per-class metrics
+    precision, recall, f1, support = precision_recall_fscore_support(
+        y_true, y_pred, labels=labels, average=None, zero_division=0
+    )
+
+    # Create per-class dictionaries
+    label_names = [str(l) for l in labels]
+    per_class_precision = dict(zip(label_names, precision))
+    per_class_recall = dict(zip(label_names, recall))
+    per_class_f1 = dict(zip(label_names, f1))
+    per_class_support = dict(zip(label_names, support.astype(int)))
+
+    # Aggregate F1 scores
+    macro_f1 = np.mean(f1)
+    weighted_f1 = np.average(f1, weights=support)
+
+    # Confusion matrix
+    cm = sklearn_confusion_matrix(y_true, y_pred, labels=labels)
+    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    np.nan_to_num(cm_normalized, copy=False, nan=0.0)
+
+    # Additional metrics
+    cohen_kappa = cohen_kappa_score(y_true, y_pred)
+    mcc = sklearn_mcc(y_true, y_pred)
+
+    # ROC-AUC for binary classification
+    roc_auc = None
+    roc_curve_data = None
+    if len(labels) == 2 and y_proba is not None:
+        try:
+            roc_auc = roc_auc_score(y_true, y_proba[:, 1])
+            fpr, tpr, thresholds = roc_curve(y_true, y_proba[:, 1])
+            roc_curve_data = {
+                'fpr': fpr.tolist(),
+                'tpr': tpr.tolist(),
+                'thresholds': thresholds.tolist()
+            }
+        except Exception as e:
+            print(f"Warning: Could not compute ROC-AUC: {e}")
+
+    # Bootstrap confidence interval
+    ci = None
+    if compute_confidence_interval and len(y_true) >= 30:
+        _, ci = bootstrap_ci(
+            (y_true == y_pred).astype(float),
+            confidence_level=0.95,
+            n_resamples=n_bootstrap,
+            method='percentile',
+            random_state=42
+        )
+
+    return ClassificationMetrics(
+        accuracy=accuracy,
+        macro_f1=macro_f1,
+        weighted_f1=weighted_f1,
+        per_class_precision=per_class_precision,
+        per_class_recall=per_class_recall,
+        per_class_f1=per_class_f1,
+        per_class_support=per_class_support,
+        confusion_matrix=cm,
+        normalized_confusion_matrix=cm_normalized,
+        cohen_kappa=cohen_kappa,
+        matthews_corrcoef=mcc,
+        roc_auc=roc_auc,
+        roc_curve_data=roc_curve_data,
+        confidence_interval_95=ci
+    )
+
+
+# =============================================================================
+# 12. GENERATION METRICS (consolidated from enhanced_generation_metrics.py)
+# =============================================================================
+
+@dataclass
+class GenerationMetrics:
+    """Container for comprehensive generation metrics."""
+
+    # ROUGE metrics
+    rouge1_f1: float
+    rouge1_precision: float
+    rouge1_recall: float
+    rouge2_f1: float
+    rouge2_precision: float
+    rouge2_recall: float
+    rougeL_f1: float
+    rougeL_precision: float
+    rougeL_recall: float
+
+    # BLEU scores
+    bleu1: float
+    bleu2: float
+    bleu3: float
+    bleu4: float
+    bleu_avg: float
+
+    # Length statistics
+    avg_pred_length: float
+    avg_ref_length: float
+    length_ratio: float
+    std_pred_length: float
+
+    # Diversity metrics
+    distinct_1: float  # Unique unigrams / total unigrams
+    distinct_2: float  # Unique bigrams / total bigrams
+    distinct_3: float  # Unique trigrams / total trigrams
+    vocab_size: int
+    repetition_rate: float
+
+    # Task-specific metrics
+    exact_match: Optional[float] = None
+    correctness: Optional[float] = None  # For math/reasoning
+    bertscore_f1: Optional[float] = None
+    perplexity: Optional[float] = None
+
+    # Statistical measures
+    rouge1_f1_ci: Optional[Tuple[float, float]] = None
+    rouge2_f1_ci: Optional[Tuple[float, float]] = None
+    rougeL_f1_ci: Optional[Tuple[float, float]] = None
+
+    # Per-sample scores for analysis
+    per_sample_scores: Optional[List[Dict]] = None
+
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for JSON serialization."""
+        result = {
+            'rouge': {
+                'rouge1': {'f1': self.rouge1_f1, 'precision': self.rouge1_precision, 'recall': self.rouge1_recall},
+                'rouge2': {'f1': self.rouge2_f1, 'precision': self.rouge2_precision, 'recall': self.rouge2_recall},
+                'rougeL': {'f1': self.rougeL_f1, 'precision': self.rougeL_precision, 'recall': self.rougeL_recall}
+            },
+            'bleu': {'bleu1': self.bleu1, 'bleu2': self.bleu2, 'bleu3': self.bleu3, 'bleu4': self.bleu4, 'average': self.bleu_avg},
+            'length': {'avg_prediction': self.avg_pred_length, 'avg_reference': self.avg_ref_length, 'ratio': self.length_ratio, 'std_prediction': self.std_pred_length},
+            'diversity': {'distinct_1': self.distinct_1, 'distinct_2': self.distinct_2, 'distinct_3': self.distinct_3, 'vocab_size': self.vocab_size, 'repetition_rate': self.repetition_rate}
+        }
+
+        if self.exact_match is not None:
+            result['exact_match'] = self.exact_match
+        if self.correctness is not None:
+            result['correctness'] = self.correctness
+        if self.bertscore_f1 is not None:
+            result['bertscore_f1'] = self.bertscore_f1
+        if self.perplexity is not None:
+            result['perplexity'] = self.perplexity
+        if self.rouge1_f1_ci is not None:
+            result['rouge']['rouge1']['f1_ci_95'] = list(self.rouge1_f1_ci)
+        if self.rouge2_f1_ci is not None:
+            result['rouge']['rouge2']['f1_ci_95'] = list(self.rouge2_f1_ci)
+        if self.rougeL_f1_ci is not None:
+            result['rouge']['rougeL']['f1_ci_95'] = list(self.rougeL_f1_ci)
+        if self.per_sample_scores is not None:
+            result['per_sample'] = self.per_sample_scores
+
+        return result
+
+    def summary_string(self) -> str:
+        """Generate human-readable summary."""
+        lines = [
+            "Generation Metrics Summary:",
+            f"  ROUGE-1 F1: {self.rouge1_f1:.4f}",
+            f"  ROUGE-2 F1: {self.rouge2_f1:.4f}",
+            f"  ROUGE-L F1: {self.rougeL_f1:.4f}",
+            f"  BLEU-4: {self.bleu4:.4f}",
+            f"  Avg Length: {self.avg_pred_length:.1f} (ref: {self.avg_ref_length:.1f})",
+            f"  Distinct-1: {self.distinct_1:.3f}",
+            f"  Distinct-2: {self.distinct_2:.3f}"
+        ]
+
+        if self.exact_match is not None:
+            lines.append(f"  Exact Match: {self.exact_match:.3f}")
+        if self.correctness is not None:
+            lines.append(f"  Correctness: {self.correctness:.3f}")
+        if self.bertscore_f1 is not None:
+            lines.append(f"  BERTScore F1: {self.bertscore_f1:.4f}")
+        if self.perplexity is not None:
+            lines.append(f"  Perplexity: {self.perplexity:.2f}")
+
+        return "\n".join(lines)
+
+
+def _compute_distinct_ngrams(texts: List[str]) -> Tuple[float, float, float]:
+    """Compute distinct n-gram ratios for diversity measurement."""
+    unigrams = []
+    bigrams = []
+    trigrams = []
+
+    for text in texts:
+        tokens = text.split()
+        unigrams.extend(tokens)
+        bigrams.extend(zip(tokens, tokens[1:]))
+        trigrams.extend(zip(tokens, tokens[1:], tokens[2:]))
+
+    distinct_1 = len(set(unigrams)) / max(len(unigrams), 1)
+    distinct_2 = len(set(bigrams)) / max(len(bigrams), 1)
+    distinct_3 = len(set(trigrams)) / max(len(trigrams), 1)
+
+    return distinct_1, distinct_2, distinct_3
+
+
+def _compute_repetition_rate(texts: List[str]) -> float:
+    """Compute rate of repeated phrases (3+ grams)."""
+    all_phrases = []
+    for text in texts:
+        tokens = text.split()
+        phrases = [' '.join(tokens[i:i+3]) for i in range(len(tokens)-2)]
+        all_phrases.extend(phrases)
+
+    if not all_phrases:
+        return 0.0
+
+    phrase_counts = Counter(all_phrases)
+    repeated = sum(1 for count in phrase_counts.values() if count > 1)
+    return repeated / len(phrase_counts)
+
+
+def _check_math_correctness(prediction: str, reference: str) -> bool:
+    """Check if math answer is correct (extracts final number)."""
+    pred_nums = re.findall(r'-?\d+\.?\d*', prediction)
+    ref_nums = re.findall(r'-?\d+\.?\d*', reference)
+
+    if not pred_nums or not ref_nums:
+        return False
+
+    try:
+        pred_final = float(pred_nums[-1])
+        ref_final = float(ref_nums[-1])
+        return abs(pred_final - ref_final) < 1e-5
+    except:
+        return False
+
+
+def compute_generation_metrics(
+    predictions: List[str],
+    references: List[str],
+    compute_bertscore: bool = False,
+    task_type: str = "general",  # "general", "math", "code"
+    compute_confidence_intervals: bool = True,
+    n_bootstrap: int = 1000,
+    return_per_sample: bool = False
+) -> GenerationMetrics:
+    """
+    Compute comprehensive generation metrics.
+
+    Args:
+        predictions: List of generated texts
+        references: List of reference texts
+        compute_bertscore: Whether to compute BERTScore (slower)
+        task_type: Type of generation task for specialized metrics
+        compute_confidence_intervals: Whether to compute bootstrap CIs
+        n_bootstrap: Number of bootstrap iterations
+        return_per_sample: Whether to include per-sample scores
+
+    Returns:
+        GenerationMetrics object with all computed metrics
+    """
+    try:
+        from rouge_score import rouge_scorer
+        from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+    except ImportError:
+        raise ImportError("Please install rouge-score and nltk: pip install rouge-score nltk")
+
+    if len(predictions) != len(references):
+        raise ValueError("Predictions and references must have same length")
+
+    # Initialize ROUGE scorer
+    scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
+
+    # Compute per-sample scores
+    rouge_scores = []
+    bleu_scores = []
+    exact_matches = []
+    correctness_scores = []
+
+    for pred, ref in zip(predictions, references):
+        # ROUGE
+        rouge = scorer.score(ref, pred)
+        rouge_scores.append({
+            'rouge1_f1': rouge['rouge1'].fmeasure,
+            'rouge1_p': rouge['rouge1'].precision,
+            'rouge1_r': rouge['rouge1'].recall,
+            'rouge2_f1': rouge['rouge2'].fmeasure,
+            'rouge2_p': rouge['rouge2'].precision,
+            'rouge2_r': rouge['rouge2'].recall,
+            'rougeL_f1': rouge['rougeL'].fmeasure,
+            'rougeL_p': rouge['rougeL'].precision,
+            'rougeL_r': rouge['rougeL'].recall,
+        })
+
+        # BLEU (with smoothing for short sequences)
+        pred_tokens = pred.split()
+        ref_tokens = ref.split()
+        smoothing = SmoothingFunction().method1
+
+        bleu1 = sentence_bleu([ref_tokens], pred_tokens, weights=(1,0,0,0), smoothing_function=smoothing)
+        bleu2 = sentence_bleu([ref_tokens], pred_tokens, weights=(0.5,0.5,0,0), smoothing_function=smoothing)
+        bleu3 = sentence_bleu([ref_tokens], pred_tokens, weights=(0.33,0.33,0.34,0), smoothing_function=smoothing)
+        bleu4 = sentence_bleu([ref_tokens], pred_tokens, weights=(0.25,0.25,0.25,0.25), smoothing_function=smoothing)
+
+        bleu_scores.append({'bleu1': bleu1, 'bleu2': bleu2, 'bleu3': bleu3, 'bleu4': bleu4})
+
+        # Exact match
+        exact_matches.append(1.0 if pred.strip() == ref.strip() else 0.0)
+
+        # Task-specific correctness
+        if task_type == "math":
+            correct = _check_math_correctness(pred, ref)
+            correctness_scores.append(1.0 if correct else 0.0)
+
+    # Aggregate ROUGE scores
+    rouge1_f1 = np.mean([s['rouge1_f1'] for s in rouge_scores])
+    rouge1_p = np.mean([s['rouge1_p'] for s in rouge_scores])
+    rouge1_r = np.mean([s['rouge1_r'] for s in rouge_scores])
+    rouge2_f1 = np.mean([s['rouge2_f1'] for s in rouge_scores])
+    rouge2_p = np.mean([s['rouge2_p'] for s in rouge_scores])
+    rouge2_r = np.mean([s['rouge2_r'] for s in rouge_scores])
+    rougeL_f1 = np.mean([s['rougeL_f1'] for s in rouge_scores])
+    rougeL_p = np.mean([s['rougeL_p'] for s in rouge_scores])
+    rougeL_r = np.mean([s['rougeL_r'] for s in rouge_scores])
+
+    # Aggregate BLEU scores
+    bleu1 = np.mean([s['bleu1'] for s in bleu_scores])
+    bleu2 = np.mean([s['bleu2'] for s in bleu_scores])
+    bleu3 = np.mean([s['bleu3'] for s in bleu_scores])
+    bleu4 = np.mean([s['bleu4'] for s in bleu_scores])
+    bleu_avg = np.mean([bleu1, bleu2, bleu3, bleu4])
+
+    # Length statistics
+    pred_lengths = [len(p.split()) for p in predictions]
+    ref_lengths = [len(r.split()) for r in references]
+    avg_pred_length = np.mean(pred_lengths)
+    avg_ref_length = np.mean(ref_lengths)
+    length_ratio = avg_pred_length / max(avg_ref_length, 1.0)
+    std_pred_length = np.std(pred_lengths)
+
+    # Diversity metrics
+    distinct_1, distinct_2, distinct_3 = _compute_distinct_ngrams(predictions)
+    vocab_size = len(set(' '.join(predictions).split()))
+    repetition_rate = _compute_repetition_rate(predictions)
+
+    # Exact match and correctness
+    exact_match = np.mean(exact_matches) if exact_matches else None
+    correctness = np.mean(correctness_scores) if correctness_scores else None
+
+    # BERTScore (optional)
+    bertscore_f1 = None
+    if compute_bertscore:
+        try:
+            from bert_score import score
+            P, R, F1 = score(predictions, references, lang='en', verbose=False)
+            bertscore_f1 = float(F1.mean())
+        except ImportError:
+            print("Warning: bert-score not installed, skipping BERTScore")
+
+    # Bootstrap confidence intervals
+    rouge1_ci = None
+    rouge2_ci = None
+    rougeL_ci = None
+    if compute_confidence_intervals and len(predictions) >= 30:
+        _, rouge1_ci = bootstrap_ci(np.array([s['rouge1_f1'] for s in rouge_scores]), confidence_level=0.95, n_resamples=n_bootstrap, method='percentile', random_state=42)
+        _, rouge2_ci = bootstrap_ci(np.array([s['rouge2_f1'] for s in rouge_scores]), confidence_level=0.95, n_resamples=n_bootstrap, method='percentile', random_state=42)
+        _, rougeL_ci = bootstrap_ci(np.array([s['rougeL_f1'] for s in rouge_scores]), confidence_level=0.95, n_resamples=n_bootstrap, method='percentile', random_state=42)
+
+    # Per-sample scores
+    per_sample = None
+    if return_per_sample:
+        per_sample = []
+        for i, (pred, ref) in enumerate(zip(predictions, references)):
+            per_sample.append({
+                'prediction': pred[:200],
+                'reference': ref[:200],
+                'rouge1_f1': rouge_scores[i]['rouge1_f1'],
+                'rouge2_f1': rouge_scores[i]['rouge2_f1'],
+                'rougeL_f1': rouge_scores[i]['rougeL_f1'],
+                'bleu4': bleu_scores[i]['bleu4'],
+                'exact_match': exact_matches[i]
+            })
+
+    return GenerationMetrics(
+        rouge1_f1=rouge1_f1, rouge1_precision=rouge1_p, rouge1_recall=rouge1_r,
+        rouge2_f1=rouge2_f1, rouge2_precision=rouge2_p, rouge2_recall=rouge2_r,
+        rougeL_f1=rougeL_f1, rougeL_precision=rougeL_p, rougeL_recall=rougeL_r,
+        bleu1=bleu1, bleu2=bleu2, bleu3=bleu3, bleu4=bleu4, bleu_avg=bleu_avg,
+        avg_pred_length=avg_pred_length, avg_ref_length=avg_ref_length,
+        length_ratio=length_ratio, std_pred_length=std_pred_length,
+        distinct_1=distinct_1, distinct_2=distinct_2, distinct_3=distinct_3,
+        vocab_size=vocab_size, repetition_rate=repetition_rate,
+        exact_match=exact_match, correctness=correctness,
+        bertscore_f1=bertscore_f1, perplexity=None,
+        rouge1_f1_ci=rouge1_ci, rouge2_f1_ci=rouge2_ci, rougeL_f1_ci=rougeL_ci,
+        per_sample_scores=per_sample
+    )
