@@ -1,80 +1,0 @@
-[Sat Dec 13 17:52:20 PST 2025] Starting latency benchmark...
-
-Found existing SST-2 checkpoint: ./bridge_sst2.pt
-
-==============================================
-PHASE 2: Running Latency Benchmark
-==============================================
-
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-Using device: cuda:0
-Loading Mistral...
-Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3922.35it/s]
-Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:03,  1.98s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:02<00:01,  1.39s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.17s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:03<00:00,  1.29s/it]
-Loading Llama...
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3418.34it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:03,  1.11s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.32s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:03<00:01,  1.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.21it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:03<00:00,  1.03it/s]
-
-Loading SST-2 dataset...
-
-============================================================
-DIRECT TEXT LATENCY MEASUREMENT
-============================================================
-Warming up (5 iterations)...
-Running 50 timed trials...
-Direct Text:   0%|          | 0/50 [00:00<?, ?it/s]Direct Text:   4%|▍         | 2/50 [00:00<00:03, 12.72it/s]Direct Text:   8%|▊         | 4/50 [00:00<00:03, 12.73it/s]Direct Text:  12%|█▏        | 6/50 [00:00<00:03, 12.72it/s]Direct Text:  16%|█▌        | 8/50 [00:00<00:03, 12.71it/s]Direct Text:  20%|██        | 10/50 [00:00<00:03, 11.16it/s]Direct Text:  24%|██▍       | 12/50 [00:01<00:03, 11.43it/s]Direct Text:  28%|██▊       | 14/50 [00:01<00:04,  8.23it/s]Direct Text:  30%|███       | 15/50 [00:01<00:04,  7.90it/s]Direct Text:  32%|███▏      | 16/50 [00:01<00:04,  7.61it/s]Direct Text:  36%|███▌      | 18/50 [00:01<00:03,  8.80it/s]Direct Text:  40%|████      | 20/50 [00:02<00:03,  9.87it/s]Direct Text:  44%|████▍     | 22/50 [00:02<00:02, 10.67it/s]Direct Text:  48%|████▊     | 24/50 [00:02<00:02, 11.23it/s]Direct Text:  52%|█████▏    | 26/50 [00:02<00:02, 11.65it/s]Direct Text:  56%|█████▌    | 28/50 [00:02<00:01, 11.89it/s]Direct Text:  60%|██████    | 30/50 [00:02<00:01, 12.13it/s]Direct Text:  64%|██████▍   | 32/50 [00:02<00:01, 12.30it/s]Direct Text:  68%|██████▊   | 34/50 [00:03<00:01, 12.43it/s]Direct Text:  72%|███████▏  | 36/50 [00:03<00:01, 12.50it/s]Direct Text:  76%|███████▌  | 38/50 [00:03<00:00, 12.55it/s]Direct Text:  80%|████████  | 40/50 [00:03<00:00, 12.58it/s]Direct Text:  84%|████████▍ | 42/50 [00:03<00:00, 12.60it/s]Direct Text:  88%|████████▊ | 44/50 [00:04<00:00,  9.70it/s]Direct Text:  92%|█████████▏| 46/50 [00:04<00:00,  8.55it/s]Direct Text:  94%|█████████▍| 47/50 [00:04<00:00,  8.14it/s]Direct Text:  98%|█████████▊| 49/50 [00:04<00:00,  9.11it/s]Direct Text: 100%|██████████| 50/50 [00:04<00:00, 10.48it/s]
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
-  warnings.warn(
-/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
-  warnings.warn(
-
-Direct Text: 94.8ms avg
-
-============================================================
-TEXT-RELAY LATENCY MEASUREMENT
-============================================================
-Warming up (5 iterations)...
-Running 50 timed trials...
-Text-Relay:   0%|          | 0/50 [00:00<?, ?it/s]Text-Relay:   2%|▏         | 1/50 [00:00<00:38,  1.29it/s]Text-Relay:   4%|▍         | 2/50 [00:01<00:44,  1.08it/s]Text-Relay:   6%|▌         | 3/50 [00:02<00:38,  1.21it/s]Text-Relay:   8%|▊         | 4/50 [00:03<00:35,  1.28it/s]Text-Relay:  10%|█         | 5/50 [00:04<00:40,  1.12it/s]Text-Relay:  12%|█▏        | 6/50 [00:05<00:36,  1.20it/s]Text-Relay:  14%|█▍        | 7/50 [00:05<00:34,  1.26it/s]Text-Relay:  16%|█▌        | 8/50 [00:06<00:35,  1.19it/s]Text-Relay:  18%|█▊        | 9/50 [00:07<00:34,  1.18it/s]Text-Relay:  20%|██        | 10/50 [00:08<00:32,  1.24it/s]Text-Relay:  22%|██▏       | 11/50 [00:09<00:30,  1.27it/s]Text-Relay:  24%|██▍       | 12/50 [00:10<00:35,  1.07it/s]Text-Relay:  26%|██▌       | 13/50 [00:10<00:32,  1.15it/s]Text-Relay:  28%|██▊       | 14/50 [00:11<00:29,  1.22it/s]Text-Relay:  30%|███       | 15/50 [00:12<00:31,  1.11it/s]Text-Relay:  32%|███▏      | 16/50 [00:13<00:28,  1.18it/s]Text-Relay:  34%|███▍      | 17/50 [00:14<00:26,  1.24it/s]Text-Relay:  36%|███▌      | 18/50 [00:15<00:27,  1.15it/s]Text-Relay:  38%|███▊      | 19/50 [00:16<00:26,  1.15it/s]Text-Relay:  40%|████      | 20/50 [00:16<00:24,  1.22it/s]Text-Relay:  42%|████▏     | 21/50 [00:17<00:22,  1.27it/s]Text-Relay:  44%|████▍     | 22/50 [00:18<00:24,  1.14it/s]Text-Relay:  46%|████▌     | 23/50 [00:19<00:22,  1.20it/s]Text-Relay:  48%|████▊     | 24/50 [00:20<00:20,  1.26it/s]Text-Relay:  50%|█████     | 25/50 [00:21<00:22,  1.13it/s]Text-Relay:  52%|█████▏    | 26/50 [00:21<00:20,  1.20it/s]Text-Relay:  54%|█████▍    | 27/50 [00:22<00:18,  1.25it/s]Text-Relay:  56%|█████▌    | 28/50 [00:23<00:17,  1.27it/s]Text-Relay:  58%|█████▊    | 29/50 [00:24<00:18,  1.15it/s]Text-Relay:  60%|██████    | 30/50 [00:25<00:16,  1.22it/s]Text-Relay:  62%|██████▏   | 31/50 [00:25<00:14,  1.27it/s]Text-Relay:  64%|██████▍   | 32/50 [00:26<00:15,  1.14it/s]Text-Relay:  66%|██████▌   | 33/50 [00:27<00:14,  1.20it/s]Text-Relay:  68%|██████▊   | 34/50 [00:28<00:12,  1.26it/s]Text-Relay:  70%|███████   | 35/50 [00:29<00:12,  1.19it/s]Text-Relay:  72%|███████▏  | 36/50 [00:30<00:11,  1.18it/s]Text-Relay:  74%|███████▍  | 37/50 [00:30<00:10,  1.24it/s]Text-Relay:  76%|███████▌  | 38/50 [00:31<00:09,  1.28it/s]Text-Relay:  78%|███████▊  | 39/50 [00:32<00:09,  1.15it/s]Text-Relay:  80%|████████  | 40/50 [00:33<00:08,  1.21it/s]Text-Relay:  82%|████████▏ | 41/50 [00:34<00:07,  1.26it/s]Text-Relay:  84%|████████▍ | 42/50 [00:35<00:07,  1.14it/s]Text-Relay:  86%|████████▌ | 43/50 [00:35<00:05,  1.20it/s]Text-Relay:  88%|████████▊ | 44/50 [00:36<00:04,  1.26it/s]Text-Relay:  90%|█████████ | 45/50 [00:37<00:03,  1.27it/s]Text-Relay:  92%|█████████▏| 46/50 [00:38<00:03,  1.16it/s]Text-Relay:  94%|█████████▍| 47/50 [00:39<00:02,  1.14it/s]Text-Relay:  96%|█████████▌| 48/50 [00:40<00:01,  1.20it/s]Text-Relay:  98%|█████████▊| 49/50 [00:41<00:00,  1.10it/s]Text-Relay: 100%|██████████| 50/50 [00:41<00:00,  1.17it/s]Text-Relay: 100%|██████████| 50/50 [00:41<00:00,  1.19it/s]
-Text-Relay: 836.8ms avg (51 summary tokens)
-[PerceiverResampler] 8 latents, 2 layers, 8 heads
-[LatentBridgeV15] Telepathy Bridge - CONTINUOUS (no quantization)
-  - src_dim: 4096
-  - tgt_dim: 4096
-  - num_latents: 8
-  - mode: CONTINUOUS (Perceiver output directly)
-  - target_rms: 0.0300
-
-============================================================
-BRIDGE LATENCY MEASUREMENT
-============================================================
-Warming up (5 iterations)...
-Traceback (most recent call last):
-  File "/projects/m000066/sujinesh/LatentWire/telepathy/benchmark_latency.py", line 395, in <module>
-    main()
-  File "/projects/m000066/sujinesh/LatentWire/telepathy/benchmark_latency.py", line 365, in main
-    bridge_results = measure_bridge_latency(
-  File "/projects/m000066/sujinesh/LatentWire/telepathy/benchmark_latency.py", line 94, in measure_bridge_latency
-    latents, _, _, _ = bridge(src_hidden, src_inputs.attention_mask)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v15.py", line 338, in forward
-    compressed = self.resampler(normed, src_mask)  # [B, K, tgt_dim]
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/projects/m000066/sujinesh/LatentWire/telepathy/latent_bridge_v15.py", line 245, in forward
-    x_norm = layer["ln1"](x)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/normalization.py", line 217, in forward
-    return F.layer_norm(
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/functional.py", line 2900, in layer_norm
-    return torch.layer_norm(
-RuntimeError: expected scalar type BFloat16 but found Float

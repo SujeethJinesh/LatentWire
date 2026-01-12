@@ -11,7 +11,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{pgfplots}
-\pgfplotsset{compat=1.17}
+\pgfplotsset{compat=1.16}
 
 % hyperref makes hyperlinks in the resulting PDF.
 \usepackage{hyperref}
@@ -220,21 +220,21 @@ Total latency: 37.3ms, compared to 834.5ms for text-relay.
 Table \ref{tab:main_results} presents our main accuracy comparison.
 
 \begin{table}[t]
-\caption{Classification accuracy (\%) across benchmarks. Bridge (32 tokens) achieves strong performance across all tasks, substantially outperforming zero-shot baselines and text-relay. Bold indicates best performance per dataset.$^*$}
+\caption{Classification accuracy (\%) across benchmarks. Bridge (32 tokens) achieves strong performance, outperforming zero-shot baselines and text-relay.$^*$}
 \label{tab:main_results}
 \vskip 0.15in
 \begin{center}
-\begin{small}
-\begin{tabular}{lcccc}
+\begin{scriptsize}
+\begin{tabular}{@{}lcccc@{}}
 \toprule
 Method & SST-2 & AG News & TREC & Avg \\
 \midrule
 Random Chance & 50.0 & 25.0 & 16.7 & 30.6 \\
 \midrule
-\textbf{Bridge (32 tokens)} & \textbf{93.7}$\pm$0.3 & \textbf{90.7}$\pm$1.4 & \textbf{87.9}$\pm$3.3 & \textbf{90.7} \\
-Bridge (8 tokens) & 93.3$\pm$0.4 & 91.1$\pm$1.2 & 61.5$\pm$23.3$^\dagger$ & 82.0 \\
+\textbf{Bridge (32 tok)} & \textbf{93.7}$\pm$0.3 & \textbf{90.7}$\pm$1.4 & \textbf{87.9}$\pm$3.3 & \textbf{90.7} \\
+Bridge (8 tok) & 93.3$\pm$0.4 & 91.1$\pm$1.2 & 61.5$\pm$23.3$^\dagger$ & 82.0 \\
 \midrule
-Linear Probe (layer-16) & 92.1 & 86.8 & 95.0 & 91.3 \\
+Linear Probe & 92.1 & 86.8 & 95.0 & 91.3 \\
 Prompt-Tuning & 50.9 & 25.0 & 15.9 & 30.6 \\
 LoRA (rank-8) & 90.1 & 40.8 & 26.4 & 52.4 \\
 \midrule
@@ -243,11 +243,11 @@ Mistral 0-shot & 89.6 & 71.1 & 50.6 & 70.4 \\
 Text-Relay & 41.3 & 1.0 & 4.0 & 15.4 \\
 \bottomrule
 \end{tabular}
-\end{small}
+\end{scriptsize}
 \end{center}
 \vskip -0.15in
-{\footnotesize $^*$Bridge results show mean$\pm$std over 5 seeds (42, 123, 456, 789, 1011). Other methods are deterministic or single-run (0 variance).}\\
-{\footnotesize $^\dagger$High variance: TREC 8-token shows bimodal distribution (35--86\% across 5 seeds), with some runs converging to poor local minima. 32 tokens eliminates this instability.}
+{\footnotesize $^*$Bridge: mean$\pm$std over 5 seeds (42, 123, 456, 789, 1011). Others deterministic.}\\
+{\footnotesize $^\dagger$TREC 8-tok bimodal (35--86\%); 32 tokens eliminates instability.}
 \vskip -0.1in
 \end{table}
 
@@ -421,20 +421,20 @@ While LatentWire excels on classification, we evaluate whether it generalizes to
 \label{tab:reasoning}
 \vskip 0.15in
 \begin{center}
-\begin{small}
+\begin{scriptsize}
 \begin{tabular}{@{}lccccc@{}}
 \toprule
-\textbf{Benchmark} & \textbf{Random} & \textbf{Llama} & \textbf{Mistral} & \textbf{Text-Relay} & \textbf{Bridge} \\
+\textbf{Task} & \textbf{Rand.} & \textbf{Llama} & \textbf{Mistral} & \textbf{Txt-Relay} & \textbf{Bridge} \\
 \midrule
-BoolQ (Yes/No) & 50.0\% & 79.2\% & \textbf{83.2\%} & 80.8\% & 72.5\% \\
-PIQA (2-way) & 50.0\% & \textbf{61.0\%} & 57.4\% & 30.4\%$^\dagger$ & 60.4\% \\
-CommonsenseQA (5-way) & 20.0\% & \textbf{75.4\%} & 68.0\% & 75.4\% & 17.0\% \\
+BoolQ & 50.0 & 79.2 & \textbf{83.2} & 80.8 & 72.5 \\
+PIQA & 50.0 & \textbf{61.0} & 57.4 & 30.4$^\dagger$ & 60.4 \\
+CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
 \bottomrule
 \end{tabular}
-\end{small}
+\end{scriptsize}
 \end{center}
 \vskip -0.1in
-{\footnotesize $^\dagger$Text-relay fails catastrophically on PIQA (30.4\%), suggesting summarization destroys physical intuition signals that the bridge preserves.}
+{\footnotesize $^\dagger$Text-relay fails on PIQA (30.4\%); bridge preserves physical intuition signals. CSQA = CommonsenseQA.}
 \end{table}
 
 \paragraph{Classification vs. Reasoning} The contrast with classification is stark. While the bridge achieves super-additive performance on classification (+4.5--26.9pp over individual models), it \emph{underperforms} on reasoning: BoolQ (-10.7pp vs. Mistral), PIQA (-0.6pp vs. Llama), and CommonsenseQA (-58.4pp vs. Llama, falling \emph{below random chance}).

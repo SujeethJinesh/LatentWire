@@ -4,6 +4,7 @@ __pycache__/
 *.so
 *ckpt*
 .venv/*
+venv/
 .pytest_cache/*
 */__pycache__/*
 .hf_home/*
@@ -11,6 +12,16 @@ __pycache__/
 .nfs*
 code-server-*
 *.pt*
+
+# Python packaging
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Training runs and logs
+runs/
+*.err
 # Exception: Allow cross-model ablation checkpoints in git (small matrices ~32MB each)
 !experimental/learning/checkpoints/**
 *adapter_model.safetensors
