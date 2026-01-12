@@ -1,0 +1,29 @@
+{
+  "sst2": {
+    "bridge_mean_ms": 170.45627504121512,
+    "bridge_std_ms": 0.4580064873730948,
+    "text_relay_mean_ms": 797.4427285604179,
+    "text_relay_std_ms": 10.895934044281839,
+    "mistral_direct_mean_ms": 154.63983041699976,
+    "mistral_direct_std_ms": 0.20006260028441372,
+    "speedup_vs_text_relay": 4.678283204109687
+  },
+  "agnews": {
+    "bridge_mean_ms": 171.29669468849897,
+    "bridge_std_ms": 0.8961879282402787,
+    "text_relay_mean_ms": 800.5811785813421,
+    "text_relay_std_ms": 1.552012664977734,
+    "mistral_direct_mean_ms": 157.59764404501766,
+    "mistral_direct_std_ms": 2.608162030655621,
+    "speedup_vs_text_relay": 4.673652226840626
+  },
+  "trec": {
+    "bridge_mean_ms": 170.02880640793592,
+    "bridge_std_ms": 0.3145422552295494,
+    "text_relay_mean_ms": 787.5661049969494,
+    "text_relay_std_ms": 3.3735403775966786,
+    "mistral_direct_mean_ms": 156.3335360493511,
+    "mistral_direct_std_ms": 0.9426932543222181,
+    "speedup_vs_text_relay": 4.6319569115095
+  }
+}

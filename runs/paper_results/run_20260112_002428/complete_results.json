@@ -1,0 +1,2270 @@
+{
+  "timestamp": "20260112_002428",
+  "config": {
+    "timestamp": "20260112_002428",
+    "datasets": [
+      "sst2",
+      "agnews",
+      "trec"
+    ],
+    "seeds": [
+      42,
+      456
+    ],
+    "token_ablation": [
+      8,
+      32
+    ],
+    "device": "cuda:0",
+    "bridge_config": {
+      "soft_tokens": 8,
+      "depth": 2,
+      "heads": 8,
+      "source_layer": 31,
+      "train_steps": 1500,
+      "batch_size": 16,
+      "lr": 0.0002,
+      "diversity_weight": 0.1
+    },
+    "linear_probe_config": {
+      "layer_idx": 16,
+      "normalize": "l2",
+      "C": 1.0,
+      "batch_size": 8,
+      "max_samples": 5000
+    },
+    "lora_config": {
+      "rank": 8,
+      "alpha": 16,
+      "epochs": 2,
+      "batch_size": 4,
+      "lr": 0.0001,
+      "max_train_samples": 2000
+    },
+    "prompt_tuning_config": {
+      "soft_tokens": 8,
+      "lr": 0.0002,
+      "steps": 1500,
+      "batch_size": 16,
+      "grad_accum": 2
+    },
+    "total_experiments": 51,
+    "fast_mode": false,
+    "max_retries": 3,
+    "skip_slow": [],
+    "extra_seeds_on_high_variance": true,
+    "variance_threshold": 5.0
+  },
+  "latency": {
+    "sst2": {
+      "bridge_mean_ms": 170.45627504121512,
+      "bridge_std_ms": 0.4580064873730948,
+      "text_relay_mean_ms": 797.4427285604179,
+      "text_relay_std_ms": 10.895934044281839,
+      "mistral_direct_mean_ms": 154.63983041699976,
+      "mistral_direct_std_ms": 0.20006260028441372,
+      "speedup_vs_text_relay": 4.678283204109687
+    },
+    "agnews": {
+      "bridge_mean_ms": 171.29669468849897,
+      "bridge_std_ms": 0.8961879282402787,
+      "text_relay_mean_ms": 800.5811785813421,
+      "text_relay_std_ms": 1.552012664977734,
+      "mistral_direct_mean_ms": 157.59764404501766,
+      "mistral_direct_std_ms": 2.608162030655621,
+      "speedup_vs_text_relay": 4.673652226840626
+    },
+    "trec": {
+      "bridge_mean_ms": 170.02880640793592,
+      "bridge_std_ms": 0.3145422552295494,
+      "text_relay_mean_ms": 787.5661049969494,
+      "text_relay_std_ms": 3.3735403775966786,
+      "mistral_direct_mean_ms": 156.3335360493511,
+      "mistral_direct_std_ms": 0.9426932543222181,
+      "speedup_vs_text_relay": 4.6319569115095
+    },
+    "average": {
+      "bridge_mean_ms": 170.59392537921667,
+      "text_relay_mean_ms": 795.1966707129031,
+      "mistral_direct_mean_ms": 156.19033683712283,
+      "speedup_vs_text_relay": 4.6612974474866045
+    }
+  },
+  "failed_experiments": [],
+  "high_variance_warnings": [
+    {
+      "method": "bridge_8",
+      "dataset": "trec",
+      "stats": {
+        "mean": 59.599999999999994,
+        "std": 34.2239682094289,
+        "range": 48.4,
+        "cv_pct": 57.42276545206191,
+        "min": 35.4,
+        "max": 83.8
+      },
+      "extra_seeds": [
+        457,
+        458,
+        459
+      ]
+    }
+  ],
+  "tracker_summary": {
+    "total": 51,
+    "completed": 54,
+    "failed": 0,
+    "skipped": 0,
+    "success_rate": 100.0,
+    "total_time": 34928.2600107193,
+    "avg_time_per_experiment": 646.4521072087465
+  },
+  "experiment_log": [
+    {
+      "name": "zeroshot_llama_sst2_seed42",
+      "time": 233.15198802947998,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T00:28:23.015219"
+    },
+    {
+      "name": "zeroshot_mistral_sst2_seed42",
+      "time": 275.51537585258484,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T00:32:58.664160"
+    },
+    {
+      "name": "zeroshot_llama_sst2_seed456",
+      "time": 231.50799942016602,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T00:36:50.309480"
+    },
+    {
+      "name": "zeroshot_mistral_sst2_seed456",
+      "time": 283.5339632034302,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T00:41:33.974553"
+    },
+    {
+      "name": "zeroshot_llama_agnews_seed42",
+      "time": 1985.1649270057678,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T01:14:39.291210"
+    },
+    {
+      "name": "zeroshot_mistral_agnews_seed42",
+      "time": 2391.8983674049377,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T01:54:31.322410"
+    },
+    {
+      "name": "zeroshot_llama_agnews_seed456",
+      "time": 1991.012535572052,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T02:27:42.486603"
+    },
+    {
+      "name": "zeroshot_mistral_agnews_seed456",
+      "time": 2388.6348206996918,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T03:07:31.264493"
+    },
+    {
+      "name": "zeroshot_llama_trec_seed42",
+      "time": 135.77023148536682,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T03:09:47.178526"
+    },
+    {
+      "name": "zeroshot_mistral_trec_seed42",
+      "time": 162.54706025123596,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T03:12:29.866570"
+    },
+    {
+      "name": "zeroshot_llama_trec_seed456",
+      "time": 135.6037027835846,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T03:14:45.608417"
+    },
+    {
+      "name": "zeroshot_mistral_trec_seed456",
+      "time": 162.00019025802612,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T03:17:27.756398"
+    },
+    {
+      "name": "text_relay_sst2_seed42",
+      "time": 716.384425163269,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T03:29:24.273035"
+    },
+    {
+      "name": "text_relay_sst2_seed456",
+      "time": 713.5624582767487,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T03:41:17.970252"
+    },
+    {
+      "name": "text_relay_agnews_seed42",
+      "time": 6155.637442350388,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T05:23:53.767885"
+    },
+    {
+      "name": "text_relay_agnews_seed456",
+      "time": 6206.764447212219,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:07:20.668779"
+    },
+    {
+      "name": "text_relay_trec_seed42",
+      "time": 410.24000310897827,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:14:11.051858"
+    },
+    {
+      "name": "text_relay_trec_seed456",
+      "time": 409.5246911048889,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:21:00.719139"
+    },
+    {
+      "name": "prompt_tuning_sst2_seed42",
+      "time": 100.47720789909363,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:22:41.350902"
+    },
+    {
+      "name": "prompt_tuning_sst2_seed456",
+      "time": 102.34948492050171,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:24:23.839685"
+    },
+    {
+      "name": "prompt_tuning_agnews_seed42",
+      "time": 321.6837341785431,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:29:45.665240"
+    },
+    {
+      "name": "prompt_tuning_agnews_seed456",
+      "time": 320.0623137950897,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:35:05.869360"
+    },
+    {
+      "name": "prompt_tuning_trec_seed42",
+      "time": 95.69228148460388,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:36:41.703482"
+    },
+    {
+      "name": "prompt_tuning_trec_seed456",
+      "time": 95.34752345085144,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:38:17.197735"
+    },
+    {
+      "name": "lora_sst2_seed42",
+      "time": 243.57166457176208,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:42:20.909923"
+    },
+    {
+      "name": "lora_sst2_seed456",
+      "time": 245.63353991508484,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T07:46:26.711708"
+    },
+    {
+      "name": "lora_agnews_seed42",
+      "time": 1601.371903181076,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:13:08.249707"
+    },
+    {
+      "name": "lora_agnews_seed456",
+      "time": 1615.05215716362,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:40:03.576817"
+    },
+    {
+      "name": "lora_trec_seed42",
+      "time": 167.64949369430542,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:42:51.384511"
+    },
+    {
+      "name": "lora_trec_seed456",
+      "time": 167.31932640075684,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:45:38.861911"
+    },
+    {
+      "name": "linear_probe_sst2_seed42",
+      "time": 32.31165623664856,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:46:11.340768"
+    },
+    {
+      "name": "linear_probe_sst2_seed456",
+      "time": 31.857449531555176,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:46:43.331853"
+    },
+    {
+      "name": "linear_probe_agnews_seed42",
+      "time": 76.42616868019104,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:47:59.891128"
+    },
+    {
+      "name": "linear_probe_agnews_seed456",
+      "time": 76.23015356063843,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:49:16.255324"
+    },
+    {
+      "name": "linear_probe_trec_seed42",
+      "time": 31.8295156955719,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:49:48.219905"
+    },
+    {
+      "name": "linear_probe_trec_seed456",
+      "time": 32.17163038253784,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:50:20.528908"
+    },
+    {
+      "name": "bridge_8_sst2_seed42",
+      "time": 194.98605728149414,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:53:35.649867"
+    },
+    {
+      "name": "bridge_8_sst2_seed456",
+      "time": 194.13312673568726,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T08:56:49.930060"
+    },
+    {
+      "name": "bridge_8_agnews_seed42",
+      "time": 541.592218875885,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:05:51.671813"
+    },
+    {
+      "name": "bridge_8_agnews_seed456",
+      "time": 538.9437248706818,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:14:50.767964"
+    },
+    {
+      "name": "bridge_8_trec_seed42",
+      "time": 187.19786071777344,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:17:58.119918"
+    },
+    {
+      "name": "bridge_8_trec_seed456",
+      "time": 187.68296194076538,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:21:05.949783"
+    },
+    {
+      "name": "bridge_32_sst2_seed42",
+      "time": 242.2029731273651,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:25:08.303372"
+    },
+    {
+      "name": "bridge_32_sst2_seed456",
+      "time": 242.7408857345581,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:29:11.194947"
+    },
+    {
+      "name": "bridge_32_agnews_seed42",
+      "time": 588.6474931240082,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:39:00.058305"
+    },
+    {
+      "name": "bridge_32_agnews_seed456",
+      "time": 586.2584090232849,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:48:46.475172"
+    },
+    {
+      "name": "bridge_32_trec_seed42",
+      "time": 233.07653069496155,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:52:39.706687"
+    },
+    {
+      "name": "bridge_32_trec_seed456",
+      "time": 232.03481698036194,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:56:31.893297"
+    },
+    {
+      "name": "bridge_8_trec_seed457_extra",
+      "time": 184.78734183311462,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T09:59:36.832344"
+    },
+    {
+      "name": "bridge_8_trec_seed458_extra",
+      "time": 186.22854208946228,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T10:02:43.207430"
+    },
+    {
+      "name": "bridge_8_trec_seed459_extra",
+      "time": 186.03098392486572,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T10:05:49.389684"
+    },
+    {
+      "name": "latency_sst2",
+      "time": 12.35685110092163,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T10:06:13.347942"
+    },
+    {
+      "name": "latency_agnews",
+      "time": 12.041129350662231,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T10:06:25.389367"
+    },
+    {
+      "name": "latency_trec",
+      "time": 11.980047941207886,
+      "success": true,
+      "error": null,
+      "timestamp": "2026-01-12T10:06:37.369687"
+    }
+  ],
+  "zeroshot_llama": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 42,
+      "accuracy": 83.8302752293578,
+      "correct": 731,
+      "total": 872,
+      "num_classes": 2,
+      "latency_mean_ms": 256.8217962155217,
+      "latency_std_ms": 12.01695069316801
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 456,
+      "accuracy": 83.8302752293578,
+      "correct": 731,
+      "total": 872,
+      "num_classes": 2,
+      "latency_mean_ms": 257.540869698785,
+      "latency_std_ms": 6.398890318334349
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 42,
+      "accuracy": 70.97368421052632,
+      "correct": 5394,
+      "total": 7600,
+      "num_classes": 4,
+      "latency_mean_ms": 259.5105798307524,
+      "latency_std_ms": 7.674463802649825
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 456,
+      "accuracy": 70.97368421052632,
+      "correct": 5394,
+      "total": 7600,
+      "num_classes": 4,
+      "latency_mean_ms": 260.35516436012637,
+      "latency_std_ms": 9.236616635617688
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 42,
+      "accuracy": 48.2,
+      "correct": 241,
+      "total": 500,
+      "num_classes": 6,
+      "latency_mean_ms": 258.0349477734417,
+      "latency_std_ms": 7.786532536222764
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 456,
+      "accuracy": 48.2,
+      "correct": 241,
+      "total": 500,
+      "num_classes": 6,
+      "latency_mean_ms": 258.29323388868943,
+      "latency_std_ms": 8.0949005100804
+    }
+  ],
+  "zeroshot_mistral": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 42,
+      "accuracy": 89.56422018348624,
+      "correct": 781,
+      "total": 872,
+      "num_classes": 2,
+      "latency_mean_ms": 308.73548545273354,
+      "latency_std_ms": 4.9357895494487485
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 456,
+      "accuracy": 89.56422018348624,
+      "correct": 781,
+      "total": 872,
+      "num_classes": 2,
+      "latency_mean_ms": 317.9819001469103,
+      "latency_std_ms": 11.809890776833743
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 42,
+      "accuracy": 71.14473684210526,
+      "correct": 5407,
+      "total": 7600,
+      "num_classes": 4,
+      "latency_mean_ms": 313.19915618490137,
+      "latency_std_ms": 10.459871626069466
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 456,
+      "accuracy": 71.14473684210526,
+      "correct": 5407,
+      "total": 7600,
+      "num_classes": 4,
+      "latency_mean_ms": 312.8029295419784,
+      "latency_std_ms": 10.338059295159166
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 42,
+      "accuracy": 50.6,
+      "correct": 253,
+      "total": 500,
+      "num_classes": 6,
+      "latency_mean_ms": 314.3241753191687,
+      "latency_std_ms": 11.89491777210942
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 456,
+      "accuracy": 50.6,
+      "correct": 253,
+      "total": 500,
+      "num_classes": 6,
+      "latency_mean_ms": 312.9429553402588,
+      "latency_std_ms": 8.709349369013603
+    }
+  ],
+  "text_relay": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "text_relay",
+      "seed": 42,
+      "accuracy": 41.28440366972477,
+      "correct": 360,
+      "total": 872,
+      "num_classes": 2,
+      "latency_mean_ms": 809.3970153577425,
+      "latency_std_ms": 25.1771842670196
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "text_relay",
+      "seed": 456,
+      "accuracy": 41.28440366972477,
+      "correct": 360,
+      "total": 872,
+      "num_classes": 2,
+      "latency_mean_ms": 806.0274972580908,
+      "latency_std_ms": 24.941141329673968
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "text_relay",
+      "seed": 42,
+      "accuracy": 1.0263157894736843,
+      "correct": 78,
+      "total": 7600,
+      "num_classes": 4,
+      "latency_mean_ms": 808.2623688631544,
+      "latency_std_ms": 22.68968064030111
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "text_relay",
+      "seed": 456,
+      "accuracy": 1.0263157894736843,
+      "correct": 78,
+      "total": 7600,
+      "num_classes": 4,
+      "latency_mean_ms": 814.9792911713993,
+      "latency_std_ms": 28.461263213111586
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "text_relay",
+      "seed": 42,
+      "accuracy": 4.0,
+      "correct": 20,
+      "total": 500,
+      "num_classes": 6,
+      "latency_mean_ms": 798.9782145596109,
+      "latency_std_ms": 10.573451509665743
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "text_relay",
+      "seed": 456,
+      "accuracy": 4.0,
+      "correct": 20,
+      "total": 500,
+      "num_classes": 6,
+      "latency_mean_ms": 798.7934673815034,
+      "latency_std_ms": 10.421745841773797
+    }
+  ],
+  "prompt_tuning": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "prompt_tuning",
+      "seed": 42,
+      "accuracy": 50.91743119266055,
+      "correct": 444,
+      "total": 872,
+      "num_classes": 2,
+      "num_soft_tokens": 8
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "prompt_tuning",
+      "seed": 456,
+      "accuracy": 50.91743119266055,
+      "correct": 444,
+      "total": 872,
+      "num_classes": 2,
+      "num_soft_tokens": 8
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "prompt_tuning",
+      "seed": 42,
+      "accuracy": 25.0,
+      "correct": 1900,
+      "total": 7600,
+      "num_classes": 4,
+      "num_soft_tokens": 8
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "prompt_tuning",
+      "seed": 456,
+      "accuracy": 25.0,
+      "correct": 1900,
+      "total": 7600,
+      "num_classes": 4,
+      "num_soft_tokens": 8
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "prompt_tuning",
+      "seed": 42,
+      "accuracy": 18.8,
+      "correct": 94,
+      "total": 500,
+      "num_classes": 6,
+      "num_soft_tokens": 8
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "prompt_tuning",
+      "seed": 456,
+      "accuracy": 13.0,
+      "correct": 65,
+      "total": 500,
+      "num_classes": 6,
+      "num_soft_tokens": 8
+    }
+  ],
+  "lora": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "lora",
+      "seed": 42,
+      "accuracy": 85.89449541284404,
+      "correct": 749,
+      "total": 872,
+      "num_classes": 2,
+      "trainable_params": 3407872
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "lora",
+      "seed": 456,
+      "accuracy": 94.38073394495413,
+      "correct": 823,
+      "total": 872,
+      "num_classes": 2,
+      "trainable_params": 3407872
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "lora",
+      "seed": 42,
+      "accuracy": 25.039473684210527,
+      "correct": 1903,
+      "total": 7600,
+      "num_classes": 4,
+      "trainable_params": 3407872
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "lora",
+      "seed": 456,
+      "accuracy": 56.53947368421053,
+      "correct": 4297,
+      "total": 7600,
+      "num_classes": 4,
+      "trainable_params": 3407872
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "lora",
+      "seed": 42,
+      "accuracy": 45.8,
+      "correct": 229,
+      "total": 500,
+      "num_classes": 6,
+      "trainable_params": 3407872
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "lora",
+      "seed": 456,
+      "accuracy": 7.0,
+      "correct": 35,
+      "total": 500,
+      "num_classes": 6,
+      "trainable_params": 3407872
+    }
+  ],
+  "linear_probe": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "linear_probe",
+      "seed": 42,
+      "layer_idx": 16,
+      "train_accuracy": 92.24,
+      "test_accuracy": 92.08715596330275,
+      "accuracy": 92.08715596330275,
+      "train_f1": 93.001443001443,
+      "test_f1": 92.3418423973363,
+      "num_train": 5000,
+      "num_test": 872,
+      "total": 872,
+      "correct": 803,
+      "num_classes": 2
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "method": "linear_probe",
+      "seed": 456,
+      "layer_idx": 16,
+      "train_accuracy": 92.24,
+      "test_accuracy": 92.08715596330275,
+      "accuracy": 92.08715596330275,
+      "train_f1": 93.001443001443,
+      "test_f1": 92.3418423973363,
+      "num_train": 5000,
+      "num_test": 872,
+      "total": 872,
+      "correct": 803,
+      "num_classes": 2
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "linear_probe",
+      "seed": 42,
+      "layer_idx": 16,
+      "train_accuracy": 89.1,
+      "test_accuracy": 86.81578947368422,
+      "accuracy": 86.81578947368422,
+      "train_f1": 89.37224823942805,
+      "test_f1": 86.81311674240013,
+      "num_train": 5000,
+      "num_test": 7600,
+      "total": 7600,
+      "correct": 6598,
+      "num_classes": 4
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "method": "linear_probe",
+      "seed": 456,
+      "layer_idx": 16,
+      "train_accuracy": 89.1,
+      "test_accuracy": 86.81578947368422,
+      "accuracy": 86.81578947368422,
+      "train_f1": 89.37224823942805,
+      "test_f1": 86.81311674240013,
+      "num_train": 5000,
+      "num_test": 7600,
+      "total": 7600,
+      "correct": 6598,
+      "num_classes": 4
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "linear_probe",
+      "seed": 42,
+      "layer_idx": 16,
+      "train_accuracy": 91.24,
+      "test_accuracy": 95.0,
+      "accuracy": 95.0,
+      "train_f1": 86.71552323591995,
+      "test_f1": 91.21217124516576,
+      "num_train": 5000,
+      "num_test": 500,
+      "total": 500,
+      "correct": 475,
+      "num_classes": 6
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "method": "linear_probe",
+      "seed": 456,
+      "layer_idx": 16,
+      "train_accuracy": 91.24,
+      "test_accuracy": 95.0,
+      "accuracy": 95.0,
+      "train_f1": 86.71552323591995,
+      "test_f1": 91.21217124516576,
+      "num_train": 5000,
+      "num_test": 500,
+      "total": 500,
+      "correct": 475,
+      "num_classes": 6
+    }
+  ],
+  "bridge_8": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "seed": 42,
+      "num_soft_tokens": 8,
+      "accuracy": 93.46330275229357,
+      "correct": 815,
+      "total": 872,
+      "num_classes": 2,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/sst2_seed42_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.025841949182912844,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 47,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0007171630859375,
+          "compression_ratio_projected": 0.011474609375,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 34,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.000518798828125,
+          "compression_ratio_projected": 0.00830078125,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 106,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.001617431640625,
+          "compression_ratio_projected": 0.02587890625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 118,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.001800537109375,
+          "compression_ratio_projected": 0.02880859375,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 33,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0005035400390625,
+          "compression_ratio_projected": 0.008056640625,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "positive",
+        "negative",
+        "positive",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "negative",
+        "negative",
+        "positive",
+        "positive",
+        "positive",
+        "negative",
+        "negative"
+      ]
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "seed": 456,
+      "num_soft_tokens": 8,
+      "accuracy": 93.23394495412845,
+      "correct": 813,
+      "total": 872,
+      "num_classes": 2,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/sst2_seed456_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.025841949182912844,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 47,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0007171630859375,
+          "compression_ratio_projected": 0.011474609375,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 34,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.000518798828125,
+          "compression_ratio_projected": 0.00830078125,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 106,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.001617431640625,
+          "compression_ratio_projected": 0.02587890625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 118,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.001800537109375,
+          "compression_ratio_projected": 0.02880859375,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 33,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0005035400390625,
+          "compression_ratio_projected": 0.008056640625,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "positive",
+        "negative",
+        "positive",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "positive",
+        "negative",
+        "positive",
+        "positive",
+        "positive",
+        "negative",
+        "negative"
+      ]
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "seed": 42,
+      "num_soft_tokens": 8,
+      "accuracy": 90.30263157894737,
+      "correct": 6863,
+      "total": 7600,
+      "num_classes": 4,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/agnews_seed42_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.057446096319901316,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 161,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0024566650390625,
+          "compression_ratio_projected": 0.039306640625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 321,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0048980712890625,
+          "compression_ratio_projected": 0.078369140625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 260,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00396728515625,
+          "compression_ratio_projected": 0.0634765625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 318,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.004852294921875,
+          "compression_ratio_projected": 0.07763671875,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 223,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0034027099609375,
+          "compression_ratio_projected": 0.054443359375,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "business",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "business",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "sports",
+        "science",
+        "science",
+        "science",
+        "business"
+      ]
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "seed": 456,
+      "num_soft_tokens": 8,
+      "accuracy": 91.8157894736842,
+      "correct": 6978,
+      "total": 7600,
+      "num_classes": 4,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/agnews_seed456_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.057446096319901316,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 161,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0024566650390625,
+          "compression_ratio_projected": 0.039306640625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 321,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0048980712890625,
+          "compression_ratio_projected": 0.078369140625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 260,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00396728515625,
+          "compression_ratio_projected": 0.0634765625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 318,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.004852294921875,
+          "compression_ratio_projected": 0.07763671875,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 223,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0034027099609375,
+          "compression_ratio_projected": 0.054443359375,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "business",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science"
+      ]
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "seed": 42,
+      "num_soft_tokens": 8,
+      "accuracy": 35.4,
+      "correct": 177,
+      "total": 500,
+      "num_classes": 6,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/trec_seed42_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.00877880859375,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 36,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00054931640625,
+          "compression_ratio_projected": 0.0087890625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 40,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0006103515625,
+          "compression_ratio_projected": 0.009765625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 32,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00048828125,
+          "compression_ratio_projected": 0.0078125,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "desc",
+        "desc",
+        "hum",
+        "desc",
+        "desc",
+        "desc",
+        "desc",
+        "desc",
+        "desc",
+        "desc",
+        "hum",
+        "desc",
+        "desc",
+        "hum",
+        "desc",
+        "desc",
+        "desc",
+        "desc",
+        "desc",
+        "desc"
+      ]
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "seed": 456,
+      "num_soft_tokens": 8,
+      "accuracy": 83.8,
+      "correct": 419,
+      "total": 500,
+      "num_classes": 6,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/trec_seed456_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.00877880859375,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 36,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00054931640625,
+          "compression_ratio_projected": 0.0087890625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 40,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0006103515625,
+          "compression_ratio_projected": 0.009765625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 32,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00048828125,
+          "compression_ratio_projected": 0.0078125,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "num",
+        "loc",
+        "hum",
+        "desc",
+        "num",
+        "num",
+        "hum",
+        "desc",
+        "desc",
+        "desc",
+        "loc",
+        "hum",
+        "desc",
+        "hum",
+        "num",
+        "desc",
+        "enty",
+        "hum",
+        "desc",
+        "num"
+      ]
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "seed": 457,
+      "num_soft_tokens": 8,
+      "accuracy": 61.2,
+      "correct": 306,
+      "total": 500,
+      "num_classes": 6,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/trec_seed457_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.00877880859375,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 36,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00054931640625,
+          "compression_ratio_projected": 0.0087890625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 40,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0006103515625,
+          "compression_ratio_projected": 0.009765625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 32,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00048828125,
+          "compression_ratio_projected": 0.0078125,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "loc",
+        "loc",
+        "hum",
+        "desc",
+        "loc",
+        "loc",
+        "enty",
+        "desc",
+        "desc",
+        "desc",
+        "loc",
+        "enty",
+        "desc",
+        "hum",
+        "loc",
+        "desc",
+        "enty",
+        "hum",
+        "desc",
+        "loc"
+      ]
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "seed": 458,
+      "num_soft_tokens": 8,
+      "accuracy": 41.4,
+      "correct": 207,
+      "total": 500,
+      "num_classes": 6,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/trec_seed458_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.00877880859375,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 36,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00054931640625,
+          "compression_ratio_projected": 0.0087890625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 40,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0006103515625,
+          "compression_ratio_projected": 0.009765625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 32,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00048828125,
+          "compression_ratio_projected": 0.0078125,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "desc",
+        "enty",
+        "hum",
+        "enty",
+        "enty",
+        "desc",
+        "enty",
+        "enty",
+        "desc",
+        "desc",
+        "enty",
+        "enty",
+        "enty",
+        "hum",
+        "desc",
+        "enty",
+        "enty",
+        "hum",
+        "desc",
+        "enty"
+      ]
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "seed": 459,
+      "num_soft_tokens": 8,
+      "accuracy": 85.8,
+      "correct": 429,
+      "total": 500,
+      "num_classes": 6,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/trec_seed459_tokens8_bridge.pt",
+      "compression_ratio_avg": 0.00877880859375,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 36,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00054931640625,
+          "compression_ratio_projected": 0.0087890625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 40,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0006103515625,
+          "compression_ratio_projected": 0.009765625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.0002593994140625,
+          "compression_ratio_projected": 0.004150390625,
+          "num_soft_tokens": 8
+        },
+        {
+          "text_bytes": 32,
+          "soft_token_bytes_raw": 65536.0,
+          "soft_token_bytes_projected": 4096.0,
+          "compression_ratio_raw": 0.00048828125,
+          "compression_ratio_projected": 0.0078125,
+          "num_soft_tokens": 8
+        }
+      ],
+      "outputs": [
+        "num",
+        "loc",
+        "hum",
+        "desc",
+        "num",
+        "num",
+        "enty",
+        "enty",
+        "desc",
+        "desc",
+        "loc",
+        "enty",
+        "enty",
+        "hum",
+        "num",
+        "enty",
+        "enty",
+        "hum",
+        "desc",
+        "num"
+      ]
+    }
+  ],
+  "bridge_32": [
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "seed": 42,
+      "num_soft_tokens": 32,
+      "accuracy": 93.92201834862385,
+      "correct": 819,
+      "total": 872,
+      "num_classes": 2,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/sst2_seed42_tokens32_bridge.pt",
+      "compression_ratio_avg": 0.006460487295728211,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 47,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000179290771484375,
+          "compression_ratio_projected": 0.00286865234375,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 34,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00012969970703125,
+          "compression_ratio_projected": 0.0020751953125,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 106,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00040435791015625,
+          "compression_ratio_projected": 0.0064697265625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 118,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00045013427734375,
+          "compression_ratio_projected": 0.0072021484375,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 33,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000125885009765625,
+          "compression_ratio_projected": 0.00201416015625,
+          "num_soft_tokens": 32
+        }
+      ],
+      "outputs": [
+        "positive",
+        "negative",
+        "positive",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "negative",
+        "negative",
+        "positive",
+        "positive",
+        "positive",
+        "negative",
+        "negative"
+      ]
+    },
+    {
+      "dataset": "sst2",
+      "dataset_name": "SST-2",
+      "seed": 456,
+      "num_soft_tokens": 32,
+      "accuracy": 93.46330275229357,
+      "correct": 815,
+      "total": 872,
+      "num_classes": 2,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/sst2_seed456_tokens32_bridge.pt",
+      "compression_ratio_avg": 0.006460487295728211,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 47,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000179290771484375,
+          "compression_ratio_projected": 0.00286865234375,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 34,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00012969970703125,
+          "compression_ratio_projected": 0.0020751953125,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 106,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00040435791015625,
+          "compression_ratio_projected": 0.0064697265625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 118,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00045013427734375,
+          "compression_ratio_projected": 0.0072021484375,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 33,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000125885009765625,
+          "compression_ratio_projected": 0.00201416015625,
+          "num_soft_tokens": 32
+        }
+      ],
+      "outputs": [
+        "positive",
+        "negative",
+        "positive",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "positive",
+        "negative",
+        "positive",
+        "negative",
+        "negative",
+        "positive",
+        "negative",
+        "positive",
+        "positive",
+        "positive",
+        "negative",
+        "negative"
+      ]
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "seed": 42,
+      "num_soft_tokens": 32,
+      "accuracy": 89.6842105263158,
+      "correct": 6816,
+      "total": 7600,
+      "num_classes": 4,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/agnews_seed42_tokens32_bridge.pt",
+      "compression_ratio_avg": 0.014361524079975329,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 161,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000614166259765625,
+          "compression_ratio_projected": 0.00982666015625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 321,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.001224517822265625,
+          "compression_ratio_projected": 0.01959228515625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 260,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.0009918212890625,
+          "compression_ratio_projected": 0.015869140625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 318,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00121307373046875,
+          "compression_ratio_projected": 0.0194091796875,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 223,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000850677490234375,
+          "compression_ratio_projected": 0.01361083984375,
+          "num_soft_tokens": 32
+        }
+      ],
+      "outputs": [
+        "business",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "business"
+      ]
+    },
+    {
+      "dataset": "agnews",
+      "dataset_name": "AG News",
+      "seed": 456,
+      "num_soft_tokens": 32,
+      "accuracy": 91.61842105263158,
+      "correct": 6963,
+      "total": 7600,
+      "num_classes": 4,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/agnews_seed456_tokens32_bridge.pt",
+      "compression_ratio_avg": 0.014361524079975329,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 161,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000614166259765625,
+          "compression_ratio_projected": 0.00982666015625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 321,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.001224517822265625,
+          "compression_ratio_projected": 0.01959228515625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 260,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.0009918212890625,
+          "compression_ratio_projected": 0.015869140625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 318,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.00121307373046875,
+          "compression_ratio_projected": 0.0194091796875,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 223,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000850677490234375,
+          "compression_ratio_projected": 0.01361083984375,
+          "num_soft_tokens": 32
+        }
+      ],
+      "outputs": [
+        "business",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "business",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "science",
+        "business"
+      ]
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "seed": 42,
+      "num_soft_tokens": 32,
+      "accuracy": 90.2,
+      "correct": 451,
+      "total": 500,
+      "num_classes": 6,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/trec_seed42_tokens32_bridge.pt",
+      "compression_ratio_avg": 0.0021947021484375,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 36,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.0001373291015625,
+          "compression_ratio_projected": 0.002197265625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 40,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000152587890625,
+          "compression_ratio_projected": 0.00244140625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 6.4849853515625e-05,
+          "compression_ratio_projected": 0.00103759765625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 6.4849853515625e-05,
+          "compression_ratio_projected": 0.00103759765625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 32,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.0001220703125,
+          "compression_ratio_projected": 0.001953125,
+          "num_soft_tokens": 32
+        }
+      ],
+      "outputs": [
+        "num",
+        "loc",
+        "hum",
+        "desc",
+        "num",
+        "num",
+        "hum",
+        "enty",
+        "desc",
+        "desc",
+        "loc",
+        "hum",
+        "num",
+        "hum",
+        "num",
+        "num",
+        "enty",
+        "hum",
+        "desc",
+        "num"
+      ]
+    },
+    {
+      "dataset": "trec",
+      "dataset_name": "TREC",
+      "seed": 456,
+      "num_soft_tokens": 32,
+      "accuracy": 85.6,
+      "correct": 428,
+      "total": 500,
+      "num_classes": 6,
+      "config": {
+        "soft_tokens": 8,
+        "depth": 2,
+        "heads": 8,
+        "source_layer": 31,
+        "train_steps": 1500,
+        "batch_size": 16,
+        "lr": 0.0002,
+        "diversity_weight": 0.1
+      },
+      "checkpoint_path": "runs/paper_results/run_20260112_002428/bridge/trec_seed456_tokens32_bridge.pt",
+      "compression_ratio_avg": 0.0021947021484375,
+      "compression_ratios_sample": [
+        {
+          "text_bytes": 36,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.0001373291015625,
+          "compression_ratio_projected": 0.002197265625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 40,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.000152587890625,
+          "compression_ratio_projected": 0.00244140625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 6.4849853515625e-05,
+          "compression_ratio_projected": 0.00103759765625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 17,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 6.4849853515625e-05,
+          "compression_ratio_projected": 0.00103759765625,
+          "num_soft_tokens": 32
+        },
+        {
+          "text_bytes": 32,
+          "soft_token_bytes_raw": 262144.0,
+          "soft_token_bytes_projected": 16384.0,
+          "compression_ratio_raw": 0.0001220703125,
+          "compression_ratio_projected": 0.001953125,
+          "num_soft_tokens": 32
+        }
+      ],
+      "outputs": [
+        "num",
+        "loc",
+        "hum",
+        "desc",
+        "num",
+        "num",
+        "hum",
+        "enty",
+        "desc",
+        "desc",
+        "loc",
+        "hum",
+        "num",
+        "hum",
+        "num",
+        "num",
+        "enty",
+        "hum",
+        "desc",
+        "num"
+      ]
+    }
+  ]
+}
