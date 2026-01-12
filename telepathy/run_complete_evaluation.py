@@ -28,6 +28,7 @@ Date: January 2025
 import argparse
 import gc
 import json
+import logging
 import os
 import sys
 import time
@@ -45,6 +46,328 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.preprocessing import normalize as sk_normalize
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+# =============================================================================
+# LOGGING SETUP
+# =============================================================================
+
+def setup_logging(log_dir: Path, log_level: int = logging.INFO) -> logging.Logger:
+    """Set up logging with both file and console handlers."""
+    log_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = log_dir / f"evaluation_{timestamp}.log"
+
+    # Create logger
+    logger = logging.getLogger("telepathy_eval")
+    logger.setLevel(log_level)
+    logger.handlers = []  # Clear existing handlers
+
+    # File handler - detailed logging
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.DEBUG)
+    file_formatter = logging.Formatter(
+        '%(asctime)s | %(levelname)s | %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    file_handler.setFormatter(file_formatter)
+    logger.addHandler(file_handler)
+
+    # Console handler - less verbose
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_formatter = logging.Formatter('%(message)s')
+    console_handler.setFormatter(console_formatter)
+    logger.addHandler(console_handler)
+
+    return logger
+
+
+# =============================================================================
+# GPU MEMORY MANAGEMENT
+# =============================================================================
+
+def get_gpu_memory_info(device: torch.device) -> Dict[str, float]:
+    """Get current GPU memory usage information."""
+    if not torch.cuda.is_available():
+        return {"available": False}
+
+    try:
+        device_idx = device.index if device.index is not None else 0
+        allocated = torch.cuda.memory_allocated(device_idx) / (1024**3)  # GB
+        reserved = torch.cuda.memory_reserved(device_idx) / (1024**3)  # GB
+        total = torch.cuda.get_device_properties(device_idx).total_memory / (1024**3)  # GB
+        free = total - reserved
+
+        return {
+            "available": True,
+            "allocated_gb": round(allocated, 2),
+            "reserved_gb": round(reserved, 2),
+            "total_gb": round(total, 2),
+            "free_gb": round(free, 2),
+            "utilization_pct": round((reserved / total) * 100, 1),
+        }
+    except Exception as e:
+        return {"available": False, "error": str(e)}
+
+
+def log_gpu_memory(logger: logging.Logger, device: torch.device, context: str = ""):
+    """Log current GPU memory status."""
+    mem_info = get_gpu_memory_info(device)
+    if mem_info.get("available"):
+        prefix = f"[{context}] " if context else ""
+        logger.debug(
+            f"{prefix}GPU Memory: {mem_info['allocated_gb']:.1f}GB allocated, "
+            f"{mem_info['free_gb']:.1f}GB free, {mem_info['utilization_pct']:.0f}% used"
+        )
+
+
+def aggressive_memory_cleanup(device: torch.device, logger: Optional[logging.Logger] = None):
+    """Perform aggressive memory cleanup between experiments."""
+    if logger:
+        log_gpu_memory(logger, device, "Before cleanup")
+
+    # Python garbage collection
+    gc.collect()
+
+    # PyTorch CUDA cleanup
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+
+        # Force garbage collection again after CUDA cleanup
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    if logger:
+        log_gpu_memory(logger, device, "After cleanup")
+
+
+def check_gpu_memory_threshold(device: torch.device, threshold_gb: float = 5.0) -> bool:
+    """Check if free GPU memory is above threshold. Returns True if OK."""
+    mem_info = get_gpu_memory_info(device)
+    if not mem_info.get("available"):
+        return True  # Can't check, assume OK
+    return mem_info.get("free_gb", 0) >= threshold_gb
+
+
+# =============================================================================
+# ERROR HANDLING AND RETRY LOGIC
+# =============================================================================
+
+class ExperimentError(Exception):
+    """Custom exception for experiment failures with context."""
+    def __init__(self, experiment_name: str, message: str, partial_result: Optional[Dict] = None):
+        self.experiment_name = experiment_name
+        self.message = message
+        self.partial_result = partial_result
+        super().__init__(f"{experiment_name}: {message}")
+
+
+def run_with_retry(
+    func,
+    *args,
+    max_retries: int = 2,
+    retry_delay: float = 5.0,
+    experiment_name: str = "unknown",
+    logger: Optional[logging.Logger] = None,
+    device: Optional[torch.device] = None,
+    **kwargs
+) -> Tuple[bool, Optional[Dict], Optional[str]]:
+    """
+    Run an experiment function with retry logic and error handling.
+
+    Returns:
+        Tuple of (success: bool, result: Optional[Dict], error_message: Optional[str])
+    """
+    last_error = None
+    last_traceback = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            if attempt > 0:
+                if logger:
+                    logger.warning(f"Retry {attempt}/{max_retries} for {experiment_name}")
+                # Clean up memory before retry
+                if device:
+                    aggressive_memory_cleanup(device, logger)
+                time.sleep(retry_delay)
+
+            result = func(*args, **kwargs)
+            return True, result, None
+
+        except torch.cuda.OutOfMemoryError as e:
+            last_error = str(e)
+            last_traceback = traceback.format_exc()
+            if logger:
+                logger.error(f"OOM in {experiment_name} (attempt {attempt + 1}): {e}")
+            # Aggressive cleanup on OOM
+            if device:
+                aggressive_memory_cleanup(device, logger)
+
+        except Exception as e:
+            last_error = str(e)
+            last_traceback = traceback.format_exc()
+            if logger:
+                logger.error(f"Error in {experiment_name} (attempt {attempt + 1}): {e}")
+                logger.debug(f"Traceback:\n{last_traceback}")
+
+    # All retries failed
+    error_msg = f"Failed after {max_retries + 1} attempts. Last error: {last_error}\n{last_traceback}"
+    return False, None, error_msg
+
+
+def save_partial_results_atomic(
+    results: Dict[str, Any],
+    output_path: Path,
+    logger: Optional[logging.Logger] = None
+):
+    """Save results atomically to prevent corruption on interrupt."""
+    temp_path = output_path.with_suffix('.tmp')
+    try:
+        with open(temp_path, 'w') as f:
+            json.dump(results, f, indent=2, default=str)
+        temp_path.replace(output_path)
+        if logger:
+            logger.debug(f"Saved results to {output_path}")
+    except Exception as e:
+        if logger:
+            logger.error(f"Failed to save results to {output_path}: {e}")
+        # Try to clean up temp file
+        if temp_path.exists():
+            try:
+                temp_path.unlink()
+            except Exception:
+                pass
+
+
+class ExperimentCheckpointer:
+    """Manages checkpointing for long-running experiments."""
+
+    def __init__(self, checkpoint_dir: Path, experiment_name: str, save_interval: int = 100):
+        self.checkpoint_dir = checkpoint_dir
+        self.experiment_name = experiment_name
+        self.save_interval = save_interval
+        self.checkpoint_path = checkpoint_dir / f"{experiment_name}_checkpoint.json"
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        self.step = 0
+        self.data = {}
+
+    def update(self, key: str, value: Any, step: Optional[int] = None):
+        """Update checkpoint data."""
+        if step is not None:
+            self.step = step
+        else:
+            self.step += 1
+        self.data[key] = value
+
+        # Save periodically
+        if self.step % self.save_interval == 0:
+            self.save()
+
+    def save(self):
+        """Save checkpoint to disk."""
+        checkpoint = {
+            "experiment_name": self.experiment_name,
+            "step": self.step,
+            "timestamp": datetime.now().isoformat(),
+            "data": self.data,
+        }
+        save_partial_results_atomic(checkpoint, self.checkpoint_path)
+
+    def load(self) -> Optional[Dict]:
+        """Load checkpoint if it exists."""
+        if not self.checkpoint_path.exists():
+            return None
+        try:
+            with open(self.checkpoint_path) as f:
+                checkpoint = json.load(f)
+            self.step = checkpoint.get("step", 0)
+            self.data = checkpoint.get("data", {})
+            return checkpoint
+        except Exception:
+            return None
+
+    def clear(self):
+        """Clear checkpoint after successful completion."""
+        if self.checkpoint_path.exists():
+            self.checkpoint_path.unlink()
+
+
+# =============================================================================
+# HIGH VARIANCE DETECTION
+# =============================================================================
+
+def detect_high_variance(
+    accuracies: List[float],
+    threshold_std: float = 5.0,
+    threshold_range: float = 15.0,
+) -> Tuple[bool, Dict[str, float]]:
+    """
+    Detect if experiment results have high variance.
+
+    Args:
+        accuracies: List of accuracy values across seeds
+        threshold_std: Standard deviation threshold for warning
+        threshold_range: Max-min range threshold for warning
+
+    Returns:
+        Tuple of (is_high_variance: bool, stats: Dict)
+    """
+    if len(accuracies) < 2:
+        return False, {"std": 0, "range": 0, "mean": accuracies[0] if accuracies else 0}
+
+    mean_acc = np.mean(accuracies)
+    std_acc = np.std(accuracies, ddof=1)
+    range_acc = max(accuracies) - min(accuracies)
+    cv = (std_acc / mean_acc * 100) if mean_acc > 0 else 0  # Coefficient of variation
+
+    stats = {
+        "mean": float(mean_acc),
+        "std": float(std_acc),
+        "range": float(range_acc),
+        "cv_pct": float(cv),
+        "min": float(min(accuracies)),
+        "max": float(max(accuracies)),
+    }
+
+    is_high_variance = std_acc >= threshold_std or range_acc >= threshold_range
+
+    return is_high_variance, stats
+
+
+def get_extra_seeds_if_needed(
+    base_seeds: List[int],
+    accuracies: List[float],
+    variance_threshold_std: float = 5.0,
+    max_extra_seeds: int = 3,
+) -> List[int]:
+    """
+    Return additional seeds to run if variance is high.
+
+    Args:
+        base_seeds: Seeds already run
+        accuracies: Accuracy results from base seeds
+        variance_threshold_std: Threshold for detecting high variance
+        max_extra_seeds: Maximum number of extra seeds to suggest
+
+    Returns:
+        List of additional seed values to run
+    """
+    is_high_var, stats = detect_high_variance(accuracies, threshold_std=variance_threshold_std)
+
+    if not is_high_var:
+        return []
+
+    # Generate extra seeds that haven't been used
+    extra_seeds = []
+    candidate = max(base_seeds) + 1
+    while len(extra_seeds) < max_extra_seeds:
+        if candidate not in base_seeds:
+            extra_seeds.append(candidate)
+        candidate += 1
+
+    return extra_seeds
+
 
 # Import from statistical_testing.py
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
@@ -1329,13 +1652,118 @@ def extract_hidden_states(
     max_length: int,
     batch_size: int,
     device: torch.device,
+    logger: Optional[logging.Logger] = None,
 ) -> np.ndarray:
-    """Extract hidden states from a specific layer."""
+    """
+    Extract hidden states from a specific layer with memory-efficient implementation.
+
+    Key optimizations:
+    1. Only extracts the specific layer needed (not all 33 layers)
+    2. Uses smaller batch size with memory monitoring
+    3. Aggressive memory cleanup between batches
+    4. Processes in chunks to avoid OOM
+    """
     model.eval()
     all_hidden = []
 
-    for i in tqdm(range(0, len(texts), batch_size), desc=f"Extracting layer {layer_idx}"):
-        batch_texts = texts[i:i+batch_size]
+    # Use a hook to extract only the specific layer - much more memory efficient
+    extracted_hidden = []
+
+    def hook_fn(module, input, output):
+        # output is a tuple, first element is the hidden states
+        if isinstance(output, tuple):
+            hidden = output[0]
+        else:
+            hidden = output
+        extracted_hidden.append(hidden.detach())
+
+    # Get the specific layer
+    if hasattr(model, 'model'):
+        # For models with a .model attribute (e.g., LlamaForCausalLM)
+        layers = model.model.layers
+    elif hasattr(model, 'transformer'):
+        # For models with a .transformer attribute
+        layers = model.transformer.h
+    else:
+        # Fallback to using output_hidden_states (less memory efficient)
+        if logger:
+            logger.warning("Could not find model layers, using output_hidden_states (less efficient)")
+        return _extract_hidden_states_fallback(
+            texts, model, tokenizer, layer_idx, max_length, batch_size, device
+        )
+
+    # Register hook on the specific layer
+    target_layer = layers[layer_idx]
+    hook = target_layer.register_forward_hook(hook_fn)
+
+    try:
+        # Reduce batch size for memory safety
+        effective_batch_size = min(batch_size, 4)  # Use smaller batches for hidden state extraction
+        total_batches = (len(texts) + effective_batch_size - 1) // effective_batch_size
+
+        if logger:
+            log_gpu_memory(logger, device, f"Before extraction (layer {layer_idx})")
+
+        for i in tqdm(range(0, len(texts), effective_batch_size),
+                     desc=f"Extracting layer {layer_idx}",
+                     total=total_batches):
+            batch_texts = texts[i:i+effective_batch_size]
+            extracted_hidden.clear()
+
+            inputs = tokenizer(batch_texts, return_tensors="pt", padding=True,
+                              truncation=True, max_length=max_length).to(device)
+
+            with torch.no_grad():
+                # Just run forward pass - hook captures what we need
+                _ = model(**inputs, output_hidden_states=False)
+
+            if not extracted_hidden:
+                raise RuntimeError(f"Hook did not capture hidden states for layer {layer_idx}")
+
+            hidden = extracted_hidden[0]
+            attention_mask = inputs["attention_mask"]
+            seq_lengths = attention_mask.sum(dim=1) - 1
+            batch_indices = torch.arange(hidden.size(0), device=device)
+            pooled = hidden[batch_indices, seq_lengths]
+            all_hidden.append(pooled.cpu().float().numpy())
+
+            # Clear intermediate tensors
+            del inputs, hidden, pooled
+            extracted_hidden.clear()
+
+            # Periodic memory cleanup
+            if (i // effective_batch_size) % 50 == 0:
+                gc.collect()
+                torch.cuda.empty_cache()
+
+        if logger:
+            log_gpu_memory(logger, device, f"After extraction (layer {layer_idx})")
+
+    finally:
+        # Always remove the hook
+        hook.remove()
+
+    return np.vstack(all_hidden)
+
+
+def _extract_hidden_states_fallback(
+    texts: List[str],
+    model: torch.nn.Module,
+    tokenizer,
+    layer_idx: int,
+    max_length: int,
+    batch_size: int,
+    device: torch.device,
+) -> np.ndarray:
+    """Fallback method using output_hidden_states when hook approach doesn't work."""
+    model.eval()
+    all_hidden = []
+
+    # Use very small batch size for fallback
+    effective_batch_size = min(batch_size, 2)
+
+    for i in tqdm(range(0, len(texts), effective_batch_size), desc=f"Extracting layer {layer_idx} (fallback)"):
+        batch_texts = texts[i:i+effective_batch_size]
         inputs = tokenizer(batch_texts, return_tensors="pt", padding=True,
                           truncation=True, max_length=max_length).to(device)
 
@@ -1347,7 +1775,12 @@ def extract_hidden_states(
         seq_lengths = attention_mask.sum(dim=1) - 1
         batch_indices = torch.arange(hidden.size(0), device=device)
         pooled = hidden[batch_indices, seq_lengths]
-        all_hidden.append(pooled.cpu().numpy())
+        all_hidden.append(pooled.cpu().float().numpy())
+
+        # Aggressive cleanup
+        del outputs, hidden, pooled, inputs
+        gc.collect()
+        torch.cuda.empty_cache()
 
     return np.vstack(all_hidden)
 
@@ -1859,36 +2292,92 @@ Dataset & Comparison & Statistic & p-value \\
 # =============================================================================
 
 class ProgressTracker:
-    """Track experiment progress and estimate time remaining."""
+    """Track experiment progress and estimate time remaining with improved logging."""
 
-    def __init__(self, total_experiments: int):
+    def __init__(self, total_experiments: int, logger: Optional[logging.Logger] = None,
+                 save_callback: Optional[callable] = None):
         self.total_experiments = total_experiments
         self.completed = 0
+        self.failed = 0
+        self.skipped = 0
         self.start_time = time.time()
         self.experiment_times = []
+        self.experiment_log = []
+        self.logger = logger
+        self.save_callback = save_callback  # Called periodically to save intermediate results
 
-    def update(self, experiment_name: str, experiment_time: float):
+    def update(self, experiment_name: str, experiment_time: float, success: bool = True,
+               error_msg: Optional[str] = None):
         """Record completion of an experiment."""
         self.completed += 1
+        if not success:
+            self.failed += 1
+
         self.experiment_times.append(experiment_time)
+
+        # Log experiment
+        log_entry = {
+            "name": experiment_name,
+            "time": experiment_time,
+            "success": success,
+            "error": error_msg,
+            "timestamp": datetime.now().isoformat(),
+        }
+        self.experiment_log.append(log_entry)
 
         # Calculate statistics
         elapsed = time.time() - self.start_time
         avg_time = np.mean(self.experiment_times)
         remaining = self.total_experiments - self.completed
         eta_seconds = remaining * avg_time
+        progress_pct = (self.completed / self.total_experiments) * 100 if self.total_experiments > 0 else 0
 
         # Format times
         elapsed_str = self._format_time(elapsed)
         eta_str = self._format_time(eta_seconds)
 
-        print(f"\n{'='*60}")
-        print(f"PROGRESS: {self.completed}/{self.total_experiments} experiments completed")
-        print(f"  Last: {experiment_name} ({experiment_time:.1f}s)")
-        print(f"  Elapsed: {elapsed_str}")
-        print(f"  Estimated remaining: {eta_str}")
-        print(f"  Avg time per experiment: {avg_time:.1f}s")
-        print(f"{'='*60}\n")
+        # Create progress bar
+        bar_width = 30
+        filled = int(bar_width * self.completed / self.total_experiments) if self.total_experiments > 0 else 0
+        bar = '=' * filled + '-' * (bar_width - filled)
+
+        status = "OK" if success else "FAILED"
+        msg = (
+            f"\n{'='*70}\n"
+            f"PROGRESS: [{bar}] {progress_pct:.1f}% ({self.completed}/{self.total_experiments})\n"
+            f"  Last: {experiment_name} ({experiment_time:.1f}s) [{status}]\n"
+            f"  Elapsed: {elapsed_str} | ETA: {eta_str}\n"
+            f"  Avg time: {avg_time:.1f}s | Failed: {self.failed} | Skipped: {self.skipped}\n"
+            f"{'='*70}"
+        )
+
+        print(msg)
+        if self.logger:
+            self.logger.info(msg)
+
+        # Call save callback periodically (every 5 experiments)
+        if self.save_callback and self.completed % 5 == 0:
+            try:
+                self.save_callback()
+            except Exception as e:
+                if self.logger:
+                    self.logger.warning(f"Save callback failed: {e}")
+
+    def record_skip(self, experiment_name: str):
+        """Record a skipped experiment."""
+        self.skipped += 1
+
+    def get_summary(self) -> Dict[str, Any]:
+        """Get summary statistics."""
+        return {
+            "total": self.total_experiments,
+            "completed": self.completed,
+            "failed": self.failed,
+            "skipped": self.skipped,
+            "success_rate": (self.completed - self.failed) / self.completed * 100 if self.completed > 0 else 0,
+            "total_time": time.time() - self.start_time,
+            "avg_time_per_experiment": np.mean(self.experiment_times) if self.experiment_times else 0,
+        }
 
     def _format_time(self, seconds: float) -> str:
         """Format seconds into human-readable string."""
@@ -1896,6 +2385,10 @@ class ProgressTracker:
         minutes = int((seconds % 3600) // 60)
         secs = int(seconds % 60)
         return f"{hours}h {minutes}m {secs}s"
+
+    def get_experiment_log(self) -> List[Dict]:
+        """Get the full experiment log."""
+        return self.experiment_log
 
 
 def count_total_experiments(datasets: List[str], seeds: List[int]) -> int:
@@ -2119,6 +2612,7 @@ def load_existing_results(run_dir: Path, datasets: List[str], seeds: List[int]) 
 def parse_args():
     parser = argparse.ArgumentParser(description="Complete Telepathy Paper Evaluation (Revised)")
 
+    # Basic options
     parser.add_argument("--output_dir", type=str, default="runs/paper_results",
                        help="Output directory for all results")
     parser.add_argument("--only", type=str,
@@ -2130,13 +2624,51 @@ def parse_args():
                        default=["sst2", "agnews", "trec"],
                        help="Datasets to evaluate")
     parser.add_argument("--seeds", type=int, nargs="+", default=SEEDS,
-                       help="Random seeds to use (default: [42, 123, 456])")
+                       help="Random seeds to use (default: [42, 456])")
     parser.add_argument("--gpu", type=int, default=0, help="GPU to use")
+
+    # Resume and skip options
     parser.add_argument("--skip_existing", action="store_true",
                        help="Skip experiments that already have results")
     parser.add_argument("--resume_dir", type=str, default=None,
                        help="Resume from a specific run directory (e.g., runs/paper_results/run_20250111_120000). "
                             "If set, --skip_existing is automatically enabled.")
+
+    # Skip slow experiments
+    parser.add_argument("--skip_slow", type=str, nargs="*", default=None,
+                       choices=["lora", "text_relay", "bridge"],
+                       help="Skip slow experiment types (e.g., --skip_slow lora text_relay)")
+    parser.add_argument("--fast_mode", action="store_true",
+                       help="Enable fast mode: reduces training steps and samples for quick iteration")
+
+    # Retry and robustness options
+    parser.add_argument("--max_retries", type=int, default=2,
+                       help="Maximum number of retries for failed experiments (default: 2)")
+    parser.add_argument("--retry_delay", type=float, default=5.0,
+                       help="Delay in seconds between retries (default: 5.0)")
+    parser.add_argument("--continue_on_error", action="store_true",
+                       help="Continue with other experiments if one fails (default: True)")
+
+    # High variance handling
+    parser.add_argument("--extra_seeds_on_high_variance", action="store_true",
+                       help="Automatically run extra seeds when high variance is detected")
+    parser.add_argument("--variance_threshold", type=float, default=5.0,
+                       help="Standard deviation threshold for high variance detection (default: 5.0)")
+    parser.add_argument("--max_extra_seeds", type=int, default=3,
+                       help="Maximum extra seeds to run for high-variance experiments (default: 3)")
+
+    # Memory and performance options
+    parser.add_argument("--memory_threshold_gb", type=float, default=5.0,
+                       help="Minimum free GPU memory (GB) required to start an experiment")
+    parser.add_argument("--aggressive_cleanup", action="store_true",
+                       help="Perform aggressive memory cleanup between all experiments")
+
+    # Logging options
+    parser.add_argument("--log_level", type=str, default="INFO",
+                       choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+                       help="Logging level (default: INFO)")
+    parser.add_argument("--save_frequency", type=int, default=5,
+                       help="Save results every N experiments (default: 5)")
 
     return parser.parse_args()
 
@@ -2164,7 +2696,27 @@ def main():
         run_dir = output_dir / f"run_{timestamp}"
         run_dir.mkdir(parents=True, exist_ok=True)
 
+    # Set up logging
+    log_level = getattr(logging, args.log_level.upper(), logging.INFO)
+    logger = setup_logging(run_dir, log_level)
+    logger.info(f"Starting evaluation run: {run_dir}")
+
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu")
+    logger.info(f"Using device: {device}")
+
+    # Log GPU info
+    mem_info = get_gpu_memory_info(device)
+    if mem_info.get("available"):
+        logger.info(f"GPU Memory: {mem_info['total_gb']:.1f}GB total, {mem_info['free_gb']:.1f}GB free")
+
+    # Apply fast mode settings if enabled
+    if args.fast_mode:
+        logger.info("FAST MODE enabled - reducing training steps and samples")
+        BRIDGE_CONFIG["train_steps"] = 500
+        LORA_CONFIG["epochs"] = 1
+        LORA_CONFIG["max_train_samples"] = 500
+        PROMPT_TUNING_CONFIG["steps"] = 500
+        LINEAR_PROBE_CONFIG["max_samples"] = 1000
 
     # Count total experiments for progress tracking
     total_experiments = count_total_experiments(args.datasets, args.seeds)
@@ -2178,23 +2730,57 @@ def main():
         skipped_experiments = completed_names
         remaining_experiments = total_experiments - completed_count
 
-        print("="*70)
-        print("RESUME MODE - Checking for existing results")
-        print("="*70)
-        print(f"Completed experiments: {completed_count}/{total_count}")
-        print(f"Remaining experiments: {remaining_experiments}")
+        logger.info("="*70)
+        logger.info("RESUME MODE - Checking for existing results")
+        logger.info("="*70)
+        logger.info(f"Completed experiments: {completed_count}/{total_count}")
+        logger.info(f"Remaining experiments: {remaining_experiments}")
 
         if completed_names:
-            print(f"\nSkipping {len(completed_names)} completed experiments:")
+            logger.info(f"Skipping {len(completed_names)} completed experiments")
             for name in completed_names[:10]:  # Show first 10
-                print(f"  - {name}")
+                logger.debug(f"  - {name}")
             if len(completed_names) > 10:
-                print(f"  ... and {len(completed_names) - 10} more")
-        print("="*70)
+                logger.debug(f"  ... and {len(completed_names) - 10} more")
+        logger.info("="*70)
     else:
         remaining_experiments = total_experiments
 
-    tracker = ProgressTracker(remaining_experiments if remaining_experiments > 0 else total_experiments)
+    # Determine which experiments to skip
+    skip_slow_set = set(args.skip_slow) if args.skip_slow else set()
+    if skip_slow_set:
+        logger.info(f"Skipping slow experiment types: {skip_slow_set}")
+
+    # Create save callback for periodic saves
+    def save_intermediate_results():
+        """Save intermediate results to disk."""
+        try:
+            intermediate = {
+                "timestamp": datetime.now().isoformat(),
+                "status": "in_progress",
+                "completed_experiments": tracker.completed,
+                "failed_experiments": tracker.failed,
+            }
+            for method, results_list in all_results.items():
+                serializable = []
+                for r in results_list:
+                    r_copy = {k: v for k, v in r.items() if k not in ["predictions", "labels"]}
+                    serializable.append(r_copy)
+                intermediate[method] = serializable
+            save_partial_results_atomic(intermediate, run_dir / "intermediate_results.json", logger)
+        except Exception as e:
+            logger.warning(f"Failed to save intermediate results: {e}")
+
+    # Initialize progress tracker with logger and save callback
+    tracker = ProgressTracker(
+        remaining_experiments if remaining_experiments > 0 else total_experiments,
+        logger=logger,
+        save_callback=save_intermediate_results
+    )
+
+    # Track failed experiments for reporting
+    failed_experiments = []
+    high_variance_warnings = []
 
     print("="*70)
     print("TELEPATHY COMPLETE PAPER EVALUATION (REVISED)")
@@ -2208,8 +2794,17 @@ def main():
     if args.skip_existing:
         print(f"Skip existing: ENABLED")
         print(f"Experiments to run: {remaining_experiments}")
-    print(f"Estimated time: ~12 hours on 1 H100")
+    if skip_slow_set:
+        print(f"Skipping: {skip_slow_set}")
+    if args.fast_mode:
+        print(f"Fast mode: ENABLED")
+    print(f"Max retries: {args.max_retries}")
+    print(f"Continue on error: {args.continue_on_error}")
+    print(f"Estimated time: ~12 hours on 1 H100 (less with fast mode)")
     print("="*70)
+
+    logger.info(f"Configuration: datasets={args.datasets}, seeds={args.seeds}")
+    logger.info(f"Retry settings: max_retries={args.max_retries}, retry_delay={args.retry_delay}")
 
     # Save configuration
     config = {
@@ -2223,6 +2818,11 @@ def main():
         "lora_config": LORA_CONFIG,
         "prompt_tuning_config": PROMPT_TUNING_CONFIG,
         "total_experiments": total_experiments,
+        "fast_mode": args.fast_mode,
+        "max_retries": args.max_retries,
+        "skip_slow": list(skip_slow_set) if skip_slow_set else [],
+        "extra_seeds_on_high_variance": args.extra_seeds_on_high_variance,
+        "variance_threshold": args.variance_threshold,
     }
     with open(run_dir / "config.json", "w") as f:
         json.dump(config, f, indent=2)
@@ -2258,154 +2858,238 @@ def main():
                 pass
 
     try:
+        # Helper function for running experiments with retry
+        def run_experiment_with_retry(func, exp_name, result_key, *func_args, **func_kwargs):
+            """Run an experiment with retry logic and proper tracking."""
+            nonlocal failed_experiments
+
+            # Check memory before starting
+            if args.aggressive_cleanup:
+                aggressive_memory_cleanup(device, logger)
+
+            if not check_gpu_memory_threshold(device, args.memory_threshold_gb):
+                logger.warning(f"Low GPU memory before {exp_name}, running cleanup...")
+                aggressive_memory_cleanup(device, logger)
+
+            exp_start = time.time()
+            success, result, error_msg = run_with_retry(
+                func, *func_args,
+                max_retries=args.max_retries,
+                retry_delay=args.retry_delay,
+                experiment_name=exp_name,
+                logger=logger,
+                device=device,
+                **func_kwargs
+            )
+
+            exp_time = time.time() - exp_start
+
+            if success and result:
+                all_results[result_key].append(result)
+                tracker.update(exp_name, exp_time, success=True)
+                logger.info(f"[SUCCESS] {exp_name} completed in {exp_time:.1f}s")
+            else:
+                failed_experiments.append({
+                    "name": exp_name,
+                    "error": error_msg,
+                    "time": exp_time,
+                })
+                tracker.update(exp_name, exp_time, success=False, error_msg=error_msg)
+                logger.error(f"[FAILED] {exp_name}: {error_msg}")
+
+                if not args.continue_on_error:
+                    raise ExperimentError(exp_name, error_msg)
+
+            return success, result
+
         # 1. Zero-shot baselines (individual models for super-additivity)
         if args.only is None or args.only == "zeroshot":
             zeroshot_dir = run_dir / "zeroshot"
             zeroshot_dir.mkdir(exist_ok=True)
+            logger.info("Starting zero-shot baselines...")
 
             for dataset_key in args.datasets:
                 for seed in args.seeds:
                     # Llama zero-shot
                     exp_name = f"zeroshot_llama_{dataset_key}_seed{seed}"
                     if args.skip_existing and exp_name in skipped_experiments:
-                        print(f"[SKIP] {exp_name} - result already exists")
+                        logger.info(f"[SKIP] {exp_name} - result already exists")
+                        tracker.record_skip(exp_name)
                     else:
-                        exp_start = time.time()
-                        try:
-                            results = run_zeroshot_baseline(
-                                dataset_key, "llama", SOURCE_MODEL, seed, zeroshot_dir, device
-                            )
-                            all_results["zeroshot_llama"].append(results)
-                            tracker.update(exp_name, time.time() - exp_start)
-                        except Exception as e:
-                            print(f"ERROR in zeroshot llama {dataset_key} seed={seed}: {e}")
-                            traceback.print_exc()
+                        run_experiment_with_retry(
+                            run_zeroshot_baseline,
+                            exp_name,
+                            "zeroshot_llama",
+                            dataset_key, "llama", SOURCE_MODEL, seed, zeroshot_dir, device
+                        )
 
                     # Mistral zero-shot
                     exp_name = f"zeroshot_mistral_{dataset_key}_seed{seed}"
                     if args.skip_existing and exp_name in skipped_experiments:
-                        print(f"[SKIP] {exp_name} - result already exists")
+                        logger.info(f"[SKIP] {exp_name} - result already exists")
+                        tracker.record_skip(exp_name)
                     else:
-                        exp_start = time.time()
-                        try:
-                            results = run_zeroshot_baseline(
-                                dataset_key, "mistral", TARGET_MODEL, seed, zeroshot_dir, device
-                            )
-                            all_results["zeroshot_mistral"].append(results)
-                            tracker.update(exp_name, time.time() - exp_start)
-                        except Exception as e:
-                            print(f"ERROR in zeroshot mistral {dataset_key} seed={seed}: {e}")
-                            traceback.print_exc()
+                        run_experiment_with_retry(
+                            run_zeroshot_baseline,
+                            exp_name,
+                            "zeroshot_mistral",
+                            dataset_key, "mistral", TARGET_MODEL, seed, zeroshot_dir, device
+                        )
 
         # 2. Text-relay baseline (with accuracy)
         if args.only is None or args.only == "text_relay":
-            relay_dir = run_dir / "text_relay"
-            relay_dir.mkdir(exist_ok=True)
+            if "text_relay" in skip_slow_set:
+                logger.info("[SKIP] Skipping text_relay experiments (--skip_slow)")
+            else:
+                relay_dir = run_dir / "text_relay"
+                relay_dir.mkdir(exist_ok=True)
+                logger.info("Starting text-relay baselines...")
 
-            for dataset_key in args.datasets:
-                for seed in args.seeds:
-                    exp_name = f"text_relay_{dataset_key}_seed{seed}"
-                    if args.skip_existing and exp_name in skipped_experiments:
-                        print(f"[SKIP] {exp_name} - result already exists")
-                    else:
-                        exp_start = time.time()
-                        try:
-                            results = run_text_relay_baseline(dataset_key, seed, relay_dir, device)
-                            all_results["text_relay"].append(results)
-                            tracker.update(exp_name, time.time() - exp_start)
-                        except Exception as e:
-                            print(f"ERROR in text_relay {dataset_key} seed={seed}: {e}")
-                            traceback.print_exc()
+                for dataset_key in args.datasets:
+                    for seed in args.seeds:
+                        exp_name = f"text_relay_{dataset_key}_seed{seed}"
+                        if args.skip_existing and exp_name in skipped_experiments:
+                            logger.info(f"[SKIP] {exp_name} - result already exists")
+                            tracker.record_skip(exp_name)
+                        else:
+                            run_experiment_with_retry(
+                                run_text_relay_baseline,
+                                exp_name,
+                                "text_relay",
+                                dataset_key, seed, relay_dir, device
+                            )
 
         # 3. Prompt tuning baseline
         if args.only is None or args.only == "prompt_tuning":
             pt_dir = run_dir / "prompt_tuning"
             pt_dir.mkdir(exist_ok=True)
+            logger.info("Starting prompt tuning baselines...")
 
             for dataset_key in args.datasets:
                 for seed in args.seeds:
                     exp_name = f"prompt_tuning_{dataset_key}_seed{seed}"
                     if args.skip_existing and exp_name in skipped_experiments:
-                        print(f"[SKIP] {exp_name} - result already exists")
+                        logger.info(f"[SKIP] {exp_name} - result already exists")
+                        tracker.record_skip(exp_name)
                     else:
-                        exp_start = time.time()
-                        try:
-                            results = train_prompt_tuning_baseline(
-                                dataset_key, seed, pt_dir, device, PROMPT_TUNING_CONFIG
-                            )
-                            all_results["prompt_tuning"].append(results)
-                            tracker.update(exp_name, time.time() - exp_start)
-                        except Exception as e:
-                            print(f"ERROR in prompt_tuning {dataset_key} seed={seed}: {e}")
-                            traceback.print_exc()
+                        run_experiment_with_retry(
+                            train_prompt_tuning_baseline,
+                            exp_name,
+                            "prompt_tuning",
+                            dataset_key, seed, pt_dir, device, PROMPT_TUNING_CONFIG
+                        )
 
         # 4. LoRA baseline
         if args.only is None or args.only == "lora":
-            lora_dir = run_dir / "lora"
-            lora_dir.mkdir(exist_ok=True)
+            if "lora" in skip_slow_set:
+                logger.info("[SKIP] Skipping LoRA experiments (--skip_slow)")
+            else:
+                lora_dir = run_dir / "lora"
+                lora_dir.mkdir(exist_ok=True)
+                logger.info("Starting LoRA baselines...")
 
-            for dataset_key in args.datasets:
-                for seed in args.seeds:
-                    exp_name = f"lora_{dataset_key}_seed{seed}"
-                    if args.skip_existing and exp_name in skipped_experiments:
-                        print(f"[SKIP] {exp_name} - result already exists")
-                    else:
-                        exp_start = time.time()
-                        try:
-                            results = train_lora_baseline(
+                for dataset_key in args.datasets:
+                    for seed in args.seeds:
+                        exp_name = f"lora_{dataset_key}_seed{seed}"
+                        if args.skip_existing and exp_name in skipped_experiments:
+                            logger.info(f"[SKIP] {exp_name} - result already exists")
+                            tracker.record_skip(exp_name)
+                        else:
+                            run_experiment_with_retry(
+                                train_lora_baseline,
+                                exp_name,
+                                "lora",
                                 dataset_key, seed, lora_dir, device, LORA_CONFIG
                             )
-                            all_results["lora"].append(results)
-                            tracker.update(exp_name, time.time() - exp_start)
-                        except Exception as e:
-                            print(f"ERROR in lora {dataset_key} seed={seed}: {e}")
-                            traceback.print_exc()
 
         # 5. Linear probe baseline
         if args.only is None or args.only == "linear_probe":
             probe_dir = run_dir / "linear_probe"
             probe_dir.mkdir(exist_ok=True)
+            logger.info("Starting linear probe baselines...")
 
             for dataset_key in args.datasets:
                 for seed in args.seeds:
                     exp_name = f"linear_probe_{dataset_key}_seed{seed}"
                     if args.skip_existing and exp_name in skipped_experiments:
-                        print(f"[SKIP] {exp_name} - result already exists")
+                        logger.info(f"[SKIP] {exp_name} - result already exists")
+                        tracker.record_skip(exp_name)
                     else:
-                        exp_start = time.time()
-                        try:
-                            results = run_linear_probe(
-                                dataset_key, seed, probe_dir, device, LINEAR_PROBE_CONFIG
-                            )
-                            all_results["linear_probe"].append(results)
-                            tracker.update(exp_name, time.time() - exp_start)
-                        except Exception as e:
-                            print(f"ERROR in linear_probe {dataset_key} seed={seed}: {e}")
-                            traceback.print_exc()
+                        run_experiment_with_retry(
+                            run_linear_probe,
+                            exp_name,
+                            "linear_probe",
+                            dataset_key, seed, probe_dir, device, LINEAR_PROBE_CONFIG
+                        )
 
         # 6. Bridge with token ablation
         if args.only is None or args.only == "bridge" or args.only == "ablation":
-            bridge_dir = run_dir / "bridge"
-            bridge_dir.mkdir(exist_ok=True)
+            if "bridge" in skip_slow_set:
+                logger.info("[SKIP] Skipping bridge experiments (--skip_slow)")
+            else:
+                bridge_dir = run_dir / "bridge"
+                bridge_dir.mkdir(exist_ok=True)
+                logger.info("Starting bridge experiments...")
 
-            for num_tokens in TOKEN_ABLATION_CONFIGS:
-                for dataset_key in args.datasets:
-                    for seed in args.seeds:
-                        exp_name = f"bridge_{num_tokens}_{dataset_key}_seed{seed}"
-                        if args.skip_existing and exp_name in skipped_experiments:
-                            print(f"[SKIP] {exp_name} - result already exists")
-                        else:
-                            exp_start = time.time()
-                            try:
-                                results = train_bridge_for_dataset(
+                for num_tokens in TOKEN_ABLATION_CONFIGS:
+                    for dataset_key in args.datasets:
+                        for seed in args.seeds:
+                            exp_name = f"bridge_{num_tokens}_{dataset_key}_seed{seed}"
+                            if args.skip_existing and exp_name in skipped_experiments:
+                                logger.info(f"[SKIP] {exp_name} - result already exists")
+                                tracker.record_skip(exp_name)
+                            else:
+                                run_experiment_with_retry(
+                                    train_bridge_for_dataset,
+                                    exp_name,
+                                    f"bridge_{num_tokens}",
                                     dataset_key, seed, bridge_dir, device, BRIDGE_CONFIG,
                                     num_soft_tokens=num_tokens
                                 )
-                                all_results[f"bridge_{num_tokens}"].append(results)
-                                tracker.update(exp_name, time.time() - exp_start)
-                            except Exception as e:
-                                print(f"ERROR in bridge {dataset_key} seed={seed} tokens={num_tokens}: {e}")
-                                traceback.print_exc()
+
+                # Check for high variance in bridge results and run extra seeds if needed
+                if args.extra_seeds_on_high_variance:
+                    logger.info("Checking for high variance in bridge results...")
+                    for num_tokens in TOKEN_ABLATION_CONFIGS:
+                        for dataset_key in args.datasets:
+                            method_key = f"bridge_{num_tokens}"
+                            method_results = [r for r in all_results[method_key]
+                                            if r.get("dataset") == dataset_key]
+                            if len(method_results) >= 2:
+                                accs = [r["accuracy"] for r in method_results]
+                                is_high_var, var_stats = detect_high_variance(
+                                    accs, threshold_std=args.variance_threshold
+                                )
+                                if is_high_var:
+                                    seeds_run = [r["seed"] for r in method_results]
+                                    extra_seeds = get_extra_seeds_if_needed(
+                                        seeds_run, accs,
+                                        variance_threshold_std=args.variance_threshold,
+                                        max_extra_seeds=args.max_extra_seeds
+                                    )
+                                    if extra_seeds:
+                                        warning_msg = (
+                                            f"HIGH VARIANCE detected for {method_key}/{dataset_key}: "
+                                            f"std={var_stats['std']:.1f}, range={var_stats['range']:.1f}. "
+                                            f"Running {len(extra_seeds)} extra seeds: {extra_seeds}"
+                                        )
+                                        logger.warning(warning_msg)
+                                        high_variance_warnings.append({
+                                            "method": method_key,
+                                            "dataset": dataset_key,
+                                            "stats": var_stats,
+                                            "extra_seeds": extra_seeds,
+                                        })
+
+                                        for extra_seed in extra_seeds:
+                                            exp_name = f"bridge_{num_tokens}_{dataset_key}_seed{extra_seed}_extra"
+                                            run_experiment_with_retry(
+                                                train_bridge_for_dataset,
+                                                exp_name,
+                                                method_key,
+                                                dataset_key, extra_seed, bridge_dir, device, BRIDGE_CONFIG,
+                                                num_soft_tokens=num_tokens
+                                            )
 
         # 7. Latency measurement (after bridge training is complete)
         if args.only is None or args.only == "bridge" or args.only == "ablation":
@@ -2546,6 +3230,10 @@ def main():
             "timestamp": timestamp,
             "config": config,
             "latency": latency_results if latency_results else {},
+            "failed_experiments": failed_experiments,
+            "high_variance_warnings": high_variance_warnings,
+            "tracker_summary": tracker.get_summary(),
+            "experiment_log": tracker.get_experiment_log(),
         }
 
         # Convert results to serializable format
@@ -2556,17 +3244,36 @@ def main():
                 serializable.append(r_copy)
             complete_results[method] = serializable
 
-        with open(run_dir / "complete_results.json", "w") as f:
-            json.dump(complete_results, f, indent=2)
+        save_partial_results_atomic(complete_results, run_dir / "complete_results.json", logger)
 
         # Final summary
         total_time = time.time() - tracker.start_time
+        summary = tracker.get_summary()
+
         print("\n" + "="*70)
         print("EVALUATION COMPLETE")
         print("="*70)
         print(f"Results saved to: {run_dir}")
         print(f"Total time: {tracker._format_time(total_time)}")
-        print(f"Experiments completed: {tracker.completed}/{tracker.total_experiments}")
+        print(f"Experiments completed: {summary['completed']}/{summary['total']}")
+        print(f"Experiments failed: {summary['failed']}")
+        print(f"Experiments skipped: {summary['skipped']}")
+        print(f"Success rate: {summary['success_rate']:.1f}%")
+
+        # Print failed experiments summary
+        if failed_experiments:
+            print("\n--- Failed Experiments ---")
+            for fail in failed_experiments:
+                print(f"  - {fail['name']}: {fail['error'][:100]}...")
+            logger.warning(f"{len(failed_experiments)} experiments failed")
+
+        # Print high variance warnings
+        if high_variance_warnings:
+            print("\n--- High Variance Warnings ---")
+            for warn in high_variance_warnings:
+                print(f"  - {warn['method']}/{warn['dataset']}: "
+                      f"std={warn['stats']['std']:.1f}, range={warn['stats']['range']:.1f}")
+            logger.warning(f"{len(high_variance_warnings)} high-variance results detected")
 
         # Print summary table
         print("\n--- Accuracy Summary ---")
@@ -2577,7 +3284,12 @@ def main():
                 method_results = [r for r in results_list if r.get("dataset") == dataset_key]
                 if method_results:
                     accs = [r["accuracy"] for r in method_results]
-                    print(f"  {method}: {np.mean(accs):.1f}% +/- {np.std(accs):.1f}%")
+                    mean_acc = np.mean(accs)
+                    std_acc = np.std(accs) if len(accs) > 1 else 0
+                    # Mark high variance
+                    is_high_var, _ = detect_high_variance(accs, threshold_std=args.variance_threshold)
+                    var_marker = " [HIGH VAR]" if is_high_var else ""
+                    print(f"  {method}: {mean_acc:.1f}% +/- {std_acc:.1f}%{var_marker}")
 
         # Print latency summary
         if latency_results and "average" in latency_results:
@@ -2592,11 +3304,16 @@ def main():
         print(f"  Complete results: {run_dir / 'complete_results.json'}")
         print(f"  Statistical analysis: {run_dir / 'statistical_analysis_corrected.json'}")
         print(f"  LaTeX tables: {run_dir / 'paper_tables_comprehensive.tex'}")
+        print(f"  Evaluation log: {run_dir / 'evaluation_*.log'}")
         if latency_results:
             print(f"  Latency results: {run_dir / 'latency' / 'latency_results.json'}")
 
+        logger.info(f"Evaluation complete. Total time: {tracker._format_time(total_time)}")
+
     except KeyboardInterrupt:
-        print("\n\nInterrupted! Partial results saved.")
+        print("\n\nInterrupted! Saving partial results...")
+        logger.warning("Evaluation interrupted by user")
+
         # Still save whatever we have
         try:
             partial_results = {
@@ -2604,6 +3321,10 @@ def main():
                 "config": config,
                 "status": "interrupted",
                 "latency": latency_results if 'latency_results' in dir() else {},
+                "failed_experiments": failed_experiments,
+                "high_variance_warnings": high_variance_warnings,
+                "tracker_summary": tracker.get_summary() if 'tracker' in dir() else {},
+                "experiment_log": tracker.get_experiment_log() if 'tracker' in dir() else [],
             }
             for method, results_list in all_results.items():
                 serializable = []
@@ -2611,11 +3332,27 @@ def main():
                     r_copy = {k: v for k, v in r.items() if k not in ["predictions", "labels"]}
                     serializable.append(r_copy)
                 partial_results[method] = serializable
-            with open(run_dir / "partial_results.json", "w") as f:
-                json.dump(partial_results, f, indent=2)
+
+            save_partial_results_atomic(partial_results, run_dir / "partial_results.json", logger)
             print(f"Partial results saved to: {run_dir / 'partial_results.json'}")
+            logger.info(f"Partial results saved to: {run_dir / 'partial_results.json'}")
+
+            # Print summary of what was completed
+            if 'tracker' in dir():
+                summary = tracker.get_summary()
+                print(f"\nProgress at interruption:")
+                print(f"  Completed: {summary['completed']}/{summary['total']}")
+                print(f"  Failed: {summary['failed']}")
+                print(f"  Time elapsed: {tracker._format_time(summary['total_time'])}")
+
         except Exception as e:
             print(f"Failed to save partial results: {e}")
+            logger.error(f"Failed to save partial results: {e}")
+
+    except ExperimentError as e:
+        logger.error(f"Experiment error: {e}")
+        print(f"\nExperiment failed: {e}")
+        print("Use --continue_on_error to continue with other experiments after failures")
 
     print(f"\nAll results: {run_dir}")
 
