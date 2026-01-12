@@ -1,0 +1,70 @@
+% Table 1: Main Results - Method Comparison
+\begin{table*}[t]
+\centering
+\caption{Classification accuracy (\%) on benchmark datasets. Results show mean $\pm$ std over 3 random seeds.
+Bold indicates best result. Statistical significance vs. Bridge (8 tokens): *p<0.05, **p<0.01, ***p<0.001 (Bonferroni-corrected).}
+\label{tab:main_results}
+\begin{tabular}{lcccccc}
+\toprule
+Method & SST-2 & AG News & TREC & Avg & Params \\
+\midrule
+\textit{Random Chance} & 50.0 & 25.0 & 16.7 & 30.6 & -- \\
+\midrule
+\textbf{Individual Models (Zero-shot)} \\
+\quad Llama-8B & 83.8 $\pm$ 0.0 & 71.0 $\pm$ 0.0 & 48.2 $\pm$ 0.0 & 67.7 & 8B \\
+\quad Mistral-7B & 89.6 $\pm$ 0.0 & 71.1 $\pm$ 0.0 & 50.6 $\pm$ 0.0 & 70.4 & 7B \\
+\midrule
+\textbf{Text-Relay} \\
+\quad Llama $\rightarrow$ text $\rightarrow$ Mistral & 41.3 $\pm$ 0.0 & 1.0 $\pm$ 0.0 & 4.0 $\pm$ 0.0 & 15.4 & 15B \\
+\midrule
+\textbf{Fine-tuning Baselines} \\
+\quad Linear Probe (Llama layer-16) & -- & -- & -- & -- & 33M \\
+\quad Prompt Tuning (Mistral only) & 50.9 $\pm$ 0.0 & 25.0 $\pm$ 0.0 & 15.9 $\pm$ 4.1 & 30.6 & 33K \\
+\quad LoRA (Mistral, rank-8) & 92.6 $\pm$ 2.0 & 53.3 $\pm$ 39.6 & 14.2 $\pm$ 11.6 & 53.4 & 4.2M \\
+\midrule
+\textbf{Telepathy Bridge (Ours)} \\
+\quad 8 soft tokens & 93.3 $\pm$ 0.2 & 91.1 $\pm$ 1.1 & 59.6 $\pm$ 34.2 & 81.3 & 33.6M \\
+\quad 32 soft tokens & 93.7 $\pm$ 0.3 & 90.7 $\pm$ 1.4 & 87.9 $\pm$ 3.3 & 90.7 & 33.8M \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+% Table 2: Token Count Ablation
+\begin{table}[t]
+\centering
+\caption{Effect of soft token count on Bridge accuracy (\%). More tokens generally improve performance at the cost of higher bandwidth.}
+\label{tab:token_ablation}
+\begin{tabular}{lccc|c}
+\toprule
+Tokens & SST-2 & AG News & TREC & Compression \\
+\midrule
+
+8 & 93.3 & 91.1 & 59.6 & 0.04x \\
+
+32 & 93.7 & 90.7 & 87.9 & 0.01x \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% Table 3: Fair Latency Comparison
+\begin{table}[t]
+\centering
+\caption{End-to-end classification latency (ms). Both Bridge and Text-Relay perform the same task (Llama encodes, Mistral classifies). Speedup is computed as Text-Relay / Bridge.}
+\label{tab:latency}
+\begin{tabular}{lccc}
+\toprule
+Method & Latency (ms) & Task & Speedup \\
+\midrule
+
+Mistral Direct & 186.9 & Classify & 1.0x (baseline) \\
+
+Text-Relay & 940.2 & Summarize + Classify & 0.20x \\
+
+Bridge (Ours) & 204.7 & Encode + Classify & 4.59x \\
+
+\bottomrule
+\end{tabular}
+\end{table}
