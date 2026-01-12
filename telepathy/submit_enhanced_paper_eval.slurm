@@ -133,6 +133,7 @@ echo ""
 # - Production metrics (memory, latency, throughput)
 # - Statistical significance testing
 # - LaTeX table generation
+# - Reasoning failure diagnostics (--run_diagnostics)
 
 echo "Starting enhanced evaluation..."
 echo "Datasets: sst2, agnews, trec, boolq, arc_easy, gsm8k (6 datasets)"
@@ -144,6 +145,7 @@ echo ""
 PYTHON_CMD="python telepathy/run_enhanced_paper_evaluation.py \
     --output_dir $OUTPUT_DIR \
     --gpu 0 \
+    --run_diagnostics \
     --log_level INFO"
 
 # Add resume flag if we have an incomplete run to resume from
@@ -275,6 +277,7 @@ Features:
 - 5 seeds for robust statistical analysis
 - 4 token configs for comprehensive ablation
 - 6 datasets (3 classification + 3 reasoning)
+- Reasoning failure diagnostics included
 - Enhanced resume capability with atomic checkpointing
 - Comprehensive memory management (128GB allocation)
 

@@ -10,6 +10,7 @@ Builds on run_complete_evaluation.py with these enhancements:
 5. Improved text-relay baseline with task-specific prompting
 6. Enhanced resume capability with atomic checkpointing
 7. Comprehensive memory management for 12-hour H100 execution
+8. Optional reasoning failure diagnostics (--run_diagnostics)
 
 Constraints:
 - Runs on 1 H100 GPU in ~12 hours
@@ -18,6 +19,9 @@ Constraints:
 
 Usage:
     python telepathy/run_enhanced_paper_evaluation.py --output_dir runs/enhanced_results
+
+    # With reasoning failure diagnostics:
+    python telepathy/run_enhanced_paper_evaluation.py --output_dir runs/enhanced_results --run_diagnostics
 
 Author: Telepathy Project
 Date: January 2025
@@ -28,15 +32,21 @@ import gc
 import json
 import logging
 import os
+import re
 import sys
 import time
 import traceback
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend for HPC
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from datasets import load_dataset
 from sklearn.linear_model import LogisticRegression
@@ -1567,6 +1577,770 @@ def count_total_experiments(datasets: List[str], seeds: List[int]) -> int:
 
 
 # =============================================================================
+# REASONING FAILURE DIAGNOSTICS
+# =============================================================================
+# Integrated from analyze_reasoning_failure.py
+# Tests 5 hypotheses about why reasoning fails when classification succeeds
+
+def extract_gsm8k_answer_for_diagnosis(text):
+    """Extract numeric answer from GSM8K format."""
+    match = re.search(r'[Tt]he answer is\s*(-?\d+(?:,\d+)*(?:\.\d+)?)', text)
+    if match:
+        return match.group(1).replace(',', '')
+    match = re.search(r'####\s*(-?\d+(?:,\d+)*(?:\.\d+)?)', text)
+    if match:
+        return match.group(1).replace(',', '')
+    numbers = re.findall(r'-?\d+(?:,\d+)*(?:\.\d+)?', text)
+    if numbers:
+        return numbers[-1].replace(',', '')
+    return None
+
+
+def extract_numbers_from_text(text):
+    """Extract all numbers from text for entity preservation analysis."""
+    return re.findall(r'\b\d+(?:\.\d+)?\b', text)
+
+
+def get_first_token_probs(model, tokenizer, inputs_embeds, attention_mask):
+    """Get probability distribution for first generated token."""
+    with torch.no_grad():
+        outputs = model(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask
+        )
+        logits = outputs.logits[:, -1, :]  # [B, vocab_size]
+        probs = F.softmax(logits, dim=-1)
+    return probs
+
+
+def analyze_first_token_accuracy_diagnostic(
+    src_model, tgt_model, src_tok, tgt_tok, bridge,
+    classification_samples, reasoning_samples, device, source_layer=31,
+    logger=None
+):
+    """
+    HYPOTHESIS 1: Classification needs 1 token, reasoning needs many.
+    Compares first-token accuracy and top-k coverage between tasks.
+    """
+    if logger:
+        logger.info("HYPOTHESIS 1: First-Token Accuracy Analysis")
+
+    results = {
+        "classification": {"correct": 0, "total": 0, "top5_hits": 0, "entropy": []},
+        "reasoning": {"correct": 0, "total": 0, "top5_hits": 0, "entropy": []}
+    }
+
+    # Classification analysis (SST-2)
+    for item in tqdm(classification_samples[:50], desc="H1: Classification"):
+        text = item['sentence']
+        label = "positive" if item['label'] == 1 else "negative"
+
+        src_input = f"Review: {text}\nSentiment (positive or negative):"
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].to(torch.bfloat16)
+            soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
+
+            primer = "Sentiment:"
+            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids).to(torch.bfloat16)
+            combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+
+            probs = get_first_token_probs(tgt_model, tgt_tok, combined_embeds, attn_mask)
+            entropy = -torch.sum(probs * torch.log(probs + 1e-10), dim=-1).item()
+            results["classification"]["entropy"].append(entropy)
+
+            top5_ids = torch.topk(probs, 5).indices[0].tolist()
+            top5_tokens = [tgt_tok.decode([t]).lower().strip() for t in top5_ids]
+
+            top1_token = top5_tokens[0]
+            if label in top1_token:
+                results["classification"]["correct"] += 1
+            if any(label in t for t in top5_tokens):
+                results["classification"]["top5_hits"] += 1
+            results["classification"]["total"] += 1
+
+    # Reasoning analysis (GSM8K)
+    for item in tqdm(reasoning_samples[:50], desc="H1: Reasoning"):
+        question = item['question']
+        gold_answer = extract_gsm8k_answer_for_diagnosis(item['answer'])
+        if gold_answer is None:
+            continue
+
+        src_input = f"Question: {question}\nLet me solve this step by step."
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].to(torch.bfloat16)
+            soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
+
+            primer = "The answer is"
+            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids).to(torch.bfloat16)
+            combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+
+            probs = get_first_token_probs(tgt_model, tgt_tok, combined_embeds, attn_mask)
+            entropy = -torch.sum(probs * torch.log(probs + 1e-10), dim=-1).item()
+            results["reasoning"]["entropy"].append(entropy)
+
+            top5_ids = torch.topk(probs, 5).indices[0].tolist()
+            top5_tokens = [tgt_tok.decode([t]).strip() for t in top5_ids]
+
+            first_digit = gold_answer[0] if gold_answer else None
+            top1_token = top5_tokens[0]
+            if first_digit and first_digit in top1_token:
+                results["reasoning"]["correct"] += 1
+            if first_digit and any(first_digit in t for t in top5_tokens):
+                results["reasoning"]["top5_hits"] += 1
+            results["reasoning"]["total"] += 1
+
+    # Compute statistics
+    cls_acc = 100 * results["classification"]["correct"] / max(results["classification"]["total"], 1)
+    cls_top5 = 100 * results["classification"]["top5_hits"] / max(results["classification"]["total"], 1)
+    cls_entropy = np.mean(results["classification"]["entropy"]) if results["classification"]["entropy"] else 0
+
+    rsn_acc = 100 * results["reasoning"]["correct"] / max(results["reasoning"]["total"], 1)
+    rsn_top5 = 100 * results["reasoning"]["top5_hits"] / max(results["reasoning"]["total"], 1)
+    rsn_entropy = np.mean(results["reasoning"]["entropy"]) if results["reasoning"]["entropy"] else 0
+
+    analysis = {
+        "classification_top1": cls_acc,
+        "classification_top5": cls_top5,
+        "classification_entropy": cls_entropy,
+        "reasoning_top1": rsn_acc,
+        "reasoning_top5": rsn_top5,
+        "reasoning_entropy": rsn_entropy,
+        "gap_top1": cls_acc - rsn_acc,
+        "gap_top5": cls_top5 - rsn_top5,
+        "entropy_difference": rsn_entropy - cls_entropy
+    }
+
+    return analysis
+
+
+def analyze_soft_token_diversity_diagnostic(
+    src_model, src_tok, bridge,
+    classification_samples, reasoning_samples, device, source_layer=31
+):
+    """
+    HYPOTHESIS 2: Classification collapses tokens, reasoning needs diversity.
+    Measures within-sample and between-sample token diversity.
+    """
+    def compute_diversity_metrics(soft_tokens):
+        soft_tokens = soft_tokens.float()
+        B, K, D = soft_tokens.shape
+        metrics = {}
+
+        within_sims = []
+        for b in range(B):
+            tokens = F.normalize(soft_tokens[b], dim=-1)
+            sim_matrix = torch.mm(tokens, tokens.t())
+            mask = ~torch.eye(K, dtype=torch.bool, device=soft_tokens.device)
+            within_sims.append(sim_matrix[mask].mean().item())
+        metrics["within_sample_similarity"] = np.mean(within_sims)
+
+        pooled = soft_tokens.mean(dim=1)
+        pooled_norm = F.normalize(pooled, dim=-1)
+        between_sim = torch.mm(pooled_norm, pooled_norm.t())
+        mask = ~torch.eye(B, dtype=torch.bool, device=soft_tokens.device)
+        metrics["between_sample_similarity"] = between_sim[mask].mean().item()
+        metrics["token_variance"] = soft_tokens.var(dim=[0, 1]).mean().item()
+
+        return metrics
+
+    # Collect soft tokens for classification
+    cls_tokens_list = []
+    for item in tqdm(classification_samples[:30], desc="H2: Classification"):
+        text = item['sentence']
+        src_input = f"Review: {text}\nSentiment (positive or negative):"
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].to(torch.bfloat16)
+            soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
+            cls_tokens_list.append(soft_tokens.cpu())
+
+    cls_tokens = torch.cat(cls_tokens_list, dim=0)
+    cls_metrics = compute_diversity_metrics(cls_tokens)
+
+    # Collect soft tokens for reasoning
+    rsn_tokens_list = []
+    for item in tqdm(reasoning_samples[:30], desc="H2: Reasoning"):
+        question = item['question']
+        src_input = f"Question: {question}\nLet me solve this step by step."
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].to(torch.bfloat16)
+            soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
+            rsn_tokens_list.append(soft_tokens.cpu())
+
+    rsn_tokens = torch.cat(rsn_tokens_list, dim=0)
+    rsn_metrics = compute_diversity_metrics(rsn_tokens)
+
+    analysis = {
+        "classification": cls_metrics,
+        "reasoning": rsn_metrics,
+        "within_similarity_gap": rsn_metrics["within_sample_similarity"] - cls_metrics["within_sample_similarity"],
+        "between_similarity_gap": rsn_metrics["between_sample_similarity"] - cls_metrics["between_sample_similarity"],
+    }
+
+    return analysis, cls_tokens, rsn_tokens
+
+
+def analyze_layer_comparison_diagnostic(
+    src_model, src_tok, reasoning_samples, device
+):
+    """
+    HYPOTHESIS 3: Different layers contain different information.
+    Tests whether reasoning info is at different layers than classification info.
+    """
+    layers_to_test = [8, 16, 24, 31]
+    layer_results = {}
+
+    for layer in layers_to_test:
+        hidden_states_list = []
+        gold_answers = []
+
+        for item in tqdm(reasoning_samples[:20], desc=f"H3: Layer {layer}"):
+            question = item['question']
+            gold = extract_gsm8k_answer_for_diagnosis(item['answer'])
+            if gold is None:
+                continue
+
+            src_input = f"Question: {question}\nLet me solve this step by step."
+            with torch.no_grad():
+                src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+                src_out = src_model(**src_enc, output_hidden_states=True)
+                src_h = src_out.hidden_states[layer]
+                pooled = src_h.mean(dim=1).float().cpu()
+                hidden_states_list.append(pooled.numpy())
+                gold_answers.append(gold)
+
+        X = np.vstack(hidden_states_list)
+
+        try:
+            U, S, V = np.linalg.svd(X, full_matrices=False)
+            explained_var = (S ** 2) / (S ** 2).sum()
+            effective_rank = np.sum(np.cumsum(explained_var) < 0.9) + 1
+        except:
+            effective_rank = X.shape[1]
+
+        # Bin answers for clustering analysis
+        answer_bins = []
+        for a in gold_answers:
+            try:
+                val = float(a)
+                if val < 10:
+                    answer_bins.append(0)
+                elif val < 100:
+                    answer_bins.append(1)
+                else:
+                    answer_bins.append(2)
+            except:
+                answer_bins.append(1)
+
+        silhouette = 0.0
+        if len(set(answer_bins)) > 1:
+            try:
+                from sklearn.metrics import silhouette_score
+                silhouette = silhouette_score(X, answer_bins)
+            except:
+                pass
+
+        layer_results[layer] = {
+            "effective_rank": effective_rank,
+            "top_singular_value_ratio": float(S[0] / S.sum()) if len(S) > 0 else 0,
+            "silhouette_score": silhouette,
+        }
+
+    return layer_results
+
+
+def analyze_entity_preservation_diagnostic(
+    src_model, src_tok, bridge, reasoning_samples, device, source_layer=31
+):
+    """
+    HYPOTHESIS 4: Bridge loses specific entities needed for reasoning.
+    Tests whether numbers and entities can be recovered from soft tokens.
+    """
+    soft_tokens_list = []
+    entity_labels = []
+    target_numbers = ['1', '2', '3', '4', '5', '10', '20', '100']
+
+    for item in tqdm(reasoning_samples[:60], desc="H4: Entity Preservation"):
+        question = item['question']
+        numbers_in_question = extract_numbers_from_text(question)
+
+        src_input = f"Question: {question}\nLet me solve this step by step."
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].to(torch.bfloat16)
+            soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
+
+            pooled = soft_tokens.mean(dim=1).float().cpu().numpy()
+            soft_tokens_list.append(pooled[0])
+            entity_vec = [1 if num in numbers_in_question else 0 for num in target_numbers]
+            entity_labels.append(entity_vec)
+
+    X = np.array(soft_tokens_list)
+    Y = np.array(entity_labels)
+
+    results = {}
+    for i, num in enumerate(target_numbers):
+        y = Y[:, i]
+        if y.sum() < 3 or (len(y) - y.sum()) < 3:
+            results[num] = {"accuracy": 0.0, "present": int(y.sum()), "absent": int(len(y) - y.sum())}
+            continue
+
+        try:
+            from sklearn.linear_model import LogisticRegression as LR
+            from sklearn.model_selection import cross_val_score
+            clf = LR(max_iter=1000, class_weight='balanced')
+            scores = cross_val_score(clf, X, y, cv=3)
+            acc = scores.mean()
+        except:
+            acc = 0.5
+
+        results[num] = {
+            "accuracy": acc,
+            "present": int(y.sum()),
+            "absent": int(len(y) - y.sum())
+        }
+
+    valid_results = [r["accuracy"] for r in results.values() if r["accuracy"] > 0]
+    mean_accuracy = np.mean(valid_results) if valid_results else 0.5
+
+    return results, mean_accuracy
+
+
+def analyze_cot_preservation_diagnostic(
+    src_model, src_tok, bridge, reasoning_samples, device, source_layer=31
+):
+    """
+    HYPOTHESIS 5: Multi-step reasoning requires sequential dependency.
+    Tests whether reasoning steps are encoded distinctly in bridge output.
+    """
+    step_similarities = []
+
+    for item in tqdm(reasoning_samples[:20], desc="H5: CoT Preservation"):
+        question = item['question']
+        src_input = f"Question: {question}\nLet me solve this step by step."
+
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].to(torch.bfloat16)
+            soft_tokens, _ = bridge(src_h, src_enc.attention_mask)
+
+            tokens = soft_tokens[0].float()
+            K = tokens.shape[0]
+
+            step_size = max(1, K // 4)
+            steps = [tokens[i:i+step_size].mean(dim=0) for i in range(0, K, step_size)]
+
+            if len(steps) >= 2:
+                steps = torch.stack(steps[:4])
+                steps_norm = F.normalize(steps, dim=-1)
+                sim_matrix = torch.mm(steps_norm, steps_norm.t())
+                seq_sims = [sim_matrix[i, i+1].item() for i in range(len(steps)-1)]
+                step_similarities.append(seq_sims)
+
+    if step_similarities:
+        avg_sims = np.mean(step_similarities, axis=0)
+        results = {
+            "sequential_similarities": avg_sims.tolist(),
+            "mean_sequential_similarity": float(np.mean(avg_sims))
+        }
+    else:
+        results = {"error": "Could not compute step similarities"}
+
+    return results
+
+
+def create_diagnostic_visualizations(results, cls_tokens, rsn_tokens, output_dir):
+    """Generate diagnostic visualizations."""
+    os.makedirs(output_dir, exist_ok=True)
+    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+
+    # 1. First-Token Accuracy Comparison
+    ax1 = axes[0, 0]
+    if "first_token" in results:
+        ft = results["first_token"]
+        categories = ['Top-1', 'Top-5']
+        cls_vals = [ft["classification_top1"], ft["classification_top5"]]
+        rsn_vals = [ft["reasoning_top1"], ft["reasoning_top5"]]
+
+        x = np.arange(len(categories))
+        width = 0.35
+
+        bars1 = ax1.bar(x - width/2, cls_vals, width, label='Classification', color='#2ecc71')
+        bars2 = ax1.bar(x + width/2, rsn_vals, width, label='Reasoning', color='#e74c3c')
+
+        ax1.set_ylabel('Accuracy (%)')
+        ax1.set_title('H1: First-Token Accuracy Gap')
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(categories)
+        ax1.legend()
+        ax1.set_ylim(0, 100)
+    else:
+        ax1.text(0.5, 0.5, 'No first-token data', ha='center', va='center', transform=ax1.transAxes)
+
+    # 2. Soft Token t-SNE
+    ax2 = axes[0, 1]
+    if cls_tokens is not None and rsn_tokens is not None:
+        n_samples = min(30, cls_tokens.shape[0], rsn_tokens.shape[0])
+        cls_flat = cls_tokens[:n_samples].reshape(n_samples, -1).numpy()
+        rsn_flat = rsn_tokens[:n_samples].reshape(n_samples, -1).numpy()
+
+        combined = np.vstack([cls_flat, rsn_flat])
+
+        try:
+            from sklearn.manifold import TSNE
+            perplexity = min(15, len(combined) - 1)
+            tsne = TSNE(n_components=2, perplexity=perplexity, max_iter=500, random_state=42)
+            embeddings = tsne.fit_transform(combined)
+
+            ax2.scatter(embeddings[:n_samples, 0], embeddings[:n_samples, 1],
+                       c='#2ecc71', label='Classification', alpha=0.7, s=50)
+            ax2.scatter(embeddings[n_samples:, 0], embeddings[n_samples:, 1],
+                       c='#e74c3c', label='Reasoning', alpha=0.7, s=50)
+            ax2.set_title('H2: Soft Token Distribution (t-SNE)')
+            ax2.legend()
+        except Exception as e:
+            ax2.text(0.5, 0.5, f't-SNE failed: {e}', ha='center', va='center', transform=ax2.transAxes)
+    else:
+        ax2.text(0.5, 0.5, 'No token data', ha='center', va='center', transform=ax2.transAxes)
+
+    # 3. Layer Comparison
+    ax3 = axes[1, 0]
+    if "layer_comparison" in results:
+        lc = results["layer_comparison"]
+        layers = sorted(lc.keys())
+        silhouettes = [lc[l]["silhouette_score"] for l in layers]
+
+        ax3_twin = ax3.twinx()
+        ax3.bar([str(l) for l in layers], silhouettes, label='Silhouette', color='#3498db')
+        ax3_twin.plot([str(l) for l in layers], [lc[l]["effective_rank"] for l in layers], 'o-',
+                     color='#9b59b6', label='Effective Rank')
+
+        ax3.set_xlabel('Layer')
+        ax3.set_ylabel('Silhouette Score', color='#3498db')
+        ax3_twin.set_ylabel('Effective Rank', color='#9b59b6')
+        ax3.set_title('H3: Layer Information Content')
+        ax3.legend(loc='upper left')
+        ax3_twin.legend(loc='upper right')
+    else:
+        ax3.text(0.5, 0.5, 'No layer data', ha='center', va='center', transform=ax3.transAxes)
+
+    # 4. Entity Preservation Probe
+    ax4 = axes[1, 1]
+    if "entity_preservation" in results:
+        ep = results["entity_preservation"]["probe_results"]
+        entities = list(ep.keys())
+        accuracies = [ep[e]["accuracy"] for e in entities]
+
+        colors = ['#2ecc71' if a > 0.65 else '#f39c12' if a > 0.55 else '#e74c3c' for a in accuracies]
+        ax4.bar(entities, accuracies, color=colors)
+        ax4.axhline(y=0.5, color='gray', linestyle='--', label='Random baseline')
+        ax4.set_xlabel('Entity (Number)')
+        ax4.set_ylabel('Probe Accuracy')
+        ax4.set_title('H4: Entity Preservation')
+        ax4.set_ylim(0, 1)
+        ax4.legend()
+    else:
+        ax4.text(0.5, 0.5, 'No entity data', ha='center', va='center', transform=ax4.transAxes)
+
+    plt.tight_layout()
+
+    fig_path = os.path.join(output_dir, "reasoning_failure_diagnosis.png")
+    plt.savefig(fig_path, dpi=150, bbox_inches='tight')
+    pdf_path = os.path.join(output_dir, "reasoning_failure_diagnosis.pdf")
+    plt.savefig(pdf_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    return fig_path, pdf_path
+
+
+def generate_diagnostic_recommendations(results):
+    """Generate actionable recommendations based on findings."""
+    recommendations = []
+
+    # H1: First-token accuracy
+    if "first_token" in results:
+        ft = results["first_token"]
+        if ft["gap_top1"] > 30:
+            recommendations.append({
+                "hypothesis": "H1: First-Token Accuracy",
+                "finding": f"Classification top-1: {ft['classification_top1']:.1f}%, Reasoning top-1: {ft['reasoning_top1']:.1f}%",
+                "recommendation": "Consider multi-token supervision. Train with loss on first K tokens.",
+                "priority": "HIGH"
+            })
+
+    # H2: Token diversity
+    if "diversity" in results:
+        div = results["diversity"]
+        if div["classification"]["within_sample_similarity"] > 0.8 and div["reasoning"]["within_sample_similarity"] > 0.8:
+            recommendations.append({
+                "hypothesis": "H2: Token Diversity",
+                "finding": "Both tasks show high within-sample similarity (>0.8)",
+                "recommendation": "Add diversity loss during training to force token differentiation.",
+                "priority": "HIGH"
+            })
+
+    # H3: Layer selection
+    if "layer_comparison" in results:
+        lc = results["layer_comparison"]
+        best_layer = max(lc.keys(), key=lambda l: lc[l]["silhouette_score"])
+        if best_layer != 31:
+            recommendations.append({
+                "hypothesis": "H3: Layer Selection",
+                "finding": f"Best layer for reasoning: {best_layer} (current: 31)",
+                "recommendation": f"Retrain bridge with --source_layer {best_layer}",
+                "priority": "MEDIUM"
+            })
+
+    # H4: Entity preservation
+    if "entity_preservation" in results:
+        ep = results["entity_preservation"]
+        if ep["mean_accuracy"] < 0.6:
+            recommendations.append({
+                "hypothesis": "H4: Entity Preservation",
+                "finding": f"Mean entity probe accuracy: {ep['mean_accuracy']:.2f} (near random)",
+                "recommendation": "Add entity-aware loss. Include reconstruction of key numbers in training objective.",
+                "priority": "CRITICAL"
+            })
+
+    # H5: CoT preservation
+    if "cot_preservation" in results:
+        cot = results["cot_preservation"]
+        if "mean_sequential_similarity" in cot and cot["mean_sequential_similarity"] > 0.85:
+            recommendations.append({
+                "hypothesis": "H5: Sequential Structure",
+                "finding": f"Token sequence lacks differentiation: {cot['mean_sequential_similarity']:.2f}",
+                "recommendation": "Add positional supervision or sequence-aware training.",
+                "priority": "MEDIUM"
+            })
+
+    return recommendations
+
+
+def run_reasoning_diagnostics(
+    run_dir: Path,
+    device: torch.device,
+    bridge_config: Dict,
+    logger: Optional[logging.Logger] = None
+) -> Dict[str, Any]:
+    """
+    Run comprehensive reasoning failure diagnostics.
+
+    Uses the first seed and 8-token configuration to minimize runtime.
+    Reuses models where possible to save memory and time.
+
+    Args:
+        run_dir: Directory containing bridge checkpoints
+        device: CUDA device
+        bridge_config: Bridge configuration dict
+        logger: Optional logger
+
+    Returns:
+        Dictionary with all diagnostic results
+    """
+    diagnostics_dir = run_dir / "diagnostics"
+    diagnostics_dir.mkdir(exist_ok=True)
+
+    if logger:
+        logger.info("=" * 70)
+        logger.info("REASONING FAILURE DIAGNOSTICS")
+        logger.info("=" * 70)
+
+    print("\n" + "=" * 70)
+    print("REASONING FAILURE DIAGNOSTICS")
+    print("=" * 70)
+
+    start_time = time.time()
+    results = {}
+
+    # Load models once
+    print("\nLoading models for diagnostics...")
+    src_model = AutoModelForCausalLM.from_pretrained(
+        SOURCE_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
+    ).eval()
+    tgt_model = AutoModelForCausalLM.from_pretrained(
+        TARGET_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
+    ).eval()
+
+    src_tok = AutoTokenizer.from_pretrained(SOURCE_MODEL)
+    src_tok.pad_token = src_tok.eos_token
+    tgt_tok = AutoTokenizer.from_pretrained(TARGET_MODEL)
+    tgt_tok.pad_token = tgt_tok.eos_token
+
+    # Compute target RMS and create bridge
+    with torch.no_grad():
+        tgt_embeds = tgt_model.get_input_embeddings().weight.float()
+        target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
+
+    # Try to load trained bridge, otherwise create fresh one
+    bridge = TelepathyBridge(
+        src_dim=src_model.config.hidden_size,
+        tgt_dim=tgt_model.config.hidden_size,
+        num_soft_tokens=8,  # Use 8-token config for diagnostics
+        heads=bridge_config["heads"],
+        depth=bridge_config["depth"],
+        target_rms=target_rms
+    ).to(device).to(torch.bfloat16).eval()
+
+    # Try to load checkpoint from first seed
+    checkpoint_path = run_dir / "bridge" / "sst2_seed42_tokens8_bridge.pt"
+    if checkpoint_path.exists():
+        try:
+            bridge.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
+            print(f"Loaded bridge checkpoint: {checkpoint_path}")
+        except Exception as e:
+            print(f"Could not load checkpoint, using fresh bridge: {e}")
+    else:
+        print("No checkpoint found, using fresh bridge")
+
+    # Load datasets
+    print("\nLoading diagnostic datasets...")
+    sst2 = load_dataset("glue", "sst2", split="validation")
+    gsm8k = load_dataset("openai/gsm8k", "main", split="test")
+
+    classification_samples = [{"sentence": item["sentence"], "label": item["label"]} for item in list(sst2)[:100]]
+    reasoning_samples = [{"question": item["question"], "answer": item["answer"]} for item in list(gsm8k)[:100]]
+
+    print(f"Classification samples: {len(classification_samples)}")
+    print(f"Reasoning samples: {len(reasoning_samples)}")
+
+    # Run H1: First-Token Accuracy
+    print("\n--- H1: First-Token Accuracy Analysis ---")
+    try:
+        results["first_token"] = analyze_first_token_accuracy_diagnostic(
+            src_model, tgt_model, src_tok, tgt_tok, bridge,
+            classification_samples, reasoning_samples, device, bridge_config["source_layer"],
+            logger=logger
+        )
+        print(f"  Classification Top-1: {results['first_token']['classification_top1']:.1f}%")
+        print(f"  Reasoning Top-1: {results['first_token']['reasoning_top1']:.1f}%")
+        print(f"  Gap: {results['first_token']['gap_top1']:.1f}pp")
+    except Exception as e:
+        print(f"  H1 failed: {e}")
+        results["first_token"] = {"error": str(e)}
+
+    # Run H2: Soft Token Diversity
+    print("\n--- H2: Soft Token Diversity Analysis ---")
+    cls_tokens = None
+    rsn_tokens = None
+    try:
+        results["diversity"], cls_tokens, rsn_tokens = analyze_soft_token_diversity_diagnostic(
+            src_model, src_tok, bridge,
+            classification_samples, reasoning_samples, device, bridge_config["source_layer"]
+        )
+        print(f"  Classification within-sample sim: {results['diversity']['classification']['within_sample_similarity']:.3f}")
+        print(f"  Reasoning within-sample sim: {results['diversity']['reasoning']['within_sample_similarity']:.3f}")
+    except Exception as e:
+        print(f"  H2 failed: {e}")
+        results["diversity"] = {"error": str(e)}
+
+    # Run H3: Layer Comparison
+    print("\n--- H3: Layer Comparison Analysis ---")
+    try:
+        results["layer_comparison"] = analyze_layer_comparison_diagnostic(
+            src_model, src_tok, reasoning_samples, device
+        )
+        best_layer = max(results["layer_comparison"].keys(),
+                        key=lambda l: results["layer_comparison"][l]["silhouette_score"])
+        print(f"  Best layer for reasoning: {best_layer}")
+    except Exception as e:
+        print(f"  H3 failed: {e}")
+        results["layer_comparison"] = {"error": str(e)}
+
+    # Run H4: Entity Preservation
+    print("\n--- H4: Entity Preservation Analysis ---")
+    try:
+        probe_results, mean_acc = analyze_entity_preservation_diagnostic(
+            src_model, src_tok, bridge, reasoning_samples, device, bridge_config["source_layer"]
+        )
+        results["entity_preservation"] = {
+            "probe_results": probe_results,
+            "mean_accuracy": mean_acc
+        }
+        print(f"  Mean entity probe accuracy: {mean_acc:.2f}")
+    except Exception as e:
+        print(f"  H4 failed: {e}")
+        results["entity_preservation"] = {"error": str(e)}
+
+    # Run H5: CoT Preservation
+    print("\n--- H5: CoT Preservation Analysis ---")
+    try:
+        results["cot_preservation"] = analyze_cot_preservation_diagnostic(
+            src_model, src_tok, bridge, reasoning_samples, device, bridge_config["source_layer"]
+        )
+        if "mean_sequential_similarity" in results["cot_preservation"]:
+            print(f"  Mean sequential similarity: {results['cot_preservation']['mean_sequential_similarity']:.3f}")
+    except Exception as e:
+        print(f"  H5 failed: {e}")
+        results["cot_preservation"] = {"error": str(e)}
+
+    # Generate visualizations
+    print("\n--- Generating Visualizations ---")
+    try:
+        fig_path, pdf_path = create_diagnostic_visualizations(
+            results, cls_tokens, rsn_tokens, str(diagnostics_dir)
+        )
+        print(f"  Saved: {fig_path}")
+        print(f"  Saved: {pdf_path}")
+    except Exception as e:
+        print(f"  Visualization failed: {e}")
+
+    # Generate recommendations
+    print("\n--- Generating Recommendations ---")
+    recommendations = generate_diagnostic_recommendations(results)
+    results["recommendations"] = recommendations
+
+    for i, rec in enumerate(recommendations, 1):
+        print(f"  {i}. [{rec['priority']}] {rec['hypothesis']}")
+        print(f"     {rec['recommendation']}")
+
+    # Save results
+    results_path = diagnostics_dir / "diagnosis_results.json"
+
+    def convert_to_serializable(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, dict):
+            return {k: convert_to_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_to_serializable(v) for v in obj]
+        elif isinstance(obj, torch.Tensor):
+            return obj.tolist()
+        return obj
+
+    serializable_results = convert_to_serializable(results)
+    with open(results_path, 'w') as f:
+        json.dump(serializable_results, f, indent=2)
+    print(f"\nResults saved to: {results_path}")
+
+    # Cleanup
+    del src_model, tgt_model, bridge
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    elapsed = time.time() - start_time
+    print(f"\nDiagnostics completed in {elapsed/60:.1f} minutes")
+
+    return results
+
+
+# =============================================================================
 # RESUME CAPABILITY
 # =============================================================================
 
@@ -1686,6 +2460,12 @@ def parse_args():
     parser.add_argument("--log_level", type=str, default="INFO",
                        choices=["DEBUG", "INFO", "WARNING", "ERROR"])
 
+    # Diagnostics options
+    parser.add_argument("--run_diagnostics", action="store_true",
+                       help="Run reasoning failure diagnostics after main evaluation")
+    parser.add_argument("--diagnostics_only", action="store_true",
+                       help="Only run diagnostics (skip main evaluation)")
+
     return parser.parse_args()
 
 
@@ -1793,8 +2573,32 @@ def main():
     print(f"Seeds: {args.seeds}")
     print(f"Token configs: {TOKEN_ABLATION_CONFIGS}")
     print(f"Total experiments: {total_experiments}")
+    print(f"Run diagnostics: {args.run_diagnostics}")
+    print(f"Diagnostics only: {args.diagnostics_only}")
     print(f"Estimated time: ~12 hours on 1 H100")
     print("="*70)
+
+    # Handle diagnostics-only mode
+    if args.diagnostics_only:
+        print("\nRunning in diagnostics-only mode...")
+        logger.info("Diagnostics-only mode enabled, skipping main evaluation")
+
+        # Run diagnostics and exit
+        try:
+            diagnostic_results = run_reasoning_diagnostics(
+                run_dir=run_dir,
+                device=device,
+                bridge_config=BRIDGE_CONFIG,
+                logger=logger
+            )
+            print(f"\nDiagnostics complete! Results saved to: {run_dir / 'diagnostics'}")
+        except Exception as e:
+            logger.error(f"Diagnostics failed: {e}")
+            print(f"\nDiagnostics failed: {e}")
+            traceback.print_exc()
+
+        print(f"\nAll results: {run_dir}")
+        return
 
     # Save configuration
     config = {
@@ -1978,6 +2782,32 @@ def main():
 
         logger.info(f"Evaluation complete. Total time: {tracker._format_time(total_time)}")
         checkpointer.clear()
+
+        # Run optional diagnostics after main evaluation
+        if args.run_diagnostics:
+            print("\n" + "="*70)
+            print("RUNNING POST-EVALUATION DIAGNOSTICS")
+            print("="*70)
+            logger.info("Starting reasoning failure diagnostics...")
+
+            try:
+                diagnostic_results = run_reasoning_diagnostics(
+                    run_dir=run_dir,
+                    device=device,
+                    bridge_config=BRIDGE_CONFIG,
+                    logger=logger
+                )
+
+                # Add diagnostics to complete results
+                complete_results["diagnostics"] = diagnostic_results
+                save_partial_results_atomic(complete_results, run_dir / "complete_results.json", logger)
+
+                print(f"\nDiagnostics complete! Results saved to: {run_dir / 'diagnostics'}")
+                logger.info("Diagnostics completed successfully")
+            except Exception as e:
+                logger.error(f"Diagnostics failed: {e}")
+                print(f"\nDiagnostics failed: {e}")
+                traceback.print_exc()
 
     except KeyboardInterrupt:
         print("\n\nInterrupted! Saving partial results...")
