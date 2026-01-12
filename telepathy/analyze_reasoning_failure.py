@@ -1,848 +1,1191 @@
 #!/usr/bin/env python
+# telepathy/analyze_reasoning_failure.py
 """
-Telepathy Reasoning Failure Analysis
+Reasoning Failure Diagnostic: Why does the bridge fail on reasoning when it succeeds on classification?
 
-This script performs systematic diagnosis of WHY the Telepathy bridge fails on
-reasoning tasks (GSM8K) while succeeding on classification tasks (SST-2, AG News).
+BACKGROUND:
+- Classification (SST-2: 94.7%, AG News: 88.9%): Bridge works excellently
+- Reasoning (GSM8K: 2%): Bridge fails catastrophically
 
-Known issues from REPORT.md:
-- Classification: 85-90% accuracy (working)
-- Reasoning: 0-5% accuracy (failing)
-- Entity tracking loss: Bridge loses specific numbers/entities
+This script tests 5 hypotheses about why reasoning fails:
 
-Hypotheses to test:
-1. Compression bottleneck: Not enough tokens for multi-step reasoning
-2. Layer selection: Layer 16 captures concepts, layer 31 captures answers
-3. Entity tracking: Bridge loses specific numbers needed for math
-4. Chain preservation: Multi-step reasoning chains collapse
+HYPOTHESIS 1: First-Token Accuracy
+    Classification only needs 1 discriminative token (pos/neg, category name)
+    Reasoning needs MANY correct tokens in sequence
+    Test: Compare first-token accuracy between classification and reasoning tasks
 
-Diagnostic tests:
-A. First-token accuracy: Does bridge preserve question semantics?
-B. Soft token diversity: Are tokens collapsed or diverse?
-C. Layer comparison: Layer 16 vs Layer 31 representations
-D. Entity preservation: Can bridge transmit specific numbers?
-E. Chain-of-thought test: Does reasoning chain survive compression?
+HYPOTHESIS 2: Soft Token Diversity
+    Classification: All soft tokens converge to "category vibe"
+    Reasoning: Need diverse tokens encoding different reasoning steps/entities
+    Test: Measure token-to-token similarity within samples
 
-Expected runtime: 2-3 hours on 4× H100 GPUs
+HYPOTHESIS 3: Layer Information Content
+    Classification info may be at different layers than reasoning info
+    Test: Compare bridge performance at different source layers
+
+HYPOTHESIS 4: Entity Preservation
+    Classification: Don't need specific entities (just category)
+    Reasoning: Need exact numbers, names, quantities
+    Test: Probe whether entities can be recovered from soft tokens
+
+HYPOTHESIS 5: Chain-of-Thought Preservation
+    Classification: Single-step decision
+    Reasoning: Multi-step dependency chain
+    Test: Measure information preservation across reasoning steps
+
+OUTPUT:
+- 4 diagnostic visualizations saved to output_dir/
+- Detailed analysis report with actionable recommendations
+- JSON results for programmatic analysis
+
+RUNTIME: ~2-3 hours on single GPU
 
 Usage:
     python telepathy/analyze_reasoning_failure.py \
-        --checkpoint runs/gsm8k_bridge/bridge.pt \
-        --output_dir runs/reasoning_analysis \
-        --num_samples 200
+        --classification_checkpoint runs/sst2_*/bridge.pt \
+        --reasoning_checkpoint runs/gsm8k_*/bridge_gsm8k.pt \
+        --output_dir runs/reasoning_diagnosis
 """
 
-import torch
-import torch.nn.functional as F
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from datasets import load_dataset
-from tqdm import tqdm
 import argparse
 import json
 import os
 import re
-from pathlib import Path
+import time
 from collections import defaultdict, Counter
-import numpy as np
-import matplotlib.pyplot as plt
+from datetime import datetime
+from pathlib import Path
+
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend for HPC
-
-# Import existing bridge infrastructure
-from latent_bridge_v15 import LatentBridgeV15
-from inspect_latents import get_nearest_neighbors, analyze_latent_geometry
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from datasets import load_dataset
+from tqdm import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 # =============================================================================
-# Configuration
+# BRIDGE ARCHITECTURE (from latent_bridge_v15.py)
+# =============================================================================
+
+class PerceiverResampler(nn.Module):
+    """Perceiver-style cross-attention resampler."""
+    def __init__(self, src_dim, tgt_dim, num_latents=64, heads=8, depth=4):
+        super().__init__()
+        self.num_latents = num_latents
+        self.tgt_dim = tgt_dim
+        self.latents = nn.Parameter(torch.randn(num_latents, tgt_dim) * 0.02)
+        self.input_proj = nn.Linear(src_dim, tgt_dim) if src_dim != tgt_dim else nn.Identity()
+
+        self.layers = nn.ModuleList([
+            nn.ModuleDict({
+                "cross_attn": nn.MultiheadAttention(tgt_dim, heads, batch_first=True),
+                "ln1": nn.LayerNorm(tgt_dim),
+                "self_attn": nn.MultiheadAttention(tgt_dim, heads, batch_first=True),
+                "ln2": nn.LayerNorm(tgt_dim),
+                "ffn": nn.Sequential(
+                    nn.Linear(tgt_dim, 4 * tgt_dim),
+                    nn.GELU(),
+                    nn.Linear(4 * tgt_dim, tgt_dim)
+                ),
+                "ln3": nn.LayerNorm(tgt_dim)
+            }) for _ in range(depth)
+        ])
+
+    def forward(self, src_hidden, src_mask=None):
+        B = src_hidden.shape[0]
+        keys = self.input_proj(src_hidden.to(self.input_proj.weight.dtype if hasattr(self.input_proj, 'weight') else src_hidden.dtype))
+        x = self.latents.unsqueeze(0).expand(B, -1, -1).to(keys.dtype)
+        key_padding_mask = ~src_mask.bool() if src_mask is not None else None
+
+        for layer in self.layers:
+            x_norm = layer["ln1"](x)
+            attn_out, _ = layer["cross_attn"](
+                query=x_norm, key=keys, value=keys,
+                key_padding_mask=key_padding_mask,
+                need_weights=False
+            )
+            x = x + attn_out
+            x_norm = layer["ln2"](x)
+            attn_out, _ = layer["self_attn"](
+                query=x_norm, key=x_norm, value=x_norm,
+                need_weights=False
+            )
+            x = x + attn_out
+            x = x + layer["ffn"](layer["ln3"](x))
+        return x
+
+
+class LatentBridgeV15(nn.Module):
+    """Telepathy Bridge (Continuous)."""
+    def __init__(self, args, src_dim, tgt_dim, target_rms=0.03):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        num_latents = getattr(args, 'soft_tokens', 128)
+        heads = getattr(args, 'heads', 8)
+        depth = getattr(args, 'depth', 4)
+        self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+
+    def forward(self, src_hidden, src_mask=None):
+        compressed = self.resampler(src_hidden, src_mask)
+        rms = torch.sqrt((compressed ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        out = (compressed / rms) * self.output_scale
+        z_variance = compressed.var(dim=[0, 1]).mean()
+        return out, torch.tensor(0.0, device=src_hidden.device), 1.0, z_variance
+
+
+class RecurrentPerceiverBlock(nn.Module):
+    """Perceiver block with recurrent capability for CoT."""
+    def __init__(self, dim, heads=8):
+        super().__init__()
+        self.dim = dim
+        self.cross_attn = nn.MultiheadAttention(dim, heads, batch_first=True)
+        self.ln_cross = nn.LayerNorm(dim)
+        self.self_attn = nn.MultiheadAttention(dim, heads, batch_first=True)
+        self.ln_self = nn.LayerNorm(dim)
+        self.ffn = nn.Sequential(
+            nn.Linear(dim, 4 * dim),
+            nn.GELU(),
+            nn.Linear(4 * dim, dim)
+        )
+        self.ln_ffn = nn.LayerNorm(dim)
+
+    def forward(self, latents, src_kv, src_mask=None, prev_latent=None):
+        key_padding_mask = ~src_mask.bool() if src_mask is not None else None
+        x = self.ln_cross(latents)
+        attn_out, _ = self.cross_attn(
+            query=x, key=src_kv, value=src_kv,
+            key_padding_mask=key_padding_mask,
+            need_weights=False
+        )
+        latents = latents + attn_out
+
+        x = self.ln_self(latents)
+        if prev_latent is not None:
+            prev_normed = self.ln_self(prev_latent)
+            kv_context = torch.cat([x, prev_normed], dim=1)
+        else:
+            kv_context = x
+
+        attn_out, _ = self.self_attn(
+            query=x, key=kv_context, value=kv_context,
+            need_weights=False
+        )
+        latents = latents + attn_out
+        latents = latents + self.ffn(self.ln_ffn(latents))
+        return latents
+
+
+class LatentCoTBridge(nn.Module):
+    """Latent Chain-of-Thought Bridge for reasoning tasks."""
+    def __init__(self, args, src_dim, tgt_dim, target_rms=0.03):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        self.target_rms = target_rms
+        self.num_latents = getattr(args, 'soft_tokens', 8)
+        self.num_steps = getattr(args, 'cot_steps', 4)
+        self.depth = getattr(args, 'depth', 2)
+        self.heads = getattr(args, 'heads', 8)
+
+        self.input_proj = nn.Linear(src_dim, tgt_dim) if src_dim != tgt_dim else nn.Identity()
+        self.latent_queries = nn.ParameterList([
+            nn.Parameter(torch.randn(self.num_latents, tgt_dim) * 0.02)
+            for _ in range(self.num_steps)
+        ])
+        self.step_embed = nn.Embedding(self.num_steps, tgt_dim)
+        self.perceiver_blocks = nn.ModuleList([
+            RecurrentPerceiverBlock(tgt_dim, self.heads)
+            for _ in range(self.depth)
+        ])
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+
+    def forward_step(self, src_kv, src_mask, step_idx, prev_latent=None):
+        B = src_kv.shape[0]
+        queries = self.latent_queries[step_idx].unsqueeze(0).expand(B, -1, -1)
+        queries = queries.to(src_kv.dtype)
+        step_emb = self.step_embed(torch.tensor([step_idx], device=src_kv.device))
+        queries = queries + step_emb.unsqueeze(0)
+        latents = queries
+        for block in self.perceiver_blocks:
+            latents = block(latents, src_kv, src_mask, prev_latent)
+        return latents
+
+    def forward(self, src_hidden, src_mask=None, return_all_steps=True):
+        src_kv = self.input_proj(src_hidden.to(
+            self.input_proj.weight.dtype if hasattr(self.input_proj, 'weight') else src_hidden.dtype
+        ))
+        all_latents = []
+        prev_latent = None
+
+        for step_idx in range(self.num_steps):
+            step_latent = self.forward_step(src_kv, src_mask, step_idx, prev_latent)
+            all_latents.append(step_latent)
+            prev_latent = step_latent
+
+        if return_all_steps:
+            combined = torch.cat(all_latents, dim=1)
+        else:
+            combined = all_latents[-1]
+
+        rms = torch.sqrt((combined ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        out = (combined / rms) * self.output_scale
+        z_variance = combined.var(dim=[0, 1]).mean()
+        return out, torch.tensor(0.0, device=src_hidden.device), 1.0, z_variance
+
+
+# =============================================================================
+# HELPER CLASSES AND FUNCTIONS
 # =============================================================================
 
 class Args:
-    """Args object for LatentBridgeV15 interface."""
-    def __init__(self, soft_tokens=8, heads=8, depth=2, use_fsq=False, stats_path=None):
+    """Minimal args object for bridge instantiation."""
+    def __init__(self, soft_tokens=8, heads=8, depth=2, cot_steps=4, use_fsq=False, stats_path=None):
         self.soft_tokens = soft_tokens
         self.heads = heads
         self.depth = depth
+        self.cot_steps = cot_steps
         self.use_fsq = use_fsq
         self.stats_path = stats_path
 
 
-# =============================================================================
-# Answer Extraction (from gsm8k_eval.py)
-# =============================================================================
-
-def extract_answer(text):
-    """Extract numeric answer following standard GSM8K format."""
-    # Primary: Look for "The answer is X"
+def extract_gsm8k_answer(text):
+    """Extract numeric answer from GSM8K format."""
     match = re.search(r'[Tt]he answer is\s*(-?\d+(?:,\d+)*(?:\.\d+)?)', text)
     if match:
         return match.group(1).replace(',', '')
-
-    # Secondary: Look for #### pattern
     match = re.search(r'####\s*(-?\d+(?:,\d+)*(?:\.\d+)?)', text)
     if match:
         return match.group(1).replace(',', '')
-
-    # Fallback: last number in text
     numbers = re.findall(r'-?\d+(?:,\d+)*(?:\.\d+)?', text)
     if numbers:
         return numbers[-1].replace(',', '')
-
     return None
 
 
-def extract_numbers_from_question(question):
-    """Extract all numbers mentioned in the question."""
-    numbers = re.findall(r'\d+(?:,\d+)*(?:\.\d+)?', question)
-    return [n.replace(',', '') for n in numbers]
+def extract_numbers_from_text(text):
+    """Extract all numbers from text for entity preservation analysis."""
+    return re.findall(r'\b\d+(?:\.\d+)?\b', text)
+
+
+def get_first_token_probs(model, tokenizer, inputs_embeds, attention_mask):
+    """Get probability distribution for first generated token."""
+    with torch.no_grad():
+        outputs = model(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask
+        )
+        logits = outputs.logits[:, -1, :]  # [B, vocab_size]
+        probs = F.softmax(logits, dim=-1)
+    return probs
+
+
+def get_nearest_neighbors(latent_vector, embedding_matrix, tokenizer, k=5):
+    """Find k tokens closest (cosine similarity) to the given latent vector."""
+    latent_vector = latent_vector.float()
+    embedding_matrix = embedding_matrix.float()
+    latent_norm = F.normalize(latent_vector.unsqueeze(0), p=2, dim=-1)
+    emb_norm = F.normalize(embedding_matrix, p=2, dim=-1)
+    similarity = torch.matmul(latent_norm, emb_norm.t())
+    scores, indices = torch.topk(similarity, k)
+    neighbors = []
+    for score, idx in zip(scores[0], indices[0]):
+        token_str = tokenizer.decode([idx.item()]).replace('\n', '\\n').replace('\t', '\\t')
+        if token_str.strip() == '':
+            token_str = repr(tokenizer.decode([idx.item()]))
+        neighbors.append((token_str, score.item()))
+    return neighbors
 
 
 # =============================================================================
-# Test A: First-Token Accuracy
+# HYPOTHESIS 1: First-Token Accuracy Analysis
 # =============================================================================
 
-def test_first_token_accuracy(
-    bridge, src_model, tgt_model, src_tok, tgt_tok,
-    dataset, source_layer, device, num_samples=100
+def analyze_first_token_accuracy(
+    src_model, tgt_model, src_tok, tgt_tok, bridge,
+    classification_samples, reasoning_samples, device, source_layer=16
 ):
     """
-    Test if bridge preserves enough information for first token prediction.
+    HYPOTHESIS 1: Classification needs 1 token, reasoning needs many.
 
-    Measures:
-    - Top-1/Top-5 first token accuracy
-    - Compares latent vs text baseline
-
-    Hypothesis: If first token is wrong, rest of generation will fail.
+    Compares first-token accuracy and top-k coverage between tasks.
     """
-    print("\n" + "="*70)
-    print("TEST A: FIRST-TOKEN ACCURACY")
-    print("="*70)
-    print("Hypothesis: Bridge must preserve question semantics for first token")
-    print("")
+    print("\n" + "=" * 70)
+    print("HYPOTHESIS 1: First-Token Accuracy Analysis")
+    print("=" * 70)
 
     results = {
-        "latent_top1": 0,
-        "latent_top5": 0,
-        "text_top1": 0,
-        "text_top5": 0,
-        "total": 0
+        "classification": {"correct": 0, "total": 0, "top5_hits": 0, "entropy": []},
+        "reasoning": {"correct": 0, "total": 0, "top5_hits": 0, "entropy": []}
     }
 
-    primer = "Analysis of received thought vector: "
-    primer_ids = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).input_ids.to(device)
+    # Classification analysis (SST-2)
+    print("\nAnalyzing classification (SST-2)...")
+    for item in tqdm(classification_samples[:100], desc="Classification"):
+        text = item['sentence']
+        label = "positive" if item['label'] == 1 else "negative"
 
-    for i in tqdm(range(num_samples), desc="First-token test"):
-        item = dataset[i]
-        question = item['question']
-        answer = item['answer']
-
-        # Get first token of answer
-        answer_text = answer.split('\n')[0]  # First line of reasoning
-        answer_ids = tgt_tok(answer_text, return_tensors="pt", add_special_tokens=False).input_ids.to(device)
-        if answer_ids.shape[1] == 0:
-            continue
-        gold_first_token = answer_ids[0, 0].item()
-
-        # === Latent Bridge Path ===
+        src_input = f"Review: {text}\nSentiment (positive or negative):"
         with torch.no_grad():
-            # Encode question with source model
-            src_inputs = src_tok(question, return_tensors="pt", padding=True).to(device)
-            src_out = src_model(**src_inputs, output_hidden_states=True)
-            src_hidden = src_out.hidden_states[source_layer]
-            src_mask = src_inputs.attention_mask
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].bfloat16()
+            soft_tokens, _, _, _ = bridge(src_h, src_enc.attention_mask)
 
-            # Bridge: hidden states -> soft tokens
-            latents, _, _, _ = bridge(src_hidden, src_mask)
+            primer = "Sentiment:"
+            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids).bfloat16()
+            combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
 
-            # Get target model embeddings for soft tokens
-            tgt_embeds = tgt_model.get_input_embeddings()(primer_ids)
-            combined = torch.cat([tgt_embeds, latents], dim=1)
+            probs = get_first_token_probs(tgt_model, tgt_tok, combined_embeds, attn_mask)
+            entropy = -torch.sum(probs * torch.log(probs + 1e-10), dim=-1).item()
+            results["classification"]["entropy"].append(entropy)
 
-            # Get logits for next token prediction
-            attention_mask = torch.ones(1, combined.shape[1], device=device, dtype=torch.long)
-            outputs = tgt_model(inputs_embeds=combined, attention_mask=attention_mask)
-            logits = outputs.logits[0, -1, :]  # Last position logits
+            top5_ids = torch.topk(probs, 5).indices[0].tolist()
+            top5_tokens = [tgt_tok.decode([t]).lower().strip() for t in top5_ids]
 
-            # Check top-k
-            top_tokens = torch.topk(logits, k=5).indices
-            results["latent_top1"] += (top_tokens[0].item() == gold_first_token)
-            results["latent_top5"] += (gold_first_token in top_tokens.tolist())
+            top1_token = top5_tokens[0]
+            if label in top1_token:
+                results["classification"]["correct"] += 1
+            if any(label in t for t in top5_tokens):
+                results["classification"]["top5_hits"] += 1
+            results["classification"]["total"] += 1
 
-        # === Text Baseline ===
-        with torch.no_grad():
-            # Full text prompt
-            prompt = f"Q: {question}\nA:"
-            tgt_inputs = tgt_tok(prompt, return_tensors="pt").to(device)
-            tgt_out = tgt_model(**tgt_inputs)
-            logits = tgt_out.logits[0, -1, :]
-
-            top_tokens = torch.topk(logits, k=5).indices
-            results["text_top1"] += (top_tokens[0].item() == gold_first_token)
-            results["text_top5"] += (gold_first_token in top_tokens.tolist())
-
-        results["total"] += 1
-
-    # Compute percentages
-    total = results["total"]
-    print(f"\nResults ({total} samples):")
-    print(f"  Latent Bridge:")
-    print(f"    Top-1: {results['latent_top1']}/{total} = {100*results['latent_top1']/total:.1f}%")
-    print(f"    Top-5: {results['latent_top5']}/{total} = {100*results['latent_top5']/total:.1f}%")
-    print(f"  Text Baseline:")
-    print(f"    Top-1: {results['text_top1']}/{total} = {100*results['text_top1']/total:.1f}%")
-    print(f"    Top-5: {results['text_top5']}/{total} = {100*results['text_top5']/total:.1f}%")
-    print("")
-    print(f"  Gap: {results['text_top1'] - results['latent_top1']} tokens lost")
-
-    if results['latent_top1'] < 0.05 * total:
-        print("  ⚠️  CRITICAL: First token is essentially random!")
-        print("      Bridge is not preserving question semantics.")
-    elif results['latent_top1'] < 0.5 * results['text_top1']:
-        print("  ⚠️  DEGRADED: Bridge loses significant information.")
-    else:
-        print("  ✓  First token accuracy is reasonable.")
-
-    return results
-
-
-# =============================================================================
-# Test B: Soft Token Diversity & Collapse
-# =============================================================================
-
-def test_soft_token_diversity(
-    bridge, src_model, src_tok, dataset, source_layer, device, num_samples=100
-):
-    """
-    Test if soft tokens are diverse or collapsed.
-
-    Measures:
-    - Intra-sample diversity: Are tokens within one sample different?
-    - Inter-sample diversity: Are different questions encoded differently?
-    - Rank/dimensionality: Is bridge using full capacity?
-
-    Hypothesis: Mode collapse = all questions produce similar tokens.
-    """
-    print("\n" + "="*70)
-    print("TEST B: SOFT TOKEN DIVERSITY")
-    print("="*70)
-    print("Hypothesis: Collapsed tokens cannot encode specific question details")
-    print("")
-
-    all_latents = []  # [num_samples, soft_tokens, dim]
-
-    for i in tqdm(range(num_samples), desc="Collecting latents"):
-        item = dataset[i]
+    # Reasoning analysis (GSM8K)
+    print("\nAnalyzing reasoning (GSM8K)...")
+    for item in tqdm(reasoning_samples[:100], desc="Reasoning"):
         question = item['question']
-
-        with torch.no_grad():
-            src_inputs = src_tok(question, return_tensors="pt", padding=True).to(device)
-            src_out = src_model(**src_inputs, output_hidden_states=True)
-            src_hidden = src_out.hidden_states[source_layer]
-            src_mask = src_inputs.attention_mask
-
-            latents, _, _, _ = bridge(src_hidden, src_mask)
-            all_latents.append(latents[0].cpu().float())  # [soft_tokens, dim]
-
-    all_latents = torch.stack(all_latents)  # [num_samples, soft_tokens, dim]
-
-    # === Metric 1: Intra-sample diversity (tokens within one question) ===
-    intra_similarities = []
-    for sample_latents in all_latents:
-        # Normalize tokens
-        normed = F.normalize(sample_latents, dim=-1)
-        # Pairwise similarity
-        sim_matrix = torch.matmul(normed, normed.t())
-        # Off-diagonal mean (how similar are different tokens)
-        mask = ~torch.eye(sim_matrix.shape[0], dtype=torch.bool)
-        intra_sim = sim_matrix[mask].mean().item()
-        intra_similarities.append(intra_sim)
-
-    mean_intra_sim = np.mean(intra_similarities)
-
-    print(f"Intra-sample diversity:")
-    print(f"  Mean token similarity: {mean_intra_sim:.3f}")
-    if mean_intra_sim > 0.9:
-        print(f"  ⚠️  COLLAPSED: All tokens in a sample are nearly identical!")
-        print(f"      Bridge is producing K copies of the same vector.")
-    elif mean_intra_sim > 0.7:
-        print(f"  ⚡ MODERATE: Tokens share structure but have variations.")
-    else:
-        print(f"  ✓  DIVERSE: Tokens encode different aspects.")
-
-    # === Metric 2: Inter-sample diversity (different questions) ===
-    # Pool all tokens: [num_samples * soft_tokens, dim]
-    pooled = all_latents.view(-1, all_latents.shape[-1])
-    # Sample 1000 random pairs
-    num_pairs = min(1000, pooled.shape[0] // 2)
-    indices = torch.randperm(pooled.shape[0])[:num_pairs*2]
-    pairs_a = pooled[indices[::2]]
-    pairs_b = pooled[indices[1::2]]
-
-    # Cosine similarity
-    normed_a = F.normalize(pairs_a, dim=-1)
-    normed_b = F.normalize(pairs_b, dim=-1)
-    inter_sim = (normed_a * normed_b).sum(dim=-1).mean().item()
-
-    print(f"\nInter-sample diversity:")
-    print(f"  Mean similarity between random token pairs: {inter_sim:.3f}")
-    if inter_sim > 0.8:
-        print(f"  ⚠️  COLLAPSED: Different questions produce similar tokens!")
-        print(f"      This explains why reasoning fails.")
-    elif inter_sim > 0.5:
-        print(f"  ⚡ MODERATE: Some overlap between questions.")
-    else:
-        print(f"  ✓  DIVERSE: Questions are distinguishable.")
-
-    # === Metric 3: Effective dimensionality ===
-    # Flatten to [num_samples * soft_tokens, dim]
-    flattened = all_latents.view(-1, all_latents.shape[-1]).float()
-
-    # Center the data
-    mean = flattened.mean(dim=0, keepdim=True)
-    centered = flattened - mean
-
-    # Compute covariance and eigenvalues
-    cov = torch.matmul(centered.t(), centered) / (centered.shape[0] - 1)
-    eigenvalues = torch.linalg.eigvalsh(cov)
-    eigenvalues = torch.sort(eigenvalues, descending=True)[0]
-
-    # Compute effective rank (participation ratio)
-    eigenvalues = eigenvalues[eigenvalues > 0]  # Remove numerical zeros
-    if len(eigenvalues) > 0:
-        normalized_eigs = eigenvalues / eigenvalues.sum()
-        effective_rank = 1.0 / (normalized_eigs ** 2).sum().item()
-    else:
-        effective_rank = 0
-
-    # Variance explained by top components
-    variance_90 = 0
-    for i, eig in enumerate(normalized_eigs):
-        variance_90 += eig.item()
-        if variance_90 >= 0.9:
-            dims_for_90 = i + 1
-            break
-    else:
-        dims_for_90 = len(eigenvalues)
-
-    print(f"\nEffective dimensionality:")
-    print(f"  Full dimension: {all_latents.shape[-1]}")
-    print(f"  Effective rank: {effective_rank:.1f}")
-    print(f"  Dims for 90% variance: {dims_for_90}")
-
-    if effective_rank < 10:
-        print(f"  ⚠️  COLLAPSED: Only {effective_rank:.0f} effective dimensions!")
-        print(f"      Bridge is not using its full capacity.")
-    elif effective_rank < 100:
-        print(f"  ⚡ MODERATE: {effective_rank:.0f} effective dimensions used.")
-    else:
-        print(f"  ✓  DIVERSE: High-dimensional representation.")
-
-    results = {
-        "intra_similarity": mean_intra_sim,
-        "inter_similarity": inter_sim,
-        "effective_rank": effective_rank,
-        "dims_for_90_variance": dims_for_90
-    }
-
-    return results, all_latents
-
-
-# =============================================================================
-# Test C: Layer Comparison (16 vs 31)
-# =============================================================================
-
-def test_layer_comparison(
-    bridge_16, bridge_31, src_model, tgt_model, src_tok, tgt_tok,
-    dataset, device, num_samples=50
-):
-    """
-    Compare Layer 16 (concepts) vs Layer 31 (answers).
-
-    Tests if different layers encode different information:
-    - Layer 16: Semantic concepts ("this is about ducks and eggs")
-    - Layer 31: Answer-oriented features ("the answer is...")
-
-    Hypothesis: Reasoning needs Layer 31, classification works with Layer 16.
-    """
-    print("\n" + "="*70)
-    print("TEST C: LAYER COMPARISON (16 vs 31)")
-    print("="*70)
-    print("Hypothesis: Layer 16 = concepts, Layer 31 = answers")
-    print("")
-
-    results = {
-        "layer_16_accuracy": 0,
-        "layer_31_accuracy": 0,
-        "total": 0
-    }
-
-    primer = "Analysis of received thought vector: "
-    primer_ids = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).input_ids.to(device)
-
-    for i in tqdm(range(num_samples), desc="Layer comparison"):
-        item = dataset[i]
-        question = item['question']
-        gold_answer = extract_answer(item['answer'])
+        gold_answer = extract_gsm8k_answer(item['answer'])
         if gold_answer is None:
             continue
 
-        # === Layer 16 ===
+        src_input = f"Question: {question}\nLet me solve this step by step."
         with torch.no_grad():
-            src_inputs = src_tok(question, return_tensors="pt", padding=True).to(device)
-            src_out = src_model(**src_inputs, output_hidden_states=True)
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].bfloat16()
+            soft_tokens, _, _, _ = bridge(src_h, src_enc.attention_mask)
 
-            # Layer 16
-            src_hidden_16 = src_out.hidden_states[16]
-            src_mask = src_inputs.attention_mask
-            latents_16, _, _, _ = bridge_16(src_hidden_16, src_mask)
+            primer = "The answer is"
+            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids).bfloat16()
+            combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
 
-            # Generate with Layer 16
-            tgt_embeds = tgt_model.get_input_embeddings()(primer_ids)
-            combined = torch.cat([tgt_embeds, latents_16], dim=1)
-            attention_mask = torch.ones(1, combined.shape[1], device=device, dtype=torch.long)
+            probs = get_first_token_probs(tgt_model, tgt_tok, combined_embeds, attn_mask)
+            entropy = -torch.sum(probs * torch.log(probs + 1e-10), dim=-1).item()
+            results["reasoning"]["entropy"].append(entropy)
 
-            outputs = tgt_model.generate(
-                inputs_embeds=combined,
-                attention_mask=attention_mask,
-                max_new_tokens=128,
-                do_sample=False,
-                pad_token_id=tgt_tok.pad_token_id
-            )
-            pred_16 = tgt_tok.decode(outputs[0], skip_special_tokens=True)
-            pred_ans_16 = extract_answer(pred_16)
+            top5_ids = torch.topk(probs, 5).indices[0].tolist()
+            top5_tokens = [tgt_tok.decode([t]).strip() for t in top5_ids]
 
-            if pred_ans_16 == gold_answer:
-                results["layer_16_accuracy"] += 1
+            # For reasoning, check if first digit matches
+            first_digit = gold_answer[0] if gold_answer else None
+            top1_token = top5_tokens[0]
+            if first_digit and first_digit in top1_token:
+                results["reasoning"]["correct"] += 1
+            if first_digit and any(first_digit in t for t in top5_tokens):
+                results["reasoning"]["top5_hits"] += 1
+            results["reasoning"]["total"] += 1
 
-            # Layer 31
-            src_hidden_31 = src_out.hidden_states[31]
-            latents_31, _, _, _ = bridge_31(src_hidden_31, src_mask)
+    # Compute statistics
+    cls_acc = 100 * results["classification"]["correct"] / max(results["classification"]["total"], 1)
+    cls_top5 = 100 * results["classification"]["top5_hits"] / max(results["classification"]["total"], 1)
+    cls_entropy = np.mean(results["classification"]["entropy"]) if results["classification"]["entropy"] else 0
 
-            combined = torch.cat([tgt_embeds, latents_31], dim=1)
-            outputs = tgt_model.generate(
-                inputs_embeds=combined,
-                attention_mask=attention_mask,
-                max_new_tokens=128,
-                do_sample=False,
-                pad_token_id=tgt_tok.pad_token_id
-            )
-            pred_31 = tgt_tok.decode(outputs[0], skip_special_tokens=True)
-            pred_ans_31 = extract_answer(pred_31)
+    rsn_acc = 100 * results["reasoning"]["correct"] / max(results["reasoning"]["total"], 1)
+    rsn_top5 = 100 * results["reasoning"]["top5_hits"] / max(results["reasoning"]["total"], 1)
+    rsn_entropy = np.mean(results["reasoning"]["entropy"]) if results["reasoning"]["entropy"] else 0
 
-            if pred_ans_31 == gold_answer:
-                results["layer_31_accuracy"] += 1
+    print(f"\n{'Task':<20} {'Top-1 Acc':<12} {'Top-5 Acc':<12} {'Entropy':<12}")
+    print("-" * 56)
+    print(f"{'Classification':<20} {cls_acc:.1f}%{'':<7} {cls_top5:.1f}%{'':<7} {cls_entropy:.2f}")
+    print(f"{'Reasoning':<20} {rsn_acc:.1f}%{'':<7} {rsn_top5:.1f}%{'':<7} {rsn_entropy:.2f}")
 
-        results["total"] += 1
+    analysis = {
+        "classification_top1": cls_acc,
+        "classification_top5": cls_top5,
+        "classification_entropy": cls_entropy,
+        "reasoning_top1": rsn_acc,
+        "reasoning_top5": rsn_top5,
+        "reasoning_entropy": rsn_entropy,
+        "gap_top1": cls_acc - rsn_acc,
+        "gap_top5": cls_top5 - rsn_top5,
+        "entropy_difference": rsn_entropy - cls_entropy
+    }
 
-    total = results["total"]
-    print(f"\nResults ({total} samples):")
-    print(f"  Layer 16 accuracy: {results['layer_16_accuracy']}/{total} = {100*results['layer_16_accuracy']/total:.1f}%")
-    print(f"  Layer 31 accuracy: {results['layer_31_accuracy']}/{total} = {100*results['layer_31_accuracy']/total:.1f}%")
-    print(f"  Gap: {results['layer_31_accuracy'] - results['layer_16_accuracy']} questions")
-
-    if results['layer_31_accuracy'] > 2 * results['layer_16_accuracy']:
-        print("  ✓  Layer 31 is significantly better for reasoning!")
-        print("     Recommendation: Use Layer 31 for math tasks.")
-    elif results['layer_16_accuracy'] > 2 * results['layer_31_accuracy']:
-        print("  ⚠️  Layer 16 is better? Unexpected result.")
+    print(f"\nFINDINGS:")
+    if analysis["gap_top1"] > 30:
+        print("  - SIGNIFICANT: First-token accuracy gap confirms hypothesis")
+        print("    Classification succeeds with single discriminative token,")
+        print("    while reasoning needs precise multi-token sequences.")
     else:
-        print("  ⚡ Layers perform similarly. Problem is elsewhere.")
+        print("  - First-token accuracy gap is modest")
+        print("    Other factors may dominate reasoning failure.")
 
-    return results
+    if analysis["entropy_difference"] > 1:
+        print(f"  - Reasoning shows higher entropy ({analysis['entropy_difference']:.2f} higher)")
+        print("    The model is less confident about reasoning outputs.")
+
+    return analysis
 
 
 # =============================================================================
-# Test D: Entity Preservation (Number Tracking)
+# HYPOTHESIS 2: Soft Token Diversity Analysis
 # =============================================================================
 
-def test_entity_preservation(
-    bridge, src_model, tgt_model, src_tok, tgt_tok,
-    dataset, source_layer, device, num_samples=100
+def analyze_soft_token_diversity(
+    src_model, src_tok, bridge,
+    classification_samples, reasoning_samples, device, source_layer=16
 ):
     """
-    Test if bridge can transmit specific numbers from questions.
+    HYPOTHESIS 2: Classification collapses tokens, reasoning needs diversity.
 
-    Measures:
-    - Number recall: Are question numbers present in nearest neighbors?
-    - Digit token presence: Do any soft tokens map to digit tokens?
-
-    Hypothesis: If numbers are lost, math reasoning is impossible.
+    Measures within-sample and between-sample token diversity.
     """
-    print("\n" + "="*70)
-    print("TEST D: ENTITY PRESERVATION (NUMBER TRACKING)")
-    print("="*70)
-    print("Hypothesis: Bridge must preserve specific numbers for math")
-    print("")
+    print("\n" + "=" * 70)
+    print("HYPOTHESIS 2: Soft Token Diversity Analysis")
+    print("=" * 70)
 
-    # Get Mistral embedding matrix
+    def compute_diversity_metrics(soft_tokens):
+        """Compute diversity metrics for soft tokens [B, K, D]."""
+        soft_tokens = soft_tokens.float()
+        B, K, D = soft_tokens.shape
+
+        metrics = {}
+
+        # Within-sample diversity: mean pairwise similarity between tokens
+        within_sims = []
+        for b in range(B):
+            tokens = F.normalize(soft_tokens[b], dim=-1)
+            sim_matrix = torch.mm(tokens, tokens.t())
+            mask = ~torch.eye(K, dtype=torch.bool, device=soft_tokens.device)
+            within_sims.append(sim_matrix[mask].mean().item())
+        metrics["within_sample_similarity"] = np.mean(within_sims)
+
+        # Between-sample diversity: similarity of pooled representations
+        pooled = soft_tokens.mean(dim=1)  # [B, D]
+        pooled_norm = F.normalize(pooled, dim=-1)
+        between_sim = torch.mm(pooled_norm, pooled_norm.t())
+        mask = ~torch.eye(B, dtype=torch.bool, device=soft_tokens.device)
+        metrics["between_sample_similarity"] = between_sim[mask].mean().item()
+
+        # Token variance across batch
+        metrics["token_variance"] = soft_tokens.var(dim=[0, 1]).mean().item()
+
+        # Effective rank (how many dimensions are being used)
+        flat = soft_tokens.reshape(-1, D)
+        try:
+            U, S, V = torch.svd(flat)
+            explained_var = (S ** 2) / (S ** 2).sum()
+            cum_var = torch.cumsum(explained_var, dim=0)
+            metrics["effective_rank_90"] = (cum_var < 0.9).sum().item() + 1
+        except:
+            metrics["effective_rank_90"] = D
+
+        return metrics
+
+    # Collect soft tokens for classification
+    print("\nCollecting classification soft tokens...")
+    cls_tokens_list = []
+    for item in tqdm(classification_samples[:50], desc="Classification"):
+        text = item['sentence']
+        src_input = f"Review: {text}\nSentiment (positive or negative):"
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=128).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].bfloat16()
+            soft_tokens, _, _, _ = bridge(src_h, src_enc.attention_mask)
+            cls_tokens_list.append(soft_tokens.cpu())
+
+    cls_tokens = torch.cat(cls_tokens_list, dim=0)
+    cls_metrics = compute_diversity_metrics(cls_tokens)
+
+    # Collect soft tokens for reasoning
+    print("\nCollecting reasoning soft tokens...")
+    rsn_tokens_list = []
+    for item in tqdm(reasoning_samples[:50], desc="Reasoning"):
+        question = item['question']
+        src_input = f"Question: {question}\nLet me solve this step by step."
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].bfloat16()
+            soft_tokens, _, _, _ = bridge(src_h, src_enc.attention_mask)
+            rsn_tokens_list.append(soft_tokens.cpu())
+
+    rsn_tokens = torch.cat(rsn_tokens_list, dim=0)
+    rsn_metrics = compute_diversity_metrics(rsn_tokens)
+
+    print(f"\n{'Metric':<30} {'Classification':<15} {'Reasoning':<15}")
+    print("-" * 60)
+    print(f"{'Within-sample similarity':<30} {cls_metrics['within_sample_similarity']:.3f}{'':<10} {rsn_metrics['within_sample_similarity']:.3f}")
+    print(f"{'Between-sample similarity':<30} {cls_metrics['between_sample_similarity']:.3f}{'':<10} {rsn_metrics['between_sample_similarity']:.3f}")
+    print(f"{'Token variance':<30} {cls_metrics['token_variance']:.6f}{'':<6} {rsn_metrics['token_variance']:.6f}")
+    print(f"{'Effective rank (90% var)':<30} {cls_metrics['effective_rank_90']:<15} {rsn_metrics['effective_rank_90']}")
+
+    analysis = {
+        "classification": cls_metrics,
+        "reasoning": rsn_metrics,
+        "within_similarity_gap": rsn_metrics["within_sample_similarity"] - cls_metrics["within_sample_similarity"],
+        "between_similarity_gap": rsn_metrics["between_sample_similarity"] - cls_metrics["between_sample_similarity"],
+        "cls_tokens_shape": list(cls_tokens.shape),
+        "rsn_tokens_shape": list(rsn_tokens.shape)
+    }
+
+    print(f"\nFINDINGS:")
+    if cls_metrics["within_sample_similarity"] > 0.8:
+        print("  - Classification tokens are highly similar (mode collapse to category vibe)")
+    if rsn_metrics["within_sample_similarity"] > 0.8:
+        print("  - PROBLEM: Reasoning tokens also collapsed!")
+        print("    Bridge cannot encode diverse reasoning steps.")
+    if rsn_metrics["between_sample_similarity"] > cls_metrics["between_sample_similarity"]:
+        print("  - Reasoning samples are MORE similar than classification samples")
+        print("    Bridge produces generic 'math template' regardless of input.")
+
+    return analysis, cls_tokens, rsn_tokens
+
+
+# =============================================================================
+# HYPOTHESIS 3: Layer Comparison Analysis
+# =============================================================================
+
+def analyze_layer_comparison(
+    src_model, tgt_model, src_tok, tgt_tok, bridge_args,
+    reasoning_samples, device
+):
+    """
+    HYPOTHESIS 3: Different layers contain different information.
+
+    Tests whether reasoning info is at different layers than classification info.
+    """
+    print("\n" + "=" * 70)
+    print("HYPOTHESIS 3: Layer Comparison Analysis")
+    print("=" * 70)
+
+    layers_to_test = [8, 16, 24, 31]
+    layer_results = {}
+
+    for layer in layers_to_test:
+        print(f"\nTesting layer {layer}...")
+
+        hidden_states_list = []
+        gold_answers = []
+        total = 0
+
+        for item in tqdm(reasoning_samples[:30], desc=f"Layer {layer}"):
+            question = item['question']
+            gold = extract_gsm8k_answer(item['answer'])
+            if gold is None:
+                continue
+
+            src_input = f"Question: {question}\nLet me solve this step by step."
+            with torch.no_grad():
+                src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+                src_out = src_model(**src_enc, output_hidden_states=True)
+                src_h = src_out.hidden_states[layer]
+
+                # Pool hidden states
+                pooled = src_h.mean(dim=1).float().cpu()
+                hidden_states_list.append(pooled.numpy())
+                gold_answers.append(gold)
+                total += 1
+
+        # Convert to arrays
+        X = np.vstack(hidden_states_list)
+
+        # Compute information metrics
+        try:
+            U, S, V = np.linalg.svd(X, full_matrices=False)
+            explained_var = (S ** 2) / (S ** 2).sum()
+            effective_rank = np.sum(np.cumsum(explained_var) < 0.9) + 1
+        except:
+            effective_rank = X.shape[1]
+
+        # Compute answer-based clustering
+        unique_answers = list(set(gold_answers))
+        if len(unique_answers) > 5:
+            # Too many unique answers - bin them
+            answer_bins = []
+            for a in gold_answers:
+                try:
+                    val = float(a)
+                    if val < 10:
+                        answer_bins.append(0)
+                    elif val < 100:
+                        answer_bins.append(1)
+                    else:
+                        answer_bins.append(2)
+                except:
+                    answer_bins.append(1)
+        else:
+            answer_bins = [unique_answers.index(a) for a in gold_answers]
+
+        # Compute cluster separation if we have multiple classes
+        silhouette = 0.0
+        if len(set(answer_bins)) > 1:
+            try:
+                from sklearn.metrics import silhouette_score
+                silhouette = silhouette_score(X, answer_bins)
+            except:
+                pass
+
+        layer_results[layer] = {
+            "effective_rank": effective_rank,
+            "top_singular_value_ratio": float(S[0] / S.sum()) if len(S) > 0 else 0,
+            "silhouette_score": silhouette,
+            "total_samples": total
+        }
+
+        print(f"  Effective rank: {effective_rank}")
+        print(f"  Silhouette score: {silhouette:.3f}")
+
+    print(f"\n{'Layer':<10} {'Eff. Rank':<15} {'Silhouette':<15} {'S1 Ratio':<15}")
+    print("-" * 55)
+    for layer in layers_to_test:
+        r = layer_results[layer]
+        print(f"{layer:<10} {r['effective_rank']:<15} {r['silhouette_score']:.3f}{'':<10} {r['top_singular_value_ratio']:.3f}")
+
+    best_layer = max(layer_results.keys(), key=lambda l: layer_results[l]["silhouette_score"])
+
+    print(f"\nFINDINGS:")
+    print(f"  - Best layer for reasoning clustering: {best_layer}")
+    if best_layer != 16:
+        print(f"    RECOMMENDATION: Try training bridge with source_layer={best_layer}")
+    if all(r["silhouette_score"] < 0.1 for r in layer_results.values()):
+        print("  - WARNING: No layer shows good answer clustering")
+        print("    The source model may not encode reasoning info in pooled states.")
+
+    return layer_results
+
+
+# =============================================================================
+# HYPOTHESIS 4: Entity Preservation Analysis
+# =============================================================================
+
+def analyze_entity_preservation(
+    src_model, tgt_model, src_tok, tgt_tok, bridge,
+    reasoning_samples, device, source_layer=16
+):
+    """
+    HYPOTHESIS 4: Bridge loses specific entities needed for reasoning.
+
+    Tests whether numbers and entities can be recovered from soft tokens.
+    """
+    print("\n" + "=" * 70)
+    print("HYPOTHESIS 4: Entity Preservation Analysis")
+    print("=" * 70)
+
+    # Get target embedding matrix for nearest neighbor analysis
     mistral_embeddings = tgt_model.get_input_embeddings().weight.detach()
 
-    # Identify digit tokens
-    digit_tokens = []
-    for i in range(mistral_embeddings.shape[0]):
-        token_str = tgt_tok.decode([i])
-        if re.match(r'^\s*\d+\s*$', token_str):
-            digit_tokens.append(i)
+    # Collect soft tokens and corresponding entities
+    soft_tokens_list = []
+    entity_labels = []
 
-    print(f"Found {len(digit_tokens)} digit tokens in vocabulary")
+    # Focus on specific numbers that appear in problems
+    target_numbers = ['1', '2', '3', '4', '5', '10', '20', '100']
 
-    results = {
-        "number_recall": [],  # For each sample, how many question numbers appear in top-50 neighbors
-        "digit_token_rank": [],  # Minimum rank of any digit token
-        "samples_with_digits": 0,  # Samples where at least one digit appears in top-10
-        "total": 0
-    }
-
-    for i in tqdm(range(num_samples), desc="Entity tracking"):
-        item = dataset[i]
+    print("\nCollecting soft tokens and entity labels...")
+    for item in tqdm(reasoning_samples[:100], desc="Collecting"):
         question = item['question']
-        question_numbers = extract_numbers_from_question(question)
+        numbers_in_question = extract_numbers_from_text(question)
 
-        if len(question_numbers) == 0:
+        src_input = f"Question: {question}\nLet me solve this step by step."
+        with torch.no_grad():
+            src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[source_layer].bfloat16()
+            soft_tokens, _, _, _ = bridge(src_h, src_enc.attention_mask)
+
+            # Pool and store
+            pooled = soft_tokens.mean(dim=1).float().cpu().numpy()
+            soft_tokens_list.append(pooled[0])
+
+            # Create multi-label entity vector
+            entity_vec = [1 if num in numbers_in_question else 0 for num in target_numbers]
+            entity_labels.append(entity_vec)
+
+    X = np.array(soft_tokens_list)
+    Y = np.array(entity_labels)
+
+    print(f"\nFeatures shape: {X.shape}")
+    print(f"Labels shape: {Y.shape}")
+
+    # Train probe for each entity type
+    results = {}
+    print(f"\n{'Entity':<10} {'Present':<10} {'Absent':<10} {'Accuracy':<10}")
+    print("-" * 40)
+
+    for i, num in enumerate(target_numbers):
+        y = Y[:, i]
+
+        # Skip if too imbalanced
+        if y.sum() < 5 or (len(y) - y.sum()) < 5:
+            results[num] = {"accuracy": 0.0, "present": int(y.sum()), "absent": int(len(y) - y.sum())}
+            print(f"{num:<10} {int(y.sum()):<10} {int(len(y) - y.sum()):<10} {'skipped':<10}")
             continue
 
-        with torch.no_grad():
-            src_inputs = src_tok(question, return_tensors="pt", padding=True).to(device)
-            src_out = src_model(**src_inputs, output_hidden_states=True)
-            src_hidden = src_out.hidden_states[source_layer]
-            src_mask = src_inputs.attention_mask
+        # Simple logistic regression probe
+        try:
+            from sklearn.linear_model import LogisticRegression
+            from sklearn.model_selection import cross_val_score
+            clf = LogisticRegression(max_iter=1000, class_weight='balanced')
+            scores = cross_val_score(clf, X, y, cv=3)
+            acc = scores.mean()
+        except:
+            acc = 0.5
 
-            latents, _, _, _ = bridge(src_hidden, src_mask)
-            latents = latents[0]  # [soft_tokens, dim]
+        results[num] = {
+            "accuracy": acc,
+            "present": int(y.sum()),
+            "absent": int(len(y) - y.sum())
+        }
+        print(f"{num:<10} {int(y.sum()):<10} {int(len(y) - y.sum()):<10} {acc:.2f}")
 
-        # For each soft token, find nearest neighbors
-        all_neighbors = []
-        for tok_idx in range(latents.shape[0]):
-            neighbors = get_nearest_neighbors(
-                latents[tok_idx], mistral_embeddings, tgt_tok, k=50
-            )
-            all_neighbors.extend([tok for tok, _ in neighbors])
+    # Aggregate statistics
+    valid_results = [r["accuracy"] for r in results.values() if r["accuracy"] > 0]
+    mean_accuracy = np.mean(valid_results) if valid_results else 0.5
 
-        # Check number recall
-        numbers_found = 0
-        for num in question_numbers:
-            # Check if number appears in any neighbor token
-            if any(num in neighbor for neighbor in all_neighbors[:50]):
-                numbers_found += 1
+    print(f"\nMean entity probe accuracy: {mean_accuracy:.2f}")
 
-        recall = numbers_found / len(question_numbers) if len(question_numbers) > 0 else 0
-        results["number_recall"].append(recall)
-
-        # Check if any digit token appears in top-10
-        top_10 = all_neighbors[:10]
-        has_digit = any(re.search(r'\d', tok) for tok in top_10)
-        if has_digit:
-            results["samples_with_digits"] += 1
-
-        results["total"] += 1
-
-    # Aggregate results
-    mean_recall = np.mean(results["number_recall"]) if results["number_recall"] else 0
-
-    print(f"\nResults ({results['total']} samples with numbers):")
-    print(f"  Mean number recall: {100*mean_recall:.1f}%")
-    print(f"    (How many question numbers appear in top-50 neighbors)")
-    print(f"  Samples with digits in top-10: {results['samples_with_digits']}/{results['total']} = {100*results['samples_with_digits']/results['total']:.1f}%")
-
-    if mean_recall < 0.1:
-        print("  ⚠️  CRITICAL: Numbers are NOT preserved!")
-        print("      Bridge loses specific numerical values.")
-        print("      This explains GSM8K failure.")
-    elif mean_recall < 0.3:
-        print("  ⚡ DEGRADED: Most numbers are lost.")
+    print(f"\nFINDINGS:")
+    if mean_accuracy < 0.6:
+        print("  - CRITICAL: Entity information is largely LOST in soft tokens")
+        print("    The bridge compresses away specific numbers/quantities.")
+        print("    This explains reasoning failure: can't compute without operands.")
+    elif mean_accuracy < 0.75:
+        print("  - Entity information is partially preserved")
+        print("    Some numbers recoverable, but not reliably.")
     else:
-        print("  ✓  Numbers are reasonably preserved.")
+        print("  - Entity information is well preserved")
+        print("    Reasoning failure may be due to other factors.")
 
-    return results
+    return results, mean_accuracy
 
 
 # =============================================================================
-# Test E: Chain-of-Thought Preservation
+# HYPOTHESIS 5: Chain-of-Thought Preservation Analysis
 # =============================================================================
 
-def test_chain_preservation(
-    bridge, src_model, tgt_model, src_tok, tgt_tok,
-    dataset, source_layer, device, num_samples=50
+def analyze_cot_preservation(
+    src_model, src_tok, bridge,
+    reasoning_samples, device, source_layer=16
 ):
     """
-    Test if reasoning chain survives compression.
+    HYPOTHESIS 5: Multi-step reasoning requires sequential dependency.
 
-    Compares:
-    - Text baseline: Full CoT answer provided
-    - Latent bridge: Compressed question only
-
-    Measures:
-    - Reasoning step overlap: How many reasoning steps match?
-    - Operation preservation: Are arithmetic operations (+ - * /) preserved?
-
-    Hypothesis: Multi-step chain requires multiple soft tokens per step.
+    Tests whether reasoning steps are encoded distinctly in bridge output.
     """
-    print("\n" + "="*70)
-    print("TEST E: CHAIN-OF-THOUGHT PRESERVATION")
-    print("="*70)
-    print("Hypothesis: Multi-step reasoning needs explicit chain encoding")
-    print("")
+    print("\n" + "=" * 70)
+    print("HYPOTHESIS 5: Chain-of-Thought Preservation Analysis")
+    print("=" * 70)
 
-    results = {
-        "step_overlap": [],
-        "operation_match": [],
-        "total": 0
-    }
+    # Check if bridge is CoT type
+    is_cot = hasattr(bridge, 'num_steps') and hasattr(bridge, 'forward_step')
 
-    primer = "Analysis of received thought vector: "
-    primer_ids = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).input_ids.to(device)
+    if not is_cot:
+        print("\nBridge is not CoT type - analyzing token sequence structure instead")
 
-    for i in tqdm(range(num_samples), desc="Chain preservation"):
-        item = dataset[i]
-        question = item['question']
-        gold_answer_full = item['answer']
+        # Analyze sequential structure in regular bridge
+        step_similarities = []
 
-        # Extract reasoning steps from gold answer
-        gold_steps = gold_answer_full.split('.')
-        gold_steps = [s.strip() for s in gold_steps if s.strip()]
-        gold_operations = re.findall(r'[+\-*/=]', gold_answer_full)
+        for item in tqdm(reasoning_samples[:30], desc="Analyzing"):
+            question = item['question']
+            src_input = f"Question: {question}\nLet me solve this step by step."
 
-        # === Latent Bridge ===
-        with torch.no_grad():
-            src_inputs = src_tok(question, return_tensors="pt", padding=True).to(device)
-            src_out = src_model(**src_inputs, output_hidden_states=True)
-            src_hidden = src_out.hidden_states[source_layer]
-            src_mask = src_inputs.attention_mask
+            with torch.no_grad():
+                src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+                src_out = src_model(**src_enc, output_hidden_states=True)
+                src_h = src_out.hidden_states[source_layer].bfloat16()
+                soft_tokens, _, _, _ = bridge(src_h, src_enc.attention_mask)
 
-            latents, _, _, _ = bridge(src_hidden, src_mask)
+                # Analyze sequential similarity
+                tokens = soft_tokens[0].float()
+                K = tokens.shape[0]
 
-            tgt_embeds = tgt_model.get_input_embeddings()(primer_ids)
-            combined = torch.cat([tgt_embeds, latents], dim=1)
-            attention_mask = torch.ones(1, combined.shape[1], device=device, dtype=torch.long)
+                # Split into "pseudo-steps" (groups of tokens)
+                step_size = max(1, K // 4)
+                steps = [tokens[i:i+step_size].mean(dim=0) for i in range(0, K, step_size)]
 
-            outputs = tgt_model.generate(
-                inputs_embeds=combined,
-                attention_mask=attention_mask,
-                max_new_tokens=256,
-                do_sample=False,
-                pad_token_id=tgt_tok.pad_token_id
-            )
-            pred = tgt_tok.decode(outputs[0], skip_special_tokens=True)
+                if len(steps) >= 2:
+                    steps = torch.stack(steps[:4])  # Keep first 4 steps
+                    steps_norm = F.normalize(steps, dim=-1)
+                    sim_matrix = torch.mm(steps_norm, steps_norm.t())
 
-        # Extract predicted steps
-        pred_steps = pred.split('.')
-        pred_steps = [s.strip() for s in pred_steps if s.strip()]
-        pred_operations = re.findall(r'[+\-*/=]', pred)
+                    # Get sequential similarities
+                    seq_sims = [sim_matrix[i, i+1].item() for i in range(len(steps)-1)]
+                    step_similarities.append(seq_sims)
 
-        # Compute step overlap (Jaccard similarity)
-        gold_set = set(' '.join(gold_steps).lower().split())
-        pred_set = set(' '.join(pred_steps).lower().split())
-        if len(gold_set | pred_set) > 0:
-            step_overlap = len(gold_set & pred_set) / len(gold_set | pred_set)
+        if step_similarities:
+            avg_sims = np.mean(step_similarities, axis=0)
+            print(f"\nSequential step similarities:")
+            for i, sim in enumerate(avg_sims):
+                print(f"  Step {i} -> Step {i+1}: {sim:.3f}")
+
+            results = {
+                "is_cot": False,
+                "sequential_similarities": avg_sims.tolist(),
+                "mean_sequential_similarity": float(np.mean(avg_sims))
+            }
+
+            print(f"\nFINDINGS:")
+            if np.mean(avg_sims) > 0.9:
+                print("  - PROBLEM: Sequential steps are nearly identical")
+                print("    No differentiation between reasoning stages.")
+            elif np.mean(avg_sims) > 0.7:
+                print("  - Steps show some differentiation")
+                print("    But high similarity suggests redundancy.")
+            else:
+                print("  - Steps are well differentiated")
+                print("    Token sequence has structural variety.")
         else:
-            step_overlap = 0
+            results = {"is_cot": False, "error": "Could not compute step similarities"}
 
-        # Compute operation match
-        gold_op_counts = Counter(gold_operations)
-        pred_op_counts = Counter(pred_operations)
-
-        if len(gold_op_counts) > 0:
-            op_match = sum((gold_op_counts & pred_op_counts).values()) / sum(gold_op_counts.values())
-        else:
-            op_match = 0
-
-        results["step_overlap"].append(step_overlap)
-        results["operation_match"].append(op_match)
-        results["total"] += 1
-
-    mean_step_overlap = np.mean(results["step_overlap"]) if results["step_overlap"] else 0
-    mean_op_match = np.mean(results["operation_match"]) if results["operation_match"] else 0
-
-    print(f"\nResults ({results['total']} samples):")
-    print(f"  Mean step overlap: {100*mean_step_overlap:.1f}%")
-    print(f"    (Jaccard similarity between reasoning steps)")
-    print(f"  Mean operation match: {100*mean_op_match:.1f}%")
-    print(f"    (Fraction of arithmetic operations preserved)")
-
-    if mean_step_overlap < 0.1:
-        print("  ⚠️  CRITICAL: Reasoning chain is lost!")
-        print("      Bridge does not preserve multi-step reasoning.")
-    elif mean_step_overlap < 0.3:
-        print("  ⚡ DEGRADED: Partial reasoning preserved.")
     else:
-        print("  ✓  Reasoning chain is reasonably preserved.")
+        # Analyze actual CoT bridge
+        print(f"\nCoT Bridge with {bridge.num_steps} steps")
 
-    if mean_op_match < 0.3:
-        print("  ⚠️  Operations are not preserved.")
-        print("      Model doesn't know which arithmetic to perform.")
+        step_representations = []
+
+        for item in tqdm(reasoning_samples[:30], desc="Analyzing CoT"):
+            question = item['question']
+            src_input = f"Question: {question}\nLet me solve this step by step."
+
+            with torch.no_grad():
+                src_enc = src_tok(src_input, return_tensors="pt", truncation=True, max_length=256).to(device)
+                src_out = src_model(**src_enc, output_hidden_states=True)
+                src_h = src_out.hidden_states[source_layer].bfloat16()
+
+                # Get step-by-step representations
+                src_kv = bridge.input_proj(src_h)
+                prev_latent = None
+                steps = []
+
+                for step_idx in range(bridge.num_steps):
+                    step_latent = bridge.forward_step(src_kv, src_enc.attention_mask, step_idx, prev_latent)
+                    steps.append(step_latent.mean(dim=1).float().cpu())
+                    prev_latent = step_latent
+
+                step_representations.append(torch.cat(steps, dim=0))
+
+        # Analyze step differentiation
+        all_steps = torch.stack(step_representations)  # [N, num_steps, D]
+
+        # Cross-step similarity
+        step_sims = []
+        for i in range(bridge.num_steps):
+            for j in range(i+1, bridge.num_steps):
+                step_i = F.normalize(all_steps[:, i, :], dim=-1)
+                step_j = F.normalize(all_steps[:, j, :], dim=-1)
+                sim = (step_i * step_j).sum(dim=-1).mean().item()
+                step_sims.append((i, j, sim))
+
+        print(f"\nStep-to-step similarities:")
+        for i, j, sim in step_sims:
+            print(f"  Step {i} <-> Step {j}: {sim:.3f}")
+
+        results = {
+            "is_cot": True,
+            "num_steps": bridge.num_steps,
+            "step_similarities": [(i, j, s) for i, j, s in step_sims],
+            "mean_step_similarity": np.mean([s for _, _, s in step_sims])
+        }
+
+        print(f"\nFINDINGS:")
+        mean_sim = results["mean_step_similarity"]
+        if mean_sim > 0.9:
+            print("  - PROBLEM: CoT steps are nearly identical")
+            print("    Recurrent mechanism is not differentiating reasoning stages.")
+        elif mean_sim > 0.7:
+            print("  - CoT steps have moderate differentiation")
+            print("    Some unique information per step, but high overlap.")
+        else:
+            print("  - CoT steps are well differentiated")
+            print("    Each step contributes unique information.")
 
     return results
 
 
 # =============================================================================
-# Visualization
+# VISUALIZATION
 # =============================================================================
 
-def create_visualizations(all_results, output_dir):
-    """Create diagnostic visualizations."""
-    print("\n" + "="*70)
-    print("CREATING VISUALIZATIONS")
-    print("="*70)
+def create_visualizations(results, cls_tokens, rsn_tokens, output_dir):
+    """Generate 4 diagnostic visualizations."""
+    print("\n" + "=" * 70)
+    print("Generating Visualizations")
+    print("=" * 70)
 
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
 
-    # Plot 1: First token accuracy comparison
-    fig, ax = plt.subplots(figsize=(8, 6))
-    test_a = all_results["test_a"]
-    categories = ["Latent\nTop-1", "Latent\nTop-5", "Text\nTop-1", "Text\nTop-5"]
-    values = [
-        100 * test_a["latent_top1"] / test_a["total"],
-        100 * test_a["latent_top5"] / test_a["total"],
-        100 * test_a["text_top1"] / test_a["total"],
-        100 * test_a["text_top5"] / test_a["total"]
-    ]
-    colors = ['#e74c3c', '#e74c3c', '#3498db', '#3498db']
-    ax.bar(categories, values, color=colors, alpha=0.7)
-    ax.set_ylabel("Accuracy (%)")
-    ax.set_title("First-Token Prediction Accuracy")
-    ax.set_ylim([0, 100])
-    ax.axhline(y=50, color='gray', linestyle='--', alpha=0.5, label='50% threshold')
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig(output_dir / "first_token_accuracy.png", dpi=150)
-    print(f"  Saved: {output_dir / 'first_token_accuracy.png'}")
-    plt.close()
+    # 1. First-Token Accuracy Comparison
+    ax1 = axes[0, 0]
+    if "first_token" in results:
+        ft = results["first_token"]
+        categories = ['Top-1', 'Top-5']
+        cls_vals = [ft["classification_top1"], ft["classification_top5"]]
+        rsn_vals = [ft["reasoning_top1"], ft["reasoning_top5"]]
 
-    # Plot 2: Diversity metrics
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-    test_b = all_results["test_b"]
+        x = np.arange(len(categories))
+        width = 0.35
 
-    # Intra vs inter similarity
-    similarities = ["Intra-sample\n(within question)", "Inter-sample\n(between questions)"]
-    values = [test_b["intra_similarity"], test_b["inter_similarity"]]
-    ax1.bar(similarities, values, color=['#2ecc71', '#e67e22'], alpha=0.7)
-    ax1.set_ylabel("Cosine Similarity")
-    ax1.set_title("Token Diversity")
-    ax1.axhline(y=0.7, color='orange', linestyle='--', alpha=0.5, label='Collapse threshold')
-    ax1.axhline(y=0.9, color='red', linestyle='--', alpha=0.5, label='Critical collapse')
-    ax1.legend()
-    ax1.set_ylim([0, 1])
+        bars1 = ax1.bar(x - width/2, cls_vals, width, label='Classification', color='#2ecc71')
+        bars2 = ax1.bar(x + width/2, rsn_vals, width, label='Reasoning', color='#e74c3c')
 
-    # Effective dimensionality
-    dims = ["Full\nDimension", "Effective\nRank", "90%\nVariance"]
-    values = [4096, test_b["effective_rank"], test_b["dims_for_90_variance"]]
-    ax2.bar(dims, values, color=['#3498db', '#9b59b6', '#1abc9c'], alpha=0.7)
-    ax2.set_ylabel("Number of Dimensions")
-    ax2.set_title("Effective Dimensionality")
-    ax2.set_yscale('log')
-
-    plt.tight_layout()
-    plt.savefig(output_dir / "diversity_metrics.png", dpi=150)
-    print(f"  Saved: {output_dir / 'diversity_metrics.png'}")
-    plt.close()
-
-    # Plot 3: Entity preservation
-    fig, ax = plt.subplots(figsize=(8, 6))
-    test_d = all_results["test_d"]
-
-    # Histogram of number recall
-    if test_d["number_recall"]:
-        ax.hist(test_d["number_recall"], bins=20, color='#e74c3c', alpha=0.7, edgecolor='black')
-        ax.set_xlabel("Number Recall (fraction)")
-        ax.set_ylabel("Count")
-        ax.set_title("Distribution of Number Preservation")
-        ax.axvline(x=np.mean(test_d["number_recall"]), color='blue', linestyle='--',
-                   label=f'Mean = {np.mean(test_d["number_recall"]):.2f}')
-        ax.legend()
-        plt.tight_layout()
-        plt.savefig(output_dir / "number_preservation.png", dpi=150)
-        print(f"  Saved: {output_dir / 'number_preservation.png'}")
-        plt.close()
-
-    # Plot 4: Chain preservation
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-    test_e = all_results["test_e"]
-
-    if test_e["step_overlap"]:
-        ax1.hist(test_e["step_overlap"], bins=20, color='#3498db', alpha=0.7, edgecolor='black')
-        ax1.set_xlabel("Step Overlap (Jaccard)")
-        ax1.set_ylabel("Count")
-        ax1.set_title("Reasoning Step Preservation")
-        ax1.axvline(x=np.mean(test_e["step_overlap"]), color='red', linestyle='--',
-                   label=f'Mean = {np.mean(test_e["step_overlap"]):.2f}')
+        ax1.set_ylabel('Accuracy (%)')
+        ax1.set_title('H1: First-Token Accuracy Gap')
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(categories)
         ax1.legend()
+        ax1.set_ylim(0, 100)
 
-    if test_e["operation_match"]:
-        ax2.hist(test_e["operation_match"], bins=20, color='#2ecc71', alpha=0.7, edgecolor='black')
-        ax2.set_xlabel("Operation Match (fraction)")
-        ax2.set_ylabel("Count")
-        ax2.set_title("Arithmetic Operation Preservation")
-        ax2.axvline(x=np.mean(test_e["operation_match"]), color='red', linestyle='--',
-                   label=f'Mean = {np.mean(test_e["operation_match"]):.2f}')
-        ax2.legend()
+        for bar in list(bars1) + list(bars2):
+            height = bar.get_height()
+            ax1.annotate(f'{height:.1f}%',
+                        xy=(bar.get_x() + bar.get_width() / 2, height),
+                        xytext=(0, 3), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=9)
+    else:
+        ax1.text(0.5, 0.5, 'No first-token data', ha='center', va='center', transform=ax1.transAxes)
+
+    # 2. Soft Token t-SNE
+    ax2 = axes[0, 1]
+    if cls_tokens is not None and rsn_tokens is not None:
+        # Subsample for visualization
+        n_samples = min(50, cls_tokens.shape[0], rsn_tokens.shape[0])
+        cls_flat = cls_tokens[:n_samples].reshape(n_samples, -1).numpy()
+        rsn_flat = rsn_tokens[:n_samples].reshape(n_samples, -1).numpy()
+
+        combined = np.vstack([cls_flat, rsn_flat])
+        labels = ['Classification'] * n_samples + ['Reasoning'] * n_samples
+
+        try:
+            from sklearn.manifold import TSNE
+            perplexity = min(30, len(combined) - 1)
+            tsne = TSNE(n_components=2, perplexity=perplexity, max_iter=1000, random_state=42)
+            embeddings = tsne.fit_transform(combined)
+
+            ax2.scatter(embeddings[:n_samples, 0], embeddings[:n_samples, 1],
+                       c='#2ecc71', label='Classification', alpha=0.7, s=50)
+            ax2.scatter(embeddings[n_samples:, 0], embeddings[n_samples:, 1],
+                       c='#e74c3c', label='Reasoning', alpha=0.7, s=50)
+            ax2.set_title('H2: Soft Token Distribution (t-SNE)')
+            ax2.legend()
+        except Exception as e:
+            ax2.text(0.5, 0.5, f't-SNE failed: {e}', ha='center', va='center', transform=ax2.transAxes)
+    else:
+        ax2.text(0.5, 0.5, 'No token data', ha='center', va='center', transform=ax2.transAxes)
+
+    # 3. Layer Comparison
+    ax3 = axes[1, 0]
+    if "layer_comparison" in results:
+        lc = results["layer_comparison"]
+        layers = sorted(lc.keys())
+        silhouettes = [lc[l]["silhouette_score"] for l in layers]
+
+        ax3_twin = ax3.twinx()
+
+        bars1 = ax3.bar([str(l) for l in layers], silhouettes, label='Silhouette', color='#3498db')
+        line = ax3_twin.plot([str(l) for l in layers], [lc[l]["effective_rank"] for l in layers], 'o-',
+                            color='#9b59b6', label='Effective Rank')
+
+        ax3.set_xlabel('Layer')
+        ax3.set_ylabel('Silhouette Score', color='#3498db')
+        ax3_twin.set_ylabel('Effective Rank', color='#9b59b6')
+        ax3.set_title('H3: Layer Information Content')
+        ax3.legend(loc='upper left')
+        ax3_twin.legend(loc='upper right')
+    else:
+        ax3.text(0.5, 0.5, 'No layer data', ha='center', va='center', transform=ax3.transAxes)
+
+    # 4. Entity Preservation Probe
+    ax4 = axes[1, 1]
+    if "entity_preservation" in results:
+        ep = results["entity_preservation"]["probe_results"]
+        entities = list(ep.keys())
+        accuracies = [ep[e]["accuracy"] for e in entities]
+
+        colors = ['#2ecc71' if a > 0.65 else '#f39c12' if a > 0.55 else '#e74c3c' for a in accuracies]
+        bars = ax4.bar(entities, accuracies, color=colors)
+
+        ax4.axhline(y=0.5, color='gray', linestyle='--', label='Random baseline')
+        ax4.set_xlabel('Entity (Number)')
+        ax4.set_ylabel('Probe Accuracy')
+        ax4.set_title('H4: Entity Preservation (Can we recover numbers?)')
+        ax4.set_ylim(0, 1)
+        ax4.legend()
+    else:
+        ax4.text(0.5, 0.5, 'No entity data', ha='center', va='center', transform=ax4.transAxes)
 
     plt.tight_layout()
-    plt.savefig(output_dir / "chain_preservation.png", dpi=150)
-    print(f"  Saved: {output_dir / 'chain_preservation.png'}")
+
+    # Save
+    fig_path = os.path.join(output_dir, "reasoning_failure_diagnosis.png")
+    plt.savefig(fig_path, dpi=150, bbox_inches='tight')
+    print(f"Saved visualization to {fig_path}")
+
+    pdf_path = os.path.join(output_dir, "reasoning_failure_diagnosis.pdf")
+    plt.savefig(pdf_path, dpi=300, bbox_inches='tight')
+    print(f"Saved PDF to {pdf_path}")
+
     plt.close()
 
-    print("  All visualizations complete!")
+
+# =============================================================================
+# RECOMMENDATIONS
+# =============================================================================
+
+def generate_recommendations(results):
+    """Generate actionable recommendations based on findings."""
+    recommendations = []
+
+    print("\n" + "=" * 70)
+    print("ACTIONABLE RECOMMENDATIONS")
+    print("=" * 70)
+
+    # H1: First-token accuracy
+    if "first_token" in results:
+        ft = results["first_token"]
+        if ft["gap_top1"] > 30:
+            recommendations.append({
+                "hypothesis": "H1: First-Token Accuracy",
+                "finding": f"Classification top-1: {ft['classification_top1']:.1f}%, Reasoning top-1: {ft['reasoning_top1']:.1f}%",
+                "recommendation": "Consider multi-token supervision. Train with loss on first K tokens, not just first token.",
+                "priority": "HIGH"
+            })
+        if ft["entropy_difference"] > 1:
+            recommendations.append({
+                "hypothesis": "H1: First-Token Entropy",
+                "finding": f"Reasoning entropy {ft['entropy_difference']:.2f} higher than classification",
+                "recommendation": "The model is uncertain about reasoning outputs. Consider temperature scaling or calibration.",
+                "priority": "MEDIUM"
+            })
+
+    # H2: Token diversity
+    if "diversity" in results:
+        div = results["diversity"]
+        if div["classification"]["within_sample_similarity"] > 0.8 and div["reasoning"]["within_sample_similarity"] > 0.8:
+            recommendations.append({
+                "hypothesis": "H2: Token Diversity",
+                "finding": f"Both tasks show high within-sample similarity (>0.8)",
+                "recommendation": "Add diversity loss during training to force token differentiation. Consider token dropout.",
+                "priority": "HIGH"
+            })
+        if div["reasoning"]["between_sample_similarity"] > div["classification"]["between_sample_similarity"]:
+            recommendations.append({
+                "hypothesis": "H2: Sample Diversity",
+                "finding": "Reasoning samples more similar than classification samples",
+                "recommendation": "Bridge produces generic templates. Add contrastive loss between samples.",
+                "priority": "HIGH"
+            })
+
+    # H3: Layer selection
+    if "layer_comparison" in results:
+        lc = results["layer_comparison"]
+        best_layer = max(lc.keys(), key=lambda l: lc[l]["silhouette_score"])
+        if best_layer != 16:
+            recommendations.append({
+                "hypothesis": "H3: Layer Selection",
+                "finding": f"Best layer for reasoning: {best_layer} (current: 16)",
+                "recommendation": f"Retrain bridge with --source_layer {best_layer}",
+                "priority": "MEDIUM"
+            })
+
+    # H4: Entity preservation
+    if "entity_preservation" in results:
+        ep = results["entity_preservation"]
+        if ep["mean_accuracy"] < 0.6:
+            recommendations.append({
+                "hypothesis": "H4: Entity Preservation",
+                "finding": f"Mean entity probe accuracy: {ep['mean_accuracy']:.2f} (near random)",
+                "recommendation": "Add entity-aware loss. Include reconstruction of key numbers in training objective.",
+                "priority": "CRITICAL"
+            })
+
+    # H5: CoT preservation
+    if "cot_preservation" in results:
+        cot = results["cot_preservation"]
+        if "mean_step_similarity" in cot and cot["mean_step_similarity"] > 0.85:
+            recommendations.append({
+                "hypothesis": "H5: CoT Preservation",
+                "finding": f"CoT steps highly similar: {cot['mean_step_similarity']:.2f}",
+                "recommendation": "CoT mechanism is collapsed. Add step-wise supervision or step-specific losses.",
+                "priority": "HIGH"
+            })
+        elif "mean_sequential_similarity" in cot and cot["mean_sequential_similarity"] > 0.85:
+            recommendations.append({
+                "hypothesis": "H5: Sequential Structure",
+                "finding": f"Token sequence lacks differentiation: {cot['mean_sequential_similarity']:.2f}",
+                "recommendation": "Add positional supervision or sequence-aware training.",
+                "priority": "MEDIUM"
+            })
+
+    # Print recommendations
+    for i, rec in enumerate(recommendations, 1):
+        print(f"\n{i}. [{rec['priority']}] {rec['hypothesis']}")
+        print(f"   Finding: {rec['finding']}")
+        print(f"   Action: {rec['recommendation']}")
+
+    if not recommendations:
+        print("\nNo critical issues identified. Consider:")
+        print("  - Increasing model capacity (more soft tokens, deeper bridge)")
+        print("  - Longer training with lower learning rate")
+        print("  - Multi-task training (classification + reasoning)")
+
+    return recommendations
 
 
 # =============================================================================
-# Main
+# MAIN
 # =============================================================================
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Diagnose reasoning failure in Telepathy bridge")
-    parser.add_argument("--checkpoint", required=True, help="Path to bridge checkpoint")
-    parser.add_argument("--checkpoint_layer16", default=None, help="Optional: separate Layer 16 checkpoint for comparison")
-    parser.add_argument("--source_model", default="meta-llama/Meta-Llama-3.1-8B-Instruct")
-    parser.add_argument("--target_model", default="mistralai/Mistral-7B-Instruct-v0.3")
-    parser.add_argument("--source_layer", type=int, default=31, help="Which layer to extract (16 or 31)")
-    parser.add_argument("--soft_tokens", type=int, default=8)
-    parser.add_argument("--heads", type=int, default=8)
-    parser.add_argument("--depth", type=int, default=2)
-    parser.add_argument("--num_samples", type=int, default=200, help="Samples per test")
-    parser.add_argument("--output_dir", default="runs/reasoning_analysis")
-    parser.add_argument("--bf16", action="store_true", default=True)
-    return parser.parse_args()
-
 
 def main():
-    args = parse_args()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    parser = argparse.ArgumentParser(description="Diagnose why reasoning fails through the bridge")
+    parser.add_argument("--classification_checkpoint", type=str, default=None,
+                       help="Path to classification bridge checkpoint (optional)")
+    parser.add_argument("--reasoning_checkpoint", type=str, default=None,
+                       help="Path to reasoning bridge checkpoint (optional)")
+    parser.add_argument("--source_model", type=str, default="meta-llama/Meta-Llama-3.1-8B-Instruct")
+    parser.add_argument("--target_model", type=str, default="mistralai/Mistral-7B-Instruct-v0.3")
+    parser.add_argument("--source_layer", type=int, default=16)
+    parser.add_argument("--soft_tokens", type=int, default=8)
+    parser.add_argument("--output_dir", type=str, default="runs/reasoning_diagnosis")
+    parser.add_argument("--num_samples", type=int, default=100)
+    parser.add_argument("--skip_layer_comparison", action="store_true",
+                       help="Skip layer comparison (faster)")
+    args = parser.parse_args()
 
-    print("="*70)
-    print("TELEPATHY REASONING FAILURE ANALYSIS")
-    print("="*70)
-    print(f"Checkpoint: {args.checkpoint}")
-    print(f"Source Layer: {args.source_layer}")
-    print(f"Soft Tokens: {args.soft_tokens}")
-    print(f"Device: {device}")
-    print(f"Samples per test: {args.num_samples}")
-    print("")
-    print("Known Issues (from REPORT.md):")
-    print("  - Classification: 85-90% accuracy (working)")
-    print("  - Reasoning: 0-5% accuracy (failing)")
-    print("  - Entity tracking loss: Bridge loses specific numbers")
-    print("")
-    print("Tests to run:")
-    print("  A. First-token accuracy")
-    print("  B. Soft token diversity")
-    print("  C. Layer comparison (if checkpoint_layer16 provided)")
-    print("  D. Entity preservation (numbers)")
-    print("  E. Chain-of-thought preservation")
-    print("="*70)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    start_time = time.time()
+
+    print("=" * 70)
+    print("REASONING FAILURE DIAGNOSTIC")
+    print("=" * 70)
+    print(f"Start time: {datetime.now().isoformat()}")
+    print(f"Output directory: {args.output_dir}")
+    print(f"Classification checkpoint: {args.classification_checkpoint or 'None (will create fresh bridge)'}")
+    print(f"Reasoning checkpoint: {args.reasoning_checkpoint or 'None (will create fresh bridge)'}")
+
+    os.makedirs(args.output_dir, exist_ok=True)
 
     # Load models
-    print("\n[1/6] Loading models...")
+    print("\nLoading models...")
     src_model = AutoModelForCausalLM.from_pretrained(
-        args.source_model,
-        torch_dtype=torch.bfloat16 if args.bf16 else torch.float32,
-        device_map={"": device}
+        args.source_model, torch_dtype=torch.bfloat16, device_map="auto"
     ).eval()
-
     tgt_model = AutoModelForCausalLM.from_pretrained(
-        args.target_model,
-        torch_dtype=torch.bfloat16 if args.bf16 else torch.float32,
-        device_map={"": device}
+        args.target_model, torch_dtype=torch.bfloat16, device_map="auto"
     ).eval()
 
     src_tok = AutoTokenizer.from_pretrained(args.source_model)
@@ -850,215 +1193,146 @@ def main():
     tgt_tok = AutoTokenizer.from_pretrained(args.target_model)
     tgt_tok.pad_token = tgt_tok.eos_token
 
-    print(f"  Source: {args.source_model}")
-    print(f"  Target: {args.target_model}")
-
     # Compute target RMS
     with torch.no_grad():
         tgt_embeds = tgt_model.get_input_embeddings().weight.float()
         target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
-    print(f"  Target RMS: {target_rms:.4f}")
 
-    # Load bridge
-    print("\n[2/6] Loading bridge...")
-    bridge_args = Args(soft_tokens=args.soft_tokens, heads=args.heads, depth=args.depth, use_fsq=False)
+    # Create or load bridge
+    bridge_args = Args(soft_tokens=args.soft_tokens, heads=8, depth=2)
     bridge = LatentBridgeV15(
         bridge_args,
         src_dim=src_model.config.hidden_size,
         tgt_dim=tgt_model.config.hidden_size,
         target_rms=target_rms
-    ).to(device)
-
-    checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=True)
-    bridge.load_state_dict(checkpoint)
-    if args.bf16:
-        bridge = bridge.bfloat16()
-    bridge.eval()
-    print(f"  Loaded: {args.checkpoint}")
-
-    # Load Layer 16 bridge if provided (for Test C)
-    bridge_16 = None
-    if args.checkpoint_layer16:
-        print(f"  Loading Layer 16 bridge: {args.checkpoint_layer16}")
-        bridge_16 = LatentBridgeV15(
-            bridge_args,
-            src_dim=src_model.config.hidden_size,
-            tgt_dim=tgt_model.config.hidden_size,
-            target_rms=target_rms
-        ).to(device)
-        checkpoint_16 = torch.load(args.checkpoint_layer16, map_location=device, weights_only=True)
-        bridge_16.load_state_dict(checkpoint_16)
-        if args.bf16:
-            bridge_16 = bridge_16.bfloat16()
-        bridge_16.eval()
-
-    # Load dataset
-    print("\n[3/6] Loading GSM8K dataset...")
-    dataset = load_dataset("openai/gsm8k", "main", split="test")
-    print(f"  Loaded {len(dataset)} test samples")
-
-    # Run tests
-    all_results = {}
-
-    print("\n[4/6] Running diagnostic tests...")
-
-    # Test A: First-token accuracy
-    all_results["test_a"] = test_first_token_accuracy(
-        bridge, src_model, tgt_model, src_tok, tgt_tok,
-        dataset, args.source_layer, device, num_samples=min(args.num_samples, 100)
     )
 
-    # Test B: Soft token diversity
-    test_b_results, all_latents = test_soft_token_diversity(
-        bridge, src_model, src_tok, dataset, args.source_layer, device,
-        num_samples=min(args.num_samples, 100)
-    )
-    all_results["test_b"] = test_b_results
-
-    # Test C: Layer comparison (only if bridge_16 provided)
-    if bridge_16 is not None:
-        all_results["test_c"] = test_layer_comparison(
-            bridge_16, bridge, src_model, tgt_model, src_tok, tgt_tok,
-            dataset, device, num_samples=min(args.num_samples, 50)
-        )
+    if args.classification_checkpoint and os.path.exists(args.classification_checkpoint):
+        print(f"Loading classification checkpoint: {args.classification_checkpoint}")
+        state_dict = torch.load(args.classification_checkpoint, map_location=device, weights_only=True)
+        bridge.load_state_dict(state_dict)
     else:
-        print("\n[SKIP] Test C: No Layer 16 checkpoint provided")
+        print("Using fresh bridge (no checkpoint loaded)")
 
-    # Test D: Entity preservation
-    all_results["test_d"] = test_entity_preservation(
-        bridge, src_model, tgt_model, src_tok, tgt_tok,
-        dataset, args.source_layer, device, num_samples=min(args.num_samples, 100)
+    bridge = bridge.to(device).bfloat16().eval()
+
+    # Load datasets
+    print("\nLoading datasets...")
+    sst2 = load_dataset("glue", "sst2", split="validation")
+    gsm8k = load_dataset("openai/gsm8k", "main", split="test")
+
+    classification_samples = list(sst2)[:args.num_samples]
+    reasoning_samples = list(gsm8k)[:args.num_samples]
+
+    print(f"Classification samples: {len(classification_samples)}")
+    print(f"Reasoning samples: {len(reasoning_samples)}")
+
+    # Run analyses
+    results = {}
+    cls_tokens = None
+    rsn_tokens = None
+
+    # H1: First-Token Accuracy
+    print("\n" + "-" * 70)
+    results["first_token"] = analyze_first_token_accuracy(
+        src_model, tgt_model, src_tok, tgt_tok, bridge,
+        classification_samples, reasoning_samples, device, args.source_layer
     )
 
-    # Test E: Chain preservation
-    all_results["test_e"] = test_chain_preservation(
-        bridge, src_model, tgt_model, src_tok, tgt_tok,
-        dataset, args.source_layer, device, num_samples=min(args.num_samples, 50)
+    # H2: Soft Token Diversity
+    print("\n" + "-" * 70)
+    results["diversity"], cls_tokens, rsn_tokens = analyze_soft_token_diversity(
+        src_model, src_tok, bridge,
+        classification_samples, reasoning_samples, device, args.source_layer
     )
 
-    # Create visualizations
-    print("\n[5/6] Creating visualizations...")
-    create_visualizations(all_results, args.output_dir)
+    # H3: Layer Comparison (optional - takes longer)
+    if not args.skip_layer_comparison:
+        print("\n" + "-" * 70)
+        results["layer_comparison"] = analyze_layer_comparison(
+            src_model, tgt_model, src_tok, tgt_tok, bridge_args,
+            reasoning_samples, device
+        )
+
+    # H4: Entity Preservation
+    print("\n" + "-" * 70)
+    probe_results, mean_acc = analyze_entity_preservation(
+        src_model, tgt_model, src_tok, tgt_tok, bridge,
+        reasoning_samples, device, args.source_layer
+    )
+    results["entity_preservation"] = {
+        "probe_results": probe_results,
+        "mean_accuracy": mean_acc
+    }
+
+    # H5: CoT Preservation
+    print("\n" + "-" * 70)
+    results["cot_preservation"] = analyze_cot_preservation(
+        src_model, src_tok, bridge,
+        reasoning_samples, device, args.source_layer
+    )
+
+    # Generate visualizations
+    print("\n" + "-" * 70)
+    create_visualizations(results, cls_tokens, rsn_tokens, args.output_dir)
+
+    # Generate recommendations
+    recommendations = generate_recommendations(results)
+    results["recommendations"] = recommendations
 
     # Save results
-    print("\n[6/6] Saving results...")
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    results_path = os.path.join(args.output_dir, "diagnosis_results.json")
 
-    with open(output_dir / "results.json", "w") as f:
-        # Convert numpy arrays to lists for JSON serialization
-        json_results = {}
-        for test_name, test_data in all_results.items():
-            json_results[test_name] = {}
-            for key, value in test_data.items():
-                if isinstance(value, list):
-                    json_results[test_name][key] = value
-                elif isinstance(value, (int, float)):
-                    json_results[test_name][key] = value
-                else:
-                    json_results[test_name][key] = str(value)
+    # Convert numpy types for JSON serialization
+    def convert_to_serializable(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, dict):
+            return {k: convert_to_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_to_serializable(v) for v in obj]
+        elif isinstance(obj, torch.Tensor):
+            return obj.tolist()
+        return obj
 
-        json.dump(json_results, f, indent=2)
+    serializable_results = convert_to_serializable(results)
 
-    print(f"  Saved: {output_dir / 'results.json'}")
+    with open(results_path, 'w') as f:
+        json.dump(serializable_results, f, indent=2)
+    print(f"\nResults saved to: {results_path}")
 
     # Print summary
-    print("\n" + "="*70)
-    print("DIAGNOSTIC SUMMARY")
-    print("="*70)
+    elapsed = time.time() - start_time
+    print("\n" + "=" * 70)
+    print("DIAGNOSTIC COMPLETE")
+    print("=" * 70)
+    print(f"Total time: {elapsed/60:.1f} minutes")
+    print(f"Output directory: {args.output_dir}")
+    print(f"  - diagnosis_results.json: Detailed numerical results")
+    print(f"  - reasoning_failure_diagnosis.png: Visualizations")
+    print(f"  - reasoning_failure_diagnosis.pdf: Publication-quality figures")
 
-    print("\n1. FIRST-TOKEN ACCURACY")
-    test_a = all_results["test_a"]
-    latent_acc = 100 * test_a["latent_top1"] / test_a["total"]
-    text_acc = 100 * test_a["text_top1"] / test_a["total"]
-    print(f"   Latent: {latent_acc:.1f}% | Text: {text_acc:.1f}%")
-    if latent_acc < 5:
-        print("   ❌ CRITICAL: Bridge loses question semantics")
-    elif latent_acc < 0.5 * text_acc:
-        print("   ⚠️  WARNING: Significant information loss")
-    else:
-        print("   ✓  Reasonable preservation")
+    print("\nKEY FINDINGS SUMMARY:")
+    if "first_token" in results:
+        ft = results["first_token"]
+        print(f"  H1 First-Token Gap: {ft['gap_top1']:.1f}pp (Classification - Reasoning)")
+    if "diversity" in results:
+        div = results["diversity"]
+        print(f"  H2 Within-Sample Sim: Cls={div['classification']['within_sample_similarity']:.3f}, Rsn={div['reasoning']['within_sample_similarity']:.3f}")
+    if "entity_preservation" in results:
+        print(f"  H4 Entity Preservation: {results['entity_preservation']['mean_accuracy']:.2f}")
+    if "cot_preservation" in results:
+        cot = results["cot_preservation"]
+        if "mean_step_similarity" in cot:
+            print(f"  H5 CoT Step Similarity: {cot['mean_step_similarity']:.3f}")
+        elif "mean_sequential_similarity" in cot:
+            print(f"  H5 Sequential Similarity: {cot['mean_sequential_similarity']:.3f}")
 
-    print("\n2. SOFT TOKEN DIVERSITY")
-    test_b = all_results["test_b"]
-    print(f"   Intra-sample similarity: {test_b['intra_similarity']:.3f}")
-    print(f"   Inter-sample similarity: {test_b['inter_similarity']:.3f}")
-    print(f"   Effective rank: {test_b['effective_rank']:.1f} / 4096")
-    if test_b['inter_similarity'] > 0.8:
-        print("   ❌ CRITICAL: Mode collapse - all questions look the same")
-    elif test_b['effective_rank'] < 10:
-        print("   ❌ CRITICAL: Severe dimensional collapse")
-    else:
-        print("   ✓  Tokens are reasonably diverse")
-
-    if "test_c" in all_results:
-        print("\n3. LAYER COMPARISON")
-        test_c = all_results["test_c"]
-        l16_acc = 100 * test_c["layer_16_accuracy"] / test_c["total"]
-        l31_acc = 100 * test_c["layer_31_accuracy"] / test_c["total"]
-        print(f"   Layer 16: {l16_acc:.1f}% | Layer 31: {l31_acc:.1f}%")
-        if l31_acc > 2 * l16_acc:
-            print("   ✓  Layer 31 is better for reasoning (as expected)")
-        else:
-            print("   ⚠️  No clear layer advantage")
-
-    print("\n4. ENTITY PRESERVATION")
-    test_d = all_results["test_d"]
-    mean_recall = np.mean(test_d["number_recall"]) if test_d["number_recall"] else 0
-    digit_pct = 100 * test_d["samples_with_digits"] / test_d["total"] if test_d["total"] > 0 else 0
-    print(f"   Number recall: {100*mean_recall:.1f}%")
-    print(f"   Samples with digits: {digit_pct:.1f}%")
-    if mean_recall < 0.1:
-        print("   ❌ CRITICAL: Numbers are lost - explains GSM8K failure")
-    else:
-        print("   ✓  Numbers are partially preserved")
-
-    print("\n5. CHAIN PRESERVATION")
-    test_e = all_results["test_e"]
-    step_overlap = np.mean(test_e["step_overlap"]) if test_e["step_overlap"] else 0
-    op_match = np.mean(test_e["operation_match"]) if test_e["operation_match"] else 0
-    print(f"   Step overlap: {100*step_overlap:.1f}%")
-    print(f"   Operation match: {100*op_match:.1f}%")
-    if step_overlap < 0.1:
-        print("   ❌ CRITICAL: Reasoning chain is lost")
-    else:
-        print("   ✓  Partial chain preservation")
-
-    print("\n" + "="*70)
-    print("RECOMMENDATIONS")
-    print("="*70)
-
-    recommendations = []
-
-    if latent_acc < 5:
-        recommendations.append("• Increase soft tokens (8→16 or 8→32)")
-        recommendations.append("• Add contrastive loss to improve discrimination")
-
-    if test_b['inter_similarity'] > 0.8:
-        recommendations.append("• Mode collapse detected - add diversity regularization")
-        recommendations.append("• Consider contrastive learning (InfoNCE)")
-
-    if mean_recall < 0.1:
-        recommendations.append("• Bridge loses numbers - add entity-aware loss")
-        recommendations.append("• Try explicit number token supervision")
-
-    if step_overlap < 0.1:
-        recommendations.append("• Multi-step reasoning lost - need more capacity")
-        recommendations.append("• Consider multi-stage bridge (one soft token per step)")
-
-    if "test_c" in all_results and test_c["layer_31_accuracy"] > 2 * test_c["layer_16_accuracy"]:
-        recommendations.append("• Use Layer 31 instead of Layer 16 for reasoning tasks")
-
-    if not recommendations:
-        recommendations.append("• No clear bottleneck identified - problem may be in training")
-        recommendations.append("• Consider longer training or different optimization")
-
-    for rec in recommendations:
-        print(rec)
-
-    print("\n" + "="*70)
-    print(f"Analysis complete! Results saved to: {args.output_dir}")
-    print("="*70)
+    print(f"\n{len(recommendations)} actionable recommendations generated.")
 
 
 if __name__ == "__main__":
