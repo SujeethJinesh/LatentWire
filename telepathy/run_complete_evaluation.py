@@ -553,8 +553,10 @@ def calculate_compression_ratio(
     d_z = 256
     compressed_soft_token_bytes = num_soft_tokens * d_z * quantization_bits / 8
 
-    compression_ratio_raw = text_bytes / soft_token_bytes if soft_token_bytes > 0 else float('inf')
-    compression_ratio_projected = text_bytes / compressed_soft_token_bytes if compressed_soft_token_bytes > 0 else float('inf')
+    # Compression ratio should show how much smaller the compressed version is
+    # i.e., compressed_bytes / original_bytes (e.g., 0.1 means 10% of original size)
+    compression_ratio_raw = soft_token_bytes / text_bytes if text_bytes > 0 else 0
+    compression_ratio_projected = compressed_soft_token_bytes / text_bytes if text_bytes > 0 else 0
 
     return {
         "text_bytes": text_bytes,
@@ -1203,8 +1205,15 @@ def run_text_relay_baseline(
         torch.cuda.synchronize()
         start = time.perf_counter()
 
-        # Step 1: Llama summarizes
-        summary_prompt = f"Summarize this in one sentence:\n\n{text[:256]}\n\nSummary:"
+        # Step 1: Llama summarizes with classification context
+        # Include the classification task in the summary prompt so Llama preserves relevant information
+        task_hint = {
+            "sst2": "sentiment (positive or negative)",
+            "agnews": "topic category",
+            "trec": "question type"
+        }.get(dataset_key, "category")
+
+        summary_prompt = f"Summarize this text in one sentence, preserving information about its {task_hint}:\n\n{text[:256]}\n\nSummary:"
         src_enc = src_tok(summary_prompt, return_tensors="pt", truncation=True, max_length=300).to(device)
 
         with torch.no_grad():
@@ -1217,7 +1226,9 @@ def run_text_relay_baseline(
             summary = src_tok.decode(summary_ids[0][src_enc.input_ids.shape[1]:], skip_special_tokens=True)
 
         # Step 2: Mistral classifies from summary
-        classify_prompt = f"{dataset_config['primer']}\n\nText: {summary}\n\nAnswer:"
+        # Make the classification prompt more explicit
+        label_list = ", ".join(dataset_config["label_names"])
+        classify_prompt = f"{dataset_config['primer']}\n\nText: {summary}\n\nClassify this as one of: {label_list}\n\nAnswer:"
         tgt_enc = tgt_tok(classify_prompt, return_tensors="pt", truncation=True, max_length=256).to(device)
 
         with torch.no_grad():
@@ -2203,14 +2214,29 @@ Tokens & SST-2 & AG News & TREC & Compression \\
             else:
                 row_values.append("--")
 
-        # Calculate compression ratio more accurately
-        # Use average text lengths from datasets
-        avg_text_bytes = {"sst2": 120, "agnews": 300, "trec": 50}
-        avg_text_len = np.mean(list(avg_text_bytes.values()))
-        soft_token_bytes = num_tokens * 256 * 2  # d_z=256, fp16
-        compression = avg_text_len / soft_token_bytes if soft_token_bytes > 0 else 0
+        # Calculate compression ratio from actual results data
+        # Get average compression ratio from bridge results for this token count
+        compression = 0.0
+        comp_count = 0
+        for dataset_key in ["sst2", "agnews", "trec"]:
+            method = f"bridge_{num_tokens}"
+            if "bridge" in all_results and dataset_key in all_results["bridge"]:
+                for result in all_results["bridge"][dataset_key]:
+                    if result.get("num_soft_tokens") == num_tokens:
+                        comp_ratio = result.get("compression_ratio_avg", 0)
+                        if comp_ratio > 0:
+                            compression += comp_ratio
+                            comp_count += 1
 
-        latex.append(f"{num_tokens} & {' & '.join(row_values)} & {compression:.2f}x \\\\\n")
+        if comp_count > 0:
+            compression = compression / comp_count
+        else:
+            # Fallback calculation if no results found
+            soft_token_bytes = num_tokens * 256 * 2  # d_z=256, fp16
+            avg_text_bytes = 157  # Average of SST-2, AG News, TREC
+            compression = soft_token_bytes / avg_text_bytes if avg_text_bytes > 0 else 0
+
+        latex.append(f"{num_tokens} & {' & '.join(row_values)} & {compression:.4f}x \\\\\n")
 
     latex.append(r"""\bottomrule
 \end{tabular}
