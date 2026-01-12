@@ -1,8 +1,0 @@
-
-\begin{abstract}
-We present Telepathy, a neural bridge architecture that enables direct communication between heterogeneous Large Language Models through learned soft tokens, eliminating autoregressive text generation entirely.
-Our approach achieves 94.7\% accuracy on SST-2 sentiment analysis, 88.9\% on AG News topic classification, and 94.5\% on TREC-6 question classification—outperforming text-relay baselines by 20-37 percentage points while operating 22$\times$ faster (37ms vs. 835ms per sample).
-Through comprehensive ablation studies, we identify that cross-attention is essential for cross-model transfer, while simpler pooling approaches fail completely.
-We also present LatentWire, our initial failed attempt at universal text communication that motivated Telepathy's focused approach.
-Our work demonstrates that learned continuous representations can serve as an efficient wire protocol between frozen heterogeneous LLMs.
-\end{abstract}

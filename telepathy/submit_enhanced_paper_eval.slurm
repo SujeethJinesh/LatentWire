@@ -4,7 +4,7 @@
 #SBATCH --gpus=1
 #SBATCH --account=marlowe-m000066
 #SBATCH --partition=preempt
-#SBATCH --time=12:00:00
+#SBATCH --time=18:00:00
 #SBATCH --mem=128GB
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/enhanced_eval_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/enhanced_eval_%j.err

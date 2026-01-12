@@ -1,219 +1,0 @@
-================================================================================
-LEARNED ADAPTER EXPERIMENT - LORA
-================================================================================
-Platform: hpc
-Model A: meta-llama/Llama-3.1-8B
-Model B: meta-llama/Llama-3.2-3B
-Log file: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_allgpus_samevocab_20251101_230300.log
-
-================================================================================
-GPU CONFIGURATION
-================================================================================
-Mode: DistributedDataParallel (DDP)
-Number of GPUs: 4
-GPU IDs: [0, 1, 2, 3]
-Rank: 0, Device: cuda:0
-Batch size per GPU: 10
-Global batch size: 40
-Effective batch (with grad accum): 320
-================================================================================
-
-
-Loading models on hpc...
-Using bfloat16 for H100
-Using Flash Attention 2
-Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4475.12it/s]Downloading shards: 100%|##########| 4/4 [00:00<00:00, 4475.12it/s]
-
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:02,  1.31it/s]Loading checkpoint shards:  25%|##5       | 1/4 [00:00<00:02,  1.31it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.66it/s]Loading checkpoint shards:  50%|#####     | 2/4 [00:01<00:01,  1.66it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.07it/s]Loading checkpoint shards:  75%|#######5  | 3/4 [00:01<00:00,  2.07it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.46it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.46it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.12it/s]Loading checkpoint shards: 100%|##########| 4/4 [00:01<00:00,  2.12it/s]
-
-Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|##########| 2/2 [00:00<00:00, 2895.62it/s]Downloading shards: 100%|##########| 2/2 [00:00<00:00, 2895.62it/s]
-
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|#####     | 1/2 [00:00<00:00,  2.16it/s]Loading checkpoint shards:  50%|#####     | 1/2 [00:00<00:00,  2.16it/s]Loading checkpoint shards: 100%|##########| 2/2 [00:00<00:00,  2.50it/s]Loading checkpoint shards: 100%|##########| 2/2 [00:00<00:00,  2.50it/s]Loading checkpoint shards: 100%|##########| 2/2 [00:00<00:00,  2.44it/s]Loading checkpoint shards: 100%|##########| 2/2 [00:00<00:00,  2.44it/s]
-
-
-Model dimensions:
-  Model A (meta-llama/Llama-3.1-8B): 4096
-  Model B (meta-llama/Llama-3.2-3B): 3072
-  Dimension mismatch detected - adapter will project 4096→3072
-
-Training LoRAAdapter...
-Loading dataset (10000 samples)...
-Rank 0: Waiting for all ranks before dataset loading...
-Rank 0: Loading wikitext dataset...
-Rank 0: Creating alignment dataset with 10000 samples...
-Rank 0: Dataset created successfully
-Rank 0: Creating DistributedSampler...
-Rank 0: Creating DataLoader with DDP...
-Rank 0: DataLoader created, syncing ranks...
-Rank 0: All ranks ready with dataloader
-
-================================================================================
-TRAINING CONFIGURATION
-================================================================================
-Total epochs: 5
-Steps per epoch: 250
-Total training steps: 1250
-Batch size: 10
-Gradient accumulation: 8 (effective batch: 80)
-Learning rate: 5e-05
-Alignment layers: [8, 16, 24]
-================================================================================
-
-
-================================================================================
-Epoch 1/5
-================================================================================
-
-================================================================================
-Epoch 1/5
-================================================================================
-Rank 0: Syncing before dataloader iteration...
-Rank 0: All ranks ready, starting batch iteration...
-Rank 0: Processing first batch of epoch 1...
-  Step 10/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 20/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 30/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 40/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 50/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 60/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 70/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 80/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 90/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  [ 40.0%] Step  100/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.120 | LR: 4.93e-05 | GradNorm: 0.000 | 0.53 steps/s | ETA: 4.8m
-  [ 40.0%] Step  100/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.120 | LR: 4.93e-05 | GradNorm: 0.000 | 0.53 steps/s | ETA: 4.8m
-  Step 110/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 120/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 130/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 140/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 150/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 160/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 170/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 180/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 190/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  [ 80.0%] Step  200/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: nan | 0.53 steps/s | ETA: 1.6m
-  [ 80.0%] Step  200/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.140 | LR: 4.69e-05 | GradNorm: nan | 0.53 steps/s | ETA: 1.6m
-  Step 210/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 220/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 230/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 240/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 250/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-
-  Computing multi-layer CKA similarity...
-  Generating quality samples...
-
-  Epoch 1 Evaluation:
-    CKA Similarity: nan
-    Cosine Similarity: nan
-
-================================================================================
-Epoch 1/5 Complete | Time: 8.1m | Total: 8.1m
-  Total Loss: nan (Gen: nan, Contr: nan)
-  CKA Score: nan | LR: 0.000045
-  ETA for remaining 4 epochs: 32.5m
-================================================================================
-
-================================================================================
-Epoch 1/5 Complete | Time: 8.1m | Total: 8.1m
-  Total Loss: nan (Gen: nan, Contr: nan)
-  CKA Score: nan | LR: 0.000045
-  ETA for remaining 4 epochs: 32.5m
-================================================================================
-  Checkpoint saved to /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_samevocab_checkpoint/checkpoint.pt
-
-================================================================================
-Epoch 2/5
-================================================================================
-
-================================================================================
-Epoch 2/5
-================================================================================
-Rank 0: Syncing before dataloader iteration...
-Rank 0: All ranks ready, starting batch iteration...
-Rank 0: Processing first batch of epoch 2...
-  Step 10/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 20/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 30/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 40/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 50/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 60/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 70/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 80/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 90/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  [ 40.0%] Step  100/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.53 steps/s | ETA: 4.8m
-  [ 40.0%] Step  100/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.170 | LR: 4.12e-05 | GradNorm: 0.000 | 0.53 steps/s | ETA: 4.8m
-  Step 110/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 120/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 130/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 140/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 150/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 160/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 170/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 180/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 190/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  [ 80.0%] Step  200/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: nan | 0.53 steps/s | ETA: 1.6m
-  [ 80.0%] Step  200/250 | Loss: nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan) | ContrW: 0.190 | LR: 3.57e-05 | GradNorm: nan | 0.53 steps/s | ETA: 1.6m
-  Step 210/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 220/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 230/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 240/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-  Step 250/250: Loss = nan (Gen: nan, Contr: nan, Align: nan, Uniform: nan)
-
-  Computing multi-layer CKA similarity...
-  Generating quality samples...
-
-  Epoch 2 Evaluation:
-    CKA Similarity: nan
-    Cosine Similarity: nan
-
-================================================================================
-Epoch 2/5 Complete | Time: 8.1m | Total: 16.2m
-  Total Loss: nan (Gen: nan, Contr: nan)
-  CKA Score: nan | LR: 0.000033
-  ETA for remaining 3 epochs: 24.4m
-================================================================================
-
-================================================================================
-Epoch 2/5 Complete | Time: 8.1m | Total: 16.2m
-  Total Loss: nan (Gen: nan, Contr: nan)
-  CKA Score: nan | LR: 0.000033
-  ETA for remaining 3 epochs: 24.4m
-================================================================================
-
-  Early stopping triggered at epoch 2
-  Best loss: inf
-  No improvement for 2 epochs
-
-
-================================================================================
-TRAINING COMPLETE
-================================================================================
-Total time: 16.2 minutes (0.27 hours)
-Total epochs: 5
-Final loss: nan
-Final CKA score: nan
-
-Loss progression:
-  Epoch  1: Loss nan, CKA nan
-  Epoch  2: Loss nan, CKA nan
-================================================================================
-
-
-
-================================================================================
-TRAINING COMPLETE
-================================================================================
-Total time: 16.2 minutes (0.27 hours)
-Total epochs: 5
-Final loss: nan
-Final CKA score: nan
-
-Loss progression:
-  Epoch  1: Loss nan, CKA nan
-  Epoch  2: Loss nan, CKA nan
-================================================================================
-
-
-Results saved to: /projects/m000066/sujinesh/LatentWire/experimental/learning/runs/learned_adapters/lora_results_20251101_230300.json
-================================================================================
-LORA EXPERIMENT COMPLETE
-================================================================================

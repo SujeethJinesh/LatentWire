@@ -1018,6 +1018,265 @@ def train_bridge_for_dataset(
     return results
 
 
+def train_same_model_bridge_for_dataset(
+    dataset_key: str,
+    seed: int,
+    output_dir: Path,
+    device: torch.device,
+    config: Dict[str, Any],
+    num_soft_tokens: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
+    Train and evaluate same-model bridge (Llama -> Llama) on a single dataset.
+
+    This baseline tests whether the benefit of cross-model telepathy comes from:
+    1. The compression itself (soft tokens vs raw text)
+    2. The cross-model transfer capability
+
+    If same-model bridge performs similarly to cross-model bridge, then the value
+    is primarily in compression. If cross-model significantly outperforms same-model,
+    then there's unique value in cross-model communication.
+    """
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+
+    soft_tokens = num_soft_tokens if num_soft_tokens else config["soft_tokens"]
+    dataset_config = DATASETS[dataset_key]
+
+    print(f"\n{'='*60}")
+    print(f"Training Same-Model Bridge (Llama->Llama): {dataset_config['name']} | Seed: {seed} | Tokens: {soft_tokens}")
+    print(f"{'='*60}")
+
+    # Load Llama model for both source and target
+    # We use a single model instance but clone hidden states for bridge training
+    model = AutoModelForCausalLM.from_pretrained(
+        SOURCE_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
+    ).eval()
+
+    tokenizer = AutoTokenizer.from_pretrained(SOURCE_MODEL)
+    tokenizer.pad_token = tokenizer.eos_token
+
+    # Freeze model
+    for p in model.parameters():
+        p.requires_grad = False
+
+    # Compute target RMS from the same model's embeddings
+    with torch.no_grad():
+        embeds = model.get_input_embeddings().weight.float()
+        target_rms = embeds.pow(2).mean(dim=1).sqrt().median().item()
+
+    # Initialize bridge (same hidden dimension for src and tgt since same model)
+    bridge = TelepathyBridge(
+        src_dim=model.config.hidden_size,
+        tgt_dim=model.config.hidden_size,  # Same as src since same model
+        num_soft_tokens=soft_tokens,
+        heads=config["heads"],
+        depth=config["depth"],
+        target_rms=target_rms
+    ).to(device).to(torch.bfloat16)
+
+    optimizer = torch.optim.AdamW(bridge.parameters(), lr=config["lr"], weight_decay=0.01)
+
+    # Load data
+    train_data = load_dataset_by_config(dataset_key, dataset_config["split_train"])
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+
+    # Training loop
+    bridge.train()
+    train_loader = torch.utils.data.DataLoader(
+        train_data, batch_size=config["batch_size"], shuffle=True,
+        collate_fn=lambda x: x, drop_last=True
+    )
+    iter_loader = iter(train_loader)
+
+    pbar = tqdm(range(config["train_steps"]), desc=f"same_model {dataset_key} seed={seed}")
+
+    for step in pbar:
+        try:
+            batch = next(iter_loader)
+        except StopIteration:
+            iter_loader = iter(train_loader)
+            batch = next(iter_loader)
+
+        B = len(batch)
+
+        # Format prompts based on dataset type
+        src_texts = [format_prompt_for_example(item, dataset_config) for item in batch]
+
+        # Get labels
+        if dataset_key == "gsm8k":
+            labels = [str(item.get("label", "")) for item in batch]
+        else:
+            labels = [dataset_config["label_names"][item["label"]]
+                     if dataset_config["label_names"] else str(item["label"])
+                     for item in batch]
+
+        # Source encoding (using same tokenizer)
+        src_enc = tokenizer(src_texts, return_tensors="pt", padding=True,
+                           truncation=True, max_length=dataset_config["max_length"]).to(device)
+
+        with torch.no_grad():
+            src_out = model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[config["source_layer"]]
+
+        # Bridge forward
+        soft_tokens_out, z_var = bridge(src_h, src_enc.attention_mask)
+
+        # Diversity loss
+        flat_tokens = soft_tokens_out.reshape(B, -1).float()
+        flat_norm = F.normalize(flat_tokens, dim=1)
+        sim_matrix = torch.mm(flat_norm, flat_norm.t())
+        mask = ~torch.eye(B, dtype=torch.bool, device=device)
+        div_loss = sim_matrix[mask].mean()
+
+        # Target (generate answer using same model)
+        primer = dataset_config["primer"]
+        with torch.no_grad():
+            primer_enc = tokenizer([primer] * B, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = model.get_input_embeddings()(primer_enc.input_ids)
+
+            tgt_texts = [f" {l}{tokenizer.eos_token}" for l in labels]
+            tgt_enc = tokenizer(tgt_texts, return_tensors="pt", padding=True,
+                              truncation=True, max_length=32, add_special_tokens=False).to(device)
+            answer_embeds = model.get_input_embeddings()(tgt_enc.input_ids)
+
+        inputs_embeds = torch.cat([primer_embeds, soft_tokens_out, answer_embeds], dim=1)
+
+        K = soft_tokens_out.shape[1]
+        P_len = primer_embeds.shape[1]
+        ignore_prefix = torch.full((B, P_len + K), -100, dtype=torch.long, device=device)
+        answer_labels = tgt_enc.input_ids.clone()
+        answer_labels[tgt_enc.attention_mask == 0] = -100
+        labels_tensor = torch.cat([ignore_prefix, answer_labels], dim=1)
+
+        soft_mask = torch.ones(B, K, dtype=torch.long, device=device)
+        full_mask = torch.cat([primer_enc.attention_mask, soft_mask, tgt_enc.attention_mask], dim=1)
+
+        outputs = model(inputs_embeds=inputs_embeds, attention_mask=full_mask, labels=labels_tensor)
+        lm_loss = outputs.loss
+
+        total_loss = lm_loss + config["diversity_weight"] * div_loss
+
+        optimizer.zero_grad()
+        total_loss.backward()
+        torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
+        optimizer.step()
+
+        pbar.set_postfix({"lm": f"{lm_loss.item():.3f}", "div": f"{div_loss.item():.3f}"})
+
+    # Evaluation
+    bridge.eval()
+    correct = 0
+    total = 0
+    all_predictions = []
+    all_labels = []
+    compression_ratios = []
+
+    print(f"\nEvaluating same-model bridge on {len(test_data)} test samples...")
+
+    for item in tqdm(test_data, desc="Evaluating", leave=False):
+        # Get ground truth label
+        if dataset_key == "gsm8k":
+            label = str(item.get("label", ""))
+        else:
+            label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+
+        # Format prompt
+        prompt = format_prompt_for_example(item, dataset_config)
+        comp_ratio = calculate_compression_ratio(prompt, soft_tokens, model.config.hidden_size)
+        compression_ratios.append(comp_ratio)
+
+        src_enc = tokenizer(prompt, return_tensors="pt", truncation=True,
+                           max_length=dataset_config["max_length"]).to(device)
+
+        with torch.no_grad():
+            src_out = model(**src_enc, output_hidden_states=True)
+            src_h = src_out.hidden_states[config["source_layer"]]
+            soft_tokens_out, _ = bridge(src_h, src_enc.attention_mask)
+
+            primer = dataset_config["primer"]
+            primer_enc = tokenizer(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = model.get_input_embeddings()(primer_enc.input_ids)
+
+            combined_embeds = torch.cat([primer_embeds, soft_tokens_out], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+
+            max_new = 64 if dataset_key == "gsm8k" else 10
+            out_ids = model.generate(
+                inputs_embeds=combined_embeds,
+                attention_mask=attn_mask,
+                max_new_tokens=max_new,
+                do_sample=False,
+                pad_token_id=tokenizer.eos_token_id
+            )
+            output = tokenizer.decode(out_ids[0], skip_special_tokens=True).strip().lower()
+
+        # Check prediction
+        if dataset_key == "gsm8k":
+            # Extract numeric answer
+            pred_label = extract_gsm8k_answer(output)
+            is_correct = pred_label == label
+        else:
+            pred_label = None
+            for lbl in dataset_config["label_names"]:
+                if lbl.lower() in output:
+                    pred_label = lbl
+                    break
+            is_correct = pred_label is not None and pred_label.lower() == label.lower()
+
+        if is_correct:
+            correct += 1
+        total += 1
+
+        all_predictions.append(pred_label)
+        all_labels.append(label)
+
+    accuracy = 100.0 * correct / total if total > 0 else 0.0
+    avg_compression = np.mean([c["compression_ratio_projected"] for c in compression_ratios])
+
+    # Save checkpoint
+    checkpoint_path = output_dir / f"same_model_{dataset_key}_seed{seed}_tokens{soft_tokens}_bridge.pt"
+    torch.save(bridge.state_dict(), checkpoint_path)
+
+    results = {
+        "dataset": dataset_key,
+        "dataset_name": dataset_config["name"],
+        "seed": seed,
+        "num_soft_tokens": soft_tokens,
+        "accuracy": accuracy,
+        "correct": correct,
+        "total": total,
+        "num_classes": dataset_config["num_classes"],
+        "config": config,
+        "checkpoint_path": str(checkpoint_path),
+        "compression_ratio_avg": avg_compression,
+        "predictions": all_predictions,
+        "labels": all_labels,
+        "baseline_type": "same_model_bridge",
+        "source_model": SOURCE_MODEL,
+        "target_model": SOURCE_MODEL,  # Same model for both
+    }
+
+    # Save results
+    results_path = output_dir / f"same_model_{dataset_key}_seed{seed}_tokens{soft_tokens}_results.json"
+    results_to_save = {k: v for k, v in results.items() if k not in ["predictions", "labels"]}
+    results_to_save["predictions_sample"] = all_predictions[:50]
+    results_to_save["labels_sample"] = all_labels[:50]
+    with open(results_path, "w") as f:
+        json.dump(results_to_save, f, indent=2)
+
+    print(f"\n[RESULT] Same-Model Bridge {dataset_config['name']} seed={seed} tokens={soft_tokens}: {accuracy:.1f}% ({correct}/{total})")
+    print(f"  Avg compression ratio: {avg_compression:.2f}x")
+
+    # Cleanup
+    del model, bridge
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    return results
+
+
 # =============================================================================
 # ZERO-SHOT BASELINES
 # =============================================================================
@@ -1458,6 +1717,227 @@ def run_linear_probe(
 
 
 # =============================================================================
+# PROMPT TUNING BASELINE
+# =============================================================================
+
+def run_prompt_tuning_baseline(
+    dataset_key: str,
+    seed: int,
+    output_dir: Path,
+    device: torch.device,
+    config: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Run prompt tuning baseline on the target model (Mistral).
+
+    This trains learnable soft prompts that are prepended to inputs for the target model.
+    Unlike the bridge which transfers from source to target, this directly optimizes
+    prompts for the target model on the classification task.
+
+    This baseline is critical for fair comparison - the paper claims prompt-tuning fails
+    for cross-model transfer. This establishes the upper bound for single-model prompt tuning.
+    """
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+
+    dataset_config = DATASETS[dataset_key]
+
+    # Skip GSM8K for prompt tuning (not classification)
+    if dataset_key == "gsm8k":
+        print(f"Skipping prompt tuning for GSM8K (not a classification task)")
+        return {"dataset": dataset_key, "skipped": True, "reason": "not_classification"}
+
+    print(f"\n{'='*60}")
+    print(f"Prompt Tuning Baseline: {dataset_config['name']} | Seed: {seed}")
+    print(f"{'='*60}")
+
+    # Load target model only
+    tgt_model = AutoModelForCausalLM.from_pretrained(
+        TARGET_MODEL, torch_dtype=torch.bfloat16, device_map={"": device}
+    ).eval()
+    tgt_tok = AutoTokenizer.from_pretrained(TARGET_MODEL)
+    tgt_tok.pad_token = tgt_tok.eos_token
+
+    # Freeze target model
+    for p in tgt_model.parameters():
+        p.requires_grad = False
+
+    # Compute target RMS for soft prompt initialization
+    with torch.no_grad():
+        tgt_embeds = tgt_model.get_input_embeddings().weight.float()
+        target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
+
+    # Initialize soft prompts
+    soft_prompts = SoftPromptTuning(
+        num_tokens=config["soft_tokens"],
+        embed_dim=tgt_model.config.hidden_size,
+        target_rms=target_rms
+    ).to(device).to(torch.bfloat16)
+
+    optimizer = torch.optim.AdamW(soft_prompts.parameters(), lr=config["lr"], weight_decay=0.01)
+
+    # Load data
+    train_data = load_dataset_by_config(dataset_key, dataset_config["split_train"])
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+
+    # Training loop
+    soft_prompts.train()
+    train_loader = torch.utils.data.DataLoader(
+        train_data, batch_size=config["batch_size"], shuffle=True,
+        collate_fn=lambda x: x, drop_last=True
+    )
+    iter_loader = iter(train_loader)
+
+    # Gradient accumulation for stability
+    grad_accum = config.get("grad_accum", 2)
+    effective_steps = config["steps"]
+
+    pbar = tqdm(range(effective_steps), desc=f"Prompt Tuning {dataset_key} seed={seed}")
+
+    for step in pbar:
+        optimizer.zero_grad()
+        accum_loss = 0.0
+
+        for _ in range(grad_accum):
+            try:
+                batch = next(iter_loader)
+            except StopIteration:
+                iter_loader = iter(train_loader)
+                batch = next(iter_loader)
+
+            B = len(batch)
+
+            # Get labels
+            labels = [dataset_config["label_names"][item["label"]]
+                     if dataset_config["label_names"] else str(item["label"])
+                     for item in batch]
+
+            # Get soft prompts for batch
+            soft_tokens = soft_prompts(B)  # [B, num_tokens, hidden_dim]
+
+            # Primer for classification
+            primer = dataset_config["primer"]
+            with torch.no_grad():
+                primer_enc = tgt_tok([primer] * B, return_tensors="pt", add_special_tokens=False).to(device)
+                primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids)
+
+                tgt_texts = [f" {l}{tgt_tok.eos_token}" for l in labels]
+                tgt_enc = tgt_tok(tgt_texts, return_tensors="pt", padding=True,
+                                truncation=True, max_length=32, add_special_tokens=False).to(device)
+                answer_embeds = tgt_model.get_input_embeddings()(tgt_enc.input_ids)
+
+            # Concatenate: primer + soft_tokens + answer
+            inputs_embeds = torch.cat([primer_embeds, soft_tokens, answer_embeds], dim=1)
+
+            K = soft_tokens.shape[1]
+            P_len = primer_embeds.shape[1]
+            ignore_prefix = torch.full((B, P_len + K), -100, dtype=torch.long, device=device)
+            answer_labels = tgt_enc.input_ids.clone()
+            answer_labels[tgt_enc.attention_mask == 0] = -100
+            labels_tensor = torch.cat([ignore_prefix, answer_labels], dim=1)
+
+            soft_mask = torch.ones(B, K, dtype=torch.long, device=device)
+            full_mask = torch.cat([primer_enc.attention_mask, soft_mask, tgt_enc.attention_mask], dim=1)
+
+            outputs = tgt_model(inputs_embeds=inputs_embeds, attention_mask=full_mask, labels=labels_tensor)
+            loss = outputs.loss / grad_accum
+            loss.backward()
+            accum_loss += loss.item()
+
+        torch.nn.utils.clip_grad_norm_(soft_prompts.parameters(), 1.0)
+        optimizer.step()
+
+        pbar.set_postfix({"loss": f"{accum_loss:.3f}"})
+
+    # Evaluation
+    soft_prompts.eval()
+    correct = 0
+    total = 0
+    all_predictions = []
+    all_labels = []
+
+    print(f"\nEvaluating on {len(test_data)} test samples...")
+
+    for item in tqdm(test_data, desc="Evaluating", leave=False):
+        # Get ground truth label
+        label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+
+        with torch.no_grad():
+            # Get soft prompts for single sample
+            soft_tokens = soft_prompts(1)  # [1, num_tokens, hidden_dim]
+
+            primer = dataset_config["primer"]
+            primer_enc = tgt_tok(primer, return_tensors="pt", add_special_tokens=False).to(device)
+            primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids)
+
+            combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
+            attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+
+            out_ids = tgt_model.generate(
+                inputs_embeds=combined_embeds,
+                attention_mask=attn_mask,
+                max_new_tokens=10,
+                do_sample=False,
+                pad_token_id=tgt_tok.eos_token_id
+            )
+            output = tgt_tok.decode(out_ids[0], skip_special_tokens=True).strip().lower()
+
+        # Check prediction
+        pred_label = None
+        for lbl in dataset_config["label_names"]:
+            if lbl.lower() in output:
+                pred_label = lbl
+                break
+        is_correct = pred_label is not None and pred_label.lower() == label.lower()
+
+        if is_correct:
+            correct += 1
+        total += 1
+
+        all_predictions.append(pred_label)
+        all_labels.append(label)
+
+    accuracy = 100.0 * correct / total if total > 0 else 0.0
+
+    # Save checkpoint
+    checkpoint_path = output_dir / f"prompt_tuning_{dataset_key}_seed{seed}.pt"
+    torch.save(soft_prompts.state_dict(), checkpoint_path)
+
+    results = {
+        "dataset": dataset_key,
+        "dataset_name": dataset_config["name"],
+        "method": "prompt_tuning",
+        "seed": seed,
+        "num_soft_tokens": config["soft_tokens"],
+        "accuracy": accuracy,
+        "correct": correct,
+        "total": total,
+        "num_classes": dataset_config["num_classes"],
+        "config": config,
+        "checkpoint_path": str(checkpoint_path),
+        "predictions": all_predictions,
+        "labels": all_labels,
+    }
+
+    # Save results
+    results_path = output_dir / f"prompt_tuning_{dataset_key}_seed{seed}.json"
+    results_to_save = {k: v for k, v in results.items() if k not in ["predictions", "labels"]}
+    results_to_save["predictions_sample"] = all_predictions[:50]
+    with open(results_path, "w") as f:
+        json.dump(results_to_save, f, indent=2)
+
+    print(f"\n[RESULT] Prompt Tuning {dataset_config['name']} seed={seed}: {accuracy:.1f}% ({correct}/{total})")
+
+    # Cleanup
+    del tgt_model, soft_prompts
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    return results
+
+
+# =============================================================================
 # PROGRESS TRACKING
 # =============================================================================
 
@@ -1570,8 +2050,12 @@ def count_total_experiments(datasets: List[str], seeds: List[int]) -> int:
     # Linear probe (skip GSM8K)
     classification_datasets = [d for d in datasets if d != "gsm8k"]
     total += len(classification_datasets) * n_seeds
-    # Bridge (per token config)
+    # Prompt tuning (skip GSM8K)
+    total += len(classification_datasets) * n_seeds
+    # Bridge (per token config) - uses ALL 4 token configs [8, 16, 24, 32]
     total += n_tokens * n_datasets * n_seeds
+    # Same-model bridge baseline (1 seed, 1 token config per dataset)
+    total += n_datasets  # Only first seed and 16 tokens
 
     return total
 
@@ -2353,6 +2837,8 @@ def get_result_file_path(run_dir: Path, method: str, dataset_key: str, seed: int
         return run_dir / "text_relay" / f"text_relay_{dataset_key}_seed{seed}.json"
     elif method == "linear_probe":
         return run_dir / "linear_probe" / f"linear_probe_{dataset_key}_seed{seed}.json"
+    elif method == "prompt_tuning":
+        return run_dir / "prompt_tuning" / f"prompt_tuning_{dataset_key}_seed{seed}.json"
     elif method == "bridge":
         return run_dir / "bridge" / f"{dataset_key}_seed{seed}_tokens{num_tokens}_results.json"
     else:
@@ -2383,6 +2869,8 @@ def load_existing_results(run_dir: Path, datasets: List[str], seeds: List[int]) 
         "zeroshot_mistral": [],
         "text_relay": [],
         "linear_probe": [],
+        "prompt_tuning": [],
+        "same_model_bridge": [],
     }
 
     for num_tokens in TOKEN_ABLATION_CONFIGS:
@@ -2413,6 +2901,14 @@ def load_existing_results(run_dir: Path, datasets: List[str], seeds: List[int]) 
             if result is not None:
                 all_results["linear_probe"].append(result)
 
+    # Load prompt_tuning results
+    for dataset_key in datasets:
+        for seed in seeds:
+            result_path = get_result_file_path(run_dir, "prompt_tuning", dataset_key, seed)
+            result = check_existing_result(result_path)
+            if result is not None:
+                all_results["prompt_tuning"].append(result)
+
     # Load bridge results
     for num_tokens in TOKEN_ABLATION_CONFIGS:
         for dataset_key in datasets:
@@ -2422,7 +2918,256 @@ def load_existing_results(run_dir: Path, datasets: List[str], seeds: List[int]) 
                 if result is not None:
                     all_results[f"bridge_{num_tokens}"].append(result)
 
+    # Load same_model_bridge results
+    for dataset_key in datasets:
+        # Same-model bridge only uses first seed and 16 tokens
+        result_path = get_result_file_path(run_dir, "same_model_bridge", dataset_key, seeds[0], num_tokens=16)
+        result = check_existing_result(result_path)
+        if result is not None:
+            all_results["same_model_bridge"].append(result)
+
     return all_results
+
+
+# =============================================================================
+# STATISTICAL SIGNIFICANCE COMPUTATION
+# =============================================================================
+
+def compute_statistical_significance(
+    all_results: Dict[str, List[Dict]],
+    datasets: List[str],
+    seeds: List[int],
+    logger: Optional[logging.Logger] = None
+) -> Dict[str, Any]:
+    """
+    Compute statistical significance tests comparing bridge methods vs baselines.
+
+    Compares:
+    - Bridge (each token config) vs zeroshot_mistral (target model baseline)
+    - Bridge (each token config) vs prompt_tuning
+    - Bridge (each token config) vs linear_probe
+    - Bridge (each token config) vs text_relay
+
+    Returns:
+        Dictionary with per-dataset and aggregate statistical results including:
+        - p-values (paired t-test across seeds)
+        - effect sizes (Cohen's d)
+        - bootstrap confidence intervals
+        - multiple comparison corrections
+    """
+    if logger:
+        logger.info("Computing statistical significance tests...")
+
+    statistical_results = {
+        "per_dataset": {},
+        "aggregate": {},
+        "methodology": {
+            "test_type": "paired_t_test",
+            "effect_size": "cohens_d_paired",
+            "correction_method": "bonferroni",
+            "confidence_level": 0.95,
+            "n_seeds": len(seeds),
+            "seeds_used": seeds,
+        }
+    }
+
+    # Baseline methods to compare against
+    baseline_methods = ["zeroshot_mistral", "prompt_tuning", "linear_probe", "text_relay"]
+
+    # Bridge methods with token ablation
+    bridge_methods = [f"bridge_{n}" for n in TOKEN_ABLATION_CONFIGS]
+
+    for dataset_key in datasets:
+        dataset_stats = {
+            "comparisons": {},
+            "summary": {}
+        }
+
+        # Get baseline accuracies per seed
+        baselines_by_seed = {}
+        for baseline_method in baseline_methods:
+            results = all_results.get(baseline_method, [])
+            dataset_results = [r for r in results if r.get("dataset") == dataset_key and not r.get("skipped")]
+
+            # Map seed -> accuracy
+            seed_to_acc = {}
+            for r in dataset_results:
+                seed = r.get("seed")
+                acc = r.get("accuracy")
+                if seed is not None and acc is not None:
+                    seed_to_acc[seed] = acc
+
+            if seed_to_acc:
+                baselines_by_seed[baseline_method] = seed_to_acc
+
+        # Compare each bridge method against each baseline
+        for bridge_method in bridge_methods:
+            bridge_results = all_results.get(bridge_method, [])
+            bridge_dataset_results = [r for r in bridge_results if r.get("dataset") == dataset_key and not r.get("skipped")]
+
+            # Map seed -> accuracy for bridge
+            bridge_seed_to_acc = {}
+            for r in bridge_dataset_results:
+                seed = r.get("seed")
+                acc = r.get("accuracy")
+                if seed is not None and acc is not None:
+                    bridge_seed_to_acc[seed] = acc
+
+            if not bridge_seed_to_acc:
+                continue
+
+            for baseline_method, baseline_seed_to_acc in baselines_by_seed.items():
+                comparison_key = f"{bridge_method}_vs_{baseline_method}"
+
+                # Get common seeds
+                common_seeds = sorted(set(bridge_seed_to_acc.keys()) & set(baseline_seed_to_acc.keys()))
+
+                if len(common_seeds) < 2:
+                    # Not enough paired samples for statistical test
+                    dataset_stats["comparisons"][comparison_key] = {
+                        "error": f"Insufficient paired samples (n={len(common_seeds)})",
+                        "n_pairs": len(common_seeds),
+                    }
+                    continue
+
+                # Get paired accuracy values
+                bridge_accs = np.array([bridge_seed_to_acc[s] for s in common_seeds])
+                baseline_accs = np.array([baseline_seed_to_acc[s] for s in common_seeds])
+
+                # Compute statistics
+                mean_bridge = float(np.mean(bridge_accs))
+                mean_baseline = float(np.mean(baseline_accs))
+                std_bridge = float(np.std(bridge_accs, ddof=1))
+                std_baseline = float(np.std(baseline_accs, ddof=1))
+                difference = mean_bridge - mean_baseline
+
+                comparison_result = {
+                    "bridge_method": bridge_method,
+                    "baseline_method": baseline_method,
+                    "n_pairs": len(common_seeds),
+                    "common_seeds": common_seeds,
+                    "bridge_mean": mean_bridge,
+                    "bridge_std": std_bridge,
+                    "baseline_mean": mean_baseline,
+                    "baseline_std": std_baseline,
+                    "difference": difference,
+                    "difference_pct": difference,  # Already in percentage points
+                }
+
+                if STATS_AVAILABLE:
+                    try:
+                        # Paired t-test
+                        diff, p_val, t_stats = paired_ttest(bridge_accs, baseline_accs)
+                        comparison_result["p_value"] = float(p_val)
+                        comparison_result["t_statistic"] = float(t_stats["t_statistic"])
+                        comparison_result["degrees_of_freedom"] = int(t_stats["degrees_of_freedom"])
+
+                        # Cohen's d (paired)
+                        d = cohens_d_paired(bridge_accs, baseline_accs)
+                        comparison_result["cohens_d"] = float(d)
+
+                        # Interpret effect size
+                        if abs(d) >= 0.8:
+                            comparison_result["effect_size_interpretation"] = "large"
+                        elif abs(d) >= 0.5:
+                            comparison_result["effect_size_interpretation"] = "medium"
+                        elif abs(d) >= 0.2:
+                            comparison_result["effect_size_interpretation"] = "small"
+                        else:
+                            comparison_result["effect_size_interpretation"] = "negligible"
+
+                        # Significance stars
+                        comparison_result["significance_stars"] = p_value_to_stars(p_val)
+                        comparison_result["significant_at_05"] = p_val < 0.05
+                        comparison_result["significant_at_01"] = p_val < 0.01
+                        comparison_result["significant_at_001"] = p_val < 0.001
+
+                        # Bootstrap CI for difference (if enough samples)
+                        if len(common_seeds) >= 3:
+                            diffs = bridge_accs - baseline_accs
+                            _, (ci_low, ci_high) = bootstrap_ci(
+                                diffs,
+                                confidence_level=0.95,
+                                n_resamples=10000,
+                                method='percentile',
+                                random_state=42
+                            )
+                            comparison_result["difference_ci_95"] = [float(ci_low), float(ci_high)]
+
+                    except Exception as e:
+                        comparison_result["statistical_test_error"] = str(e)
+                        if logger:
+                            logger.warning(f"Statistical test failed for {comparison_key}: {e}")
+                else:
+                    # Basic statistics without scipy
+                    # Simple t-statistic computation
+                    diffs = bridge_accs - baseline_accs
+                    mean_diff = np.mean(diffs)
+                    std_diff = np.std(diffs, ddof=1)
+                    n = len(diffs)
+                    if std_diff > 0:
+                        t_stat = mean_diff / (std_diff / np.sqrt(n))
+                        comparison_result["t_statistic"] = float(t_stat)
+                    comparison_result["p_value"] = None  # Cannot compute without scipy
+                    comparison_result["note"] = "scipy not available, p-value not computed"
+
+                dataset_stats["comparisons"][comparison_key] = comparison_result
+
+        # Compute dataset-level summary
+        all_bridge_accs = []
+        for bridge_method in bridge_methods:
+            bridge_results = all_results.get(bridge_method, [])
+            for r in bridge_results:
+                if r.get("dataset") == dataset_key and not r.get("skipped"):
+                    acc = r.get("accuracy")
+                    if acc is not None:
+                        all_bridge_accs.append(acc)
+
+        if all_bridge_accs:
+            dataset_stats["summary"]["best_bridge_accuracy"] = float(max(all_bridge_accs))
+            dataset_stats["summary"]["mean_bridge_accuracy"] = float(np.mean(all_bridge_accs))
+
+        statistical_results["per_dataset"][dataset_key] = dataset_stats
+
+    # Apply multiple comparison correction across all tests
+    if STATS_AVAILABLE:
+        all_p_values = []
+        all_comparison_keys = []
+
+        for dataset_key, dataset_stats in statistical_results["per_dataset"].items():
+            for comparison_key, comparison in dataset_stats.get("comparisons", {}).items():
+                p_val = comparison.get("p_value")
+                if p_val is not None and not isinstance(p_val, str):
+                    all_p_values.append(p_val)
+                    all_comparison_keys.append((dataset_key, comparison_key))
+
+        if all_p_values:
+            try:
+                reject, corrected_p, _, _ = multiple_comparison_correction(
+                    all_p_values,
+                    alpha=0.05,
+                    method='bonferroni'
+                )
+
+                # Add corrected p-values back to results
+                for i, (dataset_key, comparison_key) in enumerate(all_comparison_keys):
+                    statistical_results["per_dataset"][dataset_key]["comparisons"][comparison_key]["corrected_p_value"] = float(corrected_p[i])
+                    statistical_results["per_dataset"][dataset_key]["comparisons"][comparison_key]["significant_corrected"] = bool(reject[i])
+
+                statistical_results["aggregate"]["n_comparisons"] = len(all_p_values)
+                statistical_results["aggregate"]["n_significant_uncorrected"] = sum(1 for p in all_p_values if p < 0.05)
+                statistical_results["aggregate"]["n_significant_corrected"] = sum(1 for r in reject if r)
+
+            except Exception as e:
+                if logger:
+                    logger.warning(f"Multiple comparison correction failed: {e}")
+                statistical_results["aggregate"]["correction_error"] = str(e)
+
+    if logger:
+        n_tests = len(all_p_values) if STATS_AVAILABLE and 'all_p_values' in dir() else 0
+        logger.info(f"Completed {n_tests} statistical comparisons")
+
+    return statistical_results
 
 
 # =============================================================================
@@ -2447,7 +3192,7 @@ def parse_args():
                        help="Resume from a specific run directory")
 
     parser.add_argument("--skip_slow", type=str, nargs="*", default=None,
-                       choices=["text_relay", "bridge", "zeroshot", "linear_probe"],
+                       choices=["text_relay", "bridge", "zeroshot", "linear_probe", "prompt_tuning", "same_model_bridge"],
                        help="Skip slow experiment types")
     parser.add_argument("--fast_mode", action="store_true",
                        help="Enable fast mode with reduced training")
@@ -2519,7 +3264,9 @@ def main():
                 seed = r.get("seed", "")
                 tokens = r.get("num_soft_tokens", "")
                 model = r.get("model_name", "")
-                if "bridge" in method:
+                if method == "same_model_bridge":
+                    skipped_experiments.add(f"same_model_bridge_{tokens}_{ds}_seed{seed}")
+                elif "bridge" in method:
                     skipped_experiments.add(f"bridge_{tokens}_{ds}_seed{seed}")
                 elif "zeroshot" in method:
                     skipped_experiments.add(f"zeroshot_{model}_{ds}_seed{seed}")
@@ -2532,6 +3279,8 @@ def main():
             "zeroshot_mistral": [],
             "text_relay": [],
             "linear_probe": [],
+            "prompt_tuning": [],
+            "same_model_bridge": [],  # Llama->Llama baseline for comparison
         }
         for num_tokens in TOKEN_ABLATION_CONFIGS:
             all_results[f"bridge_{num_tokens}"] = []
@@ -2609,6 +3358,7 @@ def main():
         "device": str(device),
         "bridge_config": BRIDGE_CONFIG,
         "linear_probe_config": LINEAR_PROBE_CONFIG,
+        "prompt_tuning_config": PROMPT_TUNING_CONFIG,
         "total_experiments": total_experiments,
         "fast_mode": args.fast_mode,
     }
@@ -2719,7 +3469,25 @@ def main():
                         dataset_key, seed, probe_dir, device, LINEAR_PROBE_CONFIG
                     )
 
-        # 4. Bridge with token ablation
+        # 4. Prompt tuning baseline
+        if "prompt_tuning" not in skip_slow_set:
+            prompt_dir = run_dir / "prompt_tuning"
+            prompt_dir.mkdir(exist_ok=True)
+            logger.info("Starting prompt tuning baselines...")
+
+            for dataset_key in args.datasets:
+                if dataset_key == "gsm8k":
+                    continue  # Skip GSM8K for prompt tuning
+                for seed in args.seeds:
+                    exp_name = f"prompt_tuning_{dataset_key}_seed{seed}"
+                    run_experiment_with_retry(
+                        run_prompt_tuning_baseline,
+                        exp_name,
+                        "prompt_tuning",
+                        dataset_key, seed, prompt_dir, device, PROMPT_TUNING_CONFIG
+                    )
+
+        # 5. Bridge with token ablation
         if "bridge" not in skip_slow_set:
             bridge_dir = run_dir / "bridge"
             bridge_dir.mkdir(exist_ok=True)
@@ -2736,6 +3504,28 @@ def main():
                             dataset_key, seed, bridge_dir, device, BRIDGE_CONFIG,
                             num_soft_tokens=num_tokens
                         )
+
+        # 6. Same-model bridge baseline (Llama -> Llama)
+        # This proves whether value comes from compression or cross-model transfer
+        # Run with one seed (42) and one token config (16) to establish baseline
+        if "same_model_bridge" not in skip_slow_set:
+            same_model_dir = run_dir / "same_model_bridge"
+            same_model_dir.mkdir(exist_ok=True)
+            logger.info("Starting same-model bridge baseline (Llama->Llama)...")
+
+            # Use first seed and middle token config for baseline comparison
+            baseline_seed = args.seeds[0]  # First seed (typically 42)
+            baseline_tokens = 16  # Middle of the token range for representative comparison
+
+            for dataset_key in args.datasets:
+                exp_name = f"same_model_bridge_{baseline_tokens}_{dataset_key}_seed{baseline_seed}"
+                run_experiment_with_retry(
+                    train_same_model_bridge_for_dataset,
+                    exp_name,
+                    "same_model_bridge",
+                    dataset_key, baseline_seed, same_model_dir, device, BRIDGE_CONFIG,
+                    num_soft_tokens=baseline_tokens
+                )
 
         # Save complete results
         complete_results = {
@@ -2754,6 +3544,40 @@ def main():
             complete_results[method] = serializable
 
         save_partial_results_atomic(complete_results, run_dir / "complete_results.json", logger)
+
+        # =========================================================================
+        # STATISTICAL SIGNIFICANCE TESTING
+        # =========================================================================
+        # Compare bridge methods vs baselines with proper statistical tests
+        print("\n" + "="*70)
+        print("COMPUTING STATISTICAL SIGNIFICANCE TESTS")
+        print("="*70)
+        logger.info("Starting statistical significance testing...")
+
+        statistical_results = compute_statistical_significance(
+            all_results=all_results,
+            datasets=args.datasets,
+            seeds=args.seeds,
+            logger=logger
+        )
+
+        # Add statistical results to complete_results
+        complete_results["statistical_significance"] = statistical_results
+
+        # Save updated results with statistical tests
+        save_partial_results_atomic(complete_results, run_dir / "complete_results.json", logger)
+
+        # Print statistical significance summary
+        print("\n--- Statistical Significance Summary ---")
+        for dataset_key, dataset_stats in statistical_results.get("per_dataset", {}).items():
+            print(f"\n{DATASETS[dataset_key]['name']}:")
+            for comparison_key, comparison_stats in dataset_stats.get("comparisons", {}).items():
+                p_val = comparison_stats.get("p_value", 1.0)
+                stars = p_value_to_stars(p_val) if STATS_AVAILABLE else ""
+                diff = comparison_stats.get("difference", 0)
+                print(f"  {comparison_key}: diff={diff:+.2f}%, p={p_val:.4f} {stars}")
+
+        logger.info("Statistical significance testing complete")
 
         # Final summary
         total_time = time.time() - tracker.start_time
