@@ -1422,6 +1422,17 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
         anchor = make_anchor_text(mode, ctx["wrapper"], anchor_text_src)
         if mode != "text":
             anchor = None
+
+        # Receiver-side prompt engineering: prepend reasoning prompt to anchor
+        # Format: [soft tokens] + [receiver_prompt] + [anchor] -> generation
+        receiver_prompt = getattr(args, "receiver_prompt", "")
+        if receiver_prompt and anchor:
+            # Prepend receiver prompt before the anchor (e.g., "Let's think step by step. Answer: ")
+            anchor = receiver_prompt + anchor
+        elif receiver_prompt and not anchor:
+            # If no anchor, just use receiver prompt
+            anchor = receiver_prompt
+
         has_anchor = bool(anchor)
         bos_flag = bos_policy(args.append_bos_after_prefix, [0] if has_anchor else [])
         if mode == "chat":
@@ -1430,6 +1441,7 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
             "mode": mode,
             "text": anchor_text_src,
             "anchor": anchor,
+            "receiver_prompt": receiver_prompt,
             "bos": bos_flag,
         }
 
@@ -1986,6 +1998,8 @@ def run_standard_eval(args, device, dtype, encoded_latents, prompts_raw, golds,
     summary["debug"]["settings"] = {
         "latent_anchor_mode": args.latent_anchor_mode,
         "latent_anchor_text": args.latent_anchor_text,
+        "receiver_prompt": getattr(args, "receiver_prompt", ""),
+        "receiver_prompt_preset": getattr(args, "receiver_prompt_preset", "none"),
         "prefix_gain": args.prefix_gain,
         "calibration_mode": args.calibration,
         "append_bos_after_prefix": args.append_bos_after_prefix,
@@ -2220,6 +2234,15 @@ def main():
     ap.add_argument("--latent_anchor_mode", type=str, default="auto", choices=["auto","chat","text","none"])
     ap.add_argument("--latent_anchor_text", type=str, default="Answer: ")
     ap.add_argument("--append_bos_after_prefix", type=str, default="auto", choices=["auto","yes","no"])
+
+    # Receiver-side prompt engineering: prepend reasoning-inducing prompts after soft tokens
+    ap.add_argument("--receiver_prompt", type=str, default="",
+                    help="Reasoning-inducing prompt to prepend after soft tokens (e.g., 'Let\\'s think step by step. ')")
+    ap.add_argument("--receiver_prompt_preset", type=str, default="none",
+                    choices=["none", "cot", "cot_concise", "direct", "careful", "json"],
+                    help="Preset receiver prompts: cot='Let\\'s think step by step.', cot_concise='Think carefully.', direct='Answer directly:', careful='Be precise.', json='Respond in JSON.'")
+    ap.add_argument("--receiver_prompt_ablation", action="store_true",
+                    help="Run ablation over all receiver prompt presets")
     ap.add_argument("--skip_prefix_acc", action="store_true", help="Skip first-token accuracy evaluation (saves memory)")
     ap.add_argument("--use_chat_template", type=str, default="yes", choices=["yes","no"],
                     help="Toggle chat template application when constructing text prompts.")
@@ -2294,6 +2317,29 @@ def main():
         return []
 
     args.embedding_baseline_modes = _parse_modes(getattr(args, "embedding_baseline_modes", []))
+
+    # Receiver prompt presets - reasoning-inducing prompts for receiver-side prompt engineering
+    RECEIVER_PROMPT_PRESETS = {
+        "none": "",
+        "cot": "Let's think step by step. ",
+        "cot_concise": "Think carefully. ",
+        "direct": "Answer directly: ",
+        "careful": "Be precise. ",
+        "json": "Respond in JSON format. ",
+    }
+
+    # Apply receiver prompt preset if specified (preset takes precedence if receiver_prompt is empty)
+    receiver_prompt = getattr(args, "receiver_prompt", "").strip()
+    receiver_preset = getattr(args, "receiver_prompt_preset", "none")
+    if not receiver_prompt and receiver_preset != "none":
+        receiver_prompt = RECEIVER_PROMPT_PRESETS.get(receiver_preset, "")
+    args.receiver_prompt = receiver_prompt
+
+    # Store presets for ablation
+    args._receiver_prompt_presets = RECEIVER_PROMPT_PRESETS
+
+    if args.receiver_prompt:
+        print(f"[Receiver Prompt Engineering] Using prompt: '{args.receiver_prompt}'")
 
     selected_models = _parse_models_arg(getattr(args, "models", ""))
 
