@@ -494,6 +494,172 @@ with a learned scale factor α.
 
 ---
 
-*Last updated: 2025-01-12*
+---
+
+## Techniques from Related Work (LatentMAS, Cache2Cache, etc.)
+
+Based on analysis of recent papers (January 2025), here are key techniques that could improve Telepathy's reasoning capabilities:
+
+### From LatentMAS (Latent Multi-Agent Semantic Communication)
+
+**Paper**: Training-free collaboration between heterogeneous LLMs via aligned latent representations.
+
+**Key Techniques**:
+1. **Ridge Regression Alignment** (Training-Free)
+   - Compute alignment matrix: `W_a = (W_out^T @ W_out + λI)^{-1} @ W_out^T @ W_in`
+   - Maps sender hidden states to receiver space without neural network training
+   - **Potential experiment**: Compare ridge regression alignment vs Perceiver Resampler
+   - Claimed 14.6% accuracy improvement
+
+2. **KV-Cache Transfer** (instead of embedding injection)
+   - Transfer hidden states directly into receiver's KV-cache
+   - Bypasses embedding layer entirely
+   - **Potential experiment**: Inject soft tokens as K,V pairs instead of embedding prepending
+
+3. **Single Layer Alignment**
+   - Only aligns terminal layer representations
+   - Much simpler than multi-layer approaches
+   - **Potential experiment**: Single-layer bridge vs multi-layer Perceiver
+
+### From Cache2Cache (C2C)
+
+**Paper**: KV-cache fusion between draft and target models for speculative decoding.
+
+**Key Techniques**:
+1. **Per-Layer Cache Fuser**
+   - Different soft tokens/alignment for each transformer layer
+   - Learnable Gumbel-sigmoid gates select which layers to transfer
+   - **Potential experiment**: Layer-wise soft tokens with gating
+
+2. **Learnable Layer Selection**
+   - Not all layers need transfer - let the model learn which layers matter
+   - Uses Gumbel-softmax for differentiable selection
+   - **Potential experiment**: Add layer selection to bridge architecture
+
+3. **Token-Level Granularity**
+   - Different tokens may need different treatment
+   - Position-dependent transfer weights
+   - **Potential experiment**: Position-aware soft tokens
+
+### From COCONUT (Continuous Chain-of-Thought)
+
+**Paper**: Training LLMs to reason in continuous latent space.
+
+**Key Techniques**:
+1. **Curriculum Training**
+   - Gradually replace language tokens with latent representations
+   - Start with text CoT, progressively compress to latent
+   - **Potential experiment**: Curriculum from text → soft tokens for reasoning
+
+2. **BFS in Latent Space**
+   - Breadth-first search through latent reasoning paths
+   - Multiple latent hypotheses in parallel
+   - **Potential experiment**: Multi-hypothesis soft token generation
+
+3. **Latent Thought Tokens**
+   - Special `<bot>`, `<eot>` delimiters for thought boundaries
+   - **Potential experiment**: Structured soft token sequences with delimiters
+
+### From Token Assorted (Hybrid Latent/Text)
+
+**Key Techniques**:
+1. **VQ-VAE Discrete Tokens**
+   - Quantize soft tokens to discrete codebook
+   - More stable training, better interpretability
+   - **Potential experiment**: VQ-VAE bridge with discrete codebook
+
+2. **Hybrid Approach**
+   - Mix latent and text tokens
+   - Use text for critical information, latent for context
+   - **Potential experiment**: Hybrid soft + text tokens for reasoning
+
+### Mathematical Improvements Proposed by Subagents
+
+1. **Information-Theoretic Optimization**
+   - Variational Information Bottleneck (VIB) objective
+   - Maximize I(soft_tokens; label) while minimizing I(soft_tokens; input)
+   - More principled compression than reconstruction loss
+
+2. **Optimal Transport Alignment**
+   - Wasserstein distance / Sinkhorn loss for cross-model alignment
+   - Aligns distributions rather than individual points
+   - Better for heterogeneous model pairs
+
+3. **Contrastive Cross-Model Learning**
+   - InfoNCE loss for soft token similarity
+   - Positive: same-class soft tokens across models
+   - Negative: different-class or random tokens
+
+4. **Spectral Methods**
+   - CCA (Canonical Correlation Analysis) for finding shared subspace
+   - Procrustes alignment for orthogonal transformation
+   - Simpler than neural alignment, good initialization
+
+5. **Per-Dimension Calibration**
+   - Replace scalar α with per-dimension scaling
+   - Different dimensions may need different scaling factors
+   - Accounts for non-uniform hidden state statistics
+
+---
+
+## Priority Experiments for Reasoning Improvement
+
+Based on literature analysis, here are **HIGH IMPACT** experiments specifically targeting reasoning:
+
+### Tier 1: Quick Wins (< 2 hours each)
+
+| Experiment | Technique | Expected Impact |
+|------------|-----------|-----------------|
+| Ridge Regression Baseline | LatentMAS | Training-free comparison |
+| KV-Cache Injection | LatentMAS | Direct cache transfer |
+| Per-Dimension Scaling | Math subagent | Better calibration |
+| Single-Layer Bridge | LatentMAS | Simplified architecture |
+
+### Tier 2: Moderate Effort (2-4 hours each)
+
+| Experiment | Technique | Expected Impact |
+|------------|-----------|-----------------|
+| VQ-VAE Discrete Tokens | Token Assorted | Discrete communication |
+| Curriculum Training | COCONUT | Better reasoning |
+| Layer Gating | C2C | Adaptive layer selection |
+| InfoNCE Loss | Contrastive | Better alignment |
+
+### Tier 3: Significant Effort (4-8 hours each)
+
+| Experiment | Technique | Expected Impact |
+|------------|-----------|-----------------|
+| Full C2C Architecture | C2C | Per-layer fusion |
+| Latent CoT Training | COCONUT | Continuous reasoning |
+| Multi-Hypothesis Generation | COCONUT | BFS in latent space |
+| Optimal Transport Loss | Math subagent | Better distribution alignment |
+
+### Implementation Priority
+
+For MLSys 2025 submission, recommend:
+
+1. **Ridge Regression Baseline** (2h) - Training-free comparison to validate Perceiver complexity is justified
+2. **KV-Cache Injection** (3h) - Alternative to embedding prepending, may help reasoning
+3. **Curriculum Training for Reasoning** (4h) - Key insight from COCONUT
+4. **VQ-VAE Discrete Tokens** (4h) - May stabilize reasoning transfer
+
+---
+
+## New Citations Added to telepathy.bib
+
+The following citations have been added:
+
+1. **LatentMAS** (`zou2025latentmas`)
+   - arXiv:2511.20639
+   - Authors: Zou et al. (Princeton, UIUC, Stanford)
+   - Training-free latent collaboration via ridge regression + KV-cache transfer
+
+2. **Cache-to-Cache** (`fu2025cache2cache`)
+   - arXiv:2510.03215
+   - Authors: Fu et al. (Tsinghua, CUHK, Shanghai AI Lab)
+   - Per-layer KV-cache fusion with Gumbel-sigmoid gates
+
+---
+
+*Last updated: 2025-01-13*
 *Issues: 11 open, 7 resolved*
-*Based on: 10 critique subagents + 20 experiment subagents*
+*Based on: 10 critique subagents + 20 experiment subagents + 14 literature/math subagents*
