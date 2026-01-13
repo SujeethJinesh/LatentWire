@@ -605,13 +605,15 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     )
     loss_lm = outputs.loss
 
-    # Total loss: LM + diversity penalty
-    total_loss = loss_lm + args.diversity_weight * batch_div_loss
+    # Total loss: LM + diversity penalty + auxiliary loss (MoE load balancing, etc.)
+    aux_loss_val = aux_loss.item() if isinstance(aux_loss, torch.Tensor) else aux_loss
+    total_loss = loss_lm + args.diversity_weight * batch_div_loss + aux_loss
 
     return total_loss, {
         "total": total_loss.item(),
         "lm": loss_lm.item(),
         "div": batch_div_loss.item(),
+        "aux": aux_loss_val,  # MoE load balancing, VIB KL, etc.
         "z_var": z_variance.item() if isinstance(z_variance, torch.Tensor) else z_variance
     }
 
@@ -919,15 +921,18 @@ def main():
         progress = tqdm(range(args.steps), disable=(local_rank != 0),
                        desc=f"{args.dataset.upper()}", ncols=100)
         iter_dl = iter(dl)
-        running = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
+        running = {"total": 0, "lm": 0, "div": 0, "aux": 0, "z_var": 0, "grad_norm": 0}
         grad_accum = args.grad_accum
 
         # VIB beta annealing
         vib_beta = args.vib_beta if (args.use_vib or args.bridge_type == "vib") else 0.0
 
+        # Learning rate for logging (no scheduler currently, but track it)
+        current_lr = args.lr
+
         for step in progress:
             optimizer.zero_grad()
-            accum_loss_dict = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
+            accum_loss_dict = {"total": 0, "lm": 0, "div": 0, "aux": 0, "z_var": 0}
 
             for _ in range(grad_accum):
                 try:
@@ -958,31 +963,49 @@ def main():
                 for k in accum_loss_dict:
                     accum_loss_dict[k] += loss_dict[k] / grad_accum
 
-            torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
+            # Track gradient norm before clipping
+            grad_norm = torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
+            grad_norm_val = grad_norm.item() if isinstance(grad_norm, torch.Tensor) else grad_norm
             optimizer.step()
 
-            for k in running:
+            # Update running stats
+            for k in accum_loss_dict:
                 running[k] += accum_loss_dict[k]
+            running["grad_norm"] += grad_norm_val
 
+            # Progress bar with key metrics
             progress.set_postfix({
                 "lm": f"{accum_loss_dict['lm']:.2f}",
-                "div": f"{accum_loss_dict['div']:.3f}"
+                "aux": f"{accum_loss_dict['aux']:.3f}",
+                "gn": f"{grad_norm_val:.2f}"
             })
 
-            # Periodic logging
+            # Periodic logging (every 50 steps)
             if local_rank == 0 and (step + 1) % 50 == 0:
                 avg = {k: v / 50 for k, v in running.items()}
-                print(f"\n[Step {step+1}/{args.steps}]")
-                print(f"  LM Loss: {avg['lm']:.3f}")
-                print(f"  Batch Div Loss: {avg['div']:.4f}")
-                print(f"  Z Variance: {avg['z_var']:.4f}")
+                print(f"\n[Step {step+1}/{args.steps}] lr={current_lr:.2e}")
+                print(f"  LM Loss: {avg['lm']:.3f} | Aux Loss: {avg['aux']:.4f} | Div Loss: {avg['div']:.4f}")
+                print(f"  Z Variance: {avg['z_var']:.4f} | Grad Norm: {avg['grad_norm']:.3f}")
+
+                # Log to training_log for JSON output
+                training_log.append({
+                    "step": step + 1,
+                    "type": "metrics",
+                    "lm_loss": avg['lm'],
+                    "aux_loss": avg['aux'],
+                    "div_loss": avg['div'],
+                    "z_var": avg['z_var'],
+                    "grad_norm": avg['grad_norm'],
+                    "lr": current_lr
+                })
+
                 running = {k: 0 for k in running}
 
             # Quick eval
             if local_rank == 0 and (step + 1) % args.eval_every == 0:
                 eval_result = quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok,
                                         eval_ds, device, args, config, step + 1)
-                training_log.append({"step": step + 1, **eval_result})
+                training_log.append({"step": step + 1, "type": "eval", **eval_result})
 
             # Save checkpoint
             if local_rank == 0 and (step + 1) % args.save_every == 0:
