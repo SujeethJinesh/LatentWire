@@ -42,6 +42,7 @@ try:
         SparseKWTABridge,
         ResidualCodingBridge,
         LockAndKeyBridge,
+        MoEBridge,  # Mixture-of-Experts for cross-model transfer (Mixtral/DeepSeek)
         # MATH bridges (from math opus subagents)
         SpectralCCABridge,
         FlowMatchingBridge,
@@ -331,12 +332,12 @@ def parse_args():
                        choices=["standard", "ridge", "vib", "multi_layer",
                                # NOVEL bridge types (diverse fields)
                                "predictive_coding", "optimal_transport", "infonce",
-                               "sparse_kwta", "residual_coding", "lock_and_key",
+                               "sparse_kwta", "residual_coding", "lock_and_key", "moe",
                                # MATH bridge types
                                "spectral_cca", "flow_matching"],
                        help="Bridge architecture: standard, ridge, vib, multi_layer, "
                             "NOVEL types: predictive_coding, optimal_transport, infonce, "
-                            "sparse_kwta, residual_coding, lock_and_key, "
+                            "sparse_kwta, residual_coding, lock_and_key, moe, "
                             "MATH types: spectral_cca, flow_matching")
 
     # Ridge Regression (LatentMAS)
@@ -414,6 +415,20 @@ def parse_args():
                        help="Number of ODE integration steps for flow matching")
     parser.add_argument("--flow_loss_weight", type=float, default=0.1,
                        help="Weight for flow matching auxiliary loss")
+
+    # Mixture-of-Experts (MoE) Bridge
+    parser.add_argument("--moe_num_experts", type=int, default=8,
+                       help="Number of expert FFNs (default 8, like Mixtral)")
+    parser.add_argument("--moe_top_k", type=int, default=2,
+                       help="Number of experts to route to (default 2, like Mixtral)")
+    parser.add_argument("--moe_use_shared_expert", action="store_true", default=True,
+                       help="Include a shared expert (DeepSeek-style)")
+    parser.add_argument("--moe_no_shared_expert", action="store_false", dest="moe_use_shared_expert",
+                       help="Disable shared expert")
+    parser.add_argument("--moe_aux_loss_weight", type=float, default=0.01,
+                       help="Weight for load balancing auxiliary loss")
+    parser.add_argument("--moe_aux_loss_free", action="store_true", default=False,
+                       help="Use learnable bias instead of aux loss (DeepSeek-V3)")
 
     args = parser.parse_args()
 
@@ -816,6 +831,24 @@ def main():
             tgt_dim=tgt_model.config.hidden_size,
             target_rms=target_rms,
             num_flow_steps=args.num_flow_steps,
+        )
+
+    elif args.bridge_type == "moe":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using MoE Bridge - {args.moe_num_experts} experts, top-{args.moe_top_k}, "
+                  f"shared_expert={args.moe_use_shared_expert}, aux_loss_free={args.moe_aux_loss_free}")
+        bridge = MoEBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            num_experts=args.moe_num_experts,
+            top_k=args.moe_top_k,
+            use_shared_expert=args.moe_use_shared_expert,
+            aux_loss_weight=args.moe_aux_loss_weight,
+            use_aux_loss_free=args.moe_aux_loss_free,
         )
 
     else:

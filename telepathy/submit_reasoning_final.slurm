@@ -31,7 +31,7 @@
 # 4. DoRA fine-tuning baseline on arc_easy
 # 5. Prompt tuning baseline on arc_easy (proves sender helps)
 # 6. Linear probe baseline (layer 31) on all reasoning datasets
-# 7. Novel bridges: flow_matching, optimal_transport (on arc_easy)
+# 7. Novel bridges: flow_matching, optimal_transport, moe (on arc_easy)
 # 8. Token capacity: 8, 32 tokens (on arc_easy)
 # 9. Latency/memory/throughput benchmarks
 # 10. Batched latency benchmark (batch sizes: 1, 4, 8, 16) - CRITICAL FOR MLSys
@@ -208,9 +208,9 @@ run_gpu1() {
 
     # -----------------------------------------------------------------
     # NOVEL BRIDGES on ARC-Easy (simplest reasoning task)
-    # Only 2 bridges: flow_matching and optimal_transport
+    # 3 bridges: flow_matching, optimal_transport, moe (Mixtral/DeepSeek-style)
     # -----------------------------------------------------------------
-    NOVEL_BRIDGES="flow_matching optimal_transport"
+    NOVEL_BRIDGES="flow_matching optimal_transport moe"
 
     for BRIDGE in $NOVEL_BRIDGES; do
         echo ""
@@ -559,8 +559,8 @@ EXPERIMENTS:
 4. DoRA baseline (rank=8) on arc_easy
 5. Prompt tuning baseline (8 tokens, no sender) on arc_easy
 6. Linear probe baseline (layer 31) on all reasoning datasets
-7. Novel bridges (2 only):
-   - Flow Matching, Optimal Transport
+7. Novel bridges (3):
+   - Flow Matching, Optimal Transport, MoE (Mixtral/DeepSeek-style)
 8. Token capacity scaling (8, 32 tokens)
 9. Latency/memory/throughput benchmarks
 10. Batched latency benchmark (batch sizes: 1, 4, 8, 16) - Critical for MLSys
