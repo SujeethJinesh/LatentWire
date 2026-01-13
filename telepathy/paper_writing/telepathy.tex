@@ -499,11 +499,11 @@ These results demonstrate that continuous representations enable faster and more
 
 \section*{Reproducibility Statement}
 
-We are committed to reproducible research. Our implementation will be released as open-source code upon acceptance, including all training scripts, evaluation pipelines, and configuration files.
+We are committed to reproducible research. Our implementation will be released as open-source code upon acceptance, including all training scripts, evaluation pipelines, and configuration files. Our codebase is built on PyTorch \cite{paszke2019pytorch}, HuggingFace Transformers \cite{wolf2020transformers}, and HuggingFace Datasets \cite{lhoest2021datasets}.
 
 \paragraph{Random Seeds} All experiments use fixed random seeds for reproducibility. Main results report mean and standard deviation over 5 seeds (42, 123, 456, 789, 1011) for bridge experiments. Other baselines (zero-shot, text-relay) are deterministic and thus reported without variance.
 
-\paragraph{Model Checkpoints} All base models (Llama 3.1 8B Instruct, Mistral 7B Instruct v0.3) are publicly available on the HuggingFace Hub. We use the official model weights without modification; both models remain frozen throughout all experiments.
+\paragraph{Model Checkpoints} All base models (Llama 3.1 8B Instruct, Mistral 7B Instruct v0.3) are publicly available on the HuggingFace Hub \cite{wolf2020transformers}. We use the official model weights without modification; both models remain frozen throughout all experiments.
 
 \paragraph{Hardware} Experiments were conducted on NVIDIA H100 80GB GPUs using Stanford's Marlowe computational cluster~\cite{marlowe2025}. Training a single bridge (2000-3000 steps) requires approximately 3.5-5 minutes. Full reproduction of all experiments requires approximately 1 GPU-hour.
 
