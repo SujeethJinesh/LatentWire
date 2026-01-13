@@ -133,12 +133,12 @@ where $y$ is the correct task output and $\mathbf{x}_\text{prompt}$ is an option
 
 A naive linear projection fails because it assumes isomorphic spaces. The bridge must learn a \emph{semantic translation}, not merely a coordinate transformation. Figure~\ref{fig:architecture} illustrates the overall pipeline.
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/architecture.pdf}
-\caption{LatentWire architecture. Input text is processed by the frozen sender (Llama), whose hidden states are transformed by the bridge into soft tokens that condition the frozen receiver (Mistral) for classification.}
+\includegraphics[width=0.95\textwidth]{figures/architecture.pdf}
+\caption{LatentWire architecture. Input text is processed by the frozen sender (Llama), whose hidden states are transformed by the bridge into soft tokens that condition the frozen receiver (Mistral) for classification. The bridge uses a Perceiver Resampler to compress variable-length hidden states into a fixed number of soft tokens (M=8--32), which are then projected to the receiver's embedding space.}
 \label{fig:architecture}
-\end{figure}
+\end{figure*}
 
 \subsection{Bridge Architecture}
 
