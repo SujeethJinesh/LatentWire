@@ -160,6 +160,69 @@ This document tracks issues, concerns, and improvement ideas for the paper.
 
 ---
 
+### 5. Paper Doesn't Explain How Bridge Solves Identified Challenges
+
+**Status**: Unresolved (Critical)
+
+**Problem**: The paper identifies four specific architectural mismatches between Llama and Mistral (lines 128-131):
+
+1. **Vocabulary**: Llama (128K tokens) vs. Mistral (32K tokens)
+2. **Positional encoding**: Different RoPE base frequencies
+3. **Attention**: Grouped-query (Llama) vs. sliding window (Mistral)
+4. **Statistics**: Hidden state magnitude differs by ~5×
+
+Then says "A naive linear projection fails because it assumes isomorphic spaces. The bridge must learn a semantic translation."
+
+**But the Bridge Architecture section (lines 143-163) doesn't explain how each challenge is addressed:**
+
+| Challenge | How Bridge Addresses It | Explained in Paper? |
+|-----------|------------------------|---------------------|
+| Vocabulary mismatch | ??? | NO |
+| RoPE differences | ??? | NO |
+| Attention differences | ??? | NO |
+| Magnitude differences | RMS normalization + α calibration | Partially (line 158-162) |
+
+**What the paper actually says about the bridge:**
+1. Input Projection: Linear projection to bridge dim
+2. Learned Latent Queries: M learnable vectors
+3. Cross-Attention Layers: N transformer blocks
+4. Output Projection: Linear + RMS normalization with calibrated α
+
+**The disconnect:**
+- The paper raises specific technical challenges but then describes a generic Perceiver architecture
+- Only the magnitude difference (#4) is explicitly addressed via RMS normalization
+- The other three challenges are implicitly handled by "learning a semantic translation" but this is hand-wavy
+
+**How the bridge ACTUALLY addresses these (what should be explained):**
+
+1. **Vocabulary mismatch**: The bridge operates in hidden state space, NOT token space. Soft tokens are continuous embeddings that bypass vocabulary entirely. The receiver interprets them as "pseudo-embeddings" without tokenization.
+
+2. **RoPE differences**: The bridge extracts hidden states AFTER positional encoding is applied in the sender. The soft tokens are position-agnostic when fed to the receiver (they're prepended, not interleaved). The receiver applies its own positional encoding to subsequent text tokens.
+
+3. **Attention differences**: The cross-attention in the bridge learns to extract information regardless of how the sender computed it. The receiver then processes soft tokens with its own attention mechanism - the soft tokens just need to be in a compatible embedding space.
+
+4. **Magnitude differences**: RMS normalization + learned scale α calibrates soft tokens to match receiver's expected embedding statistics.
+
+**Recommendation**:
+Add a paragraph after the architecture description explicitly connecting each challenge to its solution:
+
+```latex
+\paragraph{Addressing Representation Mismatch}
+The bridge architecture specifically addresses each identified challenge:
+(1) Vocabulary differences are bypassed entirely---soft tokens are continuous
+embeddings that never pass through either tokenizer.
+(2) Positional encoding differences are handled by extracting post-RoPE hidden
+states from the sender; soft tokens are prepended to the receiver's input
+without positional encoding, allowing the receiver to apply its own scheme.
+(3) Attention mechanism differences are abstracted away by the cross-attention
+layers, which learn to extract task-relevant information regardless of how
+the sender computed it.
+(4) Magnitude differences are explicitly calibrated via RMS normalization
+with a learned scale factor α.
+```
+
+---
+
 ## Resolved Issues
 
 ### Fixed in commit abfac2f (2025-01-12)
@@ -181,4 +244,4 @@ This document tracks issues, concerns, and improvement ideas for the paper.
 ---
 
 *Last updated: 2025-01-12*
-*Issues: 4 open, 7 resolved*
+*Issues: 5 open, 7 resolved*
