@@ -139,7 +139,7 @@ python telepathy/statistical_tests.py --results_path results/aggregated_results.
 
 ```
 LatentWire/
-├── latent_bridge_v15.py        # Bridge architecture (PerceiverResampler, LatentBridgeV15)
+├── latent_bridge.py            # Bridge architecture (PerceiverResampler, LatentBridge)
 ├── latentwire/                 # Core library
 │   ├── train.py                # Training loop
 │   ├── eval.py                 # Evaluation

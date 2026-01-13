@@ -20,12 +20,12 @@ Expected output for Science article:
 import torch
 import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from latent_bridge_v15 import LatentBridgeV15
+from latent_bridge import LatentBridge
 import argparse
 
 
 class Args:
-    """Args object for LatentBridgeV15 interface."""
+    """Args object for LatentBridge interface."""
     def __init__(self, soft_tokens=8, heads=8, depth=2, use_fsq=False, stats_path=None):
         self.soft_tokens = soft_tokens
         self.heads = heads
@@ -127,7 +127,7 @@ def main():
     # 2. Load Bridge with correct interface
     print("Loading bridge...")
     bridge_args = Args(soft_tokens=args.soft_tokens, heads=8, depth=2, use_fsq=False)
-    bridge = LatentBridgeV15(
+    bridge = LatentBridge(
         bridge_args,
         src_dim=4096,
         tgt_dim=4096,

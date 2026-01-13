@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-Latent Bridge V15 - Telepathy Bridge Architecture
+Latent Bridge - Telepathy Bridge Architecture
 
 This module contains the core bridge architectures for cross-model communication:
 - PerceiverResampler: Cross-attention resampler for compressing hidden states
-- LatentBridgeV15: Main telepathy bridge for classification tasks
+- LatentBridge: Main telepathy bridge for classification tasks
 - LatentCoTBridge: Chain-of-thought bridge for reasoning tasks
 """
 
@@ -64,7 +64,7 @@ class PerceiverResampler(nn.Module):
         return x
 
 
-class LatentBridgeV15(nn.Module):
+class LatentBridge(nn.Module):
     """Telepathy Bridge (Continuous).
 
     Main bridge architecture for cross-model communication. Uses a Perceiver

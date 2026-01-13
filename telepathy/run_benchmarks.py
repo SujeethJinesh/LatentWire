@@ -31,7 +31,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 import numpy as np
 
-from latent_bridge_v15 import LatentBridgeV15
+from latent_bridge import LatentBridge
 
 try:
     from peft import LoraConfig, get_peft_model, TaskType
@@ -41,7 +41,7 @@ except ImportError:
 
 
 class BridgeArgs:
-    """Args object for LatentBridgeV15 interface."""
+    """Args object for LatentBridge interface."""
     def __init__(self, soft_tokens=8, heads=8, depth=2, use_fsq=False, stats_path=None):
         self.soft_tokens = soft_tokens
         self.heads = heads
@@ -74,7 +74,7 @@ def load_models(device):
 def load_bridge(checkpoint_path, device, soft_tokens=8):
     """Load a trained bridge checkpoint."""
     args = BridgeArgs(soft_tokens=soft_tokens)
-    bridge = LatentBridgeV15(args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
+    bridge = LatentBridge(args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
 
     if checkpoint_path and os.path.exists(checkpoint_path):
         ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
@@ -260,7 +260,7 @@ def run_batched_benchmark(args, device):
 
     # Create bridge (random weights for latency benchmarking)
     bridge_args = BridgeArgs(soft_tokens=args.soft_tokens)
-    bridge = LatentBridgeV15(bridge_args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
+    bridge = LatentBridge(bridge_args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
     bridge = bridge.to(device).to(torch.bfloat16).eval()
 
     for batch_size in args.batch_sizes:
@@ -459,7 +459,7 @@ def run_memory_benchmark(args, device):
             p.requires_grad = False
 
         bridge_args = BridgeArgs(soft_tokens=soft_tokens)
-        bridge = LatentBridgeV15(bridge_args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
+        bridge = LatentBridge(bridge_args, src_dim=4096, tgt_dim=4096, target_rms=0.03)
         bridge = bridge.to(device).to(torch.bfloat16)
         bridge_params = sum(p.numel() for p in bridge.parameters() if p.requires_grad)
 

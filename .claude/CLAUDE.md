@@ -28,7 +28,7 @@ LatentWire/
 │   ├── submit_enhanced_paper_eval.slurm  # HPC submission script
 │   └── paper_writing/          # LaTeX source
 ├── scripts/                    # Analysis utilities
-├── latent_bridge_v15.py        # Bridge architecture classes
+├── latent_bridge.py            # Bridge architecture classes
 ├── requirements.txt
 └── runs/                       # Output directory (created at runtime)
 ```

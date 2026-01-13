@@ -27,7 +27,7 @@ import json
 import numpy as np
 from scipy import stats
 
-from latent_bridge_v15 import LatentBridgeV15
+from latent_bridge import LatentBridge
 
 
 # =============================================================================
@@ -201,7 +201,7 @@ def main():
         target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
 
     # Load bridge
-    bridge = LatentBridgeV15(
+    bridge = LatentBridge(
         args,
         src_dim=src_model.config.hidden_size,
         tgt_dim=tgt_model.config.hidden_size,

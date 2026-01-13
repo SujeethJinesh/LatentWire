@@ -69,7 +69,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 # =============================================================================
-# BRIDGE ARCHITECTURE (from latent_bridge_v15.py)
+# BRIDGE ARCHITECTURE (from latent_bridge.py)
 # =============================================================================
 
 class PerceiverResampler(nn.Module):
@@ -120,7 +120,7 @@ class PerceiverResampler(nn.Module):
         return x
 
 
-class LatentBridgeV15(nn.Module):
+class LatentBridge(nn.Module):
     """Telepathy Bridge (Continuous)."""
     def __init__(self, args, src_dim, tgt_dim, target_rms=0.03):
         super().__init__()
@@ -1200,7 +1200,7 @@ def main():
 
     # Create or load bridge
     bridge_args = Args(soft_tokens=args.soft_tokens, heads=8, depth=2)
-    bridge = LatentBridgeV15(
+    bridge = LatentBridge(
         bridge_args,
         src_dim=src_model.config.hidden_size,
         tgt_dim=tgt_model.config.hidden_size,
