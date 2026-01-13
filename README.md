@@ -139,8 +139,8 @@ python telepathy/statistical_tests.py --results_path results/aggregated_results.
 
 ```
 LatentWire/
-├── latent_bridge.py            # Bridge architecture (PerceiverResampler, LatentBridge)
 ├── latentwire/                 # Core library
+│   ├── bridge.py               # LatentBridge, PerceiverResampler
 │   ├── train.py                # Training loop
 │   ├── eval.py                 # Evaluation
 │   ├── models.py               # Encoder, Adapter, LMWrapper

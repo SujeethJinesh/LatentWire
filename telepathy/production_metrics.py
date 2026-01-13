@@ -134,7 +134,7 @@ class QuantizationResult:
 
 
 # =============================================================================
-# Perceiver Bridge Architecture (from latent_bridge.py)
+# Perceiver Bridge Architecture (from latentwire/bridge.py)
 # =============================================================================
 
 class PerceiverResampler(nn.Module):

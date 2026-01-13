@@ -13,6 +13,7 @@ Telepathy is a cross-model communication system for MLSys 2025. It enables a "se
 ```
 LatentWire/
 ├── latentwire/                 # Core library
+│   ├── bridge.py               # LatentBridge, PerceiverResampler
 │   ├── train.py                # Training loop
 │   ├── eval.py                 # Evaluation
 │   ├── models.py               # Encoder, Adapter, LMWrapper
@@ -28,7 +29,6 @@ LatentWire/
 │   ├── submit_enhanced_paper_eval.slurm  # HPC submission script
 │   └── paper_writing/          # LaTeX source
 ├── scripts/                    # Analysis utilities
-├── latent_bridge.py            # Bridge architecture classes
 ├── requirements.txt
 └── runs/                       # Output directory (created at runtime)
 ```

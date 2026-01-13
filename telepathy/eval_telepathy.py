@@ -27,7 +27,7 @@ import json
 import numpy as np
 from scipy import stats
 
-from latent_bridge import LatentBridge
+from latentwire import LatentBridge
 
 
 # =============================================================================

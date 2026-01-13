@@ -30,7 +30,7 @@ import argparse
 import json
 from datetime import datetime
 
-from latent_bridge import LatentBridge
+from latentwire import LatentBridge
 
 
 # =============================================================================

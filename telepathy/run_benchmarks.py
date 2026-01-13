@@ -31,7 +31,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 import numpy as np
 
-from latent_bridge import LatentBridge
+from latentwire import LatentBridge
 
 try:
     from peft import LoraConfig, get_peft_model, TaskType

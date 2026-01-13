@@ -20,7 +20,7 @@ Expected output for Science article:
 import torch
 import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from latent_bridge import LatentBridge
+from latentwire import LatentBridge
 import argparse
 
 

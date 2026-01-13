@@ -69,7 +69,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 # =============================================================================
-# BRIDGE ARCHITECTURE (from latent_bridge.py)
+# BRIDGE ARCHITECTURE (from latentwire/bridge.py)
 # =============================================================================
 
 class PerceiverResampler(nn.Module):
