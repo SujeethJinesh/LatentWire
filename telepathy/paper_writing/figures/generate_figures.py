@@ -123,7 +123,7 @@ def fig2_latency_comparison():
 
     # Left: Total latency comparison (Bridge vs Text-Relay only - fair comparison)
     methods = ['Text-Relay', 'Bridge (Ours)']
-    latencies = [834.5, 37.3]
+    latencies = [795.2, 170.6]  # Updated to match Table 2
     colors = [COLORS['text_relay'], COLORS['bridge']]
 
     bars = ax1.barh(methods, latencies, color=colors, edgecolor='black', linewidth=0.5)
@@ -132,19 +132,20 @@ def fig2_latency_comparison():
     ax1.set_xlim(0, 900)
 
     # Add speedup annotations
-    ax1.annotate('1.0×', xy=(834.5 + 10, 0), va='center', fontsize=9)
-    ax1.annotate('22×', xy=(37.3 + 10, 1), va='center', fontsize=9, fontweight='bold')
+    ax1.annotate('1.0×', xy=(795.2 + 10, 0), va='center', fontsize=9)
+    ax1.annotate('4.66×', xy=(170.6 + 10, 1), va='center', fontsize=9, fontweight='bold')
 
-    # Right: Bridge breakdown
+    # Right: Bridge breakdown (matches Table 2 and Section 3.5)
+    # Total Bridge: 170.6ms = 14ms overhead + 156.2ms Mistral
     components = ['Llama\nEncode', 'Bridge\nTransform', 'Mistral\nDecode']
-    times = [16.9, 1.2, 19.3]
-    percentages = [45, 3, 52]
+    times = [10.0, 4.4, 156.2]  # Sum = 170.6ms
+    percentages = [6, 3, 91]
 
     bars2 = ax2.bar(components, times, color=['#3498db', '#2ecc71', '#9b59b6'],
                     edgecolor='black', linewidth=0.5)
     ax2.set_ylabel('Latency (ms)')
     ax2.set_title('Bridge Latency Breakdown')
-    ax2.set_ylim(0, 25)
+    ax2.set_ylim(0, 180)
 
     # Add percentage labels
     for bar, pct in zip(bars2, percentages):

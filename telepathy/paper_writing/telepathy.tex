@@ -76,7 +76,7 @@ Our key contributions are:
 
 \begin{itemize}
     \item A bridge architecture based on Perceiver Resampler \cite{jaegle2021perceiver, alayrac2022flamingo} that achieves 90.7\% average accuracy (SST-2: 93.7\%, AG News: 90.7\%, TREC: 87.9\%) while being 4.66$\times$ faster than text-relay.
-    \item Comprehensive evaluation showing the bridge substantially outperforms zero-shot baselines (+4.1pp SST-2, +19.6pp AG News, +37.3pp TREC) and completely outperforms text-relay (+52--90pp).
+    \item Comprehensive evaluation showing the bridge substantially outperforms zero-shot baselines (+4.1pp SST-2, +19.6pp AG News, +37.3pp TREC) and dramatically outperforms text-relay (+52--90pp).
     \item Linear probe analysis showing 95\% accuracy on TREC from sender hidden states, validating that task-relevant information is present and extractable.
     \item Identification of critical limitations: reasoning tasks fail fundamentally (CommonsenseQA below random), and extreme compression (8 tokens) causes high variance on complex tasks.
 \end{itemize}
@@ -95,6 +95,12 @@ Model stitching \cite{bansal2021revisiting, pan2023stitchable} connects layers f
 
 \paragraph{Prompt Compression}
 Methods like LLMLingua \cite{jiang2023llmlingua} compress prompts by removing tokens, while ICAE \cite{ge2024incontext} and 500xCompressor \cite{li2024500x} learn dense embeddings. Our work focuses on cross-model communication rather than single-model compression.
+
+\paragraph{Knowledge Distillation}
+Knowledge distillation \cite{hinton2015distilling} transfers knowledge from a teacher to a student model, typically through soft targets or intermediate representations. Recent work extends this to LLMs \cite{xu2024survey, gu2024minillm}, but focuses on training smaller models to mimic larger ones. In contrast, LatentWire enables runtime collaboration between frozen models without modifying either model's weights.
+
+\paragraph{Continuous Latent Reasoning}
+Recent work explores reasoning in continuous latent spaces rather than through explicit text tokens. Coconut \cite{hao2024coconut} trains models to reason via continuous ``thought tokens'' without verbalization, achieving improved efficiency on reasoning tasks. Our soft tokens serve a different purpose---cross-model communication rather than internal reasoning---but share the insight that continuous representations can encode information more efficiently than discrete text.
 
 \section{Method}
 \label{sec:method}
@@ -181,12 +187,12 @@ where $H$ is entropy and $\bar{\mathbf{z}}$ is the mean soft token representatio
 
 At inference time:
 \begin{enumerate}
-    \item \textbf{Sender Encode} (16.9ms): Pass input through frozen $\mathcal{S}$, extract layer $\ell$ hidden states.
-    \item \textbf{Bridge Transform} (1.2ms): Apply $f_\theta$ to obtain $M$ soft tokens.
-    \item \textbf{Receiver Decode} (19.3ms): Prepend soft tokens to task prompt, run single forward pass through $\mathcal{R}$.
+    \item \textbf{Sender Encode}: Pass input through frozen $\mathcal{S}$, extract layer $\ell$ hidden states.
+    \item \textbf{Bridge Transform}: Apply $f_\theta$ to obtain $M$ soft tokens.
+    \item \textbf{Receiver Decode}: Prepend soft tokens to task prompt, run single forward pass through $\mathcal{R}$.
 \end{enumerate}
 
-Total latency: 37.3ms, compared to 834.5ms for text-relay.
+The bridge adds only 14ms overhead compared to direct Mistral inference (170.6ms vs 156.2ms), achieving 4.66$\times$ speedup over text-relay (795.2ms). See Table~\ref{tab:latency} for detailed measurements.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -454,7 +460,7 @@ CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
 
 \paragraph{Reasoning Tasks Fail Fundamentally} As shown in Section~\ref{sec:reasoning}, the bridge completely fails on reasoning tasks. On CommonsenseQA, performance falls \emph{below random chance} (17.0\% vs 20.0\%), indicating that soft token compression destroys the multi-step inference chains required for reasoning. This is not merely a capacity limitation that more tokens would solve---it reflects a fundamental mismatch between classification (compressing to decision boundaries) and reasoning (preserving inference chains). Extending to reasoning requires fundamentally different approaches, likely \textbf{hybrid architectures} that combine soft token compression for context with text generation for explicit reasoning steps.
 
-\paragraph{High Variance Under Extreme Compression} TREC with 8 tokens exhibits \textbf{bimodal behavior}: across 5 seeds, accuracy clusters into ``successful'' runs (83-86\%) and ``failed'' runs (35-41\%), with coefficient of variation exceeding 50\%. Analysis shows failed runs collapse to predicting primarily 2-3 classes (ENTY, DESC) while ignoring others (NUM, LOC, ABBR, HUM). This instability disappears with 32 tokens (87.9\% $\pm$ 3.3\%), suggesting a minimum capacity threshold exists for reliable multi-class classification. Future work should investigate adaptive token allocation and ensemble methods for stability.
+\paragraph{High Variance Under Extreme Compression} TREC with 8 tokens exhibits \textbf{bimodal behavior}: across 5 seeds, accuracy clusters into ``successful'' runs (83-86\%) and ``failed'' runs (35-41\%), with coefficient of variation of 38\%. Analysis shows failed runs collapse to predicting primarily 2-3 classes (ENTY, DESC) while ignoring others (NUM, LOC, ABBR, HUM). This instability disappears with 32 tokens (87.9\% $\pm$ 3.3\%), suggesting a minimum capacity threshold exists for reliable multi-class classification. Future work should investigate adaptive token allocation and ensemble methods for stability.
 
 \paragraph{Task-Specific Training} Bridges must be trained per-task. We did not observe meaningful zero-shot transfer between tasks (e.g., SST-2$\to$AG News). Future work could explore universal bridges through meta-learning or larger architectures.
 
