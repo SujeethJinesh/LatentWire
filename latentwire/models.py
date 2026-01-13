@@ -10,7 +10,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from latentwire.core_utils import (
-    clean_pred,
     apply_lora,
     apply_prefix_tuning,
     maybe_merge_lora,

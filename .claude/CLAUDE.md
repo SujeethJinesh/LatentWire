@@ -2,617 +2,120 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated**: October 2025
-**Current Date**: 2025 (When working with external APIs and literature, remember the current year is 2025)
+**Last Updated**: January 2025
 
-## PROACTIVE EXPERIMENT PLANNING (READ FIRST)
+## Project Overview
 
-### CRITICAL: Plan Before Implementing
+Telepathy is a cross-model communication system for MLSys 2025. It enables a "sender" LLM (Llama) to transmit information to a "receiver" LLM (Mistral) through trained soft tokens, achieving significant latency reduction over text-based communication.
 
-**This is MANDATORY for ALL experiments:**
-
-1. **Create a detailed plan BEFORE implementing**
-   - What experiments will be run?
-   - What hypothesis is being tested?
-   - What are the success criteria?
-   - What resources (GPUs, time) are needed?
-
-2. **Self-critique the plan multiple times**
-   - Does it make sense for the current project goals?
-   - Does it duplicate existing experiments (check REPORT.md)?
-   - Are we making forward progress or re-trying failed approaches?
-   - Have we considered alternative approaches?
-
-3. **Update telepathy/REPORT.md before running**
-   - Document the planned experiment
-   - Add it to the changelog
-   - Reference which phase/section it extends
-   - This prevents us from re-trying things that already failed
-
-4. **Think proactively about:**
-   - Logging and visibility (can we monitor progress?)
-   - GPU utilization (are we using all available resources efficiently?)
-   - Result analysis (how will we know if it worked?)
-   - Error handling (what if something crashes?)
-
-5. **After experiments complete**
-   - Update REPORT.md with results
-   - Document what worked and what failed
-   - Propose next steps based on findings
-
-**Example Planning Workflow:**
+## Repository Structure
 
 ```
-1. User requests: "Run token ablation experiments"
-2. I should:
-   a. Read REPORT.md to understand current status
-   b. Check what's been tried before (avoid duplicating exp001-007)
-   c. Create a plan with specific experiments
-   d. Self-critique: Does 128 tokens make sense? Do we have baselines?
-   e. Update REPORT.md with planned experiments
-   f. Implement with proper monitoring/logging
-   g. After completion, update REPORT.md with results
+LatentWire/
+├── latentwire/                 # Core library
+│   ├── train.py                # Training loop
+│   ├── eval.py                 # Evaluation
+│   ├── models.py               # Encoder, Adapter, LMWrapper
+│   ├── losses.py               # Loss functions
+│   └── data.py                 # Dataset loading
+├── telepathy/                  # Paper experiments
+│   ├── train_telepathy.py      # Unified training script
+│   ├── eval_telepathy.py       # Unified evaluation script
+│   ├── run_baselines.py        # All baselines (zeroshot, fewshot, lora, prompt_tuning)
+│   ├── run_benchmarks.py       # Latency/throughput benchmarks
+│   ├── linear_probe_baseline.py
+│   ├── run_enhanced_paper_evaluation.py
+│   ├── submit_enhanced_paper_eval.slurm  # HPC submission script
+│   └── paper_writing/          # LaTeX source
+├── scripts/                    # Analysis utilities
+├── latent_bridge_v15.py        # Bridge architecture classes
+├── requirements.txt
+└── runs/                       # Output directory (created at runtime)
 ```
-
-**The goal is to act like a TOP RESEARCHER who:**
-- Plans systematically, not reactively
-- Documents everything for reproducibility
-- Learns from failures and doesn't repeat them
-- Makes efficient use of compute resources
-
----
-
-## CRITICAL FILE MANAGEMENT DISCIPLINE (READ FIRST)
-
-### STOP CREATING NEW FILES
-
-**This is NON-NEGOTIABLE and violation will result in termination:**
-
-1. **NEVER create new files unless EXPLICITLY requested by the user**
-   - Edit existing files in-place
-   - Enhance existing scripts rather than creating new ones
-   - If you think you need a new file, you probably don't
-
-2. **All documentation goes in LOG.md ONLY**
-   - NO new .md files (no INTERLINGUA_SUMMARY.md, no README.md, nothing)
-   - Update LOG.md with findings, plans, and results
-   - Keep LOG.md organized and current
-
-3. **No temporary diagnostic scripts**
-   - No verify_fixes.py, diagnose_issues.py, or similar throwaway files
-   - Use existing infrastructure for testing and validation
-   - If debugging is needed, add it to existing scripts with proper flags
-
-4. **Think like a TOP RESEARCHER before any action**
-   - Would a top researcher create 10 files or edit 1 intelligently?
-   - Would they scatter code everywhere or maintain logical organization?
-   - Use judgment befitting expertise, not junior-level habits
-
-5. **Keep directories logically organized**
-   - experimental/learning/ should be clean and minimal
-   - Archive old experiments if needed (with user permission)
-   - Each file should have a clear purpose
-
-6. **File creation checklist (when EXPLICITLY requested)**
-   - [ ] User explicitly asked for this new file?
-   - [ ] Cannot be done by editing existing file?
-   - [ ] Will be used long-term, not just once?
-   - [ ] Follows project structure conventions?
-
-**Examples of violations:**
-- ❌ Creating enhanced_unified_experiments.py instead of editing unified_cross_model_experiments.py
-- ❌ Creating verify_fixes.py for one-time debugging
-- ❌ Creating INTERLINGUA_SUMMARY.md instead of updating LOG.md
-- ❌ Creating multiple run_*.sh scripts when one would suffice
-
-**Correct approach:**
-- ✅ Edit unified_cross_model_experiments.py to add enhancements
-- ✅ Add debugging flags to existing scripts
-- ✅ Update LOG.md with summaries and findings
-- ✅ Consolidate related functionality into single scripts
-
-**Remember**: Every file you create adds cognitive overhead. A clean codebase with fewer, well-maintained files is the mark of expertise.
 
 ## Development Environment
 
-**IMPORTANT**: This project uses a **split development and execution environment**:
+**Split development and execution environment:**
 
-- **Local development (this machine)**: MacBook
-  - Used for: Code editing, analysis, reviewing logs, documentation
-  - You (Claude Code) are running here
-  - Pull logs and results from HPC via git to analyze locally
+- **Local development**: MacBook for code editing, analysis, reviewing logs
+- **Training execution**: HPC cluster with H100 GPUs
 
-- **Training execution (remote)**: HPC cluster with 4× H100 GPUs
-  - Used for: All training runs, evaluation, experiments
-  - Jobs submitted remotely, logs pushed back to git
-  - Checkpoint files remain on HPC (not synced locally)
+**Workflow:**
+1. Develop/modify code locally
+2. Push to git
+3. Run on HPC: `git pull && PYTHONPATH=. sbatch telepathy/submit_enhanced_paper_eval.slurm`
+4. HPC pushes results back to git
+5. Pull and analyze locally: `git pull`
 
-**Workflow**:
-1. User develops/modifies code locally on MacBook
-2. User pushes code to git
-3. User runs training on HPC: `git pull && rm -rf runs && PYTHONPATH=. bash <script.sh>`
-4. HPC saves logs and pushes back to git
-5. User pulls logs locally: `git pull`
-6. Analysis happens locally on MacBook
+## SLURM Job Submission
 
-**Documentation Preferences**:
-- **DO NOT create new .md files** - update LOG.md instead
-- RESEARCH_PROPOSAL.md is somewhat out of date (read for context only)
-- LOG.md is the primary source of truth for current status
-- CLAUDE.md (this file) defines workflow and conventions
+**CRITICAL SLURM settings for Marlowe HPC:**
 
----
+| Setting | Value |
+|---------|-------|
+| `--account` | `marlowe-m000066` |
+| `--partition` | `preempt` |
+| Working dir | `/projects/m000066/sujinesh/LatentWire` |
 
-## SLURM Job Submission (MANDATORY FOR HPC EXPERIMENTS)
-
-**When creating experiments that run on HPC, ALWAYS create a proper SLURM script.**
-
-### SLURM Script Template
-
-All SLURM scripts MUST follow this pattern (based on `telepathy/submit_enhanced_arxiv.slurm`):
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=experiment_name
-#SBATCH --nodes=1
-#SBATCH --gpus=4                                    # Use 4 for full experiments, 1 for small jobs
-#SBATCH --account=marlowe-m000066                   # REQUIRED - correct account
-#SBATCH --partition=preempt                         # REQUIRED - correct partition
-#SBATCH --time=12:00:00                             # Adjust based on expected runtime
-#SBATCH --mem=256GB                                 # Adjust based on needs (64GB for small, 256GB for large)
-#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/experiment_%j.log
-#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/experiment_%j.err
-
-# =============================================================================
-# Description of what this script does
-# =============================================================================
-# Submit with: sbatch telepathy/script_name.slurm
-# Monitor with: squeue -u $USER
-# Cancel with: scancel <job_id>
-# =============================================================================
-
-# Set working directory - MUST use /projects path
-WORK_DIR="/projects/m000066/sujinesh/LatentWire"
-cd "$WORK_DIR"
-
-echo "=============================================================="
-echo "SLURM Job Information"
-echo "=============================================================="
-echo "Job ID: $SLURM_JOB_ID"
-echo "Node: $SLURMD_NODENAME"
-echo "GPUs: $CUDA_VISIBLE_DEVICES"
-echo "Start time: $(date)"
-echo "Working directory: $WORK_DIR"
-echo "=============================================================="
-
-# Set up environment
-export PYTHONPATH=.
-export PYTORCH_ENABLE_MPS_FALLBACK=1
-
-# Create runs directory if needed
-mkdir -p runs figures
-
-# Pull latest code
-echo "Pulling latest code..."
-git pull
-
-# Run the experiment
-echo "Starting experiment..."
-# YOUR EXPERIMENT COMMAND HERE
-
-# Push results back to git
-echo "Pushing results to git..."
-git add -A
-git commit -m "results: experiment description (SLURM job $SLURM_JOB_ID)
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>" || true
-git push || true
-
-echo "=============================================================="
-echo "Job completed at $(date)"
-echo "=============================================================="
-```
-
-### CRITICAL SLURM Settings
-
-These settings are **NON-NEGOTIABLE** for Marlowe HPC:
-
-| Setting | Value | Notes |
-|---------|-------|-------|
-| `--account` | `marlowe-m000066` | NOT just `marlowe` |
-| `--partition` | `preempt` | NOT `gpu` or other |
-| Working dir | `/projects/m000066/sujinesh/LatentWire` | NOT `/home/sjinesh/...` |
-| Log paths | `/projects/m000066/sujinesh/LatentWire/runs/` | Use `runs/` for consistency |
-
-### User Commands After Script Creation
-
-**Always provide these commands to the user:**
-
+**Example commands:**
 ```bash
 # On HPC:
 cd /projects/m000066/sujinesh/LatentWire
 git pull
-sbatch telepathy/your_script.slurm
+sbatch telepathy/submit_enhanced_paper_eval.slurm
 
 # Monitor:
-squeue -u $USER              # Check job status
-tail -f runs/experiment_*.log # Watch output
-scancel <job_id>             # Cancel if needed
+squeue -u $USER
+tail -f runs/enhanced_eval_*.log
 ```
 
-### Checklist for SLURM Scripts
+## Key Scripts
 
-Before committing a SLURM script, verify:
-- [ ] `--account=marlowe-m000066` (not just `marlowe`)
-- [ ] `--partition=preempt`
-- [ ] Working directory is `/projects/m000066/sujinesh/LatentWire`
-- [ ] Log/error paths use `/projects/...` not `/home/...`
-- [ ] Script pulls latest code with `git pull`
-- [ ] Script pushes results with `git add -A && git commit && git push`
-- [ ] Clear comments explaining what the script does
-- [ ] Provided user with `sbatch` command and monitoring instructions
-
----
-
-## Core Development Principles
-
-### 0. FIX ROOT CAUSES - DON'T SKIP OR WORKAROUND
-
-**When encountering bugs, OOMs, or performance issues:**
-
-✅ **DO**:
-- Fix the actual root cause (use IncrementalPCA for memory issues, add proper batching, optimize algorithms)
-- Make features work correctly and efficiently
-- Use proper data structures and algorithms for the problem
-- Optimize memory usage through better design
-
-❌ **DON'T**:
-- Skip features with flags like `SKIP_PCA=yes` because they OOM
-- Remove functionality because it's "hard to fix"
-- Add workarounds that hide problems
-- Give up when something is slow or memory-intensive
-
-**Examples:**
-- ❌ PCA OOMs → Don't skip it
-- ✅ PCA OOMs → Use IncrementalPCA for batch processing
-- ❌ Eval too slow → Don't reduce samples
-- ✅ Eval too slow → Add proper batching and parallelization
-
-**Deliberate design choices are different:**
-- Skipping Qwen to focus on Llama first = valid optimization choice
-- Skipping PCA because it OOMs = bug that needs fixing
-
-### 1. SUBAGENT MODEL SELECTION (USER PREFERENCE)
-
-**ALWAYS prefer Claude Opus 4.5 for subagent tasks:**
-
-When using the Task tool to spawn subagents for analysis, exploration, or multi-step reasoning:
-
-- **STRONGLY prefer `claude-opus-4-5` model** - This is a direct user preference
-- Opus provides better reasoning for complex research tasks
-- Only use Sonnet subagents if explicitly requested or for simple tasks
-- The Task tool allows model selection - always specify Opus when spawning subagents
-
-**Why this matters:**
-- Research tasks require deep reasoning and careful analysis
-- Opus excels at multi-step planning and self-critique
-- Code exploration and architectural decisions benefit from Opus capabilities
-- This is not about cost - it's about research quality
-
-**Examples:**
-- ✅ Task(model="claude-opus-4-5") for analysis, planning, code exploration
-- ✅ Task(model="claude-opus-4-5") for experiment design and validation
-- ⚠️ Task(model="sonnet") only if user explicitly requests it or task is trivial
-
-**Remember**: The user has specifically requested Opus subagents. This is a strong preference that should be honored unless there's a compelling reason otherwise.
-
-## Critical Workflow Requirements
-
-**ALWAYS follow these requirements when working on this codebase:**
-
-### 1. End-to-End Execution Model (CRITICAL)
-**Scripts must work completely from scratch with NO pre-existing checkpoints or data:**
-
-- **Standard run pattern**: `git pull && rm -rf runs && PYTHONPATH=. bash <script.sh>`
-- **Checkpoints are NOT saved between runs** - `rm -rf runs` deletes everything
-- **Scripts MUST be fully self-contained and work end-to-end**
-- **NO synthetic data or synthetic tests** - only real data from real training
-
-**What this means for script design:**
-1. **Diagnostic/analysis scripts must TRAIN first, then analyze**
-   - Example: `run_embedding_diagnostics.sh` trains a quick checkpoint, then analyzes it
-   - Cannot assume any pre-existing checkpoints exist
-2. **Scripts cannot rely on previous runs** - each execution starts fresh
-3. **All data must be generated from real training** - no synthetic or mocked data
-4. **Training must be fast enough for iteration** - use small sample counts for diagnostics
-
-**Example end-to-end script structure:**
+### Training
 ```bash
-# PHASE 1: Generate real data (train checkpoint)
-python latentwire/train.py --samples 1000 --epochs 1 --output_dir runs/diagnostic/checkpoint
+# Train bridge on SST-2
+python telepathy/train_telepathy.py --dataset sst2 --soft_tokens 8 --steps 2000
 
-# PHASE 2: Analyze real data from checkpoint
-python scripts/analyze.py --checkpoint runs/diagnostic/checkpoint
+# Supported datasets: sst2, agnews, trec, banking77
 ```
 
-**This is NON-NEGOTIABLE:** Scripts that require pre-existing checkpoints will fail in the standard workflow.
-
-### 1. Logging and Output Capture (MANDATORY)
-- **ALL scripts MUST use `tee` to capture output to log files**
-- Log files should be timestamped: `{script_name}_$(date +"%Y%m%d_%H%M%S").log`
-- Both stdout and stderr must be captured: `{ command } 2>&1 | tee "$LOG_FILE"`
-- Log files must be saved in the same directory as other results
-- **Without logs, you are flying blind** - analysis is impossible
-- **This is a NON-NEGOTIABLE requirement for ALL scripts**
-
-**Mandatory Template for ALL Bash Scripts:**
+### Evaluation
 ```bash
-#!/usr/bin/env bash
-set -e
+python telepathy/eval_telepathy.py --checkpoint runs/sst2/bridge_sst2.pt --dataset sst2
+```
 
-# Configuration
-OUTPUT_DIR="${OUTPUT_DIR:-runs/experiment_name}"
+### Baselines
+```bash
+# Zero-shot, few-shot, LoRA, prompt tuning
+python telepathy/run_baselines.py --baseline zeroshot --dataset sst2
+python telepathy/run_baselines.py --baseline fewshot --dataset sst2 --shots 5
+python telepathy/run_baselines.py --baseline lora --dataset sst2 --rank 8
+python telepathy/run_baselines.py --baseline prompt_tuning --dataset sst2 --soft_tokens 8
+```
 
-# Set up environment
+### Benchmarks
+```bash
+python telepathy/run_benchmarks.py --benchmark latency --checkpoint runs/sst2/bridge_sst2.pt
+```
+
+## Development Principles
+
+1. **NEVER create new files unless explicitly requested** - edit existing files
+2. **Always commit and push after completing tasks**
+3. **Always `git pull` before analyzing results**
+4. **Use Opus subagents for complex analysis tasks**
+5. **Scripts must work end-to-end from scratch** - no pre-existing checkpoints
+
+## Common Commands
+
+```bash
+# Set environment
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
 
-# Create output directory and log file
-mkdir -p "$OUTPUT_DIR"
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-LOG_FILE="$OUTPUT_DIR/script_name_${TIMESTAMP}.log"
+# Verify Python files compile
+python3 -m py_compile latentwire/*.py telepathy/*.py
 
-echo "Starting experiment..."
-echo "Log file: $LOG_FILE"
-echo ""
-
-# Run command with tee to capture ALL output
-{
-    python scripts/your_script.py \
-        --arg1 value1 \
-        --arg2 value2 \
-        --output_dir "$OUTPUT_DIR"
-} 2>&1 | tee "$LOG_FILE"
-
-echo "Complete! Results saved to:"
-echo "  - $OUTPUT_DIR/results.json"
-echo "  - $LOG_FILE"
+# Run full paper evaluation on HPC
+sbatch telepathy/submit_enhanced_paper_eval.slurm
 ```
-
-**When creating ANY new script:**
-1. Start with this template
-2. Replace `script_name` with actual script name
-3. Add any configuration variables needed
-4. Wrap the main command in `{ } 2>&1 | tee "$LOG_FILE"`
-5. Never skip this - it's required for debugging and analysis
-
-**For Python Scripts:**
-All Python scripts should:
-- Print progress updates to stdout (these will be captured by tee)
-- Save structured results to JSON files
-- Include timing information in output
-- Log configuration at start of execution
-
-Example Python script structure:
-```python
-import time
-from datetime import datetime
-
-def main():
-    start_time = time.time()
-    print(f"Starting {script_name} at {datetime.now().isoformat()}")
-    print(f"Configuration: {config}")
-
-    # ... do work with progress updates ...
-    print(f"Processing batch {i}/{total}...")
-
-    # Save results
-    results = {...}
-    with open(output_dir / 'results.json', 'w') as f:
-        json.dump(results, f, indent=2)
-
-    total_time = time.time() - start_time
-    print(f"\nComplete! Total time: {total_time:.2f}s")
-    print(f"Results saved to: {output_dir}")
-
-if __name__ == '__main__':
-    main()
-```
-
-**Checklist for ALL Scripts:**
-Before considering ANY script complete, verify:
-- [ ] Bash wrapper uses `{ } 2>&1 | tee "$LOG_FILE"` pattern
-- [ ] Log file is timestamped and saved in output directory
-- [ ] Python script prints progress updates to stdout
-- [ ] Results saved to JSON files with comprehensive data
-- [ ] Timing information included in output
-- [ ] Configuration logged at start
-- [ ] Script committed and pushed to git
-
-**If a script doesn't have tee logging, it is INCOMPLETE and must be fixed immediately.**
-
-### 2. Version Control
-- **ALWAYS `git pull` BEFORE analyzing logs or results** - experiments run on HPC and push logs back
-- **ALWAYS commit after completing a task or fix**
-- **ALWAYS push commits to remote immediately**
-- Use descriptive commit messages that explain what was fixed/changed
-- Never leave uncommitted changes unless explicitly asked to pause
-
-**CRITICAL: When user mentions logs or asks to review results, FIRST do `git pull`**
-
-### 3. Communication Style
-- **Be matter of fact** - no superlatives, no fluff, no unnecessary praise
-- Focus on technical accuracy and objectivity
-- State what was done, what the results are, and what needs to happen next
-- If something is uncertain, investigate first rather than speculating
-
-### 4. Hardware Awareness
-- This project has access to **4 H100 GPUs** on HPC
-- Design for large-scale batch processing and high throughput
-- Don't artificially limit sample sizes or batch sizes
-- Use parallel processing and efficient memory management
-
-### 5. Script Design
-- Every experiment script must save comprehensive results
-- JSON files for structured data, log files for execution traces
-- Include timing, throughput metrics, and configuration in logs
-- Make results easy to analyze programmatically
-
-## Commands for Development
-
-### Important Note on Training Infrastructure
-**Training runs on a remote server** - checkpoints, logs, and diagnostics are saved there. When analyzing training progress locally, only the synced log files (diagnostics.jsonl, pipeline_*.log) are available. Checkpoint files themselves remain on the training server.
-
-### Running Training & Evaluation Pipeline
-```bash
-# Main pipeline script - handles training and evaluation
-bash scripts/run_pipeline.sh
-
-# Key environment variables to set before running:
-export PYTORCH_ENABLE_MPS_FALLBACK=1  # For Mac MPS
-export PYTHONPATH=.
-
-# Common training command:
-python latentwire/train.py \
-  --llama_id "meta-llama/Meta-Llama-3.1-8B-Instruct" \
-  --qwen_id "Qwen/Qwen2.5-7B-Instruct" \
-  --samples 87599 \
-  --epochs 24 \
-  --batch_size 64 \
-  --latent_len 32 \
-  --d_z 256 \
-  --encoder_type byte \
-  --dataset squad \
-  --sequential_models \
-  --warm_anchor_text "Answer: " \
-  --first_token_ce_weight 0.5
-
-# Common evaluation command:
-python latentwire/eval.py \
-  --ckpt runs/{RUN_NAME}/epoch{N} \
-  --samples 200 \
-  --max_new_tokens 12 \
-  --dataset squad \
-  --sequential_eval \
-  --fresh_eval \
-  --calibration embed_rms \
-  --latent_anchor_mode text \
-  --latent_anchor_text "Answer: " \
-  --append_bos_after_prefix yes
-```
-
-### Testing & Validation
-```bash
-# Run sanity checks for tokenization alignment
-python -c "from latentwire.train import _assert_t0_alignment; _assert_t0_alignment('meta-llama/Meta-Llama-3.1-8B-Instruct')"
-
-# Quick smoke test
-python latentwire/eval.py --ckpt {checkpoint} --samples 10 --debug
-```
-
-## High-Level Architecture
-
-### Core System Design
-LatentWire implements a **continuous interlingua** - a learned compressed representation that can condition multiple heterogeneous LLMs (Llama and Qwen) without retokenizing text. Key insights:
-
-1. **Frozen LLMs**: The base models (Llama, Qwen) remain completely frozen. Only small adapters and an encoder are trained.
-
-2. **Shared Latent Space**: A single encoder produces `Z ∈ R^{M × d_z}` soft tokens that both models consume via `inputs_embeds`.
-
-3. **Model-Specific Adapters**: Small linear adapters map the shared latent into each model's embedding space while preserving statistical properties.
-
-### Key Training Innovations
-
-#### Phase A Improvements (from PLAN.md)
-- **K-token teacher-forced CE** (`k_token_ce_from_prefix` in losses.py): Supervises first K tokens instead of just one
-- **Prefix KD** (`kd_first_k_prefix_vs_text`): Distills text-prompted teacher distributions
-- **Proper tokenization alignment**: Ensures exact t=0 alignment after anchor text
-- **Per-example calibration**: Scales latents to match embedding RMS per example
-
-#### Critical Bug Fixes (from LOG.md)
-- **PAD token masking**: Fixed gradient contamination from left-padded tokens
-- **BOS policy alignment**: Consistent BOS handling between train and eval
-- **Anchor text consistency**: Same "Answer: " anchor used throughout
-
-### Module Organization
-
-```
-latentwire/
-├── train.py          # Main training loop with K-token objectives
-├── eval.py           # Deterministic evaluation with multiple baselines
-├── losses.py         # K-token CE and KD losses (critical for learning)
-├── models.py         # Encoder, Adapter, LMWrapper classes
-├── prefix_utils.py   # Calibration, BOS policy, anchor handling
-├── data.py          # Dataset loading (SQuAD, HotpotQA)
-├── metrics.py       # EM/F1 scoring, NLL computation
-└── common.py        # Chat templates, text truncation utilities
-```
-
-### Key Configuration Parameters
-
-Critical hyperparameters that significantly impact performance:
-
-```python
-# Latent dimensions
-LATENT_LEN = 32       # M: number of soft tokens (compression vs capacity tradeoff)
-D_Z = 256            # Latent dimension per token
-
-# Training objectives
-K = 4                # Number of tokens to supervise (k_token_ce)
-FIRST_TOKEN_CE = 0.5 # Weight for first-token cross-entropy
-KD_TAU = 1.0        # Temperature for knowledge distillation
-
-# Calibration & anchoring
-CALIBRATION = "embed_rms"      # Scale latents to match embedding statistics
-WARM_ANCHOR_TEXT = "Answer: "  # Anchor text between prefix and answer
-APPEND_BOS_AFTER_PREFIX = "yes" # BOS policy for first-token generation
-
-# Decode hardening
-FIRST_TOKEN_TOP_P = 0.95       # Nucleus sampling for first token
-FIRST_TOKEN_TEMPERATURE = 0.7  # Temperature for first token
-EOS_BAN_STEPS = 4              # Prevent early EOS tokens
-```
-
-### Evaluation Metrics & Baselines
-
-The system evaluates against multiple baselines:
-1. **Text baseline**: Full prompt via text (upper bound)
-2. **Latent**: Compressed soft tokens
-3. **Token-budget**: Text truncated to M tokens (fairness baseline)
-4. **Joint rescoring**: Two-model ensemble picking best answer
-
-Key metrics tracked:
-- **Task quality**: EM/F1 scores
-- **Conditioning**: NLL/token on gold answers
-- **Efficiency**: Compression ratio, wire bytes, wall-clock time
-- **First-token accuracy**: Critical for generation quality
-
-### Common Pitfalls & Solutions
-
-1. **PAD token contamination**: Always mask PAD tokens (-100) in labels and zero their attention
-2. **BOS misalignment**: Ensure consistent BOS policy between train/eval
-3. **Amplitude drift**: Use per-example calibration, not batch-level
-4. **Tokenization mismatch**: Verify t=0 alignment with `_assert_t0_alignment()`
-5. **Left padding issues**: Handle properly in teacher-forced sequences
-
-### Compression & Wire Protocol
-
-The system measures honest compression via:
-- **Text bytes**: UTF-8 encoded prompt bytes
-- **Latent bytes**: Quantized latent representation (fp16/int8/int6/int4)
-- Group-wise quantization with scale overhead accounting
-- Target: ≥4× compression while maintaining quality
-
-### Current State & Next Steps
-
-Based on recent experiments (8B_clean_answer_ftce run):
-- Text baseline achieves F1 ~0.80-0.85
-- Latent currently at F1 ~0.01-0.02, FirstTok@1 ~5-7%
-- Recent fixes addressed PAD masking and BOS alignment
-- Next focus: Improving first-token accuracy via K-token objectives
-
-The codebase is actively implementing Phase A improvements from PLAN.md to achieve:
-- FirstTok@1: 12-20% at M∈{32,48,64}
-- F1: 0.10-0.20 with honest compression

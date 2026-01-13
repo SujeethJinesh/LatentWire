@@ -73,15 +73,15 @@ python telepathy/train_telepathy.py --dataset agnews --soft_tokens 8 --steps 300
 python telepathy/eval_telepathy.py --checkpoint runs/agnews/bridge_agnews.pt --dataset agnews --output_dir runs/agnews
 ```
 
-#### Table 2: Reasoning Benchmarks
+#### Table 2: Additional Classification
 
 ```bash
-# BoolQ
-python telepathy/train_telepathy.py --dataset boolq --soft_tokens 16 --steps 3000 --seed 42 --output_dir runs/boolq
-
-# GSM8K
-python telepathy/train_telepathy.py --dataset gsm8k --soft_tokens 24 --steps 5000 --seed 42 --output_dir runs/gsm8k
+# TREC (question classification)
+python telepathy/train_telepathy.py --dataset trec --soft_tokens 8 --steps 2000 --seed 42 --output_dir runs/trec
+python telepathy/eval_telepathy.py --checkpoint runs/trec/bridge_trec.pt --dataset trec --output_dir runs/trec
 ```
+
+**Note**: BoolQ and GSM8K are evaluated via the full reproduction script (`run_enhanced_paper_evaluation.py`).
 
 #### Table 3: Baseline Comparisons
 
@@ -139,11 +139,13 @@ python telepathy/statistical_tests.py --results_path results/aggregated_results.
 
 ```
 LatentWire/
+├── latent_bridge_v15.py        # Bridge architecture (PerceiverResampler, LatentBridgeV15)
 ├── latentwire/                 # Core library
 │   ├── train.py                # Training loop
 │   ├── eval.py                 # Evaluation
 │   ├── models.py               # Encoder, Adapter, LMWrapper
-│   └── ...
+│   ├── losses.py               # Loss functions
+│   └── data.py                 # Dataset loading
 ├── telepathy/                  # Paper experiments
 │   ├── train_telepathy.py      # Unified training
 │   ├── eval_telepathy.py       # Unified evaluation
@@ -151,9 +153,9 @@ LatentWire/
 │   ├── run_benchmarks.py       # Latency/throughput
 │   ├── linear_probe_baseline.py
 │   ├── run_enhanced_paper_evaluation.py
+│   ├── submit_enhanced_paper_eval.slurm
 │   └── paper_writing/          # LaTeX source
 ├── scripts/                    # Analysis utilities
-│   └── generate_paper_tables.py
 ├── requirements.txt
 └── runs/                       # Output directory (created)
 ```
