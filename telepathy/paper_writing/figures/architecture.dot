@@ -33,7 +33,7 @@ digraph LatentWire {
         color="#50b050";
         bgcolor="#e8f8e8";
 
-        queries [label="Learned Queries\n[M × 512]", fillcolor="#90d090"];
+        queries [label="Learned Queries\n[M × 4096]", fillcolor="#90d090"];
         cross_attn [label="Cross-Attention\n(2 layers)", fillcolor="#a8e0a8"];
         proj_out [label="Output Projection\n+ RMS Norm", fillcolor="#a8e0a8"];
         soft_tokens [label="Soft Tokens\n[M × 4096]", shape=parallelogram, fillcolor="#c8f0c8"];

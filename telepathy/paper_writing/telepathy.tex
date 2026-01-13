@@ -153,7 +153,7 @@ Our bridge uses a Perceiver Resampler design:
     \begin{align}
         \mathbf{z}^{(n+1)} = \text{FFN}(\text{CrossAttn}(\mathbf{z}^{(n)}, \mathbf{h}'))
     \end{align}
-    We use $N=2$ layers with $d=512$ internal dimension.
+    We use $N=2$ layers with $d=d_\mathcal{R}$ (receiver hidden dimension, e.g., 4096 for Llama/Mistral).
 
     \item \textbf{Output Projection}: Linear projection to receiver embedding space with RMS normalization:
     \begin{align}
@@ -167,7 +167,7 @@ The bridge adds trainable parameters to enable the cross-model mapping, while bo
 \subsection{Design Space: Why Cross-Attention?}
 \label{sec:design_space}
 
-We systematically explored several bridge architectures before arriving at the Perceiver-based approach. Our ablations (see Appendix~\ref{app:arch_ablation}) show that cross-attention is essential: the Perceiver achieves 92.0\% on SST-2, while mean pooling completely fails (0\%) by destroying sequential structure. Diffusion Transformers achieve only 85.5\% due to error accumulation across denoising steps and training objective mismatch. Interestingly, simple linear projection achieves 91.5\% on binary SST-2 but degrades on harder multi-class tasks (AG News: 78.3\% vs.\ 90.7\% for Perceiver), motivating our choice of cross-attention for general applicability.
+We systematically explored several bridge architectures before arriving at the Perceiver-based approach. Our ablations (see Appendix~\ref{app:arch_ablation}) show that cross-attention is essential: the Perceiver achieves 92.0\% on SST-2, while mean pooling completely fails (0\%) by destroying sequential structure. Diffusion Transformers achieve only 85.5\% due to error accumulation across denoising steps and training objective mismatch. Notably, simple linear projection achieves 91.5\% on binary SST-2 but degrades on harder multi-class tasks (AG News: 78.3\% vs.\ 90.7\% for Perceiver), motivating our choice of cross-attention for general applicability.
 
 \subsection{Training Objective}
 
@@ -215,11 +215,11 @@ The bridge adds only 14ms overhead compared to direct Mistral inference (170.6ms
     \item \textbf{5-shot Prompting}: Standard few-shot prompting with 5 balanced examples per class.
     \item \textbf{Text-Relay}: Llama generates a summary, Mistral classifies from summary.
     \item \textbf{CoT-Relay}: Llama generates chain-of-thought reasoning, Mistral classifies from that reasoning.
-    \item \textbf{LoRA}: Fine-tuned Mistral with rank-8 LoRA adapter (3.4M params).
-    \item \textbf{Prompt-Tuning}: Learnable soft prompts on Mistral only (no Llama). Tests whether the sender actually contributes.
+    \item \textbf{LoRA} \cite{hu2022lora}: Fine-tuned Mistral with rank-8 LoRA adapter (3.4M params).
+    \item \textbf{Prompt-Tuning}: Learnable soft prompts on Mistral only (no Llama). Tests whether the sender contributes.
 \end{itemize}
 
-\paragraph{Hyperparameters} Default settings: $M=8$ soft tokens, learning rate $10^{-4}$, batch size 8, diversity weight $\lambda=0.1$, 2000 training steps. We extract from layer $\ell=16$ for SST-2 and $\ell=31$ for AG News and TREC. For Banking77 and TREC, we use $M=16$ tokens and 3000 steps.
+\paragraph{Hyperparameters} Default settings: $M=8$ soft tokens, learning rate $2 \times 10^{-4}$, batch size 8, diversity weight $\lambda=0.1$, 2000 training steps. We extract from layer $\ell=16$ for SST-2 and $\ell=31$ for AG News and TREC. For Banking77 and TREC, we use $M=16$ tokens and 3000 steps.
 
 \subsection{Main Results}
 
@@ -238,7 +238,7 @@ Method & SST-2 & AG News & TREC & Avg \\
 Random Chance & 50.0 & 25.0 & 16.7 & 30.6 \\
 \midrule
 \textbf{Bridge (32 tok)} & \textbf{93.7}$\pm$0.3 & \textbf{90.7}$\pm$1.4 & \textbf{87.9}$\pm$3.3 & \textbf{90.7} \\
-Bridge (8 tok) & 93.3$\pm$0.4 & 91.1$\pm$1.2 & 61.5$\pm$23.3$^\dagger$ & 82.0 \\
+Bridge (8 tok) & 93.3$\pm$0.4 & 91.1$\pm$1.2 & 84/38$^\dagger$ & 82.0 \\
 \midrule
 Linear Probe & 92.1 & 86.8 & 95.0 & 91.3 \\
 Prompt-Tuning & 50.9 & 25.0 & 15.9 & 30.6 \\
@@ -253,7 +253,7 @@ Text-Relay & 41.3 & 1.0 & 4.0 & 15.4 \\
 \end{center}
 \vskip -0.15in
 {\footnotesize $^*$Bridge: mean$\pm$std over 5 seeds (42, 123, 456, 789, 1011). Others deterministic.}\\
-{\footnotesize $^\dagger$TREC 8-tok bimodal (35--86\%); 32 tokens eliminates instability.}
+{\footnotesize $^\dagger$TREC 8-tok shows bimodal distribution: 84\% (3 seeds converge) / 38\% (2 seeds collapse); mean$\pm$std inappropriate.}
 \vskip -0.1in
 \end{table}
 
@@ -420,7 +420,7 @@ We observe similar patterns on passkey retrieval tasks, where 16 tokens achieve 
 \subsection{Generalization to Reasoning Tasks}
 \label{sec:reasoning}
 
-While LatentWire excels on classification, we evaluate whether it generalizes to reasoning tasks. Table~\ref{tab:reasoning} presents results on three standard reasoning benchmarks.
+While LatentWire excels on classification, we evaluate whether it generalizes to reasoning tasks. Table~\ref{tab:reasoning} presents results on three standard reasoning benchmarks: BoolQ \cite{clark2019boolq}, PIQA \cite{bisk2020piqa}, and CommonsenseQA \cite{talmor2019commonsenseqa}.
 
 \begin{table}[t]
 \caption{Reasoning benchmark results. Unlike classification, the bridge \textbf{underperforms} direct model inference on all reasoning tasks. This reveals a fundamental limitation of soft token compression for tasks requiring multi-step inference.}
@@ -451,7 +451,7 @@ CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
     \item \textbf{Reasoning}: Requires preserving multi-step inference chains and world knowledge. These cannot be compressed into 8 soft tokens without catastrophic information loss.
 \end{itemize}
 
-\paragraph{Interesting Exception} On PIQA, text-relay fails catastrophically (30.4\%) while the bridge succeeds (60.4\%). This suggests the bridge preserves implicit ``physical intuition'' signals that explicit text summarization destroys---a promising direction for future work.
+\paragraph{Notable Exception} On PIQA, text-relay fails catastrophically (30.4\%) while the bridge succeeds (60.4\%). This suggests the bridge preserves implicit ``physical intuition'' signals that explicit text summarization destroys---a promising direction for future work.
 
 \paragraph{Soft Token Interpretability} Analyzing soft tokens by their nearest neighbors in Mistral's vocabulary reveals partially interpretable patterns: for negative sentiment, the literal word ``negative'' appears as the top nearest neighbor for 3 of 8 tokens. The 8 tokens show high pairwise cosine similarity (0.97-0.99), suggesting redundant encoding that may provide robustness.
 
@@ -470,7 +470,7 @@ CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
 
 \paragraph{Computational Cost} While the bridge achieves 4.66$\times$ lower latency than text-relay, it requires inference through two full models (sender + receiver, 15B total parameters) compared to a single model for direct classification. The 14ms overhead compared to direct Mistral inference is modest, but memory requirements remain high.
 
-\paragraph{Compression Ratio Interpretation} With 32 tokens at 4096 dimensions (fp16), soft token size is $\sim$16KB per input. For typical classification inputs (50-300 bytes), this represents \emph{expansion} rather than compression in raw bytes. However, the key insight is that 32 tokens replace the full autoregressive generation required by text-relay, achieving the latency benefits while preserving task-relevant information.
+\paragraph{Compression Ratio Interpretation} With 32 tokens at 4096 dimensions (fp16), soft token size is $32 \times 4096 \times 2 = 256$KB per input. For typical classification inputs (50-300 bytes), this represents substantial \emph{expansion} rather than compression in raw bytes. However, the key insight is that 32 tokens replace the full autoregressive generation required by text-relay, achieving the latency benefits while preserving task-relevant information.
 
 \paragraph{Future Directions: Hybrid Architectures} Our results suggest a promising direction: hybrid systems that use soft token bridges for fast context transfer combined with selective text generation for reasoning steps. This could combine the latency benefits of continuous representations with the interpretability and reasoning capabilities of text.
 
@@ -531,7 +531,7 @@ Table~\ref{tab:arch_ablation} presents systematic comparisons of bridge architec
 \midrule
 Perceiver (ours) & \textbf{92.0\%} & Best \\
 MLP Bridge & 91.5\% & Competitive \\
-Linear Projection & 91.5\% & Surprisingly good \\
+Linear Projection & 91.5\% & Competitive \\
 Diffusion Transformer & 85.5\% & Viable but worse \\
 Mean Pooling & 0.0\% & Complete failure \\
 Identity (no transform) & 0.0\% & Complete failure \\
@@ -564,7 +564,7 @@ All bridge experiments were run with 5 seeds (42, 123, 456, 789, 1011) for repro
     \item SST-2 Bridge (32 tokens): 93.7\% $\pm$ 0.3\%
     \item AG News Bridge (32 tokens): 90.7\% $\pm$ 1.4\%
     \item TREC Bridge (32 tokens): 87.9\% $\pm$ 3.3\%
-    \item TREC Bridge (8 tokens): 61.5\% $\pm$ 23.3\% (bimodal: 35-86\% range)
+    \item TREC Bridge (8 tokens): bimodal---84\% (seeds 42, 123, 456) / 38\% (seeds 789, 1011)
     \item Linear Probe (TREC): 95.0\%
     \item Prompt-Tuning (SST-2): 50.9\%
     \item Prompt-Tuning (AG News): 25.0\%
@@ -574,7 +574,7 @@ The bridge shows stable performance with 32 tokens, but 8 tokens introduces high
 \subsection{Hyperparameter Sensitivity}
 We found performance relatively robust to hyperparameters within reasonable ranges:
 \begin{itemize}
-    \item Learning rate: $10^{-5}$ to $10^{-3}$ all work, $10^{-4}$ slightly best
+    \item Learning rate: $10^{-5}$ to $10^{-3}$ all work, $2 \times 10^{-4}$ slightly best
     \item Batch size: 4-16 similar results
     \item Diversity weight: 0.05-0.2 prevents mode collapse
     \item Source layer: We use layer 16 for SST-2 and layer 31 for AG News/TREC. Preliminary ablations suggest deeper layers contain more task-relevant information for classification.
@@ -665,7 +665,7 @@ where $\alpha \approx 0.5-1.0$ based on empirical observations.
 
 \subsection{Model Size Thresholds}
 
-Our experiments establish clear capacity thresholds:
+Our experiments establish clear capacity thresholds, as shown in Table~\ref{tab:size_threshold}:
 
 \begin{table}[h]
 \caption{Generation quality vs.\ model size}
