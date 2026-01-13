@@ -52,6 +52,9 @@ This document tracks issues, concerns, and improvement ideas for the paper.
 1. **Layer mismatch undermines "upper bound" argument** - The paper claims linear probe shows information IS extractable, but it's measuring different representations
 2. **Unexplained 7pp gap on TREC** - If layer 16 has 95% accuracy with a linear classifier, why does the bridge (with Perceiver + cross-attention) only get 87.9% from layer 31?
 3. **Apples-to-oranges** - Linear probe is single-model (Llama→classifier), bridge is cross-model (Llama→Mistral)
+4. **No cross-model alignment challenge** - The linear probe doesn't have to deal with cross-model vocabulary/representation alignment, which is a core difficulty the bridge faces
+
+**Verdict**: Linear probe is appropriate as a concept but problematic in execution.
 
 **Recommendation**:
 - Run linear probe on layer 31 (same as bridge) for fair comparison
