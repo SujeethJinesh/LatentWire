@@ -499,9 +499,13 @@ We are committed to reproducible research. Our implementation will be released a
 
 \paragraph{Model Checkpoints} All base models (Llama 3.1 8B Instruct, Mistral 7B Instruct v0.3) are publicly available on the HuggingFace Hub. We use the official model weights without modification; both models remain frozen throughout all experiments.
 
-\paragraph{Hardware} Experiments were conducted on NVIDIA H100 80GB GPUs on a shared HPC cluster. Training a single bridge (2000-3000 steps) requires approximately 3.5-5 minutes. Full reproduction of all experiments requires approximately 1 GPU-hour.
+\paragraph{Hardware} Experiments were conducted on NVIDIA H100 80GB GPUs using Stanford's Marlowe computational cluster~\cite{marlowe2025}. Training a single bridge (2000-3000 steps) requires approximately 3.5-5 minutes. Full reproduction of all experiments requires approximately 1 GPU-hour.
 
 \paragraph{Datasets} All datasets (SST-2, AG News, TREC, Banking77, BoolQ, PIQA, CommonsenseQA) are publicly available through standard NLP benchmarks and will be documented in our release.
+
+\section*{Acknowledgments}
+
+We thank the Stanford Research Computing Center for providing computational resources on the Marlowe cluster~\cite{marlowe2025}. This research was supported in part by Stanford's Data Science Scholars program.
 
 \bibliography{telepathy}
 \bibliographystyle{mlsys2025}
