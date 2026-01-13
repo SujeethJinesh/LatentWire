@@ -488,7 +488,7 @@ REASONING_DATASETS = {
         "text_field": "ctx",
         "endings_field": "endings",
         "label_field": "label",
-        "label_names": ["0", "1", "2", "3"],
+        "label_names": ["A", "B", "C", "D"],  # Match prompt format
         "prompt_template": "Context: {text}\n\nWhich ending is most plausible?\nA) {ending_a}\nB) {ending_b}\nC) {ending_c}\nD) {ending_d}\n\nAnswer (A, B, C, or D):",
         "text_relay_prompt": "Summarize this scenario and possible endings:\n\nContext: {text}\n\nEndings:\nA) {ending_a}\nB) {ending_b}\nC) {ending_c}\nD) {ending_d}\n\nSummary:",
         "primer": "Answer:",
@@ -619,11 +619,11 @@ def load_dataset_by_config(dataset_key: str, split: str, max_samples: Optional[i
                 # Extract final numeric answer
                 example["label"] = extract_gsm8k_answer(label)
             elif dataset_key == "winogrande":
-                # WinoGrande has "1" or "2" as string labels
-                example["label"] = str(label)
+                # WinoGrande has "1" or "2" as string labels - convert to 0-indexed integers
+                example["label"] = int(label) - 1  # "1" -> 0, "2" -> 1
             elif dataset_key == "hellaswag":
-                # HellaSwag has integer labels 0-3
-                example["label"] = str(label)
+                # HellaSwag has integer labels 0-3 (can be string or int)
+                example["label"] = int(label)
             else:
                 example["label"] = label
 
