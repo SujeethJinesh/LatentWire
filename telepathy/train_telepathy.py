@@ -285,7 +285,8 @@ def parse_args():
 
     # Dataset selection
     parser.add_argument("--dataset", type=str, default="sst2",
-                       choices=["sst2", "agnews", "trec", "banking77"],
+                       choices=["sst2", "agnews", "trec", "banking77",
+                                "arc_easy", "winogrande", "hellaswag", "boolq"],
                        help="Dataset to train on")
 
     # Model configuration

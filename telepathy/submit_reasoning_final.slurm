@@ -21,20 +21,21 @@
 # - BoolQ: Yes/No reading comprehension (2-way)
 #
 # GPU WORKLOAD:
-# - GPU 0: Standard bridge (hail mary) + baselines (zero-shot, few-shot, DoRA, prompt tuning, linear probe)
+# - GPU 0: Standard bridge (hail mary) + baselines (zero-shot, few-shot, LoRA, DoRA, prompt tuning, linear probe)
 # - GPU 1: Novel bridges + token capacity + latency/memory/throughput benchmarks + batched latency
 #
 # EXPERIMENTS:
 # 1. Standard bridge on all reasoning tasks (3 seeds) via hail_mary
 # 2. Zero-shot baseline on all 4 reasoning datasets (arc_easy, winogrande, hellaswag, boolq)
 # 3. Few-shot baseline (4-shot) on arc_easy, winogrande, hellaswag, boolq
-# 4. DoRA fine-tuning baseline on arc_easy
-# 5. Prompt tuning baseline on arc_easy (proves sender helps)
-# 6. Linear probe baseline (layer 31) on all reasoning datasets
-# 7. Novel bridges: flow_matching, optimal_transport, moe (on arc_easy)
-# 8. Token capacity: 8, 32 tokens (on arc_easy)
-# 9. Latency/memory/throughput benchmarks
-# 10. Batched latency benchmark (batch sizes: 1, 4, 8, 16) - CRITICAL FOR MLSys
+# 4. LoRA fine-tuning baseline on arc_easy (standard PEFT comparison)
+# 5. DoRA fine-tuning baseline on arc_easy (SOTA PEFT, 2024)
+# 6. Prompt tuning baseline on arc_easy (proves sender helps)
+# 7. Linear probe baseline (layer 31) on all reasoning datasets
+# 8. Novel bridges: flow_matching, optimal_transport, moe (on arc_easy)
+# 9. Token capacity: 4, 8, 16, 32 tokens (on arc_easy)
+# 10. Latency/memory/throughput benchmarks
+# 11. Batched latency benchmark (batch sizes: 1, 4, 8, 16) - CRITICAL FOR MLSys
 #
 # Estimated runtime: ~10-11 hours on 2 H100 GPUs
 #
@@ -147,8 +148,27 @@ run_gpu0() {
     done
 
     # -----------------------------------------------------------------
-    # DORA FINE-TUNING BASELINE on ARC-Easy (simplest reasoning task)
-    # DoRA = Weight-Decomposed LoRA, typically outperforms LoRA
+    # LORA FINE-TUNING BASELINE on ARC-Easy
+    # Standard LoRA baseline for comparison (MLSys reviewers expect this)
+    # -----------------------------------------------------------------
+    echo ""
+    echo "[GPU 0] Running LoRA Baseline (rank=8) on ARC-Easy"
+
+    python telepathy/run_baselines.py \
+        --baseline lora \
+        --dataset arc_easy \
+        --rank 8 \
+        --epochs 3 \
+        --seeds 42 123 456 \
+        --gpu 0 \
+        --max_samples 200 \
+        --max_train_samples 2000 \
+        --output_dir "${OUTPUT_DIR}/baselines/lora" \
+        2>&1 | tee "${OUTPUT_DIR}/baselines/lora_arc_easy.log" || true
+
+    # -----------------------------------------------------------------
+    # DORA FINE-TUNING BASELINE on ARC-Easy
+    # DoRA = Weight-Decomposed LoRA, SOTA PEFT method (2024)
     # -----------------------------------------------------------------
     echo ""
     echo "[GPU 0] Running DoRA Baseline (rank=8) on ARC-Easy"
@@ -230,12 +250,12 @@ run_gpu1() {
 
     # -----------------------------------------------------------------
     # TOKEN CAPACITY EXPERIMENT (Does more tokens help reasoning?)
-    # Only 8 and 32 tokens (removed 16)
+    # Full ablation curve: 4, 8, 16, 32 tokens
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 1] Token Capacity Scaling on Reasoning"
+    echo "[GPU 1] Token Capacity Scaling on Reasoning (4, 8, 16, 32 tokens)"
 
-    for TOKENS in 8 32; do
+    for TOKENS in 4 8 16 32; do
         echo "[GPU 1] Testing $TOKENS soft tokens on ARC-Easy"
         python telepathy/train_telepathy.py \
             --dataset arc_easy \
@@ -422,9 +442,22 @@ for fewshot_file in sorted(output_dir.glob('baselines/fewshot/*.json')):
             if isinstance(stats, dict) and 'mean_accuracy' in stats:
                 print(f'  {dataset:12} | {model:10} | {stats[\"mean_accuracy\"]:.1f}% +/- {stats.get(\"std_accuracy\", 0):.1f}%')
 
+# LoRA baseline results
+print()
+print('LORA BASELINE (rank=8):')
+print('-'*40)
+
+for lora_file in sorted(output_dir.glob('baselines/lora/*.json')):
+    with open(lora_file) as f:
+        data = json.load(f)
+    if 'results' in data and 'summary' in data['results']:
+        dataset = data.get('config', {}).get('dataset', 'unknown')
+        summary = data['results']['summary']
+        print(f'  {dataset:12} | LoRA r=8   | {summary[\"mean_accuracy\"]:.1f}% +/- {summary.get(\"std_accuracy\", 0):.1f}%')
+
 # DoRA baseline results
 print()
-print('DORA BASELINE (rank=8):')
+print('DORA BASELINE (rank=8, SOTA 2024):')
 print('-'*40)
 
 for dora_file in sorted(output_dir.glob('baselines/dora/*.json')):
@@ -435,7 +468,7 @@ for dora_file in sorted(output_dir.glob('baselines/dora/*.json')):
         summary = data['results']['summary']
         print(f'  {dataset:12} | DoRA r=8   | {summary[\"mean_accuracy\"]:.1f}% +/- {summary.get(\"std_accuracy\", 0):.1f}%')
 
-# Prompt tuning baseline results (NEW)
+# Prompt tuning baseline results
 print()
 print('PROMPT TUNING BASELINE (8 tokens, no sender):')
 print('-'*40)
@@ -525,6 +558,7 @@ combined = {
     'baselines': {
         'zeroshot': {},
         'fewshot': {},
+        'lora': {},
         'dora': {},
         'prompt_tuning': {}
     },
@@ -556,14 +590,15 @@ EXPERIMENTS:
 1. Standard bridge (3 seeds) via hail_mary evaluation
 2. Zero-shot baseline on all 4 reasoning datasets (Llama + Mistral)
 3. Few-shot baseline (4-shot) on arc_easy, winogrande, hellaswag, boolq
-4. DoRA baseline (rank=8) on arc_easy
-5. Prompt tuning baseline (8 tokens, no sender) on arc_easy
-6. Linear probe baseline (layer 31) on all reasoning datasets
-7. Novel bridges (3):
+4. LoRA baseline (rank=8) on arc_easy
+5. DoRA baseline (rank=8) on arc_easy (SOTA PEFT 2024)
+6. Prompt tuning baseline (8 tokens, no sender) on arc_easy
+7. Linear probe baseline (layer 31) on all reasoning datasets
+8. Novel bridges (3):
    - Flow Matching, Optimal Transport, MoE (Mixtral/DeepSeek-style)
-8. Token capacity scaling (8, 32 tokens)
-9. Latency/memory/throughput benchmarks
-10. Batched latency benchmark (batch sizes: 1, 4, 8, 16) - Critical for MLSys
+9. Token capacity scaling (4, 8, 16, 32 tokens)
+10. Latency/memory/throughput benchmarks
+11. Batched latency benchmark (batch sizes: 1, 4, 8, 16) - Critical for MLSys
 
 KEY QUESTIONS:
 - Can novel compression techniques improve reasoning?
@@ -593,13 +628,14 @@ echo "KEY EXPERIMENTS:"
 echo "  1. Standard bridge on reasoning? (hail_mary)"
 echo "  2. Zero-shot baseline? (baselines/zeroshot/)"
 echo "  3. Few-shot baseline (4-shot)? (baselines/fewshot/)"
-echo "  4. DoRA baseline? (baselines/dora/)"
-echo "  5. Prompt tuning (does sender help)? (baselines/prompt_tuning/)"
-echo "  6. Linear probe upper bound? (baselines/linear_probe/)"
-echo "  7. Novel bridges help? (novel_bridges/)"
-echo "  8. More tokens help? (token_capacity)"
-echo "  9. Latency advantage? (benchmarks/latency)"
-echo " 10. Batched throughput scaling? (benchmarks/batched) - MLSys Critical"
+echo "  4. LoRA baseline? (baselines/lora/)"
+echo "  5. DoRA baseline (SOTA 2024)? (baselines/dora/)"
+echo "  6. Prompt tuning (does sender help)? (baselines/prompt_tuning/)"
+echo "  7. Linear probe upper bound? (baselines/linear_probe/)"
+echo "  8. Novel bridges help? (novel_bridges/)"
+echo "  9. More tokens help? (token_capacity: 4, 8, 16, 32)"
+echo " 10. Latency advantage? (benchmarks/latency)"
+echo " 11. Batched throughput scaling? (benchmarks/batched) - MLSys Critical"
 echo ""
 echo "Results: ${OUTPUT_DIR}"
 echo "=============================================================="
