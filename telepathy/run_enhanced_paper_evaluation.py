@@ -3356,7 +3356,7 @@ def main():
     if args.hail_mary_mode:
         logger.info("HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe")
         # Override datasets to focus on simple reasoning
-        args.datasets = ["arc_easy", "winogrande", "hellaswag", "sst2", "agnews"]
+        args.datasets = ["arc_easy", "winogrande", "hellaswag", "boolq", "sst2", "agnews"]
         # Use layer 31 for fair comparison with bridge
         LINEAR_PROBE_CONFIG["layer_idx"] = 31
         logger.info(f"Datasets: {args.datasets}")

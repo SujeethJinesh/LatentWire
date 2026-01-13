@@ -126,6 +126,50 @@ DATASET_CONFIGS = {
         "eval_split": "test",
         "label_names": None,  # Too many to list
     },
+    # =========================================================================
+    # REASONING BENCHMARKS
+    # =========================================================================
+    "arc_easy": {
+        "hf_name": ("allenai/ai2_arc", "ARC-Easy"),
+        "text_field": "question",
+        "label_field": "answerKey",
+        "num_classes": 4,
+        "train_split": "train",
+        "eval_split": "test",
+        "label_names": ["A", "B", "C", "D"],
+        "label_mapping": {"A": 0, "B": 1, "C": 2, "D": 3},  # Map string labels to int
+    },
+    "winogrande": {
+        "hf_name": ("allenai/winogrande", "winogrande_xl"),
+        "text_field": "sentence",
+        "label_field": "answer",
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "validation",
+        "label_names": ["1", "2"],
+        "label_mapping": {"1": 0, "2": 1},  # Map string labels to int
+    },
+    "hellaswag": {
+        "hf_name": ("Rowan/hellaswag",),
+        "text_field": "ctx",
+        "label_field": "label",
+        "num_classes": 4,
+        "train_split": "train",
+        "eval_split": "validation",
+        "label_names": ["0", "1", "2", "3"],
+        # label is already int, but stored as string in some versions
+        "label_mapping": {"0": 0, "1": 1, "2": 2, "3": 3},
+    },
+    "boolq": {
+        "hf_name": ("google/boolq",),
+        "text_field": "question",
+        "label_field": "answer",
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "validation",
+        "label_names": ["False", "True"],
+        "label_mapping": {False: 0, True: 1},  # Map boolean to int
+    },
 }
 
 # Default layers to evaluate
@@ -174,8 +218,14 @@ def load_dataset_by_name(
     else:
         texts = [item[text_field] for item in ds]
 
-    # Extract labels
-    labels = np.array([item[config["label_field"]] for item in ds])
+    # Extract labels (with optional mapping for reasoning datasets)
+    label_mapping = config.get("label_mapping", None)
+    if label_mapping:
+        # Map string/boolean labels to integers
+        raw_labels = [item[config["label_field"]] for item in ds]
+        labels = np.array([label_mapping.get(lbl, lbl) for lbl in raw_labels])
+    else:
+        labels = np.array([item[config["label_field"]] for item in ds])
 
     # Shuffle and limit if needed
     if max_samples is not None and len(texts) > max_samples:

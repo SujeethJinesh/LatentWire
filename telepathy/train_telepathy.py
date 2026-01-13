@@ -35,6 +35,17 @@ from latentwire import LatentBridge
 # Import experimental bridge types
 try:
     from telepathy.cross_model_experiments import (
+        # NOVEL bridges from diverse fields (neuroscience, chemistry, etc.)
+        PredictiveCodingBridge,
+        OptimalTransportBridge,
+        ContrastiveInfoNCEBridge,
+        SparseKWTABridge,
+        ResidualCodingBridge,
+        LockAndKeyBridge,
+        # MATH bridges (from math opus subagents)
+        SpectralCCABridge,
+        FlowMatchingBridge,
+        # Legacy bridges (not novel, kept for reference)
         RidgeRegressionBridge,
         VIBLatentBridge,
         MultiLayerExtractor,
@@ -107,6 +118,65 @@ DATASET_CONFIGS = {
         "prompt_template": "Query: {text}\nIntent:",
         "primer": "Intent:",
         "random_baseline": 1.3,
+    },
+    # =========================================================================
+    # REASONING BENCHMARKS
+    # =========================================================================
+    "arc_easy": {
+        "load_args": ("allenai/ai2_arc", "ARC-Easy"),
+        "text_field": "question",
+        "label_field": "answerKey",
+        "labels": ["A", "B", "C", "D"],
+        "num_classes": 4,
+        "train_split": "train",
+        "eval_split": "test",
+        "max_length": 256,
+        "prompt_template": "Question: {text}\nAnswer (A, B, C, or D):",
+        "primer": "Answer:",
+        "random_baseline": 25.0,
+        "is_reasoning": True,
+    },
+    "winogrande": {
+        "load_args": ("allenai/winogrande", "winogrande_xl"),
+        "text_field": "sentence",
+        "label_field": "answer",
+        "labels": ["1", "2"],
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "validation",
+        "max_length": 128,
+        "prompt_template": "Sentence: {text}\nWhich option fits? (1 or 2):",
+        "primer": "Option:",
+        "random_baseline": 50.0,
+        "is_reasoning": True,
+    },
+    "hellaswag": {
+        "load_args": ("Rowan/hellaswag",),
+        "text_field": "ctx",
+        "label_field": "label",
+        "labels": ["0", "1", "2", "3"],
+        "num_classes": 4,
+        "train_split": "train",
+        "eval_split": "validation",
+        "max_length": 256,
+        "prompt_template": "Context: {text}\nMost likely continuation (0, 1, 2, or 3):",
+        "primer": "Continuation:",
+        "random_baseline": 25.0,
+        "is_reasoning": True,
+    },
+    "boolq": {
+        "load_args": ("google/boolq",),
+        "text_field": "question",
+        "label_field": "answer",
+        "labels": ["False", "True"],
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "validation",
+        "max_length": 256,
+        "prompt_template": "Question: {text}\nAnswer (True or False):",
+        "primer": "Answer:",
+        "random_baseline": 50.0,
+        "is_reasoning": True,
     },
 }
 
@@ -258,8 +328,16 @@ def parse_args():
 
     # Bridge type selection
     parser.add_argument("--bridge_type", type=str, default="standard",
-                       choices=["standard", "ridge", "vib", "multi_layer"],
-                       help="Bridge architecture: standard (LatentBridge), ridge (training-free), vib (VAE-style), multi_layer")
+                       choices=["standard", "ridge", "vib", "multi_layer",
+                               # NOVEL bridge types (diverse fields)
+                               "predictive_coding", "optimal_transport", "infonce",
+                               "sparse_kwta", "residual_coding", "lock_and_key",
+                               # MATH bridge types
+                               "spectral_cca", "flow_matching"],
+                       help="Bridge architecture: standard, ridge, vib, multi_layer, "
+                            "NOVEL types: predictive_coding, optimal_transport, infonce, "
+                            "sparse_kwta, residual_coding, lock_and_key, "
+                            "MATH types: spectral_cca, flow_matching")
 
     # Ridge Regression (LatentMAS)
     parser.add_argument("--lambda_reg", type=float, default=1e-4,
@@ -296,6 +374,46 @@ def parse_args():
                        help="Use curriculum training (text -> latent)")
     parser.add_argument("--curriculum_stages", type=int, default=5,
                        help="Number of curriculum stages")
+
+    # =============================================================================
+    # NOVEL BRIDGE PARAMETERS
+    # =============================================================================
+
+    # Optimal Transport (Sinkhorn)
+    parser.add_argument("--ot_epsilon", type=float, default=0.1,
+                       help="Entropy regularization for Sinkhorn OT (lower = sharper)")
+    parser.add_argument("--ot_iters", type=int, default=20,
+                       help="Number of Sinkhorn iterations")
+
+    # Contrastive InfoNCE
+    parser.add_argument("--infonce_temp", type=float, default=0.07,
+                       help="Temperature for InfoNCE contrastive loss")
+    parser.add_argument("--infonce_weight", type=float, default=0.1,
+                       help="Weight for InfoNCE auxiliary loss")
+
+    # Sparse k-WTA
+    parser.add_argument("--sparsity_k", type=int, default=128,
+                       help="Number of active dimensions in k-WTA (lower = sparser)")
+
+    # Residual Coding
+    parser.add_argument("--num_refinement_steps", type=int, default=2,
+                       help="Number of progressive refinement steps")
+
+    # Lock-and-Key Binding
+    parser.add_argument("--num_receptors", type=int, default=32,
+                       help="Number of receptor sites for binding")
+    parser.add_argument("--binding_sparsity", type=float, default=0.1,
+                       help="Fraction of receptors each key can bind to")
+
+    # Spectral CCA (Math subagent)
+    parser.add_argument("--cca_dim", type=int, default=256,
+                       help="Dimensionality of CCA shared subspace")
+
+    # Flow Matching (Math subagent)
+    parser.add_argument("--num_flow_steps", type=int, default=4,
+                       help="Number of ODE integration steps for flow matching")
+    parser.add_argument("--flow_loss_weight", type=float, default=0.1,
+                       help="Weight for flow matching auxiliary loss")
 
     args = parser.parse_args()
 
@@ -585,6 +703,119 @@ def main():
             heads=args.heads,
             learn_layer_weights=args.learn_layer_weights,
             target_rms=target_rms,
+        )
+
+    # =========================================================================
+    # NOVEL BRIDGE TYPES
+    # =========================================================================
+
+    elif args.bridge_type == "predictive_coding":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Predictive Coding Bridge (NOVEL)")
+        bridge = PredictiveCodingBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+        )
+
+    elif args.bridge_type == "optimal_transport":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Optimal Transport Bridge (NOVEL) - epsilon={args.ot_epsilon}")
+        bridge = OptimalTransportBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            epsilon=args.ot_epsilon,
+            n_iters=args.ot_iters,
+        )
+
+    elif args.bridge_type == "infonce":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Contrastive InfoNCE Bridge (NOVEL) - temp={args.infonce_temp}")
+        bridge = ContrastiveInfoNCEBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            temperature=args.infonce_temp,
+        )
+
+    elif args.bridge_type == "sparse_kwta":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Sparse k-WTA Bridge (NOVEL) - k={args.sparsity_k}")
+        bridge = SparseKWTABridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            sparsity_k=args.sparsity_k,
+        )
+
+    elif args.bridge_type == "residual_coding":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Residual Coding Bridge (NOVEL) - steps={args.num_refinement_steps}")
+        bridge = ResidualCodingBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            num_refinement_steps=args.num_refinement_steps,
+        )
+
+    elif args.bridge_type == "lock_and_key":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Lock-and-Key Bridge (NOVEL) - receptors={args.num_receptors}")
+        bridge = LockAndKeyBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            num_receptors=args.num_receptors,
+            binding_sparsity=args.binding_sparsity,
+        )
+
+    # =========================================================================
+    # MATH BRIDGE TYPES (from math opus subagents)
+    # =========================================================================
+
+    elif args.bridge_type == "spectral_cca":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Spectral CCA Bridge (MATH) - cca_dim={args.cca_dim}")
+        bridge = SpectralCCABridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            cca_dim=args.cca_dim,
+        )
+
+    elif args.bridge_type == "flow_matching":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Flow Matching Bridge (MATH) - steps={args.num_flow_steps}")
+        bridge = FlowMatchingBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            num_flow_steps=args.num_flow_steps,
         )
 
     else:

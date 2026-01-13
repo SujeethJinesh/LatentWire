@@ -4,18 +4,20 @@
 Unified Baselines Script
 
 Runs various baseline methods for comparison with the telepathy bridge.
-Supports: zero-shot, few-shot, LoRA fine-tuning, and prompt tuning.
+Supports: zero-shot, few-shot, LoRA fine-tuning, DoRA fine-tuning, and prompt tuning.
 
 Usage:
     python telepathy/run_baselines.py --baseline zeroshot --dataset sst2
     python telepathy/run_baselines.py --baseline fewshot --dataset agnews --shots 5
     python telepathy/run_baselines.py --baseline lora --dataset trec --rank 8
+    python telepathy/run_baselines.py --baseline dora --dataset trec --rank 8
     python telepathy/run_baselines.py --baseline prompt_tuning --dataset sst2 --soft_tokens 8
 
 Baseline Types:
 - zeroshot: Direct prompting without examples (Llama and Mistral)
 - fewshot: In-context learning with k examples
 - lora: LoRA fine-tuning on Mistral
+- dora: DoRA fine-tuning on Mistral (Weight-Decomposed Low-Rank Adaptation)
 - prompt_tuning: Learnable soft prompts on Mistral (no sender model)
 """
 import os
@@ -37,7 +39,7 @@ try:
     PEFT_AVAILABLE = True
 except ImportError:
     PEFT_AVAILABLE = False
-    print("Warning: peft not installed. LoRA baseline unavailable.")
+    print("Warning: peft not installed. LoRA/DoRA baselines unavailable.")
 
 
 # =============================================================================
@@ -80,6 +82,59 @@ DATASET_CONFIGS = {
         "task_prompt": "Classify the question type as ABBR, ENTY, DESC, HUM, LOC, or NUM.",
         "prompt_template": "Question: {text}\n\n{task_prompt}\nAnswer:",
         "random_baseline": 16.7,
+    },
+    # =========================================================================
+    # REASONING BENCHMARKS
+    # =========================================================================
+    "arc_easy": {
+        "load_args": ("allenai/ai2_arc", "ARC-Easy"),
+        "text_field": "question",
+        "label_field": "answerKey",
+        "label_map": {"A": "A", "B": "B", "C": "C", "D": "D"},
+        "label_from_key": True,  # Labels are string keys, not int indices
+        "num_classes": 4,
+        "train_split": "train",
+        "eval_split": "test",
+        "task_prompt": "Answer A, B, C, or D.",
+        "prompt_template": "Question: {text}\n\n{task_prompt}\nAnswer:",
+        "random_baseline": 25.0,
+    },
+    "winogrande": {
+        "load_args": ("allenai/winogrande", "winogrande_xl"),
+        "text_field": "sentence",
+        "label_field": "answer",
+        "label_map": {"1": "1", "2": "2"},
+        "label_from_key": True,
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "validation",
+        "task_prompt": "Which option fits best? Answer 1 or 2.",
+        "prompt_template": "Sentence: {text}\n\n{task_prompt}\nAnswer:",
+        "random_baseline": 50.0,
+    },
+    "hellaswag": {
+        "load_args": ("Rowan/hellaswag",),
+        "text_field": "ctx",
+        "label_field": "label",
+        "label_map": {0: "0", 1: "1", 2: "2", 3: "3", "0": "0", "1": "1", "2": "2", "3": "3"},
+        "num_classes": 4,
+        "train_split": "train",
+        "eval_split": "validation",
+        "task_prompt": "Which continuation is most likely? Answer 0, 1, 2, or 3.",
+        "prompt_template": "Context: {text}\n\n{task_prompt}\nAnswer:",
+        "random_baseline": 25.0,
+    },
+    "boolq": {
+        "load_args": ("google/boolq",),
+        "text_field": "question",
+        "label_field": "answer",
+        "label_map": {False: "No", True: "Yes", 0: "No", 1: "Yes"},
+        "num_classes": 2,
+        "train_split": "train",
+        "eval_split": "validation",
+        "task_prompt": "Answer Yes or No.",
+        "prompt_template": "Question: {text}\n\n{task_prompt}\nAnswer:",
+        "random_baseline": 50.0,
     },
 }
 
@@ -457,6 +512,166 @@ def run_lora_baseline(args, config, device):
 
 
 # =============================================================================
+# DORA BASELINE (Weight-Decomposed Low-Rank Adaptation)
+# =============================================================================
+
+def run_dora_baseline(args, config, device):
+    """Run DoRA fine-tuning baseline.
+
+    DoRA (Weight-Decomposed Low-Rank Adaptation) decomposes weight updates into
+    magnitude and direction components. The direction is handled by standard LoRA,
+    while the magnitude is handled by a separate learnable parameter.
+
+    DoRA has been shown to outperform LoRA, especially at lower ranks.
+    Reference: https://arxiv.org/abs/2402.09353
+    """
+    if not PEFT_AVAILABLE:
+        print("ERROR: peft library not installed. Run: pip install peft")
+        return {}
+
+    print("\n" + "=" * 70)
+    print(f"DORA BASELINE (rank={args.rank}): {args.dataset.upper()}")
+    print("=" * 70)
+
+    # Load data
+    if len(config["load_args"]) == 2:
+        train_ds = load_dataset(config["load_args"][0], config["load_args"][1],
+                               split=config["train_split"], trust_remote_code=True)
+        eval_ds = load_dataset(config["load_args"][0], config["load_args"][1],
+                              split=config["eval_split"], trust_remote_code=True)
+    else:
+        train_ds = load_dataset(config["load_args"][0],
+                               split=config["train_split"], trust_remote_code=True)
+        eval_ds = load_dataset(config["load_args"][0],
+                              split=config["eval_split"], trust_remote_code=True)
+
+    if args.max_train_samples:
+        train_ds = train_ds.select(range(min(args.max_train_samples, len(train_ds))))
+    if args.max_samples:
+        eval_ds = eval_ds.select(range(min(args.max_samples, len(eval_ds))))
+
+    all_results = {}
+
+    for seed in args.seeds:
+        print(f"\n--- Seed {seed} ---")
+        set_seed(seed)
+
+        model = AutoModelForCausalLM.from_pretrained(
+            "mistralai/Mistral-7B-Instruct-v0.3",
+            torch_dtype=torch.bfloat16, device_map="auto"
+        )
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3")
+        tokenizer.pad_token = tokenizer.eos_token
+
+        # Configure DoRA (same as LoRA but with use_dora=True)
+        dora_config = LoraConfig(
+            r=args.rank,
+            lora_alpha=args.rank * 2,
+            target_modules=["q_proj", "v_proj"],
+            lora_dropout=0.05,
+            bias="none",
+            task_type=TaskType.CAUSAL_LM,
+            use_dora=True,  # Key difference: enable DoRA
+        )
+        model = get_peft_model(model, dora_config)
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        print(f"Trainable parameters: {trainable_params:,}")
+
+        # Prepare training data
+        prompt_template = f"{config['task_prompt']}\n\nText: {{text}}\nLabel:"
+        train_texts = []
+        for item in train_ds:
+            text = item[config["text_field"]]
+            label = config["label_map"][item[config["label_field"]]]
+            train_texts.append(f"{prompt_template.format(text=text[:200])} {label}")
+
+        # Training loop
+        optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+        model.train()
+
+        for epoch in range(args.epochs):
+            indices = list(range(len(train_texts)))
+            random.shuffle(indices)
+            epoch_loss = 0
+
+            pbar = tqdm(range(0, len(indices), args.batch_size), desc=f"Epoch {epoch+1}")
+            for batch_start in pbar:
+                batch_indices = indices[batch_start:batch_start + args.batch_size]
+                batch_texts = [train_texts[i] for i in batch_indices]
+
+                inputs = tokenizer(batch_texts, return_tensors="pt", padding=True,
+                                 truncation=True, max_length=512).to(device)
+                labels = inputs.input_ids.clone()
+                labels[labels == tokenizer.pad_token_id] = -100
+
+                outputs = model(**inputs, labels=labels)
+                loss = outputs.loss
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                epoch_loss += loss.item()
+                pbar.set_postfix({"loss": f"{loss.item():.4f}"})
+
+        # Evaluate
+        model.eval()
+        label_names = list(config["label_map"].values())
+        correct = 0
+        total = 0
+
+        for item in tqdm(eval_ds, desc="Evaluating"):
+            text = item[config["text_field"]]
+            true_label = config["label_map"][item[config["label_field"]]]
+
+            prompt = prompt_template.format(text=text[:200])
+            inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+
+            with torch.no_grad():
+                outputs = model.generate(**inputs, max_new_tokens=10, do_sample=False,
+                                       pad_token_id=tokenizer.eos_token_id)
+
+            response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
+            response = response.strip().lower()
+
+            pred_label = None
+            for label in label_names:
+                if label.lower() in response:
+                    pred_label = label
+                    break
+
+            if pred_label and pred_label.lower() == true_label.lower():
+                correct += 1
+            total += 1
+
+        accuracy = 100 * correct / total
+        all_results[f"seed_{seed}"] = {
+            "accuracy": accuracy,
+            "correct": correct,
+            "total": total,
+            "trainable_params": trainable_params,
+        }
+        print(f"Seed {seed}: {accuracy:.1f}%")
+
+        del model
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    # Compute statistics
+    accuracies = [r["accuracy"] for r in all_results.values()]
+    mean_acc = np.mean(accuracies)
+    std_acc = np.std(accuracies)
+
+    all_results["summary"] = {
+        "mean_accuracy": mean_acc,
+        "std_accuracy": std_acc,
+    }
+    print(f"\nDoRA (rank={args.rank}): {mean_acc:.1f}% +/- {std_acc:.1f}%")
+
+    return all_results
+
+
+# =============================================================================
 # PROMPT TUNING BASELINE
 # =============================================================================
 
@@ -646,10 +861,10 @@ def parse_args():
 
     # Required arguments
     parser.add_argument("--baseline", type=str, required=True,
-                       choices=["zeroshot", "fewshot", "lora", "prompt_tuning"],
+                       choices=["zeroshot", "fewshot", "lora", "dora", "prompt_tuning"],
                        help="Baseline type to run")
     parser.add_argument("--dataset", type=str, required=True,
-                       choices=["sst2", "agnews", "trec"],
+                       choices=["sst2", "agnews", "trec", "arc_easy", "winogrande", "hellaswag", "boolq"],
                        help="Dataset to evaluate on")
 
     # General settings
@@ -663,8 +878,8 @@ def parse_args():
     parser.add_argument("--shots", type=int, default=5,
                        help="Number of few-shot examples")
 
-    # LoRA settings
-    parser.add_argument("--rank", type=int, default=8, help="LoRA rank")
+    # LoRA/DoRA settings
+    parser.add_argument("--rank", type=int, default=8, help="LoRA/DoRA rank")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--max_train_samples", type=int, default=2000)
 
@@ -696,6 +911,8 @@ def main():
         results = run_fewshot_baseline(args, config, device)
     elif args.baseline == "lora":
         results = run_lora_baseline(args, config, device)
+    elif args.baseline == "dora":
+        results = run_dora_baseline(args, config, device)
     elif args.baseline == "prompt_tuning":
         results = run_prompt_tuning_baseline(args, config, device)
     else:
@@ -719,6 +936,9 @@ def main():
     if args.baseline == "fewshot":
         output["config"]["shots"] = args.shots
     elif args.baseline == "lora":
+        output["config"]["rank"] = args.rank
+        output["config"]["epochs"] = args.epochs
+    elif args.baseline == "dora":
         output["config"]["rank"] = args.rank
         output["config"]["epochs"] = args.epochs
     elif args.baseline == "prompt_tuning":
