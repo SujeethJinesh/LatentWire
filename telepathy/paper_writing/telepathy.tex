@@ -226,19 +226,19 @@ The bridge adds only 14ms overhead compared to direct Mistral inference (170.6ms
 Table \ref{tab:main_results} presents our main accuracy comparison.
 
 \begin{table}[t]
-\caption{Classification accuracy (\%) across benchmarks. Bridge (32 tokens) achieves strong performance, outperforming zero-shot baselines and text-relay.$^*$}
+\caption{Classification accuracy (\%) across benchmarks. Bridge (32 tokens) achieves strong performance, outperforming zero-shot baselines and text-relay.}
 \label{tab:main_results}
-\vskip 0.15in
+\vskip 0.1in
 \begin{center}
-\begin{scriptsize}
-\begin{tabular}{@{}lcccc@{}}
+\begin{small}
+\begin{tabular}{lcccc}
 \toprule
-Method & SST-2 & AG News & TREC & Avg \\
+\textbf{Method} & \textbf{SST-2} & \textbf{AG News} & \textbf{TREC} & \textbf{Avg} \\
 \midrule
 Random Chance & 50.0 & 25.0 & 16.7 & 30.6 \\
 \midrule
-\textbf{Bridge (32 tok)} & \textbf{93.7}$\pm$0.3 & \textbf{90.7}$\pm$1.4 & \textbf{87.9}$\pm$3.3 & \textbf{90.7} \\
-Bridge (8 tok) & 93.3$\pm$0.4 & 91.1$\pm$1.2 & 84/38$^\dagger$ & 82.0 \\
+\textbf{Bridge (32 tok)} & \textbf{93.7}{\scriptsize$\pm$0.3} & \textbf{90.7}{\scriptsize$\pm$1.4} & \textbf{87.9}{\scriptsize$\pm$3.3} & \textbf{90.7} \\
+Bridge (8 tok) & 93.3{\scriptsize$\pm$0.4} & 91.1{\scriptsize$\pm$1.2} & 84/38$^*$ & 82.0 \\
 \midrule
 Linear Probe & 92.1 & 86.8 & 95.0 & 91.3 \\
 Prompt-Tuning & 50.9 & 25.0 & 15.9 & 30.6 \\
@@ -249,12 +249,13 @@ Mistral 0-shot & 89.6 & 71.1 & 50.6 & 70.4 \\
 Text-Relay & 41.3 & 1.0 & 4.0 & 15.4 \\
 \bottomrule
 \end{tabular}
-\end{scriptsize}
+\end{small}
 \end{center}
+\vskip -0.05in
+\begin{flushleft}
+{\scriptsize Bridge results: mean$\pm$std over 5 seeds. $^*$TREC 8-tok bimodal: 84\% (3 seeds) / 38\% (2 seeds).}
+\end{flushleft}
 \vskip -0.15in
-{\footnotesize $^*$Bridge: mean$\pm$std over 5 seeds (42, 123, 456, 789, 1011). Others deterministic.}\\
-{\footnotesize $^\dagger$TREC 8-tok shows bimodal distribution: 84\% (3 seeds converge) / 38\% (2 seeds collapse); mean$\pm$std inappropriate.}
-\vskip -0.1in
 \end{table}
 
 \paragraph{Strong Performance Across All Tasks} The bridge (32 tokens) achieves strong performance across all three classification tasks. On SST-2, the bridge (93.7\%) outperforms both Llama (83.8\%) and Mistral (89.6\%) zero-shot baselines by +9.9pp and +4.1pp respectively. On AG News, the bridge (90.7\%) dramatically exceeds Mistral (71.1\%) by +19.6pp. On TREC, the bridge (87.9\%) substantially outperforms Mistral (50.6\%) by +37.3pp. These results demonstrate that cross-model communication via hidden states can effectively leverage information from heterogeneous architectures for classification tasks.
