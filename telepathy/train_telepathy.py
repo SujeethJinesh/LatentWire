@@ -19,6 +19,7 @@ Key Features:
 - Supports DDP for multi-GPU training
 """
 import os
+import math
 import torch
 import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -623,10 +624,17 @@ def main():
     args = parse_args()
     config = DATASET_CONFIGS[args.dataset]
 
-    # Set seeds for reproducibility
+    # Set seeds for reproducibility (all random sources)
+    import random
+    import numpy as np
+    random.seed(args.seed)
+    np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
+        # CUDNN determinism for exact reproducibility
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
 
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     world_size = int(os.environ.get("WORLD_SIZE", 1))
@@ -874,6 +882,17 @@ def main():
     # Optimizer
     optimizer = torch.optim.AdamW(bridge.parameters(), lr=args.lr, weight_decay=0.01)
 
+    # LR Scheduler with linear warmup + cosine decay
+    def lr_lambda(current_step):
+        if current_step < args.warmup_steps:
+            # Linear warmup
+            return float(current_step) / float(max(1, args.warmup_steps))
+        # Cosine decay after warmup
+        progress = float(current_step - args.warmup_steps) / float(max(1, args.steps - args.warmup_steps))
+        return max(0.0, 0.5 * (1.0 + math.cos(math.pi * progress)))
+
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
     # Load dataset
     if len(config["load_args"]) == 2:
         train_ds = load_dataset(config["load_args"][0], config["load_args"][1],
@@ -893,7 +912,10 @@ def main():
     if torch.distributed.is_initialized():
         train_ds = train_ds.shard(world_size, local_rank)
 
-    dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True)
+    # Seeded generator for reproducible shuffling
+    dl_generator = torch.Generator()
+    dl_generator.manual_seed(args.seed)
+    dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True, generator=dl_generator)
 
     if local_rank == 0:
         print(f"\nTraining on {len(train_ds)} samples")
@@ -927,8 +949,8 @@ def main():
         # VIB beta annealing
         vib_beta = args.vib_beta if (args.use_vib or args.bridge_type == "vib") else 0.0
 
-        # Learning rate for logging (no scheduler currently, but track it)
-        current_lr = args.lr
+        # Learning rate (will be updated by scheduler each step)
+        current_lr = scheduler.get_last_lr()[0]
 
         for step in progress:
             optimizer.zero_grad()
@@ -967,6 +989,8 @@ def main():
             grad_norm = torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
             grad_norm_val = grad_norm.item() if isinstance(grad_norm, torch.Tensor) else grad_norm
             optimizer.step()
+            scheduler.step()
+            current_lr = scheduler.get_last_lr()[0]
 
             # Update running stats
             for k in accum_loss_dict:
@@ -1081,20 +1105,17 @@ def main():
         print(f"Final Accuracy: {final_accuracy:.1f}% ({correct}/{total})")
         final_results = {"accuracy": final_accuracy, "correct": correct, "total": total}
 
-        # Save JSON results
+        # Save JSON results with full config and library versions
+        import transformers
         results = {
             "experiment": args.dataset,
             "timestamp": datetime.now().isoformat(),
-            "config": {
-                "output_dir": args.output_dir,
-                "steps": args.steps,
-                "soft_tokens": args.soft_tokens,
-                "batch_size": args.batch_size,
-                "lr": args.lr,
-                "eval_every": args.eval_every,
-                "diversity_weight": args.diversity_weight,
-                "source_layer": args.source_layer,
-                "seed": args.seed,
+            "config": vars(args),  # Full config for reproducibility
+            "library_versions": {
+                "torch": torch.__version__,
+                "transformers": transformers.__version__,
+                "cuda": torch.version.cuda if torch.cuda.is_available() else None,
+                "cudnn": torch.backends.cudnn.version() if torch.cuda.is_available() else None,
             },
             "num_classes": config["num_classes"],
             "random_baseline": config["random_baseline"],

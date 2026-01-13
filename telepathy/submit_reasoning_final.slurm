@@ -209,44 +209,51 @@ run_gpu1() {
     # -----------------------------------------------------------------
     # NOVEL BRIDGES on ARC-Easy (simplest reasoning task)
     # 3 bridges: flow_matching, optimal_transport, moe (Mixtral/DeepSeek-style)
+    # Multi-seed for statistical significance
     # -----------------------------------------------------------------
     NOVEL_BRIDGES="flow_matching optimal_transport moe"
+    ABLATION_SEEDS="42 123 456"
 
     for BRIDGE in $NOVEL_BRIDGES; do
-        echo ""
-        echo "[GPU 1] Testing $BRIDGE on ARC-Easy"
+        for SEED in $ABLATION_SEEDS; do
+            echo ""
+            echo "[GPU 1] Testing $BRIDGE on ARC-Easy (seed=$SEED)"
 
-        python telepathy/train_telepathy.py \
-            --dataset arc_easy \
-            --bridge_type $BRIDGE \
-            --soft_tokens 8 \
-            --steps 1500 \
-            --eval_every 200 \
-            --seed 42 \
-            --output_dir "${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy" \
-            --gpu 1 \
-            2>&1 | tee "${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy.log" || true
+            python telepathy/train_telepathy.py \
+                --dataset arc_easy \
+                --bridge_type $BRIDGE \
+                --soft_tokens 8 \
+                --steps 1500 \
+                --eval_every 200 \
+                --seed $SEED \
+                --output_dir "${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}" \
+                --gpu 1 \
+                2>&1 | tee "${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}.log" || true
+        done
     done
 
     # -----------------------------------------------------------------
     # TOKEN CAPACITY EXPERIMENT (Does more tokens help reasoning?)
     # Full ablation curve: 4, 8, 16, 32 tokens
+    # Multi-seed for statistical significance
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 1] Token Capacity Scaling on Reasoning (4, 8, 16, 32 tokens)"
+    echo "[GPU 1] Token Capacity Scaling on Reasoning (4, 8, 16, 32 tokens, 3 seeds)"
 
     for TOKENS in 4 8 16 32; do
-        echo "[GPU 1] Testing $TOKENS soft tokens on ARC-Easy"
-        python telepathy/train_telepathy.py \
-            --dataset arc_easy \
-            --bridge_type standard \
-            --soft_tokens $TOKENS \
-            --steps 1500 \
-            --eval_every 200 \
-            --seed 42 \
-            --output_dir "${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}" \
-            --gpu 1 \
-            2>&1 | tee "${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}.log" || true
+        for SEED in $ABLATION_SEEDS; do
+            echo "[GPU 1] Testing $TOKENS soft tokens on ARC-Easy (seed=$SEED)"
+            python telepathy/train_telepathy.py \
+                --dataset arc_easy \
+                --bridge_type standard \
+                --soft_tokens $TOKENS \
+                --steps 1500 \
+                --eval_every 200 \
+                --seed $SEED \
+                --output_dir "${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}" \
+                --gpu 1 \
+                2>&1 | tee "${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}.log" || true
+        done
     done
 
     # -----------------------------------------------------------------
@@ -255,8 +262,8 @@ run_gpu1() {
     echo ""
     echo "[GPU 1] Running Latency Benchmarks"
 
-    # Find a checkpoint to use for latency benchmark (from token_capacity_8)
-    CHECKPOINT="${OUTPUT_DIR}/novel_bridges/token_capacity_8/bridge_arc_easy.pt"
+    # Find a checkpoint to use for latency benchmark (from token_capacity_8, seed 42)
+    CHECKPOINT="${OUTPUT_DIR}/novel_bridges/token_capacity_8_seed42/bridge_arc_easy.pt"
 
     # Wait a bit for checkpoint to be written
     sleep 5
