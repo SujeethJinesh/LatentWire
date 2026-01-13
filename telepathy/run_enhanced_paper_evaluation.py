@@ -461,6 +461,39 @@ REASONING_DATASETS = {
         "primer": "Solution:",
         "max_length": 384,
     },
+    "winogrande": {
+        "name": "WinoGrande",
+        "type": "reasoning",
+        "num_classes": 2,
+        "split_train": "train_xl",
+        "split_test": "validation",
+        "load_fn": "winogrande:winogrande_xl",
+        "text_field": "sentence",
+        "option1_field": "option1",
+        "option2_field": "option2",
+        "label_field": "answer",
+        "label_names": ["1", "2"],
+        "prompt_template": "Sentence: {text}\n\nWhich option correctly fills the blank?\n1) {option1}\n2) {option2}\n\nAnswer (1 or 2):",
+        "text_relay_prompt": "Rephrase this sentence completion task:\n\nSentence: {text}\n\nOptions:\n1) {option1}\n2) {option2}\n\nRephrased:",
+        "primer": "Answer:",
+        "max_length": 256,
+    },
+    "hellaswag": {
+        "name": "HellaSwag",
+        "type": "reasoning",
+        "num_classes": 4,
+        "split_train": "train",
+        "split_test": "validation",
+        "load_fn": "Rowan/hellaswag",
+        "text_field": "ctx",
+        "endings_field": "endings",
+        "label_field": "label",
+        "label_names": ["0", "1", "2", "3"],
+        "prompt_template": "Context: {text}\n\nWhich ending is most plausible?\nA) {ending_a}\nB) {ending_b}\nC) {ending_c}\nD) {ending_d}\n\nAnswer (A, B, C, or D):",
+        "text_relay_prompt": "Summarize this scenario and possible endings:\n\nContext: {text}\n\nEndings:\nA) {ending_a}\nB) {ending_b}\nC) {ending_c}\nD) {ending_d}\n\nSummary:",
+        "primer": "Answer:",
+        "max_length": 384,
+    },
 }
 
 # Combined datasets
@@ -558,6 +591,19 @@ def load_dataset_by_config(dataset_key: str, split: str, max_samples: Optional[i
             else:
                 example["choices"] = choices
 
+        # Handle WinoGrande options
+        if "option1_field" in config and config["option1_field"]:
+            example["option1"] = item.get(config["option1_field"], "")
+            example["option2"] = item.get(config["option2_field"], "")
+
+        # Handle HellaSwag endings
+        if "endings_field" in config and config["endings_field"]:
+            endings = item.get(config["endings_field"], [])
+            example["endings"] = endings
+            # Pad endings if needed
+            while len(example["endings"]) < 4:
+                example["endings"].append("")
+
         # Handle label
         if config["label_field"]:
             label = item[config["label_field"]]
@@ -572,6 +618,12 @@ def load_dataset_by_config(dataset_key: str, split: str, max_samples: Optional[i
                 example["answer_text"] = label
                 # Extract final numeric answer
                 example["label"] = extract_gsm8k_answer(label)
+            elif dataset_key == "winogrande":
+                # WinoGrande has "1" or "2" as string labels
+                example["label"] = str(label)
+            elif dataset_key == "hellaswag":
+                # HellaSwag has integer labels 0-3
+                example["label"] = str(label)
             else:
                 example["label"] = label
 
@@ -614,6 +666,23 @@ def format_prompt_for_example(example: Dict, config: Dict) -> str:
                 choice_c=choices[2] if len(choices) > 2 else "",
                 choice_d=choices[3] if len(choices) > 3 else "",
             )
+        elif "option1" in example:
+            # WinoGrande
+            return template.format(
+                text=example["text"],
+                option1=example["option1"],
+                option2=example["option2"],
+            )
+        elif "endings" in example:
+            # HellaSwag
+            endings = example.get("endings", ["", "", "", ""])
+            return template.format(
+                text=example["text"],
+                ending_a=endings[0] if len(endings) > 0 else "",
+                ending_b=endings[1] if len(endings) > 1 else "",
+                ending_c=endings[2] if len(endings) > 2 else "",
+                ending_d=endings[3] if len(endings) > 3 else "",
+            )
         else:
             # GSM8K
             return template.format(text=example["text"])
@@ -641,6 +710,23 @@ def format_text_relay_prompt(example: Dict, config: Dict) -> str:
                 choice_b=choices[1] if len(choices) > 1 else "",
                 choice_c=choices[2] if len(choices) > 2 else "",
                 choice_d=choices[3] if len(choices) > 3 else "",
+            )
+        elif "option1" in example:
+            # WinoGrande
+            return template.format(
+                text=example["text"],
+                option1=example["option1"],
+                option2=example["option2"],
+            )
+        elif "endings" in example:
+            # HellaSwag
+            endings = example.get("endings", ["", "", "", ""])
+            return template.format(
+                text=example["text"],
+                ending_a=endings[0] if len(endings) > 0 else "",
+                ending_b=endings[1] if len(endings) > 1 else "",
+                ending_c=endings[2] if len(endings) > 2 else "",
+                ending_d=endings[3] if len(endings) > 3 else "",
             )
         else:
             # GSM8K
@@ -3215,6 +3301,14 @@ def parse_args():
     parser.add_argument("--diagnostics_only", action="store_true",
                        help="Only run diagnostics (skip main evaluation)")
 
+    # Linear probe layer option (for fair comparison with bridge layer 31)
+    parser.add_argument("--linear_probe_layer", type=int, default=16,
+                       help="Layer to use for linear probe (default 16, use 31 for fair comparison with bridge)")
+
+    # Hail mary options
+    parser.add_argument("--hail_mary_mode", action="store_true",
+                       help="Run hail mary experiments (simple reasoning datasets, layer-31 probe)")
+
     return parser.parse_args()
 
 
@@ -3252,6 +3346,21 @@ def main():
         logger.info("FAST MODE enabled")
         BRIDGE_CONFIG["train_steps"] = 500
         LINEAR_PROBE_CONFIG["max_samples"] = 1000
+
+    # Apply linear probe layer setting
+    if args.linear_probe_layer != 16:
+        logger.info(f"Using linear probe layer: {args.linear_probe_layer} (default is 16)")
+        LINEAR_PROBE_CONFIG["layer_idx"] = args.linear_probe_layer
+
+    # Apply hail mary mode settings
+    if args.hail_mary_mode:
+        logger.info("HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe")
+        # Override datasets to focus on simple reasoning
+        args.datasets = ["arc_easy", "winogrande", "hellaswag", "sst2", "agnews"]
+        # Use layer 31 for fair comparison with bridge
+        LINEAR_PROBE_CONFIG["layer_idx"] = 31
+        logger.info(f"Datasets: {args.datasets}")
+        logger.info(f"Linear probe layer: 31 (matching bridge layer)")
 
     # Count experiments
     total_experiments = count_total_experiments(args.datasets, args.seeds)

@@ -237,11 +237,263 @@ with a learned scale factor α.
 
 ---
 
-## Future Considerations
+---
 
-(Add notes here as review continues)
+### 6. Method Novelty Concerns (Critical)
+
+**Status**: Unresolved
+
+**Problem**: The core technical contribution is applying existing Perceiver Resampler architecture (Flamingo 2022, BLIP-2 2023) to LLM-to-LLM communication.
+
+**Specific concerns**:
+1. Paper admits architecture is "based on Perceiver Resampler" (line 75) - not architecturally novel
+2. The differentiation from model stitching (line 93-94) is weak - the bridge IS a stitching layer
+3. "Soft token communication" is essentially the same as ICAE, Gisting, AutoCompressor approaches
+
+**Missing comparisons**:
+- No comparison to simple linear stitching layer (Bansal et al. 2021)
+- No comparison to ICAE for cross-model compression
+- Linear probe achieves 91.5% vs Perceiver's 92.0% on SST-2 - is complexity justified?
+
+**Recommendation**: Either add genuine technical novelty OR reframe as systems/empirical contribution.
+
+---
+
+### 7. Missing Critical Baselines
+
+**Status**: Unresolved
+
+**Problem**: Several obvious baselines are missing:
+
+1. **Few-shot baseline (5-shot)**: Mentioned in paper but NOT in results tables
+2. **Simple ensemble**: Average Llama + Mistral logits - tests "super-additive" claim
+3. **LLMLingua prompt compression**: SOTA compression, direct competitor
+4. **Same-model bridge (Llama→Llama)**: Control for "cross-model" claim
+5. **Small fine-tuned models**: BERT-base achieves 94%+ on SST-2 with 110M params (vs 15B)
+
+**Why ensemble is critical**: Paper claims "super-additive performance" but never compares to simply averaging both models' predictions.
+
+---
+
+### 8. Datasets Are Outdated
+
+**Status**: Unresolved
+
+**Problem**: Using datasets from 1999-2015:
+- SST-2 (2013) - Movie reviews
+- AG News (2015) - News classification
+- TREC (1999) - Question classification
+
+**Modern alternatives (2020-2024)**:
+- TweetEval Sentiment (2020) - Social media, 3-class
+- Financial PhraseBank (2020) - Domain-specific sentiment
+- CLINC150 (2019) - 150-class intent classification
+- GoEmotions (Google 2020) - 27 fine-grained emotions
+- ToxiGen (2022) - Safety-critical classification
+
+**Why this matters**: Reviewers expect contemporary benchmarks; old datasets suggest cherry-picking.
+
+---
+
+### 9. Statistical Significance Missing
+
+**Status**: Unresolved
+
+**Problem**: Paper reports mean±std but no significance tests:
+- Is 93.7% vs 92.1% (Bridge vs Linear Probe on SST-2) significant with n=5?
+- No p-values, no confidence intervals, no effect sizes (Cohen's d)
+- No multiple comparison correction for the many comparisons made
+
+**Infrastructure exists**: `scripts/statistical_testing.py` has full testing suite but results not in paper.
+
+---
+
+### 10. Reasoning Failure Underexplored
+
+**Status**: Unresolved
+
+**Problem**: CommonsenseQA result (17% vs 20% random) is dismissed without analysis.
+
+**Key questions unanswered**:
+1. Does the sender even encode reasoning in hidden states? (Run linear probes)
+2. Is information lost in compression or cross-model transfer?
+3. Why does PIQA work (60.4%) but CommonsenseQA fail (17%)?
+4. Could iterative refinement help? (Coconut-style multi-hop)
+
+**Existing diagnostic script** (`analyze_reasoning_failure.py`) tests 5 hypotheses but results not in paper.
+
+---
+
+### 11. Practical Value Questionable
+
+**Status**: Unresolved
+
+**Problem**: Why use 15B parameters (8B+7B) for classification when:
+- Fine-tuned BERT-base (110M params) achieves 94%+ on SST-2
+- SetFit achieves 92%+ with 8 examples and 110M params
+- A single fine-tuned Mistral would likely beat the bridge
+
+**The paper's implicit use case is never articulated**:
+- When would you NEED two frozen models?
+- What scenario justifies 15B params for classification?
+
+**Potential angles**:
+- "Frozen model composition" - can't fine-tune API models
+- "Capability preservation" - fine-tuning hurts other abilities
+- Neither is demonstrated in the paper.
+
+---
+
+## Prioritized Experiment Recommendations
+
+### HIGH PRIORITY (Must-Run)
+
+1. **Fix Text-Relay Baseline** (~2h)
+   - Implement fair direct pass-through baseline
+   - Expected: Text-relay matches Mistral zero-shot (~90%)
+   - Makes speedup claim valid
+
+2. **Run Layer-31 Linear Probe** (~1h)
+   - Fair comparison with bridge
+   - Explain TREC gap (95% probe vs 87.9% bridge)
+
+3. **Add Modern Datasets** (~4h)
+   - TweetEval, Financial PhraseBank, GoEmotions
+   - Shows method works on contemporary data
+
+4. **Simple Reasoning Datasets** (~3h)
+   - ARC-Easy (elementary science questions)
+   - WinoGrande (common sense)
+   - HellaSwag (situational reasoning)
+   - Quick to run, properly characterizes reasoning boundary
+
+5. **Ensemble Baseline** (~2h)
+   - Average Llama + Mistral logits
+   - Tests "super-additive" claim
+
+6. **Statistical Significance** (~2h)
+   - Run paired t-tests with correction
+   - Add p-values to key comparisons
+
+### MEDIUM PRIORITY (Strengthen Paper)
+
+7. **Same-Model Control (Llama→Llama)** (~3h)
+   - Establishes ceiling for cross-model transfer
+   - Shows what "translation cost" actually is
+
+8. **LLMLingua Comparison** (~4h)
+   - SOTA prompt compression baseline
+   - Match token budgets (8, 16, 32)
+
+9. **Data Efficiency Curve** (~6h)
+   - Train with 100, 500, 1K, 5K, 16K examples
+   - Shows practical deployment requirements
+
+10. **Cross-Task Transfer Test** (~4h)
+    - SST-2 bridge → IMDB, Rotten Tomatoes
+    - Tests within-domain generalization
+
+### LOWER PRIORITY (Nice to Have)
+
+11. **Soft Token Interpretability** (~3h)
+    - Vocabulary projection analysis
+    - t-SNE visualization by class
+
+12. **Attention Visualization** (~4h)
+    - What does bridge attend to?
+    - What does Mistral attend to in soft tokens?
+
+13. **Multi-Task Bridge** (~6h)
+    - Single bridge for SST-2 + AG News + TREC
+    - Would address "per-task bridge" limitation
+
+14. **TREC Bimodality Analysis** (~5h)
+    - Why do some seeds fail (38%) and others succeed (84%)?
+    - Intervention experiments to escape bad mode
+
+---
+
+## Citations to Add
+
+### Must-Add (2024-2025 Papers)
+
+```bibtex
+@article{hao2024coconut,
+  title={Training Large Language Models to Reason in a Continuous Latent Space},
+  author={Hao, Shibo and others},
+  journal={arXiv:2412.06769},
+  year={2024}
+}
+
+@article{jiang2023llmlingua,
+  title={LLMLingua: Compressing Prompts for Accelerated Inference},
+  author={Jiang, Huiqiang and others},
+  journal={arXiv:2310.05736},
+  year={2023}
+}
+
+@article{ge2024icae,
+  title={In-context Autoencoder for Context Compression},
+  author={Ge, Tao and others},
+  journal={ICLR 2024},
+  year={2024}
+}
+
+@article{mu2023gisting,
+  title={Learning to Compress Prompts with Gist Tokens},
+  author={Mu, Jesse and others},
+  journal={NeurIPS 2023},
+  year={2023}
+}
+
+@article{leviathan2023speculative,
+  title={Fast Inference from Transformers via Speculative Decoding},
+  author={Leviathan, Yaniv and others},
+  journal={ICML 2023},
+  year={2023}
+}
+
+@article{tunstall2022setfit,
+  title={Efficient Few-Shot Learning Without Prompts},
+  author={Tunstall, Lewis and others},
+  journal={arXiv:2209.11055},
+  year={2022}
+}
+```
+
+---
+
+## Key Paper Weaknesses Summary
+
+| Issue | Severity | Fix Difficulty | Impact |
+|-------|----------|----------------|--------|
+| Text-relay strawman | Critical | Easy (2h) | Makes speedup meaningful |
+| No ensemble baseline | Critical | Easy (2h) | Validates super-additive |
+| Linear probe layer mismatch | Major | Easy (1h) | Fair comparison |
+| No statistical significance | Major | Easy (2h) | Rigorous claims |
+| Outdated datasets | Major | Medium (4h) | Contemporary relevance |
+| Novelty concerns | Critical | Hard | Core contribution |
+| No reasoning analysis | Major | Medium (3h) | Explains limitations |
+| Missing few-shot baseline | Major | Easy (1h) | Complete baselines |
+| 15B params not justified | Critical | Hard | Practical value |
+| Related work outdated | Major | Medium (4h) | Positioning |
+
+---
+
+## Resolved Issues
+
+### Fixed in commit abfac2f (2025-01-12)
+
+1. **Internal dimension inconsistency**: Paper said d=512, code uses d=4096 → Fixed to d=d_R
+2. **Learning rate mismatch**: Paper said 1e-4, code uses 2e-4 → Fixed
+3. **Soft token size calculation**: Paper said ~16KB, actual is 256KB → Fixed with formula
+4. **Missing citations**: Added BoolQ, PIQA, CommonsenseQA, LoRA references
+5. **Unreferenced table**: Added ref to tab:size_threshold
+6. **Bimodal TREC reporting**: Changed misleading mean±std to "84/38" format
+7. **Informal language**: "Interestingly" → "Notably", removed "actually"
 
 ---
 
 *Last updated: 2025-01-12*
-*Issues: 5 open, 7 resolved*
+*Issues: 11 open, 7 resolved*
+*Based on: 10 critique subagents + 20 experiment subagents*
