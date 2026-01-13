@@ -32,6 +32,21 @@ from datetime import datetime
 
 from latentwire import LatentBridge
 
+# Import experimental bridge types
+try:
+    from telepathy.cross_model_experiments import (
+        RidgeRegressionBridge,
+        VIBLatentBridge,
+        MultiLayerExtractor,
+        MultiLayerBridge,
+        CurriculumTrainer,
+        GumbelSigmoidGate,
+        CLASSIFICATION_CURRICULUM,
+    )
+    EXPERIMENTAL_BRIDGES_AVAILABLE = True
+except ImportError:
+    EXPERIMENTAL_BRIDGES_AVAILABLE = False
+
 
 # =============================================================================
 # DATASET CONFIGURATIONS
@@ -236,6 +251,51 @@ def parse_args():
     parser.add_argument("--use_fsq", action="store_true", default=False)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--gpu", type=int, default=0, help="GPU device index (for single GPU)")
+
+    # =============================================================================
+    # EXPERIMENTAL FEATURES (from cross_model_experiments.py)
+    # =============================================================================
+
+    # Bridge type selection
+    parser.add_argument("--bridge_type", type=str, default="standard",
+                       choices=["standard", "ridge", "vib", "multi_layer"],
+                       help="Bridge architecture: standard (LatentBridge), ridge (training-free), vib (VAE-style), multi_layer")
+
+    # Ridge Regression (LatentMAS)
+    parser.add_argument("--lambda_reg", type=float, default=1e-4,
+                       help="Regularization for ridge regression alignment")
+    parser.add_argument("--eval_only", action="store_true",
+                       help="Skip training, only evaluate (for ridge regression)")
+
+    # Multi-layer extraction
+    parser.add_argument("--extract_layers", nargs="+", type=int, default=None,
+                       help="Layers to extract from (e.g., 16 24 31)")
+    parser.add_argument("--learn_layer_weights", action="store_true",
+                       help="Learn weights for layer combination")
+
+    # Multi-layer injection (Cache2Cache)
+    parser.add_argument("--inject_layers", nargs="+", type=int, default=None,
+                       help="Layers to inject soft tokens (e.g., 0 8 16 24)")
+    parser.add_argument("--use_gumbel_gates", action="store_true",
+                       help="Use Gumbel-sigmoid gates for layer selection")
+    parser.add_argument("--temp_start", type=float, default=2.0,
+                       help="Starting temperature for Gumbel annealing")
+    parser.add_argument("--temp_end", type=float, default=0.1,
+                       help="Ending temperature for Gumbel annealing")
+
+    # Variational Information Bottleneck
+    parser.add_argument("--use_vib", action="store_true",
+                       help="Use VIB for stochastic soft tokens")
+    parser.add_argument("--vib_beta", type=float, default=0.001,
+                       help="KL divergence weight for VIB")
+    parser.add_argument("--vib_beta_anneal", action="store_true",
+                       help="Anneal VIB beta from 0 to target")
+
+    # Curriculum Training (COCONUT)
+    parser.add_argument("--use_curriculum", action="store_true",
+                       help="Use curriculum training (text -> latent)")
+    parser.add_argument("--curriculum_stages", type=int, default=5,
+                       help="Number of curriculum stages")
 
     args = parser.parse_args()
 
@@ -482,13 +542,60 @@ def main():
         if local_rank == 0:
             print(f"Target embedding RMS: {target_rms:.4f}")
 
-    # Initialize bridge
-    bridge = LatentBridge(
-        args,
-        src_dim=src_model.config.hidden_size,
-        tgt_dim=tgt_model.config.hidden_size,
-        target_rms=target_rms
-    )
+    # Initialize bridge based on bridge_type
+    if args.bridge_type == "ridge":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available. Check telepathy/cross_model_experiments.py")
+        if local_rank == 0:
+            print(f"Using Ridge Regression Bridge (lambda={args.lambda_reg})")
+        bridge = RidgeRegressionBridge(
+            src_model, tgt_model,
+            lambda_reg=args.lambda_reg,
+            pooling='last'
+        )
+        # Ridge is training-free, so we only evaluate
+        args.eval_only = True
+
+    elif args.bridge_type == "vib" or args.use_vib:
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available. Check telepathy/cross_model_experiments.py")
+        if local_rank == 0:
+            print(f"Using VIB Bridge (beta={args.vib_beta})")
+        bridge = VIBLatentBridge(
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            num_latents=args.soft_tokens,
+            depth=args.depth,
+            heads=args.heads,
+            target_rms=target_rms,
+        )
+
+    elif args.bridge_type == "multi_layer" or args.extract_layers:
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available. Check telepathy/cross_model_experiments.py")
+        extract_layers = args.extract_layers or [16, 24, 31]
+        if local_rank == 0:
+            print(f"Using Multi-Layer Bridge (layers={extract_layers})")
+        bridge = MultiLayerBridge(
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            extract_layers=extract_layers,
+            num_latents=args.soft_tokens,
+            depth=args.depth,
+            heads=args.heads,
+            learn_layer_weights=args.learn_layer_weights,
+            target_rms=target_rms,
+        )
+
+    else:
+        # Standard LatentBridge
+        bridge = LatentBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms
+        )
+
     if args.bf16:
         bridge = bridge.bfloat16()
     bridge.train()
@@ -524,67 +631,100 @@ def main():
     if local_rank == 0:
         print(f"\nTraining on {len(train_ds)} samples")
         print(f"Validation: {len(eval_ds)} samples")
-        print("Starting training...\n")
+        if args.eval_only:
+            print("EVAL ONLY MODE - skipping training\n")
+        else:
+            print("Starting training...\n")
 
-    progress = tqdm(range(args.steps), disable=(local_rank != 0),
-                   desc=f"{args.dataset.upper()}", ncols=100)
-    iter_dl = iter(dl)
-    running = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
-    grad_accum = args.grad_accum
+    # Initialize curriculum trainer if enabled
+    curriculum_trainer = None
+    if args.use_curriculum and EXPERIMENTAL_BRIDGES_AVAILABLE:
+        curriculum_trainer = CurriculumTrainer(
+            stages=CLASSIFICATION_CURRICULUM,
+            total_steps=args.steps
+        )
+        if local_rank == 0:
+            print(f"Curriculum training enabled with {len(CLASSIFICATION_CURRICULUM)} stages")
 
-    for step in progress:
-        optimizer.zero_grad()
-        accum_loss_dict = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
+    # Skip training for eval_only mode (e.g., ridge regression)
+    if args.eval_only:
+        if local_rank == 0:
+            print("Skipping training loop (eval_only=True)")
+    else:
+        progress = tqdm(range(args.steps), disable=(local_rank != 0),
+                       desc=f"{args.dataset.upper()}", ncols=100)
+        iter_dl = iter(dl)
+        running = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
+        grad_accum = args.grad_accum
 
-        for _ in range(grad_accum):
-            try:
-                batch = next(iter_dl)
-            except StopIteration:
-                iter_dl = iter(dl)
-                batch = next(iter_dl)
+        # VIB beta annealing
+        vib_beta = args.vib_beta if (args.use_vib or args.bridge_type == "vib") else 0.0
 
-            loss, loss_dict = train_step(
-                batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args, config
-            )
+        for step in progress:
+            optimizer.zero_grad()
+            accum_loss_dict = {"total": 0, "lm": 0, "div": 0, "z_var": 0}
 
-            scaled_loss = loss / grad_accum
-            scaled_loss.backward()
+            for _ in range(grad_accum):
+                try:
+                    batch = next(iter_dl)
+                except StopIteration:
+                    iter_dl = iter(dl)
+                    batch = next(iter_dl)
 
-            for k in accum_loss_dict:
-                accum_loss_dict[k] += loss_dict[k] / grad_accum
+                loss, loss_dict = train_step(
+                    batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args, config
+                )
 
-        torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
-        optimizer.step()
+                # Add VIB KL loss if applicable
+                if (args.use_vib or args.bridge_type == "vib") and vib_beta > 0:
+                    # loss_dict should contain kl_loss from VIBLatentBridge
+                    kl_loss = loss_dict.get("kl", 0.0)
+                    if args.vib_beta_anneal:
+                        # Anneal beta from 0 to target over first half of training
+                        anneal_factor = min(1.0, step / (args.steps * 0.5))
+                        effective_beta = vib_beta * anneal_factor
+                    else:
+                        effective_beta = vib_beta
+                    loss = loss + effective_beta * kl_loss
 
-        for k in running:
-            running[k] += accum_loss_dict[k]
+                scaled_loss = loss / grad_accum
+                scaled_loss.backward()
 
-        progress.set_postfix({
-            "lm": f"{accum_loss_dict['lm']:.2f}",
-            "div": f"{accum_loss_dict['div']:.3f}"
-        })
+                for k in accum_loss_dict:
+                    accum_loss_dict[k] += loss_dict[k] / grad_accum
 
-        # Periodic logging
-        if local_rank == 0 and (step + 1) % 50 == 0:
-            avg = {k: v / 50 for k, v in running.items()}
-            print(f"\n[Step {step+1}/{args.steps}]")
-            print(f"  LM Loss: {avg['lm']:.3f}")
-            print(f"  Batch Div Loss: {avg['div']:.4f}")
-            print(f"  Z Variance: {avg['z_var']:.4f}")
-            running = {k: 0 for k in running}
+            torch.nn.utils.clip_grad_norm_(bridge.parameters(), 1.0)
+            optimizer.step()
 
-        # Quick eval
-        if local_rank == 0 and (step + 1) % args.eval_every == 0:
-            eval_result = quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok,
-                                    eval_ds, device, args, config, step + 1)
-            training_log.append({"step": step + 1, **eval_result})
+            for k in running:
+                running[k] += accum_loss_dict[k]
 
-        # Save checkpoint
-        if local_rank == 0 and (step + 1) % args.save_every == 0:
-            bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
-            ckpt_path = os.path.join(args.output_dir, f"checkpoint_step{step+1}.pt")
-            torch.save(bridge_to_save.state_dict(), ckpt_path)
-            print(f"  Checkpoint saved: {ckpt_path}")
+            progress.set_postfix({
+                "lm": f"{accum_loss_dict['lm']:.2f}",
+                "div": f"{accum_loss_dict['div']:.3f}"
+            })
+
+            # Periodic logging
+            if local_rank == 0 and (step + 1) % 50 == 0:
+                avg = {k: v / 50 for k, v in running.items()}
+                print(f"\n[Step {step+1}/{args.steps}]")
+                print(f"  LM Loss: {avg['lm']:.3f}")
+                print(f"  Batch Div Loss: {avg['div']:.4f}")
+                print(f"  Z Variance: {avg['z_var']:.4f}")
+                running = {k: 0 for k in running}
+
+            # Quick eval
+            if local_rank == 0 and (step + 1) % args.eval_every == 0:
+                eval_result = quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok,
+                                        eval_ds, device, args, config, step + 1)
+                training_log.append({"step": step + 1, **eval_result})
+
+            # Save checkpoint
+            if local_rank == 0 and (step + 1) % args.save_every == 0:
+                bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
+                ckpt_path = os.path.join(args.output_dir, f"checkpoint_step{step+1}.pt")
+                torch.save(bridge_to_save.state_dict(), ckpt_path)
+                print(f"  Checkpoint saved: {ckpt_path}")
 
     # Final save and evaluation
     if local_rank == 0:
