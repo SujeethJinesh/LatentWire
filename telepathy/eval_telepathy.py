@@ -207,8 +207,12 @@ def main():
         tgt_dim=tgt_model.config.hidden_size,
         target_rms=target_rms
     )
-    checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=True)
-    bridge.load_state_dict(checkpoint)
+    checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=False)
+    # Handle both old (state_dict only) and new (full checkpoint) formats
+    if isinstance(checkpoint, dict) and "bridge_state_dict" in checkpoint:
+        bridge.load_state_dict(checkpoint["bridge_state_dict"])
+    else:
+        bridge.load_state_dict(checkpoint)
     bridge.to(device)
     if args.bf16:
         bridge = bridge.bfloat16()

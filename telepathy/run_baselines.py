@@ -761,32 +761,43 @@ def run_prompt_tuning_baseline(args, config, device):
                 batch = next(iter_dl)
 
             label_texts = [config["label_map"][l] for l in batch[config["label_field"]].tolist()]
+            # Get input texts from the batch
+            text_field = config["text_field"]
+            input_texts = [t[:200] for t in batch[text_field]]  # Truncate to 200 chars
             B = len(label_texts)
 
             # Get soft prompts
             prompts = soft_prompt(B)
 
-            # Get primer and answer embeddings
+            # Tokenize input texts and get embeddings
             with torch.no_grad():
+                # Tokenize input text
+                input_enc = tokenizer(input_texts, return_tensors="pt", padding=True,
+                                     truncation=True, max_length=128, add_special_tokens=False).to(device)
+                input_embeds = model.get_input_embeddings()(input_enc.input_ids)
+
                 primer_batch = primer_embeds.expand(B, -1, -1)
                 answer_texts = [f" {l}{tokenizer.eos_token}" for l in label_texts]
                 answer_enc = tokenizer(answer_texts, return_tensors="pt", padding=True,
                                       truncation=True, max_length=16, add_special_tokens=False).to(device)
                 answer_embeds = model.get_input_embeddings()(answer_enc.input_ids)
 
-            # Concatenate
-            inputs_embeds = torch.cat([primer_batch, prompts, answer_embeds], dim=1)
+            # Concatenate: [soft_prompts] + [input_text] + [primer] + [answer]
+            inputs_embeds = torch.cat([prompts, input_embeds, primer_batch, answer_embeds], dim=1)
 
             K = prompts.shape[1]
+            T_len = input_embeds.shape[1]
             P_len = primer_batch.shape[1]
 
-            ignore_prefix = torch.full((B, P_len + K), -100, dtype=torch.long, device=device)
+            # Labels: ignore soft prompts, input text, and primer; only predict answer
+            ignore_prefix = torch.full((B, K + T_len + P_len), -100, dtype=torch.long, device=device)
             answer_labels = answer_enc.input_ids.clone()
             answer_labels[answer_enc.attention_mask == 0] = -100
             labels_tensor = torch.cat([ignore_prefix, answer_labels], dim=1)
 
+            # Attention mask
             soft_mask = torch.ones(B, K, dtype=torch.long, device=device)
-            full_mask = torch.cat([primer_enc.attention_mask.expand(B, -1), soft_mask, answer_enc.attention_mask], dim=1)
+            full_mask = torch.cat([soft_mask, input_enc.attention_mask, primer_enc.attention_mask.expand(B, -1), answer_enc.attention_mask], dim=1)
 
             outputs = model(inputs_embeds=inputs_embeds, attention_mask=full_mask, labels=labels_tensor)
             loss = outputs.loss
@@ -805,11 +816,22 @@ def run_prompt_tuning_baseline(args, config, device):
 
         for item in tqdm(eval_ds, desc="Evaluating"):
             label = config["label_map"][item[config["label_field"]]]
+            # Get input text
+            input_text = item[config["text_field"]][:200]  # Truncate to 200 chars
 
             with torch.no_grad():
                 prompts = soft_prompt(1)
-                combined_embeds = torch.cat([primer_embeds, prompts], dim=1)
-                attn_mask = torch.ones(1, combined_embeds.shape[1], device=device)
+
+                # Tokenize input text and get embeddings
+                input_enc = tokenizer(input_text, return_tensors="pt", truncation=True,
+                                     max_length=128, add_special_tokens=False).to(device)
+                input_embeds = model.get_input_embeddings()(input_enc.input_ids)
+
+                # Concatenate: [soft_prompts] + [input_text] + [primer]
+                combined_embeds = torch.cat([prompts, input_embeds, primer_embeds], dim=1)
+
+                soft_mask = torch.ones(1, prompts.shape[1], device=device)
+                attn_mask = torch.cat([soft_mask, input_enc.attention_mask, primer_enc.attention_mask], dim=1)
 
                 out_ids = model.generate(
                     inputs_embeds=combined_embeds,

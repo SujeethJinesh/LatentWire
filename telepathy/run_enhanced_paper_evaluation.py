@@ -2772,7 +2772,12 @@ def run_reasoning_diagnostics(
     checkpoint_path = run_dir / "bridge" / "sst2_seed42_tokens8_bridge.pt"
     if checkpoint_path.exists():
         try:
-            bridge.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
+            checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+            # Handle both old (state_dict only) and new (full checkpoint) formats
+            if isinstance(checkpoint, dict) and "bridge_state_dict" in checkpoint:
+                bridge.load_state_dict(checkpoint["bridge_state_dict"])
+            else:
+                bridge.load_state_dict(checkpoint)
             print(f"Loaded bridge checkpoint: {checkpoint_path}")
         except Exception as e:
             print(f"Could not load checkpoint, using fresh bridge: {e}")

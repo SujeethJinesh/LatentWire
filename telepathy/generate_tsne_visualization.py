@@ -182,7 +182,12 @@ def main():
     # Load bridge
     print(f"Loading bridge from: {args.checkpoint}")
     bridge = UnifiedBridge(sender_dim, sender_dim, num_tokens=8)
-    bridge.load_state_dict(torch.load(args.checkpoint, map_location=device))
+    checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=False)
+    # Handle both old (state_dict only) and new (full checkpoint) formats
+    if isinstance(checkpoint, dict) and "bridge_state_dict" in checkpoint:
+        bridge.load_state_dict(checkpoint["bridge_state_dict"])
+    else:
+        bridge.load_state_dict(checkpoint)
     bridge = bridge.to(device=device, dtype=torch.bfloat16)
 
     # Load AG News data

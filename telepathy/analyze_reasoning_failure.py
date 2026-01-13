@@ -1209,8 +1209,12 @@ def main():
 
     if args.classification_checkpoint and os.path.exists(args.classification_checkpoint):
         print(f"Loading classification checkpoint: {args.classification_checkpoint}")
-        state_dict = torch.load(args.classification_checkpoint, map_location=device, weights_only=True)
-        bridge.load_state_dict(state_dict)
+        checkpoint = torch.load(args.classification_checkpoint, map_location=device, weights_only=False)
+        # Handle both old (state_dict only) and new (full checkpoint) formats
+        if isinstance(checkpoint, dict) and "bridge_state_dict" in checkpoint:
+            bridge.load_state_dict(checkpoint["bridge_state_dict"])
+        else:
+            bridge.load_state_dict(checkpoint)
     else:
         print("Using fresh bridge (no checkpoint loaded)")
 

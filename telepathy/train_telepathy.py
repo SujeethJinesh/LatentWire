@@ -126,7 +126,7 @@ DATASET_CONFIGS = {
     # =========================================================================
     "arc_easy": {
         "load_args": ("allenai/ai2_arc", "ARC-Easy"),
-        "text_field": "question",
+        "text_field": "question",  # Will be formatted with choices via text_formatter
         "label_field": "answerKey",
         "labels": ["A", "B", "C", "D"],
         "num_classes": 4,
@@ -137,6 +137,7 @@ DATASET_CONFIGS = {
         "primer": "Answer:",
         "random_baseline": 25.0,
         "is_reasoning": True,
+        "text_formatter": "arc",  # Special formatter to include answer choices
     },
     "winogrande": {
         "load_args": ("allenai/winogrande", "winogrande_xl"),
@@ -183,6 +184,128 @@ DATASET_CONFIGS = {
 }
 
 
+def format_text_for_item(item, config):
+    """
+    Format text for an item, handling special formatters.
+
+    For ARC datasets, includes the answer choices in the formatted text:
+    "What is the capital of France?\nA) Paris\nB) London\nC) Berlin\nD) Madrid"
+    """
+    text_field = config["text_field"]
+    text = item[text_field]
+
+    # Check if we need a special formatter
+    formatter = config.get("text_formatter")
+
+    if formatter == "arc":
+        # ARC datasets have 'choices' with 'text' (list) and 'label' (list like ["A", "B", "C", "D"])
+        if "choices" in item:
+            choices = item["choices"]
+            choice_texts = choices.get("text", [])
+            choice_labels = choices.get("label", [])
+
+            # Format choices as "A) choice1\nB) choice2\n..."
+            formatted_choices = []
+            for label, choice_text in zip(choice_labels, choice_texts):
+                formatted_choices.append(f"{label}) {choice_text}")
+
+            # Combine question with choices
+            text = f"{text}\n" + "\n".join(formatted_choices)
+
+    return text
+
+
+def format_texts_for_batch(batch, config):
+    """
+    Format texts for a batch of items, handling special formatters.
+
+    For standard datasets, returns batch[text_field] directly.
+    For ARC datasets, formats each item to include answer choices.
+    """
+    text_field = config["text_field"]
+    formatter = config.get("text_formatter")
+
+    if formatter == "arc":
+        # ARC datasets have 'choices' which is a dict with lists
+        # batch["choices"] = {"text": [[choices1], [choices2], ...], "label": [[A,B,C,D], ...]}
+        questions = batch[text_field]
+        choices_data = batch.get("choices", {})
+        choice_texts_list = choices_data.get("text", [])
+        choice_labels_list = choices_data.get("label", [])
+
+        formatted_texts = []
+        for i, question in enumerate(questions):
+            if i < len(choice_texts_list) and i < len(choice_labels_list):
+                choice_texts = choice_texts_list[i]
+                choice_labels = choice_labels_list[i]
+
+                # Format choices as "A) choice1\nB) choice2\n..."
+                formatted_choices = []
+                for lbl, choice_text in zip(choice_labels, choice_texts):
+                    formatted_choices.append(f"{lbl}) {choice_text}")
+
+                # Combine question with choices
+                text = f"{question}\n" + "\n".join(formatted_choices)
+            else:
+                text = question
+            formatted_texts.append(text)
+
+        return formatted_texts
+    else:
+        # Standard datasets - just return the text field as-is
+        return batch[text_field]
+
+
+def normalize_label_index(label_val, labels):
+    """
+    Convert a label value to the corresponding label text.
+
+    Handles the following cases:
+    - Integer labels (standard classification): labels[label_val]
+    - String labels like "1", "2" (WinoGrande): find matching string in labels
+    - String labels like "0", "1", "2", "3" (HellaSwag): find matching string in labels
+    - Boolean labels True/False (BoolQ): map to "True"/"False" strings
+    - Letter labels like "A", "B", "C", "D" (ARC): find matching string in labels
+
+    Args:
+        label_val: The raw label value from the dataset (int, str, or bool)
+        labels: List of label strings from config
+
+    Returns:
+        str: The label text
+    """
+    if labels is None:
+        return str(label_val)
+
+    # Handle boolean labels (BoolQ)
+    if isinstance(label_val, bool):
+        return "True" if label_val else "False"
+
+    # Handle string labels (WinoGrande, HellaSwag, ARC)
+    if isinstance(label_val, str):
+        # If the string is in labels, return it directly
+        if label_val in labels:
+            return label_val
+        # Otherwise, try to convert to int and index
+        try:
+            idx = int(label_val)
+            if 0 <= idx < len(labels):
+                return labels[idx]
+        except ValueError:
+            pass
+        # Fallback: return the string as-is
+        return label_val
+
+    # Handle integer labels (standard case)
+    if isinstance(label_val, int):
+        if 0 <= label_val < len(labels):
+            return labels[label_val]
+        return str(label_val)
+
+    # Fallback for any other type
+    return str(label_val)
+
+
 def get_nearest_neighbors(latent_vector, embedding_matrix, tokenizer, k=5):
     """Find k nearest vocabulary tokens to a latent vector."""
     latent_vector = latent_vector.float()
@@ -222,9 +345,9 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
     for i in range(min(200, len(eval_ds))):
         item = eval_ds[i]
         label_idx = item[config["label_field"]]
-        label = labels[label_idx] if labels else str(label_idx)
+        label = normalize_label_index(label_idx, labels)
         if label not in seen_labels:
-            text = item[config["text_field"]]
+            text = format_text_for_item(item, config)
             samples.append((text, label))
             seen_labels.add(label)
         if len(samples) >= 4:
@@ -281,6 +404,34 @@ def setup_ddp():
     return False
 
 
+def find_latest_checkpoint(output_dir):
+    """Find the latest checkpoint in the output directory for auto-resume."""
+    import glob
+    import re
+
+    # Look for checkpoint_step*.pt files
+    pattern = os.path.join(output_dir, "checkpoint_step*.pt")
+    checkpoints = glob.glob(pattern)
+
+    if not checkpoints:
+        return None
+
+    # Extract step numbers and find the latest
+    step_pattern = re.compile(r'checkpoint_step(\d+)\.pt')
+    latest_step = -1
+    latest_ckpt = None
+
+    for ckpt in checkpoints:
+        match = step_pattern.search(os.path.basename(ckpt))
+        if match:
+            step = int(match.group(1))
+            if step > latest_step:
+                latest_step = step
+                latest_ckpt = ckpt
+
+    return latest_ckpt
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Unified Telepathy Training")
 
@@ -324,6 +475,10 @@ def parse_args():
     parser.add_argument("--use_fsq", action="store_true", default=False)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--gpu", type=int, default=0, help="GPU device index (for single GPU)")
+    parser.add_argument("--resume", type=str, default=None,
+                       help="Path to checkpoint to resume training from")
+    parser.add_argument("--auto_resume", action="store_true", default=True,
+                       help="Automatically resume from latest checkpoint if available")
 
     # =============================================================================
     # EXPERIMENTAL FEATURES (from cross_model_experiments.py)
@@ -463,9 +618,9 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
 
     for i in range(n_eval):
         item = eval_ds[i]
-        text = item[config["text_field"]]
+        text = format_text_for_item(item, config)
         label_idx = item[config["label_field"]]
-        label = labels[label_idx] if labels else str(label_idx)
+        label = normalize_label_index(label_idx, labels)
 
         src_input = config["prompt_template"].format(text=text[:256])
 
@@ -530,8 +685,8 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
 def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args, config):
     """Single training step."""
     labels = config["labels"]
-    inputs = batch[config["text_field"]]
-    label_texts = [labels[l] for l in batch[config["label_field"]]] if labels else [str(l) for l in batch[config["label_field"]]]
+    inputs = format_texts_for_batch(batch, config)
+    label_texts = [normalize_label_index(l, labels) for l in batch[config["label_field"]]]
 
     B = len(inputs)
 
@@ -893,6 +1048,43 @@ def main():
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
+    # =========================================================================
+    # CHECKPOINT LOADING (for resume after preemption)
+    # =========================================================================
+    start_step = 0
+    best_accuracy = 0.0
+
+    # Determine checkpoint to resume from
+    resume_path = args.resume
+    if resume_path is None and args.auto_resume:
+        # Auto-detect latest checkpoint
+        resume_path = find_latest_checkpoint(args.output_dir)
+        if resume_path and local_rank == 0:
+            print(f"Auto-resume: Found checkpoint {resume_path}")
+
+    if resume_path and os.path.exists(resume_path):
+        if local_rank == 0:
+            print(f"Loading checkpoint from {resume_path}")
+        checkpoint = torch.load(resume_path, map_location=device)
+
+        # Handle both old (state_dict only) and new (full checkpoint) formats
+        if isinstance(checkpoint, dict) and "bridge_state_dict" in checkpoint:
+            # New format with full training state
+            bridge_module = bridge.module if torch.distributed.is_initialized() else bridge
+            bridge_module.load_state_dict(checkpoint["bridge_state_dict"])
+            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+            start_step = checkpoint["step"]
+            best_accuracy = checkpoint.get("best_accuracy", 0.0)
+            if local_rank == 0:
+                print(f"  Resumed from step {start_step}, best_accuracy={best_accuracy:.1f}%")
+        else:
+            # Old format (just bridge state_dict) - can't resume optimizer/scheduler
+            bridge_module = bridge.module if torch.distributed.is_initialized() else bridge
+            bridge_module.load_state_dict(checkpoint)
+            if local_rank == 0:
+                print(f"  Loaded bridge weights (old format, starting training from step 0)")
+
     # Load dataset
     if len(config["load_args"]) == 2:
         train_ds = load_dataset(config["load_args"][0], config["load_args"][1],
@@ -940,7 +1132,16 @@ def main():
         if local_rank == 0:
             print("Skipping training loop (eval_only=True)")
     else:
-        progress = tqdm(range(args.steps), disable=(local_rank != 0),
+        # Use start_step for resume support
+        remaining_steps = args.steps - start_step
+        if remaining_steps <= 0:
+            if local_rank == 0:
+                print(f"Training already complete (start_step={start_step} >= steps={args.steps})")
+        else:
+            if local_rank == 0 and start_step > 0:
+                print(f"Resuming training from step {start_step} ({remaining_steps} steps remaining)")
+
+        progress = tqdm(range(start_step, args.steps), disable=(local_rank != 0),
                        desc=f"{args.dataset.upper()}", ncols=100)
         iter_dl = iter(dl)
         running = {"total": 0, "lm": 0, "div": 0, "aux": 0, "z_var": 0, "grad_norm": 0}
@@ -952,7 +1153,31 @@ def main():
         # Learning rate (will be updated by scheduler each step)
         current_lr = scheduler.get_last_lr()[0]
 
-        for step in progress:
+        # NaN/Inf detection counters
+        nan_inf_count = 0
+        max_nan_inf_allowed = 10  # Stop training if too many NaN/Inf losses
+
+        # Helper function to save emergency checkpoint
+        def save_emergency_checkpoint(step, error_msg):
+            """Save emergency checkpoint when training fails."""
+            if local_rank != 0:
+                return
+            bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
+            emergency_path = os.path.join(args.output_dir, f"emergency_checkpoint_step{step}.pt")
+            torch.save({
+                "bridge_state_dict": bridge_to_save.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "scheduler_state_dict": scheduler.state_dict(),
+                "step": step,
+                "best_accuracy": best_accuracy,
+                "config": vars(args),
+                "error_message": error_msg,
+            }, emergency_path)
+            print(f"\n[EMERGENCY] Checkpoint saved to {emergency_path}")
+            print(f"[EMERGENCY] Error: {error_msg}")
+
+        try:
+          for step in progress:
             optimizer.zero_grad()
             accum_loss_dict = {"total": 0, "lm": 0, "div": 0, "aux": 0, "z_var": 0}
 
@@ -966,6 +1191,25 @@ def main():
                 loss, loss_dict = train_step(
                     batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, args, config
                 )
+
+                # NaN/Inf detection
+                if torch.isnan(loss) or torch.isinf(loss):
+                    nan_inf_count += 1
+                    if local_rank == 0:
+                        print(f"\n[WARNING] NaN/Inf loss detected at step {step+1} (count: {nan_inf_count}/{max_nan_inf_allowed})")
+                        print(f"  Loss values: total={loss_dict['total']:.4f}, lm={loss_dict['lm']:.4f}, "
+                              f"aux={loss_dict['aux']:.4f}, div={loss_dict['div']:.4f}")
+                        # Log batch info for debugging
+                        batch_texts = format_texts_for_batch(batch, config)
+                        print(f"  Batch size: {len(batch_texts)}, first text length: {len(batch_texts[0]) if batch_texts else 0}")
+
+                    if nan_inf_count >= max_nan_inf_allowed:
+                        error_msg = f"Too many NaN/Inf losses ({nan_inf_count}). Training stopped."
+                        save_emergency_checkpoint(step, error_msg)
+                        raise RuntimeError(error_msg)
+
+                    # Skip this gradient accumulation step
+                    continue
 
                 # Add VIB KL loss if applicable
                 if (args.use_vib or args.bridge_type == "vib") and vib_beta > 0:
@@ -1011,8 +1255,15 @@ def main():
                 print(f"  LM Loss: {avg['lm']:.3f} | Aux Loss: {avg['aux']:.4f} | Div Loss: {avg['div']:.4f}")
                 print(f"  Z Variance: {avg['z_var']:.4f} | Grad Norm: {avg['grad_norm']:.3f}")
 
+                # GPU memory usage logging
+                if torch.cuda.is_available():
+                    gpu_mem_allocated = torch.cuda.memory_allocated(device) / (1024**3)  # GB
+                    gpu_mem_reserved = torch.cuda.memory_reserved(device) / (1024**3)  # GB
+                    gpu_mem_max = torch.cuda.max_memory_allocated(device) / (1024**3)  # GB
+                    print(f"  GPU Memory: {gpu_mem_allocated:.2f}GB allocated, {gpu_mem_reserved:.2f}GB reserved, {gpu_mem_max:.2f}GB peak")
+
                 # Log to training_log for JSON output
-                training_log.append({
+                log_entry = {
                     "step": step + 1,
                     "type": "metrics",
                     "lm_loss": avg['lm'],
@@ -1021,7 +1272,13 @@ def main():
                     "z_var": avg['z_var'],
                     "grad_norm": avg['grad_norm'],
                     "lr": current_lr
-                })
+                }
+                # Add GPU memory to log if available
+                if torch.cuda.is_available():
+                    log_entry["gpu_mem_allocated_gb"] = gpu_mem_allocated
+                    log_entry["gpu_mem_reserved_gb"] = gpu_mem_reserved
+                    log_entry["gpu_mem_peak_gb"] = gpu_mem_max
+                training_log.append(log_entry)
 
                 running = {k: 0 for k in running}
 
@@ -1031,22 +1288,64 @@ def main():
                                         eval_ds, device, args, config, step + 1)
                 training_log.append({"step": step + 1, "type": "eval", **eval_result})
 
-            # Save checkpoint
+                # Track best checkpoint
+                current_accuracy = eval_result["accuracy"]
+                if current_accuracy > best_accuracy:
+                    best_accuracy = current_accuracy
+                    bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
+                    best_ckpt_path = os.path.join(args.output_dir, "best_checkpoint.pt")
+                    torch.save({
+                        "bridge_state_dict": bridge_to_save.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "scheduler_state_dict": scheduler.state_dict(),
+                        "step": step + 1,
+                        "best_accuracy": best_accuracy,
+                        "config": vars(args),
+                    }, best_ckpt_path)
+                    print(f"  New best accuracy: {best_accuracy:.1f}% - saved to {best_ckpt_path}")
+
+            # Save checkpoint (full state for resume)
             if local_rank == 0 and (step + 1) % args.save_every == 0:
                 bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
                 ckpt_path = os.path.join(args.output_dir, f"checkpoint_step{step+1}.pt")
-                torch.save(bridge_to_save.state_dict(), ckpt_path)
+                torch.save({
+                    "bridge_state_dict": bridge_to_save.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "scheduler_state_dict": scheduler.state_dict(),
+                    "step": step + 1,
+                    "best_accuracy": best_accuracy,
+                    "config": vars(args),
+                }, ckpt_path)
                 print(f"  Checkpoint saved: {ckpt_path}")
+
+        except Exception as e:
+            # Emergency checkpoint on any unexpected error
+            import traceback
+            error_msg = f"{type(e).__name__}: {str(e)}"
+            if local_rank == 0:
+                print(f"\n[ERROR] Training interrupted by exception at step {step+1}")
+                print(f"[ERROR] {error_msg}")
+                traceback.print_exc()
+            save_emergency_checkpoint(step, error_msg)
+            raise  # Re-raise the exception after saving checkpoint
 
     # Final save and evaluation
     if local_rank == 0:
         bridge_to_save = bridge.module if torch.distributed.is_initialized() else bridge
         final_path = os.path.join(args.output_dir, args.save_path)
-        torch.save(bridge_to_save.state_dict(), final_path)
+        torch.save({
+            "bridge_state_dict": bridge_to_save.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "scheduler_state_dict": scheduler.state_dict(),
+            "step": args.steps,
+            "best_accuracy": best_accuracy,
+            "config": vars(args),
+        }, final_path)
 
         print("\n" + "=" * 60)
         print(f"{args.dataset.upper()} Training Complete!")
-        print(f"Checkpoint: {final_path}")
+        print(f"Final checkpoint: {final_path}")
+        print(f"Best accuracy during training: {best_accuracy:.1f}%")
         print("=" * 60)
 
         # Final evaluation
@@ -1064,9 +1363,9 @@ def main():
 
         for i in range(n_eval):
             item = eval_ds[i]
-            text = item[config["text_field"]]
+            text = format_text_for_item(item, config)
             label_idx = item[config["label_field"]]
-            label = labels[label_idx] if labels else str(label_idx)
+            label = normalize_label_index(label_idx, labels)
 
             src_input = config["prompt_template"].format(text=text[:256])
 

@@ -955,7 +955,9 @@ class MoEBridge(nn.Module):
             shared_out = self.shared_expert(latents)
             expert_output = expert_output + self.shared_expert_weight * shared_out
 
-        soft_tokens = expert_output
+        # Residual connection: output = residual + MoE(residual)
+        # Standard pattern in MoE architectures (Mixtral, DeepSeek)
+        soft_tokens = latents + expert_output
 
         # RMS normalization
         rms = torch.sqrt((soft_tokens ** 2).mean(dim=-1, keepdim=True) + 1e-8)
