@@ -4,7 +4,7 @@
 Unified Baselines Script
 
 Runs various baseline methods for comparison with the telepathy bridge.
-Supports: zero-shot, few-shot, LoRA fine-tuning, DoRA fine-tuning, and prompt tuning.
+Supports: zero-shot, few-shot, LoRA fine-tuning, DoRA fine-tuning, prompt tuning, text relay, ensemble, and ridge regression.
 
 Usage:
     python telepathy/run_baselines.py --baseline zeroshot --dataset sst2
@@ -12,6 +12,9 @@ Usage:
     python telepathy/run_baselines.py --baseline lora --dataset trec --rank 8
     python telepathy/run_baselines.py --baseline dora --dataset trec --rank 8
     python telepathy/run_baselines.py --baseline prompt_tuning --dataset sst2 --soft_tokens 8
+    python telepathy/run_baselines.py --baseline text_relay --dataset sst2
+    python telepathy/run_baselines.py --baseline ensemble --dataset sst2 --alphas 0.3 0.5 0.7
+    python telepathy/run_baselines.py --baseline ridge_regression --dataset sst2 --lambda_values 0.1 1.0 10.0 100.0
 
 Baseline Types:
 - zeroshot: Direct prompting without examples (Llama and Mistral)
@@ -19,6 +22,9 @@ Baseline Types:
 - lora: LoRA fine-tuning on Mistral
 - dora: DoRA fine-tuning on Mistral (Weight-Decomposed Low-Rank Adaptation)
 - prompt_tuning: Learnable soft prompts on Mistral (no sender model)
+- text_relay: Fair cross-model text communication (Llama generates hint, Mistral classifies)
+- ensemble: Ensemble of Llama and Mistral predictions (tests if bridge is "super-additive")
+- ridge_regression: LatentMAS-style linear alignment from Llama hidden states to Mistral embeddings
 """
 import os
 import gc
@@ -40,6 +46,13 @@ try:
 except ImportError:
     PEFT_AVAILABLE = False
     print("Warning: peft not installed. LoRA/DoRA baselines unavailable.")
+
+try:
+    from sklearn.linear_model import Ridge
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+    print("Warning: sklearn not installed. Ridge regression baseline unavailable.")
 
 
 # =============================================================================
@@ -672,6 +685,176 @@ def run_dora_baseline(args, config, device):
 
 
 # =============================================================================
+# TEXT RELAY BASELINE (Fair Llama -> Mistral text communication)
+# =============================================================================
+
+def run_text_relay_baseline(args, config, device):
+    """Run fair text relay baseline: Llama generates hint, Mistral classifies.
+
+    This is a FAIR text-based cross-model communication baseline that:
+    1. Sends input text to Llama with a prompt asking for a classification hint
+    2. Gets Llama's generated hint (max 50 tokens)
+    3. Sends the hint to Mistral for final classification
+    4. Compares Mistral's output to ground truth
+
+    This provides a proper comparison point for the latent bridge approach.
+    """
+    print("\n" + "=" * 70)
+    print(f"TEXT RELAY BASELINE (Llama->Mistral): {args.dataset.upper()}")
+    print("=" * 70)
+    print("Llama generates text hint, Mistral classifies based on hint.")
+
+    # Load evaluation data
+    if len(config["load_args"]) == 2:
+        eval_ds = load_dataset(config["load_args"][0], config["load_args"][1],
+                              split=config["eval_split"], trust_remote_code=True)
+    else:
+        eval_ds = load_dataset(config["load_args"][0],
+                              split=config["eval_split"], trust_remote_code=True)
+
+    if args.max_samples:
+        eval_ds = eval_ds.select(range(min(args.max_samples, len(eval_ds))))
+
+    # Get label options string for prompts
+    label_names = list(config["label_map"].values())
+    label_options = ", ".join(label_names)
+
+    all_results = {}
+
+    for seed in args.seeds:
+        print(f"\n--- Seed {seed} ---")
+        set_seed(seed)
+
+        # Load Llama (sender)
+        print("Loading Llama (sender)...")
+        llama_model = AutoModelForCausalLM.from_pretrained(
+            "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            torch_dtype=torch.bfloat16, device_map="auto"
+        )
+        llama_tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
+        llama_tokenizer.pad_token = llama_tokenizer.eos_token
+        llama_model.eval()
+
+        # Load Mistral (receiver)
+        print("Loading Mistral (receiver)...")
+        mistral_model = AutoModelForCausalLM.from_pretrained(
+            "mistralai/Mistral-7B-Instruct-v0.3",
+            torch_dtype=torch.bfloat16, device_map="auto"
+        )
+        mistral_tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3")
+        mistral_tokenizer.pad_token = mistral_tokenizer.eos_token
+        mistral_model.eval()
+
+        correct = 0
+        total = 0
+        example_hints = []  # Store a few examples for logging
+
+        for idx, item in enumerate(tqdm(eval_ds, desc=f"Text relay (seed {seed})")):
+            text = item[config["text_field"]]
+            true_label = config["label_map"][item[config["label_field"]]]
+
+            # Step 1: Llama generates a hint
+            llama_prompt = (
+                f"Read this text and provide a brief hint about what category/sentiment "
+                f"it belongs to (options: {label_options}): {text[:256]}\nHint:"
+            )
+            llama_inputs = llama_tokenizer(
+                llama_prompt, return_tensors="pt", truncation=True, max_length=512
+            ).to(device)
+
+            with torch.no_grad():
+                llama_outputs = llama_model.generate(
+                    **llama_inputs,
+                    max_new_tokens=50,
+                    do_sample=False,
+                    pad_token_id=llama_tokenizer.eos_token_id,
+                )
+
+            hint = llama_tokenizer.decode(
+                llama_outputs[0][llama_inputs.input_ids.shape[1]:],
+                skip_special_tokens=True
+            ).strip()
+
+            # Store first few examples for logging
+            if idx < 3:
+                example_hints.append({
+                    "text": text[:100] + "...",
+                    "hint": hint,
+                    "true_label": true_label
+                })
+
+            # Step 2: Mistral classifies based on hint
+            mistral_prompt = (
+                f"Based on this hint: '{hint}'\n"
+                f"Classify as {label_options}:\nAnswer:"
+            )
+            mistral_inputs = mistral_tokenizer(
+                mistral_prompt, return_tensors="pt", truncation=True, max_length=512
+            ).to(device)
+
+            with torch.no_grad():
+                mistral_outputs = mistral_model.generate(
+                    **mistral_inputs,
+                    max_new_tokens=10,
+                    do_sample=False,
+                    pad_token_id=mistral_tokenizer.eos_token_id,
+                )
+
+            response = mistral_tokenizer.decode(
+                mistral_outputs[0][mistral_inputs.input_ids.shape[1]:],
+                skip_special_tokens=True
+            ).strip().lower()
+
+            # Match prediction to label
+            pred_label = None
+            for label in label_names:
+                if label.lower() in response:
+                    pred_label = label
+                    break
+
+            if pred_label and pred_label.lower() == true_label.lower():
+                correct += 1
+            total += 1
+
+        accuracy = 100 * correct / total
+        all_results[f"seed_{seed}"] = {
+            "accuracy": accuracy,
+            "correct": correct,
+            "total": total,
+            "example_hints": example_hints,
+        }
+        print(f"Seed {seed}: {accuracy:.1f}% ({correct}/{total})")
+
+        # Log example hints
+        print("  Example hints generated by Llama:")
+        for ex in example_hints:
+            print(f"    Text: {ex['text']}")
+            print(f"    Hint: {ex['hint']}")
+            print(f"    True: {ex['true_label']}")
+            print()
+
+        # Clean up
+        del llama_model, mistral_model
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    # Compute statistics
+    accuracies = [r["accuracy"] for r in all_results.values() if "accuracy" in r]
+    mean_acc = np.mean(accuracies)
+    std_acc = np.std(accuracies)
+
+    all_results["summary"] = {
+        "mean_accuracy": mean_acc,
+        "std_accuracy": std_acc,
+        "random_baseline": config.get("random_baseline", 0),
+    }
+    print(f"\nText Relay (Llama->Mistral): {mean_acc:.1f}% +/- {std_acc:.1f}%")
+    print(f"Random baseline: {config.get('random_baseline', 0):.1f}%")
+
+    return all_results
+
+
+# =============================================================================
 # PROMPT TUNING BASELINE
 # =============================================================================
 
@@ -875,6 +1058,456 @@ def run_prompt_tuning_baseline(args, config, device):
 
 
 # =============================================================================
+# ENSEMBLE BASELINE
+# =============================================================================
+
+def run_ensemble_baseline(args, config, device):
+    """Run ensemble baseline combining Llama and Mistral predictions.
+
+    This baseline tests whether simply averaging the predictions from both
+    models achieves similar results to the trained bridge. It computes:
+
+        ensemble_logits = alpha * llama_logits + (1-alpha) * mistral_logits
+
+    and takes argmax as the prediction. Tests multiple alpha values to find
+    the best mixing coefficient.
+
+    This is a critical experiment to verify that the bridge provides
+    "super-additive" performance beyond simple ensembling.
+    """
+    print("\n" + "=" * 70)
+    print(f"ENSEMBLE BASELINE: {args.dataset.upper()}")
+    print("=" * 70)
+    print("Testing whether ensembling Llama + Mistral achieves bridge performance.")
+
+    # Load evaluation data
+    if len(config["load_args"]) == 2:
+        eval_ds = load_dataset(config["load_args"][0], config["load_args"][1],
+                              split=config["eval_split"], trust_remote_code=True)
+    else:
+        eval_ds = load_dataset(config["load_args"][0],
+                              split=config["eval_split"], trust_remote_code=True)
+
+    if args.max_samples:
+        eval_ds = eval_ds.select(range(min(args.max_samples, len(eval_ds))))
+
+    # Alpha values to test
+    alphas = args.alphas if hasattr(args, 'alphas') and args.alphas else [0.3, 0.5, 0.7]
+    print(f"Testing alpha values: {alphas}")
+
+    all_results = {}
+
+    # Store per-sample logits from each model for ensemble computation
+    llama_all_logits = []
+    mistral_all_logits = []
+    true_labels = []
+
+    models_info = [
+        ("meta-llama/Meta-Llama-3.1-8B-Instruct", "Llama"),
+        ("mistralai/Mistral-7B-Instruct-v0.3", "Mistral"),
+    ]
+
+    for model_id, model_name in models_info:
+        print(f"\nCollecting logits from {model_name}...")
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id, torch_dtype=torch.bfloat16, device_map="auto"
+        )
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        tokenizer.pad_token = tokenizer.eos_token
+        model.eval()
+
+        # Get label tokens for this model's tokenizer
+        label_tokens = {}
+        for idx, label in config["label_map"].items():
+            tokens = tokenizer.encode(label, add_special_tokens=False)
+            label_tokens[idx] = tokens[0]
+
+        model_logits = []
+        correct = 0
+        total = 0
+
+        for item in tqdm(eval_ds, desc=f"Evaluating {model_name}"):
+            text = item[config["text_field"]]
+            label = item[config["label_field"]]
+
+            prompt = config["prompt_template"].format(
+                text=text[:256],
+                task_prompt=config["task_prompt"]
+            )
+            inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+
+            with torch.no_grad():
+                outputs = model(**inputs)
+                logits = outputs.logits[0, -1]
+
+            # Get logits for each label token
+            label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
+            # Convert to float32 for numerical stability in softmax/averaging
+            label_logits = label_logits.float().cpu()
+            model_logits.append(label_logits)
+
+            # Also track individual model accuracy
+            pred = label_logits.argmax().item()
+            if pred == label:
+                correct += 1
+            total += 1
+
+            # Store true labels only once (from first model)
+            if model_name == "Llama":
+                true_labels.append(label)
+
+        accuracy = 100 * correct / total
+        all_results[f"{model_name}_individual"] = {
+            "accuracy": accuracy,
+            "correct": correct,
+            "total": total,
+        }
+        print(f"{model_name} individual: {accuracy:.1f}% ({correct}/{total})")
+
+        if model_name == "Llama":
+            llama_all_logits = model_logits
+        else:
+            mistral_all_logits = model_logits
+
+        del model
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    # Now compute ensemble accuracy for each alpha
+    print("\n" + "-" * 50)
+    print("Computing ensemble accuracies...")
+    print("-" * 50)
+
+    ensemble_results = {}
+    best_alpha = None
+    best_accuracy = 0
+
+    for alpha in alphas:
+        correct = 0
+        total = len(true_labels)
+
+        for i in range(total):
+            # Ensemble: alpha * llama + (1-alpha) * mistral
+            ensemble_logits = alpha * llama_all_logits[i] + (1 - alpha) * mistral_all_logits[i]
+            pred = ensemble_logits.argmax().item()
+
+            if pred == true_labels[i]:
+                correct += 1
+
+        accuracy = 100 * correct / total
+        ensemble_results[f"alpha_{alpha}"] = {
+            "alpha": alpha,
+            "accuracy": accuracy,
+            "correct": correct,
+            "total": total,
+        }
+        print(f"Ensemble (alpha={alpha}): {accuracy:.1f}% ({correct}/{total})")
+
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_alpha = alpha
+
+    # Also try softmax-based averaging (probability space instead of logit space)
+    print("\n--- Probability-space ensemble (softmax then average) ---")
+    prob_ensemble_results = {}
+
+    for alpha in alphas:
+        correct = 0
+        total = len(true_labels)
+
+        for i in range(total):
+            # Convert to probabilities, then ensemble
+            llama_probs = torch.softmax(llama_all_logits[i], dim=-1)
+            mistral_probs = torch.softmax(mistral_all_logits[i], dim=-1)
+            ensemble_probs = alpha * llama_probs + (1 - alpha) * mistral_probs
+            pred = ensemble_probs.argmax().item()
+
+            if pred == true_labels[i]:
+                correct += 1
+
+        accuracy = 100 * correct / total
+        prob_ensemble_results[f"prob_alpha_{alpha}"] = {
+            "alpha": alpha,
+            "accuracy": accuracy,
+            "correct": correct,
+            "total": total,
+        }
+        print(f"Prob Ensemble (alpha={alpha}): {accuracy:.1f}% ({correct}/{total})")
+
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_alpha = f"prob_{alpha}"
+
+    all_results["ensemble_logit_space"] = ensemble_results
+    all_results["ensemble_prob_space"] = prob_ensemble_results
+    all_results["best_ensemble"] = {
+        "best_alpha": best_alpha,
+        "best_accuracy": best_accuracy,
+    }
+
+    print("\n" + "=" * 50)
+    print(f"BEST ENSEMBLE: alpha={best_alpha}, accuracy={best_accuracy:.1f}%")
+    print("=" * 50)
+
+    return all_results
+
+
+# =============================================================================
+# RIDGE REGRESSION BASELINE (LatentMAS-style)
+# =============================================================================
+
+def run_ridge_regression_baseline(args, config, device):
+    """Run ridge regression baseline for cross-model alignment.
+
+    This implements the LatentMAS approach: learn a linear mapping from source
+    (Llama) hidden states to target (Mistral) embedding space using ridge regression.
+
+    W_align = (X'X + lambda*I)^{-1} X'Y
+
+    This is training-free in the neural network sense - just fits a closed-form
+    linear transformation.
+    """
+    if not SKLEARN_AVAILABLE:
+        print("ERROR: sklearn not installed. Run: pip install scikit-learn")
+        return {}
+
+    print("\n" + "=" * 70)
+    print(f"RIDGE REGRESSION BASELINE: {args.dataset.upper()}")
+    print("=" * 70)
+    print("Testing linear alignment from Llama hidden states to Mistral embeddings")
+    print(f"Lambda values to test: {args.lambda_values}")
+
+    # Load data
+    if len(config["load_args"]) == 2:
+        train_ds = load_dataset(config["load_args"][0], config["load_args"][1],
+                               split=config["train_split"], trust_remote_code=True)
+        eval_ds = load_dataset(config["load_args"][0], config["load_args"][1],
+                              split=config["eval_split"], trust_remote_code=True)
+    else:
+        train_ds = load_dataset(config["load_args"][0],
+                               split=config["train_split"], trust_remote_code=True)
+        eval_ds = load_dataset(config["load_args"][0],
+                              split=config["eval_split"], trust_remote_code=True)
+
+    # Limit samples for fitting
+    max_fit_samples = args.max_fit_samples
+    if max_fit_samples and len(train_ds) > max_fit_samples:
+        train_ds = train_ds.shuffle(seed=args.seeds[0]).select(range(max_fit_samples))
+
+    if args.max_samples:
+        eval_ds = eval_ds.select(range(min(args.max_samples, len(eval_ds))))
+
+    # Load models
+    print("\nLoading Llama (source) model...")
+    src_model = AutoModelForCausalLM.from_pretrained(
+        "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        torch_dtype=torch.bfloat16, device_map="auto"
+    ).eval()
+    src_tok = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
+    src_tok.pad_token = src_tok.eos_token
+
+    print("Loading Mistral (target) model...")
+    tgt_model = AutoModelForCausalLM.from_pretrained(
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        torch_dtype=torch.bfloat16, device_map="auto"
+    ).eval()
+    tgt_tok = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3")
+    tgt_tok.pad_token = tgt_tok.eos_token
+
+    # Get target embedding RMS for normalization
+    with torch.no_grad():
+        tgt_embeds = tgt_model.get_input_embeddings().weight.float()
+        target_rms = tgt_embeds.pow(2).mean(dim=1).sqrt().median().item()
+    print(f"Target embedding RMS: {target_rms:.4f}")
+
+    # ==========================================================================
+    # Step 1: Collect alignment data
+    # ==========================================================================
+    print(f"\n--- Collecting alignment data from {len(train_ds)} samples ---")
+
+    source_hiddens = []  # X: Llama hidden states at layer 31
+    target_embeds_list = []   # Y: Mistral embeddings of label text
+
+    label_map = config["label_map"]
+    source_layer = args.source_layer
+
+    for item in tqdm(train_ds, desc="Collecting alignment pairs"):
+        text = item[config["text_field"]]
+        label_idx = item[config["label_field"]]
+
+        # Handle different label formats
+        if config.get("label_from_key"):
+            label_text = label_map.get(label_idx, str(label_idx))
+        else:
+            label_text = label_map[label_idx]
+
+        # Build prompt for source model
+        prompt = config["prompt_template"].format(
+            text=text[:256],
+            task_prompt=config["task_prompt"]
+        )
+
+        # Get Llama hidden state at layer 31 (last token)
+        with torch.no_grad():
+            src_enc = src_tok(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+            src_out = src_model(**src_enc, output_hidden_states=True)
+            # Get hidden state at specified layer, last token position
+            src_h = src_out.hidden_states[source_layer][0, -1, :].float().cpu().numpy()
+            source_hiddens.append(src_h)
+
+            # Get Mistral embedding of the label text
+            label_enc = tgt_tok(label_text, return_tensors="pt", add_special_tokens=False).to(device)
+            label_emb = tgt_model.get_input_embeddings()(label_enc.input_ids)
+            # Average over tokens if label has multiple tokens
+            label_emb = label_emb[0].mean(dim=0).float().cpu().numpy()
+            target_embeds_list.append(label_emb)
+
+    X = np.stack(source_hiddens)  # (N, D_src)
+    Y = np.stack(target_embeds_list)   # (N, D_tgt)
+
+    print(f"Source matrix X: {X.shape}")
+    print(f"Target matrix Y: {Y.shape}")
+
+    # ==========================================================================
+    # Step 2: Test multiple lambda values
+    # ==========================================================================
+    all_results = {}
+
+    for seed in args.seeds:
+        print(f"\n{'='*60}")
+        print(f"Seed {seed}")
+        print(f"{'='*60}")
+        set_seed(seed)
+
+        seed_results = {}
+
+        for lambda_reg in args.lambda_values:
+            print(f"\n--- Lambda = {lambda_reg} ---")
+
+            # Fit ridge regression
+            ridge = Ridge(alpha=lambda_reg, fit_intercept=True)
+            ridge.fit(X, Y)
+
+            # Get weight matrix stats
+            W = ridge.coef_  # (D_tgt, D_src)
+            print(f"Weight matrix W: {W.shape}")
+            print(f"  W norm: {np.linalg.norm(W):.4f}")
+            print(f"  W mean: {W.mean():.6f}, std: {W.std():.6f}")
+
+            # ==========================================================================
+            # Step 3: Evaluate
+            # ==========================================================================
+            correct = 0
+            total = 0
+
+            label_names = list(label_map.values())
+            primer_text = config.get("task_prompt", "Answer:")
+
+            for item in tqdm(eval_ds, desc=f"Evaluating lambda={lambda_reg}"):
+                text = item[config["text_field"]]
+                label_idx = item[config["label_field"]]
+
+                # Handle different label formats
+                if config.get("label_from_key"):
+                    true_label = label_map.get(label_idx, str(label_idx))
+                else:
+                    true_label = label_map[label_idx]
+
+                # Build prompt and get Llama hidden state
+                prompt = config["prompt_template"].format(
+                    text=text[:256],
+                    task_prompt=config["task_prompt"]
+                )
+
+                with torch.no_grad():
+                    src_enc = src_tok(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+                    src_out = src_model(**src_enc, output_hidden_states=True)
+                    src_h = src_out.hidden_states[source_layer][0, -1, :].float().cpu().numpy()
+
+                    # Transform via ridge regression
+                    aligned = ridge.predict(src_h.reshape(1, -1))[0]  # (D_tgt,)
+
+                    # Normalize to match target embedding RMS
+                    aligned_tensor = torch.from_numpy(aligned).float().to(device)
+                    rms = torch.sqrt((aligned_tensor ** 2).mean() + 1e-8)
+                    aligned_tensor = (aligned_tensor / rms) * target_rms
+                    aligned_tensor = aligned_tensor.bfloat16()
+
+                    # Use as soft token (single token)
+                    soft_token = aligned_tensor.unsqueeze(0).unsqueeze(0)  # (1, 1, D_tgt)
+
+                    # Get primer embeddings
+                    primer_enc = tgt_tok(primer_text, return_tensors="pt", add_special_tokens=False).to(device)
+                    primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids).bfloat16()
+
+                    # Concatenate: [Primer] + [Soft Token] -> Generate
+                    combined_embeds = torch.cat([primer_embeds, soft_token], dim=1)
+                    attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+
+                    out_ids = tgt_model.generate(
+                        inputs_embeds=combined_embeds,
+                        attention_mask=attn_mask,
+                        max_new_tokens=10,
+                        do_sample=False,
+                        pad_token_id=tgt_tok.eos_token_id,
+                    )
+                    output = tgt_tok.decode(out_ids[0], skip_special_tokens=True).strip().lower()
+
+                # Check if correct
+                pred_label = None
+                for label in label_names:
+                    if label.lower() in output:
+                        pred_label = label
+                        break
+
+                if pred_label and pred_label.lower() == true_label.lower():
+                    correct += 1
+                total += 1
+
+            accuracy = 100 * correct / total
+            seed_results[f"lambda_{lambda_reg}"] = {
+                "accuracy": accuracy,
+                "correct": correct,
+                "total": total,
+            }
+            print(f"Lambda {lambda_reg}: {accuracy:.1f}% ({correct}/{total})")
+
+        all_results[f"seed_{seed}"] = seed_results
+
+    # Compute summary statistics across seeds
+    print("\n" + "=" * 70)
+    print("SUMMARY ACROSS SEEDS")
+    print("=" * 70)
+
+    summary = {}
+    for lambda_reg in args.lambda_values:
+        accuracies = [all_results[f"seed_{s}"][f"lambda_{lambda_reg}"]["accuracy"]
+                     for s in args.seeds]
+        mean_acc = np.mean(accuracies)
+        std_acc = np.std(accuracies)
+        summary[f"lambda_{lambda_reg}"] = {
+            "mean_accuracy": mean_acc,
+            "std_accuracy": std_acc,
+            "all_accuracies": accuracies,
+        }
+        print(f"Lambda {lambda_reg}: {mean_acc:.1f}% +/- {std_acc:.1f}%")
+
+    # Find best lambda
+    best_lambda = max(summary.keys(), key=lambda k: summary[k]["mean_accuracy"])
+    print(f"\nBest lambda: {best_lambda} ({summary[best_lambda]['mean_accuracy']:.1f}%)")
+
+    all_results["summary"] = summary
+    all_results["best_lambda"] = best_lambda
+
+    # Clean up
+    del src_model, tgt_model
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    return all_results
+
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
@@ -883,7 +1516,8 @@ def parse_args():
 
     # Required arguments
     parser.add_argument("--baseline", type=str, required=True,
-                       choices=["zeroshot", "fewshot", "lora", "dora", "prompt_tuning"],
+                       choices=["zeroshot", "fewshot", "lora", "dora", "prompt_tuning",
+                                "text_relay", "ensemble", "ridge_regression"],
                        help="Baseline type to run")
     parser.add_argument("--dataset", type=str, required=True,
                        choices=["sst2", "agnews", "trec", "arc_easy", "winogrande", "hellaswag", "boolq"],
@@ -913,6 +1547,18 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-4)
 
+    # Ensemble settings
+    parser.add_argument("--alphas", type=float, nargs="+", default=[0.3, 0.5, 0.7],
+                       help="Alpha values to test for ensemble (alpha * llama + (1-alpha) * mistral)")
+
+    # Ridge regression settings
+    parser.add_argument("--lambda_values", type=float, nargs="+", default=[0.1, 1.0, 10.0, 100.0],
+                       help="Lambda (regularization) values to test for ridge regression")
+    parser.add_argument("--max_fit_samples", type=int, default=1000,
+                       help="Max training samples to use for fitting ridge regression")
+    parser.add_argument("--source_layer", type=int, default=31,
+                       help="Which Llama layer to extract hidden states from (31=final)")
+
     return parser.parse_args()
 
 
@@ -937,6 +1583,12 @@ def main():
         results = run_dora_baseline(args, config, device)
     elif args.baseline == "prompt_tuning":
         results = run_prompt_tuning_baseline(args, config, device)
+    elif args.baseline == "text_relay":
+        results = run_text_relay_baseline(args, config, device)
+    elif args.baseline == "ensemble":
+        results = run_ensemble_baseline(args, config, device)
+    elif args.baseline == "ridge_regression":
+        results = run_ridge_regression_baseline(args, config, device)
     else:
         print(f"Unknown baseline: {args.baseline}")
         return
@@ -966,6 +1618,12 @@ def main():
     elif args.baseline == "prompt_tuning":
         output["config"]["soft_tokens"] = args.soft_tokens
         output["config"]["steps"] = args.steps
+    elif args.baseline == "ensemble":
+        output["config"]["alphas"] = args.alphas
+    elif args.baseline == "ridge_regression":
+        output["config"]["lambda_values"] = args.lambda_values
+        output["config"]["max_fit_samples"] = args.max_fit_samples
+        output["config"]["source_layer"] = args.source_layer
 
     output_file = f"{args.output_dir}/{args.baseline}_{args.dataset}_{timestamp}.json"
     with open(output_file, "w") as f:
