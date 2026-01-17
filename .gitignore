@@ -19,9 +19,9 @@ code-server-*
 dist/
 build/
 
-# Training runs and logs
-runs/
-*.err
+# Training runs and logs (allow experiment results to be committed)
+# runs/  # Commented out - we want to commit experiment results
+# *.err  # Commented out - we want SLURM error logs
 # Exception: Allow cross-model ablation checkpoints in git (small matrices ~32MB each)
 !experimental/learning/checkpoints/**
 *adapter_model.safetensors
@@ -32,15 +32,15 @@ venv_arm64/
 experimental/learning/reproduce_coconut/coconut/YOUR_PATH_TO_SAVE_THE_MODEL/*
 *.safetensors*
 
-# LaTeX build artifacts
-*.aux
-*.bbl
-*.blg
-*.log
-*.out
-*.fls
-*.fdb_latexmk
-*.synctex.gz
+# LaTeX build artifacts (scoped to paper_writing directory)
+telepathy/paper_writing/*.aux
+telepathy/paper_writing/*.bbl
+telepathy/paper_writing/*.blg
+telepathy/paper_writing/*.log
+telepathy/paper_writing/*.out
+telepathy/paper_writing/*.fls
+telepathy/paper_writing/*.fdb_latexmk
+telepathy/paper_writing/*.synctex.gz
 
 # Experimental/future work (not part of MLSys submission)
 PUBLICATION_ROADMAP.md
