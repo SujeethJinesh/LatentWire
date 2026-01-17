@@ -41,3 +41,12 @@ experimental/learning/reproduce_coconut/coconut/YOUR_PATH_TO_SAVE_THE_MODEL/*
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Experimental/future work (not part of MLSys submission)
+PUBLICATION_ROADMAP.md
+telepathy/research/
+telepathy/paper_writing/experiments/
+latentwire/diffusion_bridge.py
+telepathy/*diffusion*.py
+telepathy/run_compression_analysis.py
+telepathy/run_token_capacity_experiment.py

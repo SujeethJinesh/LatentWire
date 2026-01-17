@@ -9,6 +9,16 @@
 #SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/reasoning_final_%j.log
 #SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/reasoning_final_%j.err
 
+set -o pipefail  # Catch pipe failures
+
+# Ensure SLURM output directory exists
+mkdir -p /projects/m000066/sujinesh/LatentWire/runs
+
+# Error tracking
+declare -a FAILED_EXPERIMENTS=()
+TOTAL_EXPERIMENTS=0
+SUCCESSFUL_EXPERIMENTS=0
+
 # =============================================================================
 # REASONING-FOCUSED FINAL EXPERIMENTS (Publication Ready)
 # =============================================================================
@@ -44,6 +54,84 @@
 WORK_DIR="/projects/m000066/sujinesh/LatentWire"
 cd "$WORK_DIR"
 
+export PYTHONPATH=.
+export HF_HOME="/projects/m000066/sujinesh/.cache/huggingface"
+export TRANSFORMERS_CACHE="/projects/m000066/sujinesh/.cache/huggingface/transformers"
+
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+OUTPUT_DIR="runs/reasoning_final_${TIMESTAMP}"
+mkdir -p "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR/standard_bridge"
+mkdir -p "$OUTPUT_DIR/novel_bridges"
+mkdir -p "$OUTPUT_DIR/baselines"
+mkdir -p "$OUTPUT_DIR/benchmarks"
+
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
+
+# Timestamped logging
+log_msg() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+}
+
+# Log experiment with error tracking
+run_experiment() {
+    local name="$1"
+    shift
+    local cmd="$@"
+
+    TOTAL_EXPERIMENTS=$((TOTAL_EXPERIMENTS + 1))
+    log_msg "START: $name"
+
+    if eval "$cmd"; then
+        SUCCESSFUL_EXPERIMENTS=$((SUCCESSFUL_EXPERIMENTS + 1))
+        log_msg "SUCCESS: $name"
+        return 0
+    else
+        local exit_code=$?
+        FAILED_EXPERIMENTS+=("$name")
+        log_msg "FAILED: $name (exit code: $exit_code)"
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $name failed with exit code $exit_code" >> "${OUTPUT_DIR}/experiment_errors.log"
+        return $exit_code
+    fi
+}
+
+# Git push with retry
+push_with_retry() {
+    local max_attempts=3
+    local attempt=1
+
+    while [ $attempt -le $max_attempts ]; do
+        log_msg "Git push attempt $attempt of $max_attempts"
+        if git push; then
+            log_msg "Git push successful"
+            return 0
+        fi
+        log_msg "Push failed, waiting 10s before retry..."
+        attempt=$((attempt + 1))
+        sleep 10
+        git pull --rebase=false 2>/dev/null || true
+    done
+
+    log_msg "CRITICAL: Failed to push after $max_attempts attempts"
+    return 1
+}
+
+# Cleanup trap
+cleanup() {
+    local exit_code=$?
+    log_msg "Job ending with exit code: $exit_code"
+
+    # Always try to save partial results
+    if [ -d "$OUTPUT_DIR" ]; then
+        git add "${OUTPUT_DIR}/" 2>/dev/null || true
+        git commit -m "partial results: job $SLURM_JOB_ID (exit: $exit_code)" 2>/dev/null || true
+        push_with_retry || true
+    fi
+}
+trap cleanup EXIT
+
 echo "=============================================================="
 echo "REASONING-FOCUSED FINAL EXPERIMENTS (Publication Ready)"
 echo "=============================================================="
@@ -63,18 +151,6 @@ echo "  - GPU 0: Standard bridge (hail mary) + baselines (zero-shot, few-shot, D
 echo "  - GPU 1: Novel bridges + token capacity + latency/memory/throughput/batched benchmarks"
 echo "=============================================================="
 
-export PYTHONPATH=.
-export HF_HOME="/projects/m000066/sujinesh/.cache/huggingface"
-export TRANSFORMERS_CACHE="/projects/m000066/sujinesh/.cache/huggingface/transformers"
-
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-OUTPUT_DIR="runs/reasoning_final_${TIMESTAMP}"
-mkdir -p "$OUTPUT_DIR"
-mkdir -p "$OUTPUT_DIR/standard_bridge"
-mkdir -p "$OUTPUT_DIR/novel_bridges"
-mkdir -p "$OUTPUT_DIR/baselines"
-mkdir -p "$OUTPUT_DIR/benchmarks"
-
 # Git setup
 git config user.name > /dev/null 2>&1 || git config user.name "SLURM Job $SLURM_JOB_ID"
 git config user.email > /dev/null 2>&1 || git config user.email "slurm@hpc.cluster"
@@ -87,63 +163,66 @@ echo ""
 SEEDS="42 123 456"
 REASONING_DATASETS="arc_easy winogrande hellaswag boolq"
 
+# Create error log file
+touch "${OUTPUT_DIR}/experiment_errors.log"
+
 # =============================================================================
 # GPU 0: STANDARD BRIDGE + BASELINES (zero-shot, few-shot, DoRA, prompt tuning, linear probe)
 # =============================================================================
 run_gpu0() {
-    echo "[GPU 0] Starting: Standard Bridge + Baselines"
+    log_msg "[GPU 0] Starting: Standard Bridge + Baselines"
 
     # -----------------------------------------------------------------
     # HAIL MARY EVALUATION (Standard bridge on reasoning benchmarks)
     # -----------------------------------------------------------------
-    echo "[GPU 0] Running Hail Mary Reasoning Evaluation"
+    log_msg "[GPU 0] Running Hail Mary Reasoning Evaluation"
 
-    python telepathy/run_enhanced_paper_evaluation.py \
-        --output_dir "${OUTPUT_DIR}/standard_bridge" \
+    run_experiment "hail_mary_reasoning" "python telepathy/run_enhanced_paper_evaluation.py \
+        --output_dir '${OUTPUT_DIR}/standard_bridge' \
         --gpu 0 \
         --hail_mary_mode \
         --fast_mode \
         --run_diagnostics \
         --log_level INFO \
-        2>&1 | tee "${OUTPUT_DIR}/standard_bridge/hail_mary.log" || true
+        2>&1 | tee '${OUTPUT_DIR}/standard_bridge/hail_mary.log'"
 
-    echo "[GPU 0] Hail mary evaluation completed"
+    log_msg "[GPU 0] Hail mary evaluation completed"
 
     # -----------------------------------------------------------------
     # ZERO-SHOT BASELINE on all 4 reasoning datasets
     # Critical comparison: how do raw LLMs perform without any training?
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 0] Running Zero-Shot Baseline on all reasoning datasets"
+    log_msg "[GPU 0] Running Zero-Shot Baseline on all reasoning datasets"
 
     for DATASET in arc_easy winogrande hellaswag boolq; do
-        echo "[GPU 0] Zero-shot on $DATASET"
-        python telepathy/run_baselines.py \
+        log_msg "[GPU 0] Zero-shot on $DATASET"
+        run_experiment "zeroshot_${DATASET}" "python telepathy/run_baselines.py \
             --baseline zeroshot \
             --dataset $DATASET \
             --gpu 0 \
             --max_samples 200 \
-            --output_dir "${OUTPUT_DIR}/baselines/zeroshot" \
-            2>&1 | tee "${OUTPUT_DIR}/baselines/zeroshot_${DATASET}.log" || true
+            --output_dir '${OUTPUT_DIR}/baselines/zeroshot' \
+            2>&1 | tee '${OUTPUT_DIR}/baselines/zeroshot_${DATASET}.log'"
     done
 
     # -----------------------------------------------------------------
     # FEW-SHOT BASELINE (4-shot) on all reasoning datasets
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 0] Running Few-Shot Baseline (4-shot) on reasoning datasets"
+    log_msg "[GPU 0] Running Few-Shot Baseline (4-shot) on reasoning datasets"
 
     for DATASET in arc_easy winogrande hellaswag boolq; do
-        echo "[GPU 0] Few-shot (4-shot) on $DATASET"
-        python telepathy/run_baselines.py \
+        log_msg "[GPU 0] Few-shot (4-shot) on $DATASET"
+        run_experiment "fewshot_${DATASET}" "python telepathy/run_baselines.py \
             --baseline fewshot \
             --dataset $DATASET \
             --shots 4 \
             --seeds 42 123 456 \
             --gpu 0 \
             --max_samples 200 \
-            --output_dir "${OUTPUT_DIR}/baselines/fewshot" \
-            2>&1 | tee "${OUTPUT_DIR}/baselines/fewshot_${DATASET}.log" || true
+            --output_dir '${OUTPUT_DIR}/baselines/fewshot' \
+            2>&1 | tee '${OUTPUT_DIR}/baselines/fewshot_${DATASET}.log'"
     done
 
     # -----------------------------------------------------------------
@@ -151,9 +230,9 @@ run_gpu0() {
     # DoRA = Weight-Decomposed LoRA, SOTA PEFT method (2024)
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 0] Running DoRA Baseline (rank=8) on ARC-Easy"
+    log_msg "[GPU 0] Running DoRA Baseline (rank=8) on ARC-Easy"
 
-    python telepathy/run_baselines.py \
+    run_experiment "dora_arc_easy" "python telepathy/run_baselines.py \
         --baseline dora \
         --dataset arc_easy \
         --rank 8 \
@@ -162,17 +241,17 @@ run_gpu0() {
         --gpu 0 \
         --max_samples 200 \
         --max_train_samples 2000 \
-        --output_dir "${OUTPUT_DIR}/baselines/dora" \
-        2>&1 | tee "${OUTPUT_DIR}/baselines/dora_arc_easy.log" || true
+        --output_dir '${OUTPUT_DIR}/baselines/dora' \
+        2>&1 | tee '${OUTPUT_DIR}/baselines/dora_arc_easy.log'"
 
     # -----------------------------------------------------------------
     # PROMPT TUNING BASELINE on ARC-Easy
     # Proves that Llama (sender) actually helps - receiver alone can't match bridge
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 0] Running Prompt Tuning Baseline (8 tokens) on ARC-Easy"
+    log_msg "[GPU 0] Running Prompt Tuning Baseline (8 tokens) on ARC-Easy"
 
-    python telepathy/run_baselines.py \
+    run_experiment "prompt_tuning_arc_easy" "python telepathy/run_baselines.py \
         --baseline prompt_tuning \
         --dataset arc_easy \
         --soft_tokens 8 \
@@ -180,31 +259,31 @@ run_gpu0() {
         --seeds 42 123 456 \
         --gpu 0 \
         --max_samples 200 \
-        --output_dir "${OUTPUT_DIR}/baselines/prompt_tuning" \
-        2>&1 | tee "${OUTPUT_DIR}/baselines/prompt_tuning_arc_easy.log" || true
+        --output_dir '${OUTPUT_DIR}/baselines/prompt_tuning' \
+        2>&1 | tee '${OUTPUT_DIR}/baselines/prompt_tuning_arc_easy.log'"
 
     # -----------------------------------------------------------------
     # LINEAR PROBE BASELINE (Layer 31 - same as bridge)
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 0] Running Linear Probe Baseline (layer 31)"
+    log_msg "[GPU 0] Running Linear Probe Baseline (layer 31)"
 
-    python telepathy/linear_probe_baseline.py \
+    run_experiment "linear_probe" "python telepathy/linear_probe_baseline.py \
         --datasets arc_easy winogrande hellaswag boolq \
         --layers 31 \
         --seeds 42 123 456 \
-        --output_dir "${OUTPUT_DIR}/baselines/linear_probe" \
+        --output_dir '${OUTPUT_DIR}/baselines/linear_probe' \
         --device cuda:0 \
-        2>&1 | tee "${OUTPUT_DIR}/baselines/linear_probe.log" || true
+        2>&1 | tee '${OUTPUT_DIR}/baselines/linear_probe.log'"
 
-    echo "[GPU 0] All evaluations completed"
+    log_msg "[GPU 0] All evaluations completed"
 }
 
 # =============================================================================
 # GPU 1: NOVEL BRIDGES + TOKEN CAPACITY + LATENCY/MEMORY/THROUGHPUT/BATCHED BENCHMARKS
 # =============================================================================
 run_gpu1() {
-    echo "[GPU 1] Starting: Novel Bridges + Token Capacity + All Benchmarks"
+    log_msg "[GPU 1] Starting: Novel Bridges + Token Capacity + All Benchmarks"
 
     # -----------------------------------------------------------------
     # NOVEL BRIDGES on ARC-Easy (simplest reasoning task)
@@ -217,18 +296,18 @@ run_gpu1() {
     for BRIDGE in $NOVEL_BRIDGES; do
         for SEED in $ABLATION_SEEDS; do
             echo ""
-            echo "[GPU 1] Testing $BRIDGE on ARC-Easy (seed=$SEED)"
+            log_msg "[GPU 1] Testing $BRIDGE on ARC-Easy (seed=$SEED)"
 
-            python telepathy/train_telepathy.py \
+            run_experiment "${BRIDGE}_arc_easy_seed${SEED}" "python telepathy/train_telepathy.py \
                 --dataset arc_easy \
                 --bridge_type $BRIDGE \
                 --soft_tokens 8 \
                 --steps 1500 \
                 --eval_every 200 \
                 --seed $SEED \
-                --output_dir "${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}" \
+                --output_dir '${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}' \
                 --gpu 1 \
-                2>&1 | tee "${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}.log" || true
+                2>&1 | tee '${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}.log'"
         done
     done
 
@@ -238,21 +317,21 @@ run_gpu1() {
     # Multi-seed for statistical significance
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 1] Token Capacity Scaling on Reasoning (4, 8, 16, 32 tokens, 3 seeds)"
+    log_msg "[GPU 1] Token Capacity Scaling on Reasoning (4, 8, 16, 32 tokens, 3 seeds)"
 
     for TOKENS in 4 8 16 32; do
         for SEED in $ABLATION_SEEDS; do
-            echo "[GPU 1] Testing $TOKENS soft tokens on ARC-Easy (seed=$SEED)"
-            python telepathy/train_telepathy.py \
+            log_msg "[GPU 1] Testing $TOKENS soft tokens on ARC-Easy (seed=$SEED)"
+            run_experiment "token_capacity_${TOKENS}_seed${SEED}" "python telepathy/train_telepathy.py \
                 --dataset arc_easy \
                 --bridge_type standard \
                 --soft_tokens $TOKENS \
                 --steps 1500 \
                 --eval_every 200 \
                 --seed $SEED \
-                --output_dir "${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}" \
+                --output_dir '${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}' \
                 --gpu 1 \
-                2>&1 | tee "${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}.log" || true
+                2>&1 | tee '${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}.log'"
         done
     done
 
@@ -260,7 +339,7 @@ run_gpu1() {
     # LATENCY BENCHMARKS
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 1] Running Latency Benchmarks"
+    log_msg "[GPU 1] Running Latency Benchmarks"
 
     # Find a checkpoint to use for latency benchmark (from token_capacity_8, seed 42)
     CHECKPOINT="${OUTPUT_DIR}/novel_bridges/token_capacity_8_seed42/bridge_arc_easy.pt"
@@ -269,26 +348,26 @@ run_gpu1() {
     sleep 5
 
     if [ -f "$CHECKPOINT" ]; then
-        echo "[GPU 1] Running latency benchmark with checkpoint: $CHECKPOINT"
-        python telepathy/run_benchmarks.py \
+        log_msg "[GPU 1] Running latency benchmark with checkpoint: $CHECKPOINT"
+        run_experiment "latency_benchmark" "python telepathy/run_benchmarks.py \
             --benchmark latency \
-            --checkpoint "$CHECKPOINT" \
+            --checkpoint '$CHECKPOINT' \
             --soft_tokens 8 \
             --num_trials 50 \
             --warmup 5 \
             --gpu 1 \
-            --output_dir "${OUTPUT_DIR}/benchmarks" \
-            2>&1 | tee "${OUTPUT_DIR}/benchmarks/latency.log" || true
+            --output_dir '${OUTPUT_DIR}/benchmarks' \
+            2>&1 | tee '${OUTPUT_DIR}/benchmarks/latency.log'"
     else
-        echo "[GPU 1] No checkpoint found, running latency benchmark without bridge"
-        python telepathy/run_benchmarks.py \
+        log_msg "[GPU 1] No checkpoint found, running latency benchmark without bridge"
+        run_experiment "latency_benchmark_no_checkpoint" "python telepathy/run_benchmarks.py \
             --benchmark latency \
             --soft_tokens 8 \
             --num_trials 50 \
             --warmup 5 \
             --gpu 1 \
-            --output_dir "${OUTPUT_DIR}/benchmarks" \
-            2>&1 | tee "${OUTPUT_DIR}/benchmarks/latency.log" || true
+            --output_dir '${OUTPUT_DIR}/benchmarks' \
+            2>&1 | tee '${OUTPUT_DIR}/benchmarks/latency.log'"
     fi
 
     # -----------------------------------------------------------------
@@ -296,8 +375,8 @@ run_gpu1() {
     # Tests throughput at different batch sizes: 1, 4, 8, 16
     # -----------------------------------------------------------------
     echo ""
-    echo "[GPU 1] Running Batched Latency Benchmark (batch sizes: 1, 4, 8, 16)"
-    python telepathy/run_benchmarks.py \
+    log_msg "[GPU 1] Running Batched Latency Benchmark (batch sizes: 1, 4, 8, 16)"
+    run_experiment "batched_latency_benchmark" "python telepathy/run_benchmarks.py \
         --benchmark batched \
         --batch_sizes 1 4 8 16 \
         --soft_tokens 8 \
@@ -305,48 +384,48 @@ run_gpu1() {
         --num_runs 5 \
         --warmup 2 \
         --gpu 1 \
-        --output_dir "${OUTPUT_DIR}/benchmarks" \
-        2>&1 | tee "${OUTPUT_DIR}/benchmarks/batched_latency.log" || true
+        --output_dir '${OUTPUT_DIR}/benchmarks' \
+        2>&1 | tee '${OUTPUT_DIR}/benchmarks/batched_latency.log'"
 
     # Memory benchmark
     echo ""
-    echo "[GPU 1] Running Memory Benchmark"
-    python telepathy/run_benchmarks.py \
+    log_msg "[GPU 1] Running Memory Benchmark"
+    run_experiment "memory_benchmark" "python telepathy/run_benchmarks.py \
         --benchmark memory \
         --gpu 1 \
-        --output_dir "${OUTPUT_DIR}/benchmarks" \
-        2>&1 | tee "${OUTPUT_DIR}/benchmarks/memory.log" || true
+        --output_dir '${OUTPUT_DIR}/benchmarks' \
+        2>&1 | tee '${OUTPUT_DIR}/benchmarks/memory.log'"
 
     # Throughput benchmark
     echo ""
-    echo "[GPU 1] Running Throughput Benchmark"
+    log_msg "[GPU 1] Running Throughput Benchmark"
     if [ -f "$CHECKPOINT" ]; then
-        python telepathy/run_benchmarks.py \
+        run_experiment "throughput_benchmark" "python telepathy/run_benchmarks.py \
             --benchmark throughput \
-            --checkpoint "$CHECKPOINT" \
+            --checkpoint '$CHECKPOINT' \
             --soft_tokens 8 \
             --num_samples 100 \
             --gpu 1 \
-            --output_dir "${OUTPUT_DIR}/benchmarks" \
-            2>&1 | tee "${OUTPUT_DIR}/benchmarks/throughput.log" || true
+            --output_dir '${OUTPUT_DIR}/benchmarks' \
+            2>&1 | tee '${OUTPUT_DIR}/benchmarks/throughput.log'"
     else
-        python telepathy/run_benchmarks.py \
+        run_experiment "throughput_benchmark_no_checkpoint" "python telepathy/run_benchmarks.py \
             --benchmark throughput \
             --soft_tokens 8 \
             --num_samples 100 \
             --gpu 1 \
-            --output_dir "${OUTPUT_DIR}/benchmarks" \
-            2>&1 | tee "${OUTPUT_DIR}/benchmarks/throughput.log" || true
+            --output_dir '${OUTPUT_DIR}/benchmarks' \
+            2>&1 | tee '${OUTPUT_DIR}/benchmarks/throughput.log'"
     fi
 
-    echo "[GPU 1] All experiments completed"
+    log_msg "[GPU 1] All experiments completed"
 }
 
 # =============================================================================
 # RUN BOTH GPUS IN PARALLEL
 # =============================================================================
 echo ""
-echo "Starting parallel execution on 2 GPUs..."
+log_msg "Starting parallel execution on 2 GPUs..."
 echo ""
 
 run_gpu0 &
@@ -355,15 +434,15 @@ GPU0_PID=$!
 run_gpu1 &
 GPU1_PID=$!
 
-echo "GPU 0 PID: $GPU0_PID (Standard Bridge + Baselines)"
-echo "GPU 1 PID: $GPU1_PID (Novel Bridges + Benchmarks)"
+log_msg "GPU 0 PID: $GPU0_PID (Standard Bridge + Baselines)"
+log_msg "GPU 1 PID: $GPU1_PID (Novel Bridges + Benchmarks)"
 echo ""
 
 wait $GPU0_PID
-echo "GPU 0 finished"
+log_msg "GPU 0 finished"
 
 wait $GPU1_PID
-echo "GPU 1 finished"
+log_msg "GPU 1 finished"
 
 # =============================================================================
 # AGGREGATE RESULTS
@@ -544,17 +623,31 @@ combined = {
 }
 with open(output_dir / 'reasoning_results_summary.json', 'w') as f:
     json.dump(combined, f, indent=2)
-" 2>/dev/null || echo "Could not aggregate (some experiments may have failed)"
+" || echo "Could not aggregate (some experiments may have failed)"
 
 # =============================================================================
-# GIT COMMIT
+# EXPERIMENT SUMMARY AND GIT COMMIT
 # =============================================================================
 echo ""
-echo "Saving to git..."
+echo "=============================================================="
+echo "EXPERIMENT SUMMARY"
+echo "=============================================================="
+echo "Total experiments: $TOTAL_EXPERIMENTS"
+echo "Successful: $SUCCESSFUL_EXPERIMENTS"
+echo "Failed: ${#FAILED_EXPERIMENTS[@]}"
 
-git add "${OUTPUT_DIR}/" 2>/dev/null || true
+if [ ${#FAILED_EXPERIMENTS[@]} -gt 0 ]; then
+    echo ""
+    echo "Failed experiments:"
+    for exp in "${FAILED_EXPERIMENTS[@]}"; do
+        echo "  - $exp"
+    done
+fi
+echo "=============================================================="
 
-COMMIT_MSG="results: REASONING-FOCUSED final experiments (job $SLURM_JOB_ID)
+# Git commit and push
+git add "$OUTPUT_DIR"
+COMMIT_MSG="Reasoning experiments: job $SLURM_JOB_ID - ${SUCCESSFUL_EXPERIMENTS}/${TOTAL_EXPERIMENTS} succeeded
 
 REASONING BENCHMARKS:
 - ARC-Easy, WinoGrande, HellaSwag, BoolQ
@@ -583,7 +676,8 @@ Runtime: $SECONDS seconds ($(($SECONDS / 3600))h $(($SECONDS % 3600 / 60))m)
 
 Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 
-git commit -m "$COMMIT_MSG" && git push || echo "Git commit/push failed"
+git commit -m "$COMMIT_MSG"
+push_with_retry
 
 # =============================================================================
 # FINAL SUMMARY
