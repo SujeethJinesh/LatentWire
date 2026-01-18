@@ -30,9 +30,9 @@ SUCCESSFUL_EXPERIMENTS=0
 # - HellaSwag: Situational reasoning (4-way MC)
 # - BoolQ: Yes/No reading comprehension (2-way)
 #
-# GPU WORKLOAD (Balanced ~4h each):
+# GPU WORKLOAD (Balanced ~4-5h each):
 # - GPU 0: Standard bridge + baselines (zero-shot, few-shot, DoRA, prompt tuning, linear probe, text_relay, ensemble)
-# - GPU 1: Novel bridges (1 seed) + token capacity (1 seed) + ridge_regression + benchmarks
+# - GPU 1: Novel bridges + HAIL MARY bridges + token capacity + ridge_regression + benchmarks
 #
 # EXPERIMENTS:
 # 1. Standard bridge on all reasoning tasks (3 seeds) via hail_mary
@@ -44,9 +44,11 @@ SUCCESSFUL_EXPERIMENTS=0
 # 7. Text relay baseline on arc_easy (fair text-based cross-model)
 # 8. Ensemble baseline on arc_easy (alpha-weighted Llama+Mistral)
 # 9. Novel bridges: flow_matching, optimal_transport, moe (1 seed each)
-# 10. Token capacity: 4, 8, 16, 32 tokens (1 seed each)
-# 11. Ridge regression baseline (training-free alignment)
-# 12. Latency/memory/throughput/batched benchmarks
+# 10. HAIL MARY bridges: cross_modal_distillation, mine, mixture_of_depths,
+#     thalamic_relay, domain_adversarial, successive_refinement (1 seed each)
+# 11. Token capacity: 4, 8, 16, 32 tokens (1 seed each)
+# 12. Ridge regression baseline (training-free alignment)
+# 13. Latency/memory/throughput/batched benchmarks
 #
 # Estimated runtime: ~4 hours on 2 H100 GPUs (balanced workload)
 #
@@ -320,7 +322,7 @@ run_gpu1() {
 
     # -----------------------------------------------------------------
     # NOVEL BRIDGES on ARC-Easy (simplest reasoning task)
-    # 3 bridges: flow_matching, optimal_transport, moe (Mixtral/DeepSeek-style)
+    # 3 original bridges: flow_matching, optimal_transport, moe (Mixtral/DeepSeek-style)
     # Multi-seed for statistical significance
     # -----------------------------------------------------------------
     NOVEL_BRIDGES="flow_matching optimal_transport moe"
@@ -341,6 +343,39 @@ run_gpu1() {
                 --output_dir '${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}' \
                 --gpu 1 \
                 2>&1 | tee '${OUTPUT_DIR}/novel_bridges/${BRIDGE}_arc_easy_seed${SEED}.log'"
+        done
+    done
+
+    # -----------------------------------------------------------------
+    # HAIL MARY BRIDGES on ARC-Easy (Literature-Informed Novel Experiments)
+    # 6 new bridges from systematic literature review:
+    # - cross_modal_distillation: KL divergence to sender logits
+    # - mine: Mutual Information Neural Estimation (tighter than InfoNCE)
+    # - mixture_of_depths: Adaptive compute via early exit
+    # - thalamic_relay: Neuroscience-inspired inhibitory gating
+    # - domain_adversarial: Gradient reversal for alignment
+    # - successive_refinement: Progressive token generation
+    # -----------------------------------------------------------------
+    echo ""
+    log_msg "[GPU 1] Starting HAIL MARY Bridge Experiments (6 literature-informed bridges)"
+
+    HAIL_MARY_BRIDGES="cross_modal_distillation mine mixture_of_depths thalamic_relay domain_adversarial successive_refinement"
+
+    for BRIDGE in $HAIL_MARY_BRIDGES; do
+        for SEED in $ABLATION_SEEDS; do
+            echo ""
+            log_msg "[GPU 1] Testing HAIL MARY $BRIDGE on ARC-Easy (seed=$SEED)"
+
+            run_experiment "hailmary_${BRIDGE}_arc_easy_seed${SEED}" "python telepathy/train_telepathy.py \
+                --dataset arc_easy \
+                --bridge_type $BRIDGE \
+                --soft_tokens 8 \
+                --steps 1500 \
+                --eval_every 200 \
+                --seed $SEED \
+                --output_dir '${OUTPUT_DIR}/novel_bridges/hailmary_${BRIDGE}_arc_easy_seed${SEED}' \
+                --gpu 1 \
+                2>&1 | tee '${OUTPUT_DIR}/novel_bridges/hailmary_${BRIDGE}_arc_easy_seed${SEED}.log'"
         done
     done
 

@@ -491,11 +491,16 @@ def parse_args():
                                "predictive_coding", "optimal_transport", "infonce",
                                "sparse_kwta", "residual_coding", "lock_and_key", "moe",
                                # MATH bridge types
-                               "spectral_cca", "flow_matching"],
+                               "spectral_cca", "flow_matching",
+                               # HAIL MARY bridge types (literature-informed)
+                               "cross_modal_distillation", "mine", "mixture_of_depths",
+                               "thalamic_relay", "domain_adversarial", "successive_refinement"],
                        help="Bridge architecture: standard, ridge, vib, multi_layer, "
                             "NOVEL types: predictive_coding, optimal_transport, infonce, "
                             "sparse_kwta, residual_coding, lock_and_key, moe, "
-                            "MATH types: spectral_cca, flow_matching")
+                            "MATH types: spectral_cca, flow_matching, "
+                            "HAIL MARY types: cross_modal_distillation, mine, mixture_of_depths, "
+                            "thalamic_relay, domain_adversarial, successive_refinement")
 
     # Ridge Regression (LatentMAS)
     parser.add_argument("--lambda_reg", type=float, default=1e-4,
@@ -1015,6 +1020,95 @@ def main():
             use_shared_expert=args.moe_use_shared_expert,
             aux_loss_weight=args.moe_aux_loss_weight,
             use_aux_loss_free=args.moe_aux_loss_free,
+        )
+
+    # =========================================================================
+    # HAIL MARY BRIDGE TYPES (Literature-Informed Novel Experiments)
+    # =========================================================================
+
+    elif args.bridge_type == "cross_modal_distillation":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Cross-Modal Distillation Bridge - KL divergence to sender logits")
+        from telepathy.cross_model_experiments import CrossModalDistillationBridge
+        bridge = CrossModalDistillationBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            temperature=2.0,
+            kd_weight=0.5,
+        )
+
+    elif args.bridge_type == "mine":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using MINE Bridge - Mutual Information Neural Estimation")
+        from telepathy.cross_model_experiments import MINEBridge
+        bridge = MINEBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            mine_weight=0.1,
+        )
+
+    elif args.bridge_type == "mixture_of_depths":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Mixture-of-Depths Bridge - Adaptive compute via early exit")
+        from telepathy.cross_model_experiments import MixtureOfDepthsBridge
+        bridge = MixtureOfDepthsBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            capacity_factor=0.5,
+        )
+
+    elif args.bridge_type == "thalamic_relay":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Thalamic Relay Bridge - Inhibitory gating")
+        from telepathy.cross_model_experiments import ThalamicRelayBridge
+        bridge = ThalamicRelayBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            gate_temperature=1.0,
+        )
+
+    elif args.bridge_type == "domain_adversarial":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Domain Adversarial Bridge - Gradient reversal alignment")
+        from telepathy.cross_model_experiments import DomainAdversarialBridge
+        bridge = DomainAdversarialBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            adv_weight=0.1,
+        )
+
+    elif args.bridge_type == "successive_refinement":
+        if not EXPERIMENTAL_BRIDGES_AVAILABLE:
+            raise ImportError("Experimental bridges not available")
+        if local_rank == 0:
+            print(f"Using Successive Refinement Bridge - Progressive token generation")
+        from telepathy.cross_model_experiments import SuccessiveRefinementBridge
+        bridge = SuccessiveRefinementBridge(
+            args,
+            src_dim=src_model.config.hidden_size,
+            tgt_dim=tgt_model.config.hidden_size,
+            target_rms=target_rms,
+            max_tokens=16,
         )
 
     else:

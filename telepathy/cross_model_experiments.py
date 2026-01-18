@@ -1220,6 +1220,751 @@ class FlowMatchingBridge(nn.Module):
 
 
 # =============================================================================
+# HAIL MARY EXPERIMENT 1: Cross-Modal Distillation Bridge
+# =============================================================================
+# Key insight: Train the bridge so that receiver with soft tokens matches
+# the sender's full probability distribution via KL divergence.
+# This provides richer supervision than just task labels.
+# =============================================================================
+
+class CrossModalDistillationBridge(nn.Module):
+    """
+    Cross-Modal Distillation Bridge - match sender's output distribution.
+
+    Architecture:
+    1. Standard Perceiver encoding to soft tokens
+    2. Additional KL divergence loss between sender logits and receiver logits
+    3. Temperature scaling for softer probability distributions
+
+    Key insight: The sender's full distribution contains more information
+    than just the correct label. KD transfers this dark knowledge.
+    """
+
+    def __init__(self, args, src_dim: int, tgt_dim: int, target_rms: float = 0.03,
+                 temperature: float = 2.0, kd_weight: float = 0.5):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        self.temperature = temperature
+        self.kd_weight = kd_weight
+
+        num_latents = getattr(args, 'soft_tokens', 8)
+        heads = getattr(args, 'heads', 8)
+        depth = getattr(args, 'depth', 2)
+
+        # Standard Perceiver encoder
+        self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
+
+        # Output scaling
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+        self.num_latents = num_latents
+
+        # Store sender logits for KD loss computation (set during training step)
+        self.cached_sender_logits = None
+
+        logger.info(f"CrossModalDistillationBridge: {num_latents} tokens, T={temperature}, kd_weight={kd_weight}")
+
+    def set_sender_logits(self, logits: torch.Tensor):
+        """Cache sender logits for KD loss computation."""
+        self.cached_sender_logits = logits.detach()
+
+    def compute_kd_loss(self, receiver_logits: torch.Tensor) -> torch.Tensor:
+        """
+        Compute KL divergence between sender and receiver distributions.
+
+        Args:
+            receiver_logits: [B, vocab_size] from receiver model
+        Returns:
+            kd_loss: scalar KL divergence loss
+        """
+        if self.cached_sender_logits is None:
+            return torch.tensor(0.0, device=receiver_logits.device)
+
+        # Align vocab sizes (use minimum)
+        min_vocab = min(self.cached_sender_logits.shape[-1], receiver_logits.shape[-1])
+        sender_logits = self.cached_sender_logits[..., :min_vocab]
+        receiver_logits = receiver_logits[..., :min_vocab]
+
+        # Soft targets with temperature
+        sender_probs = F.softmax(sender_logits / self.temperature, dim=-1)
+        receiver_log_probs = F.log_softmax(receiver_logits / self.temperature, dim=-1)
+
+        # KL divergence (scaled by T^2 as per Hinton et al.)
+        kd_loss = F.kl_div(receiver_log_probs, sender_probs, reduction='batchmean')
+        kd_loss = kd_loss * (self.temperature ** 2)
+
+        return kd_loss * self.kd_weight
+
+    def forward(self, src_hidden: torch.Tensor, src_mask=None):
+        """
+        Args:
+            src_hidden: [B, seq_len, src_dim]
+        Returns:
+            soft_tokens: [B, num_latents, tgt_dim]
+            aux_loss: 0 (KD loss computed separately via compute_kd_loss)
+        """
+        # Encode
+        soft_tokens = self.resampler(src_hidden, src_mask)
+
+        # RMS normalization
+        rms = torch.sqrt((soft_tokens ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        soft_tokens = (soft_tokens / rms) * self.output_scale
+
+        return soft_tokens.to(src_hidden.dtype), torch.tensor(0.0, device=soft_tokens.device), 1.0, soft_tokens.var()
+
+
+# =============================================================================
+# HAIL MARY EXPERIMENT 2: MINE Bridge (Mutual Information Neural Estimation)
+# =============================================================================
+# Key insight: Use Donsker-Varadhan representation for tighter MI bounds
+# than InfoNCE. This provides asymptotically exact MI estimation.
+# =============================================================================
+
+class MINEBridge(nn.Module):
+    """
+    MINE Bridge - maximize I(input; soft_tokens) via Donsker-Varadhan.
+
+    Architecture:
+    1. Perceiver encodes to soft tokens
+    2. Statistics network T(x, z) estimates MI
+    3. MINE objective: I(X;Z) >= E[T(x,z)] - log(E[exp(T(x',z))])
+
+    Key insight: MINE provides tighter MI bounds than InfoNCE, especially
+    when batch sizes are limited.
+    """
+
+    def __init__(self, args, src_dim: int, tgt_dim: int, target_rms: float = 0.03,
+                 mine_weight: float = 0.1):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        self.mine_weight = mine_weight
+
+        num_latents = getattr(args, 'soft_tokens', 8)
+        heads = getattr(args, 'heads', 8)
+        depth = getattr(args, 'depth', 2)
+
+        # Main encoder
+        self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
+
+        # MINE statistics network T(x, z)
+        stat_dim = 256
+        self.statistics_net = nn.Sequential(
+            nn.Linear(src_dim + tgt_dim * num_latents, stat_dim),
+            nn.GELU(),
+            nn.Linear(stat_dim, stat_dim),
+            nn.GELU(),
+            nn.Linear(stat_dim, 1),
+        )
+
+        # Moving average for MINE stability (exponential moving average of exp(T))
+        self.register_buffer('ema_exp_t', torch.tensor(1.0))
+        self.ema_decay = 0.99
+
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+        self.num_latents = num_latents
+
+        logger.info(f"MINEBridge: {num_latents} tokens, mine_weight={mine_weight}")
+
+    def compute_mine_loss(self, src_hidden: torch.Tensor, soft_tokens: torch.Tensor,
+                          src_mask=None) -> torch.Tensor:
+        """
+        Compute MINE loss (negative MI lower bound).
+
+        Donsker-Varadhan: I(X;Z) >= E[T(x,z)] - log(E[exp(T(x',z))])
+        """
+        B = src_hidden.shape[0]
+
+        # Pool source representation
+        if src_mask is not None:
+            mask_expanded = src_mask.unsqueeze(-1).float()
+            src_pooled = (src_hidden * mask_expanded).sum(1) / (mask_expanded.sum(1) + 1e-8)
+        else:
+            src_pooled = src_hidden.mean(dim=1)
+
+        # Flatten soft tokens
+        soft_flat = soft_tokens.view(B, -1)  # [B, K*D]
+
+        # Positive samples: (x_i, z_i) pairs
+        positive_input = torch.cat([src_pooled.float(), soft_flat.float()], dim=-1)  # [B, src_dim + K*D]
+        t_positive = self.statistics_net(positive_input).squeeze(-1)  # [B]
+
+        # Negative samples: (x_i, z_j) with j shuffled
+        perm = torch.randperm(B, device=src_hidden.device)
+        soft_shuffled = soft_flat[perm]
+        negative_input = torch.cat([src_pooled.float(), soft_shuffled.float()], dim=-1)
+        t_negative = self.statistics_net(negative_input).squeeze(-1)  # [B]
+
+        # MINE objective with EMA for stability
+        positive_term = t_positive.mean()
+
+        # Use log-sum-exp trick for numerical stability
+        exp_t_neg = torch.exp(t_negative)
+
+        # Update EMA
+        if self.training:
+            with torch.no_grad():
+                self.ema_exp_t = self.ema_decay * self.ema_exp_t + (1 - self.ema_decay) * exp_t_neg.mean()
+
+        # Use EMA in gradient (biased but lower variance)
+        negative_term = torch.log(self.ema_exp_t + 1e-8) + (exp_t_neg.mean() / (self.ema_exp_t + 1e-8)) - 1
+
+        # Negative because we want to maximize MI
+        mine_loss = -(positive_term - negative_term)
+
+        return mine_loss * self.mine_weight
+
+    def forward(self, src_hidden: torch.Tensor, src_mask=None):
+        """
+        Args:
+            src_hidden: [B, seq_len, src_dim]
+        Returns:
+            soft_tokens: [B, num_latents, tgt_dim]
+            mine_loss: scalar auxiliary loss
+        """
+        # Encode
+        soft_tokens = self.resampler(src_hidden, src_mask)
+
+        # RMS normalization
+        rms = torch.sqrt((soft_tokens ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        soft_tokens = (soft_tokens / rms) * self.output_scale
+
+        # Compute MINE loss
+        if self.training:
+            mine_loss = self.compute_mine_loss(src_hidden, soft_tokens, src_mask)
+        else:
+            mine_loss = torch.tensor(0.0, device=soft_tokens.device)
+
+        return soft_tokens.to(src_hidden.dtype), mine_loss, 1.0, soft_tokens.var()
+
+
+# =============================================================================
+# HAIL MARY EXPERIMENT 3: Mixture-of-Depths Bridge (Early Exit)
+# =============================================================================
+# Key insight: Not all tokens need the same amount of computation.
+# Easy tokens can exit early, hard tokens traverse full depth.
+# =============================================================================
+
+class MixtureOfDepthsBridge(nn.Module):
+    """
+    Mixture-of-Depths Bridge - adaptive compute via early exit.
+
+    Architecture:
+    1. Each Perceiver layer has a router deciding which tokens continue
+    2. Tokens that exit early accumulate to final output
+    3. Hard tokens get full depth processing
+
+    Based on: Raposo et al. "Mixture-of-Depths" (2024)
+    """
+
+    def __init__(self, args, src_dim: int, tgt_dim: int, target_rms: float = 0.03,
+                 capacity_factor: float = 0.5):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        self.capacity_factor = capacity_factor  # Fraction of tokens that continue at each layer
+
+        num_latents = getattr(args, 'soft_tokens', 8)
+        heads = getattr(args, 'heads', 8)
+        depth = getattr(args, 'depth', 4)  # More depth for MoD to be effective
+
+        self.num_latents = num_latents
+        self.depth = depth
+
+        # Input projection
+        self.input_proj = nn.Linear(src_dim, tgt_dim) if src_dim != tgt_dim else nn.Identity()
+
+        # Learnable latent queries
+        self.latents = nn.Parameter(torch.randn(num_latents, tgt_dim) * 0.02)
+
+        # Per-layer blocks with routers
+        self.layers = nn.ModuleList()
+        self.routers = nn.ModuleList()
+
+        for _ in range(depth):
+            # Transformer-style block
+            self.layers.append(nn.ModuleDict({
+                "cross_attn": nn.MultiheadAttention(tgt_dim, heads, batch_first=True),
+                "ln1": nn.LayerNorm(tgt_dim),
+                "self_attn": nn.MultiheadAttention(tgt_dim, heads, batch_first=True),
+                "ln2": nn.LayerNorm(tgt_dim),
+                "ffn": nn.Sequential(
+                    nn.Linear(tgt_dim, 4 * tgt_dim),
+                    nn.GELU(),
+                    nn.Linear(4 * tgt_dim, tgt_dim)
+                ),
+                "ln3": nn.LayerNorm(tgt_dim)
+            }))
+
+            # Router: predicts which tokens should continue
+            self.routers.append(nn.Linear(tgt_dim, 1))
+
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+
+        logger.info(f"MixtureOfDepthsBridge: {num_latents} tokens, {depth} layers, capacity={capacity_factor}")
+
+    def forward(self, src_hidden: torch.Tensor, src_mask=None):
+        """
+        Args:
+            src_hidden: [B, seq_len, src_dim]
+        Returns:
+            soft_tokens: [B, num_latents, tgt_dim]
+        """
+        B = src_hidden.shape[0]
+
+        # Project source
+        keys = self.input_proj(src_hidden.to(self.input_proj.weight.dtype if hasattr(self.input_proj, 'weight') else src_hidden.dtype))
+        key_padding_mask = ~src_mask.bool() if src_mask is not None else None
+
+        # Initialize latents
+        x = self.latents.unsqueeze(0).expand(B, -1, -1).to(keys.dtype)
+
+        # Track which tokens have exited and their values
+        accumulated_output = torch.zeros_like(x)
+        active_mask = torch.ones(B, self.num_latents, device=x.device, dtype=torch.bool)
+
+        # Capacity loss for load balancing
+        capacity_loss = torch.tensor(0.0, device=x.device)
+
+        for i, (layer, router) in enumerate(zip(self.layers, self.routers)):
+            # Only process active tokens
+            if not active_mask.any():
+                break
+
+            # Compute router scores for active tokens
+            router_scores = router(x).squeeze(-1)  # [B, K]
+
+            # Determine how many tokens continue (based on capacity_factor)
+            k = max(1, int(self.num_latents * self.capacity_factor))
+
+            # Select top-k tokens to continue (per batch)
+            _, continue_idx = torch.topk(router_scores, k, dim=-1)  # [B, k]
+
+            # Create continue mask
+            continue_mask = torch.zeros_like(active_mask)
+            continue_mask.scatter_(1, continue_idx, True)
+
+            # Tokens that exit at this layer
+            exit_mask = active_mask & ~continue_mask
+
+            # Accumulate exited tokens
+            accumulated_output = accumulated_output + x * exit_mask.unsqueeze(-1).float()
+
+            # Process continuing tokens through the layer
+            x_norm = layer["ln1"](x)
+            attn_out, _ = layer["cross_attn"](
+                query=x_norm, key=keys, value=keys,
+                key_padding_mask=key_padding_mask,
+                need_weights=False
+            )
+            x = x + attn_out
+
+            x_norm = layer["ln2"](x)
+            attn_out, _ = layer["self_attn"](
+                query=x_norm, key=x_norm, value=x_norm,
+                need_weights=False
+            )
+            x = x + attn_out
+            x = x + layer["ffn"](layer["ln3"](x))
+
+            # Update active mask
+            active_mask = continue_mask
+
+            # Capacity loss: encourage uniform routing
+            # Penalize deviation from expected capacity
+            actual_continue = continue_mask.float().mean()
+            capacity_loss = capacity_loss + (actual_continue - self.capacity_factor) ** 2
+
+        # Add remaining active tokens to output
+        accumulated_output = accumulated_output + x * active_mask.unsqueeze(-1).float()
+
+        soft_tokens = accumulated_output
+
+        # RMS normalization
+        rms = torch.sqrt((soft_tokens ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        soft_tokens = (soft_tokens / rms) * self.output_scale
+
+        return soft_tokens.to(src_hidden.dtype), capacity_loss * 0.01, 1.0, soft_tokens.var()
+
+
+# =============================================================================
+# HAIL MARY EXPERIMENT 4: Thalamic Relay Bridge
+# =============================================================================
+# Key insight: The thalamus acts as the brain's relay station, using
+# inhibitory gating to selectively transmit task-relevant information.
+# =============================================================================
+
+class ThalamicRelayBridge(nn.Module):
+    """
+    Thalamic Relay Bridge - inhibitory gating between channels.
+
+    Architecture:
+    1. Perceiver encodes to soft tokens
+    2. Thalamic gating module applies channel-wise inhibition
+    3. Reticular nucleus (TRN) creates winner-take-all competition
+
+    Key insight: Not all dimensions are equally important. Thalamic
+    gating learns which dimensions are task-relevant.
+    """
+
+    def __init__(self, args, src_dim: int, tgt_dim: int, target_rms: float = 0.03,
+                 gate_temperature: float = 1.0):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        self.gate_temperature = gate_temperature
+
+        num_latents = getattr(args, 'soft_tokens', 8)
+        heads = getattr(args, 'heads', 8)
+        depth = getattr(args, 'depth', 2)
+
+        # Main encoder
+        self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
+
+        # Thalamic gating network
+        # Maps each token to gate values across channels
+        self.gate_proj = nn.Sequential(
+            nn.Linear(tgt_dim, tgt_dim),
+            nn.GELU(),
+            nn.Linear(tgt_dim, tgt_dim),
+        )
+
+        # Reticular nucleus: lateral inhibition across tokens
+        # Each token inhibits others based on activity
+        self.reticular = nn.Linear(tgt_dim, num_latents)
+
+        # Learnable baseline activity
+        self.baseline = nn.Parameter(torch.zeros(1, 1, tgt_dim))
+
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+        self.num_latents = num_latents
+
+        logger.info(f"ThalamicRelayBridge: {num_latents} tokens with inhibitory gating")
+
+    def forward(self, src_hidden: torch.Tensor, src_mask=None):
+        """
+        Args:
+            src_hidden: [B, seq_len, src_dim]
+        Returns:
+            soft_tokens: [B, num_latents, tgt_dim]
+        """
+        B = src_hidden.shape[0]
+
+        # Encode via Perceiver
+        latents = self.resampler(src_hidden, src_mask)  # [B, K, D]
+
+        # Compute gate values (per-dimension gating)
+        gate_logits = self.gate_proj(latents)  # [B, K, D]
+
+        # Sigmoid gating with temperature
+        gates = torch.sigmoid(gate_logits / self.gate_temperature)  # [B, K, D]
+
+        # Reticular inhibition: competition between tokens
+        # Pool each token's activity
+        token_activity = latents.abs().mean(dim=-1)  # [B, K]
+
+        # Reticular output: how much each token inhibits others
+        inhibition = self.reticular(latents.mean(dim=1))  # [B, K]
+        inhibition = F.softmax(inhibition / self.gate_temperature, dim=-1)  # [B, K]
+
+        # Apply inhibition (winner-take-all competition)
+        inhibited_activity = token_activity * inhibition
+        token_gates = inhibited_activity.unsqueeze(-1)  # [B, K, 1]
+
+        # Combined gating: dimension gates * token gates
+        combined_gates = gates * token_gates
+
+        # Apply gating
+        gated = latents * combined_gates + self.baseline * (1 - combined_gates)
+
+        soft_tokens = gated
+
+        # RMS normalization
+        rms = torch.sqrt((soft_tokens ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        soft_tokens = (soft_tokens / rms) * self.output_scale
+
+        # Gating entropy (for monitoring)
+        gate_entropy = -(gates * (gates + 1e-8).log()).mean()
+
+        return soft_tokens.to(src_hidden.dtype), torch.tensor(0.0, device=soft_tokens.device), gate_entropy, soft_tokens.var()
+
+
+# =============================================================================
+# HAIL MARY EXPERIMENT 5: Domain Adversarial Bridge (DANN-style)
+# =============================================================================
+# Key insight: Use adversarial training to align soft token distribution
+# with the target model's embedding distribution.
+# =============================================================================
+
+class GradientReversalFunction(torch.autograd.Function):
+    """Gradient Reversal Layer for adversarial training."""
+
+    @staticmethod
+    def forward(ctx, x, alpha):
+        ctx.alpha = alpha
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return grad_output.neg() * ctx.alpha, None
+
+
+class DomainAdversarialBridge(nn.Module):
+    """
+    Domain Adversarial Bridge - align distributions via adversarial training.
+
+    Architecture:
+    1. Perceiver encodes to soft tokens
+    2. Discriminator tries to distinguish soft tokens from real embeddings
+    3. Gradient reversal makes encoder fool the discriminator
+
+    Based on: Ganin et al. "Domain-Adversarial Training" (2016)
+    """
+
+    def __init__(self, args, src_dim: int, tgt_dim: int, target_rms: float = 0.03,
+                 adv_weight: float = 0.1):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        self.adv_weight = adv_weight
+
+        num_latents = getattr(args, 'soft_tokens', 8)
+        heads = getattr(args, 'heads', 8)
+        depth = getattr(args, 'depth', 2)
+
+        # Main encoder
+        self.resampler = PerceiverResampler(src_dim, tgt_dim, num_latents, heads, depth)
+
+        # Domain discriminator: distinguishes soft tokens from real embeddings
+        self.discriminator = nn.Sequential(
+            nn.Linear(tgt_dim, tgt_dim // 2),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(tgt_dim // 2, tgt_dim // 4),
+            nn.GELU(),
+            nn.Linear(tgt_dim // 4, 1),
+        )
+
+        # Learnable GRL alpha (annealed during training)
+        self.register_buffer('grl_alpha', torch.tensor(1.0))
+
+        # Reference embeddings from target model (set externally)
+        self.register_buffer('reference_embeddings', None)
+
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+        self.num_latents = num_latents
+
+        logger.info(f"DomainAdversarialBridge: {num_latents} tokens, adv_weight={adv_weight}")
+
+    def set_reference_embeddings(self, embeddings: torch.Tensor):
+        """Set reference embeddings from target model for discriminator training."""
+        self.reference_embeddings = embeddings.detach()
+
+    def compute_adversarial_loss(self, soft_tokens: torch.Tensor) -> torch.Tensor:
+        """
+        Compute adversarial loss for domain alignment.
+
+        soft_tokens should be classified as "fake" (from bridge)
+        reference_embeddings should be classified as "real" (from target model)
+        """
+        B, K, D = soft_tokens.shape
+
+        # Apply gradient reversal to soft tokens
+        soft_reversed = GradientReversalFunction.apply(soft_tokens, self.grl_alpha)
+
+        # Discriminator predictions for soft tokens (should be 0 = fake)
+        soft_preds = self.discriminator(soft_reversed.view(-1, D)).view(B, K)  # [B, K]
+
+        # If we have reference embeddings, use them
+        if self.reference_embeddings is not None and self.reference_embeddings.numel() > 0:
+            # Sample reference embeddings
+            num_ref = min(B * K, self.reference_embeddings.shape[0])
+            ref_idx = torch.randperm(self.reference_embeddings.shape[0])[:num_ref]
+            ref_emb = self.reference_embeddings[ref_idx]
+
+            # Discriminator predictions for reference (should be 1 = real)
+            ref_preds = self.discriminator(ref_emb).squeeze(-1)  # [num_ref]
+
+            # Binary cross entropy loss
+            fake_labels = torch.zeros_like(soft_preds)
+            real_labels = torch.ones_like(ref_preds)
+
+            fake_loss = F.binary_cross_entropy_with_logits(soft_preds, fake_labels)
+            real_loss = F.binary_cross_entropy_with_logits(ref_preds, real_labels)
+
+            adv_loss = (fake_loss + real_loss) / 2
+        else:
+            # Without reference, just use soft tokens
+            fake_labels = torch.zeros_like(soft_preds)
+            adv_loss = F.binary_cross_entropy_with_logits(soft_preds, fake_labels)
+
+        return adv_loss * self.adv_weight
+
+    def anneal_grl_alpha(self, progress: float):
+        """Anneal GRL alpha from 0 to 1 based on training progress."""
+        # Gradual schedule from DANN paper
+        self.grl_alpha.fill_(2.0 / (1.0 + torch.exp(torch.tensor(-10.0 * progress))) - 1.0)
+
+    def forward(self, src_hidden: torch.Tensor, src_mask=None):
+        """
+        Args:
+            src_hidden: [B, seq_len, src_dim]
+        Returns:
+            soft_tokens: [B, num_latents, tgt_dim]
+            adv_loss: adversarial alignment loss
+        """
+        # Encode
+        soft_tokens = self.resampler(src_hidden, src_mask)
+
+        # RMS normalization
+        rms = torch.sqrt((soft_tokens ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        soft_tokens = (soft_tokens / rms) * self.output_scale
+
+        # Compute adversarial loss
+        if self.training:
+            adv_loss = self.compute_adversarial_loss(soft_tokens)
+        else:
+            adv_loss = torch.tensor(0.0, device=soft_tokens.device)
+
+        return soft_tokens.to(src_hidden.dtype), adv_loss, self.grl_alpha.item(), soft_tokens.var()
+
+
+# =============================================================================
+# HAIL MARY EXPERIMENT 6: Successive Refinement Bridge
+# =============================================================================
+# Key insight: Layered encoding where each token refines the representation.
+# Can use 2-16 tokens at inference time for bandwidth adaptation.
+# =============================================================================
+
+class SuccessiveRefinementBridge(nn.Module):
+    """
+    Successive Refinement Bridge - progressive token generation.
+
+    Architecture:
+    1. Base encoder produces first token
+    2. Each subsequent token refines/corrects the representation
+    3. Can use variable number of tokens at inference
+
+    Key insight: This allows runtime bandwidth-accuracy tradeoff without
+    retraining - use fewer tokens for fast inference, more for accuracy.
+    """
+
+    def __init__(self, args, src_dim: int, tgt_dim: int, target_rms: float = 0.03,
+                 max_tokens: int = 16):
+        super().__init__()
+        self.src_dim = src_dim
+        self.tgt_dim = tgt_dim
+        self.max_tokens = max_tokens
+
+        num_latents = getattr(args, 'soft_tokens', 8)
+        self.num_latents = min(num_latents, max_tokens)
+
+        # Input projection
+        self.input_proj = nn.Linear(src_dim, tgt_dim) if src_dim != tgt_dim else nn.Identity()
+
+        # Base encoder (produces first token/coarse representation)
+        self.base_encoder = nn.Sequential(
+            nn.Linear(tgt_dim, tgt_dim),
+            nn.GELU(),
+            nn.Linear(tgt_dim, tgt_dim),
+        )
+
+        # Refinement layers (each produces one refinement token)
+        self.refinement_layers = nn.ModuleList([
+            nn.ModuleDict({
+                "cross_attn": nn.MultiheadAttention(tgt_dim, 8, batch_first=True),
+                "ln1": nn.LayerNorm(tgt_dim),
+                "refine": nn.Sequential(
+                    nn.Linear(tgt_dim * 2, tgt_dim),  # Input: current state + source
+                    nn.GELU(),
+                    nn.Linear(tgt_dim, tgt_dim),
+                ),
+                "ln2": nn.LayerNorm(tgt_dim),
+            }) for _ in range(max_tokens - 1)
+        ])
+
+        # Per-layer scale (how much each refinement contributes)
+        self.refinement_scales = nn.ParameterList([
+            nn.Parameter(torch.tensor(0.5)) for _ in range(max_tokens - 1)
+        ])
+
+        self.output_scale = nn.Parameter(torch.tensor(target_rms))
+
+        logger.info(f"SuccessiveRefinementBridge: max {max_tokens} tokens, using {self.num_latents}")
+
+    def forward(self, src_hidden: torch.Tensor, src_mask=None, num_tokens: int = None):
+        """
+        Args:
+            src_hidden: [B, seq_len, src_dim]
+            num_tokens: How many tokens to generate (default: self.num_latents)
+        Returns:
+            soft_tokens: [B, num_tokens, tgt_dim]
+        """
+        if num_tokens is None:
+            num_tokens = self.num_latents
+
+        num_tokens = min(num_tokens, self.max_tokens)
+        B = src_hidden.shape[0]
+
+        # Project source
+        src_proj = self.input_proj(src_hidden.float())
+        key_padding_mask = ~src_mask.bool() if src_mask is not None else None
+
+        # Pool source for base encoding
+        if src_mask is not None:
+            mask_expanded = src_mask.unsqueeze(-1).float()
+            pooled = (src_proj * mask_expanded).sum(1) / (mask_expanded.sum(1) + 1e-8)
+        else:
+            pooled = src_proj.mean(dim=1)
+
+        # Base token (coarse representation)
+        base_token = self.base_encoder(pooled).unsqueeze(1)  # [B, 1, D]
+
+        tokens = [base_token]
+        current_repr = base_token
+
+        # Progressive refinement
+        for i in range(min(num_tokens - 1, len(self.refinement_layers))):
+            layer = self.refinement_layers[i]
+            scale = self.refinement_scales[i].abs()
+
+            # Cross-attend to source
+            x_norm = layer["ln1"](current_repr)
+            attn_out, _ = layer["cross_attn"](
+                query=x_norm, key=src_proj, value=src_proj,
+                key_padding_mask=key_padding_mask,
+                need_weights=False
+            )
+
+            # Compute refinement
+            combined = torch.cat([current_repr.squeeze(1), attn_out.squeeze(1)], dim=-1)
+            refinement = layer["refine"](combined).unsqueeze(1)
+            refinement = layer["ln2"](refinement)
+
+            # Scale and add refinement token
+            scaled_refinement = scale * refinement
+            tokens.append(scaled_refinement)
+
+            # Update current representation for next refinement
+            current_repr = current_repr + scaled_refinement
+
+        # Stack all tokens
+        soft_tokens = torch.cat(tokens, dim=1)  # [B, num_tokens, D]
+
+        # RMS normalization
+        rms = torch.sqrt((soft_tokens ** 2).mean(dim=-1, keepdim=True) + 1e-8)
+        soft_tokens = (soft_tokens / rms) * self.output_scale
+
+        # Refinement magnitude (for monitoring)
+        if len(tokens) > 1:
+            refinement_mag = sum(t.pow(2).mean() for t in tokens[1:]) / len(tokens[1:])
+        else:
+            refinement_mag = torch.tensor(0.0, device=soft_tokens.device)
+
+        return soft_tokens.to(src_hidden.dtype), refinement_mag, float(num_tokens), soft_tokens.var()
+
+
+# =============================================================================
 # LEGACY: Ridge Regression Baseline (from LatentMAS - NOT NOVEL)
 # =============================================================================
 
