@@ -1,0 +1,76 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+============================================================
+TELEPATHY TRAINING: ARC_EASY
+============================================================
+
+Dataset: arc_easy (4 classes)
+Random baseline: 25.0%
+Source layer: 31
+Soft tokens: 8
+Steps: 1500
+Diversity weight: 0.1
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3549.23it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:08,  2.82s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:06<00:07,  3.51s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:10<00:03,  3.68s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:11<00:00,  2.57s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:11<00:00,  2.89s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3471.15it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:05,  2.69s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:04<00:02,  2.41s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.09s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.21s/it]
+Target embedding RMS: 0.0027
+
+Training on 2251 samples
+Validation: 2376 samples
+Starting training...
+
+ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]ARC_EASY:   0%|                             | 0/1500 [00:01<?, ?it/s, lm=8.74, aux=0.000, gn=760.00]ARC_EASY:   0%|                     | 1/1500 [00:01<28:40,  1.15s/it, lm=8.74, aux=0.000, gn=760.00]ARC_EASY:   0%|                     | 1/1500 [00:01<28:40,  1.15s/it, lm=8.70, aux=0.000, gn=860.00]ARC_EASY:   0%|                     | 2/1500 [00:01<16:45,  1.49it/s, lm=8.70, aux=0.000, gn=860.00]ARC_EASY:   0%|                    | 2/1500 [00:01<16:45,  1.49it/s, lm=7.71, aux=0.000, gn=1008.00]ARC_EASY:   0%|                    | 3/1500 [00:01<12:46,  1.95it/s, lm=7.71, aux=0.000, gn=1008.00]ARC_EASY:   0%|                     | 3/1500 [00:02<12:46,  1.95it/s, lm=7.73, aux=0.000, gn=470.00]ARC_EASY:   0%|                     | 4/1500 [00:02<10:59,  2.27it/s, lm=7.73, aux=0.000, gn=470.00]ARC_EASY:   0%|                     | 4/1500 [00:02<10:59,  2.27it/s, lm=6.92, aux=0.000, gn=576.00]ARC_EASY:   0%|                     | 5/1500 [00:02<09:59,  2.49it/s, lm=6.92, aux=0.000, gn=576.00]ARC_EASY:   0%|                     | 5/1500 [00:02<09:59,  2.49it/s, lm=5.85, aux=0.000, gn=492.00]ARC_EASY:   0%|                     | 6/1500 [00:02<09:24,  2.65it/s, lm=5.85, aux=0.000, gn=492.00]ARC_EASY:   0%|                     | 6/1500 [00:03<09:24,  2.65it/s, lm=4.42, aux=0.000, gn=556.00]ARC_EASY:   0%|                     | 7/1500 [00:03<08:52,  2.81it/s, lm=4.42, aux=0.000, gn=556.00]ARC_EASY:   0%|                     | 7/1500 [00:03<08:52,  2.81it/s, lm=2.84, aux=0.000, gn=696.00]ARC_EASY:   1%|                     | 8/1500 [00:03<08:26,  2.95it/s, lm=2.84, aux=0.000, gn=696.00]ARC_EASY:   1%|                     | 8/1500 [00:03<08:26,  2.95it/s, lm=2.78, aux=0.000, gn=536.00]ARC_EASY:   1%|▏                    | 9/1500 [00:03<08:16,  3.00it/s, lm=2.78, aux=0.000, gn=536.00]ARC_EASY:   1%|▏                    | 9/1500 [00:04<08:16,  3.00it/s, lm=1.46, aux=0.000, gn=212.00]ARC_EASY:   1%|▏                   | 10/1500 [00:04<07:56,  3.13it/s, lm=1.46, aux=0.000, gn=212.00]ARC_EASY:   1%|▏                  | 10/1500 [00:04<07:56,  3.13it/s, lm=3.85, aux=0.000, gn=2304.00]ARC_EASY:   1%|▏                  | 11/1500 [00:04<07:43,  3.21it/s, lm=3.85, aux=0.000, gn=2304.00]ARC_EASY:   1%|▏                   | 11/1500 [00:04<07:43,  3.21it/s, lm=1.85, aux=0.000, gn=776.00]ARC_EASY:   1%|▏                   | 12/1500 [00:04<08:00,  3.10it/s, lm=1.85, aux=0.000, gn=776.00]ARC_EASY:   1%|▏                   | 12/1500 [00:04<08:00,  3.10it/s, lm=1.24, aux=0.000, gn=137.00]ARC_EASY:   1%|▏                   | 13/1500 [00:04<07:27,  3.32it/s, lm=1.24, aux=0.000, gn=137.00]ARC_EASY:   1%|▏                   | 13/1500 [00:05<07:27,  3.32it/s, lm=0.95, aux=0.000, gn=148.00]ARC_EASY:   1%|▏                   | 14/1500 [00:05<07:07,  3.48it/s, lm=0.95, aux=0.000, gn=148.00]ARC_EASY:   1%|▏                    | 14/1500 [00:05<07:07,  3.48it/s, lm=0.76, aux=0.000, gn=78.50]ARC_EASY:   1%|▏                    | 15/1500 [00:05<06:50,  3.61it/s, lm=0.76, aux=0.000, gn=78.50]ARC_EASY:   1%|▏                   | 15/1500 [00:05<06:50,  3.61it/s, lm=1.60, aux=0.000, gn=264.00]ARC_EASY:   1%|▏                   | 16/1500 [00:05<06:43,  3.68it/s, lm=1.60, aux=0.000, gn=264.00]ARC_EASY:   1%|▏                    | 16/1500 [00:06<06:43,  3.68it/s, lm=0.71, aux=0.000, gn=50.00]ARC_EASY:   1%|▏                    | 17/1500 [00:06<07:02,  3.51it/s, lm=0.71, aux=0.000, gn=50.00]ARC_EASY:   1%|▏                   | 17/1500 [00:06<07:02,  3.51it/s, lm=3.42, aux=0.000, gn=352.00]ARC_EASY:   1%|▏                   | 18/1500 [00:06<07:23,  3.34it/s, lm=3.42, aux=0.000, gn=352.00]ARC_EASY:   1%|▏                   | 18/1500 [00:06<08:52,  2.78it/s, lm=3.42, aux=0.000, gn=352.00]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1280, in main
+    batch = next(iter_dl)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 701, in __next__
+    data = self._next_data()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 757, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 55, in fetch
+    return self.collate_fn(data)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 398, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 171, in collate
+    {
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 172, in <dictcomp>
+    key: collate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 171, in collate
+    {
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 172, in <dictcomp>
+    key: collate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 207, in collate
+    raise RuntimeError("each element in list of batch should be of equal size")
+RuntimeError: each element in list of batch should be of equal size
+
+[ERROR] Training interrupted by exception at step 19
+[ERROR] RuntimeError: each element in list of batch should be of equal size
+
+[EMERGENCY] Checkpoint saved to runs/reasoning_final_20260118_102205/novel_bridges/token_capacity_8_seed42/emergency_checkpoint_step18.pt
+[EMERGENCY] Error: RuntimeError: each element in list of batch should be of equal size
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1530, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1280, in main
+    batch = next(iter_dl)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 701, in __next__
+    data = self._next_data()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 757, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 55, in fetch
+    return self.collate_fn(data)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 398, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 171, in collate
+    {
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 172, in <dictcomp>
+    key: collate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 171, in collate
+    {
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 172, in <dictcomp>
+    key: collate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 207, in collate
+    raise RuntimeError("each element in list of batch should be of equal size")
+RuntimeError: each element in list of batch should be of equal size
