@@ -1,0 +1,173 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+================================================================================
+LINEAR PROBE BASELINE BENCHMARK
+================================================================================
+Model: meta-llama/Meta-Llama-3.1-8B-Instruct
+Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq']
+Layers: [31]
+Pooling: last_token
+Seeds: [42, 123, 456]
+Output: runs/reasoning_final_20260118_114649/baselines/linear_probe
+================================================================================
+
+Loading Llama model...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3697.05it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.29s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.14s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:02,  2.08s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.48s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.72s/it]
+Model loaded: 4096 hidden dim, 32 layers
+
+
+################################################################################
+# DATASET: arc_easy
+################################################################################
+
+--- Seed 42 ---
+
+================================================================================
+Dataset: arc_easy (4 classes)
+================================================================================
+Loading arc_easy data...
+Train: 2251 samples, Test: 1000 samples
+
+--- Layer 31 ---
+  Extracting train features...
+Extracting layer 31:   0%|          | 0/282 [00:00<?, ?it/s]Extracting layer 31:   0%|          | 1/282 [00:00<01:13,  3.80it/s]Extracting layer 31:   2%|▏         | 6/282 [00:00<00:14, 18.90it/s]Extracting layer 31:   4%|▎         | 10/282 [00:00<00:10, 25.00it/s]Extracting layer 31:   5%|▍         | 14/282 [00:00<00:09, 29.48it/s]Extracting layer 31:   7%|▋         | 19/282 [00:00<00:07, 33.32it/s]Extracting layer 31:   9%|▊         | 24/282 [00:00<00:07, 35.15it/s]Extracting layer 31:  10%|█         | 29/282 [00:00<00:06, 37.22it/s]Extracting layer 31:  12%|█▏        | 34/282 [00:01<00:06, 39.86it/s]Extracting layer 31:  14%|█▍        | 39/282 [00:01<00:05, 41.77it/s]Extracting layer 31:  16%|█▌        | 44/282 [00:01<00:05, 41.94it/s]Extracting layer 31:  18%|█▊        | 50/282 [00:01<00:05, 44.60it/s]Extracting layer 31:  20%|█▉        | 55/282 [00:01<00:05, 45.23it/s]Extracting layer 31:  21%|██▏       | 60/282 [00:01<00:04, 45.43it/s]Extracting layer 31:  23%|██▎       | 65/282 [00:01<00:04, 45.93it/s]Extracting layer 31:  25%|██▍       | 70/282 [00:01<00:04, 45.84it/s]Extracting layer 31:  27%|██▋       | 75/282 [00:01<00:04, 44.72it/s]Extracting layer 31:  28%|██▊       | 80/282 [00:02<00:04, 44.20it/s]Extracting layer 31:  30%|███       | 85/282 [00:02<00:04, 44.63it/s]Extracting layer 31:  32%|███▏      | 90/282 [00:02<00:04, 45.43it/s]Extracting layer 31:  34%|███▎      | 95/282 [00:02<00:04, 44.03it/s]Extracting layer 31:  35%|███▌      | 100/282 [00:02<00:04, 44.13it/s]Extracting layer 31:  37%|███▋      | 105/282 [00:02<00:04, 42.79it/s]Extracting layer 31:  39%|███▉      | 110/282 [00:02<00:04, 41.94it/s]Extracting layer 31:  41%|████      | 115/282 [00:02<00:03, 43.89it/s]Extracting layer 31:  43%|████▎     | 120/282 [00:03<00:03, 42.90it/s]Extracting layer 31:  44%|████▍     | 125/282 [00:03<00:03, 40.29it/s]Extracting layer 31:  46%|████▌     | 130/282 [00:03<00:03, 40.71it/s]Extracting layer 31:  48%|████▊     | 135/282 [00:03<00:03, 42.41it/s]Extracting layer 31:  50%|████▉     | 140/282 [00:03<00:03, 42.89it/s]Extracting layer 31:  51%|█████▏    | 145/282 [00:03<00:03, 41.93it/s]Extracting layer 31:  53%|█████▎    | 150/282 [00:03<00:03, 42.39it/s]Extracting layer 31:  55%|█████▌    | 156/282 [00:03<00:02, 44.97it/s]Extracting layer 31:  57%|█████▋    | 161/282 [00:03<00:02, 43.91it/s]Extracting layer 31:  59%|█████▉    | 166/282 [00:04<00:02, 43.50it/s]Extracting layer 31:  61%|██████    | 171/282 [00:04<00:02, 41.84it/s]Extracting layer 31:  62%|██████▏   | 176/282 [00:04<00:02, 40.73it/s]Extracting layer 31:  64%|██████▍   | 181/282 [00:04<00:02, 41.69it/s]Extracting layer 31:  66%|██████▌   | 186/282 [00:04<00:02, 43.67it/s]Extracting layer 31:  68%|██████▊   | 191/282 [00:04<00:02, 42.49it/s]Extracting layer 31:  70%|██████▉   | 196/282 [00:04<00:02, 41.18it/s]Extracting layer 31:  71%|███████▏  | 201/282 [00:04<00:01, 40.69it/s]Extracting layer 31:  73%|███████▎  | 206/282 [00:05<00:01, 42.16it/s]Extracting layer 31:  75%|███████▍  | 211/282 [00:05<00:01, 43.43it/s]Extracting layer 31:  77%|███████▋  | 216/282 [00:05<00:01, 41.97it/s]Extracting layer 31:  78%|███████▊  | 221/282 [00:05<00:01, 42.80it/s]Extracting layer 31:  80%|████████  | 226/282 [00:05<00:01, 42.93it/s]Extracting layer 31:  82%|████████▏ | 231/282 [00:05<00:01, 42.52it/s]Extracting layer 31:  84%|████████▎ | 236/282 [00:05<00:01, 42.45it/s]Extracting layer 31:  85%|████████▌ | 241/282 [00:05<00:00, 43.85it/s]Extracting layer 31:  87%|████████▋ | 246/282 [00:05<00:00, 45.29it/s]Extracting layer 31:  89%|████████▉ | 251/282 [00:06<00:00, 45.51it/s]Extracting layer 31:  91%|█████████ | 256/282 [00:06<00:00, 45.26it/s]Extracting layer 31:  93%|█████████▎| 261/282 [00:06<00:00, 43.04it/s]Extracting layer 31:  94%|█████████▍| 266/282 [00:06<00:00, 42.48it/s]Extracting layer 31:  96%|█████████▌| 271/282 [00:06<00:00, 42.73it/s]Extracting layer 31:  98%|█████████▊| 276/282 [00:06<00:00, 42.76it/s]Extracting layer 31: 100%|█████████▉| 281/282 [00:06<00:00, 43.22it/s]Extracting layer 31: 100%|██████████| 282/282 [00:06<00:00, 41.47it/s]
+  Extracting test features...
+Extracting layer 31:   0%|          | 0/125 [00:00<?, ?it/s]Extracting layer 31:   4%|▍         | 5/125 [00:00<00:02, 41.56it/s]Extracting layer 31:   8%|▊         | 10/125 [00:00<00:02, 39.99it/s]Extracting layer 31:  13%|█▎        | 16/125 [00:00<00:02, 44.10it/s]Extracting layer 31:  17%|█▋        | 21/125 [00:00<00:02, 43.11it/s]Extracting layer 31:  21%|██        | 26/125 [00:00<00:02, 43.66it/s]Extracting layer 31:  25%|██▍       | 31/125 [00:00<00:02, 40.65it/s]Extracting layer 31:  29%|██▉       | 36/125 [00:00<00:02, 41.27it/s]Extracting layer 31:  33%|███▎      | 41/125 [00:01<00:02, 39.17it/s]Extracting layer 31:  37%|███▋      | 46/125 [00:01<00:01, 40.92it/s]Extracting layer 31:  41%|████      | 51/125 [00:01<00:01, 40.53it/s]Extracting layer 31:  45%|████▍     | 56/125 [00:01<00:01, 41.49it/s]Extracting layer 31:  49%|████▉     | 61/125 [00:01<00:01, 41.60it/s]Extracting layer 31:  53%|█████▎    | 66/125 [00:01<00:01, 43.49it/s]Extracting layer 31:  57%|█████▋    | 71/125 [00:01<00:01, 44.00it/s]Extracting layer 31:  61%|██████    | 76/125 [00:01<00:01, 44.98it/s]Extracting layer 31:  66%|██████▌   | 82/125 [00:01<00:00, 46.52it/s]Extracting layer 31:  70%|██████▉   | 87/125 [00:02<00:00, 46.16it/s]Extracting layer 31:  74%|███████▎  | 92/125 [00:02<00:00, 46.20it/s]Extracting layer 31:  78%|███████▊  | 97/125 [00:02<00:00, 46.96it/s]Extracting layer 31:  82%|████████▏ | 103/125 [00:02<00:00, 48.21it/s]Extracting layer 31:  86%|████████▋ | 108/125 [00:02<00:00, 47.63it/s]Extracting layer 31:  90%|█████████ | 113/125 [00:02<00:00, 44.13it/s]Extracting layer 31:  94%|█████████▍| 118/125 [00:02<00:00, 41.92it/s]Extracting layer 31:  98%|█████████▊| 123/125 [00:02<00:00, 40.24it/s]Extracting layer 31: 100%|██████████| 125/125 [00:02<00:00, 43.06it/s]
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/model_selection/_split.py:811: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+  Training LogisticRegression...
+  Train Acc: 99.8%
+  CV Acc: 25.1% +/- 2.9%
+  Test Acc: 26.9%
+  F1 Score: 20.4%
+
+Best layer: 31 with 26.9% accuracy
+
+--- Seed 123 ---
+
+================================================================================
+Dataset: arc_easy (4 classes)
+================================================================================
+Loading arc_easy data...
+Train: 2251 samples, Test: 1000 samples
+
+--- Layer 31 ---
+  Extracting train features...
+Extracting layer 31:   0%|          | 0/282 [00:00<?, ?it/s]Extracting layer 31:   2%|▏         | 5/282 [00:00<00:05, 46.21it/s]Extracting layer 31:   4%|▎         | 10/282 [00:00<00:06, 41.00it/s]Extracting layer 31:   5%|▌         | 15/282 [00:00<00:06, 41.03it/s]Extracting layer 31:   7%|▋         | 20/282 [00:00<00:06, 39.38it/s]Extracting layer 31:   9%|▉         | 26/282 [00:00<00:05, 43.51it/s]Extracting layer 31:  11%|█         | 31/282 [00:00<00:05, 43.10it/s]Extracting layer 31:  13%|█▎        | 36/282 [00:00<00:05, 43.39it/s]Extracting layer 31:  15%|█▍        | 41/282 [00:00<00:05, 44.47it/s]Extracting layer 31:  16%|█▋        | 46/282 [00:01<00:05, 43.76it/s]Extracting layer 31:  18%|█▊        | 51/282 [00:01<00:05, 44.15it/s]Extracting layer 31:  20%|██        | 57/282 [00:01<00:04, 46.92it/s]Extracting layer 31:  22%|██▏       | 62/282 [00:01<00:04, 46.97it/s]Extracting layer 31:  24%|██▍       | 67/282 [00:01<00:04, 46.93it/s]Extracting layer 31:  26%|██▌       | 72/282 [00:01<00:04, 46.18it/s]Extracting layer 31:  27%|██▋       | 77/282 [00:01<00:04, 44.43it/s]Extracting layer 31:  29%|██▉       | 82/282 [00:01<00:04, 44.42it/s]Extracting layer 31:  31%|███       | 87/282 [00:01<00:04, 44.91it/s]Extracting layer 31:  33%|███▎      | 92/282 [00:02<00:04, 44.96it/s]Extracting layer 31:  34%|███▍      | 97/282 [00:02<00:04, 44.30it/s]Extracting layer 31:  36%|███▌      | 102/282 [00:02<00:04, 44.08it/s]Extracting layer 31:  38%|███▊      | 107/282 [00:02<00:04, 41.80it/s]Extracting layer 31:  40%|███▉      | 112/282 [00:02<00:03, 42.89it/s]Extracting layer 31:  41%|████▏     | 117/282 [00:02<00:03, 43.50it/s]Extracting layer 31:  43%|████▎     | 122/282 [00:02<00:03, 42.11it/s]Extracting layer 31:  45%|████▌     | 127/282 [00:02<00:03, 41.59it/s]Extracting layer 31:  47%|████▋     | 132/282 [00:03<00:03, 42.06it/s]Extracting layer 31:  49%|████▊     | 137/282 [00:03<00:03, 43.34it/s]Extracting layer 31:  50%|█████     | 142/282 [00:03<00:03, 44.55it/s]Extracting layer 31:  52%|█████▏    | 147/282 [00:03<00:03, 42.69it/s]Extracting layer 31:  54%|█████▍    | 152/282 [00:03<00:02, 43.64it/s]Extracting layer 31:  56%|█████▌    | 157/282 [00:03<00:02, 44.45it/s]Extracting layer 31:  57%|█████▋    | 162/282 [00:03<00:02, 43.56it/s]Extracting layer 31:  59%|█████▉    | 167/282 [00:03<00:02, 43.27it/s]Extracting layer 31:  61%|██████    | 172/282 [00:03<00:02, 41.58it/s]Extracting layer 31:  63%|██████▎   | 177/282 [00:04<00:02, 41.05it/s]Extracting layer 31:  65%|██████▍   | 182/282 [00:04<00:02, 41.63it/s]Extracting layer 31:  66%|██████▋   | 187/282 [00:04<00:02, 43.67it/s]Extracting layer 31:  68%|██████▊   | 192/282 [00:04<00:02, 41.09it/s]Extracting layer 31:  70%|██████▉   | 197/282 [00:04<00:02, 41.40it/s]Extracting layer 31:  72%|███████▏  | 202/282 [00:04<00:01, 40.80it/s]Extracting layer 31:  73%|███████▎  | 207/282 [00:04<00:01, 42.51it/s]Extracting layer 31:  75%|███████▌  | 212/282 [00:04<00:01, 42.31it/s]Extracting layer 31:  77%|███████▋  | 217/282 [00:05<00:01, 42.56it/s]Extracting layer 31:  79%|███████▊  | 222/282 [00:05<00:01, 43.70it/s]Extracting layer 31:  80%|████████  | 227/282 [00:05<00:01, 42.00it/s]Extracting layer 31:  82%|████████▏ | 232/282 [00:05<00:01, 42.96it/s]Extracting layer 31:  84%|████████▍ | 237/282 [00:05<00:01, 42.92it/s]Extracting layer 31:  86%|████████▌ | 243/282 [00:05<00:00, 44.70it/s]Extracting layer 31:  88%|████████▊ | 248/282 [00:05<00:00, 45.68it/s]Extracting layer 31:  90%|████████▉ | 253/282 [00:05<00:00, 45.34it/s]Extracting layer 31:  91%|█████████▏| 258/282 [00:05<00:00, 43.95it/s]Extracting layer 31:  93%|█████████▎| 263/282 [00:06<00:00, 44.30it/s]Extracting layer 31:  95%|█████████▌| 268/282 [00:06<00:00, 43.23it/s]Extracting layer 31:  97%|█████████▋| 273/282 [00:06<00:00, 41.87it/s]Extracting layer 31:  99%|█████████▊| 278/282 [00:06<00:00, 43.39it/s]Extracting layer 31: 100%|██████████| 282/282 [00:06<00:00, 43.42it/s]
+  Extracting test features...
+Extracting layer 31:   0%|          | 0/125 [00:00<?, ?it/s]Extracting layer 31:   4%|▍         | 5/125 [00:00<00:02, 49.64it/s]Extracting layer 31:   8%|▊         | 10/125 [00:00<00:02, 46.88it/s]Extracting layer 31:  12%|█▏        | 15/125 [00:00<00:02, 44.66it/s]Extracting layer 31:  16%|█▌        | 20/125 [00:00<00:02, 41.34it/s]Extracting layer 31:  20%|██        | 25/125 [00:00<00:02, 40.08it/s]Extracting layer 31:  24%|██▍       | 30/125 [00:00<00:02, 39.81it/s]Extracting layer 31:  28%|██▊       | 35/125 [00:00<00:02, 41.93it/s]Extracting layer 31:  32%|███▏      | 40/125 [00:00<00:01, 43.93it/s]Extracting layer 31:  36%|███▌      | 45/125 [00:01<00:01, 42.71it/s]Extracting layer 31:  40%|████      | 50/125 [00:01<00:01, 41.20it/s]Extracting layer 31:  44%|████▍     | 55/125 [00:01<00:01, 40.09it/s]Extracting layer 31:  48%|████▊     | 60/125 [00:01<00:01, 41.18it/s]Extracting layer 31:  52%|█████▏    | 65/125 [00:01<00:01, 41.52it/s]Extracting layer 31:  56%|█████▌    | 70/125 [00:01<00:01, 43.18it/s]Extracting layer 31:  60%|██████    | 75/125 [00:01<00:01, 43.46it/s]Extracting layer 31:  64%|██████▍   | 80/125 [00:01<00:01, 43.58it/s]Extracting layer 31:  68%|██████▊   | 85/125 [00:01<00:00, 43.55it/s]Extracting layer 31:  72%|███████▏  | 90/125 [00:02<00:00, 44.04it/s]Extracting layer 31:  76%|███████▌  | 95/125 [00:02<00:00, 42.73it/s]Extracting layer 31:  80%|████████  | 100/125 [00:02<00:00, 43.82it/s]Extracting layer 31:  84%|████████▍ | 105/125 [00:02<00:00, 45.08it/s]Extracting layer 31:  88%|████████▊ | 110/125 [00:02<00:00, 44.96it/s]Extracting layer 31:  92%|█████████▏| 115/125 [00:02<00:00, 44.15it/s]Extracting layer 31:  96%|█████████▌| 120/125 [00:02<00:00, 45.23it/s]Extracting layer 31: 100%|██████████| 125/125 [00:02<00:00, 43.42it/s]Extracting layer 31: 100%|██████████| 125/125 [00:02<00:00, 43.02it/s]
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/model_selection/_split.py:811: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+  Training LogisticRegression...
+  Train Acc: 99.8%
+  CV Acc: 24.9% +/- 1.5%
+  Test Acc: 24.3%
+  F1 Score: 20.1%
+
+Best layer: 31 with 24.3% accuracy
+
+--- Seed 456 ---
+
+================================================================================
+Dataset: arc_easy (4 classes)
+================================================================================
+Loading arc_easy data...
+Train: 2251 samples, Test: 1000 samples
+
+--- Layer 31 ---
+  Extracting train features...
+Extracting layer 31:   0%|          | 0/282 [00:00<?, ?it/s]Extracting layer 31:   2%|▏         | 5/282 [00:00<00:06, 46.06it/s]Extracting layer 31:   4%|▎         | 10/282 [00:00<00:06, 41.25it/s]Extracting layer 31:   5%|▌         | 15/282 [00:00<00:06, 41.33it/s]Extracting layer 31:   7%|▋         | 20/282 [00:00<00:06, 39.26it/s]Extracting layer 31:   9%|▉         | 26/282 [00:00<00:05, 43.39it/s]Extracting layer 31:  11%|█         | 31/282 [00:00<00:05, 43.17it/s]Extracting layer 31:  13%|█▎        | 36/282 [00:00<00:05, 43.41it/s]Extracting layer 31:  15%|█▍        | 41/282 [00:00<00:05, 44.59it/s]Extracting layer 31:  16%|█▋        | 46/282 [00:01<00:05, 43.97it/s]Extracting layer 31:  18%|█▊        | 51/282 [00:01<00:05, 44.29it/s]Extracting layer 31:  20%|██        | 57/282 [00:01<00:04, 46.95it/s]Extracting layer 31:  22%|██▏       | 62/282 [00:01<00:04, 47.06it/s]Extracting layer 31:  24%|██▍       | 67/282 [00:01<00:04, 47.09it/s]Extracting layer 31:  26%|██▌       | 72/282 [00:01<00:04, 46.15it/s]Extracting layer 31:  27%|██▋       | 77/282 [00:01<00:04, 44.54it/s]Extracting layer 31:  29%|██▉       | 82/282 [00:01<00:04, 44.60it/s]Extracting layer 31:  31%|███       | 87/282 [00:01<00:04, 45.11it/s]Extracting layer 31:  33%|███▎      | 92/282 [00:02<00:04, 45.06it/s]Extracting layer 31:  34%|███▍      | 97/282 [00:02<00:04, 44.37it/s]Extracting layer 31:  36%|███▌      | 102/282 [00:02<00:04, 44.13it/s]Extracting layer 31:  38%|███▊      | 107/282 [00:02<00:04, 41.84it/s]Extracting layer 31:  40%|███▉      | 112/282 [00:02<00:03, 43.08it/s]Extracting layer 31:  41%|████▏     | 117/282 [00:02<00:03, 43.59it/s]Extracting layer 31:  43%|████▎     | 122/282 [00:02<00:03, 42.04it/s]Extracting layer 31:  45%|████▌     | 127/282 [00:02<00:03, 41.59it/s]Extracting layer 31:  47%|████▋     | 132/282 [00:03<00:03, 42.17it/s]Extracting layer 31:  49%|████▊     | 137/282 [00:03<00:03, 43.35it/s]Extracting layer 31:  50%|█████     | 142/282 [00:03<00:03, 44.69it/s]Extracting layer 31:  52%|█████▏    | 147/282 [00:03<00:03, 42.72it/s]Extracting layer 31:  54%|█████▍    | 152/282 [00:03<00:02, 43.38it/s]Extracting layer 31:  56%|█████▌    | 157/282 [00:03<00:02, 44.13it/s]Extracting layer 31:  57%|█████▋    | 162/282 [00:03<00:02, 43.29it/s]Extracting layer 31:  59%|█████▉    | 167/282 [00:03<00:02, 42.97it/s]Extracting layer 31:  61%|██████    | 172/282 [00:03<00:02, 41.32it/s]Extracting layer 31:  63%|██████▎   | 177/282 [00:04<00:02, 40.90it/s]Extracting layer 31:  65%|██████▍   | 182/282 [00:04<00:02, 41.61it/s]Extracting layer 31:  66%|██████▋   | 187/282 [00:04<00:02, 43.61it/s]Extracting layer 31:  68%|██████▊   | 192/282 [00:04<00:02, 41.24it/s]Extracting layer 31:  70%|██████▉   | 197/282 [00:04<00:02, 41.68it/s]Extracting layer 31:  72%|███████▏  | 202/282 [00:04<00:01, 40.88it/s]Extracting layer 31:  73%|███████▎  | 207/282 [00:04<00:01, 42.43it/s]Extracting layer 31:  75%|███████▌  | 212/282 [00:04<00:01, 42.19it/s]Extracting layer 31:  77%|███████▋  | 217/282 [00:05<00:01, 42.38it/s]Extracting layer 31:  79%|███████▊  | 222/282 [00:05<00:01, 43.66it/s]Extracting layer 31:  80%|████████  | 227/282 [00:05<00:01, 42.13it/s]Extracting layer 31:  82%|████████▏ | 232/282 [00:05<00:01, 43.03it/s]Extracting layer 31:  84%|████████▍ | 237/282 [00:05<00:01, 42.89it/s]Extracting layer 31:  86%|████████▌ | 243/282 [00:05<00:00, 44.69it/s]Extracting layer 31:  88%|████████▊ | 248/282 [00:05<00:00, 45.66it/s]Extracting layer 31:  90%|████████▉ | 253/282 [00:05<00:00, 45.19it/s]Extracting layer 31:  91%|█████████▏| 258/282 [00:05<00:00, 43.84it/s]Extracting layer 31:  93%|█████████▎| 263/282 [00:06<00:00, 44.28it/s]Extracting layer 31:  95%|█████████▌| 268/282 [00:06<00:00, 43.18it/s]Extracting layer 31:  97%|█████████▋| 273/282 [00:06<00:00, 41.71it/s]Extracting layer 31:  99%|█████████▊| 278/282 [00:06<00:00, 43.23it/s]Extracting layer 31: 100%|██████████| 282/282 [00:06<00:00, 43.42it/s]
+  Extracting test features...
+Extracting layer 31:   0%|          | 0/125 [00:00<?, ?it/s]Extracting layer 31:   3%|▎         | 4/125 [00:00<00:03, 39.93it/s]Extracting layer 31:   7%|▋         | 9/125 [00:00<00:02, 41.23it/s]Extracting layer 31:  11%|█         | 14/125 [00:00<00:02, 37.50it/s]Extracting layer 31:  15%|█▌        | 19/125 [00:00<00:02, 40.02it/s]Extracting layer 31:  19%|█▉        | 24/125 [00:00<00:02, 42.13it/s]Extracting layer 31:  23%|██▎       | 29/125 [00:00<00:02, 41.45it/s]Extracting layer 31:  27%|██▋       | 34/125 [00:00<00:02, 41.97it/s]Extracting layer 31:  31%|███       | 39/125 [00:00<00:02, 42.81it/s]Extracting layer 31:  35%|███▌      | 44/125 [00:01<00:01, 44.66it/s]Extracting layer 31:  39%|███▉      | 49/125 [00:01<00:01, 44.69it/s]Extracting layer 31:  43%|████▎     | 54/125 [00:01<00:01, 43.39it/s]Extracting layer 31:  47%|████▋     | 59/125 [00:01<00:01, 42.81it/s]Extracting layer 31:  51%|█████     | 64/125 [00:01<00:01, 41.94it/s]Extracting layer 31:  55%|█████▌    | 69/125 [00:01<00:01, 42.67it/s]Extracting layer 31:  59%|█████▉    | 74/125 [00:01<00:01, 44.05it/s]Extracting layer 31:  63%|██████▎   | 79/125 [00:01<00:01, 44.19it/s]Extracting layer 31:  67%|██████▋   | 84/125 [00:01<00:00, 44.54it/s]Extracting layer 31:  71%|███████   | 89/125 [00:02<00:00, 45.09it/s]Extracting layer 31:  75%|███████▌  | 94/125 [00:02<00:00, 45.38it/s]Extracting layer 31:  79%|███████▉  | 99/125 [00:02<00:00, 42.50it/s]Extracting layer 31:  83%|████████▎ | 104/125 [00:02<00:00, 42.22it/s]Extracting layer 31:  87%|████████▋ | 109/125 [00:02<00:00, 42.72it/s]Extracting layer 31:  91%|█████████ | 114/125 [00:02<00:00, 43.33it/s]Extracting layer 31:  95%|█████████▌| 119/125 [00:02<00:00, 42.27it/s]Extracting layer 31:  99%|█████████▉| 124/125 [00:02<00:00, 41.43it/s]Extracting layer 31: 100%|██████████| 125/125 [00:02<00:00, 42.64it/s]
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/model_selection/_split.py:811: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.8. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+  Training LogisticRegression...
+  Train Acc: 99.8%
+  CV Acc: 24.7% +/- 2.6%
+  Test Acc: 26.7%
+  F1 Score: 21.5%
+
+Best layer: 31 with 26.7% accuracy
+
+
+################################################################################
+# DATASET: winogrande
+################################################################################
+
+--- Seed 42 ---
+
+================================================================================
+Dataset: winogrande (2 classes)
+================================================================================
+Loading winogrande data...
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/linear_probe_baseline.py", line 1177, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/linear_probe_baseline.py", line 1152, in main
+    results = run_full_benchmark(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/linear_probe_baseline.py", line 864, in run_full_benchmark
+    seed_results = run_layer_sweep(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/linear_probe_baseline.py", line 572, in run_layer_sweep
+    train_texts, train_labels = load_dataset_by_name(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/linear_probe_baseline.py", line 209, in load_dataset_by_name
+    ds = load_dataset(config["hf_name"][0], config["hf_name"][1], split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--allenai--winogrande'
