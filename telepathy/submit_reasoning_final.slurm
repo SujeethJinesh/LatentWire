@@ -6,13 +6,13 @@
 #SBATCH --partition=preempt
 #SBATCH --time=12:00:00
 #SBATCH --mem=32GB
-#SBATCH --output=/projects/m000066/sujinesh/LatentWire/runs/reasoning_final_%j.log
-#SBATCH --error=/projects/m000066/sujinesh/LatentWire/runs/reasoning_final_%j.err
+#SBATCH --output=runs/reasoning_final_%j.log
+#SBATCH --error=runs/reasoning_final_%j.err
 
 set -o pipefail  # Catch pipe failures
 
-# Ensure SLURM output directory exists
-mkdir -p /projects/m000066/sujinesh/LatentWire/runs
+# Ensure SLURM output directory exists (relative to submit directory)
+mkdir -p runs
 
 # Error tracking
 declare -a FAILED_EXPERIMENTS=()
@@ -30,33 +30,35 @@ SUCCESSFUL_EXPERIMENTS=0
 # - HellaSwag: Situational reasoning (4-way MC)
 # - BoolQ: Yes/No reading comprehension (2-way)
 #
-# GPU WORKLOAD:
-# - GPU 0: Standard bridge (hail mary) + baselines (zero-shot, few-shot, DoRA, prompt tuning, linear probe)
-# - GPU 1: Novel bridges + token capacity + latency/memory/throughput benchmarks + batched latency
+# GPU WORKLOAD (Balanced ~4h each):
+# - GPU 0: Standard bridge + baselines (zero-shot, few-shot, DoRA, prompt tuning, linear probe, text_relay, ensemble)
+# - GPU 1: Novel bridges (1 seed) + token capacity (1 seed) + ridge_regression + benchmarks
 #
 # EXPERIMENTS:
 # 1. Standard bridge on all reasoning tasks (3 seeds) via hail_mary
-# 2. Zero-shot baseline on all 4 reasoning datasets (arc_easy, winogrande, hellaswag, boolq)
-# 3. Few-shot baseline (4-shot) on arc_easy, winogrande, hellaswag, boolq
+# 2. Zero-shot baseline on all 4 reasoning datasets
+# 3. Few-shot baseline (4-shot) on all 4 datasets
 # 4. DoRA fine-tuning baseline on arc_easy (SOTA PEFT, 2024)
 # 5. Prompt tuning baseline on arc_easy (proves sender helps)
-# 6. Linear probe baseline (layer 31) on all reasoning datasets
-# 7. Novel bridges: flow_matching, optimal_transport, moe (on arc_easy)
-# 8. Token capacity: 4, 8, 16, 32 tokens (on arc_easy)
-# 9. Latency/memory/throughput benchmarks
-# 10. Batched latency benchmark (batch sizes: 1, 4, 8, 16) - CRITICAL FOR MLSys
+# 6. Linear probe baseline (layer 31) on all datasets
+# 7. Text relay baseline on arc_easy (fair text-based cross-model)
+# 8. Ensemble baseline on arc_easy (alpha-weighted Llama+Mistral)
+# 9. Novel bridges: flow_matching, optimal_transport, moe (1 seed each)
+# 10. Token capacity: 4, 8, 16, 32 tokens (1 seed each)
+# 11. Ridge regression baseline (training-free alignment)
+# 12. Latency/memory/throughput/batched benchmarks
 #
-# Estimated runtime: ~10-11 hours on 2 H100 GPUs
+# Estimated runtime: ~4 hours on 2 H100 GPUs (balanced workload)
 #
 # Submit with: sbatch telepathy/submit_reasoning_final.slurm
 # =============================================================================
 
-WORK_DIR="/projects/m000066/sujinesh/LatentWire"
+WORK_DIR="${SLURM_SUBMIT_DIR:-$(pwd)}"
 cd "$WORK_DIR"
 
 export PYTHONPATH=.
-export HF_HOME="/projects/m000066/sujinesh/.cache/huggingface"
-export TRANSFORMERS_CACHE="/projects/m000066/sujinesh/.cache/huggingface/transformers"
+export HF_HOME="${WORK_DIR}/.cache/huggingface"
+export TRANSFORMERS_CACHE="${WORK_DIR}/.cache/huggingface/transformers"
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_DIR="runs/reasoning_final_${TIMESTAMP}"
@@ -276,6 +278,37 @@ run_gpu0() {
         --device cuda:0 \
         2>&1 | tee '${OUTPUT_DIR}/baselines/linear_probe.log'"
 
+    # -----------------------------------------------------------------
+    # TEXT RELAY BASELINE (Fair text-based cross-model communication)
+    # Llama generates a hint, Mistral classifies based on the hint
+    # -----------------------------------------------------------------
+    echo ""
+    log_msg "[GPU 0] Running Text Relay Baseline on ARC-Easy"
+
+    run_experiment "text_relay_arc_easy" "python telepathy/run_baselines.py \
+        --baseline text_relay \
+        --dataset arc_easy \
+        --gpu 0 \
+        --max_samples 200 \
+        --output_dir '${OUTPUT_DIR}/baselines/text_relay' \
+        2>&1 | tee '${OUTPUT_DIR}/baselines/text_relay_arc_easy.log'"
+
+    # -----------------------------------------------------------------
+    # ENSEMBLE BASELINE (Alpha-weighted Llama+Mistral ensemble)
+    # Tests if simple model averaging beats the bridge
+    # -----------------------------------------------------------------
+    echo ""
+    log_msg "[GPU 0] Running Ensemble Baseline on ARC-Easy"
+
+    run_experiment "ensemble_arc_easy" "python telepathy/run_baselines.py \
+        --baseline ensemble \
+        --dataset arc_easy \
+        --alphas 0.3 0.5 0.7 \
+        --gpu 0 \
+        --max_samples 200 \
+        --output_dir '${OUTPUT_DIR}/baselines/ensemble' \
+        2>&1 | tee '${OUTPUT_DIR}/baselines/ensemble_arc_easy.log'"
+
     log_msg "[GPU 0] All evaluations completed"
 }
 
@@ -291,7 +324,7 @@ run_gpu1() {
     # Multi-seed for statistical significance
     # -----------------------------------------------------------------
     NOVEL_BRIDGES="flow_matching optimal_transport moe"
-    ABLATION_SEEDS="42 123 456"
+    ABLATION_SEEDS="42"  # Single seed for initial validation; add more seeds if results are promising
 
     for BRIDGE in $NOVEL_BRIDGES; do
         for SEED in $ABLATION_SEEDS; do
@@ -334,6 +367,22 @@ run_gpu1() {
                 2>&1 | tee '${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}.log'"
         done
     done
+
+    # -----------------------------------------------------------------
+    # RIDGE REGRESSION BASELINE (Training-free linear alignment)
+    # LatentMAS-style: W_align = (X'X + λI)^{-1} X'Y
+    # -----------------------------------------------------------------
+    echo ""
+    log_msg "[GPU 1] Running Ridge Regression Baseline on ARC-Easy"
+
+    run_experiment "ridge_regression_arc_easy" "python telepathy/run_baselines.py \
+        --baseline ridge_regression \
+        --dataset arc_easy \
+        --lambda_values 0.1 1.0 10.0 100.0 \
+        --gpu 1 \
+        --max_samples 200 \
+        --output_dir '${OUTPUT_DIR}/baselines/ridge_regression' \
+        2>&1 | tee '${OUTPUT_DIR}/baselines/ridge_regression_arc_easy.log'"
 
     # -----------------------------------------------------------------
     # LATENCY BENCHMARKS
