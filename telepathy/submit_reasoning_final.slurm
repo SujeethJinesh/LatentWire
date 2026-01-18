@@ -618,32 +618,52 @@ for pt_file in sorted(output_dir.glob('baselines/prompt_tuning/*.json')):
         summary = data['results']['summary']
         print(f'  {dataset:12} | Prompt Tuning | {summary[\"mean_accuracy\"]:.1f}% +/- {summary.get(\"std_accuracy\", 0):.1f}%')
 
-# Novel bridge results
+# Novel bridge results (fixed glob to include seed suffix)
 print()
 print('NOVEL BRIDGES (ARC-Easy):')
 print('-'*40)
 
-for bridge_dir in sorted(output_dir.glob('novel_bridges/*_arc_easy')):
+for bridge_dir in sorted(output_dir.glob('novel_bridges/*_arc_easy_seed*')):
+    # Skip hail mary bridges (handled separately) and token capacity
+    if 'hailmary_' in bridge_dir.name or 'token_capacity' in bridge_dir.name:
+        continue
     for json_file in bridge_dir.glob('*_results.json'):
         with open(json_file) as f:
             data = json.load(f)
         if 'final_results' in data:
             acc = data['final_results'].get('accuracy', 0)
-            bridge_name = bridge_dir.name.replace('_arc_easy', '')
+            # Extract bridge name: flow_matching_arc_easy_seed42 -> flow_matching
+            bridge_name = bridge_dir.name.replace('_arc_easy_seed42', '').replace('_arc_easy_seed123', '').replace('_arc_easy_seed456', '')
             print(f'  {bridge_name:25} | {acc:.1f}%')
 
-# Token capacity results
+# HAIL MARY bridge results (6 literature-informed experiments)
+print()
+print('HAIL MARY BRIDGES (ARC-Easy):')
+print('-'*40)
+
+for bridge_dir in sorted(output_dir.glob('novel_bridges/hailmary_*_arc_easy_seed*')):
+    for json_file in bridge_dir.glob('*_results.json'):
+        with open(json_file) as f:
+            data = json.load(f)
+        if 'final_results' in data:
+            acc = data['final_results'].get('accuracy', 0)
+            # Extract bridge name: hailmary_thalamic_relay_arc_easy_seed42 -> thalamic_relay
+            bridge_name = bridge_dir.name.replace('hailmary_', '').replace('_arc_easy_seed42', '').replace('_arc_easy_seed123', '').replace('_arc_easy_seed456', '')
+            print(f'  {bridge_name:30} | {acc:.1f}%')
+
+# Token capacity results (fixed token extraction)
 print()
 print('TOKEN CAPACITY (ARC-Easy):')
 print('-'*40)
 
-for cap_dir in sorted(output_dir.glob('novel_bridges/token_capacity_*')):
+for cap_dir in sorted(output_dir.glob('novel_bridges/token_capacity_*_seed*')):
     for json_file in cap_dir.glob('*_results.json'):
         with open(json_file) as f:
             data = json.load(f)
         if 'final_results' in data:
             acc = data['final_results'].get('accuracy', 0)
-            tokens = cap_dir.name.split('_')[-1]
+            # Extract tokens: token_capacity_8_seed42 -> 8 (index 2)
+            tokens = cap_dir.name.split('_')[2]
             print(f'  {tokens} tokens | {acc:.1f}%')
 
 # Latency benchmark results
