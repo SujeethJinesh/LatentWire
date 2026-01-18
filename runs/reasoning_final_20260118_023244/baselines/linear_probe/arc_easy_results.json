@@ -1,0 +1,85 @@
+{
+  "per_seed": [
+    {
+      "dataset": "arc_easy",
+      "num_classes": 4,
+      "num_train": 2251,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 99.8223011994669,
+          "train_time": 2.6239233016967773,
+          "num_samples": 2251,
+          "num_features": 4096,
+          "cv_mean": 25.101650652870166,
+          "cv_std": 2.896184801012712,
+          "accuracy": 26.900000000000002,
+          "f1_score": 20.36148359988561,
+          "correct": 269,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 26.900000000000002,
+      "seed": 42
+    },
+    {
+      "dataset": "arc_easy",
+      "num_classes": 4,
+      "num_train": 2251,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 99.8223011994669,
+          "train_time": 2.5555098056793213,
+          "num_samples": 2251,
+          "num_features": 4096,
+          "cv_mean": 24.877654594727762,
+          "cv_std": 1.5040358162219638,
+          "accuracy": 24.3,
+          "f1_score": 20.12453385716635,
+          "correct": 243,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 24.3,
+      "seed": 123
+    },
+    {
+      "dataset": "arc_easy",
+      "num_classes": 4,
+      "num_train": 2251,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 99.8223011994669,
+          "train_time": 2.554171085357666,
+          "num_samples": 2251,
+          "num_features": 4096,
+          "cv_mean": 24.655728011825577,
+          "cv_std": 2.603034240776375,
+          "accuracy": 26.700000000000003,
+          "f1_score": 21.457912140123366,
+          "correct": 267,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 26.700000000000003,
+      "seed": 456
+    }
+  ],
+  "aggregated": {
+    "layer_31": {
+      "accuracy_mean": 25.96666666666667,
+      "accuracy_std": 1.1813363431112907,
+      "accuracy_min": 24.3,
+      "accuracy_max": 26.900000000000002,
+      "f1_mean": 20.647976532391777,
+      "f1_std": 0.5808230147226926
+    }
+  },
+  "best_layer": "layer_31",
+  "best_accuracy_mean": 25.96666666666667
+}

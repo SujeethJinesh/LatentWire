@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-01-18T05:47:33.423292",
+  "status": "in_progress",
+  "zeroshot_llama": [
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 42,
+      "accuracy": 55.327545382794,
+      "correct": 701,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 123,
+      "accuracy": 55.327545382794,
+      "correct": 701,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 456,
+      "accuracy": 55.327545382794,
+      "correct": 701,
+      "total": 1267,
+      "num_classes": 2
+    }
+  ],
+  "zeroshot_mistral": [
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 42,
+      "accuracy": 54.064719810576165,
+      "correct": 685,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 123,
+      "accuracy": 54.064719810576165,
+      "correct": 685,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 456,
+      "accuracy": 54.064719810576165,
+      "correct": 685,
+      "total": 1267,
+      "num_classes": 2
+    }
+  ],
+  "text_relay": [
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "method": "text_relay_improved",
+      "seed": 42,
+      "accuracy": 54.14364640883978,
+      "correct": 686,
+      "total": 1267,
+      "num_classes": 2,
+      "latency_mean_ms": 919.7617484456562,
+      "latency_std_ms": 7.278000453437726
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "method": "text_relay_improved",
+      "seed": 123,
+      "accuracy": 54.14364640883978,
+      "correct": 686,
+      "total": 1267,
+      "num_classes": 2,
+      "latency_mean_ms": 925.5455098171508,
+      "latency_std_ms": 12.170780447204999
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "method": "text_relay_improved",
+      "seed": 456,
+      "accuracy": 54.14364640883978,
+      "correct": 686,
+      "total": 1267,
+      "num_classes": 2,
+      "latency_mean_ms": 934.6297729933882,
+      "latency_std_ms": 10.68664122704419
+    }
+  ],
+  "linear_probe": [],
+  "prompt_tuning": [],
+  "same_model_bridge": [],
+  "bridge_8": [],
+  "bridge_24": []
+}

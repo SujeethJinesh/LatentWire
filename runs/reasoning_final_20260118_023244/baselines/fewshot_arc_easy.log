@@ -1,0 +1,23 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Device: cuda:0
+
+======================================================================
+FEW-SHOT BASELINE (4-shot): ARC_EASY
+======================================================================
+
+Evaluating Llama (4-shot)...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3847.99it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.15s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.14s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:02,  2.08s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.46s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.70s/it]
+Seed 42:   0%|          | 0/200 [00:00<?, ?it/s]/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Seed 42:   0%|          | 1/200 [00:00<01:46,  1.87it/s]Seed 42:   1%|          | 2/200 [00:00<01:05,  3.04it/s]Seed 42:   2%|▏         | 3/200 [00:00<00:53,  3.71it/s]Seed 42:   2%|▏         | 4/200 [00:01<00:46,  4.26it/s]Seed 42:   2%|▎         | 5/200 [00:01<00:42,  4.62it/s]Seed 42:   3%|▎         | 6/200 [00:01<00:39,  4.88it/s]Seed 42:   4%|▎         | 7/200 [00:01<00:38,  5.05it/s]Seed 42:   4%|▍         | 8/200 [00:01<00:37,  5.18it/s]Seed 42:   4%|▍         | 9/200 [00:02<00:36,  5.28it/s]Seed 42:   5%|▌         | 10/200 [00:02<00:35,  5.35it/s]Seed 42:   6%|▌         | 11/200 [00:02<00:35,  5.36it/s]Seed 42:   6%|▌         | 12/200 [00:02<00:34,  5.38it/s]Seed 42:   6%|▋         | 13/200 [00:02<00:34,  5.40it/s]Seed 42:   7%|▋         | 14/200 [00:02<00:34,  5.43it/s]                                                         Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1635, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1579, in main
+    results = run_fewshot_baseline(args, config, device)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 332, in run_fewshot_baseline
+    true_label = config["label_map"][item[config["label_field"]]]
+KeyError: '2'

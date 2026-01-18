@@ -1,0 +1,22 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Device: cuda:0
+
+======================================================================
+ZERO-SHOT BASELINE: ARC_EASY
+======================================================================
+
+Evaluating Llama...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3813.00it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.21s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.19s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:02,  2.09s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.46s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.72s/it]
+Zero-shot Llama:   0%|          | 0/200 [00:00<?, ?it/s]Zero-shot Llama:   0%|          | 0/200 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1635, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1577, in main
+    results = run_zeroshot_baseline(args, config, device)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 225, in run_zeroshot_baseline
+    label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 225, in <listcomp>
+    label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
+KeyError: 0
