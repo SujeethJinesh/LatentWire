@@ -1,0 +1,135 @@
+2026-01-18 09:49:50 | INFO | Starting enhanced evaluation run: runs/reasoning_final_20260118_094941/standard_bridge/run_20260118_094950
+2026-01-18 09:49:50 | INFO | Using device: cuda:0
+2026-01-18 09:49:50 | INFO | FAST MODE enabled
+2026-01-18 09:49:50 | INFO | HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+2026-01-18 09:49:50 | INFO | Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+2026-01-18 09:49:50 | INFO | Linear probe layer: 31 (matching bridge layer)
+2026-01-18 09:49:50 | INFO | Starting zero-shot baselines...
+2026-01-18 09:50:18 | ERROR | Error in zeroshot_llama_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 09:50:18 | WARNING | Retry 1/2 for zeroshot_llama_arc_easy_seed42
+2026-01-18 09:50:41 | ERROR | Error in zeroshot_llama_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 09:50:41 | WARNING | Retry 2/2 for zeroshot_llama_arc_easy_seed42
+2026-01-18 09:51:04 | ERROR | Error in zeroshot_llama_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 09:51:04 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (73.7s) [FAILED]
+  Elapsed: 0h 1m 14s | ETA: 2h 40m 55s
+  Avg time: 73.7s | Failed: 1 | Skipped: 0
+======================================================================
+2026-01-18 09:51:04 | ERROR | [FAILED] zeroshot_llama_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 09:51:21 | ERROR | Error in zeroshot_mistral_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 09:51:21 | WARNING | Retry 1/2 for zeroshot_mistral_arc_easy_seed42
+2026-01-18 09:51:43 | ERROR | Error in zeroshot_mistral_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 09:51:43 | WARNING | Retry 2/2 for zeroshot_mistral_arc_easy_seed42
+2026-01-18 09:52:04 | ERROR | Error in zeroshot_mistral_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 09:52:04 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_mistral_arc_easy_seed42 (59.0s) [FAILED]
+  Elapsed: 0h 2m 14s | ETA: 2h 23m 46s
+  Avg time: 66.4s | Failed: 2 | Skipped: 0
+======================================================================
+2026-01-18 09:52:04 | ERROR | [FAILED] zeroshot_mistral_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 09:52:35 | ERROR | Error in zeroshot_llama_arc_easy_seed123 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 09:52:35 | WARNING | Retry 1/2 for zeroshot_llama_arc_easy_seed123
+2026-01-18 09:53:02 | ERROR | Error in zeroshot_llama_arc_easy_seed123 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 09:53:02 | WARNING | Retry 2/2 for zeroshot_llama_arc_easy_seed123
+2026-01-18 09:53:27 | ERROR | Error in zeroshot_llama_arc_easy_seed123 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 09:53:27 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 2.3% (3/132)
+  Last: zeroshot_llama_arc_easy_seed123 (79.1s) [FAILED]
+  Elapsed: 0h 3m 36s | ETA: 2h 31m 47s
+  Avg time: 70.6s | Failed: 3 | Skipped: 0
+======================================================================
+2026-01-18 09:53:27 | ERROR | [FAILED] zeroshot_llama_arc_easy_seed123: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 09:53:44 | ERROR | Error in zeroshot_mistral_arc_easy_seed123 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 09:53:44 | WARNING | Retry 1/2 for zeroshot_mistral_arc_easy_seed123
+2026-01-18 09:54:06 | ERROR | Error in zeroshot_mistral_arc_easy_seed123 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 09:54:06 | WARNING | Retry 2/2 for zeroshot_mistral_arc_easy_seed123
+2026-01-18 09:54:28 | ERROR | Error in zeroshot_mistral_arc_easy_seed123 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 09:54:28 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 3.0% (4/132)
+  Last: zeroshot_mistral_arc_easy_seed123 (60.9s) [FAILED]
+  Elapsed: 0h 4m 38s | ETA: 2h 25m 25s
+  Avg time: 68.2s | Failed: 4 | Skipped: 0
+======================================================================
+2026-01-18 09:54:28 | ERROR | [FAILED] zeroshot_mistral_arc_easy_seed123: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 09:54:47 | ERROR | Error in zeroshot_llama_arc_easy_seed456 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 09:54:47 | WARNING | Retry 1/2 for zeroshot_llama_arc_easy_seed456
+2026-01-18 09:55:12 | ERROR | Error in zeroshot_llama_arc_easy_seed456 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 09:55:12 | WARNING | Retry 2/2 for zeroshot_llama_arc_easy_seed456
+2026-01-18 09:55:38 | ERROR | Error in zeroshot_llama_arc_easy_seed456 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 09:55:38 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 3.8% (5/132)
+  Last: zeroshot_llama_arc_easy_seed456 (68.9s) [FAILED]
+  Elapsed: 0h 5m 47s | ETA: 2h 24m 36s
+  Avg time: 68.3s | Failed: 5 | Skipped: 0
+======================================================================
+2026-01-18 09:55:38 | ERROR | [FAILED] zeroshot_llama_arc_easy_seed456: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 09:55:56 | ERROR | Error in zeroshot_mistral_arc_easy_seed456 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 09:55:56 | WARNING | Retry 1/2 for zeroshot_mistral_arc_easy_seed456
+2026-01-18 09:56:18 | ERROR | Error in zeroshot_mistral_arc_easy_seed456 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 09:56:18 | WARNING | Retry 2/2 for zeroshot_mistral_arc_easy_seed456
+2026-01-18 09:56:41 | ERROR | Error in zeroshot_mistral_arc_easy_seed456 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 09:56:41 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 4.5% (6/132)
+  Last: zeroshot_mistral_arc_easy_seed456 (62.1s) [FAILED]
+  Elapsed: 0h 6m 50s | ETA: 2h 21m 17s
+  Avg time: 67.3s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 09:56:41 | ERROR | [FAILED] zeroshot_mistral_arc_easy_seed456: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 10:08:09 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 5.3% (7/132)
+  Last: zeroshot_llama_winogrande_seed42 (687.9s) [OK]
+  Elapsed: 0h 18m 19s | ETA: 5h 24m 51s
+  Avg time: 155.9s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 10:08:09 | INFO | [SUCCESS] zeroshot_llama_winogrande_seed42 completed in 687.9s

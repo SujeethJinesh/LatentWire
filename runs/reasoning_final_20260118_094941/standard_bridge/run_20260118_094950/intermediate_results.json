@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-01-18T09:55:38.304585",
+  "status": "in_progress",
+  "zeroshot_llama": [],
+  "zeroshot_mistral": [],
+  "text_relay": [],
+  "linear_probe": [],
+  "prompt_tuning": [],
+  "same_model_bridge": [],
+  "bridge_8": [],
+  "bridge_24": []
+}
