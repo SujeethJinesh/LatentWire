@@ -1,0 +1,35 @@
+{
+  "experiment": "fewshot_baseline",
+  "timestamp": "20260119_122639",
+  "config": {
+    "baseline": "fewshot",
+    "dataset": "arc_easy",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200,
+    "shots": 4
+  },
+  "results": {
+    "Llama": {
+      "mean_accuracy": 24.833333333333332,
+      "std_accuracy": 0.4714045207910317,
+      "seeds": [
+        24.5,
+        25.5,
+        24.5
+      ]
+    },
+    "Mistral": {
+      "mean_accuracy": 26.0,
+      "std_accuracy": 2.1213203435596424,
+      "seeds": [
+        24.5,
+        29.0,
+        24.5
+      ]
+    }
+  }
+}

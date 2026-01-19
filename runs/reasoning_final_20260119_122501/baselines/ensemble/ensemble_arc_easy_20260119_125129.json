@@ -1,0 +1,75 @@
+{
+  "experiment": "ensemble_baseline",
+  "timestamp": "20260119_125129",
+  "config": {
+    "baseline": "ensemble",
+    "dataset": "arc_easy",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200,
+    "alphas": [
+      0.3,
+      0.5,
+      0.7
+    ]
+  },
+  "results": {
+    "Llama_individual": {
+      "accuracy": 21.0,
+      "correct": 42,
+      "total": 200
+    },
+    "Mistral_individual": {
+      "accuracy": 24.0,
+      "correct": 48,
+      "total": 200
+    },
+    "ensemble_logit_space": {
+      "alpha_0.3": {
+        "alpha": 0.3,
+        "accuracy": 26.0,
+        "correct": 52,
+        "total": 200
+      },
+      "alpha_0.5": {
+        "alpha": 0.5,
+        "accuracy": 25.0,
+        "correct": 50,
+        "total": 200
+      },
+      "alpha_0.7": {
+        "alpha": 0.7,
+        "accuracy": 24.0,
+        "correct": 48,
+        "total": 200
+      }
+    },
+    "ensemble_prob_space": {
+      "prob_alpha_0.3": {
+        "alpha": 0.3,
+        "accuracy": 25.0,
+        "correct": 50,
+        "total": 200
+      },
+      "prob_alpha_0.5": {
+        "alpha": 0.5,
+        "accuracy": 25.0,
+        "correct": 50,
+        "total": 200
+      },
+      "prob_alpha_0.7": {
+        "alpha": 0.7,
+        "accuracy": 24.5,
+        "correct": 49,
+        "total": 200
+      }
+    },
+    "best_ensemble": {
+      "best_alpha": 0.3,
+      "best_accuracy": 26.0
+    }
+  }
+}

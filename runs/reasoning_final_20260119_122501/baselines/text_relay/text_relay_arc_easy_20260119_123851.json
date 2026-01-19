@@ -1,0 +1,87 @@
+{
+  "experiment": "text_relay_baseline",
+  "timestamp": "20260119_123851",
+  "config": {
+    "baseline": "text_relay",
+    "dataset": "arc_easy",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200
+  },
+  "results": {
+    "seed_42": {
+      "accuracy": 23.5,
+      "correct": 47,
+      "total": 200,
+      "example_hints": [
+        {
+          "text": "Which statement best explains why photosynthesis is the foundation of most food webs?...",
+          "hint": "A - A scientific explanation of a natural phenomenon\nB - A personal experience or anecdote\nC - A persuasive argument or opinion\nD - A historical account or event\nAnswer: A - A scientific explanation of a natural phenomenon\nExplanation: This",
+          "true_label": "A"
+        },
+        {
+          "text": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?...",
+          "hint": "The answer is not a mask.\nA) A respirator is used to keep mold spores from entering the respiratory system.\nB) A respirator is used to keep mold spores from entering the respiratory system.\nC) A respirator is used",
+          "true_label": "B"
+        },
+        {
+          "text": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does m...",
+          "hint": "A, B, C, D\nAnswer: B\nExplanation: The text is about a scientific topic, specifically a biological process. The question is asking for a location, which is a common type of question in science. Therefore, the category is",
+          "true_label": "D"
+        }
+      ]
+    },
+    "seed_123": {
+      "accuracy": 23.5,
+      "correct": 47,
+      "total": 200,
+      "example_hints": [
+        {
+          "text": "Which statement best explains why photosynthesis is the foundation of most food webs?...",
+          "hint": "A - A scientific explanation of a natural phenomenon\nB - A personal experience or anecdote\nC - A persuasive argument or opinion\nD - A historical account or event\nAnswer: A - A scientific explanation of a natural phenomenon\nExplanation: This",
+          "true_label": "A"
+        },
+        {
+          "text": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?...",
+          "hint": "The answer is not a mask.\nA) A respirator is used to keep mold spores from entering the respiratory system.\nB) A respirator is used to keep mold spores from entering the respiratory system.\nC) A respirator is used",
+          "true_label": "B"
+        },
+        {
+          "text": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does m...",
+          "hint": "A, B, C, D\nAnswer: B\nExplanation: The text is about a scientific topic, specifically a biological process. The question is asking for a location, which is a common type of question in science. Therefore, the category is",
+          "true_label": "D"
+        }
+      ]
+    },
+    "seed_456": {
+      "accuracy": 23.5,
+      "correct": 47,
+      "total": 200,
+      "example_hints": [
+        {
+          "text": "Which statement best explains why photosynthesis is the foundation of most food webs?...",
+          "hint": "A - A scientific explanation of a natural phenomenon\nB - A personal experience or anecdote\nC - A persuasive argument or opinion\nD - A historical account or event\nAnswer: A - A scientific explanation of a natural phenomenon\nExplanation: This",
+          "true_label": "A"
+        },
+        {
+          "text": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?...",
+          "hint": "The answer is not a mask.\nA) A respirator is used to keep mold spores from entering the respiratory system.\nB) A respirator is used to keep mold spores from entering the respiratory system.\nC) A respirator is used",
+          "true_label": "B"
+        },
+        {
+          "text": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does m...",
+          "hint": "A, B, C, D\nAnswer: B\nExplanation: The text is about a scientific topic, specifically a biological process. The question is asking for a location, which is a common type of question in science. Therefore, the category is",
+          "true_label": "D"
+        }
+      ]
+    },
+    "summary": {
+      "mean_accuracy": 23.5,
+      "std_accuracy": 0.0,
+      "random_baseline": 25.0
+    }
+  }
+}

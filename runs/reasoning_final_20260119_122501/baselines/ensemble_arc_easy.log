@@ -1,0 +1,39 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Device: cuda:0
+
+======================================================================
+ENSEMBLE BASELINE: ARC_EASY
+======================================================================
+Testing whether ensembling Llama + Mistral achieves bridge performance.
+Testing alpha values: [0.3, 0.5, 0.7]
+
+Collecting logits from Llama...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2390.60it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.01s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.01s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.99s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.41s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.63s/it]
+Evaluating Llama:   0%|          | 0/200 [00:00<?, ?it/s]Evaluating Llama:   0%|          | 1/200 [00:00<01:01,  3.22it/s]Evaluating Llama:   4%|▎         | 7/200 [00:00<00:09, 19.95it/s]Evaluating Llama:   6%|▋         | 13/200 [00:00<00:06, 30.62it/s]Evaluating Llama:  10%|▉         | 19/200 [00:00<00:04, 37.75it/s]Evaluating Llama:  12%|█▎        | 25/200 [00:00<00:04, 42.62it/s]Evaluating Llama:  16%|█▌        | 31/200 [00:00<00:03, 46.01it/s]Evaluating Llama:  18%|█▊        | 37/200 [00:00<00:03, 48.32it/s]Evaluating Llama:  22%|██▏       | 43/200 [00:01<00:03, 50.02it/s]Evaluating Llama:  24%|██▍       | 49/200 [00:01<00:02, 50.41it/s]Evaluating Llama:  28%|██▊       | 55/200 [00:01<00:02, 51.22it/s]Evaluating Llama:  30%|███       | 61/200 [00:01<00:02, 52.00it/s]Evaluating Llama:  34%|███▎      | 67/200 [00:01<00:02, 52.51it/s]Evaluating Llama:  36%|███▋      | 73/200 [00:01<00:02, 52.93it/s]Evaluating Llama:  40%|███▉      | 79/200 [00:01<00:02, 53.06it/s]Evaluating Llama:  42%|████▎     | 85/200 [00:01<00:02, 53.23it/s]Evaluating Llama:  46%|████▌     | 91/200 [00:02<00:02, 53.35it/s]Evaluating Llama:  48%|████▊     | 97/200 [00:02<00:01, 53.33it/s]Evaluating Llama:  52%|█████▏    | 103/200 [00:02<00:01, 53.45it/s]Evaluating Llama:  55%|█████▍    | 109/200 [00:02<00:01, 53.34it/s]Evaluating Llama:  57%|█████▊    | 115/200 [00:02<00:01, 53.48it/s]Evaluating Llama:  60%|██████    | 121/200 [00:02<00:01, 53.51it/s]Evaluating Llama:  64%|██████▎   | 127/200 [00:02<00:01, 53.55it/s]Evaluating Llama:  66%|██████▋   | 133/200 [00:02<00:01, 53.64it/s]Evaluating Llama:  70%|██████▉   | 139/200 [00:02<00:01, 53.72it/s]Evaluating Llama:  72%|███████▎  | 145/200 [00:03<00:01, 53.78it/s]Evaluating Llama:  76%|███████▌  | 151/200 [00:03<00:00, 53.80it/s]Evaluating Llama:  78%|███████▊  | 157/200 [00:03<00:00, 53.87it/s]Evaluating Llama:  82%|████████▏ | 163/200 [00:03<00:00, 53.73it/s]Evaluating Llama:  84%|████████▍ | 169/200 [00:03<00:00, 53.67it/s]Evaluating Llama:  88%|████████▊ | 175/200 [00:03<00:00, 53.70it/s]Evaluating Llama:  90%|█████████ | 181/200 [00:03<00:00, 53.70it/s]Evaluating Llama:  94%|█████████▎| 187/200 [00:03<00:00, 53.84it/s]Evaluating Llama:  96%|█████████▋| 193/200 [00:03<00:00, 53.89it/s]Evaluating Llama: 100%|█████████▉| 199/200 [00:04<00:00, 53.89it/s]Evaluating Llama: 100%|██████████| 200/200 [00:04<00:00, 49.59it/s]
+Llama individual: 21.0% (42/200)
+
+Collecting logits from Mistral...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2016.82it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:04,  2.30s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:04<00:02,  2.10s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  1.94s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.00s/it]
+Evaluating Mistral:   0%|          | 0/200 [00:00<?, ?it/s]Evaluating Mistral:   2%|▎         | 5/200 [00:00<00:04, 44.43it/s]Evaluating Mistral:   5%|▌         | 10/200 [00:00<00:04, 45.58it/s]Evaluating Mistral:   8%|▊         | 15/200 [00:00<00:04, 46.15it/s]Evaluating Mistral:  10%|█         | 20/200 [00:00<00:03, 45.02it/s]Evaluating Mistral:  12%|█▎        | 25/200 [00:00<00:03, 45.52it/s]Evaluating Mistral:  15%|█▌        | 30/200 [00:00<00:03, 45.85it/s]Evaluating Mistral:  18%|█▊        | 35/200 [00:00<00:03, 45.98it/s]Evaluating Mistral:  20%|██        | 40/200 [00:00<00:03, 46.17it/s]Evaluating Mistral:  22%|██▎       | 45/200 [00:00<00:03, 46.33it/s]Evaluating Mistral:  25%|██▌       | 50/200 [00:01<00:03, 46.44it/s]Evaluating Mistral:  28%|██▊       | 55/200 [00:01<00:03, 46.57it/s]Evaluating Mistral:  30%|███       | 60/200 [00:01<00:03, 46.63it/s]Evaluating Mistral:  32%|███▎      | 65/200 [00:01<00:02, 46.62it/s]Evaluating Mistral:  35%|███▌      | 70/200 [00:01<00:02, 46.55it/s]Evaluating Mistral:  38%|███▊      | 75/200 [00:01<00:02, 46.73it/s]Evaluating Mistral:  40%|████      | 80/200 [00:01<00:02, 46.82it/s]Evaluating Mistral:  42%|████▎     | 85/200 [00:01<00:02, 46.46it/s]Evaluating Mistral:  45%|████▌     | 90/200 [00:01<00:02, 46.38it/s]Evaluating Mistral:  48%|████▊     | 95/200 [00:02<00:02, 46.51it/s]Evaluating Mistral:  50%|█████     | 100/200 [00:02<00:02, 46.66it/s]Evaluating Mistral:  52%|█████▎    | 105/200 [00:02<00:02, 46.63it/s]Evaluating Mistral:  55%|█████▌    | 110/200 [00:02<00:01, 46.62it/s]Evaluating Mistral:  57%|█████▊    | 115/200 [00:02<00:01, 46.66it/s]Evaluating Mistral:  60%|██████    | 120/200 [00:02<00:01, 46.74it/s]Evaluating Mistral:  62%|██████▎   | 125/200 [00:02<00:01, 46.85it/s]Evaluating Mistral:  65%|██████▌   | 130/200 [00:02<00:01, 46.80it/s]Evaluating Mistral:  68%|██████▊   | 135/200 [00:02<00:01, 46.88it/s]Evaluating Mistral:  70%|███████   | 140/200 [00:03<00:01, 46.96it/s]Evaluating Mistral:  72%|███████▎  | 145/200 [00:03<00:01, 47.09it/s]Evaluating Mistral:  75%|███████▌  | 150/200 [00:03<00:01, 46.84it/s]Evaluating Mistral:  78%|███████▊  | 155/200 [00:03<00:00, 46.79it/s]Evaluating Mistral:  80%|████████  | 160/200 [00:03<00:00, 46.89it/s]Evaluating Mistral:  82%|████████▎ | 165/200 [00:03<00:00, 46.79it/s]Evaluating Mistral:  85%|████████▌ | 170/200 [00:03<00:00, 46.79it/s]Evaluating Mistral:  88%|████████▊ | 175/200 [00:03<00:00, 46.76it/s]Evaluating Mistral:  90%|█████████ | 180/200 [00:03<00:00, 46.77it/s]Evaluating Mistral:  92%|█████████▎| 185/200 [00:03<00:00, 46.86it/s]Evaluating Mistral:  95%|█████████▌| 190/200 [00:04<00:00, 46.89it/s]Evaluating Mistral:  98%|█████████▊| 195/200 [00:04<00:00, 46.80it/s]Evaluating Mistral: 100%|██████████| 200/200 [00:04<00:00, 46.79it/s]Evaluating Mistral: 100%|██████████| 200/200 [00:04<00:00, 46.57it/s]
+Mistral individual: 24.0% (48/200)
+
+--------------------------------------------------
+Computing ensemble accuracies...
+--------------------------------------------------
+Ensemble (alpha=0.3): 26.0% (52/200)
+Ensemble (alpha=0.5): 25.0% (50/200)
+Ensemble (alpha=0.7): 24.0% (48/200)
+
+--- Probability-space ensemble (softmax then average) ---
+Prob Ensemble (alpha=0.3): 25.0% (50/200)
+Prob Ensemble (alpha=0.5): 25.0% (50/200)
+Prob Ensemble (alpha=0.7): 24.5% (49/200)
+
+==================================================
+BEST ENSEMBLE: alpha=0.3, accuracy=26.0%
+==================================================
+
+Results saved to: runs/reasoning_final_20260119_122501/baselines/ensemble/ensemble_arc_easy_20260119_125129.json
