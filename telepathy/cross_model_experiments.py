@@ -42,7 +42,6 @@ from torch.utils.data import DataLoader
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from latentwire.bridge import LatentBridge, PerceiverResampler
-from latentwire.data import load_dataset_for_classification
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
