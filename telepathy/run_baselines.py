@@ -103,13 +103,13 @@ DATASET_CONFIGS = {
         "load_args": ("allenai/ai2_arc", "ARC-Easy"),
         "text_field": "question",
         "label_field": "answerKey",
-        # ARC dataset uses both letter (A,B,C,D) and numeric (1,2,3,4) answer keys
-        "label_map": {"A": "A", "B": "B", "C": "C", "D": "D", "1": "A", "2": "B", "3": "C", "4": "D"},
+        # ARC dataset uses both letter (A,B,C,D,E) and numeric (1,2,3,4,5) answer keys
+        "label_map": {"A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "1": "A", "2": "B", "3": "C", "4": "D", "5": "E"},
         "label_from_key": True,  # Labels are string keys, not int indices
-        "num_classes": 4,
+        "num_classes": 5,  # Some questions have 5 choices
         "train_split": "train",
         "eval_split": "test",
-        "task_prompt": "Answer A, B, C, or D.",
+        "task_prompt": "Answer A, B, C, D, or E.",
         "prompt_template": "Question: {text}\n\n{task_prompt}\nAnswer:",
         "random_baseline": 25.0,
     },
@@ -948,7 +948,10 @@ def run_prompt_tuning_baseline(args, config, device):
                 iter_dl = iter(dl)
                 batch = next(iter_dl)
 
-            label_texts = [config["label_map"][l] for l in batch[config["label_field"]].tolist()]
+            # Handle both tensor and list label fields
+            labels_raw = batch[config["label_field"]]
+            labels_list = labels_raw.tolist() if hasattr(labels_raw, 'tolist') else labels_raw
+            label_texts = [config["label_map"][l] for l in labels_list]
             # Get input texts from the batch
             text_field = config["text_field"]
             input_texts = [t[:200] for t in batch[text_field]]  # Truncate to 200 chars

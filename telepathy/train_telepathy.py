@@ -128,14 +128,14 @@ DATASET_CONFIGS = {
         "load_args": ("allenai/ai2_arc", "ARC-Easy"),
         "text_field": "question",  # Will be formatted with choices via text_formatter
         "label_field": "answerKey",
-        "labels": ["A", "B", "C", "D"],
-        "num_classes": 4,
+        "labels": ["A", "B", "C", "D", "E"],  # Some questions have 5 choices
+        "num_classes": 5,
         "train_split": "train",
         "eval_split": "test",
         "max_length": 256,
-        "prompt_template": "Question: {text}\nAnswer (A, B, C, or D):",
+        "prompt_template": "Question: {text}\nAnswer (A, B, C, D, or E):",
         "primer": "Answer:",
-        "random_baseline": 25.0,
+        "random_baseline": 20.0,  # 5-way classification
         "is_reasoning": True,
         "text_formatter": "arc",  # Special formatter to include answer choices
     },
@@ -213,6 +213,41 @@ def format_text_for_item(item, config):
             text = f"{text}\n" + "\n".join(formatted_choices)
 
     return text
+
+
+def custom_collate_fn(batch):
+    """
+    Custom collate function that handles variable-length nested data.
+
+    HuggingFace datasets with nested dicts (like ARC's 'choices' field)
+    can have variable-length lists that the default collate can't stack.
+    This function keeps them as lists instead of trying to tensorize.
+    """
+    if not batch:
+        return {}
+
+    # Get all keys from first item
+    keys = batch[0].keys()
+    collated = {}
+
+    for key in keys:
+        values = [item[key] for item in batch]
+
+        # Check if values are dicts (nested structure like 'choices')
+        if isinstance(values[0], dict):
+            # Recursively collate nested dicts
+            nested_keys = values[0].keys()
+            collated[key] = {
+                nk: [v[nk] for v in values] for nk in nested_keys
+            }
+        elif isinstance(values[0], (int, float, bool)):
+            # Numeric types - keep as list (will be converted to tensor later if needed)
+            collated[key] = values
+        else:
+            # Strings and other types - keep as list
+            collated[key] = values
+
+    return collated
 
 
 def format_texts_for_batch(batch, config):
@@ -1201,7 +1236,7 @@ def main():
     # Seeded generator for reproducible shuffling
     dl_generator = torch.Generator()
     dl_generator.manual_seed(args.seed)
-    dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True, generator=dl_generator)
+    dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True, generator=dl_generator, collate_fn=custom_collate_fn)
 
     if local_rank == 0:
         print(f"\nTraining on {len(train_ds)} samples")

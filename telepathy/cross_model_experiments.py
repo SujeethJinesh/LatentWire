@@ -1143,11 +1143,11 @@ class FlowMatchingBridge(nn.Module):
             t = t.expand(B, 1)
         t_expanded = t.unsqueeze(-1).expand(B, K, 1)
 
-        # Concatenate position and time
-        xt = torch.cat([x, t_expanded], dim=-1)  # [B, K, D+1]
+        # Concatenate position and time (ensure dtype matches velocity_net weights)
+        xt = torch.cat([x, t_expanded.to(x.dtype)], dim=-1)  # [B, K, D+1]
 
-        # Compute velocity
-        v = self.velocity_net(xt)
+        # Compute velocity (match dtype to weights)
+        v = self.velocity_net(xt.to(self.velocity_net[0].weight.dtype))
         return v
 
     def integrate_flow(self, x0: torch.Tensor, num_steps: int = None) -> torch.Tensor:
@@ -1166,7 +1166,7 @@ class FlowMatchingBridge(nn.Module):
         dt = 1.0 / num_steps
 
         for i in range(num_steps):
-            t = torch.tensor(i * dt, device=x.device)
+            t = torch.tensor(i * dt, device=x.device, dtype=x.dtype)
             v = self.compute_velocity(x, t)
             x = x + dt * v
 
