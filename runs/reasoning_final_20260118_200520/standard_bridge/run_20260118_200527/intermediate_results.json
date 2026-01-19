@@ -1,0 +1,93 @@
+{
+  "timestamp": "2026-01-18T21:26:22.574910",
+  "status": "in_progress",
+  "zeroshot_llama": [
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 42,
+      "accuracy": 55.327545382794,
+      "correct": 701,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 123,
+      "accuracy": 55.327545382794,
+      "correct": 701,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 456,
+      "accuracy": 55.327545382794,
+      "correct": 701,
+      "total": 1267,
+      "num_classes": 2
+    }
+  ],
+  "zeroshot_mistral": [
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 42,
+      "accuracy": 54.064719810576165,
+      "correct": 685,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 123,
+      "accuracy": 54.064719810576165,
+      "correct": 685,
+      "total": 1267,
+      "num_classes": 2
+    },
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 456,
+      "accuracy": 54.064719810576165,
+      "correct": 685,
+      "total": 1267,
+      "num_classes": 2
+    }
+  ],
+  "text_relay": [
+    {
+      "dataset": "winogrande",
+      "dataset_name": "WinoGrande",
+      "method": "text_relay_improved",
+      "seed": 42,
+      "accuracy": 54.14364640883978,
+      "correct": 686,
+      "total": 1267,
+      "num_classes": 2,
+      "latency_mean_ms": 925.0791684647944,
+      "latency_std_ms": 10.327038232674852
+    }
+  ],
+  "linear_probe": [],
+  "prompt_tuning": [],
+  "same_model_bridge": [],
+  "bridge_8": [],
+  "bridge_24": []
+}

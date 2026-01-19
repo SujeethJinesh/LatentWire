@@ -1,0 +1,1324 @@
+2026-01-18 20:05:27 | INFO | Starting enhanced evaluation run: runs/reasoning_final_20260118_200520/standard_bridge/run_20260118_200527
+2026-01-18 20:05:27 | INFO | Using device: cuda:0
+2026-01-18 20:05:27 | INFO | FAST MODE enabled
+2026-01-18 20:05:27 | INFO | HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+2026-01-18 20:05:27 | INFO | Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+2026-01-18 20:05:27 | INFO | Linear probe layer: 31 (matching bridge layer)
+2026-01-18 20:05:27 | INFO | Starting zero-shot baselines...
+2026-01-18 20:05:51 | ERROR | Error in zeroshot_llama_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 20:05:51 | WARNING | Retry 1/2 for zeroshot_llama_arc_easy_seed42
+2026-01-18 20:06:11 | ERROR | Error in zeroshot_llama_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 20:06:11 | WARNING | Retry 2/2 for zeroshot_llama_arc_easy_seed42
+2026-01-18 20:06:32 | ERROR | Error in zeroshot_llama_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 20:06:32 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (64.8s) [FAILED]
+  Elapsed: 0h 1m 5s | ETA: 2h 21m 31s
+  Avg time: 64.8s | Failed: 1 | Skipped: 0
+======================================================================
+2026-01-18 20:06:32 | ERROR | [FAILED] zeroshot_llama_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 20:06:46 | ERROR | Error in zeroshot_mistral_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 20:06:46 | WARNING | Retry 1/2 for zeroshot_mistral_arc_easy_seed42
+2026-01-18 20:07:05 | ERROR | Error in zeroshot_mistral_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 20:07:05 | WARNING | Retry 2/2 for zeroshot_mistral_arc_easy_seed42
+2026-01-18 20:07:24 | ERROR | Error in zeroshot_mistral_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 20:07:24 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_mistral_arc_easy_seed42 (50.7s) [FAILED]
+  Elapsed: 0h 1m 56s | ETA: 2h 5m 5s
+  Avg time: 57.7s | Failed: 2 | Skipped: 0
+======================================================================
+2026-01-18 20:07:24 | ERROR | [FAILED] zeroshot_mistral_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 20:07:39 | ERROR | Error in zeroshot_llama_arc_easy_seed123 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 20:07:39 | WARNING | Retry 1/2 for zeroshot_llama_arc_easy_seed123
+2026-01-18 20:07:59 | ERROR | Error in zeroshot_llama_arc_easy_seed123 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 20:07:59 | WARNING | Retry 2/2 for zeroshot_llama_arc_easy_seed123
+2026-01-18 20:08:20 | ERROR | Error in zeroshot_llama_arc_easy_seed123 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 20:08:20 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 2.3% (3/132)
+  Last: zeroshot_llama_arc_easy_seed123 (55.7s) [FAILED]
+  Elapsed: 0h 2m 52s | ETA: 2h 2m 39s
+  Avg time: 57.0s | Failed: 3 | Skipped: 0
+======================================================================
+2026-01-18 20:08:20 | ERROR | [FAILED] zeroshot_llama_arc_easy_seed123: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 20:08:33 | ERROR | Error in zeroshot_mistral_arc_easy_seed123 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 20:08:33 | WARNING | Retry 1/2 for zeroshot_mistral_arc_easy_seed123
+2026-01-18 20:08:51 | ERROR | Error in zeroshot_mistral_arc_easy_seed123 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 20:08:51 | WARNING | Retry 2/2 for zeroshot_mistral_arc_easy_seed123
+2026-01-18 20:09:10 | ERROR | Error in zeroshot_mistral_arc_easy_seed123 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 20:09:10 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 3.0% (4/132)
+  Last: zeroshot_mistral_arc_easy_seed123 (49.9s) [FAILED]
+  Elapsed: 0h 3m 42s | ETA: 1h 57m 52s
+  Avg time: 55.3s | Failed: 4 | Skipped: 0
+======================================================================
+2026-01-18 20:09:10 | ERROR | [FAILED] zeroshot_mistral_arc_easy_seed123: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 20:09:26 | ERROR | Error in zeroshot_llama_arc_easy_seed456 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 20:09:26 | WARNING | Retry 1/2 for zeroshot_llama_arc_easy_seed456
+2026-01-18 20:09:45 | ERROR | Error in zeroshot_llama_arc_easy_seed456 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 20:09:45 | WARNING | Retry 2/2 for zeroshot_llama_arc_easy_seed456
+2026-01-18 20:10:06 | ERROR | Error in zeroshot_llama_arc_easy_seed456 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 20:10:06 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 3.8% (5/132)
+  Last: zeroshot_llama_arc_easy_seed456 (55.4s) [FAILED]
+  Elapsed: 0h 4m 38s | ETA: 1h 57m 0s
+  Avg time: 55.3s | Failed: 5 | Skipped: 0
+======================================================================
+2026-01-18 20:10:06 | ERROR | [FAILED] zeroshot_llama_arc_easy_seed456: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 20:10:18 | ERROR | Error in zeroshot_mistral_arc_easy_seed456 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 20:10:18 | WARNING | Retry 1/2 for zeroshot_mistral_arc_easy_seed456
+2026-01-18 20:10:37 | ERROR | Error in zeroshot_mistral_arc_easy_seed456 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 20:10:37 | WARNING | Retry 2/2 for zeroshot_mistral_arc_easy_seed456
+2026-01-18 20:10:55 | ERROR | Error in zeroshot_mistral_arc_easy_seed456 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 20:10:55 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 4.5% (6/132)
+  Last: zeroshot_mistral_arc_easy_seed456 (49.2s) [FAILED]
+  Elapsed: 0h 5m 28s | ETA: 1h 53m 57s
+  Avg time: 54.3s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 20:10:55 | ERROR | [FAILED] zeroshot_mistral_arc_easy_seed456: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 20:19:38 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 5.3% (7/132)
+  Last: zeroshot_llama_winogrande_seed42 (522.8s) [OK]
+  Elapsed: 0h 14m 11s | ETA: 4h 12m 29s
+  Avg time: 121.2s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 20:19:38 | INFO | [SUCCESS] zeroshot_llama_winogrande_seed42 completed in 522.8s
+2026-01-18 20:26:26 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 6.1% (8/132)
+  Last: zeroshot_mistral_winogrande_seed42 (407.6s) [OK]
+  Elapsed: 0h 20m 58s | ETA: 5h 24m 27s
+  Avg time: 157.0s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 20:26:26 | INFO | [SUCCESS] zeroshot_mistral_winogrande_seed42 completed in 407.6s
+2026-01-18 20:32:01 | INFO | 
+======================================================================
+PROGRESS: [==----------------------------] 6.8% (9/132)
+  Last: zeroshot_llama_winogrande_seed123 (334.6s) [OK]
+  Elapsed: 0h 26m 33s | ETA: 6h 2m 17s
+  Avg time: 176.7s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 20:32:01 | INFO | [SUCCESS] zeroshot_llama_winogrande_seed123 completed in 334.6s
+2026-01-18 20:38:47 | INFO | 
+======================================================================
+PROGRESS: [==----------------------------] 7.6% (10/132)
+  Last: zeroshot_mistral_winogrande_seed123 (405.9s) [OK]
+  Elapsed: 0h 33m 19s | ETA: 6h 45m 56s
+  Avg time: 199.6s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 20:38:47 | INFO | [SUCCESS] zeroshot_mistral_winogrande_seed123 completed in 405.9s
+2026-01-18 20:44:20 | INFO | 
+======================================================================
+PROGRESS: [==----------------------------] 8.3% (11/132)
+  Last: zeroshot_llama_winogrande_seed456 (333.3s) [OK]
+  Elapsed: 0h 38m 53s | ETA: 7h 7m 7s
+  Avg time: 211.8s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 20:44:20 | INFO | [SUCCESS] zeroshot_llama_winogrande_seed456 completed in 333.3s
+2026-01-18 20:51:06 | INFO | 
+======================================================================
+PROGRESS: [==----------------------------] 9.1% (12/132)
+  Last: zeroshot_mistral_winogrande_seed456 (405.3s) [OK]
+  Elapsed: 0h 45m 38s | ETA: 7h 35m 50s
+  Avg time: 227.9s | Failed: 6 | Skipped: 0
+======================================================================
+2026-01-18 20:51:06 | INFO | [SUCCESS] zeroshot_mistral_winogrande_seed456 completed in 405.3s
+2026-01-18 20:51:13 | ERROR | Error in zeroshot_llama_hellaswag_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:51:13 | WARNING | Retry 1/2 for zeroshot_llama_hellaswag_seed42
+2026-01-18 20:51:27 | ERROR | Error in zeroshot_llama_hellaswag_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:51:27 | WARNING | Retry 2/2 for zeroshot_llama_hellaswag_seed42
+2026-01-18 20:51:39 | ERROR | Error in zeroshot_llama_hellaswag_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:51:39 | INFO | 
+======================================================================
+PROGRESS: [==----------------------------] 9.8% (13/132)
+  Last: zeroshot_llama_hellaswag_seed42 (33.3s) [FAILED]
+  Elapsed: 0h 46m 12s | ETA: 7h 2m 21s
+  Avg time: 213.0s | Failed: 7 | Skipped: 0
+======================================================================
+2026-01-18 20:51:39 | ERROR | [FAILED] zeroshot_llama_hellaswag_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+
+2026-01-18 20:51:46 | ERROR | Error in zeroshot_mistral_hellaswag_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:51:46 | WARNING | Retry 1/2 for zeroshot_mistral_hellaswag_seed42
+2026-01-18 20:51:58 | ERROR | Error in zeroshot_mistral_hellaswag_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:51:58 | WARNING | Retry 2/2 for zeroshot_mistral_hellaswag_seed42
+2026-01-18 20:52:09 | ERROR | Error in zeroshot_mistral_hellaswag_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:52:09 | INFO | 
+======================================================================
+PROGRESS: [===---------------------------] 10.6% (14/132)
+  Last: zeroshot_mistral_hellaswag_seed42 (29.6s) [FAILED]
+  Elapsed: 0h 46m 41s | ETA: 6h 33m 2s
+  Avg time: 199.9s | Failed: 8 | Skipped: 0
+======================================================================
+2026-01-18 20:52:09 | ERROR | [FAILED] zeroshot_mistral_hellaswag_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+
+2026-01-18 20:52:17 | ERROR | Error in zeroshot_llama_hellaswag_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:52:17 | WARNING | Retry 1/2 for zeroshot_llama_hellaswag_seed123
+2026-01-18 20:52:30 | ERROR | Error in zeroshot_llama_hellaswag_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:52:30 | WARNING | Retry 2/2 for zeroshot_llama_hellaswag_seed123
+2026-01-18 20:52:42 | ERROR | Error in zeroshot_llama_hellaswag_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:52:42 | INFO | 
+======================================================================
+PROGRESS: [===---------------------------] 11.4% (15/132)
+  Last: zeroshot_llama_hellaswag_seed123 (33.0s) [FAILED]
+  Elapsed: 0h 47m 15s | ETA: 6h 8m 1s
+  Avg time: 188.7s | Failed: 9 | Skipped: 0
+======================================================================
+2026-01-18 20:52:42 | ERROR | [FAILED] zeroshot_llama_hellaswag_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+
+2026-01-18 20:52:50 | ERROR | Error in zeroshot_mistral_hellaswag_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:52:50 | WARNING | Retry 1/2 for zeroshot_mistral_hellaswag_seed123
+2026-01-18 20:53:01 | ERROR | Error in zeroshot_mistral_hellaswag_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:53:01 | WARNING | Retry 2/2 for zeroshot_mistral_hellaswag_seed123
+2026-01-18 20:53:13 | ERROR | Error in zeroshot_mistral_hellaswag_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:53:13 | INFO | 
+======================================================================
+PROGRESS: [===---------------------------] 12.1% (16/132)
+  Last: zeroshot_mistral_hellaswag_seed123 (29.6s) [FAILED]
+  Elapsed: 0h 47m 45s | ETA: 5h 45m 39s
+  Avg time: 178.8s | Failed: 10 | Skipped: 0
+======================================================================
+2026-01-18 20:53:13 | ERROR | [FAILED] zeroshot_mistral_hellaswag_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+
+2026-01-18 20:53:21 | ERROR | Error in zeroshot_llama_hellaswag_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:53:21 | WARNING | Retry 1/2 for zeroshot_llama_hellaswag_seed456
+2026-01-18 20:53:34 | ERROR | Error in zeroshot_llama_hellaswag_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:53:34 | WARNING | Retry 2/2 for zeroshot_llama_hellaswag_seed456
+2026-01-18 20:53:47 | ERROR | Error in zeroshot_llama_hellaswag_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:53:47 | INFO | 
+======================================================================
+PROGRESS: [===---------------------------] 12.9% (17/132)
+  Last: zeroshot_llama_hellaswag_seed456 (33.3s) [FAILED]
+  Elapsed: 0h 48m 19s | ETA: 5h 26m 16s
+  Avg time: 170.2s | Failed: 11 | Skipped: 0
+======================================================================
+2026-01-18 20:53:47 | ERROR | [FAILED] zeroshot_llama_hellaswag_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+
+2026-01-18 20:53:53 | ERROR | Error in zeroshot_mistral_hellaswag_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:53:53 | WARNING | Retry 1/2 for zeroshot_mistral_hellaswag_seed456
+2026-01-18 20:54:05 | ERROR | Error in zeroshot_mistral_hellaswag_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:54:05 | WARNING | Retry 2/2 for zeroshot_mistral_hellaswag_seed456
+2026-01-18 20:54:17 | ERROR | Error in zeroshot_mistral_hellaswag_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+2026-01-18 20:54:17 | INFO | 
+======================================================================
+PROGRESS: [====--------------------------] 13.6% (18/132)
+  Last: zeroshot_mistral_hellaswag_seed456 (29.7s) [FAILED]
+  Elapsed: 0h 48m 49s | ETA: 5h 8m 36s
+  Avg time: 162.4s | Failed: 12 | Skipped: 0
+======================================================================
+2026-01-18 20:54:17 | ERROR | [FAILED] zeroshot_mistral_hellaswag_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--Rowan--hellaswag'
+
+2026-01-18 20:54:24 | ERROR | Error in zeroshot_llama_boolq_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:54:24 | WARNING | Retry 1/2 for zeroshot_llama_boolq_seed42
+2026-01-18 20:54:37 | ERROR | Error in zeroshot_llama_boolq_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:54:37 | WARNING | Retry 2/2 for zeroshot_llama_boolq_seed42
+2026-01-18 20:54:50 | ERROR | Error in zeroshot_llama_boolq_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:54:50 | INFO | 
+======================================================================
+PROGRESS: [====--------------------------] 14.4% (19/132)
+  Last: zeroshot_llama_boolq_seed42 (33.1s) [FAILED]
+  Elapsed: 0h 49m 23s | ETA: 4h 53m 4s
+  Avg time: 155.6s | Failed: 13 | Skipped: 0
+======================================================================
+2026-01-18 20:54:50 | ERROR | [FAILED] zeroshot_llama_boolq_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+
+2026-01-18 20:54:57 | ERROR | Error in zeroshot_mistral_boolq_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:54:57 | WARNING | Retry 1/2 for zeroshot_mistral_boolq_seed42
+2026-01-18 20:55:08 | ERROR | Error in zeroshot_mistral_boolq_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:55:08 | WARNING | Retry 2/2 for zeroshot_mistral_boolq_seed42
+2026-01-18 20:55:20 | ERROR | Error in zeroshot_mistral_boolq_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:55:20 | INFO | 
+======================================================================
+PROGRESS: [====--------------------------] 15.2% (20/132)
+  Last: zeroshot_mistral_boolq_seed42 (29.7s) [FAILED]
+  Elapsed: 0h 49m 52s | ETA: 4h 38m 44s
+  Avg time: 149.3s | Failed: 14 | Skipped: 0
+======================================================================
+2026-01-18 20:55:20 | ERROR | [FAILED] zeroshot_mistral_boolq_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+
+2026-01-18 20:55:28 | ERROR | Error in zeroshot_llama_boolq_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:55:28 | WARNING | Retry 1/2 for zeroshot_llama_boolq_seed123
+2026-01-18 20:55:40 | ERROR | Error in zeroshot_llama_boolq_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:55:40 | WARNING | Retry 2/2 for zeroshot_llama_boolq_seed123
+2026-01-18 20:55:53 | ERROR | Error in zeroshot_llama_boolq_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:55:53 | INFO | 
+======================================================================
+PROGRESS: [====--------------------------] 15.9% (21/132)
+  Last: zeroshot_llama_boolq_seed123 (32.7s) [FAILED]
+  Elapsed: 0h 50m 25s | ETA: 4h 25m 58s
+  Avg time: 143.8s | Failed: 15 | Skipped: 0
+======================================================================
+2026-01-18 20:55:53 | ERROR | [FAILED] zeroshot_llama_boolq_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+
+2026-01-18 20:55:59 | ERROR | Error in zeroshot_mistral_boolq_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:55:59 | WARNING | Retry 1/2 for zeroshot_mistral_boolq_seed123
+2026-01-18 20:56:11 | ERROR | Error in zeroshot_mistral_boolq_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:56:11 | WARNING | Retry 2/2 for zeroshot_mistral_boolq_seed123
+2026-01-18 20:56:23 | ERROR | Error in zeroshot_mistral_boolq_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:56:23 | INFO | 
+======================================================================
+PROGRESS: [=====-------------------------] 16.7% (22/132)
+  Last: zeroshot_mistral_boolq_seed123 (29.9s) [FAILED]
+  Elapsed: 0h 50m 55s | ETA: 4h 14m 5s
+  Avg time: 138.6s | Failed: 16 | Skipped: 0
+======================================================================
+2026-01-18 20:56:23 | ERROR | [FAILED] zeroshot_mistral_boolq_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+
+2026-01-18 20:56:31 | ERROR | Error in zeroshot_llama_boolq_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:56:31 | WARNING | Retry 1/2 for zeroshot_llama_boolq_seed456
+2026-01-18 20:56:43 | ERROR | Error in zeroshot_llama_boolq_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:56:43 | WARNING | Retry 2/2 for zeroshot_llama_boolq_seed456
+2026-01-18 20:56:57 | ERROR | Error in zeroshot_llama_boolq_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:56:57 | INFO | 
+======================================================================
+PROGRESS: [=====-------------------------] 17.4% (23/132)
+  Last: zeroshot_llama_boolq_seed456 (33.5s) [FAILED]
+  Elapsed: 0h 51m 29s | ETA: 4h 3m 28s
+  Avg time: 134.0s | Failed: 17 | Skipped: 0
+======================================================================
+2026-01-18 20:56:57 | ERROR | [FAILED] zeroshot_llama_boolq_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+
+2026-01-18 20:57:03 | ERROR | Error in zeroshot_mistral_boolq_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:57:03 | WARNING | Retry 1/2 for zeroshot_mistral_boolq_seed456
+2026-01-18 20:57:15 | ERROR | Error in zeroshot_mistral_boolq_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:57:15 | WARNING | Retry 2/2 for zeroshot_mistral_boolq_seed456
+2026-01-18 20:57:26 | ERROR | Error in zeroshot_mistral_boolq_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+2026-01-18 20:57:26 | INFO | 
+======================================================================
+PROGRESS: [=====-------------------------] 18.2% (24/132)
+  Last: zeroshot_mistral_boolq_seed456 (29.6s) [FAILED]
+  Elapsed: 0h 51m 59s | ETA: 3h 53m 24s
+  Avg time: 129.7s | Failed: 18 | Skipped: 0
+======================================================================
+2026-01-18 20:57:26 | ERROR | [FAILED] zeroshot_mistral_boolq_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--boolq'
+
+2026-01-18 20:57:34 | ERROR | Error in zeroshot_llama_sst2_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:57:34 | WARNING | Retry 1/2 for zeroshot_llama_sst2_seed42
+2026-01-18 20:57:47 | ERROR | Error in zeroshot_llama_sst2_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:57:47 | WARNING | Retry 2/2 for zeroshot_llama_sst2_seed42
+2026-01-18 20:58:00 | ERROR | Error in zeroshot_llama_sst2_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:58:00 | INFO | 
+======================================================================
+PROGRESS: [=====-------------------------] 18.9% (25/132)
+  Last: zeroshot_llama_sst2_seed42 (33.4s) [FAILED]
+  Elapsed: 0h 52m 33s | ETA: 3h 44m 22s
+  Avg time: 125.8s | Failed: 19 | Skipped: 0
+======================================================================
+2026-01-18 20:58:00 | ERROR | [FAILED] zeroshot_llama_sst2_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 565, in load_dataset_by_config
+    dataset = load_dataset(ds_name, ds_config, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1167, in _hf_hub_download_to_cache_dir
+    with WeakFileLock(lock_path):
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_fixes.py", line 109, in WeakFileLock
+    lock.acquire(timeout=min(log_interval, timeout - elapsed_time) if timeout else log_interval)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_api.py", line 332, in acquire
+    self._acquire()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_unix.py", line 44, in _acquire
+    fd = os.open(self.lock_file, open_flags, self._context.mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+
+2026-01-18 20:58:07 | ERROR | Error in zeroshot_mistral_sst2_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:58:07 | WARNING | Retry 1/2 for zeroshot_mistral_sst2_seed42
+2026-01-18 20:58:19 | ERROR | Error in zeroshot_mistral_sst2_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:58:19 | WARNING | Retry 2/2 for zeroshot_mistral_sst2_seed42
+2026-01-18 20:58:30 | ERROR | Error in zeroshot_mistral_sst2_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:58:30 | INFO | 
+======================================================================
+PROGRESS: [=====-------------------------] 19.7% (26/132)
+  Last: zeroshot_mistral_sst2_seed42 (30.0s) [FAILED]
+  Elapsed: 0h 53m 3s | ETA: 3h 35m 46s
+  Avg time: 122.1s | Failed: 20 | Skipped: 0
+======================================================================
+2026-01-18 20:58:30 | ERROR | [FAILED] zeroshot_mistral_sst2_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 565, in load_dataset_by_config
+    dataset = load_dataset(ds_name, ds_config, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1167, in _hf_hub_download_to_cache_dir
+    with WeakFileLock(lock_path):
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_fixes.py", line 109, in WeakFileLock
+    lock.acquire(timeout=min(log_interval, timeout - elapsed_time) if timeout else log_interval)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_api.py", line 332, in acquire
+    self._acquire()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_unix.py", line 44, in _acquire
+    fd = os.open(self.lock_file, open_flags, self._context.mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+
+2026-01-18 20:58:38 | ERROR | Error in zeroshot_llama_sst2_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:58:38 | WARNING | Retry 1/2 for zeroshot_llama_sst2_seed123
+2026-01-18 20:58:51 | ERROR | Error in zeroshot_llama_sst2_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:58:51 | WARNING | Retry 2/2 for zeroshot_llama_sst2_seed123
+2026-01-18 20:59:03 | ERROR | Error in zeroshot_llama_sst2_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:59:03 | INFO | 
+======================================================================
+PROGRESS: [======------------------------] 20.5% (27/132)
+  Last: zeroshot_llama_sst2_seed123 (33.0s) [FAILED]
+  Elapsed: 0h 53m 36s | ETA: 3h 27m 57s
+  Avg time: 118.8s | Failed: 21 | Skipped: 0
+======================================================================
+2026-01-18 20:59:03 | ERROR | [FAILED] zeroshot_llama_sst2_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 565, in load_dataset_by_config
+    dataset = load_dataset(ds_name, ds_config, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1167, in _hf_hub_download_to_cache_dir
+    with WeakFileLock(lock_path):
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_fixes.py", line 109, in WeakFileLock
+    lock.acquire(timeout=min(log_interval, timeout - elapsed_time) if timeout else log_interval)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_api.py", line 332, in acquire
+    self._acquire()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_unix.py", line 44, in _acquire
+    fd = os.open(self.lock_file, open_flags, self._context.mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+
+2026-01-18 20:59:10 | ERROR | Error in zeroshot_mistral_sst2_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:59:10 | WARNING | Retry 1/2 for zeroshot_mistral_sst2_seed123
+2026-01-18 20:59:22 | ERROR | Error in zeroshot_mistral_sst2_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:59:22 | WARNING | Retry 2/2 for zeroshot_mistral_sst2_seed123
+2026-01-18 20:59:33 | ERROR | Error in zeroshot_mistral_sst2_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:59:33 | INFO | 
+======================================================================
+PROGRESS: [======------------------------] 21.2% (28/132)
+  Last: zeroshot_mistral_sst2_seed123 (29.4s) [FAILED]
+  Elapsed: 0h 54m 6s | ETA: 3h 20m 26s
+  Avg time: 115.6s | Failed: 22 | Skipped: 0
+======================================================================
+2026-01-18 20:59:33 | ERROR | [FAILED] zeroshot_mistral_sst2_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 565, in load_dataset_by_config
+    dataset = load_dataset(ds_name, ds_config, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1167, in _hf_hub_download_to_cache_dir
+    with WeakFileLock(lock_path):
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_fixes.py", line 109, in WeakFileLock
+    lock.acquire(timeout=min(log_interval, timeout - elapsed_time) if timeout else log_interval)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_api.py", line 332, in acquire
+    self._acquire()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_unix.py", line 44, in _acquire
+    fd = os.open(self.lock_file, open_flags, self._context.mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+
+2026-01-18 20:59:41 | ERROR | Error in zeroshot_llama_sst2_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:59:41 | WARNING | Retry 1/2 for zeroshot_llama_sst2_seed456
+2026-01-18 20:59:54 | ERROR | Error in zeroshot_llama_sst2_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 20:59:54 | WARNING | Retry 2/2 for zeroshot_llama_sst2_seed456
+2026-01-18 21:00:07 | ERROR | Error in zeroshot_llama_sst2_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 21:00:07 | INFO | 
+======================================================================
+PROGRESS: [======------------------------] 22.0% (29/132)
+  Last: zeroshot_llama_sst2_seed456 (33.4s) [FAILED]
+  Elapsed: 0h 54m 39s | ETA: 3h 13m 38s
+  Avg time: 112.8s | Failed: 23 | Skipped: 0
+======================================================================
+2026-01-18 21:00:07 | ERROR | [FAILED] zeroshot_llama_sst2_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 565, in load_dataset_by_config
+    dataset = load_dataset(ds_name, ds_config, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1167, in _hf_hub_download_to_cache_dir
+    with WeakFileLock(lock_path):
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_fixes.py", line 109, in WeakFileLock
+    lock.acquire(timeout=min(log_interval, timeout - elapsed_time) if timeout else log_interval)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_api.py", line 332, in acquire
+    self._acquire()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_unix.py", line 44, in _acquire
+    fd = os.open(self.lock_file, open_flags, self._context.mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+
+2026-01-18 21:00:13 | ERROR | Error in zeroshot_mistral_sst2_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 21:00:13 | WARNING | Retry 1/2 for zeroshot_mistral_sst2_seed456
+2026-01-18 21:00:25 | ERROR | Error in zeroshot_mistral_sst2_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 21:00:25 | WARNING | Retry 2/2 for zeroshot_mistral_sst2_seed456
+2026-01-18 21:00:37 | ERROR | Error in zeroshot_mistral_sst2_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+2026-01-18 21:00:37 | INFO | 
+======================================================================
+PROGRESS: [======------------------------] 22.7% (30/132)
+  Last: zeroshot_mistral_sst2_seed456 (29.9s) [FAILED]
+  Elapsed: 0h 55m 9s | ETA: 3h 7m 4s
+  Avg time: 110.0s | Failed: 24 | Skipped: 0
+======================================================================
+2026-01-18 21:00:37 | ERROR | [FAILED] zeroshot_mistral_sst2_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 565, in load_dataset_by_config
+    dataset = load_dataset(ds_name, ds_config, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1167, in _hf_hub_download_to_cache_dir
+    with WeakFileLock(lock_path):
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_fixes.py", line 109, in WeakFileLock
+    lock.acquire(timeout=min(log_interval, timeout - elapsed_time) if timeout else log_interval)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_api.py", line 332, in acquire
+    self._acquire()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/filelock/_unix.py", line 44, in _acquire
+    fd = os.open(self.lock_file, open_flags, self._context.mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock'
+
+2026-01-18 21:00:45 | ERROR | Error in zeroshot_llama_agnews_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:00:45 | WARNING | Retry 1/2 for zeroshot_llama_agnews_seed42
+2026-01-18 21:00:57 | ERROR | Error in zeroshot_llama_agnews_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:00:57 | WARNING | Retry 2/2 for zeroshot_llama_agnews_seed42
+2026-01-18 21:01:10 | ERROR | Error in zeroshot_llama_agnews_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:01:10 | INFO | 
+======================================================================
+PROGRESS: [=======-----------------------] 23.5% (31/132)
+  Last: zeroshot_llama_agnews_seed42 (32.8s) [FAILED]
+  Elapsed: 0h 55m 42s | ETA: 3h 1m 2s
+  Avg time: 107.5s | Failed: 25 | Skipped: 0
+======================================================================
+2026-01-18 21:01:10 | ERROR | [FAILED] zeroshot_llama_agnews_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+
+2026-01-18 21:01:17 | ERROR | Error in zeroshot_mistral_agnews_seed42 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:01:17 | WARNING | Retry 1/2 for zeroshot_mistral_agnews_seed42
+2026-01-18 21:01:28 | ERROR | Error in zeroshot_mistral_agnews_seed42 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:01:28 | WARNING | Retry 2/2 for zeroshot_mistral_agnews_seed42
+2026-01-18 21:01:40 | ERROR | Error in zeroshot_mistral_agnews_seed42 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:01:40 | INFO | 
+======================================================================
+PROGRESS: [=======-----------------------] 24.2% (32/132)
+  Last: zeroshot_mistral_agnews_seed42 (29.7s) [FAILED]
+  Elapsed: 0h 56m 12s | ETA: 2h 55m 11s
+  Avg time: 105.1s | Failed: 26 | Skipped: 0
+======================================================================
+2026-01-18 21:01:40 | ERROR | [FAILED] zeroshot_mistral_agnews_seed42: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+
+2026-01-18 21:01:48 | ERROR | Error in zeroshot_llama_agnews_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:01:48 | WARNING | Retry 1/2 for zeroshot_llama_agnews_seed123
+2026-01-18 21:02:01 | ERROR | Error in zeroshot_llama_agnews_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:02:01 | WARNING | Retry 2/2 for zeroshot_llama_agnews_seed123
+2026-01-18 21:02:13 | ERROR | Error in zeroshot_llama_agnews_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:02:13 | INFO | 
+======================================================================
+PROGRESS: [=======-----------------------] 25.0% (33/132)
+  Last: zeroshot_llama_agnews_seed123 (33.2s) [FAILED]
+  Elapsed: 0h 56m 46s | ETA: 2h 49m 50s
+  Avg time: 102.9s | Failed: 27 | Skipped: 0
+======================================================================
+2026-01-18 21:02:13 | ERROR | [FAILED] zeroshot_llama_agnews_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+
+2026-01-18 21:02:21 | ERROR | Error in zeroshot_mistral_agnews_seed123 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:02:21 | WARNING | Retry 1/2 for zeroshot_mistral_agnews_seed123
+2026-01-18 21:02:32 | ERROR | Error in zeroshot_mistral_agnews_seed123 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:02:32 | WARNING | Retry 2/2 for zeroshot_mistral_agnews_seed123
+2026-01-18 21:02:44 | ERROR | Error in zeroshot_mistral_agnews_seed123 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:02:44 | INFO | 
+======================================================================
+PROGRESS: [=======-----------------------] 25.8% (34/132)
+  Last: zeroshot_mistral_agnews_seed123 (29.8s) [FAILED]
+  Elapsed: 0h 57m 16s | ETA: 2h 44m 37s
+  Avg time: 100.8s | Failed: 28 | Skipped: 0
+======================================================================
+2026-01-18 21:02:44 | ERROR | [FAILED] zeroshot_mistral_agnews_seed123: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+
+2026-01-18 21:02:52 | ERROR | Error in zeroshot_llama_agnews_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:02:52 | WARNING | Retry 1/2 for zeroshot_llama_agnews_seed456
+2026-01-18 21:03:04 | ERROR | Error in zeroshot_llama_agnews_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:03:04 | WARNING | Retry 2/2 for zeroshot_llama_agnews_seed456
+2026-01-18 21:03:17 | ERROR | Error in zeroshot_llama_agnews_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:03:17 | INFO | 
+======================================================================
+PROGRESS: [=======-----------------------] 26.5% (35/132)
+  Last: zeroshot_llama_agnews_seed456 (33.1s) [FAILED]
+  Elapsed: 0h 57m 50s | ETA: 2h 39m 48s
+  Avg time: 98.9s | Failed: 29 | Skipped: 0
+======================================================================
+2026-01-18 21:03:17 | ERROR | [FAILED] zeroshot_llama_agnews_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+
+2026-01-18 21:03:24 | ERROR | Error in zeroshot_mistral_agnews_seed456 (attempt 1): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:03:24 | WARNING | Retry 1/2 for zeroshot_mistral_agnews_seed456
+2026-01-18 21:03:35 | ERROR | Error in zeroshot_mistral_agnews_seed456 (attempt 2): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:03:35 | WARNING | Retry 2/2 for zeroshot_mistral_agnews_seed456
+2026-01-18 21:03:47 | ERROR | Error in zeroshot_mistral_agnews_seed456 (attempt 3): [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+2026-01-18 21:03:47 | INFO | 
+======================================================================
+PROGRESS: [========----------------------] 27.3% (36/132)
+  Last: zeroshot_mistral_agnews_seed456 (29.7s) [FAILED]
+  Elapsed: 0h 58m 20s | ETA: 2h 35m 5s
+  Avg time: 96.9s | Failed: 30 | Skipped: 0
+======================================================================
+2026-01-18 21:03:47 | ERROR | [FAILED] zeroshot_mistral_agnews_seed456: Failed after 3 attempts. Last error: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1400, in run_zeroshot_baseline
+    test_data = load_dataset_by_config(dataset_key, dataset_config["split_test"])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 567, in load_dataset_by_config
+    dataset = load_dataset(load_fn, split=split, trust_remote_code=True)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--fancyzhx--ag_news'
+
+2026-01-18 21:03:47 | INFO | Starting improved text-relay baselines...
+2026-01-18 21:04:02 | ERROR | Error in text_relay_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 21:04:02 | WARNING | Retry 1/2 for text_relay_arc_easy_seed42
+2026-01-18 21:04:22 | ERROR | Error in text_relay_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 21:04:22 | WARNING | Retry 2/2 for text_relay_arc_easy_seed42
+2026-01-18 21:04:42 | ERROR | Error in text_relay_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 21:04:42 | INFO | 
+======================================================================
+PROGRESS: [========----------------------] 28.0% (37/132)
+  Last: text_relay_arc_easy_seed42 (54.8s) [FAILED]
+  Elapsed: 0h 59m 15s | ETA: 2h 31m 40s
+  Avg time: 95.8s | Failed: 31 | Skipped: 0
+======================================================================
+2026-01-18 21:04:42 | ERROR | [FAILED] text_relay_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1539, in run_text_relay_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 21:04:58 | ERROR | Error in text_relay_arc_easy_seed123 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 21:04:58 | WARNING | Retry 1/2 for text_relay_arc_easy_seed123
+2026-01-18 21:05:19 | ERROR | Error in text_relay_arc_easy_seed123 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 21:05:19 | WARNING | Retry 2/2 for text_relay_arc_easy_seed123
+2026-01-18 21:05:39 | ERROR | Error in text_relay_arc_easy_seed123 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 21:05:39 | INFO | 
+======================================================================
+PROGRESS: [========----------------------] 28.8% (38/132)
+  Last: text_relay_arc_easy_seed123 (55.2s) [FAILED]
+  Elapsed: 1h 0m 11s | ETA: 2h 28m 24s
+  Avg time: 94.7s | Failed: 32 | Skipped: 0
+======================================================================
+2026-01-18 21:05:39 | ERROR | [FAILED] text_relay_arc_easy_seed123: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1539, in run_text_relay_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 21:05:54 | ERROR | Error in text_relay_arc_easy_seed456 (attempt 1): list indices must be integers or slices, not str
+2026-01-18 21:05:54 | WARNING | Retry 1/2 for text_relay_arc_easy_seed456
+2026-01-18 21:06:14 | ERROR | Error in text_relay_arc_easy_seed456 (attempt 2): list indices must be integers or slices, not str
+2026-01-18 21:06:14 | WARNING | Retry 2/2 for text_relay_arc_easy_seed456
+2026-01-18 21:06:34 | ERROR | Error in text_relay_arc_easy_seed456 (attempt 3): list indices must be integers or slices, not str
+2026-01-18 21:06:34 | INFO | 
+======================================================================
+PROGRESS: [========----------------------] 29.5% (39/132)
+  Last: text_relay_arc_easy_seed456 (55.0s) [FAILED]
+  Elapsed: 1h 1m 6s | ETA: 2h 25m 14s
+  Avg time: 93.7s | Failed: 33 | Skipped: 0
+======================================================================
+2026-01-18 21:06:34 | ERROR | [FAILED] text_relay_arc_easy_seed456: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1539, in run_text_relay_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+2026-01-18 21:26:22 | INFO | 
+======================================================================
+PROGRESS: [=========---------------------] 30.3% (40/132)
+  Last: text_relay_winogrande_seed42 (1187.8s) [OK]
+  Elapsed: 1h 20m 55s | ETA: 3h 5m 37s
+  Avg time: 121.1s | Failed: 33 | Skipped: 0
+======================================================================
+2026-01-18 21:26:22 | INFO | [SUCCESS] text_relay_winogrande_seed42 completed in 1187.8s
