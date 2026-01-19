@@ -228,8 +228,8 @@ class OptimalTransportBridge(nn.Module):
         """
         B, S, _ = src_hidden.shape
 
-        # Project source to target space
-        src_proj = self.src_proj(src_hidden.float())  # [B, S, tgt_dim]
+        # Project source to target space (match dtype to weights)
+        src_proj = self.src_proj(src_hidden.to(self.src_proj.weight.dtype))  # [B, S, tgt_dim]
 
         # Compute cost matrix (squared scaled Euclidean distance)
         anchors = self.anchors.unsqueeze(0).expand(B, -1, -1)  # [B, K, tgt_dim]
@@ -1052,8 +1052,8 @@ class SpectralCCABridge(nn.Module):
         # Normalize (for correlation preservation)
         pooled_norm = (pooled - self.src_mean) / (self.src_std + 1e-8)
 
-        # Project through CCA space
-        cca_repr = self.src_proj(pooled_norm.float())
+        # Project through CCA space (match dtype to weights)
+        cca_repr = self.src_proj(pooled_norm.to(self.src_proj.weight.dtype))
         cca_repr = F.gelu(cca_repr)  # Non-linearity for expressiveness
 
         # Expand to target space
@@ -1188,8 +1188,8 @@ class FlowMatchingBridge(nn.Module):
         else:
             pooled = src_hidden[:, -1, :]
 
-        # Initial projection
-        x0 = self.initial_proj(pooled.float())
+        # Initial projection (match dtype to weights)
+        x0 = self.initial_proj(pooled.to(self.initial_proj.weight.dtype))
         x0 = x0.view(B, self.num_latents, self.tgt_dim)
 
         # Integrate flow
@@ -1384,14 +1384,15 @@ class MINEBridge(nn.Module):
         # Flatten soft tokens
         soft_flat = soft_tokens.view(B, -1)  # [B, K*D]
 
-        # Positive samples: (x_i, z_i) pairs
-        positive_input = torch.cat([src_pooled.float(), soft_flat.float()], dim=-1)  # [B, src_dim + K*D]
+        # Positive samples: (x_i, z_i) pairs (match dtype to weights)
+        weight_dtype = self.statistics_net[0].weight.dtype
+        positive_input = torch.cat([src_pooled.to(weight_dtype), soft_flat.to(weight_dtype)], dim=-1)  # [B, src_dim + K*D]
         t_positive = self.statistics_net(positive_input).squeeze(-1)  # [B]
 
         # Negative samples: (x_i, z_j) with j shuffled
         perm = torch.randperm(B, device=src_hidden.device)
         soft_shuffled = soft_flat[perm]
-        negative_input = torch.cat([src_pooled.float(), soft_shuffled.float()], dim=-1)
+        negative_input = torch.cat([src_pooled.to(weight_dtype), soft_shuffled.to(weight_dtype)], dim=-1)
         t_negative = self.statistics_net(negative_input).squeeze(-1)  # [B]
 
         # MINE objective with EMA for stability
@@ -1905,8 +1906,8 @@ class SuccessiveRefinementBridge(nn.Module):
         num_tokens = min(num_tokens, self.max_tokens)
         B = src_hidden.shape[0]
 
-        # Project source
-        src_proj = self.input_proj(src_hidden.float())
+        # Project source (match dtype to weights)
+        src_proj = self.input_proj(src_hidden.to(self.input_proj.weight.dtype))
         key_padding_mask = ~src_mask.bool() if src_mask is not None else None
 
         # Pool source for base encoding
