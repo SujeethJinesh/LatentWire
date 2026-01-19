@@ -59,8 +59,11 @@ WORK_DIR="${SLURM_SUBMIT_DIR:-$(pwd)}"
 cd "$WORK_DIR"
 
 export PYTHONPATH=.
-export HF_HOME="${WORK_DIR}/.cache/huggingface"
-export TRANSFORMERS_CACHE="${WORK_DIR}/.cache/huggingface/transformers"
+# Use /scratch for HuggingFace cache to avoid disk quota issues on /projects
+export HF_HOME="/scratch/${SLURM_JOB_ACCOUNT}/${USER}/.cache/huggingface"
+export TRANSFORMERS_CACHE="${HF_HOME}/transformers"
+export HF_DATASETS_CACHE="${HF_HOME}/datasets"
+mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_DATASETS_CACHE"
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_DIR="runs/reasoning_final_${TIMESTAMP}"

@@ -103,7 +103,8 @@ DATASET_CONFIGS = {
         "load_args": ("allenai/ai2_arc", "ARC-Easy"),
         "text_field": "question",
         "label_field": "answerKey",
-        "label_map": {"A": "A", "B": "B", "C": "C", "D": "D"},
+        # ARC dataset uses both letter (A,B,C,D) and numeric (1,2,3,4) answer keys
+        "label_map": {"A": "A", "B": "B", "C": "C", "D": "D", "1": "A", "2": "B", "3": "C", "4": "D"},
         "label_from_key": True,  # Labels are string keys, not int indices
         "num_classes": 4,
         "train_split": "train",
@@ -198,18 +199,21 @@ def run_zeroshot_baseline(args, config, device):
         tokenizer.pad_token = tokenizer.eos_token
         model.eval()
 
-        # Get label tokens
+        # Get unique canonical labels (handles datasets with multiple keys mapping to same label)
+        canonical_labels = sorted(set(config["label_map"].values()))
         label_tokens = {}
-        for idx, label in config["label_map"].items():
-            tokens = tokenizer.encode(label, add_special_tokens=False)
-            label_tokens[idx] = tokens[0]
+        for label_text in canonical_labels:
+            tokens = tokenizer.encode(label_text, add_special_tokens=False)
+            label_tokens[label_text] = tokens[0]
 
         correct = 0
         total = 0
 
         for item in tqdm(eval_ds, desc=f"Zero-shot {model_name}"):
             text = item[config["text_field"]]
-            label = item[config["label_field"]]
+            raw_label = item[config["label_field"]]
+            # Normalize raw label to canonical form (e.g., "1" -> "A" for ARC)
+            true_label = config["label_map"].get(raw_label, raw_label)
 
             prompt = config["prompt_template"].format(
                 text=text[:256],
@@ -221,11 +225,12 @@ def run_zeroshot_baseline(args, config, device):
                 outputs = model(**inputs)
                 logits = outputs.logits[0, -1]
 
-            # Get logits for each label token
-            label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
+            # Get logits for each canonical label token
+            label_logits = torch.stack([logits[label_tokens[lbl]] for lbl in canonical_labels])
             pred = label_logits.argmax().item()
+            pred_label = canonical_labels[pred]
 
-            if pred == label:
+            if pred_label == true_label:
                 correct += 1
             total += 1
 
@@ -1102,6 +1107,9 @@ def run_ensemble_baseline(args, config, device):
     mistral_all_logits = []
     true_labels = []
 
+    # Get unique canonical labels (used for all models and ensemble computation)
+    canonical_labels = sorted(set(config["label_map"].values()))
+
     models_info = [
         ("meta-llama/Meta-Llama-3.1-8B-Instruct", "Llama"),
         ("mistralai/Mistral-7B-Instruct-v0.3", "Mistral"),
@@ -1116,11 +1124,11 @@ def run_ensemble_baseline(args, config, device):
         tokenizer.pad_token = tokenizer.eos_token
         model.eval()
 
-        # Get label tokens for this model's tokenizer
+        # Build label tokens for this model's tokenizer
         label_tokens = {}
-        for idx, label in config["label_map"].items():
-            tokens = tokenizer.encode(label, add_special_tokens=False)
-            label_tokens[idx] = tokens[0]
+        for label_text in canonical_labels:
+            tokens = tokenizer.encode(label_text, add_special_tokens=False)
+            label_tokens[label_text] = tokens[0]
 
         model_logits = []
         correct = 0
@@ -1128,7 +1136,9 @@ def run_ensemble_baseline(args, config, device):
 
         for item in tqdm(eval_ds, desc=f"Evaluating {model_name}"):
             text = item[config["text_field"]]
-            label = item[config["label_field"]]
+            raw_label = item[config["label_field"]]
+            # Normalize raw label to canonical form (e.g., "1" -> "A" for ARC)
+            true_label = config["label_map"].get(raw_label, raw_label)
 
             prompt = config["prompt_template"].format(
                 text=text[:256],
@@ -1140,21 +1150,22 @@ def run_ensemble_baseline(args, config, device):
                 outputs = model(**inputs)
                 logits = outputs.logits[0, -1]
 
-            # Get logits for each label token
-            label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
+            # Get logits for each canonical label token
+            label_logits = torch.stack([logits[label_tokens[lbl]] for lbl in canonical_labels])
             # Convert to float32 for numerical stability in softmax/averaging
             label_logits = label_logits.float().cpu()
             model_logits.append(label_logits)
 
             # Also track individual model accuracy
             pred = label_logits.argmax().item()
-            if pred == label:
+            pred_label = canonical_labels[pred]
+            if pred_label == true_label:
                 correct += 1
             total += 1
 
-            # Store true labels only once (from first model)
+            # Store normalized true labels only once (from first model)
             if model_name == "Llama":
-                true_labels.append(label)
+                true_labels.append(true_label)
 
         accuracy = 100 * correct / total
         all_results[f"{model_name}_individual"] = {
@@ -1190,8 +1201,9 @@ def run_ensemble_baseline(args, config, device):
             # Ensemble: alpha * llama + (1-alpha) * mistral
             ensemble_logits = alpha * llama_all_logits[i] + (1 - alpha) * mistral_all_logits[i]
             pred = ensemble_logits.argmax().item()
+            pred_label = canonical_labels[pred]
 
-            if pred == true_labels[i]:
+            if pred_label == true_labels[i]:
                 correct += 1
 
         accuracy = 100 * correct / total
@@ -1221,8 +1233,9 @@ def run_ensemble_baseline(args, config, device):
             mistral_probs = torch.softmax(mistral_all_logits[i], dim=-1)
             ensemble_probs = alpha * llama_probs + (1 - alpha) * mistral_probs
             pred = ensemble_probs.argmax().item()
+            pred_label = canonical_labels[pred]
 
-            if pred == true_labels[i]:
+            if pred_label == true_labels[i]:
                 correct += 1
 
         accuracy = 100 * correct / total
