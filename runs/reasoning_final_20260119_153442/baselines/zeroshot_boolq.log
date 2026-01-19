@@ -1,0 +1,37 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Device: cuda:0
+
+======================================================================
+ZERO-SHOT BASELINE: BOOLQ
+======================================================================
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1651, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1593, in main
+    results = run_zeroshot_baseline(args, config, device)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 180, in run_zeroshot_baseline
+    eval_ds = load_dataset(config["load_args"][0],
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 2132, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1853, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1729, in dataset_module_factory
+    raise e1 from None
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/datasets/load.py", line 1599, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/datasets--google--boolq'

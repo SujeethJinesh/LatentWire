@@ -1,0 +1,6 @@
+[2026-01-19 15:34:53] zeroshot_winogrande failed with exit code 1
+[2026-01-19 15:35:01] zeroshot_hellaswag failed with exit code 1
+[2026-01-19 15:35:08] zeroshot_boolq failed with exit code 1
+[2026-01-19 15:35:16] fewshot_winogrande failed with exit code 1
+[2026-01-19 15:35:24] fewshot_hellaswag failed with exit code 1
+[2026-01-19 15:35:30] fewshot_boolq failed with exit code 1
