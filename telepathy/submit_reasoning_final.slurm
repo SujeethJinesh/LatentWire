@@ -71,11 +71,16 @@ WORK_DIR="${SLURM_SUBMIT_DIR:-$(pwd)}"
 cd "$WORK_DIR"
 
 export PYTHONPATH=.
-# Use /scratch for HuggingFace cache to avoid disk quota issues on /projects
-export HF_HOME="/scratch/m000066/${USER}/.cache/huggingface"
+
+# Use /scratch for ALL caches to avoid disk quota issues on /projects
+# Set XDG_CACHE_HOME first to override default ~/.cache location
+export XDG_CACHE_HOME="/scratch/m000066/sujinesh/.cache"
+export HF_HOME="/scratch/m000066/sujinesh/.cache/huggingface"
+export HF_HUB_CACHE="${HF_HOME}/hub"
+export HUGGINGFACE_HUB_CACHE="${HF_HOME}/hub"
 export TRANSFORMERS_CACHE="${HF_HOME}/transformers"
 export HF_DATASETS_CACHE="${HF_HOME}/datasets"
-mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_DATASETS_CACHE"
+mkdir -p "$HF_HOME" "$HF_HUB_CACHE" "$TRANSFORMERS_CACHE" "$HF_DATASETS_CACHE"
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_DIR="runs/reasoning_final_${TIMESTAMP}"
