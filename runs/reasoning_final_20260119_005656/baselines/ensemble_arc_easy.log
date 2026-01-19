@@ -1,0 +1,24 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Device: cuda:0
+
+======================================================================
+ENSEMBLE BASELINE: ARC_EASY
+======================================================================
+Testing whether ensembling Llama + Mistral achieves bridge performance.
+Testing alpha values: [0.3, 0.5, 0.7]
+
+Collecting logits from Llama...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3682.44it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.02s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.03s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:01,  2.00s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.42s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.64s/it]
+Evaluating Llama:   0%|          | 0/200 [00:00<?, ?it/s]Evaluating Llama:   0%|          | 0/200 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1635, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1589, in main
+    results = run_ensemble_baseline(args, config, device)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1144, in run_ensemble_baseline
+    label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1144, in <listcomp>
+    label_logits = torch.stack([logits[label_tokens[i]] for i in range(len(label_tokens))])
+KeyError: 0

@@ -1,0 +1,29 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Device: cuda:0
+
+======================================================================
+TEXT RELAY BASELINE (Llama->Mistral): ARC_EASY
+======================================================================
+Llama generates text hint, Mistral classifies based on hint.
+
+--- Seed 42 ---
+Loading Llama (sender)...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3802.63it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.07s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.19s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:02,  2.09s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.47s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.71s/it]
+Loading Mistral (receiver)...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3842.11it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:04,  2.07s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:04<00:02,  2.08s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  1.99s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.01s/it]
+Text relay (seed 42):   0%|          | 0/200 [00:00<?, ?it/s]/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+Text relay (seed 42):   0%|          | 1/200 [00:01<04:48,  1.45s/it]Text relay (seed 42):   1%|          | 2/200 [00:02<04:06,  1.25s/it]Text relay (seed 42):   2%|▏         | 3/200 [00:03<03:52,  1.18s/it]Text relay (seed 42):   2%|▏         | 4/200 [00:04<03:45,  1.15s/it]Text relay (seed 42):   2%|▎         | 5/200 [00:05<03:41,  1.14s/it]Text relay (seed 42):   3%|▎         | 6/200 [00:06<03:37,  1.12s/it]Text relay (seed 42):   4%|▎         | 7/200 [00:08<03:35,  1.12s/it]Text relay (seed 42):   4%|▍         | 8/200 [00:09<03:33,  1.11s/it]Text relay (seed 42):   4%|▍         | 9/200 [00:10<03:32,  1.11s/it]Text relay (seed 42):   5%|▌         | 10/200 [00:11<03:30,  1.11s/it]Text relay (seed 42):   6%|▌         | 11/200 [00:12<03:29,  1.11s/it]Text relay (seed 42):   6%|▌         | 12/200 [00:13<03:27,  1.10s/it]Text relay (seed 42):   6%|▋         | 13/200 [00:14<03:26,  1.10s/it]Text relay (seed 42):   7%|▋         | 14/200 [00:15<03:25,  1.10s/it]Text relay (seed 42):   7%|▋         | 14/200 [00:15<03:29,  1.13s/it]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1635, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 1587, in main
+    results = run_text_relay_baseline(args, config, device)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_baselines.py", line 754, in run_text_relay_baseline
+    true_label = config["label_map"][item[config["label_field"]]]
+KeyError: '2'
