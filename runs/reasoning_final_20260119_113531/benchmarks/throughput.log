@@ -1,0 +1,39 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+There was a problem when trying to write in your cache folder (/scratch/marlowe-m000066/sujinesh/.cache/huggingface/transformers). You should set the environment variable TRANSFORMERS_CACHE to a writable directory.
+Device: cuda:1
+GPU: NVIDIA H100 80GB HBM3
+
+======================================================================
+THROUGHPUT BENCHMARK
+======================================================================
+Loading Llama...
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_benchmarks.py", line 658, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_benchmarks.py", line 632, in main
+    results = run_throughput_benchmark(args, device)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_benchmarks.py", line 520, in run_throughput_benchmark
+    llama, llama_tok, mistral, mistral_tok = load_models(device)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_benchmarks.py", line 56, in load_models
+    llama = AutoModelForCausalLM.from_pretrained(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 487, in from_pretrained
+    resolved_config_file = cached_file(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py", line 403, in cached_file
+    resolved_file = hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  [Previous line repeated 3 more times]
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+PermissionError: [Errno 13] Permission denied: '/scratch/marlowe-m000066'
