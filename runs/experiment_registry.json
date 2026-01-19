@@ -1,7 +1,7 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-19T12:51:54.691519",
+    "last_updated": "2026-01-19T15:24:06.426878",
     "job_id": "151015"
   },
   "experiments": {
@@ -14,9 +14,10 @@
       "completed_at": "2026-01-19T12:25:46.236057",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 1,
-      "error_category": "unknown"
+      "marked_for_rerun": true,
+      "retry_count": 0,
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "hail_mary_reasoning": {
       "status": "running",
@@ -39,9 +40,10 @@
       "completed_at": "2026-01-19T12:26:24.068003",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 1,
-      "error_category": "unknown"
+      "marked_for_rerun": true,
+      "retry_count": 0,
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "moe_arc_easy_seed42": {
       "status": "running",
@@ -76,9 +78,10 @@
       "completed_at": "2026-01-19T12:26:09.077505",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "zeroshot_hellaswag": {
       "status": "failed",
@@ -89,9 +92,10 @@
       "completed_at": "2026-01-19T12:26:17.925073",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "zeroshot_boolq": {
       "status": "failed",
@@ -102,9 +106,10 @@
       "completed_at": "2026-01-19T12:26:28.075884",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "hailmary_cross_modal_distillation_arc_easy_seed42": {
       "status": "failed",
@@ -115,9 +120,10 @@
       "completed_at": "2026-01-19T12:27:23.820518",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "fewshot_arc_easy": {
       "status": "completed",
@@ -140,9 +146,10 @@
       "completed_at": "2026-01-19T12:28:11.431856",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "hailmary_mixture_of_depths_arc_easy_seed42": {
       "status": "failed",
@@ -153,9 +160,10 @@
       "completed_at": "2026-01-19T12:29:11.350473",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "hailmary_thalamic_relay_arc_easy_seed42": {
       "status": "failed",
@@ -166,9 +174,10 @@
       "completed_at": "2026-01-19T12:30:12.049051",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "hailmary_domain_adversarial_arc_easy_seed42": {
       "status": "failed",
@@ -179,9 +188,10 @@
       "completed_at": "2026-01-19T12:30:58.419489",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "hailmary_successive_refinement_arc_easy_seed42": {
       "status": "failed",
@@ -192,9 +202,10 @@
       "completed_at": "2026-01-19T12:32:07.399448",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "token_capacity_4_seed42": {
       "status": "failed",
@@ -205,9 +216,10 @@
       "completed_at": "2026-01-19T12:33:07.362260",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "token_capacity_8_seed42": {
       "status": "failed",
@@ -218,9 +230,10 @@
       "completed_at": "2026-01-19T12:34:07.088013",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "token_capacity_16_seed42": {
       "status": "failed",
@@ -231,9 +244,10 @@
       "completed_at": "2026-01-19T12:35:07.309243",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "token_capacity_32_seed42": {
       "status": "failed",
@@ -244,9 +258,10 @@
       "completed_at": "2026-01-19T12:36:03.547303",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "fewshot_winogrande": {
       "status": "failed",
@@ -257,9 +272,10 @@
       "completed_at": "2026-01-19T12:35:17.135489",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "fewshot_hellaswag": {
       "status": "failed",
@@ -270,9 +286,10 @@
       "completed_at": "2026-01-19T12:35:24.890373",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "fewshot_boolq": {
       "status": "failed",
@@ -283,9 +300,10 @@
       "completed_at": "2026-01-19T12:35:32.555215",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "dora_arc_easy": {
       "status": "failed",
@@ -296,9 +314,10 @@
       "completed_at": "2026-01-19T12:35:55.932049",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "keyerror"
+      "error_category": "keyerror",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "prompt_tuning_arc_easy": {
       "status": "failed",
@@ -309,9 +328,10 @@
       "completed_at": "2026-01-19T12:36:17.696183",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "ridge_regression_arc_easy": {
       "status": "failed",
@@ -322,9 +342,10 @@
       "completed_at": "2026-01-19T12:37:22.009489",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "linear_probe": {
       "status": "failed",
@@ -335,9 +356,10 @@
       "completed_at": "2026-01-19T12:38:45.513589",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "latency_benchmark_no_checkpoint": {
       "status": "failed",
@@ -348,9 +370,10 @@
       "completed_at": "2026-01-19T12:38:02.815044",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "batched_latency_benchmark": {
       "status": "failed",
@@ -361,9 +384,10 @@
       "completed_at": "2026-01-19T12:38:37.304988",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "memory_benchmark": {
       "status": "failed",
@@ -374,9 +398,10 @@
       "completed_at": "2026-01-19T12:39:42.654622",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "text_relay_arc_easy": {
       "status": "completed",
@@ -399,9 +424,10 @@
       "completed_at": "2026-01-19T12:40:17.524445",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
     },
     "ensemble_arc_easy": {
       "status": "completed",
