@@ -1,0 +1,47 @@
+{
+  "timestamp": "20260119_114137",
+  "datasets": [
+    "arc_easy",
+    "winogrande",
+    "hellaswag",
+    "boolq",
+    "sst2",
+    "agnews"
+  ],
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "token_ablation": [
+    8,
+    24
+  ],
+  "device": "cuda:0",
+  "bridge_config": {
+    "soft_tokens": 8,
+    "depth": 2,
+    "heads": 8,
+    "source_layer": 31,
+    "train_steps": 500,
+    "batch_size": 16,
+    "lr": 0.0002,
+    "diversity_weight": 0.1
+  },
+  "linear_probe_config": {
+    "layer_idx": 31,
+    "normalize": "l2",
+    "C": 1.0,
+    "batch_size": 8,
+    "max_samples": 1000
+  },
+  "prompt_tuning_config": {
+    "soft_tokens": 8,
+    "lr": 0.0002,
+    "steps": 1000,
+    "batch_size": 16,
+    "grad_accum": 2
+  },
+  "total_experiments": 132,
+  "fast_mode": true
+}

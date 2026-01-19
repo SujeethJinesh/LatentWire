@@ -1,0 +1,146 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Starting enhanced evaluation run: runs/reasoning_final_20260119_114130/standard_bridge/run_20260119_114137
+Using device: cuda:0
+FAST MODE enabled
+HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+Linear probe layer: 31 (matching bridge layer)
+Starting zero-shot baselines...
+Warning: statistical_testing.py not found, using basic statistics
+======================================================================
+ENHANCED TELEPATHY PAPER EVALUATION
+======================================================================
+Output directory: runs/reasoning_final_20260119_114130/standard_bridge/run_20260119_114137
+Device: cuda:0
+Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+Seeds: [42, 123, 456]
+Token configs: [8, 24]
+Total experiments: 132
+Run diagnostics: True
+Diagnostics only: False
+Estimated time: ~12 hours on 1 H100
+======================================================================
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:  25%|██▌       | 1/4 [00:15<00:45, 15.30s/it]Downloading shards:  50%|█████     | 2/4 [00:31<00:31, 15.58s/it]Downloading shards:  75%|███████▌  | 3/4 [00:45<00:15, 15.14s/it]Downloading shards: 100%|██████████| 4/4 [00:49<00:00, 10.76s/it]Downloading shards: 100%|██████████| 4/4 [00:49<00:00, 12.43s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:03<00:11,  3.94s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:07<00:07,  3.98s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.95s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.82s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.23s/it]
+Generating train split:   0%|          | 0/2251 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 2251/2251 [00:00<00:00, 38094.34 examples/s]
+Generating test split:   0%|          | 0/2376 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 2376/2376 [00:00<00:00, 423116.64 examples/s]
+Generating validation split:   0%|          | 0/570 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 570/570 [00:00<00:00, 105064.97 examples/s]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+Retry 1/2 for zeroshot_llama_arc_easy_seed42
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2516.08it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:13,  4.60s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:10<00:10,  5.23s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:16<00:05,  5.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.51s/it]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+Retry 2/2 for zeroshot_llama_arc_easy_seed42
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2398.46it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:17,  5.95s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:11<00:11,  5.99s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:17<00:05,  5.95s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.02s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.73s/it]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (127.8s) [FAILED]
+  Elapsed: 0h 2m 8s | ETA: 4h 39m 1s
+  Avg time: 127.8s | Failed: 1 | Skipped: 0
+======================================================================
+[FAILED] zeroshot_llama_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (127.8s) [FAILED]
+  Elapsed: 0h 2m 8s | ETA: 4h 39m 1s
+  Avg time: 127.8s | Failed: 1 | Skipped: 0
+======================================================================
+
+============================================================
+Zero-Shot Baseline: mistral on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1632.45it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:04<00:08,  4.06s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:07<00:03,  3.74s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.16s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.09s/it]
+Evaluating on 2376 test samples...
+Evaluating mistral:   0%|          | 0/2376 [00:00<?, ?it/s]                                                            Error in zeroshot_mistral_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+Retry 1/2 for zeroshot_mistral_arc_easy_seed42
+
+============================================================
+Zero-Shot Baseline: mistral on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2657.99it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:03<00:07,  3.81s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:07<00:03,  3.85s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.75s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.78s/it]
+Evaluating on 2376 test samples...
+Evaluating mistral:   0%|          | 0/2376 [00:00<?, ?it/s]                                                            Error in zeroshot_mistral_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+Retry 2/2 for zeroshot_mistral_arc_easy_seed42
+
+============================================================
+Zero-Shot Baseline: mistral on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2620.89it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:03<00:06,  3.47s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:05<00:02,  2.69s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:09<00:00,  3.04s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:09<00:00,  3.03s/it]
+Evaluating on 2376 test samples...
+Evaluating mistral:   0%|          | 0/2376 [00:00<?, ?it/s]                                                            Error in zeroshot_mistral_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_mistral_arc_easy_seed42 (49.3s) [FAILED]
+  Elapsed: 0h 2m 58s | ETA: 3h 11m 53s
+  Avg time: 88.6s | Failed: 2 | Skipped: 0
+======================================================================
+[FAILED] zeroshot_mistral_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_mistral_arc_easy_seed42 (49.3s) [FAILED]
+  Elapsed: 0h 2m 58s | ETA: 3h 11m 53s
+  Avg time: 88.6s | Failed: 2 | Skipped: 0
+======================================================================
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 123
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2408.10it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:03<00:11,  3.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:07<00:08,  4.01s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.91s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.77s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.20s/it]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed123 (attempt 1): list indices must be integers or slices, not str
+Retry 1/2 for zeroshot_llama_arc_easy_seed123
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 123
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2401.89it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:03<00:11,  3.77s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:07<00:07,  3.85s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.86s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.74s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.14s/it]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed123 (attempt 2): list indices must be integers or slices, not str
+Retry 2/2 for zeroshot_llama_arc_easy_seed123
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 123
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2450.66it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.77s/it]
