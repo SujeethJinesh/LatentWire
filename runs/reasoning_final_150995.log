@@ -1,0 +1,402 @@
+[2026-01-19 11:41:30] Initializing experiment registry at runs/experiment_registry.json
+==============================================================
+REASONING-FOCUSED FINAL EXPERIMENTS (Publication Ready)
+==============================================================
+Job ID: 150995
+Node: n05
+GPUs: 0,1
+Start time: Mon Jan 19 11:41:30 AM PST 2026
+
+REASONING BENCHMARKS:
+  - ARC-Easy (science)
+  - WinoGrande (commonsense)
+  - HellaSwag (situational)
+  - BoolQ (reading comprehension)
+
+GPU ALLOCATION:
+  - GPU 0: Standard bridge (hail mary) + baselines (zero-shot, few-shot, DoRA, prompt tuning, linear probe)
+  - GPU 1: Novel bridges + token capacity + latency/memory/throughput/batched benchmarks
+==============================================================
+Already up to date.
+
+index, name, memory.free [MiB]
+0, NVIDIA H100 80GB HBM3, 81106 MiB
+1, NVIDIA H100 80GB HBM3, 81106 MiB
+
+
+[2026-01-19 11:41:32] Starting parallel execution on 2 GPUs...
+
+[2026-01-19 11:41:32] GPU 0 PID: 2470610 (Standard Bridge + Baselines)
+[2026-01-19 11:41:32] GPU 1 PID: 2470611 (Novel Bridges + Benchmarks)
+
+[2026-01-19 11:41:32] [GPU 1] Starting: Novel Bridges + Token Capacity + All Benchmarks
+
+[2026-01-19 11:41:32] [GPU 0] Starting: Standard Bridge + Baselines
+[2026-01-19 11:41:32] [GPU 1] Testing flow_matching on ARC-Easy (seed=42)
+[2026-01-19 11:41:32] [GPU 0] Running Hail Mary Reasoning Evaluation
+Started: flow_matching_arc_easy_seed42
+[2026-01-19 11:41:32] START: flow_matching_arc_easy_seed42
+Started: hail_mary_reasoning
+[2026-01-19 11:41:32] START: hail_mary_reasoning
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Starting enhanced evaluation run: runs/reasoning_final_20260119_114130/standard_bridge/run_20260119_114137
+Using device: cuda:0
+FAST MODE enabled
+HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+Linear probe layer: 31 (matching bridge layer)
+Starting zero-shot baselines...
+============================================================
+TELEPATHY TRAINING: ARC_EASY
+============================================================
+
+Dataset: arc_easy (4 classes)
+Random baseline: 25.0%
+Source layer: 31
+Soft tokens: 8
+Steps: 1500
+Diversity weight: 0.1
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Warning: statistical_testing.py not found, using basic statistics
+======================================================================
+ENHANCED TELEPATHY PAPER EVALUATION
+======================================================================
+Output directory: runs/reasoning_final_20260119_114130/standard_bridge/run_20260119_114137
+Device: cuda:0
+Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+Seeds: [42, 123, 456]
+Token configs: [8, 24]
+Total experiments: 132
+Run diagnostics: True
+Diagnostics only: False
+Estimated time: ~12 hours on 1 H100
+======================================================================
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:  25%|██▌       | 1/4 [00:15<00:45, 15.30s/it]Downloading shards:  25%|██▌       | 1/4 [00:15<00:45, 15.30s/it]Downloading shards:  50%|█████     | 2/4 [00:31<00:31, 15.58s/it]Downloading shards:  50%|█████     | 2/4 [00:31<00:31, 15.58s/it]Downloading shards:  75%|███████▌  | 3/4 [00:45<00:15, 15.13s/it]Downloading shards:  75%|███████▌  | 3/4 [00:45<00:15, 15.14s/it]Downloading shards: 100%|██████████| 4/4 [00:49<00:00, 10.75s/it]Downloading shards: 100%|██████████| 4/4 [00:49<00:00, 12.43s/it]
+Downloading shards: 100%|██████████| 4/4 [00:49<00:00, 10.76s/it]Downloading shards: 100%|██████████| 4/4 [00:49<00:00, 12.43s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:03<00:11,  3.94s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:13,  4.56s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:07<00:07,  3.98s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:08,  4.34s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.95s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:12<00:04,  4.22s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.82s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.23s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  2.80s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  3.36s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Generating train split:   0%|          | 0/2251 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 2251/2251 [00:00<00:00, 38094.34 examples/s]
+Generating test split:   0%|          | 0/2376 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 2376/2376 [00:00<00:00, 423116.64 examples/s]
+Generating validation split:   0%|          | 0/570 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 570/570 [00:00<00:00, 105064.97 examples/s]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+Retry 1/2 for zeroshot_llama_arc_easy_seed42
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2516.08it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards:  33%|███▎      | 1/3 [00:17<00:35, 17.61s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:13,  4.60s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:10<00:10,  5.23s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:16<00:05,  5.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.05s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.51s/it]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+Retry 2/2 for zeroshot_llama_arc_easy_seed42
+Downloading shards:  67%|██████▋   | 2/3 [00:38<00:19, 19.52s/it]
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2398.46it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:17,  5.95s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:11<00:11,  5.99s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:17<00:05,  5.95s/it]Downloading shards: 100%|██████████| 3/3 [00:58<00:00, 19.91s/it]Downloading shards: 100%|██████████| 3/3 [00:58<00:00, 19.61s/it]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.02s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:18<00:00,  4.73s/it]
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:05,  2.80s/it]Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (127.8s) [FAILED]
+  Elapsed: 0h 2m 8s | ETA: 4h 39m 1s
+  Avg time: 127.8s | Failed: 1 | Skipped: 0
+======================================================================
+[FAILED] zeroshot_llama_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (127.8s) [FAILED]
+  Elapsed: 0h 2m 8s | ETA: 4h 39m 1s
+  Avg time: 127.8s | Failed: 1 | Skipped: 0
+======================================================================
+
+============================================================
+Zero-Shot Baseline: mistral on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 1632.45it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:06<00:03,  3.25s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:04<00:08,  4.06s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:10<00:00,  3.44s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:10<00:00,  3.35s/it]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:07<00:03,  3.74s/it]2026-01-19 11:43:58,502 - INFO - FlowMatchingBridge: 8 tokens, 4 flow steps
+Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.16s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:12<00:00,  4.09s/it]
+Target embedding RMS: 0.0027
+Using Flow Matching Bridge (MATH) - steps=4
+Generating train split:   0%|          | 0/2251 [00:00<?, ? examples/s]Evaluating on 2376 test samples...
+Evaluating mistral:   0%|          | 0/2376 [00:00<?, ?it/s]                                                            Error in zeroshot_mistral_arc_easy_seed42 (attempt 1): list indices must be integers or slices, not str
+Generating train split: 100%|██████████| 2251/2251 [00:00<00:00, 112595.74 examples/s]
+Generating test split:   0%|          | 0/2376 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 2376/2376 [00:00<00:00, 445970.93 examples/s]
+Generating validation split:   0%|          | 0/570 [00:00<?, ? examples/s]Retry 1/2 for zeroshot_mistral_arc_easy_seed42
+Generating validation split: 100%|██████████| 570/570 [00:00<00:00, 205497.10 examples/s]
+
+Training on 2251 samples
+Validation: 2376 samples
+Starting training...
+
+ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1285, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 714, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1192, in forward
+    x0 = self.initial_proj(pooled.float())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+
+[ERROR] Training interrupted by exception at step 1
+[ERROR] RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+
+[EMERGENCY] Checkpoint saved to runs/reasoning_final_20260119_114130/novel_bridges/flow_matching_arc_easy_seed42/emergency_checkpoint_step0.pt
+[EMERGENCY] Error: RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1530, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1285, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 714, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1192, in forward
+    x0 = self.initial_proj(pooled.float())
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+[2026-01-19 11:44:03] FAILED: flow_matching_arc_easy_seed42 (exit code: 1)
+Failed: flow_matching_arc_easy_seed42
+
+[2026-01-19 11:44:03] [GPU 1] Testing optimal_transport on ARC-Easy (seed=42)
+Started: optimal_transport_arc_easy_seed42
+[2026-01-19 11:44:03] START: optimal_transport_arc_easy_seed42
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+============================================================
+Zero-Shot Baseline: mistral on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2657.99it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]============================================================
+TELEPATHY TRAINING: ARC_EASY
+============================================================
+
+Dataset: arc_easy (4 classes)
+Random baseline: 25.0%
+Source layer: 31
+Soft tokens: 8
+Steps: 1500
+Diversity weight: 0.1
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1765.28it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:03<00:07,  3.81s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.69s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:07<00:03,  3.85s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:08,  4.39s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.75s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.78s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.68s/it]Evaluating on 2376 test samples...
+Evaluating mistral:   0%|          | 0/2376 [00:00<?, ?it/s]                                                            Error in zeroshot_mistral_arc_easy_seed42 (attempt 2): list indices must be integers or slices, not str
+Retry 2/2 for zeroshot_mistral_arc_easy_seed42
+Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.55s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.13s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2934.45it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:03,  1.88s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:03<00:01,  1.97s/it]
+============================================================
+Zero-Shot Baseline: mistral on ARC-Easy | Seed: 42
+============================================================
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2620.89it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.29s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.20s/it]
+2026-01-19 11:44:28,438 - INFO - OptimalTransportBridge: 8 anchors, eps=0.1
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:03<00:06,  3.47s/it]Target embedding RMS: 0.0027
+Using Optimal Transport Bridge (NOVEL) - epsilon=0.1
+
+Training on 2251 samples
+Validation: 2376 samples
+Starting training...
+
+ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:05<00:02,  2.69s/it]ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1285, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 714, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 232, in forward
+    src_proj = self.src_proj(src_hidden.float())  # [B, S, tgt_dim]
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+
+[ERROR] Training interrupted by exception at step 1
+[ERROR] RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+
+[EMERGENCY] Checkpoint saved to runs/reasoning_final_20260119_114130/novel_bridges/optimal_transport_arc_easy_seed42/emergency_checkpoint_step0.pt
+[EMERGENCY] Error: RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1530, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1285, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 714, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 232, in forward
+    src_proj = self.src_proj(src_hidden.float())  # [B, S, tgt_dim]
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+[2026-01-19 11:44:32] FAILED: optimal_transport_arc_easy_seed42 (exit code: 1)
+Failed: optimal_transport_arc_easy_seed42
+
+[2026-01-19 11:44:32] [GPU 1] Testing moe on ARC-Easy (seed=42)
+Started: moe_arc_easy_seed42
+[2026-01-19 11:44:32] START: moe_arc_easy_seed42
+Loading checkpoint shards: 100%|██████████| 3/3 [00:09<00:00,  3.04s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:09<00:00,  3.03s/it]
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Evaluating on 2376 test samples...
+Evaluating mistral:   0%|          | 0/2376 [00:00<?, ?it/s]                                                            Error in zeroshot_mistral_arc_easy_seed42 (attempt 3): list indices must be integers or slices, not str
+
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_mistral_arc_easy_seed42 (49.3s) [FAILED]
+  Elapsed: 0h 2m 58s | ETA: 3h 11m 53s
+  Avg time: 88.6s | Failed: 2 | Skipped: 0
+======================================================================
+[FAILED] zeroshot_mistral_arc_easy_seed42: Failed after 3 attempts. Last error: list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1414, in run_zeroshot_baseline
+    label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+TypeError: list indices must be integers or slices, not str
+
+
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_mistral_arc_easy_seed42 (49.3s) [FAILED]
+  Elapsed: 0h 2m 58s | ETA: 3h 11m 53s
+  Avg time: 88.6s | Failed: 2 | Skipped: 0
+======================================================================
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 123
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2408.10it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]============================================================
+TELEPATHY TRAINING: ARC_EASY
+============================================================
+
+Dataset: arc_easy (4 classes)
+Random baseline: 25.0%
+Source layer: 31
+Soft tokens: 8
+Steps: 1500
+Diversity weight: 0.1
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 1781.59it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:03<00:11,  3.84s/it]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:12,  4.28s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:07<00:08,  4.01s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:08,  4.19s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.91s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.77s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.20s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.88s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.66s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.17s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2767.30it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed123 (attempt 1): list indices must be integers or slices, not str
+Retry 1/2 for zeroshot_llama_arc_easy_seed123
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:04,  2.25s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:04<00:02,  2.08s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:05<00:00,  1.93s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:05<00:00,  1.99s/it]
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 123
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2401.89it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:03<00:11,  3.77s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:07<00:07,  3.85s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:11<00:03,  3.86s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.74s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.14s/it]
+Evaluating on 2376 test samples...
+Evaluating llama:   0%|          | 0/2376 [00:00<?, ?it/s]                                                          Error in zeroshot_llama_arc_easy_seed123 (attempt 2): list indices must be integers or slices, not str
+Retry 2/2 for zeroshot_llama_arc_easy_seed123
+2026-01-19 11:45:13,618 - INFO - MoEBridge: 8 tokens, 8 experts, top-2 routing, shared_expert=True, aux_loss_free=False
+
+============================================================
+Zero-Shot Baseline: llama on ARC-Easy | Seed: 123
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2450.66it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Target embedding RMS: 0.0027
+Using MoE Bridge - 8 experts, top-2, shared_expert=True, aux_loss_free=False
+
+Training on 2251 samples
+Validation: 2376 samples
+Starting training...
+
+ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]ARC_EASY:   0%|                             | 0/1500 [00:01<?, ?it/s, lm=8.28, aux=0.034, gn=768.00]ARC_EASY:   0%|                     | 1/1500 [00:01<37:57,  1.52s/it, lm=8.28, aux=0.034, gn=768.00]ARC_EASY:   0%|                     | 1/1500 [00:01<37:57,  1.52s/it, lm=8.33, aux=0.034, gn=688.00]ARC_EASY:   0%|                     | 2/1500 [00:01<21:20,  1.17it/s, lm=8.33, aux=0.034, gn=688.00]ARC_EASY:   0%|                    | 2/1500 [00:02<21:20,  1.17it/s, lm=7.45, aux=0.034, gn=1296.00]ARC_EASY:   0%|                    | 3/1500 [00:02<16:19,  1.53it/s, lm=7.45, aux=0.034, gn=1296.00]ARC_EASY:   0%|                     | 3/1500 [00:02<16:19,  1.53it/s, lm=7.27, aux=0.035, gn=422.00]ARC_EASY:   0%|                     | 4/1500 [00:02<13:45,  1.81it/s, lm=7.27, aux=0.035, gn=422.00]ARC_EASY:   0%|                     | 4/1500 [00:03<13:45,  1.81it/s, lm=6.25, aux=0.034, gn=366.00]ARC_EASY:   0%|                     | 5/1500 [00:03<12:21,  2.02it/s, lm=6.25, aux=0.034, gn=366.00]ARC_EASY:   0%|                     | 5/1500 [00:03<12:21,  2.02it/s, lm=4.71, aux=0.032, gn=340.00]ARC_EASY:   0%|                     | 6/1500 [00:03<11:29,  2.17it/s, lm=4.71, aux=0.032, gn=340.00]ARC_EASY:   0%|                     | 6/1500 [00:03<11:29,  2.17it/s, lm=4.36, aux=0.031, gn=600.00]ARC_EASY:   0%|                     | 7/1500 [00:03<11:02,  2.25it/s, lm=4.36, aux=0.031, gn=600.00]ARC_EASY:   0%|                    | 7/1500 [00:04<11:02,  2.25it/s, lm=3.08, aux=0.031, gn=1056.00]ARC_EASY:   1%|                    | 8/1500 [00:04<10:30,  2.37it/s, lm=3.08, aux=0.031, gn=1056.00]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.77s/it]ARC_EASY:   1%|                     | 8/1500 [00:04<10:30,  2.37it/s, lm=2.44, aux=0.032, gn=300.00]ARC_EASY:   1%|▏                    | 9/1500 [00:04<10:03,  2.47it/s, lm=2.44, aux=0.032, gn=300.00]ARC_EASY:   1%|▏                    | 9/1500 [00:05<10:03,  2.47it/s, lm=1.46, aux=0.032, gn=280.00]ARC_EASY:   1%|▏                   | 10/1500 [00:05<09:48,  2.53it/s, lm=1.46, aux=0.032, gn=280.00]ARC_EASY:   1%|▏                   | 10/1500 [00:05<09:48,  2.53it/s, lm=1.69, aux=0.030, gn=191.00]ARC_EASY:   1%|▏                   | 11/1500 [00:05<09:44,  2.55it/s, lm=1.69, aux=0.030, gn=191.00]ARC_EASY:   1%|▏                   | 11/1500 [00:05<09:44,  2.55it/s, lm=1.22, aux=0.029, gn=235.00]ARC_EASY:   1%|▏                   | 12/1500 [00:05<09:51,  2.51it/s, lm=1.22, aux=0.029, gn=235.00]ARC_EASY:   1%|▏                   | 12/1500 [00:06<09:51,  2.51it/s, lm=1.01, aux=0.029, gn=246.00]ARC_EASY:   1%|▏                   | 13/1500 [00:06<09:40,  2.56it/s, lm=1.01, aux=0.029, gn=246.00]ARC_EASY:   1%|▏                   | 13/1500 [00:06<09:40,  2.56it/s, lm=0.98, aux=0.030, gn=616.00]ARC_EASY:   1%|▏                   | 14/1500 [00:06<09:40,  2.56it/s, lm=0.98, aux=0.030, gn=616.00]ARC_EASY:   1%|▏                   | 14/1500 [00:06<09:40,  2.56it/s, lm=0.94, aux=0.033, gn=368.00]ARC_EASY:   1%|▏                   | 15/1500 [00:06<09:44,  2.54it/s, lm=0.94, aux=0.033, gn=368.00]ARC_EASY:   1%|▏                   | 15/1500 [00:07<09:44,  2.54it/s, lm=1.40, aux=0.034, gn=296.00]ARC_EASY:   1%|▏                   | 16/1500 [00:07<09:46,  2.53it/s, lm=1.40, aux=0.034, gn=296.00]ARC_EASY:   1%|▏                  | 16/1500 [00:07<09:46,  2.53it/s, lm=1.50, aux=0.033, gn=3248.00]ARC_EASY:   1%|▏                  | 17/1500 [00:07<09:40,  2.55it/s, lm=1.50, aux=0.033, gn=3248.00]ARC_EASY:   1%|▏                    | 17/1500 [00:08<09:40,  2.55it/s, lm=0.96, aux=0.031, gn=56.75]ARC_EASY:   1%|▎                    | 18/1500 [00:08<09:37,  2.56it/s, lm=0.96, aux=0.031, gn=56.75]ARC_EASY:   1%|▎                    | 18/1500 [00:08<11:28,  2.15it/s, lm=0.96, aux=0.031, gn=56.75]
+[2026-01-19 11:45:26] Job ending with exit code: 0
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1280, in main
+    batch = next(iter_dl)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 701, in __next__
+    data = self._next_data()
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 757, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 55, in fetch
+    return self.collate_fn(data)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 398, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 171, in collate
+    {
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 172, in <dictcomp>
+    key: collate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 171, in collate
+    {
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 172, in <dictcomp>
+    key: collate(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/utils/data/_utils/collate.py", line 207, in collate
+    raise RuntimeError("each element in list of batch should be of equal size")
+RuntimeError: each element in list of batch should be of equal size
+[main 9122629] partial results: job 150995 (exit: 0)
+ 9 files changed, 631 insertions(+)
+ create mode 100644 runs/reasoning_final_20260119_114130/.hail_mary_reasoning_capture.log
+ create mode 100644 runs/reasoning_final_20260119_114130/.moe_arc_easy_seed42_capture.log
+ create mode 100644 runs/reasoning_final_20260119_114130/experiment_errors.log
+ create mode 100644 runs/reasoning_final_20260119_114130/novel_bridges/flow_matching_arc_easy_seed42.log
+ create mode 100644 runs/reasoning_final_20260119_114130/novel_bridges/moe_arc_easy_seed42.log
+ create mode 100644 runs/reasoning_final_20260119_114130/novel_bridges/optimal_transport_arc_easy_seed42.log
+ create mode 100644 runs/reasoning_final_20260119_114130/standard_bridge/hail_mary.log
+ create mode 100644 runs/reasoning_final_20260119_114130/standard_bridge/run_20260119_114137/config.json
+ create mode 100644 runs/reasoning_final_20260119_114130/standard_bridge/run_20260119_114137/enhanced_evaluation_20260119_114137.log
+[2026-01-19 11:45:26] Git push attempt 1 of 3
+Loading checkpoint shards:  50%|█████     | 2/4 [00:10<00:10,  5.21s/it][2026-01-19 11:45:28] Git push successful

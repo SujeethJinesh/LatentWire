@@ -143,4 +143,4 @@ Retry 2/2 for zeroshot_llama_arc_easy_seed123
 Zero-Shot Baseline: llama on ARC-Easy | Seed: 123
 ============================================================
 Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2450.66it/s]
-Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.77s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.77s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:10<00:10,  5.21s/it]

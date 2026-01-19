@@ -1023,3 +1023,40 @@ PermissionError: [Errno 13] Permission denied: '/scratch/marlowe-m000066'
 2026-01-19 11:40:21 | WARNING | Retry 1/2 for zeroshot_llama_sst2_seed123
 2026-01-19 11:40:26 | ERROR | Error in zeroshot_llama_sst2_seed123 (attempt 2): [Errno 13] Permission denied: '/scratch/marlowe-m000066'
 2026-01-19 11:40:26 | WARNING | Retry 2/2 for zeroshot_llama_sst2_seed123
+2026-01-19 11:40:31 | ERROR | Error in zeroshot_llama_sst2_seed123 (attempt 3): [Errno 13] Permission denied: '/scratch/marlowe-m000066'
+2026-01-19 11:40:31 | INFO | 
+======================================================================
+PROGRESS: [======------------------------] 20.5% (27/132)
+  Last: zeroshot_llama_sst2_seed123 (10.8s) [FAILED]
+  Elapsed: 0h 4m 52s | ETA: 0h 18m 40s
+  Avg time: 10.7s | Failed: 27 | Skipped: 0
+======================================================================
+2026-01-19 11:40:31 | ERROR | [FAILED] zeroshot_llama_sst2_seed123: Failed after 3 attempts. Last error: [Errno 13] Permission denied: '/scratch/marlowe-m000066'
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 207, in run_with_retry
+    result = func(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 1393, in run_zeroshot_baseline
+    model = AutoModelForCausalLM.from_pretrained(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 487, in from_pretrained
+    resolved_config_file = cached_file(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py", line 403, in cached_file
+    resolved_file = hf_hub_download(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1007, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1124, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  [Previous line repeated 3 more times]
+  File "/marlowe/apps/Mambaforge/24.3.0-0/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+PermissionError: [Errno 13] Permission denied: '/scratch/marlowe-m000066'
+
+2026-01-19 11:40:32 | ERROR | Error in zeroshot_mistral_sst2_seed123 (attempt 1): [Errno 13] Permission denied: '/scratch/marlowe-m000066'
+2026-01-19 11:40:32 | WARNING | Retry 1/2 for zeroshot_mistral_sst2_seed123
