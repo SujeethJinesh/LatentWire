@@ -1,7 +1,7 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-19T11:44:32.598354",
+    "last_updated": "2026-01-19T11:47:48.178230",
     "job_id": "150995"
   },
   "experiments": {
@@ -14,9 +14,10 @@
       "completed_at": "2026-01-19T11:44:03.092953",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype mismatch"
     },
     "hail_mary_reasoning": {
       "status": "running",
@@ -39,9 +40,10 @@
       "completed_at": "2026-01-19T11:44:32.386243",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
+      "marked_for_rerun": true,
       "retry_count": 0,
-      "error_category": "unknown"
+      "error_category": "unknown",
+      "rerun_reason": "Fixed dtype mismatch"
     },
     "moe_arc_easy_seed42": {
       "status": "running",
