@@ -1,8 +1,19 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 **Last Updated**: January 2025
+
+---
+
+## MY ROLE (READ THIS FIRST)
+
+**I am the principal data scientist, engineer, and lead experimenter on this project.** The user is my manager.
+
+- **I do all the analysis** - don't ask the user to analyze results
+- **I make experiment decisions** - propose what to run, what failed, what needs re-running
+- **I interpret results** - determine if experiments succeeded, identify patterns, draw conclusions
+- **I fix issues proactively** - when experiments fail, I diagnose and fix them
+
+---
 
 ## Project Overview
 
@@ -12,44 +23,35 @@ Telepathy is a cross-model communication system for MLSys 2025. It enables a "se
 
 ```
 LatentWire/
-├── latentwire/                 # Core library
-│   ├── bridge.py               # LatentBridge, PerceiverResampler
-│   ├── train.py                # Training loop
-│   ├── eval.py                 # Evaluation
-│   ├── models.py               # Encoder, Adapter, LMWrapper
-│   ├── losses.py               # Loss functions
-│   └── data.py                 # Dataset loading
+├── latentwire/                 # Core library (bridge, train, eval, models, losses, data)
 ├── telepathy/                  # Paper experiments
-│   ├── train_telepathy.py      # Unified training script
-│   ├── eval_telepathy.py       # Unified evaluation script
-│   ├── run_baselines.py        # All baselines (zeroshot, fewshot, lora, prompt_tuning)
+│   ├── train_telepathy.py      # Training script
+│   ├── eval_telepathy.py       # Evaluation script
+│   ├── run_baselines.py        # Baselines (zeroshot, fewshot, lora, dora, prompt_tuning)
 │   ├── run_benchmarks.py       # Latency/throughput benchmarks
-│   ├── linear_probe_baseline.py
-│   ├── run_enhanced_paper_evaluation.py
-│   ├── submit_enhanced_paper_eval.slurm  # HPC submission script
-│   └── paper_writing/          # LaTeX source
-├── scripts/                    # Analysis utilities
-├── requirements.txt
-└── runs/                       # Output directory (created at runtime)
+│   ├── experiment_registry.py  # Experiment tracking
+│   └── submit_reasoning_final.slurm  # Main HPC script
+├── scripts/
+│   ├── experiment_manager.py   # CLI for analyzing results & marking re-runs
+│   └── registry_functions.sh   # Bash helpers for SLURM
+└── runs/
+    └── experiment_registry.json  # Experiment status tracking
 ```
 
-## Development Environment
+## Workflow
 
-**Split development and execution environment:**
+**Local (MacBook)** for code editing and analysis. **HPC (H100 GPUs)** for training.
 
-- **Local development**: MacBook for code editing, analysis, reviewing logs
-- **Training execution**: HPC cluster with H100 GPUs
+1. Develop/modify code locally, push to git
+2. On HPC: `git pull && sbatch telepathy/submit_reasoning_final.slurm`
+3. HPC pushes results + registry back to git
+4. Locally: `git pull`
+5. Check status: `python scripts/experiment_manager.py --status`
+6. If failures: `python scripts/experiment_manager.py --list failed`, fix issues
+7. Mark re-runs: `python scripts/experiment_manager.py --mark-rerun-all-failed`
+8. Commit, push, re-submit on HPC
 
-**Workflow:**
-1. Develop/modify code locally
-2. Push to git
-3. Run on HPC: `git pull && PYTHONPATH=. sbatch telepathy/submit_enhanced_paper_eval.slurm`
-4. HPC pushes results back to git
-5. Pull and analyze locally: `git pull`
-
-## SLURM Job Submission
-
-**CRITICAL SLURM settings for Marlowe HPC:**
+## SLURM Settings (Marlowe HPC)
 
 | Setting | Value |
 |---------|-------|
@@ -57,65 +59,28 @@ LatentWire/
 | `--partition` | `preempt` |
 | Working dir | `/projects/m000066/sujinesh/LatentWire` |
 
-**Example commands:**
-```bash
-# On HPC:
-cd /projects/m000066/sujinesh/LatentWire
-git pull
-sbatch telepathy/submit_enhanced_paper_eval.slurm
-
-# Monitor:
-squeue -u $USER
-tail -f runs/enhanced_eval_*.log
-```
-
 ## Key Scripts
 
-### Training
-```bash
-# Train bridge on SST-2
-python telepathy/train_telepathy.py --dataset sst2 --soft_tokens 8 --steps 2000
+All scripts support `--help`. Primary entry point is `submit_reasoning_final.slurm`.
 
-# Supported datasets: sst2, agnews, trec, banking77
-```
-
-### Evaluation
-```bash
-python telepathy/eval_telepathy.py --checkpoint runs/sst2/bridge_sst2.pt --dataset sst2
-```
-
-### Baselines
-```bash
-# Zero-shot, few-shot, LoRA, prompt tuning
-python telepathy/run_baselines.py --baseline zeroshot --dataset sst2
-python telepathy/run_baselines.py --baseline fewshot --dataset sst2 --shots 5
-python telepathy/run_baselines.py --baseline lora --dataset sst2 --rank 8
-python telepathy/run_baselines.py --baseline prompt_tuning --dataset sst2 --soft_tokens 8
-```
-
-### Benchmarks
-```bash
-python telepathy/run_benchmarks.py --benchmark latency --checkpoint runs/sst2/bridge_sst2.pt
-```
+| Script | Purpose |
+|--------|---------|
+| `train_telepathy.py` | Train bridge (datasets: sst2, agnews, arc_easy, winogrande, etc.) |
+| `run_baselines.py` | Run baselines (zeroshot, fewshot, lora, dora, prompt_tuning) |
+| `run_benchmarks.py` | Latency/memory/throughput benchmarks |
+| `experiment_manager.py` | Check status, list failures, mark re-runs |
 
 ## Development Principles
 
 1. **NEVER create new files unless explicitly requested** - edit existing files
 2. **Always commit and push after completing tasks**
 3. **Always `git pull` before analyzing results**
-4. **Use Opus subagents for complex analysis tasks**
-5. **Scripts must work end-to-end from scratch** - no pre-existing checkpoints
+4. **Scripts must work end-to-end from scratch** - no pre-existing checkpoints
 
-## Common Commands
+## Environment Setup
 
 ```bash
-# Set environment
 export PYTHONPATH=.
 export PYTORCH_ENABLE_MPS_FALLBACK=1
-
-# Verify Python files compile
-python3 -m py_compile latentwire/*.py telepathy/*.py
-
-# Run full paper evaluation on HPC
-sbatch telepathy/submit_enhanced_paper_eval.slurm
+python3 -m py_compile latentwire/*.py telepathy/*.py  # Verify syntax
 ```

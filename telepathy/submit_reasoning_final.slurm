@@ -16,8 +16,20 @@ mkdir -p runs
 
 # Error tracking
 declare -a FAILED_EXPERIMENTS=()
+declare -a SKIPPED_EXPERIMENTS=()
 TOTAL_EXPERIMENTS=0
 SUCCESSFUL_EXPERIMENTS=0
+SKIPPED_COUNT=0
+
+# Source registry functions for experiment tracking
+WORK_DIR="${SLURM_SUBMIT_DIR:-$(pwd)}"
+if [ -f "${WORK_DIR}/scripts/registry_functions.sh" ]; then
+    source "${WORK_DIR}/scripts/registry_functions.sh"
+    REGISTRY_ENABLED=1
+else
+    echo "Warning: Registry functions not found, experiment tracking disabled"
+    REGISTRY_ENABLED=0
+fi
 
 # =============================================================================
 # REASONING-FOCUSED FINAL EXPERIMENTS (Publication Ready)
@@ -60,7 +72,7 @@ cd "$WORK_DIR"
 
 export PYTHONPATH=.
 # Use /scratch for HuggingFace cache to avoid disk quota issues on /projects
-export HF_HOME="/scratch/${SLURM_JOB_ACCOUNT}/${USER}/.cache/huggingface"
+export HF_HOME="/scratch/m000066/${USER}/.cache/huggingface"
 export TRANSFORMERS_CACHE="${HF_HOME}/transformers"
 export HF_DATASETS_CACHE="${HF_HOME}/datasets"
 mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_DATASETS_CACHE"
@@ -73,6 +85,15 @@ mkdir -p "$OUTPUT_DIR/novel_bridges"
 mkdir -p "$OUTPUT_DIR/baselines"
 mkdir -p "$OUTPUT_DIR/benchmarks"
 
+# Initialize experiment registry
+REGISTRY_FILE="runs/experiment_registry.json"
+if [ "$REGISTRY_ENABLED" = "1" ]; then
+    log_msg "Initializing experiment registry at $REGISTRY_FILE"
+    python telepathy/experiment_registry.py --registry "$REGISTRY_FILE" summary > /dev/null 2>&1 || {
+        log_msg "Warning: Could not initialize registry"
+    }
+fi
+
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
@@ -82,24 +103,77 @@ log_msg() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
-# Log experiment with error tracking
+# Log experiment with error tracking and registry integration
 run_experiment() {
     local name="$1"
     shift
     local cmd="$@"
 
+    # Extract GPU from the command if present (look for --gpu N or cuda:N)
+    local gpu=0
+    if [[ "$cmd" =~ --gpu[[:space:]]+([0-9]+) ]]; then
+        gpu="${BASH_REMATCH[1]}"
+    elif [[ "$cmd" =~ cuda:([0-9]+) ]]; then
+        gpu="${BASH_REMATCH[1]}"
+    fi
+
+    # Check registry if enabled
+    if [ "$REGISTRY_ENABLED" = "1" ]; then
+        local result=$(python telepathy/experiment_registry.py --registry "$REGISTRY_FILE" should_run "$name" 2>/dev/null)
+        local should_run=$(echo "$result" | cut -d'|' -f1)
+        local skip_reason=$(echo "$result" | cut -d'|' -f2-)
+
+        if [ "$should_run" = "0" ]; then
+            SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+            SKIPPED_EXPERIMENTS+=("$name")
+            log_msg "SKIP: $name ($skip_reason)"
+            return 0
+        fi
+
+        # Mark as running in registry
+        python telepathy/experiment_registry.py --registry "$REGISTRY_FILE" start "$name" --gpu "$gpu" 2>/dev/null || true
+    fi
+
     TOTAL_EXPERIMENTS=$((TOTAL_EXPERIMENTS + 1))
     log_msg "START: $name"
 
-    if eval "$cmd"; then
+    # Capture output for error extraction
+    local log_capture="${OUTPUT_DIR}/.${name}_capture.log"
+
+    if eval "$cmd" 2>&1 | tee "$log_capture"; then
         SUCCESSFUL_EXPERIMENTS=$((SUCCESSFUL_EXPERIMENTS + 1))
         log_msg "SUCCESS: $name"
+
+        # Update registry with success
+        if [ "$REGISTRY_ENABLED" = "1" ]; then
+            # Try to find result file
+            local result_file=""
+            for pattern in "${OUTPUT_DIR}"/*"${name}"*_results.json "${OUTPUT_DIR}"/**/*"${name}"*_results.json; do
+                if [ -f "$pattern" ] 2>/dev/null; then
+                    result_file="$pattern"
+                    break
+                fi
+            done
+            python telepathy/experiment_registry.py --registry "$REGISTRY_FILE" complete "$name" ${result_file:+--result-file "$result_file"} 2>/dev/null || true
+        fi
+
+        rm -f "$log_capture"
         return 0
     else
         local exit_code=$?
         FAILED_EXPERIMENTS+=("$name")
         log_msg "FAILED: $name (exit code: $exit_code)"
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] $name failed with exit code $exit_code" >> "${OUTPUT_DIR}/experiment_errors.log"
+
+        # Update registry with failure
+        if [ "$REGISTRY_ENABLED" = "1" ]; then
+            # Extract error message from captured output
+            local error_msg=$(tail -20 "$log_capture" 2>/dev/null | grep -E "(Error|Exception|CUDA|OOM|NaN|Failed|Traceback)" | tail -3 | tr '\n' ' ' | head -c 300)
+            [ -z "$error_msg" ] && error_msg="Unknown error (exit code: $exit_code)"
+            python telepathy/experiment_registry.py --registry "$REGISTRY_FILE" fail "$name" --error "$error_msg" --exit-code "$exit_code" 2>/dev/null || true
+        fi
+
+        rm -f "$log_capture"
         return $exit_code
     fi
 }
@@ -739,9 +813,10 @@ echo ""
 echo "=============================================================="
 echo "EXPERIMENT SUMMARY"
 echo "=============================================================="
-echo "Total experiments: $TOTAL_EXPERIMENTS"
+echo "Total experiments run: $TOTAL_EXPERIMENTS"
 echo "Successful: $SUCCESSFUL_EXPERIMENTS"
 echo "Failed: ${#FAILED_EXPERIMENTS[@]}"
+echo "Skipped (already completed): $SKIPPED_COUNT"
 
 if [ ${#FAILED_EXPERIMENTS[@]} -gt 0 ]; then
     echo ""
@@ -750,11 +825,34 @@ if [ ${#FAILED_EXPERIMENTS[@]} -gt 0 ]; then
         echo "  - $exp"
     done
 fi
+
+if [ ${#SKIPPED_EXPERIMENTS[@]} -gt 0 ] && [ ${#SKIPPED_EXPERIMENTS[@]} -le 10 ]; then
+    echo ""
+    echo "Skipped experiments:"
+    for exp in "${SKIPPED_EXPERIMENTS[@]}"; do
+        echo "  - $exp"
+    done
+elif [ ${#SKIPPED_EXPERIMENTS[@]} -gt 10 ]; then
+    echo ""
+    echo "Skipped ${#SKIPPED_EXPERIMENTS[@]} experiments (showing first 10):"
+    for exp in "${SKIPPED_EXPERIMENTS[@]:0:10}"; do
+        echo "  - $exp"
+    done
+    echo "  ... and $((${#SKIPPED_EXPERIMENTS[@]} - 10)) more"
+fi
+
+# Print registry summary if enabled
+if [ "$REGISTRY_ENABLED" = "1" ]; then
+    echo ""
+    echo "Registry summary:"
+    python telepathy/experiment_registry.py --registry "$REGISTRY_FILE" summary 2>/dev/null || echo "  (could not get registry summary)"
+fi
 echo "=============================================================="
 
-# Git commit and push
+# Git commit and push (include registry file)
 git add "$OUTPUT_DIR"
-COMMIT_MSG="Reasoning experiments: job $SLURM_JOB_ID - ${SUCCESSFUL_EXPERIMENTS}/${TOTAL_EXPERIMENTS} succeeded
+[ -f "$REGISTRY_FILE" ] && git add "$REGISTRY_FILE"
+COMMIT_MSG="Reasoning experiments: job $SLURM_JOB_ID - ${SUCCESSFUL_EXPERIMENTS}/${TOTAL_EXPERIMENTS} succeeded, ${SKIPPED_COUNT} skipped
 
 REASONING BENCHMARKS:
 - ARC-Easy, WinoGrande, HellaSwag, BoolQ
