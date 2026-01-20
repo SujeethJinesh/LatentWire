@@ -1,8 +1,8 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-19T18:29:33.607361",
-    "job_id": "151096"
+    "last_updated": "2026-01-19T18:58:07.329510",
+    "job_id": "151105"
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
@@ -30,17 +30,16 @@
       "retry_count": 0
     },
     "optimal_transport_arc_easy_seed42": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "[EMERGENCY] Error: RuntimeError: expected scalar type BFloat16 but found Float Traceback (most recent call last): RuntimeError: expected scalar type BFloat16 but found Float ",
-      "exit_code": 1,
-      "started_at": "2026-01-19T17:50:46.868784",
-      "completed_at": "2026-01-19T17:51:30.842509",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T18:36:22.274662",
+      "completed_at": "2026-01-19T18:46:18.371296",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 2,
-      "error_category": "unknown"
+      "retry_count": 3
     },
     "moe_arc_easy_seed42": {
       "status": "running",
@@ -175,17 +174,16 @@
       "retry_count": 2
     },
     "hailmary_successive_refinement_arc_easy_seed42": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16 ",
-      "exit_code": 1,
-      "started_at": "2026-01-19T18:14:56.909143",
-      "completed_at": "2026-01-19T18:15:40.407908",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T18:46:18.766472",
+      "completed_at": "2026-01-19T18:56:41.896278",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 2,
-      "error_category": "unknown"
+      "retry_count": 3
     },
     "token_capacity_4_seed42": {
       "status": "completed",
@@ -344,17 +342,16 @@
       "retry_count": 1
     },
     "memory_benchmark": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "ValueError: Expected input batch_size (7) to match target batch_size (1). ",
-      "exit_code": 1,
-      "started_at": "2026-01-19T18:28:17.596939",
-      "completed_at": "2026-01-19T18:28:57.361348",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T18:56:47.338311",
+      "completed_at": "2026-01-19T18:58:07.329494",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 2,
-      "error_category": "unknown"
+      "retry_count": 3
     },
     "text_relay_arc_easy": {
       "status": "completed",

@@ -1,0 +1,57 @@
+{
+  "experiment": "memory_benchmark",
+  "timestamp": "20260119_185652",
+  "device": "cuda:1",
+  "gpu_name": "NVIDIA H100 80GB HBM3",
+  "config": {
+    "benchmark": "memory",
+    "checkpoint": null,
+    "soft_tokens": 8
+  },
+  "results": [
+    {
+      "method": "direct_inference",
+      "model": "Mistral-7B",
+      "model_memory_mb": 0.0,
+      "peak_memory_mb": 0.0,
+      "trainable_params": 0
+    },
+    {
+      "method": "lora_r8",
+      "model": "Mistral-7B + LoRA",
+      "model_memory_mb": 0.0,
+      "peak_memory_mb": 0.0,
+      "trainable_params": 3407872
+    },
+    {
+      "method": "bridge_8tok",
+      "model": "Llama + Bridge + Mistral",
+      "soft_tokens": 8,
+      "llama_memory_mb": 0.0,
+      "mistral_memory_mb": 0.0,
+      "bridge_memory_mb": 0.0,
+      "peak_memory_mb": 0.0,
+      "trainable_params": 537059329
+    },
+    {
+      "method": "bridge_16tok",
+      "model": "Llama + Bridge + Mistral",
+      "soft_tokens": 16,
+      "llama_memory_mb": 0.0,
+      "mistral_memory_mb": 0.0,
+      "bridge_memory_mb": 0.0,
+      "peak_memory_mb": 0.0,
+      "trainable_params": 537092097
+    },
+    {
+      "method": "bridge_32tok",
+      "model": "Llama + Bridge + Mistral",
+      "soft_tokens": 32,
+      "llama_memory_mb": 0.0,
+      "mistral_memory_mb": 0.0,
+      "bridge_memory_mb": 0.0,
+      "peak_memory_mb": 0.0,
+      "trainable_params": 537157633
+    }
+  ]
+}
