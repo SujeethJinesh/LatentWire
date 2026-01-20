@@ -393,6 +393,33 @@ run_gpu0() {
         --output_dir '${OUTPUT_DIR}/baselines/ensemble' \
         2>&1 | tee '${OUTPUT_DIR}/baselines/ensemble_arc_easy.log'"
 
+    # -----------------------------------------------------------------
+    # GSM8K MATH REASONING BASELINES (Generative Task)
+    # Tests whether bridge can transfer mathematical reasoning capability
+    # -----------------------------------------------------------------
+    echo ""
+    log_msg "[GPU 0] Running GSM8K Math Reasoning Baselines"
+
+    log_msg "[GPU 0] Zero-shot on GSM8K"
+    run_experiment "zeroshot_gsm8k" "python telepathy/run_baselines.py \
+        --baseline zeroshot \
+        --dataset gsm8k \
+        --gpu 0 \
+        --max_samples 100 \
+        --output_dir '${OUTPUT_DIR}/baselines/zeroshot' \
+        2>&1 | tee '${OUTPUT_DIR}/baselines/zeroshot_gsm8k.log'"
+
+    log_msg "[GPU 0] Few-shot (4-shot) on GSM8K"
+    run_experiment "fewshot_gsm8k" "python telepathy/run_baselines.py \
+        --baseline fewshot \
+        --dataset gsm8k \
+        --shots 4 \
+        --seeds 42 \
+        --gpu 0 \
+        --max_samples 100 \
+        --output_dir '${OUTPUT_DIR}/baselines/fewshot' \
+        2>&1 | tee '${OUTPUT_DIR}/baselines/fewshot_gsm8k.log'"
+
     log_msg "[GPU 0] All evaluations completed"
 }
 
@@ -408,7 +435,7 @@ run_gpu1() {
     # Multi-seed for statistical significance
     # -----------------------------------------------------------------
     NOVEL_BRIDGES="flow_matching optimal_transport moe"
-    ABLATION_SEEDS="42"  # Single seed for initial validation; add more seeds if results are promising
+    ABLATION_SEEDS="42"  # Single seed for now - verify reasoning benchmarks work first
 
     for BRIDGE in $NOVEL_BRIDGES; do
         for SEED in $ABLATION_SEEDS; do
@@ -483,6 +510,27 @@ run_gpu1() {
                 --gpu 1 \
                 2>&1 | tee '${OUTPUT_DIR}/novel_bridges/token_capacity_${TOKENS}_seed${SEED}.log'"
         done
+    done
+
+    # -----------------------------------------------------------------
+    # GSM8K BRIDGE TRAINING (Math Reasoning - Generative Task)
+    # Test if bridge can transfer mathematical reasoning from Llama to Mistral
+    # -----------------------------------------------------------------
+    echo ""
+    log_msg "[GPU 1] Training Bridge on GSM8K (Math Reasoning)"
+
+    for SEED in $ABLATION_SEEDS; do
+        log_msg "[GPU 1] Training Mixture of Depths bridge on GSM8K (seed=$SEED)"
+        run_experiment "bridge_gsm8k_mod_seed${SEED}" "python telepathy/train_telepathy.py \
+            --dataset gsm8k \
+            --bridge_type mixture_of_depths \
+            --soft_tokens 8 \
+            --steps 1500 \
+            --eval_every 200 \
+            --seed $SEED \
+            --output_dir '${OUTPUT_DIR}/novel_bridges/gsm8k_mod_seed${SEED}' \
+            --gpu 1 \
+            2>&1 | tee '${OUTPUT_DIR}/novel_bridges/gsm8k_mod_seed${SEED}.log'"
     done
 
     # -----------------------------------------------------------------

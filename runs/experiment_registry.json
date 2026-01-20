@@ -6,28 +6,28 @@
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
-      "status": "running",
+      "status": "pending",
       "result_file": null,
-      "error_msg": null,
+      "error_msg": "Reset from stale running state",
       "exit_code": null,
-      "started_at": "2026-01-19T15:34:44.730388",
+      "started_at": null,
       "completed_at": null,
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 1
+      "marked_for_rerun": true,
+      "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "running",
+      "status": "pending",
       "result_file": null,
-      "error_msg": null,
+      "error_msg": "Reset from stale running state",
       "exit_code": null,
-      "started_at": "2026-01-19T11:41:32.681637",
+      "started_at": null,
       "completed_at": null,
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 0
+      "marked_for_rerun": true,
+      "retry_count": 1
     },
     "optimal_transport_arc_easy_seed42": {
       "status": "completed",
@@ -42,16 +42,16 @@
       "retry_count": 3
     },
     "moe_arc_easy_seed42": {
-      "status": "running",
+      "status": "pending",
       "result_file": null,
-      "error_msg": null,
+      "error_msg": "Reset from stale running state",
       "exit_code": null,
-      "started_at": "2026-01-19T11:44:32.598347",
+      "started_at": null,
       "completed_at": null,
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 0
+      "marked_for_rerun": true,
+      "retry_count": 1
     },
     "zeroshot_arc_easy": {
       "status": "completed",
@@ -270,16 +270,16 @@
       "retry_count": 2
     },
     "dora_arc_easy": {
-      "status": "running",
+      "status": "pending",
       "result_file": null,
-      "error_msg": null,
+      "error_msg": "Reset from stale running state",
       "exit_code": null,
-      "started_at": "2026-01-19T15:35:31.315741",
+      "started_at": null,
       "completed_at": null,
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 1
+      "marked_for_rerun": true,
+      "retry_count": 2
     },
     "prompt_tuning_arc_easy": {
       "status": "completed",

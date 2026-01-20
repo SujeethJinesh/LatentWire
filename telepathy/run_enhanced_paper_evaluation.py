@@ -60,6 +60,38 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # =============================================================================
+# LABEL HANDLING HELPER
+# =============================================================================
+
+def get_label_string(item: Dict, dataset_config: Dict, dataset_key: str) -> str:
+    """
+    Extract label as string from item, handling different label formats:
+    - String labels (ARC: "A", "B", "C", "D")
+    - Integer labels (indices into label_names)
+    - Boolean labels (BoolQ: True/False)
+    - GSM8K numeric answers
+    """
+    if dataset_key == "gsm8k":
+        return str(item.get("label", ""))
+
+    raw_label = item.get("label", item.get("answerKey", ""))
+    label_names = dataset_config.get("label_names")
+
+    if label_names:
+        if isinstance(raw_label, str):
+            # String label like "A", "B", "C", "D" or "1", "2" - use directly
+            return raw_label
+        elif isinstance(raw_label, bool):
+            # Boolean label (BoolQ) - convert to string
+            return "True" if raw_label else "False"
+        else:
+            # Integer label - use as index into label_names
+            return label_names[int(raw_label)]
+    else:
+        return str(raw_label)
+
+
+# =============================================================================
 # LOGGING SETUP
 # =============================================================================
 
@@ -938,13 +970,8 @@ def train_bridge_for_dataset(
         # Format prompts based on dataset type
         src_texts = [format_prompt_for_example(item, dataset_config) for item in batch]
 
-        # Get labels
-        if dataset_key == "gsm8k":
-            labels = [str(item.get("label", "")) for item in batch]
-        else:
-            labels = [dataset_config["label_names"][item["label"]]
-                     if dataset_config["label_names"] else str(item["label"])
-                     for item in batch]
+        # Get labels using helper that handles string/int/bool labels
+        labels = [get_label_string(item, dataset_config, dataset_key) for item in batch]
 
         # Source encoding
         src_enc = src_tok(src_texts, return_tensors="pt", padding=True,
@@ -1014,7 +1041,7 @@ def train_bridge_for_dataset(
         if dataset_key == "gsm8k":
             label = str(item.get("label", ""))
         else:
-            label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+            label = get_label_string(item, dataset_config, dataset_key)
 
         # Format prompt
         prompt = format_prompt_for_example(item, dataset_config)
@@ -1194,13 +1221,8 @@ def train_same_model_bridge_for_dataset(
         # Format prompts based on dataset type
         src_texts = [format_prompt_for_example(item, dataset_config) for item in batch]
 
-        # Get labels
-        if dataset_key == "gsm8k":
-            labels = [str(item.get("label", "")) for item in batch]
-        else:
-            labels = [dataset_config["label_names"][item["label"]]
-                     if dataset_config["label_names"] else str(item["label"])
-                     for item in batch]
+        # Get labels using helper that handles string/int/bool labels
+        labels = [get_label_string(item, dataset_config, dataset_key) for item in batch]
 
         # Source encoding (using same tokenizer)
         src_enc = tokenizer(src_texts, return_tensors="pt", padding=True,
@@ -1270,7 +1292,7 @@ def train_same_model_bridge_for_dataset(
         if dataset_key == "gsm8k":
             label = str(item.get("label", ""))
         else:
-            label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+            label = get_label_string(item, dataset_config, dataset_key)
 
         # Format prompt
         prompt = format_prompt_for_example(item, dataset_config)
@@ -1407,11 +1429,8 @@ def run_zeroshot_baseline(
     print(f"Evaluating on {len(test_data)} test samples...")
 
     for item in tqdm(test_data, desc=f"Evaluating {model_name}", leave=False):
-        # Get ground truth
-        if dataset_key == "gsm8k":
-            label = str(item.get("label", ""))
-        else:
-            label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+        # Get ground truth using helper that handles string/int/bool labels
+        label = get_label_string(item, dataset_config, dataset_key)
 
         prompt = format_prompt_for_example(item, dataset_config)
         inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
@@ -1532,11 +1551,8 @@ def run_text_relay_baseline(
     print(f"Evaluating on {len(test_data)} test samples...")
 
     for item in tqdm(test_data, desc="Text-Relay", leave=False):
-        # Get ground truth
-        if dataset_key == "gsm8k":
-            label = str(item.get("label", ""))
-        else:
-            label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+        # Get ground truth using helper that handles string/int/bool labels
+        label = get_label_string(item, dataset_config, dataset_key)
 
         torch.cuda.synchronize()
         start = time.perf_counter()
@@ -1898,10 +1914,8 @@ def run_prompt_tuning_baseline(
 
             B = len(batch)
 
-            # Get labels
-            labels = [dataset_config["label_names"][item["label"]]
-                     if dataset_config["label_names"] else str(item["label"])
-                     for item in batch]
+            # Get labels using helper that handles string/int/bool labels
+            labels = [get_label_string(item, dataset_config, dataset_key) for item in batch]
 
             # Get soft prompts for batch
             soft_tokens = soft_prompts(B)  # [B, num_tokens, hidden_dim]
@@ -1950,8 +1964,8 @@ def run_prompt_tuning_baseline(
     print(f"\nEvaluating on {len(test_data)} test samples...")
 
     for item in tqdm(test_data, desc="Evaluating", leave=False):
-        # Get ground truth label
-        label = dataset_config["label_names"][item["label"]] if dataset_config["label_names"] else str(item["label"])
+        # Get ground truth label using helper that handles string/int/bool labels
+        label = get_label_string(item, dataset_config, dataset_key)
 
         with torch.no_grad():
             # Get soft prompts for single sample

@@ -265,27 +265,37 @@ Latency (ms)
 
 ### 6.3 Statistical Significance Gap
 
-**Critical Issue:** All bridge experiments only have **seed 42**. Cannot compute:
+**Current Approach:** Seed 42 only - verify reasoning benchmarks work first before multi-seed
+
+All bridge experiments currently use **seed 42 only** to:
+- Validate that novel bridges work on reasoning benchmarks
+- Debug any issues before investing in full statistical runs
+- Establish baseline performance metrics
+
+**After Validation:** Run seeds 123, 456 for top-performing bridges to compute:
 - Standard deviation
 - Confidence intervals
 - P-values
 
-**Needed:** Run seeds 123 and 456 for top bridges.
-
 ### 6.4 Recommended Priority Actions
 
-**Priority 1 (Critical for Paper):**
-1. Run top 3 bridges with seeds 123, 456 on ARC-Easy
+**Priority 1 (Validate Reasoning - seed 42 only):**
+1. Verify all novel bridges run successfully on ARC-Easy
 2. Fix stalled experiments (flow_matching, moe, dora)
-3. Run at least 1 bridge on Winogrande, HellaSwag, BoolQ
+3. Validate GSM8K math reasoning baselines (zero-shot, few-shot)
+4. Test at least 1 bridge on Winogrande, HellaSwag, BoolQ
 
-**Priority 2 (Dataset Coverage):**
-4. Add SST-2, AG News baselines and bridge experiments
-5. Complete text relay on all datasets for fair comparison
+**Priority 2 (After Validation - add multi-seed):**
+5. Run seeds 123, 456 for top 3 bridges on ARC-Easy
+6. Complete statistical analysis with confidence intervals
 
-**Priority 3 (Ablations):**
-6. Test untested bridges (predictive_coding, infonce, spectral_cca)
-7. Add benchmarks across token counts
+**Priority 3 (Dataset Coverage):**
+7. Add SST-2, AG News baselines and bridge experiments
+8. Complete text relay on all datasets for fair comparison
+
+**Priority 4 (Ablations):**
+9. Test untested bridges (predictive_coding, infonce, spectral_cca)
+10. Add benchmarks across token counts
 
 ---
 
@@ -314,10 +324,53 @@ Latency (ms)
 
 ### Next Steps
 
-1. Run multi-seed experiments for statistical significance
-2. Extend bridge to other reasoning datasets
-3. Debug stalled experiments
-4. Add classification dataset benchmarks
+#### Priority 1: Validate Reasoning (seed 42 only)
+1. **Verify reasoning benchmarks** - Run all experiments with seed 42 only first
+2. **GSM8K math reasoning** - Test generative task baselines (zero-shot, few-shot)
+3. **Fix stalled experiments** - Label handling bug fixed in run_enhanced_paper_evaluation.py
+
+#### Priority 2: After Validation (add multi-seed)
+4. Add seeds 123, 456 for top-performing bridges
+5. Complete statistical analysis with confidence intervals
+6. Run bridges on Winogrande, HellaSwag, BoolQ
+
+#### Priority 3: Strengthen Paper
+7. Complete text relay baselines on all datasets
+8. Test untested bridges: PredictiveCoding, ContrastiveInfoNCE, SpectralCCA
+
+#### Priority 4: Nice to Have
+9. Add SST-2/AG News classification experiments
+10. Update run_benchmarks.py to fully support reasoning datasets
+
+### Code Changes Made (January 2026)
+
+1. **telepathy/run_enhanced_paper_evaluation.py**
+   - Added `get_label_string()` helper function to handle string/int/bool labels
+   - Fixed TypeError when ARC-Easy string labels ("A", "B", "C", "D") were used as indices
+
+2. **telepathy/train_telepathy.py**
+   - Added GSM8K dataset configuration with `is_generative: True` flag
+   - Updated argparse choices to include "gsm8k"
+
+3. **telepathy/submit_reasoning_final.slurm**
+   - ABLATION_SEEDS set to "42" only (verify reasoning works before multi-seed)
+   - Added GSM8K baselines (zero-shot, few-shot with seed 42) to GPU 0
+   - Added GSM8K bridge training (Mixture of Depths, seed 42) to GPU 1
+
+4. **telepathy/run_baselines.py**
+   - Added GSM8K dataset configuration with `is_generative: True` flag
+   - Added `extract_gsm8k_answer()` helper for numerical answer extraction
+   - Updated zero-shot and few-shot baselines to handle generative tasks
+   - Updated argparse choices to include "gsm8k"
+
+5. **telepathy/run_benchmarks.py**
+   - Added `--dataset` argument (choices: sst2, arc_easy, winogrande, hellaswag, boolq, gsm8k)
+
+6. **telepathy/paper_writing/telepathy.tex**
+   - Added Section 4.8: "Novel Bridge Architectures on Science Reasoning"
+   - Added Table 8: Novel bridge architectures comparison on ARC-Easy
+   - Updated Limitations section to distinguish structured vs open-ended reasoning
+   - Updated Conclusion with ARC-Easy results (84.5%, +56.5pp over baseline)
 
 ---
 

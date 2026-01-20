@@ -185,6 +185,24 @@ DATASET_CONFIGS = {
         "prompt_template": "Question: {text}\n\n{task_prompt}\nAnswer:",
         "random_baseline": 50.0,
     },
+    # =========================================================================
+    # MATH REASONING (Generative - for baselines only, not bridge training)
+    # =========================================================================
+    "gsm8k": {
+        "load_args": ("openai/gsm8k", "main"),
+        "text_field": "question",
+        "label_field": "answer",
+        # GSM8K answers are free-form numerical - extract final number
+        "label_map": None,  # No fixed label mapping for generative task
+        "label_from_answer": True,  # Extract answer from text
+        "num_classes": None,  # Generative task
+        "train_split": "train",
+        "eval_split": "test",
+        "task_prompt": "Solve this math problem step by step. Give your final answer as a number.",
+        "prompt_template": "Problem: {text}\n\n{task_prompt}\nSolution:",
+        "random_baseline": 0.0,
+        "is_generative": True,
+    },
 }
 
 
@@ -197,6 +215,27 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
 
 
+def extract_gsm8k_answer(text: str) -> str:
+    """Extract the final numerical answer from GSM8K format.
+
+    GSM8K answers are formatted as full solutions with '#### <number>' at the end.
+    Model responses may also use similar formatting.
+    """
+    import re
+
+    # First try to find #### pattern (standard GSM8K format)
+    match = re.search(r'####\s*(-?[\d,]+(?:\.\d+)?)', text)
+    if match:
+        return match.group(1).replace(',', '')
+
+    # Otherwise try to find the last number in the text
+    numbers = re.findall(r'-?[\d,]+(?:\.\d+)?', text)
+    if numbers:
+        return numbers[-1].replace(',', '')
+
+    return ""
+
+
 # =============================================================================
 # ZERO-SHOT BASELINE
 # =============================================================================
@@ -206,6 +245,10 @@ def run_zeroshot_baseline(args, config, device):
     print("\n" + "=" * 70)
     print(f"ZERO-SHOT BASELINE: {args.dataset.upper()}")
     print("=" * 70)
+
+    is_generative = config.get("is_generative", False)
+    if is_generative:
+        print("Note: This is a generative task - using generation-based evaluation")
 
     # Load evaluation data
     if len(config["load_args"]) == 2:
@@ -234,48 +277,86 @@ def run_zeroshot_baseline(args, config, device):
         tokenizer.pad_token = tokenizer.eos_token
         model.eval()
 
-        # Get unique canonical labels (handles datasets with multiple keys mapping to same label)
-        canonical_labels = sorted(set(config["label_map"].values()))
-        label_tokens = {}
-        for label_text in canonical_labels:
-            tokens = tokenizer.encode(label_text, add_special_tokens=False)
-            label_tokens[label_text] = tokens[0]
-
         correct = 0
         total = 0
 
-        for item in tqdm(eval_ds, desc=f"Zero-shot {model_name}"):
-            text = item[config["text_field"]]
-            raw_label = item[config["label_field"]]
-            # Normalize raw label to canonical form (e.g., "1" -> "A" for ARC)
-            true_label = config["label_map"].get(raw_label, raw_label)
+        if is_generative:
+            # Generative evaluation (e.g., GSM8K)
+            for item in tqdm(eval_ds, desc=f"Zero-shot {model_name}"):
+                text = item[config["text_field"]]
+                raw_answer = item[config["label_field"]]
+                true_answer = extract_gsm8k_answer(raw_answer)
 
-            prompt = config["prompt_template"].format(
-                text=text[:256],
-                task_prompt=config["task_prompt"]
-            )
-            inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+                prompt = config["prompt_template"].format(
+                    text=text[:512],
+                    task_prompt=config["task_prompt"]
+                )
+                inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1024).to(device)
 
-            with torch.no_grad():
-                outputs = model(**inputs)
-                logits = outputs.logits[0, -1]
+                with torch.no_grad():
+                    outputs = model.generate(
+                        **inputs,
+                        max_new_tokens=256,
+                        do_sample=False,
+                        pad_token_id=tokenizer.eos_token_id,
+                    )
 
-            # Get logits for each canonical label token
-            label_logits = torch.stack([logits[label_tokens[lbl]] for lbl in canonical_labels])
-            pred = label_logits.argmax().item()
-            pred_label = canonical_labels[pred]
+                response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
+                pred_answer = extract_gsm8k_answer(response)
 
-            if pred_label == true_label:
-                correct += 1
-            total += 1
+                if pred_answer == true_answer:
+                    correct += 1
+                total += 1
 
-        accuracy = 100 * correct / total
-        all_results[model_name] = {
-            "accuracy": accuracy,
-            "correct": correct,
-            "total": total,
-        }
-        print(f"{model_name}: {accuracy:.1f}% ({correct}/{total})")
+            accuracy = 100 * correct / total
+            all_results[model_name] = {
+                "accuracy": accuracy,
+                "correct": correct,
+                "total": total,
+            }
+            print(f"{model_name}: {accuracy:.1f}% ({correct}/{total})")
+
+        else:
+            # Classification evaluation
+            # Get unique canonical labels (handles datasets with multiple keys mapping to same label)
+            canonical_labels = sorted(set(config["label_map"].values()))
+            label_tokens = {}
+            for label_text in canonical_labels:
+                tokens = tokenizer.encode(label_text, add_special_tokens=False)
+                label_tokens[label_text] = tokens[0]
+
+            for item in tqdm(eval_ds, desc=f"Zero-shot {model_name}"):
+                text = item[config["text_field"]]
+                raw_label = item[config["label_field"]]
+                # Normalize raw label to canonical form (e.g., "1" -> "A" for ARC)
+                true_label = config["label_map"].get(raw_label, raw_label)
+
+                prompt = config["prompt_template"].format(
+                    text=text[:256],
+                    task_prompt=config["task_prompt"]
+                )
+                inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+
+                with torch.no_grad():
+                    outputs = model(**inputs)
+                    logits = outputs.logits[0, -1]
+
+                # Get logits for each canonical label token
+                label_logits = torch.stack([logits[label_tokens[lbl]] for lbl in canonical_labels])
+                pred = label_logits.argmax().item()
+                pred_label = canonical_labels[pred]
+
+                if pred_label == true_label:
+                    correct += 1
+                total += 1
+
+            accuracy = 100 * correct / total
+            all_results[model_name] = {
+                "accuracy": accuracy,
+                "correct": correct,
+                "total": total,
+            }
+            print(f"{model_name}: {accuracy:.1f}% ({correct}/{total})")
 
         del model
         gc.collect()
@@ -288,26 +369,63 @@ def run_zeroshot_baseline(args, config, device):
 # FEW-SHOT BASELINE
 # =============================================================================
 
+def get_safe_label(label_map, raw_label):
+    """Safely get canonical label from raw label value.
+
+    Handles type mismatches (int vs str) common in ARC-Easy and other datasets.
+    """
+    if label_map is None:
+        return str(raw_label)
+    # Try direct lookup first
+    result = label_map.get(raw_label)
+    if result is not None:
+        return result
+    # Try string conversion (handles int -> str, e.g., 2 -> "2" -> "B")
+    result = label_map.get(str(raw_label))
+    if result is not None:
+        return result
+    # Fallback to raw value as string
+    return str(raw_label)
+
+
 def build_fewshot_prompt(examples, test_text, config):
     """Build a few-shot prompt with examples."""
     label_map = config["label_map"]
     task = config["task_prompt"]
+    is_generative = config.get("is_generative", False)
 
     prompt = f"{task}\n\n"
 
     for ex in examples:
         text = ex[config["text_field"]]
-        label = label_map[ex[config["label_field"]]]
-        prompt += f"Text: {text[:200]}\nLabel: {label}\n\n"
+        if is_generative:
+            # For GSM8K, use the full answer (question + solution)
+            answer = ex[config["label_field"]]
+            prompt += f"Problem: {text[:300]}\nSolution: {answer}\n\n"
+        else:
+            label = get_safe_label(label_map, ex[config["label_field"]])
+            prompt += f"Text: {text[:200]}\nLabel: {label}\n\n"
 
-    prompt += f"Text: {test_text[:200]}\nLabel:"
+    if is_generative:
+        prompt += f"Problem: {test_text[:300]}\nSolution:"
+    else:
+        prompt += f"Text: {test_text[:200]}\nLabel:"
     return prompt
 
 
 def sample_fewshot_examples(train_ds, config, num_shots, seed):
-    """Sample balanced few-shot examples."""
+    """Sample few-shot examples (balanced for classification, random for generative)."""
     random.seed(seed)
     label_map = config["label_map"]
+    is_generative = config.get("is_generative", False)
+
+    if is_generative or label_map is None:
+        # For generative tasks, just sample randomly
+        indices = list(range(len(train_ds)))
+        random.shuffle(indices)
+        return [train_ds[i] for i in indices[:num_shots]]
+
+    # For classification, sample balanced across classes
     num_classes = len(label_map)
     shots_per_class = max(1, num_shots // num_classes)
 
@@ -326,6 +444,10 @@ def run_fewshot_baseline(args, config, device):
     print("\n" + "=" * 70)
     print(f"FEW-SHOT BASELINE ({args.shots}-shot): {args.dataset.upper()}")
     print("=" * 70)
+
+    is_generative = config.get("is_generative", False)
+    if is_generative:
+        print("Note: This is a generative task - using generation-based evaluation")
 
     # Load data
     if len(config["load_args"]) == 2:
@@ -363,35 +485,60 @@ def run_fewshot_baseline(args, config, device):
             set_seed(seed)
             fewshot_examples = sample_fewshot_examples(train_ds, config, args.shots, seed)
 
-            label_names = list(config["label_map"].values())
             correct = 0
             total = 0
 
-            for item in tqdm(eval_ds, desc=f"Seed {seed}", leave=False):
-                text = item[config["text_field"]]
-                true_label = config["label_map"][item[config["label_field"]]]
+            if is_generative:
+                # Generative evaluation (e.g., GSM8K)
+                for item in tqdm(eval_ds, desc=f"Seed {seed}", leave=False):
+                    text = item[config["text_field"]]
+                    raw_answer = item[config["label_field"]]
+                    true_answer = extract_gsm8k_answer(raw_answer)
 
-                prompt = build_fewshot_prompt(fewshot_examples, text, config)
-                inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048).to(device)
+                    prompt = build_fewshot_prompt(fewshot_examples, text, config)
+                    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=3072).to(device)
 
-                with torch.no_grad():
-                    outputs = model.generate(
-                        **inputs, max_new_tokens=10, do_sample=False,
-                        pad_token_id=tokenizer.eos_token_id,
-                    )
+                    with torch.no_grad():
+                        outputs = model.generate(
+                            **inputs, max_new_tokens=256, do_sample=False,
+                            pad_token_id=tokenizer.eos_token_id,
+                        )
 
-                response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
-                response = response.strip().lower()
+                    response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
+                    pred_answer = extract_gsm8k_answer(response)
 
-                pred_label = None
-                for label in label_names:
-                    if label.lower() in response:
-                        pred_label = label
-                        break
+                    if pred_answer == true_answer:
+                        correct += 1
+                    total += 1
+            else:
+                # Classification evaluation
+                label_names = list(config["label_map"].values())
 
-                if pred_label and pred_label.lower() == true_label.lower():
-                    correct += 1
-                total += 1
+                for item in tqdm(eval_ds, desc=f"Seed {seed}", leave=False):
+                    text = item[config["text_field"]]
+                    true_label = get_safe_label(config["label_map"], item[config["label_field"]])
+
+                    prompt = build_fewshot_prompt(fewshot_examples, text, config)
+                    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048).to(device)
+
+                    with torch.no_grad():
+                        outputs = model.generate(
+                            **inputs, max_new_tokens=10, do_sample=False,
+                            pad_token_id=tokenizer.eos_token_id,
+                        )
+
+                    response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
+                    response = response.strip().lower()
+
+                    pred_label = None
+                    for label in label_names:
+                        if label.lower() in response:
+                            pred_label = label
+                            break
+
+                    if pred_label and pred_label.lower() == true_label.lower():
+                        correct += 1
+                    total += 1
 
             accuracy = 100 * correct / total
             seed_results.append(accuracy)
@@ -791,7 +938,7 @@ def run_text_relay_baseline(args, config, device):
 
         for idx, item in enumerate(tqdm(eval_ds, desc=f"Text relay (seed {seed})")):
             text = item[config["text_field"]]
-            true_label = config["label_map"][item[config["label_field"]]]
+            true_label = get_safe_label(config["label_map"], item[config["label_field"]])
 
             # Step 1: Llama generates a hint
             llama_prompt = (
@@ -1574,7 +1721,7 @@ def parse_args():
                                 "text_relay", "ensemble", "ridge_regression"],
                        help="Baseline type to run")
     parser.add_argument("--dataset", type=str, required=True,
-                       choices=["sst2", "agnews", "trec", "arc_easy", "winogrande", "hellaswag", "boolq"],
+                       choices=["sst2", "agnews", "trec", "arc_easy", "winogrande", "hellaswag", "boolq", "gsm8k"],
                        help="Dataset to evaluate on")
 
     # General settings

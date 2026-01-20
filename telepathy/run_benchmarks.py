@@ -597,6 +597,9 @@ def parse_args():
                        help="Path to bridge checkpoint (for latency/throughput)")
     parser.add_argument("--soft_tokens", type=int, default=8)
     parser.add_argument("--gpu", type=int, default=0)
+    parser.add_argument("--dataset", type=str, default="sst2",
+                       choices=["sst2", "arc_easy", "winogrande", "hellaswag", "boolq", "gsm8k"],
+                       help="Dataset to use for benchmarking (currently only sst2 fully implemented)")
 
     # Latency settings
     parser.add_argument("--num_trials", type=int, default=50)

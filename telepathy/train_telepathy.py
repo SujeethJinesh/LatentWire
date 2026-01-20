@@ -181,6 +181,24 @@ DATASET_CONFIGS = {
         "random_baseline": 50.0,
         "is_reasoning": True,
     },
+    # =========================================================================
+    # MATH REASONING (Generative)
+    # =========================================================================
+    "gsm8k": {
+        "load_args": ("openai/gsm8k", "main"),
+        "text_field": "question",
+        "label_field": "answer",
+        "labels": None,  # GSM8K is generative - extract numeric answer from "#### N" format
+        "num_classes": None,  # Not a classification task
+        "train_split": "train",
+        "eval_split": "test",
+        "max_length": 512,  # Math problems need longer context
+        "prompt_template": "Math Problem: {text}\nSolution:",
+        "primer": "The answer is",
+        "random_baseline": 0.0,  # Generative task - random baseline not applicable
+        "is_reasoning": True,
+        "is_generative": True,  # Flag for generative evaluation
+    },
 }
 
 
@@ -473,7 +491,7 @@ def parse_args():
     # Dataset selection
     parser.add_argument("--dataset", type=str, default="sst2",
                        choices=["sst2", "agnews", "trec", "banking77",
-                                "arc_easy", "winogrande", "hellaswag", "boolq"],
+                                "arc_easy", "winogrande", "hellaswag", "boolq", "gsm8k"],
                        help="Dataset to train on")
 
     # Model configuration
