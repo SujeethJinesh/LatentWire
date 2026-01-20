@@ -1245,8 +1245,16 @@ def main():
                               split=config["eval_split"], trust_remote_code=True)
 
     # Get labels from dataset if not predefined (e.g., banking77)
-    if config["labels"] is None:
-        config["labels"] = train_ds.features[config["label_field"]].names
+    # Skip for generative tasks like GSM8K where labels should stay None
+    if config["labels"] is None and not config.get("is_generative", False):
+        try:
+            config["labels"] = train_ds.features[config["label_field"]].names
+        except AttributeError:
+            # Dataset doesn't have ClassLabel with .names (e.g., string labels)
+            # Try to extract unique values instead
+            unique_labels = sorted(set(str(item[config["label_field"]]) for item in train_ds))
+            config["labels"] = unique_labels
+            print(f"Warning: Extracted {len(unique_labels)} unique labels from dataset")
 
     if torch.distributed.is_initialized():
         train_ds = train_ds.shard(world_size, local_rank)
