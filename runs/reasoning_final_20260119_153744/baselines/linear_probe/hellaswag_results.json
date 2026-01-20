@@ -1,0 +1,85 @@
+{
+  "per_seed": [
+    {
+      "dataset": "hellaswag",
+      "num_classes": 4,
+      "num_train": 5000,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 99.98,
+          "train_time": 30.286577701568604,
+          "num_samples": 5000,
+          "num_features": 4096,
+          "cv_mean": 24.4,
+          "cv_std": 1.9152023391798587,
+          "accuracy": 25.8,
+          "f1_score": 25.780469894659063,
+          "correct": 258,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 25.8,
+      "seed": 42
+    },
+    {
+      "dataset": "hellaswag",
+      "num_classes": 4,
+      "num_train": 5000,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 99.98,
+          "train_time": 29.345319986343384,
+          "num_samples": 5000,
+          "num_features": 4096,
+          "cv_mean": 25.840000000000003,
+          "cv_std": 1.5486768546084748,
+          "accuracy": 24.2,
+          "f1_score": 24.13904871832332,
+          "correct": 242,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 24.2,
+      "seed": 123
+    },
+    {
+      "dataset": "hellaswag",
+      "num_classes": 4,
+      "num_train": 5000,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 99.96000000000001,
+          "train_time": 31.582098245620728,
+          "num_samples": 5000,
+          "num_features": 4096,
+          "cv_mean": 24.060000000000002,
+          "cv_std": 1.3588230201170421,
+          "accuracy": 23.7,
+          "f1_score": 23.67361026480467,
+          "correct": 237,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 23.7,
+      "seed": 456
+    }
+  ],
+  "aggregated": {
+    "layer_31": {
+      "accuracy_mean": 24.566666666666666,
+      "accuracy_std": 0.8956685895029608,
+      "accuracy_min": 23.7,
+      "accuracy_max": 25.8,
+      "f1_mean": 24.53104295926235,
+      "f1_std": 0.9036809867331776
+    }
+  },
+  "best_layer": "layer_31",
+  "best_accuracy_mean": 24.566666666666666
+}

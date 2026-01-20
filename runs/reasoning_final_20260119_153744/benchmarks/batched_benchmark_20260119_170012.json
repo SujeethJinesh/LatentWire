@@ -1,0 +1,57 @@
+{
+  "experiment": "batched_benchmark",
+  "timestamp": "20260119_170012",
+  "device": "cuda:1",
+  "gpu_name": "NVIDIA H100 80GB HBM3",
+  "config": {
+    "benchmark": "batched",
+    "checkpoint": null,
+    "soft_tokens": 8
+  },
+  "results": {
+    "bridge": [
+      {
+        "batch_size": 1,
+        "throughput_samples_per_s": 10.017334989930221,
+        "latency_per_sample_ms": 99.82695008255541
+      },
+      {
+        "batch_size": 4,
+        "throughput_samples_per_s": 38.28445672391086,
+        "latency_per_sample_ms": 26.12026095110923
+      },
+      {
+        "batch_size": 8,
+        "throughput_samples_per_s": 70.12588186037415,
+        "latency_per_sample_ms": 14.260070226155221
+      },
+      {
+        "batch_size": 16,
+        "throughput_samples_per_s": 118.42929233995311,
+        "latency_per_sample_ms": 8.443856922909616
+      }
+    ],
+    "direct_mistral": [
+      {
+        "batch_size": 1,
+        "throughput_samples_per_s": 11.75475742981615,
+        "latency_per_sample_ms": 85.07193840201944
+      },
+      {
+        "batch_size": 4,
+        "throughput_samples_per_s": 43.73178923613768,
+        "latency_per_sample_ms": 22.86666101403534
+      },
+      {
+        "batch_size": 8,
+        "throughput_samples_per_s": 80.06773189172192,
+        "latency_per_sample_ms": 12.48942584451288
+      },
+      {
+        "batch_size": 16,
+        "throughput_samples_per_s": 134.67935776125918,
+        "latency_per_sample_ms": 7.425042832270265
+      }
+    ]
+  }
+}

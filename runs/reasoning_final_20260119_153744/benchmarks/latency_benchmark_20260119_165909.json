@@ -1,0 +1,32 @@
+{
+  "experiment": "latency_benchmark",
+  "timestamp": "20260119_165909",
+  "device": "cuda:1",
+  "gpu_name": "NVIDIA H100 80GB HBM3",
+  "config": {
+    "benchmark": "latency",
+    "checkpoint": "runs/reasoning_final_20260119_153744/novel_bridges/token_capacity_8_seed42/bridge_arc_easy.pt",
+    "soft_tokens": 8
+  },
+  "results": {
+    "timestamp": "2026-01-19T16:59:28.670149",
+    "device": "cuda:1",
+    "num_trials": 50,
+    "direct_text": {
+      "method": "direct_text",
+      "avg_ms": 82.19356745481491,
+      "std_ms": 0.8073203970078318
+    },
+    "text_relay": {
+      "method": "text_relay",
+      "avg_ms": 482.6642825547606,
+      "std_ms": 6.207319578005478
+    },
+    "bridge": {
+      "method": "bridge",
+      "soft_tokens": 8,
+      "avg_ms": 30.896129850298166,
+      "std_ms": 2.891867945357303
+    }
+  }
+}

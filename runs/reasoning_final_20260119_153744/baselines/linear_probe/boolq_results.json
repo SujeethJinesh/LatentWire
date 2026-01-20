@@ -1,0 +1,85 @@
+{
+  "per_seed": [
+    {
+      "dataset": "boolq",
+      "num_classes": 2,
+      "num_train": 5000,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 100.0,
+          "train_time": 6.876219272613525,
+          "num_samples": 5000,
+          "num_features": 4096,
+          "cv_mean": 63.080000000000005,
+          "cv_std": 0.9600000000000007,
+          "accuracy": 60.9,
+          "f1_score": 67.97706797706797,
+          "correct": 609,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 60.9,
+      "seed": 42
+    },
+    {
+      "dataset": "boolq",
+      "num_classes": 2,
+      "num_train": 5000,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 100.0,
+          "train_time": 8.772526264190674,
+          "num_samples": 5000,
+          "num_features": 4096,
+          "cv_mean": 61.13999999999999,
+          "cv_std": 1.902209241907947,
+          "accuracy": 61.6,
+          "f1_score": 69.03225806451613,
+          "correct": 616,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 61.6,
+      "seed": 123
+    },
+    {
+      "dataset": "boolq",
+      "num_classes": 2,
+      "num_train": 5000,
+      "num_test": 1000,
+      "layers": {
+        "layer_31": {
+          "train_accuracy": 100.0,
+          "train_time": 8.966134548187256,
+          "num_samples": 5000,
+          "num_features": 4096,
+          "cv_mean": 61.46,
+          "cv_std": 0.7255342858886827,
+          "accuracy": 63.3,
+          "f1_score": 70.0408163265306,
+          "correct": 633,
+          "total": 1000
+        }
+      },
+      "best_layer": 31,
+      "best_accuracy": 63.3,
+      "seed": 456
+    }
+  ],
+  "aggregated": {
+    "layer_31": {
+      "accuracy_mean": 61.93333333333334,
+      "accuracy_std": 1.0077477638553973,
+      "accuracy_min": 60.9,
+      "accuracy_max": 63.3,
+      "f1_mean": 69.0167141227049,
+      "f1_std": 0.8425934263026676
+    }
+  },
+  "best_layer": "layer_31",
+  "best_accuracy_mean": 61.93333333333334
+}

@@ -1,0 +1,62 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+============================================================
+TELEPATHY TRAINING: ARC_EASY
+============================================================
+
+Dataset: arc_easy (5 classes)
+Random baseline: 20.0%
+Source layer: 31
+Soft tokens: 8
+Steps: 1500
+Diversity weight: 0.1
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2190.24it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:13,  4.57s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:08,  4.21s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:12<00:04,  4.06s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  2.85s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  3.36s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3333.22it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:04<00:08,  4.11s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:07<00:03,  3.94s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.67s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.76s/it]
+2026-01-19 15:50:41,631 - INFO - MINEBridge: 8 tokens, mine_weight=0.1
+Target embedding RMS: 0.0027
+Using MINE Bridge - Mutual Information Neural Estimation
+
+Training on 2251 samples
+Validation: 2376 samples
+Starting training...
+
+ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1320, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 749, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1434, in forward
+    mine_loss = self.compute_mine_loss(src_hidden, soft_tokens, src_mask)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1385, in compute_mine_loss
+    soft_flat = soft_tokens.view(B, -1)  # [B, K*D]
+RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.
+
+[ERROR] Training interrupted by exception at step 1
+[ERROR] RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.
+
+[EMERGENCY] Checkpoint saved to runs/reasoning_final_20260119_153744/novel_bridges/hailmary_mine_arc_easy_seed42/emergency_checkpoint_step0.pt
+[EMERGENCY] Error: RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1565, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1320, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 749, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1434, in forward
+    mine_loss = self.compute_mine_loss(src_hidden, soft_tokens, src_mask)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1385, in compute_mine_loss
+    soft_flat = soft_tokens.view(B, -1)  # [B, K*D]
+RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.

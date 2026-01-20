@@ -1,0 +1,26 @@
+{
+  "experiment": "zeroshot_baseline",
+  "timestamp": "20260119_153955",
+  "config": {
+    "baseline": "zeroshot",
+    "dataset": "boolq",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200
+  },
+  "results": {
+    "Llama": {
+      "accuracy": 70.0,
+      "correct": 140,
+      "total": 200
+    },
+    "Mistral": {
+      "accuracy": 66.0,
+      "correct": 132,
+      "total": 200
+    }
+  }
+}

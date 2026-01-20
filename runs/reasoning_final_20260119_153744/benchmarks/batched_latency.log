@@ -1,0 +1,43 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Device: cuda:1
+GPU: NVIDIA H100 80GB HBM3
+
+======================================================================
+BATCHED LATENCY BENCHMARK
+======================================================================
+Loading Llama...
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3576.47it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.16s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.05s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:06<00:01,  1.98s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.42s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.65s/it]
+Loading Mistral...
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3983.19it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:01<00:03,  1.91s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:03<00:01,  1.96s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:05<00:00,  1.90s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:05<00:00,  1.91s/it]
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+
+--- Batch Size: 1 ---
+  Bridge: 10.0 samples/s
+  Direct Mistral: 11.8 samples/s
+
+--- Batch Size: 4 ---
+  Bridge: 38.3 samples/s
+  Direct Mistral: 43.7 samples/s
+
+--- Batch Size: 8 ---
+  Bridge: 70.1 samples/s
+  Direct Mistral: 80.1 samples/s
+
+--- Batch Size: 16 ---
+  Bridge: 118.4 samples/s
+  Direct Mistral: 134.7 samples/s
+
+======================================================================
+SUMMARY: Throughput (samples/sec) by Batch Size
+======================================================================
+Batch    Bridge          Direct         
+----------------------------------------
+1        10.0            11.8           
+4        38.3            43.7           
+8        70.1            80.1           
+16       118.4           134.7          
+
+Results saved to: runs/reasoning_final_20260119_153744/benchmarks/batched_benchmark_20260119_170012.json

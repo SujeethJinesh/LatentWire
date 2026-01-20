@@ -1,0 +1,23 @@
+{
+  "experiment": "throughput_benchmark",
+  "timestamp": "20260119_170425",
+  "device": "cuda:1",
+  "gpu_name": "NVIDIA H100 80GB HBM3",
+  "config": {
+    "benchmark": "throughput",
+    "checkpoint": "runs/reasoning_final_20260119_153744/novel_bridges/token_capacity_8_seed42/bridge_arc_easy.pt",
+    "soft_tokens": 8
+  },
+  "results": {
+    "direct_mistral": {
+      "total_time_s": 8.82347918394953,
+      "samples_per_s": 11.333397848538745,
+      "ms_per_sample": 88.2347918394953
+    },
+    "bridge": {
+      "total_time_s": 4.731892652343959,
+      "samples_per_s": 21.133192856871904,
+      "ms_per_sample": 47.318926523439586
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "experiment": "fewshot_baseline",
+  "timestamp": "20260119_154104",
+  "config": {
+    "baseline": "fewshot",
+    "dataset": "winogrande",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200,
+    "shots": 4
+  },
+  "results": {
+    "Llama": {
+      "mean_accuracy": 51.5,
+      "std_accuracy": 2.857738033247041,
+      "seeds": [
+        53.0,
+        47.5,
+        54.0
+      ]
+    },
+    "Mistral": {
+      "mean_accuracy": 51.5,
+      "std_accuracy": 2.160246899469287,
+      "seeds": [
+        53.5,
+        48.5,
+        52.5
+      ]
+    }
+  }
+}

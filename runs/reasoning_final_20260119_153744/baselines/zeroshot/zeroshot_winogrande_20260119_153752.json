@@ -1,0 +1,26 @@
+{
+  "experiment": "zeroshot_baseline",
+  "timestamp": "20260119_153752",
+  "config": {
+    "baseline": "zeroshot",
+    "dataset": "winogrande",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200
+  },
+  "results": {
+    "Llama": {
+      "accuracy": 47.5,
+      "correct": 95,
+      "total": 200
+    },
+    "Mistral": {
+      "accuracy": 47.5,
+      "correct": 95,
+      "total": 200
+    }
+  }
+}
