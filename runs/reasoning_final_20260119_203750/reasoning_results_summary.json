@@ -1,0 +1,17 @@
+{
+  "hail_mary": null,
+  "novel_bridges": {},
+  "token_capacity": {},
+  "baselines": {
+    "zeroshot": {},
+    "fewshot": {},
+    "dora": {},
+    "prompt_tuning": {}
+  },
+  "benchmarks": {
+    "latency": {},
+    "batched": {},
+    "memory": {},
+    "throughput": {}
+  }
+}
