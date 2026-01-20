@@ -63,6 +63,63 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # LABEL HANDLING HELPER
 # =============================================================================
 
+def extract_choice_label(response: str, label_names: list) -> Optional[str]:
+    """
+    Extract a choice label from model response using proper matching.
+
+    Handles single-letter (A, B, C, D) and numeric (1, 2) choices correctly
+    by using word boundaries and common answer patterns, avoiding false positives
+    from substring matching (e.g., "a" in "answer").
+
+    Args:
+        response: Model response text (should already be stripped/lowercased)
+        label_names: List of valid labels like ["A", "B", "C", "D"] or ["1", "2"]
+
+    Returns:
+        Matched label or None if no match found
+    """
+    import re
+
+    # Try multiple patterns in order of specificity
+    for lbl in label_names:
+        lbl_lower = lbl.lower()
+
+        # Pattern 1: Answer at very start of response (e.g., "A" or "A)")
+        if response.startswith(lbl_lower) or response.startswith(f"{lbl_lower})"):
+            return lbl
+
+        # Pattern 2: Common answer formats - "Answer: A", "The answer is A", etc.
+        answer_patterns = [
+            rf'\banswer[:\s]+{re.escape(lbl_lower)}\b',  # "answer: a" or "answer a"
+            rf'\banswer is[:\s]+{re.escape(lbl_lower)}\b',  # "answer is a"
+            rf'\bchoose[:\s]+{re.escape(lbl_lower)}\b',  # "choose a"
+            rf'\bselect[:\s]+{re.escape(lbl_lower)}\b',  # "select a"
+            rf'\boption[:\s]+{re.escape(lbl_lower)}\b',  # "option a"
+            rf'\b{re.escape(lbl_lower)}\)',  # "a)" with word boundary before
+            rf'\({re.escape(lbl_lower)}\)',  # "(a)"
+        ]
+        for pattern in answer_patterns:
+            if re.search(pattern, response):
+                return lbl
+
+    # Pattern 3: Look for standalone label at end of response (last word)
+    words = response.split()
+    if words:
+        last_word = words[-1].rstrip('.,!?:;')
+        for lbl in label_names:
+            if last_word == lbl.lower():
+                return lbl
+
+    # Pattern 4: For longer labels (multi-char like "yes", "no", "positive"),
+    # simple word boundary check is safer
+    for lbl in label_names:
+        if len(lbl) > 1:  # Only for non-single-char labels
+            if re.search(rf'\b{re.escape(lbl.lower())}\b', response):
+                return lbl
+
+    return None
+
+
 def get_label_string(item: Dict, dataset_config: Dict, dataset_key: str) -> str:
     """
     Extract label as string from item, handling different label formats:
@@ -1452,11 +1509,9 @@ def run_zeroshot_baseline(
             pred_label = extract_gsm8k_answer(response)
             is_correct = pred_label == label
         else:
-            pred_label = None
-            for lbl in dataset_config["label_names"]:
-                if lbl.lower() in response:
-                    pred_label = lbl
-                    break
+            # Use proper label extraction with word boundaries to avoid
+            # false matches (e.g., "a" in "answer" for ARC-Easy)
+            pred_label = extract_choice_label(response, dataset_config["label_names"])
             is_correct = pred_label is not None and pred_label.lower() == label.lower()
 
         if is_correct:
@@ -1601,11 +1656,9 @@ def run_text_relay_baseline(
             pred_label = extract_gsm8k_answer(response)
             is_correct = pred_label == label
         else:
-            pred_label = None
-            for lbl in dataset_config["label_names"]:
-                if lbl.lower() in response:
-                    pred_label = lbl
-                    break
+            # Use proper label extraction with word boundaries to avoid
+            # false matches (e.g., "a" in "answer" for ARC-Easy)
+            pred_label = extract_choice_label(response, dataset_config["label_names"])
             is_correct = pred_label is not None and pred_label.lower() == label.lower()
 
         if is_correct:

@@ -1,7 +1,7 @@
 # Telepathy Experiment Analysis Report
 
-**Generated:** 2026-01-20
-**Status:** 32 completed experiments, 2 pending
+**Generated:** 2026-01-20 (Updated after job 151755)
+**Status:** 43 completed experiments, 1 pending (hail_mary preempted)
 
 ---
 
@@ -261,10 +261,16 @@ Latency (ms)
 
 | Experiment | Status | Action Needed |
 |------------|--------|---------------|
-| hail_mary_reasoning | Pending | Awaiting next HPC run |
-| bridge_gsm8k_mod_seed42 | Pending | Awaiting next HPC run |
+| hail_mary_reasoning | Pending | Preempted at 8/132 - awaiting next run |
 
-### 6.3 Missing Dataset Coverage
+### 6.3 GSM8K Bridge Results (FAILED)
+
+The Mixture of Depths bridge trained on GSM8K achieved **0% accuracy** (0/200 correct):
+- Training loss decreased: 2.64 → 1.53 (model learned *something*)
+- But all predictions were incorrect text fragments, not mathematical answers
+- This confirms soft token compression fails for chain-of-thought reasoning
+
+### 6.4 Missing Dataset Coverage
 
 | Dataset | Zero-Shot | Few-Shot | Linear Probe | Bridge | Complete |
 |---------|-----------|----------|--------------|--------|----------|
@@ -272,12 +278,12 @@ Latency (ms)
 | Winogrande | Yes | Yes | Yes | **NO** | No |
 | HellaSwag | Yes | Yes | Yes | **NO** | No |
 | BoolQ | Yes | Yes | Yes | **NO** | No |
-| GSM8K | Yes | Yes | N/A | **Pending** | No |
+| GSM8K | Yes | Yes | N/A | **0% (FAILED)** | Yes |
 | SST-2 | No | No | No | No | No |
 | AG News | No | No | No | No | No |
 | TREC | No | No | No | No | No |
 
-### 6.4 Statistical Significance Gap
+### 6.5 Statistical Significance Gap
 
 **Current Approach:** Seed 42 only - verify reasoning benchmarks work first before multi-seed
 
@@ -291,7 +297,7 @@ All bridge experiments currently use **seed 42 only** to:
 - Confidence intervals
 - P-values
 
-### 6.5 Recommended Priority Actions
+### 6.6 Recommended Priority Actions
 
 **Priority 1 (Validate Reasoning - seed 42 only):**
 1. Verify all novel bridges run successfully on ARC-Easy
