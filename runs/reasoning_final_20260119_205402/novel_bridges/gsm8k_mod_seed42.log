@@ -1,0 +1,28 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+============================================================
+TELEPATHY TRAINING: GSM8K
+============================================================
+
+Dataset: gsm8k (None classes)
+Random baseline: 0.0%
+Source layer: 31
+Soft tokens: 8
+Steps: 1500
+Diversity weight: 0.1
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 2449.59it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:14,  4.68s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:08,  4.27s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:12<00:04,  4.11s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  2.91s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:13<00:00,  3.41s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 3190.39it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:03<00:07,  3.87s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:07<00:03,  3.91s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.85s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:11<00:00,  3.87s/it]
+2026-01-19 21:20:34,632 - INFO - MixtureOfDepthsBridge: 8 tokens, 2 layers, capacity=0.5
+Target embedding RMS: 0.0027
+Using Mixture-of-Depths Bridge - Adaptive compute via early exit
+Generating train split:   0%|          | 0/7473 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 7473/7473 [00:00<00:00, 163772.20 examples/s]
+Generating test split:   0%|          | 0/1319 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1319/1319 [00:00<00:00, 294866.59 examples/s]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1583, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1249, in main
+    config["labels"] = train_ds.features[config["label_field"]].names
+AttributeError: 'Value' object has no attribute 'names'

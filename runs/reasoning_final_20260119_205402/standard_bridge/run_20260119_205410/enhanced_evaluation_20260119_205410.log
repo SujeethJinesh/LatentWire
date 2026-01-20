@@ -1,0 +1,15 @@
+2026-01-19 20:54:10 | INFO | Starting enhanced evaluation run: runs/reasoning_final_20260119_205402/standard_bridge/run_20260119_205410
+2026-01-19 20:54:10 | INFO | Using device: cuda:0
+2026-01-19 20:54:10 | INFO | FAST MODE enabled
+2026-01-19 20:54:10 | INFO | HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+2026-01-19 20:54:10 | INFO | Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+2026-01-19 20:54:10 | INFO | Linear probe layer: 31 (matching bridge layer)
+2026-01-19 20:54:10 | INFO | Starting zero-shot baselines...
+2026-01-19 21:17:32 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (1401.6s) [OK]
+  Elapsed: 0h 23m 22s | ETA: 51h 0m 4s
+  Avg time: 1401.6s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-19 21:17:32 | INFO | [SUCCESS] zeroshot_llama_arc_easy_seed42 completed in 1401.6s
