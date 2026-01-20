@@ -56,6 +56,41 @@ except ImportError:
 
 
 # =============================================================================
+# CUSTOM COLLATE FUNCTION FOR VARIABLE-LENGTH DATA
+# =============================================================================
+
+def custom_collate_fn(batch):
+    """
+    Custom collate function that handles variable-length nested data.
+
+    This is needed for datasets like ARC where 'choices' is a nested dict
+    with variable-length lists that can't be batched by default_collate.
+    """
+    if not batch:
+        return {}
+
+    keys = batch[0].keys()
+    collated = {}
+
+    for key in keys:
+        values = [item[key] for item in batch]
+
+        # Check if values are nested dicts (like ARC's 'choices')
+        if isinstance(values[0], dict):
+            # Handle nested dict - create a dict of lists
+            nested_keys = values[0].keys()
+            collated[key] = {nk: [v[nk] for v in values] for nk in nested_keys}
+        elif isinstance(values[0], (int, float, bool)):
+            # Keep simple types as lists (don't convert to tensor)
+            collated[key] = values
+        else:
+            # Keep other types (strings, etc.) as lists
+            collated[key] = values
+
+    return collated
+
+
+# =============================================================================
 # DATASET CONFIGURATIONS
 # =============================================================================
 
@@ -935,7 +970,7 @@ def run_prompt_tuning_baseline(args, config, device):
 
         # Training
         from torch.utils.data import DataLoader
-        dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True)
+        dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True, collate_fn=custom_collate_fn)
         iter_dl = iter(dl)
 
         labels_list = list(config["label_map"].values())
@@ -1456,9 +1491,12 @@ def run_ridge_regression_baseline(args, config, device):
                     primer_enc = tgt_tok(primer_text, return_tensors="pt", add_special_tokens=False).to(device)
                     primer_embeds = tgt_model.get_input_embeddings()(primer_enc.input_ids).bfloat16()
 
+                    # Ensure soft_token is on same device as primer_embeds (handle device_map="auto")
+                    soft_token = soft_token.to(primer_embeds.device)
+
                     # Concatenate: [Primer] + [Soft Token] -> Generate
                     combined_embeds = torch.cat([primer_embeds, soft_token], dim=1)
-                    attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
+                    attn_mask = torch.ones(combined_embeds.shape[:2], device=combined_embeds.device, dtype=torch.long)
 
                     out_ids = tgt_model.generate(
                         inputs_embeds=combined_embeds,

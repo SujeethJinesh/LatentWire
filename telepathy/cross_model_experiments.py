@@ -205,6 +205,12 @@ class OptimalTransportBridge(nn.Module):
         Returns:
             P: [B, n, m] transport plan
         """
+        # Ensure all tensors have same dtype (use float32 for numerical stability)
+        dtype = torch.float32
+        C = C.to(dtype)
+        a = a.to(dtype)
+        b = b.to(dtype)
+
         # Gibbs kernel
         K = torch.exp(-C / self.epsilon)
 
@@ -1381,8 +1387,8 @@ class MINEBridge(nn.Module):
         else:
             src_pooled = src_hidden.mean(dim=1)
 
-        # Flatten soft tokens
-        soft_flat = soft_tokens.view(B, -1)  # [B, K*D]
+        # Flatten soft tokens (use reshape for non-contiguous tensors)
+        soft_flat = soft_tokens.reshape(B, -1)  # [B, K*D]
 
         # Positive samples: (x_i, z_i) pairs (match dtype to weights)
         weight_dtype = self.statistics_net[0].weight.dtype
@@ -1773,7 +1779,8 @@ class DomainAdversarialBridge(nn.Module):
         soft_reversed = GradientReversalFunction.apply(soft_tokens, self.grl_alpha)
 
         # Discriminator predictions for soft tokens (should be 0 = fake)
-        soft_preds = self.discriminator(soft_reversed.view(-1, D)).view(B, K)  # [B, K]
+        # Use reshape for non-contiguous tensors
+        soft_preds = self.discriminator(soft_reversed.reshape(-1, D)).reshape(B, K)  # [B, K]
 
         # If we have reference embeddings, use them
         if self.reference_embeddings is not None and self.reference_embeddings.numel() > 0:
@@ -1906,8 +1913,12 @@ class SuccessiveRefinementBridge(nn.Module):
         num_tokens = min(num_tokens, self.max_tokens)
         B = src_hidden.shape[0]
 
-        # Project source (match dtype to weights)
-        src_proj = self.input_proj(src_hidden.to(self.input_proj.weight.dtype))
+        # Project source (match dtype to weights, handle Identity case)
+        if hasattr(self.input_proj, 'weight'):
+            src_proj = self.input_proj(src_hidden.to(self.input_proj.weight.dtype))
+        else:
+            # Identity projection - keep original dtype
+            src_proj = self.input_proj(src_hidden)
         key_padding_mask = ~src_mask.bool() if src_mask is not None else None
 
         # Pool source for base encoding
