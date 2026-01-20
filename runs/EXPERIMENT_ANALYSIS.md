@@ -1,7 +1,7 @@
 # Telepathy Experiment Analysis Report
 
-**Generated:** 2026-01-19
-**Status:** 29 completed, 4 stalled experiments
+**Generated:** 2026-01-20
+**Status:** 32 completed experiments, 2 pending
 
 ---
 
@@ -29,6 +29,7 @@ The Telepathy system enables cross-model communication between Llama-3.1-8B (sen
 | Winogrande | 47.5% | 47.5% | Tie | Binary reasoning |
 | HellaSwag | 27.0% | 26.5% | Llama (+0.5%) | 4-way completion |
 | BoolQ | 70.0% | 66.0% | Llama (+4%) | Binary QA |
+| GSM8K | 16.0% | 48.0% | Mistral (+32%) | Math reasoning |
 
 **Observation:** Both models struggle on ARC-Easy (near random ~25%), perform moderately on reasoning tasks, and excel on BoolQ.
 
@@ -40,6 +41,7 @@ The Telepathy system enables cross-model communication between Llama-3.1-8B (sen
 | Winogrande | 51.5% (+/- 2.9) | 51.5% (+/- 2.2) | +4% |
 | HellaSwag | 23.2% (+/- 1.7) | 18.8% (+/- 3.2) | **-4 to -8%** |
 | BoolQ | 57.7% (+/- 9.3) | 67.5% (+/- 2.0) | Mixed |
+| GSM8K | 59.0% | 41.0% | **Llama +43%, Mistral -7%** |
 
 **Observation:** Few-shot helps on Winogrande but hurts on HellaSwag. High variance on BoolQ (Llama).
 
@@ -80,17 +82,18 @@ Text relay represents "fair" cross-model communication via text:
 ```
 Accuracy (%)
     |
-90% |                              ████ Mixture of Depths (84.5%)
-    |                         ████████ Cross-Modal Distill (83.0%)
-80% |                    ████████████ Domain Adversarial (83.0%)
-    |               ████████████████ Thalamic Relay (81.0%)
-    |          ████████████████████ MINE (80.5%)
-70% |     █████████████████████████ Successive Refine (72.5%)
-    |
+90% |                                    ████ Mixture of Depths (84.5%)
+    |                               ████████ Cross-Modal Distill (83.0%)
+80% |                          ████████████ Domain Adversarial (83.0%)
+    |                     ████████████████ Thalamic Relay (81.0%)
+    |                ████████████████████ MINE (80.5%)
+70% |           █████████████████████████ Successive Refine (72.5%)
+    |      ██████████████████████████████ Flow Matching (68.0%)
+50% | ████████████████████████████████████ MoE (49.0%)
     |
 20% |█ Optimal Transport (24.5%) -- FAILED
-    └──────────────────────────────────────────────────
-        OT   SR  MINE  TH   DA  CMD  MoD
+    └──────────────────────────────────────────────────────
+        OT  MoE  FM   SR  MINE  TH   DA  CMD  MoD
 ```
 
 ### 2.2 Detailed Bridge Results
@@ -103,11 +106,15 @@ Accuracy (%)
 | Thalamic Relay | 81.0% | 87.0% | 0.022 | 0.0 | 0.909 | Collapsed |
 | MINE | 80.5% | 82.0% | 0.209 | -0.05 | 0.740 | Good |
 | Successive Refinement | 72.5% | 72.0% | 0.044 | 0.24 | 0.843 | Moderate |
+| Flow Matching | 68.0% | 68.0% | 0.182 | 0.0 | 0.724 | Moderate |
+| MoE (Mixture of Experts) | 49.0% | 51.0% | 0.456 | 0.0 | 0.612 | Below Random |
 | Optimal Transport | 24.5% | 27.0% | 8.358 | 0.0 | 0.0 | **FAILED** |
 
 **Key Insights:**
 - **Mixture of Depths** achieves best accuracy with balanced diversity (0.618)
 - **Domain Adversarial** and **Thalamic Relay** show token collapse (diversity ~0.91)
+- **Flow Matching** achieves moderate 68% accuracy - viable but not optimal
+- **MoE** underperforms at 49% (below random for 4-way task) - needs hyperparameter tuning
 - **Optimal Transport** completely failed - zero gradients, no learning
 - **MINE** uses negative aux loss (maximizing mutual information)
 
@@ -242,28 +249,35 @@ Latency (ms)
 
 ## 6. Data Gaps & Missing Experiments
 
-### 6.1 Stalled Experiments (4)
+### 6.1 Recently Completed Experiments
 
-| Experiment | Status | Retry Count | Action Needed |
-|------------|--------|-------------|---------------|
-| flow_matching_arc_easy | Running (stalled) | 1 | Debug dtype errors |
-| moe_arc_easy | Running (stalled) | 0 | Debug batch errors |
-| dora_arc_easy | Running (stalled) | 1 | Check completion |
-| hail_mary_reasoning | Running (stalled) | 0 | Investigate |
+| Experiment | Status | Accuracy | Notes |
+|------------|--------|----------|-------|
+| flow_matching_arc_easy_seed42 | Completed | 68.0% | Moderate performance |
+| moe_arc_easy_seed42 | Completed | 49.0% | Below random, needs investigation |
+| dora_arc_easy | Completed | 25.0% | Random chance - DoRA may need tuning |
 
-### 6.2 Missing Dataset Coverage
+### 6.2 Pending Experiments
+
+| Experiment | Status | Action Needed |
+|------------|--------|---------------|
+| hail_mary_reasoning | Pending | Awaiting next HPC run |
+| bridge_gsm8k_mod_seed42 | Pending | Awaiting next HPC run |
+
+### 6.3 Missing Dataset Coverage
 
 | Dataset | Zero-Shot | Few-Shot | Linear Probe | Bridge | Complete |
 |---------|-----------|----------|--------------|--------|----------|
-| ARC-Easy | Yes | Yes | Yes | **Partial** | No |
+| ARC-Easy | Yes | Yes | Yes | **9 bridges** | Yes |
 | Winogrande | Yes | Yes | Yes | **NO** | No |
 | HellaSwag | Yes | Yes | Yes | **NO** | No |
 | BoolQ | Yes | Yes | Yes | **NO** | No |
+| GSM8K | Yes | Yes | N/A | **Pending** | No |
 | SST-2 | No | No | No | No | No |
 | AG News | No | No | No | No | No |
 | TREC | No | No | No | No | No |
 
-### 6.3 Statistical Significance Gap
+### 6.4 Statistical Significance Gap
 
 **Current Approach:** Seed 42 only - verify reasoning benchmarks work first before multi-seed
 
@@ -277,7 +291,7 @@ All bridge experiments currently use **seed 42 only** to:
 - Confidence intervals
 - P-values
 
-### 6.4 Recommended Priority Actions
+### 6.5 Recommended Priority Actions
 
 **Priority 1 (Validate Reasoning - seed 42 only):**
 1. Verify all novel bridges run successfully on ARC-Easy

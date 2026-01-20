@@ -18,16 +18,16 @@
       "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "running",
+      "status": "pending",
       "result_file": null,
-      "error_msg": null,
+      "error_msg": "Reset from stale running state (was running 13+ hours)",
       "exit_code": null,
-      "started_at": "2026-01-19T20:54:04.322632",
+      "started_at": null,
       "completed_at": null,
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 1
+      "marked_for_rerun": true,
+      "retry_count": 2
     },
     "optimal_transport_arc_easy_seed42": {
       "status": "completed",
@@ -414,17 +414,17 @@
       "retry_count": 0
     },
     "bridge_gsm8k_mod_seed42": {
-      "status": "failed",
+      "status": "pending",
       "result_file": null,
-      "error_msg": "Traceback (most recent call last): AttributeError: 'Value' object has no attribute 'names' ",
-      "exit_code": 1,
-      "started_at": "2026-01-20T09:42:34.616693",
-      "completed_at": "2026-01-20T09:43:03.204805",
+      "error_msg": "Reset after fixing GSM8K is_generative handling",
+      "exit_code": null,
+      "started_at": null,
+      "completed_at": null,
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": false,
-      "retry_count": 3,
-      "error_category": "unknown"
+      "marked_for_rerun": true,
+      "retry_count": 0,
+      "error_category": null
     },
     "zeroshot_gsm8k": {
       "status": "completed",

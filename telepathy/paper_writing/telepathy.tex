@@ -459,7 +459,7 @@ CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
 \subsection{Novel Bridge Architectures on Science Reasoning}
 \label{sec:novel_bridges}
 
-While the base Perceiver bridge fails on complex reasoning tasks like CommonsenseQA, we investigate whether alternative bridge architectures can succeed on \emph{structured} reasoning tasks. We evaluate 7 novel bridge architectures on ARC-Easy \cite{clark2018arc}, a 4-way multiple-choice science reasoning benchmark.
+While the base Perceiver bridge fails on complex reasoning tasks like CommonsenseQA, we investigate whether alternative bridge architectures can succeed on \emph{structured} reasoning tasks. We evaluate 9 novel bridge architectures on ARC-Easy \cite{clark2018arc}, a 4-way multiple-choice science reasoning benchmark.
 
 \begin{table}[t]
 \caption{Novel bridge architectures on ARC-Easy. The best architectures dramatically outperform all baselines, achieving 84.5\% accuracy---a +56.5pp improvement over the best baseline (Ridge Regression at 28.0\%). Random baseline is 25\%.}
@@ -477,6 +477,8 @@ Domain Adversarial & 83.0\% & 85.0\% & 0.176 & 0.913$^\dagger$ \\
 Thalamic Relay & 81.0\% & 87.0\% & 0.022 & 0.909$^\dagger$ \\
 MINE & 80.5\% & 82.0\% & 0.209 & 0.740 \\
 Successive Refinement & 72.5\% & 72.0\% & 0.044 & 0.843 \\
+Flow Matching & 68.0\% & 68.0\% & 0.182 & 0.724 \\
+MoE (Mixture of Experts) & 49.0\% & 51.0\% & 0.456 & 0.612 \\
 Optimal Transport & 24.5\% & 27.0\% & 8.358 & 0.0$^\ddagger$ \\
 \midrule
 \multicolumn{5}{@{}l@{}}{\textit{Baselines:}} \\
@@ -504,6 +506,8 @@ This result is surprising given that CommonsenseQA fails. We hypothesize the dif
 
 \paragraph{Latency Advantage} The bridge maintains significant speed improvements: 30.9ms vs 482.7ms for text relay (\textbf{15.6$\times$ faster}).
 
+\paragraph{Architecture Performance Spectrum} The 9 tested architectures span a wide performance range: top performers (Mixture of Depths, Cross-Modal Distillation) achieve 83-85\%, mid-tier (Flow Matching at 68\%) shows moderate transfer capability, while MoE at 49\% and Optimal Transport at 24.5\% fail to learn meaningful representations. This spectrum suggests that architectural inductive biases strongly influence cross-model transfer success.
+
 \paragraph{Token Collapse} Bridges with diversity $>0.9$ (Domain Adversarial, Thalamic Relay) show \emph{token collapse}---all soft tokens converge to nearly identical representations. Despite collapse, they still achieve $>80\%$ accuracy, suggesting redundancy provides robustness.
 
 \paragraph{Optimal Token Count} Testing 4, 8, 16, and 32 soft tokens reveals that \textbf{8 tokens is optimal}: it achieves 83.0\% accuracy with the fastest convergence (90\% at step 600) and lowest final loss (0.008).
@@ -511,7 +515,9 @@ This result is surprising given that CommonsenseQA fails. We hypothesize the dif
 \section{Limitations and Future Work}
 \label{sec:limitations}
 
-\paragraph{Open-Ended Reasoning Still Fails} While novel bridge architectures succeed on structured reasoning tasks like ARC-Easy (84.5\%, Section~\ref{sec:novel_bridges}), the bridge still fails on \emph{open-ended} reasoning. On CommonsenseQA, performance falls \emph{below random chance} (17.0\% vs 20.0\%), indicating that soft token compression destroys the multi-step inference chains required for unstructured reasoning. The key difference: ARC-Easy provides explicit answer choices that can be compressed into discriminative signals, whereas CommonsenseQA requires open-ended generation of reasoning chains. Future work on generative reasoning (e.g., GSM8K math problems) will further characterize this boundary.
+\paragraph{Open-Ended Reasoning Still Fails} While novel bridge architectures succeed on structured reasoning tasks like ARC-Easy (84.5\%, Section~\ref{sec:novel_bridges}), the bridge still fails on \emph{open-ended} reasoning. On CommonsenseQA, performance falls \emph{below random chance} (17.0\% vs 20.0\%), indicating that soft token compression destroys the multi-step inference chains required for unstructured reasoning. The key difference: ARC-Easy provides explicit answer choices that can be compressed into discriminative signals, whereas CommonsenseQA requires open-ended generation of reasoning chains.
+
+\paragraph{Generative Reasoning Remains Challenging} Preliminary experiments on GSM8K math word problems establish strong baselines: Zero-shot Llama achieves 16\% while Mistral reaches 48\%; with 4-shot prompting, Llama improves dramatically to 59\% while Mistral drops to 41\%. These results highlight that generative reasoning tasks like GSM8K require fundamentally different capabilities than classification, and represent a key frontier for future bridge architectures.
 
 \paragraph{High Variance Under Extreme Compression} TREC with 8 tokens exhibits \textbf{bimodal behavior}: across 5 seeds, accuracy clusters into ``successful'' runs (83-86\%) and ``failed'' runs (35-41\%), with coefficient of variation of 38\%. Analysis shows failed runs collapse to predicting primarily 2-3 classes (ENTY, DESC) while ignoring others (NUM, LOC, ABBR, HUM). This instability disappears with 32 tokens (87.9\% $\pm$ 3.3\%), suggesting a minimum capacity threshold exists for reliable multi-class classification. Future work should investigate adaptive token allocation and ensemble methods for stability.
 
