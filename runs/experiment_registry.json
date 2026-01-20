@@ -1,8 +1,8 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-20T09:43:03.204813",
-    "job_id": "151710"
+    "last_updated": "2026-01-20T11:58:57.584387",
+    "job_id": "151755"
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
@@ -18,15 +18,15 @@
       "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "pending",
+      "status": "running",
       "result_file": null,
-      "error_msg": "Reset from stale running state (was running 13+ hours)",
+      "error_msg": null,
       "exit_code": null,
-      "started_at": null,
+      "started_at": "2026-01-20T11:42:55.487613",
       "completed_at": null,
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": true,
+      "marked_for_rerun": false,
       "retry_count": 2
     },
     "optimal_transport_arc_easy_seed42": {
@@ -414,17 +414,16 @@
       "retry_count": 0
     },
     "bridge_gsm8k_mod_seed42": {
-      "status": "pending",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "Reset after fixing GSM8K is_generative handling",
-      "exit_code": null,
-      "started_at": null,
-      "completed_at": null,
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-20T11:42:56.897666",
+      "completed_at": "2026-01-20T11:58:57.584379",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": true,
-      "retry_count": 0,
-      "error_category": null
+      "marked_for_rerun": false,
+      "retry_count": 0
     },
     "zeroshot_gsm8k": {
       "status": "completed",
