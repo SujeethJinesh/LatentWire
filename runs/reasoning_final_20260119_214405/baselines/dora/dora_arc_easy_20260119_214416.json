@@ -1,0 +1,40 @@
+{
+  "experiment": "dora_baseline",
+  "timestamp": "20260119_214416",
+  "config": {
+    "baseline": "dora",
+    "dataset": "arc_easy",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200,
+    "rank": 8,
+    "epochs": 3
+  },
+  "results": {
+    "seed_42": {
+      "accuracy": 25.5,
+      "correct": 51,
+      "total": 200,
+      "trainable_params": 3571712
+    },
+    "seed_123": {
+      "accuracy": 25.0,
+      "correct": 50,
+      "total": 200,
+      "trainable_params": 3571712
+    },
+    "seed_456": {
+      "accuracy": 24.5,
+      "correct": 49,
+      "total": 200,
+      "trainable_params": 3571712
+    },
+    "summary": {
+      "mean_accuracy": 25.0,
+      "std_accuracy": 0.408248290463863
+    }
+  }
+}

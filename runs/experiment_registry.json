@@ -1,32 +1,32 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-19T18:58:07.329510",
-    "job_id": "151105"
+    "last_updated": "2026-01-19T22:24:51.803129",
+    "job_id": "151133"
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
-      "status": "pending",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "Reset from stale running state",
-      "exit_code": null,
-      "started_at": null,
-      "completed_at": null,
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T20:54:04.293352",
+      "completed_at": "2026-01-19T21:05:19.637532",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": true,
+      "marked_for_rerun": false,
       "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "pending",
+      "status": "running",
       "result_file": null,
-      "error_msg": "Reset from stale running state",
+      "error_msg": null,
       "exit_code": null,
-      "started_at": null,
+      "started_at": "2026-01-19T20:54:04.322632",
       "completed_at": null,
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": true,
+      "marked_for_rerun": false,
       "retry_count": 1
     },
     "optimal_transport_arc_easy_seed42": {
@@ -42,15 +42,15 @@
       "retry_count": 3
     },
     "moe_arc_easy_seed42": {
-      "status": "pending",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "Reset from stale running state",
-      "exit_code": null,
-      "started_at": null,
-      "completed_at": null,
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T21:05:20.072662",
+      "completed_at": "2026-01-19T21:19:53.544739",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": true,
+      "marked_for_rerun": false,
       "retry_count": 1
     },
     "zeroshot_arc_easy": {
@@ -270,15 +270,15 @@
       "retry_count": 2
     },
     "dora_arc_easy": {
-      "status": "pending",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "Reset from stale running state",
-      "exit_code": null,
-      "started_at": null,
-      "completed_at": null,
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T21:44:07.724221",
+      "completed_at": "2026-01-19T21:53:23.914813",
       "gpu": 0,
       "metrics": {},
-      "marked_for_rerun": true,
+      "marked_for_rerun": false,
       "retry_count": 2
     },
     "prompt_tuning_arc_easy": {
@@ -409,6 +409,43 @@
       "started_at": "2026-01-19T17:04:20.858085",
       "completed_at": "2026-01-19T17:05:00.660447",
       "gpu": 1,
+      "metrics": {},
+      "marked_for_rerun": false,
+      "retry_count": 0
+    },
+    "bridge_gsm8k_mod_seed42": {
+      "status": "failed",
+      "result_file": null,
+      "error_msg": "Traceback (most recent call last): AttributeError: 'Value' object has no attribute 'names' ",
+      "exit_code": 1,
+      "started_at": "2026-01-19T21:44:07.966159",
+      "completed_at": "2026-01-19T21:44:59.623256",
+      "gpu": 1,
+      "metrics": {},
+      "marked_for_rerun": false,
+      "retry_count": 1,
+      "error_category": "unknown"
+    },
+    "zeroshot_gsm8k": {
+      "status": "completed",
+      "result_file": null,
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T21:53:24.150871",
+      "completed_at": "2026-01-19T22:08:20.250708",
+      "gpu": 0,
+      "metrics": {},
+      "marked_for_rerun": false,
+      "retry_count": 0
+    },
+    "fewshot_gsm8k": {
+      "status": "completed",
+      "result_file": null,
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T22:08:20.329564",
+      "completed_at": "2026-01-19T22:24:51.803122",
+      "gpu": 0,
       "metrics": {},
       "marked_for_rerun": false,
       "retry_count": 0

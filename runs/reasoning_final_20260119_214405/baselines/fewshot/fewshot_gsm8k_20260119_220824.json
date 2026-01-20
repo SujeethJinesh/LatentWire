@@ -1,0 +1,29 @@
+{
+  "experiment": "fewshot_baseline",
+  "timestamp": "20260119_220824",
+  "config": {
+    "baseline": "fewshot",
+    "dataset": "gsm8k",
+    "seeds": [
+      42
+    ],
+    "max_samples": 100,
+    "shots": 4
+  },
+  "results": {
+    "Llama": {
+      "mean_accuracy": 59.0,
+      "std_accuracy": 0.0,
+      "seeds": [
+        59.0
+      ]
+    },
+    "Mistral": {
+      "mean_accuracy": 41.0,
+      "std_accuracy": 0.0,
+      "seeds": [
+        41.0
+      ]
+    }
+  }
+}
