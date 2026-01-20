@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-01-20T12:48:05.268156",
+  "status": "in_progress",
+  "zeroshot_llama": [
+    {
+      "dataset": "arc_easy",
+      "dataset_name": "ARC-Easy",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 42,
+      "accuracy": 23.98989898989899,
+      "correct": 570,
+      "total": 2376,
+      "num_classes": 4
+    },
+    {
+      "dataset": "arc_easy",
+      "dataset_name": "ARC-Easy",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 123,
+      "accuracy": 23.98989898989899,
+      "correct": 570,
+      "total": 2376,
+      "num_classes": 4
+    },
+    {
+      "dataset": "arc_easy",
+      "dataset_name": "ARC-Easy",
+      "model_name": "llama",
+      "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "seed": 456,
+      "accuracy": 23.98989898989899,
+      "correct": 570,
+      "total": 2376,
+      "num_classes": 4
+    }
+  ],
+  "zeroshot_mistral": [
+    {
+      "dataset": "arc_easy",
+      "dataset_name": "ARC-Easy",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 42,
+      "accuracy": 24.326599326599325,
+      "correct": 578,
+      "total": 2376,
+      "num_classes": 4
+    },
+    {
+      "dataset": "arc_easy",
+      "dataset_name": "ARC-Easy",
+      "model_name": "mistral",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "seed": 123,
+      "accuracy": 24.326599326599325,
+      "correct": 578,
+      "total": 2376,
+      "num_classes": 4
+    }
+  ],
+  "text_relay": [],
+  "linear_probe": [],
+  "prompt_tuning": [],
+  "same_model_bridge": [],
+  "bridge_8": [],
+  "bridge_24": []
+}

@@ -1,0 +1,71 @@
+2026-01-20 11:42:59 | INFO | Starting enhanced evaluation run: runs/reasoning_final_20260120_114253/standard_bridge/run_20260120_114259
+2026-01-20 11:43:00 | INFO | Using device: cuda:0
+2026-01-20 11:43:00 | INFO | FAST MODE enabled
+2026-01-20 11:43:00 | INFO | HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+2026-01-20 11:43:00 | INFO | Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+2026-01-20 11:43:00 | INFO | Linear probe layer: 31 (matching bridge layer)
+2026-01-20 11:43:00 | INFO | Starting zero-shot baselines...
+2026-01-20 12:02:06 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_llama_arc_easy_seed42 (1145.0s) [OK]
+  Elapsed: 0h 19m 5s | ETA: 41h 39m 54s
+  Avg time: 1145.0s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 12:02:06 | INFO | [SUCCESS] zeroshot_llama_arc_easy_seed42 completed in 1145.0s
+2026-01-20 12:14:28 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_mistral_arc_easy_seed42 (742.2s) [OK]
+  Elapsed: 0h 31m 27s | ETA: 34h 4m 27s
+  Avg time: 943.6s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 12:14:28 | INFO | [SUCCESS] zeroshot_mistral_arc_easy_seed42 completed in 742.2s
+2026-01-20 12:25:24 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 2.3% (3/132)
+  Last: zeroshot_llama_arc_easy_seed123 (656.0s) [OK]
+  Elapsed: 0h 42m 24s | ETA: 30h 22m 38s
+  Avg time: 847.7s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 12:25:24 | INFO | [SUCCESS] zeroshot_llama_arc_easy_seed123 completed in 656.0s
+2026-01-20 12:37:45 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 3.0% (4/132)
+  Last: zeroshot_mistral_arc_easy_seed123 (740.7s) [OK]
+  Elapsed: 0h 54m 44s | ETA: 29h 11m 25s
+  Avg time: 821.0s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 12:37:45 | INFO | [SUCCESS] zeroshot_mistral_arc_easy_seed123 completed in 740.7s
+2026-01-20 12:48:05 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 3.8% (5/132)
+  Last: zeroshot_llama_arc_easy_seed456 (619.3s) [OK]
+  Elapsed: 1h 5m 4s | ETA: 27h 32m 23s
+  Avg time: 780.7s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 12:48:05 | INFO | [SUCCESS] zeroshot_llama_arc_easy_seed456 completed in 619.3s
+2026-01-20 13:00:32 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 4.5% (6/132)
+  Last: zeroshot_mistral_arc_easy_seed456 (747.4s) [OK]
+  Elapsed: 1h 17m 32s | ETA: 27h 7m 44s
+  Avg time: 775.1s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 13:00:32 | INFO | [SUCCESS] zeroshot_mistral_arc_easy_seed456 completed in 747.4s
+2026-01-20 13:06:17 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 5.3% (7/132)
+  Last: zeroshot_llama_winogrande_seed42 (344.6s) [OK]
+  Elapsed: 1h 23m 16s | ETA: 24h 46m 41s
+  Avg time: 713.6s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 13:06:17 | INFO | [SUCCESS] zeroshot_llama_winogrande_seed42 completed in 344.6s
+2026-01-20 13:13:06 | INFO | 
+======================================================================
+PROGRESS: [=-----------------------------] 6.1% (8/132)
+  Last: zeroshot_mistral_winogrande_seed42 (408.6s) [OK]
+  Elapsed: 1h 30m 5s | ETA: 23h 15m 59s
+  Avg time: 675.5s | Failed: 0 | Skipped: 0
+======================================================================
+2026-01-20 13:13:06 | INFO | [SUCCESS] zeroshot_mistral_winogrande_seed42 completed in 408.6s
