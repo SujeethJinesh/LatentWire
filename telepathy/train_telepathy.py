@@ -219,40 +219,6 @@ DATASET_CONFIGS = {
         "text_formatter": "arc",
         "difficulty": "hard",
     },
-    "piqa": {
-        # Physical commonsense - binary choice
-        "load_args": ("piqa",),
-        "text_field": "goal",
-        "label_field": "label",
-        "labels": ["0", "1"],  # sol1 vs sol2
-        "num_classes": 2,
-        "train_split": "train",
-        "eval_split": "validation",
-        "max_length": 256,
-        "prompt_template": "Goal: {text}\nWhich solution is better? (0 or 1):",
-        "primer": "Solution:",
-        "random_baseline": 50.0,
-        "is_reasoning": True,
-        "text_formatter": "piqa",  # Include both solutions
-        "difficulty": "medium",
-    },
-    "commonsenseqa": {
-        # General commonsense - 5-way
-        "load_args": ("tau/commonsense_qa",),
-        "text_field": "question",
-        "label_field": "answerKey",
-        "labels": ["A", "B", "C", "D", "E"],
-        "num_classes": 5,
-        "train_split": "train",
-        "eval_split": "validation",
-        "max_length": 256,
-        "prompt_template": "Question: {text}\nAnswer (A, B, C, D, or E):",
-        "primer": "Answer:",
-        "random_baseline": 20.0,
-        "is_reasoning": True,
-        "text_formatter": "commonsenseqa",
-        "difficulty": "hard",
-    },
     "openbookqa": {
         # 2-hop science reasoning
         "load_args": ("allenai/openbookqa", "main"),
@@ -268,74 +234,6 @@ DATASET_CONFIGS = {
         "random_baseline": 25.0,
         "is_reasoning": True,
         "text_formatter": "openbookqa",
-        "difficulty": "hard",
-    },
-    "sciq": {
-        # Intermediate science with support paragraph
-        "load_args": ("allenai/sciq",),
-        "text_field": "question",
-        "label_field": "correct_answer",
-        "labels": None,  # Will match against correct_answer text
-        "num_classes": 4,
-        "train_split": "train",
-        "eval_split": "test",
-        "max_length": 512,
-        "prompt_template": "Question: {text}\nAnswer:",
-        "primer": "Answer:",
-        "random_baseline": 25.0,
-        "is_reasoning": True,
-        "text_formatter": "sciq",
-        "difficulty": "medium",
-    },
-    "siqa": {
-        # Social/emotional reasoning - 3-way
-        "load_args": ("allenai/social_i_qa",),
-        "text_field": "context",
-        "label_field": "label",
-        "labels": ["1", "2", "3"],
-        "num_classes": 3,
-        "train_split": "train",
-        "eval_split": "validation",
-        "max_length": 256,
-        "prompt_template": "Context: {text}\nWhich answer is correct? (1, 2, or 3):",
-        "primer": "Answer:",
-        "random_baseline": 33.3,
-        "is_reasoning": True,
-        "text_formatter": "siqa",
-        "difficulty": "medium",
-    },
-    "logiqa": {
-        # Formal logical reasoning - 4-way (from Chinese civil service exam)
-        "load_args": ("lucasmccabe/logiqa",),
-        "text_field": "context",
-        "label_field": "label",
-        "labels": ["0", "1", "2", "3"],
-        "num_classes": 4,
-        "train_split": "train",
-        "eval_split": "test",
-        "max_length": 512,  # Longer contexts
-        "prompt_template": "Passage: {text}\nAnswer (0, 1, 2, or 3):",
-        "primer": "Answer:",
-        "random_baseline": 25.0,
-        "is_reasoning": True,
-        "text_formatter": "logiqa",
-        "difficulty": "hard",
-    },
-    "aqua_rat": {
-        # Math word problems - multiple choice (5-way)
-        "load_args": ("deepmind/aqua_rat", "raw"),
-        "text_field": "question",
-        "label_field": "correct",
-        "labels": ["A", "B", "C", "D", "E"],
-        "num_classes": 5,
-        "train_split": "train",
-        "eval_split": "test",
-        "max_length": 256,
-        "prompt_template": "Math Problem: {text}\nAnswer (A, B, C, D, or E):",
-        "primer": "Answer:",
-        "random_baseline": 20.0,
-        "is_reasoning": True,
-        "text_formatter": "aqua_rat",
         "difficulty": "hard",
     },
 }
@@ -369,21 +267,6 @@ def format_text_for_item(item, config):
             # Combine question with choices
             text = f"{text}\n" + "\n".join(formatted_choices)
 
-    elif formatter == "piqa":
-        # PIQA has goal + sol1 + sol2
-        sol1 = item.get("sol1", "")
-        sol2 = item.get("sol2", "")
-        text = f"{text}\n0) {sol1}\n1) {sol2}"
-
-    elif formatter == "commonsenseqa":
-        # CommonsenseQA has 'choices' with 'text' and 'label'
-        if "choices" in item:
-            choices = item["choices"]
-            choice_texts = choices.get("text", [])
-            choice_labels = choices.get("label", [])
-            formatted_choices = [f"{lbl}) {txt}" for lbl, txt in zip(choice_labels, choice_texts)]
-            text = f"{text}\n" + "\n".join(formatted_choices)
-
     elif formatter == "openbookqa":
         # OpenBookQA has 'choices' with 'text' and 'label'
         if "choices" in item:
@@ -392,34 +275,6 @@ def format_text_for_item(item, config):
             choice_labels = choices.get("label", [])
             formatted_choices = [f"{lbl}) {txt}" for lbl, txt in zip(choice_labels, choice_texts)]
             text = f"{text}\n" + "\n".join(formatted_choices)
-
-    elif formatter == "sciq":
-        # SciQ has support, correct_answer, distractor1-3
-        correct = item.get("correct_answer", "")
-        d1 = item.get("distractor1", "")
-        d2 = item.get("distractor2", "")
-        d3 = item.get("distractor3", "")
-        text = f"{text}\nA) {correct}\nB) {d1}\nC) {d2}\nD) {d3}"
-
-    elif formatter == "siqa":
-        # Social IQa has context + question + answerA/B/C
-        question = item.get("question", "")
-        a1 = item.get("answerA", "")
-        a2 = item.get("answerB", "")
-        a3 = item.get("answerC", "")
-        text = f"{text}\nQuestion: {question}\n1) {a1}\n2) {a2}\n3) {a3}"
-
-    elif formatter == "logiqa":
-        # LogiQA has context + question + options (list)
-        question = item.get("question", "")
-        options = item.get("options", [])
-        formatted_opts = [f"{i}) {opt}" for i, opt in enumerate(options)]
-        text = f"{text}\nQuestion: {question}\n" + "\n".join(formatted_opts)
-
-    elif formatter == "aqua_rat":
-        # AQuA-RAT has question + options (list of strings like "A) 1000")
-        options = item.get("options", [])
-        text = f"{text}\n" + "\n".join(options)
 
     return text
 
@@ -488,32 +343,11 @@ def format_texts_for_batch(batch, config):
                 "text": batch["choices"]["text"][i] if i < len(batch["choices"]["text"]) else [],
                 "label": batch["choices"]["label"][i] if i < len(batch["choices"]["label"]) else [],
             }
-        elif formatter == "piqa":
-            if "sol1" in batch:
-                item["sol1"] = batch["sol1"][i] if i < len(batch["sol1"]) else ""
-            if "sol2" in batch:
-                item["sol2"] = batch["sol2"][i] if i < len(batch["sol2"]) else ""
-        elif formatter in ("commonsenseqa", "openbookqa") and "choices" in batch:
+        elif formatter == "openbookqa" and "choices" in batch:
             item["choices"] = {
                 "text": batch["choices"]["text"][i] if i < len(batch["choices"]["text"]) else [],
                 "label": batch["choices"]["label"][i] if i < len(batch["choices"]["label"]) else [],
             }
-        elif formatter == "sciq":
-            for field in ["correct_answer", "distractor1", "distractor2", "distractor3"]:
-                if field in batch:
-                    item[field] = batch[field][i] if i < len(batch[field]) else ""
-        elif formatter == "siqa":
-            for field in ["question", "answerA", "answerB", "answerC"]:
-                if field in batch:
-                    item[field] = batch[field][i] if i < len(batch[field]) else ""
-        elif formatter == "logiqa":
-            if "question" in batch:
-                item["question"] = batch["question"][i] if i < len(batch["question"]) else ""
-            if "options" in batch:
-                item["options"] = batch["options"][i] if i < len(batch["options"]) else []
-        elif formatter == "aqua_rat":
-            if "options" in batch:
-                item["options"] = batch["options"][i] if i < len(batch["options"]) else []
 
         # Use the per-item formatter
         formatted_texts.append(format_text_for_item(item, config))
@@ -758,9 +592,8 @@ def parse_args():
     # Dataset selection
     parser.add_argument("--dataset", type=str, default="sst2",
                        choices=["sst2", "agnews", "trec", "banking77",
-                                "arc_easy", "winogrande", "hellaswag", "boolq", "gsm8k",
-                                "arc_challenge", "piqa", "commonsenseqa", "openbookqa",
-                                "sciq", "siqa", "logiqa", "aqua_rat"],
+                                "arc_easy", "arc_challenge", "winogrande", "hellaswag",
+                                "boolq", "gsm8k", "openbookqa"],
                        help="Dataset to train on")
 
     # Model configuration
