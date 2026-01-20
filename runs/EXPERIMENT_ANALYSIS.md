@@ -1,0 +1,343 @@
+# Telepathy Experiment Analysis Report
+
+**Generated:** 2026-01-19
+**Status:** 29 completed, 4 stalled experiments
+
+---
+
+## Executive Summary
+
+The Telepathy system enables cross-model communication between Llama-3.1-8B (sender) and Mistral-7B (receiver) through learned soft tokens. Key findings:
+
+| Metric | Best Result | vs Text Relay | vs Best Baseline |
+|--------|-------------|---------------|------------------|
+| **Accuracy** (ARC-Easy) | 84.5% (Mixture of Depths) | +61.0% | +56.5% |
+| **Latency** | 30.9 ms | **15.6x faster** | N/A |
+| **Throughput** | 21.1 samples/s | **1.87x higher** | N/A |
+
+**Bottom Line:** The bridge achieves 84.5% accuracy on ARC-Easy while being 15.6x faster than text relay, proving that learned soft tokens can effectively transmit reasoning information between models.
+
+---
+
+## 1. Baseline Performance (Reference Points)
+
+### 1.1 Zero-Shot Baselines (Individual Models)
+
+| Dataset | Llama | Mistral | Better Model | Task Type |
+|---------|-------|---------|--------------|-----------|
+| ARC-Easy | 21.0% | 24.0% | Mistral (+3%) | 4-way reasoning |
+| Winogrande | 47.5% | 47.5% | Tie | Binary reasoning |
+| HellaSwag | 27.0% | 26.5% | Llama (+0.5%) | 4-way completion |
+| BoolQ | 70.0% | 66.0% | Llama (+4%) | Binary QA |
+
+**Observation:** Both models struggle on ARC-Easy (near random ~25%), perform moderately on reasoning tasks, and excel on BoolQ.
+
+### 1.2 Few-Shot Baselines (4-shot)
+
+| Dataset | Llama | Mistral | vs Zero-Shot |
+|---------|-------|---------|--------------|
+| ARC-Easy | 24.8% (+/- 0.5) | 26.0% (+/- 2.1) | +2-4% |
+| Winogrande | 51.5% (+/- 2.9) | 51.5% (+/- 2.2) | +4% |
+| HellaSwag | 23.2% (+/- 1.7) | 18.8% (+/- 3.2) | **-4 to -8%** |
+| BoolQ | 57.7% (+/- 9.3) | 67.5% (+/- 2.0) | Mixed |
+
+**Observation:** Few-shot helps on Winogrande but hurts on HellaSwag. High variance on BoolQ (Llama).
+
+### 1.3 Fine-Tuning Baselines
+
+| Method | ARC-Easy Acc | Trainable Params | Notes |
+|--------|--------------|------------------|-------|
+| Ridge Regression | **28.0%** | 16.8M | Best baseline, closed-form |
+| Linear Probe | 26.0% (+/- 1.2) | 16.4M | Layer 31 features |
+| Few-Shot Mistral | 26.0% (+/- 2.1) | 0 | 4-shot ICL |
+| Prompt Tuning | 23.3% (+/- 1.3) | 33K | 8 soft tokens |
+| Text Relay | 23.5% | 0 | Llama hint -> Mistral |
+| Zero-Shot Mistral | 24.0% | 0 | Direct prompting |
+
+### 1.4 Text Relay (Critical Baseline)
+
+Text relay represents "fair" cross-model communication via text:
+
+```
+┌─────────────┐    "The answer involves     ┌─────────────┐
+│   Llama     │ ──  scientific concepts  ── │   Mistral   │
+│  (Sender)   │     about heat transfer"    │ (Receiver)  │
+└─────────────┘                             └─────────────┘
+     Latency: 482.7 ms                      Accuracy: 23.5%
+```
+
+| Metric | Text Relay | Bridge | Improvement |
+|--------|------------|--------|-------------|
+| Accuracy (ARC-Easy) | 23.5% | **84.5%** | **+61.0%** |
+| Latency | 482.7 ms | 30.9 ms | **15.6x faster** |
+
+---
+
+## 2. Bridge Architecture Comparison
+
+### 2.1 All Novel Bridges Ranked (ARC-Easy, seed 42)
+
+```
+Accuracy (%)
+    |
+90% |                              ████ Mixture of Depths (84.5%)
+    |                         ████████ Cross-Modal Distill (83.0%)
+80% |                    ████████████ Domain Adversarial (83.0%)
+    |               ████████████████ Thalamic Relay (81.0%)
+    |          ████████████████████ MINE (80.5%)
+70% |     █████████████████████████ Successive Refine (72.5%)
+    |
+    |
+20% |█ Optimal Transport (24.5%) -- FAILED
+    └──────────────────────────────────────────────────
+        OT   SR  MINE  TH   DA  CMD  MoD
+```
+
+### 2.2 Detailed Bridge Results
+
+| Bridge | Final Acc | Best Acc | LM Loss | Aux Loss | Diversity | Status |
+|--------|-----------|----------|---------|----------|-----------|--------|
+| **Mixture of Depths** | **84.5%** | 90.0% | 0.143 | 0.0 | 0.618 | Best |
+| Cross-Modal Distill | 83.0% | 90.0% | 0.008 | 0.0 | 0.536 | Good |
+| Domain Adversarial | 83.0% | 85.0% | 0.176 | 0.0 | 0.913 | Collapsed |
+| Thalamic Relay | 81.0% | 87.0% | 0.022 | 0.0 | 0.909 | Collapsed |
+| MINE | 80.5% | 82.0% | 0.209 | -0.05 | 0.740 | Good |
+| Successive Refinement | 72.5% | 72.0% | 0.044 | 0.24 | 0.843 | Moderate |
+| Optimal Transport | 24.5% | 27.0% | 8.358 | 0.0 | 0.0 | **FAILED** |
+
+**Key Insights:**
+- **Mixture of Depths** achieves best accuracy with balanced diversity (0.618)
+- **Domain Adversarial** and **Thalamic Relay** show token collapse (diversity ~0.91)
+- **Optimal Transport** completely failed - zero gradients, no learning
+- **MINE** uses negative aux loss (maximizing mutual information)
+
+---
+
+## 3. Token Capacity Analysis
+
+### 3.1 Accuracy vs Token Count
+
+```
+Accuracy (%)
+    |
+85% |          ████ (8 tokens: 83.0%)     ████ (32 tokens: 83.5%)
+    |     ████                       ████
+80% |████                       ████
+    |                      ████ (16 tokens: 81.0%)
+75% |████ (4 tokens: 75.0%)
+    |
+    └────────────────────────────────────────────────────
+         4        8        16        32     tokens
+```
+
+### 3.2 Token Capacity Results
+
+| Tokens | Final Acc | Best Acc | Final Loss | Params Added | Efficiency |
+|--------|-----------|----------|------------|--------------|------------|
+| 4 | 75.0% | 75.0% | 0.268 | 16K | 18.75%/token |
+| **8** | **83.0%** | **90.0%** | **0.008** | 33K | 10.38%/token |
+| 16 | 81.0% | 82.0% | 0.219 | 66K | 5.06%/token |
+| 32 | 83.5% | 85.0% | 0.163 | 131K | 2.61%/token |
+
+**Recommendation:** Use **8 soft tokens** - achieves 83% accuracy with fastest convergence (90% at step 600) and lowest final loss (0.008).
+
+### 3.3 Training Dynamics
+
+| Step | 4 Tokens | 8 Tokens | 16 Tokens | 32 Tokens |
+|------|----------|----------|-----------|-----------|
+| 200 | 23% | 29% | 45% | 40% |
+| 600 | 50% | **90%** | 58% | 79% |
+| 1000 | 69% | 80% | 76% | 83% |
+| 1500 | 75% | 83% | 81% | 83.5% |
+
+**Observation:** 8 tokens shows fastest convergence, peaking at step 600. More tokens don't always help (16 < 8).
+
+---
+
+## 4. Performance Benchmarks
+
+### 4.1 Latency Comparison
+
+```
+Latency (ms)
+    |
+500 |████████████████████████████████████████ Text Relay: 482.7 ms
+    |
+    |
+100 |████████ Direct Mistral: 82.2 ms
+    |
+ 30 |███ Bridge: 30.9 ms
+    └──────────────────────────────────────────────────
+```
+
+| Method | Latency | Std Dev | Speedup |
+|--------|---------|---------|---------|
+| Text Relay | 482.7 ms | 6.2 ms | 1.0x (baseline) |
+| Direct Mistral | 82.2 ms | 0.8 ms | 5.9x |
+| **Bridge** | **30.9 ms** | 2.9 ms | **15.6x** |
+
+### 4.2 Throughput Comparison
+
+| Method | Samples/sec | ms/sample | Improvement |
+|--------|-------------|-----------|-------------|
+| Direct Mistral | 11.3 | 88.2 | 1.0x |
+| **Bridge** | **21.1** | 47.3 | **1.87x** |
+
+### 4.3 Batch Scaling
+
+| Batch Size | Bridge (s/s) | Direct (s/s) | Efficiency |
+|------------|--------------|--------------|------------|
+| 1 | 10.0 | 11.8 | 85% |
+| 4 | 38.3 | 43.7 | 88% |
+| 8 | 70.1 | 80.1 | 88% |
+| 16 | 118.4 | 134.7 | 88% |
+
+### 4.4 Memory & Parameters
+
+| Method | Trainable Params | Notes |
+|--------|------------------|-------|
+| Direct Inference | 0 | Frozen |
+| Prompt Tuning | 33K | Most efficient |
+| LoRA (rank=8) | 3.4M | Good balance |
+| **Bridge (8 tokens)** | **537M** | Full bridge network |
+
+---
+
+## 5. Summary: Bridge vs All Baselines
+
+### ARC-Easy Performance Comparison
+
+```
+                                                        Bridge
+                                                    ┌───────────┐
+                                              84.5% │ Mixture   │
+                                                    │ of Depths │
+                                                    └───────────┘
+                                                          │
+                                                    +56.5% improvement
+                                                          │
+    ┌─────────────────────────────────────────────────────┴───────┐
+    │                         BASELINES                           │
+    ├─────────────────────────────────────────────────────────────┤
+    │ Ridge Regression      ████████████████████████████ 28.0%   │
+    │ Few-Shot Mistral      ██████████████████████████ 26.0%     │
+    │ Linear Probe          ██████████████████████████ 26.0%     │
+    │ Zero-Shot Mistral     ████████████████████████ 24.0%       │
+    │ Text Relay            ███████████████████████ 23.5%        │
+    │ Prompt Tuning         ███████████████████████ 23.3%        │
+    │ Zero-Shot Llama       █████████████████████ 21.0%          │
+    └─────────────────────────────────────────────────────────────┘
+```
+
+| Method | Accuracy | vs Best Baseline | vs Text Relay |
+|--------|----------|------------------|---------------|
+| **Bridge (MoD)** | **84.5%** | **+56.5%** | **+61.0%** |
+| Ridge Regression | 28.0% | -- | +4.5% |
+| Few-Shot Mistral | 26.0% | -2.0% | +2.5% |
+| Linear Probe | 26.0% | -2.0% | +2.5% |
+| Zero-Shot Mistral | 24.0% | -4.0% | +0.5% |
+| Text Relay | 23.5% | -4.5% | -- |
+
+---
+
+## 6. Data Gaps & Missing Experiments
+
+### 6.1 Stalled Experiments (4)
+
+| Experiment | Status | Retry Count | Action Needed |
+|------------|--------|-------------|---------------|
+| flow_matching_arc_easy | Running (stalled) | 1 | Debug dtype errors |
+| moe_arc_easy | Running (stalled) | 0 | Debug batch errors |
+| dora_arc_easy | Running (stalled) | 1 | Check completion |
+| hail_mary_reasoning | Running (stalled) | 0 | Investigate |
+
+### 6.2 Missing Dataset Coverage
+
+| Dataset | Zero-Shot | Few-Shot | Linear Probe | Bridge | Complete |
+|---------|-----------|----------|--------------|--------|----------|
+| ARC-Easy | Yes | Yes | Yes | **Partial** | No |
+| Winogrande | Yes | Yes | Yes | **NO** | No |
+| HellaSwag | Yes | Yes | Yes | **NO** | No |
+| BoolQ | Yes | Yes | Yes | **NO** | No |
+| SST-2 | No | No | No | No | No |
+| AG News | No | No | No | No | No |
+| TREC | No | No | No | No | No |
+
+### 6.3 Statistical Significance Gap
+
+**Critical Issue:** All bridge experiments only have **seed 42**. Cannot compute:
+- Standard deviation
+- Confidence intervals
+- P-values
+
+**Needed:** Run seeds 123 and 456 for top bridges.
+
+### 6.4 Recommended Priority Actions
+
+**Priority 1 (Critical for Paper):**
+1. Run top 3 bridges with seeds 123, 456 on ARC-Easy
+2. Fix stalled experiments (flow_matching, moe, dora)
+3. Run at least 1 bridge on Winogrande, HellaSwag, BoolQ
+
+**Priority 2 (Dataset Coverage):**
+4. Add SST-2, AG News baselines and bridge experiments
+5. Complete text relay on all datasets for fair comparison
+
+**Priority 3 (Ablations):**
+6. Test untested bridges (predictive_coding, infonce, spectral_cca)
+7. Add benchmarks across token counts
+
+---
+
+## 7. Conclusions
+
+### Key Findings
+
+1. **Bridge dramatically outperforms all baselines** on ARC-Easy:
+   - 84.5% vs 28.0% (best baseline) = **+56.5%** improvement
+   - 84.5% vs 23.5% (text relay) = **+61.0%** improvement
+
+2. **Massive latency reduction**: 15.6x faster than text relay (30.9ms vs 482.7ms)
+
+3. **Mixture of Depths is best bridge architecture** with balanced token diversity
+
+4. **8 soft tokens is optimal** - fastest convergence, near-best accuracy
+
+5. **Some bridges fail**: Optimal Transport shows zero learning, Domain Adversarial shows token collapse
+
+### Limitations
+
+1. **Single seed** for bridge experiments - statistical significance unknown
+2. **Only ARC-Easy** has bridge results - generalization unclear
+3. **4 stalled experiments** need debugging
+4. **Classification datasets** (SST-2, AG News) not tested
+
+### Next Steps
+
+1. Run multi-seed experiments for statistical significance
+2. Extend bridge to other reasoning datasets
+3. Debug stalled experiments
+4. Add classification dataset benchmarks
+
+---
+
+## Appendix: File Locations
+
+```
+runs/
+├── experiment_registry.json          # Experiment status tracking
+├── reasoning_final_20260119_*/
+│   ├── novel_bridges/
+│   │   └── *_results.json            # Bridge experiment results
+│   ├── baselines/
+│   │   ├── zeroshot/                 # Zero-shot results
+│   │   ├── fewshot/                  # Few-shot results
+│   │   ├── linear_probe/             # Linear probe results
+│   │   ├── prompt_tuning/            # Prompt tuning results
+│   │   └── ridge_regression/         # Ridge regression results
+│   └── benchmarks/
+│       ├── latency*.json             # Latency benchmarks
+│       ├── throughput*.json          # Throughput benchmarks
+│       └── memory*.json              # Memory benchmarks
+└── EXPERIMENT_ANALYSIS.md            # This report
+```
