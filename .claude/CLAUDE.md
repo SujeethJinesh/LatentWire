@@ -13,6 +13,15 @@
 - **I interpret results** - determine if experiments succeeded, identify patterns, draw conclusions
 - **I fix issues proactively** - when experiments fail, I diagnose and fix them
 
+### Analyzing HPC Results (MANDATORY)
+
+When analyzing HPC results and fixing failures, I **MUST use at least 3 Opus subagents in parallel** to:
+1. Analyze different failed experiments concurrently
+2. Propose fixes for each failure
+3. Preserve context by having each agent focus on a specific issue
+
+Each subagent should read the relevant log file, identify the root cause, find the code location, and propose a fix. After all subagents complete, I consolidate and apply the fixes.
+
 ---
 
 ## Project Overview

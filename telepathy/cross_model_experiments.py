@@ -265,7 +265,8 @@ class OptimalTransportBridge(nn.Module):
         P = self.sinkhorn(C, a, b)  # [B, S, K]
 
         # Transport: soft_tokens = P^T @ src_proj (barycentric projection)
-        soft_tokens = torch.bmm(P.transpose(1, 2), src_proj)  # [B, K, tgt_dim]
+        # Convert P back to src_proj dtype (sinkhorn uses float32 for stability)
+        soft_tokens = torch.bmm(P.transpose(1, 2).to(src_proj.dtype), src_proj)  # [B, K, tgt_dim]
 
         # Normalize by column sums (how much mass each anchor received)
         col_sums = P.sum(dim=1, keepdim=True).transpose(1, 2) + 1e-8  # [B, K, 1]
@@ -1929,7 +1930,9 @@ class SuccessiveRefinementBridge(nn.Module):
             pooled = src_proj.mean(dim=1)
 
         # Base token (coarse representation)
-        base_token = self.base_encoder(pooled).unsqueeze(1)  # [B, 1, D]
+        # Cast pooled to base_encoder's weight dtype (pooled may be float32 from mask operations)
+        base_encoder_dtype = self.base_encoder[0].weight.dtype
+        base_token = self.base_encoder(pooled.to(base_encoder_dtype)).unsqueeze(1)  # [B, 1, D]
 
         tokens = [base_token]
         current_repr = base_token

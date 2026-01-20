@@ -474,7 +474,9 @@ def run_memory_benchmark(args, device):
             llama_hidden = llama_out.hidden_states[31]
 
         latents, aux_loss, _, _ = bridge(llama_hidden, inputs.attention_mask)
-        outputs = mistral(inputs_embeds=latents, labels=inputs.input_ids)
+        # Create dummy labels matching latent dimensions for loss computation
+        dummy_labels = torch.zeros(latents.shape[0], latents.shape[1], dtype=torch.long, device=device)
+        outputs = mistral(inputs_embeds=latents, labels=dummy_labels)
         (outputs.loss + aux_loss).backward()
 
         mem_peak = get_peak_gpu_memory_mb()
