@@ -53,7 +53,7 @@
 \vskip 0.3in
 
 \begin{abstract}
-We present LatentWire, a method for cross-model communication through learned soft tokens that bypasses autoregressive text generation. A Perceiver Resampler bridge transforms hidden states from a sender LLM (Llama 3.1 8B) into soft tokens conditioning a receiver (Mistral 7B). On classification benchmarks, LatentWire achieves \textbf{90.7\% average accuracy} across SST-2, AG News, and TREC with 32 soft tokens---outperforming zero-shot baselines by +4.1pp, +19.6pp, and +37.3pp respectively---while providing \textbf{4.66$\times$ speedup} over text-relay. Linear probes validate that task-relevant information is extractable from sender representations (95\% on TREC). However, we identify critical limitations: reasoning tasks fail fundamentally (CommonsenseQA below random chance), and extreme compression (8 tokens) causes high variance. These results demonstrate that continuous representations enable faster, more effective cross-model communication than text for classification, while highlighting the need for hybrid architectures to handle reasoning.
+We present LatentWire, a method for cross-model communication through learned soft tokens that bypasses autoregressive text generation. A Perceiver Resampler bridge transforms hidden states from a sender LLM (Llama 3.1 8B) into soft tokens conditioning a receiver (Mistral 7B). On classification benchmarks, LatentWire achieves \textbf{90.7\% average accuracy} across SST-2, AG News, and TREC with 32 soft tokens---outperforming zero-shot Mistral by +4.1pp, +19.6pp, and +37.3pp respectively---while providing \textbf{4.66$\times$ speedup} over text-relay. Linear probes validate that task-relevant information is extractable from sender representations (95\% on TREC). However, we identify critical limitations: reasoning tasks fail fundamentally (CommonsenseQA achieves only 17\% vs. 75\% for Llama zero-shot), and extreme compression (8 tokens) causes high variance. These results demonstrate that continuous representations enable faster, more effective cross-model communication than text for classification, while highlighting the need for hybrid architectures to handle reasoning.
 \end{abstract}
 ]
 
@@ -78,7 +78,7 @@ Our key contributions are:
     \item A bridge architecture based on Perceiver Resampler \cite{jaegle2021perceiver, alayrac2022flamingo} that achieves 90.7\% average accuracy (SST-2: 93.7\%, AG News: 90.7\%, TREC: 87.9\%) while being 4.66$\times$ faster than text-relay.
     \item Comprehensive evaluation showing the bridge substantially outperforms zero-shot baselines (+4.1pp SST-2, +19.6pp AG News, +37.3pp TREC) and dramatically outperforms text-relay (+52--90pp).
     \item Linear probe analysis showing 95\% accuracy on TREC from sender hidden states, validating that task-relevant information is present and extractable.
-    \item Identification of critical limitations: reasoning tasks fail fundamentally (CommonsenseQA below random), and extreme compression (8 tokens) causes high variance on complex tasks.
+    \item Identification of critical limitations: reasoning tasks fail fundamentally (CommonsenseQA: 17\% vs. Llama's 75\%), and extreme compression (8 tokens) causes high variance on complex tasks.
 \end{itemize}
 
 \section{Related Work}
@@ -235,8 +235,6 @@ Table \ref{tab:main_results} presents our main accuracy comparison.
 \toprule
 \textbf{Method} & \textbf{SST-2} & \textbf{AG News} & \textbf{TREC} & \textbf{Avg} \\
 \midrule
-Random Chance & 50.0 & 25.0 & 16.7 & 30.6 \\
-\midrule
 \textbf{Bridge (32 tok)} & \textbf{93.7}{\scriptsize$\pm$0.3} & \textbf{90.7}{\scriptsize$\pm$1.4} & \textbf{87.9}{\scriptsize$\pm$3.3} & \textbf{90.7} \\
 Bridge (8 tok) & 93.3{\scriptsize$\pm$0.4} & 91.1{\scriptsize$\pm$1.2} & 84/38$^*$ & 82.0 \\
 \midrule
@@ -263,13 +261,13 @@ Text-Relay & 41.3 & 1.0 & 4.0 & 15.4 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/sender_essential.pdf}
-\caption{Bridge vs.\ Prompt-Tuning: The sender model is essential. Prompt-tuning on Mistral alone achieves only 50.9\% on SST-2 (random chance), while the bridge achieves 93.7\%, demonstrating that cross-model communication provides critical task information.}
+\caption{Bridge vs.\ Prompt-Tuning: The sender model is essential. Prompt-tuning on Mistral alone achieves only 50.9\% on SST-2, while the bridge achieves 93.7\%---demonstrating that cross-model communication provides critical task information that cannot be learned from the receiver alone.}
 \label{fig:sender_essential}
 \end{figure}
 
 \paragraph{Linear Probe Validation} To verify that task-relevant information exists in the sender representations, we trained linear probes on Llama layer-16 hidden states. The linear probe achieves 95.0\% on TREC, 92.1\% on SST-2, and 86.8\% on AG News. The TREC result (95.0\%) exceeds the bridge (87.9\%) by 7.1pp, indicating that the bridge does not fully extract available information---room remains for architectural improvements. However, this validates our core hypothesis: task-relevant information is linearly accessible in intermediate representations, and the bridge successfully transfers much of this signal cross-model.
 
-\paragraph{Bridge vs. Text-Relay} The bridge dramatically outperforms text-relay across all tasks. Text-relay fails catastrophically: 41.3\% on SST-2 (below random), 1.0\% on AG News, and 4.0\% on TREC. In contrast, the bridge achieves 93.7\%, 90.7\%, and 87.9\% respectively---improvements of +52.4pp, +89.7pp, and +83.9pp. This demonstrates that text summarization destroys classification-relevant information, while continuous representations preserve it effectively.
+\paragraph{Bridge vs. Text-Relay} The bridge dramatically outperforms text-relay across all tasks. Text-relay fails catastrophically: 41.3\% on SST-2 (below both Llama and Mistral zero-shot), 1.0\% on AG News, and 4.0\% on TREC. In contrast, the bridge achieves 93.7\%, 90.7\%, and 87.9\% respectively---improvements of +52.4pp, +89.7pp, and +83.9pp over text-relay. This demonstrates that text summarization destroys classification-relevant information, while continuous representations preserve it effectively.
 
 \paragraph{High Variance Under Extreme Compression} While the bridge with 32 tokens shows stable performance (87.9\% $\pm$ 3.3\% on TREC), using only 8 tokens introduces significant instability. Across 5 seeds on TREC, 8-token accuracy varies from 35.4\% to 85.8\%, with a bimodal distribution: some runs converge to good solutions (~84\%) while others collapse to predicting only 2-3 classes (~38\%). This suggests a minimum capacity threshold exists for reliable multi-class classification---32 tokens provides sufficient capacity to avoid mode collapse.
 
@@ -347,7 +345,7 @@ Prompt-Tuning & 50.9 & 25.0 & 155ms$^\dagger$ \\
 
 \paragraph{Bridge vs.\ LoRA} LoRA fine-tuning shows high variance, particularly on AG News (40.8\% $\pm$ 22.3\%). The bridge achieves both higher accuracy (90.7\% vs 40.8\% on AG News) and lower variance ($\pm$1.4 vs $\pm$22.3), suggesting more stable optimization.
 
-\paragraph{Bridge vs.\ Prompt-Tuning} Prompt-tuning on Mistral alone (without sender information) achieves only random chance (50.9\% on SST-2, 25.0\% on AG News), as visualized in Figure~\ref{fig:sender_essential}. This demonstrates that the sender model provides essential task information that cannot be recovered through receiver-only soft prompt optimization.
+\paragraph{Bridge vs.\ Prompt-Tuning} Prompt-tuning on Mistral alone (without sender information) achieves only 50.9\% on SST-2 and 25.0\% on AG News, as visualized in Figure~\ref{fig:sender_essential}. This is dramatically worse than zero-shot Mistral (89.6\% and 71.1\% respectively), demonstrating that receiver-only soft prompt optimization fails to capture task-relevant signals---the sender model provides essential information.
 
 \subsection{Batched Throughput}
 
@@ -401,7 +399,7 @@ Soft Tokens & Accuracy (\%) \\
 \vskip -0.1in
 \end{table}
 
-Table \ref{tab:token_scaling} shows a striking inverse relationship: increasing tokens from 16 to 128 causes accuracy to collapse from 21.5\% to random (1.3\% for 77 classes). This ``inverse scaling'' phenomenon suggests:
+Table \ref{tab:token_scaling} shows a striking inverse relationship: increasing tokens from 16 to 128 causes accuracy to collapse from 21.5\% to just 1.0\%. This ``inverse scaling'' phenomenon suggests:
 
 \begin{enumerate}
     \item \textbf{Compression as regularization}: Fewer tokens force the bridge to extract only the most task-relevant information.
@@ -429,13 +427,13 @@ While LatentWire excels on classification, we evaluate whether it generalizes to
 \vskip 0.15in
 \begin{center}
 \begin{scriptsize}
-\begin{tabular}{@{}lccccc@{}}
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-\textbf{Task} & \textbf{Rand.} & \textbf{Llama} & \textbf{Mistral} & \textbf{Txt-Relay} & \textbf{Bridge} \\
+\textbf{Task} & \textbf{Llama 0-shot} & \textbf{Mistral 0-shot} & \textbf{Text-Relay} & \textbf{Bridge} \\
 \midrule
-BoolQ & 50.0 & 79.2 & \textbf{83.2} & 80.8 & 72.5 \\
-PIQA & 50.0 & \textbf{61.0} & 57.4 & 30.4$^\dagger$ & 60.4 \\
-CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
+BoolQ & 79.2 & \textbf{83.2} & 80.8 & 72.5 \\
+PIQA & \textbf{61.0} & 57.4 & 30.4$^\dagger$ & 60.4 \\
+CSQA & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
 \bottomrule
 \end{tabular}
 \end{scriptsize}
@@ -444,7 +442,7 @@ CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
 {\footnotesize $^\dagger$Text-relay fails on PIQA (30.4\%); bridge preserves physical intuition signals. CSQA = CommonsenseQA.}
 \end{table}
 
-\paragraph{Classification vs. Reasoning} The contrast with classification is stark. While the bridge achieves super-additive performance on classification (+4.5--26.9pp over individual models), it \emph{underperforms} on reasoning: BoolQ (-10.7pp vs. Mistral), PIQA (-0.6pp vs. Llama), and CommonsenseQA (-58.4pp vs. Llama, falling \emph{below random chance}).
+\paragraph{Classification vs. Reasoning} The contrast with classification is stark. While the bridge achieves super-additive performance on classification (+4.5--26.9pp over individual models), it \emph{underperforms} on reasoning: BoolQ (-10.7pp vs. Mistral 0-shot), PIQA (-0.6pp vs. Llama 0-shot), and CommonsenseQA (-58.4pp vs. Llama 0-shot, with the bridge achieving only 17.0\% vs. Llama's 75.4\%).
 
 \paragraph{Why Does Reasoning Fail?} We hypothesize that classification and reasoning have fundamentally different information requirements:
 \begin{itemize}
@@ -462,7 +460,7 @@ CSQA & 20.0 & \textbf{75.4} & 68.0 & 75.4 & 17.0 \\
 While the base Perceiver bridge fails on complex reasoning tasks like CommonsenseQA, we investigate whether alternative bridge architectures can succeed on \emph{structured} reasoning tasks. We evaluate 9 novel bridge architectures on ARC-Easy \cite{clark2018arc}, a 4-way multiple-choice science reasoning benchmark.
 
 \begin{table}[t]
-\caption{Novel bridge architectures on ARC-Easy. The best architectures dramatically outperform all baselines, achieving 84.5\% accuracy---a +56.5pp improvement over the best baseline (Ridge Regression at 28.0\%). Random baseline is 25\%.}
+\caption{Novel bridge architectures on ARC-Easy. The best architectures dramatically outperform all baselines, achieving 84.5\% accuracy---substantially exceeding zero-shot Mistral (24.0\%), zero-shot Llama (21.0\%), and text-relay (23.5\%).}
 \label{tab:novel_bridges}
 \vskip 0.15in
 \begin{center}
@@ -515,7 +513,7 @@ This result is surprising given that CommonsenseQA fails. We hypothesize the dif
 \section{Limitations and Future Work}
 \label{sec:limitations}
 
-\paragraph{Open-Ended Reasoning Still Fails} While novel bridge architectures succeed on structured reasoning tasks like ARC-Easy (84.5\%, Section~\ref{sec:novel_bridges}), the bridge still fails on \emph{open-ended} reasoning. On CommonsenseQA, performance falls \emph{below random chance} (17.0\% vs 20.0\%), indicating that soft token compression destroys the multi-step inference chains required for unstructured reasoning. The key difference: ARC-Easy provides explicit answer choices that can be compressed into discriminative signals, whereas CommonsenseQA requires open-ended generation of reasoning chains.
+\paragraph{Open-Ended Reasoning Still Fails} While novel bridge architectures succeed on structured reasoning tasks like ARC-Easy (84.5\%, Section~\ref{sec:novel_bridges}), the bridge still fails on \emph{open-ended} reasoning. On CommonsenseQA, the bridge achieves only 17.0\% compared to Llama zero-shot at 75.4\% and Mistral zero-shot at 68.0\%, indicating that soft token compression destroys the multi-step inference chains required for unstructured reasoning. The key difference: ARC-Easy provides explicit answer choices that can be compressed into discriminative signals, whereas CommonsenseQA requires open-ended generation of reasoning chains.
 
 \paragraph{Generative Reasoning Fails Completely} Experiments on GSM8K math word problems reveal the limits of soft token compression for generative tasks. Baseline models perform reasonably: Zero-shot Llama achieves 16\%, Mistral reaches 48\%; with 4-shot prompting, Llama improves to 59\%. However, the Mixture of Depths bridge trained on GSM8K achieves \textbf{0\% accuracy} (0/200 correct)---a total failure. The bridge learns to minimize language modeling loss (2.64$\to$1.53) but generates irrelevant text fragments instead of mathematical reasoning chains. This confirms that 8 soft tokens cannot compress the sequential chain-of-thought reasoning required for math problems, marking a clear boundary for the Telepathy approach.
 
@@ -548,7 +546,7 @@ We present LatentWire, a method for cross-model communication via learned soft t
 We also identify critical limitations:
 
 \begin{itemize}
-    \item \textbf{Open-ended reasoning fails}: CommonsenseQA below random chance (17\% vs 20\%), while structured reasoning (ARC-Easy with explicit choices) succeeds
+    \item \textbf{Open-ended reasoning fails}: CommonsenseQA achieves only 17\% vs.\ Llama zero-shot at 75\%, while structured reasoning (ARC-Easy with explicit choices) succeeds
     \item \textbf{High variance under extreme compression}: TREC 8-token shows bimodal distribution (35-86\% across seeds), requiring minimum 32 tokens for stability
 \end{itemize}
 

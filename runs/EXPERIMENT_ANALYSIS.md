@@ -9,13 +9,13 @@
 
 The Telepathy system enables cross-model communication between Llama-3.1-8B (sender) and Mistral-7B (receiver) through learned soft tokens. Key findings:
 
-| Metric | Best Result | vs Text Relay | vs Best Baseline |
-|--------|-------------|---------------|------------------|
-| **Accuracy** (ARC-Easy) | 84.5% (Mixture of Depths) | +61.0% | +56.5% |
-| **Latency** | 30.9 ms | **15.6x faster** | N/A |
-| **Throughput** | 21.1 samples/s | **1.87x higher** | N/A |
+| Metric | Best Result | vs Llama (21%) | vs Mistral (24%) | vs Text-relay (23.5%) | vs Ridge (28%) |
+|--------|-------------|----------------|------------------|----------------------|----------------|
+| **Accuracy** (ARC-Easy) | 84.5% (Mixture of Depths) | **+63.5%** | **+60.5%** | **+61.0%** | **+56.5%** |
+| **Latency** | 30.9 ms | N/A | N/A | **15.6x faster** | N/A |
+| **Throughput** | 21.1 samples/s | N/A | N/A | **1.87x higher** | N/A |
 
-**Bottom Line:** The bridge achieves 84.5% accuracy on ARC-Easy while being 15.6x faster than text relay, proving that learned soft tokens can effectively transmit reasoning information between models.
+**Bottom Line:** The bridge achieves 84.5% accuracy on ARC-Easy while being 15.6x faster than text relay, proving that learned soft tokens can effectively transmit reasoning information between models. This represents +60.5% over Zero-shot Mistral, +63.5% over Zero-shot Llama, and +56.5% over the best traditional baseline (Ridge Regression).
 
 ---
 
@@ -31,7 +31,7 @@ The Telepathy system enables cross-model communication between Llama-3.1-8B (sen
 | BoolQ | 70.0% | 66.0% | Llama (+4%) | Binary QA |
 | GSM8K | 16.0% | 48.0% | Mistral (+32%) | Math reasoning |
 
-**Observation:** Both models struggle on ARC-Easy (near random ~25%), perform moderately on reasoning tasks, and excel on BoolQ.
+**Observation:** Both models struggle on ARC-Easy (21-24%), perform moderately on reasoning tasks, and excel on BoolQ. Zero-shot Llama achieves 21%, Zero-shot Mistral achieves 24%.
 
 ### 1.2 Few-Shot Baselines (4-shot)
 
@@ -98,23 +98,25 @@ Accuracy (%)
 
 ### 2.2 Detailed Bridge Results
 
-| Bridge | Final Acc | Best Acc | LM Loss | Aux Loss | Diversity | Status |
-|--------|-----------|----------|---------|----------|-----------|--------|
-| **Mixture of Depths** | **84.5%** | 90.0% | 0.143 | 0.0 | 0.618 | Best |
-| Cross-Modal Distill | 83.0% | 90.0% | 0.008 | 0.0 | 0.536 | Good |
-| Domain Adversarial | 83.0% | 85.0% | 0.176 | 0.0 | 0.913 | Collapsed |
-| Thalamic Relay | 81.0% | 87.0% | 0.022 | 0.0 | 0.909 | Collapsed |
-| MINE | 80.5% | 82.0% | 0.209 | -0.05 | 0.740 | Good |
-| Successive Refinement | 72.5% | 72.0% | 0.044 | 0.24 | 0.843 | Moderate |
-| Flow Matching | 68.0% | 68.0% | 0.182 | 0.0 | 0.724 | Moderate |
-| MoE (Mixture of Experts) | 49.0% | 51.0% | 0.456 | 0.0 | 0.612 | Below Random |
-| Optimal Transport | 24.5% | 27.0% | 8.358 | 0.0 | 0.0 | **FAILED** |
+**Reference Baselines:** Zero-shot Llama: 21% | Zero-shot Mistral: 24% | Text-relay: 23.5% | Ridge Regression: 28%
+
+| Bridge | Final Acc | vs Mistral | vs Llama | vs Text-relay | LM Loss | Diversity | Status |
+|--------|-----------|------------|----------|---------------|---------|-----------|--------|
+| **Mixture of Depths** | **84.5%** | **+60.5%** | **+63.5%** | **+61.0%** | 0.143 | 0.618 | Best |
+| Cross-Modal Distill | 83.0% | +59.0% | +62.0% | +59.5% | 0.008 | 0.536 | Good |
+| Domain Adversarial | 83.0% | +59.0% | +62.0% | +59.5% | 0.176 | 0.913 | Collapsed |
+| Thalamic Relay | 81.0% | +57.0% | +60.0% | +57.5% | 0.022 | 0.909 | Collapsed |
+| MINE | 80.5% | +56.5% | +59.5% | +57.0% | 0.209 | 0.740 | Good |
+| Successive Refinement | 72.5% | +48.5% | +51.5% | +49.0% | 0.044 | 0.843 | Moderate |
+| Flow Matching | 68.0% | +44.0% | +47.0% | +44.5% | 0.182 | 0.724 | Moderate |
+| MoE (Mixture of Experts) | 49.0% | +25.0% | +28.0% | +25.5% | 0.456 | 0.612 | Below Top Bridges |
+| Optimal Transport | 24.5% | +0.5% | +3.5% | +1.0% | 8.358 | 0.0 | **FAILED** |
 
 **Key Insights:**
 - **Mixture of Depths** achieves best accuracy with balanced diversity (0.618)
 - **Domain Adversarial** and **Thalamic Relay** show token collapse (diversity ~0.91)
 - **Flow Matching** achieves moderate 68% accuracy - viable but not optimal
-- **MoE** underperforms at 49% (below random for 4-way task) - needs hyperparameter tuning
+- **MoE** underperforms at 49% (vs 24% Mistral, 21% Llama, 23.5% text-relay) - needs hyperparameter tuning
 - **Optimal Transport** completely failed - zero gradients, no learning
 - **MINE** uses negative aux loss (maximizing mutual information)
 
@@ -139,14 +141,16 @@ Accuracy (%)
 
 ### 3.2 Token Capacity Results
 
-| Tokens | Final Acc | Best Acc | Final Loss | Params Added | Efficiency |
-|--------|-----------|----------|------------|--------------|------------|
-| 4 | 75.0% | 75.0% | 0.268 | 16K | 18.75%/token |
-| **8** | **83.0%** | **90.0%** | **0.008** | 33K | 10.38%/token |
-| 16 | 81.0% | 82.0% | 0.219 | 66K | 5.06%/token |
-| 32 | 83.5% | 85.0% | 0.163 | 131K | 2.61%/token |
+**Reference Baselines:** Zero-shot Llama: 21% | Zero-shot Mistral: 24% | Text-relay: 23.5% | Ridge Regression: 28%
 
-**Recommendation:** Use **8 soft tokens** - achieves 83% accuracy with fastest convergence (90% at step 600) and lowest final loss (0.008).
+| Tokens | Final Acc | vs Mistral | vs Text-relay | Best Acc | Final Loss | Params Added |
+|--------|-----------|------------|---------------|----------|------------|--------------|
+| 4 | 75.0% | +51.0% | +51.5% | 75.0% | 0.268 | 16K |
+| **8** | **83.0%** | **+59.0%** | **+59.5%** | **90.0%** | **0.008** | 33K |
+| 16 | 81.0% | +57.0% | +57.5% | 82.0% | 0.219 | 66K |
+| 32 | 83.5% | +59.5% | +60.0% | 85.0% | 0.163 | 131K |
+
+**Recommendation:** Use **8 soft tokens** - achieves 83% accuracy (+59% vs Mistral, +59.5% vs text-relay) with fastest convergence (90% at step 600) and lowest final loss (0.008).
 
 ### 3.3 Training Dynamics
 
@@ -236,14 +240,15 @@ Latency (ms)
     └─────────────────────────────────────────────────────────────┘
 ```
 
-| Method | Accuracy | vs Best Baseline | vs Text Relay |
-|--------|----------|------------------|---------------|
-| **Bridge (MoD)** | **84.5%** | **+56.5%** | **+61.0%** |
-| Ridge Regression | 28.0% | -- | +4.5% |
-| Few-Shot Mistral | 26.0% | -2.0% | +2.5% |
-| Linear Probe | 26.0% | -2.0% | +2.5% |
-| Zero-Shot Mistral | 24.0% | -4.0% | +0.5% |
-| Text Relay | 23.5% | -4.5% | -- |
+| Method | Accuracy | vs Llama (21%) | vs Mistral (24%) | vs Text-relay (23.5%) |
+|--------|----------|----------------|------------------|----------------------|
+| **Bridge (MoD)** | **84.5%** | **+63.5%** | **+60.5%** | **+61.0%** |
+| Ridge Regression | 28.0% | +7.0% | +4.0% | +4.5% |
+| Few-Shot Mistral | 26.0% | +5.0% | +2.0% | +2.5% |
+| Linear Probe | 26.0% | +5.0% | +2.0% | +2.5% |
+| Zero-Shot Mistral | 24.0% | +3.0% | -- | +0.5% |
+| Text Relay | 23.5% | +2.5% | -0.5% | -- |
+| Zero-Shot Llama | 21.0% | -- | -3.0% | -2.5% |
 
 ---
 
@@ -254,8 +259,8 @@ Latency (ms)
 | Experiment | Status | Accuracy | Notes |
 |------------|--------|----------|-------|
 | flow_matching_arc_easy_seed42 | Completed | 68.0% | Moderate performance |
-| moe_arc_easy_seed42 | Completed | 49.0% | Below random, needs investigation |
-| dora_arc_easy | Completed | 25.0% | Random chance - DoRA may need tuning |
+| moe_arc_easy_seed42 | Completed | 49.0% | Still beats baselines (24% Mistral), needs investigation |
+| dora_arc_easy | Completed | 25.0% | At Mistral level (24%) - DoRA may need tuning |
 
 ### 6.2 Pending Experiments
 
@@ -324,8 +329,10 @@ All bridge experiments currently use **seed 42 only** to:
 ### Key Findings
 
 1. **Bridge dramatically outperforms all baselines** on ARC-Easy:
-   - 84.5% vs 28.0% (best baseline) = **+56.5%** improvement
-   - 84.5% vs 23.5% (text relay) = **+61.0%** improvement
+   - 84.5% vs 24.0% (Zero-shot Mistral) = **+60.5%** improvement
+   - 84.5% vs 21.0% (Zero-shot Llama) = **+63.5%** improvement
+   - 84.5% vs 23.5% (Text-relay) = **+61.0%** improvement
+   - 84.5% vs 28.0% (Ridge Regression, best traditional baseline) = **+56.5%** improvement
 
 2. **Massive latency reduction**: 15.6x faster than text relay (30.9ms vs 482.7ms)
 

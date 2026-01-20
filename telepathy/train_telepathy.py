@@ -437,8 +437,63 @@ def analyze_latent_interpretability(bridge, src_model, tgt_model, src_tok, tgt_t
     print(f"  Token RMS range: {latents.float().pow(2).mean(dim=-1).sqrt().min().item():.4f} - {latents.float().pow(2).mean(dim=-1).sqrt().max().item():.4f}")
 
 
+def extract_numeric_answer(text):
+    """
+    Extract numeric answer from text.
+
+    Handles various formats:
+    - GSM8K ground truth format: "...#### 42"
+    - Generated text: "The answer is 42", "42", "= 42", etc.
+
+    Returns the extracted number as a string, or None if not found.
+    """
+    import re
+
+    # First, try GSM8K format: "#### <number>"
+    gsm8k_match = re.search(r'####\s*(-?\d+(?:,\d+)*(?:\.\d+)?)', text)
+    if gsm8k_match:
+        # Remove commas from numbers like "1,234"
+        return gsm8k_match.group(1).replace(',', '')
+
+    # Try common answer patterns in generated text
+    # "The answer is X", "answer: X", "= X", etc.
+    patterns = [
+        r'(?:the\s+)?answer\s*(?:is|:)\s*(-?\d+(?:,\d+)*(?:\.\d+)?)',
+        r'=\s*(-?\d+(?:,\d+)*(?:\.\d+)?)\s*$',
+        r'(-?\d+(?:,\d+)*(?:\.\d+)?)\s*$',  # Number at end of string
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, text.lower().strip())
+        if match:
+            return match.group(1).replace(',', '')
+
+    # Fallback: find any number in the text (last one is usually the answer)
+    numbers = re.findall(r'-?\d+(?:,\d+)*(?:\.\d+)?', text)
+    if numbers:
+        return numbers[-1].replace(',', '')
+
+    return None
+
+
 def check_label_match(label, output, config):
     """Check if label matches output, with permissive matching for synonyms."""
+
+    # For generative tasks (like GSM8K), compare numeric answers
+    if config.get("is_generative", False):
+        gt_number = extract_numeric_answer(str(label))
+        pred_number = extract_numeric_answer(output)
+
+        if gt_number is None or pred_number is None:
+            return False
+
+        # Compare as floats to handle "42" vs "42.0" etc.
+        try:
+            return float(gt_number) == float(pred_number)
+        except ValueError:
+            return gt_number == pred_number
+
+    # Standard classification matching
     output_lower = output.lower()
 
     # Check synonyms if defined
@@ -701,10 +756,13 @@ def quick_eval(bridge, src_model, tgt_model, src_tok, tgt_tok, eval_ds, device, 
             combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
             attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
 
+            # Use more tokens for generative tasks like GSM8K
+            max_tokens = 30 if config.get("is_generative", False) else 10
+
             out_ids = tgt_model.generate(
                 inputs_embeds=combined_embeds,
                 attention_mask=attn_mask,
-                max_new_tokens=10,
+                max_new_tokens=max_tokens,
                 do_sample=False,
                 pad_token_id=tgt_tok.eos_token_id,
             )
@@ -744,7 +802,14 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
     """Single training step."""
     labels = config["labels"]
     inputs = format_texts_for_batch(batch, config)
-    label_texts = [normalize_label_index(l, labels) for l in batch[config["label_field"]]]
+    is_generative = config.get("is_generative", False)
+
+    # For generative tasks like GSM8K, extract just the final numeric answer
+    # This prevents training on the full reasoning chain (which would be truncated anyway)
+    if is_generative:
+        label_texts = [extract_numeric_answer(str(l)) or str(l) for l in batch[config["label_field"]]]
+    else:
+        label_texts = [normalize_label_index(l, labels) for l in batch[config["label_field"]]]
 
     B = len(inputs)
 
@@ -787,9 +852,12 @@ def train_step(batch, src_tok, tgt_tok, src_model, bridge, tgt_model, device, ar
             primer_embeds = primer_embeds.bfloat16()
 
         tgt_texts = [f" {l}{tgt_tok.eos_token}" for l in label_texts]
+        # Use longer max_length for generative tasks (GSM8K answers can be longer numbers)
+        # For classification, labels are short (16 is plenty)
+        tgt_max_length = 32 if is_generative else 16
         tgt_enc = tgt_tok(
             tgt_texts, return_tensors="pt", padding=True,
-            truncation=True, max_length=16, add_special_tokens=False
+            truncation=True, max_length=tgt_max_length, add_special_tokens=False
         ).to(device)
         answer_embeds = tgt_model.get_input_embeddings()(tgt_enc.input_ids)
         if args.bf16:
@@ -1542,10 +1610,13 @@ def main():
                 combined_embeds = torch.cat([primer_embeds, soft_tokens], dim=1)
                 attn_mask = torch.ones(combined_embeds.shape[:2], device=device, dtype=torch.long)
 
+                # Use more tokens for generative tasks like GSM8K
+                max_tokens = 30 if config.get("is_generative", False) else 10
+
                 out_ids = tgt_model.generate(
                     inputs_embeds=combined_embeds,
                     attention_mask=attn_mask,
-                    max_new_tokens=10,
+                    max_new_tokens=max_tokens,
                     do_sample=False,
                     pad_token_id=tgt_tok.eos_token_id,
                 )
