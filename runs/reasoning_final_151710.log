@@ -1,0 +1,237 @@
+[2026-01-20 10:10:58] Initializing experiment registry at runs/experiment_registry.json
+==============================================================
+REASONING-FOCUSED FINAL EXPERIMENTS (Publication Ready)
+==============================================================
+Job ID: 151710
+Node: n24
+GPUs: 0,1
+Start time: Tue Jan 20 10:10:59 AM PST 2026
+
+REASONING BENCHMARKS:
+  - ARC-Easy (science)
+  - WinoGrande (commonsense)
+  - HellaSwag (situational)
+  - BoolQ (reading comprehension)
+
+GPU ALLOCATION:
+  - GPU 0: Standard bridge (hail mary) + baselines (zero-shot, few-shot, DoRA, prompt tuning, linear probe)
+  - GPU 1: Novel bridges + token capacity + latency/memory/throughput/batched benchmarks
+==============================================================
+Already up to date.
+
+index, name, memory.free [MiB]
+0, NVIDIA H100 80GB HBM3, 81106 MiB
+1, NVIDIA H100 80GB HBM3, 81106 MiB
+
+
+[2026-01-20 10:11:00] Starting parallel execution on 2 GPUs...
+
+[2026-01-20 10:11:00] GPU 0 PID: 2602236 (Standard Bridge + Baselines)
+[2026-01-20 10:11:00] GPU 1 PID: 2602237 (Novel Bridges + Benchmarks)
+
+[2026-01-20 10:11:00] [GPU 1] Starting: Novel Bridges + Token Capacity + All Benchmarks
+
+[2026-01-20 10:11:00] [GPU 0] Starting: Standard Bridge + Baselines
+[2026-01-20 10:11:00] [GPU 1] Testing flow_matching on ARC-Easy (seed=42)
+[2026-01-20 10:11:00] [GPU 0] Running Hail Mary Reasoning Evaluation
+[2026-01-20 10:11:00] SKIP: flow_matching_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:00] [GPU 1] Testing optimal_transport on ARC-Easy (seed=42)
+[2026-01-20 10:11:00] SKIP: hail_mary_reasoning (currently running (started 13.3h ago))
+[2026-01-20 10:11:00] [GPU 0] Hail mary evaluation completed
+
+[2026-01-20 10:11:00] [GPU 0] Running Zero-Shot Baseline on all reasoning datasets
+[2026-01-20 10:11:00] [GPU 0] Zero-shot on arc_easy
+[2026-01-20 10:11:00] SKIP: optimal_transport_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:00] [GPU 1] Testing moe on ARC-Easy (seed=42)
+[2026-01-20 10:11:00] SKIP: zeroshot_arc_easy (already completed)
+[2026-01-20 10:11:00] [GPU 0] Zero-shot on winogrande
+[2026-01-20 10:11:00] SKIP: moe_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:00] [GPU 1] Starting HAIL MARY Bridge Experiments (6 literature-informed bridges)
+
+[2026-01-20 10:11:00] [GPU 1] Testing HAIL MARY cross_modal_distillation on ARC-Easy (seed=42)
+[2026-01-20 10:11:00] SKIP: zeroshot_winogrande (already completed)
+[2026-01-20 10:11:00] [GPU 0] Zero-shot on hellaswag
+[2026-01-20 10:11:00] SKIP: hailmary_cross_modal_distillation_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:00] [GPU 1] Testing HAIL MARY mine on ARC-Easy (seed=42)
+[2026-01-20 10:11:00] SKIP: zeroshot_hellaswag (already completed)
+[2026-01-20 10:11:00] [GPU 0] Zero-shot on boolq
+[2026-01-20 10:11:00] SKIP: hailmary_mine_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:00] [GPU 1] Testing HAIL MARY mixture_of_depths on ARC-Easy (seed=42)
+[2026-01-20 10:11:00] SKIP: zeroshot_boolq (already completed)
+
+[2026-01-20 10:11:00] [GPU 0] Running Few-Shot Baseline (4-shot) on reasoning datasets
+[2026-01-20 10:11:00] [GPU 0] Few-shot (4-shot) on arc_easy
+[2026-01-20 10:11:01] SKIP: hailmary_mixture_of_depths_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:01] [GPU 1] Testing HAIL MARY thalamic_relay on ARC-Easy (seed=42)
+[2026-01-20 10:11:01] SKIP: fewshot_arc_easy (already completed)
+[2026-01-20 10:11:01] [GPU 0] Few-shot (4-shot) on winogrande
+[2026-01-20 10:11:01] SKIP: hailmary_thalamic_relay_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:01] [GPU 1] Testing HAIL MARY domain_adversarial on ARC-Easy (seed=42)
+[2026-01-20 10:11:01] SKIP: fewshot_winogrande (already completed)
+[2026-01-20 10:11:01] [GPU 0] Few-shot (4-shot) on hellaswag
+[2026-01-20 10:11:01] SKIP: hailmary_domain_adversarial_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:01] [GPU 1] Testing HAIL MARY successive_refinement on ARC-Easy (seed=42)
+[2026-01-20 10:11:01] SKIP: fewshot_hellaswag (already completed)
+[2026-01-20 10:11:01] [GPU 0] Few-shot (4-shot) on boolq
+[2026-01-20 10:11:01] SKIP: hailmary_successive_refinement_arc_easy_seed42 (already completed)
+
+[2026-01-20 10:11:01] [GPU 1] Token Capacity Scaling on Reasoning (4, 8, 16, 32 tokens, 3 seeds)
+[2026-01-20 10:11:01] [GPU 1] Testing 4 soft tokens on ARC-Easy (seed=42)
+[2026-01-20 10:11:01] SKIP: fewshot_boolq (already completed)
+
+[2026-01-20 10:11:01] [GPU 0] Running DoRA Baseline (rank=8) on ARC-Easy
+[2026-01-20 10:11:01] SKIP: token_capacity_4_seed42 (already completed)
+[2026-01-20 10:11:01] [GPU 1] Testing 8 soft tokens on ARC-Easy (seed=42)
+[2026-01-20 10:11:01] SKIP: dora_arc_easy (already completed)
+
+[2026-01-20 10:11:01] [GPU 0] Running Prompt Tuning Baseline (8 tokens) on ARC-Easy
+[2026-01-20 10:11:01] SKIP: token_capacity_8_seed42 (already completed)
+[2026-01-20 10:11:01] [GPU 1] Testing 16 soft tokens on ARC-Easy (seed=42)
+[2026-01-20 10:11:01] SKIP: prompt_tuning_arc_easy (already completed)
+
+[2026-01-20 10:11:01] [GPU 0] Running Linear Probe Baseline (layer 31)
+[2026-01-20 10:11:01] SKIP: token_capacity_16_seed42 (already completed)
+[2026-01-20 10:11:01] [GPU 1] Testing 32 soft tokens on ARC-Easy (seed=42)
+[2026-01-20 10:11:01] SKIP: linear_probe (already completed)
+
+[2026-01-20 10:11:01] [GPU 0] Running Text Relay Baseline on ARC-Easy
+[2026-01-20 10:11:01] SKIP: token_capacity_32_seed42 (already completed)
+
+[2026-01-20 10:11:01] [GPU 1] Training Bridge on GSM8K (Math Reasoning)
+[2026-01-20 10:11:01] [GPU 1] Training Mixture of Depths bridge on GSM8K (seed=42)
+[2026-01-20 10:11:01] SKIP: text_relay_arc_easy (already completed)
+
+[2026-01-20 10:11:01] [GPU 0] Running Ensemble Baseline on ARC-Easy
+[2026-01-20 10:11:01] SKIP: bridge_gsm8k_mod_seed42 (max retries (3) exceeded)
+
+[2026-01-20 10:11:01] [GPU 1] Running Ridge Regression Baseline on ARC-Easy
+[2026-01-20 10:11:01] SKIP: ensemble_arc_easy (already completed)
+
+[2026-01-20 10:11:01] [GPU 0] Running GSM8K Math Reasoning Baselines
+[2026-01-20 10:11:01] [GPU 0] Zero-shot on GSM8K
+[2026-01-20 10:11:01] SKIP: ridge_regression_arc_easy (already completed)
+
+[2026-01-20 10:11:01] [GPU 1] Running Latency Benchmarks
+[2026-01-20 10:11:01] SKIP: zeroshot_gsm8k (already completed)
+[2026-01-20 10:11:01] [GPU 0] Few-shot (4-shot) on GSM8K
+[2026-01-20 10:11:01] SKIP: fewshot_gsm8k (already completed)
+[2026-01-20 10:11:01] [GPU 0] All evaluations completed
+[2026-01-20 10:11:01] GPU 0 finished
+[2026-01-20 10:11:06] [GPU 1] No checkpoint found, running latency benchmark without bridge
+[2026-01-20 10:11:06] SKIP: latency_benchmark_no_checkpoint (already completed)
+
+[2026-01-20 10:11:06] [GPU 1] Running Batched Latency Benchmark (batch sizes: 1, 4, 8, 16)
+[2026-01-20 10:11:06] SKIP: batched_latency_benchmark (already completed)
+
+[2026-01-20 10:11:06] [GPU 1] Running Memory Benchmark
+[2026-01-20 10:11:06] SKIP: memory_benchmark (already completed)
+
+[2026-01-20 10:11:06] [GPU 1] Running Throughput Benchmark
+[2026-01-20 10:11:06] SKIP: throughput_benchmark_no_checkpoint (already completed)
+[2026-01-20 10:11:06] [GPU 1] All experiments completed
+[2026-01-20 10:11:06] GPU 1 finished
+
+==============================================================
+AGGREGATING REASONING RESULTS
+==============================================================
+======================================================================
+REASONING BENCHMARK RESULTS (Publication Ready)
+======================================================================
+
+ZERO-SHOT BASELINE (no training):
+----------------------------------------
+
+FEW-SHOT BASELINE (4-shot):
+----------------------------------------
+
+DORA BASELINE (rank=8, SOTA 2024):
+----------------------------------------
+
+PROMPT TUNING BASELINE (8 tokens, no sender):
+----------------------------------------
+
+NOVEL BRIDGES (ARC-Easy):
+----------------------------------------
+
+HAIL MARY BRIDGES (ARC-Easy):
+----------------------------------------
+
+TOKEN CAPACITY (ARC-Easy):
+----------------------------------------
+
+LATENCY BENCHMARKS:
+----------------------------------------
+
+BATCHED LATENCY (samples/sec by batch size):
+----------------------------------------
+======================================================================
+
+==============================================================
+EXPERIMENT SUMMARY
+==============================================================
+Total experiments run: 0
+Successful: 0
+Failed: 0
+Skipped (already completed): 0
+
+Registry summary:
+{
+  "total": 37,
+  "completed": 35,
+  "failed": 1,
+  "pending": 0,
+  "running": 1,
+  "needs_rerun": 0,
+  "by_error_category": {
+    "unknown": 1
+  }
+}
+==============================================================
+[main 86112a8] Reasoning experiments: job 151710 - 0/0 succeeded, 0 skipped
+ 2 files changed, 17 insertions(+)
+ create mode 100644 runs/reasoning_final_20260120_101058/experiment_errors.log
+ create mode 100644 runs/reasoning_final_20260120_101058/reasoning_results_summary.json
+[2026-01-20 10:11:07] Git push attempt 1 of 3
+[2026-01-20 10:11:08] Git push successful
+
+==============================================================
+REASONING EXPERIMENTS COMPLETED (Publication Ready)
+==============================================================
+Job ID: 151710
+End time: Tue Jan 20 10:11:08 AM PST 2026
+Total runtime: 10 seconds (0h 0m)
+
+KEY EXPERIMENTS:
+  1. Standard bridge on reasoning? (hail_mary)
+  2. Zero-shot baseline? (baselines/zeroshot/)
+  3. Few-shot baseline (4-shot)? (baselines/fewshot/)
+  4. DoRA baseline (SOTA 2024)? (baselines/dora/)
+  5. Prompt tuning (does sender help)? (baselines/prompt_tuning/)
+  6. Linear probe upper bound? (baselines/linear_probe/)
+  7. Novel bridges help? (novel_bridges/)
+  8. More tokens help? (token_capacity: 4, 8, 16, 32)
+  9. Latency advantage? (benchmarks/latency)
+ 10. Batched throughput scaling? (benchmarks/batched) - MLSys Critical
+
+Results: runs/reasoning_final_20260120_101058
+==============================================================
+[2026-01-20 10:11:08] Job ending with exit code: 0
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	runs/reasoning_final_151710.err
+	runs/reasoning_final_151710.log
+
+nothing added to commit but untracked files present (use "git add" to track)
+[2026-01-20 10:11:09] Git push attempt 1 of 3
+[2026-01-20 10:11:10] Git push successful
