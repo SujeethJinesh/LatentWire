@@ -1,8 +1,8 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-19T17:05:00.660454",
-    "job_id": "151071"
+    "last_updated": "2026-01-19T18:29:33.607361",
+    "job_id": "151096"
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
@@ -32,14 +32,14 @@
     "optimal_transport_arc_easy_seed42": {
       "status": "failed",
       "result_file": null,
-      "error_msg": "[EMERGENCY] Error: RuntimeError: expected scalar type Float but found BFloat16 Traceback (most recent call last): RuntimeError: expected scalar type Float but found BFloat16 ",
+      "error_msg": "[EMERGENCY] Error: RuntimeError: expected scalar type BFloat16 but found Float Traceback (most recent call last): RuntimeError: expected scalar type BFloat16 but found Float ",
       "exit_code": 1,
-      "started_at": "2026-01-19T15:37:45.942982",
-      "completed_at": "2026-01-19T15:38:20.758768",
+      "started_at": "2026-01-19T17:50:46.868784",
+      "completed_at": "2026-01-19T17:51:30.842509",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
+      "retry_count": 2,
       "error_category": "unknown"
     },
     "moe_arc_easy_seed42": {
@@ -127,17 +127,16 @@
       "retry_count": 0
     },
     "hailmary_mine_arc_easy_seed42": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "[EMERGENCY] Error: RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead. Traceback (most recent call last): RuntimeError: view size is not compatible with input tensor's size and stride",
-      "exit_code": 1,
-      "started_at": "2026-01-19T15:50:04.215220",
-      "completed_at": "2026-01-19T15:50:50.179546",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T17:51:31.618508",
+      "completed_at": "2026-01-19T18:05:41.626188",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
-      "error_category": "unknown"
+      "retry_count": 2
     },
     "hailmary_mixture_of_depths_arc_easy_seed42": {
       "status": "completed",
@@ -164,29 +163,28 @@
       "retry_count": 1
     },
     "hailmary_domain_adversarial_arc_easy_seed42": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "[EMERGENCY] Error: RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead. Traceback (most recent call last): RuntimeError: view size is not compatible with input tensor's size and stride",
-      "exit_code": 1,
-      "started_at": "2026-01-19T16:15:40.574255",
-      "completed_at": "2026-01-19T16:16:27.099135",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T18:05:41.811450",
+      "completed_at": "2026-01-19T18:14:56.814704",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
-      "error_category": "unknown"
+      "retry_count": 2
     },
     "hailmary_successive_refinement_arc_easy_seed42": {
       "status": "failed",
       "result_file": null,
-      "error_msg": "Traceback (most recent call last):     raise AttributeError( AttributeError: 'Identity' object has no attribute 'weight' ",
+      "error_msg": "RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16 ",
       "exit_code": 1,
-      "started_at": "2026-01-19T16:16:27.366554",
-      "completed_at": "2026-01-19T16:17:34.836044",
+      "started_at": "2026-01-19T18:14:56.909143",
+      "completed_at": "2026-01-19T18:15:40.407908",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
+      "retry_count": 2,
       "error_category": "unknown"
     },
     "token_capacity_4_seed42": {
@@ -286,30 +284,28 @@
       "retry_count": 1
     },
     "prompt_tuning_arc_easy": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "    raise RuntimeError(\"each element in list of batch should be of equal size\") RuntimeError: each element in list of batch should be of equal size ",
-      "exit_code": 1,
-      "started_at": "2026-01-19T16:17:11.660480",
-      "completed_at": "2026-01-19T16:17:41.325408",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T17:50:47.923149",
+      "completed_at": "2026-01-19T18:03:31.893280",
       "gpu": 0,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
-      "error_category": "unknown"
+      "retry_count": 2
     },
     "ridge_regression_arc_easy": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "Traceback (most recent call last): RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:1! (when checking argument for argument tensors in method wrapper_CUDA_cat) ",
-      "exit_code": 1,
-      "started_at": "2026-01-19T16:58:18.500405",
-      "completed_at": "2026-01-19T16:59:00.299388",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T18:15:40.680992",
+      "completed_at": "2026-01-19T18:27:11.628361",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
-      "error_category": "unknown"
+      "retry_count": 2
     },
     "linear_probe": {
       "status": "completed",
@@ -324,18 +320,16 @@
       "retry_count": 1
     },
     "latency_benchmark_no_checkpoint": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock' ",
-      "exit_code": 1,
-      "started_at": "2026-01-19T12:37:27.320259",
-      "completed_at": "2026-01-19T12:38:02.815044",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T18:27:16.726127",
+      "completed_at": "2026-01-19T18:28:17.457423",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": true,
-      "retry_count": 0,
-      "error_category": "unknown",
-      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
+      "marked_for_rerun": false,
+      "retry_count": 1
     },
     "batched_latency_benchmark": {
       "status": "completed",
@@ -354,12 +348,12 @@
       "result_file": null,
       "error_msg": "ValueError: Expected input batch_size (7) to match target batch_size (1). ",
       "exit_code": 1,
-      "started_at": "2026-01-19T17:03:46.342916",
-      "completed_at": "2026-01-19T17:04:20.776128",
+      "started_at": "2026-01-19T18:28:17.596939",
+      "completed_at": "2026-01-19T18:28:57.361348",
       "gpu": 1,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
+      "retry_count": 2,
       "error_category": "unknown"
     },
     "text_relay_arc_easy": {
@@ -375,18 +369,16 @@
       "retry_count": 0
     },
     "throughput_benchmark_no_checkpoint": {
-      "status": "failed",
+      "status": "completed",
       "result_file": null,
-      "error_msg": "OSError: [Errno 122] Disk quota exceeded: '/projects/m000066/sujinesh/.cache/huggingface/hub/.locks/datasets--glue/274c0b2c4c5524fe09285a8b7d945fe98a1dfe7a.lock' ",
-      "exit_code": 1,
-      "started_at": "2026-01-19T12:39:42.914155",
-      "completed_at": "2026-01-19T12:40:17.524445",
+      "error_msg": null,
+      "exit_code": 0,
+      "started_at": "2026-01-19T18:28:57.452959",
+      "completed_at": "2026-01-19T18:29:33.607351",
       "gpu": 1,
       "metrics": {},
-      "marked_for_rerun": true,
-      "retry_count": 0,
-      "error_category": "unknown",
-      "rerun_reason": "Fixed dtype, batching, ARC labels, and tolist issues"
+      "marked_for_rerun": false,
+      "retry_count": 1
     },
     "ensemble_arc_easy": {
       "status": "completed",

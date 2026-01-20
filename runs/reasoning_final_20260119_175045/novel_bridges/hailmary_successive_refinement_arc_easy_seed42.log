@@ -1,0 +1,82 @@
+/users/sujinesh/.local/lib/python3.10/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+============================================================
+TELEPATHY TRAINING: ARC_EASY
+============================================================
+
+Dataset: arc_easy (5 classes)
+Random baseline: 20.0%
+Source layer: 31
+Soft tokens: 8
+Steps: 1500
+Diversity weight: 0.1
+============================================================
+Downloading shards:   0%|          | 0/4 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 4/4 [00:00<00:00, 3069.94it/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.57s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.38s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:07<00:02,  2.39s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.70s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.97s/it]
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 2628.56it/s]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:02<00:04,  2.22s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:04<00:02,  2.22s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.15s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:06<00:00,  2.17s/it]
+2026-01-19 18:15:28,569 - INFO - SuccessiveRefinementBridge: max 16 tokens, using 8
+Target embedding RMS: 0.0027
+Using Successive Refinement Bridge - Progressive token generation
+
+Training on 2251 samples
+Validation: 2376 samples
+Starting training...
+
+ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]ARC_EASY:   0%|                                                            | 0/1500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1320, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 749, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1932, in forward
+    base_token = self.base_encoder(pooled).unsqueeze(1)  # [B, 1, D]
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+
+[ERROR] Training interrupted by exception at step 1
+[ERROR] RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+
+[EMERGENCY] Checkpoint saved to runs/reasoning_final_20260119_175045/novel_bridges/hailmary_successive_refinement_arc_easy_seed42/emergency_checkpoint_step0.pt
+[EMERGENCY] Error: RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+Traceback (most recent call last):
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1565, in <module>
+    main()
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 1320, in main
+    loss, loss_dict = train_step(
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/train_telepathy.py", line 749, in train_step
+    soft_tokens, aux_loss, diversity, z_variance = bridge_module(src_h, src_mask)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/scratch/m000066/sujinesh/LatentWire/telepathy/cross_model_experiments.py", line 1932, in forward
+    base_token = self.base_encoder(pooled).unsqueeze(1)  # [B, 1, D]
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/users/sujinesh/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16

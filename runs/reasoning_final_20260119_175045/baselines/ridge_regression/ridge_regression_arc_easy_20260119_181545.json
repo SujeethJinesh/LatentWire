@@ -1,0 +1,129 @@
+{
+  "experiment": "ridge_regression_baseline",
+  "timestamp": "20260119_181545",
+  "config": {
+    "baseline": "ridge_regression",
+    "dataset": "arc_easy",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200,
+    "lambda_values": [
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "max_fit_samples": 1000,
+    "source_layer": 31
+  },
+  "results": {
+    "seed_42": {
+      "lambda_0.1": {
+        "accuracy": 27.0,
+        "correct": 54,
+        "total": 200
+      },
+      "lambda_1.0": {
+        "accuracy": 27.0,
+        "correct": 54,
+        "total": 200
+      },
+      "lambda_10.0": {
+        "accuracy": 28.0,
+        "correct": 56,
+        "total": 200
+      },
+      "lambda_100.0": {
+        "accuracy": 26.0,
+        "correct": 52,
+        "total": 200
+      }
+    },
+    "seed_123": {
+      "lambda_0.1": {
+        "accuracy": 27.0,
+        "correct": 54,
+        "total": 200
+      },
+      "lambda_1.0": {
+        "accuracy": 27.0,
+        "correct": 54,
+        "total": 200
+      },
+      "lambda_10.0": {
+        "accuracy": 28.0,
+        "correct": 56,
+        "total": 200
+      },
+      "lambda_100.0": {
+        "accuracy": 26.0,
+        "correct": 52,
+        "total": 200
+      }
+    },
+    "seed_456": {
+      "lambda_0.1": {
+        "accuracy": 27.0,
+        "correct": 54,
+        "total": 200
+      },
+      "lambda_1.0": {
+        "accuracy": 27.0,
+        "correct": 54,
+        "total": 200
+      },
+      "lambda_10.0": {
+        "accuracy": 28.0,
+        "correct": 56,
+        "total": 200
+      },
+      "lambda_100.0": {
+        "accuracy": 26.0,
+        "correct": 52,
+        "total": 200
+      }
+    },
+    "summary": {
+      "lambda_0.1": {
+        "mean_accuracy": 27.0,
+        "std_accuracy": 0.0,
+        "all_accuracies": [
+          27.0,
+          27.0,
+          27.0
+        ]
+      },
+      "lambda_1.0": {
+        "mean_accuracy": 27.0,
+        "std_accuracy": 0.0,
+        "all_accuracies": [
+          27.0,
+          27.0,
+          27.0
+        ]
+      },
+      "lambda_10.0": {
+        "mean_accuracy": 28.0,
+        "std_accuracy": 0.0,
+        "all_accuracies": [
+          28.0,
+          28.0,
+          28.0
+        ]
+      },
+      "lambda_100.0": {
+        "mean_accuracy": 26.0,
+        "std_accuracy": 0.0,
+        "all_accuracies": [
+          26.0,
+          26.0,
+          26.0
+        ]
+      }
+    },
+    "best_lambda": "lambda_10.0"
+  }
+}

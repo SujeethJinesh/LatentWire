@@ -1,0 +1,43 @@
+{
+  "experiment": "prompt_tuning_baseline",
+  "timestamp": "20260119_175054",
+  "config": {
+    "baseline": "prompt_tuning",
+    "dataset": "arc_easy",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "max_samples": 200,
+    "soft_tokens": 8,
+    "steps": 1500
+  },
+  "results": {
+    "seed_42": {
+      "accuracy": 24.5,
+      "correct": 49,
+      "total": 200,
+      "soft_tokens": 8,
+      "trainable_params": 32769
+    },
+    "seed_123": {
+      "accuracy": 21.5,
+      "correct": 43,
+      "total": 200,
+      "soft_tokens": 8,
+      "trainable_params": 32769
+    },
+    "seed_456": {
+      "accuracy": 24.0,
+      "correct": 48,
+      "total": 200,
+      "soft_tokens": 8,
+      "trainable_params": 32769
+    },
+    "summary": {
+      "mean_accuracy": 23.333333333333332,
+      "std_accuracy": 1.3123346456686351
+    }
+  }
+}

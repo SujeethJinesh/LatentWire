@@ -1,0 +1,18 @@
+{
+  "experiment": "throughput_benchmark",
+  "timestamp": "20260119_182901",
+  "device": "cuda:1",
+  "gpu_name": "NVIDIA H100 80GB HBM3",
+  "config": {
+    "benchmark": "throughput",
+    "checkpoint": null,
+    "soft_tokens": 8
+  },
+  "results": {
+    "direct_mistral": {
+      "total_time_s": 10.138921039178967,
+      "samples_per_s": 9.862982423236016,
+      "ms_per_sample": 101.38921039178967
+    }
+  }
+}
