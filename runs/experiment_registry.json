@@ -1,8 +1,8 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-20T17:55:37.268047",
-    "job_id": "152036"
+    "last_updated": "2026-01-21T10:27:31.048762",
+    "job_id": "152912"
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
@@ -18,11 +18,11 @@
       "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "pending",
+      "status": "running",
       "result_file": null,
       "error_msg": null,
       "exit_code": null,
-      "started_at": null,
+      "started_at": "2026-01-21T10:27:31.048753",
       "completed_at": null,
       "gpu": 0,
       "metrics": {},
