@@ -18,16 +18,16 @@
       "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "running",
+      "status": "pending",
       "result_file": null,
       "error_msg": null,
       "exit_code": null,
-      "started_at": "2026-01-20T17:55:37.268037",
+      "started_at": null,
       "completed_at": null,
       "gpu": 0,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 3
+      "retry_count": 4
     },
     "optimal_transport_arc_easy_seed42": {
       "status": "completed",
