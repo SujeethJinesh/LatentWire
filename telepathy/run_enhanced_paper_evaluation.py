@@ -3003,6 +3003,8 @@ def get_result_file_path(run_dir: Path, method: str, dataset_key: str, seed: int
         return run_dir / "prompt_tuning" / f"prompt_tuning_{dataset_key}_seed{seed}.json"
     elif method == "bridge":
         return run_dir / "bridge" / f"{dataset_key}_seed{seed}_tokens{num_tokens}_results.json"
+    elif method == "same_model_bridge":
+        return run_dir / "same_model_bridge" / f"same_model_{dataset_key}_seed{seed}_tokens{num_tokens}_results.json"
     else:
         raise ValueError(f"Unknown method: {method}")
 

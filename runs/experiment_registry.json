@@ -18,17 +18,16 @@
       "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "failed",
+      "status": "pending",
       "result_file": null,
-      "error_msg": "Traceback (most recent call last):     raise ValueError(f\"Unknown method: {method}\") ValueError: Unknown method: same_model_bridge ",
-      "exit_code": 1,
-      "started_at": "2026-01-20T17:31:44.606615",
-      "completed_at": "2026-01-20T17:31:48.896825",
+      "error_msg": null,
+      "exit_code": null,
+      "started_at": null,
+      "completed_at": null,
       "gpu": 0,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 2,
-      "error_category": "unknown"
+      "retry_count": 3
     },
     "optimal_transport_arc_easy_seed42": {
       "status": "completed",
