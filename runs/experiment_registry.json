@@ -1,8 +1,8 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-21T10:27:31.048762",
-    "job_id": "152912"
+    "last_updated": "2026-01-21T14:55:16.344392",
+    "job_id": "153107"
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
@@ -18,16 +18,17 @@
       "retry_count": 2
     },
     "hail_mary_reasoning": {
-      "status": "pending",
+      "status": "failed",
       "result_file": null,
-      "error_msg": null,
-      "exit_code": null,
-      "started_at": null,
-      "completed_at": null,
+      "error_msg": "Traceback (most recent call last): ModuleNotFoundError: No module named 'numpy' ",
+      "exit_code": 1,
+      "started_at": "2026-01-21T14:55:16.147941",
+      "completed_at": "2026-01-21T14:55:16.344385",
       "gpu": 0,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 5
+      "retry_count": 5,
+      "error_category": "import"
     },
     "optimal_transport_arc_easy_seed42": {
       "status": "completed",
