@@ -1,0 +1,6 @@
+2026-01-20 17:31:47 | INFO | Starting enhanced evaluation run: runs/reasoning_final_20260120_145048/standard_bridge/run_20260120_145055
+2026-01-20 17:31:48 | INFO | Using device: cuda:0
+2026-01-20 17:31:48 | INFO | FAST MODE enabled
+2026-01-20 17:31:48 | INFO | HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+2026-01-20 17:31:48 | INFO | Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+2026-01-20 17:31:48 | INFO | Linear probe layer: 31 (matching bridge layer)

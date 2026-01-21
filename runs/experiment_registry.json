@@ -1,8 +1,8 @@
 {
   "meta": {
     "created_at": "2026-01-19T11:41:30.963742",
-    "last_updated": "2026-01-20T16:18:54.090912",
-    "job_id": "151977"
+    "last_updated": "2026-01-20T17:31:48.896833",
+    "job_id": "152016"
   },
   "experiments": {
     "flow_matching_arc_easy_seed42": {
@@ -22,12 +22,12 @@
       "result_file": null,
       "error_msg": "Traceback (most recent call last):     raise ValueError(f\"Unknown method: {method}\") ValueError: Unknown method: same_model_bridge ",
       "exit_code": 1,
-      "started_at": "2026-01-20T16:18:49.269589",
-      "completed_at": "2026-01-20T16:18:54.090903",
+      "started_at": "2026-01-20T17:31:44.606615",
+      "completed_at": "2026-01-20T17:31:48.896825",
       "gpu": 0,
       "metrics": {},
       "marked_for_rerun": false,
-      "retry_count": 1,
+      "retry_count": 2,
       "error_category": "unknown"
     },
     "optimal_transport_arc_easy_seed42": {
