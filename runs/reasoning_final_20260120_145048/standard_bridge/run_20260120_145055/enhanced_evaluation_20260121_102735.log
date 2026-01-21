@@ -1,0 +1,46 @@
+2026-01-21 10:27:35 | INFO | Starting enhanced evaluation run: runs/reasoning_final_20260120_145048/standard_bridge/run_20260120_145055
+2026-01-21 10:27:36 | INFO | Using device: cuda:0
+2026-01-21 10:27:36 | INFO | FAST MODE enabled
+2026-01-21 10:27:36 | INFO | HAIL MARY MODE enabled - running simple reasoning datasets with layer-31 probe
+2026-01-21 10:27:36 | INFO | Datasets: ['arc_easy', 'winogrande', 'hellaswag', 'boolq', 'sst2', 'agnews']
+2026-01-21 10:27:36 | INFO | Linear probe layer: 31 (matching bridge layer)
+2026-01-21 10:27:36 | INFO | Starting zero-shot baselines...
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_arc_easy_seed42 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_mistral_arc_easy_seed42 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_arc_easy_seed123 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_mistral_arc_easy_seed123 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_arc_easy_seed456 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_mistral_arc_easy_seed456 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_winogrande_seed42 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_mistral_winogrande_seed42 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_winogrande_seed123 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_mistral_winogrande_seed123 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_winogrande_seed456 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_mistral_winogrande_seed456 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_hellaswag_seed42 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_mistral_hellaswag_seed42 - result already exists
+2026-01-21 10:27:36 | INFO | [SKIP] zeroshot_llama_hellaswag_seed123 - result already exists
+2026-01-21 11:11:15 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 0.8% (1/132)
+  Last: zeroshot_mistral_hellaswag_seed123 (2618.5s) [OK]
+  Elapsed: 0h 43m 39s | ETA: 95h 17m 3s
+  Avg time: 2618.5s | Failed: 0 | Skipped: 15
+======================================================================
+2026-01-21 11:11:15 | INFO | [SUCCESS] zeroshot_mistral_hellaswag_seed123 completed in 2618.5s
+2026-01-21 12:00:32 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 1.5% (2/132)
+  Last: zeroshot_llama_hellaswag_seed456 (2956.9s) [OK]
+  Elapsed: 1h 32m 56s | ETA: 100h 40m 3s
+  Avg time: 2787.7s | Failed: 0 | Skipped: 15
+======================================================================
+2026-01-21 12:00:32 | INFO | [SUCCESS] zeroshot_llama_hellaswag_seed456 completed in 2956.9s
+2026-01-21 13:01:38 | INFO | 
+======================================================================
+PROGRESS: [------------------------------] 2.3% (3/132)
+  Last: zeroshot_mistral_hellaswag_seed456 (3665.8s) [OK]
+  Elapsed: 2h 34m 2s | ETA: 110h 22m 52s
+  Avg time: 3080.4s | Failed: 0 | Skipped: 15
+======================================================================
+2026-01-21 13:01:38 | INFO | [SUCCESS] zeroshot_mistral_hellaswag_seed456 completed in 3665.8s
