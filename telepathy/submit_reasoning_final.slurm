@@ -82,8 +82,27 @@ export TRANSFORMERS_CACHE="${HF_HOME}/transformers"
 export HF_DATASETS_CACHE="${HF_HOME}/datasets"
 mkdir -p "$HF_HOME" "$HF_HUB_CACHE" "$TRANSFORMERS_CACHE" "$HF_DATASETS_CACHE"
 
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-OUTPUT_DIR="runs/reasoning_final_${TIMESTAMP}"
+# Check for existing incomplete run to resume from
+RESUME_DIR=""
+EXISTING_RUN=$(ls -td runs/reasoning_final_*/standard_bridge/run_*/intermediate_results.json 2>/dev/null | head -1)
+if [ -n "$EXISTING_RUN" ]; then
+    # Found existing run - check if it's incomplete
+    EXISTING_RUN_DIR=$(dirname "$EXISTING_RUN")
+    if [ -f "$EXISTING_RUN_DIR/enhanced_evaluation_results.json" ]; then
+        echo "[RESUME] Found completed run at $EXISTING_RUN_DIR - starting fresh"
+    else
+        echo "[RESUME] Found incomplete run at $EXISTING_RUN_DIR - will resume"
+        RESUME_DIR="$EXISTING_RUN_DIR"
+        OUTPUT_DIR=$(dirname $(dirname "$EXISTING_RUN_DIR"))
+    fi
+fi
+
+# If no resume, create new output directory
+if [ -z "$RESUME_DIR" ]; then
+    TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+    OUTPUT_DIR="runs/reasoning_final_${TIMESTAMP}"
+fi
+
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR/standard_bridge"
 mkdir -p "$OUTPUT_DIR/novel_bridges"
@@ -263,14 +282,21 @@ run_gpu0() {
     # -----------------------------------------------------------------
     log_msg "[GPU 0] Running Hail Mary Reasoning Evaluation"
 
-    run_experiment "hail_mary_reasoning" "python telepathy/run_enhanced_paper_evaluation.py \
+    # Build hail_mary command with optional resume
+    HAIL_MARY_CMD="python telepathy/run_enhanced_paper_evaluation.py \
         --output_dir '${OUTPUT_DIR}/standard_bridge' \
         --gpu 0 \
         --hail_mary_mode \
         --fast_mode \
         --run_diagnostics \
-        --log_level INFO \
-        2>&1 | tee '${OUTPUT_DIR}/standard_bridge/hail_mary.log'"
+        --log_level INFO"
+
+    if [ -n "$RESUME_DIR" ]; then
+        log_msg "[GPU 0] RESUMING hail_mary from: $RESUME_DIR"
+        HAIL_MARY_CMD="$HAIL_MARY_CMD --resume_dir '$RESUME_DIR'"
+    fi
+
+    run_experiment "hail_mary_reasoning" "$HAIL_MARY_CMD 2>&1 | tee '${OUTPUT_DIR}/standard_bridge/hail_mary.log'"
 
     log_msg "[GPU 0] Hail mary evaluation completed"
 
