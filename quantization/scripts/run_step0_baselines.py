@@ -118,6 +118,7 @@ def main():
     )
     parser.add_argument("--env", default="rosetta", help="Conda env name to use")
     parser.add_argument("--skip-gpu-check", action="store_true", help="Skip GPU detection")
+    parser.add_argument("--prep-only", action="store_true", help="Run setup + downloads only; skip evaluation")
     parser.add_argument("--no-reexec", action="store_true", help="Internal flag to avoid re-exec loops")
     args = parser.parse_args()
 
@@ -125,7 +126,7 @@ def main():
     if not project_root.is_dir():
         die(f"PROJECT_ROOT not found: {project_root}")
 
-    if not args.skip_gpu_check:
+    if not args.skip_gpu_check and not args.prep_only:
         check_gpu()
 
     ensure_env(args.env, project_root, args)
@@ -191,6 +192,7 @@ def main():
             "c2c_commit": git_rev(c2c_root),
             "hostname": socket.gethostname(),
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "prep_only": bool(args.prep_only),
         }
         manifest_path = run_root / "manifests" / "step_0_checkpoint_manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))
@@ -213,6 +215,13 @@ def main():
 
         patch(run_root / "configs/openbookqa.yaml", "openbookqa", run_root / "results" / "openbookqa")
         patch(run_root / "configs/arc_c.yaml", "ai2-arc", run_root / "results" / "arc_c")
+
+        if args.prep_only:
+            print(f"Prep-only complete. Run on GPU to execute evals. Run folder: {run_root}")
+            return
+
+        if not args.skip_gpu_check:
+            check_gpu()
 
         run_cmd(
             [sys.executable, "script/evaluation/unified_evaluator.py", "--config", str(run_root / "configs/openbookqa.yaml")],
