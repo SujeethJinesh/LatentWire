@@ -62,6 +62,7 @@ kv_quant_config:
   scheme: int8   # int8 | int4
   axis: head     # head | layer
   eps: 1e-6
+  collect_stats: false
 ```  
 Follow the Step 0 pattern with a minimal, well‑scoped runner:
 - `quantization/scripts/run_step1_kv_ptq.py` with GPU as default; `--mode local` for Mac validation.  
@@ -83,6 +84,7 @@ PTQ results + bandwidth reductions are sufficient for a workshop paper.
 - **Hook point**: `rosetta/model/wrapper.py` quantizes **source KV slices** immediately before projection.  
 - **Config plumbing**: `rosetta/utils/evaluate.py` passes `kv_quant_config` into `RosettaModel`.  
 - **Design choice**: fake‑quant only (quantize → dequantize), no bit‑packing yet. This preserves execution path while modeling quantization noise.
+- **Interpretability**: optional `collect_stats` aggregates min/max/mean scale stats per run (low overhead when enabled).
 
 **Decisions + justification**  
 - **Start with INT8 + INT4 only**: These are the most standard, hardware‑agnostic PTQ baselines. They deliver a clear accuracy/bytes trade‑off and are sufficient for a workshop paper.  
@@ -98,6 +100,7 @@ PTQ results + bandwidth reductions are sufficient for a workshop paper.
 - **Source+base quantization**: quantify whether quantization noise on both sides compounds or cancels.  
 - **Layer‑selective quantization**: higher precision in late layers, lower in early layers.  
 - **Group‑wise quantization**: group size tuning for accuracy/overhead trade‑offs.  
+- **Per‑run scale histograms**: richer quantization diagnostics beyond min/max/mean.  
 
 **Technical notes / acronyms (Step 1)**  
 - **KV cache**: Attention Keys/Values stored for past tokens to avoid recomputation.  
