@@ -90,6 +90,8 @@ def ensure_env(env_name, project_root, args):
     ]
     if args.skip_gpu_check:
         cmd.append("--skip-gpu-check")
+    if args.prep_only:
+        cmd.append("--prep-only")
     print("Re-running inside conda env:", " ".join(cmd))
     subprocess.check_call(cmd)
     sys.exit(0)
