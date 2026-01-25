@@ -1,0 +1,75 @@
+\documentclass[10pt]{article}
+
+% Minimal workshop-friendly template (replace with official when ready)
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{Quantized Cache-to-Cache: Communication-Budgeted KV Transfer for Heterogeneous LLMs}
+\author{Anonymous Authors}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study precision-aware communication between heterogeneous LLMs by quantizing KV-cache transfers in Cache-to-Cache (C2C). Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization and cache-length reduction, and show accuracy vs bytes transmitted curves. This draft contains placeholders for results.
+\end{abstract}
+
+\section{Introduction}
+Large language models (LLMs) often communicate via text, which is slow and lossy. Cache-to-Cache (C2C) communicates via KV-cache projection and fusion, but does not address precision constraints. We ask: \textit{How low can KV precision go before accuracy collapses, and can we recover performance under tight bandwidth budgets?}
+
+\section{Background and Motivation}
+C2C projects sharer KV caches into receiver space and fuses them with learned gates. This retains richer semantics than text relay. However, KV caches are large: they scale with sequence length, heads, and hidden size. Quantization and cache-length reduction can shrink the communication footprint.
+
+\section{Method}
+\subsection{Post-Training Quantization (PTQ)}
+We quantize the KV caches using INT8 or INT4/NF4 with per-head scaling. We evaluate accuracy and latency under fixed precision budgets.
+
+\subsection{Cache-Length Reduction}
+We prune KV tokens using a fixed ratio (e.g., top-50\%, 25\%, 10\%), reducing transmitted bytes further.
+
+\subsection{Communication-Budget Curves}
+We report accuracy as a function of transmitted bytes, enabling fair comparison under equal communication constraints.
+
+\section{Experiments}
+\subsection{Setup}
+We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. All models are frozen; only the projector is trained when QAT is enabled.
+
+\subsection{Main Results}
+\begin{table}[ht]
+\centering
+\caption{Accuracy (\%) and bandwidth (bytes) on ARC-C. Placeholder values shown.}
+\begin{tabular}{lccc}
+\toprule
+Method & Precision & Accuracy (\%) & Bytes (\% of FP16) \\
+\midrule
+C2C (FP16) & FP16 & x\% & 100 \\
+C2C + PTQ & INT8 & x\% & 50 \\
+C2C + PTQ & INT4/NF4 & x\% & 25 \\
+C2C + PTQ + Prune & INT8 + 50\% & x\% & 25 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Communication-Budget Curve}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\linewidth]{figures/accuracy_vs_bytes_placeholder.pdf}
+\caption{Accuracy vs bytes transmitted (placeholder).}
+\end{figure}
+
+\section{Discussion}
+Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication.
+
+\section{Conclusion}
+We introduce precision-aware C2C and report accuracy vs bytes curves. This establishes a communication-budget perspective for cross-model KV transfer and opens the door to low-latency, low-bandwidth agent collaboration.
+
+\section*{Acknowledgments}
+Placeholder.
+
+\end{document}

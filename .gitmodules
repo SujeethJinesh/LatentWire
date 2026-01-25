@@ -1,0 +1,3 @@
+[submodule "quantization/C2C"]
+	path = quantization/C2C
+	url = git@github.com:thu-nics/C2C.git

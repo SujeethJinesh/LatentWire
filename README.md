@@ -1,6 +1,6 @@
 # Telepathy
 
-Continuous latent communication for cross-model inference. MLSys 2025.
+Continuous latent communication for cross-model inference.
 
 ## Overview
 
@@ -9,7 +9,7 @@ Telepathy enables cross-model communication via learned soft tokens, where a "se
 ## Key Results
 
 | Dataset | Telepathy | Text-Relay | Speedup |
-|---------|-----------|------------|---------|
+| ------- | --------- | ---------- | ------- |
 | SST-2   | 93.7%     | 41.3%      | 4.7x    |
 | AG News | 90.7%     | 1.0%       | 4.7x    |
 
@@ -51,6 +51,7 @@ sbatch telepathy/submit_enhanced_paper_eval.slurm
 ```
 
 This runs the complete evaluation including:
+
 - 3 random seeds (42, 123, 456) for statistical significance
 - 2 token configurations (8, 24) for ablation study
 - 4 datasets: SST-2, AG News, BoolQ, GSM8K
@@ -167,17 +168,6 @@ LatentWire/
 **Model Loading Issues**: Ensure Hugging Face authentication and model access permissions for Llama.
 
 **Import Errors**: Set `export PYTHONPATH=.` before running scripts.
-
-## Citation
-
-```bibtex
-@inproceedings{telepathy2025,
-  title={Telepathy: Continuous Latent Communication for Cross-Model Inference},
-  author={...},
-  booktitle={MLSys},
-  year={2025}
-}
-```
 
 ## License
 
