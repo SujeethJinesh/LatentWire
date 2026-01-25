@@ -1,0 +1,37 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": null,
+  "include_response": false,
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_133331",
+  "input_length": 105,
+  "generated_length": 10,
+  "prompt_text": "Accurately answer the following question:\n\nThe main component in dirt is\n\nChoices:\nA. microorganisms\nB. broken stones\nC. pollution\nD. bacteria\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "The main component in dirt is",
+  "choices_texts": [
+    "microorganisms",
+    "broken stones",
+    "pollution",
+    "bacteria"
+  ],
+  "choices_str": "A. microorganisms\nB. broken stones\nC. pollution\nD. bacteria\n",
+  "generated_text": "The correct answer is A. microorganisms.",
+  "extracted_answer": "A",
+  "expected_answer": "B",
+  "matches_expected": false,
+  "dataset": "openbookqa",
+  "sample_index": 9,
+  "receiver_only": true,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": false
+  },
+  "kv_quant_stats": null,
+  "kv_quant_applied": false
+}

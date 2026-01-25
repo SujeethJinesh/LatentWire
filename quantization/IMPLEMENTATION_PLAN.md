@@ -138,14 +138,19 @@ Store results under `quantization/data/step_1_kv_ptq/<run_tag>/` for now (rename
   - **Why**: keeps eval settings identical to Milestone 0 while toggling only KV precision.  
 - **Phase 2 (Local sanity)**: run 5–20 local samples with quant enabled vs `--disable-kv-quant` to confirm quantization does not change behavior in small samples.  
   - **Why**: verifies the quant path is exercised and stable before burning GPU time.  
-- **Phase 3 (GPU smoke)**: run a limited GPU eval (e.g., 25–50 samples) by temporarily setting `eval.limit` in the generated configs to validate throughput + correctness.  
-  - **Why**: catches runtime errors and logging issues quickly on the real target environment.  
-- **Phase 4 (Receiver‑only sanity)**: run a short receiver‑only baseline on the same subset to confirm outputs are not degenerate (sanity check vs Table 3).  
-  - **Why**: ensures the base model is behaving reasonably before we attribute deltas to C2C or quantization.  
-- **Phase 5 (Full GPU eval)**: run full OpenBookQA + ARC‑C for INT8 and INT4; capture results + logs.  
-  - **Why**: these numbers anchor the workshop paper and the budget‑accuracy curves.  
-- **Phase 6 (Analysis + QC)**: compute delta accuracy vs Milestone 0, check consistency with C2C paper settings.  
-  - **Why**: prevents accidental misalignment with the baseline or paper protocol.
+  - **Notes**: keep `include_response=false` (default) to match paper evals; record answer distribution (A/B/C/D) to spot degenerate outputs.  
+- **Phase 3 (Local receiver‑only baseline)**: run the receiver model without C2C projectors on the same samples.  
+  - **Why**: isolates base model behavior and helps explain degenerate outputs before GPU access.  
+- **Deferred GPU block (execute when GPU is available)**  
+  - **Phase 4 (GPU smoke)**: run a limited GPU eval (e.g., 25–50 samples) by temporarily setting `eval.limit` in the generated configs to validate throughput + correctness.  
+    - **Why**: catches runtime errors and logging issues quickly on the real target environment.  
+    - **Notes**: verify answer distribution and output length stats before running full eval.  
+  - **Phase 5 (Receiver‑only sanity)**: run a short receiver‑only baseline on the same subset with the same prompt settings to confirm outputs are not degenerate (sanity check vs Table 3).  
+    - **Why**: ensures the base model is behaving reasonably before we attribute deltas to C2C or quantization.  
+  - **Phase 6 (Full GPU eval)**: run full OpenBookQA + ARC‑C for INT8 and INT4; capture results + logs.  
+    - **Why**: these numbers anchor the workshop paper and the budget‑accuracy curves.  
+  - **Phase 7 (Analysis + QC)**: compute delta accuracy vs Milestone 0, check consistency with C2C paper settings.  
+    - **Why**: prevents accidental misalignment with the baseline or paper protocol.
 
 **Telemetry (Milestone 2)**  
 - `env_info.json`: conda, HF cache paths, torch/transformers versions, CUDA visibility.  
@@ -166,8 +171,10 @@ Store results under `quantization/data/step_1_kv_ptq/<run_tag>/` for now (rename
 - Quant vs no‑quant (OpenBookQA, 20 samples):  
   - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --kv-quant-scheme int8 --kv-quant-collect-stats`  
   - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --disable-kv-quant`  
+- Receiver‑only local baseline (OpenBookQA, 20 samples):  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --local-receiver-only`  
 
-**GPU smoke commands (Milestone 2)**  
+**GPU smoke commands (Milestone 2, deferred)**  
 - After `--prep-only`, set `eval.limit` inside `quantization/data/step_1_kv_ptq/<run_tag>/configs/*.yaml` to a small value (25–50), then run the evaluator commands recorded in `logs/step1.log`.  
 
 ## Milestone 3: Cache‑Length Reduction
@@ -271,6 +278,11 @@ Reuse the PTQ + pruning settings from Steps 2–3.
 - **QAT scope**: keep projector‑only training (freeze base/teacher weights) to stay within 1×H100 budget.
 - **Mixed precision**: start with “last‑N layers FP16, rest INT8” as the minimal schedule.
 - **Heterogeneity**: plan for tokenizer alignment (`is_do_alignment`) when crossing model families.
+- **Local vs GPU accuracy**: MPS local runs can show degenerate answer distributions (e.g., over‑predicting “A”). Treat local runs as pipeline validation only; rely on GPU evals for accuracy.
+- **include_response alignment**: paper eval defaults to `include_response=false`. Our code now supports both; keep official evals at false, use true only for ablations.
+- **Prompt alignment**: stay on the unified Non‑CoT prompt template with `use_template=true`, `use_cot=false`, `max_new_tokens=64`, temp=0.
+- **Cache/conda drift**: HF caches are large; keep caches out of git and ensure conda env matches versions in `env_info.json`.
+- **Extensions**: add `--eval-limit` flag to the runner for GPU smoke runs and capture answer‑distribution stats (A/B/C/D counts) automatically.
 
 ## Time Budget (rough)
 - Workshop path: ~1 day on 1 H100 (assuming caches are warm).

@@ -352,7 +352,16 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
         env_info = collect_env_info()
         print("Environment info:", json.dumps(env_info, indent=2))
         (run_root / "manifests" / "env_info.json").write_text(json.dumps(env_info, indent=2))
-        write_status(run_root, "running", {"mode": "local", "kv_quant_config": kv_quant_config})
+        write_status(
+            run_root,
+            "running",
+            {
+                "mode": "local",
+                "kv_quant_config": kv_quant_config,
+                "receiver_only": bool(args.local_receiver_only),
+                "include_response": bool(args.include_response),
+            },
+        )
 
         run_cmd(
             ["git", "submodule", "update", "--init", "--recursive", "quantization/C2C"],
@@ -408,28 +417,29 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
         from rosetta.utils.evaluate import set_default_chat_template, extract_answer_from_content
 
         checkpoint_dir = args.checkpoint_dir
-        if checkpoint_dir is None:
-            ckpt_root = data_root / "step_1_kv_ptq" / "local_smoke_tests" / "checkpoints"
-            ckpt_root.mkdir(parents=True, exist_ok=True)
-            repo_id = "nics-efc/C2C_Fuser"
-            pattern = "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
-            local_dir = ckpt_root / "C2C_Fuser"
-            snapshot_path = snapshot_download(
-                repo_id=repo_id,
-                allow_patterns=[pattern],
-                local_dir=str(local_dir),
-                local_dir_use_symlinks=False,
-            )
-            checkpoint_dir = str(local_dir / "qwen3_0.6b+qwen2.5_0.5b_Fuser" / "final")
-            manifest = {
-                "repo_id": repo_id,
-                "allow_patterns": [pattern],
-                "snapshot_path": snapshot_path,
-                "checkpoint_dir": checkpoint_dir,
-            }
-            (run_root / "manifests" / "checkpoint_manifest.json").write_text(
-                json.dumps(manifest, indent=2)
-            )
+        if not args.local_receiver_only:
+            if checkpoint_dir is None:
+                ckpt_root = data_root / "step_1_kv_ptq" / "local_smoke_tests" / "checkpoints"
+                ckpt_root.mkdir(parents=True, exist_ok=True)
+                repo_id = "nics-efc/C2C_Fuser"
+                pattern = "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
+                local_dir = ckpt_root / "C2C_Fuser"
+                snapshot_path = snapshot_download(
+                    repo_id=repo_id,
+                    allow_patterns=[pattern],
+                    local_dir=str(local_dir),
+                    local_dir_use_symlinks=False,
+                )
+                checkpoint_dir = str(local_dir / "qwen3_0.6b+qwen2.5_0.5b_Fuser" / "final")
+                manifest = {
+                    "repo_id": repo_id,
+                    "allow_patterns": [pattern],
+                    "snapshot_path": snapshot_path,
+                    "checkpoint_dir": checkpoint_dir,
+                }
+                (run_root / "manifests" / "checkpoint_manifest.json").write_text(
+                    json.dumps(manifest, indent=2)
+                )
 
         device = resolve_device_for_mode(args.mode)
         dtype = torch.float16 if device.type in ("cuda", "mps") else torch.float32
@@ -438,36 +448,41 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
         tokenizer = AutoTokenizer.from_pretrained(args.base_model)
         set_default_chat_template(tokenizer, args.base_model)
         base_model = AutoModelForCausalLM.from_pretrained(args.base_model, torch_dtype=dtype).eval()
-        teacher_model = AutoModelForCausalLM.from_pretrained(args.teacher_model, torch_dtype=dtype).eval()
         base_model.to(device)
-        teacher_model.to(device)
 
-        ckpt_path = Path(checkpoint_dir)
-        projector_list = []
-        for proj_json in sorted(ckpt_path.glob("projector_*.json")):
-            if proj_json.name == "projector_config.json":
-                continue
-            proj = load_projector(str(proj_json))
-            pt_path = proj_json.with_suffix(".pt")
-            if pt_path.exists():
-                state_dict = torch.load(pt_path, map_location="cpu")
-                for key, value in state_dict.items():
-                    if torch.is_tensor(value):
-                        state_dict[key] = value.to(projector_dtype)
-                proj.load_state_dict(state_dict, strict=False)
-            proj = proj.to(device=device, dtype=projector_dtype)
-            projector_list.append(proj)
+        teacher_model = None
+        if not args.local_receiver_only:
+            teacher_model = AutoModelForCausalLM.from_pretrained(args.teacher_model, torch_dtype=dtype).eval()
+            teacher_model.to(device)
 
-        rosetta = RosettaModel(
-            model_list=[base_model, teacher_model],
-            base_model_idx=0,
-            projector_list=projector_list,
-            include_response=args.include_response,
-            kv_quant_config=kv_quant_config,
-        ).to(device).eval()
+        rosetta = None
+        if not args.local_receiver_only:
+            ckpt_path = Path(checkpoint_dir)
+            projector_list = []
+            for proj_json in sorted(ckpt_path.glob("projector_*.json")):
+                if proj_json.name == "projector_config.json":
+                    continue
+                proj = load_projector(str(proj_json))
+                pt_path = proj_json.with_suffix(".pt")
+                if pt_path.exists():
+                    state_dict = torch.load(pt_path, map_location="cpu")
+                    for key, value in state_dict.items():
+                        if torch.is_tensor(value):
+                            state_dict[key] = value.to(projector_dtype)
+                    proj.load_state_dict(state_dict, strict=False)
+                proj = proj.to(device=device, dtype=projector_dtype)
+                projector_list.append(proj)
 
-        proj_cfg_path = ckpt_path / "projector_config.json"
-        rosetta.load_projector_config(str(proj_cfg_path))
+            rosetta = RosettaModel(
+                model_list=[base_model, teacher_model],
+                base_model_idx=0,
+                projector_list=projector_list,
+                include_response=args.include_response,
+                kv_quant_config=kv_quant_config,
+            ).to(device).eval()
+
+            proj_cfg_path = ckpt_path / "projector_config.json"
+            rosetta.load_projector_config(str(proj_cfg_path))
 
         dataset = load_local_dataset(args.local_dataset)
         dataset_size = len(dataset)
@@ -517,13 +532,20 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
             )
 
             with torch.no_grad():
-                outputs = rosetta.generate(
-                    **inputs,
-                    position_ids=position_ids,
-                    kv_cache_index=kv_cache_index,
-                    do_sample=False,
-                    max_new_tokens=args.max_new_tokens,
-                )
+                if args.local_receiver_only:
+                    outputs = base_model.generate(
+                        **inputs,
+                        do_sample=False,
+                        max_new_tokens=args.max_new_tokens,
+                    )
+                else:
+                    outputs = rosetta.generate(
+                        **inputs,
+                        position_ids=position_ids,
+                        kv_cache_index=kv_cache_index,
+                        do_sample=False,
+                        max_new_tokens=args.max_new_tokens,
+                    )
 
             output_ids = outputs[0]
             input_len = inputs["input_ids"].shape[1]
@@ -544,7 +566,8 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
                 else None
             )
 
-            kv_quant_stats = rosetta.get_kv_quant_stats()
+            kv_quant_stats = rosetta.get_kv_quant_stats() if rosetta is not None else None
+            kv_quant_applied = (rosetta is not None) and kv_quant_config.get("enabled", False)
             meta = {
                 "device": str(device),
                 "dtype": str(dtype),
@@ -566,8 +589,10 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
                 "matches_expected": matches,
                 "dataset": args.local_dataset,
                 "sample_index": int(sample_index),
+                "receiver_only": bool(args.local_receiver_only),
                 "kv_quant_config": kv_quant_config,
                 "kv_quant_stats": kv_quant_stats,
+                "kv_quant_applied": kv_quant_applied,
             }
 
             sample_tag = f"sample_{sample_index:05d}"
@@ -592,8 +617,9 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
             "num_correct": num_correct,
             "accuracy": (num_correct / len(sample_indices)) if sample_indices else None,
             "kv_quant_config": kv_quant_config,
-            "kv_quant_stats": rosetta.get_kv_quant_stats(),
+            "kv_quant_stats": rosetta.get_kv_quant_stats() if rosetta is not None else None,
             "include_response": bool(args.include_response),
+            "receiver_only": bool(args.local_receiver_only),
         }
         (run_root / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
         (run_root / "samples.jsonl").write_text(
@@ -773,6 +799,11 @@ def main():
     )
     parser.add_argument("--local-sample-index", type=int, default=0, help="Local dataset sample index")
     parser.add_argument("--local-num-samples", type=int, default=1, help="Number of local samples to run")
+    parser.add_argument(
+        "--local-receiver-only",
+        action="store_true",
+        help="Local-only baseline: run the receiver model without C2C projectors",
+    )
     parser.add_argument("--include-response", action="store_true", help="Enable include_response for RosettaModel")
     parser.add_argument("--skip-gpu-check", action="store_true", help="Skip GPU detection")
     parser.add_argument("--prep-only", action="store_true", help="Run setup + downloads only; skip evaluation")

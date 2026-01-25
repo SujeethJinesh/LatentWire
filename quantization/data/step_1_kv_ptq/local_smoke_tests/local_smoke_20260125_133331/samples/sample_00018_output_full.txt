@@ -1,0 +1,25 @@
+user
+Accurately answer the following question:
+
+Which requires energy to move?
+
+Choices:
+A. weasel
+B. willow
+C. mango
+D. poison ivy
+
+
+Instructions:
+- Carefully read the question and all options.
+- Select the single most correct answer.
+- Respond ONLY in the following format: "The correct answer is A/B/C/D".
+- Do not include any explanations, additional text, or punctuation besides the answer.
+
+The correct answer is
+assistant
+<think>
+
+</think>
+
+The correct answer is A. weasel

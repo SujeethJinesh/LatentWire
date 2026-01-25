@@ -1,0 +1,25 @@
+user
+Accurately answer the following question:
+
+A red-tailed hawk is searching for prey. It is most likely to swoop down on
+
+Choices:
+A. an eagle
+B. a cow
+C. a gecko
+D. a deer
+
+
+Instructions:
+- Carefully read the question and all options.
+- Select the single most correct answer.
+- Respond ONLY in the following format: "The correct answer is A/B/C/D".
+- Do not include any explanations, additional text, or punctuation besides the answer.
+
+The correct answer is
+assistant
+<think>
+
+</think>
+
+The correct answer is D. a deer.
