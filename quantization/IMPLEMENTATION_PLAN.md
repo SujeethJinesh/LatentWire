@@ -175,7 +175,21 @@ Store results under `quantization/data/step_1_kv_ptq/<run_tag>/` for now (rename
   - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --local-receiver-only`  
 
 **GPU smoke commands (Milestone 2, deferred)**  
-- After `--prep-only`, set `eval.limit` inside `quantization/data/step_1_kv_ptq/<run_tag>/configs/*.yaml` to a small value (25–50), then run the evaluator commands recorded in `logs/step1.log`.  
+- Prep + config patch (INT8 example, repeat for INT4):  
+  - `export PROJECT_ROOT=/projects/m000066/sujinesh/LatentWire`  
+  - `export RUN_TAG=int8_smoke_$(date +%Y%m%d_%H%M%S)`  
+  - `export C2C_CKPT_ROOT=/scratch/m000066/$USER/c2c_checkpoints`  
+  - `export HF_HOME=/scratch/m000066/$USER/.cache/huggingface`  
+  - `cd $PROJECT_ROOT`  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme int8 --prep-only --run-tag "$RUN_TAG"`  
+  - `python - <<'PY'\nimport sys\nfrom pathlib import Path\nimport yaml\nrun_tag = sys.argv[1]\nrun_root = Path('quantization/data/step_1_kv_ptq') / run_tag\nfor name in ('openbookqa.yaml', 'arc_c.yaml'):\n    path = run_root / 'configs' / name\n    cfg = yaml.safe_load(path.read_text())\n    cfg.setdefault('eval', {})['limit'] = 50\n    path.write_text(yaml.safe_dump(cfg, sort_keys=False))\nPY "$RUN_TAG"`  
+- Run evaluator with logging (use the run’s log file):  
+  - `python quantization/C2C/script/evaluation/unified_evaluator.py --config quantization/data/step_1_kv_ptq/$RUN_TAG/configs/openbookqa.yaml 2>&1 | tee -a quantization/data/step_1_kv_ptq/$RUN_TAG/logs/step1.log`  
+  - `python quantization/C2C/script/evaluation/unified_evaluator.py --config quantization/data/step_1_kv_ptq/$RUN_TAG/configs/arc_c.yaml 2>&1 | tee -a quantization/data/step_1_kv_ptq/$RUN_TAG/logs/step1.log`  
+
+**Full GPU eval commands (Milestone 2, deferred)**  
+- INT8 full run: `python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme int8`  
+- INT4 full run: `python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme int4`  
 
 ## Milestone 3: Cache‑Length Reduction
 **What**  
