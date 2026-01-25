@@ -158,15 +158,15 @@ def collect_env_info():
     return info
 
 
-def resolve_device(device_arg):
+def resolve_device_for_mode(mode):
     import torch
-    if device_arg == "auto":
-        if torch.backends.mps.is_available():
-            return torch.device("mps")
-        if torch.cuda.is_available():
-            return torch.device("cuda")
-        return torch.device("cpu")
-    return torch.device(device_arg)
+    if mode == "local":
+        if not torch.backends.mps.is_available():
+            die("MPS not available. Local mode expects a Mac with MPS support.")
+        return torch.device("mps")
+    if not torch.cuda.is_available():
+        die("CUDA not available. GPU mode expects a CUDA-capable node.")
+    return torch.device("cuda")
 
 
 def run_local_smoke_test(project_root, args):
@@ -239,7 +239,7 @@ def run_local_smoke_test(project_root, args):
                 json.dumps(manifest, indent=2)
             )
 
-        device = resolve_device(args.device)
+        device = resolve_device_for_mode(args.mode)
         dtype = torch.float16 if device.type in ("cuda", "mps") else torch.float32
 
         tokenizer = AutoTokenizer.from_pretrained(args.base_model)
@@ -324,7 +324,6 @@ def main():
         help="gpu for full evals (default), local for Mac smoke test",
     )
     parser.add_argument("--env", default="rosetta", help="Conda env name to use")
-    parser.add_argument("--device", default="auto", help="Local mode device: auto | mps | cpu | cuda")
     parser.add_argument("--max-new-tokens", type=int, default=32, help="Local mode generation length")
     parser.add_argument("--base-model", default="Qwen/Qwen3-0.6B", help="Local mode base model")
     parser.add_argument("--teacher-model", default="Qwen/Qwen2.5-0.5B-Instruct", help="Local mode teacher model")
