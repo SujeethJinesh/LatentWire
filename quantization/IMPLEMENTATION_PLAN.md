@@ -255,7 +255,37 @@ Report accuracy vs transmitted bytes (precision × KV length).
 This reframes C2C under a realistic communication budget, a key paper contribution.
 
 **How**  
-Log bytes in evaluation outputs and produce a single “accuracy vs bytes” plot.
+Compute bytes per sequence from model config + quant scheme + cache proportion, then plot accuracy vs bytes for each dataset.
+
+**What it shows**  
+The concrete trade‑off between bandwidth cost and accuracy, enabling direct comparison across INT8/INT4 and cache‑length pruning.
+
+**Expected outcome**  
+- Accuracy should degrade monotonically as bytes decrease (small deviations are noise).  
+- INT8 with shorter caches should outperform INT4 at the same byte budget unless quantization error dominates.  
+
+**Milestone 4 sub‑steps (phased)**  
+- **Phase 0 (Budget definition)**: define byte formula and the metadata required.  
+  - **Formula**: `bytes = avg_input_length × kv_cache_proportion × 2 × num_layers × num_kv_heads × head_dim × bytes_per_element`.  
+  - **Why**: fixes the accounting so curves are comparable and reproducible.  
+- **Phase 1 (Analysis script)**: add a parser to read run folders, extract accuracy + length stats, compute bytes, and emit CSV + plots.  
+  - **Why**: makes the curve generation repeatable from raw results.  
+- **Phase 2 (Local validation)**: run the script in demo mode to validate plotting and CSV formatting without GPU results.  
+  - **Why**: ensures the analysis pipeline works before the long GPU runs finish.  
+- **Phase 3 (GPU analysis)**: run the script on M2 + M3 GPU outputs, generating final plots for the paper.  
+  - **Why**: produces the main empirical figure for the workshop paper.
+
+**Telemetry (Milestone 4)**  
+- `budget_curve.csv`: per‑run rows with accuracy, bytes, and config metadata.  
+- `budget_curve_<dataset>.png`: accuracy vs bytes plots per dataset.  
+
+**Local test commands (Milestone 4)**  
+- Demo mode (no GPU results needed):  
+  - `python quantization/scripts/analyze_budget_curve.py --demo`
+
+**GPU analysis commands (Milestone 4, deferred)**  
+- After GPU runs are complete:  
+  - `python quantization/scripts/analyze_budget_curve.py --runs-root quantization/data`
 
 ## Milestone 5: QAT Recovery (Main‑conf extension)
 **What**  
