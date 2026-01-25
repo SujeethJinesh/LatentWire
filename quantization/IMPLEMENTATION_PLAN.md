@@ -201,6 +201,16 @@ Adds a second “budget” axis (length) beyond precision, enabling stronger tra
 **How**  
 Use the existing `kv_cache_proportion` + `kv_cache_order_mode` hooks in the evaluator to mask a fraction of instruction tokens (simple front/back pruning) and evaluate with INT8.
 
+**What it shows**  
+Whether C2C is robust to shorter transmitted caches and how accuracy degrades as we remove early vs late instruction tokens.
+
+**Expected outcome**  
+- Accuracy should drop as `kv_cache_proportion` decreases; if it does not, we may be over‑pruning already or the task is insensitive.  
+- `order_mode=front` vs `back` should reveal whether early or late instruction content is more valuable for this model pair.  
+
+**Testing approach**  
+Phases 2–6 below provide the local sanity checks and GPU smoke/full runs; local runs validate plumbing, GPU runs supply paper‑quality accuracy.
+
 **Milestone 3 sub‑steps (phased)**  
 - **Phase 0 (Plan update)**: lock the cache‑length grid and defaults.  
   - **Default**: `kv_cache_proportion=1.0`, `kv_cache_order_mode=front`.  
