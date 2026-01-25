@@ -126,6 +126,9 @@ python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/arc_c.
 **GPU guard**
 - The script exits early if no GPU is detected (prevents accidental login-node runs).
 
+**Environment auto-detect**
+- The script checks for required Python modules; if they are already installed, it skips `pip install` and proceeds to evaluation.
+
 **Workshop/Main‑conf connection**
 - Valid baseline needed to attribute any gains to quantization or cache‑budgeting.
 

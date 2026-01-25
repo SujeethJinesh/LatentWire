@@ -52,9 +52,31 @@ if ! conda env list | awk '{print $1}' | grep -qx "rosetta"; then
 fi
 conda activate rosetta
 
+NEED_INSTALL=1
+python - <<'PY' && NEED_INSTALL=0 || NEED_INSTALL=1
+import importlib
+mods = [
+    "rosetta",
+    "torch",
+    "transformers",
+    "datasets",
+    "huggingface_hub",
+    "yaml",
+    "numpy",
+    "tqdm",
+]
+for m in mods:
+    importlib.import_module(m)
+print("Environment OK")
+PY
+
 pushd quantization/C2C
-pip install -e .
-pip install -e ".[training,evaluation]"
+if [ "$NEED_INSTALL" -eq 1 ]; then
+  pip install -e .
+  pip install -e ".[training,evaluation]"
+else
+  echo "Dependencies already installed; skipping pip install."
+fi
 
 python - <<'PY'
 from huggingface_hub import snapshot_download
