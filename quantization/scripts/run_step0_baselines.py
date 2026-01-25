@@ -349,6 +349,7 @@ def run_local_smoke_test(project_root, data_root, args):
         input_text = tokenizer.apply_chat_template(
             prompt, tokenize=False, add_generation_prompt=True, enable_thinking=False
         )
+        input_text += " The answer is"
         inputs = tokenizer(input_text, return_tensors="pt").to(device)
 
         instruction_index = (
@@ -368,9 +369,16 @@ def run_local_smoke_test(project_root, data_root, args):
                 max_new_tokens=args.max_new_tokens,
             )
 
-        text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        output_ids = outputs[0]
+        input_len = inputs["input_ids"].shape[1]
+        generated_ids = output_ids[input_len:]
+        generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+        full_text = tokenizer.decode(output_ids, skip_special_tokens=True)
         print("C2C smoke test output:")
-        print(text)
+        print(generated_text)
+
+        def strip_think_tags(text_value):
+            return text_value.replace("<think>", "").replace("</think>", "").strip()
 
         meta = {
             "device": str(device),
@@ -380,8 +388,14 @@ def run_local_smoke_test(project_root, data_root, args):
             "checkpoint_dir": checkpoint_dir,
             "max_new_tokens": args.max_new_tokens,
             "output_dir": str(run_root),
+            "input_length": input_len,
+            "generated_length": int(generated_ids.shape[0]),
+            "generated_text": generated_text,
+            "expected_answer": "4",
+            "matches_expected": "4" in strip_think_tags(generated_text),
         }
-        (run_root / "output.txt").write_text(text + "\n", encoding="utf-8")
+        (run_root / "output.txt").write_text(generated_text + "\n", encoding="utf-8")
+        (run_root / "output_full.txt").write_text(full_text + "\n", encoding="utf-8")
         (run_root / "metadata.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
 
     print(f"Local smoke test complete. Output in: {run_root}")
