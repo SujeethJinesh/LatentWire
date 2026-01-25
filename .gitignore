@@ -13,6 +13,8 @@ venv/
 .nfs*
 code-server-*
 *.pt*
+quantization/data/local_smoke_tests/hf_cache/
+quantization/data/local_smoke_tests/checkpoints/
 
 # Python packaging
 *.egg-info/
