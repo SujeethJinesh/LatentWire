@@ -123,6 +123,9 @@ python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/arc_c.
 - Logs under `data/step_0_baselines/<run_tag>/logs/*`.
 - Manifest with checkpoint provenance under `data/step_0_baselines/<run_tag>/manifests/`.
 
+**GPU guard**
+- The script exits early if no GPU is detected (prevents accidental login-node runs).
+
 **Workshop/Main‑conf connection**
 - Valid baseline needed to attribute any gains to quantization or cache‑budgeting.
 

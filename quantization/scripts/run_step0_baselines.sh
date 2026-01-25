@@ -9,6 +9,16 @@ if [ ! -d "$PROJECT_ROOT" ]; then
   exit 1
 fi
 
+# Require a visible GPU (avoid running on login nodes).
+if ! command -v nvidia-smi >/dev/null 2>&1; then
+  echo "ERROR: nvidia-smi not found. This script requires a GPU node." >&2
+  exit 1
+fi
+if ! nvidia-smi -L >/dev/null 2>&1; then
+  echo "ERROR: No GPUs detected by nvidia-smi. Run this on a GPU node." >&2
+  exit 1
+fi
+
 cd "$PROJECT_ROOT"
 
 git submodule update --init --recursive quantization/C2C
