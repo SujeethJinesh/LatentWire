@@ -345,12 +345,24 @@ def run_local_smoke_test(project_root, data_root, args):
         proj_cfg_path = ckpt_path / "projector_config.json"
         rosetta.load_projector_config(str(proj_cfg_path))
 
-        prompt = [{"role": "user", "content": "Answer in one word: What is 2+2?"}]
+        from rosetta.utils.evaluate import build_prompt, extract_answer_from_content
+
+        question = "What is 2+2?"
+        choices = "A. 3\nB. 4\nC. 5\nD. 6\n"
+        prompt_text = build_prompt(
+            dataset="mmlu-redux",
+            locale="",
+            question=question,
+            choices=choices,
+            use_cot=False,
+            use_template=True,
+        )
+        prompt = [{"role": "user", "content": prompt_text}]
         input_text = tokenizer.apply_chat_template(
             prompt, tokenize=False, add_generation_prompt=True, enable_thinking=False
         )
-        input_text += " The answer is"
         inputs = tokenizer(input_text, return_tensors="pt").to(device)
+        position_ids = inputs["attention_mask"].long().cumsum(-1) - 1
 
         instruction_index = (
             torch.tensor([1, 0], dtype=torch.long)
@@ -364,6 +376,7 @@ def run_local_smoke_test(project_root, data_root, args):
         with torch.no_grad():
             outputs = rosetta.generate(
                 **inputs,
+                position_ids=position_ids,
                 kv_cache_index=kv_cache_index,
                 do_sample=False,
                 max_new_tokens=args.max_new_tokens,
@@ -380,6 +393,9 @@ def run_local_smoke_test(project_root, data_root, args):
         def strip_think_tags(text_value):
             return text_value.replace("<think>", "").replace("</think>", "").strip()
 
+        extracted_answer = extract_answer_from_content(generated_text)
+        expected_answer = "B"
+
         meta = {
             "device": str(device),
             "dtype": str(dtype),
@@ -390,9 +406,13 @@ def run_local_smoke_test(project_root, data_root, args):
             "output_dir": str(run_root),
             "input_length": input_len,
             "generated_length": int(generated_ids.shape[0]),
+            "prompt_text": prompt_text,
             "generated_text": generated_text,
-            "expected_answer": "4",
-            "matches_expected": "4" in strip_think_tags(generated_text),
+            "extracted_answer": extracted_answer,
+            "expected_answer": expected_answer,
+            "matches_expected": (extracted_answer == expected_answer)
+            if extracted_answer is not None
+            else (expected_answer in strip_think_tags(generated_text)),
         }
         (run_root / "output.txt").write_text(generated_text + "\n", encoding="utf-8")
         (run_root / "output_full.txt").write_text(full_text + "\n", encoding="utf-8")
@@ -415,7 +435,7 @@ def main():
         help="gpu for full evals (default), local for Mac smoke test",
     )
     parser.add_argument("--env", default="rosetta", help="Conda env name to use")
-    parser.add_argument("--max-new-tokens", type=int, default=32, help="Local mode generation length")
+    parser.add_argument("--max-new-tokens", type=int, default=64, help="Local mode generation length")
     parser.add_argument("--base-model", default="Qwen/Qwen3-0.6B", help="Local mode base model")
     parser.add_argument("--teacher-model", default="Qwen/Qwen2.5-0.5B-Instruct", help="Local mode teacher model")
     parser.add_argument("--checkpoint-dir", default=None, help="Local mode projector checkpoint dir")
