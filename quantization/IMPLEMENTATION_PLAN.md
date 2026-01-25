@@ -1,360 +1,153 @@
-# Implementation Plan (1x H100 per step)
+# Implementation Plan + Experiment Matrix (1x H100 per step)
 
-Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with communication‑budget curves, and a clear extension path to main‑conference quality (QAT + mixed precision + heterogeneity scaling). Each step below is runnable on a single H100 node.
+Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with communication‑budget curves, and a clear path to a main‑conference submission (QAT + mixed precision + heterogeneity scaling). Each step is designed to run on a single H100.
 
-Data layout (committed to git):
-```
-data/
-  step_0_baselines/<run_tag>/
-    configs/
-    logs/
-    results/
-    manifests/
-```
-Every step follows the same pattern: create a new `data/step_X_*` run folder, copy the config, log all commands, and store results JSONs there. Checkpoints can live on scratch; the run folder must include a manifest (repo + commit + path).
+## Data Capture Contract (applies to every step)
+- Each run creates `data/step_X_<name>/<run_tag>/` with:
+  - `configs/` (the exact eval/train configs used)
+  - `logs/` (stdout/stderr logs)
+  - `results/` (JSON outputs)
+  - `manifests/` (checkpoint + environment provenance)
+- Commit `data/step_*` to git after each step so results are reviewable.
 
----
+## Step 0: Baseline + Environment Sanity
+**What**  
+Run the official C2C baselines on OpenBookQA and ARC‑C with the released 0.6B+0.5B fuser.
 
-## Step 0: Environment + Baseline Sanity (1–2 hours)
+**Why**  
+Establish a trustworthy baseline before introducing quantization or cache‑budget changes.
 
-**What**
-- Create the C2C environment, confirm code runs, and reproduce 1–2 baseline scores.
+**How**  
+Use `quantization/scripts/run_step0_baselines.py` (supports `--prep-only` on login nodes).  
+The script:
+- Ensures the C2C submodule is initialized.
+- Verifies the `rosetta` conda env and installs deps if missing.
+- Downloads the published fuser checkpoint to scratch.
+- Writes `env_info.json` and checkpoint manifests.
+- Runs OpenBookQA + ARC‑C and logs everything into `data/step_0_baselines/<run_tag>/`.
 
-**Why**
-- Establish a trusted baseline before introducing quantization effects.
+**Workshop/Main‑conf connection**  
+Baseline accuracy and latency anchors the whole paper.
 
-**How (1x H100)**
-```bash
-# After salloc:
-# salloc -N 1 -G 1 -A marlowe-m000066 -p preempt --time=3:00:00 --mem=32GB
+## Step 1: Implement KV PTQ Utilities
+**What**  
+Add post‑training quantization (INT8, INT4/NF4, optional FP8) for KV caches.
 
-# One-time setup (can be done on login node)
-conda create -n rosetta python=3.10 -y
+**Why**  
+Quantization is not covered in C2C; it is the core novelty for the workshop paper.
 
-# Login node prep (downloads + configs, no eval)
-cd /projects/m000066/sujinesh/LatentWire
-python quantization/scripts/run_step0_baselines.py --prep-only
+**How**  
+Add a small quantization module (e.g., `rosetta/utils/quant.py`) and hook it before projection in `rosetta/model/wrapper.py`.  
+Expose configs for `kv_quant_scheme` and `kv_quant_axis` (per‑head / per‑layer).
 
-# One-command runner on GPU node (recommended, from repo root)
-cd /projects/m000066/sujinesh/LatentWire
-python quantization/scripts/run_step0_baselines.py
+**Workshop/Main‑conf connection**  
+PTQ results + bandwidth reductions are sufficient for a workshop paper.
 
-# Repo + submodule
-cd /path/to/LatentWire
-git submodule update --init --recursive quantization/C2C
+## Step 2: PTQ Evaluation
+**What**  
+Evaluate INT8 and INT4/NF4 on OpenBookQA + ARC‑C.
 
-# (Optional) use scratch for HF caches
-export HF_HOME=/scratch/m000066/$USER/.cache/huggingface
-export TRANSFORMERS_CACHE=$HF_HOME/transformers
-mkdir -p "$HF_HOME"
+**Why**  
+Quantifies accuracy drop vs bandwidth savings.
 
-# Create run folder for step 0
-RUN_TAG=$(date +"%Y%m%d_%H%M%S")
-RUN_ROOT="$PWD/data/step_0_baselines/$RUN_TAG"
-export RUN_ROOT
-mkdir -p "$RUN_ROOT"/{configs,logs,results,manifests}
+**How**  
+Run the same eval pipeline as Step 0 with quantization flags enabled.  
+Store results under `data/step_2_ptq/<run_tag>/`.
 
-cd quantization/C2C
-conda create -n rosetta python=3.10 -y
-conda activate rosetta
-pip install -e .
-pip install -e ".[training,evaluation]"
+## Step 3: Cache‑Length Reduction
+**What**  
+Prune KV tokens (e.g., keep top‑50%, 25%, 10%) before projection.
 
-# Download C2C fuser checkpoint to scratch (do not commit weights)
-python - <<'PY'
-from huggingface_hub import snapshot_download
-from pathlib import Path
-import json, os, time
+**Why**  
+Adds a second “budget” axis (length) beyond precision, enabling stronger trade‑off curves.
 
-run_root = Path(os.environ["RUN_ROOT"]) if "RUN_ROOT" in os.environ else Path("data/step_0_baselines/unknown")
-ckpt_root = Path(os.environ.get("C2C_CKPT_ROOT", "/scratch/m000066/%s/c2c_checkpoints" % os.environ.get("USER", "user")))
-ckpt_root.mkdir(parents=True, exist_ok=True)
+**How**  
+Implement a simple selection policy (magnitude‑based or attention‑norm) and evaluate with INT8.
 
-repo_id = "nics-efc/C2C_Fuser"
-pattern = "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
-local_dir = ckpt_root / "C2C_Fuser"
+## Step 4: Communication‑Budget Curves
+**What**  
+Report accuracy vs transmitted bytes (precision × KV length).
 
-snapshot_path = snapshot_download(
-    repo_id=repo_id,
-    allow_patterns=[pattern],
-    local_dir=str(local_dir),
-    local_dir_use_symlinks=False,
-)
+**Why**  
+This reframes C2C under a realistic communication budget, a key paper contribution.
 
-manifest = {
-    "repo_id": repo_id,
-    "allow_patterns": [pattern],
-    "snapshot_path": snapshot_path,
-    "checkpoint_dir": str(local_dir / "qwen3_0.6b+qwen2.5_0.5b_Fuser" / "final"),
-    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-}
+**How**  
+Log bytes in evaluation outputs and produce a single “accuracy vs bytes” plot.
 
-out = run_root / "manifests" / "step_0_checkpoint_manifest.json"
-out.parent.mkdir(parents=True, exist_ok=True)
-out.write_text(json.dumps(manifest, indent=2))
-print("Wrote manifest:", out)
-PY
+## Step 5: QAT Recovery (Main‑conf extension)
+**What**  
+Quantization‑aware training of the projector under INT8 noise.
 
-# Copy eval config and point to checkpoint/output dir
-cp recipe/eval_recipe/unified_eval.yaml "$RUN_ROOT/configs/openbookqa.yaml"
-cp recipe/eval_recipe/unified_eval.yaml "$RUN_ROOT/configs/arc_c.yaml"
+**Why**  
+Shows that low‑precision transfer can be learned, not just approximated.
 
-python - <<'PY'
-import yaml, json, os
-from pathlib import Path
+**How**  
+Train on a small subset (10–50k samples), then re‑evaluate ARC‑C + OpenBookQA.
 
-run_root = Path(os.environ["RUN_ROOT"])
-manifest = json.loads((run_root / "manifests/step_0_checkpoint_manifest.json").read_text())
-ckpt_dir = manifest["checkpoint_dir"]
+## Step 6: Mixed Precision by Layer (Main‑conf extension)
+**What**  
+Use higher precision in later layers and lower precision in early layers.
 
-def patch(cfg_path, dataset, out_dir):
-    cfg = yaml.safe_load(Path(cfg_path).read_text())
-    cfg["model"]["rosetta_config"]["checkpoints_dir"] = ckpt_dir
-    cfg["output"]["output_dir"] = str(out_dir)
-    cfg["eval"]["dataset"] = dataset
-    Path(cfg_path).write_text(yaml.safe_dump(cfg, sort_keys=False))
+**Why**  
+Leverages layer sensitivity to improve the accuracy‑per‑byte curve.
 
-patch(run_root / "configs/openbookqa.yaml", "openbookqa", run_root / "results/openbookqa")
-patch(run_root / "configs/arc_c.yaml", "ai2-arc", run_root / "results/arc_c")
-PY
+**How**  
+Add per‑layer precision configs; evaluate a small grid (e.g., last 4 layers FP16).
 
-# Run baseline evals (OpenBookQA + ARC-C)
-python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/openbookqa.yaml" \
-  2>&1 | tee "$RUN_ROOT/logs/openbookqa.log"
+## Step 7: Heterogeneity Scaling (Main‑conf extension)
+**What**  
+Test at least one cross‑family pair (e.g., Qwen3 ← Llama3.2).
 
-python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/arc_c.yaml" \
-  2>&1 | tee "$RUN_ROOT/logs/arc_c.log"
-```
+**Why**  
+Demonstrates that the method generalizes beyond a single model family.
 
-**Output**
-- Results JSON under `data/step_0_baselines/<run_tag>/results/*`.
-- Logs under `data/step_0_baselines/<run_tag>/logs/*`.
-- Manifest with checkpoint provenance under `data/step_0_baselines/<run_tag>/manifests/`.
-
-**GPU guard**
-- The script exits early if no GPU is detected (prevents accidental login-node runs).
- - Use `--prep-only` on the login node to run setup and downloads without evaluation.
-
-**Environment auto-detect**
-- The script checks for required Python modules; if they are already installed, it skips `pip install` and proceeds to evaluation.
-- If not running inside the requested conda env, the script re-execs itself via `conda run -n rosetta ...`.
-- Environment/module paths are always printed and written to `data/step_0_baselines/<run_tag>/manifests/env_info.json`.
-
-**Workshop/Main‑conf connection**
-- Valid baseline needed to attribute any gains to quantization or cache‑budgeting.
-
-**Git capture (after step 0)**
-```bash
-cd /path/to/LatentWire
-git add "data/step_0_baselines/$RUN_TAG"
-git status -sb
-```
+**How**  
+Reuse the PTQ + pruning settings from Steps 2–3.
 
 ---
 
-## Step 1: Implement KV PTQ Utilities (2–4 hours)
+# Experiment Matrix (Merged)
 
-**What**
-- Add post‑training quantization (PTQ) for KV tensors (INT8 + INT4/NF4).
+## A. Baselines (Step 0)
+| ID | Model Pair | Dataset | Method | Precision | Cache Length | Train |
+|---|---|---|---|---|---|---|
+| A1 | Qwen3‑0.6B ← Qwen2.5‑0.5B | OpenBookQA | C2C | FP16 | full | no |
+| A2 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | C2C | FP16 | full | no |
 
-**Why**
-- This is the core missing piece in C2C and a strong workshop‑level contribution.
+## B. PTQ (Steps 1–2)
+| ID | Model Pair | Dataset | Method | Precision | Cache Length | Train |
+|---|---|---|---|---|---|---|
+| B1 | Qwen3‑0.6B ← Qwen2.5‑0.5B | OpenBookQA | C2C + PTQ | INT8 | full | no |
+| B2 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | C2C + PTQ | INT8 | full | no |
+| B3 | Qwen3‑0.6B ← Qwen2.5‑0.5B | OpenBookQA | C2C + PTQ | INT4/NF4 | full | no |
+| B4 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | C2C + PTQ | INT4/NF4 | full | no |
 
-**How (1x H100)**
-- Create `rosetta/utils/quant.py` with:
-  - `quantize_kv(t, scheme, axis)`
-  - `dequantize_kv(q, scale, zero)`
-  - optional per‑head / per‑token scales
-- Add quantization hooks in `rosetta/model/wrapper.py` near projector calls:
-  - Quantize source KV before projection (and optionally target KV).
-- Add config flags in `recipe/eval_recipe/unified_eval.yaml`:
-  - `kv_quant_scheme: int8 | int4 | nf4 | fp8`
-  - `kv_quant_axis: per_head | per_layer`
+## C. Cache‑Length Reduction (Step 3)
+| ID | Model Pair | Dataset | Method | Precision | Cache Length | Train |
+|---|---|---|---|---|---|---|
+| C1 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | C2C + PTQ | INT8 | 50% | no |
+| C2 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | C2C + PTQ | INT8 | 25% | no |
+| C3 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | C2C + PTQ | INT8 | 10% | no |
 
-**Output**
-- Code compiles and PTQ toggles via config.
+## D. QAT / Mixed Precision (Steps 5–6)
+| ID | Model Pair | Dataset | Method | Precision | Cache Length | Train |
+|---|---|---|---|---|---|---|
+| D1 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | C2C + QAT | INT8 | full | yes |
+| D2 | Qwen3‑0.6B ← Qwen2.5‑0.5B | OpenBookQA | C2C + QAT | INT8 | full | yes |
+| D3 | Qwen3‑0.6B ← Qwen2.5‑0.5B | ARC‑C | Mixed precision | FP16/INT8/INT4 | full | yes |
 
-**Workshop/Main‑conf connection**
-- Enables controlled accuracy‑vs‑bytes comparisons.
-
----
-
-## Step 2: PTQ Evaluation (3–6 hours)
-
-**What**
-- Run PTQ evaluation on OpenBookQA + ARC‑C with INT8 and INT4/NF4.
-
-**Why**
-- Establish accuracy‑drop vs bandwidth reduction.
-
-**How (1x H100)**
-```bash
-# Create a new run folder
-RUN_TAG=$(date +"%Y%m%d_%H%M%S")
-RUN_ROOT="$PWD/data/step_2_ptq/$RUN_TAG"
-export RUN_ROOT
-mkdir -p "$RUN_ROOT"/{configs,logs,results,manifests}
-
-# Point to the Step 0 run folder
-STEP0_ROOT="/path/to/LatentWire/data/step_0_baselines/<RUN_TAG_FROM_STEP0>"
-
-# Copy baseline configs from Step 0
-cp "$STEP0_ROOT/configs/openbookqa.yaml" "$RUN_ROOT/configs/openbookqa_int8.yaml"
-cp "$STEP0_ROOT/configs/openbookqa.yaml" "$RUN_ROOT/configs/openbookqa_nf4.yaml"
-
-# Edit configs (set quant scheme + output dir)
-python - <<'PY'
-import yaml
-from pathlib import Path
-
-def patch(cfg_path, scheme, out_dir):
-    cfg = yaml.safe_load(Path(cfg_path).read_text())
-    cfg.setdefault("quant", {})
-    cfg["quant"]["kv_quant_scheme"] = scheme
-    cfg["quant"]["kv_quant_axis"] = "per_head"
-    cfg["output"]["output_dir"] = str(out_dir)
-    Path(cfg_path).write_text(yaml.safe_dump(cfg, sort_keys=False))
-
-root = Path("data/step_2_ptq")
-for cfg_path in root.rglob("openbookqa_int8.yaml"):
-    patch(cfg_path, "int8", cfg_path.parent.parent / "results/openbookqa_int8")
-for cfg_path in root.rglob("openbookqa_nf4.yaml"):
-    patch(cfg_path, "nf4", cfg_path.parent.parent / "results/openbookqa_nf4")
-PY
-
-python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/openbookqa_int8.yaml" \
-  2>&1 | tee "$RUN_ROOT/logs/openbookqa_int8.log"
-
-python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/openbookqa_nf4.yaml" \
-  2>&1 | tee "$RUN_ROOT/logs/openbookqa_nf4.log"
-```
-
-**Output**
-- Eval logs + metrics per dataset.
-
-**Workshop/Main‑conf connection**
-- Core results table for workshop submission.
-
-**Git capture (after step 2)**
-```bash
-cd /path/to/LatentWire
-git add "data/step_2_ptq/$RUN_TAG"
-git status -sb
-```
+## E. Heterogeneity (Step 7)
+| ID | Model Pair | Dataset | Method | Precision | Cache Length | Train |
+|---|---|---|---|---|---|---|
+| E1 | Qwen3‑0.6B ← Llama3.2‑1B | ARC‑C | C2C + PTQ | INT8 | full | no |
+| E2 | Qwen3‑0.6B ← Gemma‑1B | ARC‑C | C2C + PTQ | INT8 | full | no |
 
 ---
 
-## Step 3: Cache‑Length Reduction (2–6 hours)
+## Workshop vs Main‑Conference Path
+- **Workshop**: Steps 0 → 1 → 2 → 3 → 4 (baseline + PTQ + pruning + budget curve).
+- **Main‑conf**: Workshop path + Steps 5–7 (QAT + mixed precision + heterogeneity).
 
-**What**
-- Add KV token pruning (top‑k or fixed ratio) and evaluate accuracy vs cache length.
-
-**Why**
-- Shows direct communication‑budget control (bytes vs accuracy) beyond quantization.
-
-**How (1x H100)**
-- Add a selection function (e.g., top‑k by attention norm or key magnitude).
-- Implement in `rosetta/model/wrapper.py` before projection (prune source KV).
-- Evaluate 50%, 25%, 10% cache ratios with INT8.
-
-**Output**
-- Accuracy vs cache ratio curves.
-
-**Workshop/Main‑conf connection**
-- Strong “budgeted communication” framing for workshop paper.
-
----
-
-## Step 4: Communication‑Budget Curves (1–3 hours)
-
-**What**
-- Log total bytes transmitted for each setting and plot accuracy vs bytes.
-
-**Why**
-- Provides a new evaluation dimension (accuracy per byte) not in C2C.
-
-**How (1x H100)**
-- Compute bytes = num_tokens * heads * head_dim * 2 * bytes_per_value.
-- Extend `script/evaluation/unified_evaluator.py` to emit `bytes_tx`.
-- Plot (matplotlib) in `script/analysis/`.
-
-**Output**
-- Main plot for paper: Accuracy vs Bytes (C2C FP16 vs PTQ vs PTQ+pruning).
-
-**Workshop/Main‑conf connection**
-- Strong single‑figure contribution; helps justify novelty.
-
----
-
-## Step 5: QAT Recovery (Optional for Main‑Conf, 4–12 hours)
-
-**What**
-- Quantization‑aware training (QAT) of projector weights under INT8 noise.
-
-**Why**
-- Demonstrates that accuracy can be recovered at low precision.
-
-**How (1x H100)**
-- Inject fake‑quant in projector forward.
-- Train on 10–50k samples (OpenHermes subset).
-- Evaluate on ARC‑C + OpenBookQA.
-
-**Output**
-- Accuracy improvements vs PTQ; report training cost.
-
-**Workshop/Main‑conf connection**
-- Moves the story from “engineering tweak” to “learning under constraints”.
-
----
-
-## Step 6: Mixed Precision by Layer (Optional, 4–10 hours)
-
-**What**
-- Use higher precision for late layers, lower precision for early layers.
-
-**Why**
-- Exploit layer sensitivity for better accuracy/bytes trade‑off.
-
-**How (1x H100)**
-- Add per‑layer precision config (e.g., last 4 layers FP16, middle INT8, early INT4).
-- Evaluate with same datasets.
-
-**Output**
-- Mixed‑precision curve beating uniform INT4/INT8.
-
-**Workshop/Main‑conf connection**
-- New technical idea with clear empirical win.
-
----
-
-## Step 7: Heterogeneity Scaling (Optional, 3–6 hours)
-
-**What**
-- Test one cross‑family pair (Qwen3 ← Llama3.2 or Gemma3).
-
-**Why**
-- Demonstrates generality beyond a single model family.
-
-**How (1x H100)**
-- Load different base/sharer pairs in `recipe/train_recipe/` or eval recipes.
-- Run PTQ + pruning on ARC‑C.
-
-**Output**
-- A single robustness table.
-
-**Workshop/Main‑conf connection**
-- Adds external validity; helps main‑conf story.
-
----
-
-# Minimal Workshop Path (Shortest)
-
-- Step 0 → Step 1 → Step 2 → Step 3 → Step 4
-
-Expected GPU time: **~1 day** total on 1 H100.
-
-# Main‑Conf Path (Extended)
-
-- Workshop path + Step 5 + Step 6 + Step 7
-
-Expected GPU time: **~3–5 days** total on 1 H100.
+## Time Budget (rough)
+- Workshop path: ~1 day on 1 H100 (assuming caches are warm).
+- Main‑conf path: ~3–5 days on 1 H100.
