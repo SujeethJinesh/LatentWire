@@ -153,7 +153,18 @@ def main():
     parser.add_argument("--env", default="rosetta", help="Conda env name to use")
     parser.add_argument("--skip-gpu-check", action="store_true", help="Skip GPU detection")
     parser.add_argument("--prep-only", action="store_true", help="Run setup + downloads only; skip evaluation")
-    parser.add_argument("--print-env", action="store_true", help="Print environment/module locations")
+    parser.add_argument(
+        "--print-env",
+        action="store_true",
+        default=True,
+        help="Print environment/module locations (default: enabled)",
+    )
+    parser.add_argument(
+        "--no-print-env",
+        action="store_false",
+        dest="print_env",
+        help="Disable printing environment/module locations",
+    )
     parser.add_argument("--no-reexec", action="store_true", help="Internal flag to avoid re-exec loops")
     args = parser.parse_args()
 

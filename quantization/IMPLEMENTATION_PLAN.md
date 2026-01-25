@@ -33,7 +33,7 @@ conda create -n rosetta python=3.10 -y
 
 # Login node prep (downloads + configs, no eval)
 cd /projects/m000066/sujinesh/LatentWire
-python quantization/scripts/run_step0_baselines.py --prep-only --print-env
+python quantization/scripts/run_step0_baselines.py --prep-only
 
 # One-command runner on GPU node (recommended, from repo root)
 cd /projects/m000066/sujinesh/LatentWire
