@@ -28,6 +28,9 @@ Every step follows the same pattern: create a new `data/step_X_*` run folder, co
 # After salloc:
 # salloc -N 1 -G 1 -A marlowe-m000066 -p preempt --time=3:00:00 --mem=32GB
 
+# Shortcut: one-command runner (recommended)
+bash /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.sh /projects/m000066/sujinesh/LatentWire
+
 # Repo + submodule
 cd /path/to/LatentWire
 git submodule update --init --recursive quantization/C2C
