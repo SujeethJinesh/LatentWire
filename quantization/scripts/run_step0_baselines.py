@@ -118,6 +118,8 @@ def collect_env_info():
         "hostname": socket.gethostname(),
         "hf_home": os.environ.get("HF_HOME"),
         "transformers_cache": os.environ.get("TRANSFORMERS_CACHE"),
+        "hf_datasets_cache": os.environ.get("HF_DATASETS_CACHE"),
+        "hf_hub_cache": os.environ.get("HF_HUB_CACHE") or os.environ.get("HUGGINGFACE_HUB_CACHE"),
         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
         "nvidia_smi_path": shutil.which("nvidia-smi"),
     }
