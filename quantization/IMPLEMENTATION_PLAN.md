@@ -10,6 +10,18 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
   - `manifests/` (checkpoint + environment provenance)
 - Commit `quantization/data/step_*` to git after each step so results are reviewable.
 
+## C2C Fork Strategy (for Step 1+ changes)
+**Decision**  
+Fork C2C and point the submodule at the fork. Keep all quantization changes on a dedicated branch (e.g., `quant-kv`).
+
+**Why**  
+This is the cleanest path for reproducibility and publication: exact diffs are visible, and upstream sync is straightforward.
+
+**How**  
+- Create fork on GitHub, add `upstream` remote for the original repo.  
+- Update submodule remote to the fork and pin to the branch.  
+- Keep changes minimal and well‑scoped (quantization utilities + hook points only).
+
 ## Step 0: Baseline + Environment Sanity
 **What**  
 Run the official C2C baselines on OpenBookQA and ARC‑C with the released 0.6B+0.5B fuser.
@@ -26,6 +38,10 @@ The script:
 - Writes `env_info.json` and checkpoint manifests.
 - Runs OpenBookQA + ARC‑C and logs everything into `quantization/data/step_0_baselines/<run_tag>/`.
 
+**Commands (from repo root)**  
+- Login node prep: `python quantization/scripts/run_step0_baselines.py --prep-only`  
+- GPU node eval: `python quantization/scripts/run_step0_baselines.py`
+
 **Workshop/Main‑conf connection**  
 Baseline accuracy and latency anchors the whole paper.
 
@@ -38,10 +54,23 @@ Quantization is not covered in C2C; it is the core novelty for the workshop pape
 
 **How**  
 Add a small quantization module (e.g., `rosetta/utils/quant.py`) and hook it before projection in `rosetta/model/wrapper.py`.  
-Expose configs for `kv_quant_scheme` and `kv_quant_axis` (per‑head / per‑layer).
+Expose configs for `kv_quant_scheme` and `kv_quant_axis` (per‑head / per‑layer).  
+Follow the Step 0 pattern with a minimal, well‑scoped runner:
+- `quantization/scripts/run_step1_kv_ptq.py` with `--mode local` for Mac validation and `--mode gpu` for cluster eval.  
+- Local smoke test: single prompt with the same C2C eval template + `extract_answer_from_content` check.  
+- GPU eval: identical to Step 0, but with quantization flags enabled.  
 
 **Workshop/Main‑conf connection**  
 PTQ results + bandwidth reductions are sufficient for a workshop paper.
+
+**Technical notes / acronyms (Step 1)**  
+- **KV cache**: Attention Keys/Values stored for past tokens to avoid recomputation.  
+- **C2C**: Cache‑to‑Cache projection from a source model’s KV to a target model’s KV.  
+- **PTQ**: Post‑Training Quantization; quantize activations without retraining.  
+- **INT8/INT4**: 8‑bit / 4‑bit integer quantization (smaller = less bandwidth).  
+- **NF4**: Normalized 4‑bit quantization (non‑uniform 4‑bit, often higher accuracy than plain INT4).  
+- **FP8**: 8‑bit floating point (hardware‑dependent, often H100‑friendly).  
+- **Per‑head vs per‑layer**: granularity of scales/zero‑points; per‑head is higher accuracy, per‑layer is cheaper.  
 
 ## Step 2: PTQ Evaluation
 **What**  
