@@ -31,9 +31,9 @@ Every step follows the same pattern: create a new `data/step_X_*` run folder, co
 # One-time setup (can be done on login node)
 conda create -n rosetta python=3.10 -y
 
-# One-command runner (recommended)
-python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.py \
-  --project-root /projects/m000066/sujinesh/LatentWire
+# One-command runner (recommended, from repo root)
+cd /projects/m000066/sujinesh/LatentWire
+python quantization/scripts/run_step0_baselines.py
 
 # Repo + submodule
 cd /path/to/LatentWire

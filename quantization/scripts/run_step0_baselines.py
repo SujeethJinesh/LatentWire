@@ -113,8 +113,8 @@ def main():
     parser = argparse.ArgumentParser(description="Run Step 0 C2C baselines on a GPU node.")
     parser.add_argument(
         "--project-root",
-        default="/projects/m000066/sujinesh/LatentWire",
-        help="Path to LatentWire repo root",
+        default=os.getcwd(),
+        help="Path to LatentWire repo root (default: current working directory)",
     )
     parser.add_argument("--env", default="rosetta", help="Conda env name to use")
     parser.add_argument("--skip-gpu-check", action="store_true", help="Skip GPU detection")
@@ -150,7 +150,10 @@ def main():
 
         c2c_root = project_root / "quantization" / "C2C"
         if not c2c_root.is_dir():
-            die(f"C2C submodule missing at {c2c_root}")
+            die(
+                f"C2C submodule missing at {c2c_root}. "
+                "Run from the LatentWire repo root or pass --project-root."
+            )
 
         ensure_installed(str(c2c_root), log_file=log_file)
 
