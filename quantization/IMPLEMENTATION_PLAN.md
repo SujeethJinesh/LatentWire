@@ -33,7 +33,7 @@ conda create -n rosetta python=3.10 -y
 
 # Login node prep (downloads + configs, no eval)
 cd /projects/m000066/sujinesh/LatentWire
-python quantization/scripts/run_step0_baselines.py --prep-only
+python quantization/scripts/run_step0_baselines.py --prep-only --print-env
 
 # One-command runner on GPU node (recommended, from repo root)
 cd /projects/m000066/sujinesh/LatentWire
@@ -138,6 +138,7 @@ python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/arc_c.
 **Environment auto-detect**
 - The script checks for required Python modules; if they are already installed, it skips `pip install` and proceeds to evaluation.
 - If not running inside the requested conda env, the script re-execs itself via `conda run -n rosetta ...`.
+- Environment/module paths are written to `data/step_0_baselines/<run_tag>/manifests/env_info.json`.
 
 **Workshop/Main‑conf connection**
 - Valid baseline needed to attribute any gains to quantization or cache‑budgeting.

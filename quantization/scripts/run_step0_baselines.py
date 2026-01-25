@@ -109,6 +109,40 @@ def ensure_installed(c2c_root, log_file=None):
     run_cmd([sys.executable, "-m", "pip", "install", "-e", ".[training,evaluation]"], cwd=c2c_root, log_file=log_file)
 
 
+def collect_env_info():
+    info = {
+        "python_executable": sys.executable,
+        "python_version": sys.version,
+        "conda_default_env": os.environ.get("CONDA_DEFAULT_ENV"),
+        "conda_prefix": os.environ.get("CONDA_PREFIX"),
+        "hostname": socket.gethostname(),
+        "hf_home": os.environ.get("HF_HOME"),
+        "transformers_cache": os.environ.get("TRANSFORMERS_CACHE"),
+        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+        "nvidia_smi_path": shutil.which("nvidia-smi"),
+    }
+
+    def add_mod(name):
+        try:
+            mod = __import__(name)
+            info[f"{name}_version"] = getattr(mod, "__version__", None)
+            info[f"{name}_path"] = getattr(mod, "__file__", None)
+        except Exception as exc:
+            info[f"{name}_error"] = str(exc)
+
+    for mod in ["torch", "transformers", "datasets", "huggingface_hub", "yaml", "numpy", "tqdm", "rosetta"]:
+        add_mod(mod)
+
+    try:
+        import torch
+        info["torch_cuda_available"] = torch.cuda.is_available()
+        info["torch_cuda_device_count"] = torch.cuda.device_count()
+    except Exception as exc:
+        info["torch_cuda_error"] = str(exc)
+
+    return info
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run Step 0 C2C baselines on a GPU node.")
     parser.add_argument(
@@ -119,6 +153,7 @@ def main():
     parser.add_argument("--env", default="rosetta", help="Conda env name to use")
     parser.add_argument("--skip-gpu-check", action="store_true", help="Skip GPU detection")
     parser.add_argument("--prep-only", action="store_true", help="Run setup + downloads only; skip evaluation")
+    parser.add_argument("--print-env", action="store_true", help="Print environment/module locations")
     parser.add_argument("--no-reexec", action="store_true", help="Internal flag to avoid re-exec loops")
     args = parser.parse_args()
 
@@ -143,6 +178,12 @@ def main():
 
     log_path = run_root / "logs" / "step0.log"
     with log_path.open("a", encoding="utf-8") as log_file:
+        env_info = collect_env_info()
+        if args.print_env or args.prep_only:
+            print("Environment info:", json.dumps(env_info, indent=2))
+        env_path = run_root / "manifests" / "env_info.json"
+        env_path.write_text(json.dumps(env_info, indent=2))
+
         run_cmd(
             ["git", "submodule", "update", "--init", "--recursive", "quantization/C2C"],
             cwd=str(project_root),
