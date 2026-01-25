@@ -28,7 +28,14 @@ Every step follows the same pattern: create a new `data/step_X_*` run folder, co
 # After salloc:
 # salloc -N 1 -G 1 -A marlowe-m000066 -p preempt --time=3:00:00 --mem=32GB
 
-# Shortcut: one-command runner (recommended)
+# One-time setup (can be done on login node)
+conda create -n rosetta python=3.10 -y
+
+# One-command runner (recommended)
+python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.py \
+  --project-root /projects/m000066/sujinesh/LatentWire
+
+# Bash wrapper (optional)
 bash /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.sh /projects/m000066/sujinesh/LatentWire
 
 # Repo + submodule
@@ -128,6 +135,7 @@ python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/arc_c.
 
 **Environment auto-detect**
 - The script checks for required Python modules; if they are already installed, it skips `pip install` and proceeds to evaluation.
+- If not running inside the requested conda env, the script re-execs itself via `conda run -n rosetta ...`.
 
 **Workshop/Main‑conf connection**
 - Valid baseline needed to attribute any gains to quantization or cache‑budgeting.
