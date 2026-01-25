@@ -360,6 +360,8 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
                 "kv_quant_config": kv_quant_config,
                 "receiver_only": bool(args.local_receiver_only),
                 "include_response": bool(args.include_response),
+                "kv_cache_proportion": args.kv_cache_proportion,
+                "kv_cache_order_mode": args.kv_cache_order_mode,
             },
         )
 
@@ -526,8 +528,8 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
             kv_cache_index = create_segmented_kv_cache_index(
                 instruction_length=instruction_length,
                 response_length=1,
-                proportion=1.0,
-                order_mode="front",
+                proportion=args.kv_cache_proportion,
+                order_mode=args.kv_cache_order_mode,
                 device=device,
             )
 
@@ -593,6 +595,8 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
                 "kv_quant_config": kv_quant_config,
                 "kv_quant_stats": kv_quant_stats,
                 "kv_quant_applied": kv_quant_applied,
+                "kv_cache_proportion": args.kv_cache_proportion,
+                "kv_cache_order_mode": args.kv_cache_order_mode,
             }
 
             sample_tag = f"sample_{sample_index:05d}"
@@ -620,6 +624,8 @@ def run_local_smoke_test(project_root, data_root, kv_quant_config, args, run_roo
             "kv_quant_stats": rosetta.get_kv_quant_stats() if rosetta is not None else None,
             "include_response": bool(args.include_response),
             "receiver_only": bool(args.local_receiver_only),
+            "kv_cache_proportion": args.kv_cache_proportion,
+            "kv_cache_order_mode": args.kv_cache_order_mode,
         }
         (run_root / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
         (run_root / "samples.jsonl").write_text(
@@ -657,7 +663,16 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
         env_info = collect_env_info()
         print("Environment info:", json.dumps(env_info, indent=2))
         (run_root / "manifests" / "env_info.json").write_text(json.dumps(env_info, indent=2))
-        write_status(run_root, "running", {"mode": "gpu", "kv_quant_config": kv_quant_config})
+        write_status(
+            run_root,
+            "running",
+            {
+                "mode": "gpu",
+                "kv_quant_config": kv_quant_config,
+                "kv_cache_proportion": args.kv_cache_proportion,
+                "kv_cache_order_mode": args.kv_cache_order_mode,
+            },
+        )
 
         run_cmd(
             ["git", "submodule", "update", "--init", "--recursive", "quantization/C2C"],
@@ -715,6 +730,8 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "prep_only": bool(args.prep_only),
             "kv_quant_config": kv_quant_config,
+            "kv_cache_proportion": args.kv_cache_proportion,
+            "kv_cache_order_mode": args.kv_cache_order_mode,
         }
         manifest_path = run_root / "manifests" / "step_1_manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))
@@ -729,10 +746,13 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
 
         def patch(cfg_path, dataset, out_dir):
             cfg = yaml.safe_load(Path(cfg_path).read_text())
+            cfg.setdefault("eval", {})
             cfg["model"]["rosetta_config"]["checkpoints_dir"] = manifest["checkpoint_dir"]
             cfg["model"]["rosetta_config"]["kv_quant_config"] = kv_quant_config
             cfg["output"]["output_dir"] = str(out_dir)
             cfg["eval"]["dataset"] = dataset
+            cfg["eval"]["kv_cache_proportion"] = args.kv_cache_proportion
+            cfg["eval"]["kv_cache_order_mode"] = args.kv_cache_order_mode
             Path(cfg_path).write_text(yaml.safe_dump(cfg, sort_keys=False))
 
         patch(run_root / "configs/openbookqa.yaml", "openbookqa", run_root / "results" / "openbookqa")
@@ -792,6 +812,18 @@ def main():
     parser.add_argument("--kv-quant-collect-stats", action="store_true", help="Collect quant scale stats")
     parser.add_argument("--disable-kv-quant", action="store_true", help="Disable KV quantization for baseline compare")
     parser.add_argument(
+        "--kv-cache-proportion",
+        type=float,
+        default=1.0,
+        help="Proportion of instruction tokens kept for KV cache sharing (0.0-1.0)",
+    )
+    parser.add_argument(
+        "--kv-cache-order-mode",
+        choices=["front", "back"],
+        default="front",
+        help="Which part of instruction tokens to keep when pruning (front/back)",
+    )
+    parser.add_argument(
         "--local-dataset",
         choices=["openbookqa", "ai2-arc"],
         default="openbookqa",
@@ -818,6 +850,9 @@ def main():
     if not quant_root.is_dir():
         die(f"quantization/ folder not found under {project_root}")
     data_root = quant_root / "data"
+
+    if args.kv_cache_proportion < 0.0 or args.kv_cache_proportion > 1.0:
+        die("kv_cache_proportion must be between 0.0 and 1.0")
 
     if args.mode == "gpu" and not args.skip_gpu_check and not args.prep_only:
         check_gpu()
