@@ -199,7 +199,42 @@ Prune KV tokens (e.g., keep top‑50%, 25%, 10%) before projection.
 Adds a second “budget” axis (length) beyond precision, enabling stronger trade‑off curves.
 
 **How**  
-Implement a simple selection policy (magnitude‑based or attention‑norm) and evaluate with INT8.
+Use the existing `kv_cache_proportion` + `kv_cache_order_mode` hooks in the evaluator to mask a fraction of instruction tokens (simple front/back pruning) and evaluate with INT8.
+
+**Milestone 3 sub‑steps (phased)**  
+- **Phase 0 (Plan update)**: lock the cache‑length grid and defaults.  
+  - **Default**: `kv_cache_proportion=1.0`, `kv_cache_order_mode=front`.  
+  - **Grid**: {1.0, 0.75, 0.5, 0.25, 0.1} × {front, back}.  
+  - **Why**: aligns with the “budget curve” goal while keeping the search small enough for 1×H100.  
+- **Phase 1 (Runner update)**: extend the GPU runner to accept `--kv-cache-proportion` and `--kv-cache-order-mode` and inject them into the generated eval configs; add these fields to `step_1_manifest.json` and local summaries.  
+  - **Why**: ensures all runs are traceable and reduces manual config edits.  
+- **Phase 2 (Local sanity)**: run 5–20 local samples with `proportion=1.0` vs `0.5` (front) to validate the kv_cache_index masking path.  
+  - **Why**: quick plumbing check before GPU time.  
+- **Phase 3 (Local order‑mode check)**: run 5–20 local samples with `proportion=0.5` and `order_mode=back` to verify ordering is wired.  
+  - **Why**: ensures we can separate “keep early” vs “keep late” effects.  
+- **Deferred GPU block (execute when GPU is available)**  
+  - **Phase 4 (GPU smoke)**: run a 25–50 sample limit for two settings (0.5/front, 0.5/back).  
+    - **Why**: validate throughput + correctness under the real target environment.  
+  - **Phase 5 (Full GPU grid)**: run OpenBookQA + ARC‑C for the full grid above using INT8 PTQ.  
+    - **Why**: this yields the core “accuracy vs length” curve for the workshop.  
+  - **Phase 6 (Analysis + QC)**: compute accuracy vs proportion and produce a single curve per dataset; verify output lengths and answer distributions.  
+    - **Why**: catches degenerate outputs and produces paper‑ready plots.
+
+**Telemetry (Milestone 3)**  
+- `step_1_manifest.json`: include `kv_cache_proportion` and `kv_cache_order_mode`.  
+- `results/*_summary.json`: record accuracy and length stats per setting.  
+- `progress/*.json`: chunked resume state for long runs (GPU).  
+- `logs/step1.log`: combined stdout/stderr for auditing and failures.
+
+**Local test commands (Milestone 3)**  
+- After Phase 1 is implemented, run:  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --kv-quant-scheme int8 --kv-cache-proportion 1.0 --kv-cache-order-mode front`  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --kv-quant-scheme int8 --kv-cache-proportion 0.5 --kv-cache-order-mode front`  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --kv-quant-scheme int8 --kv-cache-proportion 0.5 --kv-cache-order-mode back`  
+
+**GPU commands (Milestone 3, deferred)**  
+- Use the chunked SLURM runner, but override `kv_cache_proportion` and `kv_cache_order_mode` per run tag (after Phase 1 adds flags).  
+- Start with smoke limits (50 samples) for 0.5/front and 0.5/back; then expand to the full grid.
 
 ## Milestone 4: Communication‑Budget Curves
 **What**  
