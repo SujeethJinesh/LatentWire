@@ -36,6 +36,7 @@ export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-/scratch/m000066/${USER}/c2c_checkpoints}
 # Milestone toggles (set to 1 when you want to run them).
 RUN_MILESTONE_0="${RUN_MILESTONE_0:-0}"
 RUN_MILESTONE_2="${RUN_MILESTONE_2:-0}"
+PREFLIGHT="${PREFLIGHT:-1}"
 DRY_RUN="${DRY_RUN:-0}"
 
 # Chunked eval settings (resume at chunk boundaries).
@@ -166,19 +167,51 @@ run_eval_chunks() {
   done
 }
 
+preflight_cleanup() {
+  local run_root="$1"
+  if [ -d "${run_root}" ]; then
+    rm -rf "${run_root}"
+  fi
+}
+
+run_preflight() {
+  if [ "${PREFLIGHT}" != "1" ]; then
+    return
+  fi
+
+  echo "Preflight: running prep-only to validate plumbing."
+
+  if [ "${RUN_MILESTONE_0}" = "1" ]; then
+    local pre_tag="preflight_step0_${RUN_TAG_PREFIX}"
+    python quantization/scripts/run_step0_baselines.py --mode gpu --prep-only --run-tag "${pre_tag}"
+    preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_0_baselines/${pre_tag}"
+  fi
+
+  if [ "${RUN_MILESTONE_2}" = "1" ]; then
+    for SCHEME in int8 int4; do
+      local pre_tag="preflight_step1_${SCHEME}_${RUN_TAG_PREFIX}"
+      python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme "${SCHEME}" --prep-only --run-tag "${pre_tag}"
+      preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
+    done
+  fi
+
+  if [ "${DRY_RUN}" = "1" ]; then
+    echo "DRY_RUN=1: preflight complete; exiting before evaluation."
+    exit 0
+  fi
+}
+
+run_preflight
+
 # =============================================================================
 # Milestone 0: Baseline evals (receiver-only, no quant).
 # =============================================================================
 if [ "${RUN_MILESTONE_0}" = "1" ]; then
   RUN_TAG="step0_${RUN_TAG_PREFIX}"
   python quantization/scripts/run_step0_baselines.py --mode gpu --prep-only --run-tag "${RUN_TAG}"
-  if [ "${DRY_RUN}" = "1" ]; then
-    echo "DRY_RUN=1: Milestone 0 prep-only complete; skipping evaluation."
-  else
-    RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_0_baselines/${RUN_TAG}"
-    run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log"
-    run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log"
-  fi
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_0_baselines/${RUN_TAG}"
+  run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log"
+  run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log"
 fi
 
 # =============================================================================
@@ -188,10 +221,6 @@ if [ "${RUN_MILESTONE_2}" = "1" ]; then
   for SCHEME in int8 int4; do
     RUN_TAG="step1_${SCHEME}_${RUN_TAG_PREFIX}"
     python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme "${SCHEME}" --prep-only --run-tag "${RUN_TAG}"
-    if [ "${DRY_RUN}" = "1" ]; then
-      echo "DRY_RUN=1: Milestone 2 (${SCHEME}) prep-only complete; skipping evaluation."
-      continue
-    fi
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
     run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
     run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
