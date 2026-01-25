@@ -3,12 +3,12 @@
 Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with communication‑budget curves, and a clear path to a main‑conference submission (QAT + mixed precision + heterogeneity scaling). Each step is designed to run on a single H100.
 
 ## Data Capture Contract (applies to every step)
-- Each run creates `data/step_X_<name>/<run_tag>/` with:
+- Each run creates `quantization/data/step_X_<name>/<run_tag>/` with:
   - `configs/` (the exact eval/train configs used)
   - `logs/` (stdout/stderr logs)
   - `results/` (JSON outputs)
   - `manifests/` (checkpoint + environment provenance)
-- Commit `data/step_*` to git after each step so results are reviewable.
+- Commit `quantization/data/step_*` to git after each step so results are reviewable.
 
 ## Step 0: Baseline + Environment Sanity
 **What**  
@@ -24,7 +24,7 @@ The script:
 - Verifies the `rosetta` conda env and installs deps if missing.
 - Downloads the published fuser checkpoint to scratch.
 - Writes `env_info.json` and checkpoint manifests.
-- Runs OpenBookQA + ARC‑C and logs everything into `data/step_0_baselines/<run_tag>/`.
+- Runs OpenBookQA + ARC‑C and logs everything into `quantization/data/step_0_baselines/<run_tag>/`.
 
 **Workshop/Main‑conf connection**  
 Baseline accuracy and latency anchors the whole paper.
@@ -52,7 +52,7 @@ Quantifies accuracy drop vs bandwidth savings.
 
 **How**  
 Run the same eval pipeline as Step 0 with quantization flags enabled.  
-Store results under `data/step_2_ptq/<run_tag>/`.
+Store results under `quantization/data/step_2_ptq/<run_tag>/`.
 
 ## Step 3: Cache‑Length Reduction
 **What**  

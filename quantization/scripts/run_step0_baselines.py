@@ -215,7 +215,7 @@ def resolve_device_for_mode(mode):
     return torch.device("cuda")
 
 
-def run_local_smoke_test(project_root, args):
+def run_local_smoke_test(project_root, data_root, args):
     if args.prep_only:
         print("Note: --prep-only ignored in local mode.")
 
@@ -223,7 +223,7 @@ def run_local_smoke_test(project_root, args):
     if args.output_dir:
         run_root = Path(args.output_dir).expanduser().resolve()
     else:
-        run_root = project_root / "data" / "local_smoke_tests" / run_tag
+        run_root = data_root / "local_smoke_tests" / run_tag
     run_root.mkdir(parents=True, exist_ok=True)
     (run_root / "manifests").mkdir(parents=True, exist_ok=True)
 
@@ -286,7 +286,7 @@ def run_local_smoke_test(project_root, args):
 
         checkpoint_dir = args.checkpoint_dir
         if checkpoint_dir is None:
-            ckpt_root = project_root / "data" / "local_smoke_tests" / "checkpoints"
+            ckpt_root = data_root / "local_smoke_tests" / "checkpoints"
             ckpt_root.mkdir(parents=True, exist_ok=True)
             repo_id = "nics-efc/C2C_Fuser"
             pattern = "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
@@ -416,6 +416,10 @@ def main():
     project_root = Path(args.project_root).resolve()
     if not project_root.is_dir():
         die(f"PROJECT_ROOT not found: {project_root}")
+    quant_root = project_root / "quantization"
+    if not quant_root.is_dir():
+        die(f"quantization/ folder not found under {project_root}")
+    data_root = quant_root / "data"
 
     if args.mode == "gpu" and not args.skip_gpu_check and not args.prep_only:
         check_gpu()
@@ -426,7 +430,7 @@ def main():
         os.environ["HF_HOME"] = args.hf_cache
         os.environ["TRANSFORMERS_CACHE"] = os.path.join(args.hf_cache, "transformers")
     elif args.mode == "local":
-        local_cache = project_root / "data" / "local_smoke_tests" / "hf_cache"
+        local_cache = data_root / "local_smoke_tests" / "hf_cache"
         os.environ.setdefault("HF_HOME", str(local_cache))
         os.environ.setdefault("TRANSFORMERS_CACHE", str(local_cache / "transformers"))
     else:
@@ -435,13 +439,13 @@ def main():
     os.environ.setdefault("WANDB_DISABLED", "true")
 
     if args.mode == "local":
-        run_local_smoke_test(project_root, args)
+        run_local_smoke_test(project_root, data_root, args)
         return
 
     run_tag = time.strftime("%Y%m%d_%H%M%S")
     if args.run_tag:
         run_tag = args.run_tag
-    run_root = project_root / "data" / "step_0_baselines" / run_tag
+    run_root = data_root / "step_0_baselines" / run_tag
     run_root.mkdir(parents=True, exist_ok=True)
     for sub in ("configs", "logs", "results", "manifests"):
         (run_root / sub).mkdir(parents=True, exist_ok=True)
