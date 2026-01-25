@@ -216,6 +216,7 @@ Phases 2–6 below provide the local sanity checks and GPU smoke/full runs; loca
   - **Default**: `kv_cache_proportion=1.0`, `kv_cache_order_mode=front`.  
   - **Grid**: {1.0, 0.75, 0.5, 0.25, 0.1} × {front, back}.  
   - **Why**: aligns with the “budget curve” goal while keeping the search small enough for 1×H100.  
+  - **Extensions (backburner)**: add `order_mode=middle` (center chunk) or random‑keep at one proportion (e.g., 0.5) for interpretability.  
 - **Phase 1 (Runner update)**: extend the GPU runner to accept `--kv-cache-proportion` and `--kv-cache-order-mode` and inject them into the generated eval configs; add these fields to `step_1_manifest.json` and local summaries.  
   - **Why**: ensures all runs are traceable and reduces manual config edits.  
 - **Phase 2 (Local sanity)**: run 5–20 local samples with `proportion=1.0` vs `0.5` (front) to validate the kv_cache_index masking path.  
