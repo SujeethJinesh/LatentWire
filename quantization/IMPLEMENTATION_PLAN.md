@@ -138,7 +138,7 @@ python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/arc_c.
 **Environment auto-detect**
 - The script checks for required Python modules; if they are already installed, it skips `pip install` and proceeds to evaluation.
 - If not running inside the requested conda env, the script re-execs itself via `conda run -n rosetta ...`.
-- Environment/module paths are written to `data/step_0_baselines/<run_tag>/manifests/env_info.json`.
+- Environment/module paths are always printed and written to `data/step_0_baselines/<run_tag>/manifests/env_info.json`.
 
 **Workshop/Main‑conf connection**
 - Valid baseline needed to attribute any gains to quantization or cache‑budgeting.

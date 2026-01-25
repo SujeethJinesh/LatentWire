@@ -153,18 +153,6 @@ def main():
     parser.add_argument("--env", default="rosetta", help="Conda env name to use")
     parser.add_argument("--skip-gpu-check", action="store_true", help="Skip GPU detection")
     parser.add_argument("--prep-only", action="store_true", help="Run setup + downloads only; skip evaluation")
-    parser.add_argument(
-        "--print-env",
-        action="store_true",
-        default=True,
-        help="Print environment/module locations (default: enabled)",
-    )
-    parser.add_argument(
-        "--no-print-env",
-        action="store_false",
-        dest="print_env",
-        help="Disable printing environment/module locations",
-    )
     parser.add_argument("--no-reexec", action="store_true", help="Internal flag to avoid re-exec loops")
     args = parser.parse_args()
 
@@ -190,8 +178,7 @@ def main():
     log_path = run_root / "logs" / "step0.log"
     with log_path.open("a", encoding="utf-8") as log_file:
         env_info = collect_env_info()
-        if args.print_env or args.prep_only:
-            print("Environment info:", json.dumps(env_info, indent=2))
+        print("Environment info:", json.dumps(env_info, indent=2))
         env_path = run_root / "manifests" / "env_info.json"
         env_path.write_text(json.dumps(env_info, indent=2))
 
