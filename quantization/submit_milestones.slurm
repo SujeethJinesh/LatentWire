@@ -36,6 +36,7 @@ export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-/scratch/m000066/${USER}/c2c_checkpoints}
 # Milestone toggles (set to 1 when you want to run them).
 RUN_MILESTONE_0="${RUN_MILESTONE_0:-0}"
 RUN_MILESTONE_2="${RUN_MILESTONE_2:-0}"
+DRY_RUN="${DRY_RUN:-0}"
 
 # Chunked eval settings (resume at chunk boundaries).
 CHUNK_SIZE="${CHUNK_SIZE:-200}"
@@ -171,9 +172,13 @@ run_eval_chunks() {
 if [ "${RUN_MILESTONE_0}" = "1" ]; then
   RUN_TAG="step0_${RUN_TAG_PREFIX}"
   python quantization/scripts/run_step0_baselines.py --mode gpu --prep-only --run-tag "${RUN_TAG}"
-  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_0_baselines/${RUN_TAG}"
-  run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log"
-  run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log"
+  if [ "${DRY_RUN}" = "1" ]; then
+    echo "DRY_RUN=1: Milestone 0 prep-only complete; skipping evaluation."
+  else
+    RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_0_baselines/${RUN_TAG}"
+    run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log"
+    run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log"
+  fi
 fi
 
 # =============================================================================
@@ -183,6 +188,10 @@ if [ "${RUN_MILESTONE_2}" = "1" ]; then
   for SCHEME in int8 int4; do
     RUN_TAG="step1_${SCHEME}_${RUN_TAG_PREFIX}"
     python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme "${SCHEME}" --prep-only --run-tag "${RUN_TAG}"
+    if [ "${DRY_RUN}" = "1" ]; then
+      echo "DRY_RUN=1: Milestone 2 (${SCHEME}) prep-only complete; skipping evaluation."
+      continue
+    fi
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
     run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
     run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
