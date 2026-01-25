@@ -216,6 +216,14 @@ Reuse the PTQ + pruning settings from Steps 2–3.
 - **Workshop**: Milestones 0 → 1 → 2 → 3 → 4 (baseline + PTQ + pruning + budget curve).
 - **Main‑conf**: Workshop path + Milestones 5 → 6 → 7 (QAT + mixed precision + heterogeneity).
 
+## Potential Improvements / Follow‑ups
+- **Byte accounting**: include per‑head scale metadata in “bytes transferred” so INT8/INT4 are not under‑counted.
+- **Milestone 3 simplification**: use `proportion/order_mode` in `kv_cache_index` for cheap cache‑length ablations before adding top‑k pruning.
+- **Budget curves**: report accuracy vs *effective* bytes (precision × cache length + metadata).
+- **QAT scope**: keep projector‑only training (freeze base/teacher weights) to stay within 1×H100 budget.
+- **Mixed precision**: start with “last‑N layers FP16, rest INT8” as the minimal schedule.
+- **Heterogeneity**: plan for tokenizer alignment (`is_do_alignment`) when crossing model families.
+
 ## Time Budget (rough)
 - Workshop path: ~1 day on 1 H100 (assuming caches are warm).
 - Main‑conf path: ~3–5 days on 1 H100.
