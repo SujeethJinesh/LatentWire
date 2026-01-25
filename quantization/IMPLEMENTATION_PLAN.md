@@ -35,9 +35,6 @@ conda create -n rosetta python=3.10 -y
 python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.py \
   --project-root /projects/m000066/sujinesh/LatentWire
 
-# Bash wrapper (optional)
-bash /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.sh /projects/m000066/sujinesh/LatentWire
-
 # Repo + submodule
 cd /path/to/LatentWire
 git submodule update --init --recursive quantization/C2C
