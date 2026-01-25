@@ -30,6 +30,7 @@ REQUIRED_MODULES_LOCAL = [
     "numpy",
     "tqdm",
 ]
+LOCAL_TORCH_VERSION = "2.2.2"
 
 
 def die(msg):
@@ -74,6 +75,20 @@ def find_conda_exe():
     return os.environ.get("CONDA_EXE") or shutil.which("conda")
 
 
+def find_conda_env_prefix(conda_exe, env_name):
+    try:
+        res = subprocess.run(
+            [conda_exe, "env", "list", "--json"], capture_output=True, text=True, check=True
+        )
+        data = json.loads(res.stdout)
+        for env_path in data.get("envs", []):
+            if Path(env_path).name == env_name:
+                return env_path
+    except Exception:
+        return None
+    return None
+
+
 def ensure_env(env_name, project_root, args):
     current_env = os.environ.get("CONDA_DEFAULT_ENV")
     if current_env == env_name:
@@ -93,8 +108,15 @@ def ensure_env(env_name, project_root, args):
 
     script_path = Path(__file__).resolve()
     forwarded = [arg for arg in sys.argv[1:] if arg != "--no-reexec"]
+    env_prefix = find_conda_env_prefix(conda_exe, env_name)
+    python_exe = None
+    if env_prefix:
+        python_exe = Path(env_prefix) / "bin" / "python"
+        if not python_exe.exists():
+            python_exe = None
+    python_cmd = str(python_exe) if python_exe else "python"
     cmd = [
-        conda_exe, "run", "-n", env_name, "python", str(script_path),
+        conda_exe, "run", "-n", env_name, python_cmd, str(script_path),
         "--project-root", str(project_root),
     ] + forwarded + ["--no-reexec"]
     print("Re-running inside conda env:", " ".join(cmd))
@@ -102,7 +124,14 @@ def ensure_env(env_name, project_root, args):
     sys.exit(0)
 
 
-def ensure_installed(c2c_root, log_file=None, required_modules=None, extras=None):
+def ensure_installed(
+    c2c_root,
+    log_file=None,
+    required_modules=None,
+    extras=None,
+    no_deps=False,
+    extra_pip=None,
+):
     required_modules = required_modules or REQUIRED_MODULES_GPU
     try:
         import importlib
@@ -113,13 +142,18 @@ def ensure_installed(c2c_root, log_file=None, required_modules=None, extras=None
     except Exception:
         pass
 
-    run_cmd([sys.executable, "-m", "pip", "install", "-e", "."], cwd=c2c_root, log_file=log_file)
+    pip_cmd = [sys.executable, "-m", "pip", "install", "-e", "."]
+    if no_deps:
+        pip_cmd.append("--no-deps")
+    run_cmd(pip_cmd, cwd=c2c_root, log_file=log_file)
     if extras:
         run_cmd(
             [sys.executable, "-m", "pip", "install", "-e", f".[{extras}]"],
             cwd=c2c_root,
             log_file=log_file,
         )
+    if extra_pip:
+        run_cmd([sys.executable, "-m", "pip", "install"] + list(extra_pip), log_file=log_file)
 
 
 def collect_env_info():
@@ -158,6 +192,18 @@ def collect_env_info():
     return info
 
 
+def ensure_numpy_compat(log_file=None):
+    try:
+        import numpy as np
+        major = int(np.__version__.split(".", 1)[0])
+        if major < 2:
+            return
+    except Exception:
+        pass
+    run_cmd([sys.executable, "-m", "pip", "install", "numpy<2"], log_file=log_file)
+    os.execv(sys.executable, [sys.executable, str(Path(__file__).resolve())] + sys.argv[1:])
+
+
 def resolve_device_for_mode(mode):
     import torch
     if mode == "local":
@@ -183,6 +229,7 @@ def run_local_smoke_test(project_root, args):
 
     log_path = run_root / "local_smoke.log"
     with log_path.open("a", encoding="utf-8") as log_file:
+        ensure_numpy_compat(log_file=log_file)
         env_info = collect_env_info()
         print("Environment info:", json.dumps(env_info, indent=2))
         env_path = run_root / "manifests" / "env_info.json"
@@ -206,11 +253,33 @@ def run_local_smoke_test(project_root, args):
             log_file=log_file,
             required_modules=REQUIRED_MODULES_LOCAL,
             extras=None,
+            no_deps=True,
+            extra_pip=[
+                f"torch=={LOCAL_TORCH_VERSION}",
+                "transformers==4.52.4",
+                "huggingface_hub",
+                "pyyaml",
+                "numpy<2",
+                "tqdm",
+                "tiktoken",
+                "sentencepiece",
+            ],
         )
-
         from huggingface_hub import snapshot_download
         from transformers import AutoModelForCausalLM, AutoTokenizer
         import torch
+        if not hasattr(torch.nn, "RMSNorm"):
+            class RMSNorm(torch.nn.Module):
+                def __init__(self, hidden_size, eps=1e-6, dtype=None):
+                    super().__init__()
+                    self.weight = torch.nn.Parameter(torch.ones(hidden_size, dtype=dtype))
+                    self.eps = eps
+
+                def forward(self, x):
+                    norm = x.pow(2).mean(-1, keepdim=True).add(self.eps).rsqrt()
+                    return x * norm * self.weight
+
+            torch.nn.RMSNorm = RMSNorm
         from rosetta.model.projector import load_projector
         from rosetta.model.wrapper import RosettaModel
         from rosetta.utils.evaluate import set_default_chat_template
@@ -241,6 +310,7 @@ def run_local_smoke_test(project_root, args):
 
         device = resolve_device_for_mode(args.mode)
         dtype = torch.float16 if device.type in ("cuda", "mps") else torch.float32
+        projector_dtype = torch.float16 if device.type == "mps" else dtype
 
         tokenizer = AutoTokenizer.from_pretrained(args.base_model)
         set_default_chat_template(tokenizer, args.base_model)
@@ -252,17 +322,24 @@ def run_local_smoke_test(project_root, args):
         ckpt_path = Path(checkpoint_dir)
         projector_list = []
         for proj_json in sorted(ckpt_path.glob("projector_*.json")):
-            proj = load_projector(str(proj_json)).to(device)
+            if proj_json.name == "projector_config.json":
+                continue
+            proj = load_projector(str(proj_json))
             pt_path = proj_json.with_suffix(".pt")
             if pt_path.exists():
-                state_dict = torch.load(pt_path, map_location=device)
+                state_dict = torch.load(pt_path, map_location="cpu")
+                for key, value in state_dict.items():
+                    if torch.is_tensor(value):
+                        state_dict[key] = value.to(projector_dtype)
                 proj.load_state_dict(state_dict, strict=False)
+            proj = proj.to(device=device, dtype=projector_dtype)
             projector_list.append(proj)
 
         rosetta = RosettaModel(
             model_list=[base_model, teacher_model],
             base_model_idx=0,
             projector_list=projector_list,
+            include_response=True,
         ).to(device).eval()
 
         proj_cfg_path = ckpt_path / "projector_config.json"
