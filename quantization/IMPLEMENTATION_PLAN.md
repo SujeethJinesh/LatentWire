@@ -31,10 +31,6 @@ Every step follows the same pattern: create a new `data/step_X_*` run folder, co
 # One-time setup (can be done on login node)
 conda create -n rosetta python=3.10 -y
 
-# Login node prep (downloads + configs, no eval)
-cd /projects/m000066/sujinesh/LatentWire
-python quantization/scripts/run_step0_baselines.py --prep-only
-
 # One-command runner on GPU node (recommended, from repo root)
 cd /projects/m000066/sujinesh/LatentWire
 python quantization/scripts/run_step0_baselines.py
@@ -133,7 +129,6 @@ python script/evaluation/unified_evaluator.py --config "$RUN_ROOT/configs/arc_c.
 
 **GPU guard**
 - The script exits early if no GPU is detected (prevents accidental login-node runs).
-- Use `--prep-only` on the login node to run setup and downloads without evaluation.
 
 **Environment auto-detect**
 - The script checks for required Python modules; if they are already installed, it skips `pip install` and proceeds to evaluation.
