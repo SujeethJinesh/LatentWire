@@ -36,6 +36,7 @@ export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-/scratch/m000066/${USER}/c2c_checkpoints}
 # Milestone toggles (set to 1 when you want to run them).
 RUN_MILESTONE_0="${RUN_MILESTONE_0:-0}"
 RUN_MILESTONE_2="${RUN_MILESTONE_2:-0}"
+RUN_MILESTONE_3="${RUN_MILESTONE_3:-0}"
 PREFLIGHT="${PREFLIGHT:-1}"
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -46,6 +47,13 @@ SMOKE_LIMIT="${SMOKE_LIMIT:-50}"
 
 # Run tag prefix for deterministic folder names.
 RUN_TAG_PREFIX="${RUN_TAG_PREFIX:-$(date +%Y%m%d_%H%M%S)}"
+
+# Milestone 3 grid (cache-length reduction).
+M3_KV_QUANT_SCHEME="${M3_KV_QUANT_SCHEME:-int8}"
+M3_PROPORTIONS="${M3_PROPORTIONS:-1.0 0.75 0.5 0.25 0.1}"
+M3_ORDER_MODES="${M3_ORDER_MODES:-front back}"
+PREFLIGHT_M3_PROPORTION="${PREFLIGHT_M3_PROPORTION:-0.5}"
+PREFLIGHT_M3_ORDER_MODE="${PREFLIGHT_M3_ORDER_MODE:-front}"
 
 handle_signal() {
   echo "Received preemption signal. Job will exit and can be requeued."
@@ -167,6 +175,10 @@ run_eval_chunks() {
   done
 }
 
+sanitize_prop() {
+  echo "$1" | sed 's/\./p/g'
+}
+
 preflight_cleanup() {
   local run_root="$1"
   if [ -d "${run_root}" ]; then
@@ -193,6 +205,22 @@ run_preflight() {
       python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme "${SCHEME}" --prep-only --run-tag "${pre_tag}"
       preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
     done
+  fi
+
+  if [ "${RUN_MILESTONE_3}" = "1" ]; then
+    local pre_prop="${PREFLIGHT_M3_PROPORTION}"
+    local pre_order="${PREFLIGHT_M3_ORDER_MODE}"
+    local pre_prop_tag
+    pre_prop_tag="$(sanitize_prop "${pre_prop}")"
+    local pre_tag="preflight_step3_p${pre_prop_tag}_${pre_order}_${RUN_TAG_PREFIX}"
+    python quantization/scripts/run_step1_kv_ptq.py \
+      --mode gpu \
+      --kv-quant-scheme "${M3_KV_QUANT_SCHEME}" \
+      --kv-cache-proportion "${pre_prop}" \
+      --kv-cache-order-mode "${pre_order}" \
+      --prep-only \
+      --run-tag "${pre_tag}"
+    preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
   fi
 
   if [ "${DRY_RUN}" = "1" ]; then
@@ -224,6 +252,28 @@ if [ "${RUN_MILESTONE_2}" = "1" ]; then
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
     run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
     run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
+  done
+fi
+
+# =============================================================================
+# Milestone 3: Cache-length reduction (INT8 + proportion/order grid).
+# =============================================================================
+if [ "${RUN_MILESTONE_3}" = "1" ]; then
+  for PROP in ${M3_PROPORTIONS}; do
+    for ORDER in ${M3_ORDER_MODES}; do
+      PROP_TAG="$(sanitize_prop "${PROP}")"
+      RUN_TAG="step3_${M3_KV_QUANT_SCHEME}_p${PROP_TAG}_${ORDER}_${RUN_TAG_PREFIX}"
+      python quantization/scripts/run_step1_kv_ptq.py \
+        --mode gpu \
+        --kv-quant-scheme "${M3_KV_QUANT_SCHEME}" \
+        --kv-cache-proportion "${PROP}" \
+        --kv-cache-order-mode "${ORDER}" \
+        --prep-only \
+        --run-tag "${RUN_TAG}"
+      RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
+      run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
+      run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
+    done
   done
 fi
 
