@@ -55,7 +55,14 @@ Quantization is not covered in C2C; it is the core novelty for the workshop pape
 
 **How**  
 Add a small quantization module (e.g., `rosetta/utils/quant.py`) and hook it before projection in `rosetta/model/wrapper.py`.  
-Expose configs for `kv_quant_scheme` and `kv_quant_axis` (per‑head / per‑layer).  
+Expose a `kv_quant_config` block (per‑head / per‑layer) under `model.rosetta_config`:  
+```yaml
+kv_quant_config:
+  enabled: true
+  scheme: int8   # int8 | int4
+  axis: head     # head | layer
+  eps: 1e-6
+```  
 Follow the Step 0 pattern with a minimal, well‑scoped runner:
 - `quantization/scripts/run_step1_kv_ptq.py` with GPU as default; `--mode local` for Mac validation.  
 - Local smoke test: single prompt with the same C2C eval template + `extract_answer_from_content` check.  
@@ -71,6 +78,12 @@ PTQ results + bandwidth reductions are sufficient for a workshop paper.
 - **Phase 3 (Local validation)**: Run a **single dataset sample** (OpenBookQA or ARC‑C) to validate prompt formatting, quantization path, and logging.  
 - **Phase 4 (GPU eval)**: Run full OpenBookQA + ARC‑C with quantization enabled; compare accuracy vs Step 0.  
 
+**Phase 1 implementation details (applied)**  
+- **Quantization module**: `rosetta/utils/quant.py` implements symmetric fake‑quant for KV (INT8/INT4), per‑head or per‑layer.  
+- **Hook point**: `rosetta/model/wrapper.py` quantizes **source KV slices** immediately before projection.  
+- **Config plumbing**: `rosetta/utils/evaluate.py` passes `kv_quant_config` into `RosettaModel`.  
+- **Design choice**: fake‑quant only (quantize → dequantize), no bit‑packing yet. This preserves execution path while modeling quantization noise.
+
 **Decisions + justification**  
 - **Start with INT8 + INT4 only**: These are the most standard, hardware‑agnostic PTQ baselines. They deliver a clear accuracy/bytes trade‑off and are sufficient for a workshop paper.  
   - **Extensions (later)**: NF4 and FP8. NF4 can improve INT4 accuracy; FP8 is H100‑friendly and could strengthen a main‑conf submission.  
@@ -78,6 +91,13 @@ PTQ results + bandwidth reductions are sufficient for a workshop paper.
   - **Extensions (later)**: quantize base KV, quantize both source+base, or quantize only a subset of layers.  
 - **Default per‑head axis**: Per‑head scales typically preserve accuracy better than per‑layer with modest overhead.  
   - **Extensions (later)**: per‑layer (cheaper), per‑token (more accurate but expensive), or mixed granularity by layer depth.  
+
+**Extensions to Step 1 (backburner)**  
+- **NF4 / FP8**: add additional schemes for improved INT4 accuracy or H100‑optimized precision.  
+- **Bit‑packing**: actual KV compression for realistic bandwidth measurements.  
+- **Source+base quantization**: quantify whether quantization noise on both sides compounds or cancels.  
+- **Layer‑selective quantization**: higher precision in late layers, lower in early layers.  
+- **Group‑wise quantization**: group size tuning for accuracy/overhead trade‑offs.  
 
 **Technical notes / acronyms (Step 1)**  
 - **KV cache**: Attention Keys/Values stored for past tokens to avoid recomputation.  
