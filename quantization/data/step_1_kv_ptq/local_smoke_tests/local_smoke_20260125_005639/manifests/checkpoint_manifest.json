@@ -1,8 +1,0 @@
-{
-  "repo_id": "nics-efc/C2C_Fuser",
-  "allow_patterns": [
-    "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
-  ],
-  "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser",
-  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final"
-}
