@@ -1,0 +1,34 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_005639",
+  "input_length": 102,
+  "generated_length": 7,
+  "prompt_text": "Accurately answer the following question:\n\nPredators eat\n\nChoices:\nA. lions\nB. humans\nC. bunnies\nD. grass\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "Predators eat",
+  "choices_texts": [
+    "lions",
+    "humans",
+    "bunnies",
+    "grass"
+  ],
+  "choices_str": "A. lions\nB. humans\nC. bunnies\nD. grass\n",
+  "generated_text": "The correct answer is A.",
+  "extracted_answer": "A",
+  "expected_answer": "C",
+  "matches_expected": false,
+  "dataset": "openbookqa",
+  "sample_index": 2,
+  "kv_quant_config": {
+    "enabled": false,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": false
+  },
+  "kv_quant_stats": null
+}

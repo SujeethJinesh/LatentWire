@@ -1,0 +1,45 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "include_response": false,
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_111800",
+  "input_length": 129,
+  "generated_length": 7,
+  "prompt_text": "Accurately answer the following question:\n\nA positive effect of burning biofuel is\n\nChoices:\nA. shortage of crops for the food supply\nB. an increase in air pollution\nC. powering the lights in a home\nD. deforestation in the amazon to make room for crops\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "A positive effect of burning biofuel is",
+  "choices_texts": [
+    "shortage of crops for the food supply",
+    "an increase in air pollution",
+    "powering the lights in a home",
+    "deforestation in the amazon to make room for crops"
+  ],
+  "choices_str": "A. shortage of crops for the food supply\nB. an increase in air pollution\nC. powering the lights in a home\nD. deforestation in the amazon to make room for crops\n",
+  "generated_text": "The correct answer is A.",
+  "extracted_answer": "A",
+  "expected_answer": "C",
+  "matches_expected": false,
+  "dataset": "openbookqa",
+  "sample_index": 14,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 360,
+    "k_scale_min": 0.054472193121910095,
+    "k_scale_max": 1.7401574850082397,
+    "k_scale_mean_sum": 74.5961325392127,
+    "v_scale_min": 0.0011466919677332044,
+    "v_scale_max": 0.11478838324546814,
+    "v_scale_mean_sum": 12.196063200710341,
+    "k_scale_mean": 0.20721147927559083,
+    "v_scale_mean": 0.03387795333530651
+  }
+}

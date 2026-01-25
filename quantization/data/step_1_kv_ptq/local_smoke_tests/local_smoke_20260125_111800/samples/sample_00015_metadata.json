@@ -1,0 +1,45 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "include_response": false,
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_111800",
+  "input_length": 126,
+  "generated_length": 13,
+  "prompt_text": "Accurately answer the following question:\n\nAs gasoline costs rise, alternative fuels are being used, which means that\n\nChoices:\nA. wind power will be expensive\nB. gas costs will rise\nC. oil costs will be maintained\nD. gasoline will be needed less\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "As gasoline costs rise, alternative fuels are being used, which means that",
+  "choices_texts": [
+    "wind power will be expensive",
+    "gas costs will rise",
+    "oil costs will be maintained",
+    "gasoline will be needed less"
+  ],
+  "choices_str": "A. wind power will be expensive\nB. gas costs will rise\nC. oil costs will be maintained\nD. gasoline will be needed less\n",
+  "generated_text": "The correct answer is A. wind power will be expensive.",
+  "extracted_answer": "A",
+  "expected_answer": "D",
+  "matches_expected": false,
+  "dataset": "openbookqa",
+  "sample_index": 15,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 384,
+    "k_scale_min": 0.054472193121910095,
+    "k_scale_max": 1.7401574850082397,
+    "k_scale_mean_sum": 79.58236826956272,
+    "v_scale_min": 0.0011466919677332044,
+    "v_scale_max": 0.11478838324546814,
+    "v_scale_mean_sum": 13.005026509054005,
+    "k_scale_mean": 0.20724575070198625,
+    "v_scale_mean": 0.033867256533994805
+  }
+}

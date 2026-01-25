@@ -1,0 +1,45 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "include_response": false,
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_111800",
+  "input_length": 111,
+  "generated_length": 11,
+  "prompt_text": "Accurately answer the following question:\n\nThe chance of wildfires is increased by\n\nChoices:\nA. parched foliage\nB. torrential rain\nC. lush foliage\nD. careful fire maintenance\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "The chance of wildfires is increased by",
+  "choices_texts": [
+    "parched foliage",
+    "torrential rain",
+    "lush foliage",
+    "careful fire maintenance"
+  ],
+  "choices_str": "A. parched foliage\nB. torrential rain\nC. lush foliage\nD. careful fire maintenance\n",
+  "generated_text": "The correct answer is A. parched foliage.",
+  "extracted_answer": "A",
+  "expected_answer": "A",
+  "matches_expected": true,
+  "dataset": "openbookqa",
+  "sample_index": 13,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 336,
+    "k_scale_min": 0.054472193121910095,
+    "k_scale_max": 1.7401574850082397,
+    "k_scale_mean_sum": 69.61288028210402,
+    "v_scale_min": 0.0011466919677332044,
+    "v_scale_max": 0.11478838324546814,
+    "v_scale_mean_sum": 11.364377489779145,
+    "k_scale_mean": 0.20718119131578577,
+    "v_scale_mean": 0.03382255205291412
+  }
+}

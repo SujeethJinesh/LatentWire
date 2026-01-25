@@ -1,0 +1,31 @@
+{
+  "dataset": "openbookqa",
+  "sample_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "num_samples": 5,
+  "num_correct": 1,
+  "accuracy": 0.2,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 960,
+    "k_scale_min": 0.02654404565691948,
+    "k_scale_max": 1.7401574850082397,
+    "k_scale_mean_sum": 179.72871524468064,
+    "v_scale_min": 0.00036909448681399226,
+    "v_scale_max": 0.11478838324546814,
+    "v_scale_mean_sum": 18.661801989306696,
+    "k_scale_mean": 0.187217411713209,
+    "v_scale_mean": 0.019439377072194473
+  }
+}

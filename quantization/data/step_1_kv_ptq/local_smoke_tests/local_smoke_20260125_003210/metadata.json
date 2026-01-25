@@ -1,0 +1,44 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_003210",
+  "input_length": 150,
+  "generated_length": 7,
+  "prompt_text": "Accurately answer the following question:\n\nA person wants to start saving money so that they can afford a nice vacation at the end of the year. After looking over their budget and expenses, they decide the best way to save money is to\n\nChoices:\nA. make more phone calls\nB. quit eating lunch out\nC. buy less with monopoly money\nD. have lunch with friends\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "A person wants to start saving money so that they can afford a nice vacation at the end of the year. After looking over their budget and expenses, they decide the best way to save money is to",
+  "choices_texts": [
+    "make more phone calls",
+    "quit eating lunch out",
+    "buy less with monopoly money",
+    "have lunch with friends"
+  ],
+  "choices_str": "A. make more phone calls\nB. quit eating lunch out\nC. buy less with monopoly money\nD. have lunch with friends\n",
+  "generated_text": "The correct answer is A.",
+  "extracted_answer": "A",
+  "expected_answer": "B",
+  "matches_expected": false,
+  "dataset": "openbookqa",
+  "sample_index": 0,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 192,
+    "k_scale_min": 0.027589812874794006,
+    "k_scale_max": 1.739173173904419,
+    "k_scale_mean_sum": 36.09391911700368,
+    "v_scale_min": 0.00036909448681399226,
+    "v_scale_max": 0.09159694612026215,
+    "v_scale_mean_sum": 3.766822865814902,
+    "k_scale_mean": 0.1879891620677275,
+    "v_scale_mean": 0.019618869092785946
+  }
+}

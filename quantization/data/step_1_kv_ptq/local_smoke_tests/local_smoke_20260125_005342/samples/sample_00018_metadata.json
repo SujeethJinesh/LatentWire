@@ -1,0 +1,44 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_005342",
+  "input_length": 106,
+  "generated_length": 10,
+  "prompt_text": "Accurately answer the following question:\n\nWhich requires energy to move?\n\nChoices:\nA. weasel\nB. willow\nC. mango\nD. poison ivy\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "Which requires energy to move?",
+  "choices_texts": [
+    "weasel",
+    "willow",
+    "mango",
+    "poison ivy"
+  ],
+  "choices_str": "A. weasel\nB. willow\nC. mango\nD. poison ivy\n",
+  "generated_text": "The correct answer is A/B/C/D.",
+  "extracted_answer": "A",
+  "expected_answer": "A",
+  "matches_expected": true,
+  "dataset": "openbookqa",
+  "sample_index": 18,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 3720,
+    "k_scale_min": 0.02503690868616104,
+    "k_scale_max": 1.7401574850082397,
+    "k_scale_mean_sum": 695.1818308271468,
+    "v_scale_min": 0.00036909448681399226,
+    "v_scale_max": 0.13927164673805237,
+    "v_scale_mean_sum": 72.22495459456695,
+    "k_scale_mean": 0.18687683624385665,
+    "v_scale_mean": 0.01941531037488359
+  }
+}

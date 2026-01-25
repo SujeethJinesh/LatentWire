@@ -1,0 +1,45 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "include_response": false,
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_111800",
+  "input_length": 106,
+  "generated_length": 9,
+  "prompt_text": "Accurately answer the following question:\n\nAn animal that only eats plants is a\n\nChoices:\nA. rat\nB. moth\nC. chimpanzee\nD. pig\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "An animal that only eats plants is a",
+  "choices_texts": [
+    "rat",
+    "moth",
+    "chimpanzee",
+    "pig"
+  ],
+  "choices_str": "A. rat\nB. moth\nC. chimpanzee\nD. pig\n",
+  "generated_text": "The correct answer is D. pig.",
+  "extracted_answer": "D",
+  "expected_answer": "B",
+  "matches_expected": false,
+  "dataset": "openbookqa",
+  "sample_index": 19,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 480,
+    "k_scale_min": 0.054472193121910095,
+    "k_scale_max": 1.7401574850082397,
+    "k_scale_mean_sum": 99.43563737720251,
+    "v_scale_min": 0.0011466919677332044,
+    "v_scale_max": 0.13927164673805237,
+    "v_scale_mean_sum": 16.251888716593385,
+    "k_scale_mean": 0.2071575778691719,
+    "v_scale_mean": 0.03385810149290289
+  }
+}

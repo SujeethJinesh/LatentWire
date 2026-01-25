@@ -66,11 +66,20 @@ kv_quant_config:
 ```  
 Follow the Milestone 0 pattern with a minimal, well‑scoped runner:
 - `quantization/scripts/run_step1_kv_ptq.py` with GPU as default; `--mode local` for Mac validation.  
-- Local smoke test: single prompt with the same C2C eval template + `extract_answer_from_content` check.  
+- Local smoke test: **one real sample** from OpenBookQA or ARC‑C using the same C2C eval template + `extract_answer_from_content` check.  
 - GPU eval: identical to Step 0, but with quantization flags enabled.  
 
 **Workshop/Main‑conf connection**  
 PTQ results + bandwidth reductions are sufficient for a workshop paper.
+
+**Commands (from repo root)**  
+- Login node prep (INT8): `python quantization/scripts/run_step1_kv_ptq.py --prep-only --kv-quant-scheme int8`  
+- GPU node eval (INT8): `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8`  
+- GPU node eval (INT4): `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int4`  
+- Local dry run (1 sample): `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --kv-quant-scheme int8`  
+- Local mini‑batch (5 samples): `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 5 --kv-quant-scheme int8`  
+- Local no‑quant baseline (5 samples): `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 5 --disable-kv-quant`  
+- Cleanup failed runs: add `--cleanup-failed` to remove incomplete folders.
 
 **Milestone 1 sub‑steps (phased)**  
 - **Phase 0 (Plan update)**: Document decisions, sub‑steps, and extensions (this section).  
@@ -120,7 +129,46 @@ Quantifies accuracy drop vs bandwidth savings.
 
 **How**  
 Run the same eval pipeline as Step 0 with quantization flags enabled.  
-Store results under `quantization/data/step_2_ptq/<run_tag>/`.
+Store results under `quantization/data/step_1_kv_ptq/<run_tag>/` for now (rename to `step_2_ptq` if we split a dedicated runner later).
+
+**Milestone 2 sub‑steps (phased)**  
+- **Phase 0 (Plan update)**: lock down eval datasets (OpenBookQA + ARC‑C), quant schemes (INT8/INT4), and the storage contract.  
+  - **Why**: avoids drifting benchmarks and ensures deltas are attributable to quantization only.  
+- **Phase 1 (Config + runner)**: ensure Step 1 runner writes eval configs with `kv_quant_config` injected and output dirs scoped per run.  
+  - **Why**: keeps eval settings identical to Milestone 0 while toggling only KV precision.  
+- **Phase 2 (Local sanity)**: run 5–20 local samples with quant enabled vs `--disable-kv-quant` to confirm quantization does not change behavior in small samples.  
+  - **Why**: verifies the quant path is exercised and stable before burning GPU time.  
+- **Phase 3 (GPU smoke)**: run a limited GPU eval (e.g., 25–50 samples) by temporarily setting `eval.limit` in the generated configs to validate throughput + correctness.  
+  - **Why**: catches runtime errors and logging issues quickly on the real target environment.  
+- **Phase 4 (Receiver‑only sanity)**: run a short receiver‑only baseline on the same subset to confirm outputs are not degenerate (sanity check vs Table 3).  
+  - **Why**: ensures the base model is behaving reasonably before we attribute deltas to C2C or quantization.  
+- **Phase 5 (Full GPU eval)**: run full OpenBookQA + ARC‑C for INT8 and INT4; capture results + logs.  
+  - **Why**: these numbers anchor the workshop paper and the budget‑accuracy curves.  
+- **Phase 6 (Analysis + QC)**: compute delta accuracy vs Milestone 0, check consistency with C2C paper settings.  
+  - **Why**: prevents accidental misalignment with the baseline or paper protocol.
+
+**Telemetry (Milestone 2)**  
+- `env_info.json`: conda, HF cache paths, torch/transformers versions, CUDA visibility.  
+- `manifests/step_1_manifest.json`: checkpoint + git SHA provenance and `kv_quant_config`.  
+- `logs/step1.log`: full evaluator stdout/stderr for reproducibility.  
+- `results/`: evaluator JSON outputs per dataset.  
+- Optional: `kv_quant_stats` saved by local runs to confirm quant path is exercised.
+- Add a small analysis note after each GPU run: answer distribution (A/B/C/D counts) and mean output length to catch degenerate outputs early.
+
+**Paper‑alignment checklist (pre‑GPU)**  
+- `include_response=false` (default in C2C eval config).  
+- `use_template=true`, `use_cot=false`, `max_new_tokens=64`, temperature = 0.  
+- Datasets: OpenBookQA + ARC‑C test splits; zero‑shot prompts.  
+- Model pair: Qwen3‑0.6B (receiver) + Qwen2.5‑0.5B (sharer), matching Table 3.  
+- `is_do_alignment=false` unless explicitly testing alignment.
+
+**Local test commands (Milestone 2)**  
+- Quant vs no‑quant (OpenBookQA, 20 samples):  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --kv-quant-scheme int8 --kv-quant-collect-stats`  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-sample-index 0 --local-num-samples 20 --disable-kv-quant`  
+
+**GPU smoke commands (Milestone 2)**  
+- After `--prep-only`, set `eval.limit` inside `quantization/data/step_1_kv_ptq/<run_tag>/configs/*.yaml` to a small value (25–50), then run the evaluator commands recorded in `logs/step1.log`.  
 
 ## Milestone 3: Cache‑Length Reduction
 **What**  

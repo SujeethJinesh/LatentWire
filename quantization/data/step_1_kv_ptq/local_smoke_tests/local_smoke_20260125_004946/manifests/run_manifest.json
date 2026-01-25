@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "mode": "local",
+  "kv_quant_config": {
+    "enabled": false,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": false
+  }
+}

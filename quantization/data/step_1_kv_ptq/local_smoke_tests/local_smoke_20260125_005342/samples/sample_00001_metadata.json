@@ -1,0 +1,44 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_005342",
+  "input_length": 111,
+  "generated_length": 7,
+  "prompt_text": "Accurately answer the following question:\n\nThere is most likely going to be fog around:\n\nChoices:\nA. a marsh\nB. a tundra\nC. the plains\nD. a desert\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "There is most likely going to be fog around:",
+  "choices_texts": [
+    "a marsh",
+    "a tundra",
+    "the plains",
+    "a desert"
+  ],
+  "choices_str": "A. a marsh\nB. a tundra\nC. the plains\nD. a desert\n",
+  "generated_text": "The correct answer is A.",
+  "extracted_answer": "A",
+  "expected_answer": "A",
+  "matches_expected": true,
+  "dataset": "openbookqa",
+  "sample_index": 1,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 384,
+    "k_scale_min": 0.027128444984555244,
+    "k_scale_max": 1.739173173904419,
+    "k_scale_mean_sum": 72.03235726058483,
+    "v_scale_min": 0.00036909448681399226,
+    "v_scale_max": 0.0976254940032959,
+    "v_scale_mean_sum": 7.488558048149571,
+    "k_scale_mean": 0.18758426369943967,
+    "v_scale_mean": 0.019501453250389506
+  }
+}

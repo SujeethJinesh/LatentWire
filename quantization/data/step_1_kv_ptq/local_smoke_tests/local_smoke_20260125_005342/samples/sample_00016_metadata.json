@@ -1,0 +1,44 @@
+{
+  "device": "mps",
+  "dtype": "torch.float16",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "max_new_tokens": 64,
+  "output_dir": "/Users/sujeethjinesh/Desktop/LatentWire/quantization/data/step_1_kv_ptq/local_smoke_tests/local_smoke_20260125_005342",
+  "input_length": 137,
+  "generated_length": 7,
+  "prompt_text": "Accurately answer the following question:\n\nA person wants to be able to have more natural power in their home. They choose to cease using a traditional electric company to source this electricity, and so decide to install\n\nChoices:\nA. sun grafts\nB. sunlight shields\nC. panels collecting sunlight\nD. solar bees\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is",
+  "question_text": "A person wants to be able to have more natural power in their home. They choose to cease using a traditional electric company to source this electricity, and so decide to install",
+  "choices_texts": [
+    "sun grafts",
+    "sunlight shields",
+    "panels collecting sunlight",
+    "solar bees"
+  ],
+  "choices_str": "A. sun grafts\nB. sunlight shields\nC. panels collecting sunlight\nD. solar bees\n",
+  "generated_text": "The correct answer is C.",
+  "extracted_answer": "C",
+  "expected_answer": "C",
+  "matches_expected": true,
+  "dataset": "openbookqa",
+  "sample_index": 16,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": true
+  },
+  "kv_quant_stats": {
+    "count": 3192,
+    "k_scale_min": 0.02654404565691948,
+    "k_scale_max": 1.7401574850082397,
+    "k_scale_mean_sum": 597.0652892850339,
+    "v_scale_min": 0.00036909448681399226,
+    "v_scale_max": 0.11478838324546814,
+    "v_scale_mean_sum": 62.00395602785284,
+    "k_scale_mean": 0.1870505292246347,
+    "v_scale_mean": 0.019424798254339862
+  }
+}
