@@ -3,6 +3,9 @@ import argparse
 import csv
 import json
 import math
+import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -10,6 +13,59 @@ from pathlib import Path
 def die(msg):
     print(f"ERROR: {msg}", file=sys.stderr)
     sys.exit(1)
+
+
+def find_conda_exe():
+    return os.environ.get("CONDA_EXE") or shutil.which("conda")
+
+
+def find_conda_env_prefix(conda_exe, env_name):
+    try:
+        res = subprocess.run(
+            [conda_exe, "env", "list", "--json"], capture_output=True, text=True, check=True
+        )
+        data = json.loads(res.stdout)
+        for env_path in data.get("envs", []):
+            if Path(env_path).name == env_name:
+                return env_path
+    except Exception:
+        return None
+    return None
+
+
+def ensure_env(env_name):
+    current_env = os.environ.get("CONDA_DEFAULT_ENV")
+    if current_env == env_name:
+        return
+    if "--no-reexec" in sys.argv:
+        die(f"Not running inside conda env '{env_name}'. Activate it and retry.")
+    conda_exe = find_conda_exe()
+    if conda_exe is None:
+        die("conda not found in PATH. Load your conda module and retry.")
+    res = subprocess.run([conda_exe, "env", "list", "--json"], capture_output=True, text=True)
+    if res.returncode != 0:
+        die("Failed to list conda environments.")
+    try:
+        data = json.loads(res.stdout)
+    except Exception:
+        data = {}
+    envs = data.get("envs", [])
+    if not any(Path(p).name == env_name for p in envs):
+        print(f"Conda env '{env_name}' not found. Creating it now...")
+        subprocess.check_call([conda_exe, "create", "-n", env_name, "python=3.10", "-y"])
+    env_prefix = find_conda_env_prefix(conda_exe, env_name)
+    python_exe = None
+    if env_prefix:
+        candidate = Path(env_prefix) / "bin" / "python"
+        if candidate.exists():
+            python_exe = str(candidate)
+    script_path = Path(__file__).resolve()
+    forwarded = [arg for arg in sys.argv[1:] if arg != "--no-reexec"]
+    python_cmd = python_exe or "python"
+    cmd = [conda_exe, "run", "-n", env_name, python_cmd, str(script_path)] + forwarded + ["--no-reexec"]
+    print("Re-running inside conda env:", " ".join(cmd))
+    subprocess.check_call(cmd)
+    sys.exit(0)
 
 
 def safe_float(value):
@@ -232,6 +288,7 @@ def plot_budget_curve(rows, out_dir):
 
 def main():
     parser = argparse.ArgumentParser(description="Compute accuracy vs bytes curves for C2C runs.")
+    parser.add_argument("--env", default="rosetta", help="Conda env name to use")
     parser.add_argument(
         "--runs-root",
         action="append",
@@ -251,7 +308,10 @@ def main():
     )
     parser.add_argument("--no-plot", action="store_true", help="Skip generating PNG plots")
     parser.add_argument("--demo", action="store_true", help="Generate a synthetic CSV/plot for validation")
+    parser.add_argument("--no-reexec", action="store_true", help="Internal flag to avoid re-exec loops")
     args = parser.parse_args()
+
+    ensure_env(args.env)
 
     out_dir = Path(args.output_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
