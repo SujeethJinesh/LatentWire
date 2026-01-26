@@ -175,10 +175,28 @@ def write_csv(rows, out_path):
 
 def plot_budget_curve(rows, out_dir):
     try:
+        import numpy as np
+    except Exception:
+        try:
+            import subprocess
+            print("numpy not available; installing a compatible version...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy<2"])
+            import numpy as np
+        except Exception as exc:
+            print(f"Skipping plot (numpy missing): {exc}")
+            return
+
+    try:
         import matplotlib.pyplot as plt
-    except Exception as exc:
-        print(f"Skipping plot (matplotlib missing): {exc}")
-        return
+    except Exception:
+        try:
+            import subprocess
+            print("matplotlib not found; installing...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "matplotlib"])
+            import matplotlib.pyplot as plt
+        except Exception as exc:
+            print(f"Skipping plot (matplotlib missing): {exc}")
+            return
 
     datasets = sorted({row["dataset"] for row in rows})
     scheme_colors = {"fp16": "#333333", "int8": "#1f77b4", "int4": "#ff7f0e"}
