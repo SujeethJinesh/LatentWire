@@ -1,0 +1,186 @@
+Preflight: running prep-only to validate plumbing.
+Environment info: {
+  "python_executable": "/projects/m000066/sujinesh/conda/envs/rosetta/bin/python",
+  "python_version": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:29:10) [GCC 14.3.0]",
+  "conda_default_env": "rosetta",
+  "conda_prefix": "/projects/m000066/sujinesh/conda/envs/rosetta",
+  "hostname": "n13",
+  "hf_home": "/scratch/m000066/sujinesh/.cache/huggingface",
+  "transformers_cache": "/scratch/m000066/sujinesh/.cache/huggingface/transformers",
+  "hf_datasets_cache": "/scratch/m000066/sujinesh/.cache/huggingface/datasets",
+  "hf_hub_cache": "/scratch/m000066/sujinesh/.cache/huggingface/hub",
+  "cuda_visible_devices": "0",
+  "nvidia_smi_path": "/usr/bin/nvidia-smi",
+  "torch_version": "2.6.0+cu124",
+  "torch_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/torch/__init__.py",
+  "transformers_version": "4.52.4",
+  "transformers_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/transformers/__init__.py",
+  "datasets_version": "4.5.0",
+  "datasets_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/datasets/__init__.py",
+  "huggingface_hub_version": "0.36.0",
+  "huggingface_hub_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/huggingface_hub/__init__.py",
+  "yaml_version": "6.0.3",
+  "yaml_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/yaml/__init__.py",
+  "numpy_version": "2.2.6",
+  "numpy_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/numpy/__init__.py",
+  "tqdm_version": "4.67.1",
+  "tqdm_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/tqdm/__init__.py",
+  "rosetta_version": null,
+  "rosetta_path": null,
+  "torch_cuda_available": true,
+  "torch_cuda_device_count": 1
+}
+$ git submodule update --init --recursive quantization/C2C
+Dependencies already installed; skipping pip install.
+Wrote manifest: /projects/m000066/sujinesh/LatentWire/quantization/data/step_0_baselines/preflight_step0_20260126_021514/manifests/step_0_checkpoint_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /projects/m000066/sujinesh/LatentWire/quantization/data/step_0_baselines/preflight_step0_20260126_021514
+
+Re-running inside conda env: /cm/shared/apps/Mambaforge/24.3.0-0/bin/conda run -n rosetta /projects/m000066/sujinesh/conda/envs/rosetta/bin/python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.py --project-root /projects/m000066/sujinesh/LatentWire --mode gpu --prep-only --run-tag preflight_step0_20260126_021514 --no-reexec
+Environment info: {
+  "python_executable": "/projects/m000066/sujinesh/conda/envs/rosetta/bin/python",
+  "python_version": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:29:10) [GCC 14.3.0]",
+  "conda_default_env": "rosetta",
+  "conda_prefix": "/projects/m000066/sujinesh/conda/envs/rosetta",
+  "hostname": "n13",
+  "hf_home": "/scratch/m000066/sujinesh/.cache/huggingface",
+  "transformers_cache": "/scratch/m000066/sujinesh/.cache/huggingface/transformers",
+  "hf_datasets_cache": "/scratch/m000066/sujinesh/.cache/huggingface/datasets",
+  "hf_hub_cache": "/scratch/m000066/sujinesh/.cache/huggingface/hub",
+  "cuda_visible_devices": "0",
+  "nvidia_smi_path": "/usr/bin/nvidia-smi",
+  "torch_version": "2.6.0+cu124",
+  "torch_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/torch/__init__.py",
+  "transformers_version": "4.52.4",
+  "transformers_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/transformers/__init__.py",
+  "datasets_version": "4.5.0",
+  "datasets_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/datasets/__init__.py",
+  "huggingface_hub_version": "0.36.0",
+  "huggingface_hub_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/huggingface_hub/__init__.py",
+  "yaml_version": "6.0.3",
+  "yaml_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/yaml/__init__.py",
+  "numpy_version": "2.2.6",
+  "numpy_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/numpy/__init__.py",
+  "tqdm_version": "4.67.1",
+  "tqdm_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/tqdm/__init__.py",
+  "rosetta_version": null,
+  "rosetta_path": null,
+  "torch_cuda_available": true,
+  "torch_cuda_device_count": 1
+}
+$ git submodule update --init --recursive quantization/C2C
+Dependencies already installed; skipping pip install.
+Wrote manifest: /projects/m000066/sujinesh/LatentWire/quantization/data/step_1_kv_ptq/preflight_step1_int8_20260126_021514/manifests/step_1_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /projects/m000066/sujinesh/LatentWire/quantization/data/step_1_kv_ptq/preflight_step1_int8_20260126_021514
+
+Re-running inside conda env: /cm/shared/apps/Mambaforge/24.3.0-0/bin/conda run -n rosetta /projects/m000066/sujinesh/conda/envs/rosetta/bin/python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step1_kv_ptq.py --project-root /projects/m000066/sujinesh/LatentWire --mode gpu --kv-quant-scheme int8 --prep-only --run-tag preflight_step1_int8_20260126_021514 --no-reexec
+Environment info: {
+  "python_executable": "/projects/m000066/sujinesh/conda/envs/rosetta/bin/python",
+  "python_version": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:29:10) [GCC 14.3.0]",
+  "conda_default_env": "rosetta",
+  "conda_prefix": "/projects/m000066/sujinesh/conda/envs/rosetta",
+  "hostname": "n13",
+  "hf_home": "/scratch/m000066/sujinesh/.cache/huggingface",
+  "transformers_cache": "/scratch/m000066/sujinesh/.cache/huggingface/transformers",
+  "hf_datasets_cache": "/scratch/m000066/sujinesh/.cache/huggingface/datasets",
+  "hf_hub_cache": "/scratch/m000066/sujinesh/.cache/huggingface/hub",
+  "cuda_visible_devices": "0",
+  "nvidia_smi_path": "/usr/bin/nvidia-smi",
+  "torch_version": "2.6.0+cu124",
+  "torch_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/torch/__init__.py",
+  "transformers_version": "4.52.4",
+  "transformers_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/transformers/__init__.py",
+  "datasets_version": "4.5.0",
+  "datasets_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/datasets/__init__.py",
+  "huggingface_hub_version": "0.36.0",
+  "huggingface_hub_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/huggingface_hub/__init__.py",
+  "yaml_version": "6.0.3",
+  "yaml_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/yaml/__init__.py",
+  "numpy_version": "2.2.6",
+  "numpy_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/numpy/__init__.py",
+  "tqdm_version": "4.67.1",
+  "tqdm_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/tqdm/__init__.py",
+  "rosetta_version": null,
+  "rosetta_path": null,
+  "torch_cuda_available": true,
+  "torch_cuda_device_count": 1
+}
+$ git submodule update --init --recursive quantization/C2C
+Dependencies already installed; skipping pip install.
+Wrote manifest: /projects/m000066/sujinesh/LatentWire/quantization/data/step_1_kv_ptq/preflight_step1_int4_20260126_021514/manifests/step_1_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /projects/m000066/sujinesh/LatentWire/quantization/data/step_1_kv_ptq/preflight_step1_int4_20260126_021514
+
+Re-running inside conda env: /cm/shared/apps/Mambaforge/24.3.0-0/bin/conda run -n rosetta /projects/m000066/sujinesh/conda/envs/rosetta/bin/python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step1_kv_ptq.py --project-root /projects/m000066/sujinesh/LatentWire --mode gpu --kv-quant-scheme int4 --prep-only --run-tag preflight_step1_int4_20260126_021514 --no-reexec
+Environment info: {
+  "python_executable": "/projects/m000066/sujinesh/conda/envs/rosetta/bin/python",
+  "python_version": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:29:10) [GCC 14.3.0]",
+  "conda_default_env": "rosetta",
+  "conda_prefix": "/projects/m000066/sujinesh/conda/envs/rosetta",
+  "hostname": "n13",
+  "hf_home": "/scratch/m000066/sujinesh/.cache/huggingface",
+  "transformers_cache": "/scratch/m000066/sujinesh/.cache/huggingface/transformers",
+  "hf_datasets_cache": "/scratch/m000066/sujinesh/.cache/huggingface/datasets",
+  "hf_hub_cache": "/scratch/m000066/sujinesh/.cache/huggingface/hub",
+  "cuda_visible_devices": "0",
+  "nvidia_smi_path": "/usr/bin/nvidia-smi",
+  "torch_version": "2.6.0+cu124",
+  "torch_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/torch/__init__.py",
+  "transformers_version": "4.52.4",
+  "transformers_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/transformers/__init__.py",
+  "datasets_version": "4.5.0",
+  "datasets_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/datasets/__init__.py",
+  "huggingface_hub_version": "0.36.0",
+  "huggingface_hub_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/huggingface_hub/__init__.py",
+  "yaml_version": "6.0.3",
+  "yaml_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/yaml/__init__.py",
+  "numpy_version": "2.2.6",
+  "numpy_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/numpy/__init__.py",
+  "tqdm_version": "4.67.1",
+  "tqdm_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/tqdm/__init__.py",
+  "rosetta_version": null,
+  "rosetta_path": null,
+  "torch_cuda_available": true,
+  "torch_cuda_device_count": 1
+}
+$ git submodule update --init --recursive quantization/C2C
+Dependencies already installed; skipping pip install.
+Wrote manifest: /projects/m000066/sujinesh/LatentWire/quantization/data/step_1_kv_ptq/preflight_step3_p0p5_front_20260126_021514/manifests/step_1_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /projects/m000066/sujinesh/LatentWire/quantization/data/step_1_kv_ptq/preflight_step3_p0p5_front_20260126_021514
+
+Re-running inside conda env: /cm/shared/apps/Mambaforge/24.3.0-0/bin/conda run -n rosetta /projects/m000066/sujinesh/conda/envs/rosetta/bin/python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step1_kv_ptq.py --project-root /projects/m000066/sujinesh/LatentWire --mode gpu --kv-quant-scheme int8 --kv-cache-proportion 0.5 --kv-cache-order-mode front --prep-only --run-tag preflight_step3_p0p5_front_20260126_021514 --no-reexec
+Environment info: {
+  "python_executable": "/projects/m000066/sujinesh/conda/envs/rosetta/bin/python",
+  "python_version": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:29:10) [GCC 14.3.0]",
+  "conda_default_env": "rosetta",
+  "conda_prefix": "/projects/m000066/sujinesh/conda/envs/rosetta",
+  "hostname": "n13",
+  "hf_home": "/scratch/m000066/sujinesh/.cache/huggingface",
+  "transformers_cache": "/scratch/m000066/sujinesh/.cache/huggingface/transformers",
+  "hf_datasets_cache": "/scratch/m000066/sujinesh/.cache/huggingface/datasets",
+  "hf_hub_cache": "/scratch/m000066/sujinesh/.cache/huggingface/hub",
+  "cuda_visible_devices": "0",
+  "nvidia_smi_path": "/usr/bin/nvidia-smi",
+  "torch_version": "2.6.0+cu124",
+  "torch_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/torch/__init__.py",
+  "transformers_version": "4.52.4",
+  "transformers_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/transformers/__init__.py",
+  "datasets_version": "4.5.0",
+  "datasets_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/datasets/__init__.py",
+  "huggingface_hub_version": "0.36.0",
+  "huggingface_hub_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/huggingface_hub/__init__.py",
+  "yaml_version": "6.0.3",
+  "yaml_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/yaml/__init__.py",
+  "numpy_version": "2.2.6",
+  "numpy_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/numpy/__init__.py",
+  "tqdm_version": "4.67.1",
+  "tqdm_path": "/projects/m000066/sujinesh/conda/envs/rosetta/lib/python3.10/site-packages/tqdm/__init__.py",
+  "rosetta_version": null,
+  "rosetta_path": null,
+  "torch_cuda_available": true,
+  "torch_cuda_device_count": 1
+}
+$ git submodule update --init --recursive quantization/C2C
+Dependencies already installed; skipping pip install.
+Wrote manifest: /projects/m000066/sujinesh/LatentWire/quantization/data/step_0_baselines/step0_20260126_021514/manifests/step_0_checkpoint_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /projects/m000066/sujinesh/LatentWire/quantization/data/step_0_baselines/step0_20260126_021514
+
+Re-running inside conda env: /cm/shared/apps/Mambaforge/24.3.0-0/bin/conda run -n rosetta /projects/m000066/sujinesh/conda/envs/rosetta/bin/python /projects/m000066/sujinesh/LatentWire/quantization/scripts/run_step0_baselines.py --project-root /projects/m000066/sujinesh/LatentWire --mode gpu --prep-only --run-tag step0_20260126_021514 --no-reexec

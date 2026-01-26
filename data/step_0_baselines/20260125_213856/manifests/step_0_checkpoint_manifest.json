@@ -1,0 +1,13 @@
+{
+  "repo_id": "nics-efc/C2C_Fuser",
+  "allow_patterns": [
+    "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
+  ],
+  "snapshot_path": "/scratch/m000066/sujinesh/c2c_checkpoints/C2C_Fuser",
+  "checkpoint_dir": "/scratch/m000066/sujinesh/c2c_checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "latentwire_commit": "5411305b64679b81ca2f770849b277845cb87e51",
+  "c2c_commit": "69eb70584b5cf32835ca326ba47f0f96d9805375",
+  "hostname": "login-03",
+  "timestamp": "2026-01-25 21:39:26",
+  "prep_only": true
+}
