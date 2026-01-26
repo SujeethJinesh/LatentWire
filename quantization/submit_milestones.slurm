@@ -21,15 +21,24 @@ if [ -x /cm/shared/apps/Mambaforge/24.3.0-0/bin/conda ]; then
 fi
 
 CONDA_ENV="${CONDA_ENV:-rosetta}"
-CONDA_EXE="${CONDA_EXE:-}"
-if [ -z "${CONDA_EXE}" ]; then
-  CONDA_EXE="$(command -v conda || true)"
+CONDA_ENV_PATH="${CONDA_ENV_PATH:-/projects/m000066/${USER}/conda/envs/${CONDA_ENV}}"
+if [ -x "${CONDA_ENV_PATH}/bin/python" ]; then
+  export CONDA_DEFAULT_ENV="${CONDA_ENV}"
+  export CONDA_PREFIX="${CONDA_ENV_PATH}"
+  PYTHON=( "${CONDA_ENV_PATH}/bin/python" )
+  echo "Using conda env python: ${CONDA_ENV_PATH}/bin/python"
+else
+  CONDA_EXE="${CONDA_EXE:-}"
+  if [ -z "${CONDA_EXE}" ]; then
+    CONDA_EXE="$(command -v conda || true)"
+  fi
+  if [ -z "${CONDA_EXE}" ]; then
+    echo "ERROR: conda not found in PATH. Load your conda module and retry." >&2
+    exit 1
+  fi
+  PYTHON=( "${CONDA_EXE}" run -n "${CONDA_ENV}" python )
+  echo "Using conda run: ${CONDA_EXE} run -n ${CONDA_ENV} python"
 fi
-if [ -z "${CONDA_EXE}" ]; then
-  echo "ERROR: conda not found in PATH. Load your conda module and retry." >&2
-  exit 1
-fi
-PYTHON=( "${CONDA_EXE}" run -n "${CONDA_ENV}" python )
 
 PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-/projects/m000066/sujinesh/LatentWire}}"
 cd "${PROJECT_ROOT}"
