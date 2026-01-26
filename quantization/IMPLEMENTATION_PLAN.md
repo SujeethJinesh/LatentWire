@@ -40,8 +40,25 @@ The script:
 - Runs OpenBookQA + ARC‑C and logs everything into `quantization/data/step_0_baselines/<run_tag>/`.
 
 **Commands (from repo root)**  
-- Login node prep: `python quantization/scripts/run_step0_baselines.py --prep-only`  
+- Login node prep (verbose streaming):  
+  - `conda run --no-capture-output -n rosetta python -u quantization/scripts/run_step0_baselines.py --prep-only`  
 - GPU node eval: `python quantization/scripts/run_step0_baselines.py`
+
+**GPU node instructions (Milestone 0, direct run)**  
+1) Allocate a GPU node (example):  
+   - `salloc -N 1 -G 1 -A marlowe-m000066 -p preempt --time=3:00:00 --mem=32GB`  
+2) From the GPU node:  
+   - `cd /projects/m000066/sujinesh/LatentWire`  
+   - Optional cache overrides:  
+     - `export HF_HOME=/scratch/m000066/$USER/.cache/huggingface`  
+     - `export C2C_CKPT_ROOT=/scratch/m000066/$USER/c2c_checkpoints`  
+   - Run eval: `python quantization/scripts/run_step0_baselines.py`  
+3) Outputs land in `quantization/data/step_0_baselines/<run_tag>/` with logs, configs, results, and manifests.
+
+**GPU node instructions (Milestone 0, SLURM batch)**  
+- `RUN_MILESTONE_0=1 sbatch quantization/submit_milestones.slurm`  
+- Use `PREFLIGHT=1` (default) to validate plumbing first.  
+- For a preflight‑only check: `RUN_MILESTONE_0=1 DRY_RUN=1 sbatch quantization/submit_milestones.slurm`
 
 **Workshop/Main‑conf connection**  
 Baseline accuracy and latency anchors the whole paper.
@@ -286,6 +303,17 @@ The concrete trade‑off between bandwidth cost and accuracy, enabling direct co
 **GPU analysis commands (Milestone 4, deferred)**  
 - After GPU runs are complete:  
   - `python quantization/scripts/analyze_budget_curve.py --runs-root quantization/data`
+
+**GPU node instructions (Milestone 4 analysis)**  
+1) From any node (GPU not required, but fine if already allocated):  
+   - `cd /projects/m000066/sujinesh/LatentWire`  
+   - Optional: set offline mode if the node has no internet:  
+     - `export TRANSFORMERS_OFFLINE=1`  
+2) Run analysis:  
+   - `python quantization/scripts/analyze_budget_curve.py --runs-root quantization/data --output-dir quantization/analysis/m4_budget_curve`  
+3) Outputs:  
+   - `quantization/analysis/m4_budget_curve/budget_curve.csv`  
+   - `quantization/analysis/m4_budget_curve/budget_curve_<dataset>.png`
 
 ## Milestone 5: QAT Recovery (Main‑conf extension)
 **What**  
