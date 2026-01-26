@@ -156,6 +156,31 @@ def ensure_installed(
         run_cmd([sys.executable, "-m", "pip", "install"] + list(extra_pip), log_file=log_file)
 
 
+def collect_model_stats(model_name):
+    if not model_name:
+        return None, "missing_model_name"
+    try:
+        from transformers import AutoConfig
+        local_only = os.environ.get("TRANSFORMERS_OFFLINE", "").lower() in ("1", "true", "yes")
+        cfg = AutoConfig.from_pretrained(model_name, local_files_only=local_only)
+        hidden_size = getattr(cfg, "hidden_size", None)
+        num_layers = getattr(cfg, "num_hidden_layers", None)
+        num_heads = getattr(cfg, "num_attention_heads", None)
+        num_kv_heads = getattr(cfg, "num_key_value_heads", None) or num_heads
+        if not all([hidden_size, num_layers, num_heads, num_kv_heads]):
+            return None, "missing_model_stats"
+        head_dim = int(hidden_size) // int(num_heads)
+        return {
+            "hidden_size": int(hidden_size),
+            "num_layers": int(num_layers),
+            "num_heads": int(num_heads),
+            "num_kv_heads": int(num_kv_heads),
+            "head_dim": int(head_dim),
+        }, None
+    except Exception as exc:
+        return None, str(exc)
+
+
 def collect_env_info():
     info = {
         "python_executable": sys.executable,
@@ -529,6 +554,12 @@ def main():
             local_dir_use_symlinks=False,
         )
 
+        eval_cfg = yaml.safe_load((c2c_root / "recipe" / "eval_recipe" / "unified_eval.yaml").read_text())
+        rosetta_cfg = eval_cfg.get("model", {}).get("rosetta_config", {})
+        base_model = rosetta_cfg.get("base_model")
+        teacher_model = rosetta_cfg.get("teacher_model")
+        base_model_stats, base_model_stats_error = collect_model_stats(base_model)
+
         def git_rev(path):
             try:
                 out = subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"])
@@ -541,6 +572,10 @@ def main():
             "allow_patterns": [pattern],
             "snapshot_path": snapshot_path,
             "checkpoint_dir": str(local_dir / "qwen3_0.6b+qwen2.5_0.5b_Fuser" / "final"),
+            "base_model": base_model,
+            "teacher_model": teacher_model,
+            "base_model_stats": base_model_stats,
+            "base_model_stats_error": base_model_stats_error,
             "latentwire_commit": git_rev(project_root),
             "c2c_commit": git_rev(c2c_root),
             "hostname": socket.gethostname(),

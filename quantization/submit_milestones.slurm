@@ -20,6 +20,17 @@ if [ -x /cm/shared/apps/Mambaforge/24.3.0-0/bin/conda ]; then
   export PATH="/cm/shared/apps/Mambaforge/24.3.0-0/bin:${PATH}"
 fi
 
+CONDA_ENV="${CONDA_ENV:-rosetta}"
+CONDA_EXE="${CONDA_EXE:-}"
+if [ -z "${CONDA_EXE}" ]; then
+  CONDA_EXE="$(command -v conda || true)"
+fi
+if [ -z "${CONDA_EXE}" ]; then
+  echo "ERROR: conda not found in PATH. Load your conda module and retry." >&2
+  exit 1
+fi
+PYTHON=( "${CONDA_EXE}" run -n "${CONDA_ENV}" python )
+
 PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-/projects/m000066/sujinesh/LatentWire}}"
 cd "${PROJECT_ROOT}"
 
@@ -45,8 +56,8 @@ CHUNK_SIZE="${CHUNK_SIZE:-200}"
 EVAL_SMOKE="${EVAL_SMOKE:-0}"
 SMOKE_LIMIT="${SMOKE_LIMIT:-50}"
 
-# Run tag prefix for deterministic folder names.
-RUN_TAG_PREFIX="${RUN_TAG_PREFIX:-$(date +%Y%m%d_%H%M%S)}"
+# Run tag prefix for deterministic folder names (stable across requeues).
+RUN_TAG_PREFIX="${RUN_TAG_PREFIX:-${SLURM_JOB_ID:-$(date +%Y%m%d_%H%M%S)}}"
 
 # Milestone 3 grid (cache-length reduction).
 M3_KV_QUANT_SCHEME="${M3_KV_QUANT_SCHEME:-int8}"
@@ -61,7 +72,7 @@ handle_signal() {
 trap handle_signal USR1 TERM
 
 dataset_len() {
-  python - <<'PY' "$1"
+  "${PYTHON[@]}" - <<'PY' "$1"
 import sys
 from datasets import load_dataset
 
@@ -79,7 +90,7 @@ PY
 }
 
 patch_limit() {
-  python - <<'PY' "$1" "$2" "$3"
+  "${PYTHON[@]}" - <<'PY' "$1" "$2" "$3"
 import sys
 from pathlib import Path
 import yaml
@@ -94,7 +105,7 @@ PY
 }
 
 write_progress() {
-  python - <<'PY' "$1" "$2" "$3" "$4"
+  "${PYTHON[@]}" - <<'PY' "$1" "$2" "$3" "$4"
 import json
 import sys
 from pathlib import Path
@@ -112,7 +123,7 @@ PY
 }
 
 read_next_start() {
-  python - <<'PY' "$1"
+  "${PYTHON[@]}" - <<'PY' "$1"
 import json
 import sys
 from pathlib import Path
@@ -147,7 +158,7 @@ run_eval_chunks() {
     fi
     echo "Smoke eval ${dataset}: [0, ${end}) of ${total}"
     patch_limit "${run_root}/configs/${config_name}" 0 "${end}"
-    python quantization/C2C/script/evaluation/unified_evaluator.py \
+    "${PYTHON[@]}" quantization/C2C/script/evaluation/unified_evaluator.py \
       --config "${run_root}/configs/${config_name}" 2>&1 | tee -a "${log_path}"
     echo "{\"start\":0,\"end\":${end},\"total\":${total},\"timestamp\":\"$(date -Iseconds)\"}" >> "${chunks_log}"
     return
@@ -157,6 +168,7 @@ run_eval_chunks() {
   start="$(read_next_start "${progress_file}")"
   if [ "${start}" -ge "${total}" ]; then
     echo "Resume: ${dataset} already complete (start=${start}, total=${total})."
+    patch_limit "${run_root}/configs/${config_name}" 0 "${total}"
     return
   fi
 
@@ -167,12 +179,15 @@ run_eval_chunks() {
     fi
     echo "Eval ${dataset}: [${start}, ${end}) of ${total}"
     patch_limit "${run_root}/configs/${config_name}" "${start}" "${end}"
-    python quantization/C2C/script/evaluation/unified_evaluator.py \
+    "${PYTHON[@]}" quantization/C2C/script/evaluation/unified_evaluator.py \
       --config "${run_root}/configs/${config_name}" 2>&1 | tee -a "${log_path}"
     echo "{\"start\":${start},\"end\":${end},\"total\":${total},\"timestamp\":\"$(date -Iseconds)\"}" >> "${chunks_log}"
     write_progress "${progress_file}" "${start}" "${end}" "${total}"
     start="${end}"
   done
+
+  # Reset limit after completion so manual re-runs don't stay pinned to the last chunk.
+  patch_limit "${run_root}/configs/${config_name}" 0 "${total}"
 }
 
 sanitize_prop() {
@@ -195,14 +210,23 @@ run_preflight() {
 
   if [ "${RUN_MILESTONE_0}" = "1" ]; then
     local pre_tag="preflight_step0_${RUN_TAG_PREFIX}"
-    python quantization/scripts/run_step0_baselines.py --mode gpu --prep-only --run-tag "${pre_tag}"
+    "${PYTHON[@]}" quantization/scripts/run_step0_baselines.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --prep-only \
+      --run-tag "${pre_tag}"
     preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_0_baselines/${pre_tag}"
   fi
 
   if [ "${RUN_MILESTONE_2}" = "1" ]; then
     for SCHEME in int8 int4; do
       local pre_tag="preflight_step1_${SCHEME}_${RUN_TAG_PREFIX}"
-      python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme "${SCHEME}" --prep-only --run-tag "${pre_tag}"
+      "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+        --env "${CONDA_ENV}" \
+        --mode gpu \
+        --kv-quant-scheme "${SCHEME}" \
+        --prep-only \
+        --run-tag "${pre_tag}"
       preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
     done
   fi
@@ -213,7 +237,8 @@ run_preflight() {
     local pre_prop_tag
     pre_prop_tag="$(sanitize_prop "${pre_prop}")"
     local pre_tag="preflight_step3_p${pre_prop_tag}_${pre_order}_${RUN_TAG_PREFIX}"
-    python quantization/scripts/run_step1_kv_ptq.py \
+    "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+      --env "${CONDA_ENV}" \
       --mode gpu \
       --kv-quant-scheme "${M3_KV_QUANT_SCHEME}" \
       --kv-cache-proportion "${pre_prop}" \
@@ -236,7 +261,11 @@ run_preflight
 # =============================================================================
 if [ "${RUN_MILESTONE_0}" = "1" ]; then
   RUN_TAG="step0_${RUN_TAG_PREFIX}"
-  python quantization/scripts/run_step0_baselines.py --mode gpu --prep-only --run-tag "${RUN_TAG}"
+  "${PYTHON[@]}" quantization/scripts/run_step0_baselines.py \
+    --env "${CONDA_ENV}" \
+    --mode gpu \
+    --prep-only \
+    --run-tag "${RUN_TAG}"
   RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_0_baselines/${RUN_TAG}"
   run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log"
   run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log"
@@ -248,7 +277,12 @@ fi
 if [ "${RUN_MILESTONE_2}" = "1" ]; then
   for SCHEME in int8 int4; do
     RUN_TAG="step1_${SCHEME}_${RUN_TAG_PREFIX}"
-    python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme "${SCHEME}" --prep-only --run-tag "${RUN_TAG}"
+    "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --kv-quant-scheme "${SCHEME}" \
+      --prep-only \
+      --run-tag "${RUN_TAG}"
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
     run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
     run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
@@ -263,7 +297,8 @@ if [ "${RUN_MILESTONE_3}" = "1" ]; then
     for ORDER in ${M3_ORDER_MODES}; do
       PROP_TAG="$(sanitize_prop "${PROP}")"
       RUN_TAG="step3_${M3_KV_QUANT_SCHEME}_p${PROP_TAG}_${ORDER}_${RUN_TAG_PREFIX}"
-      python quantization/scripts/run_step1_kv_ptq.py \
+      "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+        --env "${CONDA_ENV}" \
         --mode gpu \
         --kv-quant-scheme "${M3_KV_QUANT_SCHEME}" \
         --kv-cache-proportion "${PROP}" \

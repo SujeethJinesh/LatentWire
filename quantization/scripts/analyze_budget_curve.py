@@ -119,14 +119,39 @@ def quant_bits_from_config(kv_quant_config):
     return 16, scheme
 
 
-def load_model_stats(model_name, override):
+def normalize_model_stats(stats):
+    if not isinstance(stats, dict):
+        return None
+    hidden_size = stats.get("hidden_size")
+    num_layers = stats.get("num_layers")
+    num_heads = stats.get("num_heads")
+    num_kv_heads = stats.get("num_kv_heads")
+    head_dim = stats.get("head_dim")
+    if head_dim is None and hidden_size is not None and num_heads:
+        head_dim = int(hidden_size) // int(num_heads)
+    required = [hidden_size, num_layers, num_heads, num_kv_heads, head_dim]
+    if any(v is None for v in required):
+        return None
+    return {
+        "hidden_size": int(hidden_size),
+        "num_layers": int(num_layers),
+        "num_heads": int(num_heads),
+        "num_kv_heads": int(num_kv_heads),
+        "head_dim": int(head_dim),
+    }
+
+
+def load_model_stats(model_name, override, local_files_only=False):
     if override:
-        return override
+        normalized = normalize_model_stats(override)
+        if normalized:
+            return normalized
+        die(f"Invalid model stats override for {model_name}")
     try:
         from transformers import AutoConfig
     except Exception as exc:
         die(f"transformers not available to load model config: {exc}")
-    cfg = AutoConfig.from_pretrained(model_name)
+    cfg = AutoConfig.from_pretrained(model_name, local_files_only=local_files_only)
     hidden_size = getattr(cfg, "hidden_size", None)
     num_layers = getattr(cfg, "num_hidden_layers", None)
     num_heads = getattr(cfg, "num_attention_heads", None)
@@ -141,6 +166,40 @@ def load_model_stats(model_name, override):
         "num_kv_heads": int(num_kv_heads),
         "head_dim": int(head_dim),
     }
+
+
+def load_model_stats_overrides(paths):
+    overrides = {}
+    for path in paths or []:
+        data = json.loads(Path(path).read_text())
+        if not isinstance(data, dict):
+            die(f"Model stats file must be a JSON object: {path}")
+        for model_name, stats in data.items():
+            normalized = normalize_model_stats(stats)
+            if not normalized:
+                die(f"Invalid stats for {model_name} in {path}")
+            overrides[model_name] = normalized
+    return overrides
+
+
+def read_manifest_model_stats(run_root):
+    manifest_dir = run_root / "manifests"
+    if not manifest_dir.exists():
+        return None
+    for name in ("step_1_manifest.json", "step_0_checkpoint_manifest.json", "run_manifest.json"):
+        path = manifest_dir / name
+        if not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        for key in ("base_model_stats", "model_stats"):
+            stats = data.get(key)
+            normalized = normalize_model_stats(stats)
+            if normalized:
+                return normalized
+    return None
 
 
 def bytes_per_token(model_stats, bits_per_elem):
@@ -175,6 +234,7 @@ def parse_run(run_root):
         return []
 
     rows = []
+    manifest_stats = read_manifest_model_stats(run_root)
     for dataset_dir in sorted(results_root.iterdir()):
         if not dataset_dir.is_dir():
             continue
@@ -202,6 +262,7 @@ def parse_run(run_root):
                 "kv_cache_order_mode": order_mode,
                 "accuracy": safe_float(summary.get("overall_accuracy")),
                 "avg_input_length": extract_avg_input_length(summary),
+                "model_stats": manifest_stats,
             }
         )
     return rows
@@ -229,30 +290,28 @@ def write_csv(rows, out_path):
             writer.writerow({k: row.get(k) for k in fieldnames})
 
 
-def plot_budget_curve(rows, out_dir):
+def plot_budget_curve(rows, out_dir, install_deps=False):
     try:
         import numpy as np
     except Exception:
-        try:
-            import subprocess
-            print("numpy not available; installing a compatible version...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy<2"])
-            import numpy as np
-        except Exception as exc:
-            print(f"Skipping plot (numpy missing): {exc}")
+        if not install_deps:
+            print("Skipping plot (numpy missing). Install numpy<2 or pass --install-plot-deps.")
             return
+        import subprocess
+        print("numpy not available; installing a compatible version...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy<2"])
+        import numpy as np
 
     try:
         import matplotlib.pyplot as plt
     except Exception:
-        try:
-            import subprocess
-            print("matplotlib not found; installing...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "matplotlib"])
-            import matplotlib.pyplot as plt
-        except Exception as exc:
-            print(f"Skipping plot (matplotlib missing): {exc}")
+        if not install_deps:
+            print("Skipping plot (matplotlib missing). Install matplotlib or pass --install-plot-deps.")
             return
+        import subprocess
+        print("matplotlib not found; installing...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "matplotlib"])
+        import matplotlib.pyplot as plt
 
     datasets = sorted({row["dataset"] for row in rows})
     scheme_colors = {"fp16": "#333333", "int8": "#1f77b4", "int4": "#ff7f0e"}
@@ -306,7 +365,14 @@ def main():
         default=None,
         help="Fallback avg input length if summaries lack length stats",
     )
+    parser.add_argument(
+        "--model-stats-file",
+        action="append",
+        default=[],
+        help="JSON file mapping model names to stats (hidden_size/num_layers/num_heads/num_kv_heads/head_dim)",
+    )
     parser.add_argument("--no-plot", action="store_true", help="Skip generating PNG plots")
+    parser.add_argument("--install-plot-deps", action="store_true", help="Install numpy/matplotlib if missing")
     parser.add_argument("--demo", action="store_true", help="Generate a synthetic CSV/plot for validation")
     parser.add_argument("--no-reexec", action="store_true", help="Internal flag to avoid re-exec loops")
     args = parser.parse_args()
@@ -347,7 +413,7 @@ def main():
         ]
         write_csv(rows, out_dir / "budget_curve.csv")
         if not args.no_plot:
-            plot_budget_curve(rows, out_dir)
+            plot_budget_curve(rows, out_dir, install_deps=args.install_plot_deps)
         print(f"Demo outputs in {out_dir}")
         return
 
@@ -364,6 +430,14 @@ def main():
         die("No runs found with results. Provide --runs-root after GPU evals.")
 
     model_stats_cache = {}
+    overrides = load_model_stats_overrides(args.model_stats_file)
+    row_overrides = {}
+    for row in rows:
+        stats = row.get("model_stats")
+        model_name = row.get("base_model")
+        if stats and model_name and model_name not in row_overrides:
+            row_overrides[model_name] = stats
+    local_only = os.environ.get("TRANSFORMERS_OFFLINE", "").lower() in ("1", "true", "yes")
     enriched = []
     for row in rows:
         avg_input_length = row["avg_input_length"]
@@ -375,7 +449,10 @@ def main():
             row["avg_input_length"] = avg_input_length
         model_name = row["base_model"]
         if model_name not in model_stats_cache:
-            model_stats_cache[model_name] = load_model_stats(model_name, override=None)
+            override = row_overrides.get(model_name) or overrides.get(model_name)
+            model_stats_cache[model_name] = load_model_stats(
+                model_name, override=override, local_files_only=local_only
+            )
         model_stats = model_stats_cache[model_name]
         bits = 16 if row["kv_quant_scheme"] == "fp16" else (8 if row["kv_quant_scheme"] == "int8" else 4)
         bpt = bytes_per_token(model_stats, bits)
@@ -386,7 +463,7 @@ def main():
 
     write_csv(enriched, out_dir / "budget_curve.csv")
     if not args.no_plot:
-        plot_budget_curve(enriched, out_dir)
+        plot_budget_curve(enriched, out_dir, install_deps=args.install_plot_deps)
     print(f"Wrote outputs to {out_dir}")
 
 
