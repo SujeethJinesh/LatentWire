@@ -41,17 +41,30 @@ We report accuracy as a function of transmitted bytes, enabling fair comparison 
 We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. All models are frozen; only the projector is trained when QAT is enabled.
 
 \subsection{Main Results}
+We report preliminary cache-length pruning results from INT8 PTQ runs. Baseline FP16/INT8/INT4 full runs are currently partial (100/169 samples) and are omitted here; we will re-run them to match the full 500/1150 sample counts.
+
 \begin{table}[ht]
 \centering
-\caption{Accuracy (\%) and bandwidth (bytes) on ARC-C. Placeholder values shown.}
-\begin{tabular}{lccc}
+\caption{OpenBookQA accuracy (\%, 500 samples) for cache-length pruning (INT8).}
+\begin{tabular}{lcccc}
 \toprule
-Method & Precision & Accuracy (\%) & Bytes (\% of FP16) \\
+Order mode & 75\% & 50\% & 25\% & 10\% \\
 \midrule
-C2C (FP16) & FP16 & x\% & 100 \\
-C2C + PTQ & INT8 & x\% & 50 \\
-C2C + PTQ & INT4/NF4 & x\% & 25 \\
-C2C + PTQ + Prune & INT8 + 50\% & x\% & 25 \\
+Front & 44.6 & 43.0 & 38.8 & 38.6 \\
+Back  & 52.2 & 52.0 & 50.8 & 49.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{ARC-C accuracy (\%, 1150 samples) for cache-length pruning (INT8).}
+\begin{tabular}{lcccc}
+\toprule
+Order mode & 75\% & 50\% & 25\% & 10\% \\
+\midrule
+Front & 40.2 & 46.3 & 38.3 & 40.7 \\
+Back  & 55.7 & 57.2 & 56.2 & 53.7 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -59,7 +72,7 @@ C2C + PTQ + Prune & INT8 + 50\% & x\% & 25 \\
 \subsection{Communication-Budget Curve}
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.8\linewidth]{figures/accuracy_vs_bytes_placeholder.pdf}
+\fbox{\parbox{0.8\linewidth}{\centering Placeholder for accuracy vs bytes plot.}}
 \caption{Accuracy vs bytes transmitted (placeholder).}
 \end{figure}
 
