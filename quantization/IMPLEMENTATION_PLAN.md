@@ -333,7 +333,7 @@ Train on a small subset (10–50k samples), then re‑evaluate ARC‑C + OpenBoo
 Purpose: validate the QAT wiring (kv_quant_config flows into RosettaModel) without full training.  
 Command (from repo root):  
 - `python quantization/C2C/script/train/SFT_train.py --config quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`  
-Notes: smoke config uses `dtype: fp16` and `device: mps` to avoid bf16 incompatibilities on Mac.
+Notes: smoke config uses `dtype: fp32` and `device: cpu` to avoid MPS reduction bugs on Mac.
 
 **GPU training (RunPod/H100)**  
 Command (from repo root):  
