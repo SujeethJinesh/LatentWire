@@ -1,0 +1,23 @@
+{
+  "repo_id": "nics-efc/C2C_Fuser",
+  "allow_patterns": [
+    "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
+  ],
+  "snapshot_path": "/workspace/c2c_checkpoints/C2C_Fuser",
+  "checkpoint_dir": "/workspace/c2c_checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "base_model_stats": {
+    "hidden_size": 1024,
+    "num_layers": 28,
+    "num_heads": 16,
+    "num_kv_heads": 8,
+    "head_dim": 64
+  },
+  "base_model_stats_error": null,
+  "latentwire_commit": "6eb858253f972a5dc0cf713eb85ba1bfe009b057",
+  "c2c_commit": "cad82ef0543caeb21c38f305011ec82db59e42e2",
+  "hostname": "a2fed25646b1",
+  "timestamp": "2026-01-27 05:28:09",
+  "prep_only": true
+}
