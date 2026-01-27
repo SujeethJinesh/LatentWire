@@ -325,6 +325,27 @@ Shows that low‑precision transfer can be learned, not just approximated.
 **How**  
 Train on a small subset (10–50k samples), then re‑evaluate ARC‑C + OpenBookQA.
 
+**Workshop+ (optional) pre‑QAT main‑conf previews**  
+If we want to strengthen the workshop paper without committing to full QAT, we can do one or more of the following *before* Milestone 5 training. These reuse the existing PTQ runner and add minimal code paths.
+
+- **M5‑P0: NF4 PTQ ablation (low risk)**  
+  - **Why**: NF4 often recovers INT4 accuracy with similar bandwidth.  
+  - **What**: add `scheme: nf4` to `kv_quant_config` (likely via bitsandbytes).  
+  - **How**: implement NF4 quant/dequant in `rosetta/utils/quant.py`, run OpenBookQA + ARC‑C like INT4.  
+  - **Success criterion**: NF4 accuracy ≥ INT4, bandwidth unchanged.
+
+- **M5‑P1: Lightweight mixed‑precision schedule (medium risk)**  
+  - **Why**: later layers are more sensitive; mixed precision can lift accuracy per byte.  
+  - **What**: add per‑layer precision schedule (e.g., last 4 layers FP16, others INT8/INT4).  
+  - **How**: extend `kv_quant_config` with a `layer_schedule` map; apply in `wrapper.py`.  
+  - **Success criterion**: measurable accuracy gain at similar or modestly higher bytes.
+
+- **M5‑P2: Quantize both source + base KV (medium risk)**  
+  - **Why**: tests worst‑case compression and isolates where quantization noise matters.  
+  - **What**: add a `quantize_target: source|base|both` knob.  
+  - **How**: apply quantization on both cache paths in `wrapper.py`; re‑run INT8/INT4.  
+  - **Success criterion**: accuracy drop is bounded; provides stronger budget curves.
+
 **Additional Main‑conf extensions (beyond M5–M7)**  
 - **NF4**: accuracy‑preserving INT4 variant (likely via bitsandbytes) to strengthen INT4 results with low added risk.  
 - **FP8 (H100‑friendly)**: hardware‑optimized precision that can narrow the INT8/INT4 accuracy gap; higher engineering effort.  
