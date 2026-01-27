@@ -265,7 +265,7 @@ def bytes_per_token(model_stats, bits_per_elem):
 
 
 def iter_run_roots(root):
-    for sub in ("step_0_baselines", "step_1_kv_ptq"):
+    for sub in ("step_0_baselines", "step_1_kv_ptq", "step_8_selective_transfer"):
         base = root / sub
         if not base.exists():
             continue
@@ -304,11 +304,25 @@ def parse_run(run_root):
         model_cfg = cfg.get("model", {}).get("rosetta_config", {})
         base_model = model_cfg.get("base_model", "Qwen/Qwen3-0.6B")
         kv_quant_config = model_cfg.get("kv_quant_config") or manifest.get("kv_quant_config")
+        kv_transfer_config = model_cfg.get("kv_transfer_config") or manifest.get("kv_transfer_config")
         num_layers = manifest_stats["num_layers"] if isinstance(manifest_stats, dict) else None
         bits, scheme = quant_bits_from_config(kv_quant_config, num_layers=num_layers)
         eval_cfg = cfg.get("eval", {})
         proportion = eval_cfg.get("kv_cache_proportion", manifest.get("kv_cache_proportion", 1.0))
         order_mode = eval_cfg.get("kv_cache_order_mode", manifest.get("kv_cache_order_mode", "front"))
+        token_select_mode = None
+        token_select_proportion = None
+        token_select_scope = None
+        sparse_fuse = None
+        index_dtype_bytes = None
+        include_scale_overhead = None
+        if isinstance(kv_transfer_config, dict) and kv_transfer_config.get("enabled", False):
+            token_select_mode = kv_transfer_config.get("token_select_mode")
+            token_select_proportion = kv_transfer_config.get("token_select_proportion")
+            token_select_scope = kv_transfer_config.get("token_select_scope")
+            sparse_fuse = kv_transfer_config.get("sparse_fuse")
+            index_dtype_bytes = kv_transfer_config.get("index_dtype_bytes")
+            include_scale_overhead = kv_transfer_config.get("include_scale_overhead")
         rows.append(
             {
                 "run_root": str(run_root),
@@ -319,6 +333,12 @@ def parse_run(run_root):
                 "kv_quant_bits": bits,
                 "kv_cache_proportion": float(proportion),
                 "kv_cache_order_mode": order_mode,
+                "token_select_mode": token_select_mode,
+                "token_select_proportion": token_select_proportion,
+                "token_select_scope": token_select_scope,
+                "sparse_fuse": sparse_fuse,
+                "index_dtype_bytes": index_dtype_bytes,
+                "include_scale_overhead": include_scale_overhead,
                 "accuracy": safe_float(summary.get("overall_accuracy")),
                 "avg_input_length": extract_avg_input_length(summary),
                 "model_stats": manifest_stats,
@@ -336,6 +356,12 @@ def write_csv(rows, out_path):
         "kv_quant_bits",
         "kv_cache_proportion",
         "kv_cache_order_mode",
+        "token_select_mode",
+        "token_select_proportion",
+        "token_select_scope",
+        "sparse_fuse",
+        "index_dtype_bytes",
+        "include_scale_overhead",
         "base_model",
         "avg_input_length",
         "bytes_per_sequence",
@@ -518,7 +544,24 @@ def main():
         if bits is None:
             bits = 16 if row["kv_quant_scheme"] == "fp16" else (8 if row["kv_quant_scheme"] == "int8" else 4)
         bpt = bytes_per_token(model_stats, bits)
-        bytes_seq = avg_input_length * row["kv_cache_proportion"] * bpt
+        effective_prop = row["kv_cache_proportion"]
+        if row.get("token_select_proportion") is not None:
+            try:
+                effective_prop = effective_prop * float(row["token_select_proportion"])
+            except Exception:
+                pass
+        bytes_seq = avg_input_length * effective_prop * bpt
+        index_bytes = 0.0
+        if row.get("index_dtype_bytes") is not None:
+            try:
+                index_bytes = avg_input_length * effective_prop * float(row["index_dtype_bytes"])
+            except Exception:
+                index_bytes = 0.0
+        bytes_seq += index_bytes
+        if row.get("include_scale_overhead") and model_stats:
+            # Approximate per-head scale overhead: 2 scales (K/V) per layer per head (float32)
+            overhead = 2 * model_stats["num_layers"] * model_stats["num_kv_heads"] * 4
+            bytes_seq += overhead
         row["bytes_per_sequence"] = bytes_seq
         row["bytes_per_sequence_mib"] = bytes_seq / (1024.0 * 1024.0)
         enriched.append(row)
