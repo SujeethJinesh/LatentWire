@@ -231,6 +231,37 @@ def collect_env_info():
     return info
 
 
+def collect_system_info():
+    info = {
+        "nvidia_smi_path": shutil.which("nvidia-smi"),
+    }
+    try:
+        import torch
+
+        info["torch_cuda_available"] = torch.cuda.is_available()
+        info["torch_cuda_device_count"] = torch.cuda.device_count()
+        if torch.cuda.is_available():
+            info["torch_cuda_device_name"] = torch.cuda.get_device_name(0)
+            info["torch_cuda_capability"] = torch.cuda.get_device_capability(0)
+    except Exception as exc:
+        info["torch_error"] = str(exc)
+
+    if info["nvidia_smi_path"]:
+        try:
+            out = subprocess.check_output(
+                [
+                    "nvidia-smi",
+                    "--query-gpu=name,driver_version,memory.total,memory.used",
+                    "--format=csv,noheader,nounits",
+                ],
+                text=True,
+            ).strip()
+            info["nvidia_smi"] = out
+        except Exception as exc:
+            info["nvidia_smi_error"] = str(exc)
+    return info
+
+
 def ensure_numpy_compat(log_file=None):
     try:
         import numpy as np
@@ -529,6 +560,8 @@ def main():
         print("Environment info:", json.dumps(env_info, indent=2))
         env_path = run_root / "manifests" / "env_info.json"
         env_path.write_text(json.dumps(env_info, indent=2))
+        system_info = collect_system_info()
+        (run_root / "manifests" / "system_info.json").write_text(json.dumps(system_info, indent=2))
 
         run_cmd(
             ["git", "submodule", "update", "--init", "--recursive", "quantization/C2C"],
@@ -625,18 +658,24 @@ def main():
         if not args.skip_gpu_check:
             check_gpu()
 
-        run_cmd(
-            [sys.executable, "script/evaluation/unified_evaluator.py", "--config", str(run_root / "configs/openbookqa.yaml")],
-            cwd=str(c2c_root),
-            env=os.environ.copy(),
-            log_file=log_file,
-        )
-        run_cmd(
-            [sys.executable, "script/evaluation/unified_evaluator.py", "--config", str(run_root / "configs/arc_c.yaml")],
-            cwd=str(c2c_root),
-            env=os.environ.copy(),
-            log_file=log_file,
-        )
+        timings = {"datasets": {}, "start_time": time.time()}
+
+        def run_eval_with_timing(label, cfg_path):
+            start = time.time()
+            run_cmd(
+                [sys.executable, "script/evaluation/unified_evaluator.py", "--config", str(cfg_path)],
+                cwd=str(c2c_root),
+                env=os.environ.copy(),
+                log_file=log_file,
+            )
+            timings["datasets"][label] = {"seconds": time.time() - start}
+            (run_root / "manifests" / "timings.json").write_text(json.dumps(timings, indent=2))
+
+        run_eval_with_timing("openbookqa", run_root / "configs/openbookqa.yaml")
+        run_eval_with_timing("arc_c", run_root / "configs/arc_c.yaml")
+
+        timings["total_seconds"] = time.time() - timings["start_time"]
+        (run_root / "manifests" / "timings.json").write_text(json.dumps(timings, indent=2))
 
     print(f"Step 0 complete. Results in: {run_root}")
 
