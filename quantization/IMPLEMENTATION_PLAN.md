@@ -619,6 +619,48 @@ kv_transfer_config:
 - Workshop path: ~1 day on 1 H100 (assuming caches are warm).
 - Main‑conf path: ~3–5 days on 1 H100.
 
+---
+
+## Performance Speedups (scoped plan + Mac correctness tests)
+Goal: increase GPU utilization safely (batching/compile/prefetch), while proving correctness on Mac before GPU runs.
+
+### Step 0 — Feasibility research (local)
+- Inspect `quantization/C2C/script/evaluation/unified_evaluator.py` for:
+  - whether it already supports batched decoding
+  - where prompts are built vs generated
+  - where logits/outputs are post‑processed
+- Decide on **batching strategy**:
+  1) **Receiver‑only batching** first (lowest risk).
+  2) Extend to **C2C batched decoding** if outputs match.
+
+### Step 1 — Correctness harness (Mac)
+- Add a small local test script to compare **batched vs unbatched outputs** on ~20 samples:
+  - Dataset: OpenBookQA
+  - Config: `use_cot=false`, `use_template=true`, `max_new_tokens=64`, temp=0
+  - Compare:
+    - exact output strings
+    - extracted answers
+    - accuracy (should match exactly)
+- If mismatch: inspect for padding/attention mask or stop‑token issues; fix before GPU use.
+
+### Step 2 — Implement batching (guarded)
+- Add `--eval-batch-size` to unified evaluator and wire it into config.
+- Default remains **1** (no behavior change).
+- Only enable batching after Mac correctness passes.
+
+### Step 3 — Optional compile speedup
+- Add an opt‑in flag `--torch-compile` for the projector/fuser path.
+- Validate numerically on Mac or small GPU sample (20 items).
+
+### Step 4 — Deploy on GPU
+- Use `eval.batch_size=4` or `8`, then scale up while monitoring VRAM.
+- Keep `EVAL_SMOKE=1` for first run; compare to unbatched accuracy.
+
+### Expected gain (rough)
+- Batching: **2×–4×** throughput
+- Compile: **+10–40%**
+- Combined: **~2×–5×** end‑to‑end speedup
+
 ## References (ArXiv)
 
 ### Quantization
