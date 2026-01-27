@@ -22,21 +22,13 @@ Use this as the runbook. Replace `$PROJECT_ROOT` and cache paths as needed (RunP
   - `export C2C_CKPT_ROOT=/scratch/$USER/c2c_checkpoints`
 
 ### GPU verification pass (smoke, all milestones)
-This is the “make sure nothing breaks” pass before full runs.
-- [ ] **M0/M2/M3/M8 via SLURM (smoke):**
-  - `RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_8=1 EVAL_SMOKE=1 SMOKE_LIMIT=50 sbatch quantization/submit_milestones.slurm`
-- [ ] **M5 (QAT smoke):**
-  - `python quantization/C2C/script/train/SFT_train.py --config quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`
-- [ ] **M6 (mixed precision smoke):**
-  - `export RUN_TAG=m6_smoke_$(date +%Y%m%d_%H%M%S)`
-  - `python quantization/scripts/run_step1_kv_ptq.py --prep-only --kv-quant-scheme int8 --kv-quant-layer-schedule quantization/configs/kv_layer_schedule.yaml --run-tag "$RUN_TAG"`
-  - Patch limit + run (50 samples):  
-    `python - <<'PY'\nimport os\nfrom pathlib import Path\nimport yaml\nrun_tag=os.environ['RUN_TAG']\nrun_root=Path('quantization/data/step_1_kv_ptq')/run_tag\nfor name in ('openbookqa.yaml','arc_c.yaml'):\n  p=run_root/'configs'/name\n  cfg=yaml.safe_load(p.read_text())\n  cfg.setdefault('eval',{})['limit']=[0,50]\n  p.write_text(yaml.safe_dump(cfg, sort_keys=False))\nPY`  
-    `python quantization/C2C/script/evaluation/unified_evaluator.py --config quantization/data/step_1_kv_ptq/$RUN_TAG/configs/openbookqa.yaml`
-- [ ] **M7 (heterogeneity smoke):**
-  - `export RUN_TAG=m7_smoke_$(date +%Y%m%d_%H%M%S)`
-  - `python quantization/scripts/run_step1_kv_ptq.py --prep-only --base-model Qwen/Qwen3-0.6B --teacher-model meta-llama/Llama-3.2-1B-Instruct --kv-quant-scheme int8 --run-tag "$RUN_TAG"`
-  - Patch limit + run as above (50 samples) using `$RUN_TAG`.
+This is the “make sure nothing breaks” pass before full runs. **Now unified in SLURM.**
+- [ ] **All milestones via SLURM (smoke):**
+  - `RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 EVAL_SMOKE=1 SMOKE_LIMIT=50 sbatch quantization/submit_milestones.slurm`
+  - Optional overrides:  
+    - `M5_RECIPE=quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`  
+    - `M6_LAYER_SCHEDULE=quantization/configs/kv_layer_schedule.yaml`  
+    - `M7_BASE_MODEL=Qwen/Qwen3-0.6B M7_TEACHER_MODEL=meta-llama/Llama-3.2-1B-Instruct M7_DO_ALIGNMENT=1`
 
 ### Full runs (paper‑quality)
 - [ ] **M0/M2/M3/M8 via SLURM (full):**

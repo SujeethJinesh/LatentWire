@@ -63,6 +63,9 @@ export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-${DEFAULT_CACHE_ROOT}/c2c_checkpoints}"
 RUN_MILESTONE_0="${RUN_MILESTONE_0:-0}"
 RUN_MILESTONE_2="${RUN_MILESTONE_2:-0}"
 RUN_MILESTONE_3="${RUN_MILESTONE_3:-0}"
+RUN_MILESTONE_5="${RUN_MILESTONE_5:-0}"
+RUN_MILESTONE_6="${RUN_MILESTONE_6:-0}"
+RUN_MILESTONE_7="${RUN_MILESTONE_7:-0}"
 RUN_MILESTONE_8="${RUN_MILESTONE_8:-0}"
 PREFLIGHT="${PREFLIGHT:-1}"
 DRY_RUN="${DRY_RUN:-0}"
@@ -81,6 +84,19 @@ M3_PROPORTIONS="${M3_PROPORTIONS:-1.0 0.75 0.5 0.25 0.1}"
 M3_ORDER_MODES="${M3_ORDER_MODES:-front back}"
 PREFLIGHT_M3_PROPORTION="${PREFLIGHT_M3_PROPORTION:-0.5}"
 PREFLIGHT_M3_ORDER_MODE="${PREFLIGHT_M3_ORDER_MODE:-front}"
+
+# Milestone 5 (QAT smoke/full).
+M5_RECIPE="${M5_RECIPE:-quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json}"
+
+# Milestone 6 (mixed precision).
+M6_KV_QUANT_SCHEME="${M6_KV_QUANT_SCHEME:-int8}"
+M6_LAYER_SCHEDULE="${M6_LAYER_SCHEDULE:-quantization/configs/kv_layer_schedule.yaml}"
+
+# Milestone 7 (heterogeneity).
+M7_BASE_MODEL="${M7_BASE_MODEL:-Qwen/Qwen3-0.6B}"
+M7_TEACHER_MODEL="${M7_TEACHER_MODEL:-meta-llama/Llama-3.2-1B-Instruct}"
+M7_DO_ALIGNMENT="${M7_DO_ALIGNMENT:-1}"
+M7_ALIGNMENT_STRATEGY="${M7_ALIGNMENT_STRATEGY:-}"
 
 # Milestone 8 grid (selective transfer).
 M8_KV_QUANT_SCHEME="${M8_KV_QUANT_SCHEME:-int8}"
@@ -275,6 +291,31 @@ run_preflight() {
     preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
   fi
 
+  if [ "${RUN_MILESTONE_6}" = "1" ]; then
+    local pre_tag="preflight_step6_${RUN_TAG_PREFIX}"
+    "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --kv-quant-scheme "${M6_KV_QUANT_SCHEME}" \
+      --kv-quant-layer-schedule "${M6_LAYER_SCHEDULE}" \
+      --prep-only \
+      --run-tag "${pre_tag}"
+    preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
+  fi
+
+  if [ "${RUN_MILESTONE_7}" = "1" ]; then
+    local pre_tag="preflight_step7_${RUN_TAG_PREFIX}"
+    "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --base-model "${M7_BASE_MODEL}" \
+      --teacher-model "${M7_TEACHER_MODEL}" \
+      --kv-quant-scheme int8 \
+      --prep-only \
+      --run-tag "${pre_tag}"
+    preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
+  fi
+
   if [ "${RUN_MILESTONE_8}" = "1" ]; then
     local pre_prop="${PREFLIGHT_M8_PROPORTION}"
     local pre_mode="${PREFLIGHT_M8_MODE}"
@@ -356,6 +397,57 @@ if [ "${RUN_MILESTONE_3}" = "1" ]; then
       run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
     done
   done
+fi
+
+# =============================================================================
+# Milestone 5: QAT smoke/full (training).
+# =============================================================================
+if [ "${RUN_MILESTONE_5}" = "1" ]; then
+  "${PYTHON[@]}" quantization/C2C/script/train/SFT_train.py \
+    --config "${M5_RECIPE}"
+fi
+
+# =============================================================================
+# Milestone 6: Mixed precision (layer schedule).
+# =============================================================================
+if [ "${RUN_MILESTONE_6}" = "1" ]; then
+  RUN_TAG="step6_${M6_KV_QUANT_SCHEME}_${RUN_TAG_PREFIX}"
+  "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+    --env "${CONDA_ENV}" \
+    --mode gpu \
+    --kv-quant-scheme "${M6_KV_QUANT_SCHEME}" \
+    --kv-quant-layer-schedule "${M6_LAYER_SCHEDULE}" \
+    --prep-only \
+    --run-tag "${RUN_TAG}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
+  run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
+  run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
+fi
+
+# =============================================================================
+# Milestone 7: Heterogeneity (model pair swap).
+# =============================================================================
+if [ "${RUN_MILESTONE_7}" = "1" ]; then
+  RUN_TAG="step7_${RUN_TAG_PREFIX}"
+  EXTRA_ARGS=()
+  if [ "${M7_DO_ALIGNMENT}" = "1" ]; then
+    EXTRA_ARGS+=( "--do-alignment" )
+  fi
+  if [ -n "${M7_ALIGNMENT_STRATEGY}" ]; then
+    EXTRA_ARGS+=( "--alignment-strategy" "${M7_ALIGNMENT_STRATEGY}" )
+  fi
+  "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+    --env "${CONDA_ENV}" \
+    --mode gpu \
+    --base-model "${M7_BASE_MODEL}" \
+    --teacher-model "${M7_TEACHER_MODEL}" \
+    --kv-quant-scheme int8 \
+    --prep-only \
+    --run-tag "${RUN_TAG}" \
+    "${EXTRA_ARGS[@]}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
+  run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
+  run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
 fi
 
 # =============================================================================
