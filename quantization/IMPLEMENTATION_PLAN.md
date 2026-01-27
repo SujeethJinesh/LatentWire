@@ -325,6 +325,13 @@ Shows that low‑precision transfer can be learned, not just approximated.
 **How**  
 Train on a small subset (10–50k samples), then re‑evaluate ARC‑C + OpenBookQA.
 
+**Additional Main‑conf extensions (beyond M5–M7)**  
+- **NF4**: accuracy‑preserving INT4 variant (likely via bitsandbytes) to strengthen INT4 results with low added risk.  
+- **FP8 (H100‑friendly)**: hardware‑optimized precision that can narrow the INT8/INT4 accuracy gap; higher engineering effort.  
+- **Mixed‑precision schedules**: per‑layer precision (late layers higher precision) to improve accuracy per byte.  
+- **Quantize both source+base KV**: more aggressive compression; likely larger drop but stronger budget curves.  
+- **True bit‑packing**: makes byte accounting realistic (not just fake‑quant); higher engineering overhead.  
+
 ## Milestone 6: Mixed Precision by Layer (Main‑conf extension)
 **What**  
 Use higher precision in later layers and lower precision in early layers.
