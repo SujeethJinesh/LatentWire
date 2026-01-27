@@ -182,6 +182,49 @@ def collect_model_stats(model_name):
         return None, str(exc)
 
 
+def get_hf_token():
+    return os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_HUB_TOKEN")
+
+
+def check_hf_model_access(model_name, require_token=False):
+    if not model_name:
+        return
+    token = get_hf_token()
+    if require_token and not token:
+        die(
+            f"HF token required to access model '{model_name}'. "
+            "Set HF_TOKEN or HUGGINGFACE_HUB_TOKEN."
+        )
+    try:
+        from huggingface_hub import HfApi
+        from huggingface_hub.errors import HfHubHTTPError
+    except Exception as exc:
+        die(f"huggingface_hub is required for access checks: {exc}")
+    try:
+        HfApi().model_info(model_name, token=token)
+        print(f"HF access OK: {model_name}")
+    except HfHubHTTPError as exc:
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        if status in (401, 403, 404):
+            if not token:
+                die(
+                    f"HF access check failed for '{model_name}' (status {status}). "
+                    "Token missing or repo gated. Set HF_TOKEN or choose a public model."
+                )
+            die(
+                f"HF access denied for '{model_name}' (status {status}). "
+                "Verify token + license acceptance."
+            )
+        raise
+
+
+def requires_token_hint(model_name):
+    if not model_name:
+        return False
+    lower = model_name.lower()
+    return lower.startswith(("meta-llama/", "google/gemma", "mistralai/"))
+
+
 def load_layer_schedule(path: Path):
     import yaml
 
@@ -773,10 +816,30 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
             local_dir_use_symlinks=False,
         )
 
-        eval_cfg = yaml.safe_load((c2c_root / "recipe" / "eval_recipe" / "unified_eval.yaml").read_text())
+        if args.eval_recipe:
+            eval_recipe_path = Path(args.eval_recipe)
+            if not eval_recipe_path.is_absolute():
+                eval_recipe_path = c2c_root / eval_recipe_path
+        else:
+            eval_recipe_path = c2c_root / "recipe" / "eval_recipe" / "unified_eval.yaml"
+
+        eval_cfg = yaml.safe_load(eval_recipe_path.read_text())
         rosetta_cfg = eval_cfg.get("model", {}).get("rosetta_config", {})
-        base_model = rosetta_cfg.get("base_model")
-        teacher_model = rosetta_cfg.get("teacher_model")
+        base_model = args.base_model_override or rosetta_cfg.get("base_model")
+        teacher_model = args.teacher_model_override or rosetta_cfg.get("teacher_model")
+        if args.do_alignment:
+            rosetta_cfg["is_do_alignment"] = True
+        if args.alignment_strategy:
+            rosetta_cfg["alignment_strategy"] = args.alignment_strategy
+        if args.base_model_override:
+            rosetta_cfg["base_model"] = base_model
+        if args.teacher_model_override:
+            rosetta_cfg["teacher_model"] = teacher_model
+
+        require_token = args.require_hf_auth or requires_token_hint(base_model) or requires_token_hint(teacher_model)
+        check_hf_model_access(base_model, require_token=require_token)
+        check_hf_model_access(teacher_model, require_token=require_token)
+
         base_model_stats, base_model_stats_error = collect_model_stats(base_model)
         if args.kv_quant_last_fp16:
             schedule = resolve_layer_schedule(args, base_model)
@@ -808,6 +871,8 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
             "checkpoint_dir": str(local_dir / "qwen3_0.6b+qwen2.5_0.5b_Fuser" / "final"),
             "base_model": base_model,
             "teacher_model": teacher_model,
+            "is_do_alignment": rosetta_cfg.get("is_do_alignment", False),
+            "alignment_strategy": rosetta_cfg.get("alignment_strategy"),
             "base_model_stats": base_model_stats,
             "base_model_stats_error": base_model_stats_error,
             "latentwire_commit": git_rev(project_root),
@@ -818,23 +883,28 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
             "kv_quant_config": kv_quant_config,
             "kv_cache_proportion": args.kv_cache_proportion,
             "kv_cache_order_mode": args.kv_cache_order_mode,
+            "eval_recipe_path": str(eval_recipe_path),
         }
         manifest_path = run_root / "manifests" / "step_1_manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))
         print("Wrote manifest:", manifest_path)
 
-        (run_root / "configs" / "openbookqa.yaml").write_text(
-            (c2c_root / "recipe" / "eval_recipe" / "unified_eval.yaml").read_text()
-        )
-        (run_root / "configs" / "arc_c.yaml").write_text(
-            (c2c_root / "recipe" / "eval_recipe" / "unified_eval.yaml").read_text()
-        )
+        (run_root / "configs" / "openbookqa.yaml").write_text(eval_recipe_path.read_text())
+        (run_root / "configs" / "arc_c.yaml").write_text(eval_recipe_path.read_text())
 
         def patch(cfg_path, dataset, out_dir):
             cfg = yaml.safe_load(Path(cfg_path).read_text())
             cfg.setdefault("eval", {})
             cfg["model"]["rosetta_config"]["checkpoints_dir"] = manifest["checkpoint_dir"]
             cfg["model"]["rosetta_config"]["kv_quant_config"] = kv_quant_config
+            if args.base_model_override:
+                cfg["model"]["rosetta_config"]["base_model"] = base_model
+            if args.teacher_model_override:
+                cfg["model"]["rosetta_config"]["teacher_model"] = teacher_model
+            if args.do_alignment:
+                cfg["model"]["rosetta_config"]["is_do_alignment"] = True
+            if args.alignment_strategy:
+                cfg["model"]["rosetta_config"]["alignment_strategy"] = args.alignment_strategy
             cfg["output"]["output_dir"] = str(out_dir)
             cfg["eval"]["dataset"] = dataset
             cfg["eval"]["kv_cache_proportion"] = args.kv_cache_proportion
@@ -888,6 +958,36 @@ def main():
     parser.add_argument("--max-new-tokens", type=int, default=64, help="Local mode generation length")
     parser.add_argument("--base-model", default="Qwen/Qwen3-0.6B", help="Local mode base model")
     parser.add_argument("--teacher-model", default="Qwen/Qwen2.5-0.5B-Instruct", help="Local mode teacher model")
+    parser.add_argument(
+        "--base-model-override",
+        default=None,
+        help="GPU mode: override base model in eval recipe",
+    )
+    parser.add_argument(
+        "--teacher-model-override",
+        default=None,
+        help="GPU mode: override teacher model in eval recipe",
+    )
+    parser.add_argument(
+        "--eval-recipe",
+        default=None,
+        help="GPU mode: path to eval recipe YAML (default: recipe/eval_recipe/unified_eval.yaml)",
+    )
+    parser.add_argument(
+        "--do-alignment",
+        action="store_true",
+        help="GPU mode: set is_do_alignment=true in rosetta_config",
+    )
+    parser.add_argument(
+        "--alignment-strategy",
+        default=None,
+        help="GPU mode: override alignment_strategy in rosetta_config",
+    )
+    parser.add_argument(
+        "--require-hf-auth",
+        action="store_true",
+        help="Require HF token and validate access to base/teacher models",
+    )
     parser.add_argument("--checkpoint-dir", default=None, help="Local mode projector checkpoint dir")
     parser.add_argument("--run-tag", default=None, help="Override run tag")
     parser.add_argument("--output-dir", default=None, help="Local mode output dir override")

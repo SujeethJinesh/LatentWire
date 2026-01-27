@@ -436,7 +436,35 @@ Test at least one cross‑family pair (e.g., Qwen3 ← Llama3.2).
 Demonstrates that the method generalizes beyond a single model family.
 
 **How**  
-Reuse the PTQ + pruning settings from Steps 2–3.
+Reuse the PTQ + pruning settings from Steps 2–3, but swap the **teacher model family** and enable tokenizer alignment when needed.
+
+**Milestone 7 phases (recommended)**  
+- **M7‑P0 (Design)**: choose 1–2 cross‑family pairs + datasets.  
+  - Example pairs: Qwen3‑0.6B ← Llama‑3.2‑1B, Qwen3‑0.6B ← Gemma‑1B.  
+  - Why: small, interpretable set; enough to show generalization.  
+- **M7‑P1 (Config)**: add a dedicated eval recipe (copy of `unified_eval.yaml`) with:  
+  - `rosetta_config.teacher_model` set to the new source model.  
+  - `is_do_alignment=true` if tokenizers differ (cross‑family).  
+  - Keep `use_template=true`, `use_cot=false`, `max_new_tokens=64`, `temperature=0`.  
+- **M7‑P2 (Local sanity)**: run **1–5 samples** in local mode with the new base/teacher to verify:  
+  - tokenizer alignment, prompt formatting, and that outputs are non‑degenerate.  
+- **M7‑P3 (GPU smoke)**: run 25–50 samples on OpenBookQA to validate throughput and correctness.  
+- **M7‑P4 (Full GPU eval)**: run OpenBookQA + ARC‑C (INT8) for the cross‑family pair.  
+- **M7‑P5 (Analysis)**: compare to within‑family INT8 baseline; report delta accuracy + bytes.  
+
+**Expected outcome**  
+- Cross‑family should show **some drop** vs within‑family but remain usable.  
+- Alignment flag should reduce severe degradation; if not, consider alternative token alignment or prompt templates.
+
+**Local test commands (M7)**  
+- `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --base-model Qwen/Qwen3-0.6B --teacher-model meta-llama/Llama-3.2-1B-Instruct --kv-quant-scheme int8`  
+- Repeat with `--teacher-model google/gemma-1b` if desired.
+
+**GPU commands (M7, deferred)**  
+- Create a new eval recipe (copy `quantization/C2C/recipe/eval_recipe/unified_eval.yaml` → `unified_eval_hetero.yaml`) with the new teacher model and `is_do_alignment=true`.  
+- Then run via the standard runner (INT8):  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme int8`  
+  - (If multiple recipes are needed, run each by swapping the eval recipe or adding a flag later.)
 
 ---
 
