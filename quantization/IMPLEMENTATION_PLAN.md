@@ -10,6 +10,7 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
   - `manifests/` (checkpoint + environment provenance)
   - `manifests/system_info.json` (GPU + driver snapshot)
   - `manifests/timings.json` (per‑dataset wall‑clock timings)
+  - `manifests/*_manifest.json` includes `bytes_estimate` (bytes/token + effective proportion; multiply by avg length for per‑sequence bytes)
 - Commit `quantization/data/step_*` to git after each milestone so results are reviewable.
 - Cleanup hygiene: remove failed runs that do not contain `results/` or have `status=failed` in manifests (keep only validated runs).
 

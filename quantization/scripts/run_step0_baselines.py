@@ -231,6 +231,51 @@ def collect_env_info():
     return info
 
 
+def estimate_bytes(base_model_stats, kv_cache_proportion=1.0, kv_quant_config=None, kv_transfer_config=None):
+    if not base_model_stats:
+        return {"error": "missing_base_model_stats"}
+    num_layers = base_model_stats.get("num_layers")
+    num_kv_heads = base_model_stats.get("num_kv_heads")
+    head_dim = base_model_stats.get("head_dim")
+    if not all([num_layers, num_kv_heads, head_dim]):
+        return {"error": "incomplete_base_model_stats"}
+
+    scheme = (kv_quant_config or {}).get("scheme", "fp16")
+    quant_enabled = bool((kv_quant_config or {}).get("enabled", False))
+    scheme = scheme.lower() if isinstance(scheme, str) else "fp16"
+    if not quant_enabled:
+        scheme = "fp16"
+    bytes_per_element = {
+        "int8": 1.0,
+        "int4": 0.5,
+        "nf4": 0.5,
+        "fp8": 1.0,
+        "fp16": 2.0,
+        "bf16": 2.0,
+    }.get(scheme, 2.0)
+
+    effective_proportion = float(kv_cache_proportion or 1.0)
+    if kv_transfer_config and kv_transfer_config.get("enabled", False):
+        token_prop = kv_transfer_config.get("token_select_proportion")
+        if token_prop is not None:
+            effective_proportion *= float(token_prop)
+
+    bytes_per_token = 2 * int(num_layers) * int(num_kv_heads) * int(head_dim) * bytes_per_element
+    index_bytes_per_token = None
+    if kv_transfer_config and kv_transfer_config.get("enabled", False):
+        index_bytes = kv_transfer_config.get("index_dtype_bytes")
+        if index_bytes:
+            index_bytes_per_token = effective_proportion * float(index_bytes)
+
+    return {
+        "bytes_per_element": bytes_per_element,
+        "bytes_per_token": bytes_per_token,
+        "effective_proportion": effective_proportion,
+        "index_bytes_per_token": index_bytes_per_token,
+        "formula": "bytes_per_token * avg_input_length",
+    }
+
+
 def collect_system_info():
     info = {
         "nvidia_smi_path": shutil.which("nvidia-smi"),
@@ -628,6 +673,7 @@ def main():
             "hostname": socket.gethostname(),
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "prep_only": bool(args.prep_only),
+            "bytes_estimate": estimate_bytes(base_model_stats, kv_cache_proportion=1.0),
         }
         manifest_path = run_root / "manifests" / "step_0_checkpoint_manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))
