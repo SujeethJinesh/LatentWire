@@ -358,7 +358,7 @@ def load_local_dataset(dataset_name):
     from datasets import load_dataset
 
     if dataset_name == "openbookqa":
-        return load_dataset("openbookqa")["test"]
+        return load_dataset("allenai/openbookqa")["test"]
     if dataset_name == "ai2-arc":
         return load_dataset("allenai/ai2_arc", "ARC-Challenge")["test"]
     die(f"Unsupported local dataset: {dataset_name}")

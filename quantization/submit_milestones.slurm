@@ -94,7 +94,7 @@ from datasets import load_dataset
 dataset = sys.argv[1]
 revision = "main"
 if dataset == "openbookqa":
-    ds = load_dataset("openbookqa", revision=revision)
+    ds = load_dataset("allenai/openbookqa", revision=revision)
     split = ds["test"]
 elif dataset == "ai2-arc":
     ds = load_dataset("allenai/ai2_arc", "ARC-Challenge", revision=revision)
