@@ -125,6 +125,16 @@ def ensure_env(env_name, project_root, args):
     sys.exit(0)
 
 
+def _module_in_repo(module, repo_root: Path) -> bool:
+    module_file = getattr(module, "__file__", None)
+    if not module_file:
+        return False
+    try:
+        return Path(module_file).resolve().is_relative_to(repo_root.resolve())
+    except Exception:
+        return str(repo_root.resolve()) in str(Path(module_file).resolve())
+
+
 def ensure_installed(
     c2c_root,
     log_file=None,
@@ -136,11 +146,15 @@ def ensure_installed(
     required_modules = required_modules or REQUIRED_MODULES_GPU
     try:
         import importlib
-        for mod in required_modules:
-            importlib.import_module(mod)
+        imported = {mod: importlib.import_module(mod) for mod in required_modules}
+        rosetta_mod = imported.get("rosetta")
+        if rosetta_mod and not _module_in_repo(rosetta_mod, Path(c2c_root)):
+            raise RuntimeError(f"rosetta resolved to {rosetta_mod.__file__}, expected under {c2c_root}")
         print("Dependencies already installed; skipping pip install.")
         return
-    except Exception:
+    except Exception as exc:
+        if log_file:
+            log_file.write(f"Dependency check failed or mismatched: {exc}\n")
         pass
 
     pip_cmd = [sys.executable, "-m", "pip", "install", "-e", "."]
