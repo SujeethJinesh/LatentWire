@@ -11,6 +11,83 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - Commit `quantization/data/step_*` to git after each milestone so results are reviewable.
 - Cleanup hygiene: remove failed runs that do not contain `results/` or have `status=failed` in manifests (keep only validated runs).
 
+## Milestone Execution Checklist (commands)
+Use this as the end‑to‑end runbook. Replace `$PROJECT_ROOT` and cache paths as needed (e.g., RunPod `/workspace/LatentWire`, HPC `/projects/.../LatentWire`).
+
+### Common prep (once per machine)
+- [ ] Clone + submodule:
+  - `git clone git@github.com:SujeethJinesh/LatentWire.git`
+  - `cd LatentWire`
+  - `git submodule update --init --recursive quantization/C2C`
+- [ ] Optional cache paths (recommended):
+  - `export HF_HOME=/scratch/$USER/.cache/huggingface`
+  - `export C2C_CKPT_ROOT=/scratch/$USER/c2c_checkpoints`
+
+### Milestone 0 (Baselines)
+- [ ] Login node / preflight:
+  - `conda run --no-capture-output -n rosetta python -u quantization/scripts/run_step0_baselines.py --prep-only`
+- [ ] GPU run:
+  - `python quantization/scripts/run_step0_baselines.py`
+- [ ] Verify outputs:
+  - `ls quantization/data/step_0_baselines/<run_tag>/results`
+
+### Milestone 1–2 (KV PTQ + PTQ eval)
+- [ ] Prep (optional):
+  - `python quantization/scripts/run_step1_kv_ptq.py --prep-only --kv-quant-scheme int8`
+- [ ] GPU evals:
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8`
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int4`
+- [ ] Local sanity (optional):
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 5 --kv-quant-scheme int8`
+
+### Milestone 3 (Cache‑length reduction)
+- [ ] GPU runs (INT8 + proportions):
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8 --kv-cache-proportion 0.75 --kv-cache-order-mode front`
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8 --kv-cache-proportion 0.50 --kv-cache-order-mode front`
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8 --kv-cache-proportion 0.25 --kv-cache-order-mode front`
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8 --kv-cache-proportion 0.10 --kv-cache-order-mode front`
+  - Repeat with `--kv-cache-order-mode back`
+
+### Milestone 4 (Budget curves)
+- [ ] Analyze:
+  - `python quantization/scripts/analyze_budget_curve.py --runs-root quantization/data --output-dir quantization/analysis/m4_budget_curve`
+- [ ] Verify outputs:
+  - `ls quantization/analysis/m4_budget_curve`
+
+### Milestone 5 (QAT recovery)
+- [ ] Smoke (CPU/local, optional):
+  - `python quantization/C2C/script/train/SFT_train.py --config quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`
+- [ ] GPU train (QAT):
+  - `python quantization/C2C/script/train/SFT_train.py --config quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json`
+- [ ] GPU eval (post‑QAT):
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8`
+
+### Milestone 6 (Mixed precision by layer)
+- [ ] Prepare schedule:
+  - `cat quantization/configs/kv_layer_schedule.yaml`
+- [ ] GPU runs (INT8 with mixed‑precision schedule):
+  - `python quantization/scripts/run_step1_kv_ptq.py --kv-quant-scheme int8 --kv-quant-layer-schedule quantization/configs/kv_layer_schedule.yaml`
+
+### Milestone 7 (Heterogeneity scaling)
+- [ ] Local sanity (optional):
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --base-model Qwen/Qwen3-0.6B --teacher-model meta-llama/Llama-3.2-1B-Instruct --kv-quant-scheme int8`
+- [ ] GPU eval:
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme int8`
+
+### Milestone 8 (Selective & Compressed Cache Transfer)
+- [ ] Local sanity:
+  - `python quantization/scripts/run_step8_selective_transfer.py --mode local --local-dataset openbookqa --local-num-samples 5 --kv-quant-scheme int8 --kv-select-mode proj_vnorm_topk --kv-select-proportion 0.25 --kv-sparse-fuse`
+- [ ] GPU smoke:
+  - `python quantization/scripts/run_step8_selective_transfer.py --mode gpu --eval-limit 50 --kv-quant-scheme int8 --kv-select-mode proj_vnorm_topk --kv-select-proportion 0.25 --kv-sparse-fuse`
+- [ ] GPU full:
+  - `python quantization/scripts/run_step8_selective_transfer.py --mode gpu --kv-quant-scheme int8 --kv-select-mode proj_vnorm_topk --kv-select-proportion 0.25 --kv-sparse-fuse`
+
+### Post‑run hygiene
+- [ ] Archive “golden” results:
+  - `mkdir -p quantization/golden && cp -r quantization/data/step_*_*/<run_tag> quantization/golden/`
+- [ ] Clean failed/incomplete runs:
+  - `python quantization/scripts/run_step1_kv_ptq.py --cleanup-failed` (applies to step_1 runs)
+
 ## C2C Fork Strategy (for Milestone 1+ changes)
 **Decision**  
 Fork C2C and point the submodule at the fork. Keep all quantization changes on a dedicated branch (e.g., `quant-kv`).
