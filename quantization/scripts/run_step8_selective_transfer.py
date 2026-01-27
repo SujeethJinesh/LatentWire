@@ -1058,9 +1058,9 @@ def main():
     )
     parser.add_argument(
         "--kv-select-mode",
-        choices=["vnorm_topk", "knorm_topk", "random", "front", "back"],
+        choices=["vnorm_topk", "knorm_topk", "proj_vnorm_topk", "random", "front", "back"],
         default="vnorm_topk",
-        help="Token selection mode for sparse transfer",
+        help="Token selection mode for sparse transfer (proj_vnorm_topk scores in receiver space)",
     )
     parser.add_argument(
         "--kv-select-proportion",

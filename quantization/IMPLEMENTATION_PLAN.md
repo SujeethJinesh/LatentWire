@@ -480,7 +480,7 @@ KVComm focuses on layer selection within same-architecture sharing. Here we keep
 ```yaml
 kv_transfer_config:
   enabled: true
-  token_select_mode: vnorm_topk   # vnorm_topk | knorm_topk | random | front | back
+  token_select_mode: vnorm_topk   # vnorm_topk | knorm_topk | proj_vnorm_topk | random | front | back
   token_select_proportion: 0.25
   token_select_scope: prompt      # prompt | instruction_only | all_context
   token_select_min_tokens: 64
@@ -496,8 +496,8 @@ kv_transfer_config:
 ```
 
 **Milestone 8 phases (recommended)**  
-- **M8‑P0 (Design lock)**: modes = {front, back, random, vnorm_topk}, proportions = {1.0, 0.5, 0.25, 0.10}, schemes = {int8, int4}.  
-- **M8‑P1 (Token selection)**: add `rosetta/utils/kv_select.py` with scoring + top‑k selection and scope masking.  
+- **M8‑P0 (Design lock)**: modes = {front, back, random, vnorm_topk, proj_vnorm_topk}, proportions = {1.0, 0.5, 0.25, 0.10}, schemes = {int8, int4}.  
+- **M8‑P1 (Token selection)**: add `rosetta/utils/kv_select.py` with scoring + top‑k selection and scope masking; add projector‑aware scoring via `proj_vnorm_topk` (score in receiver space after projection).  
 - **M8‑P2 (Sparse transfer + fuse)**: gather selected KV, quantize gathered KV, project + fuse selected tokens only, scatter back.  
 - **M8‑P3 (Runner + telemetry)**: add `run_step8_selective_transfer.py` with token stats + effective bytes.  
 - **M8‑P4 (Local sanity)**: 1–5 samples; `proportion=1.0` must match Milestone 1 outputs.  
@@ -506,7 +506,7 @@ kv_transfer_config:
   - Extend `analyze_budget_curve.py` with token_select columns and effective bytes (payload + index bytes + quant scales).
 
 **Expected outcome**  
-- At matched bytes, `vnorm_topk` should outperform `front/back`.  
+- At matched bytes, projector‑aware `proj_vnorm_topk` should match or exceed `vnorm_topk` and outperform `front/back`.  
 - Sparse fusion should reduce fuser compute roughly proportional to `token_select_proportion`.
 
 ---
@@ -595,6 +595,15 @@ kv_transfer_config:
 - Transformer‑XL: Attentive LMs Beyond a Fixed‑Length Context — https://arxiv.org/abs/1901.02860
 - Compressive Transformer: Long‑Range Sequence Modeling — https://arxiv.org/abs/1911.05507
 - Memorizing Transformers — https://arxiv.org/abs/2203.08913
+
+### KV‑Cache Communication / Compression
+- KVComm: Selective KV Sharing for Efficient LLM Communication — https://arxiv.org/abs/2510.03346
+- Q‑KVComm: Adaptive KV Cache Compression for Multi‑Agent Communication — https://arxiv.org/abs/2512.17914
+- Latent Space Communication via KV Cache Alignment — https://arxiv.org/abs/2601.06123
+- ZipCache: Efficient KV Cache Compression via Token Saliency — https://arxiv.org/abs/2405.14256
+- TokenSelect: Efficient Long‑Context Inference via Token‑Level KV Selection — https://aclanthology.org/2025.emnlp-main.1079/
+- VATP: Attention Score is not All You Need for Token Importance (Value Matters) — https://arxiv.org/abs/2406.12335
+- PDTrim: Prefill‑Decode KV Pruning for Communication Bandwidth — https://arxiv.org/abs/2509.04467
 
 ### Inference / Decoding / Serving
 - FlashAttention: Fast and Memory‑Efficient Exact Attention — https://arxiv.org/abs/2205.14135

@@ -17,7 +17,7 @@
 \maketitle
 
 \begin{abstract}
-We study precision-aware communication between heterogeneous LLMs by quantizing KV-cache transfers in Cache-to-Cache (C2C). Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization and cache-length reduction, and show accuracy vs bytes transmitted curves. This draft contains placeholders for results.
+We study precision-aware communication between heterogeneous LLMs by quantizing KV-cache transfers in Cache-to-Cache (C2C). Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization, cache-length reduction, and token-level selective transfer with sparse fusion, and show accuracy vs.\ bytes transmitted curves. This draft contains placeholders for results.
 \end{abstract}
 
 \section{Introduction}
@@ -26,12 +26,27 @@ Large language models (LLMs) often communicate via text, which is slow and lossy
 \section{Background and Motivation}
 C2C projects sharer KV caches into receiver space and fuses them with learned gates. This retains richer semantics than text relay. However, KV caches are large: they scale with sequence length, heads, and hidden size. Quantization and cache-length reduction can shrink the communication footprint.
 
+\section{Related Work}
+Layer-selective cache communication has been explored in KVComm and Q-KVComm, which emphasize selecting layers and quantizing shared caches (\href{https://arxiv.org/abs/2510.03346}{KVComm}, \href{https://arxiv.org/abs/2512.17914}{Q-KVComm}). Token-level KV selection has been studied for single-model inference (e.g., ZipCache and TokenSelect), and value-norm criteria have been shown to outperform attention-only scores for token importance (VATP) (\href{https://arxiv.org/abs/2405.14256}{ZipCache}, \href{https://aclanthology.org/2025.emnlp-main.1079/}{TokenSelect}, \href{https://arxiv.org/abs/2406.12335}{VATP}). Our contribution is distinct: we apply projector-aware, token-level sparsity within a C2C projector+fuser pipeline for heterogeneous models, and quantify accuracy-per-byte tradeoffs.
+
 \section{Method}
 \subsection{Post-Training Quantization (PTQ)}
 We quantize the KV caches using INT8 or INT4/NF4 with per-head scaling. We evaluate accuracy and latency under fixed precision budgets.
 
 \subsection{Cache-Length Reduction}
 We prune KV tokens using a fixed ratio (e.g., top-50\%, 25\%, 10\%), reducing transmitted bytes further.
+
+\subsection{Selective \& Compressed Cache Transfer (SparseC2C)}
+We select a sparse subset of token positions to transfer and fuse. Let $I \subset \{1,\dots,T\}$ be selected tokens and $S_I$ the gather operator. We fuse only selected tokens and scatter updates back:
+\[
+(\tilde{K}^R_\ell, \tilde{V}^R_\ell) = S_I^\top (K^R_\ell, V^R_\ell),\quad
+(\tilde{K}^S_\ell, \tilde{V}^S_\ell) = S_I^\top (K^S_\ell, V^S_\ell)
+\]
+\[
+(\tilde{K}^{R\prime}_\ell, \tilde{V}^{R\prime}_\ell) =
+\mathcal{F}_\ell\big(\tilde{K}^R_\ell, \tilde{V}^R_\ell, \Pi^K_\ell(\tilde{K}^S_\ell), \Pi^V_\ell(\tilde{V}^S_\ell)\big)
+\]
+We then scatter the update to the full cache. We use \emph{projector-aware} token scoring by computing value norms in receiver space (``proj\_vnorm\_topk''), which ties selection to the cross-model mapping.
 
 \subsection{Communication-Budget Curves}
 We report accuracy as a function of transmitted bytes, enabling fair comparison under equal communication constraints.
