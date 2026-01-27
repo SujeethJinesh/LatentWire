@@ -45,13 +45,19 @@ cd "${PROJECT_ROOT}"
 
 export PYTHONPATH="${PROJECT_ROOT}"
 
-# Caches on scratch to avoid quota issues on /projects.
-export HF_HOME="${HF_HOME:-/scratch/m000066/${USER}/.cache/huggingface}"
+# Cache roots (prefer scratch on HPC, fallback to /workspace for RunPod/containers).
+DEFAULT_CACHE_ROOT="/scratch/m000066/${USER}"
+if [ ! -d "/scratch" ]; then
+  DEFAULT_CACHE_ROOT="/workspace"
+fi
+
+# Caches on scratch/volume to avoid filling container root.
+export HF_HOME="${HF_HOME:-${DEFAULT_CACHE_ROOT}/.cache/huggingface}"
 export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-${HF_HOME}/transformers}"
 export HF_HUB_CACHE="${HF_HUB_CACHE:-${HF_HOME}/hub}"
 export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-${HF_HOME}/hub}"
 export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-${HF_HOME}/datasets}"
-export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-/scratch/m000066/${USER}/c2c_checkpoints}"
+export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-${DEFAULT_CACHE_ROOT}/c2c_checkpoints}"
 
 # Milestone toggles (set to 1 when you want to run them).
 RUN_MILESTONE_0="${RUN_MILESTONE_0:-0}"
