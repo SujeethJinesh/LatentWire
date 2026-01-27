@@ -325,6 +325,19 @@ Shows that low‑precision transfer can be learned, not just approximated.
 **How**  
 Train on a small subset (10–50k samples), then re‑evaluate ARC‑C + OpenBookQA.
 
+**Configs (added)**  
+- Full QAT config: `quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json`  
+- Local smoke config (Mac): `quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`  
+
+**Local smoke test (Mac/MPS)**  
+Purpose: validate the QAT wiring (kv_quant_config flows into RosettaModel) without full training.  
+Command (from repo root):  
+- `python quantization/C2C/script/train/SFT_train.py --config quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`  
+
+**GPU training (RunPod/H100)**  
+Command (from repo root):  
+- `python quantization/C2C/script/train/SFT_train.py --config quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json`  
+
 **Workshop+ (optional) pre‑QAT main‑conf previews**  
 If we want to strengthen the workshop paper without committing to full QAT, we can do one or more of the following *before* Milestone 5 training. These reuse the existing PTQ runner and add minimal code paths.
 
