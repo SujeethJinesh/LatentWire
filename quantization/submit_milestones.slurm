@@ -86,6 +86,13 @@ if [ "${RUN_FULL}" = "1" ]; then
   EVAL_SMOKE=0
 fi
 
+# Auto-push results after each milestone (full runs only by default).
+AUTO_PUSH="${AUTO_PUSH:-0}"
+AUTO_PUSH_FULL_ONLY="${AUTO_PUSH_FULL_ONLY:-1}"
+AUTO_PUSH_REBASE="${AUTO_PUSH_REBASE:-1}"
+AUTO_PUSH_REMOTE="${AUTO_PUSH_REMOTE:-origin}"
+AUTO_PUSH_BRANCH="${AUTO_PUSH_BRANCH:-main}"
+
 # Run tag prefix for deterministic folder names (stable across requeues).
 RUN_TAG_PREFIX="${RUN_TAG_PREFIX:-${SLURM_JOB_ID:-$(date +%Y%m%d_%H%M%S)}}"
 
@@ -292,6 +299,42 @@ path = Path(sys.argv[1])
 data = path.read_bytes()
 print(hashlib.sha1(data).hexdigest())
 PY
+}
+
+git_autopush() {
+  local label="$1"
+  if [ "${AUTO_PUSH}" != "1" ]; then
+    return
+  fi
+  if [ "${AUTO_PUSH_FULL_ONLY}" = "1" ] && [ "${RUN_FULL}" != "1" ]; then
+    return
+  fi
+  if [ ! -d "${PROJECT_ROOT}/.git" ]; then
+    echo "Auto-push skipped: no git repo at ${PROJECT_ROOT}"
+    return
+  fi
+  (
+    set +e
+    cd "${PROJECT_ROOT}" || exit 0
+    git add quantization/data/step_* quantization/registry/run_registry.json quantization/golden 2>/dev/null
+    if git diff --cached --quiet; then
+      echo "Auto-push: no new data to commit for ${label}"
+      exit 0
+    fi
+    git commit -m "Add results ${label} ${RUN_TAG_PREFIX}" >/dev/null 2>&1
+    if [ "${AUTO_PUSH_REBASE}" = "1" ]; then
+      git pull --rebase "${AUTO_PUSH_REMOTE}" "${AUTO_PUSH_BRANCH}"
+      if [ $? -ne 0 ]; then
+        git rebase --abort >/dev/null 2>&1 || true
+        echo "Auto-push: rebase failed for ${label}"
+        exit 0
+      fi
+    fi
+    git push "${AUTO_PUSH_REMOTE}" "${AUTO_PUSH_BRANCH}"
+    if [ $? -ne 0 ]; then
+      echo "Auto-push: push failed for ${label}"
+    fi
+  )
 }
 
 run_eval_chunks() {
@@ -512,6 +555,7 @@ if [ "${RUN_MILESTONE_0}" = "1" ]; then
   RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_0_baselines/${RUN_TAG}"
   run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log" "m0"
   run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log" "m0"
+  git_autopush "m0"
 fi
 
 # =============================================================================
@@ -530,6 +574,7 @@ if [ "${RUN_MILESTONE_2}" = "1" ]; then
     run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m2|${SCHEME}"
     run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m2|${SCHEME}"
   done
+  git_autopush "m2"
 fi
 
 # =============================================================================
@@ -553,6 +598,7 @@ if [ "${RUN_MILESTONE_3}" = "1" ]; then
       run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m3|${M3_KV_QUANT_SCHEME}|${PROP}|${ORDER}"
     done
   done
+  git_autopush "m3"
 fi
 
 # =============================================================================
@@ -561,6 +607,7 @@ fi
 if [ "${RUN_MILESTONE_5}" = "1" ]; then
   "${PYTHON[@]}" quantization/C2C/script/train/SFT_train.py \
     --config "${M5_RECIPE}"
+  git_autopush "m5"
 fi
 
 # =============================================================================
@@ -579,6 +626,7 @@ if [ "${RUN_MILESTONE_6}" = "1" ]; then
   schedule_hash="$(config_hash "${M6_LAYER_SCHEDULE}")"
   run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
   run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
+  git_autopush "m6"
 fi
 
 # =============================================================================
@@ -605,6 +653,7 @@ if [ "${RUN_MILESTONE_7}" = "1" ]; then
   RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
   run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}"
   run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}"
+  git_autopush "m7"
 fi
 
 # =============================================================================
@@ -635,6 +684,7 @@ if [ "${RUN_MILESTONE_8}" = "1" ]; then
       run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}"
     done
   done
+  git_autopush "m8"
 fi
 
 echo "Done."

@@ -34,6 +34,9 @@ This is the “make sure nothing breaks” pass before full runs. **Now unified 
 - [ ] **All milestones via SLURM (full, skip done by default):**
   - `RUN_FULL=1 RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 sbatch quantization/submit_milestones.slurm`
   - Optional: `SKIP_DONE=0` to ignore registry, `FORCE_RERUN=1` to override skip.
+- [ ] **Auto‑push results after each milestone (full runs only):**
+  - `AUTO_PUSH=1` (default: off)
+  - Optional: `AUTO_PUSH_REBASE=1` (default), `AUTO_PUSH_FULL_ONLY=1` (default), `AUTO_PUSH_REMOTE=origin`, `AUTO_PUSH_BRANCH=main`
 - [ ] **Registry file (auto‑updated):**
   - `quantization/registry/run_registry.json` (per‑dataset status with run root + config hash)
 - [ ] **M4 analysis:**
