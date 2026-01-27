@@ -67,6 +67,7 @@ RUN_MILESTONE_5="${RUN_MILESTONE_5:-0}"
 RUN_MILESTONE_6="${RUN_MILESTONE_6:-0}"
 RUN_MILESTONE_7="${RUN_MILESTONE_7:-0}"
 RUN_MILESTONE_8="${RUN_MILESTONE_8:-0}"
+RUN_FULL="${RUN_FULL:-0}"
 PREFLIGHT="${PREFLIGHT:-1}"
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -74,6 +75,16 @@ DRY_RUN="${DRY_RUN:-0}"
 CHUNK_SIZE="${CHUNK_SIZE:-200}"
 EVAL_SMOKE="${EVAL_SMOKE:-0}"
 SMOKE_LIMIT="${SMOKE_LIMIT:-50}"
+
+# Skip/registry controls (avoid re-running completed configs).
+SKIP_DONE="${SKIP_DONE:-1}"
+FORCE_RERUN="${FORCE_RERUN:-0}"
+REGISTRY_PATH="${REGISTRY_PATH:-${PROJECT_ROOT}/quantization/registry/run_registry.json}"
+mkdir -p "$(dirname "${REGISTRY_PATH}")"
+
+if [ "${RUN_FULL}" = "1" ]; then
+  EVAL_SMOKE=0
+fi
 
 # Run tag prefix for deterministic folder names (stable across requeues).
 RUN_TAG_PREFIX="${RUN_TAG_PREFIX:-${SLURM_JOB_ID:-$(date +%Y%m%d_%H%M%S)}}"
@@ -180,6 +191,109 @@ print(int(data.get("next_start", 0)))
 PY
 }
 
+registry_should_skip() {
+  local key="$1"
+  local dataset="$2"
+  local smoke="$3"
+  "${PYTHON[@]}" - <<'PY' "$REGISTRY_PATH" "$key" "$dataset" "$smoke" "$SKIP_DONE" "$FORCE_RERUN"
+import json
+import sys
+from pathlib import Path
+
+registry_path = Path(sys.argv[1])
+key = sys.argv[2]
+dataset = sys.argv[3]
+smoke = sys.argv[4] == "1"
+skip_done = sys.argv[5] == "1"
+force = sys.argv[6] == "1"
+
+if force or not skip_done:
+    print("0")
+    raise SystemExit(0)
+
+if not registry_path.exists():
+    print("0")
+    raise SystemExit(0)
+
+data = json.loads(registry_path.read_text())
+entry = data.get(key, {}).get(dataset)
+if not entry:
+    print("0")
+    raise SystemExit(0)
+
+status = entry.get("status")
+entry_smoke = bool(entry.get("smoke", False))
+if status != "complete":
+    print("0")
+    raise SystemExit(0)
+
+if smoke:
+    # Skip smokes if any complete run already exists.
+    print("1")
+    raise SystemExit(0)
+
+# Full runs: skip only if a full (non-smoke) run exists.
+print("1" if not entry_smoke else "0")
+PY
+}
+
+registry_record() {
+  local key="$1"
+  local dataset="$2"
+  local status="$3"
+  local run_root="$4"
+  local smoke="$5"
+  local config_hash="$6"
+  local reason="${7:-}"
+  "${PYTHON[@]}" - <<'PY' "$REGISTRY_PATH" "$key" "$dataset" "$status" "$run_root" "$smoke" "$config_hash" "$reason"
+import json
+import sys
+from datetime import datetime
+from pathlib import Path
+
+registry_path = Path(sys.argv[1])
+key = sys.argv[2]
+dataset = sys.argv[3]
+status = sys.argv[4]
+run_root = sys.argv[5]
+smoke = sys.argv[6] == "1"
+config_hash = sys.argv[7]
+reason = sys.argv[8]
+
+data = {}
+if registry_path.exists():
+    try:
+        data = json.loads(registry_path.read_text())
+    except Exception:
+        data = {}
+
+data.setdefault(key, {})
+data[key][dataset] = {
+    "status": status,
+    "smoke": smoke,
+    "run_root": run_root,
+    "config_hash": config_hash,
+    "reason": reason,
+    "timestamp": datetime.utcnow().isoformat() + "Z",
+}
+
+registry_path.write_text(json.dumps(data, indent=2) + "\n")
+PY
+}
+
+config_hash() {
+  local cfg_path="$1"
+  "${PYTHON[@]}" - <<'PY' "$cfg_path"
+import hashlib
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = path.read_bytes()
+print(hashlib.sha1(data).hexdigest())
+PY
+}
+
 run_eval_chunks() {
   local run_root="$1"
   local config_name="$2"
@@ -231,6 +345,48 @@ run_eval_chunks() {
 
   # Reset limit after completion so manual re-runs don't stay pinned to the last chunk.
   patch_limit "${run_root}/configs/${config_name}" 0 "${total}"
+}
+
+run_eval_chunks_with_skip() {
+  local run_root="$1"
+  local config_name="$2"
+  local dataset="$3"
+  local log_path="$4"
+  local registry_key="$5"
+
+  local progress_dir="${run_root}/progress"
+  local progress_file="${progress_dir}/${dataset}.json"
+  mkdir -p "${progress_dir}"
+
+  local total
+  total="$(dataset_len "${dataset}")"
+
+  if [ -f "${progress_file}" ]; then
+    local start
+    start="$(read_next_start "${progress_file}")"
+    if [ "${start}" -lt "${total}" ]; then
+      run_eval_chunks "${run_root}" "${config_name}" "${dataset}" "${log_path}"
+      local cfg_hash
+      cfg_hash="$(config_hash "${run_root}/configs/${config_name}")"
+      registry_record "${registry_key}" "${dataset}" "complete" "${run_root}" "${EVAL_SMOKE}" "${cfg_hash}"
+      return
+    fi
+  fi
+
+  local skip
+  skip="$(registry_should_skip "${registry_key}" "${dataset}" "${EVAL_SMOKE}")"
+  if [ "${skip}" = "1" ]; then
+    local cfg_hash
+    cfg_hash="$(config_hash "${run_root}/configs/${config_name}")"
+    registry_record "${registry_key}" "${dataset}" "skipped" "${run_root}" "${EVAL_SMOKE}" "${cfg_hash}" "skip_done"
+    echo "Skipping ${dataset} for ${registry_key} (registry says complete)."
+    return
+  fi
+
+  run_eval_chunks "${run_root}" "${config_name}" "${dataset}" "${log_path}"
+  local cfg_hash
+  cfg_hash="$(config_hash "${run_root}/configs/${config_name}")"
+  registry_record "${registry_key}" "${dataset}" "complete" "${run_root}" "${EVAL_SMOKE}" "${cfg_hash}"
 }
 
 sanitize_prop() {
@@ -354,8 +510,8 @@ if [ "${RUN_MILESTONE_0}" = "1" ]; then
     --prep-only \
     --run-tag "${RUN_TAG}"
   RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_0_baselines/${RUN_TAG}"
-  run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log"
-  run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step0.log" "m0"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step0.log" "m0"
 fi
 
 # =============================================================================
@@ -371,8 +527,8 @@ if [ "${RUN_MILESTONE_2}" = "1" ]; then
       --prep-only \
       --run-tag "${RUN_TAG}"
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
-    run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
-    run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m2|${SCHEME}"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m2|${SCHEME}"
   done
 fi
 
@@ -393,8 +549,8 @@ if [ "${RUN_MILESTONE_3}" = "1" ]; then
         --prep-only \
         --run-tag "${RUN_TAG}"
       RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
-      run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
-      run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
+      run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m3|${M3_KV_QUANT_SCHEME}|${PROP}|${ORDER}"
+      run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m3|${M3_KV_QUANT_SCHEME}|${PROP}|${ORDER}"
     done
   done
 fi
@@ -420,8 +576,9 @@ if [ "${RUN_MILESTONE_6}" = "1" ]; then
     --prep-only \
     --run-tag "${RUN_TAG}"
   RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
-  run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
-  run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
+  schedule_hash="$(config_hash "${M6_LAYER_SCHEDULE}")"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
 fi
 
 # =============================================================================
@@ -446,8 +603,8 @@ if [ "${RUN_MILESTONE_7}" = "1" ]; then
     --run-tag "${RUN_TAG}" \
     "${EXTRA_ARGS[@]}"
   RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
-  run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log"
-  run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}"
 fi
 
 # =============================================================================
@@ -474,8 +631,8 @@ if [ "${RUN_MILESTONE_8}" = "1" ]; then
         --run-tag "${RUN_TAG}" \
         "${EXTRA_ARGS[@]}"
       RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
-      run_eval_chunks "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log"
-      run_eval_chunks "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log"
+      run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}"
+      run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}"
     done
   done
 fi

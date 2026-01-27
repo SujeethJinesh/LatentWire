@@ -31,8 +31,11 @@ This is the “make sure nothing breaks” pass before full runs. **Now unified 
     - `M7_BASE_MODEL=Qwen/Qwen3-0.6B M7_TEACHER_MODEL=meta-llama/Llama-3.2-1B-Instruct M7_DO_ALIGNMENT=1`
 
 ### Full runs (paper‑quality)
-- [ ] **M0/M2/M3/M8 via SLURM (full):**
-  - `RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_8=1 sbatch quantization/submit_milestones.slurm`
+- [ ] **All milestones via SLURM (full, skip done by default):**
+  - `RUN_FULL=1 RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 sbatch quantization/submit_milestones.slurm`
+  - Optional: `SKIP_DONE=0` to ignore registry, `FORCE_RERUN=1` to override skip.
+- [ ] **Registry file (auto‑updated):**
+  - `quantization/registry/run_registry.json` (per‑dataset status with run root + config hash)
 - [ ] **M4 analysis:**
   - `python quantization/scripts/analyze_budget_curve.py --runs-root quantization/data --output-dir quantization/analysis/m4_budget_curve`
 - [ ] **M5 full QAT:**
