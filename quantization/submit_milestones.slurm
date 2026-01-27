@@ -86,11 +86,12 @@ import sys
 from datasets import load_dataset
 
 dataset = sys.argv[1]
+revision = "main"
 if dataset == "openbookqa":
-    ds = load_dataset("openbookqa")
+    ds = load_dataset("openbookqa", revision=revision)
     split = ds["test"]
 elif dataset == "ai2-arc":
-    ds = load_dataset("allenai/ai2_arc", "ARC-Challenge")
+    ds = load_dataset("allenai/ai2_arc", "ARC-Challenge", revision=revision)
     split = ds["test"]
 else:
     raise SystemExit(f"Unknown dataset: {dataset}")
