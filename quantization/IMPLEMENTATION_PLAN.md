@@ -405,3 +405,34 @@ Reuse the PTQ + pruning settings from Steps 2–3.
 ## Time Budget (rough)
 - Workshop path: ~1 day on 1 H100 (assuming caches are warm).
 - Main‑conf path: ~3–5 days on 1 H100.
+
+## References (ArXiv)
+
+### Quantization
+- GPTQ: Accurate Post‑Training Quantization for Generative Pre‑trained Transformers — https://arxiv.org/abs/2210.17323
+- SmoothQuant: Accurate and Efficient Post‑Training Quantization for Large Language Models — https://arxiv.org/abs/2211.10438
+- AWQ: Activation‑aware Weight Quantization for LLMs — https://arxiv.org/abs/2306.00978
+- LLM.int8(): 8‑bit Matrix Multiplication for Transformers at Scale — https://arxiv.org/abs/2208.07339
+- ZeroQuant: Efficient and Affordable Post‑Training Quantization for Large‑Scale Transformers — https://arxiv.org/abs/2206.01861
+
+### Cross‑LLM Communication / Multi‑Agent
+- AutoGen: Enabling Next‑Gen LLM Applications via Multi‑Agent Conversation Framework — https://arxiv.org/abs/2308.08155
+- CAMEL: Communicative Agents for “Mind” Exploration of LLM Society — https://arxiv.org/abs/2303.17760
+- MetaGPT: Meta Programming for A Multi‑Agent Collaborative Framework — https://arxiv.org/abs/2308.00352
+- FrugalGPT: How to Use LLMs While Reducing Cost and Improving Performance — https://arxiv.org/abs/2305.05176
+- HuggingGPT: Solving AI Tasks with ChatGPT and Its Friends — https://arxiv.org/abs/2303.17580
+
+### KV‑Cache / Long‑Context Memory
+- Cache‑to‑Cache (C2C): Direct Semantic Communication via KV‑Cache Fusion — https://arxiv.org/abs/2510.03215
+- vLLM / PagedAttention: Efficient Memory Management for LLM Serving — https://arxiv.org/abs/2309.06180
+- StreamingLLM: Efficient Streaming LMs with Attention Sinks — https://arxiv.org/abs/2309.17453
+- Transformer‑XL: Attentive LMs Beyond a Fixed‑Length Context — https://arxiv.org/abs/1901.02860
+- Compressive Transformer: Long‑Range Sequence Modeling — https://arxiv.org/abs/1911.05507
+- Memorizing Transformers — https://arxiv.org/abs/2203.08913
+
+### Inference / Decoding / Serving
+- FlashAttention: Fast and Memory‑Efficient Exact Attention — https://arxiv.org/abs/2205.14135
+- FlashAttention‑2: Faster Attention with Better Parallelism — https://arxiv.org/abs/2307.08691
+- Medusa: Simple LLM Inference Acceleration with Multiple Decoding Heads — https://arxiv.org/abs/2401.10774
+- DeepSpeed Inference: Efficient Inference of Transformer Models at Scale — https://arxiv.org/abs/2207.00032
+- Speculative Sampling / Decoding — https://arxiv.org/abs/2302.01318
