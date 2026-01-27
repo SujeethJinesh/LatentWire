@@ -6,13 +6,19 @@ model:
     is_do_alignment: false
     alignment_strategy: longest
     checkpoints_dir: /workspace/c2c_checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final
+    kv_quant_config:
+      enabled: true
+      scheme: int8
+      axis: head
+      eps: 1.0e-06
+      collect_stats: false
   generation_config:
     do_sample: false
     max_new_tokens: 64
 output:
-  output_dir: /workspace/LatentWire/quantization/data/step_0_baselines/step0_20260127_052746/results/arc_c
+  output_dir: /workspace/LatentWire/quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_052746/results/openbookqa
 eval:
-  dataset: ai2-arc
+  dataset: openbookqa
   gpu_ids:
   - 0
   answer_method: generate
@@ -20,6 +26,8 @@ eval:
   use_template: true
   sample_interval: 1
   math_grading_method: comprehensive
+  kv_cache_proportion: 1.0
+  kv_cache_order_mode: front
   limit:
   - 0
-  - 1172
+  - 500
