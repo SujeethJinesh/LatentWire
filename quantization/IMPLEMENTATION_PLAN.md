@@ -466,6 +466,49 @@ Reuse the PTQ + pruning settings from Steps 2–3, but swap the **teacher model 
   - `python quantization/scripts/run_step1_kv_ptq.py --mode gpu --kv-quant-scheme int8`  
   - (If multiple recipes are needed, run each by swapping the eval recipe or adding a flag later.)
 
+## Milestone 8: Selective & Compressed Cache Transfer (Token-Importance Sparse C2C)
+**What**  
+Add token-level selective transfer of the sharer KV cache into C2C, combined with KV PTQ (INT8/INT4). Unlike Milestone 3 (front/back truncation), this selects a **sparse subset of token positions** to transmit/fuse and optionally performs **sparse fusion** (fuser runs only on selected tokens, then scatter back).
+
+**Why**  
+Milestones 1–4 give "precision x length" budget curves, but length pruning is structural and may drop high-value tokens. Token-importance selection should preserve accuracy at the same bytes. Sparse fusion reduces both **communication bandwidth** and **prefill compute**.
+
+**Novelty (vs KVComm/Q-KVComm)**  
+KVComm focuses on layer selection within same-architecture sharing. Here we keep C2C's **projection + fusion** for **heterogeneous** models and add a **token-level** sparsity axis inside the C2C fuser.
+
+**Config block (new)**  
+```yaml
+kv_transfer_config:
+  enabled: true
+  token_select_mode: vnorm_topk   # vnorm_topk | knorm_topk | random | front | back
+  token_select_proportion: 0.25
+  token_select_scope: prompt      # prompt | instruction_only | all_context
+  token_select_min_tokens: 64
+  sparse_fuse: true               # fuse only selected tokens, then scatter back
+  scatter_fill: receiver_only     # receiver_only | zeros
+  kv_quant_config:
+    enabled: true
+    scheme: int8                  # int8 | int4
+    axis: head
+    eps: 1e-6
+  index_dtype_bytes: 2            # uint16 indices if seq_len < 65535
+  include_scale_overhead: true
+```
+
+**Milestone 8 phases (recommended)**  
+- **M8‑P0 (Design lock)**: modes = {front, back, random, vnorm_topk}, proportions = {1.0, 0.5, 0.25, 0.10}, schemes = {int8, int4}.  
+- **M8‑P1 (Token selection)**: add `rosetta/utils/kv_select.py` with scoring + top‑k selection and scope masking.  
+- **M8‑P2 (Sparse transfer + fuse)**: gather selected KV, quantize gathered KV, project + fuse selected tokens only, scatter back.  
+- **M8‑P3 (Runner + telemetry)**: add `run_step8_selective_transfer.py` with token stats + effective bytes.  
+- **M8‑P4 (Local sanity)**: 1–5 samples; `proportion=1.0` must match Milestone 1 outputs.  
+- **M8‑P5 (GPU smoke)**: 50‑sample runs, INT8 x {1.0, 0.5, 0.25}, compare front vs vnorm_topk.  
+- **M8‑P6 (Full GPU grid + plots)**: INT8 x {1.0, 0.5, 0.25, 0.10} x {front, vnorm_topk}; INT4 x {1.0, 0.5, 0.25} x {front, vnorm_topk}.  
+  - Extend `analyze_budget_curve.py` with token_select columns and effective bytes (payload + index bytes + quant scales).
+
+**Expected outcome**  
+- At matched bytes, `vnorm_topk` should outperform `front/back`.  
+- Sparse fusion should reduce fuser compute roughly proportional to `token_select_proportion`.
+
 ---
 
 # Experiment Matrix (Merged)
@@ -509,7 +552,8 @@ Reuse the PTQ + pruning settings from Steps 2–3, but swap the **teacher model 
 ## Workshop vs Main‑Conference Path
 - **Workshop**: Milestones 0 → 1 → 2 → 3 → 4 (baseline + PTQ + pruning + budget curve).
 - **Main‑conf**: Workshop path + M5 (QAT) + M6 (mixed precision) + **systems measurements** (bandwidth/latency or bit‑packing).  
-  - **M7 (heterogeneity)** is recommended if time allows; otherwise move to appendix.
+  - **M7 (heterogeneity)** is recommended if time allows; otherwise move to appendix.  
+  - **M8 (token‑level sparse C2C)** is a strong main‑conf differentiator if bandwidth permits.
 
 ## Potential Improvements / Follow‑ups
 - **Byte accounting**: include per‑head scale metadata in “bytes transferred” so INT8/INT4 are not under‑counted.
