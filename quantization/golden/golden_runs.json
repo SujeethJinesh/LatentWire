@@ -1,0 +1,109 @@
+{
+  "note": "Golden run registry for M0\u2013M3 results. Do not delete referenced run folders.",
+  "runs": [
+    {
+      "run_tag": "step0_20260127_052746",
+      "run_path": "quantization/data/step_0_baselines/step0_20260127_052746",
+      "dataset": "arc_c",
+      "scheme": "fp16",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.551304347826087,
+      "num_samples": 1150,
+      "avg_input_length": 141.31739130434784,
+      "bytes_per_sequence": 8103704.486956522,
+      "status": "complete",
+      "notes": null
+    },
+    {
+      "run_tag": "step0_20260127_052746",
+      "run_path": "quantization/data/step_0_baselines/step0_20260127_052746",
+      "dataset": "openbookqa",
+      "scheme": "fp16",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.528,
+      "num_samples": 500,
+      "avg_input_length": 117.926,
+      "bytes_per_sequence": 6762348.544,
+      "status": "complete",
+      "notes": null
+    },
+    {
+      "run_tag": "step1_int8_20260127_052746",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int8_20260127_052746",
+      "dataset": "arc_c",
+      "scheme": "int8",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.5504347826086956,
+      "num_samples": 1150,
+      "avg_input_length": 141.31739130434784,
+      "bytes_per_sequence": 4051852.243478261,
+      "status": "complete",
+      "notes": null
+    },
+    {
+      "run_tag": "step1_int8_20260127_052746",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int8_20260127_052746",
+      "dataset": "openbookqa",
+      "scheme": "int8",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.528,
+      "num_samples": 500,
+      "avg_input_length": 117.926,
+      "bytes_per_sequence": 3381174.272,
+      "status": "complete",
+      "notes": null
+    },
+    {
+      "run_tag": "step1_int4_20260127_052746",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int4_20260127_052746",
+      "dataset": "arc_c",
+      "scheme": "int4",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.5539130434782609,
+      "num_samples": 1150,
+      "avg_input_length": 141.31739130434784,
+      "bytes_per_sequence": 2025926.1217391305,
+      "status": "complete",
+      "notes": null
+    },
+    {
+      "run_tag": "step1_int4_20260127_052746",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int4_20260127_052746",
+      "dataset": "openbookqa",
+      "scheme": "int4",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.526,
+      "num_samples": 500,
+      "avg_input_length": 117.926,
+      "bytes_per_sequence": 1690587.136,
+      "status": "complete",
+      "notes": null
+    },
+    {
+      "run_tag": "step3_int8_p1p0_front_20260127_052746",
+      "run_path": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_052746",
+      "dataset": "arc_c",
+      "scheme": "int8",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.5482233502538071,
+      "num_samples": 197,
+      "avg_input_length": 140.4263959390863,
+      "bytes_per_sequence": 4026305.624365482,
+      "status": "partial",
+      "notes": "Only first chunk (197 samples) finished; arc_c incomplete."
+    },
+    {
+      "run_tag": "step3_int8_p1p0_front_20260127_052746",
+      "run_path": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_052746",
+      "dataset": "openbookqa",
+      "scheme": "int8",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.528,
+      "num_samples": 500,
+      "avg_input_length": 117.926,
+      "bytes_per_sequence": 3381174.272,
+      "status": "complete",
+      "notes": null
+    }
+  ]
+}
