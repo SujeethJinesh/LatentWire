@@ -1,5 +1,0 @@
-
-$ git submodule update --init --recursive quantization/C2C
-fatal: remote error: upload-pack: not our ref cad82ef0543caeb21c38f305011ec82db59e42e2
-fatal: Fetched in submodule path 'quantization/C2C', but it did not contain cad82ef0543caeb21c38f305011ec82db59e42e2. Direct fetching of that commit failed.
-fatal: 

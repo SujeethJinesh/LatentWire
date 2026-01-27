@@ -1,5 +1,0 @@
-
-$ git submodule update --init --recursive quantization/C2C
-From github.com:thu-nics/C2C
- * branch            ac9039737aa155af96f0c3ab18eac858951302c9 -> FETCH_HEAD
-Submodule path 'quantization/C2C': checked out 'ac9039737aa155af96f0c3ab18eac858951302c9'
