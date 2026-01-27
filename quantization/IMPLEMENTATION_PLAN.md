@@ -508,6 +508,8 @@ kv_transfer_config:
 **Expected outcome**  
 - At matched bytes, projector‑aware `proj_vnorm_topk` should match or exceed `vnorm_topk` and outperform `front/back`.  
 - Sparse fusion should reduce fuser compute roughly proportional to `token_select_proportion`.
+**Notes / risks**  
+- `proj_vnorm_topk` computes a full projection to score tokens, which adds overhead. If it becomes too expensive, add a coarse scoring cadence (e.g., score every N tokens) or a cap on selected tokens beyond `token_select_min_tokens`.
 
 ---
 
